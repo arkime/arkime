@@ -1426,14 +1426,21 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
     BSB_EXPORT_u08(*jbsb, '{');
 
 #ifdef DNSDEBUG
-    LOG("DNSDEBUG: Host: %s, Opcode: %s, QC: %s, QT: %s", dns->query.hostname, dns->query.opcode, dns->query.class, dns->query.type);
+    LOG("DNSDEBUG: Host: %s, Opcode: %s, QC ID: %u, QT ID: %u", dns->query.hostname, dns->query.opcode, dns->query.class_id, dns->query.type_id);
 #endif
 
     BSB_EXPORT_sprintf(*jbsb, "\"opcode\":\"%s\",", dns->query.opcode);
     BSB_EXPORT_sprintf(*jbsb, "\"queryHost\":");
     arkime_db_js0n_str(jbsb, (uint8_t *)dns->query.hostname, TRUE);
-    BSB_EXPORT_sprintf(*jbsb, ",\"qc\":\"%s\",", dns->query.class);
-    BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
+    BSB_EXPORT_u08(*jbsb, ',');
+    if (dns->query.class)
+        BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"%s\",", dns->query.class);
+    else if (dns->query.class_id) // RFC 3597 style for unknown classes, omit for reserved 0 (synthesized mDNS entries)
+        BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"CLASS%u\",", dns->query.class_id);
+    if (dns->query.type)
+        BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
+    else if (dns->query.type_id) // RFC 3597 style for unknown types, omit for reserved 0 (synthesized mDNS entries)
+        BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"TYPE%u\",", dns->query.type_id);
 
     if (HASH_COUNT(s_, dns->hosts) > 0) {
         SAVE_STRING_HASH(dns->hosts, "host");

@@ -466,8 +466,6 @@
        "AA"
       ],
       "opcode" : "QUERY",
-      "qc" : "(null)",
-      "qt" : "(null)",
       "queryHost" : "<root>",
       "status" : "NOERROR"
      },
