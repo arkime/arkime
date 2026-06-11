@@ -18,16 +18,41 @@ SPDX-License-Identifier: Apache-2.0
     All Sessions
   </v-btn>
 
-  <v-btn
-    class="session-options-btn"
-    variant="text"
-    size="small"
-    :href="permalink">
-    <v-icon
-      icon="mdi-link"
-      class="me-1" />
-    {{ $t('sessions.link') }}
-  </v-btn>
+  <v-menu>
+    <template #activator="{ props: activatorProps }">
+      <v-btn
+        v-bind="activatorProps"
+        class="session-options-btn"
+        variant="text"
+        size="small">
+        <v-icon
+          icon="mdi-link"
+          class="me-1" />
+        {{ $t('sessions.link') }}
+        <v-icon
+          icon="mdi-menu-down"
+          class="ms-1" />
+      </v-btn>
+    </template>
+    <v-list density="compact">
+      <v-list-item
+        prepend-icon="mdi-clipboard"
+        @click="copyLink">
+        {{ $t('sessions.copyLink') }}
+      </v-list-item>
+      <v-list-item
+        prepend-icon="mdi-open-in-new"
+        :href="permalink"
+        target="_blank">
+        {{ $t('sessions.openLinkNewTab') }}
+      </v-list-item>
+      <v-list-item
+        prepend-icon="mdi-arrow-right-circle"
+        :href="permalink">
+        {{ $t('sessions.pivotToLink') }}
+      </v-list-item>
+    </v-list>
+  </v-menu>
 
   <template v-if="actions.hasPackets">
     <template v-if="actions.rootId">
@@ -182,6 +207,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import qs from 'qs';
 import store from '@/store';
 import UserService from '../users/UserService';
@@ -193,6 +219,7 @@ const props = defineProps({
 const emit = defineEmits(['openForm']);
 
 const route = useRoute();
+const { t } = useI18n();
 
 const remoteclusters = computed(() => store.state.remoteclusters);
 const canDownloadPcap = computed(() => UserService.hasPermission('!disablePcapDownload'));
@@ -210,6 +237,15 @@ const permalink = computed(() => {
     openAll: 1
   })}`;
 });
+
+function copyLink () {
+  const url = new URL(permalink.value, document.baseURI).href;
+  if (!navigator.clipboard) {
+    alert(t('common.clipboardNotSupported', { value: url }));
+    return;
+  }
+  navigator.clipboard.writeText(url);
+}
 
 function allSessions () {
   store.commit('setExpression', `rootId == ${props.actions.rootId}`);
