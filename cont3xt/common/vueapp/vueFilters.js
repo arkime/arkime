@@ -4,6 +4,25 @@
 import moment from 'moment-timezone';
 
 /**
+ * Returns url if it uses a safe scheme (http(s)/mailto/ftp/tel or relative),
+ * otherwise undefined. Rejects javascript:/data: and similar.
+ *
+ * @param {string} url The url to validate
+ * @returns {string|undefined}
+ */
+export const safeUrl = function (url) {
+  if (typeof url !== 'string') { return undefined; }
+
+  const stripped = url.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '');
+
+  if (/^[a-z][a-z0-9+.-]*:/i.test(stripped) && !/^(https?|mailto|ftp|tel):/i.test(stripped)) {
+    return undefined;
+  }
+
+  return url;
+};
+
+/**
  * Rounds a number using Math.round
  *
  * @example

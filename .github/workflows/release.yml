@@ -17,7 +17,25 @@ permissions:
   packages: read
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+          ITERATION: ${{ github.event.inputs.iteration }}
+        run: |
+          if ! echo "$RELEASE_TAG" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "ERROR - invalid release_tag '$RELEASE_TAG', expected e.g. 1.0.0 or 6.0.0-rc1"
+            exit 1
+          fi
+          if ! echo "$ITERATION" | grep -qE '^[0-9]+$'; then
+            echo "ERROR - invalid iteration '$ITERATION', expected a number"
+            exit 1
+          fi
+
   generate-matrix:
+    needs: validate
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -54,6 +72,8 @@ jobs:
 
     env:
       PYTHON: ${{ matrix.python || 'python' }}
+      RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+      ITERATION: ${{ github.event.inputs.iteration }}
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
@@ -85,15 +105,15 @@ jobs:
         if: ${{ matrix.package == 'arch' }}
         run: |
           gem install --no-document fpm rexml erb
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          /root/.local/share/gem/ruby/3.4.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}.pkg.tar.zst /opt/arkime
+          export ARKIME_VERSION="$RELEASE_TAG"
+          /root/.local/share/gem/ruby/3.4.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${ITERATION}_${{matrix.version}}.pkg.tar.zst /opt/arkime
           ls -l *.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
         run: |
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.rpm /opt/arkime
+          export ARKIME_VERSION="$RELEASE_TAG"
+          fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.rpm /opt/arkime
           ls -l *.rpm
 
       - name: Arkime ENV Variables
@@ -113,7 +133,7 @@ jobs:
       - name: moloch el package rpm
         if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
         run: |
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
+          export ARKIME_VERSION="$RELEASE_TAG"
           rm -rf /data/moloch; mkdir -p /data
           mv /opt/arkime /data/moloch
           ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
@@ -122,14 +142,14 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.rpm /data/moloch
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.rpm /data/moloch
           ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.deb /opt/arkime
+          export ARKIME_VERSION="$RELEASE_TAG"
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.deb /opt/arkime
           ls -l *.deb
 
       - name: notice
@@ -220,6 +240,7 @@ jobs:
 
     env:
       PYTHON: ${{ matrix.python || 'python' }}
+      RELEASE_TAG: ${{ github.event.inputs.release_tag }}
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
@@ -235,6 +256,7 @@ jobs:
           release: ${{ matrix.freebsdrelease }}
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
           usesh: true
+          envs: 'RELEASE_TAG'
           prepare: |
             pkg update -f
             pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar pcre2 python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
@@ -244,7 +266,7 @@ jobs:
             ./easybutton-build.sh --dir /usr/local/share/arkime ${{ matrix.buildopt }} --rminstall --nothirdparty
             ls -l capture/capture
             INSTALL_BUNDLE=bundle gmake install
-            export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
+            export ARKIME_VERSION="$RELEASE_TAG"
             arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
             ./release/freebsdpkg.sh $ARKIME_VERSION ${{ matrix.version }} ${{ matrix.version }} /usr/local/share/arkime
             # mv arkime_*.pkg arkime-main.${{matrix.version}}.pkg || true
@@ -294,6 +316,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.release_tag }}
     steps:
       - name: Log in to registry
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
@@ -305,29 +329,29 @@ jobs:
       - name: Create and push manifest
         run: |
           package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
-          export ARKIME_MAJOR_VERSION=`echo ${{github.event.inputs.release_tag}} | cut -c 1-1`
+          export ARKIME_MAJOR_VERSION=`echo "$RELEASE_TAG" | cut -c 1-1`
 
           create_and_push() {
             local tag=$1
             local extra=$2
 
             docker manifest create ${package}:${tag} \
-              ${package}:v${{github.event.inputs.release_tag}}-amd64${extra} \
-              ${package}:v${{github.event.inputs.release_tag}}-arm64${extra}
+              ${package}:v${RELEASE_TAG}-amd64${extra} \
+              ${package}:v${RELEASE_TAG}-arm64${extra}
             docker manifest annotate ${package}:${tag} \
-              ${package}:v${{github.event.inputs.release_tag}}-amd64${extra} --arch amd64
+              ${package}:v${RELEASE_TAG}-amd64${extra} --arch amd64
             docker manifest annotate ${package}:${tag} \
-              ${package}:v${{github.event.inputs.release_tag}}-arm64${extra} --arch arm64
+              ${package}:v${RELEASE_TAG}-arm64${extra} --arch arm64
             docker manifest push ${package}:${tag}
           }
 
           ### Normal ###
-          create_and_push "v${{github.event.inputs.release_tag}}" ""
+          create_and_push "v${RELEASE_TAG}" ""
           create_and_push "v${ARKIME_MAJOR_VERSION}-latest" ""
           create_and_push "latest" ""
 
           ### JA4+ ###
-          create_and_push "v${{github.event.inputs.release_tag}}-ja4" "-ja4"
+          create_and_push "v${RELEASE_TAG}-ja4" "-ja4"
           create_and_push "v${ARKIME_MAJOR_VERSION}-ja4-latest" "-ja4"
           create_and_push "ja4-latest" "-ja4"
 
@@ -340,9 +364,10 @@ jobs:
       - name: send
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         run: |
           echo "Sending msg"
-          export ARKIME_VERSION="v${{ github.event.inputs.release_tag }}"
+          export ARKIME_VERSION="v$RELEASE_TAG"
           echo ARKIME_VERSION: $ARKIME_VERSION
           BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"Release $ARKIME_VERSION worked!!!\"}"
           curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
