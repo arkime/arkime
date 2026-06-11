@@ -1751,6 +1751,7 @@
       "invalidNoteId": "Vigane märkuse ID",
       "tooManyDismissedNotes": "Liiga palju tagasilükatud märkusi",
       "dismissNoteFailed": "Teate peitmine ebaõnnestus",
+      "dbNeedsUpgrade": "Kasutajate andmebaas vajab uuendamist, käivita db.pl upgrade",
       "unknownUser": "Tundmatu kasutaja",
       "invalidStateName": "Vigane oleku nimi",
       "stateUpdateFailed": "Oleku uuendamine ebaõnnestus",

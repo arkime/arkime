@@ -1752,6 +1752,7 @@
       "invalidNoteId": "Invalidway otenay idway",
       "tooManyDismissedNotes": "Ootay anymay ismissedday otesnay",
       "dismissNoteFailed": "Otenay ismissalday ailedfay",
+      "dbNeedsUpgrade": "Usersway atabaseday eedsnay anway upgradeway, unray db.pl upgradeway",
       "unknownUser": "Unknownway userway",
       "invalidStateName": "Invalidway atestay amenay",
       "stateUpdateFailed": "atestay updateway ailedfay",

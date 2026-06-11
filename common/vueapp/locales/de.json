@@ -1751,6 +1751,7 @@
       "invalidNoteId": "Ungültige Hinweis-ID",
       "tooManyDismissedNotes": "Zu viele verworfene Hinweise",
       "dismissNoteFailed": "Verwerfen der Nachricht fehlgeschlagen",
+      "dbNeedsUpgrade": "Benutzerdatenbank benötigt ein Upgrade, db.pl upgrade ausführen",
       "unknownUser": "Unbekannter Benutzer",
       "invalidStateName": "Ungültiger Statusname",
       "stateUpdateFailed": "Statusaktualisierung fehlgeschlagen",

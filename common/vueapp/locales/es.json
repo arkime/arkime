@@ -1751,6 +1751,7 @@
       "invalidNoteId": "ID de nota inválido",
       "tooManyDismissedNotes": "Demasiadas notas descartadas",
       "dismissNoteFailed": "Error al descartar el mensaje",
+      "dbNeedsUpgrade": "La base de datos de usuarios necesita una actualización, ejecuta db.pl upgrade",
       "unknownUser": "Usuario desconocido",
       "invalidStateName": "Nombre de estado inválido",
       "stateUpdateFailed": "Error al actualizar el estado",

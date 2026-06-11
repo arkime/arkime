@@ -1751,6 +1751,7 @@
       "invalidNoteId": "Invalid note id",
       "tooManyDismissedNotes": "Too many dismissed notes",
       "dismissNoteFailed": "Note dismissal failed",
+      "dbNeedsUpgrade": "Users database needs an upgrade, run db.pl upgrade",
       "unknownUser": "Unknown user",
       "invalidStateName": "Invalid state name",
       "stateUpdateFailed": "state update failed",

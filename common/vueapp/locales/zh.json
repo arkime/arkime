@@ -1751,6 +1751,7 @@
       "invalidNoteId": "无效的提示 ID",
       "tooManyDismissedNotes": "关闭的提示过多",
       "dismissNoteFailed": "关闭消息失败",
+      "dbNeedsUpgrade": "用户数据库需要升级，请运行 db.pl upgrade",
       "unknownUser": "未知用户",
       "invalidStateName": "无效的状态名称",
       "stateUpdateFailed": "状态更新失败",

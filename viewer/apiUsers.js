@@ -709,6 +709,11 @@ class UserAPIs {
       }
 
       if (noteId !== undefined) {
+        // dismissedHelpNotes needs users db schema >= 87; fail open when the version is unknown
+        const schemaVersion = User.getSchemaVersion();
+        if (schemaVersion !== undefined && schemaVersion < 87) {
+          return res.serverError(503, 'Users database needs an upgrade, run db.pl upgrade', 'api.users.dbNeedsUpgrade');
+        }
         user.dismissedHelpNotes ??= [];
         if (!user.dismissedHelpNotes.includes(noteId)) {
           // 'all' supersedes everything, so it must never be blocked by the cap

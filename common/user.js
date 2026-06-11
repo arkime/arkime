@@ -166,6 +166,14 @@ class User {
     return null;
   }
 
+  // Users db schema version, undefined when unknown (non-ES implementations)
+  static getSchemaVersion () {
+    if (User.#implementation.getSchemaVersion) {
+      return User.#implementation.getSchemaVersion();
+    }
+    return undefined;
+  }
+
   static getDbUrl () {
     return User.#dbUrl;
   }
@@ -1969,6 +1977,7 @@ function filterUsers (users, filter, searchFields, noRoles) {
 class UserESImplementation {
   prefix;
   client;
+  schemaVersion;
 
   constructor (options) {
     this.prefix = ArkimeUtil.formatPrefix(options.prefix);
@@ -2007,6 +2016,11 @@ class UserESImplementation {
     }
 
     this.client = new Client(esOptions);
+
+    // soft fetch (no minVersion): the users es may not have the sessions3 template
+    ArkimeUtil.checkArkimeSchemaVersion(this.client, options.prefix)
+      .then((version) => { this.schemaVersion = version; });
+
     if (!Auth.isAnonymousMode()) {
       process.nextTick(async () => {
         try {
@@ -2021,6 +2035,10 @@ class UserESImplementation {
 
   getClient () {
     return this.client;
+  }
+
+  getSchemaVersion () {
+    return this.schemaVersion;
   }
 
   async flush (cluster) {
