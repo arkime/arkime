@@ -146,11 +146,24 @@ SPDX-License-Identifier: Apache-2.0
                       </v-menu>
                     </v-list-item>
 
-                    <!-- submenu: save / load named column layouts -->
+                    <!-- save current columns over the loaded config -->
                     <v-list-item
+                      v-if="loadedColConfig"
                       prepend-icon="mdi-content-save"
+                      @click="updateColumnConfiguration(loadedColConfig)">
+                      {{ $t('sessions.sessions.saveConfig', { name: loadedColConfig }) }}
+                      <v-tooltip
+                        activator="parent"
+                        location="end">
+                        {{ $t('sessions.sessions.customColumnUpdate') }}
+                      </v-tooltip>
+                    </v-list-item>
+
+                    <!-- submenu: save current columns as a new config -->
+                    <v-list-item
+                      prepend-icon="mdi-content-save-plus"
                       append-icon="mdi-chevron-right">
-                      <v-list-item-title>{{ $t('sessions.sessions.customColumnMsg') }}</v-list-item-title>
+                      <v-list-item-title>{{ $t('sessions.sessions.saveConfigAs') }}</v-list-item-title>
                       <v-menu
                         activator="parent"
                         :close-on-content-click="false"
@@ -185,7 +198,46 @@ SPDX-License-Identifier: Apache-2.0
                               </v-btn>
                             </div>
                           </div>
-                          <v-divider />
+                        </v-list>
+                        <v-alert
+                          v-if="colConfigError"
+                          density="compact"
+                          variant="tonal"
+                          type="error"
+                          class="ma-1">
+                          {{ colConfigError }}
+                        </v-alert>
+                      </v-menu>
+                    </v-list-item>
+
+                    <!-- submenu: load a saved config (filterable) -->
+                    <v-list-item
+                      prepend-icon="mdi-folder-open"
+                      append-icon="mdi-chevron-right">
+                      <v-list-item-title>{{ $t('sessions.sessions.loadConfig') }}</v-list-item-title>
+                      <v-menu
+                        activator="parent"
+                        :close-on-content-click="false"
+                        location="end"
+                        open-on-click
+                        :open-on-hover="false">
+                        <v-list
+                          density="compact"
+                          class="col-config-list">
+                          <div
+                            v-if="colConfigs.length"
+                            class="px-2 py-1">
+                            <div class="arkime-input-group arkime-input-group--fluid">
+                              <input
+                                autofocus
+                                @click.stop
+                                type="text"
+                                class="arkime-input-control"
+                                v-model="colConfigQuery"
+                                :placeholder="$t('sessions.sessions.filterConfigs')">
+                            </div>
+                          </div>
+                          <v-divider v-if="colConfigs.length" />
                           <v-list-item
                             key="col-config-default"
                             @click.stop.prevent="loadColumnConfiguration(-1)">
@@ -197,34 +249,23 @@ SPDX-License-Identifier: Apache-2.0
                             </v-tooltip>
                           </v-list-item>
                           <v-list-item
-                            v-for="(config, key) in colConfigs"
+                            v-if="colConfigQuery && !filteredColConfigs.length"
+                            disabled>
+                            {{ $t('sessions.sessions.noConfigsMatch') }}
+                          </v-list-item>
+                          <v-list-item
+                            v-for="config in filteredColConfigs"
                             :key="config.name"
-                            @click.self.stop.prevent="loadColumnConfiguration(key)">
+                            :active="config.name === loadedColConfig"
+                            @click.self.stop.prevent="loadColumnConfiguration(config)">
                             <div
                               class="d-flex align-center w-100"
-                              @click.self="loadColumnConfiguration(key)">
+                              @click.self="loadColumnConfiguration(config)">
                               <span
                                 class="flex-grow-1"
-                                @click="loadColumnConfiguration(key)">
+                                @click="loadColumnConfiguration(config)">
                                 {{ config.name }}
                               </span>
-                              <v-btn
-                                :id="`updateCol${key}`"
-                                :aria-label="$t('sessions.sessions.customColumnUpdate')"
-                                color="warning"
-                                variant="flat"
-                                size="small"
-                                density="comfortable"
-                                icon
-                                class="ms-1"
-                                @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                                <v-icon icon="mdi-content-save" />
-                                <v-tooltip
-                                  :activator="`[id='updateCol${key}']`"
-                                  location="end">
-                                  {{ $t('sessions.sessions.customColumnUpdate') }}
-                                </v-tooltip>
-                              </v-btn>
                               <v-btn
                                 :aria-label="$t('common.delete')"
                                 color="error"
@@ -233,28 +274,12 @@ SPDX-License-Identifier: Apache-2.0
                                 density="comfortable"
                                 icon
                                 class="ms-1"
-                                @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                                @click.stop.prevent="deleteColumnConfiguration(config)">
                                 <v-icon icon="mdi-trash-can-outline" />
                               </v-btn>
                             </div>
                           </v-list-item>
                         </v-list>
-                        <v-alert
-                          v-if="colConfigError"
-                          density="compact"
-                          variant="tonal"
-                          type="error"
-                          class="ma-1">
-                          {{ colConfigError }}
-                        </v-alert>
-                        <v-alert
-                          v-if="colConfigSuccess"
-                          density="compact"
-                          variant="tonal"
-                          type="success"
-                          class="ma-1">
-                          {{ colConfigSuccess }}
-                        </v-alert>
                       </v-menu>
                     </v-list-item>
                   </v-list>
@@ -382,11 +407,24 @@ SPDX-License-Identifier: Apache-2.0
                           </v-menu>
                         </v-list-item>
 
-                        <!-- submenu: save / load custom info field layouts -->
+                        <!-- save current info fields over the loaded config -->
                         <v-list-item
+                          v-if="loadedInfoConfig"
                           prepend-icon="mdi-content-save"
+                          @click="updateInfoFieldLayout(loadedInfoConfig)">
+                          {{ $t('sessions.sessions.saveConfig', { name: loadedInfoConfig }) }}
+                          <v-tooltip
+                            activator="parent"
+                            location="end">
+                            {{ $t('sessions.sessions.customInfoUpdate') }}
+                          </v-tooltip>
+                        </v-list-item>
+
+                        <!-- submenu: save current info fields as a new config -->
+                        <v-list-item
+                          prepend-icon="mdi-content-save-plus"
                           append-icon="mdi-chevron-right">
-                          <v-list-item-title>{{ $t('sessions.sessions.customInfoMsg') }}</v-list-item-title>
+                          <v-list-item-title>{{ $t('sessions.sessions.saveConfigAs') }}</v-list-item-title>
                           <v-menu
                             activator="parent"
                             :close-on-content-click="false"
@@ -421,7 +459,46 @@ SPDX-License-Identifier: Apache-2.0
                                   </v-btn>
                                 </div>
                               </div>
-                              <v-divider />
+                            </v-list>
+                            <v-alert
+                              v-if="infoConfigError"
+                              density="compact"
+                              variant="tonal"
+                              type="error"
+                              class="ma-1">
+                              {{ infoConfigError }}
+                            </v-alert>
+                          </v-menu>
+                        </v-list-item>
+
+                        <!-- submenu: load a saved info config (filterable) -->
+                        <v-list-item
+                          prepend-icon="mdi-folder-open"
+                          append-icon="mdi-chevron-right">
+                          <v-list-item-title>{{ $t('sessions.sessions.loadConfig') }}</v-list-item-title>
+                          <v-menu
+                            activator="parent"
+                            :close-on-content-click="false"
+                            location="end"
+                            open-on-click
+                            :open-on-hover="false">
+                            <v-list
+                              density="compact"
+                              class="col-dropdown-menu">
+                              <div
+                                v-if="infoConfigs.length"
+                                class="px-2 py-1">
+                                <div class="arkime-input-group arkime-input-group--fluid">
+                                  <input
+                                    autofocus
+                                    @click.stop
+                                    type="text"
+                                    class="arkime-input-control"
+                                    v-model="infoConfigQuery"
+                                    :placeholder="$t('sessions.sessions.filterConfigs')">
+                                </div>
+                              </div>
+                              <v-divider v-if="infoConfigs.length" />
                               <v-list-item
                                 key="infodefault"
                                 data-tip-id="infodefault"
@@ -433,71 +510,37 @@ SPDX-License-Identifier: Apache-2.0
                                   {{ $t('sessions.sessions.customInfoReset') }}
                                 </v-tooltip>
                               </v-list-item>
-                              <transition-group
-                                name="list"
-                                tag="div">
-                                <v-divider
-                                  key="infodivider"
-                                  v-if="infoConfigs.length" />
-                                <v-list-item
-                                  v-for="(config, key) in infoConfigs"
-                                  :key="config.name"
-                                  @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                                  <div
-                                    class="d-flex align-center w-100"
-                                    @click.self="loadInfoFieldLayout(key)">
-                                    <span
-                                      class="flex-grow-1"
-                                      @click="loadInfoFieldLayout(key)">
-                                      {{ config.name }}
-                                    </span>
-                                    <v-btn
-                                      :id="`updateInfo${key}`"
-                                      :aria-label="$t('sessions.sessions.customInfoUpdate')"
-                                      color="warning"
-                                      variant="flat"
-                                      size="small"
-                                      density="comfortable"
-                                      icon
-                                      class="ms-1"
-                                      @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                                      <v-icon icon="mdi-content-save" />
-                                      <v-tooltip
-                                        :activator="`[id='updateInfo${key}']`"
-                                        location="end">
-                                        {{ $t('sessions.sessions.customInfoUpdate') }}
-                                      </v-tooltip>
-                                    </v-btn>
-                                    <v-btn
-                                      :aria-label="$t('common.delete')"
-                                      color="error"
-                                      variant="flat"
-                                      size="small"
-                                      density="comfortable"
-                                      icon
-                                      class="ms-1"
-                                      @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
-                                      <v-icon icon="mdi-trash-can-outline" />
-                                    </v-btn>
-                                  </div>
-                                </v-list-item>
-                              </transition-group>
-                              <v-alert
-                                v-if="infoConfigError"
-                                density="compact"
-                                variant="tonal"
-                                type="error"
-                                class="ma-1">
-                                {{ infoConfigError }}
-                              </v-alert>
-                              <v-alert
-                                v-if="infoConfigSuccess"
-                                density="compact"
-                                variant="tonal"
-                                type="success"
-                                class="ma-1">
-                                {{ infoConfigSuccess }}
-                              </v-alert>
+                              <v-list-item
+                                v-if="infoConfigQuery && !filteredInfoConfigs.length"
+                                disabled>
+                                {{ $t('sessions.sessions.noConfigsMatch') }}
+                              </v-list-item>
+                              <v-list-item
+                                v-for="config in filteredInfoConfigs"
+                                :key="config.name"
+                                :active="config.name === loadedInfoConfig"
+                                @click.self.stop.prevent="loadInfoFieldLayout(config)">
+                                <div
+                                  class="d-flex align-center w-100"
+                                  @click.self="loadInfoFieldLayout(config)">
+                                  <span
+                                    class="flex-grow-1"
+                                    @click="loadInfoFieldLayout(config)">
+                                    {{ config.name }}
+                                  </span>
+                                  <v-btn
+                                    :aria-label="$t('common.delete')"
+                                    color="error"
+                                    variant="flat"
+                                    size="small"
+                                    density="comfortable"
+                                    icon
+                                    class="ms-1"
+                                    @click.stop.prevent="deleteInfoFieldLayout(config)">
+                                    <v-icon icon="mdi-trash-can-outline" />
+                                  </v-btn>
+                                </div>
+                              </v-list-item>
                             </v-list>
                           </v-menu>
                         </v-list-item>
@@ -709,6 +752,15 @@ SPDX-License-Identifier: Apache-2.0
           :view="query.view" /> <!-- /no results -->
       </div> <!-- /table view -->
     </div>
+
+    <!-- save/load config feedback -->
+    <v-snackbar
+      v-model="configSnackbar.open"
+      location="bottom"
+      :color="configSnackbar.color"
+      :timeout="5000">
+      {{ configSnackbar.text }}
+    </v-snackbar>
   </div>
 </template>
 
@@ -812,7 +864,7 @@ export default {
       colWidths: {},
       colConfigs: [],
       colConfigError: '',
-      colConfigSuccess: '',
+      colConfigQuery: '', // filter for saved column configs in the load menu
       headers: [],
       graphData: undefined,
       mapData: undefined,
@@ -833,7 +885,8 @@ export default {
       infoConfigs: [],
       newInfoConfigName: '',
       infoConfigError: '',
-      infoConfigSuccess: '',
+      infoConfigQuery: '', // filter for saved info configs in the load menu
+      configSnackbar: { open: false, text: '', color: 'success' },
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
       showAllInfoFields: false,
@@ -883,6 +936,26 @@ export default {
     });
   },
   computed: {
+    /* name of the currently loaded column config (if it still exists) */
+    loadedColConfig: function () {
+      const configName = this.tableState.colConfigName;
+      return configName && this.colConfigs.some(c => c.name === configName) ? configName : '';
+    },
+    /* name of the currently loaded info field config (if it still exists) */
+    loadedInfoConfig: function () {
+      const configName = this.user?.settings?.infoFieldsConfigName;
+      return configName && this.infoConfigs.some(c => c.name === configName) ? configName : '';
+    },
+    filteredColConfigs: function () {
+      if (!this.colConfigQuery) { return this.colConfigs; }
+      const query = this.colConfigQuery.toLowerCase();
+      return this.colConfigs.filter(c => c.name.toLowerCase().includes(query));
+    },
+    filteredInfoConfigs: function () {
+      if (!this.infoConfigQuery) { return this.infoConfigs; }
+      const query = this.infoConfigQuery.toLowerCase();
+      return this.infoConfigs.filter(c => c.name.toLowerCase().includes(query));
+    },
     query: function () {
       return { // query defaults
         length: parseInt(this.$route.query.length || 50), // page length
@@ -1364,6 +1437,11 @@ export default {
 
         this.newColConfigName = null;
         this.colConfigError = false;
+
+        // the new config is now the loaded one
+        this.tableState.colConfigName = data.name;
+        this.saveTableState();
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
         this.colConfigError = resolveMessage(error, this.$t);
       });
@@ -1371,15 +1449,15 @@ export default {
     /**
      * Loads a previously saved custom column configuration and
      * reloads table and table data
-     * If no index is given, loads the default columns
-     * @param {int} index The index in the array of the column config to load
+     * @param {object|int} config The column config to load (-1 loads the default columns)
      */
-    loadColumnConfiguration: function (index) {
+    loadColumnConfiguration: function (config) {
       this.loading = true;
 
-      if (index === -1) { // default columns
+      if (config === -1) { // default columns
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
         this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
+        delete this.tableState.colConfigName;
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1388,8 +1466,9 @@ export default {
           if (field) { field.width = defaultColWidths[headerId] || 100; }
         }
       } else {
-        this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
-        this.tableState.order = JSON.parse(JSON.stringify(this.colConfigs[index].order));
+        this.tableState.visibleHeaders = config.columns.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(config.order));
+        this.tableState.colConfigName = config.name;
       }
 
       // keep info column pinned as the last visible column
@@ -1403,23 +1482,29 @@ export default {
     },
     /**
      * Deletes a previously saved custom column configuration
-     * @param {string} colName  The name of the column config to remove
-     * @param {int} index       The index in the array of the column config to remove
+     * @param {object} config The column config to remove
      */
-    deleteColumnConfiguration: function (colName, index) {
-      UserService.deleteLayout('sessionstable', colName).then((response) => {
-        this.colConfigs.splice(index, 1);
-        this.colConfigError = false;
+    deleteColumnConfiguration: function (config) {
+      UserService.deleteLayout('sessionstable', config.name).then((response) => {
+        const index = this.colConfigs.indexOf(config);
+        if (index > -1) { this.colConfigs.splice(index, 1); }
+        if (this.tableState.colConfigName === config.name) {
+          delete this.tableState.colConfigName;
+          this.saveTableState();
+        }
       }).catch((error) => {
-        this.colConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /**
      * Updates a previously saved custom column configuration
-     * @param {string} colName  The name of the column config to update
-     * @param {int} index       The index in the array of the column config to update
+     * with the currently visible columns
+     * @param {string} colName The name of the column config to update
      */
-    updateColumnConfiguration: function (colName, index) {
+    updateColumnConfiguration: function (colName) {
+      const index = this.colConfigs.findIndex(c => c.name === colName);
+      if (index === -1) { return; }
+
       const data = {
         name: colName,
         columns: this.tableState.visibleHeaders.slice(),
@@ -1428,11 +1513,9 @@ export default {
 
       UserService.updateLayout('sessionstable', data).then((response) => {
         this.colConfigs[index] = data;
-        this.colConfigError = false;
-        this.colConfigSuccess = resolveMessage(response, this.$t);
-        setTimeout(() => { this.colConfigSuccess = ''; }, 5000);
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
-        this.colConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /**
@@ -1512,7 +1595,7 @@ export default {
     /* Saves a custom info field column configuration */
     saveInfoFieldLayout () {
       if (!this.newInfoConfigName) {
-        this.infoConfigError = 'You must name your new info field configuration';
+        this.infoConfigError = this.$t('sessions.sessions.nameInfoConfigErr');
         return;
       }
 
@@ -1526,53 +1609,63 @@ export default {
         this.infoConfigs.push(data);
         this.newInfoConfigName = null;
         this.infoConfigError = false;
+
+        // the new config is now the loaded one
+        this.user.settings.infoFieldsConfigName = data.name;
+        UserService.saveSettings(this.user.settings);
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
         this.infoConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
      * Loads a previously saved custom info field column configuration and updates the table
-     * @param {int} index The index in the array of the info field config to load
+     * @param {object} config The info field config to load
      */
-    loadInfoFieldLayout (index) {
+    loadInfoFieldLayout (config) {
       const fieldObjects = [];
-      for (const field of this.infoConfigs[index].fields) {
+      for (const field of config.fields) {
         fieldObjects.push(FieldService.getField(field));
       }
       this.infoFields = fieldObjects;
+      this.user.settings.infoFieldsConfigName = config.name;
       this.saveInfoFields();
     },
     /**
      * Deletes a previously saved custom info field column layout
-     * @param {string} layoutName  The name of the layout to remove
-     * @param {int} index          The index in the array of layouts to remove
+     * @param {object} config The info field config to remove
      */
-    deleteInfoFieldLayout (layoutName, index) {
-      UserService.deleteLayout('sessionsinfofields', layoutName).then((response) => {
-        this.infoConfigs.splice(index, 1);
-        this.infoConfigError = false;
+    deleteInfoFieldLayout (config) {
+      UserService.deleteLayout('sessionsinfofields', config.name).then((response) => {
+        const index = this.infoConfigs.indexOf(config);
+        if (index > -1) { this.infoConfigs.splice(index, 1); }
+        if (this.user.settings.infoFieldsConfigName === config.name) {
+          this.user.settings.infoFieldsConfigName = undefined;
+          UserService.saveSettings(this.user.settings);
+        }
       }).catch((error) => {
-        this.infoConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /**
       * Updates a previously saved custom info field layout
-      * @param {string} layoutName  The name of the layout to update
-      * @param {int} index          The index in the array of layouts to update
+      * with the currently visible info fields
+      * @param {string} layoutName The name of the layout to update
       */
-    updateInfoFieldLayout (layoutName, index) {
+    updateInfoFieldLayout (layoutName) {
+      const index = this.infoConfigs.findIndex(c => c.name === layoutName);
+      if (index === -1) { return; }
+
       const data = {
         name: layoutName,
-        fields: this.infoFields.slice()
+        fields: this.infoFields.map((field) => field.dbField)
       };
 
       UserService.updateLayout('sessionsinfofields', data).then((response) => {
         this.infoConfigs[index] = data;
-        this.infoConfigError = false;
-        this.infoConfigSuccess = resolveMessage(response, this.$t);
-        setTimeout(() => { this.infoConfigSuccess = ''; }, 5000);
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
-        this.infoConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /* Resets the visible fields in the info column to the default */
@@ -1580,6 +1673,7 @@ export default {
       this.infoFields = defaultInfoFields;
       customCols.info.children = defaultInfoFields;
       this.user.settings.infoFields = undefined;
+      this.user.settings.infoFieldsConfigName = undefined;
 
       // make sure children of fields are field objects
       this.setupFields();
@@ -1711,6 +1805,10 @@ export default {
     },
 
     /* helper functions ---------------------------------------------------- */
+    /* Shows transient feedback for save/load config actions */
+    showConfigSnackbar: function (text, color = 'success') {
+      this.configSnackbar = { open: true, text, color };
+    },
     reloadTable: function () {
       // disable resizable columns so it can be initialized after table reloads
       this.destroyColResizable();
