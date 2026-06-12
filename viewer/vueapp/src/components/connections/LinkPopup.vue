@@ -3,9 +3,9 @@
     <div class="mb-2 mt-2">
       <strong>Link</strong>
       <a
-        class="pull-right cursor-pointer no-decoration"
+        class="float-right cursor-pointer no-decoration"
         @click="$emit('close')">
-        <span class="fa fa-close" />
+        <v-icon icon="mdi-close" />
       </a>
     </div>
     <div>
@@ -65,7 +65,9 @@
       class="cursor-pointer no-decoration"
       href="javascript:void(0)"
       @click="$emit('hideLink')">
-      <span class="fa fa-eye-slash me-2" />
+      <v-icon
+        icon="mdi-eye-off"
+        class="me-2" />
       {{ $t('connections.hideLink') }}
     </a>
   </div>

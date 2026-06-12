@@ -8,58 +8,83 @@ SPDX-License-Identifier: Apache-2.0
       <span class="fixed-header">
         <!-- search navbar -->
         <div class="history-search p-1">
-          <Clusters />
-          <button
-            type="button"
-            class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
-            @click="loadData">
-            <span v-if="!shiftKeyHold">
-              Search
-            </span>
-            <span
-              v-else
-              class="enter-icon">
-              <span class="fa fa-long-arrow-left fa-lg" />
-              <div class="enter-arm" />
-            </span>
-          </button>
-          <BInputGroup size="sm">
-            <BInputGroupText class="input-group-text-fw">
+          <!-- search row: cluster + search expression + search button -->
+          <div class="d-flex align-center gap-1 mb-1">
+            <Clusters />
+            <div class="arkime-input-group arkime-input-group--fluid">
               <span
-                v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw" />
+                id="searchHistory"
+                class="arkime-input-label arkime-input-label-fw cursor-help">
+                <v-icon
+                  icon="mdi-magnify"
+                  v-if="!shiftKeyHold" />
+                <span
+                  v-else
+                  class="query-shortcut">
+                  Q
+                </span>
+                <v-tooltip activator="#searchHistory">
+                  <div v-html="$t('history.searchHistoryTipHtml')" />
+                </v-tooltip>
+              </span>
+              <input
+                type="text"
+                v-model="searchTerm"
+                class="arkime-input-control"
+                :placeholder="$t('history.searchHistoryPlaceholder')"
+                v-focus="focusInput"
+                @keyup.enter="loadData"
+                @input="debounceSearch"
+                @blur="onOffFocus">
+              <v-btn
+                v-if="searchTerm"
+                variant="text"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="arkime-input-append-btn"
+                :aria-label="$t('common.clear')"
+                @click="clear">
+                <v-icon icon="mdi-close" />
+              </v-btn>
+            </div>
+            <v-btn
+              variant="flat"
+              size="large"
+              color="tertiary"
+              @click="loadData">
+              <span v-if="!shiftKeyHold">
+                Search
+              </span>
               <span
                 v-else
-                class="query-shortcut">
-                Q
+                class="enter-icon">
+                <v-icon
+                  icon="mdi-arrow-left"
+                  size="small" />
+                <div class="enter-arm" />
               </span>
-            </BInputGroupText>
-            <input
-              type="text"
-              @keyup.enter="loadData"
-              @input="debounceSearch"
-              class="form-control"
-              v-model="searchTerm"
-              v-focus="focusInput"
-              @blur="onOffFocus"
-              :placeholder="$t('history.searchHistoryPlaceholder')">
-            <button
-              type="button"
-              @click="clear"
-              :disabled="!searchTerm"
-              :aria-label="$t('common.clear')"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close" />
-            </button>
-            <BInputGroupText id="searchHistory">
-              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
-              <BTooltip target="searchHistory">
-                <div v-html="$t('history.searchHistoryTipHtml')" />
-              </BTooltip>
-            </BInputGroupText>
-          </BInputGroup>
+            </v-btn>
+            <v-btn
+              id="seeAllHistoryBtn"
+              class="ms-1"
+              variant="flat"
+              size="large"
+              color="primary"
+              v-has-role="{user:user,roles:'arkimeAdmin'}"
+              @click="toggleSeeAll">
+              <v-icon
+                class="me-1"
+                icon="mdi-account-circle" />
+              See {{ seeAll ? ' MY ' : ' ALL ' }} History
+              <v-tooltip activator="#seeAllHistoryBtn">
+                {{ seeAll ? $t('history.seeMyHistoryTip') : $t('history.seeAllHistoryTip') }}
+              </v-tooltip>
+            </v-btn>
+          </div> <!-- /search row -->
+
+          <!-- time row -->
           <arkime-time
-            class="mt-1"
             :timezone="user.settings.timezone"
             @time-change="loadData"
             :hide-bounding="true"
@@ -85,20 +110,11 @@ SPDX-License-Identifier: Apache-2.0
 
     <table
       v-if="!error"
-      class="table table-sm table-striped small">
+      class="history-table small">
       <thead>
         <tr>
           <th width="100px;">
-            <button
-              id="toggleColFilters"
-              :aria-label="$t('history.toggleColFiltersTip')"
-              class="btn btn-xs btn-primary margined-bottom-sm"
-              @click="showColFilters = !showColFilters">
-              <span class="fa fa-filter" />
-              <BTooltip target="toggleColFilters">
-                {{ $t('history.toggleColFiltersTip') }}
-              </BTooltip>
-            </button>
+            &nbsp;
           </th>
           <th
             :key="column.name"
@@ -107,28 +123,6 @@ SPDX-License-Identifier: Apache-2.0
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
-            <b-form-checkbox
-              id="seeAll"
-              @input="toggleSeeAll"
-              class="d-inline me-2"
-              v-if="column.sort == 'userId'" />
-            <BTooltip
-              target="seeAll"
-              noninteractive
-              placement="bottom">
-              <span v-html="$t('history.seeAllTipHtml')" />
-            </BTooltip>
-            <input
-              type="text"
-              @click.stop
-              data-lpignore="true"
-              @keyup="debounceSearch"
-              v-model="filters[column.sort]"
-              v-has-permission="column.permission"
-              v-if="column.filter && showColFilters"
-              :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
-              class="form-control form-control-sm input-filter"
-              :id="`filter-${column.name}`">
             <div
               v-if="column.exists"
               :id="`exists-${column.name}`"
@@ -138,35 +132,31 @@ SPDX-License-Identifier: Apache-2.0
                 class="checkbox"
                 @change="loadData"
                 v-model="column.exists">
-              <BTooltip
-                placement="bottom"
-                triggers="hover"
-                :target="`exists-${column.name}`">
+              <v-tooltip
+                location="bottom"
+                :activator="`[id='exists-${column.name}']`">
                 {{ $t('history.existsTip', { name: column.name }) }}
-              </BTooltip>
+              </v-tooltip>
             </div>
             <div
               class="header-div break-word"
               :id="`column-${column.name}`"
-              @click="columnClick(column.sort)">
-              <span v-if="column.sort !== undefined">
-                <span
-                  v-show="sortField === column.sort && !desc"
-                  class="fa fa-sort-asc" />
-                <span
-                  v-show="sortField === column.sort && desc"
-                  class="fa fa-sort-desc" />
-                <span
-                  v-show="sortField !== column.sort"
-                  class="fa fa-sort" />
-              </span>
+              :class="{ 'cursor-pointer': !column.nosort }"
+              @click="!column.nosort && columnClick(column.sort)">
               {{ column.name }}
-              <BTooltip
-                placement="bottom"
-                triggers="hover"
-                :target="`column-${column.name}`">
+              <span v-if="column.sort !== undefined && !column.nosort">
+                <v-icon
+                  icon="mdi-chevron-up"
+                  v-show="sortField === column.sort && !desc" />
+                <v-icon
+                  icon="mdi-chevron-down"
+                  v-show="sortField === column.sort && desc" />
+              </span>
+              <v-tooltip
+                location="bottom"
+                :activator="`[id='column-${column.name}']`">
                 {{ column.help }}
-              </BTooltip>
+              </v-tooltip>
             </div>
           </th>
         </tr>
@@ -177,7 +167,7 @@ SPDX-License-Identifier: Apache-2.0
           <td
             :colspan="colSpan"
             class="text-danger text-center">
-            <span class="fa fa-warning" />&nbsp;
+            <v-icon icon="mdi-alert" />&nbsp;
             <strong>
               {{ $t('history.noHistory') }}
             </strong>
@@ -192,29 +182,36 @@ SPDX-License-Identifier: Apache-2.0
               <toggle-btn
                 :opened="item.expanded"
                 @toggle="toggleLogDetail(item)" />
-              <button
-                type="button"
-                role="button"
+              <v-btn
                 title="Delete history"
                 :aria-label="$t('common.delete')"
-                class="btn btn-xs btn-warning ms-1"
+                variant="flat"
+                color="warning"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
-                <span class="fa fa-trash-o" />
-              </button>
-              <a
+                <v-icon icon="mdi-trash-can-outline" />
+              </v-btn>
+              <v-btn
                 :id="`openPage-${item.id}`"
-                class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
                 :aria-label="$t('common.open')"
-                tooltip-placement="right"
+                variant="flat"
+                color="info"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
                 @click="openPage(item)">
-                <span class="fa fa-folder-open" />
-                <BTooltip :target="`openPage-${item.id}`">
+                <v-icon icon="mdi-folder-open" />
+                <v-tooltip :activator="`#openPage-${item.id}`">
                   {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
-                </BTooltip>
-              </a>
+                </v-tooltip>
+              </v-btn>
             </td>
             <td class="no-wrap">
               {{ timezoneDateString(item.timestamp * 1000, user.settings.timezone) }}
@@ -315,7 +312,9 @@ SPDX-License-Identifier: Apache-2.0
                       <h5>
                         {{ $t('history.queryParameters') }}
                         <sup>
-                          <span class="fa fa-info-circle text-theme-primary" />
+                          <v-icon
+                            icon="mdi-information"
+                            class="text-theme-primary" />
                         </sup>
                       </h5>
                     </dt>
@@ -335,7 +334,9 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="mt-2">
                     <em>
                       <strong v-if="item.query">
-                        <span class="fa fa-info-circle text-theme-primary" />&nbsp;
+                        <v-icon
+                          icon="mdi-information"
+                          class="text-theme-primary" />&nbsp;
                         {{ $t('history.parsedFrom') }}
                       </strong>
                       <span style="word-break:break-all;">
@@ -357,14 +358,19 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="item.esQuery">
                     <h5>
                       {{ $t('history.esQuery') }}
-                      <button
-                        type="button"
-                        class="btn btn-xs btn-theme-secondary ms-2"
+                      <v-btn
+                        variant="flat"
+                        size="small"
+                        density="comfortable"
+                        class="ms-2"
+                        :style="secondaryBtnStyle"
                         :title="$t('common.copyValueTip')"
                         @click="copyValue(item.esQuery)">
-                        <span class="fa fa-clipboard" />&nbsp;
+                        <v-icon
+                          icon="mdi-clipboard"
+                          class="me-1" />
                         {{ $t('common.copy') }}
-                      </button>
+                      </v-btn>
                     </h5>
                     <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
@@ -400,7 +406,7 @@ import Clusters from '../utils/Clusters.vue';
 import ArkimeToast from '../utils/Toast.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import HistoryService from './HistoryService';
 import Focus from '@common/Focus.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
@@ -431,7 +437,6 @@ export default {
       recordsTotal: 0,
       recordsFiltered: 0,
       expandedLogs: { change: false },
-      showColFilters: false,
       colSpan: 8,
       filters: {},
       sortField: 'timestamp',
@@ -440,6 +445,17 @@ export default {
       msg: '',
       msgType: undefined,
       seeAll: false,
+      // Arkime theme-color v-btn styles. Vuetify's :color prop doesn't
+      // resolve CSS variables at runtime; inline :style keeps them
+      // theme-adaptive.
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {
@@ -454,12 +470,12 @@ export default {
       return [
         intl({ sort: 'timestamp', width: 13 }),
         intl({ sort: 'range', width: 11, classes: 'text-end' }),
-        intl({ sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin' }),
+        intl({ sort: 'userId', width: 10, role: 'arkimeAdmin' }),
         intl({ sort: 'queryTime', width: 8, classes: 'text-end' }),
         intl({ sort: 'method', width: 8 }),
-        intl({ sort: 'api', width: 15, filter: true }),
+        intl({ sort: 'api', width: 15 }),
         intl({ sort: 'expression', width: 20, exists: false }),
-        intl({ sort: 'view.name', width: 15, exists: false })
+        intl({ sort: 'view.name', width: 15, exists: false, nosort: true })
       ];
     },
     query: function () {
@@ -526,8 +542,8 @@ export default {
     },
     /* exposed page functions ------------------------------------ */
     toggleSeeAll () {
+      this.seeAll = !this.seeAll;
       this.filters.userId = this.seeAll ? '' : this.user.userId;
-      if (this.seeAll) { this.showColFilters = true; }
       this.loadData();
     },
     debounceSearch: function () {
@@ -662,7 +678,7 @@ export default {
 .history-page .history-search {
   z-index: 5;
   border: none;
-  background-color: var(--color-secondary-lightest);
+  background-color: rgb(var(--v-theme-secondary-lightest));
   position: relative;
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -679,28 +695,44 @@ export default {
   height: 40px;
 }
 
-.input-group {
-  flex-wrap: none;
-  width: auto;
-}
-
-/* table styles -------------------- */
-.history-page table {
+.history-page .history-table {
+  width: 100%;
   margin-top: 10px;
+  margin-bottom: 1rem;
   table-layout: fixed;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+  color: rgb(var(--v-theme-foreground));
 }
-.history-page table tbody tr td.no-wrap {
+.history-page .history-table thead tr th {
+  vertical-align: bottom;
+  padding: 4px 4px 4px 4px;
+  border-bottom: 2px solid rgb(var(--v-theme-neutral));
+}
+.history-page .history-table tbody tr td {
+  vertical-align: top;
+  padding: 4px;
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
+}
+.history-page .history-table tbody tr:nth-of-type(odd) > td {
+  background-color: color-mix(in srgb, rgb(var(--v-theme-foreground)) 4%, transparent);
+}
+.history-page .history-table tbody tr td.no-wrap {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 /* super tiny input boxes for column filters */
-.history-page table thead tr th input.input-filter {
+.history-page .history-table thead tr th input.input-filter {
   height: 24px;
   padding: 2px 5px;
   font-size: 12px;
   margin-bottom: 2px;
   margin-top: 2px;
+  border: 1px solid rgb(var(--v-theme-neutral));
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
 }
 .history-page table thead tr th div.header-div {
   display: inline-block;

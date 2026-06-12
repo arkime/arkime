@@ -12,10 +12,16 @@
           :value="data.item"
           :field="fieldConfig"
           :expr="fieldConfig.exp" />
-        <button
+        <v-btn
+          variant="text"
+          size="x-small"
+          density="comfortable"
+          icon
+          class="float-right mt-1"
           :aria-label="$t('common.close')"
-          class="btn-close btn-xs pull-right mt-1"
-          @click="$emit('close')" />
+          @click="$emit('close')">
+          <v-icon icon="mdi-close" />
+        </v-btn>
 
         <!-- Statistics in vertical format -->
         <div class="stats-container">
@@ -109,8 +115,8 @@ const percentageLabel = computed(() => {
 .summary-tooltip {
   position: fixed;
   z-index: 9999;
-  background: var(--color-quaternary-lightest);
-  border: 1px solid var(--color-gray);
+  background: rgb(var(--v-theme-quaternary-lightest));
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 3px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   padding: 0;
@@ -149,9 +155,4 @@ const percentageLabel = computed(() => {
   text-align: right;
 }
 
-.btn-close.btn-xs {
-  font-size: 10px;
-  padding: 2px 3px;
-  margin-left: 6px;
-}
 </style>

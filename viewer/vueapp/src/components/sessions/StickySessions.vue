@@ -12,19 +12,18 @@ SPDX-License-Identifier: Apache-2.0
     }">
     <!-- toggle button -->
     <div
-      id="toggleStickySessions"
       class="sticky-session-btn"
       @click="toggleStickySessions"
       v-if="sortedSessions && sortedSessions.length > 0">
-      <span
-        v-if="!open"
-        class="fa fa-angle-double-left" /><span
-          v-else
-          class="fa fa-angle-double-right" />&nbsp;
+      <v-icon
+        icon="mdi-chevron-double-left"
+        v-if="!open" /><v-icon
+          icon="mdi-chevron-double-right"
+          v-else />&nbsp;
       <small>{{ sortedSessions.length }}</small>
-      <BTooltip target="toggleStickySessions">
+      <v-tooltip activator="parent">
         {{ $t('sessions.sticky.toggleOpenTip') }}
-      </BTooltip>
+      </v-tooltip>
     </div> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
@@ -33,75 +32,89 @@ SPDX-License-Identifier: Apache-2.0
         v-if="open"
         class="sticky-session-detail">
         <!-- sticky sessions list -->
-        <ul class="list-group">
-          <li class="list-group-item list-group-header">
-            <a
-              id="closeAllFromSticky"
-              @click="closeAll"
-              class="btn btn-default btn-sm pull-right ms-1">
-              <span class="fa fa-close" />
-              <BTooltip target="closeAllFromSticky">
-                {{ $t('sessions.sticky.closeAllTip') }}
-              </BTooltip>
-            </a>
-            <span v-if="sortBy">
-              <a
-                v-if="sortOrder === 'asc'"
-                id="toggleStickySortOrderDesc"
-                @click="toggleSortOrder"
-                class="btn btn-default btn-sm pull-right ms-1">
-                <span class="fa fa-sort-asc" />
-                <BTooltip target="toggleStickySortOrderDesc">
+        <ul class="sticky-list">
+          <li class="sticky-list-item sticky-list-header">
+            <div class="d-flex align-center gap-1">
+              <h4 class="mb-0 flex-grow-1">
+                {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
+              </h4>
+              <div class="arkime-input-group sort-by-select">
+                <select
+                  v-model="sortBy"
+                  class="arkime-input-control">
+                  <option
+                    disabled
+                    value="">
+                    {{ $t('sessions.sortBy') }}
+                  </option>
+                  <option value="firstPacket">
+                    {{ $t('sessions.startTime') }}
+                  </option>
+                  <option value="lastPacket">
+                    {{ $t('sessions.stopTime') }}
+                  </option>
+                </select>
+              </div>
+              <v-btn
+                v-if="sortBy && sortOrder === 'asc'"
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="toggleSortOrder">
+                <v-icon icon="mdi-chevron-up" />
+                <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortDescTip') }}
-                </BTooltip>
-              </a>
-              <a
-                v-if="sortOrder === 'desc'"
-                id="toggleStickySortOrderAsc"
-                @click="toggleSortOrder"
-                class="btn btn-default btn-sm pull-right ms-1">
-                <span class="fa fa-sort-desc" />
-                <BTooltip target="toggleStickySortOrderAsc">
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                v-if="sortBy && sortOrder === 'desc'"
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="toggleSortOrder">
+                <v-icon icon="mdi-chevron-down" />
+                <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortAscTip') }}
-                </BTooltip>
-              </a>
-            </span>
-            <select
-              v-model="sortBy"
-              class="form-control form-control-sm pull-right sort-by-select">
-              <option
-                disabled
-                value="">
-                {{ $t('sessions.sortBy') }}
-              </option>
-              <option value="firstPacket">
-                {{ $t('sessions.startTime') }}
-              </option>
-              <option value="lastPacket">
-                {{ $t('sessions.stopTime') }}
-              </option>
-            </select>
-            <h4>
-              {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
-            </h4>
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="closeAll">
+                <v-icon icon="mdi-close" />
+                <v-tooltip activator="parent">
+                  {{ $t('sessions.sticky.closeAllTip') }}
+                </v-tooltip>
+              </v-btn>
+            </div>
           </li>
           <transition-group
             name="slide"
             tag="span">
             <a
-              class="list-group-item list-group-item-animate cursor-pointer"
+              class="sticky-list-item sticky-list-item-animate cursor-pointer"
               @click="scrollTo(session.id)"
               v-for="session in sortedSessions"
               :key="session.id">
-              <div class="list-group-item-text">
-                <button
-                  class="btn btn-xs btn-link pull-right"
+              <div class="sticky-list-item-text">
+                <v-btn
+                  variant="text"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  class="float-right"
                   :aria-label="$t('common.close')"
                   @click.stop="closeSessionDetail(session)">
-                  <span class="fa fa-close fa-lg" />
-                </button>
+                  <v-icon
+                    icon="mdi-close"
+                    size="small" />
+                </v-btn>
                 <small>
-                  <span class="fa fa-clock-o fa-fw" />
+                  <v-icon icon="mdi-clock-outline" />
                   <em>
                     {{ timezoneDateString(session.firstPacket, timezone, ms) }} -
                     {{ timezoneDateString(session.lastPacket, timezone, ms) }}
@@ -136,8 +149,8 @@ export default {
       default: () => []
     },
     ms: {
-      type: Object,
-      default: () => ({})
+      type: Boolean,
+      default: false
     }
   },
   data: function () {
@@ -257,7 +270,7 @@ export default {
   width: 100px;
   display: block;
   position: fixed;
-  top: 76px;
+  top: 86px;
   right: 0;
   z-index: 5;
   margin-right: -50px;
@@ -265,8 +278,8 @@ export default {
   padding: 1px 10px 2px 12px;
   border-radius: 4px 0 0 4px;
   cursor: pointer;
-  background-color: var(--color-quaternary);
-  color: var(--color-button, #FFF);
+  background-color: rgb(var(--v-theme-quaternary));
+  color: rgb(var(--v-theme-button-fg));
 }
 
 /* move the sticky session button up when the toolbars are hidden */
@@ -282,13 +295,13 @@ export default {
 .sticky-session-detail {
   overflow-y: auto;
   position: fixed;
-  top: 150px;
+  top: 160px;
   right: 0;
   bottom: 0;
   z-index: 4;
   width: 360px;
-  border-left: 1px solid var(--color-gray-light);
-  background-color: var(--color-gray-lighter);
+  border-left: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-neutral-lighter));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -300,37 +313,35 @@ export default {
   top: 35px;
 }
 
-.sticky-session-detail ul {
+.sticky-session-detail .sticky-list {
   margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
 }
 
-.sticky-session-detail .list-group-item {
-  border-left : none;
-  border-right: none;
+.sticky-session-detail .sticky-list-item {
+  display: block;
+  border-top: 1px solid rgb(var(--v-theme-neutral-light)));
   padding: 4px 8px;
-  background-color: var(--color-background, #FFF);
-  color: var(--color-foreground, #333);
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+}
+.sticky-session-detail .sticky-list-item:first-child {
+  border-top: 0;
 }
 
-.sticky-session-detail .list-group-item .list-group-item-text {
+.sticky-session-detail .sticky-list-item .sticky-list-item-text {
   line-height: 1.25;
 }
 
-a.list-group-item:hover,
-a.list-group-item:focus {
-  background-color: var(--color-tertiary-lightest);
+a.sticky-list-item:hover,
+a.sticky-list-item:focus {
+  background-color: rgb(var(--v-theme-tertiary-lightest));
 }
 
-.sticky-session-detail .list-group-item:last-child {
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.sticky-session-detail .list-group-item.list-group-header {
-  border-top-right-radius: 0;
-  border-top-left-radius: 0;
+.sticky-session-detail .sticky-list-item.sticky-list-header {
   padding: 12px 8px;
-  background-color: var(--color-gray-lighter);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 /* ANIMATIONS ---------------------- */
@@ -341,14 +352,14 @@ a.list-group-item:focus {
           animation: bounce 1000ms linear both;
 }
 
-/* animate sticky-session-detail and list-group-item slide in/out */
+/* animate sticky-session-detail and sticky-list-item slide in/out */
 .slide-enter-active, .slide-leave-active {
   transition: all .5s ease;
 }
 .slide-enter-from, .slide-leave-to {
   transform: translateX(360px);
 }
-.list-group-item.list-group-item-animate {
+.sticky-list-item.sticky-list-item-animate {
   width: 100%;
   transition: all .5s ease;
   display: inline-block;

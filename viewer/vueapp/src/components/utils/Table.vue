@@ -6,89 +6,103 @@ SPDX-License-Identifier: Apache-2.0
   <table
     v-if="computedColumns && computedColumns.length"
     :style="`width:${tableWidth}px`"
-    class="table-striped table-xs"
+    class="arkime-table arkime-table--xs"
     :class="tableClasses"
     ref="table"
     :id="id">
     <thead>
-      <button
-        type="button"
+      <v-btn
         v-if="showFitButton"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        icon
+        :style="quaternaryBtnStyle"
+        class="fit-btn"
         :aria-label="$t('utils.fitBtnTip')"
-        class="btn btn-xs btn-theme-quaternary fit-btn"
-        @click="fitTable"
-        id="fitBtn">
-        <span class="fa fa-arrows-h" />
-        <BTooltip target="fitBtn">
+        @click="fitTable">
+        <v-icon icon="mdi-arrow-expand-horizontal" />
+        <v-tooltip activator="parent">
           {{ $t('utils.fitBtnTip') }}
-        </BTooltip>
-      </button>
+        </v-tooltip>
+      </v-btn>
       <tr ref="draggableColumns">
         <th
           v-if="actionColumn"
           style="width:70px;"
           class="ignore-element text-start">
-          <div class="d-flex align-items-center">
-            <!-- column visibility button -->
-            <b-dropdown
-              size="sm"
-              no-flip
-              no-caret
-              role="dropdown"
-              class="col-vis-menu pull-left"
-              variant="theme-primary">
-              <template #button-content>
-                <span
-                  class="fa fa-th"
-                  id="colVisBtn">
-                  <BTooltip target="colVisBtn">{{ $t('utils.colVisBtnTip') }}</BTooltip>
-                </span>
+          <div class="d-flex align-center">
+            <!-- column visibility menu -->
+            <v-menu
+              :close-on-content-click="false"
+              location="bottom start">
+              <template #activator="{ props: activatorProps }">
+                <v-btn
+                  v-bind="activatorProps"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  :style="primaryBtnStyle"
+                  class="col-vis-trigger">
+                  <v-icon icon="mdi-view-grid" />
+                  <v-tooltip activator="parent">
+                    {{ $t('utils.colVisBtnTip') }}
+                  </v-tooltip>
+                </v-btn>
               </template>
-              <b-dropdown-header>
-                <input
-                  type="text"
-                  v-model="colQuery"
-                  class="form-control form-control-sm dropdown-typeahead"
-                  :placeholder="$t('utils.colQueryPlaceholder')">
-              </b-dropdown-header>
-              <b-dropdown-divider />
-              <b-dropdown-item
-                @click="resetDefault">
-                {{ $t('utils.resultDefaultColumns') }}
-              </b-dropdown-item>
-              <b-dropdown-divider />
-              <b-dropdown-item
-                v-for="column in filteredColumns"
-                :key="column.id"
-                :id="`colVis-${column.id}`"
-                :class="{'active':isVisible(column.id) >= 0}"
-                @click.stop.prevent="toggleVisibility(column)">
-                {{ column.name }}
-                <BTooltip
-                  v-if="column.help"
-                  :target="`colVis-${column.id}`">
-                  {{ column.help }}
-                </BTooltip>
-              </b-dropdown-item>
-            </b-dropdown> <!-- /column visibility button -->
+              <v-list
+                density="compact"
+                class="col-vis-list">
+                <div class="px-2 py-1">
+                  <div class="arkime-input-group arkime-input-group--fluid">
+                    <input
+                      type="text"
+                      v-model="colQuery"
+                      class="arkime-input-control"
+                      :placeholder="$t('utils.colQueryPlaceholder')">
+                  </div>
+                </div>
+                <v-divider />
+                <v-list-item @click="resetDefault">
+                  {{ $t('utils.resultDefaultColumns') }}
+                </v-list-item>
+                <v-divider />
+                <v-list-item
+                  v-for="column in filteredColumns"
+                  :key="column.id"
+                  :id="`colVis-${column.id}`"
+                  :active="isVisible(column.id) >= 0"
+                  @click.stop.prevent="toggleVisibility(column)">
+                  {{ column.name }}
+                  <v-tooltip
+                    v-if="column.help"
+                    activator="parent"
+                    location="end">
+                    {{ column.help }}
+                  </v-tooltip>
+                </v-list-item>
+              </v-list>
+            </v-menu> <!-- /column visibility menu -->
             <!-- ESNode data node only toggle -->
-            <div class="ms-3">
-              <b-form-checkbox
-                v-if="showDataNodesToggle"
+            <span
+              v-if="showDataNodesToggle"
+              class="ms-2 d-inline-block">
+              <v-checkbox
+                density="compact"
+                hide-details
+                inline
                 :id="`only-data-nodes-checkbox-${id}`"
-                @change="$emit('toggle-data-node-only')"
-                name="only-data-nodes-checkbox">
-                <BTooltip :target="`only-data-nodes-checkbox-${id}`">
-                  {{ $t('utils.onlyShowDataNodesTip') }}
-                </BTooltip>
-              </b-form-checkbox>
-            </div><!-- ESNode data node only toggle -->
+                @update:model-value="$emit('toggle-data-node-only')" />
+              <v-tooltip :activator="`#only-data-nodes-checkbox-${id}`">
+                {{ $t('utils.onlyShowDataNodesTip') }}
+              </v-tooltip>
+            </span><!-- /ESNode data node only toggle -->
           </div>
         </th>
         <th
           v-for="column in computedColumns"
-          :key="column.name"
-          :id="`col-${column.name}`"
+          :key="column.id"
+          :id="`col-${column.id}`"
           @click.self="sort(column)"
           :class="(column.classes ? `${column.classes} ` : '') + (column.sort ? 'cursor-pointer' : '')"
           :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
@@ -97,41 +111,36 @@ SPDX-License-Identifier: Apache-2.0
 &nbsp;
           </div>
           {{ column.name }}
-          <BTooltip
+          <v-tooltip
             v-if="column.help"
-            :target="`col-${column.name}`">
+            :activator="`#col-${column.id}`">
             {{ column.help }}
-          </BTooltip>
+          </v-tooltip>
           <span
             v-if="column.canClear"
             class="btn-zero">
-            <button
-              :id="`zero-btn-${column.name}`"
-              type="button"
-              @click="zeroColValues(column)"
+            <v-btn
+              color="grey"
+              variant="flat"
+              size="x-small"
+              density="comfortable"
+              icon
               :aria-label="$t('common.clear')"
-              class="btn btn-xs btn-secondary">
-              <span class="fa fa-ban" />
-              <BTooltip :target="`zero-btn-${column.name}`">
+              @click="zeroColValues(column)">
+              <v-icon icon="mdi-cancel" />
+              <v-tooltip activator="parent">
                 Set this column's values to 0.
                 <strong v-if="zeroedAt && zeroedAt[column.id]">
                   <br>
                   {{ $t('utils.lastClearedAt') }}
                   {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
                 </strong>
-              </BTooltip>
-            </button>
+              </v-tooltip>
+            </v-btn>
           </span>
-          <span v-if="column.sort">
-            <span
-              v-show="tableSortField === column.sort && !tableDesc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="tableSortField === column.sort && tableDesc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="tableSortField !== column.sort"
-              class="fa fa-sort" />
+          <span v-if="column.sort && tableSortField === column.sort">
+            <v-icon
+              :icon="tableDesc ? 'mdi-chevron-down' : 'mdi-chevron-up'" />
           </span>
         </th>
       </tr>
@@ -213,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
         <td
           :colspan="tableColspan"
           class="text-danger text-center">
-          <span class="fa fa-warning" />&nbsp;
+          <v-icon icon="mdi-alert" />&nbsp;
           {{ noResultsMsg }}
         </td>
       </tr> <!-- /no results -->
@@ -252,76 +261,9 @@ import Sortable from 'sortablejs';
 import UserService from '../users/UserService';
 import ToggleBtn from '@common/ToggleBtn.vue';
 import { timezoneDateString } from '@common/vueFilters.js';
+import { attachTableGrips } from '@common/composables/useColumnResize.js';
 
-// column resize variables and functions
-let selectedColElem; // store selected column to watch drag and calculate new column width
-let colStartOffset; // store column offset width to calculate new column width
-let colWidthBeforeResize; // sore column width before resize to calculate diff
-let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
-let table; // store table element to update its width after column resize
-let cols; // store cols to add grip event handlers and save new widths
-let selectedGripElem; // store the grip to style it while resizing column
-
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, col) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedColElem = col;
-  colWidthBeforeResize = col.style.width.slice(0, -2);
-  tableWidthBeforeResize = table.style.width.slice(0, -2);
-  colStartOffset = col.offsetWidth - e.pageX;
-  selectedGripElem = col.getElementsByClassName('grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
-    selectedGripElem.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
-    selectedColElem.style.width = `${newWidth}px`;
-
-    for (let i = 0; i < cols.length; i++) { // get width of each col
-      const col = cols[i];
-      const colW = parseInt(col.style.width.slice(0, -2));
-      if (vueThis.computedColumns[i]) {
-        const header = vueThis.computedColumns[i];
-        header.width = colW;
-        vueThis.columnWidths[header.id] = colW;
-      }
-    }
-
-    vueThis.saveColumnWidths();
-
-    // update the width of the table. need to do this or else the table
-    // cannot overflow its container
-    const newTableWidth = parseInt(tableWidthBeforeResize) + newWidth - colWidthBeforeResize;
-    table.style.width = `${newTableWidth}px`;
-    vueThis.tableWidth = newTableWidth;
-
-    if (Math.abs(vueThis.tableWidth - window.innerWidth) > 15) {
-      vueThis.showFitButton = true;
-    }
-
-    selectedGripElem.style.borderLeft = 'unset';
-    selectedGripElem.style.left = 'unset';
-  }
-
-  selectedGripElem = undefined;
-  selectedColElem = undefined;
-}
+const MIN_COL_WIDTH = 70;
 
 /**
  * IMPORTANT! This component kicks off the loading of the
@@ -431,7 +373,16 @@ export default {
       totalValues: {}, // list of total values
       zeroMap: {}, // list of values that have been cleared
       zeroedAt: {}, // list of times each column was cleared
-      tableWidth: $(this.tableDiv).width()
+      tableWidth: $(this.tableDiv).width(),
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {
@@ -557,6 +508,15 @@ export default {
       this.initializeColResizable();
       this.loadData(this.tableSortField, this.tableDesc);
     });
+
+    // Surface the Fit Table button when the viewport shrinks past the content,
+    // without auto-fitting (which would clobber explicit user widths).
+    this._windowResizeHandler = () => {
+      if (Math.abs((this.tableWidth || 0) - window.innerWidth) > 15) {
+        this.showFitButton = true;
+      }
+    };
+    window.addEventListener('resize', this._windowResizeHandler);
   },
   methods: {
     timezoneDateString,
@@ -582,7 +542,8 @@ export default {
             column.width = parseInt(JSON.parse(JSON.stringify(col.width)));
           }
         }
-        const newWidth = Math.floor(column.width * percentChange);
+        // clamp to min so narrow viewports don't push columns past the grip floor
+        const newWidth = Math.max(MIN_COL_WIDTH, Math.floor(column.width * percentChange));
         column.width = newWidth;
         this.columnWidths[column.id] = newWidth;
       }
@@ -775,43 +736,51 @@ export default {
             this.computedColumns.splice(newIdx, 0, element);
 
             this.saveTableState();
+            // Grip handlers capture colIndex in a closure at attach time,
+            // so they go stale after a reorder. Rebuild them against the
+            // new column order.
+            this.initializeColResizable();
           }
         });
       });
     },
     initializeColResizable: function () {
       this.$nextTick(() => {
-        cols = document.getElementsByClassName('col-header');
-        table = this.$refs.table;
-
-        for (const col of cols) { // listen for grip dragging
-          const grip = col.getElementsByClassName('grip')[0];
-          if (grip) {
-            grip.addEventListener('mousedown', (e) => gripClick(e, col));
+        this.destroyColResizable(); // idempotent re-init
+        this._gripAttachment = attachTableGrips({
+          cols: document.getElementsByClassName('col-header'),
+          table: this.$refs.table,
+          minWidth: MIN_COL_WIDTH,
+          onResetAll: () => {
+            // Ctrl+Shift+click any grip → reset column widths/order to the
+            // in-code defaults (handy for testing layout defaults).
+            this.resetDefault();
+          },
+          onCommit: ({ colIndex, newWidth, newTableWidth }) => {
+            // Only update the dragged column. Reading offsetWidth from every
+            // column would clobber state with whatever widths the browser
+            // happened to render (table-layout:auto redistributes width based
+            // on content), so e.g. dragging the name|locked grip could end up
+            // growing the num column.
+            const header = this.computedColumns[colIndex];
+            if (header) {
+              header.width = newWidth;
+              this.columnWidths[header.id] = newWidth;
+            }
+            this.saveColumnWidths();
+            this.tableWidth = newTableWidth;
+            if (Math.abs(newTableWidth - window.innerWidth) > 15) {
+              this.showFitButton = true;
+            }
           }
-        }
-
-        document.addEventListener('mousemove', gripDrag);
-        const self = this;
-        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+        });
       });
     },
     destroyColResizable () {
-      if (!cols) return;
-
-      for (const col of cols) { // remove all grip dragging listeners
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.removeEventListener('mousedown', gripClick);
-        }
+      if (this._gripAttachment) {
+        this._gripAttachment.detach();
+        this._gripAttachment = null;
       }
-
-      // remove document listeners
-      document.removeEventListener('mousemove', gripDrag);
-      document.removeEventListener('mouseup', gripUnclick);
-
-      cols = undefined;
-      table = undefined;
     },
     saveTableState: function () {
       const tableState = {
@@ -853,44 +822,36 @@ export default {
   },
   beforeUnmount () {
     this.destroyColResizable();
+    if (this._windowResizeHandler) {
+      window.removeEventListener('resize', this._windowResizeHandler);
+      this._windowResizeHandler = null;
+    }
   }
 };
 </script>
 
-<style>
-/* force border radius on col vis menu btn */
-.col-vis-menu > button.btn {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;
-}
-
-/* don't let col vis menu overflow the page */
-.col-vis-menu .dropdown-menu {
+<style scoped>
+/* col visibility menu list */
+.col-vis-list {
   max-height: 300px;
   overflow: auto;
+  width: 280px;
 }
-</style>
 
-<style scoped>
 /* table fit button -------------------------- */
 /* make fit button pos relative to table */
 table {
   position: relative;
 }
-button.fit-btn {
+.fit-btn {
   top: 0;
   right: 0;
   z-index: 9;
   position: absolute;
   visibility: hidden;
 }
-table > thead:hover button.fit-btn {
+table > thead:hover .fit-btn {
   visibility: visible;
-}
-
-/* column visibility menu styles ------------- */
-.col-vis-menu .dropdown-header {
-  padding: .25rem .5rem 0;
 }
 
 /* average/total delimiters ------------------ */
@@ -906,7 +867,12 @@ table tr.border-top-bold > td {
 
 /* slider grips indicator -------------------- */
 table thead tr th {
-  border-right: 1px dotted var(--color-gray);
+  border-right: 1px dotted rgb(var(--v-theme-neutral));
+  vertical-align: middle;
+  text-align: left;
+}
+table tbody tr td {
+  vertical-align: middle;
 }
 table thead tr th.ignore-element {
   border-right: none;
@@ -914,9 +880,6 @@ table thead tr th.ignore-element {
 
 /* remove terrible padding applied by the column resize lib */
 .JPadding > tbody > tr > td, .JPadding > tbody > tr > th {
-  padding: 0.75rem;
-}
-.table-sm.JPadding > tbody > tr > td, .table-sm.JPadding > tbody > tr > th {
   padding: 0.1rem 0.5rem !important;
 }
 
@@ -925,10 +888,15 @@ table thead th {
   position: relative;
 }
 table thead th .btn-zero {
-  top: 0;
-  left: 2px;
+  top: 1px;
+  right: 4px;
   position: absolute;
   visibility: hidden;
+}
+table thead th .btn-zero .btn {
+  padding: 0 4px;
+  font-size: 0.7rem;
+  line-height: 1.2;
 }
 table thead th:hover .btn-zero {
   visibility: visible;

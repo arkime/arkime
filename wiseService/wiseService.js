@@ -650,8 +650,8 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
@@ -1472,6 +1472,40 @@ if (internals.webconfig) {
    * @returns {ArkimeUser} The currently logged in user.
    */
   app.get('/api/user', [ArkimeUtil.noCacheJson, isWiseUser], User.apiGetUser);
+
+  // ----------------------------------------------------------------------------
+  /**
+   * GET - /api/settings
+   *
+   * Returns the shared Vuetify theme keys for the logged-in user. Used
+   * by the wise UI on startup to hydrate the Vuetify theme picker from
+   * the server. These are the same keys every Arkime app reads/writes,
+   * so a user's choice follows them across apps and browsers.
+   *
+   * @name "/api/settings"
+   * @returns {string} vuetifyTheme - The saved theme id
+   * @returns {object} vuetifyCustomTheme - The saved custom-theme object
+   */
+  app.get('/api/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], User.apiGetSettings);
+
+  // ----------------------------------------------------------------------------
+  /**
+   * POST - /api/settings/update
+   *
+   * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+   * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+   * are the same keys every Arkime app reads/writes, so a theme picked
+   * in any app follows the user into all of them. Other keys posted
+   * here are dropped.
+   *
+   * @name "/api/settings/update"
+   * @returns {boolean} success
+   * @returns {string} text
+   */
+  app.post('/api/settings/update',
+    [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
+    User.apiUpdateSettings
+  );
 
   // ----------------------------------------------------------------------------
   /**

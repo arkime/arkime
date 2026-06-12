@@ -58,7 +58,6 @@ SPDX-License-Identifier: Apache-2.0
     <v-data-table-server
       hover
       must-sort
-      class="table-striped"
       :search="search"
       :loading="loading"
       :headers="headers"

@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="well well-lg">
         <h1>404</h1>
-        <h4>{{ $t('common.nothingToSeeHere') }}</h4>
+        <h3>{{ $t('common.nothingToSeeHere') }}</h3>
       </div>
 
       <br>

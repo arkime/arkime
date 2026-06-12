@@ -1,92 +1,68 @@
 <template>
-  <b-dropdown
-    lazy
-    no-flip
-    no-caret
-    auto-close="outside"
-    size="sm"
-    menu-class="field-dropdown-menu"
-    class="field-dropdown d-inline-block"
-    :variant="buttonVariant"
-    @show="menuOpen = true"
-    @hide="menuOpen = false; showAllFields = false">
-    <template #button-content>
-      <span
-        class="fa fa-bars"
-        :id="dropdownId">
-        <BTooltip
-          :target="dropdownId"
-          noninteractive
-          placement="right">{{ tooltipText }}</BTooltip>
-      </span>
+  <!-- bodyOnly: render just the v-list so a parent v-menu can host us
+       as a submenu. Otherwise: the standalone v-menu + v-btn + v-list
+       form used everywhere a FieldSelectDropdown stands on its own. -->
+  <v-menu
+    v-if="!bodyOnly"
+    v-model="menuOpen"
+    :close-on-content-click="false"
+    location="bottom end">
+    <template #activator="{ props: activatorProps }">
+      <v-btn v-bind="activatorProps">
+        <v-icon icon="mdi-menu" />
+        <v-tooltip
+          activator="parent"
+          location="right">
+          {{ tooltipText }}
+        </v-tooltip>
+      </v-btn>
     </template>
-    <b-dropdown-header header-class="p-1">
-      <b-input
-        size="sm"
-        autofocus
-        type="text"
-        v-model="query"
-        @input="debounceQuery"
-        @click.stop
-        :placeholder="searchPlaceholder" />
-    </b-dropdown-header>
-    <li v-if="selectedFields.length > 0">
-      <button
-        type="button"
-        class="dropdown-item text-danger py-1"
-        @click="$emit('clear')">
-        <span class="fa fa-times me-1" />
-        Clear all
-      </button>
-    </li>
-    <b-dropdown-divider />
-    <template v-if="menuOpen">
-      <b-dropdown-item v-if="!filteredFieldsCount">
-        No fields match
-      </b-dropdown-item>
-      <template
-        v-for="(groupFields, group) in visibleFilteredFields"
-        :key="group">
-        <b-dropdown-header
-          v-if="groupFields.length"
-          class="group-header"
-          header-class="p-1 text-uppercase">
-          {{ group }}
-        </b-dropdown-header>
-        <li
-          v-for="(field, idx) in groupFields"
-          :key="group + idx + 'item'">
-          <button
-            type="button"
-            :id="group + idx + 'item'"
-            class="dropdown-item"
-            :class="{ active: isSelected(getFieldId(field)) }"
-            @click="toggle(getFieldId(field))">
-            {{ field.friendlyName }}
-            <small>({{ field.exp }})</small>
-            <BTooltip
-              v-if="field.help"
-              :target="group + idx + 'item'">
-              {{ field.help }}
-            </BTooltip>
-          </button>
-        </li>
-      </template>
-      <button
-        v-if="hasMoreFields"
-        type="button"
-        @click.stop="showAllFields = true"
-        class="dropdown-item text-center cursor-pointer">
-        <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields</strong>
-      </button>
-    </template>
-  </b-dropdown>
+    <v-list
+      density="compact"
+      class="field-dropdown-menu">
+      <FieldSelectDropdownBody
+        :menu-open="menuOpen"
+        :selected-fields="selectedFields"
+        :search-placeholder="searchPlaceholder"
+        :query="query"
+        :show-all-fields="showAllFields"
+        :visible-filtered-fields="visibleFilteredFields"
+        :filtered-fields-count="filteredFieldsCount"
+        :has-more-fields="hasMoreFields"
+        :get-field-id="getFieldId"
+        :is-selected="isSelected"
+        @update:query="onQueryInput"
+        @toggle="toggle"
+        @clear="$emit('clear')"
+        @show-all="showAllFields = true" />
+    </v-list>
+  </v-menu>
+  <v-list
+    v-else
+    density="compact"
+    class="field-dropdown-menu">
+    <FieldSelectDropdownBody
+      :menu-open="true"
+      :selected-fields="selectedFields"
+      :search-placeholder="searchPlaceholder"
+      :query="query"
+      :show-all-fields="showAllFields"
+      :visible-filtered-fields="visibleFilteredFields"
+      :filtered-fields-count="filteredFieldsCount"
+      :has-more-fields="hasMoreFields"
+      :get-field-id="getFieldId"
+      :is-selected="isSelected"
+      @update:query="onQueryInput"
+      @toggle="toggle"
+      @clear="$emit('clear')"
+      @show-all="showAllFields = true" />
+  </v-list>
 </template>
 
 <script>
 import { searchFields } from '@common/vueFilters.js';
-import Utils from './utils';
 import FieldService from '../search/FieldService';
+import FieldSelectDropdownBody from './FieldSelectDropdownBody.vue';
 
 let filterTimeout;
 
@@ -104,10 +80,6 @@ export default {
     searchPlaceholder: {
       type: String,
       default: 'Search for fields...'
-    },
-    buttonVariant: {
-      type: String,
-      default: 'theme-primary'
     },
     // Which field property to use as the ID (dbField for columns, exp for summary)
     fieldIdKey: {
@@ -134,9 +106,17 @@ export default {
     includeSummaryFields: {
       type: Boolean,
       default: false
+    },
+    // When true, render only the v-list body (no v-menu wrapper, no
+    // v-btn activator). Used when this component is nested inside a
+    // parent v-menu acting as a submenu.
+    bodyOnly: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['toggle', 'clear'],
+  components: { FieldSelectDropdownBody },
   data () {
     return {
       menuOpen: false,
@@ -144,8 +124,7 @@ export default {
       query: '',
       groupedFields: {},
       filteredFields: {},
-      filteredFieldsCount: 0,
-      dropdownId: `field-dropdown-${Utils.createRandomString()}`
+      filteredFieldsCount: 0
     };
   },
   computed: {
@@ -183,6 +162,10 @@ export default {
         this.buildGroupedFields();
         this.filterFields();
       }
+    },
+    menuOpen (opened) {
+      // Reset showAllFields when menu closes (matches BVN @hide handler).
+      if (!opened) { this.showAllFields = false; }
     }
   },
   methods: {
@@ -226,6 +209,10 @@ export default {
         this.filterFields();
       }, 400);
     },
+    onQueryInput (value) {
+      this.query = value;
+      this.debounceQuery();
+    },
     getFieldId (field) {
       return field[this.fieldIdKey] || field.exp || field.dbField;
     },
@@ -243,10 +230,9 @@ export default {
 .field-dropdown-menu {
   max-height: 400px;
   overflow-y: auto;
+  width: 320px;
 }
-
-.group-header {
-  font-weight: bold;
-  color: var(--color-foreground-accent);
-}
+/* .group-header + .field-item styling lives in FieldSelectDropdownBody.vue
+   since that's where those elements are now rendered (and scoped styles
+   here would no longer reach them across the component boundary). */
 </style>

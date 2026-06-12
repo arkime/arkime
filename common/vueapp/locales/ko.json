@@ -338,8 +338,12 @@
     "sourceRaw": "출발지 (원시)",
     "destinationRaw": "목적지 (원시)",
     "link": "링크",
+    "copyLink": "링크 복사",
+    "openLinkNewTab": "새 탭에서 링크 열기",
+    "pivotToLink": "이 링크로 피벗",
     "actions": "작업",
     "hideColumn": "열 숨기기",
+    "columnActions": "열 작업",
     "summary": {
       "generateSummary": "요약 생성",
       "unknownErr": "요약 생성 중 예상치 못한 오류가 발생했습니다.",
@@ -470,6 +474,8 @@
       "srcVisTip": "출발지 패킷 가시성 전환",
       "dstVisTip": "목적지 패킷 가시성 전환",
       "toggleDecodingTip": "{name} 디코딩 전환",
+      "decodings": "디코딩",
+      "decodingsDisabledTip": "디코딩은 프레임이 재조립된 경우에만 작동합니다",
       "noPacketSelector": "이 세션의 모든 패킷을 표시하고 있습니다. 이미지 및 파일 표시 또는 압축 해제 활성화를 위해 모든 패킷이 필요할 수 있으므로 패킷 수를 선택할 수 없습니다."
     },
     "remove": {
@@ -512,23 +518,28 @@
       "openAll": "표시된 모든 세션 열기 (최대 50개)",
       "closeAll": "열려 있는 모든 세션 닫기",
       "fitTable": "테이블을 창 크기에 맞추기",
+      "tableOptions": "테이블 옵션",
       "toggleColumns": "가시 열 전환",
       "searchColumns": "열 검색...",
       "showMoreFields": "{count}개 필드 더 보기...",
-      "customColumnMsg": "사용자 지정 열 설정 저장 또는 로드",
+      "saveConfig": "\"{name}\" 저장",
+      "saveConfigAs": "다른 이름으로 저장...",
+      "loadConfig": "로드",
+      "filterConfigs": "설정 필터링...",
+      "noConfigsMatch": "필터와 일치하는 설정이 없습니다",
       "customColumnName": "새 열 설정 이름 입력",
       "arkimeDefault": "Arkime 기본값",
       "customColumnReset": "테이블을 기본값으로 재설정",
       "customColumnUpdate": "현재 표시된 열로 이 열 설정을 업데이트",
-      "customInfoMsg": "사용자 지정 정보 필드 설정 저장 또는 로드",
       "customInfoName": "새 정보 필드 설정 이름 입력",
       "customInfoReset": "정보 열을 기본 필드로 재설정",
-      "customInfoUpdate": "현재 표시된 열로 이 정보 필드 설정을 업데이트",
+      "customInfoUpdate": "현재 표시된 필드로 이 정보 필드 설정을 업데이트",
       "toggleInfoFields": "가시 정보 열 필드 전환",
       "noFieldsMatch": "검색과 일치하는 필드가 없습니다",
       "loadingSessionDetail": "세션 상세 정보 로딩 중...",
       "canceledSearch": "검색을 취소했습니다",
       "nameColumnConfigErr": "열 설정 이름을 입력해야 합니다",
+      "nameInfoConfigErr": "정보 필드 설정 이름을 입력해야 합니다",
       "tooManySessionsErr": "너무 많은 세션 상세 정보를 한 번에 열려고 합니다! 처음 50개만 열어드립니다. 죄송합니다!",
       "closingCancelsSearchErr": "세션 페이지를 닫아 검색이 취소되었습니다"
     },
@@ -609,6 +620,8 @@
     "nextStartTimeTip": "다음 날짜의 시작",
     "prevStopTimeTip": "이전 날짜의 종료",
     "nextStopTimeTip": "현재 날짜의 종료 / 다음 날짜",
+    "pickStartDateTip": "시작 날짜 선택",
+    "pickStopDateTip": "종료 날짜 선택",
     "timeBounding": "시간 경계",
     "timeBoundingTip": "선택한 시간 창에 사용할 시간 필드",
     "timeBounding-first": "첫 번째 패킷",
@@ -911,10 +924,10 @@
   "history": {
     "searchHistoryPlaceholder": "아래 테이블에서 기록 검색",
     "searchHistoryTipHtml": "<h5>검색 기록</h5><p>검색바를 사용하여 아래 기록 테이블을 필터링하세요. 테이블의 모든 열로 검색할 수 있습니다.</p><p> <strong>팁:</strong> 쿼리에서 한 문자를 대체하려면 <code>?</code>를, 0개 이상의 문자를 대체하려면 <code>*</code>를 사용하세요. </p>",
-    "toggleColFiltersTip": "열 필터 전환",
-    "seeAllTipHtml": "<strong>모든 기록 보기</strong><br />모든 사용자의 기록을 봅니다 (arkimeAdmin 권한이 있으므로 가능합니다!)",
-    "filterByPlaceholder": "{name}으로 필터링",
-    "existsTip": "{name} 필드가 존재하는 항목만 표시",
+    "seeAllHistoryBtn": "모든 기록 보기",
+    "seeMyHistoryBtn": "내 기록 보기",
+    "seeAllHistoryTip": "모든 사용자의 기록을 봅니다 (arkimeAdmin 권한이 있으므로 가능합니다!)",
+    "seeMyHistoryTip": "내 활동으로 생성된 기록만 표시",
     "noHistory": "기록이 없거나 검색과 일치하는 결과가 없습니다",
     "openPageTip": "{uiPage} 페이지에서 이 쿼리 열기",
     "timestampName": "시간",
@@ -1126,6 +1139,7 @@
       "helpParliament": "Parliament 내 이슈에 대해 경고하는 데 사용할 알림기를 구성합니다.",
       "title": "알림기",
       "new": "새 {name} 알림기",
+      "newGeneric": "새 알림기",
       "namePlaceholder": "알림기 이름 (구체적으로)",
       "nameInfo": "알림기 이름을 구체적으로 지정하세요. 동일한 유형의 알림기가 여러 개 있을 수 있습니다.",
       "createHelp": "위의 버튼 중 하나를 클릭하여 생성하세요.",
@@ -1317,6 +1331,8 @@
     "toggleDstCountry": "목적지 국가 전환",
     "graphLines": "선형",
     "graphBars": "막대형",
+    "graphLinear": "선형",
+    "graphLog": "로그",
     "capRestarts": "캡처 재시작",
     "capRestartsTip": "캡처 프로세스 시작 시간 표시 전환",
     "capNodeRestarted": "캡처 노드 {node}가 {when}에 시작됨"
@@ -1339,9 +1355,47 @@
     "greeting": "환영합니다 {userName}님!",
     "checkOutOur": "자세한 내용은",
     "pageInfo": "페이지를 확인하거나 왼쪽 상단의 올빼미를 클릭하세요.",
-    "dismissTip": "다음에 이 메시지 다시 표시",
-    "gotIt": "알겠습니다!",
-    "gotItTip": "이 메시지를 다시 표시하지 않음"
+    "v7Title": "Arkime 7에 오신 것을 환영합니다!",
+    "v7Intro": "새로운 기능을 소개합니다:",
+    "v7Item1": "2가지 새 테마와 함께 새로워진 디자인",
+    "v7Item2": "새로운 세션 보기 (상세/패킷/tshark)",
+    "v7Item3": "국제화 지원 강화",
+    "v7Item4": "더 많은 시각화",
+    "v7Item5": "그 외 다양한 개선"
+  },
+  "helpNotes": {
+    "learnMore": "더 알아보기",
+    "dismissTip": "이 메시지를 다시 표시하지 않음",
+    "dismissAll": "모두 숨기기",
+    "dismissAllTip": "이 메시지들을 모두 다시 표시하지 않음",
+    "closeTip": "다음번까지 이 메시지들을 숨겨 둠",
+    "sessions": {
+      "text": "여기는 세션 페이지입니다. 캡처된 트래픽을 검색한 후 세션을 클릭하여 메타데이터와 패킷을 살펴보세요."
+    },
+    "spiview": {
+      "text": "SPI 뷰는 캡처된 필드 값을 카테고리별로 묶어 보여주므로 데이터에 무엇이 있는지 한눈에 파악할 수 있습니다."
+    },
+    "spigraph": {
+      "text": "SPI 그래프는 어떤 필드든 상위 값을 시간에 따라 차트로 보여줍니다. 다양한 필드와 그래프 유형을 시도해 보세요."
+    },
+    "connections": {
+      "text": "연결 페이지는 소스와 대상이 어떻게 통신하는지 보여줍니다. 드래그, 확대/축소, 노드 클릭으로 자세히 살펴보세요."
+    },
+    "hunt": {
+      "text": "사냥(Hunt)은 세션 메타데이터뿐 아니라 원시 패킷 내부를 검색합니다. 패킷 검색 작업을 만들어 인덱싱에서 놓친 것을 찾아보세요."
+    },
+    "files": {
+      "text": "파일 페이지는 Arkime이 기록한 PCAP 파일과 해당 세션이 아직 검색 가능한지 보여줍니다."
+    },
+    "stats": {
+      "text": "통계 페이지는 캡처 노드와 Elasticsearch 상태를 추적합니다. 그래프, 노드별 지표, 인덱스 세부 정보를 확인하세요."
+    },
+    "history": {
+      "text": "기록 페이지는 과거 쿼리(관리자는 전체 사용자)를 기록하여 검토하고 다시 실행할 수 있습니다."
+    },
+    "settings": {
+      "text": "Arkime을 나만의 것으로 만드세요. 테마, 시간대, 사용자 지정 열 및 필드 레이아웃, 보기, 단축키, 알림이 모두 여기에 있습니다."
+    }
   },
   "spigraph": {
     "addAnotherField": "다른 필드 추가",
@@ -1440,6 +1494,8 @@
       "lastHtml": "<strong>마지막</strong> 감지됨: <br> <strong> {last} </strong>",
       "issueFixed": "이슈 해결됨! 제거하세요.",
       "issueAckTip": "이 이슈를 승인합니다. 이슈가 해결된 후 자동으로 또는 수동으로 제거할 수 있습니다.",
+      "ignoreTip": "선택한 기간 동안 이 이슈를 무시합니다",
+      "unignoreTip": "현재 무시 중 — 새 기간을 선택하거나 무시를 중지하세요",
       "removeIgnore": "무시 제거",
       "ignoreHourCount": "1시간 동안 무시 | {count}시간 동안 무시",
       "ignoreDayCount": "1일 동안 무시 | {count}일 동안 무시",
@@ -1471,6 +1527,7 @@
       "noIssuesMatch": "검색 및 필터와 일치하는 이슈가 없습니다"
     },
     "settings": {
+      "title": "Parliament 설정",
       "ifProblem": "문제가 지속되면,",
       "restoreDefaults": "기본값으로 복원해 보세요",
       "general": "일반",
@@ -1519,6 +1576,7 @@
       "helpHtml": "또는 <a href=\"help\" class=\"no-decoration\"> 도움말</a>이 필요하신가요?"
     },
     "config": {
+      "title": "WISE 구성",
       "importTip": "새로운 소스 설정 가져오기 (JSON 또는 INI)",
       "createTip": "UI를 통해 새 소스 생성",
       "resetFile": "파일 재설정",
@@ -1696,6 +1754,11 @@
       "userNotFound": "사용자를 찾을 수 없습니다",
       "welcomeMsgNumNotInteger": "welcomeMsgNum이 정수가 아닙니다",
       "dismissedMessage": "사용자 {userId}이(가) 메시지 {msgNum}을(를) 닫았습니다",
+      "dismissedNote": "사용자 {userId}이(가) 도움말 노트 {noteId}을(를) 닫았습니다",
+      "invalidNoteId": "잘못된 노트 ID",
+      "tooManyDismissedNotes": "닫은 노트가 너무 많습니다",
+      "dismissNoteFailed": "메시지 닫기에 실패했습니다",
+      "dbNeedsUpgrade": "사용자 데이터베이스 업그레이드가 필요합니다. db.pl upgrade를 실행하세요",
       "unknownUser": "알 수 없는 사용자",
       "invalidStateName": "잘못된 상태 이름",
       "stateUpdateFailed": "상태 업데이트 실패",

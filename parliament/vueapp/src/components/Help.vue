@@ -4,51 +4,51 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="help-content">
-    <div class="container-fluid">
-      <div class="row ps-2">
-        <div class="nav flex-column nav-pills col-1">
-          <a
-            href="help#about"
-            class="nav-link">
-            <span class="fa fa-fw fa-question-circle" />&nbsp;
-            About
-          </a>
-          <a
-            href="help#dashboard"
-            class="nav-link">
-            <span class="fa fa-fw fa-tachometer" />&nbsp;
-            Dashboard
-          </a>
-          <a
-            href="help#issues"
-            class="nav-link">
-            <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
-            Issues
-          </a>
-          <a
-            href="help#settings"
-            class="nav-link">
-            <span class="fa fa-fw fa-cogs" />&nbsp;
-            Settings
-          </a>
-          <a
-            href="help#general"
-            class="nav-link nested">
-            General
-          </a>
-          <a
-            href="help#notifiers"
-            class="nav-link nested">
-            Notifiers
-          </a>
-        </div>
+    <v-container fluid>
+      <v-row class="ps-2">
+        <v-col
+          cols="12"
+          sm="2"
+          md="2"
+          lg="1"
+          class="help-nav-col">
+          <v-list
+            density="compact"
+            nav
+            class="help-nav">
+            <v-list-item
+              href="help#about"
+              prepend-icon="mdi-help-circle"
+              title="About" />
+            <v-list-item
+              href="help#dashboard"
+              prepend-icon="mdi-speedometer"
+              title="Dashboard" />
+            <v-list-item
+              href="help#issues"
+              prepend-icon="mdi-alert"
+              title="Issues" />
+            <v-list-item
+              href="help#settings"
+              prepend-icon="mdi-cog-outline"
+              title="Settings" />
+            <v-list-item
+              href="help#general"
+              title="General"
+              class="nested" />
+            <v-list-item
+              href="help#notifiers"
+              title="Notifiers"
+              class="nested" />
+          </v-list>
+        </v-col>
 
-        <div class="col mt-2 mb-3">
+        <v-col class="mt-2 mb-3">
           <!-- about -->
-          <h3 id="about">
-            <span class="fa fa-question-circle" />&nbsp;
+          <h2 id="about">
+            <v-icon icon="mdi-help-circle" />&nbsp;
             About
-          </h3>
+          </h2>
           <p class="lead">
             <strong>
               Parliament contains a grouped list of your Arkime clusters.
@@ -60,13 +60,13 @@ SPDX-License-Identifier: Apache-2.0
           </p>
           <!-- /about -->
 
-          <hr>
+          <v-divider class="my-3" />
 
           <!-- dashboard -->
-          <h3 id="dashboard">
-            <span class="fa fa-tachometer" />&nbsp;
+          <h2 id="dashboard">
+            <v-icon icon="mdi-speedometer" />&nbsp;
             Parliament Dashboard
-          </h3>
+          </h2>
           <p class="lead">
             The Parliament dashboard includes links, ES health, and issues for each Arkime cluster.
           </p>
@@ -83,13 +83,13 @@ SPDX-License-Identifier: Apache-2.0
           </p>
           <!-- /dashboard -->
 
-          <hr>
+          <v-divider class="my-3" />
 
           <!-- issues -->
-          <h3 id="issues">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
+          <h2 id="issues">
+            <v-icon icon="mdi-alert" />&nbsp;
             Issues
-          </h3>
+          </h2>
           <p class="lead">
             The issues page contains a list of issues that your Parliament is experiencing.
           </p>
@@ -98,13 +98,13 @@ SPDX-License-Identifier: Apache-2.0
             can ignore, acknowledge, and remove acknowledged issues for every cluster.
           </p>
           <p>
-            <span class="fa fa-check" />&nbsp;
+            <v-icon icon="mdi-check" />&nbsp;
             <strong>Acknowledged issues</strong> will not show up on the main Parliament page,
             but will remain here (grayed out) to be removed
             (via the trashcan button or by waiting for them to be removed automatically after the set time).
           </p>
           <p>
-            <span class="fa fa-eye-slash" />&nbsp;
+            <v-icon icon="mdi-eye-off" />&nbsp;
             <strong>Ignored issues</strong> will not show up on the main Parliament page,
             but will remain here (grayed out) to be unignored
             (via the ignore dropdown button or automatically after the set ignore time has expired).
@@ -117,17 +117,17 @@ SPDX-License-Identifier: Apache-2.0
             <li>
               <strong>ES Down:</strong>
               OpenSearch/Elasticsearch was unreachable
-              <em class="text-muted">(configurable in settings)</em>.
+              <em class="text-medium-emphasis">(configurable in settings)</em>.
             </li>
             <li>
               <strong>Out of Date:</strong>
               The capture node has not checked in
-              <em class="text-muted">(configurable in settings)</em>.
+              <em class="text-medium-emphasis">(configurable in settings)</em>.
             </li>
             <li>
               <strong>Low Packets:</strong>
               The capture node is not receiving many packets
-              <em class="text-muted">(configurable in settings)</em>.
+              <em class="text-medium-emphasis">(configurable in settings)</em>.
             </li>
             <li>
               <strong>ES Red:</strong>
@@ -140,23 +140,23 @@ SPDX-License-Identifier: Apache-2.0
             <li>
               <strong>Low Disk Space:</strong>
               The capture node has low disk space. Can be configured as a percentage or GB threshold. 4% default.
-              <em class="text-muted">(configurable in settings)</em>.
+              <em class="text-medium-emphasis">(configurable in settings)</em>.
             </li>
             <li>
               <strong>ES Low Disk Space:</strong>
               An OpenSearch/Elasticsearch node has low disk space. Can be configured as a percentage or GB threshold. 15% default.
-              <em class="text-muted">(configurable in settings)</em>.
+              <em class="text-medium-emphasis">(configurable in settings)</em>.
             </li>
           </ul>
           <!-- /issues -->
 
-          <hr>
+          <v-divider class="my-3" />
 
           <!-- settings -->
-          <h3 id="settings">
-            <span class="fa fa-cogs" />&nbsp;
+          <h2 id="settings">
+            <v-icon icon="mdi-cog-outline" />&nbsp;
             Settings
-          </h3>
+          </h2>
           <p class="lead">
             The settings page allows you to configure your Parliament for your needs.
           </p>
@@ -168,10 +168,10 @@ SPDX-License-Identifier: Apache-2.0
 
           <div class="ms-4">
             <!-- general -->
-            <h6 id="general">
-              <span class="fa fa-fw fa-cog" />&nbsp;
+            <h4 id="general">
+              <v-icon icon="mdi-cog" />&nbsp;
               General
-            </h6>
+            </h4>
             <p>
               The general section has a few settings that pertain to issues in your Parliament:
             </p>
@@ -182,7 +182,7 @@ SPDX-License-Identifier: Apache-2.0
                 If the timestamp exceeds this time setting, an <strong>Out Of Date</strong>
                 issue is added to the cluster.
                 <br>
-                <em class="text-muted">
+                <em class="text-medium-emphasis">
                   The default for this setting is <strong>30 seconds</strong>.
                 </em>
               </li>
@@ -191,7 +191,7 @@ SPDX-License-Identifier: Apache-2.0
                 status query duration. If the query exceeds this time setting, an
                 <strong>ES Down</strong> issue is added to the cluster.
                 <br>
-                <em class="text-muted">
+                <em class="text-medium-emphasis">
                   The default for this setting is <strong>5 seconds</strong>.
                 </em>
               </li>
@@ -202,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
                 to <strong>-1</strong> to ignore this issue altogether. This setting also includes a
                 time range for how long this problem must persist before adding an issue to the cluster.
                 <br>
-                <em class="text-muted">
+                <em class="text-medium-emphasis">
                   The default for this setting is <strong>0 packets</strong> for
                   <strong>10 seconds</strong>.
                 </em>
@@ -212,7 +212,7 @@ SPDX-License-Identifier: Apache-2.0
                 not occurred again. The issue is removed from the cluster after this time expires as
                 long as the issue has not occurred again.
                 <br>
-                <em class="text-muted">
+                <em class="text-medium-emphasis">
                   The default for this setting is <strong>60 minutes</strong>.
                 </em>
               </li>
@@ -221,7 +221,7 @@ SPDX-License-Identifier: Apache-2.0
                 is removed. The issue is removed from the cluster after this time expires
                 (so you don't have to remove issues manually with the trashcan button).
                 <br>
-                <em class="text-muted">
+                <em class="text-medium-emphasis">
                   The default for this setting is <strong>15 minutes</strong>.
                 </em>
               </li>
@@ -229,10 +229,12 @@ SPDX-License-Identifier: Apache-2.0
             <!-- /general -->
 
             <!-- notifiers -->
-            <h6 id="notifiers">
-              <span class="fa fa-fw fa-bell me-2" />
+            <h4 id="notifiers">
+              <v-icon
+                icon="mdi-bell"
+                class="me-2" />
               Notifiers
-            </h6>
+            </h4>
             <p>
               The notifiers section provides the ability to configure alerts for your Parliament.
               Users can be alerted via:
@@ -255,9 +257,9 @@ SPDX-License-Identifier: Apache-2.0
             <!-- /notifiers -->
           </div>
           <!-- /settings -->
-        </div>
-      </div>
-    </div>
+        </v-col>
+      </v-row>
+    </v-container>
   </div> <!-- /help content -->
 </template>
 
@@ -268,34 +270,27 @@ export default {
 </script>
 
 <style scoped>
-/* help navigation */
-.help-content div.nav-pills {
+/* help navigation -- sticky sidebar wrapping a Vuetify v-list */
+.help-content .help-nav-col {
   min-width: 150px;
-  border: 1px solid var(--color-gray);
+}
+
+.help-content .help-nav {
+  border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 4px;
   position: sticky;
   top: 70px;
-  height: calc(100vh - 85px);
+  max-height: calc(100vh - 85px);
   overflow-x: hidden;
   overflow-y: auto;
   white-space: nowrap;
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
+  box-shadow: 0 0 16px -2px black;
+  background-color: rgb(var(--v-theme-surface));
 }
 
-.help-content .nav-pills .nav-link {
-  width: 100%;
-}
-
-.help-content div.nav-pills a {
-  padding: 5px 8px !important;
-}
-
-.help-content div.nav-pills a.nested {
-  margin-left: 2.4em;
+.help-content .help-nav :deep(.v-list-item.nested) {
+  margin-left: 2em;
   font-size: 0.85em;
-  padding: 2px 5px !important;
+  min-height: 28px;
 }
 </style>

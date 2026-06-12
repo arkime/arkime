@@ -7,56 +7,60 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <div class="files-search p-1">
-          <BRow
-            gutter-x="1"
-            align-h="start">
-            <BCol cols="auto">
+          <v-row
+            dense
+            justify="start">
+            <v-col cols="auto">
               <arkime-paging
                 v-if="files"
                 :records-total="recordsTotal"
                 :records-filtered="recordsFiltered"
                 @change-paging="changePaging"
                 :length-default="500" />
-            </BCol>
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText class="input-group-text-fw">
-                  <span
-                    v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw" />
+            </v-col>
+            <v-col>
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon
+                    icon="mdi-magnify"
+                    v-if="!shiftKeyHold" />
                   <span
                     v-else
                     class="query-shortcut">
                     Q
                   </span>
-                </BInputGroupText>
+                </span>
                 <input
                   type="text"
-                  class="form-control"
+                  class="arkime-input-control"
                   v-model="query.filter"
                   v-focus="focusInput"
                   @blur="onOffFocus"
                   @input="searchForFiles"
                   @keydown.enter="searchForFiles"
                   :placeholder="$t('files.searchPlaceholder')">
-                <BButton
-                  variant="outline-secondary"
-                  @click="clear"
+                <v-btn
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
                   :disabled="!query.filter"
-                  class="btn-clear-input">
-                  <span class="fa fa-close" />
-                </BButton>
-              </BInputGroup>
-            </BCol>
-            <BCol cols="auto">
+                  :aria-label="$t('common.clear')"
+                  @click="clear">
+                  <v-icon icon="mdi-close" />
+                </v-btn>
+              </div>
+            </v-col>
+            <v-col cols="auto">
               <Clusters />
-            </BCol>
-          </BRow>
+            </v-col>
+          </v-row>
         </div>
       </span>
     </ArkimeCollapsible>
 
-    <div class="mt-4 container-fluid">
+    <div class="mt-4 px-3">
       <arkime-loading v-if="loading && !error" />
 
       <arkime-error
@@ -92,7 +96,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
 import Clusters from '../utils/Clusters.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Focus from '@common/Focus.vue';
 import { commaString, timezoneDateString } from '@common/vueFilters.js';
@@ -140,10 +144,10 @@ export default {
         intl({ id: 'num', classes: 'text-end', sort: 'num', width: 140, default: true }),
         intl({ id: 'node', sort: 'node', width: 120, default: true }),
         intl({ id: 'name', sort: 'name', width: 500, default: true }),
-        intl({ id: 'locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, width: 100, default: true }),
+        intl({ id: 'locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, width: 130, default: true }),
         intl({ id: 'first', sort: 'first', dataFunction: (item) => { return timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220, default: true }),
         intl({ id: 'lastTimestamp', sort: 'lastTimestamp', dataFunction: (item) => { return timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
-        intl({ id: 'filesize', sort: 'filesize', classes: 'text-end', width: 100, default: true, dataFunction: (item) => { return this.commaString(item.filesize); } }),
+        intl({ id: 'filesize', sort: 'filesize', classes: 'text-end', width: 140, default: true, dataFunction: (item) => { return this.commaString(item.filesize); } }),
         intl({ id: 'encoding', width: 140 }),
         intl({ id: 'packetPosEncoding', width: 140 }),
         intl({ id: 'packets', sort: 'packets', classes: 'text-end', width: 130 }),
@@ -247,7 +251,7 @@ export default {
 .files-search {
   z-index: 5;
   border: none;
-  background-color: var(--color-secondary-lightest);
+  background-color: rgb(var(--v-theme-secondary-lightest));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;

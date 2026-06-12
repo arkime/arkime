@@ -96,7 +96,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 86;
+my $VERSION = 87;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -7257,6 +7257,9 @@ sub usersUpdate
     "welcomeMsgNum": {
       "type": "integer"
     },
+    "dismissedHelpNotes": {
+      "type": "keyword"
+    },
     "lastUsed": {
       "type": "date"
     },
@@ -9763,6 +9766,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        usersUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

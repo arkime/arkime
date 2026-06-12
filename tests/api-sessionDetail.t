@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 48;
 
 use Cwd;
 use URI::Escape;
@@ -14,13 +14,33 @@ my $pwd = "*/pcap";
     my $id = $sdId->{data}->[0]->{id};
     my $encodedId = uri_escape($id);
 
-    my $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m{sessionid.*\Q$id\E}s, "/detail");
-    ok($sd =~ m{Tags.*md5taggertest1}s, "/detail Tags");
+    # /detail returns { html, info }; assert against the decoded parts
+    my $sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content);
+    ok($sd->{html} =~ m{sessionid.*\Q$id\E}s, "/detail");
+    ok($sd->{html} =~ m{Tags.*md5taggertest1}s, "/detail Tags");
+    is($sd->{info}->{id}, $id, "/detail info id");
+    ok($sd->{info}->{packets} > 0, "/detail info packets");
 
-    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/detail")->content;
-    ok($sd =~ m{sessionid.*\Q$id\E}s, "multi /detail");
-    ok($sd =~ m{Tags.*md5taggertest1}s, "multi /detail Tags");
+    $sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/detail")->content);
+    ok($sd->{html} =~ m{sessionid.*\Q$id\E}s, "multi /detail");
+    ok($sd->{html} =~ m{Tags.*md5taggertest1}s, "multi /detail Tags");
+
+# tshark
+    my $tsharkProbe = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/tshark");
+    SKIP: {
+        skip "tshark not available on viewer", 1 if $tsharkProbe->code != 200;
+        ok($tsharkProbe->content =~ m{"layers":\[.*"name":"frame"}s, "/tshark");
+    }
+
+    my $tsharkMulti = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/tshark");
+    SKIP: {
+        skip "tshark not available on multi viewer", 1 if $tsharkMulti->code != 200;
+        ok($tsharkMulti->content =~ m{"layers":\[.*"name":"frame"}s, "multi /tshark");
+    }
+
+# multi /packets
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/packets?line=false&ts=false&base=natural")->content;
+    ok(bin2hex($sd) =~ /636f6c3a2038303a71756963.*08000000000002/, "multi encoding:natural");
 
 # http
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&showFrames=true")->content;
@@ -119,13 +139,13 @@ my $pwd = "*/pcap";
 # ipv6/4 port separators
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));
     $id = $sdId->{data}->[0]->{id};
-    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m|'sessions.exportUnique', {name: "Src IP.Port"}|s, "ipv6 separator");
+    $sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content);
+    ok($sd->{html} =~ m|'sessions.exportUnique', {name: "Src IP.Port"}|s, "ipv6 separator");
 
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/mpls-basic.pcap"));
     $id = $sdId->{data}->[0]->{id};
-    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m|'sessions.exportUnique', {name: "Src IP:Port"}|s, "ipv4 separator");
+    $sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content);
+    ok($sd->{html} =~ m|'sessions.exportUnique', {name: "Src IP:Port"}|s, "ipv4 separator");
 
 # cyberchef
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef.html")->content;
@@ -182,9 +202,10 @@ my $noPcapList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("ta
 is (scalar @{$noPcapList->{data}}, 1, "no-pcap session indexed");
 my $noPcapId = $noPcapList->{data}->[0]->{id};
 
-$sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$noPcapId/detail")->content;
-ok($sd =~ m{sessionid="\Q$noPcapId\E"}s, "no-pcap /detail rendered");
-ok($sd =~ m{hidepackets="true"}, "no-pcap /detail sets hidepackets=\"true\"");
+$sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$noPcapId/detail")->content);
+ok($sd->{html} =~ m{sessionid="\Q$noPcapId\E"}s, "no-pcap /detail rendered");
+ok($sd->{html} =~ m{hidepackets="true"}, "no-pcap /detail sets hidepackets=\"true\"");
+ok(!$sd->{info}->{hasPackets}, "no-pcap /detail info hasPackets false");
 
 my $noPcapPackets = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$noPcapId/packets?line=false&ts=false&base=ascii");
 is ($noPcapPackets->code, 200, "no-pcap /packets returns 200 (no crash)");

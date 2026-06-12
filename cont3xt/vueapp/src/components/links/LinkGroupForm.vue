@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       :value="rawEditText"
       :disabled="noEdit"
       @input="e => debounceRawEdit(e)"
-      class="form-control form-control-sm" />
+      class="cont3xt-textarea" />
     <!-- form -->
     <v-form v-if="lg && !rawEditMode">
       <!-- group name -->

@@ -40,8 +40,8 @@ FooterDataComponent.value = footerData.getVueInstance(
 <style scoped>
 .footer {
   text-align: center;
-  color: var(--color-gray-dark);
-  border-top: 1px solid var(--color-gray-light);
+  color: rgb(var(--v-theme-neutral-dark));
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
   position: absolute;
   bottom: 0;
   width: 100%;

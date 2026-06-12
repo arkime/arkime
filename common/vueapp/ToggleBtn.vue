@@ -3,14 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <a
-    role="button"
+  <v-btn
+    variant="flat"
+    size="small"
+    density="comfortable"
+    icon
+    :color="opened ? 'warning' : 'primary'"
+    :class="{ 'toggle-btn-collapsed': !opened }"
+    class="toggle-btn"
     title="toggle"
-    @click="toggle"
-    :class="btnClass"
-    class="btn btn-sm btn-toggle">
-    <span class="fa fa-close" />
-  </a>
+    @click="toggle">
+    <v-icon icon="mdi-close" />
+  </v-btn>
 </template>
 
 <script>
@@ -23,14 +27,6 @@ export default {
       default: false
     }
   },
-  computed: {
-    btnClass () {
-      return {
-        'btn-warning': this.opened,
-        'collapsed btn-primary': !this.opened
-      };
-    }
-  },
   methods: {
     toggle () {
       this.$emit('toggle');
@@ -40,42 +36,13 @@ export default {
 </script>
 
 <style>
-/* override btn-sm style to better fit in table rows */
-.btn-toggle.btn-sm {
-  padding: 2px 6px;
-  font-size: 12px;
+/* Spin the close icon 45° when collapsed so the same glyph reads as
+   a `+` (collapsed) or `×` (opened). */
+.toggle-btn .v-icon {
+  transform-origin: 50% 50%;
+  transition: transform 750ms;
 }
-
-/* use bootstrap theme styles for button */
-.btn-toggle {
-  border-color: var(--bs-primary) !important;
-  background-color: var(--bs-primary) !important;
-}
-.btn-toggle:hover {
-  border-color: var(--bs-primary) !important;
-  background-color: var(--bs-primary) !important;
-}
-.btn-toggle:not(.collapsed) {
-  border-color: var(--bs-warning) !important;
-  background-color: var(--bs-warning) !important;
-}
-.btn-toggle:not(.collapsed):hover {
-  border-color: var(--bs-warning) !important;
-  background-color: var(--bs-warning) !important;
-}
-
-/* transition for font awesome icon
- * only works for rotating icons 45 degrees  */
-.btn-toggle .fa {
-  -webkit-transform-origin: 50% 50%;
-          transform-origin: 50% 50%;
-
-  -webkit-transition: all 750ms;
-          transition: all 750ms;
-}
-.btn-toggle.collapsed > .fa {
-  -webkit-transform: rotate(-45deg);
-      -ms-transform: rotate(-45deg);
-          transform: rotate(-45deg);
+.toggle-btn.toggle-btn-collapsed > .v-btn__content > .v-icon {
+  transform: rotate(-45deg);
 }
 </style>

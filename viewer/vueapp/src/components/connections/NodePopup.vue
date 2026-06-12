@@ -10,9 +10,9 @@
           :pull-left="true" />
       </strong>
       <a
-        class="pull-right cursor-pointer no-decoration"
+        class="float-right cursor-pointer no-decoration"
         @click="$emit('close')">
-        <span class="fa fa-close" />
+        <v-icon icon="mdi-close" />
       </a>
     </div>
 
@@ -64,7 +64,9 @@
       class="cursor-pointer no-decoration"
       href="javascript:void(0)"
       @click.stop.prevent="$emit('hideNode')">
-      <span class="fa fa-eye-slash me-2" />
+      <v-icon
+        icon="mdi-eye-off"
+        class="me-2" />
       {{ $t('connections.hideNode') }}
     </a>
   </div>

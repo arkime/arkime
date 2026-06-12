@@ -444,8 +444,8 @@ typedef struct arkime_config {
     char     *bpf;
     char     *yara;
     char     *caTrustFile;
-    char    **geoLite2ASN;
-    char    **geoLite2Country;
+    char    **geoASNFile;
+    char    **geoFile;
     char     *rirFile;
     char     *ouiFile;
     char     *dropUser;

@@ -166,8 +166,9 @@ app.use((req, res, next) => {
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+// Material Design Icons -- icon library across all four apps.
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -426,11 +427,17 @@ function createSessionDetail () {
       return nextCb();
     });
   }, function () {
+    // Replaces the previous BVN structure (b-card-group(columns) > b-card).
+    // .session-detail-cards uses CSS columns (column-count) for the masonry
+    // layout, with each .session-detail-card child rendering as a bordered
+    // card via styles in viewer/vueapp/src/components/sessions/SessionDetail.vue.
+    // The action bar (link/download/tags/etc.) is now the client-side
+    // SessionActions.vue component, fed by the `actions` object the
+    // /detail endpoint returns alongside this html.
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
                                  'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
-                                 '  include views/sessionOptions\n' +
-                                 '  b-card-group(columns)\n' +
-                                 '    b-card\n' +
+                                 '  div.session-detail-cards\n' +
+                                 '    div.session-detail-card\n' +
                                  '      include views/sessionDetail\n';
     for (const k of Object.keys(found).sort()) {
       internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
@@ -449,7 +456,7 @@ function createSessionDetail () {
           // Save current indent level, so we can look for line without it
           spaces = ' '.repeat(line.search(/\S/));
           state = 1;
-          return spaces + 'b-card\n  ' + line;
+          return spaces + 'div.session-detail-card\n  ' + line;
         } else {
           return line;
         }
@@ -463,7 +470,7 @@ function createSessionDetail () {
       }
     }).join('\n');
 
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.session-card-title')
       .replace(/dl.sessionDetailMeta/g, 'dl');
   });
 }
@@ -1295,11 +1302,10 @@ app.delete( // user delete endpoint
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiDeleteUser
 );
-app.get( // user css endpoint
-  ['/api/user[/.]css'],
-  User.checkPermissions(['webEnabled']),
-  UserAPIs.getUserCSS
-);
+// Custom-theme CSS endpoint removed -- custom themes are now first-class
+// Vuetify themes registered client-side at boot time (see
+// common/vueapp/themes/customTheme.js + viewer/vueapp/src/App.vue's
+// applySavedTheme()), so no server-side stylus rendering is needed.
 
 // Locale endpoints ----------------------------------------------------------
 app.get( // get all locales endpoint - returns all locale files at once
@@ -1793,6 +1799,12 @@ app.get( // session packets endpoint
   SessionAPIs.getPackets
 );
 
+app.get( // session tshark endpoint
+  ['/api/session/:nodeName/:id/tshark'],
+  [logAction(), User.checkPermissions(['hidePcap'])],
+  SessionAPIs.getTshark
+);
+
 app.post( // add tags endpoint
   ['/api/sessions/addtags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
@@ -2171,7 +2183,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
-    themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
+    hasTshark: !!internals.tsharkPath,
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,

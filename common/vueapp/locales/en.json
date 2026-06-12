@@ -113,8 +113,8 @@
     "arkime": "Arkime",
     "sessions": "Sessions",
     "settings": "Settings",
-    "spiview": "SPI View",
-    "spigraph": "SPI Graph",
+    "spiview": "SPIView",
+    "spigraph": "SPIGraph",
     "connections": "Connections",
     "hunt": "Hunt",
     "stats": "Stats",
@@ -338,8 +338,12 @@
     "sourceRaw": "Source (raw)",
     "destinationRaw": "Destination (raw)",
     "link": "Link",
+    "copyLink": "Copy link",
+    "openLinkNewTab": "Open link in new tab",
+    "pivotToLink": "Pivot to this link",
     "actions": "Actions",
     "hideColumn": "Hide column",
+    "columnActions": "Column actions",
     "summary": {
       "generateSummary": "Generate Summary",
       "unknownErr": "An unexpected error occurred during summary generation.",
@@ -470,6 +474,8 @@
       "srcVisTip": "Toggle source packet visibility",
       "dstVisTip": "Toggle destination packet visibility",
       "toggleDecodingTip": "Toggle {name} Decoding",
+      "decodings": "Decodings",
+      "decodingsDisabledTip": "Decodings only work when frames are reassembled",
       "noPacketSelector": "Displaying all packets for this session.  You cannot select the number of packets because Show Images & Files OR Enable Uncompressing might need all packets."
     },
     "remove": {
@@ -512,23 +518,28 @@
       "openAll": "Open all visible sessions (up to 50)",
       "closeAll": "Close all open sessions",
       "fitTable": "Fit table to window size",
+      "tableOptions": "Table options",
       "toggleColumns": "Toggle visible columns",
       "searchColumns": "Search for columns...",
       "showMoreFields": "Show {count} more fields...",
-      "customColumnMsg": "Save or load custom column configuration",
+      "saveConfig": "Save \"{name}\"",
+      "saveConfigAs": "Save as...",
+      "loadConfig": "Load",
+      "filterConfigs": "Filter configurations...",
+      "noConfigsMatch": "No configurations match your filter",
       "customColumnName": "Enter new column configuration name",
       "arkimeDefault": "Arkime Default",
       "customColumnReset": "Reset table to defaults",
       "customColumnUpdate": "Update this column configuration with the currently visible columns",
-      "customInfoMsg": "Save or load custom info field configuration",
       "customInfoName": "Enter new info field configuration name",
       "customInfoReset": "Reset info column to default fields",
-      "customInfoUpdate": "Update this info field configuration with the currently visible columns",
+      "customInfoUpdate": "Update this info field configuration with the currently visible fields",
       "toggleInfoFields": "Toggle visible info column fields",
       "noFieldsMatch": "No fields match your search",
       "loadingSessionDetail": "Loading session detail...",
       "canceledSearch": "You canceled the search",
       "nameColumnConfigErr": "You must enter a name for your column configuration",
+      "nameInfoConfigErr": "You must enter a name for your info field configuration",
       "tooManySessionsErr": "You're trying to open too many session details at once! I'll only open the first 50 for you, sorry!",
       "closingCancelsSearchErr": "Closing the Sessions page canceled the search"
     },
@@ -609,6 +620,8 @@
     "nextStartTimeTip": "Beginning of Next Day",
     "prevStopTimeTip": "Ending of Previous Day",
     "nextStopTimeTip": "Ending of Current Day / Next Day",
+    "pickStartDateTip": "Pick a start date",
+    "pickStopDateTip": "Pick a stop date",
     "timeBounding": "Bounding",
     "timeBoundingTip": "Which time field to use for selected time window",
     "timeBounding-first": "First Packet",
@@ -911,10 +924,10 @@
   "history": {
     "searchHistoryPlaceholder": "Search for history in the table below",
     "searchHistoryTipHtml": "<h5>Search History</h5><p>Use the search bar to filter the history table below. You can search by any of the columns in the table.</p><p> <strong>Tip:</strong> Use <code>?</code> to replace a single character and <code>*</code> to replace zero or more characters in your query.  </p>",
-    "toggleColFiltersTip": "Toggle column filter",
-    "seeAllTipHtml": "<strong>See ALL History</strong><br />See the history for all users (you can because you are an arkimeAdmin!)",
-    "filterByPlaceholder": "Filter by {name}",
-    "existsTip": "Only show entries where the {name} field exists",
+    "seeAllHistoryBtn": "See ALL History",
+    "seeMyHistoryBtn": "See MY History",
+    "seeAllHistoryTip": "See the history for all users (you can because you are an arkimeAdmin!)",
+    "seeMyHistoryTip": "Only show the history created from your activity",
     "noHistory": "No history or none that matches your search",
     "openPageTip": "Open this query on the {uiPage} page",
     "timestampName": "Time",
@@ -1126,6 +1139,7 @@
       "helpParliament": "Configure notifiers that can be used to alert on issues within your Parliament",
       "title": "Notifiers",
       "new": "New {name} Notifier",
+      "newGeneric": "New Notifier",
       "namePlaceholder": "Notifier name (be specific)",
       "nameInfo": "Be specific with your notifier name. There can be multiple {type} notifiers.",
       "createHelp": "Create one by clicking one of the buttons above.",
@@ -1317,6 +1331,8 @@
     "toggleDstCountry": "Toggle destination countries",
     "graphLines": "Lines",
     "graphBars": "Bars",
+    "graphLinear": "Linear",
+    "graphLog": "Log",
     "capRestarts": "Cap Restarts",
     "capRestartsTip": "Toggle the capture process start times",
     "capNodeRestarted": "Capture node {node} started at {when}"
@@ -1339,9 +1355,47 @@
     "greeting": "Welcome {userName}!",
     "checkOutOur": "Check out our",
     "pageInfo": "page for more information, or click the owl on the top left.",
-    "dismissTip": "But see this message again next time",
-    "gotIt": "Got it!",
-    "gotItTip": "Don't show me this message again"
+    "v7Title": "Welcome to Arkime 7!",
+    "v7Intro": "Here's what's new:",
+    "v7Item1": "New look and feel with 2 new themes",
+    "v7Item2": "New session view (detail/packets/tshark)",
+    "v7Item3": "More internationalization",
+    "v7Item4": "More visualizations",
+    "v7Item5": "And many more"
+  },
+  "helpNotes": {
+    "learnMore": "Learn more",
+    "dismissTip": "Never show this message again",
+    "dismissAll": "Dismiss all",
+    "dismissAllTip": "Never show any of these messages again",
+    "closeTip": "Put these messages away until next time",
+    "sessions": {
+      "text": "This is the Sessions page — search captured traffic, then click a session to inspect its metadata and packets."
+    },
+    "spiview": {
+      "text": "SPI View shows captured field values grouped by category, so you can scan what's in your data at a glance."
+    },
+    "spigraph": {
+      "text": "SPI Graph charts the top values of any field over time — try different fields and graph types."
+    },
+    "connections": {
+      "text": "The Connections page maps how sources and destinations talk to each other — drag, zoom, and click nodes to dig in."
+    },
+    "hunt": {
+      "text": "Hunts search inside raw packets, not just session metadata. Create a packet search job to find what indexing missed."
+    },
+    "files": {
+      "text": "The Files page lists the PCAP files Arkime has written and whether their sessions are still searchable."
+    },
+    "stats": {
+      "text": "The Stats page tracks capture node and Elasticsearch health — graphs, per-node metrics, and index details."
+    },
+    "history": {
+      "text": "The History page records past queries from you (or everyone, for admins) so you can review and replay them."
+    },
+    "settings": {
+      "text": "Make Arkime yours — themes, time zones, custom column and field layouts, views, shortcuts, and notifiers all live here."
+    }
   },
   "spigraph": {
     "addAnotherField": "Add another field",
@@ -1393,7 +1447,7 @@
     "clusterDescription": "Description",
     "clusterDescriptionPlaceholder": "Cluster description",
     "clusterUrl": "URL",
-    "clusterUrlPlaceholder": "User cluster URL",
+    "clusterUrlPlaceholder": "User cluster URL (e.g. http://arkime.example.com)",
     "clusterLocalUrl": "Local URL",
     "clusterLocalUrlPlaceholder": "Internal cluster URL (optional)",
     "clusterType": "Type",
@@ -1440,6 +1494,8 @@
       "lastHtml": "<strong>Last</strong> noticed at: <br> <strong> {last} </strong>",
       "issueFixed": "Issue fixed! Remove it.",
       "issueAckTip": "Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.",
+      "ignoreTip": "Ignore this issue for a chosen amount of time",
+      "unignoreTip": "Currently ignored — pick a new duration or stop ignoring",
       "removeIgnore": "Remove ignore",
       "ignoreHourCount": "notused | Ignore for 1 hour | Ignore for {count} hours",
       "ignoreDayCount": "notused | Ignore for 1 day | Ignore for {count} days",
@@ -1471,6 +1527,7 @@
       "noIssuesMatch": "No issues match your search and filters"
     },
     "settings": {
+      "title": "Parliament Settings",
       "ifProblem": "If the problem persists, try",
       "restoreDefaults": "restoring them to the defaults",
       "general": "General",
@@ -1519,6 +1576,7 @@
       "helpHtml": "Or, maybe you need some <a href=\"help\" class=\"no-decoration\"> help</a>?"
     },
     "config": {
+      "title": "WISE Configuration",
       "importTip": "Import a new Source Configuration (JSON or INI)",
       "createTip": "Create a new Source through the UI",
       "resetFile": "Reset File",
@@ -1696,6 +1754,11 @@
       "userNotFound": "User not found",
       "welcomeMsgNumNotInteger": "welcomeMsgNum is not integer",
       "dismissedMessage": "User, {userId}, dismissed message {msgNum}",
+      "dismissedNote": "User, {userId}, dismissed help note {noteId}",
+      "invalidNoteId": "Invalid note id",
+      "tooManyDismissedNotes": "Too many dismissed notes",
+      "dismissNoteFailed": "Note dismissal failed",
+      "dbNeedsUpgrade": "Users database needs an upgrade, run db.pl upgrade",
       "unknownUser": "Unknown user",
       "invalidStateName": "Invalid state name",
       "stateUpdateFailed": "state update failed",
