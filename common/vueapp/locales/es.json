@@ -1351,9 +1351,47 @@
     "greeting": "¡Bienvenido {userName}!",
     "checkOutOur": "Consulta nuestra página de",
     "pageInfo": "para más información, o haz clic en el búho en la esquina superior izquierda.",
-    "dismissTip": "Ver este mensaje de nuevo la próxima vez",
-    "gotIt": "¡Entendido!",
-    "gotItTip": "No mostrar este mensaje de nuevo"
+    "v7Title": "¡Bienvenido a Arkime 7!",
+    "v7Intro": "Esto es lo nuevo:",
+    "v7Item1": "Nueva apariencia con 2 temas nuevos",
+    "v7Item2": "Nueva vista de sesión (detalle/paquetes/tshark)",
+    "v7Item3": "Más internacionalización",
+    "v7Item4": "Más visualizaciones",
+    "v7Item5": "Y mucho más"
+  },
+  "helpNotes": {
+    "learnMore": "Más información",
+    "dismissTip": "No volver a mostrar este mensaje",
+    "dismissAll": "Descartar todo",
+    "dismissAllTip": "No volver a mostrar ninguno de estos mensajes",
+    "closeTip": "Ocultar estos mensajes hasta la próxima vez",
+    "sessions": {
+      "text": "Esta es la página de Sesiones — busca en el tráfico capturado y luego haz clic en una sesión para inspeccionar sus metadatos y paquetes."
+    },
+    "spiview": {
+      "text": "La Vista SPI muestra los valores de campo capturados agrupados por categoría, para que veas de un vistazo qué hay en tus datos."
+    },
+    "spigraph": {
+      "text": "El Gráfico SPI muestra los valores principales de cualquier campo a lo largo del tiempo — prueba distintos campos y tipos de gráfico."
+    },
+    "connections": {
+      "text": "La página de Conexiones muestra cómo se comunican los orígenes y los destinos — arrastra, haz zoom y haz clic en los nodos para profundizar."
+    },
+    "hunt": {
+      "text": "Las búsquedas (Hunt) examinan el interior de los paquetes sin procesar, no solo los metadatos de sesión. Crea un trabajo de búsqueda de paquetes para encontrar lo que la indexación pasó por alto."
+    },
+    "files": {
+      "text": "La página de Archivos muestra los archivos PCAP que Arkime ha escrito y si sus sesiones todavía se pueden buscar."
+    },
+    "stats": {
+      "text": "La página de Estadísticas supervisa la salud de los nodos de captura y de Elasticsearch — gráficos, métricas por nodo y detalles de los índices."
+    },
+    "history": {
+      "text": "La página de Historial registra tus consultas anteriores (o las de todos, para los administradores) para que puedas revisarlas y repetirlas."
+    },
+    "settings": {
+      "text": "Haz que Arkime sea tuyo — temas, zonas horarias, diseños personalizados de columnas y campos, vistas, atajos y notificadores, todo está aquí."
+    }
   },
   "spigraph": {
     "addAnotherField": "Agregar otro campo",
@@ -1712,6 +1750,11 @@
       "userNotFound": "Usuario no encontrado",
       "welcomeMsgNumNotInteger": "welcomeMsgNum no es un entero",
       "dismissedMessage": "El usuario {userId} descartó el mensaje {msgNum}",
+      "dismissedNote": "El usuario {userId} descartó la nota de ayuda {noteId}",
+      "invalidNoteId": "ID de nota inválido",
+      "tooManyDismissedNotes": "Demasiadas notas descartadas",
+      "dismissNoteFailed": "Error al descartar el mensaje",
+      "dbNeedsUpgrade": "La base de datos de usuarios necesita una actualización, ejecuta db.pl upgrade",
       "unknownUser": "Usuario desconocido",
       "invalidStateName": "Nombre de estado inválido",
       "stateUpdateFailed": "Error al actualizar el estado",

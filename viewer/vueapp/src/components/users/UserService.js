@@ -183,16 +183,14 @@ export default {
   },
 
   /**
-  * Acknowledge the welcome message for a user
-  * @param {number} msgNum     The message number
-  *                            { userId, currentPassword, newPassword }
+  * Permanently dismiss a help message for a user
+  * @param {string} noteId     The help message id ('all' silences every message)
   * @param {string} userId     The unique identifier for a user
-  *                            (only required if not the current user)
   * @returns {Promise} Promise A promise object that signals the completion
   *                            or rejection of the request.
    */
-  async acknowledgeMsg (msgNum, userId) {
-    return await fetchWrapper({ url: `api/user/${userId}/acknowledge`, method: 'PUT', data: { msgNum } });
+  async dismissNote (noteId, userId) {
+    return await fetchWrapper({ url: `api/user/${userId}/acknowledge`, method: 'PUT', data: { noteId } });
   },
 
   /**

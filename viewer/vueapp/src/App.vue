@@ -44,8 +44,7 @@ SPDX-License-Identifier: Apache-2.0
       </template>
     </keyboard-shortcuts>
     <arkime-footer :store="$store" />
-    <arkime-welcome-message
-      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)" />
+    <arkime-help-notes v-if="user" />
   </div>
   <div v-else>
     <arkime-upgrade-browser />
@@ -57,7 +56,7 @@ import ConfigService from './components/utils/ConfigService.js';
 import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
 import ArkimeFooter from '@common/Footer.vue';
-import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
+import ArkimeHelpNotes from './components/utils/HelpNotes.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
 import UserService from './components/users/UserService.js';
@@ -75,7 +74,7 @@ export default {
     ArkimeNavbar,
     ArkimeFooter,
     KeyboardShortcuts,
-    ArkimeWelcomeMessage,
+    ArkimeHelpNotes,
     ArkimeUpgradeBrowser
   },
   data: function () {

@@ -1351,9 +1351,47 @@
     "greeting": "환영합니다 {userName}님!",
     "checkOutOur": "자세한 내용은",
     "pageInfo": "페이지를 확인하거나 왼쪽 상단의 올빼미를 클릭하세요.",
-    "dismissTip": "다음에 이 메시지 다시 표시",
-    "gotIt": "알겠습니다!",
-    "gotItTip": "이 메시지를 다시 표시하지 않음"
+    "v7Title": "Arkime 7에 오신 것을 환영합니다!",
+    "v7Intro": "새로운 기능을 소개합니다:",
+    "v7Item1": "2가지 새 테마와 함께 새로워진 디자인",
+    "v7Item2": "새로운 세션 보기 (상세/패킷/tshark)",
+    "v7Item3": "국제화 지원 강화",
+    "v7Item4": "더 많은 시각화",
+    "v7Item5": "그 외 다양한 개선"
+  },
+  "helpNotes": {
+    "learnMore": "더 알아보기",
+    "dismissTip": "이 메시지를 다시 표시하지 않음",
+    "dismissAll": "모두 숨기기",
+    "dismissAllTip": "이 메시지들을 모두 다시 표시하지 않음",
+    "closeTip": "다음번까지 이 메시지들을 숨겨 둠",
+    "sessions": {
+      "text": "여기는 세션 페이지입니다. 캡처된 트래픽을 검색한 후 세션을 클릭하여 메타데이터와 패킷을 살펴보세요."
+    },
+    "spiview": {
+      "text": "SPI 뷰는 캡처된 필드 값을 카테고리별로 묶어 보여주므로 데이터에 무엇이 있는지 한눈에 파악할 수 있습니다."
+    },
+    "spigraph": {
+      "text": "SPI 그래프는 어떤 필드든 상위 값을 시간에 따라 차트로 보여줍니다. 다양한 필드와 그래프 유형을 시도해 보세요."
+    },
+    "connections": {
+      "text": "연결 페이지는 소스와 대상이 어떻게 통신하는지 보여줍니다. 드래그, 확대/축소, 노드 클릭으로 자세히 살펴보세요."
+    },
+    "hunt": {
+      "text": "사냥(Hunt)은 세션 메타데이터뿐 아니라 원시 패킷 내부를 검색합니다. 패킷 검색 작업을 만들어 인덱싱에서 놓친 것을 찾아보세요."
+    },
+    "files": {
+      "text": "파일 페이지는 Arkime이 기록한 PCAP 파일과 해당 세션이 아직 검색 가능한지 보여줍니다."
+    },
+    "stats": {
+      "text": "통계 페이지는 캡처 노드와 Elasticsearch 상태를 추적합니다. 그래프, 노드별 지표, 인덱스 세부 정보를 확인하세요."
+    },
+    "history": {
+      "text": "기록 페이지는 과거 쿼리(관리자는 전체 사용자)를 기록하여 검토하고 다시 실행할 수 있습니다."
+    },
+    "settings": {
+      "text": "Arkime을 나만의 것으로 만드세요. 테마, 시간대, 사용자 지정 열 및 필드 레이아웃, 보기, 단축키, 알림이 모두 여기에 있습니다."
+    }
   },
   "spigraph": {
     "addAnotherField": "다른 필드 추가",
@@ -1712,6 +1750,11 @@
       "userNotFound": "사용자를 찾을 수 없습니다",
       "welcomeMsgNumNotInteger": "welcomeMsgNum이 정수가 아닙니다",
       "dismissedMessage": "사용자 {userId}이(가) 메시지 {msgNum}을(를) 닫았습니다",
+      "dismissedNote": "사용자 {userId}이(가) 도움말 노트 {noteId}을(를) 닫았습니다",
+      "invalidNoteId": "잘못된 노트 ID",
+      "tooManyDismissedNotes": "닫은 노트가 너무 많습니다",
+      "dismissNoteFailed": "메시지 닫기에 실패했습니다",
+      "dbNeedsUpgrade": "사용자 데이터베이스 업그레이드가 필요합니다. db.pl upgrade를 실행하세요",
       "unknownUser": "알 수 없는 사용자",
       "invalidStateName": "잘못된 상태 이름",
       "stateUpdateFailed": "상태 업데이트 실패",

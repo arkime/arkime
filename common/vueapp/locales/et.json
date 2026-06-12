@@ -1351,9 +1351,47 @@
     "greeting": "Tere tulemast {userName}!",
     "checkOutOur": "Tutvu meie",
     "pageInfo": "lehega lisateabe saamiseks või klõpsa öökullil vasakul üleval.",
-    "dismissTip": "Näita seda teadet järgmine kord uuesti",
-    "gotIt": "Sain aru!",
-    "gotItTip": "Ära näita seda teadet enam"
+    "v7Title": "Tere tulemast Arkime 7-sse!",
+    "v7Intro": "Siin on uut:",
+    "v7Item1": "Uus välimus koos 2 uue teemaga",
+    "v7Item2": "Uus seansivaade (üksikasjad/paketid/tshark)",
+    "v7Item3": "Rohkem rahvusvahelistamist",
+    "v7Item4": "Rohkem visualiseeringuid",
+    "v7Item5": "Ja palju muud"
+  },
+  "helpNotes": {
+    "learnMore": "Loe lähemalt",
+    "dismissTip": "Ära näita seda teadet enam kunagi",
+    "dismissAll": "Loobu kõigist",
+    "dismissAllTip": "Ära näita ühtegi neist teadetest enam kunagi",
+    "closeTip": "Peida need teated järgmise korrani",
+    "sessions": {
+      "text": "See on seansside leht — otsi püütud liiklusest ja klõpsa seansil, et uurida selle metaandmeid ja pakette."
+    },
+    "spiview": {
+      "text": "SPI Vaade näitab püütud väljade väärtusi kategooriate kaupa, et näeksid ühe pilguga, mis sinu andmetes leidub."
+    },
+    "spigraph": {
+      "text": "SPI Graafik kuvab mis tahes välja populaarseimad väärtused ajas — proovi erinevaid välju ja graafikutüüpe."
+    },
+    "connections": {
+      "text": "Ühenduste leht näitab, kuidas allikad ja sihtkohad omavahel suhtlevad — lohista, suumi ja klõpsa sõlmedel, et lähemalt uurida."
+    },
+    "hunt": {
+      "text": "Jahid otsivad toorpakettide seest, mitte ainult seansi metaandmetest. Loo paketiotsingu töö, et leida see, mis indekseerimisel märkamata jäi."
+    },
+    "files": {
+      "text": "Failide leht loetleb Arkime'i kirjutatud PCAP-failid ja näitab, kas nende seansid on veel otsitavad."
+    },
+    "stats": {
+      "text": "Statistika leht jälgib püügisõlmede ja Elasticsearchi seisundit — graafikud, sõlmede mõõdikud ja indeksite üksikasjad."
+    },
+    "history": {
+      "text": "Ajaloo leht salvestab sinu varasemad päringud (adminite puhul kõigi omad), et saaksid neid üle vaadata ja uuesti käivitada."
+    },
+    "settings": {
+      "text": "Tee Arkime enda omaks — teemad, ajavööndid, kohandatud veergude ja väljade paigutused, vaated, otseteed ja teavitajad on kõik siin."
+    }
   },
   "spigraph": {
     "addAnotherField": "Lisa veel üks väli",
@@ -1712,6 +1750,11 @@
       "userNotFound": "Kasutajat ei leitud",
       "welcomeMsgNumNotInteger": "welcomeMsgNum ei ole täisarv",
       "dismissedMessage": "Kasutaja {userId} keeldus sõnumist {msgNum}",
+      "dismissedNote": "Kasutaja {userId} keeldus abimärkusest {noteId}",
+      "invalidNoteId": "Vigane märkuse ID",
+      "tooManyDismissedNotes": "Liiga palju tagasilükatud märkusi",
+      "dismissNoteFailed": "Teate peitmine ebaõnnestus",
+      "dbNeedsUpgrade": "Kasutajate andmebaas vajab uuendamist, käivita db.pl upgrade",
       "unknownUser": "Tundmatu kasutaja",
       "invalidStateName": "Vigane oleku nimi",
       "stateUpdateFailed": "Oleku uuendamine ebaõnnestus",

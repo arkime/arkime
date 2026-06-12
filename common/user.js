@@ -166,6 +166,14 @@ class User {
     return null;
   }
 
+  // Users db schema version, undefined when unknown (non-ES implementations)
+  static getSchemaVersion () {
+    if (User.#implementation.getSchemaVersion) {
+      return User.#implementation.getSchemaVersion();
+    }
+    return undefined;
+  }
+
   static getDbUrl () {
     return User.#dbUrl;
   }
@@ -484,7 +492,7 @@ class User {
   static async getCurrentUser (req) {
     const userProps = [
       'enabled', 'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
-      'welcomeMsgNum', 'lastUsed'
+      'welcomeMsgNum', 'dismissedHelpNotes', 'lastUsed'
     ];
 
     const clone = {};
@@ -536,6 +544,7 @@ class User {
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
    * @param {number} welcomeMsgNum=0 - The message number that a user is on. Gets incremented when a user dismisses a message.
+   * @param {array} dismissedHelpNotes - The ids of per-page help notes the user has dismissed ('all' silences every note).
    * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOCH.
    * @param {number} timeLimit - Limits the time range a user can query for.
    * @param {array} roles - The list of Arkime roles assigned to this user.
@@ -1986,6 +1995,7 @@ function filterUsers (users, filter, searchFields, noRoles) {
 class UserESImplementation {
   prefix;
   client;
+  schemaVersion;
 
   constructor (options) {
     this.prefix = ArkimeUtil.formatPrefix(options.prefix);
@@ -2024,6 +2034,11 @@ class UserESImplementation {
     }
 
     this.client = new Client(esOptions);
+
+    // soft fetch (no minVersion): the users es may not have the sessions3 template
+    ArkimeUtil.checkArkimeSchemaVersion(this.client, options.prefix)
+      .then((version) => { this.schemaVersion = version; });
+
     if (!Auth.isAnonymousMode()) {
       process.nextTick(async () => {
         try {
@@ -2038,6 +2053,10 @@ class UserESImplementation {
 
   getClient () {
     return this.client;
+  }
+
+  getSchemaVersion () {
+    return this.schemaVersion;
   }
 
   async flush (cluster) {
