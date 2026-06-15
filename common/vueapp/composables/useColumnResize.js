@@ -64,6 +64,7 @@ export function useColumnResize ({
     const cb = commit;
     const delta = w - startW;
     clearGuide();
+    col.classList.remove('col-resizing');
     col = null;
     grip = null;
     commit = null;
@@ -81,6 +82,7 @@ export function useColumnResize ({
     e.preventDefault();
     e.stopPropagation();
     col = columnEl;
+    col.classList.add('col-resizing'); // style hook for the active column
     grip = gripEl;
     startW = parseInt(columnEl.style.width, 10) ||
              columnEl.offsetWidth ||

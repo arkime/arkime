@@ -25,19 +25,23 @@ SPDX-License-Identifier: Apache-2.0
  *   <div class="navbarOffset" />   <!-- pushes content below the fixed bar -->
  */
 
+:root {
+  --arkime-navbar-height: 36px;
+}
+
 .arkime-navbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 36px;
+  height: var(--arkime-navbar-height);
   z-index: 7;
   background-color: rgb(var(--v-theme-primary-dark));
   color: rgb(var(--v-theme-button-fg));
   padding-left: 0.5rem;
 }
 .navbarOffset {
-  padding-top: 36px;
+  padding-top: var(--arkime-navbar-height);
 }
 
 /* brand (logo) -- router-link, intentionally narrow; the 40px-tall

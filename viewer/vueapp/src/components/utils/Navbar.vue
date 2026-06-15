@@ -3,11 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span
-    :class="{
-      'hide-tool-bars': !showToolBars,
-      'show-sticky-sessions-btn': stickySessionsBtn
-    }">
+  <span>
     <nav class="arkime-navbar d-flex align-center pe-2">
 
       <router-link
@@ -221,9 +217,6 @@ export default {
     },
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
-    },
-    stickySessionsBtn: function () {
-      return this.$store.state.stickySessionsBtn;
     },
     timezone: function () {
       return this.$store.state?.user?.settings?.timezone || 'gmt';

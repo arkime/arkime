@@ -3,73 +3,63 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    class="sessions-page"
-    :class="{'hide-tool-bars': !showToolBars}">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <arkime-search
-          :fields="headers"
-          :open-sessions="stickySessions"
-          :num-visible-sessions="query.length"
-          :num-matching-sessions="sessions.recordsFiltered"
-          :start="query.start"
-          @change-search="cancelAndLoad(true)"
-          @set-view="loadNewView"
-          @set-columns="loadColumns"
-          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
+  <page-layout
+    ref="pageLayout"
+    class="sessions-page">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- search navbar -->
+          <arkime-search
+            :fields="headers"
+            :open-sessions="stickySessions"
+            :num-visible-sessions="query.length"
+            :num-matching-sessions="sessions.recordsFiltered"
+            :start="query.start"
+            @change-search="cancelAndLoad(true)"
+            @set-view="loadNewView"
+            @set-columns="loadColumns" /> <!-- /search navbar -->
 
-        <!-- paging navbar -->
-        <div class="d-flex justify-start align-baseline m-1">
-          <arkime-paging
-            style="height: 32px;"
-            :records-total="sessions.recordsTotal"
-            :records-filtered="sessions.recordsFiltered"
-            @change-paging="changePaging" />
-        </div> <!-- /paging navbar -->
-      </span>
-    </ArkimeCollapsible>
+          <!-- paging navbar -->
+          <div class="d-flex justify-start align-center paging-navbar">
+            <arkime-paging
+              :records-total="sessions.recordsTotal"
+              :records-filtered="sessions.recordsFiltered"
+              @change-paging="changePaging" />
+          </div> <!-- /paging navbar -->
+        </div>
+      </ArkimeCollapsible>
+      <!-- pinned visualizations land here (teleported from below) -->
+      <div id="viz-pin-anchor" />
+    </template>
 
-    <!-- visualizations -->
-    <arkime-visualizations
-      v-if="graphData && showToolBars"
-      :primary="true"
-      :map-data="mapData"
-      :graph-data="graphData"
-      @fetch-map-data="fetchMapData"
-      @spanning-change="loadData"
-      :timeline-data-filters="timelineDataFilters" />
-    <!-- /visualizations -->
+    <!-- visualizations: pinned = chrome row above the scroll container,
+         unpinned = scrolls away with the content -->
+    <teleport
+      defer
+      to="#viz-pin-anchor"
+      :disabled="!stickyViz">
+      <arkime-visualizations
+        v-if="graphData && showToolBars"
+        :primary="true"
+        :map-data="mapData"
+        :graph-data="graphData"
+        @fetch-map-data="fetchMapData"
+        @spanning-change="loadData"
+        :timeline-data-filters="timelineDataFilters" />
+    </teleport> <!-- /visualizations -->
 
-    <div
-      class="sessions-content ms-2"
-      id="sessions-content"
-      ref="sessionsContent">
+    <div class="sessions-content ms-2">
       <!-- table view -->
       <div>
-        <!-- sticky (opened) sessions -->
-        <transition name="leave">
-          <arkime-sticky-sessions
-            class="sticky-sessions"
-            v-if="stickySessions.length"
-            :ms="user.settings.ms"
-            :sessions="stickySessions"
-            @close-session="closeSession"
-            @close-all-sessions="closeAllSessions" />
-        </transition> <!-- /sticky (opened) sessions -->
-
         <!-- sessions results -->
         <table
           class="sessions-table"
           :style="`width:${tableWidth}px`"
-          :class="{'sticky-header':stickyHeader}"
+          :class="{'sticky-header':stickyViz}"
           ref="sessionsTable"
           id="sessionsTable">
-          <thead
-            ref="tableHeader"
-            id="sessions-table-header"
-            style="overflow:scroll">
+          <thead>
             <tr ref="draggableColumns">
               <!-- table options: single dropdown collapsing five separate
                    controls (open/close all, fit, toggle columns, save
@@ -636,6 +626,12 @@ SPDX-License-Identifier: Apache-2.0
                     </div>
                     <div class="header-text">
                       {{ header.friendlyName }}
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="500">
+                        {{ header.friendlyName }}
+                      </v-tooltip>
                     </div>
                   </span> <!-- /sortable column -->
                 </th> <!-- /table headers -->
@@ -643,16 +639,13 @@ SPDX-License-Identifier: Apache-2.0
             </tr>
           </thead>
 
-          <tbody
-            class="small"
-            id="sessions-table-body">
+          <tbody class="small">
             <!-- session + detail -->
             <template
-              v-for="(session, index) of sessions.data"
+              v-for="session of sessions.data"
               :key="session.id">
               <tr
                 class="sessions-scroll-margin"
-                :ref="`tableRow${index}`"
                 :id="`session${session.id}`">
                 <!-- toggle button and ip protocol -->
                 <td class="ignore-element">
@@ -761,7 +754,20 @@ SPDX-License-Identifier: Apache-2.0
       :timeout="5000">
       {{ configSnackbar.text }}
     </v-snackbar>
-  </div>
+
+    <template #overlay>
+      <!-- sticky (opened) sessions -->
+      <transition name="leave">
+        <arkime-sticky-sessions
+          class="sticky-sessions"
+          v-if="stickySessions.length"
+          :ms="user.settings.ms"
+          :sessions="stickySessions"
+          @close-session="closeSession"
+          @close-all-sessions="closeAllSessions" />
+      </transition> <!-- /sticky (opened) sessions -->
+    </template>
+  </page-layout>
 </template>
 
 <script>
@@ -781,6 +787,7 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeSessionDetail from './SessionDetail.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
@@ -819,22 +826,6 @@ const defaultColWidths = {
 
 const MIN_COL_WIDTH = 70;
 
-// fired when a scroll event is captured on this page
-// scrolls the table header and body together if the header is sticky
-function docScroll (e, vueThis) {
-  if (!vueThis.stickyHeader) { return; }
-
-  let sibling;
-  if (e.target.id === 'sessions-content') {
-    sibling = vueThis.$refs.tableHeader;
-  } else if (e.target.id === 'sessions-table-header') {
-    sibling = vueThis.$refs.sessionsContent;
-  } else {
-    return;
-  }
-  sibling.scrollLeft = e.target.scrollLeft;
-}
-
 // save a pending promise to be able to cancel it
 let pendingPromise;
 
@@ -851,10 +842,10 @@ export default {
     ArkimeVisualizations,
     ArkimeStickySessions,
     ArkimeCollapsible,
+    PageLayout,
     FieldActions,
     FieldSelectDropdown
   },
-  emits: ['recalc-collapse'],
   data: function () {
     return {
       loading: true,
@@ -874,8 +865,6 @@ export default {
       infoFields: customCols.info.children,
       colVisMenuOpen: false,
       infoFieldVisMenuOpen: false,
-      stickyHeader: false,
-      tableHeaderOverflow: undefined,
       showFitButton: false,
       tableWidth: window.innerWidth - 20, // account for margins
       filteredFields: [],
@@ -920,7 +909,7 @@ export default {
     windowResizeEvent = () => {
       // Surface the Fit Table button when the viewport shrinks past the content.
       // Cheap; runs every resize event so the affordance appears immediately.
-      if (Math.abs((this.tableWidth || 0) - window.innerWidth) > 15) {
+      if (Math.abs((this.tableWidth || 0) - this.availableTableWidth()) > 15) {
         this.showFitButton = true;
       }
       if (resizeTimeout) { clearTimeout(resizeTimeout); }
@@ -1000,6 +989,9 @@ export default {
     showToolBars: function () {
       return this.$store.state.showToolBars;
     },
+    stickyViz: function () {
+      return this.$store.state.stickyViz;
+    },
     fields: function () {
       return this.$store.state.fieldsMap;
     },
@@ -1069,8 +1061,9 @@ export default {
   },
   watch: {
     '$store.state.stickyViz': function () {
-      this.stickyHeader = this.$store.state.stickyViz;
-      this.toggleStickyHeader();
+      // pin toggle teleports the viz between chrome and scroll content;
+      // charts/map cache geometry, so nudge their resize handling
+      this.$nextTick(() => window.dispatchEvent(new Event('resize')));
     },
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.fetchGraphData(); }
@@ -1084,23 +1077,13 @@ export default {
       this.tableState = JSON.parse(JSON.stringify(colConfig));
       this.loadData(true);
     },
-    /* show the overflow when a dropdown in a column header is shown. otherwise,
-     * the dropdown is cut off and scrolls vertically in the column header */
-    dropdownShowListener: function (bvEvent) {
-      if (!this.stickyHeader) { return; }
-      const target = $(bvEvent.target);
-      if (!target) { return; }
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow', 'visible');
-    },
-    /* when the column header dropdown is hidden, go back to the default scroll
-     * behavior so that the table can overflow the window width */
-    dropdownHideListener: function (bvEvent) {
-      if (!this.stickyHeader) { return; }
-      const target = $(bvEvent.target);
-      if (!target) { return; }
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow', 'scroll');
+    /* Width available to the table inside the page scroll container */
+    availableTableWidth: function () {
+      const scrollEl = this.$refs.pageLayout?.scrollEl;
+      if (scrollEl && scrollEl.clientWidth) {
+        return scrollEl.clientWidth - 20; // account for margins
+      }
+      return window.innerWidth - 20; // pre-mount fallback
     },
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
@@ -1173,8 +1156,6 @@ export default {
         const index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
-
-      this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
     },
     expandSessionDetail: function (session) {
       if (session.expanded) { return; }
@@ -1195,7 +1176,6 @@ export default {
         if (session.id === sessionId) {
           session.expanded = false;
           this.stickySessions.splice(i, 1);
-          this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
           return;
         }
       }
@@ -1692,10 +1672,10 @@ export default {
       customCols.info.children = this.infoFields;
       UserService.saveSettings(this.user.settings);
     },
-    /* Fits the table to the width of the current window size */
+    /* Fits the table to the width of the page scroll container */
     fitTable: function () {
-      const windowWidth = window.innerWidth - 20; // account for margins
-      const leftoverWidth = windowWidth - this.sumOfColWidths;
+      const targetWidth = this.availableTableWidth();
+      const leftoverWidth = targetWidth - this.sumOfColWidths;
       const percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
 
       for (let i = 0, len = this.headers.length; i < len; ++i) {
@@ -1706,13 +1686,12 @@ export default {
         this.colWidths[header.dbField] = newWidth;
       }
 
-      this.tableWidth = windowWidth;
+      this.tableWidth = targetWidth;
       this.showFitButton = false;
 
-      this.$refs.sessionsTable.style.width = `${windowWidth}px`;
+      this.$refs.sessionsTable.style.width = `${targetWidth}px`;
 
       this.saveColumnWidths();
-      this.toggleStickyHeader();
     },
     /**
      * Returns the list of field targets a column-context menu should render
@@ -2062,7 +2041,6 @@ export default {
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
       this.calculateInfoColumnWidth(defaultColWidths.info);
-      this.toggleStickyHeader();
     },
     /* Opens up to 50 session details in the table */
     openAll: function () {
@@ -2163,17 +2141,11 @@ export default {
           this.loading = false;
         }
       });
-      this._docScrollHandler = (e) => docScroll(e, this);
-      document.addEventListener('scroll', this._docScrollHandler, true);
     },
     destroyColResizable () {
       if (this._gripAttachment) {
         this._gripAttachment.detach();
         this._gripAttachment = null;
-      }
-      if (this._docScrollHandler) {
-        document.removeEventListener('scroll', this._docScrollHandler, true);
-        this._docScrollHandler = null;
       }
       this._colResizeInitialized = false;
     },
@@ -2204,10 +2176,10 @@ export default {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
 
-      const windowWidth = window.innerWidth - 20; // account for margins
+      const availableWidth = this.availableTableWidth();
 
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
-        const fillWithInfoCol = windowWidth - this.sumOfColWidths;
+        const fillWithInfoCol = availableWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
         for (let i = 0, len = this.headers.length; i < len; ++i) {
           if (this.headers[i].dbField === 'info') {
@@ -2219,52 +2191,11 @@ export default {
         this.tableWidth = newTableWidth;
       } else {
         this.tableWidth = this.sumOfColWidths;
-        // display a button to fit the table to the width of the window
-        // if the table is more than 10 pixels larger or smaller than the window
-        if (Math.abs(this.tableWidth - windowWidth) > 10) {
+        // display a button to fit the table to the width of the container
+        // if the table is more than 10 pixels larger or smaller than it
+        if (Math.abs(this.tableWidth - availableWidth) > 10) {
           this.showFitButton = true;
         }
-      }
-    },
-    /* Toggles the sticky table header */
-    toggleStickyHeader: function () {
-      // Guard check: ensure refs are available before proceeding
-      if (!this.$refs.draggableColumns || !this.$refs.tableHeader || !this.$refs.tableRow0) {
-        return;
-      }
-
-      const firstTableRow = this.$refs.tableRow0;
-      if (this.stickyHeader) {
-        // calculate the height of the header row
-        const height = this.$refs.draggableColumns.clientHeight + 6;
-        const windowWidth = window.innerWidth - 20; // account for margins
-        // calculate how much the header row is under or overflowing the window
-        const tableHeaderOverflow = windowWidth - this.tableWidth;
-        if (tableHeaderOverflow !== 0) { // if it's overflowing the window
-          this.tableHeaderOverflow = tableHeaderOverflow;
-          // set the right style to the amount of the overflow
-          if (tableHeaderOverflow < 0) {
-            this.$refs.tableHeader.style.width = `${window.innerWidth}px`;
-            this.$refs.draggableColumns.style.width = `${table.clientWidth}px`;
-          }
-        } else { // otherwise unset it (default = auto, see css)
-          this.tableHeaderOverflow = undefined;
-          this.$refs.tableHeader.style = undefined;
-          this.$refs.draggableColumns.style = undefined;
-        }
-        if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
-          // set the margin top to the height of the header so it renders below it
-          firstTableRow[0].style.marginTop = `${height}px`;
-        }
-        // set the overflow to scroll so that the header can scroll horizontally
-        $('thead').css('overflow', 'scroll');
-      } else { // if the header is not sticky
-        if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
-          // unset the top margin because the table header won't overlay it
-          firstTableRow[0].style = undefined;
-        }
-        // set the overflow to visible so that the dropdowns overflow the header
-        $('thead').css('overflow', 'visible');
       }
     },
     /* event handlers ------------------------------------------------------ */
@@ -2289,6 +2220,8 @@ export default {
     }
 
     if (timeout) { clearTimeout(timeout); }
+    if (resizeTimeout) { clearTimeout(resizeTimeout); }
+    if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
 
     this.destroyColResizable();
 
@@ -2387,33 +2320,26 @@ table.sessions-table thead tr th.sessions-options-cell {
   margin-left: 0;
 }
 
-/* clear the box shadow above the sticky column headers */
-.sessions-page .sticky-viz .viz-container {
-  box-shadow: none !important;
-}
 </style>
 
 <style scoped>
-.sessions-page {
-  overflow: hidden;
+/* paging sub-navbar: fixed band height, controls centered within it */
+.paging-navbar {
+  height: 44px;
+  padding: 0 4px;
 }
 
 .sessions-content {
-  margin-top: -12px;
   min-height: 500px;
-}
-
-/* only pad above the table when the sticky-viz sibling is present;
-   otherwise the gap looks like dead space at the top of the page */
-.sticky-viz ~ .sessions-content {
-  padding-top: 30px;
-  margin-top: 10px;
 }
 
 /* sessions table styles --------------------- */
 table.sessions-table {
   margin-bottom: 20px;
   table-layout: fixed;
+  /* separate borders so they travel with the sticky header cells */
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 /* borders for header */
@@ -2428,10 +2354,6 @@ table.sessions-table thead tr th:first-child {
   border-right: none;
   padding: 0;
   vertical-align: middle;
-}
-/* remove scrollbar from table header */
-table.sessions-table thead::-webkit-scrollbar {
-  display: none;
 }
 
 /* alternate-row striping */
@@ -2467,40 +2389,25 @@ table.sessions-table tbody tr td.ignore-element {
 }
 
 /* sticky table header ----------------------- */
-table.sessions-table.sticky-header > thead {
-  left: 0;
+/* native sticky: the page-scroll container is the one scroller for both
+   axes, so the header pins vertically and stays aligned horizontally with
+   the body for free */
+table.sessions-table.sticky-header > thead th {
+  position: sticky;
+  top: 0;
   z-index: 2;
-  /* need to unset right because sometimes the header overflows the window */
-  right: auto;
-  position: fixed;
-  margin-top: -50px;
-  padding-top: 5px;
-  /* need x overflow for the table to be able to overflow the window width */
-  overflow-x: scroll;
-  padding-left: 8px;
   box-shadow: 0 6px 9px -6px black;
   background-color: rgb(var(--v-theme-background));
 }
-table.sessions-table.sticky-header > thead > tr {
-  display: table;
-  /* need x overflow for the table to be able to overflow the window width */
-  overflow-x: scroll;
-  table-layout: fixed;
+/* each sticky th is its own stacking context; lift the dragged cell so
+   the grip's guide line isn't painted under the following cells */
+table.sessions-table.sticky-header > thead th.col-resizing {
+  z-index: 3;
 }
-/* need this to make sure that the body cells are the correct width */
-table.sessions-table.sticky-header > tbody > tr {
-  display: table;
-  table-layout: fixed;
-}
-/* need this when reloading the page with sticky headers */
-table.sessions-table.sticky-header > tbody {
-  display: block;
-  margin-top: -50px;
-}
-/* Disabled-aggregations variant: pull tbody up under the sticky thead so it
-   lands flush when the info column is showing and rows are pinned. */
-.sticky-viz.disabled-msg ~ .sessions-content table.sessions-table.sticky-header > tbody {
-  margin-top: -50px;
+/* keep the grip fully inside its cell — the overhanging half would
+   hit-test under the next (opaque) sticky th */
+table.sessions-table thead .grip {
+  right: 0;
 }
 
 /* table column headers -------------------- */
@@ -2528,6 +2435,10 @@ table.sessions-table.sticky-header > tbody {
 .arkime-col-header .header-text {
   display: inline-block;
   width: calc(100% - 24px);
+  /* one line max so the header height stays within scroll-margin-top */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .arkime-col-header .header-sort {
@@ -2569,12 +2480,8 @@ table.sessions-table.sticky-header > tbody {
   opacity: 0;
 }
 
-/* set scroll margin offset for scrolling to sessions */
+/* keep scrolled-to sessions clear of the sticky column headers */
 .sessions-scroll-margin {
-  scroll-margin: 115px;
-}
-/* if there are no toolbars, there is no offset */
-.hide-tool-bars .sessions-scroll-margin {
-  scroll-margin: 0px;
+  scroll-margin-top: 40px;
 }
 </style>

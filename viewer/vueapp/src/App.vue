@@ -282,8 +282,11 @@ html {
   position: relative;
   min-height: 100%;
 }
+:root {
+  --arkime-footer-height: 25px;
+}
 #app {
-  padding-bottom: 25px;
+  padding-bottom: var(--arkime-footer-height);
 }
 
 /* global font, colors, and vars */
@@ -306,17 +309,19 @@ body {
   color: rgb(var(--v-theme-neutral));
 }
 
-/* displaying */
-.fixed-header {
-  z-index: 5;
-  position: fixed;
-  left: 0;
-  right: 0;
+/* toolbar chrome row on PageLayout pages: a normal flow row inside the
+   page shell */
+.page-toolbar {
   background-color: rgb(var(--v-theme-quaternary-lightest));
+  box-shadow: 0 0 16px -2px black;
+}
 
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
+/* page sub-navbar band: the page-specific control row below the search
+   toolbar — a comfortable fixed-height band with vertically-centered
+   content, matching the Sessions paging bar. */
+.page-shell .page-subnav {
+  align-items: center;
+  min-height: 44px;
 }
 
 /* themed buttons */

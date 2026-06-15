@@ -193,7 +193,7 @@
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { themedColor } from '@common/themes/themedColor.js';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
@@ -266,6 +266,8 @@ const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
 const widgetContainer = ref(null);
+// scroll container provided by the page shell (PageLayout)
+const pageScrollEl = inject('pageScrollEl', null);
 const canceled = ref(false);
 const streaming = ref(false);
 
@@ -945,13 +947,16 @@ const initializeDragDrop = () => {
   const minScrollSpeed = 50;
   const maxScrollSpeed = 300;
 
+  // the page shell's scroll container is the scroller (not the document)
+  const scrollTarget = () => pageScrollEl?.value || document.documentElement;
+
   sortableInstance = Sortable.create(widgetContainer.value, {
     animation: 100,
     handle: '.widget-handle',
     draggable: '.widget-wrapper',
     ghostClass: 'widget-ghost',
     chosenClass: 'widget-chosen',
-    scroll: document.documentElement,
+    scroll: scrollTarget(),
     scrollSensitivity,
     bubbleScroll: true,
     forceFallback: true,
@@ -960,18 +965,19 @@ const initializeDragDrop = () => {
       // Custom scroll function for dynamic speed based on cursor proximity to edge
       // offsetY is negative when near top, positive when near bottom
       if (offsetY !== 0 && originalEvent) {
-        const viewportHeight = window.innerHeight;
+        const el = scrollTarget();
+        const rect = el.getBoundingClientRect();
         const cursorY = originalEvent.clientY;
 
-        // Calculate distance from the edge being scrolled toward
-        const distanceFromEdge = offsetY < 0 ? cursorY : viewportHeight - cursorY;
+        // Calculate distance from the scroller edge being scrolled toward
+        const distanceFromEdge = offsetY < 0 ? cursorY - rect.top : rect.bottom - cursorY;
 
         // Calculate speed: closer to edge = faster scroll
         const ratio = 1 - (distanceFromEdge / scrollSensitivity);
         const speed = minScrollSpeed + (ratio * (maxScrollSpeed - minScrollSpeed));
 
         // Apply scroll in the appropriate direction
-        document.documentElement.scrollTop += offsetY > 0 ? speed : -speed;
+        el.scrollTop += offsetY > 0 ? speed : -speed;
       }
     },
     onSort: (evt) => {

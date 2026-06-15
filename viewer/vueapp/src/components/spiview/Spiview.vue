@@ -3,197 +3,206 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="spiview-page">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <arkime-search
-          @change-search="changeSearch"
-          :num-matching-sessions="filtered"
-          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
+  <page-layout class="spiview-page">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- search navbar -->
+          <arkime-search
+            @change-search="changeSearch"
+            :num-matching-sessions="filtered" /> <!-- /search navbar -->
 
-        <!-- info navbar -->
-        <div class="d-flex align-center info-nav m-1 gap-2">
-          <div v-if="!dataLoading">
-            <!-- field config save button -->
-            <v-menu
-              :close-on-content-click="false"
-              location="bottom start">
-              <template #activator="{ props: activatorProps }">
-                <v-btn
-                  v-bind="activatorProps"
-                  variant="flat"
-                  size="large"
-                  color="secondary"
-                  class="field-config-trigger">
-                  <v-icon icon="mdi-view-column" />
-                  <v-tooltip
-                    activator="parent"
-                    location="right">
-                    {{ $t('spiview.spiViewFieldConfigTip') }}
-                  </v-tooltip>
-                </v-btn>
-              </template>
-              <v-list
-                density="compact"
-                class="field-config-list">
-                <div class="px-2 py-1">
-                  <div class="arkime-input-group">
-                    <input
-                      autofocus
-                      @click.stop
-                      maxlength="30"
-                      type="text"
-                      class="arkime-input-control"
-                      @input="debounceNewFieldConfigName"
-                      v-model.lazy="newFieldConfigName"
-                      :placeholder="$t('spiview.newConfigPlaceholder')"
-                      @keydown.enter.stop.prevent="saveFieldConfiguration">
-                    <v-btn
-                      :aria-label="$t('common.save')"
-                      variant="flat"
-                      size="small"
-                      density="comfortable"
-                      icon
-                      class="arkime-input-append-btn"
-                      :style="secondaryBtnStyle"
-                      :disabled="!newFieldConfigName"
-                      @click.stop.prevent="saveFieldConfiguration">
-                      <v-icon icon="mdi-content-save" />
-                      <v-tooltip
-                        activator="parent"
-                        location="right">
-                        {{ $t('spiview.spiViewFieldConfigSaveTip') }}
-                      </v-tooltip>
-                    </v-btn>
+          <!-- info navbar -->
+          <div class="d-flex align-center info-nav mx-1 gap-2 page-subnav">
+            <div v-if="!dataLoading">
+              <!-- field config save button -->
+              <v-menu
+                :close-on-content-click="false"
+                location="bottom start">
+                <template #activator="{ props: activatorProps }">
+                  <v-btn
+                    v-bind="activatorProps"
+                    variant="flat"
+                    size="large"
+                    color="secondary"
+                    class="field-config-trigger">
+                    <v-icon icon="mdi-view-column" />
+                    <v-tooltip
+                      activator="parent"
+                      location="right">
+                      {{ $t('spiview.spiViewFieldConfigTip') }}
+                    </v-tooltip>
+                  </v-btn>
+                </template>
+                <v-list
+                  density="compact"
+                  class="field-config-list">
+                  <div class="px-2 py-1">
+                    <div class="arkime-input-group">
+                      <input
+                        autofocus
+                        @click.stop
+                        maxlength="30"
+                        type="text"
+                        class="arkime-input-control"
+                        @input="debounceNewFieldConfigName"
+                        v-model.lazy="newFieldConfigName"
+                        :placeholder="$t('spiview.newConfigPlaceholder')"
+                        @keydown.enter.stop.prevent="saveFieldConfiguration">
+                      <v-btn
+                        :aria-label="$t('common.save')"
+                        variant="flat"
+                        size="small"
+                        density="comfortable"
+                        icon
+                        class="arkime-input-append-btn"
+                        :style="secondaryBtnStyle"
+                        :disabled="!newFieldConfigName"
+                        @click.stop.prevent="saveFieldConfiguration">
+                        <v-icon icon="mdi-content-save" />
+                        <v-tooltip
+                          activator="parent"
+                          location="right">
+                          {{ $t('spiview.spiViewFieldConfigSaveTip') }}
+                        </v-tooltip>
+                      </v-btn>
+                    </div>
                   </div>
-                </div>
-                <v-divider />
-                <v-list-item
-                  key="config-default"
-                  @click.stop.prevent="loadFieldConfiguration(-1)">
-                  {{ $t('spiview.arkimeDefault') }}
-                  <v-tooltip
-                    activator="parent"
-                    location="end">
-                    {{ $t('spiview.spiViewConfigDefaultTip') }}
-                  </v-tooltip>
-                </v-list-item>
-                <v-list-item
-                  v-for="(config, key) in fieldConfigs"
-                  :key="config.name"
-                  @click.self.stop.prevent="loadFieldConfiguration(key)">
-                  <div
-                    class="d-flex align-center w-100"
-                    @click.self="loadFieldConfiguration(key)">
-                    <span
-                      class="flex-grow-1"
-                      @click="loadFieldConfiguration(key)">
-                      {{ config.name }}
-                    </span>
-                    <v-btn
-                      :id="`updateFieldConfig${key}`"
-                      color="warning"
-                      variant="flat"
-                      size="small"
-                      density="comfortable"
-                      icon
-                      class="ms-1"
-                      :aria-label="$t('common.save')"
-                      @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                      <v-icon icon="mdi-content-save" />
-                      <v-tooltip
-                        :activator="`[id='updateFieldConfig${key}']`"
-                        location="end">
-                        Update this field configuration with the currently visible fields
-                      </v-tooltip>
-                    </v-btn>
-                    <v-btn
-                      color="error"
-                      variant="flat"
-                      size="small"
-                      density="comfortable"
-                      icon
-                      class="ms-1"
-                      :aria-label="$t('common.delete')"
-                      @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                      <v-icon icon="mdi-trash-can-outline" />
-                    </v-btn>
-                  </div>
-                </v-list-item>
-              </v-list>
-              <v-alert
-                v-if="fieldConfigError"
-                density="compact"
-                variant="tonal"
-                type="error"
-                class="ma-1">
-                {{ fieldConfigError }}
-              </v-alert>
-              <v-alert
-                v-if="fieldConfigSuccess"
-                density="compact"
-                variant="tonal"
-                type="success"
-                class="ma-1">
-                {{ fieldConfigSuccess }}
-              </v-alert>
-            </v-menu> <!-- /field config save button -->
-          </div>
-          <div class="info-nav-count">
-            <strong
-              class="text-theme-accent"
-              v-if="!dataLoading && !error && filtered !== undefined">
-              {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }}
-            </strong>
-          </div>
-          <div
-            v-if="dataLoading"
-            class="info-nav-loading">
-            <v-icon
-              icon="mdi-loading"
-              size="small"
-              class="mdi-spin" />&nbsp;
-            <em>
-              {{ $t('common.loading') }}
-            </em>
-            <v-btn
-              :class="{'disabled-aggregations':disabledAggregations}"
-              color="warning"
-              variant="flat"
-              size="large"
-              class="ms-2"
-              @click="cancelLoading">
+                  <v-divider />
+                  <v-list-item
+                    key="config-default"
+                    @click.stop.prevent="loadFieldConfiguration(-1)">
+                    {{ $t('spiview.arkimeDefault') }}
+                    <v-tooltip
+                      activator="parent"
+                      location="end">
+                      {{ $t('spiview.spiViewConfigDefaultTip') }}
+                    </v-tooltip>
+                  </v-list-item>
+                  <v-list-item
+                    v-for="(config, key) in fieldConfigs"
+                    :key="config.name"
+                    @click.self.stop.prevent="loadFieldConfiguration(key)">
+                    <div
+                      class="d-flex align-center w-100"
+                      @click.self="loadFieldConfiguration(key)">
+                      <span
+                        class="flex-grow-1"
+                        @click="loadFieldConfiguration(key)">
+                        {{ config.name }}
+                      </span>
+                      <v-btn
+                        :id="`updateFieldConfig${key}`"
+                        color="warning"
+                        variant="flat"
+                        size="small"
+                        density="comfortable"
+                        icon
+                        class="ms-1"
+                        :aria-label="$t('common.save')"
+                        @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                        <v-icon icon="mdi-content-save" />
+                        <v-tooltip
+                          :activator="`[id='updateFieldConfig${key}']`"
+                          location="end">
+                          Update this field configuration with the currently visible fields
+                        </v-tooltip>
+                      </v-btn>
+                      <v-btn
+                        color="error"
+                        variant="flat"
+                        size="small"
+                        density="comfortable"
+                        icon
+                        class="ms-1"
+                        :aria-label="$t('common.delete')"
+                        @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                        <v-icon icon="mdi-trash-can-outline" />
+                      </v-btn>
+                    </div>
+                  </v-list-item>
+                </v-list>
+                <v-alert
+                  v-if="fieldConfigError"
+                  density="compact"
+                  variant="tonal"
+                  type="error"
+                  class="ma-1">
+                  {{ fieldConfigError }}
+                </v-alert>
+                <v-alert
+                  v-if="fieldConfigSuccess"
+                  density="compact"
+                  variant="tonal"
+                  type="success"
+                  class="ma-1">
+                  {{ fieldConfigSuccess }}
+                </v-alert>
+              </v-menu> <!-- /field config save button -->
+            </div>
+            <div class="info-nav-count">
+              <strong
+                class="text-theme-accent"
+                v-if="!dataLoading && !error && filtered !== undefined">
+                {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }}
+              </strong>
+            </div>
+            <div
+              v-if="dataLoading"
+              class="info-nav-loading">
               <v-icon
-                icon="mdi-cancel"
-                class="me-1" />
-              {{ $t('common.cancel') }}
-            </v-btn>
-          </div>
-        </div> <!-- /info navbar -->
-      </span>
+                icon="mdi-loading"
+                size="small"
+                class="mdi-spin" />&nbsp;
+              <em>
+                {{ $t('common.loading') }}
+              </em>
+              <v-btn
+                :class="{'disabled-aggregations':disabledAggregations}"
+                color="warning"
+                variant="flat"
+                size="large"
+                class="ms-2"
+                @click="cancelLoading">
+                <v-icon
+                  icon="mdi-cancel"
+                  class="me-1" />
+                {{ $t('common.cancel') }}
+              </v-btn>
+            </div>
+          </div> <!-- /info navbar -->
+        </div>
 
-      <!-- warning navbar -->
-      <div
-        class="text-theme-accent"
-        v-if="staleData && !dataLoading">
-        <v-icon icon="mdi-alert" />&nbsp;<span v-html="$t('spiview.cancelWarningHtml')" />
-        <v-icon
-          icon="mdi-close"
-          class="cursor-pointer"
-          @click="staleData = false" />
-      </div> <!-- /warning navbar -->
-    </ArkimeCollapsible>
+        <!-- warning navbar -->
+        <div
+          class="text-theme-accent"
+          v-if="staleData && !dataLoading">
+          <v-icon icon="mdi-alert" />&nbsp;<span v-html="$t('spiview.cancelWarningHtml')" />
+          <v-icon
+            icon="mdi-close"
+            class="cursor-pointer"
+            @click="staleData = false" />
+        </div> <!-- /warning navbar -->
+      </ArkimeCollapsible>
+      <!-- pinned visualizations land here (teleported from below) -->
+      <div id="viz-pin-anchor" />
+    </template>
 
-    <!-- visualizations -->
-    <arkime-visualizations
-      v-if="mapData && graphData && showToolBars"
-      :primary="true"
-      :map-data="mapData"
-      :graph-data="graphData"
-      @fetch-map-data="fetchVizData"
-      @spanning-change="issueQueries"
-      :timeline-data-filters="timelineDataFilters" /> <!-- /visualizations -->
+    <!-- visualizations: pinned = chrome row above the scroll container,
+         unpinned = scrolls away with the content -->
+    <teleport
+      defer
+      to="#viz-pin-anchor"
+      :disabled="!stickyViz">
+      <arkime-visualizations
+        v-if="mapData && graphData && showToolBars"
+        :primary="true"
+        :map-data="mapData"
+        :graph-data="graphData"
+        @fetch-map-data="fetchVizData"
+        @spanning-change="issueQueries"
+        :timeline-data-filters="timelineDataFilters" />
+    </teleport> <!-- /visualizations -->
 
     <div class="spiview-content me-1 ms-1">
       <!-- page error -->
@@ -463,7 +472,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div> <!-- /spiview panels -->
     </div>
-  </div>
+  </page-layout>
 </template>
 
 <script>
@@ -478,6 +487,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import FieldActions from '../sessions/FieldActions.vue';
 import { commaString, searchFields, buildExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -505,9 +515,9 @@ export default {
     ArkimeSearch,
     ArkimeVisualizations,
     ArkimeCollapsible,
+    PageLayout,
     FieldActions
   },
-  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',
@@ -565,6 +575,9 @@ export default {
     showToolBars: function () {
       return this.$store.state.showToolBars;
     },
+    stickyViz: function () {
+      return this.$store.state.stickyViz;
+    },
     fields: function () {
       return this.$store.state.fieldsArr;
     },
@@ -573,6 +586,11 @@ export default {
     }
   },
   watch: {
+    '$store.state.stickyViz': function () {
+      // pin toggle teleports the viz between chrome and scroll content;
+      // charts/map cache geometry, so nudge their resize handling
+      this.$nextTick(() => window.dispatchEvent(new Event('resize')));
+    },
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.fetchGraphData(); }
     }
@@ -1546,7 +1564,6 @@ export default {
 
 /* info navbar --------------------- */
 .spiview-page .info-nav {
-  height: 32px;
   background-color: rgb(var(--v-theme-quaternary-lightest));
 }
 
