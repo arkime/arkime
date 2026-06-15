@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.4.1 2026/06/xx
+6.5.0 2026/06/15
 ## Breaking
   - #4005 userAuthIps is now correctly matched against the real connecting peer address.
           Deployments behind a proxy must ensure the proxy's own address is
@@ -91,7 +91,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4027 Fix viewer crash when /api/sessions/csv with ids fails to build the query
   - #4027 Fix malformed TOTP codes causing a request error instead of being treated as invalid
   - #4031 Fix potential stored XSS in session detail
-  - #4031 Fix possible stored XSS in hunt search string
+  - #4031 Fix stored XSS in hunt search string
 ## Wise
   - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
   - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
