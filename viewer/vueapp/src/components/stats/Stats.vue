@@ -3,556 +3,589 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="stats-content">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- stats sub navbar -->
-        <v-row
-          class="g-1 stats-form p-1 align-center justify-start"
-          :class="{ 'stats-form--empty': tabIndex === 7 }">
-
-          <v-col
-            cols="auto"
-            class="flex-grow-1"
-            v-if="tabIndex !== 7">
-            <div class="arkime-input-group arkime-input-group--fluid">
-              <span class="arkime-input-label arkime-input-label-fw">
-                <v-icon
-                  icon="mdi-loading"
-                  class="mdi-spin text-theme-accent"
-                  v-if="loadingData" />
-                <v-icon
-                  icon="mdi-magnify"
-                  v-else-if="!shiftKeyHold" />
-                <span
-                  v-else-if="shiftKeyHold"
-                  class="query-shortcut">
-                  Q
+  <page-layout class="stats-content">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- stats sub navbar -->
+          <v-row class="g-1 stats-form p-1 align-center justify-start page-subnav">
+            <v-col
+              cols="auto"
+              class="flex-grow-1"
+              v-if="tabIndex !== 7">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon
+                    icon="mdi-loading"
+                    class="mdi-spin text-theme-accent"
+                    v-if="loadingData" />
+                  <v-icon
+                    icon="mdi-magnify"
+                    v-else-if="!shiftKeyHold" />
+                  <span
+                    v-else-if="shiftKeyHold"
+                    class="query-shortcut">
+                    Q
+                  </span>
                 </span>
-              </span>
-              <input
-                type="text"
-                class="arkime-input-control"
-                v-model="searchTerm"
-                v-focus="focusInput"
-                @blur="onOffFocus"
-                @input="debounceSearchInput"
-                @keydown.stop.prevent.enter="debounceSearchInput"
-                :placeholder="$t('stats.filterPlaceholder')">
+                <input
+                  type="text"
+                  class="arkime-input-control"
+                  v-model="searchTerm"
+                  v-focus="focusInput"
+                  @blur="onOffFocus"
+                  @input="debounceSearchInput"
+                  @keydown.stop.prevent.enter="debounceSearchInput"
+                  :placeholder="$t('stats.filterPlaceholder')">
+                <v-btn
+                  v-if="searchTerm"
+                  variant="outlined"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  :disabled="!searchTerm"
+                  @click="clear">
+                  <v-icon icon="mdi-close" />
+                </v-btn>
+              </div>
+            </v-col>
+
+            <!-- graph type select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 0">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">
+                  {{ $t('stats.graphType') }}
+                </span>
+                <select
+                  class="arkime-input-control"
+                  v-model="statsType"
+                  @change="statsTypeChange">
+                  <option
+                    value="deltaPacketsPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaBytesPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaBitsPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaSessionsPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaDroppedPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="monitoring"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="tcpSessions"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="udpSessions"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="icmpSessions"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="sctpSessions"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="espSessions"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="usedSpaceM"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="freeSpaceM"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="freeSpaceP"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="memory"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="memoryP"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="cpu"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="diskQueue"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="esQueue"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaESDroppedPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="esHealthMS"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="packetQueue"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="closeQueue"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="needSave"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="frags"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaFragsDroppedPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaOverloadDroppedPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaDupDroppedPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaTotalDroppedPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaSessionBytesPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="sessionSizePerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaWrittenBytesPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                  <option
+                    value="deltaUnwrittenBytesPerSec"
+                    v-i18n-value="'stats.cstats.'" />
+                </select>
+              </div>
+            </v-col> <!-- /graph type select -->
+
+            <!-- graph interval select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 0">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">
+                  {{ $t('stats.graphInterval') }}
+                </span>
+                <select
+                  class="arkime-input-control"
+                  v-model="graphInterval"
+                  @change="graphIntervalChange">
+                  <option value="5">
+                    {{ $t('common.secondCount', 5) }}
+                  </option>
+                  <option value="60">
+                    {{ $t('common.minuteCount', 1) }}
+                  </option>
+                  <option value="600">
+                    {{ $t('common.minuteCount', 10) }}
+                  </option>
+                </select>
+              </div>
+            </v-col> <!-- /graph interval select -->
+
+            <!-- graph hide select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 0 || tabIndex === 1">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('stats.graphHide') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="graphHide"
+                  @change="graphHideChange">
+                  <option
+                    value="none"
+                    v-i18n-value="'stats.graphHide-'" />
+                  <option
+                    value="old"
+                    v-i18n-value="'stats.graphHide-'" />
+                  <option
+                    value="nosession"
+                    v-i18n-value="'stats.graphHide-'" />
+                  <option
+                    value="both"
+                    v-i18n-value="'stats.graphHide-'" />
+                </select>
+              </div>
+            </v-col> <!-- /graph hide select -->
+
+            <!-- graph sort select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 0">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('stats.graphSort') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="graphSort">
+                  <option
+                    value="asc"
+                    v-i18n-value="'stats.graphSort-'" />
+                  <option
+                    value="desc"
+                    v-i18n-value="'stats.graphSort-'" />
+                </select>
+              </div>
+            </v-col> <!-- /graph sort select -->
+
+            <!-- page size select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 4">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('stats.pageSize') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="pageSize"
+                  @change="pageSizeChange">
+                  <option value="100">
+                    {{ $t('common.perPage', 100) }}
+                  </option>
+                  <option value="200">
+                    {{ $t('common.perPage', 200) }}
+                  </option>
+                  <option value="500">
+                    {{ $t('common.perPage', 500) }}
+                  </option>
+                  <option value="1000">
+                    {{ $t('common.perPage', {count: "1,000"}) }}
+                  </option>
+                  <option value="5000">
+                    {{ $t('common.perPage', {count: "5,000"}) }}
+                  </option>
+                  <option value="10000">
+                    {{ $t('common.perPage', {count: "10,000"}) }}
+                  </option>
+                </select>
+              </div>
+            </v-col><!-- /page size select -->
+
+            <!-- table data interval select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex !== 0 && tabIndex !== 7">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="dataInterval"
+                  @change="dataIntervalChange">
+                  <option value="5000">
+                    {{ $t('common.secondCount', 5) }}
+                  </option>
+                  <option value="15000">
+                    {{ $t('common.secondCount', 15) }}
+                  </option>
+                  <option value="30000">
+                    {{ $t('common.secondCount', 30) }}
+                  </option>
+                  <option value="60000">
+                    {{ $t('common.minuteCount', 1) }}
+                  </option>
+                  <option value="600000">
+                    {{ $t('common.minuteCount', 10) }}
+                  </option>
+                  <option value="0">
+                    {{ $t('common.never') }}
+                  </option>
+                </select>
+              </div>
+            </v-col> <!-- /table data interval select -->
+
+            <!-- shards show select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 5">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('stats.shardsShow') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="shardsShow"
+                  @change="shardsShowChange">
+                  <option
+                    value="all"
+                    v-i18n-value="'stats.shardsShow-'" />
+                  <option
+                    value="UNASSIGNED"
+                    v-i18n-value="'stats.shardsShow-'" />
+                  <option
+                    value="RELOCATING"
+                    v-i18n-value="'stats.shardsShow-'" />
+                  <option
+                    value="INITIALIZING"
+                    v-i18n-value="'stats.shardsShow-'" />
+                  <option
+                    value="notstarted"
+                    v-i18n-value="'stats.shardsShow-'" />
+                </select>
+              </div>
+            </v-col> <!-- /shards show select -->
+
+            <!-- recovery show select -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 6">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('stats.recoveryShow') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="recoveryShow"
+                  @change="recoveryShowChange">
+                  <option
+                    value="all"
+                    v-i18n-value="'stats.recoveryShow-'" />
+                  <option
+                    value="notdone"
+                    v-i18n-value="'stats.recoveryShow-'" />
+                </select>
+              </div>
+            </v-col> <!-- /recovery show select -->
+
+            <!-- refresh button -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex !== 0 && tabIndex !== 7">
               <v-btn
-                v-if="searchTerm"
-                variant="outlined"
-                size="x-small"
+                variant="flat"
+                size="large"
                 density="comfortable"
-                icon
-                :disabled="!searchTerm"
-                @click="clear">
-                <v-icon icon="mdi-close" />
+                :style="tertiaryBtnStyle"
+                @click="loadData">
+                <span v-if="!shiftKeyHold">
+                  {{ $t('common.refresh') }}
+                </span>
+                <span
+                  v-else
+                  class="enter-icon">
+                  <v-icon
+                    icon="mdi-arrow-left"
+                    size="small" />
+                  <div class="enter-arm" />
+                </span>
               </v-btn>
-            </div>
-          </v-col>
+            </v-col> <!-- /refresh button -->
 
-          <!-- graph type select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 0">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">
-                {{ $t('stats.graphType') }}
-              </span>
-              <select
-                class="arkime-input-control"
-                v-model="statsType"
-                @change="statsTypeChange">
-                <option
-                  value="deltaPacketsPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaBytesPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaBitsPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaSessionsPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaDroppedPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="monitoring"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="tcpSessions"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="udpSessions"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="icmpSessions"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="sctpSessions"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="espSessions"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="usedSpaceM"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="freeSpaceM"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="freeSpaceP"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="memory"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="memoryP"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="cpu"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="diskQueue"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="esQueue"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaESDroppedPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="esHealthMS"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="packetQueue"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="closeQueue"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="needSave"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="frags"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaFragsDroppedPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaOverloadDroppedPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaDupDroppedPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaTotalDroppedPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaSessionBytesPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="sessionSizePerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaWrittenBytesPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-                <option
-                  value="deltaUnwrittenBytesPerSec"
-                  v-i18n-value="'stats.cstats.'" />
-              </select>
-            </div>
-          </v-col> <!-- /graph type select -->
+            <v-col cols="auto">
+              <!-- confirm button -->
+              <transition name="buttons">
+                <v-btn
+                  v-if="confirmMessage"
+                  color="error"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="ms-2"
+                  @click="confirmed">
+                  <v-icon
+                    icon="mdi-check"
+                    class="me-1" />
+                  {{ confirmMessage }}
+                </v-btn>
+              </transition> <!-- /confirm button -->
 
-          <!-- graph interval select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 0">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">
-                {{ $t('stats.graphInterval') }}
-              </span>
-              <select
-                class="arkime-input-control"
-                v-model="graphInterval"
-                @change="graphIntervalChange">
-                <option value="5">{{ $t('common.secondCount', 5) }}</option>
-                <option value="60">{{ $t('common.minuteCount', 1) }}</option>
-                <option value="600">{{ $t('common.minuteCount', 10) }}</option>
-              </select>
-            </div>
-          </v-col> <!-- /graph interval select -->
+              <!-- cancel confirm button -->
+              <transition name="buttons">
+                <v-btn
+                  v-if="confirmMessage"
+                  color="warning"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="ms-2"
+                  @click="cancelConfirm">
+                  <v-icon
+                    icon="mdi-cancel"
+                    class="me-1" />
+                  {{ $t('common.cancel') }}
+                </v-btn>
+              </transition> <!-- /cancel confirm button -->
+            </v-col>
 
-          <!-- graph hide select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 0 || tabIndex === 1">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">{{ $t('stats.graphHide') }}</span>
-              <select
-                class="arkime-input-control"
-                v-model="graphHide"
-                @change="graphHideChange">
-                <option
-                  value="none"
-                  v-i18n-value="'stats.graphHide-'" />
-                <option
-                  value="old"
-                  v-i18n-value="'stats.graphHide-'" />
-                <option
-                  value="nosession"
-                  v-i18n-value="'stats.graphHide-'" />
-                <option
-                  value="both"
-                  v-i18n-value="'stats.graphHide-'" />
-              </select>
-            </div>
-          </v-col> <!-- /graph hide select -->
+            <!-- error (from child component) -->
+            <v-alert
+              v-if="childError"
+              type="error"
+              density="compact"
+              variant="tonal"
+              closable
+              class="ms-2"
+              @click:close="childError = ''">
+              {{ childError }}
+            </v-alert> <!-- /error (from child component) -->
 
-          <!-- graph sort select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 0">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">{{ $t('stats.graphSort') }}</span>
-              <select
-                class="arkime-input-control"
-                v-model="graphSort">
-                <option
-                  value="asc"
-                  v-i18n-value="'stats.graphSort-'" />
-                <option
-                  value="desc"
-                  v-i18n-value="'stats.graphSort-'" />
-              </select>
-            </div>
-          </v-col> <!-- /graph sort select -->
-
-          <!-- page size select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 4">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">{{ $t('stats.pageSize') }}</span>
-              <select
-                class="arkime-input-control"
-                v-model="pageSize"
-                @change="pageSizeChange">
-                <option value="100">{{ $t('common.perPage', 100) }}</option>
-                <option value="200">{{ $t('common.perPage', 200) }}</option>
-                <option value="500">{{ $t('common.perPage', 500) }}</option>
-                <option value="1000">{{ $t('common.perPage', {count: "1,000"}) }}</option>
-                <option value="5000">{{ $t('common.perPage', {count: "5,000"}) }}</option>
-                <option value="10000">{{ $t('common.perPage', {count: "10,000"}) }}</option>
-              </select>
-            </div>
-          </v-col><!-- /page size select -->
-
-          <!-- table data interval select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex !== 0 && tabIndex !== 7">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
-              <select
-                class="arkime-input-control"
-                v-model="dataInterval"
-                @change="dataIntervalChange">
-                <option value="5000">{{ $t('common.secondCount', 5) }}</option>
-                <option value="15000">{{ $t('common.secondCount', 15) }}</option>
-                <option value="30000">{{ $t('common.secondCount', 30) }}</option>
-                <option value="60000">{{ $t('common.minuteCount', 1) }}</option>
-                <option value="600000">{{ $t('common.minuteCount', 10) }}</option>
-                <option value="0">{{ $t('common.never') }}</option>
-              </select>
-            </div>
-          </v-col> <!-- /table data interval select -->
-
-          <!-- shards show select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 5">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">{{ $t('stats.shardsShow') }}</span>
-              <select
-                class="arkime-input-control"
-                v-model="shardsShow"
-                @change="shardsShowChange">
-                <option
-                  value="all"
-                  v-i18n-value="'stats.shardsShow-'" />
-                <option
-                  value="UNASSIGNED"
-                  v-i18n-value="'stats.shardsShow-'" />
-                <option
-                  value="RELOCATING"
-                  v-i18n-value="'stats.shardsShow-'" />
-                <option
-                  value="INITIALIZING"
-                  v-i18n-value="'stats.shardsShow-'" />
-                <option
-                  value="notstarted"
-                  v-i18n-value="'stats.shardsShow-'" />
-              </select>
-            </div>
-          </v-col> <!-- /shards show select -->
-
-          <!-- recovery show select -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex === 6">
-            <div class="arkime-input-group">
-              <span class="arkime-input-label">{{ $t('stats.recoveryShow') }}</span>
-              <select
-                class="arkime-input-control"
-                v-model="recoveryShow"
-                @change="recoveryShowChange">
-                <option
-                  value="all"
-                  v-i18n-value="'stats.recoveryShow-'" />
-                <option
-                  value="notdone"
-                  v-i18n-value="'stats.recoveryShow-'" />
-              </select>
-            </div>
-          </v-col> <!-- /recovery show select -->
-
-          <!-- refresh button -->
-          <v-col
-            cols="auto"
-            v-if="tabIndex !== 0 && tabIndex !== 7">
-            <v-btn
-              variant="flat"
-              size="large"
-              density="comfortable"
-              :style="tertiaryBtnStyle"
-              @click="loadData">
-              <span v-if="!shiftKeyHold">
-                {{ $t('common.refresh') }}
-              </span>
-              <span
-                v-else
-                class="enter-icon">
-                <v-icon
-                  icon="mdi-arrow-left"
-                  size="small" />
-                <div class="enter-arm" />
-              </span>
-            </v-btn>
-          </v-col> <!-- /refresh button -->
-
-          <v-col cols="auto">
-            <!-- confirm button -->
-            <transition name="buttons">
+            <!-- shrink index -->
+            <div
+              v-if="shrinkIndex"
+              class="ms-4 d-flex align-center">
+              <strong>
+                {{ $t('stats.shrink') }}  {{ shrinkIndex.index }}
+              </strong>
+              <!-- new # shards -->
+              <div class="arkime-input-group ms-2">
+                <span class="arkime-input-label">
+                  {{ $t('stats.numShards') }}
+                </span>
+                <select
+                  v-model="shrinkFactor"
+                  class="arkime-input-control"
+                  style="-webkit-appearance:none;">
+                  <option
+                    v-for="factor in shrinkFactors"
+                    :key="factor"
+                    :value="factor">
+                    {{ factor }}
+                  </option>
+                </select>
+              </div> <!-- /new # shards -->
+              <!-- temporary node -->
+              <div
+                v-if="nodes && temporaryNode"
+                class="arkime-input-group ms-2">
+                <span class="arkime-input-label">
+                  {{ $t('stats.temporaryNode') }}
+                </span>
+                <select
+                  v-model="temporaryNode"
+                  class="arkime-input-control"
+                  style="-webkit-appearance:none;">
+                  <option
+                    v-for="node in nodes"
+                    :key="node.name"
+                    :value="node.name">
+                    {{ node.name }}
+                  </option>
+                </select>
+              </div> <!-- /new shards input -->
+              <!-- ok button -->
               <v-btn
-                v-if="confirmMessage"
-                color="error"
+                color="success"
                 variant="flat"
                 size="small"
                 density="comfortable"
-                class="ms-2"
-                @click="confirmed">
-                <v-icon
-                  icon="mdi-check"
-                  class="me-1" />
-                {{ confirmMessage }}
-              </v-btn>
-            </transition> <!-- /confirm button -->
-
-            <!-- cancel confirm button -->
-            <transition name="buttons">
+                icon
+                class="float-right ms-2"
+                :aria-label="$t('common.apply')"
+                @click="executeShrink(shrinkIndex)">
+                <v-icon icon="mdi-check" />
+              </v-btn> <!-- /ok button -->
+              <!-- cancel button -->
               <v-btn
-                v-if="confirmMessage"
                 color="warning"
                 variant="flat"
                 size="small"
                 density="comfortable"
-                class="ms-2"
-                @click="cancelConfirm">
-                <v-icon
-                  icon="mdi-cancel"
-                  class="me-1" />
-                {{ $t('common.cancel') }}
-              </v-btn>
-            </transition> <!-- /cancel confirm button -->
-          </v-col>
+                icon
+                class="float-right ms-2"
+                :aria-label="$t('common.cancel')"
+                @click="cancelShrink">
+                <v-icon icon="mdi-cancel" />
+              </v-btn> <!-- /cancel button -->
+            </div>
+            <span
+              v-if="shrinkIndex && shrinkError"
+              class="text-danger ms-2">
+              {{ shrinkError }}
+            </span> <!-- /shrink index -->
 
-          <!-- error (from child component) -->
-          <v-alert
-            v-if="childError"
-            type="error"
-            density="compact"
-            variant="tonal"
-            closable
-            class="ms-2"
-            @click:close="childError = ''">
-            {{ childError }}
-          </v-alert> <!-- /error (from child component) -->
+            <!-- select cluster(s) -->
+            <v-col
+              cols="auto"
+              v-if="multiviewer">
+              <Clusters
+                @update-cluster="updateCluster"
+                :select-one="clusterParamOverride && tabIndex > 1" />
+            </v-col> <!-- /select cluster(s) -->
 
-          <!-- shrink index -->
-          <div
-            v-if="shrinkIndex"
-            class="ms-4 d-flex align-center">
-            <strong>
-              {{ $t('stats.shrink') }}  {{ shrinkIndex.index }}
-            </strong>
-            <!-- new # shards -->
-            <div class="arkime-input-group ms-2">
-              <span class="arkime-input-label">
-                {{ $t('stats.numShards') }}
-              </span>
-              <select
-                v-model="shrinkFactor"
-                class="arkime-input-control"
-                style="-webkit-appearance:none;">
-                <option
-                  v-for="factor in shrinkFactors"
-                  :key="factor"
-                  :value="factor">
-                  {{ factor }}
-                </option>
-              </select>
-            </div> <!-- /new # shards -->
-            <!-- temporary node -->
-            <div
-              v-if="nodes && temporaryNode"
-              class="arkime-input-group ms-2">
-              <span class="arkime-input-label">
-                {{ $t('stats.temporaryNode') }}
-              </span>
-              <select
-                v-model="temporaryNode"
-                class="arkime-input-control"
-                style="-webkit-appearance:none;">
-                <option
-                  v-for="node in nodes"
-                  :key="node.name"
-                  :value="node.name">
-                  {{ node.name }}
-                </option>
-              </select>
-            </div> <!-- /new shards input -->
-            <!-- ok button -->
-            <v-btn
-              color="success"
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              class="float-right ms-2"
-              :aria-label="$t('common.apply')"
-              @click="executeShrink(shrinkIndex)">
-              <v-icon icon="mdi-check" />
-            </v-btn> <!-- /ok button -->
-            <!-- cancel button -->
-            <v-btn
-              color="warning"
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              class="float-right ms-2"
-              :aria-label="$t('common.cancel')"
-              @click="cancelShrink">
-              <v-icon icon="mdi-cancel" />
-            </v-btn> <!-- /cancel button -->
-          </div>
-          <span
-            v-if="shrinkIndex && shrinkError"
-            class="text-danger ms-2">
-            {{ shrinkError }}
-          </span> <!-- /shrink index -->
-
-          <!-- select cluster(s) -->
-          <v-col
-            cols="auto"
-            v-if="multiviewer">
-            <Clusters
-              @update-cluster="updateCluster"
-              :select-one="clusterParamOverride && tabIndex > 1" />
-          </v-col> <!-- /select cluster(s) -->
-
-          <!-- spacer on esAdmin so the sub-navbar keeps the same height
+            <!-- spacer on esAdmin so the sub-navbar keeps the same height
                as on other tabs (all real controls are v-if-hidden when
                tabIndex === 7); without this the row collapses and leaves
                a gap above the tab strip. -->
-          <v-col
-            v-if="tabIndex === 7"
-            cols="auto">
+            <v-col
+              v-if="tabIndex === 7"
+              cols="auto">
             &nbsp;
-          </v-col>
+            </v-col>
+          </v-row> <!-- /stats sub navbar -->
+        </div>
+      </ArkimeCollapsible>
 
-        </v-row> <!-- /stats sub navbar -->
-      </span>
-    </ArkimeCollapsible>
+      <!-- tab strip: chrome row outside the collapsible so the tabs stay
+           visible when the toolbar is collapsed -->
+      <div class="stats-tabs">
+        <div class="stats-tab-bar">
+          <v-btn-toggle
+            :model-value="tabIndex"
+            @update:model-value="tabIndexChange($event)"
+            density="compact"
+            variant="text"
+            color="primary"
+            mandatory
+            class="stats-tab-strip">
+            <v-btn :value="0">
+              <v-icon
+                start
+                icon="mdi-chart-areaspline" />
+              {{ $t('stats.nav.captureGraphs') }}
+            </v-btn>
+            <v-btn :value="1">
+              <v-icon
+                start
+                icon="mdi-speedometer" />
+              {{ $t('stats.nav.captureStats') }}
+            </v-btn>
+            <span class="stats-tab-divider" />
+            <v-btn :value="2">
+              <v-icon
+                start
+                icon="mdi-server" />
+              {{ $t('stats.nav.esNodes') }}
+            </v-btn>
+            <v-btn :value="3">
+              <v-icon
+                start
+                icon="mdi-database" />
+              {{ $t('stats.nav.esIndices') }}
+            </v-btn>
+            <v-btn :value="4">
+              <v-icon
+                start
+                icon="mdi-format-list-checks" />
+              {{ $t('stats.nav.esTasks') }}
+            </v-btn>
+            <v-btn :value="5">
+              <v-icon
+                start
+                icon="mdi-sitemap" />
+              {{ $t('stats.nav.esShards') }}
+            </v-btn>
+            <v-btn :value="6">
+              <v-icon
+                start
+                icon="mdi-lifebuoy" />
+              {{ $t('stats.nav.esRecovery') }}
+            </v-btn>
+            <v-btn
+              v-if="user.esAdminUser"
+              :value="7">
+              <v-icon
+                start
+                icon="mdi-cog-outline" />
+              {{ $t('stats.nav.esAdmin') }}
+            </v-btn>
+          </v-btn-toggle>
+        </div>
+      </div>
+    </template>
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <div class="stats-tab-bar">
-        <v-btn-toggle
-          :model-value="tabIndex"
-          @update:model-value="tabIndexChange($event)"
-          density="compact"
-          variant="text"
-          color="primary"
-          mandatory
-          class="stats-tab-strip">
-          <v-btn :value="0">
-            <v-icon
-              start
-              icon="mdi-chart-areaspline" />
-            {{ $t('stats.nav.captureGraphs') }}
-          </v-btn>
-          <v-btn :value="1">
-            <v-icon
-              start
-              icon="mdi-speedometer" />
-            {{ $t('stats.nav.captureStats') }}
-          </v-btn>
-          <span class="stats-tab-divider" />
-          <v-btn :value="2">
-            <v-icon
-              start
-              icon="mdi-server" />
-            {{ $t('stats.nav.esNodes') }}
-          </v-btn>
-          <v-btn :value="3">
-            <v-icon
-              start
-              icon="mdi-database" />
-            {{ $t('stats.nav.esIndices') }}
-          </v-btn>
-          <v-btn :value="4">
-            <v-icon
-              start
-              icon="mdi-format-list-checks" />
-            {{ $t('stats.nav.esTasks') }}
-          </v-btn>
-          <v-btn :value="5">
-            <v-icon
-              start
-              icon="mdi-sitemap" />
-            {{ $t('stats.nav.esShards') }}
-          </v-btn>
-          <v-btn :value="6">
-            <v-icon
-              start
-              icon="mdi-lifebuoy" />
-            {{ $t('stats.nav.esRecovery') }}
-          </v-btn>
-          <v-btn
-            v-if="user.esAdminUser"
-            :value="7">
-            <v-icon
-              start
-              icon="mdi-cog-outline" />
-            {{ $t('stats.nav.esAdmin') }}
-          </v-btn>
-        </v-btn-toggle>
-      </div>
       <!-- Lazy-mount each tab pane via v-if so child components only initialize
            when their tab is active. -->
       <div class="stats-tab-content">
@@ -623,7 +656,7 @@ SPDX-License-Identifier: Apache-2.0
           :cluster="cluster" />
       </div>
     </div> <!-- /stats content -->
-  </div>
+  </page-layout>
 </template>
 
 <script>
@@ -636,6 +669,7 @@ import EsAdmin from './EsAdmin.vue';
 import CaptureGraphs from './CaptureGraphs.vue';
 import CaptureStats from './CaptureStats.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import Utils from '../utils/utils';
 import Focus from '@common/Focus.vue';
 import Clusters from '../utils/Clusters.vue';
@@ -656,6 +690,7 @@ export default {
     EsRecovery,
     EsAdmin,
     ArkimeCollapsible,
+    PageLayout,
     Clusters
   },
   directives: { Focus },
@@ -893,10 +928,6 @@ export default {
    (the search/cluster/refresh row above) but uses a different theme
    tint so the two rows read as separate strata. */
 .stats-tabs .stats-tab-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  z-index: 4;
   padding: 6px 12px;
   background-color: rgb(var(--v-theme-secondary-lightest));
   border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
@@ -960,9 +991,6 @@ export default {
   margin: 0 8px;
   background-color: rgb(var(--v-theme-neutral-light));
 }
-.stats-tabs .stats-tab-content {
-  padding-top: 50px;
-}
 
 /* shrink the column header font on stats tables one notch so that the
    long headers (Sessions/s, Packet Q, Free Space, etc.) fit without
@@ -978,12 +1006,6 @@ export default {
 .stats-form {
   z-index : 6;
   background-color: rgb(var(--v-theme-quaternary-lightest));
-}
-/* Lock the height ONLY when the form has no controls (esAdmin tab) so
-   it doesn't collapse and leave a gap above the fixed tab strip. Other
-   tabs let their form controls drive the row height naturally. */
-.stats-form.stats-form--empty {
-  min-height: 44px;
 }
 
 /* remove browser styles on select box (mostly for border-radius) */

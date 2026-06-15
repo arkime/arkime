@@ -604,7 +604,6 @@ export default {
   },
   emits: [
     'changeSearch',
-    'recalc-collapse',
     'setView',
     'setColumns'
   ],
@@ -702,9 +701,6 @@ export default {
     },
     issueSearch: function (newVal, oldVal) {
       if (newVal) { this.applyParams(); }
-    },
-    actionForm: function () {
-      this.$emit('recalc-collapse');
     }
   },
   created: function () {
@@ -721,7 +717,6 @@ export default {
     messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
-      this.$emit('recalc-collapse');
     },
     applyExpression: function (expression) {
       if (!this.expression) { this.expression = undefined; }
@@ -1004,10 +999,12 @@ form {
   min-width: 0;
 }
 
-/* viz options button position above viz in nav */
+/* viz options gear: docked under the right end of the search form (its
+   position-relative parent) so it follows the toolbar chrome in flow */
 .viz-options-btn-container {
-  top: 128px;
+  position: absolute;
+  top: 108%; /* a nudge past the form bottom centers it in the paging bar */
   right: 4px;
-  position: fixed;
+  z-index: 5;
 }
 </style>

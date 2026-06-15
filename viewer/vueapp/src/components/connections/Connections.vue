@@ -3,312 +3,353 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="connections-page">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <arkime-search
-          :start="query.start"
-          @change-search="cancelAndLoad(true)"
-          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
+  <page-layout
+    ref="pageLayout"
+    class="connections-page">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- search navbar -->
+          <arkime-search
+            :start="query.start"
+            @change-search="cancelAndLoad(true)" /> <!-- /search navbar -->
 
-        <!-- connections sub navbar -->
-        <div class="connections-form m-1">
-          <div class="d-flex flex-wrap align-center gap-1">
+          <!-- connections sub navbar -->
+          <div class="connections-form mx-1">
+            <div class="d-flex flex-wrap align-center gap-1 page-subnav">
+              <!-- query size select -->
+              <div class="arkime-input-group">
+                <span
+                  id="querySize"
+                  class="arkime-input-label cursor-help">
+                  {{ $t('connections.querySize') }}
+                </span>
+                <v-tooltip
+                  activator="#querySize"
+                  :open-delay="300">
+                  {{ $t('connections.querySizeTip') }}
+                </v-tooltip>
+                <select
+                  class="arkime-input-control"
+                  :value="query.length"
+                  @change="changeLength(Number($event.target.value))">
+                  <option
+                    v-for="opt in [100, 500, 1000, 5000, 10000, 50000, 100000]"
+                    :key="opt"
+                    :value="opt">
+                    {{ opt }}
+                  </option>
+                </select>
+              </div> <!-- /query size select -->
 
-            <!-- query size select -->
-            <div class="arkime-input-group">
+              <!-- src select -->
+              <div
+                class="connections-field-row"
+                v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
+                <span
+                  class="connections-legend-cell primary-legend cursor-help"
+                  id="sourceField">
+                  Src:
+                </span>
+                <v-tooltip
+                  activator="#sourceField"
+                  :open-delay="300">
+                  {{ $t('connections.sourceFieldTip') }}
+                </v-tooltip>
+                <arkime-field-typeahead
+                  :fields="fields"
+                  query-param="srcField"
+                  :initial-value="srcFieldTypeahead"
+                  @field-selected="changeSrcField"
+                  :history="fieldHistoryConnectionsSrc"
+                  page="ConnectionsSrc" />
+              </div> <!-- /src select -->
+
+              <!-- dst select -->
+              <div
+                class="connections-field-row"
+                v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
+                <span
+                  class="connections-legend-cell secondary-legend cursor-help"
+                  id="dstField">
+                  Dst:
+                </span>
+                <v-tooltip
+                  activator="#dstField"
+                  :open-delay="300">
+                  {{ $t('connections.dstFieldTip') }}
+                </v-tooltip>
+                <arkime-field-typeahead
+                  :fields="fields"
+                  query-param="dstField"
+                  :initial-value="dstFieldTypeahead"
+                  @field-selected="changeDstField"
+                  :history="fieldHistoryConnectionsDst"
+                  page="ConnectionsDst" />
+              </div> <!-- /dst select -->
+
+              <!-- src & dst color -->
               <span
-                id="querySize"
-                class="arkime-input-label cursor-help">
-                {{ $t('connections.querySize') }}
+                class="connections-legend-cell connections-legend-standalone tertiary-legend cursor-help"
+                id="srcDstColor">
+                Src &amp; dst
               </span>
               <v-tooltip
-                activator="#querySize"
+                activator="#srcDstColor"
                 :open-delay="300">
-                {{ $t('connections.querySizeTip') }}
-              </v-tooltip>
-              <select
-                class="arkime-input-control"
-                :value="query.length"
-                @change="changeLength(Number($event.target.value))">
-                <option
-                  v-for="opt in [100, 500, 1000, 5000, 10000, 50000, 100000]"
-                  :key="opt"
-                  :value="opt">{{ opt }}</option>
-              </select>
-            </div> <!-- /query size select -->
+                {{ $t('connections.srcDstColorTip') }}
+              </v-tooltip> <!-- /src & dst color -->
 
-            <!-- src select -->
-            <div
-              class="connections-field-row"
-              v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
-              <span
-                class="connections-legend-cell primary-legend cursor-help"
-                id="sourceField">
-                Src:
-              </span>
-              <v-tooltip
-                activator="#sourceField"
-                :open-delay="300">
-                {{ $t('connections.sourceFieldTip') }}
-              </v-tooltip>
-              <arkime-field-typeahead
-                :fields="fields"
-                query-param="srcField"
-                :initial-value="srcFieldTypeahead"
-                @field-selected="changeSrcField"
-                :history="fieldHistoryConnectionsSrc"
-                page="ConnectionsSrc" />
-            </div> <!-- /src select -->
+              <!-- min connections select -->
+              <div class="arkime-input-group">
+                <span
+                  id="minConn"
+                  class="arkime-input-label help-cursor">
+                  {{ $t('connections.minConn') }}
+                </span>
+                <v-tooltip
+                  activator="#minConn"
+                  :open-delay="300">
+                  {{ $t('connections.minConnTip') }}
+                </v-tooltip>
+                <select
+                  class="arkime-input-control"
+                  :value="query.minConn"
+                  @change="changeMinConn(Number($event.target.value))">
+                  <option
+                    v-for="opt in [1,2,3,4,5]"
+                    :key="opt"
+                    :value="opt">
+                    {{ opt }}
+                  </option>
+                </select>
+              </div> <!-- /min connections select -->
 
-            <!-- dst select -->
-            <div
-              class="connections-field-row"
-              v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
-              <span
-                class="connections-legend-cell secondary-legend cursor-help"
-                id="dstField">
-                Dst:
-              </span>
-              <v-tooltip
-                activator="#dstField"
-                :open-delay="300">
-                {{ $t('connections.dstFieldTip') }}
-              </v-tooltip>
-              <arkime-field-typeahead
-                :fields="fields"
-                query-param="dstField"
-                :initial-value="dstFieldTypeahead"
-                @field-selected="changeDstField"
-                :history="fieldHistoryConnectionsDst"
-                page="ConnectionsDst" />
-            </div> <!-- /dst select -->
+              <!-- weight select -->
+              <div class="arkime-input-group">
+                <span
+                  class="arkime-input-label help-cursor"
+                  id="weight">
+                  {{ $t('connections.weight') }}
+                </span>
+                <v-tooltip
+                  activator="#weight"
+                  :open-delay="300">
+                  {{ $t('connections.weightTip') }}
+                </v-tooltip>
+                <select
+                  class="arkime-input-control"
+                  :value="weight"
+                  @change="changeWeight($event.target.value)">
+                  <option
+                    value="sessions"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value="network.packets"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value="network.bytes"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value="totDataBytes"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value=""
+                    v-i18n-value="'connections.weight-'" />
+                </select>
+              </div> <!-- /weight select -->
 
-            <!-- src & dst color -->
-            <span
-              class="connections-legend-cell connections-legend-standalone tertiary-legend cursor-help"
-              id="srcDstColor">
-              Src &amp; dst
-            </span>
-            <v-tooltip
-              activator="#srcDstColor"
-              :open-delay="300">
-              {{ $t('connections.srcDstColorTip') }}
-            </v-tooltip> <!-- /src & dst color -->
-
-            <!-- min connections select -->
-            <div class="arkime-input-group">
-              <span
-                id="minConn"
-                class="arkime-input-label help-cursor">
-                {{ $t('connections.minConn') }}
-              </span>
-              <v-tooltip
-                activator="#minConn"
-                :open-delay="300">
-                {{ $t('connections.minConnTip') }}
-              </v-tooltip>
-              <select
-                class="arkime-input-control"
-                :value="query.minConn"
-                @change="changeMinConn(Number($event.target.value))">
-                <option
-                  v-for="opt in [1,2,3,4,5]"
-                  :key="opt"
-                  :value="opt">{{ opt }}</option>
-              </select>
-            </div> <!-- /min connections select -->
-
-            <!-- weight select -->
-            <div class="arkime-input-group">
-              <span
-                class="arkime-input-label help-cursor"
-                id="weight">
-                {{ $t('connections.weight') }}
-              </span>
-              <v-tooltip
-                activator="#weight"
-                :open-delay="300">
-                {{ $t('connections.weightTip') }}
-              </v-tooltip>
-              <select
-                class="arkime-input-control"
-                :value="weight"
-                @change="changeWeight($event.target.value)">
-                <option
-                  value="sessions"
-                  v-i18n-value="'connections.weight-'" />
-                <option
-                  value="network.packets"
-                  v-i18n-value="'connections.weight-'" />
-                <option
-                  value="network.bytes"
-                  v-i18n-value="'connections.weight-'" />
-                <option
-                  value="totDataBytes"
-                  v-i18n-value="'connections.weight-'" />
-                <option
-                  value=""
-                  v-i18n-value="'connections.weight-'" />
-              </select>
-            </div> <!-- /weight select -->
-
-            <div
-              v-if="!loading"
-              class="d-inline-flex">
-              <!-- node + link field-visibility menus (same shape, kind='node'|'link') -->
-              <template
-                v-for="m in fieldVisMenus"
-                :key="m.kind">
-                <v-menu
-                  v-if="fields && groupedFields && fieldList(m.kind)"
-                  :close-on-content-click="false"
-                  location="bottom start">
-                  <template #activator="{ props: activatorProps }">
-                    <v-btn
-                      v-bind="activatorProps"
-                      variant="flat"
-                      size="large"
-                      color="primary"
-                      class="ms-1 field-vis-trigger"
-                      :id="`${m.kind}Fields`">
-                      <v-icon :icon="m.icon" />
-                      <v-tooltip
-                        activator="parent"
-                        :open-delay="300">
-                        {{ $t(m.tipKey) }}
-                      </v-tooltip>
-                    </v-btn>
-                  </template>
-                  <v-list
-                    density="compact"
-                    class="field-vis-list">
-                    <div class="px-2 py-1">
-                      <div class="arkime-input-group arkime-input-group--fluid">
-                        <span class="arkime-input-label arkime-input-label-fw">
-                          <v-icon icon="mdi-magnify" />
-                        </span>
-                        <input
-                          type="text"
-                          v-model="fieldQuery"
-                          class="arkime-input-control"
-                          :placeholder="$t('common.searchForFields')">
-                      </div>
-                    </div>
-                    <v-divider />
-                    <v-list-item @click.stop.prevent="resetFieldVisibility(m.kind)">
-                      {{ $t('connections.reset') }}
-                    </v-list-item>
-                    <v-divider />
-                    <template
-                      v-for="(group, key) in filteredFields"
-                      :key="key">
-                      <v-list-subheader
-                        v-if="group.length"
-                        class="field-vis-group-header">
-                        {{ key }}
-                      </v-list-subheader>
-                      <template
-                        v-for="(field, k) in group"
-                        :key="key + k + m.kind">
-                        <v-list-item
-                          :data-tip-id="key + k + m.kind"
-                          :active="isFieldVisible(field.dbField, fieldList(m.kind)) >= 0"
-                          @click.stop.prevent="toggleFieldVisibility(field.dbField, fieldList(m.kind))">
-                          {{ field.friendlyName }}
-                          <small>({{ field.exp }})</small>
-                          <v-tooltip
-                            :activator="`[data-tip-id='${key + k + m.kind}']`"
-                            :open-delay="300">
-                            {{ field.help }}
-                          </v-tooltip>
-                        </v-list-item>
-                      </template>
+              <div
+                v-if="!loading"
+                class="d-inline-flex">
+                <!-- node + link field-visibility menus (same shape, kind='node'|'link') -->
+                <template
+                  v-for="m in fieldVisMenus"
+                  :key="m.kind">
+                  <v-menu
+                    v-if="fields && groupedFields && fieldList(m.kind)"
+                    :close-on-content-click="false"
+                    location="bottom start">
+                    <template #activator="{ props: activatorProps }">
+                      <v-btn
+                        v-bind="activatorProps"
+                        variant="flat"
+                        size="large"
+                        color="primary"
+                        class="ms-1 field-vis-trigger"
+                        :id="`${m.kind}Fields`">
+                        <v-icon :icon="m.icon" />
+                        <v-tooltip
+                          activator="parent"
+                          :open-delay="300">
+                          {{ $t(m.tipKey) }}
+                        </v-tooltip>
+                      </v-btn>
                     </template>
-                  </v-list>
-                </v-menu>
-              </template> <!-- /field-visibility menus -->
+                    <v-list
+                      density="compact"
+                      class="field-vis-list">
+                      <div class="px-2 py-1">
+                        <div class="arkime-input-group arkime-input-group--fluid">
+                          <span class="arkime-input-label arkime-input-label-fw">
+                            <v-icon icon="mdi-magnify" />
+                          </span>
+                          <input
+                            type="text"
+                            v-model="fieldQuery"
+                            class="arkime-input-control"
+                            :placeholder="$t('common.searchForFields')">
+                        </div>
+                      </div>
+                      <v-divider />
+                      <v-list-item @click.stop.prevent="resetFieldVisibility(m.kind)">
+                        {{ $t('connections.reset') }}
+                      </v-list-item>
+                      <v-divider />
+                      <template
+                        v-for="(group, key) in filteredFields"
+                        :key="key">
+                        <v-list-subheader
+                          v-if="group.length"
+                          class="field-vis-group-header">
+                          {{ key }}
+                        </v-list-subheader>
+                        <template
+                          v-for="(field, k) in group"
+                          :key="key + k + m.kind">
+                          <v-list-item
+                            :data-tip-id="key + k + m.kind"
+                            :active="isFieldVisible(field.dbField, fieldList(m.kind)) >= 0"
+                            @click.stop.prevent="toggleFieldVisibility(field.dbField, fieldList(m.kind))">
+                            {{ field.friendlyName }}
+                            <small>({{ field.exp }})</small>
+                            <v-tooltip
+                              :activator="`[data-tip-id='${key + k + m.kind}']`"
+                              :open-delay="300">
+                              {{ field.help }}
+                            </v-tooltip>
+                          </v-list-item>
+                        </template>
+                      </template>
+                    </v-list>
+                  </v-menu>
+                </template> <!-- /field-visibility menus -->
+              </div>
+
+              <!-- network baseline time range -->
+              <div class="arkime-input-group">
+                <span
+                  class="arkime-input-label help-cursor"
+                  id="baselineDate">
+                  {{ $t('connections.baselineDate') }}
+                </span>
+                <v-tooltip
+                  activator="#baselineDate"
+                  :open-delay="300">
+                  {{ $t('connections.baselineDateTip') }}
+                </v-tooltip>
+                <select
+                  class="arkime-input-control"
+                  v-model="query.baselineDate"
+                  @change="changeBaselineDate">
+                  <option value="0">
+                    {{ $t('common.optionDisabled') }}
+                  </option>
+                  <option value="1x">
+                    {{ $t('connections.queryRange', 1) }}
+                  </option>
+                  <option value="2x">
+                    {{ $t('connections.queryRange', 2) }}
+                  </option>
+                  <option value="4x">
+                    {{ $t('connections.queryRange', 4) }}
+                  </option>
+                  <option value="6x">
+                    {{ $t('connections.queryRange', 6) }}
+                  </option>
+                  <option value="8x">
+                    {{ $t('connections.queryRange', 8) }}
+                  </option>
+                  <option value="10x">
+                    {{ $t('connections.queryRange', 10) }}
+                  </option>
+                  <option value="1">
+                    {{ $t('common.hourCount', 1) }}
+                  </option>
+                  <option value="6">
+                    {{ $t('common.hourCount', 6) }}
+                  </option>
+                  <option value="24">
+                    {{ $t('common.hourCount', 24) }}
+                  </option>
+                  <option value="48">
+                    {{ $t('common.hourCount', 48) }}
+                  </option>
+                  <option value="72">
+                    {{ $t('common.hourCount', 72) }}
+                  </option>
+                  <option value="168">
+                    {{ $t('common.weekCount', 1) }}
+                  </option>
+                  <option value="336">
+                    {{ $t('common.weekCount', 2) }}
+                  </option>
+                  <option value="720">
+                    {{ $t('common.monthCount', 1) }}
+                  </option>
+                  <option value="1440">
+                    {{ $t('common.monthCount', 2) }}
+                  </option>
+                  <option value="4380">
+                    {{ $t('common.monthCount', 6) }}
+                  </option>
+                  <option value="8760">
+                    {{ $t('common.yearCount', 1) }}
+                  </option>
+                </select>
+              </div> <!-- /network baseline time range -->
+
+              <!-- network baseline node visibility -->
+              <div
+                class="arkime-input-group"
+                v-show="query.baselineDate !== '0'">
+                <span
+                  class="arkime-input-label help-cursor"
+                  id="baselineVis">
+                  {{ $t('connections.baselineVis') }}
+                </span>
+                <v-tooltip
+                  activator="#baselineVis"
+                  :open-delay="300">
+                  {{ $t('connections.baselineVisTip') }}
+                </v-tooltip>
+                <select
+                  class="arkime-input-control"
+                  :disabled="query.baselineDate === '0'"
+                  v-model="query.baselineVis"
+                  @change="changeBaselineVis">
+                  <option
+                    value="all"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="actual"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="actualold"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="new"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="old"
+                    v-i18n-value="'connections.baselineVis-'" />
+                </select>
+              </div> <!-- /network baseline node visibility -->
             </div>
-
-            <!-- network baseline time range -->
-            <div class="arkime-input-group">
-              <span
-                class="arkime-input-label help-cursor"
-                id="baselineDate">
-                {{ $t('connections.baselineDate') }}
-              </span>
-              <v-tooltip
-                activator="#baselineDate"
-                :open-delay="300">
-                {{ $t('connections.baselineDateTip') }}
-              </v-tooltip>
-              <select
-                class="arkime-input-control"
-                v-model="query.baselineDate"
-                @change="changeBaselineDate">
-                <option value="0">{{ $t('common.optionDisabled') }}</option>
-                <option value="1x">{{ $t('connections.queryRange', 1) }}</option>
-                <option value="2x">{{ $t('connections.queryRange', 2) }}</option>
-                <option value="4x">{{ $t('connections.queryRange', 4) }}</option>
-                <option value="6x">{{ $t('connections.queryRange', 6) }}</option>
-                <option value="8x">{{ $t('connections.queryRange', 8) }}</option>
-                <option value="10x">{{ $t('connections.queryRange', 10) }}</option>
-                <option value="1">{{ $t('common.hourCount', 1) }}</option>
-                <option value="6">{{ $t('common.hourCount', 6) }}</option>
-                <option value="24">{{ $t('common.hourCount', 24) }}</option>
-                <option value="48">{{ $t('common.hourCount', 48) }}</option>
-                <option value="72">{{ $t('common.hourCount', 72) }}</option>
-                <option value="168">{{ $t('common.weekCount', 1) }}</option>
-                <option value="336">{{ $t('common.weekCount', 2) }}</option>
-                <option value="720">{{ $t('common.monthCount', 1) }}</option>
-                <option value="1440">{{ $t('common.monthCount', 2) }}</option>
-                <option value="4380">{{ $t('common.monthCount', 6) }}</option>
-                <option value="8760">{{ $t('common.yearCount', 1) }}</option>
-              </select>
-            </div> <!-- /network baseline time range -->
-
-            <!-- network baseline node visibility -->
-            <div
-              class="arkime-input-group"
-              v-show="query.baselineDate !== '0'">
-              <span
-                class="arkime-input-label help-cursor"
-                id="baselineVis">
-                {{ $t('connections.baselineVis') }}
-              </span>
-              <v-tooltip
-                activator="#baselineVis"
-                :open-delay="300">
-                {{ $t('connections.baselineVisTip') }}
-              </v-tooltip>
-              <select
-                class="arkime-input-control"
-                :disabled="query.baselineDate === '0'"
-                v-model="query.baselineVis"
-                @change="changeBaselineVis">
-                <option
-                  value="all"
-                  v-i18n-value="'connections.baselineVis-'" />
-                <option
-                  value="actual"
-                  v-i18n-value="'connections.baselineVis-'" />
-                <option
-                  value="actualold"
-                  v-i18n-value="'connections.baselineVis-'" />
-                <option
-                  value="new"
-                  v-i18n-value="'connections.baselineVis-'" />
-                <option
-                  value="old"
-                  v-i18n-value="'connections.baselineVis-'" />
-              </select>
-            </div> <!-- /network baseline node visibility -->
-
-          </div>
-        </div> <!-- /connections sub navbar -->
-      </span>
-    </ArkimeCollapsible>
+          </div> <!-- /connections sub navbar -->
+        </div>
+      </ArkimeCollapsible>
+    </template>
 
     <div class="connections-content">
       <!-- loading overlay -->
@@ -356,11 +397,11 @@ SPDX-License-Identifier: Apache-2.0
             @hide-link="hideLink" />
         </div>
       </div> <!-- /popup area -->
+    </div>
 
+    <template #overlay>
       <!-- Button group -->
-      <div
-        class="connections-buttons d-flex align-center ga-2"
-        :style="[showToolBars ? {'top': '175px'} : {'top': '55px'}]">
+      <div class="connections-buttons d-flex align-center ga-2">
         <!-- unlock + export -->
         <div class="d-flex ga-1">
           <v-btn
@@ -511,8 +552,8 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
         </div>
       </div> <!-- /Button group -->
-    </div>
-  </div>
+    </template>
+  </page-layout>
 </template>
 
 <script>
@@ -522,6 +563,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import NodePopup from './NodePopup.vue';
 import LinkPopup from './LinkPopup.vue';
 // import services
@@ -608,11 +650,13 @@ function unfocus () {
   link.style('opacity', 1);
 }
 
-// simulation resize helper
-function resize (toolbarDown = true) {
-  const width = $(window).width() - 10;
-  // 36px for navbar + 25px for footer = 61px.
-  const height = $(window).height() - (toolbarDown ? 171 : 61);
+// simulation resize helper: size the canvas to the page scroll container
+// (tracks window resizes AND toolbar collapse via the ResizeObserver below)
+function resize (scrollEl) {
+  if (!svg) { return; }
+
+  const width = (scrollEl ? scrollEl.clientWidth : $(window).width()) - 10;
+  const height = (scrollEl ? scrollEl.clientHeight : $(window).height() - 61) - 4;
 
   // set the width and height of the canvas
   svg.attr('width', width).attr('height', height);
@@ -632,11 +676,11 @@ export default {
     ArkimeLoading,
     ArkimeNoResults,
     ArkimeCollapsible,
+    PageLayout,
     ArkimeFieldTypeahead,
     NodePopup,
     LinkPopup
   },
-  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',
@@ -697,10 +741,6 @@ export default {
     },
     user: function () {
       return store.state.user;
-    },
-    // Boolean in the store will remember chosen toggle state for all pages
-    showToolBars: function () {
-      return store.state.showToolBars;
     },
     filteredFields: function () {
       const filteredGroupedFields = {};
@@ -766,13 +806,6 @@ export default {
     },
     '$route.query.dstField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
-    },
-
-    // Resize svg height after toggle is updated and mounted()
-    showToolBars: function () {
-      this.$nextTick(() => {
-        resize(this.showToolBars);
-      });
     }
   },
   mounted () {
@@ -789,8 +822,12 @@ export default {
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', this.closePopupsOnEsc);
-    // resize the simulation with the window
-    window.addEventListener('resize', resize);
+    // resize the simulation with its container (covers window resizes and
+    // the animated toolbar collapse)
+    this._svgResizeObserver = new ResizeObserver(() => {
+      resize(this.$refs.pageLayout?.scrollEl);
+    });
+    this._svgResizeObserver.observe(this.$refs.pageLayout.scrollEl);
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
@@ -1175,10 +1212,10 @@ export default {
         linkedByIndex[d.source + ',' + d.target] = true;
       });
 
-      // calculate the width and height of the canvas
-      const width = $(window).width() - 10;
-      // 36px for navbar + 25px for footer = 61px.
-      const height = $(window).height() - (this.toolbarDown ? 171 : 61);
+      // calculate the width and height of the canvas from the scroll container
+      const scrollEl = this.$refs.pageLayout?.scrollEl;
+      const width = (scrollEl ? scrollEl.clientWidth : $(window).width()) - 10;
+      const height = (scrollEl ? scrollEl.clientHeight : $(window).height() - 61) - 4;
 
       // get the node and link data
       links = data.links.map(d => Object.create(d));
@@ -1482,7 +1519,7 @@ export default {
     }
 
     // remove listeners
-    window.removeEventListener('resize', resize);
+    this._svgResizeObserver?.disconnect();
     window.removeEventListener('keyup', this.closePopupsOnEsc);
 
     if (d3) {
@@ -1599,9 +1636,11 @@ export default {
   fill: rgb(var(--v-theme-foreground));
 }
 
-/* buttons overlaying the graph */
+/* buttons overlaying the graph (in the page shell's overlay slot, which
+   tracks the content area — no toolbar offset math) */
 .connections-buttons {
-  position: fixed;
+  position: absolute;
+  top: 8px;
   right: 10px;
 }
 </style>
@@ -1612,8 +1651,8 @@ export default {
 .connections-page div.connections-popup {
   position: absolute;
   left: 0;
-  top: 75px;
-  bottom: 24px;
+  top: 8px;
+  bottom: 8px;
   font-size: 0.85rem;
   padding: 4px 8px;
   max-width: 400px;

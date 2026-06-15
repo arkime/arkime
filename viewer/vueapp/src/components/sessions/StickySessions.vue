@@ -3,34 +3,36 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    class="bounce"
-    ref="stickyContainer"
-    :class="{
-      'hide-toolbars': !showToolBars,
-      'show-sticky-sessions-btn': sortedSessions && sortedSessions.length
-    }">
-    <!-- toggle button -->
-    <div
-      class="sticky-session-btn"
-      @click="toggleStickySessions"
-      v-if="sortedSessions && sortedSessions.length > 0">
-      <v-icon
-        icon="mdi-chevron-double-left"
-        v-if="!open" /><v-icon
-          icon="mdi-chevron-double-right"
-          v-else />&nbsp;
-      <small>{{ sortedSessions.length }}</small>
-      <v-tooltip activator="parent">
-        {{ $t('sessions.sticky.toggleOpenTip') }}
-      </v-tooltip>
-    </div> <!-- /toggle button -->
+  <div>
+    <!-- toggle button: teleported to body so it escapes the page
+         overlay's stacking context and paints over the toolbar chrome
+         (z-tie with .page-chrome, later in DOM = on top, like the
+         legacy .fixed-header tie) -->
+    <teleport to="body">
+      <div
+        class="sticky-session-btn bounce"
+        :style="showToolBars ? null : { top: '4px', zIndex: 8 }"
+        ref="stickyContainer"
+        @click="toggleStickySessions"
+        v-if="sortedSessions && sortedSessions.length > 0">
+        <v-icon
+          icon="mdi-chevron-double-left"
+          v-if="!open" /><v-icon
+            icon="mdi-chevron-double-right"
+            v-else />&nbsp;
+        <small>{{ sortedSessions.length }}</small>
+        <v-tooltip activator="parent">
+          {{ $t('sessions.sticky.toggleOpenTip') }}
+        </v-tooltip>
+      </div>
+    </teleport> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
     <transition name="slide">
       <div
         v-if="open"
-        class="sticky-session-detail">
+        class="sticky-session-detail"
+        :style="showToolBars ? null : { top: '35px' }">
         <!-- sticky sessions list -->
         <ul class="sticky-list">
           <li class="sticky-list-item sticky-list-header">
@@ -137,9 +139,6 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { timezoneDateString, protocol } from '@common/vueFilters.js';
 
-let stickyContainer;
-let oldLength = 1;
-
 export default {
   name: 'ArkimeStickySessions',
   emits: ['closeSession', 'closeAllSessions'],
@@ -157,7 +156,8 @@ export default {
     return {
       open: false,
       sortBy: '', // use the order sessions are opened
-      sortOrder: 'desc'
+      sortOrder: 'desc',
+      oldLength: this.sessions.length
     };
   },
   watch: {
@@ -166,33 +166,29 @@ export default {
       handler (newVal, oldVal) {
         const newLength = newVal.length;
 
-        this.$store.commit('setStickySessionsBtn', !!newLength);
-
         // only sort changed, nothing to do
-        if (newLength === oldLength) { return; }
+        if (newLength === this.oldLength) { return; }
 
         if (!newLength) {
           this.open = false;
           return;
         }
 
-        if (newLength > oldLength) {
-          if (!stickyContainer) {
-            stickyContainer = this.$refs.stickyContainer;
+        if (newLength > this.oldLength) {
+          const btn = this.$refs.stickyContainer;
+          if (btn) {
+            btn.classList.remove('bounce');
+            setTimeout(() => btn.classList.add('bounce'));
           }
-
-          stickyContainer.classList.remove('bounce');
-
-          setTimeout(() => {
-            stickyContainer.classList.add('bounce');
-          });
         }
 
-        oldLength = newLength;
+        this.oldLength = newLength;
       }
     }
   },
   computed: {
+    // store toggle (shared across pages); collapsed toolbar rides the
+    // button/panel up to the top
     showToolBars: function () {
       return this.$store.state.showToolBars;
     },
@@ -251,7 +247,6 @@ export default {
     closeAll: function () {
       this.open = false;
       this.$emit('closeAllSessions');
-      this.$store.commit('setStickySessionsBtn', false);
     },
     /**
      * Scrolls to specified session
@@ -266,6 +261,9 @@ export default {
 </script>
 
 <style scoped>
+/* viewport-fixed: the button (body-teleported) paints over the toolbar
+   chrome; the panel stays in the overlay and slides under it (chrome z5 >
+   overlay z4). When the toolbar collapses, :style rides both up to the top. */
 .sticky-session-btn {
   width: 100px;
   display: block;
@@ -275,17 +273,11 @@ export default {
   z-index: 5;
   margin-right: -50px;
   overflow: hidden;
-  padding: 1px 10px 2px 12px;
+  padding: 1px 0px 1px 0px;
   border-radius: 4px 0 0 4px;
   cursor: pointer;
   background-color: rgb(var(--v-theme-quaternary));
   color: rgb(var(--v-theme-button-fg));
-}
-
-/* move the sticky session button up when the toolbars are hidden */
-.hide-toolbars.show-sticky-sessions-btn .sticky-session-btn {
-  top: 4px;
-  z-index: 8;
 }
 
 .sort-by-select {
@@ -295,7 +287,7 @@ export default {
 .sticky-session-detail {
   overflow-y: auto;
   position: fixed;
-  top: 160px;
+  top: 168px;
   right: 0;
   bottom: 0;
   z-index: 4;
@@ -308,11 +300,6 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-/* move the sticky session detail up when the toolbars are hidden */
-.hide-toolbars.show-sticky-sessions-btn .sticky-session-detail {
-  top: 35px;
-}
-
 .sticky-session-detail .sticky-list {
   margin-bottom: 0;
   padding-left: 0;
@@ -321,7 +308,7 @@ export default {
 
 .sticky-session-detail .sticky-list-item {
   display: block;
-  border-top: 1px solid rgb(var(--v-theme-neutral-light)));
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
   padding: 4px 8px;
   background-color: rgb(var(--v-theme-background));
   color: rgb(var(--v-theme-foreground));
@@ -346,7 +333,7 @@ a.sticky-list-item:focus {
 
 /* ANIMATIONS ---------------------- */
 /* bounce the sticky sessions button */
-.bounce .sticky-session-btn {
+.sticky-session-btn.bounce {
   -webkit-animation: bounce 1000ms linear both;
      -moz-animation: bounce 1000ms linear both;
           animation: bounce 1000ms linear both;

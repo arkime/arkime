@@ -919,23 +919,15 @@ export default {
   z-index: 0;
 }
 
-/* sticky visualizations styles --------------- */
-/* 195 = 8 viz-container padding-top + 186 chart/map (TimelineGraph host
-   180 + wrapper padding-top 6; map matches at .inline-map > .map). +1
-   keeps the overflow-hidden clip off antialiased chart edges.
-   padding-bottom 200 = height + 5 gap below viz. */
-.sticky-viz {
-  padding-bottom: 200px;
-}
-
+/* sticky ("pinned") visualizations --------------- */
+/* The pinned viz is a normal-flow chrome row inside the page shell, so
+   no fixed positioning and no reserved flow space. 195 = 8 viz-container
+   padding-top + 186 chart/map (TimelineGraph host 180 + wrapper
+   padding-top 6; map matches at .inline-map > .map). +1 keeps the
+   overflow-hidden clip off antialiased chart edges. */
 .sticky-viz .viz-container {
-  left: 0;
-  right: 0;
-  z-index: 3;
   height: 195px;
-  position: fixed;
   overflow: hidden;
-  box-shadow: 0 0 16px -2px black;
   background-color: rgb(var(--v-theme-background));
 }
 
@@ -954,36 +946,16 @@ export default {
 }
 
 /* Disabled-aggregations variant: chart is replaced by a compact v-alert
-   info card (~80px with title + body). 90/95 preserves the normal-
-   variant spacing ratio so the thead still lands flush below the viz. */
-.sticky-viz.disabled-msg {
-  padding-bottom: 95px;
-}
+   info card (~80px with title + body). */
 .sticky-viz.disabled-msg .viz-container {
   height: 90px;
-}
-
-/* viz options button styles ----------------- */
-.viz-options-btn-container {
-  z-index: 5;
-  position: relative;
-}
-.viz-options-btn {
-  right: 8px;
-  display: block;
-  position: fixed;
-  margin-top: -35px;
 }
 
 /* hide visualization styles ----------------- */
 .hide-viz .viz-container {
   height: auto;
 }
-.hide-viz.sticky-viz {
-  padding-bottom: 0px;
-}
 .hide-viz.sticky-viz .viz-container {
-  z-index: 4;
   overflow: visible;
   box-shadow: none !important;
   background-color: transparent;

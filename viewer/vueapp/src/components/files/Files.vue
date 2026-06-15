@@ -3,14 +3,19 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <div class="files-search p-1">
+  <page-layout>
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="files-search px-1">
           <v-row
             dense
-            justify="start">
-            <v-col cols="auto">
+            align="center"
+            justify="start"
+            class="page-subnav">
+            <v-col
+              cols="auto"
+              align-self="start"
+              class="mt-2">
               <arkime-paging
                 v-if="files"
                 :records-total="recordsTotal"
@@ -57,8 +62,8 @@ SPDX-License-Identifier: Apache-2.0
             </v-col>
           </v-row>
         </div>
-      </span>
-    </ArkimeCollapsible>
+      </ArkimeCollapsible>
+    </template>
 
     <div class="mt-4 px-3">
       <arkime-loading v-if="loading && !error" />
@@ -86,7 +91,7 @@ SPDX-License-Identifier: Apache-2.0
           table-widths-state-name="filesColWidths" />
       </div>
     </div>
-  </div> <!-- /files content -->
+  </page-layout> <!-- /files content -->
 </template>
 
 <script>
@@ -98,6 +103,7 @@ import Clusters from '../utils/Clusters.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '@common/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import Focus from '@common/Focus.vue';
 import { commaString, timezoneDateString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -112,6 +118,7 @@ export default {
     ArkimeLoading,
     ArkimeTable,
     ArkimeCollapsible,
+    PageLayout,
     Clusters
   },
   directives: { Focus },

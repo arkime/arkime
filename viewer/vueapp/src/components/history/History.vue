@@ -3,110 +3,114 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="history-page">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <div class="history-search p-1">
-          <!-- search row: cluster + search expression + search button -->
-          <div class="d-flex align-center gap-1 mb-1">
-            <Clusters />
-            <div class="arkime-input-group arkime-input-group--fluid">
-              <span
-                id="searchHistory"
-                class="arkime-input-label arkime-input-label-fw cursor-help">
-                <v-icon
-                  icon="mdi-magnify"
-                  v-if="!shiftKeyHold" />
+  <page-layout class="history-page">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- search navbar -->
+          <div class="history-search px-1 pt-2 pb-1 d-flex flex-column gap-2">
+            <!-- search row: cluster + search expression + search button -->
+            <div class="d-flex align-center search-row">
+              <Clusters />
+              <div class="arkime-input-group arkime-input-group--fluid me-1">
+                <span
+                  id="searchHistory"
+                  class="arkime-input-label arkime-input-label-fw cursor-help">
+                  <v-icon
+                    icon="mdi-magnify"
+                    v-if="!shiftKeyHold" />
+                  <span
+                    v-else
+                    class="query-shortcut">
+                    Q
+                  </span>
+                  <v-tooltip activator="#searchHistory">
+                    <div v-html="$t('history.searchHistoryTipHtml')" />
+                  </v-tooltip>
+                </span>
+                <input
+                  type="text"
+                  v-model="searchTerm"
+                  class="arkime-input-control"
+                  :placeholder="$t('history.searchHistoryPlaceholder')"
+                  v-focus="focusInput"
+                  @keyup.enter="loadData"
+                  @input="debounceSearch"
+                  @blur="onOffFocus">
+                <v-btn
+                  v-if="searchTerm"
+                  variant="text"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
+                  :aria-label="$t('common.clear')"
+                  @click="clear">
+                  <v-icon icon="mdi-close" />
+                </v-btn>
+              </div>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                color="tertiary"
+                @click="loadData">
+                <span v-if="!shiftKeyHold">
+                  Search
+                </span>
                 <span
                   v-else
-                  class="query-shortcut">
-                  Q
+                  class="enter-icon">
+                  <v-icon
+                    icon="mdi-arrow-left"
+                    size="small" />
+                  <div class="enter-arm" />
                 </span>
-                <v-tooltip activator="#searchHistory">
-                  <div v-html="$t('history.searchHistoryTipHtml')" />
-                </v-tooltip>
-              </span>
-              <input
-                type="text"
-                v-model="searchTerm"
-                class="arkime-input-control"
-                :placeholder="$t('history.searchHistoryPlaceholder')"
-                v-focus="focusInput"
-                @keyup.enter="loadData"
-                @input="debounceSearch"
-                @blur="onOffFocus">
-              <v-btn
-                v-if="searchTerm"
-                variant="text"
-                size="x-small"
-                density="comfortable"
-                icon
-                class="arkime-input-append-btn"
-                :aria-label="$t('common.clear')"
-                @click="clear">
-                <v-icon icon="mdi-close" />
               </v-btn>
-            </div>
-            <v-btn
-              variant="flat"
-              size="large"
-              color="tertiary"
-              @click="loadData">
-              <span v-if="!shiftKeyHold">
-                Search
-              </span>
-              <span
-                v-else
-                class="enter-icon">
+              <v-btn
+                id="seeAllHistoryBtn"
+                class="ms-1"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                color="primary"
+                v-has-role="{user:user,roles:'arkimeAdmin'}"
+                @click="toggleSeeAll">
                 <v-icon
-                  icon="mdi-arrow-left"
-                  size="small" />
-                <div class="enter-arm" />
-              </span>
-            </v-btn>
-            <v-btn
-              id="seeAllHistoryBtn"
-              class="ms-1"
-              variant="flat"
-              size="large"
-              color="primary"
-              v-has-role="{user:user,roles:'arkimeAdmin'}"
-              @click="toggleSeeAll">
-              <v-icon
-                class="me-1"
-                icon="mdi-account-circle" />
-              See {{ seeAll ? ' MY ' : ' ALL ' }} History
-              <v-tooltip activator="#seeAllHistoryBtn">
-                {{ seeAll ? $t('history.seeMyHistoryTip') : $t('history.seeAllHistoryTip') }}
-              </v-tooltip>
-            </v-btn>
-          </div> <!-- /search row -->
+                  class="me-1"
+                  icon="mdi-account-circle" />
+                See {{ seeAll ? ' MY ' : ' ALL ' }} History
+                <v-tooltip activator="#seeAllHistoryBtn">
+                  {{ seeAll ? $t('history.seeMyHistoryTip') : $t('history.seeAllHistoryTip') }}
+                </v-tooltip>
+              </v-btn>
+            </div> <!-- /search row -->
 
-          <!-- time row -->
-          <arkime-time
-            :timezone="user.settings.timezone"
-            @time-change="loadData"
-            :hide-bounding="true"
-            :hide-interval="true" />
-        </div> <!-- /search navbar -->
+            <!-- time row -->
+            <arkime-time
+              :timezone="user.settings.timezone"
+              @time-change="loadData"
+              :hide-bounding="true"
+              :hide-interval="true" />
+          </div> <!-- /search navbar -->
 
-        <!-- paging navbar -->
-        <div class="history-paging pt-1">
-          <arkime-paging
-            class="ms-1 d-inline"
-            :length-default="100"
-            :records-total="recordsTotal"
-            :records-filtered="recordsFiltered"
-            @change-paging="changePaging" />
-          <arkime-toast
-            class="ms-2 mb-3 mt-1 d-inline"
-            :message="msg"
-            :type="msgType"
-            :done="messageDone" />
-        </div> <!-- /paging navbar -->
-      </span>
-    </ArkimeCollapsible>
+          <!-- paging navbar -->
+          <div class="history-paging page-subnav">
+            <arkime-paging
+              class="ms-1 d-inline"
+              :length-default="100"
+              :records-total="recordsTotal"
+              :records-filtered="recordsFiltered"
+              @change-paging="changePaging" />
+            <arkime-toast
+              class="ms-2 mb-3 mt-1 d-inline"
+              :message="msg"
+              :type="msgType"
+              :done="messageDone" />
+          </div> <!-- /paging navbar -->
+        </div>
+      </ArkimeCollapsible>
+    </template>
 
     <table
       v-if="!error"
@@ -395,7 +399,7 @@ SPDX-License-Identifier: Apache-2.0
     <div style="display:none;">
       {{ expandedLogs }}
     </div>
-  </div>
+  </page-layout>
 </template>
 
 <script>
@@ -410,6 +414,7 @@ import ArkimePaging from '@common/Pagination.vue';
 import HistoryService from './HistoryService';
 import Focus from '@common/Focus.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import ToggleBtn from '@common/ToggleBtn.vue';
 import { timezoneDateString, readableTime } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -426,6 +431,7 @@ export default {
     ToggleBtn,
     ArkimeToast,
     ArkimeCollapsible,
+    PageLayout,
     Clusters
   },
   directives: { Focus },
@@ -689,10 +695,17 @@ export default {
   -webkit-appearance: none;
 }
 
+/* match the main Search.vue search row: pin the search/see-all buttons to
+   the 32px input-group height so they don't tower over the inputs */
+.history-page .search-row > :deep(.v-btn) {
+  height: 32px;
+}
+
 /* navbar with pagination */
 .history-page .history-paging {
   z-index: 4;
-  height: 40px;
+  display: flex;
+  align-items: center;
 }
 
 .history-page .history-table {
