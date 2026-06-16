@@ -10,7 +10,6 @@ import ArkimeHistory from '@/components/history/History.vue';
 import Sessions from '@/components/sessions/Sessions.vue';
 import Spiview from '@/components/spiview/Spiview.vue';
 import Spigraph from '@/components/spigraph/Spigraph.vue';
-import Connections from '@/components/connections/Connections.vue';
 import Settings from '@/components/settings/Settings.vue';
 import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
@@ -88,9 +87,13 @@ const router = createRouter({
       component: Spigraph
     },
     {
+      // Connections folded into Spigraph as a graph type; keep old
+      // bookmarks/links working by redirecting (query params preserved).
       path: '/connections',
-      name: 'Connections',
-      component: Connections
+      redirect: to => ({
+        path: '/spigraph',
+        query: { ...to.query, spiGraphType: 'connections' }
+      })
     },
     {
       path: '/settings',

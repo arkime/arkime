@@ -115,7 +115,6 @@
     "settings": "Einstellungen",
     "spiview": "SPI-Ansicht",
     "spigraph": "SPI-Grafik",
-    "connections": "Verbindungen",
     "hunt": "Jagd",
     "stats": "Statistik",
     "files": "Dateien",
@@ -1361,7 +1360,8 @@
     "v7Item2": "Neue Sitzungsansicht (Details/Pakete/tshark)",
     "v7Item3": "Mehr Internationalisierung",
     "v7Item4": "Mehr Visualisierungen",
-    "v7Item5": "Und vieles mehr"
+    "v7Item5": "Verbindungen wurden in die SPI-Grafik verschoben",
+    "v7Item6": "Und vieles mehr"
   },
   "helpNotes": {
     "learnMore": "Mehr erfahren",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "Die SPI-Grafik stellt die häufigsten Werte eines beliebigen Feldes über die Zeit dar — probieren Sie verschiedene Felder und Diagrammtypen aus."
-    },
-    "connections": {
-      "text": "Die Seite Verbindungen zeigt, wie Quellen und Ziele miteinander kommunizieren — ziehen, zoomen und klicken Sie auf Knoten, um tiefer einzusteigen."
     },
     "hunt": {
       "text": "Jagden durchsuchen die Roh-Pakete selbst, nicht nur Sitzungs-Metadaten. Erstellen Sie einen Paketsuchauftrag, um zu finden, was die Indizierung übersehen hat."
@@ -1412,10 +1409,12 @@
     "graphType-table": "Tabelle",
     "graphType-treemap": "Baumkarte",
     "graphType-sankey": "Sankey",
+    "graphType-connections": "Verbindungen",
     "sortBy": "Sortieren nach",
     "sortBy-name": "Alphabetisch",
     "sortBy-graph": "Anzahl",
     "refreshEvery": "Alle aktualisieren",
+    "exportCSV": "CSV exportieren",
     "exportCSVSPIGraphTip": "Diese Daten als CSV-Datei exportieren"
   },
   "utils": {

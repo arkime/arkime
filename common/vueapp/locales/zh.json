@@ -115,7 +115,6 @@
     "settings": "设置",
     "spiview": "SPI 视图",
     "spigraph": "SPI 图",
-    "connections": "连接",
     "hunt": "捕获任务",
     "stats": "统计",
     "files": "文件",
@@ -1361,7 +1360,8 @@
     "v7Item2": "全新会话视图（详情/数据包/tshark）",
     "v7Item3": "更完善的国际化支持",
     "v7Item4": "更多可视化功能",
-    "v7Item5": "以及更多改进"
+    "v7Item5": "连接已移至 SPI 图",
+    "v7Item6": "以及更多改进"
   },
   "helpNotes": {
     "learnMore": "了解更多",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "SPI 图按时间绘制任意字段的最高频值——尝试不同的字段和图表类型。"
-    },
-    "connections": {
-      "text": "连接页面展示源和目标之间的通信关系——拖动、缩放并点击节点深入查看。"
     },
     "hunt": {
       "text": "捕获任务可搜索原始数据包内部，而不仅仅是会话元数据。创建数据包搜索任务，找出索引遗漏的内容。"
@@ -1412,10 +1409,12 @@
     "graphType-table": "表格",
     "graphType-treemap": "树状图",
     "graphType-sankey": "桑基图",
+    "graphType-connections": "连接",
     "sortBy": "排序方式",
     "sortBy-name": "按字母顺序",
     "sortBy-graph": "按计数",
     "refreshEvery": "每隔多久刷新一次",
+    "exportCSV": "导出 CSV",
     "exportCSVSPIGraphTip": "以 CSV 格式导出 SPI 图表数据"
   },
   "utils": {

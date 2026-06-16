@@ -115,7 +115,6 @@
     "settings": "Settings",
     "spiview": "SPIView",
     "spigraph": "SPIGraph",
-    "connections": "Connections",
     "hunt": "Hunt",
     "stats": "Stats",
     "files": "Files",
@@ -1361,7 +1360,8 @@
     "v7Item2": "New session view (detail/packets/tshark)",
     "v7Item3": "More internationalization",
     "v7Item4": "More visualizations",
-    "v7Item5": "And many more"
+    "v7Item5": "Connections moved into SPI Graph",
+    "v7Item6": "And many more"
   },
   "helpNotes": {
     "learnMore": "Learn more",
@@ -1376,10 +1376,7 @@
       "text": "SPI View shows captured field values grouped by category, so you can scan what's in your data at a glance."
     },
     "spigraph": {
-      "text": "SPI Graph charts the top values of any field over time — try different fields and graph types."
-    },
-    "connections": {
-      "text": "The Connections page maps how sources and destinations talk to each other — drag, zoom, and click nodes to dig in."
+      "text": "SPI Graph charts the top values of any field over time — try different fields and graph types, including the connections network graph."
     },
     "hunt": {
       "text": "Hunts search inside raw packets, not just session metadata. Create a packet search job to find what indexing missed."
@@ -1407,15 +1404,17 @@
     "maxElements": "Max Elements",
     "maxElementsTip": "Maximum number of elements returned (for the first field selected)",
     "graphType": "Graph Type",
-    "graphType-default": "timeline/map",
-    "graphType-pie": "donut",
-    "graphType-table": "table",
-    "graphType-treemap": "treemap",
-    "graphType-sankey": "sankey",
+    "graphType-default": "Timeline/Map",
+    "graphType-pie": "Donut",
+    "graphType-table": "Table",
+    "graphType-treemap": "Treemap",
+    "graphType-sankey": "Sankey",
+    "graphType-connections": "Connections",
     "sortBy": "Sort by",
     "sortBy-name": "Alphabetically",
     "sortBy-graph": "Count",
     "refreshEvery": "Refresh every",
+    "exportCSV": "Export CSV",
     "exportCSVSPIGraphTip": "Export this data as a CSV file"
   },
   "utils": {
