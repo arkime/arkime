@@ -115,7 +115,6 @@
     "settings": "설정",
     "spiview": "SPI 뷰",
     "spigraph": "SPI 그래프",
-    "connections": "연결",
     "hunt": "사냥(Hunt)",
     "stats": "통계",
     "files": "파일",
@@ -1361,7 +1360,8 @@
     "v7Item2": "새로운 세션 보기 (상세/패킷/tshark)",
     "v7Item3": "국제화 지원 강화",
     "v7Item4": "더 많은 시각화",
-    "v7Item5": "그 외 다양한 개선"
+    "v7Item5": "연결이 SPI 그래프로 이동되었습니다",
+    "v7Item6": "그 외 다양한 개선"
   },
   "helpNotes": {
     "learnMore": "더 알아보기",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "SPI 그래프는 어떤 필드든 상위 값을 시간에 따라 차트로 보여줍니다. 다양한 필드와 그래프 유형을 시도해 보세요."
-    },
-    "connections": {
-      "text": "연결 페이지는 소스와 대상이 어떻게 통신하는지 보여줍니다. 드래그, 확대/축소, 노드 클릭으로 자세히 살펴보세요."
     },
     "hunt": {
       "text": "사냥(Hunt)은 세션 메타데이터뿐 아니라 원시 패킷 내부를 검색합니다. 패킷 검색 작업을 만들어 인덱싱에서 놓친 것을 찾아보세요."
@@ -1412,10 +1409,12 @@
     "graphType-table": "테이블",
     "graphType-treemap": "트리맵",
     "graphType-sankey": "생키(Sankey)",
+    "graphType-connections": "연결",
     "sortBy": "정렬 기준",
     "sortBy-name": "사전순",
     "sortBy-graph": "개수",
     "refreshEvery": "새로고침 주기",
+    "exportCSV": "CSV 내보내기",
     "exportCSVSPIGraphTip": "이 데이터를 CSV 파일로 내보내기"
   },
   "utils": {

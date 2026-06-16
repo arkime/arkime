@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- viz options button -->
     <div
       class="viz-options-btn-container"
-      v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview' || basePath === 'arkime')">
+      v-if="!actionForm && (basePath === 'sessions' || basePath === 'spiview' || basePath === 'arkime')">
       <!-- Split-button vs single-dropdown depending on whether the gear
            has a meaningful primary action. When viz is hidden or there
            are no disabled aggregations to fetch, the gear has nothing
@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
             <v-divider />
             <v-list-item @click="toggleStickyViz">
-              {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+              {{ !stickyViz ? 'Pin' : 'Unpin' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
             </v-list-item>
             <v-list-item
               id="hideViz"
@@ -114,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('search.disableVis') }}
           </v-list-item>
           <v-list-item @click="toggleStickyViz">
-            {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+            {{ !stickyViz ? 'Pin' : 'Unpin' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
           </v-list-item>
           <v-list-item
             id="hideViz"

@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
         <br>
         <code>'G'</code> - jump to the SPI Graph page
         <br>
-        <code>'C'</code> - jump to the Connections page
+        <code>'C'</code> - jump to the Connections graph (SPI Graph)
         <br>
         <code>'H'</code> - jump to the Arkime Help page
         <br>
@@ -174,9 +174,17 @@ export default {
         }
         break;
       case 'c': // c
-        // open connections page if not on connections page
-        if (this.$route.name !== 'Connections') {
-          this.routeTo('/connections');
+        // open the connections graph (a Spigraph view) if not already there
+        if (this.$route.name !== 'Spigraph' || this.$route.query.spiGraphType !== 'connections') {
+          this.$router.push({
+            path: '/spigraph',
+            query: {
+              ...this.$route.query,
+              spiGraphType: 'connections',
+              expression: this.$store.state.expression
+            },
+            hash: this.$route.hash
+          });
         }
         break;
       case 'h': // h

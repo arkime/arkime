@@ -116,7 +116,6 @@
     "settings": "Ettingssay",
     "spiview": "PIsay Iewvay",
     "spigraph": "PIsay Raphgray",
-    "connections": "Onnectionscay",
     "hunt": "Unthay",
     "stats": "Atssay",
     "files": "Ilesfay",
@@ -1362,7 +1361,8 @@
     "v7Item2": "Ewnay essionsay iewvay (etailday/acketspay/sharktay)",
     "v7Item3": "Oremay internationalizationway",
     "v7Item4": "Oremay isualizationsvay",
-    "v7Item5": "Andway anymay oremay"
+    "v7Item5": "Onnectionscay ovedmay intoway PIsay Raphgray",
+    "v7Item6": "Andway anymay oremay"
   },
   "helpNotes": {
     "learnMore": "Earnlay oremay",
@@ -1378,9 +1378,6 @@
     },
     "spigraph": {
       "text": "PIsay Raphgray artschay ethay optay aluesvay ofway anyway ieldfay overway imetay — ytray ifferentday ieldsfay andway aphgray ypestay."
-    },
-    "connections": {
-      "text": "Ethay Onnectionscay agepay apsmay owhay ourcessay andway estinationsday alktay otay eachway otherway — agdray, oomzay, andway ickclay odesnay otay igday inway."
     },
     "hunt": {
       "text": "Untshay earchsay insideway awray acketspay, otnay ustjay essionsay etadatamay. Eatecray away acketpay earchsay objay otay indfay atwhay indexingway issedmay."
@@ -1408,15 +1405,17 @@
     "maxElements": "Axmay Elementsway",
     "maxElementsTip": "Aximummay umbernay ofway elementsway eturnedray (orfay ethay irtsfay ieldfay electedsay)",
     "graphType": "Raphgray Ypetay",
-    "graphType-default": "imelinetay/apmay",
-    "graphType-pie": "onutday",
-    "graphType-table": "abletay",
-    "graphType-treemap": "eemaptray",
-    "graphType-sankey": "ankeysay",
+    "graphType-default": "Imelinetay/apmay",
+    "graphType-pie": "Onutday",
+    "graphType-table": "Abletay",
+    "graphType-treemap": "Eemaptray",
+    "graphType-sankey": "Ankeysay",
+    "graphType-connections": "Onnectionscay",
     "sortBy": "Ortsay ybay",
     "sortBy-name": "Alphabeticallyway",
     "sortBy-graph": "Ountcay",
     "refreshEvery": "Efreshrway everyway",
+    "exportCSV": "Exportway SVCAY",
     "exportCSVSPIGraphTip": "Exportway isthay ataday asway away SVCAY ilefay"
   },
   "utils": {

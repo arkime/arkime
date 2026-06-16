@@ -115,7 +115,6 @@
     "settings": "Configurações",
     "spiview": "Visualização SPI",
     "spigraph": "Gráfico SPI",
-    "connections": "Conexões",
     "hunt": "Caça",
     "stats": "Estatísticas",
     "files": "Arquivos",
@@ -1361,7 +1360,8 @@
     "v7Item2": "Nova visualização de sessão (detalhes/pacotes/tshark)",
     "v7Item3": "Mais internacionalização",
     "v7Item4": "Mais visualizações",
-    "v7Item5": "E muito mais"
+    "v7Item5": "Conexões foi movido para o Gráfico SPI",
+    "v7Item6": "E muito mais"
   },
   "helpNotes": {
     "learnMore": "Saiba mais",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "O Gráfico SPI mostra os principais valores de qualquer campo ao longo do tempo — experimente diferentes campos e tipos de gráfico."
-    },
-    "connections": {
-      "text": "A página de Conexões mapeia como origens e destinos se comunicam — arraste, amplie e clique nos nós para explorar."
     },
     "hunt": {
       "text": "Caças pesquisam dentro dos pacotes brutos, não apenas nos metadados de sessão. Crie um trabalho de busca de pacotes para encontrar o que a indexação deixou passar."
@@ -1407,15 +1404,17 @@
     "maxElements": "Máx de Elementos",
     "maxElementsTip": "Número máximo de elementos retornados (para o primeiro campo selecionado)",
     "graphType": "Tipo de Gráfico",
-    "graphType-default": "linha do tempo/mapa",
-    "graphType-pie": "rosca",
-    "graphType-table": "tabela",
-    "graphType-treemap": "treemap",
-    "graphType-sankey": "sankey",
+    "graphType-default": "Linha do tempo/mapa",
+    "graphType-pie": "Rosca",
+    "graphType-table": "Tabela",
+    "graphType-treemap": "Treemap",
+    "graphType-sankey": "Sankey",
+    "graphType-connections": "Conexões",
     "sortBy": "Ordenar por",
     "sortBy-name": "Alfabeticamente",
     "sortBy-graph": "Contagem",
     "refreshEvery": "Atualizar a cada",
+    "exportCSV": "Exportar CSV",
     "exportCSVSPIGraphTip": "Exportar estes dados como arquivo CSV"
   },
   "utils": {

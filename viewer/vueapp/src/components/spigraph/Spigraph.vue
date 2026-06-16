@@ -10,15 +10,36 @@ SPDX-License-Identifier: Apache-2.0
           <!-- search navbar -->
           <arkime-search
             :num-matching-sessions="filtered"
-            @change-search="cancelAndLoad(true)" /> <!-- /search navbar -->
+            @change-search="onSearch" /> <!-- /search navbar -->
 
           <!-- spigraph sub navbar -->
           <div class="spigraph-form mx-1">
             <div class="d-flex flex-wrap align-center gap-1 page-subnav">
+              <!-- main graph type switcher -->
+              <div class="d-flex align-center spigraph-type-switcher">
+                <v-btn-toggle
+                  :model-value="spiGraphType"
+                  @update:model-value="changeSpiGraphType"
+                  mandatory
+                  divided
+                  density="comfortable"
+                  variant="outlined"
+                  color="primary"
+                  class="spigraph-type-toggle">
+                  <v-btn
+                    v-for="t in graphTypeOptions"
+                    :key="t"
+                    :value="t"
+                    size="small">
+                    {{ $t(`spigraph.graphType-${t}`) }}
+                  </v-btn>
+                </v-btn-toggle>
+              </div> <!-- /main graph type switcher -->
+
               <!-- field select -->
               <div
                 class="arkime-input-group"
-                v-if="fields && fields.length && fieldTypeahead">
+                v-if="spiGraphType !== 'connections' && fields && fields.length && fieldTypeahead">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.field') }}:
                 </span>
@@ -31,7 +52,9 @@ SPDX-License-Identifier: Apache-2.0
               </div> <!-- /field select -->
 
               <!-- maxElements select -->
-              <div class="arkime-input-group">
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType !== 'connections'">
                 <span
                   id="maxElements"
                   class="arkime-input-label cursor-help">
@@ -53,22 +76,11 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /maxElements select -->
 
-              <!-- main graph type select -->
-              <div class="arkime-input-group">
-                <span class="arkime-input-label">
-                  {{ $t('spigraph.graphType') }}:
-                </span>
-                <select
-                  class="arkime-input-control"
-                  :value="spiGraphType"
-                  @change="changeSpiGraphType($event.target.value)">
-                  <option
-                    v-for="t in graphTypeOptions"
-                    :key="t"
-                    :value="t"
-                    v-i18n-value="'spigraph.graphType-'" />
-                </select>
-              </div> <!-- /main graph type select -->
+              <!-- connections controls anchor -->
+              <div
+                v-if="spiGraphType === 'connections'"
+                id="connections-controls-anchor"
+                class="connections-controls-anchor d-flex flex-wrap align-center gap-1 mt-1 mb-1" />
 
               <!-- sort select (not shown for the pie graph) -->
               <div
@@ -126,46 +138,45 @@ SPDX-License-Identifier: Apache-2.0
 
               <!-- export button-->
               <v-btn
-                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
+                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey' && spiGraphType !== 'connections'"
                 variant="outlined"
                 size="small"
                 density="comfortable"
-                icon
                 class="ms-1"
-                :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
+                prepend-icon="mdi-download"
                 @click.stop.prevent="exportCSV">
-                <v-icon icon="mdi-download" />
+                {{ $t('spigraph.exportCSV') }}
                 <v-tooltip activator="parent">
                   {{ $t('spigraph.exportCSVSPIGraphTip') }}
                 </v-tooltip>
               </v-btn> <!-- /export button-->
+
+              <!-- hierarchy "add another field" anchor (own full-width row) -->
+              <div
+                v-if="['pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
+                id="spigraph-subfield-anchor"
+                class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1 mt-1" />
             </div>
           </div>
         </div>
       </ArkimeCollapsible>
-      <!-- pinned ("Pin top") visualizations land here (teleported from below) -->
-      <div id="viz-pin-anchor" />
     </template>
 
-    <!-- main visualization: pinned = chrome row above the scroll container,
-         unpinned = scrolls away with the content -->
-    <teleport
-      defer
-      to="#viz-pin-anchor"
-      :disabled="!stickyViz">
-      <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && showToolBars">
-        <arkime-visualizations
-          id="primary"
-          :graph-data="graphData"
-          :map-data="mapData"
-          :primary="true"
-          :timeline-data-filters="timelineDataFilters"
-          @fetch-map-data="cancelAndLoad(true)"
-          @spanning-change="cancelAndLoad(true)" />
-      </div>
-    </teleport> <!-- /main visualization -->
+    <!-- main visualization (timeline/map): always inline, scrolls with content -->
+    <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && showToolBars">
+      <arkime-visualizations
+        id="primary"
+        :graph-data="graphData"
+        :map-data="mapData"
+        :primary="true"
+        :timeline-data-filters="timelineDataFilters"
+        @fetch-map-data="cancelAndLoad(true)"
+        @spanning-change="cancelAndLoad(true)" />
+    </div> <!-- /main visualization -->
 
-    <div class="spigraph-content">
+    <div
+      class="spigraph-content"
+      v-if="spiGraphType !== 'connections'">
       <!-- pie graph type -->
       <div v-if="spiGraphType !== 'default'">
         <arkime-pie
@@ -243,6 +254,19 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="recordsTotal"
         :view="query.view" /> <!-- /no results -->
     </div>
+
+    <!-- connections network graph type (self-contained: owns its own
+         /api/connections fetch, controls, and overlay buttons) -->
+    <arkime-connections-graph
+      v-else
+      ref="connectionsGraph" /> <!-- /connections graph type -->
+
+    <!-- overlay anchor: connections floating buttons teleport here -->
+    <template
+      v-if="spiGraphType === 'connections'"
+      #overlay>
+      <div id="connections-overlay-anchor" />
+    </template>
   </page-layout>
 </template>
 
@@ -261,6 +285,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
+import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
@@ -281,7 +306,8 @@ export default {
     ArkimeVisualizations,
     ArkimeCollapsible,
     PageLayout,
-    ArkimePie
+    ArkimePie,
+    ArkimeConnectionsGraph
   },
   data: function () {
     return {
@@ -307,7 +333,7 @@ export default {
       // <option> blocks into one.
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
-      graphTypeOptions: ['default', 'pie', 'table', 'treemap', 'sankey']
+      graphTypeOptions: ['default', 'pie', 'table', 'treemap', 'sankey', 'connections']
     };
   },
   computed: {
@@ -347,19 +373,11 @@ export default {
     showToolBars: function () {
       return this.$store.state.showToolBars;
     },
-    stickyViz: function () {
-      return this.$store.state.stickyViz;
-    },
     fields: function () {
       return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
     }
   },
   watch: {
-    '$store.state.stickyViz': function () {
-      // pin toggle teleports the viz between chrome and scroll content;
-      // charts/map cache geometry, so nudge their resize handling
-      this.$nextTick(() => window.dispatchEvent(new Event('resize')));
-    },
     '$route.query' (newVal, oldVal) {
       if (newVal.size !== this.query.size) {
         this.query.size = newVal.size || 20;
@@ -369,6 +387,11 @@ export default {
       }
       if (newVal.spiGraphType !== this.spiGraphType) {
         this.spiGraphType = newVal.spiGraphType || 'default';
+        if (this.spiGraphType === 'connections') {
+          // connections owns its data; stop spigraph refresh
+          this.refresh = 0;
+          this.changeRefreshInterval(0);
+        }
       }
     },
     // watch graph type and update sort
@@ -384,13 +407,26 @@ export default {
       this.fieldTypeahead = field.friendlyName;
       this.baseField = field.exp;
       this.query.exp = field.exp;
+    }
 
+    if (this.spiGraphType === 'connections') {
+      // the connections child runs its own /api/connections load on mount
+      this.loading = false;
+    } else if (field) {
       this.cancelAndLoad(true);
       this.changeRefreshInterval(0);
     }
   },
   methods: {
     commaString,
+    /* Search bar change: connections reloads via its child, others here. */
+    onSearch: function () {
+      if (this.spiGraphType === 'connections') {
+        this.$refs.connectionsGraph?.cancelAndLoad(true);
+        return;
+      }
+      this.cancelAndLoad(true);
+    },
     /* exposed page functions ---------------------------------------------- */
     /**
      * Cancels the pending session query (if it's still pending) and runs a new
@@ -464,6 +500,7 @@ export default {
       }
     },
     changeSpiGraphType: function (spiGraphType) {
+      const leavingConnections = this.spiGraphType === 'connections';
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' ||
         this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
@@ -472,6 +509,10 @@ export default {
         }
         this.sortBy = 'graph'; // set default sort to count (graph)
         this.query.sort = this.graphType;
+        this.refresh = 0;
+        this.changeRefreshInterval(0);
+      } else if (this.spiGraphType === 'connections') {
+        // connections owns its data; stop spigraph refresh
         this.refresh = 0;
         this.changeRefreshInterval(0);
       }
@@ -483,6 +524,10 @@ export default {
           spiGraphType: this.spiGraphType
         }
       });
+      if (leavingConnections && this.spiGraphType !== 'connections') {
+        // load spigraph data skipped while connections was active
+        this.cancelAndLoad(true);
+      }
     },
     fetchedResults: function (tableResults, fieldTypeaheadList, baseFieldObj) {
       this.fieldTypeaheadList = fieldTypeaheadList;
@@ -552,6 +597,12 @@ export default {
     async loadData () {
       respondedAt = undefined;
 
+      // connections loads via its own child
+      if (this.spiGraphType === 'connections') {
+        this.loading = false;
+        return;
+      }
+
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.items = [];
         pendingPromise = null;
@@ -617,6 +668,26 @@ export default {
 .spigraph-page .spigraph-form .records-display  {
   font-size: 0.85rem;
   font-weight: 400;
+}
+
+/* primary view switcher: a prominent segmented toggle (not a buried
+   dropdown) sized to the 32px subnav band */
+.spigraph-page .spigraph-type-toggle {
+  height: 32px;
+}
+.spigraph-page .spigraph-type-toggle :deep(.v-btn) {
+  height: 32px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+/* symmetric band padding: even spacing for single-row vs multi-row subnavs */
+.spigraph-page .page-subnav {
+  padding-block: 6px;
+}
+/* "add another field" on its own row: full-width forces a flex-wrap break */
+.spigraph-page .spigraph-subfield-anchor {
+  flex: 1 0 100%;
+  padding-bottom: 6px;
 }
 
 /* field typeahead */

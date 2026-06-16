@@ -115,7 +115,6 @@
     "settings": "Paramètres",
     "spiview": "Vue SPI",
     "spigraph": "Graphique SPI",
-    "connections": "Connexions",
     "hunt": "Chasse",
     "stats": "Statistiques",
     "files": "Fichiers",
@@ -1361,7 +1360,8 @@
     "v7Item2": "Nouvelle vue de session (détail/paquets/tshark)",
     "v7Item3": "Plus d'internationalisation",
     "v7Item4": "Plus de visualisations",
-    "v7Item5": "Et bien plus encore"
+    "v7Item5": "Connexions a été déplacé dans Graphique SPI",
+    "v7Item6": "Et bien plus encore"
   },
   "helpNotes": {
     "learnMore": "En savoir plus",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "Le Graphique SPI trace les principales valeurs de n'importe quel champ dans le temps — essayez différents champs et types de graphiques."
-    },
-    "connections": {
-      "text": "La page Connexions cartographie les échanges entre sources et destinations — déplacez, zoomez et cliquez sur les nœuds pour approfondir."
     },
     "hunt": {
       "text": "Les chasses recherchent dans les paquets bruts, pas seulement dans les métadonnées de session. Créez une tâche de recherche de paquets pour trouver ce que l'indexation a manqué."
@@ -1407,15 +1404,17 @@
     "maxElements": "Max. éléments",
     "maxElementsTip": "Nombre maximum d'éléments retournés (pour le premier champ sélectionné)",
     "graphType": "Type de graphique",
-    "graphType-default": "chronologie/carte",
-    "graphType-pie": "beignet",
-    "graphType-table": "tableau",
-    "graphType-treemap": "treemap",
-    "graphType-sankey": "sankey",
+    "graphType-default": "Chronologie/carte",
+    "graphType-pie": "Beignet",
+    "graphType-table": "Tableau",
+    "graphType-treemap": "Treemap",
+    "graphType-sankey": "Sankey",
+    "graphType-connections": "Connexions",
     "sortBy": "Trier par",
     "sortBy-name": "Alphabétiquement",
     "sortBy-graph": "Compte",
     "refreshEvery": "Actualiser toutes les",
+    "exportCSV": "Exporter CSV",
     "exportCSVSPIGraphTip": "Exporter les données du graphique SPI au format CSV"
   },
   "utils": {

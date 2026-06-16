@@ -169,7 +169,7 @@ export default {
     },
     async loadDeps () {
       // Lazy-load d3 / topojson / world-atlas — mirrors the
-      // Connections.vue / Hierarchy.vue precedent so the deps don't
+      // ConnectionsGraph.vue / Hierarchy.vue precedent so the deps don't
       // bloat the main bundle and the topojson is only fetched when
       // the map actually mounts.
       const [d3, topojson, world] = await Promise.all([

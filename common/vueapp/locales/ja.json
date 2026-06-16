@@ -115,7 +115,6 @@
     "settings": "設定",
     "spiview": "SPI View",
     "spigraph": "SPI Graph",
-    "connections": "コネクション",
     "hunt": "ハント",
     "stats": "統計",
     "files": "ファイル",
@@ -1361,7 +1360,8 @@
     "v7Item2": "新しいセッションビュー（詳細/パケット/tshark）",
     "v7Item3": "国際化対応の強化",
     "v7Item4": "ビジュアライゼーションの追加",
-    "v7Item5": "その他多数の改善"
+    "v7Item5": "コネクションは SPI Graph に移動しました",
+    "v7Item6": "その他多数の改善"
   },
   "helpNotes": {
     "learnMore": "詳細を見る",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "SPI Graph は任意のフィールドの上位値を時系列でグラフ化します。さまざまなフィールドやグラフタイプを試してみてください。"
-    },
-    "connections": {
-      "text": "コネクションページは送信元と宛先がどのように通信しているかをマップ表示します。ドラッグ、ズーム、ノードのクリックで詳しく調べられます。"
     },
     "hunt": {
       "text": "ハントはセッションのメタデータだけでなく、生のパケットの中身を検索します。パケット検索ジョブを作成して、インデックス化で漏れたものを見つけましょう。"
@@ -1412,10 +1409,12 @@
     "graphType-table": "テーブル",
     "graphType-treemap": "ツリーマップ",
     "graphType-sankey": "サンキー",
+    "graphType-connections": "コネクション",
     "sortBy": "ソート順",
     "sortBy-name": "アルファベット順",
     "sortBy-graph": "カウント順",
     "refreshEvery": "更新間隔",
+    "exportCSV": "CSV をエクスポート",
     "exportCSVSPIGraphTip": "このデータを CSV ファイルとしてエクスポート"
   },
   "utils": {

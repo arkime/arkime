@@ -10,7 +10,6 @@ export default [
   { id: 'sessions', route: 'Sessions', anchor: '#sessions' },
   { id: 'spiview', route: 'Spiview', anchor: '#spiview' },
   { id: 'spigraph', route: 'Spigraph', anchor: '#spigraph' },
-  { id: 'connections', route: 'Connections', anchor: '#connections' },
   { id: 'hunt', route: 'Hunt', anchor: '#hunt' },
   { id: 'files', route: 'Files', anchor: '#files' },
   { id: 'stats', route: 'Stats', anchor: '#stats' },

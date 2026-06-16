@@ -4,30 +4,33 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="spigraph-pie">
-    <!-- field select -->
-    <div
-      class="d-flex flex-row ps-1"
-      :class="{'position-absolute': !!tableData.length}">
-      <div
-        class="d-inline"
-        v-if="fields && fields.length">
-        <div class="arkime-input-group me-2">
-          <span class="arkime-input-label">
-            {{ $t('spigraph.addAnotherField') }}:
-          </span>
-          <arkime-field-typeahead
-            :fields="fields"
-            @field-selected="changeField"
-            page="SpigraphSubfield" />
+    <!-- field select: teleported into the spigraph sub-navbar, alongside the
+         other controls (same pattern as the connections view) -->
+    <teleport
+      defer
+      to="#spigraph-subfield-anchor">
+      <div class="d-flex flex-row align-center">
+        <div
+          class="d-inline"
+          v-if="fields && fields.length">
+          <div class="arkime-input-group subfield-group">
+            <span class="arkime-input-label">
+              {{ $t('spigraph.addAnotherField') }}:
+            </span>
+            <arkime-field-typeahead
+              :fields="fields"
+              @field-selected="changeField"
+              page="SpigraphSubfield" />
+          </div>
+        </div>
+        <div class="d-inline ms-1">
+          <drag-list
+            :list="this.fieldTypeaheadList"
+            @reorder="reorderFields"
+            @remove="removeField" />
         </div>
       </div>
-      <div class="d-inline ms-1">
-        <drag-list
-          :list="this.fieldTypeaheadList"
-          @reorder="reorderFields"
-          @remove="removeField" />
-      </div>
-    </div> <!-- /field select -->
+    </teleport> <!-- /field select -->
 
     <!-- info area -->
     <div
@@ -49,21 +52,19 @@ SPDX-License-Identifier: Apache-2.0
     <!-- treemap area -->
     <div
       id="treemap-area"
-      class="pt-3"
       v-show="spiGraphType === 'treemap' && vizData && vizData.children.length" />
     <!-- /treemap area -->
 
     <!-- sankey area -->
     <div
       id="sankey-area"
-      class="pt-4"
       v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length" />
     <!-- /sankey area -->
 
     <!-- table area -->
     <div
       v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
-      class="m-1 pt-5">
+      class="m-1 pt-1">
       <table
         class="spigraph-table"
         id="spigraphTable"
@@ -235,25 +236,36 @@ let radius = getRadius();
 
 // page treemap variables -------------------------------------------------- //
 let gtree, newBox;
-const treemapMargin = 10;
+const treemapMargin = 4;
 let treemapWidth = getTreemapWidth();
 let treemapHeight = getTreemapHeight();
 
 // page sankey variables -------------------------------------------------- //
 let gsankey;
-const sankeyMargin = { top: 10, right: 10, bottom: 10, left: 10 };
+const sankeyMargin = { top: 2, right: 2, bottom: 2, left: 2 };
 let sankeyWidth = getSankeyWidth();
 let sankeyHeight = getSankeyHeight();
 
 const MIN_COL_WIDTH = 70;
 
 // pie functions ----------------------------------------------------------- //
-function getWindowWidth () {
-  return window.innerWidth;
+// the scroll container is the real drawing area; measure it directly
+function getContentEl () {
+  return document.querySelector('.spigraph-page .page-scroll');
 }
 
-function getWindowHeight (toolbarDown = true) {
-  return window.innerHeight - 184; // height - (footer + headers + padding)
+function getWindowWidth () {
+  const el = getContentEl();
+  return (el ? el.clientWidth : window.innerWidth) - 8;
+}
+
+function getWindowHeight () {
+  const el = getContentEl();
+  if (!el) { return window.innerHeight - 184; }
+  // measure the live scroll container, not a guessed fixed header height
+  const area = el.querySelector('.spigraph-pie');
+  const offsetTop = area ? (area.getBoundingClientRect().top - el.getBoundingClientRect().top) : 0;
+  return el.clientHeight - offsetTop - 8;
 }
 
 function getRadius () {
@@ -296,11 +308,11 @@ function getUid (d) {
 }
 
 function getTreemapWidth () {
-  return getWindowWidth() - (treemapMargin * 2);
+  return getWindowWidth();
 }
 
 function getTreemapHeight () {
-  return getWindowHeight() - (treemapMargin * 2);
+  return getWindowHeight() + 6;
 }
 
 function mouseoverBox (d, self) {
@@ -319,11 +331,11 @@ function fillBoxText (d) {
 
 // sankey functions ------------------------------------------------------- //
 function getSankeyWidth () {
-  return window.innerWidth - (sankeyMargin.left + sankeyMargin.right);
+  return getWindowWidth();
 }
 
 function getSankeyHeight () {
-  return window.innerHeight - 200 - (sankeyMargin.top + sankeyMargin.bottom);
+  return getWindowHeight() + 6;
 }
 
 // common functions -------------------------------------------------------- //
@@ -517,10 +529,9 @@ export default {
     resize: function () {
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(() => {
-        // recalculate width, height, and radius
+        // recalculate from the live scroll container
         width = getWindowWidth();
-        // re-add the header space if collapsed
-        height = getWindowHeight() + (this.showToolBars ? 0 : 113);
+        height = getWindowHeight();
         radius = getRadius();
 
         // set the new width and height of the pie
@@ -764,6 +775,15 @@ export default {
      * @param {Object} data The data to construct the pie
      */
     initializeGraphs: function (data) {
+      // size to the live scroll container before creating the svgs
+      width = getWindowWidth();
+      height = getWindowHeight();
+      radius = getRadius();
+      treemapWidth = getTreemapWidth();
+      treemapHeight = getTreemapHeight();
+      sankeyWidth = getSankeyWidth();
+      sankeyHeight = getSankeyHeight();
+
       g = d3.select('#pie-area')
         .append('svg')
         .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
@@ -911,12 +931,13 @@ export default {
         .sum((d) => { return d.size; }); // sum each node's children
 
       const treemap = d3.treemap() // organize data into treemap
-        .size([treemapWidth - 12, treemapHeight - 12])
-        .paddingTop(18) // padding between children and parent
-        .paddingLeft(8)
-        .paddingRight(8)
-        .paddingBottom(8)
-        .paddingInner(4) // padding between children
+        .size([treemapWidth - (treemapMargin * 2), treemapHeight - (treemapMargin * 2)])
+        // root label is hidden, so reserve no top band for it
+        .paddingTop((d) => d.depth === 0 ? 2 : 18)
+        .paddingLeft(2)
+        .paddingRight(2)
+        .paddingBottom(2)
+        .paddingInner(3) // padding between children
         .round(true); // round the width/height numbers
 
       // combine treemap var (data structure) with the root node (the actual data)
@@ -1024,7 +1045,7 @@ export default {
         .nodeId(d => d.id)
         .nodeWidth(15)
         .nodePadding(10)
-        .extent([[1, 1], [sankeyWidth - sankeyMargin.left - sankeyMargin.right - 1, sankeyHeight - sankeyMargin.top - sankeyMargin.bottom - 6]]);
+        .extent([[1, 1], [sankeyWidth - sankeyMargin.left - sankeyMargin.right - 1, sankeyHeight - sankeyMargin.top - sankeyMargin.bottom - 2]]);
 
       // Generate the sankey layout
       const graph = sankeyLayout(data);
@@ -1324,6 +1345,15 @@ export default {
 </script>
 
 <style>
+/* not scoped: teleported into the spigraph sub-navbar */
+/* widen the "Add another field" typeahead so its placeholder isn't clipped */
+.subfield-group {
+  flex: 0 1 auto;
+}
+.subfield-group input {
+  min-width: 280px;
+}
+
 /* styling for the lines connecting the labels to the slices
    make sure they are lines, not triangles (no fill) */
 .spigraph-pie polyline {

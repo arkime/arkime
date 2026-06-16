@@ -102,7 +102,7 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'arkime', 'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
+        'arkime', 'sessions', 'spiview', 'spigraph', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ],
       // active-pill colors -- use Arkime CSS vars so the pill flips
@@ -127,7 +127,6 @@ export default {
         sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
         spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
-        connections: { title: this.$t('navigation.connections'), link: 'connections', hotkey: ['Connections'], name: 'Connections' },
         files: { title: this.$t('navigation.files'), link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
         stats: { title: this.$t('navigation.stats'), link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
         upload: { title: this.$t('navigation.upload'), link: 'upload', permission: 'canUpload', name: 'Upload' },

@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t('welcome.v7Intro') }}
           <ul class="v7-list ms-4 mt-1">
             <li
-              v-for="n in 5"
+              v-for="n in 6"
               :key="n">
               {{ $t(`welcome.v7Item${n}`) }}
             </li>

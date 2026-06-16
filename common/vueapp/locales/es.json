@@ -115,7 +115,6 @@
     "settings": "Configuración",
     "spiview": "Vista SPI",
     "spigraph": "Gráfico SPI",
-    "connections": "Conexiones",
     "hunt": "Búsqueda",
     "stats": "Estadísticas",
     "files": "Archivos",
@@ -1361,7 +1360,8 @@
     "v7Item2": "Nueva vista de sesión (detalle/paquetes/tshark)",
     "v7Item3": "Más internacionalización",
     "v7Item4": "Más visualizaciones",
-    "v7Item5": "Y mucho más"
+    "v7Item5": "Conexiones se movió a Gráfico SPI",
+    "v7Item6": "Y mucho más"
   },
   "helpNotes": {
     "learnMore": "Más información",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "El Gráfico SPI muestra los valores principales de cualquier campo a lo largo del tiempo — prueba distintos campos y tipos de gráfico."
-    },
-    "connections": {
-      "text": "La página de Conexiones muestra cómo se comunican los orígenes y los destinos — arrastra, haz zoom y haz clic en los nodos para profundizar."
     },
     "hunt": {
       "text": "Las búsquedas (Hunt) examinan el interior de los paquetes sin procesar, no solo los metadatos de sesión. Crea un trabajo de búsqueda de paquetes para encontrar lo que la indexación pasó por alto."
@@ -1407,15 +1404,17 @@
     "maxElements": "Elementos máximos",
     "maxElementsTip": "Número máximo de elementos devueltos (para el primer campo seleccionado)",
     "graphType": "Tipo de gráfico",
-    "graphType-default": "línea de tiempo/mapa",
-    "graphType-pie": "dona",
-    "graphType-table": "tabla",
-    "graphType-treemap": "mapa de árbol",
-    "graphType-sankey": "sankey",
+    "graphType-default": "Línea de tiempo/mapa",
+    "graphType-pie": "Dona",
+    "graphType-table": "Tabla",
+    "graphType-treemap": "Mapa de árbol",
+    "graphType-sankey": "Sankey",
+    "graphType-connections": "Conexiones",
     "sortBy": "Ordenar por",
     "sortBy-name": "Alfabéticamente",
     "sortBy-graph": "Conteo",
     "refreshEvery": "Actualizar cada",
+    "exportCSV": "Exportar CSV",
     "exportCSVSPIGraphTip": "Exportar estos datos como archivo CSV"
   },
   "utils": {

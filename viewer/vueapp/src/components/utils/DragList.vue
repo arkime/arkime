@@ -72,7 +72,7 @@ export default {
 .arkime-drag-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.3rem 0.5rem;
+  padding: 0.45rem 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1;

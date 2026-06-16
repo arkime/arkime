@@ -115,7 +115,6 @@
     "settings": "Seaded",
     "spiview": "SPI Vaade",
     "spigraph": "SPI Graafik",
-    "connections": "Ühendused",
     "hunt": "Jaht",
     "stats": "Statistika",
     "files": "Failid",
@@ -1361,7 +1360,8 @@
     "v7Item2": "Uus seansivaade (üksikasjad/paketid/tshark)",
     "v7Item3": "Rohkem rahvusvahelistamist",
     "v7Item4": "Rohkem visualiseeringuid",
-    "v7Item5": "Ja palju muud"
+    "v7Item5": "Ühendused on nüüd SPI Graafikus",
+    "v7Item6": "Ja palju muud"
   },
   "helpNotes": {
     "learnMore": "Loe lähemalt",
@@ -1377,9 +1377,6 @@
     },
     "spigraph": {
       "text": "SPI Graafik kuvab mis tahes välja populaarseimad väärtused ajas — proovi erinevaid välju ja graafikutüüpe."
-    },
-    "connections": {
-      "text": "Ühenduste leht näitab, kuidas allikad ja sihtkohad omavahel suhtlevad — lohista, suumi ja klõpsa sõlmedel, et lähemalt uurida."
     },
     "hunt": {
       "text": "Jahid otsivad toorpakettide seest, mitte ainult seansi metaandmetest. Loo paketiotsingu töö, et leida see, mis indekseerimisel märkamata jäi."
@@ -1407,15 +1404,17 @@
     "maxElements": "Maksimaalne elementide arv",
     "maxElementsTip": "Tagastatud elementide maksimaalne arv (esimese valitud välja jaoks)",
     "graphType": "Graafiku tüüp",
-    "graphType-default": "ajajoon/kaart",
-    "graphType-pie": "sõõrik",
-    "graphType-table": "tabel",
-    "graphType-treemap": "puukaart",
-    "graphType-sankey": "sankey",
+    "graphType-default": "Ajajoon/kaart",
+    "graphType-pie": "Sõõrik",
+    "graphType-table": "Tabel",
+    "graphType-treemap": "Puukaart",
+    "graphType-sankey": "Sankey",
+    "graphType-connections": "Ühendused",
     "sortBy": "Sorteeri",
     "sortBy-name": "Tähestikuliselt",
     "sortBy-graph": "Loendus",
     "refreshEvery": "Värskenda iga",
+    "exportCSV": "Ekspordi CSV",
     "exportCSVSPIGraphTip": "Ekspordi SPI graafiku andmed CSV kujul"
   },
   "utils": {
