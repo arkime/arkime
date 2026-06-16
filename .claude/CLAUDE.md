@@ -111,7 +111,7 @@ Arkime is a modular network analysis system with these components:
 
 ### Tech Stack
 - **Vue 3** - Composition API ready
-- **Vite 7.x** - Modern bundler with HMR (replaces Webpack)
+- **Vite 8.x** - Modern bundler with HMR (replaces Webpack); uses Rolldown + Oxc internally
 - **Bootstrap Vue Next** - Bootstrap 5 components
 - **Vue Router 4** - SPA routing
 - **Vuex 4** - State management
