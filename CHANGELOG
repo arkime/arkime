@@ -40,8 +40,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
 
+6.5.1 2026/07/xx
 
-6.4.1 2026/06/xx
+
+6.5.0 2026/06/15
 ## Breaking
   - #4005 userAuthIps is now correctly matched against the real connecting peer address.
           Deployments behind a proxy must ensure the proxy's own address is
@@ -52,7 +54,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4030 Fix hidePcap/hideFiles/hideStats/disablePcapDownload failing open for users with the permission inherited from multiple roles
   - #4031 Fix CSV formula injection in session, connection, and user CSV exports by neutralizing cells starting with = + - @
 ## Capture
-  - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
+  - #3996 Added missing ntlm.detail.jade for NTLM session detail rendering
   - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
   - #3997 Added IPFIX and sFlow v5 classifiers for flow telemetry visibility
   - #3997 Added DCERPC interface labels for AD CS (MS-WCCE/ICPR), PrintNightmare (MS-RPRN/MS-PAR), DfsCoerce, ShadowCoerce, WMI, BackupKey (BKRP), EventLog6, DFS-R (FRS2), and IObjectExporter
@@ -97,7 +99,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4027 Fix viewer crash when /api/sessions/csv with ids fails to build the query
   - #4027 Fix malformed TOTP codes causing a request error instead of being treated as invalid
   - #4031 Fix potential stored XSS in session detail
-  - #4031 Fix possible stored XSS in hunt search string
+  - #4031 Fix stored XSS in hunt search string
 ## Wise
   - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
   - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
