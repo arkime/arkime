@@ -51,7 +51,6 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d glib2 -d libcurl -d libnghttp2 -d yara -d lua-libs -d python3-libs -d curl"
     package: rpm
     python: python3
-    prbuild: true
 
   - version: ubuntu2204_amd64
     container: andywick/arkime-build-22:6.0.0-2
@@ -182,7 +181,6 @@ include:
     package: rpm
     python: python3
     runson: ubuntu-24.04-arm
-    prbuild: true
 
   ############# FreeBSD #############
   - version: freebsd14.x86_64
