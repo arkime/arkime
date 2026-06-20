@@ -517,6 +517,10 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
         }
         if (host)
             g_free(host);
+
+        // Don't leave the caller's pointer dangling at the freed host
+        if (uniSet)
+            *uniSet = NULL;
         return 1;
     }
 
@@ -552,6 +556,134 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
         }
     }
     return 0;
+}
+/******************************************************************************/
+LOCAL void dns_free_answer(DNSAnswer_t *answer)
+{
+    switch (answer->type_id) {
+    case DNS_RR_A: {
+        // Nothing to do
+    }
+    break;
+    case DNS_RR_NS: {
+        if (answer->nsdname) {
+            g_free(answer->nsdname);
+        }
+    }
+    break;
+    case DNS_RR_CNAME: {
+        if (answer->cname) {
+            g_free(answer->cname);
+        }
+    }
+    break;
+    case DNS_RR_MX: {
+        if (!answer->mx) {
+            break;
+        }
+        if (answer->mx->exchange) {
+            g_free(answer->mx->exchange);
+        }
+        ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+    }
+    break;
+    case DNS_RR_AAAA: {
+        if (answer->ipAAAA) {
+            g_free(answer->ipAAAA);
+        }
+    }
+    break;
+    case DNS_RR_TXT: {
+        if (answer->txts) {
+            g_ptr_array_free(answer->txts, TRUE);
+        }
+    }
+    break;
+    case DNS_RR_HTTPS: {
+        if (!answer->svcb) {
+            break;
+        }
+        if (answer->svcb->dname) {
+            g_free(answer->svcb->dname);
+        }
+        while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
+            DNSSVCBRDataFieldValue_t *fieldValue;
+            DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
+            switch (fieldValue->key) {
+            case SVCB_PARAM_KEY_ALPN: {
+                g_ptr_array_free(fieldValue->value, TRUE);
+            }
+            break;
+            case SVCB_PARAM_KEY_PORT: {
+                ARKIME_TYPE_FREE(uint16_t, (uint16_t *)fieldValue->value);
+            }
+            break;
+            case SVCB_PARAM_KEY_IPV4_HINT: {
+                g_array_free(fieldValue->value, TRUE);
+            }
+            break;
+            case SVCB_PARAM_KEY_IPV6_HINT: {
+                g_ptr_array_free(fieldValue->value, TRUE);
+            }
+            break;
+            }
+            ARKIME_TYPE_FREE(DNSSVCBRDataFieldValue_t, fieldValue);
+        }
+        ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
+    }
+    break;
+    case DNS_RR_CAA: {
+        if (!answer->caa) {
+            break;
+        }
+        if (answer->caa->tag) {
+            g_free(answer->caa->tag);
+        }
+        if (answer->caa->value) {
+            g_free(answer->caa->value);
+        }
+        ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
+    }
+    break;
+    case DNS_RR_RRSIG: {
+        if (!answer->rrsig) {
+            break;
+        }
+        if (answer->rrsig->signerName) {
+            g_free(answer->rrsig->signerName);
+        }
+        ARKIME_TYPE_FREE(DNSRRSIGRData_t, answer->rrsig);
+    }
+    break;
+    case DNS_RR_NSEC: {
+        if (!answer->nsec) {
+            break;
+        }
+        if (answer->nsec->nextDomainName) {
+            g_free(answer->nsec->nextDomainName);
+        }
+        if (answer->nsec->typeList) {
+            g_free(answer->nsec->typeList);
+        }
+        ARKIME_TYPE_FREE(DNSNSECRData_t, answer->nsec);
+    }
+    break;
+    case DNS_RR_DS: {
+        if (!answer->ds) {
+            break;
+        }
+        if (answer->ds->digest) {
+            g_free(answer->ds->digest);
+        }
+        ARKIME_TYPE_FREE(DNSDSRData_t, answer->ds);
+    }
+    break;
+    }
+
+    if (answer->name && answer->name != root) {
+        g_free(answer->name);
+    }
+    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
 }
 /******************************************************************************/
 LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, int len)
@@ -805,6 +937,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
             uint16_t antype = 0;
             BSB_IMPORT_u16 (bsb, antype);
+            answer->type_id = antype;
+
             uint16_t anclass = 0;
             BSB_IMPORT_u16 (bsb, anclass);
 
@@ -819,10 +953,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             BSB_IMPORT_u16 (bsb, rdlength);
 
             if (BSB_REMAINING(bsb) < rdlength) {
-                if (answer->name && answer->name != root) {
-                    g_free(answer->name);
-                }
-                ARKIME_TYPE_FREE(DNSAnswer_t, answer);
+                dns_free_answer(answer);
                 break;
             }
 
@@ -952,12 +1083,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 if (parseDNSRecordAll) {
                     if (dns_add_host(session, dns, dns->mxHosts, dnsHostMailserverField, &answer->mx->exchange, &jsonLen, name, namelen)) {
-                        ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
                         goto continueerr;
                     }
                 } else {
                     if (dns_add_host(session, dns, &(dns->hosts), dnsHostField, &answer->mx->exchange, &jsonLen, name, namelen)) {
-                        ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
                         goto continueerr;
                     }
                 }
@@ -1235,7 +1364,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
             if (antype < ARRAY_LEN(qtypes) && qtypes[antype]) {
                 answer->type = qtypes[antype];
-                answer->type_id = antype;
             }
 
             answer->ttl = anttl;
@@ -1245,13 +1373,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             continue;
 
 continueerr:
-            if (answer->name && answer->name != root) {
-                g_free(answer->name);
-            }
-            if (answer->txts) {
-                g_ptr_array_free(answer->txts, TRUE);
-            }
-            ARKIME_TYPE_FREE(DNSAnswer_t, answer);
+            dns_free_answer(answer);
         } // record loop
     } // record type loop
 
@@ -1714,130 +1836,7 @@ LOCAL void dns_free_object(ArkimeFieldObject_t *object)
     DNSAnswer_t *answer;
 
     while (DLL_POP_HEAD(t_, &dns->answers, answer)) {
-        switch (answer->type_id) {
-        case DNS_RR_A: {
-            // Nothing to do
-        }
-        break;
-        case DNS_RR_NS: {
-            if (answer->nsdname) {
-                g_free(answer->nsdname);
-            }
-        }
-        break;
-        case DNS_RR_CNAME: {
-            if (answer->cname) {
-                g_free(answer->cname);
-            }
-        }
-        break;
-        case DNS_RR_MX: {
-            if (!answer->mx) {
-                break;
-            }
-            if (answer->mx->exchange) {
-                g_free(answer->mx->exchange);
-            }
-            ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
-        }
-        break;
-        case DNS_RR_AAAA: {
-            if (answer->ipAAAA) {
-                g_free(answer->ipAAAA);
-            }
-        }
-        break;
-        case DNS_RR_TXT: {
-            if (answer->txts) {
-                g_ptr_array_free(answer->txts, TRUE);
-            }
-        }
-        break;
-        case DNS_RR_HTTPS: {
-            if (!answer->svcb) {
-                break;
-            }
-            if (answer->svcb->dname) {
-                g_free(answer->svcb->dname);
-            }
-            while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
-                DNSSVCBRDataFieldValue_t *fieldValue;
-                DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
-                switch (fieldValue->key) {
-                case SVCB_PARAM_KEY_ALPN: {
-                    g_ptr_array_free(fieldValue->value, TRUE);
-                }
-                break;
-                case SVCB_PARAM_KEY_PORT: {
-                    ARKIME_TYPE_FREE(uint16_t, (uint16_t *)fieldValue->value);
-                }
-                break;
-                case SVCB_PARAM_KEY_IPV4_HINT: {
-                    g_array_free(fieldValue->value, TRUE);
-                }
-                break;
-                case SVCB_PARAM_KEY_IPV6_HINT: {
-                    g_ptr_array_free(fieldValue->value, TRUE);
-                }
-                break;
-                }
-                ARKIME_TYPE_FREE(DNSSVCBRDataFieldValue_t, fieldValue);
-            }
-            ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
-        }
-        break;
-        case DNS_RR_CAA: {
-            if (!answer->caa) {
-                break;
-            }
-            if (answer->caa->tag) {
-                g_free(answer->caa->tag);
-            }
-            if (answer->caa->value) {
-                g_free(answer->caa->value);
-            }
-            ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
-        }
-        break;
-        case DNS_RR_RRSIG: {
-            if (!answer->rrsig) {
-                break;
-            }
-            if (answer->rrsig->signerName) {
-                g_free(answer->rrsig->signerName);
-            }
-            ARKIME_TYPE_FREE(DNSRRSIGRData_t, answer->rrsig);
-        }
-        break;
-        case DNS_RR_NSEC: {
-            if (!answer->nsec) {
-                break;
-            }
-            if (answer->nsec->nextDomainName) {
-                g_free(answer->nsec->nextDomainName);
-            }
-            if (answer->nsec->typeList) {
-                g_free(answer->nsec->typeList);
-            }
-            ARKIME_TYPE_FREE(DNSNSECRData_t, answer->nsec);
-        }
-        break;
-        case DNS_RR_DS: {
-            if (!answer->ds) {
-                break;
-            }
-            if (answer->ds->digest) {
-                g_free(answer->ds->digest);
-            }
-            ARKIME_TYPE_FREE(DNSDSRData_t, answer->ds);
-        }
-        break;
-        }
-
-        if (answer->name && answer->name != root) {
-            g_free(answer->name);
-        }
-        ARKIME_TYPE_FREE(DNSAnswer_t, answer);
+        dns_free_answer(answer);
     }
 
     if (dns->query.hostname && dns->query.hostname != root) {
