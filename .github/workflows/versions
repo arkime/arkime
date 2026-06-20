@@ -36,6 +36,13 @@ include:
     notice: true
     prbuild: true
 
+  - version: fc44.x86_64
+    container: andywick/arkime-build-f44:6.0.0-6
+    buildopt: "--kafka"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d glib2 -d libcurl -d libnghttp2 -d yara -d lua-libs -d python3-libs -d curl"
+    package: rpm
+    python: python3
+
   - version: ubuntu2204_amd64
     container: andywick/arkime-build-22:6.0.0-2
     buildopt: "--kafka --pfring"
@@ -156,6 +163,14 @@ include:
     buildopt: "--thirdparty --kafka"
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs -d curl"
     package: rpm
+    runson: ubuntu-24.04-arm
+
+  - version: fc44.aarch64
+    container: andywick/arkime-build-f44-arm64:6.0.0-6
+    buildopt: "--kafka"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d glib2 -d libcurl -d libnghttp2 -d yara -d lua-libs -d python3-libs -d curl"
+    package: rpm
+    python: python3
     runson: ubuntu-24.04-arm
 
   ############# FreeBSD #############
