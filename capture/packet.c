@@ -418,6 +418,34 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             if (session->ethertype == 0 && n + 1 < packet->pktlen) {
                 session->ethertype = (pcapData[n] << 8) | pcapData[n + 1];
             }
+        } else if (pcapFileHeader.dlt == DLT_ETHERNET_MPACKET) {
+            // mPacket inner Ethernet frame starts at etherOffset (past the preamble)
+            const uint8_t *ed = packet->pkt + packet->etherOffset;
+            int eavail = (int)packet->pktlen - (int)packet->etherOffset;
+            if (packet->direction == 1) {
+                arkime_field_macoui_add(session, mac1Field, oui1Field, ed);
+                arkime_field_macoui_add(session, mac2Field, oui2Field, ed + 6);
+            } else {
+                arkime_field_macoui_add(session, mac1Field, oui1Field, ed + 6);
+                arkime_field_macoui_add(session, mac2Field, oui2Field, ed);
+            }
+
+            int n = 12;
+            while (n + 3 < eavail &&
+                   ((ed[n] == 0x81 && ed[n + 1] == 0x00) || (ed[n] == 0x88 && ed[n + 1] == 0xa8))) {
+                uint16_t vlan = ((uint16_t)(ed[n + 2] << 8 | ed[n + 3])) & 0xfff;
+                arkime_field_int_add(vlanField, session, vlan);
+                if (ed[n] == 0x81 && ed[n + 1] == 0x00) {
+                    arkime_field_int_add(dot1qField, session, vlan);
+                } else {
+                    arkime_field_int_add(dot1adField, session, vlan);
+                }
+                n += 4;
+            }
+
+            if (session->ethertype == 0 && n + 1 < eavail) {
+                session->ethertype = (ed[n] << 8) | ed[n + 1];
+            }
         }
 
         if (packet->vlan) {
@@ -1491,6 +1519,61 @@ LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t *batch, ArkimePacke
     return ARKIME_PACKET_CORRUPT;
 }
 /******************************************************************************/
+// IEEE 802.3br Frame Preemption mPacket (DLT_ETHERNET_MPACKET / linktype 274)
+// Layout: [optional 0x50 align octet][0x55... preamble][SMD octet][Ethernet mData][4-byte CRC]
+// SMD (Start mPacket Delimiter) values per IEEE 802.3br (see Wireshark packet-fpp.c)
+LOCAL ArkimePacketRC arkime_packet_mpacket(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
+{
+    if (len < 14) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short %d", len);
+#endif
+        return ARKIME_PACKET_CORRUPT;
+    }
+
+    int offset = 0;
+
+    // An optional leading octet (0x50) carries preamble alignment bits
+    if (data[0] == 0x50)
+        offset = 1;
+
+    // Skip the 0x55 preamble octets, leaving room for the SMD and a frame
+    while (offset + 2 < len && data[offset] == 0x55)
+        offset++;
+
+    switch (data[offset]) {
+    case 0xd5: // SMD-E  Express frame
+    case 0xe6: // SMD-S0 preemptable start / non-fragmented frame
+    case 0x4c: // SMD-S1
+    case 0x7f: // SMD-S2
+    case 0xb3: // SMD-S3
+        offset++;
+        break;
+    default:
+        // SMD-V/SMD-R control frames have no Ethernet payload, and SMD-Cx
+        // continuation fragments require reassembly we don't perform here
+#ifdef DEBUG_PACKET
+        LOG("Unsupported mPacket SMD 0x%02x", data[offset]);
+#endif
+        return ARKIME_PACKET_CORRUPT;
+    }
+
+    // What remains is the Ethernet mData followed by a trailing 4-byte CRC
+    int elen = len - offset - 4;
+    if (elen < 14) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short after preamble %d", elen);
+#endif
+        return ARKIME_PACKET_CORRUPT;
+    }
+
+    // Treat the inner Ethernet frame as the sole frame: pre-seeding etherOffset
+    // makes arkime_packet_ether set outerEtherOffset == etherOffset, so the
+    // preamble bytes are not mistaken for an outer MAC.
+    packet->etherOffset = offset;
+    return arkime_packet_ether(batch, packet, data + offset, elen);
+}
+/******************************************************************************/
 LOCAL ArkimePacketRC arkime_packet_radiotap(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (data[0] != 0 || len < 36)
@@ -1616,11 +1699,16 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     case DLT_NFLOG: // NFLOG
         rc = arkime_packet_nflog(batch, packet, packet->pkt, packet->pktlen);
         break;
+    case DLT_ETHERNET_MPACKET: // IEEE 802.3br mPackets
+        rc = arkime_packet_mpacket(batch, packet, packet->pkt, packet->pktlen);
+        break;
     default:
         if (config.ignoreErrors)
             rc = ARKIME_PACKET_CORRUPT;
+        else if (config.pcapReadOffline)
+            LOGEXIT("ERROR - Unsupported pcap link type %u in file %s", pcapFileHeader.dlt, offlineInfo[packet->readerPos].filename);
         else
-            LOGEXIT("ERROR - Unsupported pcap link type %u", pcapFileHeader.dlt);
+            LOGEXIT("ERROR - Unsupported pcap link type %u on interface %s", pcapFileHeader.dlt, config.interface ? config.interface[packet->readerPos] : NULL);
     }
 
     if (likely(rc == ARKIME_PACKET_DO_PROCESS) && unlikely(packet->mProtocol == 0)) {
