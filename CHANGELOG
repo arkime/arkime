@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4048 Node 22.23.0
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
+  - #4055 Fix DNS memory leak when parsing malformed answers
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 
