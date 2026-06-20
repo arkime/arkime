@@ -38,6 +38,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.5.1 2026/07/xx
 ## Release
   - #4048 Node 22.23.0
+## Capture
+  - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
+## Capture/Viewer
+  - #4054 Add mpacket link layer support
 
 6.5.0 2026/06/15
 ## Breaking

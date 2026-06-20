@@ -975,6 +975,40 @@ class Pcap {
   }
 
   // --------------------------------------------------------------------------
+  // IEEE 802.3br Frame Preemption mPacket (DLT_ETHERNET_MPACKET / 274)
+  // Layout: [optional 0x50 align octet][0x55... preamble][SMD octet][Ethernet mData][4-byte CRC]
+  mpacket (buffer, obj, pos) {
+    let offset = 0;
+
+    // Optional leading octet carrying preamble alignment bits
+    if (buffer[0] === 0x50) { offset = 1; }
+
+    // Skip the 0x55 preamble octets, leaving room for the SMD and a frame
+    while (offset + 2 < buffer.length && buffer[offset] === 0x55) { offset++; }
+
+    // SMD (Start mPacket Delimiter); only express / preemptable-start frames
+    // carry a full Ethernet frame here (see capture/parsers gre/packet.c)
+    switch (buffer[offset]) {
+    case 0xd5: // SMD-E  Express frame
+    case 0xe6: // SMD-S0 preemptable start / non-fragmented frame
+    case 0x4c: // SMD-S1
+    case 0x7f: // SMD-S2
+    case 0xb3: // SMD-S3
+      offset++;
+      break;
+    default:
+      // SMD-V/SMD-R control frames and SMD-Cx continuation fragments have no
+      // standalone Ethernet frame to decode here
+      return;
+    }
+
+    // What remains is the Ethernet mData followed by a trailing 4-byte CRC
+    const end = buffer.length - 4;
+    if (end - offset < 14) { return; }
+    this.ether(buffer.slice(offset, end), obj, pos + offset);
+  }
+
+  // --------------------------------------------------------------------------
   radiotap (buffer, obj, pos) {
     const l = buffer[2] + 24 + 6;
     const ethertype = buffer.readUInt16BE(l);
@@ -1075,6 +1109,9 @@ class Pcap {
       break;
     case 239: // NFLOG
       this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+      break;
+    case 274: // IEEE 802.3br mPackets
+      this.mpacket(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
       break;
     case 276: // SLL2
       this.ip4(buffer.slice(36, obj.pcap.incl_len + 20), obj, 36);
