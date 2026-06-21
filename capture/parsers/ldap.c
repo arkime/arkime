@@ -70,7 +70,7 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
                 BSB sbsb;
                 BSB_INIT(sbsb, ivalue, ilen);
                 uint32_t spc, stag, slen;
-                uint8_t *svalue = arkime_parsers_asn_get_tlv(&sbsb, &spc, &stag, &slen);
+                const uint8_t *svalue = arkime_parsers_asn_get_tlv(&sbsb, &spc, &stag, &slen);
                 if (svalue && stag == 4) {
                     svalue = arkime_parsers_asn_get_tlv(&sbsb, &spc, &stag, &slen);
                     /* For now only handle NTLMSSP blobs delivered directly
@@ -105,7 +105,7 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
             // resultCode (ENUMERATED)
             arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
             // matchedDN (OCTET STRING)
-            uint8_t *rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            const uint8_t *rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
             if (rvalue && rlen >= 8 && memcmp(rvalue, "NTLMSSP\0", 8) == 0) {
                 arkime_parsers_ntlm_decode(session, rvalue, rlen);
             }

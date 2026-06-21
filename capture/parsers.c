@@ -707,8 +707,8 @@ LOCAL gboolean arkime_ntlm_secbuf(const uint8_t *msg, uint32_t msglen,
         return FALSE;
 
     BSB hdr;
-    uint16_t slen;
-    uint32_t soff;
+    uint16_t slen = 0;
+    uint32_t soff = 0;
     BSB_INIT(hdr, msg + pos, 8);
     BSB_LIMPORT_u16(hdr, slen);
     BSB_LIMPORT_skip(hdr, 2);              // skip MaxLen
@@ -751,7 +751,7 @@ void arkime_parsers_ntlm_decode(ArkimeSession_t *session,
     BSB_INIT(msg, data, dlen);
     BSB_LIMPORT_skip(msg, 8); // already validated NTLMSSP signature
 
-    uint32_t mtype;
+    uint32_t mtype = 0;
     BSB_LIMPORT_u32(msg, mtype);
     if (BSB_IS_ERROR(msg) || mtype < 1 || mtype > 3)
         return;
