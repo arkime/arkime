@@ -112,7 +112,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
     }
 }
 /******************************************************************************/
-void http_common_add_header_value(ArkimeSession_t *session, int pos, const char *s, int l)
+LOCAL void http_common_add_header_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
     while (l > 0 && isspace(*s)) {
         s++;
