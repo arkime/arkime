@@ -1406,6 +1406,7 @@
     "maxElementsTip": "Aximummay umbernay ofway elementsway eturnedray (orfay ethay irtsfay ieldfay electedsay)",
     "graphType": "Raphgray Ypetay",
     "graphType-default": "Imelinetay/apmay",
+    "graphType-heatmap": "Eatmaphay",
     "graphType-pie": "Onutday",
     "graphType-table": "Abletay",
     "graphType-treemap": "Eemaptray",
@@ -1415,6 +1416,8 @@
     "sortBy-name": "Alphabeticallyway",
     "sortBy-graph": "Ountcay",
     "refreshEvery": "Efreshrway everyway",
+    "intensity": "Intensityway",
+    "sessions": "Essionssay",
     "exportCSV": "Exportway SVCAY",
     "exportCSVSPIGraphTip": "Exportway isthay ataday asway away SVCAY ilefay"
   },

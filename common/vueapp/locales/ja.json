@@ -1405,6 +1405,7 @@
     "maxElementsTip": "返される最大要素数（最初に選択されたフィールドに適用）",
     "graphType": "グラフタイプ",
     "graphType-default": "タイムライン/マップ",
+    "graphType-heatmap": "ヒートマップ",
     "graphType-pie": "ドーナツ",
     "graphType-table": "テーブル",
     "graphType-treemap": "ツリーマップ",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "アルファベット順",
     "sortBy-graph": "カウント順",
     "refreshEvery": "更新間隔",
+    "intensity": "強度",
+    "sessions": "セッション",
     "exportCSV": "CSV をエクスポート",
     "exportCSVSPIGraphTip": "このデータを CSV ファイルとしてエクスポート"
   },

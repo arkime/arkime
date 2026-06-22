@@ -1405,6 +1405,7 @@
     "maxElementsTip": "Nombre maximum d'éléments retournés (pour le premier champ sélectionné)",
     "graphType": "Type de graphique",
     "graphType-default": "Chronologie/carte",
+    "graphType-heatmap": "Carte thermique",
     "graphType-pie": "Beignet",
     "graphType-table": "Tableau",
     "graphType-treemap": "Treemap",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "Alphabétiquement",
     "sortBy-graph": "Compte",
     "refreshEvery": "Actualiser toutes les",
+    "intensity": "Intensité",
+    "sessions": "Sessions",
     "exportCSV": "Exporter CSV",
     "exportCSVSPIGraphTip": "Exporter les données du graphique SPI au format CSV"
   },

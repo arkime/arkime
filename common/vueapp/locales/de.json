@@ -1405,6 +1405,7 @@
     "maxElementsTip": "Maximale Anzahl zurückgegebener Elemente (für das erste ausgewählte Feld)",
     "graphType": "Graphentyp",
     "graphType-default": "Zeitachse/Karte",
+    "graphType-heatmap": "Heatmap",
     "graphType-pie": "Donut",
     "graphType-table": "Tabelle",
     "graphType-treemap": "Baumkarte",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "Alphabetisch",
     "sortBy-graph": "Anzahl",
     "refreshEvery": "Alle aktualisieren",
+    "intensity": "Intensität",
+    "sessions": "Sitzungen",
     "exportCSV": "CSV exportieren",
     "exportCSVSPIGraphTip": "Diese Daten als CSV-Datei exportieren"
   },

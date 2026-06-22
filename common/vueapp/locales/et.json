@@ -1405,6 +1405,7 @@
     "maxElementsTip": "Tagastatud elementide maksimaalne arv (esimese valitud välja jaoks)",
     "graphType": "Graafiku tüüp",
     "graphType-default": "Ajajoon/kaart",
+    "graphType-heatmap": "Soojuskaart",
     "graphType-pie": "Sõõrik",
     "graphType-table": "Tabel",
     "graphType-treemap": "Puukaart",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "Tähestikuliselt",
     "sortBy-graph": "Loendus",
     "refreshEvery": "Värskenda iga",
+    "intensity": "Intensiivsus",
+    "sessions": "Seansid",
     "exportCSV": "Ekspordi CSV",
     "exportCSVSPIGraphTip": "Ekspordi SPI graafiku andmed CSV kujul"
   },

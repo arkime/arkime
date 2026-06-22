@@ -1405,6 +1405,7 @@
     "maxElementsTip": "Número máximo de elementos retornados (para o primeiro campo selecionado)",
     "graphType": "Tipo de Gráfico",
     "graphType-default": "Linha do tempo/mapa",
+    "graphType-heatmap": "Mapa de calor",
     "graphType-pie": "Rosca",
     "graphType-table": "Tabela",
     "graphType-treemap": "Treemap",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "Alfabeticamente",
     "sortBy-graph": "Contagem",
     "refreshEvery": "Atualizar a cada",
+    "intensity": "Intensidade",
+    "sessions": "Sessões",
     "exportCSV": "Exportar CSV",
     "exportCSVSPIGraphTip": "Exportar estes dados como arquivo CSV"
   },

@@ -1405,6 +1405,7 @@
     "maxElementsTip": "返回的最大元素数（针对第一个选定字段）",
     "graphType": "图表类型",
     "graphType-default": "时间线/地图",
+    "graphType-heatmap": "热力图",
     "graphType-pie": "圆环图",
     "graphType-table": "表格",
     "graphType-treemap": "树状图",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "按字母顺序",
     "sortBy-graph": "按计数",
     "refreshEvery": "每隔多久刷新一次",
+    "intensity": "强度",
+    "sessions": "会话",
     "exportCSV": "导出 CSV",
     "exportCSVSPIGraphTip": "以 CSV 格式导出 SPI 图表数据"
   },

@@ -1405,6 +1405,7 @@
     "maxElementsTip": "반환되는 최대 요소 수 (선택된 첫 번째 필드 기준)",
     "graphType": "그래프 유형",
     "graphType-default": "타임라인/지도",
+    "graphType-heatmap": "히트맵",
     "graphType-pie": "도넛형",
     "graphType-table": "테이블",
     "graphType-treemap": "트리맵",
@@ -1414,6 +1415,8 @@
     "sortBy-name": "사전순",
     "sortBy-graph": "개수",
     "refreshEvery": "새로고침 주기",
+    "intensity": "강도",
+    "sessions": "세션",
     "exportCSV": "CSV 내보내기",
     "exportCSVSPIGraphTip": "이 데이터를 CSV 파일로 내보내기"
   },
