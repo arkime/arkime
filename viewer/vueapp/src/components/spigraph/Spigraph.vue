@@ -3,164 +3,158 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <page-layout class="spigraph-page">
-    <template #chrome>
-      <ArkimeCollapsible>
-        <div class="page-toolbar">
-          <!-- search navbar -->
-          <arkime-search
-            :num-matching-sessions="filtered"
-            @change-search="onSearch" /> <!-- /search navbar -->
-
-          <!-- spigraph sub navbar -->
-          <div class="spigraph-form mx-1">
-            <div class="d-flex flex-wrap align-center gap-1 page-subnav">
-              <!-- main graph type switcher -->
-              <div class="d-flex align-center spigraph-type-switcher">
-                <v-btn-toggle
-                  :model-value="spiGraphType"
-                  @update:model-value="changeSpiGraphType"
-                  mandatory
-                  divided
-                  density="comfortable"
-                  variant="outlined"
-                  color="primary"
-                  class="spigraph-type-toggle">
-                  <v-btn
-                    v-for="t in graphTypeOptions"
-                    :key="t"
-                    :value="t"
-                    size="small">
-                    {{ $t(`spigraph.graphType-${t}`) }}
-                  </v-btn>
-                </v-btn-toggle>
-              </div> <!-- /main graph type switcher -->
-
-              <!-- field select -->
-              <div
-                class="arkime-input-group"
-                v-if="spiGraphType !== 'connections' && fields && fields.length && fieldTypeahead">
-                <span class="arkime-input-label">
-                  {{ $t('spigraph.field') }}:
-                </span>
-                <arkime-field-typeahead
-                  :fields="fields"
-                  query-param="exp"
-                  :initial-value="fieldTypeahead"
-                  @field-selected="changeField"
-                  page="Spigraph" />
-              </div> <!-- /field select -->
-
-              <!-- maxElements select -->
-              <div
-                class="arkime-input-group"
-                v-if="spiGraphType !== 'connections'">
-                <span
-                  id="maxElements"
-                  class="arkime-input-label cursor-help">
-                  {{ $t('spigraph.maxElements') }}:
-                </span>
-                <v-tooltip activator="#maxElements">
-                  {{ $t('spigraph.maxElementsTip') }}
-                </v-tooltip>
-                <select
-                  class="arkime-input-control"
-                  :value="query.size"
-                  @change="changeMaxElements(Number($event.target.value))">
-                  <option
-                    v-for="opt in maxElementsOptions"
-                    :key="opt"
-                    :value="opt">
-                    {{ opt }}
-                  </option>
-                </select>
-              </div> <!-- /maxElements select -->
-
-              <!-- connections controls anchor -->
-              <div
-                v-if="spiGraphType === 'connections'"
-                id="connections-controls-anchor"
-                class="connections-controls-anchor d-flex flex-wrap align-center gap-1 mt-1 mb-1" />
-
-              <!-- sort select (not shown for the pie graph) -->
-              <div
-                class="arkime-input-group"
-                v-if="spiGraphType === 'default'">
-                <span class="arkime-input-label">
-                  {{ $t('spigraph.sortBy') }}:
-                </span>
-                <select
-                  class="arkime-input-control"
-                  :value="sortBy"
-                  @change="changeSortBy($event.target.value)">
-                  <option value="name">
-                    {{ $t('spigraph.sortBy-name') }}
-                  </option>
-                  <option value="graph">
-                    {{ $t('spigraph.sortBy-graph') }}
-                  </option>
-                </select>
-              </div> <!-- /sort select -->
-
-              <!-- refresh input (not shown for pie) -->
-              <div
-                class="arkime-input-group"
-                v-if="spiGraphType === 'default'">
-                <span class="arkime-input-label">
-                  {{ $t('spigraph.refreshEvery') }}:
-                </span>
-                <select
-                  class="arkime-input-control"
-                  :value="refresh"
-                  @change="changeRefreshInterval(Number($event.target.value))">
-                  <option
-                    v-for="opt in refreshOptions"
-                    :key="opt"
-                    :value="opt">
-                    {{ opt }}
-                  </option>
-                </select>
-                <span class="arkime-input-label">
-                  {{ $t('common.seconds') }}
-                </span>
-              </div> <!-- /refresh input-->
-
-              <!-- page info -->
-              <div
-                class="records-display align-self-center"
-                v-if="spiGraphType === 'default'">
-                <strong
-                  class="text-theme-accent"
-                  v-if="!error && recordsFiltered !== undefined">
-                  {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
-                </strong>
-              </div> <!-- /page info -->
-
-              <!-- export button-->
+  <div class="spigraph-page">
+    <!-- spigraph sub navbar teleports into the host toolbar -->
+    <teleport
+      defer
+      to="#tab-subnav-anchor">
+      <!-- spigraph sub navbar -->
+      <div class="spigraph-form mx-1">
+        <div class="d-flex flex-wrap gap-1">
+          <!-- main graph type switcher -->
+          <div class="d-flex align-center spigraph-type-switcher">
+            <v-btn-toggle
+              :model-value="spiGraphType"
+              @update:model-value="changeSpiGraphType"
+              mandatory
+              divided
+              density="comfortable"
+              variant="outlined"
+              color="primary"
+              class="spigraph-type-toggle">
               <v-btn
-                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey' && spiGraphType !== 'connections'"
-                variant="outlined"
-                size="small"
-                density="comfortable"
-                class="ms-1"
-                prepend-icon="mdi-download"
-                @click.stop.prevent="exportCSV">
-                {{ $t('spigraph.exportCSV') }}
-                <v-tooltip activator="parent">
-                  {{ $t('spigraph.exportCSVSPIGraphTip') }}
-                </v-tooltip>
-              </v-btn> <!-- /export button-->
+                v-for="t in graphTypeOptions"
+                :key="t"
+                :value="t"
+                size="small">
+                {{ $t(`spigraph.graphType-${t}`) }}
+              </v-btn>
+            </v-btn-toggle>
+          </div> <!-- /main graph type switcher -->
 
-              <!-- hierarchy "add another field" anchor (own full-width row) -->
-              <div
-                v-if="['pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
-                id="spigraph-subfield-anchor"
-                class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1 mt-1" />
-            </div>
-          </div>
+          <!-- field select -->
+          <div
+            class="arkime-input-group"
+            v-if="spiGraphType !== 'connections' && fields && fields.length && fieldTypeahead">
+            <span class="arkime-input-label">
+              {{ $t('spigraph.field') }}:
+            </span>
+            <arkime-field-typeahead
+              :fields="fields"
+              query-param="exp"
+              :initial-value="fieldTypeahead"
+              @field-selected="changeField"
+              page="Spigraph" />
+          </div> <!-- /field select -->
+
+          <!-- maxElements select -->
+          <div
+            class="arkime-input-group"
+            v-if="spiGraphType !== 'connections'">
+            <span
+              id="maxElements"
+              class="arkime-input-label cursor-help">
+              {{ $t('spigraph.maxElements') }}:
+            </span>
+            <v-tooltip activator="#maxElements">
+              {{ $t('spigraph.maxElementsTip') }}
+            </v-tooltip>
+            <select
+              class="arkime-input-control"
+              :value="query.size"
+              @change="changeMaxElements(Number($event.target.value))">
+              <option
+                v-for="opt in maxElementsOptions"
+                :key="opt"
+                :value="opt">
+                {{ opt }}
+              </option>
+            </select>
+          </div> <!-- /maxElements select -->
+
+          <!-- connections controls anchor -->
+          <div
+            v-if="spiGraphType === 'connections'"
+            id="connections-controls-anchor"
+            class="connections-controls-anchor d-flex flex-wrap align-center gap-1 mt-1 mb-1" />
+
+          <!-- sort select (not shown for the pie graph) -->
+          <div
+            class="arkime-input-group"
+            v-if="spiGraphType === 'default'">
+            <span class="arkime-input-label">
+              {{ $t('spigraph.sortBy') }}:
+            </span>
+            <select
+              class="arkime-input-control"
+              :value="sortBy"
+              @change="changeSortBy($event.target.value)">
+              <option value="name">
+                {{ $t('spigraph.sortBy-name') }}
+              </option>
+              <option value="graph">
+                {{ $t('spigraph.sortBy-graph') }}
+              </option>
+            </select>
+          </div> <!-- /sort select -->
+
+          <!-- refresh input (not shown for pie) -->
+          <div
+            class="arkime-input-group"
+            v-if="spiGraphType === 'default'">
+            <span class="arkime-input-label">
+              {{ $t('spigraph.refreshEvery') }}:
+            </span>
+            <select
+              class="arkime-input-control"
+              :value="refresh"
+              @change="changeRefreshInterval(Number($event.target.value))">
+              <option
+                v-for="opt in refreshOptions"
+                :key="opt"
+                :value="opt">
+                {{ opt }}
+              </option>
+            </select>
+            <span class="arkime-input-label">
+              {{ $t('common.seconds') }}
+            </span>
+          </div> <!-- /refresh input-->
+
+          <!-- page info -->
+          <div
+            class="records-display align-self-center"
+            v-if="spiGraphType === 'default'">
+            <strong
+              class="text-theme-accent"
+              v-if="!error && recordsFiltered !== undefined">
+              {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
+            </strong>
+          </div> <!-- /page info -->
+
+          <!-- export button-->
+          <v-btn
+            v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey' && spiGraphType !== 'connections'"
+            variant="outlined"
+            size="small"
+            density="comfortable"
+            class="ms-1"
+            prepend-icon="mdi-download"
+            @click.stop.prevent="exportCSV">
+            {{ $t('spigraph.exportCSV') }}
+            <v-tooltip activator="parent">
+              {{ $t('spigraph.exportCSVSPIGraphTip') }}
+            </v-tooltip>
+          </v-btn> <!-- /export button-->
+
+          <!-- hierarchy "add another field" anchor (own full-width row) -->
+          <div
+            v-if="['pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
+            id="spigraph-subfield-anchor"
+            class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1 mt-1" />
         </div>
-      </ArkimeCollapsible>
-    </template>
+      </div>
+    </teleport>
 
     <!-- main visualization (timeline/map): always inline, scrolls with content -->
     <div v-if="spiGraphType === 'default' && mapData && graphData && fieldObj && showToolBars">
@@ -255,19 +249,22 @@ SPDX-License-Identifier: Apache-2.0
         :view="query.view" /> <!-- /no results -->
     </div>
 
+    <!-- connections overlay anchor: rendered before the connections graph so its
+         deferred teleport resolves first, leaving #connections-overlay-anchor in
+         place for the child's own deferred teleport of its floating buttons -->
+    <teleport
+      v-if="spiGraphType === 'connections'"
+      defer
+      to="#explore-overlay-anchor">
+      <div id="connections-overlay-anchor" />
+    </teleport>
+
     <!-- connections network graph type (self-contained: owns its own
          /api/connections fetch, controls, and overlay buttons) -->
     <arkime-connections-graph
-      v-else
-      ref="connectionsGraph" /> <!-- /connections graph type -->
-
-    <!-- overlay anchor: connections floating buttons teleport here -->
-    <template
       v-if="spiGraphType === 'connections'"
-      #overlay>
-      <div id="connections-overlay-anchor" />
-    </template>
-  </page-layout>
+      ref="connectionsGraph" /> <!-- /connections graph type -->
+  </div>
 </template>
 
 <script>
@@ -277,13 +274,10 @@ import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 // import internal
 import ArkimeError from '../utils/Error.vue';
-import ArkimeSearch from '../search/Search.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
 import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import { commaString } from '@common/vueFilters.js';
@@ -299,16 +293,14 @@ export default {
   name: 'Spigraph',
   components: {
     ArkimeError,
-    ArkimeSearch,
     ArkimeLoading,
     ArkimeNoResults,
     ArkimeFieldTypeahead,
     ArkimeVisualizations,
-    ArkimeCollapsible,
-    PageLayout,
     ArkimePie,
     ArkimeConnectionsGraph
   },
+  emits: ['search-meta'],
   data: function () {
     return {
       error: '',
@@ -337,6 +329,10 @@ export default {
     };
   },
   computed: {
+    /* props the shared (host-owned) search bar needs while this tab is active */
+    searchBarProps: function () {
+      return { numMatchingSessions: this.filtered };
+    },
     user: function () {
       return this.$store.state.user;
     },
@@ -378,6 +374,11 @@ export default {
     }
   },
   watch: {
+    // feed the host-owned search bar this tab's props
+    searchBarProps: {
+      handler: function (val) { this.$emit('search-meta', val); },
+      immediate: true
+    },
     '$route.query' (newVal, oldVal) {
       if (newVal.size !== this.query.size) {
         this.query.size = newVal.size || 20;
@@ -674,15 +675,14 @@ export default {
    dropdown) sized to the 32px subnav band */
 .spigraph-page .spigraph-type-toggle {
   height: 32px;
+  min-height: 32px; /* override Vuetify's comfortable-density min-height so the
+                       toggle matches the 32px input rows and stays centered */
 }
 .spigraph-page .spigraph-type-toggle :deep(.v-btn) {
   height: 32px;
+  min-height: 32px;
   text-transform: none;
   letter-spacing: normal;
-}
-/* symmetric band padding: even spacing for single-row vs multi-row subnavs */
-.spigraph-page .page-subnav {
-  padding-block: 6px;
 }
 /* "add another field" on its own row: full-width forces a flex-wrap break */
 .spigraph-page .spigraph-subfield-anchor {

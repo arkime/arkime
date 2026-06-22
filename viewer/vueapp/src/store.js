@@ -22,7 +22,7 @@ const store = createStore({
     fieldsAliasMap: {},
     fieldhistory: [],
     // eslint-disable-next-line no-undef
-    timeRange: DEFAULT_TIME_RANGE ?? 1,
+    timeRange: DEFAULT_TIME_RANGE ?? 0.25,
     expression: undefined,
     time: {
       startTime: undefined,

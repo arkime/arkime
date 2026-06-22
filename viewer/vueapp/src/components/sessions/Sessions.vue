@@ -3,35 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <page-layout
-    ref="pageLayout"
-    class="sessions-page">
-    <template #chrome>
-      <ArkimeCollapsible>
-        <div class="page-toolbar">
-          <!-- search navbar -->
-          <arkime-search
-            :fields="headers"
-            :open-sessions="stickySessions"
-            :num-visible-sessions="query.length"
-            :num-matching-sessions="sessions.recordsFiltered"
-            :start="query.start"
-            @change-search="cancelAndLoad(true)"
-            @set-view="loadNewView"
-            @set-columns="loadColumns" /> <!-- /search navbar -->
-
-          <!-- paging navbar -->
-          <div class="d-flex justify-start align-center paging-navbar">
-            <arkime-paging
-              :records-total="sessions.recordsTotal"
-              :records-filtered="sessions.recordsFiltered"
-              @change-paging="changePaging" />
-          </div> <!-- /paging navbar -->
-        </div>
-      </ArkimeCollapsible>
-      <!-- pinned visualizations land here (teleported from below) -->
-      <div id="viz-pin-anchor" />
-    </template>
+  <div class="sessions-page">
+    <!-- paging navbar teleports into the host toolbar -->
+    <teleport
+      defer
+      to="#tab-subnav-anchor">
+      <div class="d-flex justify-start align-center paging-navbar">
+        <arkime-paging
+          :records-total="sessions.recordsTotal"
+          :records-filtered="sessions.recordsFiltered"
+          @change-paging="changePaging" />
+      </div>
+    </teleport> <!-- /paging navbar -->
 
     <!-- visualizations: pinned = chrome row above the scroll container,
          unpinned = scrolls away with the content -->
@@ -755,8 +738,10 @@ SPDX-License-Identifier: Apache-2.0
       {{ configSnackbar.text }}
     </v-snackbar>
 
-    <template #overlay>
-      <!-- sticky (opened) sessions -->
+    <!-- sticky (opened) sessions float over the host overlay -->
+    <teleport
+      defer
+      to="#explore-overlay-anchor">
       <transition name="leave">
         <arkime-sticky-sessions
           class="sticky-sessions"
@@ -766,8 +751,8 @@ SPDX-License-Identifier: Apache-2.0
           @close-session="closeSession"
           @close-all-sessions="closeAllSessions" />
       </transition> <!-- /sticky (opened) sessions -->
-    </template>
-  </page-layout>
+    </teleport> <!-- /sticky (opened) sessions -->
+  </div>
 </template>
 
 <script>
@@ -778,7 +763,6 @@ import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
 // import components
-import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
 import ArkimePaging from '@common/Pagination.vue';
 import ToggleBtn from '@common/ToggleBtn.vue';
@@ -786,8 +770,6 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeSessionDetail from './SessionDetail.vue';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import PageLayout from '../utils/PageLayout.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
@@ -832,7 +814,6 @@ let pendingPromise;
 export default {
   name: 'Sessions',
   components: {
-    ArkimeSearch,
     ArkimePaging,
     ToggleBtn,
     ArkimeError,
@@ -841,11 +822,11 @@ export default {
     ArkimeSessionDetail,
     ArkimeVisualizations,
     ArkimeStickySessions,
-    ArkimeCollapsible,
-    PageLayout,
     FieldActions,
     FieldSelectDropdown
   },
+  inject: ['pageScrollEl'],
+  emits: ['search-meta'],
   data: function () {
     return {
       loading: true,
@@ -925,6 +906,16 @@ export default {
     });
   },
   computed: {
+    /* props the shared (host-owned) search bar needs while this tab is active */
+    searchBarProps: function () {
+      return {
+        fields: this.headers,
+        openSessions: this.stickySessions,
+        numVisibleSessions: this.query.length,
+        numMatchingSessions: this.sessions.recordsFiltered,
+        start: this.query.start
+      };
+    },
     /* name of the currently loaded column config (if it still exists) */
     loadedColConfig: function () {
       const configName = this.tableState.colConfigName;
@@ -1060,6 +1051,11 @@ export default {
     }
   },
   watch: {
+    // feed the host-owned search bar this tab's props
+    searchBarProps: {
+      handler: function (val) { this.$emit('search-meta', val); },
+      immediate: true
+    },
     '$store.state.stickyViz': function () {
       // pin toggle teleports the viz between chrome and scroll content;
       // charts/map cache geometry, so nudge their resize handling
@@ -1070,6 +1066,10 @@ export default {
     }
   },
   methods: {
+    // host delegates the shared search bar's change-search here
+    onSearch: function () {
+      this.cancelAndLoad(true);
+    },
     loadNewView: function () {
       this.viewChanged = true;
     },
@@ -1079,7 +1079,7 @@ export default {
     },
     /* Width available to the table inside the page scroll container */
     availableTableWidth: function () {
-      const scrollEl = this.$refs.pageLayout?.scrollEl;
+      const scrollEl = this.pageScrollEl?.value;
       if (scrollEl && scrollEl.clientWidth) {
         return scrollEl.clientWidth - 20; // account for margins
       }

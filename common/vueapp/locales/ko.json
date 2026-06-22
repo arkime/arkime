@@ -111,6 +111,8 @@
   },
   "navigation": {
     "arkime": "Arkime",
+    "explore": "탐색",
+    "summary": "요약",
     "sessions": "세션",
     "settings": "설정",
     "spiview": "SPI 뷰",

@@ -111,6 +111,8 @@
   },
   "navigation": {
     "arkime": "Arkime",
+    "explore": "Explorer",
+    "summary": "Résumé",
     "sessions": "Sessions",
     "settings": "Paramètres",
     "spiview": "Vue SPI",

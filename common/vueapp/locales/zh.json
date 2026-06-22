@@ -111,6 +111,8 @@
   },
   "navigation": {
     "arkime": "Arkime",
+    "explore": "浏览",
+    "summary": "摘要",
     "sessions": "会话",
     "settings": "设置",
     "spiview": "SPI 视图",

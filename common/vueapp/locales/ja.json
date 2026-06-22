@@ -111,6 +111,8 @@
   },
   "navigation": {
     "arkime": "Arkime",
+    "explore": "探索",
+    "summary": "サマリー",
     "sessions": "セッション",
     "settings": "設定",
     "spiview": "SPI View",

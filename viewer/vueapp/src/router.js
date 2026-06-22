@@ -7,14 +7,11 @@ import Files from '@/components/files/Files.vue';
 import Users from '@/components/users/Users.vue';
 import Roles from '@/components/roles/Roles.vue';
 import ArkimeHistory from '@/components/history/History.vue';
-import Sessions from '@/components/sessions/Sessions.vue';
-import Spiview from '@/components/spiview/Spiview.vue';
-import Spigraph from '@/components/spigraph/Spigraph.vue';
+import Explore from '@/components/explore/Explore.vue';
 import Settings from '@/components/settings/Settings.vue';
 import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
-import Arkime from '@/components/arkime/Arkime.vue';
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
@@ -43,13 +40,15 @@ const router = createRouter({
     {
       path: '/arkime',
       name: 'Arkime',
-      component: Arkime
+      alias: '/',
+      component: Explore,
+      meta: { tab: 'arkime' }
     },
     {
       path: '/sessions',
       name: 'Sessions',
-      alias: '/',
-      component: Sessions
+      component: Explore,
+      meta: { tab: 'sessions' }
     },
     {
       path: '/help',
@@ -79,12 +78,14 @@ const router = createRouter({
     {
       path: '/spiview',
       name: 'Spiview',
-      component: Spiview
+      component: Explore,
+      meta: { tab: 'spiview' }
     },
     {
       path: '/spigraph',
       name: 'Spigraph',
-      component: Spigraph
+      component: Explore,
+      meta: { tab: 'spigraph' }
     },
     {
       // Connections folded into Spigraph as a graph type; keep old

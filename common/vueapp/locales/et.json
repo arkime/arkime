@@ -111,6 +111,8 @@
   },
   "navigation": {
     "arkime": "Arkime",
+    "explore": "Uuri",
+    "summary": "Kokkuvõte",
     "sessions": "Seansid",
     "settings": "Seaded",
     "spiview": "SPI Vaade",

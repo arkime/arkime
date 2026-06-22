@@ -919,11 +919,11 @@ export default {
           this.localStartTime = moment(start * 1000);
           this.time.startTime = start;
         } else { // if we can't parse stop or start time, set default
-          this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '1'; // default to config or 1 hour
+          this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '0.25'; // default to config or 15 minutes
         }
       } else {
         // there are no time query parameters, so set defaults
-        this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '1'; // default to config or 1 hour
+        this.timeRange = this.$constants.DEFAULT_TIME_RANGE ?? '0.25'; // default to config or 15 minutes
       }
     },
     /* watch for the url parameters to change and update the page */

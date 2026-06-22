@@ -3,122 +3,114 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <page-layout class="arkime-page">
-    <template #chrome>
-      <ArkimeCollapsible>
-        <div class="page-toolbar">
-          <!-- search navbar -->
-          <arkime-search
-            :hide-actions="true"
-            @change-search="loadSummary" />
-
-          <!-- toolbar row -->
-          <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav">
-            <!-- results per widget dropdown -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  size="large"
-                  variant="flat"
-                  color="secondary">
-                  {{ summaryResultsLimit }}
-                  <v-icon
-                    end
-                    icon="mdi-menu-down" />
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="opt in [10, 20, 50, 100]"
-                  :key="opt"
-                  :active="summaryResultsLimit === opt"
-                  @click="updateSummaryResultsLimit(opt)">
-                  <v-list-item-title>{{ opt }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-
-            <!-- top/bottom results toggle -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  size="large"
-                  variant="flat"
-                  color="secondary">
-                  {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
-                  <v-icon
-                    end
-                    icon="mdi-menu-down" />
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  :active="summaryOrder === 'desc'"
-                  @click="updateSummaryOrder('desc')">
-                  <v-list-item-title>Top</v-list-item-title>
-                </v-list-item>
-                <v-list-item
-                  :active="summaryOrder === 'asc'"
-                  @click="updateSummaryOrder('asc')">
-                  <v-list-item-title>Bottom</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-
-            <!-- export all charts as PNG -->
+  <div class="arkime-page">
+    <!-- summary toolbar teleports into the host toolbar -->
+    <teleport
+      defer
+      to="#tab-subnav-anchor">
+      <!-- toolbar row -->
+      <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav">
+        <!-- results per widget dropdown -->
+        <v-menu>
+          <template #activator="{ props }">
             <v-btn
-              :aria-label="$t('sessions.summary.exportAllPNG')"
+              v-bind="props"
               size="large"
-              variant="flat"
-              color="secondary"
-              @click="exportAllPNG">
-              <v-icon icon="mdi-download" />
-              <v-tooltip
-                activator="parent"
-                :open-delay="500">
-                {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
-              </v-tooltip>
-            </v-btn>
-
-            <!-- summary field visibility + config group -->
-            <v-btn-group
-              divided
-              density="compact"
               variant="flat"
               color="secondary">
-              <FieldSelectDropdown
-                :selected-fields="summaryFields"
-                :tooltip-text="$t('sessions.summary.toggleFields')"
-                :search-placeholder="$t('sessions.summary.searchFields')"
-                :include-summary-fields="true"
-                field-id-key="exp"
-                @toggle="toggleSummaryField"
-                @clear="clearSummaryFields" />
-              <SummaryConfigDropdown
-                :current-config="currentSummaryConfig"
-                @load="loadSummaryConfigFromShareable"
-                @reset="resetSummaryToDefaults"
-                @message="displayMessage" />
-            </v-btn-group>
+              {{ summaryResultsLimit }}
+              <v-icon
+                end
+                icon="mdi-menu-down" />
+            </v-btn>
+          </template>
+          <v-list density="compact">
+            <v-list-item
+              v-for="opt in [10, 20, 50, 100]"
+              :key="opt"
+              :active="summaryResultsLimit === opt"
+              @click="updateSummaryResultsLimit(opt)">
+              <v-list-item-title>{{ opt }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
-            <!-- cancel loading button -->
+        <!-- top/bottom results toggle -->
+        <v-menu>
+          <template #activator="{ props }">
             <v-btn
-              v-if="summaryStreaming"
+              v-bind="props"
               size="large"
               variant="flat"
-              color="warning"
-              @click="cancelSummaryLoading">
-              <v-icon icon="mdi-cancel" />&nbsp;
-              {{ $t('common.cancel') }}
+              color="secondary">
+              {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
+              <v-icon
+                end
+                icon="mdi-menu-down" />
             </v-btn>
-          </div>
-        </div>
-      </ArkimeCollapsible>
-      <!-- pinned visualizations land here (teleported from below) -->
-      <div id="viz-pin-anchor" />
-    </template>
+          </template>
+          <v-list density="compact">
+            <v-list-item
+              :active="summaryOrder === 'desc'"
+              @click="updateSummaryOrder('desc')">
+              <v-list-item-title>Top</v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              :active="summaryOrder === 'asc'"
+              @click="updateSummaryOrder('asc')">
+              <v-list-item-title>Bottom</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- export all charts as PNG -->
+        <v-btn
+          :aria-label="$t('sessions.summary.exportAllPNG')"
+          size="large"
+          variant="flat"
+          color="secondary"
+          @click="exportAllPNG">
+          <v-icon icon="mdi-download" />
+          <v-tooltip
+            activator="parent"
+            :open-delay="500">
+            {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
+          </v-tooltip>
+        </v-btn>
+
+        <!-- summary field visibility + config group -->
+        <v-btn-group
+          divided
+          density="compact"
+          variant="flat"
+          color="secondary">
+          <FieldSelectDropdown
+            :selected-fields="summaryFields"
+            :tooltip-text="$t('sessions.summary.toggleFields')"
+            :search-placeholder="$t('sessions.summary.searchFields')"
+            :include-summary-fields="true"
+            field-id-key="exp"
+            @toggle="toggleSummaryField"
+            @clear="clearSummaryFields" />
+          <SummaryConfigDropdown
+            :current-config="currentSummaryConfig"
+            @load="loadSummaryConfigFromShareable"
+            @reset="resetSummaryToDefaults"
+            @message="displayMessage" />
+        </v-btn-group>
+
+        <!-- cancel loading button -->
+        <v-btn
+          v-if="summaryStreaming"
+          size="large"
+          variant="flat"
+          color="warning"
+          @click="cancelSummaryLoading">
+          <v-icon icon="mdi-cancel" />&nbsp;
+          {{ $t('common.cancel') }}
+        </v-btn>
+      </div>
+    </teleport>
 
     <!-- visualizations: pinned = chrome row above the scroll container,
          unpinned = scrolls away with the content -->
@@ -185,13 +177,10 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('sessions.summary.retryAllFailed') }}
       </v-btn>
     </v-alert>
-  </page-layout>
+  </div>
 </template>
 
 <script>
-import ArkimeSearch from '../search/Search.vue';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import PageLayout from '../utils/PageLayout.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
@@ -203,9 +192,6 @@ import UserService from '../users/UserService';
 export default {
   name: 'Arkime',
   components: {
-    ArkimeSearch,
-    ArkimeCollapsible,
-    PageLayout,
     ArkimeVisualizations,
     ArkimeSummaryView,
     FieldSelectDropdown,
@@ -296,6 +282,10 @@ export default {
     this.loadSummaryConfig();
   },
   methods: {
+    // host delegates the shared search bar's change-search here
+    onSearch: function () {
+      this.loadSummary();
+    },
     /**
      * Loads summary data when search is triggered
      */

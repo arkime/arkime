@@ -102,7 +102,7 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'arkime', 'sessions', 'spiview', 'spigraph', 'hunt',
+        'explore', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ],
       // active-pill colors -- use Arkime CSS vars so the pill flips
@@ -123,10 +123,9 @@ export default {
     },
     menu: function () {
       const menu = {
-        arkime: { title: this.$t('navigation.arkime'), link: 'arkime', hotkey: ['Arkime'], name: 'Arkime' },
-        sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
-        spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
-        spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
+        // Summary/Sessions/SPIView/SPIGraph folded into one tabbed Explore page;
+        // activePaths keeps the pill lit on any of the four tab routes
+        explore: { title: this.$t('navigation.explore'), link: 'arkime', name: 'Arkime', activePaths: ['/', '/arkime', '/sessions', '/spiview', '/spigraph'] },
         files: { title: this.$t('navigation.files'), link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
         stats: { title: this.$t('navigation.stats'), link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
         upload: { title: this.$t('navigation.upload'), link: 'upload', permission: 'canUpload', name: 'Upload' },
@@ -170,7 +169,9 @@ export default {
           item.hasRole = !item.role || this.user.roles?.includes(item.role);
         }
 
-        item.isActive = this.$route.path === `/${item.link}`;
+        item.isActive = item.activePaths
+          ? item.activePaths.includes(this.$route.path)
+          : this.$route.path === `/${item.link}`;
       }
 
       return menu;
@@ -192,8 +193,10 @@ export default {
       let activeLink;
       const chosenPath = this.$route.path.split('/')[1];
       for (const page in this.menu) {
-        const link = this.menu[page].link;
-        if (link === chosenPath) {
+        const item = this.menu[page];
+        // grouped item (explore): resolve to the real path segment so the
+        // help anchor + toolbar chevron still work per tab
+        if (item.activePaths?.includes(`/${chosenPath}`) || item.link === chosenPath) {
           activeLink = chosenPath;
           break;
         }
