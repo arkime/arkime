@@ -845,7 +845,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         }
     }
 
-    request->priority = priority;
+    request->priority = MIN(priority, ARKIME_HTTP_PRIORITY_DROPABLE);
 
     if (priority == ARKIME_HTTP_PRIORITY_DROPABLE)
         request->retries = 0;

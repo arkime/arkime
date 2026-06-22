@@ -419,8 +419,6 @@ LOCAL int reader_libpcapfile_stats(ArkimeReaderStats_t *stats)
 /******************************************************************************/
 LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
 {
-    ArkimePacket_t *packet = arkime_packet_alloc();
-
     if (unlikely(h->caplen != h->len) && !config.readTruncatedPackets && !config.ignoreErrors) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
                 "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
@@ -430,6 +428,8 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     if (unlikely(h->caplen > 0xffff)) {
         return;
     }
+
+    ArkimePacket_t *packet = arkime_packet_alloc();
 
     offlineInfo[readerPos].lastPackets++;
     offlineInfo[readerPos].lastPacketTime = h->ts;
