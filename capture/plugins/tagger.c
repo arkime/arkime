@@ -410,11 +410,18 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
     }
 
     g_free(file->md5);
-    g_free(file->type);
-    if (file->tags)
-        g_strfreev(file->tags);
-    g_strfreev(file->elements);
     file->md5 = NULL;
+
+    g_free(file->type);
+    file->type = NULL;
+
+    if (file->tags) {
+        g_strfreev(file->tags);
+        file->tags = NULL;
+    }
+
+    g_strfreev(file->elements);
+    file->elements = NULL;
 }
 /******************************************************************************/
 LOCAL void tagger_info_free(gpointer data)

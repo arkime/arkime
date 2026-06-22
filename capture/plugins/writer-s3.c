@@ -1045,7 +1045,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
 
         g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
-    } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
+    } else if (!s3ConfigCreds.s3SecretAccessKey) {
         CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
     }
 

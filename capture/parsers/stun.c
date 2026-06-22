@@ -113,7 +113,7 @@ LOCAL const char *stunClasses[4] = {
 /******************************************************************************/
 // Returns TRUE if ip matches either endpoint of the session.
 // ip points to 4 bytes (AF_INET) or 16 bytes (AF_INET6).
-LOCAL gboolean stun_ip_matches_session(ArkimeSession_t *session, const uint8_t *ip, int family)
+LOCAL gboolean stun_ip_matches_session(const ArkimeSession_t *session, const uint8_t *ip, int family)
 {
     if (family == AF_INET && ARKIME_SESSION_IS_v4(session)) {
         uint32_t v4 = *(const uint32_t *)ip;
