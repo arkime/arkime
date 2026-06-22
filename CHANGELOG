@@ -42,8 +42,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
+  - #4063 Fix pcapNG reader bugs: out-of-bounds read on blocks claiming >2GB, Simple Packet Block length including 32-bit padding, and Section Header Block lost when split across reads
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
+## Viewer
+  - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
 
 6.5.0 2026/06/15
 ## Breaking
