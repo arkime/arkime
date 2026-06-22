@@ -116,6 +116,10 @@ SPDX-License-Identifier: Apache-2.0
     </v-btn>
   </template>
 
+  <!-- slot sits between the left action buttons and the right-justified
+       Columns/Actions menus (e.g. the detail find box) -->
+  <slot />
+
   <template v-if="showMenus">
     <v-menu>
       <template #activator="{ props: activatorProps }">

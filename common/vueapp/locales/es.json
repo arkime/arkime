@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Cargando paquetes de sesión",
       "renderingSessionPackets": "Renderizando paquetes de sesión",
-      "loadingErr": "Error al cargar el detalle de la sesión"
+      "loadingErr": "Error al cargar el detalle de la sesión",
+      "findPlaceholderDetails": "Buscar en los detalles…",
+      "findPlaceholderPackets": "Buscar contenido de paquetes…",
+      "findPlaceholderTshark": "Filtrar paquetes…",
+      "findRegex": "Expresión regular",
+      "findPrev": "Coincidencia anterior",
+      "findNext": "Coincidencia siguiente",
+      "findTypeHint": "Tipo de coincidencia",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (distingue mayúsculas)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Regex hex"
+      }
     },
     "field": {
       "cantLocate": "No podemos localizar este campo",

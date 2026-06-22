@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Loading session packets",
       "renderingSessionPackets": "Rendering session packets",
-      "loadingErr": "Error loading session detail"
+      "loadingErr": "Error loading session detail",
+      "findPlaceholderDetails": "Find in details…",
+      "findPlaceholderPackets": "Search packet content…",
+      "findPlaceholderTshark": "Filter packets…",
+      "findRegex": "Regular expression",
+      "findPrev": "Previous match",
+      "findNext": "Next match",
+      "findTypeHint": "Match type",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (case)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex regex"
+      }
     },
     "field": {
       "cantLocate": "We cannot locate this field",

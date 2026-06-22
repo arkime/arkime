@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "正在加载会话数据包",
       "renderingSessionPackets": "正在渲染会话数据包",
-      "loadingErr": "加载会话详情时出错"
+      "loadingErr": "加载会话详情时出错",
+      "findPlaceholderDetails": "在详情中查找…",
+      "findPlaceholderPackets": "搜索数据包内容…",
+      "findPlaceholderTshark": "筛选数据包…",
+      "findRegex": "正则表达式",
+      "findPrev": "上一个匹配",
+      "findNext": "下一个匹配",
+      "findTypeHint": "匹配类型",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII（区分大小写）",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex 正则"
+      }
     },
     "field": {
       "cantLocate": "我们找不到此字段",
