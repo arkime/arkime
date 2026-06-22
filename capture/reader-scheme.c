@@ -85,7 +85,7 @@ LOCAL struct {
     uint32_t               pktlen;
     uint8_t                tmpBuffer[0xffff];
     int                    tmpBufferLen;
-    int                    blockSize;
+    int32_t                blockSize;
     int                    haveInterface;
     uint64_t               tsresol;
 } readerState;
@@ -632,6 +632,14 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 return 1;
             }
 
+            // A single block larger than INT32_MAX is never legitimate; treat the
+            // file as corrupt rather than skip it (block_total_length - 8 would
+            // otherwise overflow the signed blockSize and corrupt the parser).
+            if (unlikely(blockHeader->block_total_length > INT32_MAX)) {
+                LOG("ERROR - block_total_length %u too large in pcapNG file '%s'", blockHeader->block_total_length, uri);
+                return 1;
+            }
+
             readerState.blockSize = blockHeader->block_total_length - 8;
 
             if ((size_t)readerState.blockSize > sizeof(readerState.tmpBuffer)) {
@@ -762,8 +770,24 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             len -= need;
             readerState.blockSize -= need;
 
-            // Captured length is block_total_length - 16 (8 header + 4 orig_len + 4 trailing length)
-            readerState.pktlen = readerState.blockSize - 4; // blockSize already had 8 subtracted, subtract trailing 4
+            // The block holds (blockSize - 4) bytes of 32-bit-padded packet data
+            // (blockSize already had 8 subtracted, subtract the trailing block length).
+            // Need at least the trailing length left; anything less is malformed.
+            if (unlikely(readerState.blockSize < 4)) {
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+                continue;
+            }
+
+            uint32_t origLen;
+            memcpy(&origLen, readerState.tmpBuffer, sizeof(origLen));
+            if (readerState.needSwap) {
+                origLen = SWAP32(origLen);
+            }
+
+            // Captured length is min(originalLength, paddedLength) so the trailing
+            // 0-3 alignment padding bytes are not treated as captured packet data.
+            const uint32_t paddedLen = readerState.blockSize - 4;
+            readerState.pktlen = MIN(origLen, paddedLen);
             if (unlikely(readerState.pktlen > 0xffff)) {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
                 continue;
@@ -940,6 +964,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                     return 0;
                 }
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+                readerState.tmpBufferLen += need;
                 header = readerState.tmpBuffer;
 
                 data += need;
@@ -947,6 +972,9 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 
                 if (memcmp(header, "\x0a\x0d\x0d\x0a", 4) == 0) {
                     readerState.isPcapNG = 1;
+                    // The SHB start is already buffered in tmpBuffer (it spanned a
+                    // chunk boundary); tmpBufferLen is left intact so processNG picks
+                    // up from the buffer instead of re-reading the advanced data.
                     return arkime_reader_scheme_processNG(uri, data, len, extraInfo, actions);
                 }
                 readerState.tmpBufferLen = 0;

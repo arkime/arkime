@@ -1069,8 +1069,8 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         }
     }
 
-    // Support up to 1000 S3 parts
-    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 1000LL);
+    // Support up to 10000 S3 parts
+    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 10000LL);
 
     // S3 has a 5TiB max size
     config.maxFileSizeB = MIN(config.maxFileSizeB, 0x50000000000LL);
