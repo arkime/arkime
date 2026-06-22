@@ -140,7 +140,7 @@ defineEmits(['hideLink', 'close']);
 .connections-popup-endpoint {
   font-weight: 600;
   min-width: 0;
-  max-width: 100%;
+  width: 100%;
 }
 .connections-popup-endpoint-label {
   display: block;
