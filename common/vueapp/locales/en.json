@@ -1404,7 +1404,7 @@
     "maxElements": "Max Elements",
     "maxElementsTip": "Maximum number of elements returned (for the first field selected)",
     "graphType": "Graph Type",
-    "graphType-default": "Timeline/Map",
+    "graphType-default": "Timeline",
     "graphType-heatmap": "Heatmap",
     "graphType-pie": "Donut",
     "graphType-table": "Table",

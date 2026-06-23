@@ -1404,7 +1404,7 @@
     "maxElements": "Maksimaalne elementide arv",
     "maxElementsTip": "Tagastatud elementide maksimaalne arv (esimese valitud välja jaoks)",
     "graphType": "Graafiku tüüp",
-    "graphType-default": "Ajajoon/kaart",
+    "graphType-default": "Ajajoon",
     "graphType-heatmap": "Soojuskaart",
     "graphType-pie": "Sõõrik",
     "graphType-table": "Tabel",

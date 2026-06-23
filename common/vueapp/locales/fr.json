@@ -1404,7 +1404,7 @@
     "maxElements": "Max. éléments",
     "maxElementsTip": "Nombre maximum d'éléments retournés (pour le premier champ sélectionné)",
     "graphType": "Type de graphique",
-    "graphType-default": "Chronologie/carte",
+    "graphType-default": "Chronologie",
     "graphType-heatmap": "Carte thermique",
     "graphType-pie": "Beignet",
     "graphType-table": "Tableau",

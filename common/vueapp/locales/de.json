@@ -1404,7 +1404,7 @@
     "maxElements": "Max. Elemente",
     "maxElementsTip": "Maximale Anzahl zurückgegebener Elemente (für das erste ausgewählte Feld)",
     "graphType": "Graphentyp",
-    "graphType-default": "Zeitachse/Karte",
+    "graphType-default": "Zeitachse",
     "graphType-heatmap": "Heatmap",
     "graphType-pie": "Donut",
     "graphType-table": "Tabelle",

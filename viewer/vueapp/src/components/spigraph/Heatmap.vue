@@ -15,13 +15,16 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <div class="heatmap-body">
-        <div class="heatmap-labels">
+        <div
+          class="heatmap-labels"
+          :style="{ flex: '0 0 ' + labelW + 'px', width: labelW + 'px' }">
           <div
             v-for="(row, r) in rows"
             :key="row.name"
             class="heatmap-row-label"
             :class="{ 'heatmap-row-alt': r % 2 }"
-            :style="{ height: rowH + 'px' }">
+            :style="{ height: rowH + 'px' }"
+            :title="row.name">
             <arkime-session-field
               :field="fieldObj"
               :value="row.name"
@@ -32,6 +35,10 @@ SPDX-License-Identifier: Apache-2.0
             <sup>({{ commaString(row.total) }})</sup>
           </div>
         </div>
+
+        <div
+          class="heatmap-divider"
+          @mousedown="startDrag" />
 
         <div
           ref="grid"
@@ -90,6 +97,7 @@ import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumbe
 
 const ROW_H = 26;
 const AXIS_H = 18;
+const LABEL_W = 200; // value-label gutter width (px), draggable
 const MIN_COL_PX = 6; // rebucket columns once cells would be narrower than this
 
 export default {
@@ -107,6 +115,7 @@ export default {
       rowH: ROW_H,
       axisH: AXIS_H,
       gridWidth: 600,
+      labelW: LABEL_W,
       tooltip: null
     };
   },
@@ -232,6 +241,12 @@ export default {
       return out;
     }
   },
+  watch: {
+    // resizing the label gutter changes the grid width — remeasure after layout
+    labelW () {
+      this.$nextTick(() => this.measure());
+    }
+  },
   mounted () {
     this.measure();
     this._resize = () => this.measure();
@@ -251,6 +266,22 @@ export default {
     measure () {
       const w = this.$refs.grid?.clientWidth;
       if (w && w > 0) { this.gridWidth = w; }
+    },
+    startDrag (e) {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = this.labelW;
+      const bodyW = this.$refs.root?.clientWidth || 1000;
+      const onMove = (ev) => {
+        const next = startW + (ev.clientX - startX);
+        this.labelW = Math.max(80, Math.min(bodyW - 120, next));
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
     },
     cellFill (v) {
       const norm = this.maxVal > 0 ? v / this.maxVal : 0;
@@ -309,11 +340,19 @@ export default {
   display: flex;
   align-items: flex-start;
 }
-/* divider marks where the timeline starts */
 .spigraph-heatmap .heatmap-labels {
   flex: 0 0 200px;
   width: 200px;
-  border-right: 2px solid rgba(var(--v-theme-foreground), 0.45);
+}
+/* draggable divider marks where the timeline starts */
+.spigraph-heatmap .heatmap-divider {
+  flex: 0 0 5px;
+  align-self: stretch;
+  cursor: col-resize;
+  border-left: 2px solid rgba(var(--v-theme-foreground), 0.45);
+}
+.spigraph-heatmap .heatmap-divider:hover {
+  border-left-color: rgb(var(--v-theme-foreground-accent));
 }
 .spigraph-heatmap .heatmap-row-label {
   display: flex;

@@ -1404,7 +1404,7 @@
     "maxElements": "最大元素数",
     "maxElementsTip": "返回的最大元素数（针对第一个选定字段）",
     "graphType": "图表类型",
-    "graphType-default": "时间线/地图",
+    "graphType-default": "时间线",
     "graphType-heatmap": "热力图",
     "graphType-pie": "圆环图",
     "graphType-table": "表格",

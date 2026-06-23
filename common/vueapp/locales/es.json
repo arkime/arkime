@@ -1404,7 +1404,7 @@
     "maxElements": "Elementos máximos",
     "maxElementsTip": "Número máximo de elementos devueltos (para el primer campo seleccionado)",
     "graphType": "Tipo de gráfico",
-    "graphType-default": "Línea de tiempo/mapa",
+    "graphType-default": "Línea de tiempo",
     "graphType-heatmap": "Mapa de calor",
     "graphType-pie": "Dona",
     "graphType-table": "Tabla",

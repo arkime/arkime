@@ -1404,7 +1404,7 @@
     "maxElements": "最大要素数",
     "maxElementsTip": "返される最大要素数（最初に選択されたフィールドに適用）",
     "graphType": "グラフタイプ",
-    "graphType-default": "タイムライン/マップ",
+    "graphType-default": "タイムライン",
     "graphType-heatmap": "ヒートマップ",
     "graphType-pie": "ドーナツ",
     "graphType-table": "テーブル",

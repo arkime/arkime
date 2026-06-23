@@ -1404,7 +1404,7 @@
     "maxElements": "최대 요소 수",
     "maxElementsTip": "반환되는 최대 요소 수 (선택된 첫 번째 필드 기준)",
     "graphType": "그래프 유형",
-    "graphType-default": "타임라인/지도",
+    "graphType-default": "타임라인",
     "graphType-heatmap": "히트맵",
     "graphType-pie": "도넛형",
     "graphType-table": "테이블",
