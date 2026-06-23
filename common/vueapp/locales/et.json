@@ -1416,6 +1416,7 @@
     "sortBy-graph": "Loendus",
     "refreshEvery": "Värskenda iga",
     "intensity": "Intensiivsus",
+    "showCount": "Näita arvu",
     "sessions": "Seansid",
     "exportCSV": "Ekspordi CSV",
     "exportCSVSPIGraphTip": "Ekspordi SPI graafiku andmed CSV kujul"

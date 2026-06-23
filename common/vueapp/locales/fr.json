@@ -1416,6 +1416,7 @@
     "sortBy-graph": "Compte",
     "refreshEvery": "Actualiser toutes les",
     "intensity": "Intensité",
+    "showCount": "Afficher le nombre",
     "sessions": "Sessions",
     "exportCSV": "Exporter CSV",
     "exportCSVSPIGraphTip": "Exporter les données du graphique SPI au format CSV"

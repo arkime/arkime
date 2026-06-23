@@ -1416,6 +1416,7 @@
     "sortBy-graph": "按计数",
     "refreshEvery": "每隔多久刷新一次",
     "intensity": "强度",
+    "showCount": "显示计数",
     "sessions": "会话",
     "exportCSV": "导出 CSV",
     "exportCSVSPIGraphTip": "以 CSV 格式导出 SPI 图表数据"

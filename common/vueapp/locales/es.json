@@ -1416,6 +1416,7 @@
     "sortBy-graph": "Conteo",
     "refreshEvery": "Actualizar cada",
     "intensity": "Intensidad",
+    "showCount": "Mostrar recuento",
     "sessions": "Sesiones",
     "exportCSV": "Exportar CSV",
     "exportCSVSPIGraphTip": "Exportar estos datos como archivo CSV"

@@ -1416,6 +1416,7 @@
     "sortBy-graph": "カウント順",
     "refreshEvery": "更新間隔",
     "intensity": "強度",
+    "showCount": "件数を表示",
     "sessions": "セッション",
     "exportCSV": "CSV をエクスポート",
     "exportCSVSPIGraphTip": "このデータを CSV ファイルとしてエクスポート"

@@ -8,6 +8,12 @@ SPDX-License-Identifier: Apache-2.0
     class="spigraph-heatmap">
     <template v-if="rows.length && cols.length">
       <div class="heatmap-legend">
+        <v-checkbox-btn
+          v-model="showCount"
+          :label="$t('spigraph.showCount')"
+          density="compact"
+          hide-details
+          class="heatmap-count-toggle me-auto" />
         <span class="heatmap-legend-label">{{ metricLabel }}</span>
         <span class="heatmap-legend-min">0</span>
         <span class="heatmap-legend-bar" />
@@ -25,6 +31,9 @@ SPDX-License-Identifier: Apache-2.0
             :class="{ 'heatmap-row-alt': r % 2 }"
             :style="{ height: rowH + 'px' }"
             :title="row.name">
+            <span
+              v-if="showCount"
+              class="heatmap-row-count">{{ commaString(row.total) }}</span>
             <arkime-session-field
               :field="fieldObj"
               :value="row.name"
@@ -32,7 +41,6 @@ SPDX-License-Identifier: Apache-2.0
               :parse="true"
               :pull-left="true"
               :session-btn="true" />
-            <sup>({{ commaString(row.total) }})</sup>
           </div>
         </div>
 
@@ -97,7 +105,7 @@ import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumbe
 
 const ROW_H = 26;
 const AXIS_H = 18;
-const LABEL_W = 200; // value-label gutter width (px), draggable
+const LABEL_W = 280; // value-label gutter width (px), draggable
 const MIN_COL_PX = 6; // rebucket columns once cells would be narrower than this
 
 export default {
@@ -116,6 +124,7 @@ export default {
       axisH: AXIS_H,
       gridWidth: 600,
       labelW: LABEL_W,
+      showCount: true,
       tooltip: null
     };
   },
@@ -315,7 +324,6 @@ export default {
 <style scoped>
 .spigraph-heatmap {
   position: relative;
-  padding: 10px;
 }
 .spigraph-heatmap .heatmap-legend {
   display: flex;
@@ -324,6 +332,17 @@ export default {
   gap: 4px;
   font-size: 0.75rem;
   padding-bottom: 8px;
+}
+.spigraph-heatmap .heatmap-count-toggle {
+  flex: 0 0 auto;
+}
+.spigraph-heatmap .heatmap-count-toggle :deep(.v-label) {
+  font-size: 0.75rem;
+  opacity: 1;
+}
+.spigraph-heatmap .heatmap-count-toggle :deep(.v-selection-control__wrapper) {
+  width: 28px;
+  height: 28px;
 }
 .spigraph-heatmap .heatmap-legend-bar {
   display: inline-block;
@@ -359,24 +378,31 @@ export default {
   align-items: center;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   font-size: 0.8rem;
   padding: 0 6px;
-  background-color: rgb(var(--v-theme-quaternary-lightest));
+  background-color: rgba(var(--v-theme-foreground), 0.04);
 }
 .spigraph-heatmap .heatmap-row-label.heatmap-row-alt {
   background-color: transparent;
 }
-.spigraph-heatmap .heatmap-row-label sup {
-  margin-left: 2px;
-  opacity: 0.7;
+/* fixed-width count column so the value labels all align */
+.spigraph-heatmap .heatmap-row-count {
+  flex: 0 0 64px;
+  box-sizing: border-box;
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  background-color: rgba(var(--v-theme-foreground), 0.1);
 }
 .spigraph-heatmap .heatmap-grid {
   flex: 1 1 auto;
   min-width: 0;
 }
 .spigraph-heatmap .heatmap-track {
-  fill: rgb(var(--v-theme-quaternary-lightest));
+  fill: rgba(var(--v-theme-foreground), 0.04);
 }
 .spigraph-heatmap .heatmap-track-alt {
   fill: transparent;
