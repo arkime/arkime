@@ -8,7 +8,7 @@ When those data structures need to be updated we create a new one and replace th
 
 ## capture
 The main thread, all http requests are on the main thread.  
-Since sessions aren't locked, any sessions actions need to be added to the packet threads.
+Since sessions aren't locked, any session actions need to be added to the packet threads.
 
 ## arkime-stats
 Simple thread that just calculates all the stats occasionally and sends to ES.
@@ -16,7 +16,7 @@ Simple thread that just calculates all the stats occasionally and sends to ES.
 ## arkime-pkt##
 The packet threads controlled by packetThreads.
 These threads are responsible for processing packets that are passed to it in batches.
-Sessions are hashed across packet threads and all packets are processed by where the session is.
+Sessions are hashed across packet threads and all packets for a session are processed by the thread the session is assigned to.
 Any operations to a session has to happen in the packet thread since sessions don't have locks.
 Use arkime_session_add_cmd to schedule a session task from a different thread.
 
@@ -40,12 +40,12 @@ In reality there isn't much difference between parsers and plugins, other than w
 
 ## Parsers
 Anything in the parsers directories (parsersDir) are auto loaded and the arkime_parser_init function is called when loaded.
-If files have the same in multiple directories, capture will load the first one found.
+If files have the same name in multiple directories, capture will load the first one found.
 
 ## Plugins
 Which plugins to use have to be explicitly listed in rootPlugins and plugins variables.
 They are loaded from the plugins directories (pluginsDir) and the arkime_plugin_init function is called when loaded.
-If files have the same in multiple directories, capture will load the first one found.
+If files have the same name in multiple directories, capture will load the first one found.
 The rootPlugins are loaded first, before capture has dropped privileges.
 The normal plugins are loaded after the parsers.
 
@@ -62,7 +62,7 @@ This phase is responsible for
 * setting the `mProtocol` field with the arkime protocol
 * setting the `hash` field with the hash of the session id
 
-You only need to create a new enqueue callback for special ethernet and ip protocols, which can be set with the arkime_packet_set_ethernet_cb and arkime_packet_set_ip_cb..
+You only need to create a new enqueue callback for special ethernet and ip protocols, which can be set with the arkime_packet_set_ethernet_cb and arkime_packet_set_ip_cb.
 Normal TCP/UDP traffic should NOT set an enqueue callback.
 
 ## Ethernet/IP Process phase
@@ -83,8 +83,8 @@ arkime_mprotocol_register (char *name, int ses, create_session_id, pre_process, 
 ## TCP/UDP parsing
 
 TCP/UDP parsing and classification is a two step process.
-* Classify - Look
-* Parsing - 
+* Classify - Look at the start of the session to determine the protocol, using classifiers registered with arkime_parsers_classifier_register_tcp, arkime_parsers_classifier_register_udp, or arkime_parsers_classifier_register_port.
+* Parsing - Once classified, parsers registered with arkime_parsers_register process the session data and extract the SPI fields.
 
 
 arkime_parsers_register2

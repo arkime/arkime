@@ -1045,7 +1045,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
 
         g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
-    } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
+    } else if (!s3ConfigCreds.s3SecretAccessKey) {
         CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
     }
 
@@ -1069,8 +1069,8 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         }
     }
 
-    // Support up to 1000 S3 parts
-    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 1000LL);
+    // Support up to 10000 S3 parts
+    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 10000LL);
 
     // S3 has a 5TiB max size
     config.maxFileSizeB = MIN(config.maxFileSizeB, 0x50000000000LL);
