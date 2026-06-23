@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "세션 패킷 로딩 중",
       "renderingSessionPackets": "세션 패킷 렌더링 중",
-      "loadingErr": "세션 상세 정보 로드 오류"
+      "loadingErr": "세션 상세 정보 로드 오류",
+      "findPlaceholderDetails": "상세 정보에서 찾기…",
+      "findPlaceholderPackets": "패킷 내용 검색…",
+      "findPlaceholderTshark": "패킷 필터링…",
+      "findRegex": "정규 표현식",
+      "findPrev": "이전 일치",
+      "findNext": "다음 일치",
+      "findTypeHint": "일치 유형",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (대소문자 구분)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex 정규식"
+      }
     },
     "field": {
       "cantLocate": "이 필드를 찾을 수 없습니다",

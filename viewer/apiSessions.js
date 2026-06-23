@@ -32,6 +32,7 @@ const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
+const RE2 = require('re2');
 const BuildQuery = require('./buildQuery');
 
 // Replace pug's escape with the same algorithm plus {. Detail HTML must be
@@ -377,6 +378,22 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  // searchType matches hunt's vocabulary; regex types pre-compile with RE2.
+  static #buildFindOptions (search, searchType) {
+    if (!search) { return undefined; }
+    searchType = searchType || 'ascii';
+    const findOpts = { search, searchType };
+    if (searchType === 'regex' || searchType === 'hexregex') {
+      try {
+        findOpts.regex = new RE2(search, searchType === 'regex' ? 'gi' : 'g');
+      } catch (e) {
+        return undefined; // invalid regex -> no highlighting
+      }
+    }
+    return findOpts;
+  }
+
+  // --------------------------------------------------------------------------
   static #localSessionDetailReturn (req, res, session, incoming) {
     // console.log("ALW", JSON.stringify(incoming));
     const numPackets = req.query.packets || 200;
@@ -401,6 +418,9 @@ class SessionAPIs {
       'ITEM-CB': {
       }
     };
+
+    const findOpts = SessionAPIs.#buildFindOptions(req.query.search, req.query.searchType);
+    if (findOpts) { options.find = findOpts; }
 
     if (req.query.needgzip) {
       options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');

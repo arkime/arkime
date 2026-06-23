@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "セッションパケットを読み込み中",
       "renderingSessionPackets": "セッションパケットを描画中",
-      "loadingErr": "セッション詳細の読み込みエラー"
+      "loadingErr": "セッション詳細の読み込みエラー",
+      "findPlaceholderDetails": "詳細内を検索…",
+      "findPlaceholderPackets": "パケット内容を検索…",
+      "findPlaceholderTshark": "パケットを絞り込み…",
+      "findRegex": "正規表現",
+      "findPrev": "前の一致",
+      "findNext": "次の一致",
+      "findTypeHint": "一致タイプ",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII（大文字小文字区別）",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex 正規表現"
+      }
     },
     "field": {
       "cantLocate": "このフィールドを特定できません",

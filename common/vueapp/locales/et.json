@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Seansi pakettide laadimine",
       "renderingSessionPackets": "Seansi pakettide renderdamine",
-      "loadingErr": "Viga seansi detailide laadimisel"
+      "loadingErr": "Viga seansi detailide laadimisel",
+      "findPlaceholderDetails": "Otsi detailidest…",
+      "findPlaceholderPackets": "Otsi pakettide sisust…",
+      "findPlaceholderTshark": "Filtreeri pakette…",
+      "findRegex": "Regulaaravaldis",
+      "findPrev": "Eelmine vaste",
+      "findNext": "Järgmine vaste",
+      "findTypeHint": "Vaste tüüp",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (tõstutundlik)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex-regex"
+      }
     },
     "field": {
       "cantLocate": "Me ei leia seda välja",

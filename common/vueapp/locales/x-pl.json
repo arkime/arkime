@@ -498,7 +498,21 @@
     "detail": {
       "loadingSessionPackets": "Oadinglay essionsay acketspay",
       "renderingSessionPackets": "Enderinngray essionsay acketspay",
-      "loadingErr": "Errorway oadinglay essionsay etailday"
+      "loadingErr": "Errorway oadinglay essionsay etailday",
+      "findPlaceholderDetails": "Indfay inway etailsday…",
+      "findPlaceholderPackets": "Earchsay acketpay ontentcay…",
+      "findPlaceholderTshark": "Ilterfay acketspay…",
+      "findRegex": "Egularray expressionway",
+      "findPrev": "Eviouspray atchmay",
+      "findNext": "Extnay atchmay",
+      "findTypeHint": "Atchmay ypetay",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (asecay)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Exhay egexray"
+      }
     },
     "field": {
       "cantLocate": "Eway annotcay ocatelay isthay ieldfay",

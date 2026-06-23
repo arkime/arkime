@@ -78,7 +78,21 @@
         v-if="actions"
         :actions="actions"
         :show-menus="activeTab === 'details'"
-        @open-form="openForm" />
+        @open-form="openForm">
+        <content-find
+          v-if="activeTab === 'details'"
+          class="find-centered"
+          mode="text"
+          :initial-query="detailFindQuery"
+          :placeholder="$t('sessions.detail.findPlaceholderDetails')"
+          :match-count="detailFind.matchCount.value"
+          :current-index="detailFind.currentIndex.value"
+          :capped="detailFind.capped.value"
+          :error="detailFind.error.value"
+          @search="onDetailFind"
+          @next="detailFind.next"
+          @prev="detailFind.prev" />
+      </session-actions>
 
       <!-- push each tab's own controls to the right (Details' Columns/Actions
            already right-justify via ms-auto inside SessionActions) -->
@@ -87,6 +101,19 @@
         class="tb-spacer" />
 
       <!-- packets controls -->
+      <content-find
+        v-if="activeTab === 'packets'"
+        mode="bytes"
+        :initial-query="packetFindQuery"
+        :placeholder="$t('sessions.detail.findPlaceholderPackets')"
+        :match-count="packetFind.matchCount.value"
+        :current-index="packetFind.currentIndex.value"
+        :capped="packetFind.capped.value"
+        :error="packetFindError"
+        @search="onPacketFind"
+        @next="packetFind.next"
+        @prev="packetFind.prev" />
+
       <fieldset
         v-if="activeTab === 'packets'"
         class="toolbar-fieldset"
@@ -141,19 +168,19 @@
           </v-btn>
         </div>
 
-        <div
+        <content-find
           v-if="tsharkPackets.length"
-          class="tb-group">
-          <v-text-field
-            v-model="tsharkFilter"
-            placeholder="filter packets…"
-            prepend-inner-icon="mdi-magnify"
-            clearable
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="tshark-filter-input" />
-        </div>
+          ref="tsharkFindRef"
+          mode="text"
+          :initial-query="tsharkFilter"
+          :placeholder="$t('sessions.detail.findPlaceholderTshark')"
+          :match-count="tsharkFind.matchCount.value"
+          :current-index="tsharkFind.currentIndex.value"
+          :capped="tsharkFind.capped.value"
+          :error="tsharkFind.error.value"
+          @search="onTsharkFind"
+          @next="tsharkFind.next"
+          @prev="tsharkFind.prev" />
 
         <div
           v-if="tsharkPackets.length"
@@ -221,7 +248,9 @@
     </div>
 
     <!-- details tab content -->
-    <div v-show="activeTab === 'details'">
+    <div
+      v-show="activeTab === 'details'"
+      ref="detailContainerRef">
       <SessionDetailDataComponent
         :key="componentKey"
         @add-tags="openForm({ type: 'add:tags' })"
@@ -323,7 +352,7 @@
             variant="flat"
             label
             :style="packetProtoStyle(proto)"
-            @click="tsharkFilter = (tsharkFilter === proto) ? '' : proto">
+            @click="tsharkFindRef?.setQuery((tsharkFilter === proto) ? '' : proto)">
             {{ proto.toUpperCase() }}&nbsp;×{{ count }}
           </v-chip>
         </div>
@@ -425,6 +454,8 @@ import ArkimeRemoveData from './Remove.vue';
 import ArkimeSendSessions from './Send.vue';
 import ArkimeExportPcap from './ExportPcap.vue';
 import ArkimeToast from '../utils/Toast.vue';
+import ContentFind from '@common/ContentFind.vue';
+import { useContentFind } from '@common/composables/useContentFind.js';
 // asynchronous component defined above with html injected by createDetailDataComponent
 let SessionDetailDataComponent = null;
 
@@ -479,6 +510,46 @@ const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
 const tsharkExpandSignal = ref(0);
 const tsharkSplitWidth = ref(280);
+
+// find-in-content: one engine per tab. details/tshark mark client-side over the
+// rendered DOM; packets navigate spans the server renders (byte-level search).
+const detailContainerRef = ref(null);
+const tsharkFindRef = ref(null);
+const detailFindQuery = ref('');
+const packetFindQuery = ref('');
+const packetFindError = ref('');
+const packetSearchType = ref('ascii');
+const tsharkRegex = ref(false);
+const detailFind = useContentFind(() => detailContainerRef.value, { skipSelector: '.session-card-title' });
+const packetFind = useContentFind(() => packetContainerRef.value, { navigateOnly: true, skipHidden: true });
+const tsharkFind = useContentFind(() => tsharkOutputRef.value, {
+  onBeforeNav (el) { // open the collapsed tree nodes above the hit so it can scroll into view
+    let d = el.closest('details');
+    while (d) { d.open = true; d = d.parentElement?.closest('details'); }
+  }
+});
+
+const onDetailFind = ({ query, regex }) => {
+  detailFindQuery.value = query || '';
+  detailFind.search(query, { regex });
+};
+const onPacketFind = ({ query, searchType }) => {
+  // the server compiles regex with RE2; pre-validate here so a bad pattern surfaces
+  // an error instead of silently rendering zero highlights
+  if (query && (searchType === 'regex' || searchType === 'hexregex')) {
+    try { new RegExp(query); } catch (e) { packetFindError.value = e.message; return; }
+  }
+  packetFindError.value = '';
+  packetFindQuery.value = query || '';
+  packetSearchType.value = searchType;
+  getPackets(); // a full re-fetch + decode — pricier than the client-side detail/tshark paths
+};
+const onTsharkFind = ({ query, regex }) => {
+  tsharkFilter.value = query || '';
+  tsharkRegex.value = !!regex;
+  nextTick(() => tsharkFind.search(query, { regex }));
+};
+
 const params = ref({
   base: 'natural',
   line: false,
@@ -769,7 +840,11 @@ const getPackets = async () => {
       props.session.id,
       props.session.node,
       props.session.cluster,
-      params.value
+      {
+        ...params.value,
+        search: packetFindQuery.value || undefined,
+        searchType: packetSearchType.value
+      }
     );
     packetPromise.value = { controller };
 
@@ -837,6 +912,8 @@ const getPackets = async () => {
       dstBytes[0].addEventListener('mouseenter', showDstBytesImg);
     }
 
+    packetFind.reapply();
+
     renderingPackets.value = false;
   } catch (err) {
     loadingPackets.value = false;
@@ -891,16 +968,34 @@ const cancelTshark = () => {
   }
 };
 
-// Filter packets by text against summary/protocol/layer names.
+// Filter packets by text against summary/protocol and any field name/label/value.
 const filteredTsharkPackets = computed(() => {
   const list = tsharkPackets.value.map((p, i) => ({ pkt: p, origIdx: i }));
   // v-text-field clearable sets the model to null, so coerce before trim().
-  const f = (tsharkFilter.value || '').trim().toLowerCase();
-  if (!f) { return list; }
+  const raw = (tsharkFilter.value || '').trim();
+  if (!raw) { return list; }
+
+  let test;
+  if (tsharkRegex.value) {
+    let re;
+    try { re = new RegExp(raw, 'i'); } catch (e) { return list; } // invalid regex: don't filter
+    test = (s) => re.test(s || '');
+  } else {
+    const f = raw.toLowerCase();
+    test = (s) => (s || '').toLowerCase().includes(f);
+  }
+
+  const nodeMatches = (node) => {
+    if (!node) { return false; }
+    if (test(node.name) || test(node.label)) { return true; }
+    if (node.show !== undefined && test(String(node.show))) { return true; }
+    if (node.value !== undefined && test(String(node.value))) { return true; }
+    return (node.fields || []).some(nodeMatches);
+  };
+
   return list.filter(({ pkt }) => {
-    if (packetTopProto(pkt).toLowerCase().includes(f)) { return true; }
-    if (packetSummary(pkt).toLowerCase().includes(f)) { return true; }
-    return (pkt.layers || []).some(l => (l.name || '').toLowerCase().includes(f));
+    if (test(packetTopProto(pkt)) || test(packetSummary(pkt))) { return true; }
+    return (pkt.layers || []).some(nodeMatches);
   });
 });
 
@@ -1019,6 +1114,12 @@ watch(activeTab, (newTab) => {
   }
 });
 
+// reload swaps the detail subtree → re-mark
+watch(componentKey, () => { nextTick(() => detailFind.reapply()); });
+
+// selecting a packet re-renders the tree → re-mark
+watch(tsharkSelectedIdx, () => { nextTick(() => tsharkFind.reapply()); });
+
 // mounted
 onMounted(async () => {
   setUserParams();
@@ -1106,6 +1207,11 @@ onUnmounted(() => {
   flex: 1 1 auto;
   min-width: 0;
 }
+/* center the detail find box between the left action buttons and the
+   right-justified Columns/Actions menus (beats .tb-group's margin:0) */
+.arkime-pcap-toolbar .content-find.find-centered {
+  margin-inline-start: auto !important;
+}
 /* PacketOptions wrapping row sits right-justified after the spacer in the
    shared bar (don't grow, so the spacer keeps it on the right). */
 .arkime-pcap-toolbar .packet-options-row {
@@ -1160,6 +1266,19 @@ onUnmounted(() => {
   cursor: pointer;
   font-weight: 600;
   letter-spacing: 0.03em;
+}
+
+/* find-in-content match highlights — client-injected <mark> (details/tshark)
+   and server-rendered <span> (packets byte search) share these classes. */
+.find-hit {
+  background-color: rgba(var(--v-theme-warning), 0.4);
+  color: inherit;
+  border-radius: 2px;
+}
+.find-hit--current {
+  background-color: rgb(var(--v-theme-warning));
+  color: #000;
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-warning));
 }
 
 /* split view: packet list (resizable) + grab handle + flexible tree pane */
