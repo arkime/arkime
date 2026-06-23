@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #4048 Node 22.23.0
   - #4056 Add Fedora 44 builds
+## All
+  - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers

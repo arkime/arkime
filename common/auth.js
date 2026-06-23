@@ -987,7 +987,11 @@ class Auth {
           if (ogurlEncoded) {
             try {
               const ogurl = Auth.auth2objNext(Buffer.from(ogurlEncoded, 'base64').toString());
-              return res.redirect(ogurl);
+              // Only redirect to a local same-origin path; reject absolute, protocol-relative
+              // ('//') and backslash ('/\') targets to prevent an open redirect.
+              if (typeof ogurl === 'string' && ogurl[0] === '/' && ogurl[1] !== '/' && ogurl[1] !== '\\') {
+                return res.redirect(ogurl);
+              }
             } catch (e) {
               console.log('Error', e);
               // Fall through to redirect below
