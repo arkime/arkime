@@ -21,6 +21,7 @@ import uPlot from 'uplot';
 import { themedColor } from '@common/themes/themedColor.js';
 import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
+import { COMPOSITE_METRICS } from './metrics.js';
 import moment from 'moment-timezone';
 
 const HOST_HEIGHT = 180;
@@ -89,27 +90,15 @@ export default {
       this.restartColor = this.foregroundColor;
     },
     seriesDefsFor (type) {
-      switch (type) {
-      case 'totPacketsHisto':
-      case 'network.packetsHisto':
-        return [
-          { label: 'Src packets', key: 'source.packetsHisto', color: this.srcColor },
-          { label: 'Dst packets', key: 'destination.packetsHisto', color: this.dstColor }
-        ];
-      case 'totBytesHisto':
-      case 'network.bytesHisto':
-        return [
-          { label: 'Src bytes', key: 'source.bytesHisto', color: this.srcColor },
-          { label: 'Dst bytes', key: 'destination.bytesHisto', color: this.dstColor }
-        ];
-      case 'totDataBytesHisto':
-        return [
-          { label: 'Client bytes', key: 'client.bytesHisto', color: this.srcColor },
-          { label: 'Server bytes', key: 'server.bytesHisto', color: this.dstColor }
-        ];
-      default:
-        return [{ label: this.friendlyTypeName(type), key: type, color: this.foregroundColor }];
+      const defs = COMPOSITE_METRICS[type];
+      if (defs) {
+        return defs.map(d => ({
+          label: d.label,
+          key: d.key,
+          color: d.role === 'src' ? this.srcColor : this.dstColor
+        }));
       }
+      return [{ label: this.friendlyTypeName(type), key: type, color: this.foregroundColor }];
     },
     friendlyTypeName (type) {
       if (type === 'sessionsHisto') return 'Sessions';
