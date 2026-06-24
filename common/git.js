@@ -1,5 +1,5 @@
 'use strict';
-// NOTE: modified from 'cjs -> ejs' for use with Vite
+// NOTE: modified from 'cjs -> esm' for use with Vite
 
 import { execSync } from 'child_process';
 

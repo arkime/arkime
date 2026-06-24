@@ -71,6 +71,11 @@ class RedisSource extends WISESource {
         if (err) {
           console.log(`${this.section} -`, err);
         }
+        // parse threw before producing a result; complete the query so the
+        // wiseService in-progress entry isn't left hanging until the timeout
+        if (!found) {
+          return cb(null, undefined);
+        }
       }
     });
   }
@@ -99,7 +104,7 @@ exports.initSource = function (api) {
       { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, or json', regex: '^(csv|tagger|jsonl|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: ['jsonl', 'json'] },
-      { name: 'template', required: true, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' },
+      { name: 'template', required: false, help: 'The template when forming the key name. %key% = the key being looked up, %type% = the type being looked up' },
       { name: 'redisMethod', required: false, help: 'The lowercase redis method to retrieve values, defaults to "get"' }
     ]
   });

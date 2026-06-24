@@ -2122,7 +2122,7 @@ app.use((err, req, res, next) => {
 // INITIALIZE
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  Auth.initialize({
+  await Auth.initialize({
     appAdminRole: 'parliamentAdmin',
     passwordSecretSection: 'parliament'
   });
