@@ -217,7 +217,7 @@ class ArkimeIntegration extends Integration {
       query: {
         bool: {
           must: [
-            { range: { lastPacket: { gte: new Date() - (this.#searchDays * 7 * 24 * 60 * 60 * 1000) } } },
+            { range: { lastPacket: { gte: new Date() - (this.#searchDays * 24 * 60 * 60 * 1000) } } },
             { bool: { should: fields.map(field => { return { term: { [field]: item } }; }) } }
           ]
         }

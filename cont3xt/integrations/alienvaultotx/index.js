@@ -15,7 +15,7 @@ class AlienVaultOTXIntegration extends Integration {
     ip: 'fetchIp',
     domain: 'fetchDomain',
     hash: 'fetchHash',
-    url: 'fetchHash'
+    url: 'fetchUrl'
   };
 
   homePage = 'https://otx.alienvault.com/';
@@ -25,7 +25,7 @@ class AlienVaultOTXIntegration extends Integration {
       type: 'boolean'
     },
     key: {
-      help: 'Your Alien Vault OTX Key',
+      help: 'Your AlienVault OTX Key',
       password: true,
       required: true
     }
@@ -150,7 +150,7 @@ class AlienVaultOTXIntegration extends Integration {
         return undefined;
       }
 
-      const base = `https://otx.alienvault.com/api/v1/indicators/${type}/${query}`;
+      const base = `https://otx.alienvault.com/api/v1/indicators/${type}/${encodeURIComponent(query)}`;
 
       const result = {};
 

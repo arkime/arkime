@@ -39,6 +39,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Breaking
   - #4072 WISE reversedns now saves resolved names that match none of the stripDomains entries in
           full (as documented) instead of silently dropping them
+  - #4073 The cont3xt Arkime integration searchDays setting now searches that many days instead of 7x that many.
+           Existing configs that relied on the wider window must increase searchDays to keep the previous range.
+  - #4073 The cont3xt redis integration now substitutes 'domain' (not 'domainip') for %type% in keyTemplate on domain lookups.
+          Deployments that stored domain data under the old 'domainip' key must re-key it as 'domain'.
 ## Release
   - #4066 Node 22.23.1
   - #4056 Add Fedora 44 builds
@@ -52,6 +56,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4068 Add some missing http methods to parser
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
+## Cont3xt
+  - #4073 Fix search and single-integration refresh hanging when an integration errors or returns no data
+  - #4073 Fix integration cacheTimeout values specified in milliseconds being treated as seconds (1000x too long); short-TTL integrations like DNS now expire on time
+  - #4073 Fix csv/json integrations sometimes failing to load JSON feeds over http/elasticsearch/opensearch
+  - #4073 Fix ClickHouse integration being broken (wrong search method name and unawaited result parsing)
 ## Viewer
   - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
   - #4071 Fix negative numbers being rejected in expressions
