@@ -95,19 +95,33 @@ typedef int (*http_cb) (http_parser*);
   XX(13, PROPPATCH,   PROPPATCH)    \
   XX(14, SEARCH,      SEARCH)       \
   XX(15, UNLOCK,      UNLOCK)       \
+  XX(16, ACL,         ACL)          \
+  XX(17, BIND,        BIND)         \
+  XX(18, REBIND,      REBIND)       \
+  XX(19, UNBIND,      UNBIND)       \
+  XX(20, MKCALENDAR,  MKCALENDAR)   \
   /* subversion */                  \
-  XX(16, REPORT,      REPORT)       \
-  XX(17, MKACTIVITY,  MKACTIVITY)   \
-  XX(18, CHECKOUT,    CHECKOUT)     \
-  XX(19, MERGE,       MERGE)        \
+  XX(21, REPORT,      REPORT)       \
+  XX(22, MKACTIVITY,  MKACTIVITY)   \
+  XX(23, CHECKOUT,    CHECKOUT)     \
+  XX(24, MERGE,       MERGE)        \
   /* upnp */                        \
-  XX(20, MSEARCH,     M-SEARCH)     \
-  XX(21, NOTIFY,      NOTIFY)       \
-  XX(22, SUBSCRIBE,   SUBSCRIBE)    \
-  XX(23, UNSUBSCRIBE, UNSUBSCRIBE)  \
+  XX(25, MSEARCH,     M-SEARCH)     \
+  XX(26, NOTIFY,      NOTIFY)       \
+  XX(27, SUBSCRIBE,   SUBSCRIBE)    \
+  XX(28, UNSUBSCRIBE, UNSUBSCRIBE)  \
   /* RFC-5789 */                    \
-  XX(24, PATCH,       PATCH)        \
-  XX(25, PURGE,       PURGE)        \
+  XX(29, PATCH,       PATCH)        \
+  XX(30, PURGE,       PURGE)        \
+  /* RFC-8288 */                    \
+  XX(31, LINK,        LINK)         \
+  XX(32, UNLINK,      UNLINK)       \
+  /* icecast */                     \
+  XX(33, SOURCE,      SOURCE)       \
+  /* RFC-7540 http/2 preface */     \
+  XX(34, PRI,         PRI)          \
+  /* QUERY */                       \
+  XX(35, QUERY,       QUERY)        \
 
 enum http_method
   {
