@@ -479,7 +479,7 @@ async function setupAuth () {
     basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
   });
 
-  Auth.initialize({
+  await Auth.initialize({
     appAdminRole: 'cont3xtAdmin',
     passwordSecretSection: 'cont3xt',
     basePath: internals.webBasePath

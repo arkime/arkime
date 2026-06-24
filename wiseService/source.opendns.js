@@ -82,7 +82,7 @@ class OpenDNSSource extends WISESource {
     }
 
     if (this.api.debug > 0) {
-      console.log(this.section, '- Fetching %d', this.waiting.length);
+      console.log(this.section, '- Fetching', this.waiting.length);
     }
 
     // http://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js/6158966
