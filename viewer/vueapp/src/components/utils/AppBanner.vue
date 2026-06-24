@@ -47,9 +47,6 @@ export default {
 </script>
 
 <style scoped>
-.app-banner {
-  border-radius: 0;
-}
 /* honor newlines an admin types into the message */
 .app-banner-text {
   white-space: pre-line;

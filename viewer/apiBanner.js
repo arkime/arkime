@@ -28,7 +28,7 @@ class BannerAPIs {
    * @property {boolean} enabled - Whether the banner is shown to users.
    * @property {string} message - The message to display.
    * @property {string} type - The severity/style: "info", "warning", or "error".
-   * @property {number} updated - When the banner was last changed (seconds since Unix EPOCH).
+   * @property {number} updated - When the banner was last changed (milliseconds since Unix EPOCH); also used as the per-user dismissal key.
    * @property {string} user - The id of the user that last updated the banner.
    */
 
@@ -97,7 +97,7 @@ class BannerAPIs {
       enabled: !!req.body.enabled,
       message,
       type,
-      updated: Math.floor(Date.now() / 1000),
+      updated: Date.now(),
       user: req.user.userId
     };
 
