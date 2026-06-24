@@ -1076,8 +1076,17 @@
       "typeInfo": "Info",
       "typeWarning": "Warnung",
       "typeError": "Kritisch",
+      "effect": "Effekt",
+      "effectNone": "Keiner",
+      "effectMarquee": "Marquee",
+      "effectBlink": "Blinken",
+      "effectRainbow": "Regenbogen",
       "message": "Nachricht",
       "messagePlaceholder": "z. B. Arkime wird morgen um 8 Uhr für Wartungsarbeiten nicht verfügbar sein.",
+      "showUntil": "Anzeigen bis",
+      "showUntilTip": "Optional — das Banner wird nach diesem Zeitpunkt automatisch ausgeblendet.",
+      "showUntilPlaceholder": "Kein Ablauf — wird angezeigt, bis es deaktiviert wird",
+      "timeLabel": "Uhrzeit",
       "preview": "Vorschau"
     },
     "general": {

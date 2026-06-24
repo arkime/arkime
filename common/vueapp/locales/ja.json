@@ -1076,8 +1076,17 @@
       "typeInfo": "情報",
       "typeWarning": "警告",
       "typeError": "重大",
+      "effect": "エフェクト",
+      "effectNone": "なし",
+      "effectMarquee": "マーキー",
+      "effectBlink": "点滅",
+      "effectRainbow": "レインボー",
       "message": "メッセージ",
       "messagePlaceholder": "例: Arkime は明日午前8時よりメンテナンスのため停止します。",
+      "showUntil": "表示期限",
+      "showUntilTip": "任意 — この時刻を過ぎるとバナーは自動的に非表示になります。",
+      "showUntilPlaceholder": "有効期限なし — オフにするまで表示されます",
+      "timeLabel": "時刻",
       "preview": "プレビュー"
     },
     "general": {

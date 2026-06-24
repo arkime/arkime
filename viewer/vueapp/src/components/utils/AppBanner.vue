@@ -13,24 +13,28 @@ SPDX-License-Identifier: Apache-2.0
     class="app-banner rounded-0 mb-0"
     :close-label="$t('common.close')"
     @click:close="dismiss">
-    <span class="app-banner-text">{{ banner.message }}</span>
+    <banner-message
+      :message="banner.message"
+      :effects="banner.effects" />
   </v-alert>
 </template>
 
 <script>
-// Per-browser dismissal keyed on the banner's updated time so editing or
-// re-issuing the banner makes it reappear for everyone who dismissed it.
+import BannerMessage from './BannerMessage.vue';
+
+// dismissal is keyed on banner.updated so an edited banner reappears
 const DISMISS_KEY = 'arkimeBannerDismissed';
-// CSS var (see arkime-navbar.css) that offsets the fixed navbar + page
-// content below this top-pinned banner. 0px when no banner is showing.
-const HEIGHT_VAR = '--app-banner-height';
+const HEIGHT_VAR = '--app-banner-height'; // see arkime-navbar.css
 
 export default {
   name: 'AppBanner',
+  components: { BannerMessage },
   data () {
     return {
       dismissedUpdated: Number(localStorage.getItem(DISMISS_KEY)) || 0,
-      resizeObserver: undefined
+      resizeObserver: undefined,
+      now: Date.now(), // bumped by a timer so expiry hides the banner live
+      expiryTimer: undefined
     };
   },
   computed: {
@@ -38,25 +42,47 @@ export default {
       return this.$store.state.banner || {};
     },
     show () {
-      return !!(this.banner.enabled && this.banner.message) &&
-        this.banner.updated !== this.dismissedUpdated;
+      if (!(this.banner.enabled && this.banner.message)) { return false; }
+      if (this.banner.updated === this.dismissedUpdated) { return false; }
+      if (this.banner.expires && this.now >= this.banner.expires) { return false; }
+      return true;
     }
   },
   watch: {
     show () { this.syncHeight(); },
     'banner.message' () { this.syncHeight(); },
-    'banner.type' () { this.syncHeight(); }
+    'banner.type' () { this.syncHeight(); },
+    'banner.effects' () { this.syncHeight(); },
+    'banner.expires' () { this.scheduleExpiry(); }
   },
   mounted () {
     this.syncHeight();
+    this.scheduleExpiry();
   },
   beforeUnmount () {
     this.teardownObserver();
+    this.clearExpiry();
     this.setHeight(0);
   },
   methods: {
     setHeight (px) {
       document.documentElement.style.setProperty(HEIGHT_VAR, `${px}px`);
+    },
+    clearExpiry () {
+      if (this.expiryTimer) { clearTimeout(this.expiryTimer); this.expiryTimer = undefined; }
+    },
+    // bump `now` at expiry so `show` recomputes; re-arm past setTimeout's ~24.8d cap
+    scheduleExpiry () {
+      this.clearExpiry();
+      this.now = Date.now();
+      const expires = this.banner.expires;
+      if (expires && expires > this.now) {
+        const delay = Math.min(expires - this.now, 2147483647);
+        this.expiryTimer = setTimeout(() => {
+          this.now = Date.now();
+          this.scheduleExpiry();
+        }, delay + 50);
+      }
     },
     teardownObserver () {
       if (this.resizeObserver) {
@@ -64,8 +90,7 @@ export default {
         this.resizeObserver = undefined;
       }
     },
-    // keep --app-banner-height in sync with the rendered banner height
-    // (handles message wrapping / viewport resize); 0 when hidden
+    // keep --app-banner-height synced with the rendered banner (0 when hidden)
     syncHeight () {
       this.$nextTick(() => {
         const el = this.$refs.bannerEl?.$el;
@@ -87,7 +112,6 @@ export default {
     dismiss () {
       this.dismissedUpdated = this.banner.updated || 0;
       localStorage.setItem(DISMISS_KEY, this.dismissedUpdated);
-      // show flips to false -> the watcher resets the height var
     }
   }
 };
@@ -100,9 +124,12 @@ export default {
   left: 0;
   right: 0;
   z-index: 8; /* above the fixed navbar (z-index 7) */
+  /* keep the band slim, near navbar height */
+  min-height: 0 !important;
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
 }
-/* honor newlines an admin types into the message */
-.app-banner-text {
-  white-space: pre-line;
+.app-banner :deep(.v-alert__prepend) {
+  margin-inline-end: 10px;
 }
 </style>

@@ -1076,8 +1076,17 @@
       "typeInfo": "Teave",
       "typeWarning": "Hoiatus",
       "typeError": "Kriitiline",
+      "effect": "Efekt",
+      "effectNone": "Puudub",
+      "effectMarquee": "Marquee",
+      "effectBlink": "Vilkumine",
+      "effectRainbow": "Vikerkaar",
       "message": "Sõnum",
       "messagePlaceholder": "nt Arkime on homme kell 8.00 hoolduse tõttu maas.",
+      "showUntil": "Kuva kuni",
+      "showUntilTip": "Valikuline — bänner peidetakse pärast seda aega automaatselt.",
+      "showUntilPlaceholder": "Aegumiseta — kuvatakse kuni väljalülitamiseni",
+      "timeLabel": "Kellaaeg",
       "preview": "Eelvaade"
     },
     "general": {

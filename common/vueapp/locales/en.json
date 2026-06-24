@@ -1076,8 +1076,17 @@
       "typeInfo": "Info",
       "typeWarning": "Warning",
       "typeError": "Critical",
+      "effect": "Effect",
+      "effectNone": "None",
+      "effectMarquee": "Marquee",
+      "effectBlink": "Blink",
+      "effectRainbow": "Rainbow",
       "message": "Message",
       "messagePlaceholder": "e.g. Arkime will be down tomorrow at 8am for maintenance.",
+      "showUntil": "Show Until",
+      "showUntilTip": "Optional — the banner hides automatically after this time.",
+      "showUntilPlaceholder": "No expiry — shows until turned off",
+      "timeLabel": "Time",
       "preview": "Preview"
     },
     "general": {

@@ -1,4 +1,4 @@
-use Test::More tests => 21;
+use Test::More tests => 29;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -47,6 +47,23 @@ my $notAdminToken = getTokenCookie('banner-notadmin');
   is($banner->{message}, "down tomorrow", "get returns saved message");
   is($banner->{type}, "warning", "get returns saved type");
   ok($banner->{enabled}, "get returns enabled");
+
+# effects + expires validation
+  $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"x","type":"info","effects":["disco"]}', $token);
+  is($json->{text}, "Unknown banner effect", "invalid effect caught");
+  $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"x","type":"info","effects":"marquee"}', $token);
+  is($json->{text}, "Banner effects must be an array", "non-array effects caught");
+  $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"x","type":"info","expires":"soon"}', $token);
+  is($json->{text}, "Banner expires must be a number", "invalid expires caught");
+
+# effects + expires saved and reflected
+  $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"ticker","type":"info","effects":["marquee","rainbow"],"expires":9999999999999}', $token);
+  ok($json->{success}, "banner with effects+expires saved");
+  is($json->{banner}->{effects}->[0], "marquee", "first effect saved");
+  is($json->{banner}->{effects}->[1], "rainbow", "second effect saved");
+  is($json->{banner}->{expires}, 9999999999999, "expires saved");
+  $banner = viewerGet("/api/banner");
+  is($banner->{effects}->[0], "marquee", "get returns effects");
 
 # mass assignment - extra fields should not be stored
   $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"clean","type":"info","evil":"injected"}', $token);

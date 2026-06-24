@@ -1076,8 +1076,17 @@
       "typeInfo": "Información",
       "typeWarning": "Advertencia",
       "typeError": "Crítico",
+      "effect": "Efecto",
+      "effectNone": "Ninguno",
+      "effectMarquee": "Marquesina",
+      "effectBlink": "Parpadeo",
+      "effectRainbow": "Arcoíris",
       "message": "Mensaje",
       "messagePlaceholder": "p. ej. Arkime estará fuera de servicio mañana a las 8 a. m. por mantenimiento.",
+      "showUntil": "Mostrar hasta",
+      "showUntilTip": "Opcional: el banner se oculta automáticamente después de esta hora.",
+      "showUntilPlaceholder": "Sin caducidad: se muestra hasta que se desactive",
+      "timeLabel": "Hora",
       "preview": "Vista previa"
     },
     "general": {

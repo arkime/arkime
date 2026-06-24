@@ -1076,8 +1076,17 @@
       "typeInfo": "Info",
       "typeWarning": "Avertissement",
       "typeError": "Critique",
+      "effect": "Effet",
+      "effectNone": "Aucun",
+      "effectMarquee": "Défilement",
+      "effectBlink": "Clignotement",
+      "effectRainbow": "Arc-en-ciel",
       "message": "Message",
       "messagePlaceholder": "ex. Arkime sera indisponible demain à 8h pour maintenance.",
+      "showUntil": "Afficher jusqu'à",
+      "showUntilTip": "Facultatif — la bannière se masque automatiquement après cette heure.",
+      "showUntilPlaceholder": "Sans expiration — affichée jusqu'à sa désactivation",
+      "timeLabel": "Heure",
       "preview": "Aperçu"
     },
     "general": {

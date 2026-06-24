@@ -1076,8 +1076,17 @@
       "typeInfo": "信息",
       "typeWarning": "警告",
       "typeError": "严重",
+      "effect": "效果",
+      "effectNone": "无",
+      "effectMarquee": "跑马灯",
+      "effectBlink": "闪烁",
+      "effectRainbow": "彩虹",
       "message": "消息",
       "messagePlaceholder": "例如：Arkime 将于明天上午 8 点停机维护。",
+      "showUntil": "显示截止时间",
+      "showUntilTip": "可选——超过此时间后横幅将自动隐藏。",
+      "showUntilPlaceholder": "永不过期——在关闭前一直显示",
+      "timeLabel": "时间",
       "preview": "预览"
     },
     "general": {

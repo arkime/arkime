@@ -1077,8 +1077,17 @@
       "typeInfo": "Infoway",
       "typeWarning": "Arningway",
       "typeError": "Iticalcray",
+      "effect": "Effectay",
+      "effectNone": "Onenay",
+      "effectMarquee": "Arqueemay",
+      "effectBlink": "Inkblay",
+      "effectRainbow": "Ainbowray",
       "message": "Essagemay",
       "messagePlaceholder": "e.g. ArkimeWay illway ebay ownday omorrowtay atway 8amway orfay aintenancemay.",
+      "showUntil": "Owshay Untilay",
+      "showUntilTip": "Optionalay — ethay annerbay ideshay automaticallyay afteray isthay imetay.",
+      "showUntilPlaceholder": "Onay expiryay — owsshay untilay urnedtay offay",
+      "timeLabel": "Imetay",
       "preview": "Eviewpray"
     },
     "general": {

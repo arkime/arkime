@@ -1076,8 +1076,17 @@
       "typeInfo": "정보",
       "typeWarning": "경고",
       "typeError": "심각",
+      "effect": "효과",
+      "effectNone": "없음",
+      "effectMarquee": "마퀴",
+      "effectBlink": "깜빡임",
+      "effectRainbow": "무지개",
       "message": "메시지",
       "messagePlaceholder": "예: Arkime는 내일 오전 8시에 유지보수를 위해 중단됩니다.",
+      "showUntil": "표시 종료 시각",
+      "showUntilTip": "선택 사항 — 이 시각이 지나면 배너가 자동으로 숨겨집니다.",
+      "showUntilPlaceholder": "만료 없음 — 끌 때까지 표시됩니다",
+      "timeLabel": "시각",
       "preview": "미리보기"
     },
     "general": {

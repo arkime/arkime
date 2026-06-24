@@ -3,7 +3,7 @@ import { createStore } from 'vuex';
 import Utils from './components/utils/utils';
 import { parseRoles } from '@common/vueFilters.js';
 
-const DEFAULT_BANNER = { enabled: false, message: '', type: 'info', updated: 0 };
+const DEFAULT_BANNER = { enabled: false, message: '', type: 'info', effects: [], expires: 0, updated: 0 };
 
 const store = createStore({
   state: {
