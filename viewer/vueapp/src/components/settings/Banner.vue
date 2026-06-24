@@ -101,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
         sm="9">
         <v-alert
           :type="banner.type"
-          variant="tonal"
+          variant="flat"
           density="compact"
           class="rounded-0">
           <span style="white-space: pre-line;">{{ banner.message }}</span>

@@ -326,7 +326,8 @@ pre {
 /* ========================================================================== */
 .sub-navbar {
   position: fixed;
-  top: 36px;
+  /* 36px navbar + viewer's top banner height (0 when no banner / other apps) */
+  top: calc(36px + var(--app-banner-height, 0px));
   left: 0;
   right: 0;
   z-index: 100;

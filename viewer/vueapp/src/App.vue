@@ -4,8 +4,8 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div v-if="compatibleBrowser">
-    <arkime-navbar />
     <app-banner v-if="user" />
+    <arkime-navbar />
     <router-view v-if="user" />
     <div class="float-right small app-info-error">
       <arkime-toast
