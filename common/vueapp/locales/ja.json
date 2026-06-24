@@ -641,6 +641,7 @@
     "timeRangeDisplayTip": "クエリ時間範囲",
     "timeOptions": "時間",
     "timeOptionsTip": "すべての時間範囲オプション",
+    "lastRange": "過去 {range}",
     "createSummary": "サマリーを作成"
   },
   "stats": {

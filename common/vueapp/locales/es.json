@@ -641,6 +641,7 @@
     "timeRangeDisplayTip": "Rango de tiempo de consulta",
     "timeOptions": "Tiempo",
     "timeOptionsTip": "Todas las opciones de rango de tiempo",
+    "lastRange": "Últimas {range}",
     "createSummary": "Crear resumen"
   },
   "stats": {

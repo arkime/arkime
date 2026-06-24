@@ -641,6 +641,7 @@
     "timeRangeDisplayTip": "Query time range",
     "timeOptions": "Time",
     "timeOptionsTip": "All time range options",
+    "lastRange": "Last {range}",
     "createSummary": "Create Summary"
   },
   "stats": {

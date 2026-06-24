@@ -641,6 +641,7 @@
     "timeRangeDisplayTip": "Abfragezeitbereich",
     "timeOptions": "Zeit",
     "timeOptionsTip": "Alle Optionen für den Zeitbereich",
+    "lastRange": "Letzte {range}",
     "createSummary": "Zusammenfassung erstellen"
   },
   "stats": {

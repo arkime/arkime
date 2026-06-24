@@ -444,14 +444,18 @@ export default {
       }
       return ranges;
     },
-    // label shown on the single time button: the matched preset, the custom
-    // window duration, or a fallback
+    // label shown on the single time button. A custom window shows its absolute
+    // duration as-is ("6 days 5 hours"); a preset is a rolling window from now,
+    // so it's prefaced with "Last" ("Last 6 hours") to distinguish the two.
+    // "All" isn't a duration, so it's shown as-is.
     currentRangeLabel: function () {
       if (this.isCustomRange) {
         return this.rangeLabel || this.$t('common.custom');
       }
       const match = this.presets.find(p => this.isPresetActive(p));
-      return match ? match.label : this.$t('search.timeOptions');
+      if (!match) { return this.$t('search.timeOptions'); }
+      if (match.value === '-1') { return match.label; }
+      return this.$t('search.lastRange', { range: match.label });
     },
     // whether the bounding/interval section (and its divider) should render
     showBoundingInterval: function () {

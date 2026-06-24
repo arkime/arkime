@@ -641,6 +641,7 @@
     "timeRangeDisplayTip": "쿼리 시간 범위",
     "timeOptions": "시간",
     "timeOptionsTip": "모든 시간 범위 옵션",
+    "lastRange": "최근 {range}",
     "createSummary": "요약 생성"
   },
   "stats": {

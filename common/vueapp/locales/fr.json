@@ -641,6 +641,7 @@
     "timeRangeDisplayTip": "Plage temporelle de la requête",
     "timeOptions": "Temps",
     "timeOptionsTip": "Toutes les options de plage temporelle",
+    "lastRange": "Dernières {range}",
     "createSummary": "Créer un résumé"
   },
   "stats": {
