@@ -1245,7 +1245,7 @@ LOCAL void arkime_config_load()
     config.pluginsDir       = arkime_config_str_list(keyfile, "pluginsDir", CONFIG_PREFIX "/plugins ; ./plugins ");
     config.parsersDir       = arkime_config_str_list(keyfile, "parsersDir", CONFIG_PREFIX "/parsers ; ./parsers ");
     config.caTrustFile      = arkime_config_str(keyfile, "caTrustFile", NULL);
-    char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
+    char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|pcapng|cap)$");
 
     if (config.bpf && *config.bpf == 0) {
         g_free(config.bpf);
