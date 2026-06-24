@@ -953,11 +953,13 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
-    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session) {
+    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session && req._parsedUrl.pathname !== '/auth/login/callback') {
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
     }
+
+    const savedOgurl = req.session?.ogurl;
 
     const passportAuthOptionsExtra = {};
     if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
@@ -981,10 +983,15 @@ class Auth {
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {
-          if (req.body?.ogurl) {
+          const ogurlEncoded = req.body?.ogurl || req.session?.ogurl || savedOgurl;
+          if (ogurlEncoded) {
             try {
-              const ogurl = Auth.auth2objNext(Buffer.from(req.body.ogurl, 'base64').toString());
-              return res.redirect(ogurl);
+              const ogurl = Auth.auth2objNext(Buffer.from(ogurlEncoded, 'base64').toString());
+              // Only redirect to a local same-origin path; reject absolute, protocol-relative
+              // ('//') and backslash ('/\') targets to prevent an open redirect.
+              if (typeof ogurl === 'string' && ogurl[0] === '/' && ogurl[1] !== '/' && ogurl[1] !== '\\') {
+                return res.redirect(ogurl);
+              }
             } catch (e) {
               console.log('Error', e);
               // Fall through to redirect below
