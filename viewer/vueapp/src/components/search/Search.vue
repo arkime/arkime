@@ -143,6 +143,13 @@ SPDX-License-Identifier: Apache-2.0
           @apply-expression="applyParams"
           @change-expression="changeExpression" /> <!-- /search box typeahead -->
 
+        <!-- time inputs -->
+        <arkime-time
+          :timezone="user.settings.timezone"
+          @time-change="timeChange"
+          :hide-interval="hideInterval"
+          :update-time="updateTime" /> <!-- /time inputs -->
+
         <!-- search button -->
         <v-btn
           variant="flat"
@@ -417,13 +424,6 @@ SPDX-License-Identifier: Apache-2.0
           </v-list>
         </v-menu> <!-- /actions dropdown menu -->
       </div> <!-- /search row -->
-
-      <!-- time inputs -->
-      <arkime-time
-        :timezone="user.settings.timezone"
-        @time-change="timeChange"
-        :hide-interval="hideInterval"
-        :update-time="updateTime" /> <!-- /time inputs -->
 
       <!-- form message -->
       <div class="small mt-1">

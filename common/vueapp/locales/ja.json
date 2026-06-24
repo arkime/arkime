@@ -639,6 +639,8 @@
     "timeInterval-day": "日",
     "timeInterval-week": "週",
     "timeRangeDisplayTip": "クエリ時間範囲",
+    "timeOptions": "時間",
+    "timeOptionsTip": "すべての時間範囲オプション",
     "createSummary": "サマリーを作成"
   },
   "stats": {

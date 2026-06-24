@@ -639,6 +639,8 @@
     "timeInterval-day": "天",
     "timeInterval-week": "周",
     "timeRangeDisplayTip": "查询时间范围",
+    "timeOptions": "时间",
+    "timeOptionsTip": "所有时间范围选项",
     "createSummary": "创建摘要"
   },
   "stats": {

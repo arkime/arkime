@@ -49,6 +49,13 @@ SPDX-License-Identifier: Apache-2.0
                   <v-icon icon="mdi-close" />
                 </v-btn>
               </div>
+              <!-- time inputs -->
+              <arkime-time
+                class="me-1"
+                :timezone="user.settings.timezone"
+                @time-change="loadData"
+                :hide-bounding="true"
+                :hide-interval="true" /> <!-- /time inputs -->
               <v-btn
                 variant="flat"
                 size="small"
@@ -85,13 +92,6 @@ SPDX-License-Identifier: Apache-2.0
                 </v-tooltip>
               </v-btn>
             </div> <!-- /search row -->
-
-            <!-- time row -->
-            <arkime-time
-              :timezone="user.settings.timezone"
-              @time-change="loadData"
-              :hide-bounding="true"
-              :hide-interval="true" />
           </div> <!-- /search navbar -->
 
           <!-- paging navbar -->

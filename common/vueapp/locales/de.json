@@ -639,6 +639,8 @@
     "timeInterval-day": "Tage",
     "timeInterval-week": "Wochen",
     "timeRangeDisplayTip": "Abfragezeitbereich",
+    "timeOptions": "Zeit",
+    "timeOptionsTip": "Alle Optionen für den Zeitbereich",
     "createSummary": "Zusammenfassung erstellen"
   },
   "stats": {

@@ -22,10 +22,13 @@
   display: inline-flex;
   align-items: center;
   height: 32px;
-  border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 4px;
   background-color: rgb(var(--v-theme-background));
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
+  /* No resting border: a 1px border eats 2px of the border-box height, so the
+     inner input/select would only be 30px while the buttons are 32px. Dropping
+     it lets the content box (and the control) be a full 32px. Hover/focus add
+     an outset ring (no layout shift) so the field still reads as interactive. */
   /* outer padding -- prepended labels and the input share this */
   padding: 0 2px;
 }
@@ -39,10 +42,9 @@
   flex: 1 1 auto;
 }
 .arkime-input-group:hover {
-  border-color: rgba(var(--v-theme-on-surface), 0.6);
+  box-shadow: 0 0 0 1px rgba(var(--v-theme-on-surface), 0.4);
 }
 .arkime-input-group:focus-within {
-  border-color: rgb(var(--v-theme-primary));
   box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
 }
 
