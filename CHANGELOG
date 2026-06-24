@@ -42,12 +42,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 6.5.1 2026/07/xx
 ## Release
-  - #4048 Node 22.23.0
+  - #4066 Node 22.23.1
   - #4056 Add Fedora 44 builds
+## All
+  - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
   - #4063 Fix pcapNG reader bugs: out-of-bounds read on blocks claiming >2GB, Simple Packet Block length including 32-bit padding, and Section Header Block lost when split across reads
+  - #4068 Add some missing http methods to parser
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Viewer
