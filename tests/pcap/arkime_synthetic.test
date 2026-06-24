@@ -8686,6 +8686,20 @@
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1737752487000,
+    "http" : {
+     "clientVersion" : [
+      "2.0"
+     ],
+     "clientVersionCnt" : 1,
+     "method" : [
+      "PRI"
+     ],
+     "methodCnt" : 1,
+     "uri" : [
+      "*"
+     ],
+     "uriCnt" : 1
+    },
     "initRTT" : 1000,
     "ipProtocol" : 6,
     "lastPacket" : 1737752490000,
@@ -8713,10 +8727,11 @@
      "lte" : 1737752490000
     },
     "protocol" : [
+     "http",
      "http2",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
