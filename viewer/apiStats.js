@@ -414,7 +414,7 @@ class StatsAPIs {
 
         const writeInfo = node.thread_pool.bulk || node.thread_pool.write;
 
-        const oldnode = StatsAPIs.#previousNodesStats[0][nodeKeys[n]];
+        const oldnode = StatsAPIs.#previousNodesStats[0]?.[nodeKeys[n]];
         if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && 'total' in node.fs.io_stats) {
           const timediffsec = (node.timestamp - oldnode.timestamp) / 1000.0;
           read = Math.max(0, Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes) / timediffsec * 1024));
@@ -696,7 +696,7 @@ class StatsAPIs {
    * @name /esindices/:index/shrink
    * @param {string} target - The index name to shrink the index to.
    * @param {number} numShards - The number of shards to shrink the index to.
-   * @returns {boolean} success - Whether the close shrink operation was successful.
+   * @returns {boolean} success - Whether the shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async shrinkESIndex (req, res) {
@@ -850,7 +850,7 @@ class StatsAPIs {
         data: rtasks
       });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/estask`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/estasks`, util.inspect(err, false, 50));
       return res.send({
         data: [],
         recordsTotal: 0,
@@ -1107,7 +1107,7 @@ class StatsAPIs {
       } else {
         const parts = req.body.value.split(',');
         if (parts.length !== 3) {
-          return res.serverError(500, 'Must be 3 piece of info', 'api.stats.mustBeThreePieces');
+          return res.serverError(500, 'Must be 3 pieces of info', 'api.stats.mustBeThreePieces');
         }
 
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = parts[0];
@@ -1227,7 +1227,7 @@ class StatsAPIs {
       await Db.reroute(req.query.cluster);
       return res.json({ success: true, text: 'Reroute successful', i18n: 'api.stats.rerouteSuccessful' });
     } catch (err) {
-      return res.json({ success: true, text: 'Reroute failed', i18n: 'api.stats.rerouteFailed' });
+      return res.json({ success: false, text: 'Reroute failed', i18n: 'api.stats.rerouteFailed' });
     }
   }
 
@@ -1374,7 +1374,7 @@ class StatsAPIs {
       for (const shard of shards) {
         if (shard.node === null || shard.node === 'null') {
           if (shard.ud && shard.ud.startsWith('node_left [')) {
-            shard.oldNode = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster);
+            shard.oldNode = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), options.cluster);
           }
           shard.node = 'Unassigned';
         }
@@ -1530,9 +1530,9 @@ class StatsAPIs {
   /**
    * POST - /api/esshards/:index/:shard/delete
    *
-   * Delete OpenSearch/Elasticsearch (admin only).
+   * Deletes an OpenSearch/Elasticsearch shard (admin only).
    * @name /esshards/:index/:shard/delete
-   * @returns {boolean} success - Whether include node operation was successful.
+   * @returns {boolean} success - Whether the delete shard operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async deleteESShard (req, res) {
