@@ -4,128 +4,30 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="d-flex align-center gap-1 text-start">
-    <!-- time range select -->
-    <div class="arkime-input-group">
-      <span
-        id="timeInput"
-        class="arkime-input-label arkime-input-label-fw cursor-help">
-        <v-icon
-          icon="mdi-clock-outline"
-          v-if="!shiftKeyHold" />
-        <span
-          v-else
-          class="time-shortcut">
-          T
-        </span>
-        <v-tooltip
-          activator="#timeInput"
-          location="bottom"
-          :open-delay="500">
-          {{ $t('search.timeInputTip') }}
-        </v-tooltip>
-      </span>
-      <select
-        tabindex="3"
-        role="listbox"
-        class="arkime-input-control"
-        v-model="timeRange"
-        v-focus="focusTimeRange"
-        @change="changeTimeRange"
-        @blur="onOffTimeRangeFocus">
-        <option value="0.25">
-          {{ $t('common.minuteCount', 15) }}
-        </option>
-        <option value="0.5">
-          {{ $t('common.minuteCount', 30) }}
-        </option>
-        <option value="1">
-          {{ $t('common.hourCount', 1) }}
-        </option>
-        <option
-          value="6"
-          v-if="!user.timeLimit || user.timeLimit >= 6">
-          {{ $t('common.hourCount', 6) }}
-        </option>
-        <option
-          value="24"
-          v-if="!user.timeLimit || user.timeLimit >= 24">
-          {{ $t('common.hourCount', 24) }}
-        </option>
-        <option
-          value="48"
-          v-if="!user.timeLimit || user.timeLimit >= 48">
-          {{ $t('common.hourCount', 48) }}
-        </option>
-        <option
-          value="72"
-          v-if="!user.timeLimit || user.timeLimit >= 72">
-          {{ $t('common.hourCount', 72) }}
-        </option>
-        <option
-          value="168"
-          v-if="!user.timeLimit || user.timeLimit >= 168">
-          {{ $t('common.weekCount', 1) }}
-        </option>
-        <option
-          value="336"
-          v-if="!user.timeLimit || user.timeLimit >= 336">
-          {{ $t('common.weekCount', 2) }}
-        </option>
-        <option
-          value="720"
-          v-if="!user.timeLimit || user.timeLimit >= 720">
-          {{ $t('common.monthCount', 1) }}
-        </option>
-        <option
-          value="1440"
-          v-if="!user.timeLimit || user.timeLimit >= 1440">
-          {{ $t('common.monthCount', 2) }}
-        </option>
-        <option
-          value="4380"
-          v-if="!user.timeLimit || user.timeLimit >= 4380">
-          {{ $t('common.monthCount', 6) }}
-        </option>
-        <option
-          value="8760"
-          v-if="!user.timeLimit || user.timeLimit >= 8760">
-          {{ $t('common.yearCount', 1) }}
-        </option>
-        <option
-          value="-1"
-          v-if="!user.timeLimit || user.timeLimit > 8760">
-          {{ $t('common.allCareful') }}
-        </option>
-        <option
-          value="0"
-          disabled>
-          {{ $t('common.custom') }}
-        </option>
-      </select>
-    </div> <!-- /time range select -->
-
-    <!-- time options dropdown button: shows current state, opens the breakout popover -->
+    <!-- single time control: shows the current range, opens the breakout popover -->
     <v-btn
       id="timeOptionsBtn"
       variant="flat"
       size="small"
       density="comfortable"
       class="time-options-btn"
-      :style="secondaryBtnStyle">
+      :style="secondaryBtnStyle"
+      v-focus="focusTimeRange"
+      @blur="onOffTimeRangeFocus">
       <template v-if="timeError">
         <v-icon icon="mdi-alert" />
       </template>
-      <template v-else-if="isCustomRange && rangeLabel">
-        <v-icon
-          icon="mdi-clock-outline"
-          class="me-1" />
-        {{ rangeLabel }}
-      </template>
       <template v-else>
         <v-icon
-          icon="mdi-calendar-clock"
+          icon="mdi-clock-outline"
+          v-if="!shiftKeyHold"
           class="me-1" />
-        {{ $t('search.timeOptions') }}
+        <span
+          v-else
+          class="time-shortcut me-1">
+          T
+        </span>
+        {{ currentRangeLabel }}
       </template>
       <v-icon
         icon="mdi-menu-down"
@@ -139,6 +41,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-menu
         activator="parent"
         location="bottom start"
+        v-model="menuOpen"
         :close-on-content-click="false">
         <v-card class="arkime-time-popover pa-3">
           <!-- validation error (full text lives here + on the button tooltip) -->
@@ -150,6 +53,22 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             {{ timeError }}
           </div>
+
+          <!-- section 1: quick-range presets -->
+          <div class="d-flex flex-wrap ga-1">
+            <v-chip
+              v-for="p in presets"
+              :key="p.value"
+              size="small"
+              :variant="isPresetActive(p) ? 'flat' : 'tonal'"
+              :color="isPresetActive(p) ? 'primary' : undefined"
+              @click="selectPreset(p.value)">
+              {{ p.label }}
+            </v-chip>
+          </div>
+          <v-divider class="my-3" />
+
+          <!-- section 2: custom start / stop date inputs -->
           <div class="d-flex flex-wrap ga-4">
             <!-- start time -->
             <div class="arkime-time-col">
@@ -222,9 +141,24 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <v-date-picker
                 v-if="localStartTime"
+                hide-header
                 :model-value="localStartTime.toDate()"
                 show-adjacent-months
                 @update:model-value="applyStartDate" />
+              <!-- start time-of-day picker -->
+              <div
+                v-if="localStartTime"
+                class="arkime-input-group arkime-input-group--fluid mt-2">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon icon="mdi-clock-outline" />
+                </span>
+                <input
+                  type="time"
+                  step="1"
+                  class="arkime-input-control"
+                  :value="localStartTime.format('HH:mm:ss')"
+                  @input="changeTimeOfDay('start', $event)">
+              </div>
             </div> <!-- /start time -->
 
             <!-- stop time -->
@@ -298,16 +232,34 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <v-date-picker
                 v-if="localStopTime"
+                hide-header
                 :model-value="localStopTime.toDate()"
                 show-adjacent-months
                 @update:model-value="applyStopDate" />
+              <!-- stop time-of-day picker -->
+              <div
+                v-if="localStopTime"
+                class="arkime-input-group arkime-input-group--fluid mt-2">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon icon="mdi-clock-outline" />
+                </span>
+                <input
+                  type="time"
+                  step="1"
+                  class="arkime-input-control"
+                  :value="localStopTime.format('HH:mm:ss')"
+                  @input="changeTimeOfDay('stop', $event)">
+              </div>
             </div> <!-- /stop time -->
           </div>
 
-          <!-- bounding + interval selects -->
+          <!-- section 3: bounding + interval selects -->
+          <v-divider
+            v-if="showBoundingInterval"
+            class="my-3" />
           <div
-            v-if="!hideBounding || !hideInterval"
-            class="d-flex flex-wrap ga-2 mt-3">
+            v-if="showBoundingInterval"
+            class="d-flex flex-wrap ga-2">
             <!-- time bounding select -->
             <div
               class="arkime-input-group"
@@ -440,6 +392,8 @@ export default {
       // result on every keystroke would otherwise reset the caret to the end.
       typedStartTime: '',
       typedStopTime: '',
+      // controls the time-options popover so picking a preset can close it
+      menuOpen: false,
       // Arkime theme-color v-btn style for the time-options button. Vuetify
       // :color can't take CSS vars, so apply the secondary token inline to
       // match the other search-row buttons (Views, etc.).
@@ -463,6 +417,45 @@ export default {
       const stop = parseInt(this.time.stopTime, 10);
       if (isNaN(start) || isNaN(stop)) { return ''; }
       return readableTime((stop - start) * 1000);
+    },
+    // quick-pick time ranges shown as chips in the popover. Single source of
+    // truth for both the chips and the button's current-range label. `min` is
+    // the hours the user's timeLimit must allow; gated like the old <option>s.
+    presets: function () {
+      const limit = this.user.timeLimit;
+      const ranges = [
+        { value: '0.25', label: this.$t('common.minuteCount', 15), min: 0 },
+        { value: '0.5', label: this.$t('common.minuteCount', 30), min: 0 },
+        { value: '1', label: this.$t('common.hourCount', 1), min: 0 },
+        { value: '6', label: this.$t('common.hourCount', 6), min: 6 },
+        { value: '24', label: this.$t('common.hourCount', 24), min: 24 },
+        { value: '48', label: this.$t('common.hourCount', 48), min: 48 },
+        { value: '72', label: this.$t('common.hourCount', 72), min: 72 },
+        { value: '168', label: this.$t('common.weekCount', 1), min: 168 },
+        { value: '336', label: this.$t('common.weekCount', 2), min: 336 },
+        { value: '720', label: this.$t('common.monthCount', 1), min: 720 },
+        { value: '1440', label: this.$t('common.monthCount', 2), min: 1440 },
+        { value: '4380', label: this.$t('common.monthCount', 6), min: 4380 },
+        { value: '8760', label: this.$t('common.yearCount', 1), min: 8760 }
+      ].filter(p => !limit || limit >= p.min);
+      // "All" only when there's no limit or it exceeds a year
+      if (!limit || limit > 8760) {
+        ranges.push({ value: '-1', label: this.$t('common.allCareful'), min: 0 });
+      }
+      return ranges;
+    },
+    // label shown on the single time button: the matched preset, the custom
+    // window duration, or a fallback
+    currentRangeLabel: function () {
+      if (this.isCustomRange) {
+        return this.rangeLabel || this.$t('common.custom');
+      }
+      const match = this.presets.find(p => this.isPresetActive(p));
+      return match ? match.label : this.$t('search.timeOptions');
+    },
+    // whether the bounding/interval section (and its divider) should render
+    showBoundingInterval: function () {
+      return !this.hideBounding || !this.hideInterval;
     },
     time: {
       get: function () {
@@ -619,6 +612,16 @@ export default {
         }
       });
     },
+    /**
+     * Fired when a quick-range chip is clicked in the popover. Applies the
+     * preset (reusing changeTimeRange) and closes the popover.
+     * @param {string} value the preset's time range value (hours, or -1 for all)
+     */
+    selectPreset: function (value) {
+      this.timeRange = value;
+      this.changeTimeRange();
+      this.menuOpen = false;
+    },
     /* Fired when start datetime is typed. Keep the raw string in
      * typedStartTime so the input doesn't re-render mid-edit (which would
      * jump the cursor). Only sync to localStartTime if the string parses
@@ -663,6 +666,32 @@ export default {
       this.time.stopTime = Math.floor(newMoment.valueOf() / 1000);
       this.timeRange = '0';
       this.validateDate();
+    },
+    /* Fired when a native time field changes. Mirrors applyStartDate/applyStopDate
+     * but for the HH:mm:ss portion -- the date carries over from the current
+     * value. e.target.value is "HH:mm" or "HH:mm:ss" (24h).
+     * @param {string} startOrStop whether to update the start time or stop time */
+    changeTimeOfDay: function (startOrStop, e) {
+      const local = startOrStop === 'start' ? this.localStartTime : this.localStopTime;
+      if (!e.target.value || !local) { return; }
+      const [h, m, s] = e.target.value.split(':');
+      const newMoment = moment(local)
+        .hour(parseInt(h, 10)).minute(parseInt(m, 10)).second(s ? parseInt(s, 10) : 0);
+      const secondsPastEpoch = Math.floor(newMoment.valueOf() / 1000);
+      if (startOrStop === 'start') {
+        this.localStartTime = newMoment;
+        this.time.startTime = secondsPastEpoch;
+      } else {
+        this.localStopTime = newMoment;
+        this.time.stopTime = secondsPastEpoch;
+      }
+      this.timeRange = '0';
+      this.validateDate();
+    },
+    /* whether a preset matches the active time range -- used for chip styling
+     * and the button's current-range label */
+    isPresetActive: function (p) {
+      return parseFloat(this.timeRange) === parseFloat(p.value);
     },
     /**
      * Determines whether the supplied time is the start of a day
@@ -970,7 +999,7 @@ export default {
 </script>
 
 <style scoped>
-/* match the 32px height of the time-range select + search-row buttons */
+/* match the 32px height of the search-row buttons */
 .time-options-btn {
   height: 32px;
 }
@@ -979,14 +1008,23 @@ export default {
 <style>
 /* Time-options breakout popover. Its content is teleported to the overlay
    root, so Time.vue's scoped styles don't reach it -- these rules are
-   intentionally global (class names namespaced to avoid leakage). The two
-   date columns sit side-by-side on wide screens and wrap on narrow ones. */
+   intentionally global (class names namespaced to avoid leakage). Width is
+   capped to fit the two date columns side-by-side; without the cap the card
+   grows to fit all preset chips on a single line and reads as too wide. The
+   chips wrap to this width instead; columns stack on narrow viewports. */
 .arkime-time-popover {
-  max-width: 95vw;
+  max-width: min(720px, 95vw);
 }
 .arkime-time-popover .arkime-time-col {
-  flex: 1 1 320px;
-  min-width: 320px;
+  /* size each column to the date picker's intrinsic width so the fluid
+     start/stop input above it matches the calendar width exactly (a growing
+     column would stretch the input wider than the fixed-width calendar) */
+  flex: 0 0 auto;
+}
+/* Vuetify dividers default to --v-border-opacity ~0.12, which is nearly
+   invisible on light themes. Bump it so the section separators read clearly. */
+.arkime-time-popover .v-divider {
+  --v-border-opacity: 0.32;
 }
 .arkime-time-popover .arkime-time-error {
   display: flex;
