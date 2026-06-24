@@ -50,6 +50,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4054 Add mpacket link layer support
 ## Viewer
   - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
+  - #4071 Fix negative numbers being rejected in expressions
 
 6.5.0 2026/06/15
 ## Breaking

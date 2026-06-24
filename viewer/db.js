@@ -438,7 +438,7 @@ async function fixPacketPos (fields) {
   try {
     const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
     if (internals.debug > 2) {
-      console.log('GETSESSION - fixPackPos', fileInfo);
+      console.log('GETSESSION - fixPacketPos', fileInfo);
     }
 
     if (!fileInfo || !fileInfo.packetPosEncoding) {
@@ -686,7 +686,7 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
 };
 
 Db.searchScroll = async (index, query, options, cb) => {
-  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
   if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     if (!cb) {
       return Db.search(index, query, options);
@@ -758,7 +758,7 @@ Db.searchScroll = async (index, query, options, cb) => {
 };
 
 Db.searchScrollIterator = async function* (index, query, options) {
-  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
   if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     const result = await Db.search(index, query, options);
     yield result;
