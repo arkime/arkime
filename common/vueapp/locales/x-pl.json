@@ -1064,7 +1064,22 @@
       "views": "Iewsvay",
       "shortcuts": "Ortcutsshay",
       "cron": "EriodicPay EriesQuay",
-      "notifiers": "Otifiersnay"
+      "notifiers": "Otifiersnay",
+      "banner": "Annerbay"
+    },
+    "banner": {
+      "title": "Annerbay",
+      "info": "Owshay away essagemay acrossway ethay optay ofway everyway agepay orfay allway usersway. Angeschay aketay effectway ethay extnay imetay away userway oadslay orway efreshesray away agepay.",
+      "enabled": "Owshay Annerbay",
+      "on": "Onway",
+      "off": "Offway",
+      "type": "Ylestay",
+      "typeInfo": "Infoway",
+      "typeWarning": "Arningway",
+      "typeError": "Iticalcray",
+      "message": "Essagemay",
+      "messagePlaceholder": "e.g. ArkimeWay illway ebay ownday omorrowtay atway 8amway orfay aintenancemay.",
+      "preview": "Eviewpray"
     },
     "general": {
       "title": "Eneralgay Ettingssay",

@@ -62,6 +62,7 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
+const BannerAPIs = require('./apiBanner');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1556,6 +1557,19 @@ app.post( // test notifier endpoint
   ['/api/notifier/:id/test'],
   [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkRole('arkimeAdmin'), checkCookieToken],
   Notifier.apiTestNotifier
+);
+
+// banner apis ----------------------------------------------------------------
+app.get( // get banner endpoint
+  ['/api/banner'],
+  [ArkimeUtil.noCacheJson],
+  BannerAPIs.apiGetBanner
+);
+
+app.put( // update banner endpoint (admin only)
+  ['/api/banner'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  BannerAPIs.apiUpdateBanner
 );
 
 // history apis ---------------------------------------------------------------

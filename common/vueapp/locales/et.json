@@ -1063,7 +1063,22 @@
       "views": "Vaated",
       "shortcuts": "Otseteed",
       "cron": "Perioodilised päringud",
-      "notifiers": "Teavitajad"
+      "notifiers": "Teavitajad",
+      "banner": "Bänner"
+    },
+    "banner": {
+      "title": "Bänner",
+      "info": "Kuvab kõigile kasutajatele teate iga lehe ülaosas. Muudatused jõustuvad, kui kasutaja järgmine kord lehe laadib või värskendab.",
+      "enabled": "Näita bännerit",
+      "on": "Sees",
+      "off": "Väljas",
+      "type": "Stiil",
+      "typeInfo": "Teave",
+      "typeWarning": "Hoiatus",
+      "typeError": "Kriitiline",
+      "message": "Sõnum",
+      "messagePlaceholder": "nt Arkime on homme kell 8.00 hoolduse tõttu maas.",
+      "preview": "Eelvaade"
     },
     "general": {
       "title": "Üldised seaded",

@@ -1063,7 +1063,22 @@
       "views": "Ansichten",
       "shortcuts": "Verknüpfungen",
       "cron": "Periodische Abfragen",
-      "notifiers": "Benachrichtiger"
+      "notifiers": "Benachrichtiger",
+      "banner": "Banner"
+    },
+    "banner": {
+      "title": "Banner",
+      "info": "Zeigt allen Benutzern eine Nachricht am oberen Rand jeder Seite an. Änderungen werden wirksam, sobald ein Benutzer eine Seite das nächste Mal lädt oder aktualisiert.",
+      "enabled": "Banner anzeigen",
+      "on": "An",
+      "off": "Aus",
+      "type": "Stil",
+      "typeInfo": "Info",
+      "typeWarning": "Warnung",
+      "typeError": "Kritisch",
+      "message": "Nachricht",
+      "messagePlaceholder": "z. B. Arkime wird morgen um 8 Uhr für Wartungsarbeiten nicht verfügbar sein.",
+      "preview": "Vorschau"
     },
     "general": {
       "title": "Allgemeine Einstellungen",

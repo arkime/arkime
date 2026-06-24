@@ -1063,7 +1063,22 @@
       "views": "Views",
       "shortcuts": "Shortcuts",
       "cron": "Periodic Queries",
-      "notifiers": "Notifiers"
+      "notifiers": "Notifiers",
+      "banner": "Banner"
+    },
+    "banner": {
+      "title": "Banner",
+      "info": "Show a message across the top of every page for all users. Changes take effect the next time a user loads or refreshes a page.",
+      "enabled": "Show Banner",
+      "on": "On",
+      "off": "Off",
+      "type": "Style",
+      "typeInfo": "Info",
+      "typeWarning": "Warning",
+      "typeError": "Critical",
+      "message": "Message",
+      "messagePlaceholder": "e.g. Arkime will be down tomorrow at 8am for maintenance.",
+      "preview": "Preview"
     },
     "general": {
       "title": "General Settings",

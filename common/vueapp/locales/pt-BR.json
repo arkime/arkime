@@ -1063,7 +1063,22 @@
       "views": "Visualizações",
       "shortcuts": "Atalhos",
       "cron": "Consultas Periódicas",
-      "notifiers": "Notificadores"
+      "notifiers": "Notificadores",
+      "banner": "Banner"
+    },
+    "banner": {
+      "title": "Banner",
+      "info": "Exibe uma mensagem no topo de todas as páginas para todos os usuários. As alterações entram em vigor na próxima vez que um usuário carregar ou atualizar uma página.",
+      "enabled": "Mostrar banner",
+      "on": "Ligado",
+      "off": "Desligado",
+      "type": "Estilo",
+      "typeInfo": "Informação",
+      "typeWarning": "Aviso",
+      "typeError": "Crítico",
+      "message": "Mensagem",
+      "messagePlaceholder": "ex. O Arkime ficará indisponível amanhã às 8h para manutenção.",
+      "preview": "Visualização"
     },
     "general": {
       "title": "Configurações Gerais",

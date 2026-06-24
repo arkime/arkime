@@ -56,7 +56,8 @@ const store = createStore({
     notifiers: [],
     sessionDetailDLWidth: 160,
     sessionDetailCols: localStorage.getItem('sessionDetailCols') || 2,
-    userSettingDefaults: {}
+    userSettingDefaults: {},
+    banner: { enabled: false, message: '', type: 'info', updated: 0 }
   },
   getters: {
     sessionsTableState (state) {
@@ -216,6 +217,7 @@ const store = createStore({
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
       state.userSettingDefaults = value.userSettingDefaults;
+      state.banner = value.banner || { enabled: false, message: '', type: 'info', updated: 0 };
       state.roles = parseRoles(value.roles);
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
@@ -249,6 +251,9 @@ const store = createStore({
     },
     setNotifiers (state, value) {
       state.notifiers = value;
+    },
+    setBanner (state, value) {
+      state.banner = value;
     },
     setSessionDetailDLWidth (state, value) {
       state.sessionDetailDLWidth = value;

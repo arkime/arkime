@@ -69,6 +69,31 @@ export default {
     return response.data;
   },
 
+  // BANNER ---------------------------------------------------------------- //
+  /**
+   * Gets the global app banner and updates the store
+   * @returns {Promise} Promise - A promise object that signals the completion
+   *                              or rejection of the request.
+   */
+  async getBanner () {
+    const banner = await fetchWrapper({ url: 'api/banner' });
+    store.commit('setBanner', banner);
+    return banner;
+  },
+
+  /**
+   * Updates the global app banner (admin only)
+   * NOTE: updates the store with the saved banner so it shows immediately
+   * @param {Object} banner - The banner to save { enabled, message, type }
+   * @returns {Promise} Promise - A promise object that signals the completion
+   *                              or rejection of the request.
+   */
+  async updateBanner (banner) {
+    const response = await fetchWrapper({ url: 'api/banner', method: 'PUT', data: banner });
+    if (response.banner) { store.commit('setBanner', response.banner); }
+    return response;
+  },
+
   // SHORTCUTS ------------------------------------------------------------- //
   /**
    * Gets a list of user configured shortcuts

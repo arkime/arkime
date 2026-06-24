@@ -1063,7 +1063,22 @@
       "views": "ビュー",
       "shortcuts": "ショートカット",
       "cron": "定期クエリ",
-      "notifiers": "通知設定"
+      "notifiers": "通知設定",
+      "banner": "バナー"
+    },
+    "banner": {
+      "title": "バナー",
+      "info": "すべてのユーザーに対して、各ページの上部にメッセージを表示します。変更は、ユーザーが次にページを読み込むか更新したときに有効になります。",
+      "enabled": "バナーを表示",
+      "on": "オン",
+      "off": "オフ",
+      "type": "スタイル",
+      "typeInfo": "情報",
+      "typeWarning": "警告",
+      "typeError": "重大",
+      "message": "メッセージ",
+      "messagePlaceholder": "例: Arkime は明日午前8時よりメンテナンスのため停止します。",
+      "preview": "プレビュー"
     },
     "general": {
       "title": "全般設定",

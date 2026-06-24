@@ -1063,7 +1063,22 @@
       "views": "视图",
       "shortcuts": "快捷方式",
       "cron": "周期性查询",
-      "notifiers": "通知器"
+      "notifiers": "通知器",
+      "banner": "横幅"
+    },
+    "banner": {
+      "title": "横幅",
+      "info": "在每个页面顶部向所有用户显示一条消息。更改将在用户下次加载或刷新页面时生效。",
+      "enabled": "显示横幅",
+      "on": "开",
+      "off": "关",
+      "type": "样式",
+      "typeInfo": "信息",
+      "typeWarning": "警告",
+      "typeError": "严重",
+      "message": "消息",
+      "messagePlaceholder": "例如：Arkime 将于明天上午 8 点停机维护。",
+      "preview": "预览"
     },
     "general": {
       "title": "常规设置",

@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div v-if="compatibleBrowser">
     <arkime-navbar />
+    <app-banner v-if="user" />
     <router-view v-if="user" />
     <div class="float-right small app-info-error">
       <arkime-toast
@@ -55,6 +56,7 @@ SPDX-License-Identifier: Apache-2.0
 import ConfigService from './components/utils/ConfigService.js';
 import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
+import AppBanner from './components/utils/AppBanner.vue';
 import ArkimeFooter from '@common/Footer.vue';
 import ArkimeHelpNotes from './components/utils/HelpNotes.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
@@ -72,6 +74,7 @@ export default {
   components: {
     ArkimeToast,
     ArkimeNavbar,
+    AppBanner,
     ArkimeFooter,
     KeyboardShortcuts,
     ArkimeHelpNotes,

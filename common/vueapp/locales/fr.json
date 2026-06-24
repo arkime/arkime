@@ -1063,7 +1063,22 @@
       "views": "Vues",
       "shortcuts": "Raccourcis",
       "cron": "Requêtes périodiques",
-      "notifiers": "Notificateurs"
+      "notifiers": "Notificateurs",
+      "banner": "Bannière"
+    },
+    "banner": {
+      "title": "Bannière",
+      "info": "Affiche un message en haut de chaque page pour tous les utilisateurs. Les modifications prennent effet au prochain chargement ou rafraîchissement d'une page par l'utilisateur.",
+      "enabled": "Afficher la bannière",
+      "on": "Activé",
+      "off": "Désactivé",
+      "type": "Style",
+      "typeInfo": "Info",
+      "typeWarning": "Avertissement",
+      "typeError": "Critique",
+      "message": "Message",
+      "messagePlaceholder": "ex. Arkime sera indisponible demain à 8h pour maintenance.",
+      "preview": "Aperçu"
     },
     "general": {
       "title": "Paramètres généraux",
