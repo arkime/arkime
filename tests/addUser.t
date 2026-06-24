@@ -145,15 +145,15 @@ is ($response->code, 403);
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'role:role', 'role:role' );
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->code, 403);
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'role:role');
 is ($response->code, 403);
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/?arkimeRegressionUser=role:role");
 is ($response->code, 403);
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 # s2s
 
@@ -184,7 +184,7 @@ is ($response->code, 403);
 
 # /receiveSession - user role
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "role:authtest2", "date": 1}');
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 is ($response->code, 403);
 
 # /receiveSession - url mismatch
@@ -290,7 +290,7 @@ is ($response->content, '{"success":false,"text":"User name header is empty"}');
 # JWT with role: prefix in claim — should be rejected
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
 is ($response->code, 403, "JWT with role: prefix rejected");
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 # JWT with department claim — should get role:securityTeam via role mappings
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');

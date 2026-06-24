@@ -305,7 +305,7 @@ class Config {
     });
 
     if (options?.initAuth) {
-      Auth.initialize({
+      await Auth.initialize({
         appAdminRole: 'arkimeAdmin',
         basePath: Config.basePath(),
         passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',

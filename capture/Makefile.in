@@ -107,7 +107,7 @@ check:
 	(cd plugins; $(MAKE) check)
 
 distclean realclean clean:
-	rm -f *.o arkime-capture capture */*.o */*.so
+	rm -f *.o arkime-capture capture */*.o */*.so ../tests/plugins/*.so
 
 cppcheck:
 	cppcheck --suppress=toomanyconfigs --suppress=normalCheckLevelMaxBranches --suppress=constParameterCallback --suppress=nullPointerOutOfMemory --suppress=nullPointerArithmeticOutOfMemory -q --enable=all --disable=missingInclude --std=c99 -I. -Ithirdparty $(INCLUDE_OTHER) *.c plugins/*.c plugins/*/*.c parsers/*.c

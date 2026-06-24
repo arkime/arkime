@@ -165,7 +165,7 @@ class WISESource {
    * Util function to parse CSV formatted data
    * @param {string} body - the raw CSV data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseCSV (body, setCb, endCb) {
     csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
@@ -204,7 +204,7 @@ class WISESource {
    * Util function to parse tagger formatted data
    * @param {string} body - the raw CSV data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseTagger (body, setCb, endCb) {
     const lines = body.toString().split(/\r?\n/);
@@ -252,7 +252,7 @@ class WISESource {
    * Util function to parse JSON formatted data
    * @param {string} body - the raw JSON data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseJSONArray (json, setCb, endCb) {
     try {
@@ -361,7 +361,7 @@ class WISESource {
    * Util function to parse JSON formatted data
    * @param {string} body - the raw JSON data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseJSON (body, setCb, endCb) {
     try {
@@ -393,7 +393,7 @@ class WISESource {
    * Util function to parse JSONL formatted data
    * @param {string} body - the raw JSONL data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseJSONL (body, setCb, endCb) {
     const json = body.toString().split('\n').reduce((acc, line) => {
@@ -581,7 +581,7 @@ class WISESource {
    *
    * @param {string} url - The URL to download
    * @param {string} file - The file to save the results to
-   * @param {function} cb - (statusCode) The stats code result from the download
+   * @param {function} cb - (statusCode) The status code result from the download
    */
   static request (url, file, cb) {
     const headers = {};
@@ -589,7 +589,7 @@ class WISESource {
       if (fs.existsSync(file)) {
         const stat = fs.statSync(file);
 
-        // Don't download again if file is less than 1 minutes old
+        // Don't download again if file is less than 1 minute old
         if (Date.now() - stat.mtime.getTime() < 60000) {
           return setImmediate(cb, 304);
         }
@@ -653,8 +653,8 @@ class WISESource {
  */
 
 /**
- * Every source needs to implement this method. If a singleton it will just create the source object direction.
- * If not it should loop thru all keys that start with sourcekind:
+ * Every source needs to implement this method. If a singleton it will just create the source object directly.
+ * If not it should loop through all keys that start with sourcekind:
  * @method
  * @name WISESource.initSource
  * @param {WISESourceAPI} api - The api back into the WISE Service

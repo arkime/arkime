@@ -631,7 +631,7 @@ class SessionAPIs {
         return;
       }
 
-      // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
+      // Get the pcap file for this node and filenum, if it isn't opened then do the filename lookup and open it
       const opcap = Pcap.get(fields.node + ':' + fileNum);
       if (opcap.isCorrupt()) {
         throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
@@ -1119,8 +1119,8 @@ class SessionAPIs {
       b.writeUInt32LE(0x80808080, 0); // Block Type
       b.writeUInt32LE(len, 4); // Block Len 1
       b.write('MOWL', 8); // Magic
-      b.writeUInt32LE(json.length, 12); // Block Len 1
-      b.write(json, 16); // Magic
+      b.writeUInt32LE(json.length, 12); // JSON Length
+      b.write(json, 16); // JSON Data
       b.fill(0, 16 + json.length, 16 + json.length + (4 - (json.length % 4)) % 4); // padding
       b.writeUInt32LE(len, len - 4); // Block Len 2
       res.write(b);
@@ -1184,7 +1184,7 @@ class SessionAPIs {
           return;
         }
 
-        // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
+        // Get the pcap file for this node and filenum, if it isn't opened then do the filename lookup and open it
         const opcap = Pcap.get(`write:${fields.node}:${fileNum}`);
         if (opcap.isCorrupt()) {
           throw new Error('Corrupt');
@@ -1904,7 +1904,7 @@ class SessionAPIs {
             response.recordsTotal = total.count;
             response.spi = sessions.aggregations;
             response.recordsFiltered = recordsFiltered;
-            res.logCounts(response.spi.count, response.recordsFiltered, response.total);
+            res.logCounts(response.spi.count, response.recordsFiltered, response.recordsTotal);
             return res.send(response);
           } catch (e) {
             console.trace('fetch spiview error', ArkimeUtil.sanitizeStr(e.stack));

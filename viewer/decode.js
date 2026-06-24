@@ -763,7 +763,7 @@ class ItemHTTPStream extends ItemTransform {
 class ItemHexFormatterStream extends Transform {
   constructor (options) {
     super({ objectMode: true });
-    mkname(this, 'ItemHexFormaterStream');
+    mkname(this, 'ItemHexFormatterStream');
     this.showOffsets = options['ITEM-HEX'] ? options['ITEM-HEX'].showOffsets || false : false;
     this.find = options.find;
   }
@@ -1152,7 +1152,7 @@ if (require.main === module) {
     async.whilst(
       function (cb) { return cb(null, pos < stat.size); },
       async function (callback) {
-        const packet = pcap.readPacket(pos);
+        const packet = await pcap.readPacket(pos);
         const obj = {};
         pcap.decode(packet, obj);
         packets.push(obj);

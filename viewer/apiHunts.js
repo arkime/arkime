@@ -357,7 +357,7 @@ ${Config.arkimeWebURL()}hunt
     const failedSessions = JSON.parse(JSON.stringify(hunt.failedSessionIds));
     // we don't need to search the db for session, we just need to search each session in failedSessionIds
     async.forEachLimit(failedSessions, 3, (sessionId, cb) => {
-      Db.getSession(sessionId, { arkime_unflatten: true, _source: false, fields: 'node,huntName,huntId,lastPacket,field'.split(',') }, async (err, session) => {
+      Db.getSession(sessionId, { arkime_unflatten: true, _source: false, fields: 'node,huntName,huntId,lastPacket,fileId'.split(',') }, async (err, session) => {
         if (err) {
           const result = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
           return cb(result);
@@ -368,11 +368,11 @@ ${Config.arkimeWebURL()}hunt
         const huntRemotePath = `api/hunt/${session.node}/${huntId}/remote/${sessionId}`;
 
         if (Config.debug > 1) {
-          console.log('HUNT - remote', huntRemotePath);
+          console.log('HUNT - failed remote', huntRemotePath);
         }
         ViewerUtils.makeRequest(session.node, huntRemotePath, user, async (err, response) => {
           if (Config.debug > 1) {
-            console.log('HUNT - remote response', huntRemotePath, err, response);
+            console.log('HUNT - failed remote response', huntRemotePath, err, response);
           }
           if (err) {
             const updateResult = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
@@ -516,11 +516,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             const huntRemotePath = `api/hunt/${node}/${huntId}/remote/${sessionId}`;
 
             if (Config.debug > 1) {
-              console.log('HUNT - failed remote', huntRemotePath);
+              console.log('HUNT - remote', huntRemotePath);
             }
             ViewerUtils.makeRequest(node, huntRemotePath, user, async (err, response) => {
               if (Config.debug > 1) {
-                console.log('HUNT - failed remote response', huntRemotePath, err, response);
+                console.log('HUNT - remote response', huntRemotePath, err, response);
               }
               if (err) {
                 const skipResult = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
@@ -786,7 +786,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {number} matchedSessions - How many sessions contain packets that match the search text.
    * @property {number} searchedSessions - How many sessions have had their packets searched.
    * @property {number} totalSessions - The number of sessions to search.
-   * @property {number} lastPacketTime - The date of the first packet of the last searched session. Used to query for the next chunk of sessions to search. Format is seconds since Unix EPOCH.
+   * @property {number} lastPacketTime - The date of the last packet of the last searched session. Used to query for the next chunk of sessions to search. Format is seconds since Unix EPOCH.
    * @property {number} created - The time that the hunt was created. Format is seconds since Unix EPOCH.
    * @property {number} lastUpdated - The time that the hunt was last updated in the DB. Used to only update every 2 seconds. Format is seconds since Unix EPOCH.
    * @property {number} started - The time that the hunt was started (put into running state). Format is seconds since Unix EPOCH.
@@ -1235,7 +1235,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         return res.serverError(500, 'Unable to update hunt', 'api.hunts.errorUpdating');
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/hunt/%s/users (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/hunt/%s (updateHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to update hunt', 'api.hunts.errorUpdating');
     }
   }

@@ -54,7 +54,8 @@ class FieldActionsSource extends WISESource {
       this.getSourceRaw = this.getSourceRawRedis;
       this.putSourceRaw = this.putSourceRawRedis;
       const redisParts = this.url.split('/');
-      if (redisParts.length !== 5) {
+      const expectedParts = this.url.startsWith('redis-sentinel://') ? 6 : 5;
+      if (redisParts.length !== expectedParts) {
         throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
       }
       this.key = redisParts.pop();
@@ -68,7 +69,7 @@ class FieldActionsSource extends WISESource {
 
     setImmediate(this.load.bind(this));
 
-    if (this.url[0] === '/' || this.url.startsWith('../')) {
+    if (this.url[0] === '/' || this.url.startsWith('./') || this.url.startsWith('../')) {
       this.watchFile();
     } else {
       setInterval(this.load.bind(this), 5 * 1000 * 60);

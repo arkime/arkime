@@ -41,11 +41,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
 
 6.5.1 2026/07/xx
+## Breaking
+  - #4072 WISE reversedns now saves resolved names that match none of the stripDomains entries in
+          full (as documented) instead of silently dropping them
 ## Release
   - #4066 Node 22.23.1
   - #4056 Add Fedora 44 builds
 ## All
   - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
+  - #4072 Fix header/OIDC auth requests hanging when a dynamic role update fails
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
@@ -55,6 +59,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4054 Add mpacket link layer support
 ## Viewer
   - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
+  - #4071 Fix negative numbers being rejected in expressions
+## WISE
+  - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
+  - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
+  - #4072 Fix databricks periodic mode never running the initial query and crashing on refresh
+  - #4072 Fix caching md5/sha256 results without contentType, and crashes on repeated hashes params and on viewing an empty redisfile source
 
 6.5.0 2026/06/15
 ## Breaking

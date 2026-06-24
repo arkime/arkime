@@ -743,7 +743,7 @@ class ArkimeUtil {
 
   static #SAFE_ARRAY_METHODS = new Set([
     'includes', 'indexOf', 'lastIndexOf', 'some', 'every', 'filter', 'map', 'find', 'findIndex',
-    'slice', 'join', 'concat', 'flat', 'flatMap', 'length'
+    'slice', 'join', 'concat', 'flat', 'flatMap'
   ]);
 
   static #SAFE_METHODS = new Set([

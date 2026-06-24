@@ -78,12 +78,12 @@ class Auth {
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
-   * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
+   * @param {string} options.userAutoCreateTmpl A JavaScript string function that is used to create users that don't exist
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
    */
-  static initialize (options) {
+  static async initialize (options) {
     // Make sure all options we need below are set
     options ??= {};
     options.mode ??= ArkimeConfig.get('authMode');
@@ -291,7 +291,7 @@ class Auth {
       console.log('AUTH strategies', Auth.#strategies);
     }
 
-    Auth.#registerStrategies();
+    await Auth.#registerStrategies();
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
@@ -501,8 +501,8 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('basic', new BasicStrategy((userId, password, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`AUTH: User ${userId} Can not authenticate with role`);
-        return done('Can not authenticate with role');
+        console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+        return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
@@ -521,8 +521,8 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`AUTH: User ${userId} Can not authenticate with role`);
-        return done('Can not authenticate with role');
+        console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+        return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
@@ -595,7 +595,7 @@ class Auth {
       }
 
       if (userId.startsWith('role:')) {
-        return done('Can not authenticate with role');
+        return done('Cannot authenticate with role');
       }
 
       async function headerAuthCheck (err, user) {
@@ -603,7 +603,12 @@ class Auth {
         if (!user.enabled) { return done('User not enabled'); }
         if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-        await user.updateDynamicRoles(vals);
+        try {
+          await user.updateDynamicRoles(vals);
+        } catch (e) {
+          console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
+          return done('Failed to update dynamic roles');
+        }
         user.setLastUsed();
         return done(null, user);
       }
@@ -661,8 +666,8 @@ class Auth {
         }
 
         if (userId.startsWith('role:')) {
-          console.log(`AUTH: User ${userId} Can not authenticate with role`);
-          return done('Can not authenticate with role');
+          console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+          return done('Cannot authenticate with role');
         }
 
         async function oidcAuthCheck (err, user) {
@@ -670,7 +675,12 @@ class Auth {
           if (!user.enabled) { return done('User not enabled'); }
           if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-          await user.updateDynamicRoles(userinfo);
+          try {
+            await user.updateDynamicRoles(userinfo);
+          } catch (e) {
+            console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
+            return done('Failed to update dynamic roles');
+          }
           user.setLastUsed();
           return done(null, user, { id_token: tokenSet.id_token });
         }
@@ -690,8 +700,8 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('form', new LocalStrategy((userId, password, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`AUTH: User ${userId} Can not authenticate with role`);
-        return done('Can not authenticate with role');
+        console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+        return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
@@ -711,7 +721,7 @@ class Auth {
     passport.use('regressionTests', new CustomStrategy((req, done) => {
       const userId = req?.query?.arkimeRegressionUser ?? 'anonymous';
       if (userId.startsWith('role:')) {
-        return done('Can not authenticate with role');
+        return done('Cannot authenticate with role');
       }
 
       User.getUserCache(userId, async (err, user) => {
@@ -758,7 +768,7 @@ class Auth {
       }
 
       if (obj.user.startsWith('role:')) {
-        return done('Can not authenticate with role');
+        return done('Cannot authenticate with role');
       }
 
       let objPath = obj.path;
@@ -1066,7 +1076,7 @@ class Auth {
         return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section cannot decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
       return '';
     }
   }
@@ -1098,7 +1108,7 @@ class Auth {
         return null;
       }
     } catch (e) {
-      console.log(`passwordSecret can not decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
+      console.log(`passwordSecret cannot decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
       return null;
     }
   }
