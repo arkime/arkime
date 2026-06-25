@@ -21,7 +21,6 @@ extern ArkimeConfig_t        config;
 LOCAL ARKIME_LOCK_DEFINE(filePtr2Id);
 
 extern ArkimeFileInfo_t  fileInfo[256];
-extern int               arkimeDbVersion;
 
 /******************************************************************************/
 LOCAL uint32_t writer_inplace_queue_length()
@@ -46,7 +45,7 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
         // can find link types for read-back/export without rescanning.
         char interfaceOffsets[ARKIME_MAX_INTERFACES_PER_FILE * 22 + 4];
         char *interfaceOffsetsArg = ARKIME_VAR_ARG_STR_SKIP;
-        if (arkimeDbVersion >= 88 && fi->isPcapNG && fi->numInterfaces > 0) {
+        if (fi->isPcapNG && fi->numInterfaces > 0) {
             arkime_packet_interface_offsets_json(interfaceOffsets, sizeof(interfaceOffsets), fi->interfaces, fi->numInterfaces);
             interfaceOffsetsArg = interfaceOffsets;
         }

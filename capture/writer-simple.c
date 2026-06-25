@@ -34,7 +34,6 @@ typedef enum {
 } ArkimeCompressionMode;
 
 extern ArkimeConfig_t        config;
-extern int                   arkimeDbVersion;
 LOCAL  gboolean              localPcapIndex;
 LOCAL  ArkimeCompressionMode compressionMode = ARKIME_COMPRESSION_NONE;
 LOCAL  gboolean              simpleShortHeader;
@@ -567,7 +566,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         // map an EPB's interface_id to a link type without rescanning.
         char interfaceOffsets[ARKIME_DLT_MAX * 22 + 4];
         char *interfaceOffsetsArg = ARKIME_VAR_ARG_STR_SKIP;
-        if (arkimeDbVersion >= 88 && fileInfo[packet->readerPos].isPcapNG) {
+        if (fileInfo[packet->readerPos].isPcapNG) {
             const int dltCount = arkime_packet_dlt_index_count();
             ArkimeInterfaceInfo_t outIfaces[ARKIME_DLT_MAX];
             for (int d = 0; d < dltCount; d++)
