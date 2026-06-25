@@ -32,11 +32,13 @@ typedef struct sqs_item_head {
     int     done;
 } SQSItemHead;
 
-LOCAL ARKIME_LOCK_DEFINE(waitingsqs);
-
 typedef struct sqs_request {
     SQSItemHead *items;
     uint8_t      done : 1;
+    uint8_t      responseReady : 1;
+
+    ARKIME_COND_EXTERN(wait);
+    ARKIME_LOCK_EXTERN(wait);
 } SQSRequest;
 
 
@@ -64,6 +66,15 @@ LOCAL void sqs_enqueue(SQSItemHead *head, char *receiptHandle, char *bucket, cha
     ARKIME_UNLOCK(head->lock);
 }
 /******************************************************************************/
+LOCAL void sqs_wait_for_response(SQSRequest *req)
+{
+    ARKIME_LOCK(req->wait);
+    while (!req->responseReady) {
+        ARKIME_COND_WAIT(req->wait);
+    }
+    ARKIME_UNLOCK(req->wait);
+}
+/******************************************************************************/
 LOCAL void sqs_init()
 {
     inited = TRUE;
@@ -79,13 +90,17 @@ LOCAL void sqs_delete_done(int UNUSED(code), uint8_t *data, int data_len, gpoint
 /******************************************************************************/
 LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 {
+    SQSRequest *req = (SQSRequest *)uw;
+
     if (code != 200) {
         LOG("Receive failed %d %.*s", code, data_len, data);
-        ARKIME_UNLOCK(waitingsqs);
+        ARKIME_LOCK(req->wait);
+        req->done = 1;
+        req->responseReady = 1;
+        ARKIME_COND_SIGNAL(req->wait);
+        ARKIME_UNLOCK(req->wait);
         return;
     }
-
-    SQSRequest *req = (SQSRequest *)uw;
 
     // AWS uses "messages"
     static const char *messagesPath1[] = {"ReceiveMessageResponse", "ReceiveMessageResult", "messages", NULL};
@@ -100,10 +115,12 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 
     // AWS returns "null" instead of removing key
     if (!messages || (messagesLen == 4 && memcmp(messages, "null", 4) == 0)) {
+        ARKIME_LOCK(req->wait);
         if (!config.pcapMonitor)
             req->done = 1;
-        ARKIME_UNLOCK(waitingsqs);
-        ARKIME_COND_SIGNAL(req->items->lock);
+        req->responseReady = 1;
+        ARKIME_COND_SIGNAL(req->wait);
+        ARKIME_UNLOCK(req->wait);
         return;
     }
 
@@ -114,7 +131,11 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         int rc;
         if ((rc = js0n(messages, messagesLen, out, sizeof(out))) != 0) {
             LOG("ERROR - Parse error %d in >%.*s<\n", rc, messagesLen, messages);
-            ARKIME_UNLOCK(waitingsqs);
+            ARKIME_LOCK(req->wait);
+            req->done = 1;
+            req->responseReady = 1;
+            ARKIME_COND_SIGNAL(req->wait);
+            ARKIME_UNLOCK(req->wait);
             return;
         }
     } else {
@@ -189,7 +210,10 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         g_free(body);
     }
 
-    ARKIME_UNLOCK(waitingsqs);
+    ARKIME_LOCK(req->wait);
+    req->responseReady = 1;
+    ARKIME_COND_SIGNAL(req->wait);
+    ARKIME_UNLOCK(req->wait);
 }
 /******************************************************************************/
 // sqs://sqs.us-east-1.amazonaws.com/80398EXAMPLE/MyQueue
@@ -202,6 +226,8 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
 
     SQSRequest *req = ARKIME_TYPE_ALLOC0(SQSRequest);
     req->items = sqs_alloc();
+    ARKIME_LOCK_INIT(req->wait);
+    ARKIME_COND_INIT(req->wait);
 
     char **uris = g_strsplit(uri, "/", 0);
 
@@ -262,11 +288,11 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
         headers[3] = tokenHeader;
     }
+    ARKIME_LOCK(req->wait);
+    req->responseReady = 0;
+    ARKIME_UNLOCK(req->wait);
     arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
-
-    ARKIME_LOCK(waitingsqs);
-    ARKIME_LOCK(waitingsqs);
-    ARKIME_UNLOCK(waitingsqs);
+    sqs_wait_for_response(req);
 
     const gboolean isaws = g_str_has_suffix(uris[2], "amazonaws.com");
 
@@ -274,23 +300,26 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     g_strfreev(dots);
 
     while (!req->done || DLL_COUNT(item_, req->items) > 0) {
+        ARKIME_LOCK(req->items->lock);
         if (!req->done && DLL_COUNT(item_, req->items) == 0) {
+            ARKIME_UNLOCK(req->items->lock);
+
             // Update tokenHeader
             if (creds->token) {
                 snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
             }
 
             // request more items
+            ARKIME_LOCK(req->wait);
+            req->responseReady = 0;
+            ARKIME_UNLOCK(req->wait);
             arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
-            ARKIME_LOCK(waitingsqs);
-            ARKIME_LOCK(waitingsqs);
-            ARKIME_UNLOCK(waitingsqs);
+            sqs_wait_for_response(req);
             continue;
         }
-
-        ARKIME_LOCK(req->items->lock);
-        while (DLL_COUNT(item_, req->items) == 0) {
-            ARKIME_COND_WAIT(req->items->lock);
+        if (DLL_COUNT(item_, req->items) == 0) {
+            ARKIME_UNLOCK(req->items->lock);
+            continue;
         }
         SQSItem *item;
         DLL_POP_HEAD(item_, req->items, item);

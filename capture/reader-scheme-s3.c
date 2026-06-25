@@ -38,9 +38,6 @@ typedef struct {
 
 S3ItemHead *s3Items;
 
-LOCAL ARKIME_LOCK_DEFINE(waiting);
-LOCAL ARKIME_LOCK_DEFINE(waitingdir);
-
 /* S3Request is used to pass information from the scheme thread to the http thread */
 typedef struct s3_request {
     ArkimeSchemeAction_t  *actions;
@@ -50,6 +47,10 @@ typedef struct s3_request {
     uint8_t                isS3 : 1;     // Use S3 URL
     uint8_t                tryAgain : 1; // Try again because wrong region
     uint8_t                first : 1;    // The first attempt at url
+    uint8_t                responseReady : 1;
+
+    ARKIME_COND_EXTERN(wait);
+    ARKIME_LOCK_EXTERN(wait);
 } S3Request;
 
 
@@ -73,6 +74,23 @@ LOCAL void s3_enqueue(S3ItemHead *head, const char *url)
 
     ARKIME_COND_SIGNAL(head->lock);
     ARKIME_UNLOCK(head->lock);
+}
+/******************************************************************************/
+LOCAL void scheme_s3_wait_for_response(S3Request *req)
+{
+    ARKIME_LOCK(req->wait);
+    while (!req->responseReady) {
+        ARKIME_COND_WAIT(req->wait);
+    }
+    ARKIME_UNLOCK(req->wait);
+}
+/******************************************************************************/
+LOCAL void scheme_s3_signal_response(S3Request *req)
+{
+    ARKIME_LOCK(req->wait);
+    req->responseReady = 1;
+    ARKIME_COND_SIGNAL(req->wait);
+    ARKIME_UNLOCK(req->wait);
 }
 /******************************************************************************/
 LOCAL void scheme_s3_init()
@@ -130,7 +148,7 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
 {
     S3Request *req = uw;
     if (!req->isDir) {
-        ARKIME_UNLOCK(waiting);
+        scheme_s3_signal_response(req);
         return;
     }
 
@@ -138,12 +156,10 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
         req->first = FALSE;
         if (data_len > 200 && arkime_memstr((char *)data, MIN(400, data_len), "' is wrong; expecting '", 23)) {
             scheme_s3_parse_region(data, data_len, req->url, req);
-            ARKIME_UNLOCK(waitingdir);
+            scheme_s3_signal_response(req);
             return;
         }
     }
-
-    ARKIME_UNLOCK(waitingdir);
 
     if (code < 200 || code >= 300) {
         LOG("ERROR - S3 list request failed with HTTP %d for %s", code, req->url);
@@ -151,6 +167,7 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
         s3Items->done = 1;
         ARKIME_COND_BROADCAST(s3Items->lock);
         ARKIME_UNLOCK(s3Items->lock);
+        scheme_s3_signal_response(req);
         return;
     }
 
@@ -195,6 +212,7 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
     s3Items->done = 1;
     ARKIME_COND_BROADCAST(s3Items->lock);
     ARKIME_UNLOCK(s3Items->lock);
+    scheme_s3_signal_response(req);
 }
 /******************************************************************************/
 LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
@@ -240,6 +258,9 @@ LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, con
         headers[2] = tokenHeader;
     }
 
+    ARKIME_LOCK(req->wait);
+    req->responseReady = 0;
+    ARKIME_UNLOCK(req->wait);
     req->first = TRUE;
     req->tryAgain = FALSE;
     if (cb)
@@ -291,6 +312,8 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         .tryAgain = FALSE,
         .first = TRUE
     };
+    ARKIME_LOCK_INIT(req.wait);
+    ARKIME_COND_INIT(req.wait);
 
     s3Items->done = 0;
 
@@ -320,10 +343,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         server = scheme_s3_make_server(creds, schemehostport, region);
 
         scheme_s3_request(server, creds, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
-
-        ARKIME_LOCK(waitingdir);
-        ARKIME_LOCK(waitingdir);
-        ARKIME_UNLOCK(waitingdir);
+        scheme_s3_wait_for_response(&req);
     } while (req.tryAgain);
 
     while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
@@ -341,7 +361,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
 
             scheme_s3_request(server, creds, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
             g_free(uri2);
-            ARKIME_LOCK(waitingdir);
+            scheme_s3_wait_for_response(&req);
         }
         ARKIME_LOCK(s3Items->lock);
         while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
@@ -449,10 +469,13 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
         .tryAgain = FALSE,
         .first = TRUE
     };
+    ARKIME_LOCK_INIT(req.wait);
+    ARKIME_COND_INIT(req.wait);
 
     s3Items->done = 0;
 
     scheme_s3_request(server, creds, uri + strlen(shpb), paths[1], &req, TRUE, NULL);
+    scheme_s3_wait_for_response(&req);
 
     curl_free(scheme);
     curl_free(host);
@@ -475,7 +498,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 
             scheme_s3_request(server, creds, uri2 + strlen(shpb), paths[1], &req, TRUE, NULL);
             g_free(uri2);
-            ARKIME_LOCK(waitingdir);
+            scheme_s3_wait_for_response(&req);
         }
         ARKIME_LOCK(s3Items->lock);
         while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
@@ -533,6 +556,8 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
         .tryAgain = FALSE,
         .first = TRUE
     };
+    ARKIME_LOCK_INIT(req.wait);
+    ARKIME_COND_INIT(req.wait);
 
     const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
@@ -563,10 +588,7 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
                  uri + 5 + strlen(uris[2]),
                  s3PathAccessStyle ? "true" : "false");
         scheme_s3_request(server, creds, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, scheme_s3_read);
-
-        ARKIME_LOCK(waiting);
-        ARKIME_LOCK(waiting);
-        ARKIME_UNLOCK(waiting);
+        scheme_s3_wait_for_response(&req);
     } while (req.tryAgain);
     g_strfreev(uris);
 
@@ -679,8 +701,11 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
         .tryAgain = FALSE,
         .first = TRUE
     };
+    ARKIME_LOCK_INIT(req.wait);
+    ARKIME_COND_INIT(req.wait);
 
     scheme_s3_request(server, creds, path + 1 + strlen(paths[1]), paths[1], &req, TRUE, scheme_s3_read);
+    scheme_s3_wait_for_response(&req);
 
     curl_free(scheme);
     curl_free(host);
@@ -688,10 +713,6 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     curl_free(path);
     g_strfreev(paths);
     curl_url_cleanup(h);
-
-    ARKIME_LOCK(waiting);
-    ARKIME_LOCK(waiting);
-    ARKIME_UNLOCK(waiting);
 
     return 0;
 }
