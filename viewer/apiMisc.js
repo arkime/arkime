@@ -21,7 +21,6 @@ const View = require('./apiViews');
 const internals = require('./internals');
 const UserAPIs = require('./apiUsers');
 const SessionAPIs = require('./apiSessions');
-const BannerAPIs = require('./apiBanner');
 
 class MiscAPIs {
   // --------------------------------------------------------------------------
@@ -402,7 +401,6 @@ class MiscAPIs {
       const fieldsArr = internals.fieldsArr;
       const fieldsMap = JSON.parse(internals.fieldsMap);
       const userSettingDefaults = internals.settingDefaults;
-      const banner = await BannerAPIs.getBanner();
 
       return res.send({
         esHealth,
@@ -415,8 +413,7 @@ class MiscAPIs {
         fieldsArr,
         fieldsMap,
         roles,
-        userSettingDefaults,
-        banner
+        userSettingDefaults
       });
     } catch (err) {
       console.log('ERROR - /api/appinfo', err);

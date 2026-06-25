@@ -35,6 +35,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const Notifier = require('../common/notifier');
+const Banner = require('../common/banner');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
@@ -1155,6 +1156,8 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
+
   Parliament.initialize({
     name: internals.parliamentName,
     prefix: ArkimeConfig.get('usersPrefix')
@@ -1719,6 +1722,11 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiU
 
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
+
+// Banner
+app.get('/parliament/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/parliament/api/banner', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiUpdateBanner);
+app.post('/parliament/api/banner/sync', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiSyncBanner);
 
 // user endpoints
 app.get('/parliament/api/user', User.apiGetUser);

@@ -62,7 +62,7 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
-const BannerAPIs = require('./apiBanner');
+const Banner = require('../common/banner');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1563,13 +1563,19 @@ app.post( // test notifier endpoint
 app.get( // get banner endpoint
   ['/api/banner'],
   [ArkimeUtil.noCacheJson],
-  BannerAPIs.apiGetBanner
+  Banner.apiGetBanner
 );
 
 app.put( // update banner endpoint (admin only)
   ['/api/banner'],
   [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
-  BannerAPIs.apiUpdateBanner
+  Banner.apiUpdateBanner
+);
+
+app.post( // sync banner to all apps endpoint (admin only)
+  ['/api/banner/sync'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  Banner.apiSyncBanner
 );
 
 // history apis ---------------------------------------------------------------
@@ -2346,6 +2352,11 @@ async function premain () {
   });
 
   Notifier.initialize({
+    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+  });
+
+  Banner.initialize({
+    app: 'viewer',
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
   });
 

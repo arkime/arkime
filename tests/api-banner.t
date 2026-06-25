@@ -1,4 +1,4 @@
-use Test::More tests => 29;
+use Test::More tests => 35;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -47,6 +47,7 @@ my $notAdminToken = getTokenCookie('banner-notadmin');
   is($banner->{message}, "down tomorrow", "get returns saved message");
   is($banner->{type}, "warning", "get returns saved type");
   ok($banner->{enabled}, "get returns enabled");
+  ok(!exists $banner->{user}, "get does not leak the editing user");
 
 # effects + expires validation
   $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"x","type":"info","effects":["disco"]}', $token);
@@ -71,9 +72,23 @@ my $notAdminToken = getTokenCookie('banner-notadmin');
   $banner = viewerGet("/api/banner");
   ok(!exists $banner->{evil}, "extra field not stored in banner");
 
-# cleanup - disable the banner so it doesn't affect other tests
+# sync requires token + admin
+  $json = viewerPost("/api/banner/sync", "{}");
+  is($json->{text}, "Missing token", "sync requires token");
+  $json = viewerPostToken("/api/banner/sync?arkimeRegressionUser=banner-notadmin", "{}", $notAdminToken);
+  is($json->{text}, "You do not have permission to access this resource", "sync requires admin");
+
+# sync copies this app's banner to all apps
+  $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"syncme","type":"info"}', $token);
+  ok($json->{success}, "banner set before sync");
+  $json = viewerPostToken("/api/banner/sync", "{}", $token);
+  ok($json->{success}, "banner sync success");
+  is($json->{banner}->{message}, "syncme", "sync returns the synced banner");
+
+# cleanup - disable + sync so no app is left with a banner
   $json = viewerPutToken("/api/banner", '{"enabled":false,"message":"","type":"info"}', $token);
   ok($json->{success}, "banner disable success");
+  viewerPostToken("/api/banner/sync", "{}", $token);
   $banner = viewerGet("/api/banner");
   ok(!$banner->{enabled}, "banner disabled after cleanup");
 

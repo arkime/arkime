@@ -3,8 +3,6 @@ import { createStore } from 'vuex';
 import Utils from './components/utils/utils';
 import { parseRoles } from '@common/vueFilters.js';
 
-const DEFAULT_BANNER = { enabled: false, message: '', type: 'info', effects: [], expires: 0, updated: 0 };
-
 const store = createStore({
   state: {
     esHealth: undefined,
@@ -58,8 +56,7 @@ const store = createStore({
     notifiers: [],
     sessionDetailDLWidth: 160,
     sessionDetailCols: localStorage.getItem('sessionDetailCols') || 2,
-    userSettingDefaults: {},
-    banner: { ...DEFAULT_BANNER }
+    userSettingDefaults: {}
   },
   getters: {
     sessionsTableState (state) {
@@ -219,7 +216,6 @@ const store = createStore({
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
       state.userSettingDefaults = value.userSettingDefaults;
-      state.banner = value.banner || { ...DEFAULT_BANNER };
       state.roles = parseRoles(value.roles);
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
@@ -253,9 +249,6 @@ const store = createStore({
     },
     setNotifiers (state, value) {
       state.notifiers = value;
-    },
-    setBanner (state, value) {
-      state.banner = value;
     },
     setSessionDetailDLWidth (state, value) {
       state.sessionDetailDLWidth = value;

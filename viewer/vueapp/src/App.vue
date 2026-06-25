@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
 import ConfigService from './components/utils/ConfigService.js';
 import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
-import AppBanner from './components/utils/AppBanner.vue';
+import AppBanner from '@common/AppBanner.vue';
 import ArkimeFooter from '@common/Footer.vue';
 import ArkimeHelpNotes from './components/utils/HelpNotes.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';

@@ -1268,9 +1268,8 @@ SPDX-License-Identifier: Apache-2.0
           help-intl-id="settings.notifiers.helpViewer" />
 
         <!-- banner settings -->
-        <Banner
+        <BannerSettings
           id="banner"
-          @display-message="displayMessage"
           v-if="visibleTab === 'banner'"
           v-has-role="{user:user,roles:'arkimeAdmin'}" />
 
@@ -1318,7 +1317,7 @@ import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shortcuts from './Shortcuts.vue';
-import Banner from './Banner.vue';
+import BannerSettings from '@common/BannerSettings.vue';
 import Views from './Views.vue';
 
 let clockInterval;
@@ -1339,7 +1338,7 @@ export default {
     PeriodicQueries,
     Shortcuts,
     Notifiers,
-    Banner,
+    BannerSettings,
     Views
   },
   data: function () {

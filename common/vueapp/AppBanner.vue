@@ -21,6 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import BannerMessage from './BannerMessage.vue';
+import { bannerState, loadBanner } from './BannerService.js';
 
 // dismissal is keyed on banner.updated so an edited banner reappears
 const DISMISS_KEY = 'arkimeBannerDismissed';
@@ -31,6 +32,7 @@ export default {
   components: { BannerMessage },
   data () {
     return {
+      bstate: bannerState(),
       dismissedUpdated: Number(localStorage.getItem(DISMISS_KEY)) || 0,
       resizeObserver: undefined,
       now: Date.now(), // bumped by a timer so expiry hides the banner live
@@ -39,7 +41,7 @@ export default {
   },
   computed: {
     banner () {
-      return this.$store.state.banner || {};
+      return this.bstate.banner || {};
     },
     show () {
       if (!(this.banner.enabled && this.banner.message)) { return false; }
@@ -50,14 +52,12 @@ export default {
   },
   watch: {
     show () { this.syncHeight(); },
-    'banner.message' () { this.syncHeight(); },
-    'banner.type' () { this.syncHeight(); },
-    'banner.effects' () { this.syncHeight(); },
-    'banner.expires' () { this.scheduleExpiry(); }
+    banner () { this.syncHeight(); this.scheduleExpiry(); }
   },
   mounted () {
     this.syncHeight();
     this.scheduleExpiry();
+    loadBanner().catch(() => { /* not logged in / no banner -- ignore */ });
   },
   beforeUnmount () {
     this.teardownObserver();

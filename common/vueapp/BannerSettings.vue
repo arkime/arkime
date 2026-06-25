@@ -199,14 +199,15 @@ SPDX-License-Identifier: Apache-2.0
       </v-col>
     </v-row> <!-- /live preview -->
 
-    <!-- save -->
+    <!-- actions -->
     <v-row>
       <v-col
         cols="12"
         sm="3" />
       <v-col
         cols="12"
-        sm="9">
+        sm="9"
+        class="d-flex flex-wrap gap-2">
         <v-btn
           variant="flat"
           size="large"
@@ -218,24 +219,82 @@ SPDX-License-Identifier: Apache-2.0
             class="me-2" />
           {{ $t('common.save') }}
         </v-btn>
+        <v-btn
+          variant="outlined"
+          size="large"
+          color="secondary"
+          :loading="syncing"
+          @click="showSyncConfirm = true">
+          <v-icon
+            icon="mdi-sync"
+            class="me-2" />
+          {{ $t('settings.banner.sync') }}
+          <v-tooltip
+            activator="parent"
+            location="top">
+            {{ $t('settings.banner.syncTip') }}
+          </v-tooltip>
+        </v-btn>
       </v-col>
-    </v-row> <!-- /save -->
+    </v-row> <!-- /actions -->
+
+    <!-- sync confirm -->
+    <v-dialog
+      v-model="showSyncConfirm"
+      max-width="520">
+      <v-card>
+        <v-card-title>{{ $t('settings.banner.sync') }}</v-card-title>
+        <v-card-text>{{ $t('settings.banner.syncConfirm') }}</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="showSyncConfirm = false">
+            {{ $t('common.cancel') }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            :loading="syncing"
+            @click="sync">
+            {{ $t('settings.banner.sync') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- feedback -->
+    <v-snackbar
+      v-model="msg.show"
+      :color="msg.color"
+      location="bottom"
+      variant="flat">
+      {{ msg.text }}
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="$close"
+          @click="msg.show = false" />
+      </template>
+    </v-snackbar>
   </form>
 </template>
 
 <script>
-import SettingsService from './SettingsService';
-import BannerMessage from '../utils/BannerMessage.vue';
+import BannerMessage from './BannerMessage.vue';
+import { bannerState, loadBanner, updateBanner, syncBanner } from './BannerService.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 
 export default {
   name: 'BannerSettings',
   components: { BannerMessage },
-  emits: ['display-message'],
   data () {
     return {
       saving: false,
+      syncing: false,
+      showSyncConfirm: false,
+      msg: { show: false, text: '', color: 'success' },
       banner: { enabled: false, message: '', type: 'info', effects: [], expires: 0 }
     };
   },
@@ -255,11 +314,11 @@ export default {
     }
   },
   created () {
-    // seed from the store, then refresh from the server
-    this.seed(this.$store.state.banner || {});
-    SettingsService.getBanner()
+    // seed from the shared state, then refresh from the server
+    this.seed(bannerState().banner || {});
+    loadBanner()
       .then((banner) => { this.seed(banner); })
-      .catch(() => { /* keep store-seeded values */ });
+      .catch(() => { /* keep seeded values */ });
   },
   methods: {
     seed (src) {
@@ -270,6 +329,9 @@ export default {
         effects: Array.isArray(src.effects) ? [...src.effects] : [],
         expires: src.expires || 0
       };
+    },
+    notify (text, color = 'success') {
+      this.msg = { show: true, text, color };
     },
     applyExpiry (date, time) {
       if (!date) { this.banner.expires = 0; return; }
@@ -287,13 +349,24 @@ export default {
     },
     save () {
       this.saving = true;
-      SettingsService.updateBanner(this.banner).then((response) => {
-        this.$emit('display-message', { msg: response.text });
-      }).catch((error) => {
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+      return updateBanner(this.banner).then((res) => {
+        this.notify(res.text || this.$t('common.success'));
+      }).catch((err) => {
+        this.notify(err.text || this.$t('common.error'), 'error');
+        throw err;
       }).finally(() => {
         this.saving = false;
       });
+    },
+    // save this app's edits first, then copy to every app
+    sync () {
+      this.showSyncConfirm = false;
+      this.syncing = true;
+      updateBanner(this.banner)
+        .then(() => syncBanner())
+        .then((res) => { this.notify(res.text || this.$t('settings.banner.synced')); })
+        .catch((err) => { this.notify(err.text || this.$t('common.error'), 'error'); })
+        .finally(() => { this.syncing = false; });
     }
   }
 };
