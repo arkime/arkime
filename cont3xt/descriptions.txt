@@ -6,7 +6,7 @@ Terminology
 User Settings Description - an object with each sub object a setting.
   * sub objects can have
     * help - some help text
-    * password - if true then its a password
+    * password - if true then it's a password
     * uiSetting - true if value is needed in the UI (do not set true for secure values like passwords)
 
 

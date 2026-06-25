@@ -58,7 +58,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// define csp headers - no-op in NODE_END=development, since csp will disable vite's HMR (hot module reloading)
+// define csp headers - no-op in NODE_ENV=development, since csp will disable vite's HMR (hot module reloading)
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
   : helmet.contentSecurityPolicy({
@@ -165,12 +165,12 @@ const integrationsStatic = express.static(
   { maxAge: dayMs, fallthrough: false }
 );
 app.use('/integrations', (req, res, next) => {
-  if (req.path.endsWith('.png')) {
+  if (req.path.endsWith('.png') || req.path.endsWith('.jpg') || req.path.endsWith('.jpeg')) {
     return integrationsStatic(req, res, (err) => {
       ArkimeUtil.missingResource(err, req, res);
     });
   }
-  return ArkimeUtil.missingResource('Not png', req, res);
+  return ArkimeUtil.missingResource('Not png or jpg', req, res);
 });
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
@@ -372,6 +372,10 @@ function apiPutSettings (req, res, next) {
     }
 
     user.save((err) => {
+      if (err) {
+        console.log('ERROR - saving cont3xt settings', err);
+        return res.send({ success: false, text: 'Save failed' });
+      }
       res.send({ success: true, text: 'Saved' });
     });
   });
