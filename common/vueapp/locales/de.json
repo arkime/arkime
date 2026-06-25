@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Sitzungspakete werden geladen",
       "renderingSessionPackets": "Sitzungspakete werden gerendert",
-      "loadingErr": "Fehler beim Laden der Sitzungsdetails"
+      "loadingErr": "Fehler beim Laden der Sitzungsdetails",
+      "findPlaceholderDetails": "In Details suchen…",
+      "findPlaceholderPackets": "Paketinhalt durchsuchen…",
+      "findPlaceholderTshark": "Pakete filtern…",
+      "findRegex": "Regulärer Ausdruck",
+      "findPrev": "Vorheriger Treffer",
+      "findNext": "Nächster Treffer",
+      "findTypeHint": "Übereinstimmungstyp",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (Groß-/Kleinschreibung)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex-Regex"
+      }
     },
     "field": {
       "cantLocate": "Wir können dieses Feld nicht finden",
@@ -639,6 +653,9 @@
     "timeInterval-day": "Tage",
     "timeInterval-week": "Wochen",
     "timeRangeDisplayTip": "Abfragezeitbereich",
+    "timeOptions": "Zeit",
+    "timeOptionsTip": "Alle Optionen für den Zeitbereich",
+    "lastRange": "Letzte {range}",
     "createSummary": "Zusammenfassung erstellen"
   },
   "stats": {
@@ -1404,7 +1421,8 @@
     "maxElements": "Max. Elemente",
     "maxElementsTip": "Maximale Anzahl zurückgegebener Elemente (für das erste ausgewählte Feld)",
     "graphType": "Graphentyp",
-    "graphType-default": "Zeitachse/Karte",
+    "graphType-default": "Zeitachse",
+    "graphType-heatmap": "Heatmap",
     "graphType-pie": "Donut",
     "graphType-table": "Tabelle",
     "graphType-treemap": "Baumkarte",
@@ -1414,6 +1432,9 @@
     "sortBy-name": "Alphabetisch",
     "sortBy-graph": "Anzahl",
     "refreshEvery": "Alle aktualisieren",
+    "intensity": "Intensität",
+    "showCount": "Anzahl anzeigen",
+    "sessions": "Sitzungen",
     "exportCSV": "CSV exportieren",
     "exportCSVSPIGraphTip": "Diese Daten als CSV-Datei exportieren"
   },

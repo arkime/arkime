@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Seansi pakettide laadimine",
       "renderingSessionPackets": "Seansi pakettide renderdamine",
-      "loadingErr": "Viga seansi detailide laadimisel"
+      "loadingErr": "Viga seansi detailide laadimisel",
+      "findPlaceholderDetails": "Otsi detailidest…",
+      "findPlaceholderPackets": "Otsi pakettide sisust…",
+      "findPlaceholderTshark": "Filtreeri pakette…",
+      "findRegex": "Regulaaravaldis",
+      "findPrev": "Eelmine vaste",
+      "findNext": "Järgmine vaste",
+      "findTypeHint": "Vaste tüüp",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (tõstutundlik)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex-regex"
+      }
     },
     "field": {
       "cantLocate": "Me ei leia seda välja",
@@ -639,6 +653,9 @@
     "timeInterval-day": "Päevad",
     "timeInterval-week": "Nädalad",
     "timeRangeDisplayTip": "Päringu ajavahemik",
+    "timeOptions": "Aeg",
+    "timeOptionsTip": "Kõik ajavahemiku valikud",
+    "lastRange": "Viimased {range}",
     "createSummary": "Loo kokkuvõte"
   },
   "stats": {
@@ -1404,7 +1421,8 @@
     "maxElements": "Maksimaalne elementide arv",
     "maxElementsTip": "Tagastatud elementide maksimaalne arv (esimese valitud välja jaoks)",
     "graphType": "Graafiku tüüp",
-    "graphType-default": "Ajajoon/kaart",
+    "graphType-default": "Ajajoon",
+    "graphType-heatmap": "Soojuskaart",
     "graphType-pie": "Sõõrik",
     "graphType-table": "Tabel",
     "graphType-treemap": "Puukaart",
@@ -1414,6 +1432,9 @@
     "sortBy-name": "Tähestikuliselt",
     "sortBy-graph": "Loendus",
     "refreshEvery": "Värskenda iga",
+    "intensity": "Intensiivsus",
+    "showCount": "Näita arvu",
+    "sessions": "Seansid",
     "exportCSV": "Ekspordi CSV",
     "exportCSVSPIGraphTip": "Ekspordi SPI graafiku andmed CSV kujul"
   },

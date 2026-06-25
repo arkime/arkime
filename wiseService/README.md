@@ -6,7 +6,7 @@ Learn more about [WISE](https://arkime.com/wise).
 
 ### Install Dependencies
 
-The app uses dependencies that are all bundled and minified using [vite](https://vitejs.dev) via `npm run build`. This compiles the application into an output directory, in this case `wiseService/vueapp/dist`. This is done automatically when starting the application with `npm start`.
+The app uses dependencies that are all bundled and minified using [vite](https://vitejs.dev) via `npm run wise:bundle`. This compiles the application into an output directory, in this case `wiseService/vueapp/dist`. This is done automatically when starting the application with `npm run wise:start`.
 
 The app uses a number of node.js tools for initialization. You must have node.js and its package manager (npm) installed. You can get them from [node](http://nodejs.org/).
 
@@ -31,11 +31,11 @@ To start the app for production:
 * Move to the top level Arkime directory
 * run `npm run wise:start`
 
-This command starts the app. It assumes that you are using the config in `/tests/config.test.ini`. It also bundles the application files into the `wiseService/vueapp/dist` folder.
+This command starts the app. It assumes that you are using the config in `../tests/config.test.json`. It also bundles the application files into the `wiseService/vueapp/dist` folder.
 
 You can also run the app by building then starting the app. Like so:
 * Move to the top level Arkime directory
-* run `npm run wise:build`
+* run `npm run wise:bundle`
 * Move to the wiseService directory
 * run `node wiseService.js -c ./absolute/path/to/wise.ini`
 
@@ -43,12 +43,12 @@ You can also run the app by building then starting the app. Like so:
 
 | Parameter       | Default | Description |
 | --------------- | ------- | ----------- |
-| -c, --config    | ./wiseService.ini | Absolute path to the JSON file OR redis source (redis://host:port/dbNum/configKey) that has your wise config rules stored |
+| -c, --config    | ./wiseService.ini | Path to the INI or JSON config file OR redis source (redis://host:port/dbNum/configKey) that has your wise config rules stored |
 
 
 _Note: if you do not pass in the arguments, the defaults are used._
 
-Now browse to the app at `http://localhost:8081`, or whichever port you passed into the `npm start` command.
+Now browse to the app at `http://localhost:8081`, or whichever port is configured.
 
 #### Development
 
@@ -56,7 +56,7 @@ To start the app for development and testing:
 * Move to the top level Arkime directory
 * run `npm run wise:dev`
 
-This command starts the app with the necessary config options set (`-c ../tests/config.test.ini`) and bundles the unminified application files into the `wiseService/vueapp/dist` folder.
+This command starts the app with the necessary config options set (`-c ../tests/config.test.json`) and bundles the unminified application files into the `wiseService/vueapp/dist` folder.
 
 `npm run wise:dev` uses vite to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
@@ -69,3 +69,6 @@ Check out our [contributing guide](../CONTRIBUTING.md) for more information abou
 Before submitting a pull request with your contribution, please move to the top level Arkime directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `../eslint.config.js` to view this project's rules.
 
 :octocat: Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
+
+[npm]: https://www.npmjs.org/
+[eslint]: https://eslint.org/

@@ -17,7 +17,7 @@
  * STOMP events:
  *   - CONNECT/STARTED event  → upsert (add or overwrite) all IPs for that session;
  *     stale IPs from the same auditSessionId that are no longer present are purged
- *   - DISCONNECT event → remove all IPs ever associated with that auditSessionId
+ *   - DISCONNECTED event → remove all IPs ever associated with that auditSessionId
  *
  * The cache is cleared and rebuilt from ISE on:
  *   - Restart (Maps start empty, bulk load runs after STOMP subscribe)
@@ -120,12 +120,13 @@ class StompClient {
 
     const command = frameStr.slice(0, nlIdx).trim();
     const rest = frameStr.slice(nlIdx + 1);
-    const blankIdx = rest.indexOf('\n\n');
-    const rawHdrs = blankIdx >= 0 ? rest.slice(0, blankIdx) : rest;
-    const body = blankIdx >= 0 ? rest.slice(blankIdx + 2) : '';
+    // STOMP 1.2 allows CRLF line endings, so split headers/body on either \n\n or \r\n\r\n
+    const sep = rest.match(/\r?\n\r?\n/);
+    const rawHdrs = sep ? rest.slice(0, sep.index) : rest;
+    const body = sep ? rest.slice(sep.index + sep[0].length) : '';
 
     const headers = {};
-    for (const line of rawHdrs.split('\n')) {
+    for (const line of rawHdrs.split(/\r?\n/)) {
       const colon = line.indexOf(':');
       if (colon > 0) headers[line.slice(0, colon)] = line.slice(colon + 1);
     }

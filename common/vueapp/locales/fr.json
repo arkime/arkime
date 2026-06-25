@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Chargement des paquets de session",
       "renderingSessionPackets": "Rendu des paquets de session",
-      "loadingErr": "Erreur lors du chargement du détail de la session"
+      "loadingErr": "Erreur lors du chargement du détail de la session",
+      "findPlaceholderDetails": "Rechercher dans les détails…",
+      "findPlaceholderPackets": "Rechercher dans le contenu des paquets…",
+      "findPlaceholderTshark": "Filtrer les paquets…",
+      "findRegex": "Expression régulière",
+      "findPrev": "Correspondance précédente",
+      "findNext": "Correspondance suivante",
+      "findTypeHint": "Type de correspondance",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (sensible à la casse)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Regex hex"
+      }
     },
     "field": {
       "cantLocate": "Nous ne pouvons pas localiser ce champ",
@@ -639,6 +653,9 @@
     "timeInterval-day": "Jours",
     "timeInterval-week": "Semaines",
     "timeRangeDisplayTip": "Plage temporelle de la requête",
+    "timeOptions": "Temps",
+    "timeOptionsTip": "Toutes les options de plage temporelle",
+    "lastRange": "Dernières {range}",
     "createSummary": "Créer un résumé"
   },
   "stats": {
@@ -1404,7 +1421,8 @@
     "maxElements": "Max. éléments",
     "maxElementsTip": "Nombre maximum d'éléments retournés (pour le premier champ sélectionné)",
     "graphType": "Type de graphique",
-    "graphType-default": "Chronologie/carte",
+    "graphType-default": "Chronologie",
+    "graphType-heatmap": "Carte thermique",
     "graphType-pie": "Beignet",
     "graphType-table": "Tableau",
     "graphType-treemap": "Treemap",
@@ -1414,6 +1432,9 @@
     "sortBy-name": "Alphabétiquement",
     "sortBy-graph": "Compte",
     "refreshEvery": "Actualiser toutes les",
+    "intensity": "Intensité",
+    "showCount": "Afficher le nombre",
+    "sessions": "Sessions",
     "exportCSV": "Exporter CSV",
     "exportCSVSPIGraphTip": "Exporter les données du graphique SPI au format CSV"
   },

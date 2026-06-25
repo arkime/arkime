@@ -35,7 +35,7 @@ class IPQSIntegration extends Integration {
     }
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -75,7 +75,7 @@ class IPQSIPIntegration extends Integration {
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
   constructor () {
     super();
     Integration.register(this);
@@ -160,7 +160,7 @@ class IPQSEmailIntegration extends Integration {
     }
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   card = {
     title: 'IPQS Email Reputation for %{query}',
@@ -266,7 +266,7 @@ class IPQSEmailLeakIntegration extends Integration {
     }
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   card = {
     title: 'IPQS Email Leak Records for %{query}',
@@ -308,10 +308,10 @@ class IPQSEmailLeakIntegration extends Integration {
           console.error(`${this.name}: Email Leak API request failed for ${email}. Status: ${axiosError.response.status}, Data: ${JSON.stringify(axiosError.response.data)}`);
         } else if (axiosError.request) {
           errorMsg = 'No response received from the Email Leak API.';
-          console.error(`${this.name}: No response received from Darkweb API for ${email}. Request: ${JSON.stringify(axiosError.request)}`);
+          console.error(`${this.name}: No response received from Email Leak API for ${email}. Request: ${JSON.stringify(axiosError.request)}`);
         } else {
           errorMsg = `Request setup failed. Message: ${axiosError.message}`;
-          console.error(`${this.name}: Error setting up Darkweb API request for ${email}. Message: ${axiosError.message}`);
+          console.error(`${this.name}: Error setting up Email Leak API request for ${email}. Message: ${axiosError.message}`);
         }
 
         return {
@@ -328,7 +328,7 @@ class IPQSEmailLeakIntegration extends Integration {
         };
       }
       if (response.data?.success === false) {
-        console.error(`${this.name}: Darkweb API reported failure for ${email}. Message: ${response.data.message || 'No specific message.'}`);
+        console.error(`${this.name}: Email Leak API reported failure for ${email}. Message: ${response.data.message || 'No specific message.'}`);
         return {
           _cont3xt: { count: 0 },
           error: response.data.message || 'Invalid input'
@@ -338,7 +338,7 @@ class IPQSEmailLeakIntegration extends Integration {
       response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
-      console.error(`${this.name}: An unexpected error occurred while fetching darkweb data for ${email}:`, err);
+      console.error(`${this.name}: An unexpected error occurred while fetching Email Leak data for ${email}:`, err);
       return {
         _cont3xt: { count: 0 },
         error: `Unexpected error occurred while fetching data for ${email}.`
@@ -386,7 +386,7 @@ class IPQSUrlIntegration extends Integration {
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -490,7 +490,7 @@ class IPQSPhoneIntegration extends Integration {
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();

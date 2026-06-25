@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 222;
+use Test::More tests => 223;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -89,6 +89,15 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
   viewRoles => ["cont3xtUser"],
   editRoles => ["superAdmin"],
   links => [1]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link must be object"}'));
+
+# a null link must be rejected, not throw (typeof null === 'object')
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [undef]
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "Link must be object"}'));
 

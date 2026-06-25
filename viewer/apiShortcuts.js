@@ -57,7 +57,7 @@ class ShortcutAPIs {
    * Also validates that the users added to the shortcut are valid within the system
    * NOTE: Mutates the shortcut directly
    * @param {Shortcut} shortcut - The shortcut to normalize
-   * @returns {Object} {type, values, invalidusers} - The shortcut type (ip, string, number),
+   * @returns {Object} {type, values, invalidUsers} - The shortcut type (ip, string, number),
    *                                                  array of values, and list of invalid users
    */
   static async #normalizeShortcut (shortcut) {

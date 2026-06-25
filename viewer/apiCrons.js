@@ -537,8 +537,8 @@ class CronAPIs {
 
   // --------------------------------------------------------------------------
   /* Process a single cron query.  At max it will process 24 hours worth of data
-   * to give other queries a chance to run.  Because its timestamp based and not
-   * lastPacket based since 1.0 it now search all indices each time.
+   * to give other queries a chance to run.  Because it's timestamp based and not
+   * lastPacket based since 1.0 it now searches all indices each time.
    */
   static async #processCronQuery (cq, options, query, endTime) {
     if (Config.debug > 2) {

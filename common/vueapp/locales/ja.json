@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "セッションパケットを読み込み中",
       "renderingSessionPackets": "セッションパケットを描画中",
-      "loadingErr": "セッション詳細の読み込みエラー"
+      "loadingErr": "セッション詳細の読み込みエラー",
+      "findPlaceholderDetails": "詳細内を検索…",
+      "findPlaceholderPackets": "パケット内容を検索…",
+      "findPlaceholderTshark": "パケットを絞り込み…",
+      "findRegex": "正規表現",
+      "findPrev": "前の一致",
+      "findNext": "次の一致",
+      "findTypeHint": "一致タイプ",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII（大文字小文字区別）",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex 正規表現"
+      }
     },
     "field": {
       "cantLocate": "このフィールドを特定できません",
@@ -639,6 +653,9 @@
     "timeInterval-day": "日",
     "timeInterval-week": "週",
     "timeRangeDisplayTip": "クエリ時間範囲",
+    "timeOptions": "時間",
+    "timeOptionsTip": "すべての時間範囲オプション",
+    "lastRange": "過去 {range}",
     "createSummary": "サマリーを作成"
   },
   "stats": {
@@ -1404,7 +1421,8 @@
     "maxElements": "最大要素数",
     "maxElementsTip": "返される最大要素数（最初に選択されたフィールドに適用）",
     "graphType": "グラフタイプ",
-    "graphType-default": "タイムライン/マップ",
+    "graphType-default": "タイムライン",
+    "graphType-heatmap": "ヒートマップ",
     "graphType-pie": "ドーナツ",
     "graphType-table": "テーブル",
     "graphType-treemap": "ツリーマップ",
@@ -1414,6 +1432,9 @@
     "sortBy-name": "アルファベット順",
     "sortBy-graph": "カウント順",
     "refreshEvery": "更新間隔",
+    "intensity": "強度",
+    "showCount": "件数を表示",
+    "sessions": "セッション",
     "exportCSV": "CSV をエクスポート",
     "exportCSVSPIGraphTip": "このデータを CSV ファイルとしてエクスポート"
   },

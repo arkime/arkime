@@ -69,7 +69,7 @@ class VirusTotalSource extends WISESource {
     }
 
     if (this.api.debug > 0) {
-      console.log(this.section, '- Fetching %d', this.waiting.length);
+      console.log(this.section, '- Fetching', this.waiting.length);
     }
 
     const options = {

@@ -1,4 +1,4 @@
-use Test::More tests => 48;
+use Test::More tests => 53;
 
 use Cwd;
 use URI::Escape;
@@ -61,6 +61,27 @@ my $pwd = "*/pcap";
 
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=true&ts=false&base=hex")->content;
     ok($sd =~ /00000272:.*636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*00000000:.*0800 0000 0000 02ff/s, "encoding:hex line:true");
+
+# find-in-packets (byte-level content search)
+    # ascii search is case-insensitive and wraps the matched bytes in a find-hit span
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&search=QUIC&searchType=ascii")->content;
+    ok($sd =~ m{class="find-hit find-hit-start">quic</span>}s, "find natural ascii (case-insensitive)");
+
+    # the same match highlights the anchor byte (q = 0x71) in hex mode
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=hex&search=quic&searchType=ascii")->content;
+    ok($sd =~ m{class="find-hit find-hit-start">71</span>}s, "find hex via ascii search");
+
+    # hex search type matches against the hex byte string
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=hex&search=717569&searchType=hex")->content;
+    ok($sd =~ m{class="find-hit find-hit-start">71</span>}s, "find hex via hex search");
+
+    # a term that isn't present produces no highlights
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&search=zzznotpresentzzz&searchType=ascii")->content;
+    ok($sd !~ m{find-hit}s, "find no match -> no highlights");
+
+    # no search param -> highlighting is off by default
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural")->content;
+    ok($sd !~ m{find-hit}s, "find off by default");
 
 # http gzip:true
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&gzip=true")->content;

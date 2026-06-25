@@ -72,6 +72,7 @@ class DatabricksIntegration extends Integration {
   }
 
   async search (user, item) {
+    if (!this.#session) { return Integration.NoResult; }
     const queryOperation = await this.#session.executeStatement(this.#statement, { namedParameters: { SEARCHTERM: item } });
     const resultSet = await queryOperation.fetchAll();
     await queryOperation.close();

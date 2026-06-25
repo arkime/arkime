@@ -634,8 +634,8 @@ class DbESImplementation {
   async getMatchingAudits (userId, roles, reqQuery) {
     const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
     const filter = [];
-    const allowedSortBy = { issuedAt: 1, indicator: 1, iType: 1 };
-    const safeSortBy = allowedSortBy[sortBy] ? sortBy : 'issuedAt';
+    const allowedSortBy = ['issuedAt', 'indicator', 'iType'];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : 'issuedAt';
     const safeSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
     const query = {
       size: itemsPerPage || 1000,
@@ -689,7 +689,7 @@ class DbESImplementation {
       };
     } catch (err) {
       console.log('ERROR - fetching audit log history', util.inspect(err, false, 10));
-      return [];
+      return { audits: [], total: 0 };
     }
   }
 
@@ -913,7 +913,7 @@ class DbLMDBImplementation {
   async getMatchingAudits (userId, roles, reqQuery) {
     const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
     let audits = [...this.auditStore.getRange({})
-      .filter(({ _, value }) => {
+      .filter(({ value }) => {
         // remove entries outside the dateRange, if there is one
         if ((startMs != null && stopMs != null) && (value.issuedAt < startMs || value.issuedAt > stopMs)) {
           return false;

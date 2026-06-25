@@ -82,10 +82,30 @@ SPDX-License-Identifier: Apache-2.0
                 id="connections-controls-anchor"
                 class="connections-controls-anchor d-flex flex-wrap align-center gap-1 mt-1 mb-1" />
 
+              <!-- intensity select (heatmap only) -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'heatmap'">
+                <span class="arkime-input-label">
+                  {{ $t('spigraph.intensity') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="intensity"
+                  @change="changeIntensity($event.target.value)">
+                  <option
+                    v-for="opt in intensityOptions"
+                    :key="opt.value"
+                    :value="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </div> <!-- /intensity select -->
+
               <!-- sort select (not shown for the pie graph) -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'default'">
+                v-if="spiGraphType === 'default' || spiGraphType === 'heatmap'">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.sortBy') }}:
                 </span>
@@ -105,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- refresh input (not shown for pie) -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'default'">
+                v-if="spiGraphType === 'default' || spiGraphType === 'heatmap'">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.refreshEvery') }}:
                 </span>
@@ -128,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- page info -->
               <div
                 class="records-display align-self-center"
-                v-if="spiGraphType === 'default'">
+                v-if="spiGraphType === 'default' || spiGraphType === 'heatmap'">
                 <strong
                   class="text-theme-accent"
                   v-if="!error && recordsFiltered !== undefined">
@@ -177,8 +197,20 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="spigraph-content"
       v-if="spiGraphType !== 'connections'">
+      <!-- heatmap graph type -->
+      <div v-if="spiGraphType === 'heatmap'">
+        <arkime-heatmap
+          v-if="items && items.length && fieldObj && graphData"
+          :items="items"
+          :graph="graphData"
+          :field-obj="fieldObj"
+          :metric="intensity"
+          :timeline-data-filters="timelineDataFilters"
+          :sort-by="sortBy" />
+      </div> <!-- /heatmap graph type -->
+
       <!-- pie graph type -->
-      <div v-if="spiGraphType !== 'default'">
+      <div v-else-if="spiGraphType !== 'default'">
         <arkime-pie
           v-if="items && items.length"
           :base-field="baseField"
@@ -285,6 +317,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
+import ArkimeHeatmap from './Heatmap.vue';
 import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -307,6 +340,7 @@ export default {
     ArkimeCollapsible,
     PageLayout,
     ArkimePie,
+    ArkimeHeatmap,
     ArkimeConnectionsGraph
   },
   data: function () {
@@ -333,7 +367,7 @@ export default {
       // <option> blocks into one.
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
-      graphTypeOptions: ['default', 'pie', 'table', 'treemap', 'sankey', 'connections']
+      graphTypeOptions: ['default', 'heatmap', 'pie', 'table', 'treemap', 'sankey', 'connections']
     };
   },
   computed: {
@@ -346,6 +380,21 @@ export default {
     },
     graphType: function () {
       return this.$store.state.graphType;
+    },
+    // heatmap intensity choices: sessions + each timeline metric
+    intensityOptions: function () {
+      const opts = [{ value: 'sessionsHisto', label: this.$t('spigraph.sessions') }];
+      for (const f of this.timelineDataFilters) {
+        opts.push({ value: f.dbField + 'Histo', label: f.friendlyName });
+      }
+      return opts;
+    },
+    intensity: function () {
+      // graphType may name a metric whose timeline filter was since removed
+      if (this.graphType && this.intensityOptions.some(o => o.value === this.graphType)) {
+        return this.graphType;
+      }
+      return 'sessionsHisto';
     },
     query: function () {
       let sort = 'name';
@@ -472,6 +521,11 @@ export default {
         }
       });
     },
+    changeIntensity: function (value) {
+      // recolors + re-sorts client-side (all metrics are already fetched); the
+      // backend top-N ranking only switches to this metric on the next fetch
+      this.$store.commit('updateGraphType', value);
+    },
     changeSortBy: function (sortBy) {
       this.sortBy = sortBy;
       if (this.sortBy === 'graph') {
@@ -511,6 +565,8 @@ export default {
         this.query.sort = this.graphType;
         this.refresh = 0;
         this.changeRefreshInterval(0);
+      } else if (this.spiGraphType === 'heatmap') {
+        if (!this.graphType) { this.$store.commit('updateGraphType', 'sessionsHisto'); }
       } else if (this.spiGraphType === 'connections') {
         // connections owns its data; stop spigraph refresh
         this.refresh = 0;

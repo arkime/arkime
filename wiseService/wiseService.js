@@ -54,7 +54,7 @@ const internals = {
         { name: 'authMode', required: true, help: 'How should auth be done: anonymous - no auth, basic - basic auth, digest - digest auth, header - http header auth, oidc - oidc auth, form - form auth', regex: '(anonymous|basic|digest|header|oidc|form|basic\\+oidc|basic\\+form|header\\+basic|header\\+digest|headerOnly|)' },
         { name: 'userNameHeader', required: true, help: 'the http header to use for username', ifField: 'authMode', ifValue: 'header' },
         { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
-        { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
+        { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypt password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elasticsearch API key for users DB access', password: true },
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elasticsearch Basic Auth', password: true },
@@ -195,8 +195,8 @@ process.on('SIGINT', function () {
 });
 
 // ----------------------------------------------------------------------------
-function setupAuth () {
-  Auth.initialize({
+async function setupAuth () {
+  await Auth.initialize({
     appAdminRole: 'wiseAdmin',
     passwordSecretSection: 'wiseService',
     basePath: internals.webBasePath
@@ -308,7 +308,7 @@ class WISESourceAPI {
    * Get the full config for a section
    *
    * @param {string} section - The section of the config file to return
-   * @returns {object} - A list of all the sections in the config file
+   * @returns {object} - The full config for the section
    */
   getConfigSection = ArkimeConfig.getSection;
 
@@ -460,7 +460,7 @@ class WISESourceAPI {
    *
    * @param {string} section - The section name
    * @param {WISESource} src - A WISESource object
-   * @param {string|Array} types - An array of the types that this source supports
+   * @param {Array} types - An array of the types that this source supports
    */
   addSource (section, src, types) {
     if (section === undefined || src === undefined || types === undefined) {
@@ -494,9 +494,9 @@ class WISESourceAPI {
    * This is used by the UI to generate what to display to the admin.
    * @typedef {Object} WISESourceAPI~SourceConfig
    * @property {string} name - The name of the source
-   * @property {boolean} singleton - Can there multiple instances of this source
+   * @property {boolean} singleton - Can there be multiple instances of this source
    * @property {string} description - Friendly text about the source
-   * @property {string|Array} types - List of WISE types the source supports
+   * @property {Array} types - List of WISE types the source supports
    * @property {boolean} [cacheable=true] - Can the source be cached by WISE
    * @property {WISESourceAPI~SourceConfigField|Array} fields - The fields for the source
    */
@@ -505,7 +505,7 @@ class WISESourceAPI {
    * Add for each source config definition for the UI to use.
    *
    * @param {string} sourceName - The source name
-   * @param {WISESourceAPI~SourceConfig} config - The configuration of this source type
+   * @param {WISESourceAPI~SourceConfig} configDef - The configuration of this source type
    */
   addSourceConfigDef (sourceName, configDef) {
     if (internals.configDefs[sourceName] === undefined) {
@@ -558,7 +558,7 @@ class WISESourceAPI {
 
   // ----------------------------------------------------------------------------
   /**
-   * Define all configuration for a field for a source
+   * Define a value action (right click menu item)
    * @typedef {Object} WISESourceAPI~ValueAction
    * @property {string} key - The key must be unique and is also used as the right click menu name if the name field is missing
    * @property {string} name - The name of the value action to show the user
@@ -904,7 +904,9 @@ async function processQuery (req, query, cb) {
   }
 
   // Fetch the cache for this query
-  const cacheKey = query.typeName + '-' + query.value;
+  // md5/sha256 results can depend on contentType, so include it in the cache and in-progress keys
+  const valueKey = query.contentType !== undefined ? query.value + '-' + query.contentType : query.value;
+  const cacheKey = query.typeName + '-' + valueKey;
   let cacheResult = await internals.cache.get(cacheKey);
   if (req.timedout) {
     return cb('Timed out ' + query.typeName + ' ' + query.value);
@@ -945,13 +947,13 @@ async function processQuery (req, query, cb) {
       delete cacheResult[src.section];
 
       // If already in progress then add to the list and return, cb called later;
-      if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(query.value)) {
-        src.srcInProgress[query.typeName].get(query.value).push(mapCb);
+      if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(valueKey)) {
+        src.srcInProgress[query.typeName].get(valueKey).push(mapCb);
         return;
       }
 
       // First query for this value
-      src.srcInProgress[query.typeName].set(query.value, [mapCb]);
+      src.srcInProgress[query.typeName].set(valueKey, [mapCb]);
       const startTime = Date.now();
       src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
         src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
@@ -968,8 +970,8 @@ async function processQuery (req, query, cb) {
           err = null;
           result = undefined;
         }
-        const srcInProgress = src.srcInProgress[query.typeName].get(query.value);
-        src.srcInProgress[query.typeName].delete(query.value);
+        const srcInProgress = src.srcInProgress[query.typeName].get(valueKey);
+        src.srcInProgress[query.typeName].delete(valueKey);
         for (let i = 0, l = srcInProgress.length; i < l; i++) {
           srcInProgress[i](err, result);
         }
@@ -1021,10 +1023,10 @@ function processQueryResponse0 (req, res, queries, results) {
 // 0   4   flags
 // 4   2   2
 // 8   32  md5 of fields
-// 40  2   length of fields info if md5 unknown
+// 40  2   count of fields if md5 unknown
 // 42  L   fields info
 function processQueryResponse2 (req, res, queries, results) {
-  const hashes = (req.query.hashes || '').split(',');
+  const hashes = Array.isArray(req.query.hashes) ? req.query.hashes : (req.query.hashes || '').split(',');
 
   const sendFields = !hashes.includes(internals.fieldsMd5);
 
@@ -1109,6 +1111,12 @@ app.post('/get', function (req, res) {
     }, (err, results) => {
       if (err || req.timedout) {
         console.log('Error', err || 'Timed out');
+        // Respond immediately so the capture client isn't left hanging until
+        // the connect-timeout middleware kills the whole batch. If the timeout
+        // already sent a response, headersSent guards against a double-send.
+        if (!res.headersSent) {
+          res.status(500).end();
+        }
         return;
       }
 
@@ -1154,7 +1162,7 @@ app.get(
 );
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by the wise UI to all the types known (unauthenticated).
+ * GET - Used by the wise UI to retrieve all the types known (unauthenticated).
  *
  * @name "/types"
  * @returns {string|array} - all the types
@@ -1514,7 +1522,7 @@ if (internals.webconfig) {
    *
    * @name "/source/:source/get"
    * @param {string} :source - The source to get the raw data for
-   * @returns {object} All the views
+   * @returns {object} {success, raw} - The raw source data
    */
   app.get('/source/:source/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
     const source = internals.sources.get(req.params.source);
@@ -1530,7 +1538,7 @@ if (internals.webconfig) {
       if (err) {
         return res.send({ success: false, text: err });
       }
-      return res.send({ success: true, raw: raw.toString('utf8') });
+      return res.send({ success: true, raw: raw ? raw.toString('utf8') : '' });
     });
   });
   // ----------------------------------------------------------------------------
@@ -1540,7 +1548,7 @@ if (internals.webconfig) {
    *
    * @name "/source/:source/put"
    * @param {string} :source - The source to put the raw data for
-   * @returns {object} All the views
+   * @returns {object} {success, text} - The result of saving the raw source data
    */
   app.put('/source/:source/put', [isWiseAdmin, ArkimeUtil.noCacheJson, jsonParser], (req, res) => {
     const source = internals.sources.get(req.params.source);
@@ -1684,7 +1692,7 @@ app.use(ArkimeUtil.expressErrorHandler);
 // ============================================================================
 // VUE APP
 // ============================================================================
-// loads the manifest.json file from dist and inject it in the ejs template
+// loads the manifest.json file from dist and injects it in the ejs template
 const parseManifest = () => {
   if (process.env.NODE_ENV === 'development') return {};
 
@@ -1775,7 +1783,7 @@ async function buildConfigAndStart () {
   }, ((3000 * 60) + (Math.random() * 3000 * 60))); // Check 3min + 0-3min
 
   if (internals.webconfig) {
-    setupAuth();
+    await setupAuth();
   }
   if (internals.workers <= 1 || cluster.isWorker) {
     main();

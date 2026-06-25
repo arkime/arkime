@@ -198,7 +198,7 @@ exports.initSource = function (api) {
       { name: 'host', required: true, help: 'The Splunk hostname' },
       // { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },
-      { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
+      { name: 'periodic', required: false, help: 'If set, the number of seconds between periodic full queries. If not set, an individual query is done per key.' },
       { name: 'port', required: true, help: 'The Splunk port' },
       { name: 'query', required: true, help: 'The query to run against Splunk. For non periodic queries the string %%SEARCHTERM%% will be replaced with the key' },
       { name: 'mergeQuery', help: 'When in periodic mode, use this query after startup and merge the keyPath value into previous table' },
