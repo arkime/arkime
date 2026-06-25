@@ -1256,6 +1256,16 @@ class SessionAPIs {
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
   static async processSessionId (idOrSession, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
+    // endCb must fire exactly once: psid helpers can call it directly on an error
+    // path and again via their async.eachLimit completion callback
+    const origEndCb = endCb;
+    let endCbCalled = false;
+    endCb = (err, fields) => {
+      if (endCbCalled) { return undefined; }
+      endCbCalled = true;
+      return origEndCb(err, fields);
+    };
+
     let extra;
     let options;
     if (!fullSession) {

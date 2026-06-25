@@ -1667,6 +1667,7 @@
       "usersMustBeString": "Benutzerfeld muss eine Zeichenkette sein",
       "created": "Abfrage erstellt!",
       "createFailed": "Erstellen der Abfrage fehlgeschlagen",
+      "retrieveFailed": "Fehler beim Abrufen der periodischen Abfragen",
       "badKey": "Ungültiger Abfrageschlüssel",
       "missingKey": "Abfrageschlüssel fehlt",
       "updated": "Periodische Abfrage aktualisiert!",
