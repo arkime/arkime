@@ -654,6 +654,9 @@
     "timeInterval-day": "Aysday",
     "timeInterval-week": "Eeksway",
     "timeRangeDisplayTip": "Ueryqay imetay angeray",
+    "timeOptions": "Imetay",
+    "timeOptionsTip": "Allway imetay angeray optionsway",
+    "lastRange": "Astlay {range}",
     "createSummary": "Eatecray Ummarysay"
   },
   "stats": {

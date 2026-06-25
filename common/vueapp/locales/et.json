@@ -653,6 +653,9 @@
     "timeInterval-day": "Päevad",
     "timeInterval-week": "Nädalad",
     "timeRangeDisplayTip": "Päringu ajavahemik",
+    "timeOptions": "Aeg",
+    "timeOptionsTip": "Kõik ajavahemiku valikud",
+    "lastRange": "Viimased {range}",
     "createSummary": "Loo kokkuvõte"
   },
   "stats": {

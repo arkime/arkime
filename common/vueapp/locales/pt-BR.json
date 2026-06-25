@@ -653,6 +653,9 @@
     "timeInterval-day": "Dias",
     "timeInterval-week": "Semanas",
     "timeRangeDisplayTip": "Intervalo de tempo da consulta",
+    "timeOptions": "Tempo",
+    "timeOptionsTip": "Todas as opções de intervalo de tempo",
+    "lastRange": "Últimas {range}",
     "createSummary": "Criar Resumo"
   },
   "stats": {
