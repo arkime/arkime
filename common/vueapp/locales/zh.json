@@ -1667,6 +1667,7 @@
       "usersMustBeString": "用户字段必须是字符串",
       "created": "查询已创建！",
       "createFailed": "创建查询失败",
+      "retrieveFailed": "检索周期性查询出错",
       "badKey": "无效的查询键",
       "missingKey": "缺少查询键",
       "updated": "定期查询已更新！",

@@ -67,6 +67,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
   - #4071 Fix negative numbers being rejected in expressions
+  - #4076 Fix raw packet search hunts hanging when a session's PCAP is missing or unreadable
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
