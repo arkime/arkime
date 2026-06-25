@@ -971,7 +971,8 @@ class ArkimeUtil {
 
     // If we get here, expression is safe - compile it
 
-    return new Function(argName, `return ${expr};`);
+    // Strict mode so a bare `this` is undefined, not globalThis (avoids this.process.env leak).
+    return new Function(argName, `'use strict';\nreturn ${expr};`);
   }
 
   // ----------------------------------------------------------------------------
