@@ -199,27 +199,24 @@ LOCAL void pcapoverip_client_connect(int interface)
 
     GSocket *conn = NULL;
     while (!conn && (sockaddr = g_socket_address_enumerator_next (enumerator, NULL, &error))) {
-        conn = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
+        GSocketFamily family = g_socket_address_get_family(sockaddr);
+        conn = g_socket_new(family, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
 
         if (!error) {
-            g_socket_set_blocking (conn, TRUE);
+            g_socket_set_blocking(conn, TRUE);
             g_socket_connect(conn, sockaddr, NULL, &error);
         }
 
         if (error && error->code != G_IO_ERROR_PENDING) {
             g_clear_error(&error);
-            g_object_unref (conn);
+            g_object_unref(conn);
             conn = NULL;
         } else {
-            g_socket_set_blocking (conn, FALSE);
-            struct sockaddr_in localAddress, remoteAddress;
-            socklen_t addressLength = sizeof(localAddress);
-            getsockname(g_socket_get_fd(conn), (struct sockaddr *)&localAddress, &addressLength);
-            g_socket_address_to_native(sockaddr, &remoteAddress, addressLength, NULL);
+            g_socket_set_blocking(conn, FALSE);
             if (config.debug > 0)
                 LOG("connected %s:%d", config.interface[interface], port);
         }
-        g_object_unref (sockaddr);
+        g_object_unref(sockaddr);
     }
     g_object_unref (enumerator);
 
