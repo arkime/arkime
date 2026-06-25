@@ -511,13 +511,15 @@ SPDX-License-Identifier: Apache-2.0
                         v-model="setting.values[name]" />
                       <v-text-field
                         v-else
+                        type="text"
+                        autocomplete="off"
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
                         :disabled="setting.locked"
                         v-model="setting.values[name]"
                         :rules="[(value) => !field.required || !!value?.length]"
-                        :type="field.password && !revealedFields[`${key}.${name}`] ? 'password' : 'text'">
+                        :class="{ 'masked-input': field.password && !revealedFields[`${key}.${name}`] }">
                         <template #label>
                           {{ name }}<span
                             class="text-warning"
@@ -1596,6 +1598,11 @@ export default {
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.85rem;
   line-height: 1.5;
+}
+
+/* mask secret values without type=password, which triggers Chrome/LastPass autofill */
+.masked-input :deep(input) {
+  -webkit-text-security: disc;
 }
 
 .itype-group-container {
