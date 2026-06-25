@@ -365,6 +365,8 @@ SPDX-License-Identifier: Apache-2.0
               class="ml-4 mr-2 medium-input"
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
+              density="compact"
+              hide-details
               v-debounce="updateIntegrationSearchTerm"
               placeholder="Search integrations"
               clearable />
@@ -390,95 +392,163 @@ SPDX-License-Identifier: Apache-2.0
               </v-btn>
             </div>
           </div>
-          <div
-            class="d-flex flex-wrap"
-            :class="{ 'flex-column': rawIntegrationSettings }">
-            <template v-if="!rawIntegrationSettings">
+
+          <template v-if="!rawIntegrationSettings">
+            <!-- status summary strip -->
+            <div class="d-flex flex-wrap ga-2 ml-2 mr-3 mt-3 mb-1">
+              <v-chip
+                v-for="bucket in statusSummary"
+                :key="bucket.id"
+                size="small"
+                label
+                variant="tonal"
+                :color="bucket.color"
+                class="cursor-pointer"
+                :class="{ 'status-chip--active': integrationStatusFilter === bucket.id }"
+                @click="integrationStatusFilter = integrationStatusFilter === bucket.id ? 'all' : bucket.id">
+                <v-icon
+                  :icon="bucket.icon"
+                  start
+                  size="small" />
+                {{ bucket.count }} {{ bucket.label }}
+              </v-chip>
+            </div>
+
+            <!-- no results -->
+            <div
+              class="lead ml-2 mt-4"
+              v-if="displayedIntegrationRows.length === 0">
+              No integrations match your search.
+            </div>
+
+            <!-- integration list -->
+            <div class="integration-list ml-2 mr-3 mt-2">
               <div
-                class="row lead mt-4"
-                v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
-                <div class="col">
-                  No Integrations match your search.
-                </div>
-              </div>
-              <div
+                v-for="{ key, setting, status, itypes } in displayedIntegrationRows"
                 :key="key"
-                class="px-2 pb-4 flex-grow-1"
-                v-for="([key, setting]) in sortedFilteredIntegrationSettings">
-                <v-card variant="tonal">
-                  <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
-                    <img
-                      v-if="getIntegrations[key]"
-                      class="integration-setting-img"
-                      :src="getIntegrations[key].icon">
-                    <h4 class="ml-1 text-truncate">
-                      {{ key }}
-                    </h4>
-                    <div class="mb-2">
-                      <v-icon
-                        size="large"
-                        icon="mdi-lock"
-                        v-if="setting.locked"
-                        class="mr-2 cursor-help"
-                        v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'" />
-                      <span
-                        size="large"
-                        icon="mdi-earth"
-                        class="mr-2 cursor-help"
-                        v-if="setting.globalConfiged"
-                        v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'" />
-                      <a
-                        target="_blank"
-                        :href="setting.homePage"
-                        v-if="!!setting.homePage"
-                        v-tooltip="`${key} home page`">
-                        <v-icon
-                          icon="mdi-home"
-                          size="large" />
-                      </a>
+                class="integration-row"
+                :class="[`integration-row--${status.id}`, { 'integration-row--open': expandedIntegrations[key] }]">
+                <!-- row header — div is a mouse-only convenience; the chevron button
+                     is the accessible toggle so interactive controls aren't nested -->
+                <div
+                  class="integration-row__header"
+                  @click="toggleIntegration(key)">
+                  <button
+                    type="button"
+                    class="integration-row__chevron"
+                    :aria-expanded="!!expandedIntegrations[key]"
+                    :aria-label="`${expandedIntegrations[key] ? 'Collapse' : 'Expand'} ${key} settings`"
+                    @click.stop="toggleIntegration(key)">
+                    <v-icon :icon="expandedIntegrations[key] ? 'mdi-chevron-down' : 'mdi-chevron-right'" />
+                  </button>
+                  <img
+                    v-if="getIntegrations[key]"
+                    class="integration-row__icon"
+                    :alt="key"
+                    :src="getIntegrations[key].icon">
+                  <span
+                    v-else
+                    class="integration-row__icon" />
+                  <span class="integration-row__name text-truncate">
+                    {{ key }}
+                  </span>
+                  <!-- itype chips -->
+                  <span class="integration-row__itypes">
+                    <v-icon
+                      v-for="iType in itypes"
+                      :key="iType"
+                      :icon="iTypeIconMap[iType]"
+                      size="small"
+                      class="itype-dot"
+                      :style="iTypeColorStyleMap[iType]"
+                      v-tooltip="iType" />
+                  </span>
+                  <!-- status -->
+                  <span
+                    class="integration-row__status"
+                    :class="status.cls"
+                    v-tooltip="status.tooltip">
+                    <v-icon
+                      :icon="status.icon"
+                      size="small"
+                      class="mr-1" />
+                    {{ status.label }}
+                  </span>
+                  <!-- home link -->
+                  <a
+                    v-if="!!setting.homePage"
+                    target="_blank"
+                    class="integration-row__home"
+                    :href="setting.homePage"
+                    @click.stop
+                    v-tooltip="`${key} home page`">
+                    <v-icon icon="mdi-home" />
+                  </a>
+                  <span
+                    v-else
+                    class="integration-row__home" />
+                </div>
+                <!-- expandable body — v-if so the form mounts only when expanded -->
+                <v-expand-transition>
+                  <div
+                    v-if="expandedIntegrations[key]"
+                    class="integration-row__body">
+                    <div
+                      v-if="Object.keys(setting.settings).length === 0"
+                      class="text-medium-emphasis font-italic">
+                      No configurable settings for this integration.
                     </div>
-                  </v-card-title>
-                  <div class="d-flex flex-column ga-2 mb-2">
                     <template
                       v-for="(field, name) in setting.settings"
                       :key="name">
                       <v-checkbox
-                        slim
-                        density="compact"
-                        class="ml-1"
                         v-if="field.type === 'boolean'"
-                        v-model="setting.values[name]">
-                        <template #label>
-                          <span class="ma-0">{{ name }}</span>
-                        </template>
-                      </v-checkbox>
+                        slim
+                        hide-details
+                        density="compact"
+                        :label="name"
+                        :disabled="setting.locked"
+                        v-model="setting.values[name]" />
                       <v-text-field
                         v-else
-                        class="ml-2 mr-2"
                         variant="outlined"
+                        density="compact"
+                        hide-details="auto"
                         :disabled="setting.locked"
                         v-model="setting.values[name]"
                         :rules="[(value) => !field.required || !!value?.length]"
-                        :type="field.password && !field.showValue ? 'password' : 'text'">
+                        :type="field.password && !revealedFields[`${key}.${name}`] ? 'password' : 'text'">
                         <template #label>
                           {{ name }}<span
-                            class="text-info"
+                            class="text-warning"
                             v-if="field.required">*</span>
+                        </template>
+                        <template
+                          #append-inner
+                          v-if="field.password">
+                          <v-icon
+                            class="cursor-pointer"
+                            :icon="revealedFields[`${key}.${name}`] ? 'mdi-eye-off' : 'mdi-eye'"
+                            @click="toggleFieldReveal(key, name)" />
                         </template>
                       </v-text-field>
                     </template>
                   </div>
-                </v-card>
+                </v-expand-transition>
               </div>
-            </template>
-            <textarea
-              v-else
-              rows="20"
-              size="sm"
-              @input="e => debounceRawEdit(e)"
-              class="cont3xt-textarea"
-              :value="createINI(rawIntegrationSettings)" />
-          </div>
+            </div>
+          </template>
+
+          <v-textarea
+            v-else
+            rows="20"
+            no-resize
+            hide-details
+            variant="outlined"
+            class="raw-integration-edit ml-2 mr-3 mt-3"
+            :placeholder="rawEditPlaceholder"
+            :model-value="createINI(rawIntegrationSettings)"
+            @update:model-value="debounceRawEdit" />
         </div> <!-- /integrations settings -->
 
         <!-- overviews settings -->
@@ -717,7 +787,7 @@ import OverviewService from '@/components/services/OverviewService';
 import OverviewFormCard from '@/components/overviews/OverviewFormCard.vue';
 import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
-import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
+import { iTypes, iTypeIconMap, iTypeColorMap, iTypeColorStyleMap } from '@/utils/iTypes';
 import CommonUserService from '@common/UserService';
 import TransferResource from '@common/TransferResource.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
@@ -726,6 +796,21 @@ import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 let timeout;
+
+// status descriptors for an integration's configuration state (most-actionable first)
+const STATUS_META = {
+  needsKey: { id: 'needsKey', label: 'Needs key', icon: 'mdi-key-alert-outline', color: 'warning', cls: 'text-warning', tooltip: 'This integration requires credentials that have not been configured.' },
+  configured: { id: 'configured', label: 'Configured', icon: 'mdi-check-circle', color: 'success', cls: 'text-success', tooltip: 'Configured with your credentials.' },
+  global: { id: 'global', label: 'Shared account', icon: 'mdi-earth', color: 'info', cls: 'text-info', tooltip: 'Globally configured by your administrator with a shared account. Fill the fields below to override it.' },
+  partial: { id: 'partial', label: 'Partial key', icon: 'mdi-key-alert', color: 'warning', cls: 'text-warning', tooltip: 'You have filled some but not all credential fields. The blank fields fall back to the shared account — complete or clear them.' },
+  optional: { id: 'optional', label: 'Optional key', icon: 'mdi-key-outline', color: 'info', cls: 'text-info', tooltip: 'Works without credentials, but you can add a key for higher limits or more data.' },
+  ready: { id: 'ready', label: 'No key needed', icon: 'mdi-check', color: 'secondary', cls: 'text-medium-emphasis', tooltip: 'Ready to use — no configuration required.' },
+  disabled: { id: 'disabled', label: 'Disabled', icon: 'mdi-cancel', color: 'secondary', cls: 'text-medium-emphasis', tooltip: 'You have disabled this integration. Expand to re-enable it.' },
+  locked: { id: 'locked', label: 'Locked', icon: 'mdi-lock', color: 'secondary', cls: 'text-medium-emphasis', tooltip: 'Locked by your administrator. It uses the global configuration and your settings are ignored.' }
+};
+
+// shown when no integrations have saved values, so the raw editor isn't a blank box
+const RAW_EDIT_PLACEHOLDER = 'No integrations configured yet. Add settings in INI format, e.g.\n\n[AbuseIPDB]\nkey=YOUR_API_KEY\n\n[Censys]\nid=YOUR_ID\nsecret=YOUR_SECRET';
 
 export default {
   name: 'Cont3xtSettings',
@@ -754,11 +839,16 @@ export default {
       integrationSettings: {},
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
+      expandedIntegrations: {},
+      revealedFields: {},
+      integrationStatusFilter: 'all',
+      rawEditPlaceholder: RAW_EDIT_PLACEHOLDER,
       // overviews
       overviewModalOpen: false,
       iTypes,
       iTypeIconMap,
       iTypeColorMap,
+      iTypeColorStyleMap,
       activeOverviewId: undefined,
       modifiedOverviewMap: {},
       // link groups
@@ -851,6 +941,35 @@ export default {
       const entries = Object.entries(this.filteredIntegrationSettings);
       entries.sort(([aKey], [bKey]) => aKey.localeCompare(bKey));
       return entries;
+    },
+    // per-row view models — status & itypes computed once each, consumed by the
+    // list, the filter, and the summary chips (respects search, ignores status filter)
+    integrationRows () {
+      return this.sortedFilteredIntegrationSettings.map(([key, setting]) => ({
+        key,
+        setting,
+        status: this.statusOf(setting),
+        itypes: this.getIntegrations[key]?.itypes ?? []
+      }));
+    },
+    // rows narrowed by the selected status filter; an expanded row stays visible
+    // even if its status flips out of the filter mid-edit (so the form can't vanish)
+    displayedIntegrationRows () {
+      if (this.integrationStatusFilter === 'all') { return this.integrationRows; }
+      return this.integrationRows.filter(
+        row => row.status.id === this.integrationStatusFilter || this.expandedIntegrations[row.key]
+      );
+    },
+    // chips shown above the list — statuses with at least one integration, plus the
+    // active filter (even at count 0) so it never becomes an invisible dead-end
+    statusSummary () {
+      const counts = {};
+      for (const row of this.integrationRows) {
+        counts[row.status.id] = (counts[row.status.id] ?? 0) + 1;
+      }
+      return Object.values(STATUS_META)
+        .filter(meta => counts[meta.id] || this.integrationStatusFilter === meta.id)
+        .map(meta => ({ ...meta, count: counts[meta.id] ?? 0 }));
     },
     disablePassword () {
       if (!this.getUser) { return true; } // wait for user to be initialized
@@ -953,9 +1072,11 @@ export default {
       }
     },
     /* INTEGRATIONS! ------------------------- */
-    /* toggles the visibility of the value of password fields */
-    toggleVisiblePasswordField (field) {
-      field.showValue = !field.showValue;
+    /* toggles password-field visibility, keyed outside the settings object so it
+       survives the re-clone that search/raw-edit do to filteredIntegrationSettings */
+    toggleFieldReveal (key, fieldName) {
+      const id = `${key}.${fieldName}`;
+      this.revealedFields[id] = !this.revealedFields[id];
     },
     saveIntegrationSettings () {
       const settings = this.getIntegrationSettingValues();
@@ -976,16 +1097,16 @@ export default {
       const settings = this.getIntegrationSettingValues();
       this.rawIntegrationSettings = settings;
     },
-    debounceRawEdit (e) {
+    debounceRawEdit (value) {
       if (timeout) { clearTimeout(timeout); }
       // debounce the textarea so it only updates the integration settings after keyups cease for 400ms
       timeout = setTimeout(() => {
         timeout = null;
-        this.updateRawIntegrationSettings(e);
+        this.updateRawIntegrationSettings(value);
       }, 400);
     },
-    updateRawIntegrationSettings (e) {
-      const rawIntegrationSettings = this.parseINI(e.target.value);
+    updateRawIntegrationSettings (value) {
+      const rawIntegrationSettings = this.parseINI(value);
 
       for (const s in this.integrationSettings) {
         if (rawIntegrationSettings[s] && this.integrationSettings[s]) {
@@ -1001,6 +1122,31 @@ export default {
       }
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
+    },
+    /* toggles the expanded config panel for an integration row */
+    toggleIntegration (key) {
+      this.expandedIntegrations[key] = !this.expandedIntegrations[key];
+    },
+    /* computes the configuration status descriptor for an integration */
+    statusOf (setting) {
+      const fields = Object.entries(setting.settings ?? {});
+      const isFilled = (fieldName) => !!setting.values?.[fieldName]?.length;
+      const requiredFields = fields.filter(([, f]) => f.required && f.type !== 'boolean');
+      const optionalFields = fields.filter(([, f]) => !f.required && f.type !== 'boolean');
+
+      // match the backend: only true/'true' disables (INI strings 'false' are truthy)
+      const disabled = setting.values?.disabled;
+      if (setting.locked) { return STATUS_META.locked; }
+      if (disabled === true || disabled === 'true') { return STATUS_META.disabled; }
+      if (requiredFields.length && requiredFields.every(([fieldName]) => isFilled(fieldName))) { return STATUS_META.configured; }
+      if (setting.globalConfiged) {
+        // some local fields filled override the shared account but leave gaps it falls back on
+        return requiredFields.some(([fieldName]) => isFilled(fieldName)) ? STATUS_META.partial : STATUS_META.global;
+      }
+      if (requiredFields.length) { return STATUS_META.needsKey; }
+      if (optionalFields.some(([fieldName]) => isFilled(fieldName))) { return STATUS_META.configured; }
+      if (optionalFields.length) { return STATUS_META.optional; }
+      return STATUS_META.ready;
     },
     /* OVERVIEWS! ---------------------------- */
     setActiveOverviewToFirst () {
@@ -1329,6 +1475,124 @@ export default {
 .integration-setting-img {
   height:27px;
   margin-left: -8px;
+}
+
+/* integrations list */
+.status-chip--active {
+  outline: 2px solid currentColor;
+  outline-offset: -1px;
+}
+
+.integration-list {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.integration-row {
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.integration-row:last-child {
+  border-bottom: none;
+}
+
+.integration-row--needsKey { border-left-color: rgb(var(--v-theme-warning)); }
+.integration-row--open { background: rgba(var(--v-theme-on-surface), 0.03); }
+
+.integration-row__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  min-height: 44px;
+  user-select: none;
+}
+
+.integration-row__header:hover {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+.integration-row__chevron {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.integration-row__chevron:hover {
+  opacity: 1;
+}
+
+.integration-row__chevron:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  opacity: 1;
+}
+
+.integration-row__icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.integration-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.integration-row__itypes {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.85;
+}
+
+.integration-row__status {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 130px;
+  justify-content: flex-end;
+}
+
+.integration-row__home {
+  flex: 0 0 auto;
+  width: 24px;
+  text-align: center;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.integration-row__home:hover {
+  opacity: 1;
+}
+
+.integration-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem 0.85rem 2.6rem;
+}
+
+.raw-integration-edit :deep(textarea) {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .itype-group-container {
