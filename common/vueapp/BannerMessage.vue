@@ -63,9 +63,11 @@ export default {
 </script>
 
 <style scoped>
-/* honor newlines an admin types into the message */
+/* honor newlines an admin types into the message; pin the size so it's
+   consistent across apps (cont3xt shrinks body to 0.85rem) */
 .banner-message {
   white-space: pre-line;
+  font-size: 1rem;
 }
 .banner-message a {
   color: inherit;
