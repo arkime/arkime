@@ -154,18 +154,22 @@ void arkime_plugin_init()
                           NULL);
 
     conf = rd_kafka_conf_new();
-    brokers = *arkime_config_str_list(NULL, "kafkaBootstrapServers", "");
+    gchar **brokersList = arkime_config_str_list(NULL, "kafkaBootstrapServers", "");
+    brokers = brokersList && brokersList[0] ? brokersList[0] : "";
     topic = arkime_config_str(NULL, "kafkaTopic", "arkime-json");
 
     // See more config on https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
     if (rd_kafka_conf_set(conf, "metadata.broker.list", brokers,
                           errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
+        g_strfreev(brokersList);
         LOGEXIT("Error configuring kafka:metadata.broker.list, error = %s", errstr);
     }
 
     if (config.debug)
         LOG("kafka broker %s", brokers);
+
+    g_strfreev(brokersList);
 
     kafkaSSL = arkime_config_boolean(NULL, "kafkaSSL", FALSE);
     if (kafkaSSL) {
