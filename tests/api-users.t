@@ -632,7 +632,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff($json, from_json('{"text": "Role created successfully", "success": true}'));
 
     $json = viewerPost("/api/users?arkimeRegressionUser=role:sac-test1", "");
-    eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
+    eq_or_diff($json, from_json('{"text": "Cannot authenticate with role", "success": false}'));
 
 # role tests
     $json = viewerPostToken("/api/user/role:sac-test1", '{"roles":["superAdmin"]}', $token);

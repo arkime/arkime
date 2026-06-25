@@ -163,7 +163,7 @@ DB Indices (Elasticsearch indices) tab column layout.
 
 ---
 
-### 5. `files-columns` — Files Tab Column Layout
+### `files-columns` (Alkeme TUI)
 
 Configures visible columns and sort order for the Files tab (PCAP file browser).
 

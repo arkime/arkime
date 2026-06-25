@@ -3,415 +3,344 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row
-    no-gutters
-    align="center"
-    class="text-start flex-nowrap justify-start gap-2">
-    <!-- time range select -->
-    <v-col cols="auto">
-      <div class="arkime-input-group arkime-input-group--fluid">
+  <div class="d-flex align-center gap-1 text-start">
+    <!-- single time control: shows the current range, opens the breakout popover -->
+    <v-btn
+      id="timeOptionsBtn"
+      variant="flat"
+      size="small"
+      density="comfortable"
+      class="time-options-btn"
+      :style="secondaryBtnStyle"
+      v-focus="focusTimeRange"
+      @blur="onOffTimeRangeFocus">
+      <template v-if="timeError">
+        <v-icon icon="mdi-alert" />
+      </template>
+      <template v-else>
+        <v-icon
+          icon="mdi-clock-outline"
+          v-if="!shiftKeyHold"
+          class="me-1" />
         <span
-          id="timeInput"
-          class="arkime-input-label arkime-input-label-fw cursor-help">
-          <v-icon
-            icon="mdi-clock-outline"
-            v-if="!shiftKeyHold" />
-          <span
-            v-else
-            class="time-shortcut">
-            T
-          </span>
-          <v-tooltip
-            activator="#timeInput"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.timeInputTip') }}
-          </v-tooltip>
+          v-else
+          class="time-shortcut me-1">
+          T
         </span>
-        <select
-          tabindex="3"
-          role="listbox"
-          class="arkime-input-control"
-          v-model="timeRange"
-          v-focus="focusTimeRange"
-          @change="changeTimeRange"
-          @blur="onOffTimeRangeFocus">
-          <option value="0.25">
-            {{ $t('common.minuteCount', 15) }}
-          </option>
-          <option value="0.5">
-            {{ $t('common.minuteCount', 30) }}
-          </option>
-          <option value="1">
-            {{ $t('common.hourCount', 1) }}
-          </option>
-          <option
-            value="6"
-            v-if="!user.timeLimit || user.timeLimit >= 6">
-            {{ $t('common.hourCount', 6) }}
-          </option>
-          <option
-            value="24"
-            v-if="!user.timeLimit || user.timeLimit >= 24">
-            {{ $t('common.hourCount', 24) }}
-          </option>
-          <option
-            value="48"
-            v-if="!user.timeLimit || user.timeLimit >= 48">
-            {{ $t('common.hourCount', 48) }}
-          </option>
-          <option
-            value="72"
-            v-if="!user.timeLimit || user.timeLimit >= 72">
-            {{ $t('common.hourCount', 72) }}
-          </option>
-          <option
-            value="168"
-            v-if="!user.timeLimit || user.timeLimit >= 168">
-            {{ $t('common.weekCount', 1) }}
-          </option>
-          <option
-            value="336"
-            v-if="!user.timeLimit || user.timeLimit >= 336">
-            {{ $t('common.weekCount', 2) }}
-          </option>
-          <option
-            value="720"
-            v-if="!user.timeLimit || user.timeLimit >= 720">
-            {{ $t('common.monthCount', 1) }}
-          </option>
-          <option
-            value="1440"
-            v-if="!user.timeLimit || user.timeLimit >= 1440">
-            {{ $t('common.monthCount', 2) }}
-          </option>
-          <option
-            value="4380"
-            v-if="!user.timeLimit || user.timeLimit >= 4380">
-            {{ $t('common.monthCount', 6) }}
-          </option>
-          <option
-            value="8760"
-            v-if="!user.timeLimit || user.timeLimit >= 8760">
-            {{ $t('common.yearCount', 1) }}
-          </option>
-          <option
-            value="-1"
-            v-if="!user.timeLimit || user.timeLimit > 8760">
-            {{ $t('common.allCareful') }}
-          </option>
-          <option
-            value="0"
-            disabled>
-            {{ $t('common.custom') }}
-          </option>
-        </select>
-      </div>
-    </v-col> <!-- /time range select -->
+        {{ currentRangeLabel }}
+      </template>
+      <v-icon
+        icon="mdi-menu-down"
+        class="ms-1" />
+      <v-tooltip
+        activator="#timeOptionsBtn"
+        location="bottom"
+        :open-delay="500">
+        {{ timeError || $t('search.timeOptionsTip') }}
+      </v-tooltip>
+      <v-menu
+        activator="parent"
+        location="bottom start"
+        v-model="menuOpen"
+        :close-on-content-click="false">
+        <v-card class="arkime-time-popover pa-3">
+          <!-- validation error (full text lives here + on the button tooltip) -->
+          <div
+            v-if="timeError"
+            class="arkime-time-error mb-3">
+            <v-icon
+              icon="mdi-alert"
+              class="me-1" />
+            {{ timeError }}
+          </div>
 
-    <!-- start time -->
-    <v-col cols="auto">
-      <div class="arkime-input-group arkime-input-group--fluid">
-        <span
-          id="startTimeLabel"
-          class="arkime-input-label cursor-help">
-          {{ $t('search.startTime') }}
-          <v-tooltip
-            activator="#startTimeLabel"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.startTimeTip') }}
-          </v-tooltip>
-        </span>
-        <input
-          type="text"
-          tabindex="4"
-          id="startTime"
-          ref="startTime"
-          name="startTime"
-          class="arkime-input-control"
-          placeholder="YYYY-MM-DD HH:mm:ss"
-          @input="changeStartTime"
-          :value="typedStartTime">
-        <span
-          v-if="timezone !== 'local'"
-          id="startTimeTimezone"
-          class="arkime-input-label cursor-help">
-          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
-          <v-tooltip
-            activator="#startTimeTimezone"
-            location="bottom"
-            :open-delay="500">
-            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
-            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
-          </v-tooltip>
-        </span>
-        <v-btn
-          id="startDatePickerBtn"
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon
-          class="arkime-input-append-btn">
-          <v-icon icon="mdi-calendar" />
-          <v-menu
-            activator="parent"
-            :close-on-content-click="false">
-            <v-date-picker
-              :model-value="localStartTime.toDate()"
-              show-adjacent-months
-              @update:model-value="applyStartDate" />
-          </v-menu>
-          <v-tooltip
-            activator="#startDatePickerBtn"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.pickStartDateTip') }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn
-          id="prevStartTime"
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon
-          class="arkime-input-append-btn"
-          @click="prevTime('start')">
-          <v-icon icon="mdi-skip-previous" />
-          <v-tooltip
-            activator="#prevStartTime"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.prevStartTimeTip') }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn
-          id="nextStartTime"
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon
-          class="arkime-input-append-btn"
-          @click="nextTime('start')">
-          <v-icon icon="mdi-skip-next" />
-          <v-tooltip
-            activator="#nextStartTime"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.nextStartTimeTip') }}
-          </v-tooltip>
-        </v-btn>
-      </div>
-    </v-col> <!-- /start time -->
+          <!-- section 1: quick-range presets -->
+          <div class="d-flex flex-wrap ga-1">
+            <v-chip
+              v-for="p in presets"
+              :key="p.value"
+              size="small"
+              :variant="isPresetActive(p) ? 'flat' : 'tonal'"
+              :color="isPresetActive(p) ? 'primary' : undefined"
+              @click="selectPreset(p.value)">
+              {{ p.label }}
+            </v-chip>
+          </div>
+          <v-divider class="my-3" />
 
-    <!-- stop time -->
-    <v-col cols="auto">
-      <div class="arkime-input-group arkime-input-group--fluid">
-        <span
-          id="stopTimeLabel"
-          class="arkime-input-label cursor-help">
-          {{ $t('search.stopTime') }}
-          <v-tooltip
-            activator="#stopTimeLabel"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.stopTimeTip') }}
-          </v-tooltip>
-        </span>
-        <input
-          type="text"
-          tabindex="5"
-          id="stopTime"
-          ref="stopTime"
-          name="stopTime"
-          class="arkime-input-control"
-          placeholder="YYYY-MM-DD HH:mm:ss"
-          @input="changeStopTime"
-          :value="typedStopTime">
-        <span
-          v-if="timezone !== 'local'"
-          id="stopTimeTimezone"
-          class="arkime-input-label cursor-help">
-          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
-          <v-tooltip
-            activator="#stopTimeTimezone"
-            location="bottom"
-            :open-delay="500">
-            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
-            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
-          </v-tooltip>
-        </span>
-        <v-btn
-          id="stopDatePickerBtn"
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon
-          class="arkime-input-append-btn">
-          <v-icon icon="mdi-calendar" />
-          <v-menu
-            activator="parent"
-            :close-on-content-click="false">
-            <v-date-picker
-              :model-value="localStopTime.toDate()"
-              show-adjacent-months
-              @update:model-value="applyStopDate" />
-          </v-menu>
-          <v-tooltip
-            activator="#stopDatePickerBtn"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.pickStopDateTip') }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn
-          id="prevStopTime"
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon
-          class="arkime-input-append-btn"
-          @click="prevTime('stop')">
-          <v-icon icon="mdi-skip-previous" />
-          <v-tooltip
-            activator="#prevStopTime"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.prevStopTimeTip') }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn
-          id="nextStopTime"
-          variant="text"
-          size="small"
-          density="comfortable"
-          icon
-          class="arkime-input-append-btn"
-          @click="nextTime('stop')">
-          <v-icon icon="mdi-skip-next" />
-          <v-tooltip
-            activator="#nextStopTime"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.nextStopTimeTip') }}
-          </v-tooltip>
-        </v-btn>
-      </div>
-    </v-col> <!-- /stop time -->
+          <!-- section 2: custom start / stop date inputs -->
+          <div class="d-flex flex-wrap ga-4">
+            <!-- start time -->
+            <div class="arkime-time-col">
+              <div class="arkime-input-group arkime-input-group--fluid mb-2">
+                <span
+                  id="startTimeLabel"
+                  class="arkime-input-label cursor-help">
+                  {{ $t('search.startTime') }}
+                  <v-tooltip
+                    activator="#startTimeLabel"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ $t('search.startTimeTip') }}
+                  </v-tooltip>
+                </span>
+                <input
+                  type="text"
+                  id="startTime"
+                  ref="startTime"
+                  name="startTime"
+                  class="arkime-input-control"
+                  placeholder="YYYY-MM-DD HH:mm:ss"
+                  @input="changeStartTime"
+                  :value="typedStartTime">
+                <span
+                  v-if="timezone !== 'local'"
+                  id="startTimeTimezone"
+                  class="arkime-input-label cursor-help">
+                  {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
+                  <v-tooltip
+                    activator="#startTimeTimezone"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+                    {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+                  </v-tooltip>
+                </span>
+                <v-btn
+                  id="prevStartTime"
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
+                  @click="prevTime('start')">
+                  <v-icon icon="mdi-skip-previous" />
+                  <v-tooltip
+                    activator="#prevStartTime"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ $t('search.prevStartTimeTip') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  id="nextStartTime"
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
+                  @click="nextTime('start')">
+                  <v-icon icon="mdi-skip-next" />
+                  <v-tooltip
+                    activator="#nextStartTime"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ $t('search.nextStartTimeTip') }}
+                  </v-tooltip>
+                </v-btn>
+              </div>
+              <v-date-picker
+                v-if="localStartTime"
+                hide-header
+                :model-value="localStartTime.toDate()"
+                show-adjacent-months
+                @update:model-value="applyStartDate" />
+              <!-- start time-of-day picker -->
+              <div
+                v-if="localStartTime"
+                class="arkime-input-group arkime-input-group--fluid mt-2">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon icon="mdi-clock-outline" />
+                </span>
+                <input
+                  type="time"
+                  step="1"
+                  class="arkime-input-control"
+                  :value="localStartTime.format('HH:mm:ss')"
+                  @input="changeTimeOfDay('start', $event)">
+              </div>
+            </div> <!-- /start time -->
 
-    <!-- time bounding select -->
-    <v-col
-      cols="auto"
-      v-if="!hideBounding">
-      <div class="arkime-input-group arkime-input-group--fluid">
-        <span
-          id="timeBounding"
-          class="arkime-input-label cursor-help">
-          {{ $t('search.timeBounding') }}
-          <v-tooltip
-            activator="#timeBounding"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.timeBoundingTip') }}
-          </v-tooltip>
-        </span>
-        <select
-          class="arkime-input-control"
-          v-model="timeBounding"
-          tabindex="6"
-          @change="changeTimeBounding">
-          <option
-            value="first"
-            v-i18n-value="'search.timeBounding-'" />
-          <option
-            value="last"
-            v-i18n-value="'search.timeBounding-'" />
-          <option
-            value="both"
-            v-i18n-value="'search.timeBounding-'" />
-          <option
-            value="either"
-            v-i18n-value="'search.timeBounding-'" />
-          <option
-            value="database"
-            v-i18n-value="'search.timeBounding-'" />
-        </select>
-      </div>
-    </v-col>  <!-- /time bounding select -->
+            <!-- stop time -->
+            <div class="arkime-time-col">
+              <div class="arkime-input-group arkime-input-group--fluid mb-2">
+                <span
+                  id="stopTimeLabel"
+                  class="arkime-input-label cursor-help">
+                  {{ $t('search.stopTime') }}
+                  <v-tooltip
+                    activator="#stopTimeLabel"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ $t('search.stopTimeTip') }}
+                  </v-tooltip>
+                </span>
+                <input
+                  type="text"
+                  id="stopTime"
+                  ref="stopTime"
+                  name="stopTime"
+                  class="arkime-input-control"
+                  placeholder="YYYY-MM-DD HH:mm:ss"
+                  @input="changeStopTime"
+                  :value="typedStopTime">
+                <span
+                  v-if="timezone !== 'local'"
+                  id="stopTimeTimezone"
+                  class="arkime-input-label cursor-help">
+                  {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
+                  <v-tooltip
+                    activator="#stopTimeTimezone"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+                    {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+                  </v-tooltip>
+                </span>
+                <v-btn
+                  id="prevStopTime"
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
+                  @click="prevTime('stop')">
+                  <v-icon icon="mdi-skip-previous" />
+                  <v-tooltip
+                    activator="#prevStopTime"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ $t('search.prevStopTimeTip') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  id="nextStopTime"
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
+                  @click="nextTime('stop')">
+                  <v-icon icon="mdi-skip-next" />
+                  <v-tooltip
+                    activator="#nextStopTime"
+                    location="bottom"
+                    :open-delay="500">
+                    {{ $t('search.nextStopTimeTip') }}
+                  </v-tooltip>
+                </v-btn>
+              </div>
+              <v-date-picker
+                v-if="localStopTime"
+                hide-header
+                :model-value="localStopTime.toDate()"
+                show-adjacent-months
+                @update:model-value="applyStopDate" />
+              <!-- stop time-of-day picker -->
+              <div
+                v-if="localStopTime"
+                class="arkime-input-group arkime-input-group--fluid mt-2">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon icon="mdi-clock-outline" />
+                </span>
+                <input
+                  type="time"
+                  step="1"
+                  class="arkime-input-control"
+                  :value="localStopTime.format('HH:mm:ss')"
+                  @input="changeTimeOfDay('stop', $event)">
+              </div>
+            </div> <!-- /stop time -->
+          </div>
 
-    <!-- time interval select -->
-    <v-col
-      cols="auto"
-      v-if="!hideInterval">
-      <div class="arkime-input-group arkime-input-group--fluid">
-        <span
-          id="timeInterval"
-          class="arkime-input-label cursor-help">
-          {{ $t('search.timeInterval') }}
-          <v-tooltip
-            activator="#timeInterval"
-            location="bottom"
-            :open-delay="500">
-            {{ $t('search.timeIntervalTip') }}
-          </v-tooltip>
-        </span>
-        <select
-          class="arkime-input-control"
-          v-model="timeInterval"
-          tabindex="6"
-          @change="changeTimeInterval">
-          <option
-            value="auto"
-            v-i18n-value="'search.timeInterval-'" />
-          <option
-            value="second"
-            v-i18n-value="'search.timeInterval-'" />
-          <option
-            value="minute"
-            v-i18n-value="'search.timeInterval-'" />
-          <option
-            value="hour"
-            v-i18n-value="'search.timeInterval-'" />
-          <option
-            value="day"
-            v-i18n-value="'search.timeInterval-'" />
-          <option
-            value="week"
-            v-i18n-value="'search.timeInterval-'" />
-        </select>
-      </div>
-    </v-col> <!-- /time interval select -->
+          <!-- section 3: bounding + interval selects -->
+          <v-divider
+            v-if="showBoundingInterval"
+            class="my-3" />
+          <div
+            v-if="showBoundingInterval"
+            class="d-flex flex-wrap ga-2">
+            <!-- time bounding select -->
+            <div
+              class="arkime-input-group"
+              v-if="!hideBounding">
+              <span
+                id="timeBounding"
+                class="arkime-input-label cursor-help">
+                {{ $t('search.timeBounding') }}
+                <v-tooltip
+                  activator="#timeBounding"
+                  location="bottom"
+                  :open-delay="500">
+                  {{ $t('search.timeBoundingTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="arkime-input-control"
+                v-model="timeBounding"
+                @change="changeTimeBounding">
+                <option
+                  value="first"
+                  v-i18n-value="'search.timeBounding-'" />
+                <option
+                  value="last"
+                  v-i18n-value="'search.timeBounding-'" />
+                <option
+                  value="both"
+                  v-i18n-value="'search.timeBounding-'" />
+                <option
+                  value="either"
+                  v-i18n-value="'search.timeBounding-'" />
+                <option
+                  value="database"
+                  v-i18n-value="'search.timeBounding-'" />
+              </select>
+            </div> <!-- /time bounding select -->
 
-    <!-- human readable time range or error -->
-    <v-col
-      v-if="(deltaTime && !timeError) || timeError"
-      cols="auto"
-      class="time-range-display">
-      <span
-        class="time-range-chip"
-        :class="{ 'time-range-chip--error': timeError }">
-        <template v-if="deltaTime && !timeError">
-          <span
-            id="timeRangeDisplay"
-            class="help-cursor">
-            {{ readableTime(deltaTime * 1000) }}
-            <v-tooltip
-              activator="#timeRangeDisplay"
-              location="bottom"
-              :open-delay="500">
-              {{ $t('search.timeRangeDisplayTip') }}
-            </v-tooltip>
-          </span>
-        </template>
-        <template v-if="timeError">
-          <v-icon
-            icon="mdi-alert"
-            class="me-1" />
-          {{ timeError }}
-        </template>
-      </span>
-    </v-col> <!-- /human readable time range or error -->
-  </v-row>
+            <!-- time interval select -->
+            <div
+              class="arkime-input-group"
+              v-if="!hideInterval">
+              <span
+                id="timeInterval"
+                class="arkime-input-label cursor-help">
+                {{ $t('search.timeInterval') }}
+                <v-tooltip
+                  activator="#timeInterval"
+                  location="bottom"
+                  :open-delay="500">
+                  {{ $t('search.timeIntervalTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="arkime-input-control"
+                v-model="timeInterval"
+                @change="changeTimeInterval">
+                <option
+                  value="auto"
+                  v-i18n-value="'search.timeInterval-'" />
+                <option
+                  value="second"
+                  v-i18n-value="'search.timeInterval-'" />
+                <option
+                  value="minute"
+                  v-i18n-value="'search.timeInterval-'" />
+                <option
+                  value="hour"
+                  v-i18n-value="'search.timeInterval-'" />
+                <option
+                  value="day"
+                  v-i18n-value="'search.timeInterval-'" />
+                <option
+                  value="week"
+                  v-i18n-value="'search.timeInterval-'" />
+              </select>
+            </div> <!-- /time interval select -->
+          </div>
+        </v-card>
+      </v-menu>
+    </v-btn> <!-- /time options dropdown button -->
+  </div>
 </template>
 
 <script>
@@ -451,7 +380,6 @@ export default {
   },
   data: function () {
     return {
-      deltaTime: null,
       timeError: '',
       timeBounding: this.$route.query.bounding || 'last',
       timeInterval: this.$route.query.interval || 'auto',
@@ -463,12 +391,75 @@ export default {
       // preserved as the analyst types. Re-binding :value to a fresh format()
       // result on every keystroke would otherwise reset the caret to the end.
       typedStartTime: '',
-      typedStopTime: ''
+      typedStopTime: '',
+      // controls the time-options popover so picking a preset can close it
+      menuOpen: false,
+      // Arkime theme-color v-btn style for the time-options button. Vuetify
+      // :color can't take CSS vars, so apply the secondary token inline to
+      // match the other search-row buttons (Views, etc.).
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    // true when the time range is a custom start/stop window (not a preset)
+    isCustomRange: function () {
+      return parseFloat(this.timeRange) === 0;
+    },
+    // readable duration of the current window, e.g. "6 hours"
+    rangeLabel: function () {
+      const start = parseInt(this.time.startTime, 10);
+      const stop = parseInt(this.time.stopTime, 10);
+      if (isNaN(start) || isNaN(stop)) { return ''; }
+      return readableTime((stop - start) * 1000);
+    },
+    // quick-pick time ranges shown as chips in the popover. Single source of
+    // truth for both the chips and the button's current-range label. `min` is
+    // the hours the user's timeLimit must allow; gated like the old <option>s.
+    presets: function () {
+      const limit = this.user.timeLimit;
+      const ranges = [
+        { value: '0.25', label: this.$t('common.minuteCount', 15), min: 0 },
+        { value: '0.5', label: this.$t('common.minuteCount', 30), min: 0 },
+        { value: '1', label: this.$t('common.hourCount', 1), min: 0 },
+        { value: '6', label: this.$t('common.hourCount', 6), min: 6 },
+        { value: '24', label: this.$t('common.hourCount', 24), min: 24 },
+        { value: '48', label: this.$t('common.hourCount', 48), min: 48 },
+        { value: '72', label: this.$t('common.hourCount', 72), min: 72 },
+        { value: '168', label: this.$t('common.weekCount', 1), min: 168 },
+        { value: '336', label: this.$t('common.weekCount', 2), min: 336 },
+        { value: '720', label: this.$t('common.monthCount', 1), min: 720 },
+        { value: '1440', label: this.$t('common.monthCount', 2), min: 1440 },
+        { value: '4380', label: this.$t('common.monthCount', 6), min: 4380 },
+        { value: '8760', label: this.$t('common.yearCount', 1), min: 8760 }
+      ].filter(p => !limit || limit >= p.min);
+      // "All" only when there's no limit or it exceeds a year
+      if (!limit || limit > 8760) {
+        ranges.push({ value: '-1', label: this.$t('common.allCareful'), min: 0 });
+      }
+      return ranges;
+    },
+    // label shown on the single time button. A custom window shows its absolute
+    // duration as-is ("6 days 5 hours"); a preset is a rolling window from now,
+    // so it's prefaced with "Last" ("Last 6 hours") to distinguish the two.
+    // "All" isn't a duration, so it's shown as-is.
+    currentRangeLabel: function () {
+      if (this.isCustomRange) {
+        return this.rangeLabel || this.$t('common.custom');
+      }
+      const match = this.presets.find(p => this.isPresetActive(p));
+      if (!match) { return this.$t('search.timeOptions'); }
+      if (match.value === '-1') { return match.label; }
+      return this.$t('search.lastRange', { range: match.label });
+    },
+    // whether the bounding/interval section (and its divider) should render
+    showBoundingInterval: function () {
+      return !this.hideBounding || !this.hideInterval;
     },
     time: {
       get: function () {
@@ -603,7 +594,6 @@ export default {
      * Updating the url parameter triggers updateParams
      */
     changeTimeRange: function () {
-      this.deltaTime = null;
       this.timeError = '';
       this.focusTimeRange = false;
 
@@ -625,6 +615,16 @@ export default {
           startTime: undefined
         }
       });
+    },
+    /**
+     * Fired when a quick-range chip is clicked in the popover. Applies the
+     * preset (reusing changeTimeRange) and closes the popover.
+     * @param {string} value the preset's time range value (hours, or -1 for all)
+     */
+    selectPreset: function (value) {
+      this.timeRange = value;
+      this.changeTimeRange();
+      this.menuOpen = false;
     },
     /* Fired when start datetime is typed. Keep the raw string in
      * typedStartTime so the input doesn't re-render mid-edit (which would
@@ -670,6 +670,32 @@ export default {
       this.time.stopTime = Math.floor(newMoment.valueOf() / 1000);
       this.timeRange = '0';
       this.validateDate();
+    },
+    /* Fired when a native time field changes. Mirrors applyStartDate/applyStopDate
+     * but for the HH:mm:ss portion -- the date carries over from the current
+     * value. e.target.value is "HH:mm" or "HH:mm:ss" (24h).
+     * @param {string} startOrStop whether to update the start time or stop time */
+    changeTimeOfDay: function (startOrStop, e) {
+      const local = startOrStop === 'start' ? this.localStartTime : this.localStopTime;
+      if (!e.target.value || !local) { return; }
+      const [h, m, s] = e.target.value.split(':');
+      const newMoment = moment(local)
+        .hour(parseInt(h, 10)).minute(parseInt(m, 10)).second(s ? parseInt(s, 10) : 0);
+      const secondsPastEpoch = Math.floor(newMoment.valueOf() / 1000);
+      if (startOrStop === 'start') {
+        this.localStartTime = newMoment;
+        this.time.startTime = secondsPastEpoch;
+      } else {
+        this.localStopTime = newMoment;
+        this.time.stopTime = secondsPastEpoch;
+      }
+      this.timeRange = '0';
+      this.validateDate();
+    },
+    /* whether a preset matches the active time range -- used for chip styling
+     * and the button's current-range label */
+    isPresetActive: function (p) {
+      return parseFloat(this.timeRange) === parseFloat(p.value);
     },
     /**
      * Determines whether the supplied time is the start of a day
@@ -773,7 +799,7 @@ export default {
     },
     /**
      * Fired when a date value is changed manually or the datepicker is closed
-     * Validates a date and updates delta time (stop time - start time)
+     * Validates the selected start/stop time window, setting timeError if invalid
      * start/stop url parameters are updated in Search.vue timeUpdate function
      */
     validateDate: function () {
@@ -795,19 +821,13 @@ export default {
         return;
       }
 
-      // update the displayed time range
-      const deltaTime = stopSec - startSec;
-
       // make sure the time range does not exceed the user setting
       if (this.user.timeLimit) {
-        const deltaTimeHrs = deltaTime / 3600;
+        const deltaTimeHrs = (stopSec - startSec) / 3600;
         if (deltaTimeHrs > this.user.timeLimit) {
           this.timeError = `Your query cannot exceed ${this.user.timeLimit} hours`;
-          return;
         }
       }
-
-      this.deltaTime = deltaTime;
     },
     onOffTimeRangeFocus: function () {
       this.focusTimeRange = false;
@@ -898,19 +918,10 @@ export default {
             this.timeError = 'Stop time cannot be before start time';
           }
 
-          // update the displayed time range
-          let deltaTime = stop - start;
-
-          // make sure the time range does not exceed the user setting
-          const deltaTimeHrs = deltaTime / 3600;
-          if (this.user.timeLimit) {
-            if (deltaTimeHrs > this.user.timeLimit) {
-              start = stop - (this.user.timeLimit * 3600);
-              deltaTime = stop - start;
-            }
+          // clamp the window to the user's time limit
+          if (this.user.timeLimit && (stop - start) / 3600 > this.user.timeLimit) {
+            start = stop - (this.user.timeLimit * 3600);
           }
-
-          this.deltaTime = deltaTime;
 
           // if we can parse start and stop time, set them
           this.timeRange = '0'; // custom time range
@@ -992,28 +1003,38 @@ export default {
 </script>
 
 <style scoped>
-.time-range-display {
-  font-size: 0.85rem;
-  margin-left: 8px;
-}
-/* Read-only readout chip that sits at the end of the time picker
-   row. Subtle outlined background lifts it off the navbar bg so the
-   delta-time text doesn't get lost next to the bordered inputs. */
-.time-range-chip {
-  display: inline-flex;
-  align-items: center;
+/* match the 32px height of the search-row buttons */
+.time-options-btn {
   height: 32px;
-  padding: 0 12px;
-  border-radius: 4px;
-  background-color: color-mix(in srgb, rgb(var(--v-theme-foreground)) 6%, transparent);
-  border: 1px solid color-mix(in srgb, rgb(var(--v-theme-foreground)) 12%, transparent);
-  color: rgb(var(--v-theme-foreground-accent)));
-  font-weight: 600;
-  white-space: nowrap;
 }
-.time-range-chip--error {
+</style>
+
+<style>
+/* Time-options breakout popover. Its content is teleported to the overlay
+   root, so Time.vue's scoped styles don't reach it -- these rules are
+   intentionally global (class names namespaced to avoid leakage). Width is
+   capped to fit the two date columns side-by-side; without the cap the card
+   grows to fit all preset chips on a single line and reads as too wide. The
+   chips wrap to this width instead; columns stack on narrow viewports. */
+.arkime-time-popover {
+  max-width: min(720px, 95vw);
+}
+.arkime-time-popover .arkime-time-col {
+  /* size each column to the date picker's intrinsic width so the fluid
+     start/stop input above it matches the calendar width exactly (a growing
+     column would stretch the input wider than the fixed-width calendar) */
+  flex: 0 0 auto;
+}
+/* Vuetify dividers default to --v-border-opacity ~0.12, which is nearly
+   invisible on light themes. Bump it so the section separators read clearly. */
+.arkime-time-popover .v-divider {
+  --v-border-opacity: 0.32;
+}
+.arkime-time-popover .arkime-time-error {
+  display: flex;
+  align-items: center;
   color: rgb(var(--v-theme-secondary));
-  background-color: color-mix(in srgb, rgb(var(--v-theme-secondary)) 12%, transparent);
-  border-color: color-mix(in srgb, rgb(var(--v-theme-secondary)) 30%, transparent);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 </style>

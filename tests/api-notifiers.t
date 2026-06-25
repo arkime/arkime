@@ -38,7 +38,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
   $json = viewerPostToken("/api/notifier", '{"name":"<>","type":"slack","fields":[]}', $token);
-  is($json->{text}, "Notifier name empty");
+  is($json->{text}, "Notifier name is empty");
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"foo", "fields": ["foo"]}', $token);
   is($json->{text}, "Unknown notifier type");
 
@@ -144,7 +144,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1a","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
   $json = viewerPutToken("/api/notifier/$id1", '{"name":"<>","type":"slack","fields":[]}', $token);
-  is($json->{text}, "Notifier name empty");
+  is($json->{text}, "Notifier name is empty");
   $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1","type":"foo", "fields": ["foo"]}', $token);
   is($json->{text}, "Unknown notifier type");
 

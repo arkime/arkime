@@ -1726,7 +1726,7 @@ app.post( // include OpenSearch/Elasticsearch shard endpoint
   StatsAPIs.includeESShard
 );
 
-app.post( // include OpenSearch/Elasticsearch shard endpoint
+app.post( // delete OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:index/:shard/delete'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
   StatsAPIs.deleteESShard
@@ -2290,13 +2290,13 @@ async function main () {
 function processArgs (argv) {
   for (let i = 0, ilen = argv.length; i < ilen; i++) {
     if (argv[i] === '--help') {
-      console.log('node.js [<options>]');
+      console.log('viewer.js [<options>]');
       console.log('');
       console.log('Options:');
       console.log('  -c, --config <file|url>  Where to fetch the config file from');
       console.log('  -n <node name>           Node name section to use in config file, default first part of hostname');
       console.log('  --debug                  Increase debug level, multiple are supported');
-      console.log('  --esprofile              Turn on profiling to es search queries');
+      console.log('  --esprofile              Turn on profiling of es search queries');
       console.log('  --host <host name>       Host name to use, default os hostname');
       console.log('  --insecure               Disable certificate verification for https calls');
 

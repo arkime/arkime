@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* multies.js  -- Make multiple ES servers look like one but merging results
+/* multies.js  -- Make multiple ES servers look like one by merging results
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
@@ -1079,7 +1079,7 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
       const result = results[i];
 
       if (result.error) {
-        console.log('ERROR - GET /fields/field/_search', result.error);
+        console.log('ERROR - POST /fields/field/_search', result.error);
         return res.send(obj);
       }
 
@@ -1342,7 +1342,7 @@ async function premain () {
   for (let i = 0; i < nodes.length; i++) {
     const nodeName = node2Name(nodes[i]);
     if (!nodeName) {
-      console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
+      console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-1>;http://example2:9200,name:<friendly-name-2>');
       process.exit(1);
     }
     clusterList[i] = nodeName; // name

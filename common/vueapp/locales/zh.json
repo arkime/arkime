@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "正在加载会话数据包",
       "renderingSessionPackets": "正在渲染会话数据包",
-      "loadingErr": "加载会话详情时出错"
+      "loadingErr": "加载会话详情时出错",
+      "findPlaceholderDetails": "在详情中查找…",
+      "findPlaceholderPackets": "搜索数据包内容…",
+      "findPlaceholderTshark": "筛选数据包…",
+      "findRegex": "正则表达式",
+      "findPrev": "上一个匹配",
+      "findNext": "下一个匹配",
+      "findTypeHint": "匹配类型",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII（区分大小写）",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Hex 正则"
+      }
     },
     "field": {
       "cantLocate": "我们找不到此字段",
@@ -639,6 +653,9 @@
     "timeInterval-day": "天",
     "timeInterval-week": "周",
     "timeRangeDisplayTip": "查询时间范围",
+    "timeOptions": "时间",
+    "timeOptionsTip": "所有时间范围选项",
+    "lastRange": "最近 {range}",
     "createSummary": "创建摘要"
   },
   "stats": {
@@ -1428,7 +1445,8 @@
     "maxElements": "最大元素数",
     "maxElementsTip": "返回的最大元素数（针对第一个选定字段）",
     "graphType": "图表类型",
-    "graphType-default": "时间线/地图",
+    "graphType-default": "时间线",
+    "graphType-heatmap": "热力图",
     "graphType-pie": "圆环图",
     "graphType-table": "表格",
     "graphType-treemap": "树状图",
@@ -1438,6 +1456,9 @@
     "sortBy-name": "按字母顺序",
     "sortBy-graph": "按计数",
     "refreshEvery": "每隔多久刷新一次",
+    "intensity": "强度",
+    "showCount": "显示计数",
+    "sessions": "会话",
     "exportCSV": "导出 CSV",
     "exportCSVSPIGraphTip": "以 CSV 格式导出 SPI 图表数据"
   },

@@ -40,6 +40,10 @@ LOCAL ArkimePacketRC geneve_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePac
         return ARKIME_PACKET_UNKNOWN_IP;
     }
 
+    // protocol 0 isn't a valid EtherType; avoid ether handler (type 0) mis-dispatch / bogus MACs
+    if (protocol == 0)
+        return ARKIME_PACKET_UNKNOWN_IP;
+
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GENEVE;
 
     return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), protocol, "geneve");

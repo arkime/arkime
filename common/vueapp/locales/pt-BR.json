@@ -497,7 +497,21 @@
     "detail": {
       "loadingSessionPackets": "Carregando pacotes da sessão",
       "renderingSessionPackets": "Renderizando pacotes da sessão",
-      "loadingErr": "Erro ao carregar detalhes da sessão"
+      "loadingErr": "Erro ao carregar detalhes da sessão",
+      "findPlaceholderDetails": "Buscar nos detalhes…",
+      "findPlaceholderPackets": "Buscar conteúdo dos pacotes…",
+      "findPlaceholderTshark": "Filtrar pacotes…",
+      "findRegex": "Expressão regular",
+      "findPrev": "Correspondência anterior",
+      "findNext": "Próxima correspondência",
+      "findTypeHint": "Tipo de correspondência",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (diferencia maiúsculas)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Regex hex"
+      }
     },
     "field": {
       "cantLocate": "Não conseguimos localizar este campo",
@@ -639,6 +653,9 @@
     "timeInterval-day": "Dias",
     "timeInterval-week": "Semanas",
     "timeRangeDisplayTip": "Intervalo de tempo da consulta",
+    "timeOptions": "Tempo",
+    "timeOptionsTip": "Todas as opções de intervalo de tempo",
+    "lastRange": "Últimas {range}",
     "createSummary": "Criar Resumo"
   },
   "stats": {
@@ -1428,7 +1445,8 @@
     "maxElements": "Máx de Elementos",
     "maxElementsTip": "Número máximo de elementos retornados (para o primeiro campo selecionado)",
     "graphType": "Tipo de Gráfico",
-    "graphType-default": "Linha do tempo/mapa",
+    "graphType-default": "Linha do tempo",
+    "graphType-heatmap": "Mapa de calor",
     "graphType-pie": "Rosca",
     "graphType-table": "Tabela",
     "graphType-treemap": "Treemap",
@@ -1438,6 +1456,9 @@
     "sortBy-name": "Alfabeticamente",
     "sortBy-graph": "Contagem",
     "refreshEvery": "Atualizar a cada",
+    "intensity": "Intensidade",
+    "showCount": "Mostrar contagem",
+    "sessions": "Sessões",
     "exportCSV": "Exportar CSV",
     "exportCSVSPIGraphTip": "Exportar estes dados como arquivo CSV"
   },

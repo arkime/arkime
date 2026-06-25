@@ -12,7 +12,8 @@
  * Auth model: phpIPAM "App code" security.  The App Code is sent as a
  * static token on every request (phpipam-token header).  If your phpIPAM
  * is configured for "User token" auth instead, set useSessionAuth=true in
- * the config section and supply username + password.
+ * the config section; username and password default to appId and appCode
+ * but may be overridden.  appId and appCode are required in both modes.
  *
  * Cache strategy (preloadAddresses=true, the default):
  *   On startup and every `reload` minutes the plugin bulk-fetches:
@@ -497,7 +498,6 @@ exports.initSource = function (api) {
       { name: 'preloadAddresses', required: false, help: 'Bulk-load all registered addresses per subnet at startup/reload (default true). Set false to do live per-IP lookups instead.' },
       { name: 'addrConcurrency', required: false, help: 'Max parallel subnet address-fetch requests during preload. Default 10.' },
       { name: 'reload', required: false, help: 'Minutes between full cache refresh. Default 60.' },
-      { name: 'cacheAgeMin', required: false, help: 'Minutes to cache per-IP WISE results. Default 60.' },
       { name: 'searchUrl', required: false, help: 'Override the base URL for right-click search actions. Default: <phpIPAM base>/tools/search/. Example: https://arkime.example.com/?tab=ipam&goto=/ipam/tools/search/' }
     ]
   });

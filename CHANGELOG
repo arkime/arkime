@@ -41,14 +41,42 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
 
 6.5.1 2026/07/xx
+## Breaking
+  - #4072 WISE reversedns now saves resolved names that match none of the stripDomains entries in
+          full (as documented) instead of silently dropping them
+  - #4073 The cont3xt Arkime integration searchDays setting now searches that many days instead of 7x that many.
+           Existing configs that relied on the wider window must increase searchDays to keep the previous range.
+  - #4073 The cont3xt redis integration now substitutes 'domain' (not 'domainip') for %type% in keyTemplate on domain lookups.
+          Deployments that stored domain data under the old 'domainip' key must re-key it as 'domain'.
 ## Release
-  - #4048 Node 22.23.0
+  - #4066 Node 22.23.1
   - #4056 Add Fedora 44 builds
+## All
+  - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
+  - #4072 Fix header/OIDC auth requests hanging when a dynamic role update fails
+  - #4074 Harden user-auto-create/user-role-mappings expressions to run in strict mode
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
+  - #4063 Fix pcapNG reader bugs: out-of-bounds read on blocks claiming >2GB, Simple Packet Block length including 32-bit padding, and Section Header Block lost when split across reads
+  - #4068 Add some missing http methods to parser
+  - #4074 Fix Geneve packets with protocol type 0 adding bogus 00:00:00:00:00:00 MACs
+  - #4074 Fix pcap-over-IP client reader not connecting to IPv6 endpoints
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
+## Cont3xt
+  - #4073 Fix search and single-integration refresh hanging when an integration errors or returns no data
+  - #4073 Fix integration cacheTimeout values specified in milliseconds being treated as seconds (1000x too long); short-TTL integrations like DNS now expire on time
+  - #4073 Fix csv/json integrations sometimes failing to load JSON feeds over http/elasticsearch/opensearch
+  - #4073 Fix ClickHouse integration being broken (wrong search method name and unawaited result parsing)
+## Viewer
+  - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
+  - #4071 Fix negative numbers being rejected in expressions
+## WISE
+  - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
+  - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
+  - #4072 Fix databricks periodic mode never running the initial query and crashing on refresh
+  - #4072 Fix caching md5/sha256 results without contentType, and crashes on repeated hashes params and on viewing an empty redisfile source
 
 6.5.0 2026/06/15
 ## Breaking

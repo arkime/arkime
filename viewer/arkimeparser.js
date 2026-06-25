@@ -366,7 +366,7 @@ function getRegexInfoList (yy, info) {
 function parseIpPort (yy, field, ipPortStr) {
   const dbField = getFieldInfo(yy, field).dbField;
 
-  // Have just a single Ip, create obj for it
+  // Have just a single ip, create obj for it
   function parseSingleIp (exp, singleDbField, singleIp, singlePort) {
     let singleObj;
 
@@ -494,7 +494,6 @@ function parseIpPort (yy, field, ipPortStr) {
     }
 
     if (slash[1] === undefined) {
-      console.log(colons2.length, colons2, colons2.length, 16*colons2.length);
       slash[1] = `${16*colons2.length}`;
     }
 
@@ -672,10 +671,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
       if (field === 'ip') {
         const infos = getIpInfoList(yy, false);
         for (const ipInfo of infos) {
-          const newObj = formatShortcutsQuery(yy, ipInfo.exp, op, '$' + value, obj);
-          if (newObj) {
-            obj.bool[operation].concat(newObj);
-          }
+          formatShortcutsQuery(yy, ipInfo.exp, op, '$' + value, obj);
         }
       } else {
         terms[info.dbField] = {
@@ -896,7 +892,7 @@ function field2Raw (yy, field) {
   const dbField = info.dbField;
   if (info.rawField) { return info.rawField; }
 
-  if (dbField.indexOf('.snow', dbField.length - 5) === 0) { return dbField.substring(0, dbField.length - 5) + '.raw'; }
+  if (dbField.endsWith('.snow')) { return dbField.substring(0, dbField.length - 5) + '.raw'; }
 
   return dbField;
 }
@@ -1165,7 +1161,7 @@ function termOrTermsInt (dbField, str) {
       obj = { range: {} };
       obj.range[dbField] = { gte: parseInt(match[1]), lte: parseInt(match[2]) };
       return obj;
-    } else if (str.match(/[^\d]+/)) {
+    } else if (!str.match(/^-?\d+$/)) {
       throw str + ' is not a number';
     }
     obj = { term: {} };

@@ -498,7 +498,21 @@
     "detail": {
       "loadingSessionPackets": "Oadinglay essionsay acketspay",
       "renderingSessionPackets": "Enderinngray essionsay acketspay",
-      "loadingErr": "Errorway oadinglay essionsay etailday"
+      "loadingErr": "Errorway oadinglay essionsay etailday",
+      "findPlaceholderDetails": "Indfay inway etailsday…",
+      "findPlaceholderPackets": "Earchsay acketpay ontentcay…",
+      "findPlaceholderTshark": "Ilterfay acketspay…",
+      "findRegex": "Egularray expressionway",
+      "findPrev": "Eviouspray atchmay",
+      "findNext": "Extnay atchmay",
+      "findTypeHint": "Atchmay ypetay",
+      "findType": {
+        "ascii": "ASCII",
+        "asciicase": "ASCII (asecay)",
+        "hex": "Hex",
+        "regex": "Regex",
+        "hexregex": "Exhay egexray"
+      }
     },
     "field": {
       "cantLocate": "Eway annotcay ocatelay isthay ieldfay",
@@ -640,6 +654,9 @@
     "timeInterval-day": "Aysday",
     "timeInterval-week": "Eeksway",
     "timeRangeDisplayTip": "Ueryqay imetay angeray",
+    "timeOptions": "Imetay",
+    "timeOptionsTip": "Allway imetay angeray optionsway",
+    "lastRange": "Astlay {range}",
     "createSummary": "Eatecray Ummarysay"
   },
   "stats": {
@@ -1429,7 +1446,8 @@
     "maxElements": "Axmay Elementsway",
     "maxElementsTip": "Aximummay umbernay ofway elementsway eturnedray (orfay ethay irtsfay ieldfay electedsay)",
     "graphType": "Raphgray Ypetay",
-    "graphType-default": "Imelinetay/apmay",
+    "graphType-default": "Imelinetay",
+    "graphType-heatmap": "Eatmaphay",
     "graphType-pie": "Onutday",
     "graphType-table": "Abletay",
     "graphType-treemap": "Eemaptray",
@@ -1439,6 +1457,9 @@
     "sortBy-name": "Alphabeticallyway",
     "sortBy-graph": "Ountcay",
     "refreshEvery": "Efreshrway everyway",
+    "intensity": "Intensityway",
+    "showCount": "Owshay ountcay",
+    "sessions": "Essionssay",
     "exportCSV": "Exportway SVCAY",
     "exportCSVSPIGraphTip": "Exportway isthay ataday asway away SVCAY ilefay"
   },

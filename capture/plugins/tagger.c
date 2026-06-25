@@ -128,7 +128,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         prefix.bitlen = 32;
         prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr1);
     } else {
-        prefix.family = AF_INET;
+        prefix.family = AF_INET6;
         prefix.bitlen = 128;
         memcpy(&prefix.add.sin6.s6_addr, &session->addr1, 16);
     }
@@ -143,7 +143,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         prefix.bitlen = 32;
         prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr2);
     } else {
-        prefix.family = AF_INET;
+        prefix.family = AF_INET6;
         prefix.bitlen = 128;
         memcpy(&prefix.add.sin6.s6_addr, &session->addr2, 16);
     }

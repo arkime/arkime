@@ -13,7 +13,7 @@ Please note that communication to Elasticsearch is still needed, for the stats a
 
 # Configure
 
-The table below list all the possible configuration option of the kafka plugin.
+The table below lists all the possible configuration options of the kafka plugin.
 
 | Property | Details | Example |
 |----------|---------|---------|
