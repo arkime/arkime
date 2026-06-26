@@ -100,10 +100,10 @@ SPDX-License-Identifier: Apache-2.0
         <div class="config-preview mt-3 p-2 border rounded">
           <strong>{{ $t('sessions.summary.config.preview') }}</strong>
           <div class="mt-1 small">
-            <span class="text-medium-emphasis">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
-            {{ config?.fields?.length || 0 }}
-            <span class="ms-3 text-medium-emphasis">{{ $t('sessions.summary.config.resultsLimit') }}:</span>
-            {{ config?.resultsLimit || 20 }}
+            <span class="text-medium-emphasis">{{ $t('sessions.summary.config.widgetsCount') }}:</span>
+            {{ config?.widgets?.length || 0 }}
+            <span class="ms-3 text-medium-emphasis">{{ $t('sessions.summary.config.columns') }}:</span>
+            {{ config?.columnCount || 2 }}
           </div>
           <div class="mt-1 small text-medium-emphasis">
             {{ fieldsList }}
@@ -197,12 +197,12 @@ const saving = ref(false);
 // Get roles from store
 const roles = computed(() => store.state.roles || []);
 
-// Preview text showing field friendly names
+// Preview text showing widget field friendly names
 const fieldsList = computed(() => {
-  if (!props.config?.fields?.length) return '';
-  return props.config.fields.map(f => {
-    const fieldObj = FieldService.getField(f.field, true);
-    return fieldObj?.friendlyName || f.field;
+  if (!props.config?.widgets?.length) return '';
+  return props.config.widgets.map(w => {
+    const fieldObj = FieldService.getField(w.field, true);
+    return w.title || fieldObj?.friendlyName || w.field;
   }).join(', ');
 });
 

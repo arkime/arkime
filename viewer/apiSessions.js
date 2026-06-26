@@ -3146,30 +3146,17 @@ class SessionAPIs {
    *
    */
   static summary (req, res) {
-    let topNum = 20;
-    if (req.query.length) {
-      topNum = parseInt(req.query.length);
-    }
-    if (!Number.isFinite(topNum) || topNum <= 0) {
-      topNum = 20;
-    }
-    if (topNum > 1000) {
-      topNum = 1000;
+    // Clamp a requested top/bottom N to a sane range
+    function clampLength (val, fallback) {
+      let n = parseInt(val);
+      if (!Number.isFinite(n) || n <= 0) { n = fallback; }
+      if (n > 1000) { n = 1000; }
+      return n;
     }
 
-    const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
-
-    // Validate and parse fields parameter - should be a comma-separated string of field names
-    if (!req.body.fields || !ArkimeUtil.isString(req.body.fields)) {
-      return res.status(400).send({ error: 'Missing or invalid fields parameter in request body - must be a comma-separated string of field names' });
-    }
-
-    // Parse comma-separated string into array
-    const aggFields = req.body.fields.split(',').map(f => f.trim()).filter(f => f.length > 0);
-
-    if (aggFields.length === 0) {
-      return res.status(400).send({ error: 'Fields parameter cannot be empty' });
-    }
+    // Global limit/order are defaults for widgets that don't set their own
+    const defaultTopNum = clampLength(req.query.length, 20);
+    const defaultOrder = req.body.order === 'asc' ? 'asc' : 'desc';
 
     // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {
@@ -3191,42 +3178,71 @@ class SessionAPIs {
     // Special fields that don't have a direct database field mapping
     const specialFields = ['ip', 'ip.dst:port'];
 
-    // Build mapping of field exp to aggregation name and dbField
-    const fieldConfig = {};
-    for (const fieldExp of aggFields) {
-      let aggName;
-
-      // Handle special fields that use Painless scripts
-      if (specialFields.includes(fieldExp)) {
-        aggName = fieldExp === 'ip' ? 'allIp' : 'dstIpPort';
-        fieldConfig[fieldExp] = {
-          aggName,
-          isSpecial: true
-        };
-        continue;
-      }
-
-      // Handle regular fields from Config.getFieldsMap()
-      const field = fieldsMap[fieldExp];
-      if (!field) {
-        console.log(`Warning: Unknown field expression '${fieldExp}' in summary aggFields`);
-        continue;
-      }
-      // Create a unique aggregation name from the field expression
-      aggName = fieldExp.replace(/\./g, '_');
-      fieldConfig[fieldExp] = {
-        aggName,
-        dbField: field.dbField
-      };
+    // Build the list of widgets to aggregate. The modular dashboard sends a
+    // `widgets` array of per-widget specs ({id, field, length, order, expression,
+    // viewMode, metricType}); the legacy summary page sends a comma-separated
+    // `fields` string with a single global length/order. Both are supported.
+    let rawWidgets;
+    if (Array.isArray(req.body.widgets) && req.body.widgets.length > 0) {
+      rawWidgets = req.body.widgets;
+    } else if (req.body.fields && ArkimeUtil.isString(req.body.fields)) {
+      rawWidgets = req.body.fields
+        .split(',').map(f => f.trim()).filter(f => f.length > 0)
+        .map(f => ({ field: f }));
+    } else {
+      return res.status(400).send({ error: 'Missing or invalid widgets/fields parameter in request body' });
     }
 
-    function convert (agg) {
+    if (rawWidgets.length === 0) {
+      return res.status(400).send({ error: 'No widgets/fields requested' });
+    }
+
+    // Normalize each requested widget into an aggregation spec
+    const widgetSpecs = [];
+    for (let i = 0; i < rawWidgets.length; i++) {
+      const w = rawWidgets[i] || {};
+      const fieldExp = w.field;
+      if (!ArkimeUtil.isString(fieldExp)) { continue; }
+
+      const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
+      const spec = {
+        id: ArkimeUtil.isString(w.id) ? w.id : `w${i}`,
+        field: fieldExp,
+        aggName: `agg${i}`,
+        length: clampLength(w.length, defaultTopNum),
+        order: w.order === 'asc' ? 'asc' : (w.order === 'desc' ? 'desc' : defaultOrder),
+        expression: ArkimeUtil.isString(w.expression) && w.expression.length > 0 ? w.expression : undefined,
+        // viewMode/metricType are owned by the client; the response only echoes
+        // sensible field-based defaults for the legacy fields-string callers.
+        viewMode: metadata.viewMode,
+        metricType: metadata.metricType
+      };
+
+      if (specialFields.includes(fieldExp)) {
+        spec.isSpecial = true;
+      } else {
+        const field = fieldsMap[fieldExp];
+        if (!field) {
+          console.log(`Warning: Unknown field expression '${fieldExp}' in summary widgets`);
+          spec.unknown = true;
+        } else {
+          spec.dbField = field.dbField;
+        }
+      }
+      widgetSpecs.push(spec);
+    }
+
+    if (widgetSpecs.length === 0) {
+      return res.status(400).send({ error: 'No valid widgets/fields requested' });
+    }
+
+    function convert (agg, limit) {
       if (!agg || !agg.buckets) {
         return [];
       }
 
       const results = [];
-      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+      for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
         results.push({
           item: agg.buckets[i].key,
           sessions: agg.buckets[i].doc_count,
@@ -3364,73 +3380,90 @@ class SessionAPIs {
       response.downloadBytes = 20 + response.bytes + 16 * response.packets;
       await send(response, false);
 
-      /****************************************/
-      /* Phase 2 Requested field aggregations */
+      /*****************************************/
+      /* Phase 2 Requested widget aggregations */
 
-      // Field aggregations - dynamically added based on requested fields
-      for (const fieldExp in fieldConfig) {
+      // Per-widget local expressions are ANDed with the global search. Build (and
+      // cache) one base query per distinct combined expression so widgets that share
+      // a filter — or use none — don't rebuild the query.
+      const queryCache = new Map();
+      const globalExpression = req.query.expression;
+
+      const widgetBaseQuery = async (expression) => {
+        if (!expression) { return query; } // reuse the global base query
+        const combined = globalExpression ? `(${globalExpression}) && (${expression})` : expression;
+        if (queryCache.has(combined)) { return queryCache.get(combined); }
+        const override = { ...req.query, expression: combined };
+        const built = await BuildQuery.buildPromise(req, override);
+        queryCache.set(combined, built.query);
+        return built.query;
+      };
+
+      // INVARIANT: this loop runs strictly sequentially (it awaits each search
+      // before the next). Each iteration mutates its base query in place
+      // (aggregations/size/_source) — both the shared no-expression `query` and
+      // the cached per-expression queries are reused across widgets. Do NOT
+      // parallelize without cloning the query per iteration.
+      for (const spec of widgetSpecs) {
         if (clientDisconnected || res.destroyed) { break; }
         try {
-          const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
-          const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
-          query.aggregations = {};
+          if (spec.unknown) {
+            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.field}` }, false);
+            continue;
+          }
 
-          if (isSpecial) {
-            // Handle special fields with Painless scripts
-            if (fieldExp === 'ip') {
-              query.aggregations[aggName] = {
-                terms: {
-                  script: {
-                    source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
-                    lang: 'painless'
-                  },
-                  size: topNum,
-                  order: { _count: sortOrder }
-                },
-                aggs: extraAggs
-              };
-            } else if (fieldExp === 'ip.dst:port') {
-              query.aggregations[aggName] = {
-                terms: {
-                  script: {
-                    source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
-                    lang: 'painless'
-                  },
-                  size: topNum,
-                  order: { _count: sortOrder }
-                },
-                aggs: extraAggs
-              };
-            }
+          const wquery = await widgetBaseQuery(spec.expression);
+          wquery._source = false;
+          wquery.size = 0;
+          delete wquery.sort;
+          wquery.aggregations = {};
+
+          if (spec.isSpecial) {
+            // Special fields use Painless scripts (no direct dbField mapping)
+            const source = spec.field === 'ip'
+              ? "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];"
+              : "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];";
+            wquery.aggregations[spec.aggName] = {
+              terms: {
+                script: { source, lang: 'painless' },
+                size: spec.length,
+                order: { _count: spec.order }
+              },
+              aggs: extraAggs
+            };
           } else {
             // Regular field aggregations
-            query.aggregations[aggName] = {
+            wquery.aggregations[spec.aggName] = {
               terms: {
-                field: dbField,
-                size: topNum,
-                order: { _count: sortOrder }
+                field: spec.dbField,
+                size: spec.length,
+                order: { _count: spec.order }
               },
               aggs: extraAggs
             };
           }
 
-          const phase2 = await Db.searchSessions(indices, query, options);
+          const phase2 = await Db.searchSessions(indices, wquery, options);
           const field = {
-            field: fieldExp,
-            viewMode: metadata.viewMode,
-            metricType: metadata.metricType,
+            id: spec.id,
+            field: spec.field,
+            viewMode: spec.viewMode,
+            metricType: spec.metricType,
+            length: spec.length,
+            order: spec.order,
+            expression: spec.expression,
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration
           };
-          if (fieldExp === 'ip.dst:port') {
-            field.data = convert(phase2.aggregations[aggName]).map(ipDstPortProcessor);
-          } else {
-            field.data = convert(phase2.aggregations[aggName]);
+          let data = convert(phase2.aggregations[spec.aggName], spec.length);
+          if (spec.field === 'ip.dst:port') {
+            data = data.map(ipDstPortProcessor);
           }
+          field.data = data;
           await send(field, false);
         } catch (fieldErr) {
-          // Send error for this specific field, continue with others
-          await send({ field: fieldExp, error: fieldErr.message || String(fieldErr) }, false);
+          // Send error for this specific widget, continue with others
+          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr) }, false);
         }
       }
       if (!res.destroyed) {

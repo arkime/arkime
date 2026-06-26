@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- toolbar row -->
           <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav">
-            <!-- results per widget dropdown -->
+            <!-- column count toggle -->
             <v-menu>
               <template #activator="{ props }">
                 <v-btn
@@ -22,7 +22,10 @@ SPDX-License-Identifier: Apache-2.0
                   size="large"
                   variant="flat"
                   color="secondary">
-                  {{ summaryResultsLimit }}
+                  <v-icon
+                    start
+                    icon="mdi-view-column" />
+                  {{ columnCount }}
                   <v-icon
                     end
                     icon="mdi-menu-down" />
@@ -30,39 +33,11 @@ SPDX-License-Identifier: Apache-2.0
               </template>
               <v-list density="compact">
                 <v-list-item
-                  v-for="opt in [10, 20, 50, 100]"
-                  :key="opt"
-                  :active="summaryResultsLimit === opt"
-                  @click="updateSummaryResultsLimit(opt)">
-                  <v-list-item-title>{{ opt }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-
-            <!-- top/bottom results toggle -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  size="large"
-                  variant="flat"
-                  color="secondary">
-                  {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
-                  <v-icon
-                    end
-                    icon="mdi-menu-down" />
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  :active="summaryOrder === 'desc'"
-                  @click="updateSummaryOrder('desc')">
-                  <v-list-item-title>Top</v-list-item-title>
-                </v-list-item>
-                <v-list-item
-                  :active="summaryOrder === 'asc'"
-                  @click="updateSummaryOrder('asc')">
-                  <v-list-item-title>Bottom</v-list-item-title>
+                  v-for="n in [2, 3]"
+                  :key="n"
+                  :active="columnCount === n"
+                  @click="setColumnCount(n)">
+                  <v-list-item-title>{{ $t('sessions.summary.columns', { n }) }}</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -85,22 +60,27 @@ SPDX-License-Identifier: Apache-2.0
             <!-- summary field visibility + config group -->
             <v-btn-group
               divided
-              density="compact"
               variant="flat"
-              color="secondary">
-              <FieldSelectDropdown
-                :selected-fields="summaryFields"
-                :tooltip-text="$t('sessions.summary.toggleFields')"
-                :search-placeholder="$t('sessions.summary.searchFields')"
-                :include-summary-fields="true"
-                field-id-key="exp"
-                @toggle="toggleSummaryField"
-                @clear="clearSummaryFields" />
-              <SummaryConfigDropdown
-                :current-config="currentSummaryConfig"
-                @load="loadSummaryConfigFromShareable"
-                @reset="resetSummaryToDefaults"
-                @message="displayMessage" />
+              color="secondary"
+              class="dashboard-btn-group">
+              <!-- v-btn-group resets its children to density-default/size-default;
+                   force them back to density-compact + size-large to match the
+                   sibling toolbar buttons -->
+              <v-defaults-provider :defaults="{ VBtn: { density: 'compact', size: 'large' } }">
+                <FieldSelectDropdown
+                  :selected-fields="selectedFields"
+                  :tooltip-text="$t('sessions.summary.toggleFields')"
+                  :search-placeholder="$t('sessions.summary.searchFields')"
+                  :include-summary-fields="true"
+                  field-id-key="exp"
+                  @toggle="toggleSummaryField"
+                  @clear="clearSummaryFields" />
+                <SummaryConfigDropdown
+                  :current-config="currentDashboardConfig"
+                  @load="loadSummaryConfigFromShareable"
+                  @reset="resetSummaryToDefaults"
+                  @message="displayMessage" />
+              </v-defaults-provider>
             </v-btn-group>
 
             <!-- cancel loading button -->
@@ -152,11 +132,10 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-summary-view
         v-if="configLoaded"
         ref="summaryView"
-        :summary-fields="summaryFields"
+        :widgets="widgets"
+        :column-count="columnCount"
         @update-visualizations="updateVisualizationsData"
-        @reorder-fields="reorderSummaryFields"
         @widget-config-changed="updateWidgetConfigs"
-        @remove-field="toggleSummaryField"
         @streaming-state="summaryStreaming = $event"
         @canceled-state="summaryCanceled = $event" />
     </div>
@@ -199,6 +178,23 @@ import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 import Utils from '../utils/utils';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
+import { createShareableService } from '../users/ShareableService';
+
+const DashboardService = createShareableService('summaryConfig');
+
+// Default per-field widget view modes (mirrors the server's fieldMetadata)
+const DEFAULT_VIEW_MODES = {
+  ip: 'bar',
+  'ip.src': 'bar',
+  'ip.dst': 'bar',
+  'port.src': 'bar',
+  'port.dst': 'bar',
+  protocols: 'pie',
+  tags: 'pie',
+  'ip.dst:port': 'table',
+  'host.http': 'table',
+  'dns.query.host': 'table'
+};
 
 export default {
   name: 'Arkime',
@@ -213,11 +209,9 @@ export default {
   },
   data: function () {
     return {
-      // Summary configuration
-      summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20,
-      summaryOrder: this.$route.query.summaryOrder || 'desc',
-      summaryFields: [],
-      widgetConfigs: [],
+      // Dashboard configuration
+      widgets: [],
+      columnCount: 2,
       // Visualization data
       mapData: undefined,
       graphData: undefined,
@@ -244,24 +238,15 @@ export default {
       }
       return this.user.settings.timelineDataFilters.map(i => FieldService.getField(i));
     },
-    /**
-     * Returns the current summary configuration for saving
-     * Combines summaryFields with widgetConfigs and resultsLimit
-     */
-    currentSummaryConfig: function () {
-      const fields = this.summaryFields.map(fieldExp => {
-        const widgetConfig = this.widgetConfigs.find(w => w.field === fieldExp);
-        return {
-          field: fieldExp,
-          viewMode: widgetConfig?.viewMode || 'bar',
-          metricType: widgetConfig?.metricType || 'sessions'
-        };
-      });
-
+    // Field expressions currently on the dashboard (drives the field toggle dropdown)
+    selectedFields: function () {
+      return this.widgets.map(w => w.field);
+    },
+    // Current dashboard configuration for saving (layout + widgets)
+    currentDashboardConfig: function () {
       return {
-        fields,
-        resultsLimit: this.summaryResultsLimit,
-        order: this.summaryOrder
+        columnCount: this.columnCount,
+        widgets: this.widgets
       };
     }
   },
@@ -271,135 +256,165 @@ export default {
       // charts/map cache geometry, so nudge their resize handling
       this.$nextTick(() => window.dispatchEvent(new Event('resize')));
     },
-    // Handle browser back/forward navigation for summaryLength
-    '$route.query.summaryLength': function (newValue) {
-      const newLimit = parseInt(newValue) || 20;
-      if (this.summaryResultsLimit !== newLimit) {
-        this.summaryResultsLimit = newLimit;
-        this.reloadSummaryView();
-      }
-    },
-    // Handle browser back/forward navigation for summaryOrder
-    '$route.query.summaryOrder': function (newValue) {
-      const newOrder = newValue || 'desc';
-      if (this.summaryOrder !== newOrder) {
-        this.summaryOrder = newOrder;
-        this.reloadSummaryView();
-      }
-    },
     // Handle fetch viz data button click (re-fetch visualizations)
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.reloadSummaryView(); }
     }
   },
   created: function () {
-    this.loadSummaryConfig();
+    this.loadDashboardConfig();
   },
   methods: {
+    /**
+     * Builds a default widget definition for a field expression
+     */
+    makeWidgetDef: function (fieldExp, overrides = {}) {
+      return {
+        id: Utils.createRandomString(),
+        field: fieldExp,
+        viewMode: DEFAULT_VIEW_MODES[fieldExp] || 'bar',
+        metricType: 'sessions',
+        length: 20,
+        order: 'desc',
+        expression: '',
+        height: 'standard',
+        width: 'standard',
+        title: '',
+        ...overrides
+      };
+    },
+    /**
+     * Ensures a saved widget has an id and all expected fields
+     */
+    normalizeWidget: function (w) {
+      return this.makeWidgetDef(w.field, {
+        id: w.id || Utils.createRandomString(),
+        viewMode: w.viewMode || DEFAULT_VIEW_MODES[w.field] || 'bar',
+        metricType: w.metricType || 'sessions',
+        length: w.length || 20,
+        order: w.order || 'desc',
+        expression: w.expression || '',
+        height: w.height || 'standard',
+        width: w.width || 'standard',
+        title: w.title || ''
+      });
+    },
+    /**
+     * Default set of widgets when no saved config exists
+     */
+    defaultWidgets: function () {
+      return Utils.getDefaultSummaryFields().map(f => this.makeWidgetDef(f));
+    },
     /**
      * Loads summary data when search is triggered
      */
     loadSummary: function () {
       this.reloadSummaryView();
     },
-    updateSummaryResultsLimit: async function (newLimit) {
-      this.summaryResultsLimit = newLimit;
-      await this.$router.replace({
-        query: { ...this.$route.query, summaryLength: newLimit }
-      });
-      this.reloadSummaryView();
-      this.saveSummaryConfig();
-    },
-    updateSummaryOrder: async function (newOrder) {
-      this.summaryOrder = newOrder;
-      await this.$router.replace({
-        query: { ...this.$route.query, summaryOrder: newOrder }
-      });
-      this.reloadSummaryView();
-      this.saveSummaryConfig();
+    setColumnCount: function (n) {
+      this.columnCount = n;
+      this.saveDashboardConfig();
     },
     toggleSummaryField: function (fieldExp) {
-      const index = this.summaryFields.indexOf(fieldExp);
-      if (index >= 0) {
-        this.summaryFields.splice(index, 1);
-        this.$refs.summaryView?.removeField?.(fieldExp);
+      // The field dropdown is a presence toggle: turning a field off removes
+      // every widget for that field (duplicates are still creatable via the
+      // per-widget edit modal's change-field path), turning it on adds one.
+      const matching = this.widgets.filter(w => w.field === fieldExp);
+      if (matching.length) {
+        this.widgets = this.widgets.filter(w => w.field !== fieldExp);
+        matching.forEach(w => this.$refs.summaryView?.removeWidget?.(w.id));
       } else {
-        this.summaryFields.push(fieldExp);
-        this.$refs.summaryView?.addField?.(fieldExp);
+        const def = this.makeWidgetDef(fieldExp);
+        this.widgets.push(def);
+        this.$refs.summaryView?.addWidget?.(def);
       }
-      this.saveSummaryConfig();
+      this.saveDashboardConfig();
     },
     clearSummaryFields: function () {
-      this.summaryFields = [];
+      this.widgets = [];
       this.reloadSummaryView();
-      this.saveSummaryConfig();
+      this.saveDashboardConfig();
     },
-    reorderSummaryFields: function ({ oldIndex, newIndex }) {
-      const field = this.summaryFields.splice(oldIndex, 1)[0];
-      this.summaryFields.splice(newIndex, 0, field);
-      this.saveSummaryConfig();
-    },
+    // Summary emits the full widget list after any per-widget change
+    // (view mode, metric, edit, reorder, remove)
     updateWidgetConfigs: function (configs) {
-      this.widgetConfigs = configs;
-      this.saveSummaryConfig();
+      this.widgets = configs;
+      this.saveDashboardConfig();
     },
     loadSummaryConfigFromShareable: function (shareable) {
-      const configData = shareable.data;
-      if (!configData?.fields?.length) {
-        return;
-      }
-
-      this.summaryFields = configData.fields.map(f => f.field);
-      this.widgetConfigs = configData.fields.map(f => ({
-        field: f.field,
-        viewMode: f.viewMode || 'bar',
-        metricType: f.metricType || 'sessions'
-      }));
-
-      if (configData.order) {
-        this.updateSummaryOrder(configData.order);
-      }
-
-      if (configData.resultsLimit) {
-        this.updateSummaryResultsLimit(configData.resultsLimit);
-      } else {
-        this.reloadSummaryView();
-        this.saveSummaryConfig();
-      }
+      if (!shareable?.data) { return; }
+      this.applyConfig(shareable.data);
+      this.reloadSummaryView();
+      this.saveDashboardConfig();
     },
     displayMessage: function ({ msg, type }) {
       if (type === 'danger') {
         this.error = msg;
       }
     },
-    loadSummaryConfig: async function () {
+    /**
+     * Applies a saved config object to local state. Tolerates the legacy
+     * shape ({ fields, resultsLimit, order }) and the new shape
+     * ({ columnCount, widgets }).
+     */
+    applyConfig: function (cfg) {
+      if (Array.isArray(cfg?.widgets) && cfg.widgets.length) {
+        this.widgets = cfg.widgets.map(w => this.normalizeWidget(w));
+      } else if (Array.isArray(cfg?.fields) && cfg.fields.length) {
+        // Legacy summaryConfig: migrate fields[] into widget objects
+        this.widgets = cfg.fields.map(f => this.makeWidgetDef(f.field, {
+          viewMode: f.viewMode || DEFAULT_VIEW_MODES[f.field] || 'bar',
+          metricType: f.metricType || 'sessions',
+          length: cfg.resultsLimit || 20,
+          order: cfg.order || 'desc'
+        }));
+      } else {
+        this.widgets = this.defaultWidgets();
+      }
+      // Guarantee unique widget ids — hand-edited imports may collide, which
+      // would leave a widget stuck loading (stream chunks are matched by id)
+      const seen = new Set();
+      for (const w of this.widgets) {
+        if (!w.id || seen.has(w.id)) { w.id = Utils.createRandomString(); }
+        seen.add(w.id);
+      }
+      if (cfg?.columnCount === 2 || cfg?.columnCount === 3) {
+        this.columnCount = cfg.columnCount;
+      }
+    },
+    loadDashboardConfig: async function () {
+      // Prefer the user's default dashboard if one is set
+      const defaultId = this.user?.settings?.defaultDashboardId;
+      if (defaultId) {
+        try {
+          const response = await DashboardService.get(defaultId);
+          if (response?.shareable?.data) {
+            this.applyConfig(response.shareable.data);
+            this.configLoaded = true;
+            return;
+          }
+        } catch (err) {
+          // fall through to per-user state
+        }
+      }
+
+      // Otherwise restore the last per-user dashboard state
       try {
         const response = await UserService.getPageConfig('summary');
-        if (response?.summaryConfig?.fields?.length) {
-          const config = response.summaryConfig;
-          this.summaryFields = config.fields.map(f => f.field);
-          this.widgetConfigs = config.fields.map(f => ({
-            field: f.field,
-            viewMode: f.viewMode || 'bar',
-            metricType: f.metricType || 'sessions'
-          }));
-          if (config.order) {
-            this.summaryOrder = config.order;
-          }
-          if (config.resultsLimit) {
-            this.summaryResultsLimit = config.resultsLimit;
-          }
+        if (response?.summaryConfig) {
+          this.applyConfig(response.summaryConfig);
           this.configLoaded = true;
           return;
         }
       } catch (err) {
         // fall through to defaults
       }
-      this.summaryFields = Utils.getDefaultSummaryFields();
+
+      this.widgets = this.defaultWidgets();
       this.configLoaded = true;
     },
-    saveSummaryConfig: function () {
-      UserService.saveState(this.currentSummaryConfig, 'summary');
+    saveDashboardConfig: function () {
+      UserService.saveState(this.currentDashboardConfig, 'summary');
     },
     reloadSummaryView: function () {
       this.$nextTick(() => {
@@ -407,11 +422,10 @@ export default {
       });
     },
     resetSummaryToDefaults: function () {
-      this.summaryFields = Utils.getDefaultSummaryFields();
-      this.widgetConfigs = [];
-      this.summaryOrder = 'desc';
-      this.updateSummaryOrder('desc');
-      this.updateSummaryResultsLimit(20);
+      this.widgets = this.defaultWidgets();
+      this.columnCount = 2;
+      this.reloadSummaryView();
+      this.saveDashboardConfig();
     },
     cancelSummaryLoading: function () {
       this.$refs.summaryView?.cancelLoading?.();
@@ -433,5 +447,16 @@ export default {
 <style scoped>
 .arkime-content {
   margin-right: 0.5rem;
+}
+
+/* The sibling toolbar buttons are density-compact + size-large = 32px tall.
+   v-btn-group's density sets its own (taller) height and its children get an
+   inline height:auto, so pin the group to 32px and force the child buttons to
+   fill it (overriding the inline style) so the group lines up with the siblings. */
+.dashboard-btn-group.v-btn-group {
+  height: 32px;
+}
+.dashboard-btn-group :deep(.v-btn) {
+  height: 100% !important;
 }
 </style>

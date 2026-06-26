@@ -51,7 +51,7 @@ Response objects also include computed fields:
 
 ### `summaryConfig` (Viewer Vue app)
 
-Summary/Arkime tab widget configuration.
+Summary/Arkime tab modular dashboard configuration (layout + per-widget settings).
 
 **Used by:** `viewer/vueapp/src/components/arkime/Arkime.vue`, `SummaryConfigDropdown.vue`, `SummaryConfigSaveModal.vue`
 
@@ -59,26 +59,44 @@ Summary/Arkime tab widget configuration.
 {
   "type": "summaryConfig",
   "data": {
-    "fields": [
+    "columnCount": 2,
+    "widgets": [
       {
+        "id": "ab12cd34",
         "field": "source.ip",
         "viewMode": "bar",
-        "metricType": "sessions"
+        "metricType": "sessions",
+        "length": 20,
+        "order": "desc",
+        "expression": "protocols == tls",
+        "height": "standard",
+        "width": "standard",
+        "title": ""
       }
-    ],
-    "resultsLimit": 20,
-    "order": "desc"
+    ]
   }
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data.fields[].field` | string | Arkime field expression (e.g. `source.ip`, `protocol`) |
-| `data.fields[].viewMode` | string | Widget display mode (`bar`, etc.). Default: `bar` |
-| `data.fields[].metricType` | string | Metric to display (`sessions`, `packets`, `bytes`). Default: `sessions` |
-| `data.resultsLimit` | number | Max results per widget (10, 20, 50, 100) |
-| `data.order` | string | Sort order: `asc` or `desc`. Default: `desc` |
+| `data.columnCount` | number | Grid column count (`2` or `3`). Default: `2` |
+| `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
+| `data.widgets[].field` | string | Arkime field expression (e.g. `source.ip`, `protocols`) |
+| `data.widgets[].viewMode` | string | Widget display mode (`bar`, `pie`, `table`). Default: `bar` |
+| `data.widgets[].metricType` | string | Metric to display (`sessions`, `packets`, `bytes`). Default: `sessions` |
+| `data.widgets[].length` | number | Max results for this widget (10, 20, 50, 100). Default: `20` |
+| `data.widgets[].order` | string | Sort order: `asc` (Bottom) or `desc` (Top). Default: `desc` |
+| `data.widgets[].expression` | string | Optional local filter, ANDed with the global search |
+| `data.widgets[].height` | string | Grid row span: `standard` or `double`. Default: `standard` |
+| `data.widgets[].width` | string | Grid column span: `standard` or `double`. Default: `standard` |
+| `data.widgets[].title` | string | Optional custom widget title (overrides the field name) |
+
+> **Legacy shape:** older configs use `data.fields[] + data.resultsLimit + data.order`
+> (no `widgets`/`columnCount`). The Arkime tab still reads that shape and migrates it
+> into widgets on load. A per-user copy of the active dashboard is also stored via
+> `POST /api/user/savestate?stateName=summary`, and the user's default landing
+> dashboard id is stored on `user.settings.defaultDashboardId`.
 
 ---
 

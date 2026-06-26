@@ -50,17 +50,18 @@
 
       <!-- Skeleton Field Widgets -->
       <div
-        class="charts-container"
-        :class="gridLayoutClass">
+        class="charts-container charts-grid"
+        :style="gridStyle">
         <div
-          v-for="field in summaryFields"
-          :key="field"
-          class="widget-wrapper">
+          v-for="w in widgets"
+          :key="w.id"
+          class="widget-wrapper"
+          :class="spanClass(w)">
           <SummaryWidget
-            :title="FieldService.getField(field, true)?.friendlyName || field"
+            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
             :data="[]"
             :loading="true"
-            :field="field" />
+            :field="w.field" />
         </div>
       </div>
     </div>
@@ -156,38 +157,59 @@
         :metric-type="tooltipMetricType"
         @close="hideTooltip" />
 
+      <!-- empty state when no widgets configured -->
+      <div
+        v-if="!summary.fields?.length"
+        class="empty-dashboard text-medium-emphasis">
+        <v-icon
+          icon="mdi-view-dashboard-outline"
+          size="x-large"
+          class="mb-2" />
+        <p class="mb-0">
+          {{ $t('sessions.summary.noWidgets') }}
+        </p>
+      </div>
+
       <!-- Charts Grid -->
       <div
+        v-else
         ref="widgetContainer"
-        class="charts-container"
-        :class="gridLayoutClass">
+        class="charts-container charts-grid"
+        :style="gridStyle">
         <!-- Widgets rendered via v-for -->
         <div
-          v-for="widget in widgetConfigs"
-          :key="widget.field"
-          class="widget-wrapper">
+          v-for="w in summary.fields"
+          :key="w.id"
+          class="widget-wrapper"
+          :class="spanClass(w)">
           <span
             class="widget-handle"
             :title="$t('sessions.summary.dragToReorder')">
             <v-icon icon="mdi-view-grid" />
           </span>
           <SummaryWidget
-            :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
-            :data="widget.data"
-            :loading="widget.loading"
-            :error="widget.error"
-            :view-mode="widget.viewMode.value"
-            :metric-type="widget.metricType.value"
-            :field="widget.field"
-            @change-mode="updateWidgetViewMode(widget, $event)"
-            @change-metric="updateWidgetMetricType(widget, $event)"
+            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
+            :data="w.data"
+            :loading="w.loading"
+            :error="w.error"
+            :view-mode="w.viewMode"
+            :metric-type="w.metricType"
+            :field="w.field"
             @show-tooltip="showTooltip"
-            @export="handleWidgetExport(widget, $event)"
-            @remove-field="emit('remove-field', $event)"
-            @retry-field="retryField" />
+            @export="handleWidgetExport(w, $event)"
+            @edit="openEdit(w.id)"
+            @remove-field="removeWidgetLocal(w)"
+            @retry-field="retryWidget(w.id)" />
         </div>
       </div> <!-- /charts-container -->
     </div>
+
+    <!-- Per-widget edit modal -->
+    <SummaryWidgetEditModal
+      :show="editModalShow"
+      :widget="editingWidget"
+      @close="editModalShow = false"
+      @save="onEditSave" />
   </div>
 </template>
 
@@ -203,6 +225,7 @@ import Sortable from 'sortablejs';
 import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
+import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -233,14 +256,20 @@ const { t } = useI18n();
 
 // Define props
 const props = defineProps({
-  summaryFields: {
+  // widget definitions (source of truth lives in the parent)
+  widgets: {
     type: Array,
     default: () => []
+  },
+  // number of grid columns (2 or 3)
+  columnCount: {
+    type: Number,
+    default: 2
   }
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed', 'remove-field', 'streaming-state', 'canceled-state']);
+const emit = defineEmits(['update-visualizations', 'widget-config-changed', 'streaming-state', 'canceled-state']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
@@ -253,12 +282,13 @@ const user = computed(() => store.state.user);
 const timezone = computed(() => user.value?.settings?.timezone || 'local');
 const showMs = computed(() => user.value?.settings?.ms === true);
 
-// Grid layout class based on results limit
-const gridLayoutClass = computed(() => {
-  const resultsLimit = parseInt(route.query.summaryLength) || 20;
-  // When results > 20, use fewer columns (more data per chart)
-  // When results <= 20, use more columns (less data per chart)
-  return resultsLimit > 20 ? 'charts-grid-large-data' : 'charts-grid-small-data';
+// Grid column count exposed to CSS
+const gridStyle = computed(() => ({ '--summary-cols': props.columnCount || 2 }));
+
+// Per-widget grid span classes (height/width presets)
+const spanClass = (w) => ({
+  'span-h-2': w?.height === 'double',
+  'span-w-2': w?.width === 'double'
 });
 
 // Reactive state
@@ -271,6 +301,10 @@ const pageScrollEl = inject('pageScrollEl', null);
 const canceled = ref(false);
 const streaming = ref(false);
 
+// Per-widget edit modal state
+const editModalShow = ref(false);
+const editingWidget = ref(null);
+
 // Shared tooltip state - one tooltip to rule them all
 const tooltipVisible = ref(false);
 const tooltipData = ref(null);
@@ -282,25 +316,21 @@ const tooltipMetricType = ref('sessions');
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
 
-// Widget configurations for v-for rendering
-// Dynamically built from the API response fields array
-const widgetConfigs = computed(() => {
-  if (!summary.value?.fields) {
-    return [];
-  }
+// Build a render entry (widget definition + data state) from a definition
+const makeEntry = (def) => ({
+  ...def,
+  data: [],
+  loading: true,
+  error: null
+});
 
-  // Map each field from the API response to a widget configuration
-  // Fields start as loading placeholders until their data arrives
-  return summary.value.fields.map(fieldObj => ({
-    data: fieldObj.data || [],
-    loading: fieldObj.loading ?? false,   // true until field data arrives
-    error: fieldObj.error || null,        // error message if field aggregation failed
-    viewMode: ref(fieldObj.viewMode ?? 'bar'),     // viewMode from API (default bar)
-    metricType: ref(fieldObj.metricType ?? 'sessions'), // metricType from API (default sessions)
-    field: fieldObj.field,                // field expression from API
-    title: fieldObj.title,                // title from API (may be undefined)
-    description: fieldObj.description     // description from API (may be undefined)
-  }));
+// Map a widget definition to the request payload (only what the server needs)
+const toRequestWidget = (w) => ({
+  id: w.id,
+  field: w.field,
+  length: w.length,
+  order: w.order,
+  expression: w.expression || undefined
 });
 
 // Cancel an in-progress summary stream
@@ -319,7 +349,7 @@ const cancelLoading = () => {
   streaming.value = false;
   loading.value = false;
 
-  // Mark still-loading fields as cancelled
+  // Mark still-loading widgets as cancelled
   if (summary.value?.fields) {
     for (let i = 0; i < summary.value.fields.length; i++) {
       if (summary.value.fields[i].loading) {
@@ -334,11 +364,11 @@ const cancelLoading = () => {
 };
 
 // Build the common request body from current route/store state
-const buildRequestBody = (fields, cancelId) => {
+const buildRequestBody = (widgetDefs, cancelId) => {
   const body = {
     cancelId,
     facets: 1,
-    fields
+    widgets: widgetDefs.map(toRequestWidget)
   };
 
   const routeParams = ['view', 'bounding', 'interval', 'expression', 'cluster'];
@@ -353,15 +383,6 @@ const buildRequestBody = (fields, cancelId) => {
   }
 
   if (route.query.start) { body.start = route.query.start; }
-  if (route.query.summaryLength) {
-    body.length = route.query.summaryLength;
-  } else if (route.query.length) {
-    body.length = route.query.length;
-  }
-
-  if (route.query.summaryOrder) {
-    body.order = route.query.summaryOrder;
-  }
 
   if (parseInt(store.state.timeRange, 10) === -1) {
     body.date = store.state.timeRange;
@@ -376,10 +397,24 @@ const buildRequestBody = (fields, cancelId) => {
   return body;
 };
 
-// Fetch a subset of fields and update them in the existing summary
-const fetchFields = async (fieldExps) => {
+// Merge a streamed field chunk (keyed by widget id) into the matching entry
+const mergeFieldChunk = (chunk) => {
+  if (!summary.value?.fields) return;
+  const index = summary.value.fields.findIndex(f => f.id === chunk.id);
+  if (index === -1) return;
+  summary.value.fields[index] = {
+    ...summary.value.fields[index],
+    data: chunk.data || [],
+    loading: false,
+    error: chunk.error || null
+  };
+};
+
+// Fetch a subset of widgets and merge them into the existing summary
+const fetchWidgets = async (widgetDefs) => {
+  if (!widgetDefs.length) return;
   const cancelId = Utils.createRandomString();
-  const body = buildRequestBody(fieldExps.join(','), cancelId);
+  const body = buildRequestBody(widgetDefs, cancelId);
 
   const controller = new AbortController();
 
@@ -397,7 +432,6 @@ const fetchFields = async (fieldExps) => {
 
     const reader = fetchResponse.body.getReader();
     let buffer = '';
-    let isFirstLine = true;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -410,30 +444,22 @@ const fetchFields = async (fieldExps) => {
         let line = buffer.slice(0, pos);
         buffer = buffer.slice(pos + 1);
 
-        // First line starts with '[', subsequent lines start with ','
-        if (isFirstLine) {
-          line = line.slice(1);
-          isFirstLine = false;
-        } else {
-          line = line.slice(1);
-        }
+        // Drop the leading '[' (first line) or ',' (subsequent lines)
+        line = line.slice(1);
 
         const chunk = parseChunk(line);
-        if (chunk && chunk.field && summary.value?.fields) {
-          // Only process field chunks — ignore the stats chunk
-          const index = summary.value.fields.findIndex(f => f.field === chunk.field);
-          if (index !== -1) {
-            summary.value.fields[index] = chunk;
-          }
+        if (chunk && chunk.id) {
+          // Only process widget chunks — ignore the stats chunk
+          mergeFieldChunk(chunk);
         }
       }
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
-    // Mark retried fields as errored
+    // Mark retried widgets as errored
     if (summary.value?.fields) {
-      for (const fieldExp of fieldExps) {
-        const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+      for (const def of widgetDefs) {
+        const index = summary.value.fields.findIndex(f => f.id === def.id);
         if (index !== -1 && summary.value.fields[index].loading) {
           summary.value.fields[index] = {
             ...summary.value.fields[index],
@@ -446,51 +472,50 @@ const fetchFields = async (fieldExps) => {
   }
 };
 
-// Retry a single failed field
-const retryField = (fieldExp) => {
+// Retry a single failed widget
+const retryWidget = (id) => {
   if (!summary.value?.fields) return;
 
-  const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  const index = summary.value.fields.findIndex(f => f.id === id);
   if (index === -1) return;
 
-  // Reset to loading state
-  summary.value.fields[index] = { field: fieldExp, loading: true };
+  // Reset to loading state (keep the definition)
+  summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
 
-  fetchFields([fieldExp]);
+  fetchWidgets([summary.value.fields[index]]);
 };
 
-// Retry all failed fields at once
+// Retry all failed widgets at once
 const retryAllFailed = () => {
   if (!summary.value?.fields) return;
 
-  const errorFields = summary.value.fields
-    .filter(f => f.error)
-    .map(f => f.field);
+  const errored = summary.value.fields.filter(f => f.error);
+  if (!errored.length) return;
 
-  if (!errorFields.length) return;
-
-  // Reset all error fields to loading
-  for (const fieldExp of errorFields) {
-    const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  // Reset all errored widgets to loading
+  for (const w of errored) {
+    const index = summary.value.fields.findIndex(f => f.id === w.id);
     if (index !== -1) {
-      summary.value.fields[index] = { field: fieldExp, loading: true };
+      summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
     }
   }
 
   // Clear canceled state since user is retrying
   canceled.value = false;
 
-  fetchFields(errorFields);
+  fetchWidgets(errored.map(w => summary.value.fields.find(f => f.id === w.id)));
 };
 
 // Methods
 const generateSummary = async () => {
-  // Wait for fields to be loaded from parent before generating summary
-  if (!props.summaryFields?.length) {
-    // No summary fields provided: ensure we are not stuck in a loading state
+  // Wait for widgets to be provided by parent before generating summary
+  if (!props.widgets?.length) {
+    // No widgets configured: show an empty dashboard rather than spinning
     loading.value = false;
-    summary.value = null;
-    error.value = 'No summary fields were provided to generate a summary.';
+    error.value = '';
+    summary.value = summary.value
+      ? { ...summary.value, fields: [] }
+      : { sessions: 0, packets: 0, bytes: 0, dataBytes: 0, downloadBytes: 0, firstPacket: 0, lastPacket: 0, fields: [] };
     return;
   }
 
@@ -512,7 +537,7 @@ const generateSummary = async () => {
     const cancelId = Utils.createRandomString();
 
     // Build request body using shared helper
-    const body = buildRequestBody(props.summaryFields.join(','), cancelId);
+    const body = buildRequestBody(props.widgets, cancelId);
 
     // Create abort controller for request cancellation
     const controller = new AbortController();
@@ -549,11 +574,8 @@ const generateSummary = async () => {
 
       // First chunk has summary stats (sessions, packets, bytes, etc.)
       if (chunk.sessions !== undefined) {
-        // Initialize placeholder fields for all requested fields (they show loading state)
-        chunk.fields = props.summaryFields.map(field => ({
-          field,
-          loading: true
-        }));
+        // Initialize render entries for all configured widgets (loading state)
+        chunk.fields = props.widgets.map(makeEntry);
         summary.value = chunk;
 
         // Emit map/graph data immediately
@@ -562,25 +584,17 @@ const generateSummary = async () => {
           graphData: chunk.graph
         });
 
-        // Hide loading overlay once we have summary stats (field cards show their own loading)
+        // Hide loading overlay once we have summary stats (widgets show their own loading)
         loading.value = false;
-      } else if (chunk.field) {
-        // Field chunks have field property - find and update the placeholder
-        if (summary.value?.fields) {
-          const index = summary.value.fields.findIndex(f => f.field === chunk.field);
-          if (index !== -1) {
-            // Replace placeholder with actual data
-            summary.value.fields[index] = chunk;
-          }
-        }
+      } else if (chunk.id) {
+        // Widget chunks have an id - find and update the placeholder
+        mergeFieldChunk(chunk);
       }
       // Empty object {} signals stream end (ignore)
     };
 
     // Process the stream
     // Format: [{first}\n,{second}\n,{third}\n...{}]
-    let isFirstLine = true;
-
     while (true) {
       const { done, value } = await reader.read();
 
@@ -597,13 +611,8 @@ const generateSummary = async () => {
         let line = buffer.slice(0, pos);
         buffer = buffer.slice(pos + 1);
 
-        // First line starts with '[', subsequent lines start with ','
-        if (isFirstLine) {
-          line = line.slice(1); // Remove leading '['
-          isFirstLine = false;
-        } else {
-          line = line.slice(1); // Remove leading ','
-        }
+        // Drop the leading '[' (first line) or ',' (subsequent lines)
+        line = line.slice(1);
 
         const chunk = parseChunk(line);
         if (chunk) handleChunk(chunk);
@@ -763,7 +772,7 @@ const handleWidgetExport = (widget, svgId) => {
   const filename = widget.field;
   const itemLabel = widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field;
 
-  if (widget.viewMode.value === 'table') {
+  if (widget.viewMode === 'table') {
     const headers = [itemLabel, 'Sessions', 'Packets', 'Bytes'];
     exportTableCSV(widget.data, headers, `arkime-summary-${filename}.csv`);
   } else {
@@ -850,13 +859,13 @@ const exportAllPNG = async () => {
     const cleanups = [];
 
     for (let i = 0; i < wrappers.length; i++) {
-      const config = widgetConfigs.value[i];
-      if (!config || config.viewMode?.value === 'table') continue; // Skip table widgets
+      const config = summary.value?.fields?.[i];
+      if (!config || config.viewMode === 'table') continue; // Skip table widgets
 
       const svg = wrappers[i].querySelector('svg');
       if (!svg) continue; // Skip loading, error, or empty widgets
       const label = config?.title || FieldService.getField(config?.field, true)?.friendlyName || config?.field || '';
-      const metricType = config?.metricType?.value || 'sessions';
+      const metricType = config?.metricType || 'sessions';
       const data = config?.data || [];
 
       // Temporarily add count labels to the live SVG
@@ -991,10 +1000,10 @@ const initializeDragDrop = () => {
       const newIndex = evt.newIndex;
       // Reorder the local data to match the new DOM order
       if (summary.value?.fields && oldIndex !== newIndex) {
-        const field = summary.value.fields.splice(oldIndex, 1)[0];
-        summary.value.fields.splice(newIndex, 0, field);
-        // Emit to parent to persist the new order
-        emit('reorder-fields', { oldIndex, newIndex });
+        const w = summary.value.fields.splice(oldIndex, 1)[0];
+        summary.value.fields.splice(newIndex, 0, w);
+        // Emit the new full widget order to parent to persist
+        emitWidgetConfigChange();
       }
     }
   });
@@ -1041,58 +1050,93 @@ onBeforeUnmount(() => {
 });
 
 /**
- * Updates a widget's view mode and emits change event
+ * Open the edit modal for a widget
  */
-const updateWidgetViewMode = (widget, newMode) => {
-  widget.viewMode.value = newMode;
+const openEdit = (id) => {
+  const w = summary.value?.fields?.find(f => f.id === id);
+  if (w) {
+    editingWidget.value = { ...w };
+    editModalShow.value = true;
+  }
+};
+
+/**
+ * Apply an edited widget; refetch only when data-affecting fields changed
+ */
+const onEditSave = (updated) => {
+  editModalShow.value = false;
+  if (!summary.value?.fields) return;
+  const index = summary.value.fields.findIndex(f => f.id === updated.id);
+  if (index === -1) return;
+
+  const prev = summary.value.fields[index];
+  const needsRefetch = prev.field !== updated.field ||
+    prev.length !== updated.length ||
+    prev.order !== updated.order ||
+    (prev.expression || '') !== (updated.expression || '');
+
+  summary.value.fields[index] = { ...prev, ...updated };
+  emitWidgetConfigChange();
+
+  if (needsRefetch) {
+    summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
+    fetchWidgets([summary.value.fields[index]]);
+  }
+};
+
+/**
+ * Remove a widget locally (from its own menu) and persist
+ */
+const removeWidgetLocal = (widget) => {
+  if (!summary.value?.fields) return;
+  const index = summary.value.fields.findIndex(f => f.id === widget.id);
+  if (index !== -1) {
+    summary.value.fields.splice(index, 1);
+  }
   emitWidgetConfigChange();
 };
 
 /**
- * Updates a widget's metric type and emits change event
- */
-const updateWidgetMetricType = (widget, newMetric) => {
-  widget.metricType.value = newMetric;
-  emitWidgetConfigChange();
-};
-
-/**
- * Emits the current widget configuration to parent
+ * Emits the current widget configuration to parent (for persistence)
  */
 const emitWidgetConfigChange = () => {
-  emit('widget-config-changed', getWidgetConfigs());
+  emit('widget-config-changed', getWidgets());
 };
 
 /**
- * Gets the current widget configurations for saving
- * @returns {Array} Array of field configurations with viewMode and metricType
+ * Gets the current widget definitions for saving
  */
-const getWidgetConfigs = () => {
-  return widgetConfigs.value.map(w => ({
+const getWidgets = () => {
+  return (summary.value?.fields || []).map(w => ({
+    id: w.id,
     field: w.field,
-    viewMode: w.viewMode.value,
-    metricType: w.metricType.value
+    viewMode: w.viewMode,
+    metricType: w.metricType,
+    length: w.length,
+    order: w.order,
+    expression: w.expression || '',
+    height: w.height || 'standard',
+    width: w.width || 'standard',
+    title: w.title || ''
   }));
 };
 
-// Add a single field without re-fetching everything
-const addField = (fieldExp) => {
+// Add a single widget without re-fetching everything (parent-initiated)
+const addWidget = (def) => {
   if (!summary.value?.fields) {
     // Summary hasn't loaded yet, need a full reload
     generateSummary();
     return;
   }
 
-  // Add loading placeholder and fetch just this field
-  summary.value.fields.push({ field: fieldExp, loading: true });
-  fetchFields([fieldExp]);
+  summary.value.fields.push(makeEntry(def));
+  fetchWidgets([def]);
 };
 
-// Remove a single field without re-fetching anything
-const removeField = (fieldExp) => {
+// Remove a single widget by id without re-fetching (parent-initiated)
+const removeWidget = (id) => {
   if (!summary.value?.fields) return;
-
-  const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  const index = summary.value.fields.findIndex(f => f.id === id);
   if (index !== -1) {
     summary.value.fields.splice(index, 1);
   }
@@ -1101,9 +1145,9 @@ const removeField = (fieldExp) => {
 // Expose methods to parent component
 defineExpose({
   reloadSummary: generateSummary,
-  addField,
-  removeField,
-  getWidgetConfigs,
+  addWidget,
+  removeWidget,
+  getWidgets,
   exportAllPNG,
   cancelLoading,
   retryAllFailed
@@ -1207,6 +1251,15 @@ defineExpose({
   font-family: monospace;
 }
 
+.empty-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
 .charts-container {
   gap: 1rem;
   margin-top: 1.5rem; /* Extra margin to accommodate drag handles */
@@ -1219,30 +1272,29 @@ defineExpose({
   min-height: 450px; /* Minimum height for readability */
 }
 
-/* When results > 20 (large data): 1-2 columns max */
-.charts-grid-large-data {
-  /* Default: 1 column */
-  grid-template-columns: 1fr;
+/* Explicit column-count grid driven by --summary-cols (2 or 3) */
+.charts-grid {
+  grid-template-columns: repeat(var(--summary-cols, 2), minmax(0, 1fr));
+  grid-auto-rows: 480px;
 }
 
-@media (min-width: 2500px) {
-  .charts-grid-large-data {
-    /* Very large viewport: 2 columns */
-    grid-template-columns: repeat(2, 1fr);
+/* Single column on narrow viewports regardless of column setting */
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  /* double-width spans are meaningless in a single column */
+  .widget-wrapper.span-w-2 {
+    grid-column: auto;
   }
 }
 
-/* When results <= 20 (small data): 2-3 columns max */
-.charts-grid-small-data {
-  /* Default: 2 columns */
-  grid-template-columns: repeat(2, 1fr);
+/* Per-widget height/width spans */
+.widget-wrapper.span-h-2 {
+  grid-row: span 2;
 }
-
-@media (min-width: 2500px) {
-  .charts-grid-small-data {
-    /* Very large viewport: 3 columns */
-    grid-template-columns: repeat(3, 1fr);
-  }
+.widget-wrapper.span-w-2 {
+  grid-column: span 2;
 }
 
 /* Widget wrapper for drag-and-drop */

@@ -68,54 +68,14 @@
           </template>
 
           <v-list density="compact">
-            <!-- View Mode Options -->
-            <template v-if="enableViewMode">
-              <v-list-item
-                :active="viewMode === 'pie'"
-                @click="$emit('change-mode', 'pie')">
-                <span><v-icon icon="mdi-chart-pie" /> {{ $t('sessions.summary.pieChart') }}</span>
-              </v-list-item>
-
-              <v-list-item
-                :active="viewMode === 'bar'"
-                @click="$emit('change-mode', 'bar')">
-                <span><v-icon icon="mdi-chart-bar" /> {{ $t('sessions.summary.barChart') }}</span>
-              </v-list-item>
-
-              <v-list-item
-                :active="viewMode === 'table'"
-                @click="$emit('change-mode', 'table')">
-                <span><v-icon icon="mdi-table" /> {{ $t('sessions.summary.tableView') }}</span>
-              </v-list-item>
-
-              <!-- Metric Selector Options (only for charts, not table) -->
-              <template v-if="viewMode !== 'table'">
-                <v-divider />
-
-                <v-list-item
-                  :active="metricType === 'sessions'"
-                  @click="$emit('change-metric', 'sessions')">
-                  <span>{{ $t('sessions.summary.sessions') }}</span>
-                </v-list-item>
-
-                <v-list-item
-                  :active="metricType === 'packets'"
-                  @click="$emit('change-metric', 'packets')">
-                  <span>{{ $t('sessions.summary.packets') }}</span>
-                </v-list-item>
-
-                <v-list-item
-                  :active="metricType === 'bytes'"
-                  @click="$emit('change-metric', 'bytes')">
-                  <span>{{ $t('sessions.summary.bytes') }}</span>
-                </v-list-item>
-              </template>
-            </template>
+            <!-- Edit widget -->
+            <v-list-item @click="$emit('edit')">
+              <span><v-icon icon="mdi-pencil" /> {{ $t('sessions.summary.editWidget') }}</span>
+            </v-list-item>
 
             <!-- Export Option -->
             <template v-if="showExport">
-              <v-divider v-if="enableViewMode" />
-
+              <v-divider />
               <v-list-item @click="$emit('export', svgId)">
                 <v-icon icon="mdi-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
               </v-list-item>
@@ -123,7 +83,7 @@
 
             <!-- Remove Field Option -->
             <v-divider />
-            <v-list-item @click="$emit('remove-field', field)">
+            <v-list-item @click="$emit('remove-field')">
               <v-icon
                 icon="mdi-close"
                 class="text-danger" /> {{ $t('sessions.summary.removeField') }}
@@ -148,7 +108,8 @@
     <div
       v-else-if="hasData"
       ref="chartContainerRef"
-      class="chart-content">
+      class="chart-content"
+      :class="{ 'chart-content--scroll': viewMode === 'table' }">
       <!-- Pie Chart -->
       <SummaryPieChart
         v-if="viewMode === 'pie'"
@@ -234,10 +195,6 @@ const props = defineProps({
     default: null
   },
   showExport: {
-    type: Boolean,
-    default: true
-  },
-  enableViewMode: {
     type: Boolean,
     default: true
   },
@@ -354,7 +311,7 @@ onMounted(() => {
 // Cleanup on unmount
 onBeforeUnmount(cleanupResizeObserver);
 
-const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-field', 'retry-field']);
+const emit = defineEmits(['export', 'show-tooltip', 'remove-field', 'retry-field', 'edit']);
 </script>
 
 <style scoped>
@@ -374,8 +331,14 @@ const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-toolti
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 400px;
-  overflow: visible; /* Allow dropdowns to overflow */
+  min-height: 0;       /* allow the body to shrink within its grid cell */
+  overflow: hidden;    /* charts fit their container, never scroll */
+}
+
+/* Only table widgets scroll internally (e.g. Top 50) */
+.chart-content--scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .loading-widget {
