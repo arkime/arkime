@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
             v-model="form.metricType"
             :items="metricItems"
             :label="$t('sessions.summary.widget.metric')"
-            :disabled="form.viewMode === 'table'"
+            :disabled="metricDisabled"
             density="compact"
             variant="outlined"
             hide-details
@@ -164,6 +164,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
+import { METRICLESS_VIEW_MODES } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -183,7 +184,6 @@ const emit = defineEmits(['close', 'save']);
 
 const error = ref('');
 
-// Default form shape
 const blankForm = () => ({
   id: undefined,
   field: '',
@@ -202,17 +202,21 @@ const form = ref(blankForm());
 // Field list (includes the special summary fields like All IP / Dst IP:Dst Port)
 const fields = computed(() => FieldService.addSummarySpecialFields(store.state.fieldsArr || []));
 
-// Friendly name for the currently selected field (for the typeahead input)
 const fieldFriendlyName = computed(() => {
-  if (!form.value.field) return '';
+  if (!form.value.field) { return ''; }
   return FieldService.getField(form.value.field, true)?.friendlyName || form.value.field;
 });
 
 const viewModeItems = computed(() => [
   { title: t('sessions.summary.barChart'), value: 'bar' },
   { title: t('sessions.summary.pieChart'), value: 'pie' },
-  { title: t('sessions.summary.tableView'), value: 'table' }
+  { title: t('sessions.summary.tableView'), value: 'table' },
+  { title: t('sessions.summary.heatmapView'), value: 'heatmap' },
+  { title: t('sessions.summary.treemapView'), value: 'treemap' }
 ]);
+
+// metric basis only applies to the count-based charts (not table/heatmap/treemap)
+const metricDisabled = computed(() => METRICLESS_VIEW_MODES.includes(form.value.viewMode));
 
 const metricItems = computed(() => [
   { title: t('sessions.summary.sessions'), value: 'sessions' },
@@ -241,7 +245,6 @@ const sizeItems = computed(() => [
   { title: t('sessions.summary.widget.double'), value: 'double' }
 ]);
 
-// Sync form from the widget being edited each time the modal opens
 watch(() => props.show, (isOpen) => {
   if (isOpen && props.widget) {
     error.value = '';

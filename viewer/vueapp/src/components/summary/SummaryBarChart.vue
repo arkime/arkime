@@ -8,6 +8,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { colorRange } from './widgets/chartColors';
 
 const props = defineProps({
   data: {
@@ -34,6 +35,10 @@ const props = defineProps({
     type: String,
     default: 'sessions',
     validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+  },
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
   }
 });
 
@@ -118,8 +123,8 @@ const renderChart = async () => {
     .domain([0, d3.max(props.data, d => d[props.metricType])])
     .range([height, 0]);
 
-  // Use D3 color scheme
-  const colors = d3.scaleOrdinal(d3.schemeCategory10);
+  // Dashboard palette (shared with the pie/treemap charts)
+  const colors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
 
   const handlers = createChartHoverHandlers();
 
@@ -153,7 +158,7 @@ const renderChart = async () => {
 };
 
 // Watch for data, metric type, or dimension changes
-watch([() => props.data, () => props.metricType, () => props.width, () => props.height], () => {
+watch([() => props.data, () => props.metricType, () => props.width, () => props.height, () => props.colorScheme], () => {
   renderChart();
 }, { deep: true });
 

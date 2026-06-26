@@ -3183,18 +3183,14 @@ class SessionAPIs {
     // viewMode, metricType}); the legacy summary page sends a comma-separated
     // `fields` string with a single global length/order. Both are supported.
     let rawWidgets;
-    if (Array.isArray(req.body.widgets) && req.body.widgets.length > 0) {
-      rawWidgets = req.body.widgets;
+    if (Array.isArray(req.body.widgets)) {
+      rawWidgets = req.body.widgets; // may be empty -> stats-only response
     } else if (req.body.fields && ArkimeUtil.isString(req.body.fields)) {
       rawWidgets = req.body.fields
         .split(',').map(f => f.trim()).filter(f => f.length > 0)
         .map(f => ({ field: f }));
     } else {
       return res.status(400).send({ error: 'Missing or invalid widgets/fields parameter in request body' });
-    }
-
-    if (rawWidgets.length === 0) {
-      return res.status(400).send({ error: 'No widgets/fields requested' });
     }
 
     // Normalize each requested widget into an aggregation spec
@@ -3230,10 +3226,6 @@ class SessionAPIs {
         }
       }
       widgetSpecs.push(spec);
-    }
-
-    if (widgetSpecs.length === 0) {
-      return res.status(400).send({ error: 'No valid widgets/fields requested' });
     }
 
     function convert (agg, limit) {
@@ -3327,58 +3319,46 @@ class SessionAPIs {
       /******************************/
       /* Phase 1, top level and map */
 
-      // Top level aggregations
-      const aggregations = {
-        firstPacket: {
-          min: {
-            field: 'firstPacket'
-          }
-        },
-        lastPacket: {
-          max: {
-            field: 'lastPacket'
-          }
-        },
-        bytes: {
-          sum: {
-            field: 'network.bytes'
-          }
-        },
-        dataBytes: {
-          sum: {
-            field: 'totDataBytes'
-          }
-        },
-        packets: {
-          sum: {
-            field: 'network.packets'
-          }
+      // Phase 1 (top-level stats + map + graph) is skipped for incremental
+      // single-widget fetches (noStats): the dashboard stats/viz don't change
+      // when adding/editing/retrying one widget, so the client omits them and
+      // ignores the stats chunk — recomputing them here would be wasted work.
+      const noStats = req.query.noStats === true || req.query.noStats === 'true';
+
+      if (!noStats) {
+        // Top level aggregations
+        const aggregations = {
+          firstPacket: { min: { field: 'firstPacket' } },
+          lastPacket: { max: { field: 'lastPacket' } },
+          bytes: { sum: { field: 'network.bytes' } },
+          dataBytes: { sum: { field: 'totDataBytes' } },
+          packets: { sum: { field: 'network.packets' } }
+        };
+        query.aggregations ??= {};
+        query.aggregations = { ...query.aggregations, ...aggregations };
+
+        const phase1 = await Db.searchSessions(indices, query, options);
+        const map = ViewerUtils.mapMerge(phase1.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
+
+        // Handle case where there's no data
+        if (!phase1.aggregations) {
+          return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
         }
-      };
-      query.aggregations ??= {};
-      query.aggregations = { ...query.aggregations, ...aggregations };
 
-      const phase1 = await Db.searchSessions(indices, query, options);
-      const map = ViewerUtils.mapMerge(phase1.aggregations);
-      const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
-
-      // Handle case where there's no data
-      if (!phase1.aggregations) {
-        return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
+        const response = {
+          firstPacket: phase1.aggregations.firstPacket.value,
+          lastPacket: phase1.aggregations.lastPacket.value,
+          sessions: phase1.hits.total,
+          bytes: phase1.aggregations.bytes.value,
+          dataBytes: phase1.aggregations.dataBytes.value,
+          packets: phase1.aggregations.packets.value,
+          map,
+          graph
+        };
+        response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+        await send(response, false);
       }
-
-      const response = {
-        firstPacket: phase1.aggregations.firstPacket.value,
-        lastPacket: phase1.aggregations.lastPacket.value,
-        sessions: phase1.hits.total,
-        bytes: phase1.aggregations.bytes.value,
-        dataBytes: phase1.aggregations.dataBytes.value,
-        packets: phase1.aggregations.packets.value,
-        map,
-        graph
-      };
-      response.downloadBytes = 20 + response.bytes + 16 * response.packets;
-      await send(response, false);
 
       /*****************************************/
       /* Phase 2 Requested widget aggregations */

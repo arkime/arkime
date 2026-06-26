@@ -180,14 +180,16 @@
         <div
           v-for="w in summary.fields"
           :key="w.id"
+          :data-widget-id="w.id"
           class="widget-wrapper"
-          :class="spanClass(w)">
+          :class="[spanClass(w), { 'widget-flash': w.id === flashWidgetId }]">
           <span
             class="widget-handle"
             :title="$t('sessions.summary.dragToReorder')">
             <v-icon icon="mdi-view-grid" />
           </span>
           <SummaryWidget
+            v-if="isStreamMode(w.viewMode)"
             :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
             :data="w.data"
             :loading="w.loading"
@@ -195,11 +197,27 @@
             :view-mode="w.viewMode"
             :metric-type="w.metricType"
             :field="w.field"
+            :color-scheme="colorScheme"
             @show-tooltip="showTooltip"
             @export="handleWidgetExport(w, $event)"
             @edit="openEdit(w.id)"
             @remove-field="removeWidgetLocal(w)"
             @retry-field="retryWidget(w.id)" />
+          <HeatmapWidget
+            v-else-if="w.viewMode === 'heatmap'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <TreemapWidget
+            v-else-if="w.viewMode === 'treemap'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
         </div>
       </div> <!-- /charts-container -->
     </div>
@@ -208,7 +226,7 @@
     <SummaryWidgetEditModal
       :show="editModalShow"
       :widget="editingWidget"
-      @close="editModalShow = false"
+      @close="onEditClose"
       @save="onEditSave" />
   </div>
 </template>
@@ -226,7 +244,10 @@ import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
+import HeatmapWidget from './widgets/HeatmapWidget.vue';
+import TreemapWidget from './widgets/TreemapWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
+import { isStreamMode } from './widgets/viewModes';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -265,6 +286,11 @@ const props = defineProps({
   columnCount: {
     type: Number,
     default: 2
+  },
+  // dashboard-wide chart color palette
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
   }
 });
 
@@ -300,6 +326,10 @@ const widgetContainer = ref(null);
 const pageScrollEl = inject('pageScrollEl', null);
 const canceled = ref(false);
 const streaming = ref(false);
+// bumped on every (re)load so self-fetching view modes (e.g. heatmap) refetch
+const reloadNonce = ref(0);
+// briefly highlights a freshly-added widget so it's noticed after scrolling
+const flashWidgetId = ref('');
 
 // Per-widget edit modal state
 const editModalShow = ref(false);
@@ -316,11 +346,14 @@ const tooltipMetricType = ref('sessions');
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
 
-// Build a render entry (widget definition + data state) from a definition
+// Build a render entry (widget definition + data state) from a definition.
+// Only configured stream-mode widgets (bar/pie/table) start loading; an
+// unconfigured widget (no field) shows its configure state, and self-fetch
+// view modes (heatmap/treemap) manage their own loading.
 const makeEntry = (def) => ({
   ...def,
   data: [],
-  loading: true,
+  loading: !!def.field && isStreamMode(def.viewMode),
   error: null
 });
 
@@ -363,13 +396,17 @@ const cancelLoading = () => {
   }
 };
 
-// Build the common request body from current route/store state
-const buildRequestBody = (widgetDefs, cancelId) => {
+// Build the common request body from current route/store state. `statsless`
+// skips the server's Phase-1 stats/map/graph for incremental single-widget
+// fetches (add/edit/retry) — the dashboard stats don't change for those.
+const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
   const body = {
     cancelId,
     facets: 1,
     widgets: widgetDefs.map(toRequestWidget)
   };
+
+  if (statsless) { body.noStats = true; }
 
   const routeParams = ['view', 'bounding', 'interval', 'expression', 'cluster'];
   for (const param of routeParams) {
@@ -410,11 +447,13 @@ const mergeFieldChunk = (chunk) => {
   };
 };
 
-// Fetch a subset of widgets and merge them into the existing summary
+// Fetch a subset of widgets and merge them into the existing summary. These are
+// incremental (add/edit/retry) so the dashboard stats are already loaded — skip
+// recomputing them server-side.
 const fetchWidgets = async (widgetDefs) => {
   if (!widgetDefs.length) return;
   const cancelId = Utils.createRandomString();
-  const body = buildRequestBody(widgetDefs, cancelId);
+  const body = buildRequestBody(widgetDefs, cancelId, true);
 
   const controller = new AbortController();
 
@@ -508,17 +547,11 @@ const retryAllFailed = () => {
 
 // Methods
 const generateSummary = async () => {
-  // Wait for widgets to be provided by parent before generating summary
-  if (!props.widgets?.length) {
-    // No widgets configured: show an empty dashboard rather than spinning
-    loading.value = false;
-    error.value = '';
-    summary.value = summary.value
-      ? { ...summary.value, fields: [] }
-      : { sessions: 0, packets: 0, bytes: 0, dataBytes: 0, downloadBytes: 0, firstPacket: 0, lastPacket: 0, fields: [] };
-    return;
-  }
+  // signal self-fetching view modes (e.g. heatmap) to refetch on every reload
+  reloadNonce.value++;
 
+  // Note: an empty dashboard still requests (widgets: []) so the capture-stats
+  // band shows real numbers, consistent with a dashboard of only self-fetch widgets.
   canceled.value = false;
   streaming.value = true;
 
@@ -536,8 +569,10 @@ const generateSummary = async () => {
     // Create unique cancel id to make cancel req for corresponding es task
     const cancelId = Utils.createRandomString();
 
-    // Build request body using shared helper
-    const body = buildRequestBody(props.widgets, cancelId);
+    // Stream only configured stream-mode widgets (heatmap/treemap self-fetch).
+    // An empty list still returns the stats chunk for the capture-stats band.
+    const fieldDefs = props.widgets.filter(w => w.field && isStreamMode(w.viewMode));
+    const body = buildRequestBody(fieldDefs, cancelId);
 
     // Create abort controller for request cancellation
     const controller = new AbortController();
@@ -1061,6 +1096,19 @@ const openEdit = (id) => {
 };
 
 /**
+ * Close the edit modal. If a just-added widget was never configured (no field),
+ * drop it so cancel doesn't leave a dangling "configure me" card.
+ */
+const onEditClose = () => {
+  editModalShow.value = false;
+  const id = editingWidget.value?.id;
+  const entry = id && summary.value?.fields?.find(f => f.id === id);
+  if (entry && !entry.field) {
+    removeWidgetLocal(entry);
+  }
+};
+
+/**
  * Apply an edited widget; refetch only when data-affecting fields changed
  */
 const onEditSave = (updated) => {
@@ -1070,10 +1118,16 @@ const onEditSave = (updated) => {
   if (index === -1) return;
 
   const prev = summary.value.fields[index];
-  const needsRefetch = prev.field !== updated.field ||
+  // self-fetch view modes (heatmap/treemap) react to the replaced entry on their
+  // own; stream-mode widgets refetch here when the aggregation changed — including
+  // when switching back from a self-fetch mode (they have no streamed data yet)
+  const becameStream = isStreamMode(updated.viewMode) && !isStreamMode(prev.viewMode);
+  const needsRefetch = isStreamMode(updated.viewMode) && (
+    becameStream ||
+    prev.field !== updated.field ||
     prev.length !== updated.length ||
     prev.order !== updated.order ||
-    (prev.expression || '') !== (updated.expression || '');
+    (prev.expression || '') !== (updated.expression || ''));
 
   summary.value.fields[index] = { ...prev, ...updated };
   emitWidgetConfigChange();
@@ -1121,6 +1175,16 @@ const getWidgets = () => {
   }));
 };
 
+// Scroll a (possibly off-screen) widget into view and briefly highlight it
+const scrollToWidget = (id) => {
+  nextTick(() => {
+    const el = widgetContainer.value?.querySelector(`[data-widget-id="${id}"]`);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    flashWidgetId.value = id;
+    setTimeout(() => { if (flashWidgetId.value === id) { flashWidgetId.value = ''; } }, 1800);
+  });
+};
+
 // Add a single widget without re-fetching everything (parent-initiated)
 const addWidget = (def) => {
   if (!summary.value?.fields) {
@@ -1130,7 +1194,13 @@ const addWidget = (def) => {
   }
 
   summary.value.fields.push(makeEntry(def));
-  fetchWidgets([def]);
+  // configured stream-mode widgets fetch immediately; self-fetch view modes
+  // (heatmap/treemap) fetch themselves and an unconfigured widget waits for its editor
+  if (def.field && isStreamMode(def.viewMode)) {
+    fetchWidgets([def]);
+  }
+  // bring the new widget into view + flash it (it may be below the fold)
+  scrollToWidget(def.id);
 };
 
 // Remove a single widget by id without re-fetching (parent-initiated)
@@ -1147,6 +1217,7 @@ defineExpose({
   reloadSummary: generateSummary,
   addWidget,
   removeWidget,
+  openEdit,
   getWidgets,
   exportAllPNG,
   cancelLoading,
@@ -1300,6 +1371,16 @@ defineExpose({
 /* Widget wrapper for drag-and-drop */
 .widget-wrapper {
   position: relative;
+}
+
+/* Briefly ring a freshly-added widget so it's noticed after scrolling */
+.widget-wrapper.widget-flash {
+  border-radius: 8px;
+  animation: widgetFlash 1.8s ease-out;
+}
+@keyframes widgetFlash {
+  0% { box-shadow: 0 0 0 3px rgb(var(--v-theme-foreground-accent)); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
 }
 
 /* Drag handle for reordering widgets */

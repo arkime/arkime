@@ -1,4 +1,4 @@
-use Test::More tests => 191;
+use Test::More tests => 197;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -485,3 +485,24 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
         startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr
     }), $token);
     ok (defined $sumErr->{error}, "summary requires fields or widgets");
+
+    # --- empty widgets[] -> stats chunk only (no widget chunks) ---
+    my $sumStatsOnly = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr, widgets => []
+    }), $token);
+    is (ref($sumStatsOnly), "ARRAY", "summary empty widgets returns an array");
+    is ($sumStatsOnly->[0]->{sessions}, 3, "summary empty widgets still returns stats");
+    my @sumWidgetChunks = grep { ref($_) eq "HASH" && defined $_->{id} } @$sumStatsOnly;
+    is (scalar @sumWidgetChunks, 0, "summary empty widgets has no widget chunks");
+
+    # --- noStats skips the stats chunk (incremental single-widget fetch) ---
+    my $sumNoStats = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, noStats => \1,
+        expression => $sumExpr, widgets => [{ id => "n1", field => "protocols", length => 10 }]
+    }), $token);
+    is (ref($sumNoStats), "ARRAY", "summary noStats returns an array");
+    my @noStatsBands = grep { ref($_) eq "HASH" && defined $_->{sessions} } @$sumNoStats;
+    is (scalar @noStatsBands, 0, "summary noStats omits the stats chunk");
+    my ($n1) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "n1" } @$sumNoStats;
+    ok (defined $n1, "summary noStats still returns the widget chunk");

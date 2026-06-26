@@ -114,7 +114,9 @@ const percentageLabel = computed(() => {
 <style scoped>
 .summary-tooltip {
   position: fixed;
-  z-index: 9999;
+  /* below Vuetify's overlay range (~2000+) so the session-field dropdown menu
+     inside the popover renders above it, not behind */
+  z-index: 1900;
   background: rgb(var(--v-theme-quaternary-lightest));
   border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 3px;

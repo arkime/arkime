@@ -42,6 +42,49 @@ SPDX-License-Identifier: Apache-2.0
               </v-list>
             </v-menu>
 
+            <!-- chart color palette -->
+            <v-menu>
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  size="large"
+                  variant="flat"
+                  color="secondary"
+                  :aria-label="$t('sessions.summary.colorPalette')">
+                  <v-icon icon="mdi-palette" />
+                  <v-icon
+                    end
+                    icon="mdi-menu-down" />
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="500">
+                    {{ $t('sessions.summary.colorPalette') }}
+                  </v-tooltip>
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-for="p in palettes"
+                  :key="p.value"
+                  :active="colorScheme === p.value"
+                  @click="setColorScheme(p.value)">
+                  <v-list-item-title>{{ p.label }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
+            <!-- add a widget -->
+            <v-btn
+              size="large"
+              variant="flat"
+              color="secondary"
+              @click="addDashboardWidget">
+              <v-icon
+                start
+                icon="mdi-plus" />
+              {{ $t('sessions.summary.addWidget') }}
+            </v-btn>
+
             <!-- export all charts as PNG -->
             <v-btn
               :aria-label="$t('sessions.summary.exportAllPNG')"
@@ -57,9 +100,8 @@ SPDX-License-Identifier: Apache-2.0
               </v-tooltip>
             </v-btn>
 
-            <!-- summary field visibility + config group -->
+            <!-- save / load dashboard config -->
             <v-btn-group
-              divided
               variant="flat"
               color="secondary"
               class="dashboard-btn-group">
@@ -67,14 +109,6 @@ SPDX-License-Identifier: Apache-2.0
                    force them back to density-compact + size-large to match the
                    sibling toolbar buttons -->
               <v-defaults-provider :defaults="{ VBtn: { density: 'compact', size: 'large' } }">
-                <FieldSelectDropdown
-                  :selected-fields="selectedFields"
-                  :tooltip-text="$t('sessions.summary.toggleFields')"
-                  :search-placeholder="$t('sessions.summary.searchFields')"
-                  :include-summary-fields="true"
-                  field-id-key="exp"
-                  @toggle="toggleSummaryField"
-                  @clear="clearSummaryFields" />
                 <SummaryConfigDropdown
                   :current-config="currentDashboardConfig"
                   @load="loadSummaryConfigFromShareable"
@@ -134,6 +168,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="summaryView"
         :widgets="widgets"
         :column-count="columnCount"
+        :color-scheme="colorScheme"
         @update-visualizations="updateVisualizationsData"
         @widget-config-changed="updateWidgetConfigs"
         @streaming-state="summaryStreaming = $event"
@@ -173,28 +208,15 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
-import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 import Utils from '../utils/utils';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
+import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
+import { DEFAULT_VIEW_MODES } from '../summary/widgets/viewModes';
 
 const DashboardService = createShareableService('summaryConfig');
-
-// Default per-field widget view modes (mirrors the server's fieldMetadata)
-const DEFAULT_VIEW_MODES = {
-  ip: 'bar',
-  'ip.src': 'bar',
-  'ip.dst': 'bar',
-  'port.src': 'bar',
-  'port.dst': 'bar',
-  protocols: 'pie',
-  tags: 'pie',
-  'ip.dst:port': 'table',
-  'host.http': 'table',
-  'dns.query.host': 'table'
-};
 
 export default {
   name: 'Arkime',
@@ -204,7 +226,6 @@ export default {
     PageLayout,
     ArkimeVisualizations,
     ArkimeSummaryView,
-    FieldSelectDropdown,
     SummaryConfigDropdown
   },
   data: function () {
@@ -212,6 +233,8 @@ export default {
       // Dashboard configuration
       widgets: [],
       columnCount: 2,
+      colorScheme: 'rainbow',
+      palettes: CHART_PALETTES,
       // Visualization data
       mapData: undefined,
       graphData: undefined,
@@ -238,14 +261,11 @@ export default {
       }
       return this.user.settings.timelineDataFilters.map(i => FieldService.getField(i));
     },
-    // Field expressions currently on the dashboard (drives the field toggle dropdown)
-    selectedFields: function () {
-      return this.widgets.map(w => w.field);
-    },
     // Current dashboard configuration for saving (layout + widgets)
     currentDashboardConfig: function () {
       return {
         columnCount: this.columnCount,
+        colorScheme: this.colorScheme,
         widgets: this.widgets
       };
     }
@@ -315,25 +335,17 @@ export default {
       this.columnCount = n;
       this.saveDashboardConfig();
     },
-    toggleSummaryField: function (fieldExp) {
-      // The field dropdown is a presence toggle: turning a field off removes
-      // every widget for that field (duplicates are still creatable via the
-      // per-widget edit modal's change-field path), turning it on adds one.
-      const matching = this.widgets.filter(w => w.field === fieldExp);
-      if (matching.length) {
-        this.widgets = this.widgets.filter(w => w.field !== fieldExp);
-        matching.forEach(w => this.$refs.summaryView?.removeWidget?.(w.id));
-      } else {
-        const def = this.makeWidgetDef(fieldExp);
-        this.widgets.push(def);
-        this.$refs.summaryView?.addWidget?.(def);
-      }
+    setColorScheme: function (scheme) {
+      this.colorScheme = scheme;
       this.saveDashboardConfig();
     },
-    clearSummaryFields: function () {
-      this.widgets = [];
-      this.reloadSummaryView();
-      this.saveDashboardConfig();
+    addDashboardWidget: function () {
+      // a new widget has no field yet — add it and open the editor to configure.
+      // Don't persist until it's configured (saved) or it'll be pruned on cancel.
+      const def = this.makeWidgetDef('');
+      this.widgets.push(def);
+      this.$refs.summaryView?.addWidget?.(def);
+      this.$refs.summaryView?.openEdit?.(def.id);
     },
     // Summary emits the full widget list after any per-widget change
     // (view mode, metric, edit, reorder, remove)
@@ -381,6 +393,7 @@ export default {
       if (cfg?.columnCount === 2 || cfg?.columnCount === 3) {
         this.columnCount = cfg.columnCount;
       }
+      this.colorScheme = normalizePalette(cfg?.colorScheme);
     },
     loadDashboardConfig: async function () {
       // Prefer the user's default dashboard if one is set
