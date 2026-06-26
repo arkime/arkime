@@ -882,6 +882,7 @@ class Integration {
         values,
         globalConfiged,
         homePage: integration.homePage,
+        icon: integration.icon,
         locked: integration.locked
       };
     }

@@ -83,6 +83,8 @@
 # 84 - added shareables index
 # 85 - added packetRange field to sessions
 # 86 - added totpSecret field to users
+# 87 - added dismissedHelpNotes field to users
+# 88 - added interfaceOffsets to files
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -96,7 +98,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 87;
+my $VERSION = 88;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -652,6 +654,10 @@ sub filesUpdate
     },
     "sessionsPresent": {
       "type": "long"
+    },
+    "interfaceOffsets": {
+      "type": "long",
+      "index": false
     }
   }
 }';
@@ -9762,11 +9768,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         shareablesUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber <= 86) {
+        filesUpdate();
+    } elsif ($main::versionNumber <= 88) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         usersUpdate();
+        filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

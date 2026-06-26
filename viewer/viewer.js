@@ -1855,16 +1855,26 @@ app.get( // session body file image endpoint
   SessionAPIs.getFilePNG
 );
 
+app.get( // session pcapng endpoint
+  // NOTE: pcapng must be registered before pcap because the pcap route pattern
+  // /\/sessions.pcap.*/ also matches .pcapng and would otherwise shadow it.
+  ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
+  [logAction(), User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.getPCAPNG
+);
+
 app.get( // session pcap endpoint
   ['/api/sessions[/.]pcap', /\/sessions.pcap.*/],
   [logAction(), User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getPCAP
 );
 
-app.get( // session pcapng endpoint
-  ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
-  [logAction(), User.checkPermissions(['disablePcapDownload'])],
-  SessionAPIs.getPCAPNG
+app.get( // session node pcapng endpoint
+  // NOTE: pcapng must be registered before pcap because the pcap route pattern
+  // :id[/.]pcap* also matches .pcapng and would otherwise shadow it.
+  ['/api/session/:nodeName/:id[/.]pcapng'],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session node pcap endpoint
@@ -1877,12 +1887,6 @@ app.post( // session node pcap endpoint
   ['/api/session/:nodeName/:id[/.]pcap*'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.postPCAPFromNode
-);
-
-app.get( // session node pcapng endpoint
-  ['/api/session/:nodeName/:id[/.]pcapng'],
-  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint

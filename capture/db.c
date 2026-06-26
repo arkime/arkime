@@ -35,7 +35,7 @@ LOCAL const char      **geoCityPath;
 LOCAL const char      **geoASNNumPath;
 LOCAL const char      **geoASNOrgPath;
 
-#define ARKIME_MIN_DB_VERSION 83
+#define ARKIME_MIN_DB_VERSION 85
 
 int                     arkimeDbVersion = 0;
 extern uint64_t         totalPackets;

@@ -434,7 +434,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- integration list -->
             <div class="integration-list ml-2 mr-3 mt-2">
               <div
-                v-for="{ key, setting, status, itypes } in displayedIntegrationRows"
+                v-for="{ key, setting, status, itypes, icon } in displayedIntegrationRows"
                 :key="key"
                 class="integration-row"
                 :class="[`integration-row--${status.id}`, { 'integration-row--open': expandedIntegrations[key] }]">
@@ -452,10 +452,10 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon :icon="expandedIntegrations[key] ? 'mdi-chevron-down' : 'mdi-chevron-right'" />
                   </button>
                   <img
-                    v-if="getIntegrations[key]"
+                    v-if="icon"
                     class="integration-row__icon"
                     :alt="key"
-                    :src="getIntegrations[key].icon">
+                    :src="icon">
                   <span
                     v-else
                     class="integration-row__icon" />
@@ -521,13 +521,15 @@ SPDX-License-Identifier: Apache-2.0
                         v-model="setting.values[name]" />
                       <v-text-field
                         v-else
+                        type="text"
+                        autocomplete="off"
                         variant="outlined"
                         density="compact"
                         hide-details="auto"
                         :disabled="setting.locked"
                         v-model="setting.values[name]"
                         :rules="[(value) => !field.required || !!value?.length]"
-                        :type="field.password && !revealedFields[`${key}.${name}`] ? 'password' : 'text'">
+                        :class="{ 'masked-input': field.password && !revealedFields[`${key}.${name}`] }">
                         <template #label>
                           {{ name }}<span
                             class="text-warning"
@@ -966,7 +968,10 @@ export default {
         key,
         setting,
         status: this.statusOf(setting),
-        itypes: this.getIntegrations[key]?.itypes ?? []
+        itypes: this.getIntegrations[key]?.itypes ?? [],
+        // parent integrations (empty itypes) aren't in getIntegrations, so fall
+        // back to the icon the settings endpoint returns for the row itself
+        icon: this.getIntegrations[key]?.icon ?? setting.icon
       }));
     },
     // rows narrowed by the selected status filter; an expanded row stays visible
@@ -1610,6 +1615,11 @@ export default {
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.85rem;
   line-height: 1.5;
+}
+
+/* mask secret values without type=password, which triggers Chrome/LastPass autofill */
+.masked-input :deep(input) {
+  -webkit-text-security: disc;
 }
 
 .itype-group-container {

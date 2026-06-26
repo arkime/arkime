@@ -1067,33 +1067,66 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #writePcapNg (res, id, writerOptions, doneCb) {
-    let b = Buffer.alloc(0xfffe);
+    // One buffered EPB must fit entirely: a max-length packet (16-byte pcap
+    // record header + up to ARKIME_PACKET_MAX_LEN=0x10000 bytes of frame) plus
+    // the EPB header, padding, and trailing block length. 0x10100 leaves room.
+    const ngBufSize = 0x10100;
+    let b = Buffer.alloc(ngBufSize);
     let boffset = 0;
+
+    // Map of link type -> interface id, shared across every session/file in this
+    // export (writerOptions persists for the whole download). This merges and
+    // dedups interfaces from multiple pcapng/pcap files: each distinct link type
+    // gets exactly one Interface Description Block, and each packet's EPB
+    // interface_id is remapped to it.
+    writerOptions.ngInterfaces ??= new Map();
+    const ngInterfaces = writerOptions.ngInterfaces;
+
+    // Emit one IDB (lazily) the first time a link type is seen. IDBs go straight
+    // to res, flushing any buffered EPBs first so they precede the EPBs that
+    // reference them.
+    const interfaceIdFor = (pcap, buffer) => {
+      const linkType = (buffer.ngLinkType !== undefined) ? buffer.ngLinkType : pcap.linkType;
+      let ifaceId = ngInterfaces.get(linkType);
+      if (ifaceId === undefined) {
+        ifaceId = ngInterfaces.size;
+        if (boffset > 0) {
+          res.write(b.slice(0, boffset));
+          boffset = 0;
+          b = Buffer.alloc(ngBufSize);
+        }
+        res.write(Pcap.makeIdbNg(linkType, 262144));
+        ngInterfaces.set(linkType, ifaceId);
+      }
+      return ifaceId;
+    };
 
     SessionAPIs.processSessionId(id, true, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
-        res.write(pcap.getHeaderNg());
+        res.write(Pcap.makeShbNg());
         writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb) => {
+      const interfaceId = interfaceIdFor(pcap, buffer);
+
       if (boffset + buffer.length + 20 > b.length) {
         res.write(b.slice(0, boffset));
         boffset = 0;
-        b = Buffer.alloc(0xfffe);
+        b = Buffer.alloc(ngBufSize);
       }
 
       /* Need to write the ng block, and convert the old timestamp */
       b.writeUInt32LE(0x00000006, boffset); // Block Type
       const len = ((buffer.length + 20 + 3) >> 2) << 2;
       b.writeUInt32LE(len, boffset + 4); // Block Len 1
-      b.writeUInt32LE(0, boffset + 8); // Interface Id
+      b.writeUInt32LE(interfaceId, boffset + 8); // Interface Id
 
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
       b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
       b.writeUInt32LE(time % 0x100000000, boffset + 16); // Timestamp Low
 
-      buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
+      buffer.copy(b, boffset + 20, 8, buffer.length); // cap_len, packet_len, frame
       b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
       boffset += len - 8;
 
