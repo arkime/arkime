@@ -1,4 +1,4 @@
-use Test::More tests => 171;
+use Test::More tests => 191;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -413,3 +413,75 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
         is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=hpBodyUser")->code,  403, "hidePcap blocks $url");
         is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=dpdBodyUser")->code, 403, "disablePcapDownload blocks $url");
     }
+
+################################################################################
+# /api/sessions/summary - modular dashboard widgets (#3971)
+#   Responses stream as a JSON array: [ {stats}, {widget}, ..., {} ]
+#   The endpoint is token protected (checkHeaderToken) so POST with a token.
+#   The startTime/stopTime window below matches the "short" facets test (3 sessions).
+################################################################################
+    my $sumExpr = "file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap";
+
+    # --- legacy fields-string path (back compat) ---
+    my $sumLegacy = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr, fields => "protocols,ip.src"
+    }), $token);
+
+    is (ref($sumLegacy), "ARRAY", "summary streams a JSON array");
+    is ($sumLegacy->[0]->{sessions}, 3, "summary legacy stats sessions");
+    ok (defined $sumLegacy->[0]->{bytes}, "summary legacy stats has bytes");
+    ok (defined $sumLegacy->[0]->{graph}, "summary legacy stats has graph");
+
+    my ($protoW) = grep { ref($_) eq "HASH" && ($_->{field} // "") eq "protocols" } @$sumLegacy;
+    ok (defined $protoW, "summary legacy has protocols widget");
+    is ($protoW->{viewMode}, "pie", "summary legacy protocols default viewMode");
+    is ($protoW->{metricType}, "sessions", "summary legacy protocols default metricType");
+    is (ref($protoW->{data}), "ARRAY", "summary legacy protocols data is an array");
+
+    my ($srcW) = grep { ref($_) eq "HASH" && ($_->{field} // "") eq "ip.src" } @$sumLegacy;
+    ok (defined $srcW, "summary legacy has ip.src widget");
+    is ($srcW->{viewMode}, "bar", "summary legacy ip.src default viewMode");
+
+    # --- per-widget widgets[] path: per-widget length + two widgets on one field ---
+    my $sumWidgets = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr,
+        widgets => [
+            { id => "wAll", field => "protocols", length => 100, order => "desc" },
+            { id => "wOne", field => "protocols", length => 1,   order => "desc" }
+        ]
+    }), $token);
+
+    is ($sumWidgets->[0]->{sessions}, 3, "summary widgets stats sessions");
+    my ($wAll) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "wAll" } @$sumWidgets;
+    my ($wOne) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "wOne" } @$sumWidgets;
+    ok (defined $wAll, "summary widgets wAll chunk present");
+    ok (defined $wOne, "summary widgets wOne chunk present (same field, distinct id)");
+    is ($wAll->{field}, "protocols", "wAll echoes field");
+    is ($wOne->{length}, 1, "wOne echoes per-widget length");
+    cmp_ok (scalar(@{$wOne->{data}}), "<=", 1, "wOne honors per-widget length 1");
+    cmp_ok (scalar(@{$wAll->{data}}), ">=", scalar(@{$wOne->{data}}), "wAll returns at least as many items as wOne");
+
+    # --- per-widget local expression is ANDed with the global search ---
+    # global = socks only; the andFilter widget adds file=bigendian, so the
+    # combined query matches nothing (a session is never in two files)
+    my $sumExpr2 = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => "file=$pwd/socks-http-example.pcap",
+        widgets => [
+            { id => "noFilter",  field => "protocols", length => 100 },
+            { id => "andFilter", field => "protocols", length => 100, expression => "file=$pwd/bigendian.pcap" }
+        ]
+    }), $token);
+
+    my ($noF)  = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "noFilter" } @$sumExpr2;
+    my ($andF) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "andFilter" } @$sumExpr2;
+    cmp_ok (scalar(@{$noF->{data}}), ">=", 1, "unfiltered widget returns data");
+    is (scalar(@{$andF->{data}}), 0, "per-widget expression is ANDed with global (no session is in both files)");
+
+    # --- missing widgets/fields -> 400 ---
+    my $sumErr = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr
+    }), $token);
+    ok (defined $sumErr->{error}, "summary requires fields or widgets");
