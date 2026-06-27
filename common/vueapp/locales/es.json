@@ -1745,6 +1745,7 @@
       "usersMustBeString": "El campo de usuarios debe ser una cadena de texto",
       "created": "¡Consulta creada!",
       "createFailed": "Error al crear la consulta",
+      "retrieveFailed": "Error al recuperar las consultas periódicas",
       "badKey": "Clave de consulta inválida",
       "missingKey": "Falta la clave de consulta",
       "updated": "¡Consulta periódica actualizada!",

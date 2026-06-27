@@ -424,11 +424,12 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_UDP("ssdp", "M-SEARCH ");
     SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY * ");
-    SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY ALIVE SDDP/");
     arkime_parsers_classifier_register_udp("ssdp", NULL, 0, (uint8_t *)"HTTP/1.", 7, ssdp_response_classify);
 
     SIMPLE_CLASSIFY_UDP("bsdp", "SEARCH BSDP/");
     SIMPLE_CLASSIFY_UDP("bsdp", "NOTIFY BSDP/");
+
+    SIMPLE_CLASSIFY_UDP("sddp", "NOTIFY ALIVE SDDP/");
 
     SIMPLE_CLASSIFY_UDP("plex-gdm", "UPDATE * ");
     SIMPLE_CLASSIFY_UDP("plex-gdm", "VUPDATE * ");

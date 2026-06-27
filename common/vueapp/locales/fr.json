@@ -1745,6 +1745,7 @@
       "usersMustBeString": "Le champ des utilisateurs doit être une chaîne",
       "created": "Requête créée !",
       "createFailed": "Échec de la création de la requête",
+      "retrieveFailed": "Erreur lors de la récupération des requêtes périodiques",
       "badKey": "Clé de requête invalide",
       "missingKey": "Clé de requête manquante",
       "updated": "Requête périodique mise à jour !",

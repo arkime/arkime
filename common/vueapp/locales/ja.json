@@ -1745,6 +1745,7 @@
       "usersMustBeString": "ユーザーフィールドは文字列である必要があります",
       "created": "クエリを作成しました！",
       "createFailed": "クエリの作成に失敗しました",
+      "retrieveFailed": "定期クエリの取得エラー",
       "badKey": "無効なクエリキー",
       "missingKey": "クエリキーが未入力です",
       "updated": "定期クエリを更新しました！",

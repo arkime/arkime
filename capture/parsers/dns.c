@@ -325,7 +325,7 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
 
         BSB_EXPORT_rewind(*curbsb, 1);
 
-        if (ch & 0xc0) {
+        if ((ch & 0xc0) == 0xc0) {
             if (didPointer > 10) {
                 arkime_session_add_tag(session, "dns:bad-pointer-loop");
                 return 0;
@@ -341,6 +341,11 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
             BSB_INIT(tmpbsb, full + tpos, fulllen - tpos);
             curbsb = &tmpbsb;
             continue;
+        }
+
+        if (ch & 0xc0) {
+            // 0x40 and 0x80 are reserved label types (RFC 1035 4.1.4), not pointers
+            return 0;
         }
 
         if (BSB_LENGTH(nbsb)) {

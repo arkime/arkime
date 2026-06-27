@@ -1745,6 +1745,7 @@
       "usersMustBeString": "사용자 필드는 문자열이어야 합니다",
       "created": "쿼리가 생성되었습니다!",
       "createFailed": "쿼리 생성 실패",
+      "retrieveFailed": "주기적 쿼리 조회 오류",
       "badKey": "잘못된 쿼리 키",
       "missingKey": "쿼리 키가 없습니다",
       "updated": "주기적 쿼리가 업데이트되었습니다!",
