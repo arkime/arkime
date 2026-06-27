@@ -57,6 +57,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4068 Add some missing http methods to parser
   - #4074 Fix Geneve packets with protocol type 0 adding bogus 00:00:00:00:00:00 MACs
   - #4074 Fix pcap-over-IP client reader not connecting to IPv6 endpoints
+  - #4078 Fix radiotap headers >= 256 bytes parsing at the wrong offset (it_len read as 8-bit instead of 16-bit)
+  - #4078 Fix Linux cooked (SLL) VLAN frames misdispatching non-IP payloads to IP and not recording the VLAN id
+  - #4078 Classify Control4 SDDP as sddp instead of mislabeling it ssdp
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt

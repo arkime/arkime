@@ -491,6 +491,7 @@ void arkime_parser_init()
                                            "TURN XOR-PEER-ADDRESS port",
                                            ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                            "category", "port",
+                                           "aliases", "[\"stun.xor-peer-port\"]",
                                            (char *)NULL);
 
     attributesField = arkime_field_define("stun", "termfield",
