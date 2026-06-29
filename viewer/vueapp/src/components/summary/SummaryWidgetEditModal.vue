@@ -46,8 +46,8 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             style="min-width: 150px" />
 
-          <!-- Metric basis -->
-          <v-select
+          <!-- Metric basis: Sessions count, or any numeric field summed per value -->
+          <v-autocomplete
             v-model="form.metricType"
             :items="metricItems"
             :label="$t('sessions.summary.widget.metric')"
@@ -55,7 +55,8 @@ SPDX-License-Identifier: Apache-2.0
             density="compact"
             variant="outlined"
             hide-details
-            style="min-width: 150px" />
+            auto-select-first
+            style="min-width: 200px" />
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3">
@@ -239,10 +240,17 @@ const viewModeItems = computed(() => [
 // metric basis only applies to the count-based charts (not table/heatmap/treemap)
 const metricDisabled = computed(() => METRICLESS_VIEW_MODES.includes(form.value.viewMode));
 
+// Metric basis: session count plus every numeric (integer) field, summed per
+// value. Mirrors the timeline graph's metric set — Settings.vue uses the same
+// `type === 'integer'` criterion for its timeline data filters.
+const numericFields = computed(() => (store.state.fieldsArr || [])
+  .filter(f => f.type === 'integer')
+  .map(f => ({ title: f.friendlyName || f.exp, value: f.exp }))
+  .sort((a, b) => a.title.localeCompare(b.title)));
+
 const metricItems = computed(() => [
   { title: t('sessions.summary.sessions'), value: 'sessions' },
-  { title: t('sessions.summary.packets'), value: 'packets' },
-  { title: t('sessions.summary.bytes'), value: 'bytes' }
+  ...numericFields.value
 ]);
 
 // Standard limits, plus the widget's current value if it's a legacy/imported

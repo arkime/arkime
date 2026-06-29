@@ -1,4 +1,4 @@
-use Test::More tests => 197;
+use Test::More tests => 205;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -506,3 +506,32 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is (scalar @noStatsBands, 0, "summary noStats omits the stats chunk");
     my ($n1) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "n1" } @$sumNoStats;
     ok (defined $n1, "summary noStats still returns the widget chunk");
+
+    # --- per-widget metric basis: 'sessions' (count) vs a numeric field (summed) ---
+    my $sumMetric = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "mSess",  field => "protocols", length => 100, metricType => "sessions" },
+            { id => "mBytes", field => "protocols", length => 100, metricType => "bytes", order => "desc" }
+        ]
+    }), $token);
+
+    my ($mSess)  = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mSess" }  @$sumMetric;
+    my ($mBytes) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mBytes" } @$sumMetric;
+    ok (defined $mSess,  "summary metric sessions widget present");
+    ok (defined $mBytes, "summary metric bytes widget present");
+    is ($mBytes->{metricType}, "bytes", "summary metric widget echoes selected metricType");
+    cmp_ok (scalar(@{$mSess->{data}}), ">", 0, "summary metric sessions widget has data");
+
+    # sessions metric: the visualized value mirrors the session (doc) count
+    is ($mSess->{data}->[0]->{value}, $mSess->{data}->[0]->{sessions}, "summary sessions metric value equals session count");
+
+    # numeric-field metric: each item carries a summed value, Top N ordered by it
+    ok (exists $mBytes->{data}->[0]->{value}, "summary numeric metric data item has value");
+    cmp_ok ($mBytes->{data}->[0]->{value}, ">=", 0, "summary numeric metric value is non-negative");
+    my $metricOrdered = 1;
+    for (my $k = 1; $k < scalar(@{$mBytes->{data}}); $k++) {
+        $metricOrdered = 0 if $mBytes->{data}->[$k]->{value} > $mBytes->{data}->[$k - 1]->{value};
+    }
+    ok ($metricOrdered, "summary numeric metric Top N ordered by metric value desc");

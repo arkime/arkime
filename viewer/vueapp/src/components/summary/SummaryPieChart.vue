@@ -33,8 +33,7 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
   },
   colorScheme: {
     type: String,
@@ -108,7 +107,7 @@ const renderChart = async () => {
   const color = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
 
   const pie = d3.pie()
-    .value(d => d[props.metricType])
+    .value(d => d.value)
     .sort(null);
 
   const arc = d3.arc()

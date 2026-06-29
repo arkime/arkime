@@ -356,6 +356,7 @@ const toRequestWidget = (w) => ({
   field: w.field,
   length: w.length,
   order: w.order,
+  metricType: w.metricType,
   expression: widgetLocalExpression(w, store.state.views)
 });
 
@@ -813,8 +814,9 @@ const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
   const NS = 'http://www.w3.org/2000/svg';
   const added = [];
 
+  const metricIsBytes = /bytes/i.test(metricType || '');
   const formatValue = (val) => {
-    if (metricType === 'bytes') return humanReadableBytes(val || 0);
+    if (metricIsBytes) return humanReadableBytes(val || 0);
     return commaString(val || 0);
   };
 
@@ -827,7 +829,7 @@ const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
       const x = parseFloat(bar.getAttribute('x'));
       const y = parseFloat(bar.getAttribute('y'));
       const width = parseFloat(bar.getAttribute('width'));
-      const value = data[i]?.[metricType] || 0;
+      const value = data[i]?.value || 0;
 
       const text = document.createElementNS(NS, 'text');
       text.setAttribute('x', String(x + width / 2));
@@ -849,7 +851,7 @@ const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
       if (i >= data.length) return;
       const existingText = arc.querySelector('text');
       if (!existingText || !existingText.textContent) return; // Skip tiny slices with no label
-      const value = data[i]?.[metricType] || 0;
+      const value = data[i]?.value || 0;
       const transform = existingText.getAttribute('transform');
 
       const countText = document.createElementNS(NS, 'text');
@@ -1120,6 +1122,7 @@ const onEditSave = (updated) => {
     prev.field !== updated.field ||
     prev.length !== updated.length ||
     prev.order !== updated.order ||
+    (prev.metricType || 'sessions') !== (updated.metricType || 'sessions') ||
     (prev.expression || '') !== (updated.expression || '') ||
     (prev.view || '') !== (updated.view || ''));
 

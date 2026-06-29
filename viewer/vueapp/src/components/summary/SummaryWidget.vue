@@ -106,8 +106,7 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
   },
   // Data and visualization props
   data: {

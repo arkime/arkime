@@ -3211,7 +3211,7 @@ class SessionAPIs {
         // viewMode/metricType are owned by the client; the response only echoes
         // sensible field-based defaults for the legacy fields-string callers.
         viewMode: metadata.viewMode,
-        metricType: metadata.metricType
+        metricType: (ArkimeUtil.isString(w.metricType) && w.metricType.length > 0) ? w.metricType : metadata.metricType
       };
 
       if (specialFields.includes(fieldExp)) {
@@ -3225,21 +3225,35 @@ class SessionAPIs {
           spec.dbField = field.dbField;
         }
       }
+
+      // Metric basis: 'sessions' aggregates by session count (doc_count); any
+      // other value is a numeric field exp that gets summed per bucket and used
+      // to order the Top/Bottom N. Unknown/non-numeric metrics fall back to count.
+      if (spec.metricType && spec.metricType !== 'sessions') {
+        const metricField = fieldsMap[spec.metricType];
+        if (metricField?.dbField) { spec.metricDbField = metricField.dbField; }
+      }
+
       widgetSpecs.push(spec);
     }
 
-    function convert (agg, limit) {
+    // `metricKey` is the agg field holding the widget's selected metric sum
+    // (undefined when the metric is sessions/doc_count). `value` is the quantity
+    // the chart visualizes; sessions/bytes/packets remain for tooltip context.
+    function convert (agg, limit, metricKey) {
       if (!agg || !agg.buckets) {
         return [];
       }
 
       const results = [];
       for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
+        const bucket = agg.buckets[i];
         results.push({
-          item: agg.buckets[i].key,
-          sessions: agg.buckets[i].doc_count,
-          bytes: agg.buckets[i].bytes.value,
-          packets: agg.buckets[i].packets.value
+          item: bucket.key,
+          sessions: bucket.doc_count,
+          bytes: bucket.bytes.value,
+          packets: bucket.packets.value,
+          value: metricKey ? (bucket[metricKey]?.value ?? 0) : bucket.doc_count
         });
       }
       return results;
@@ -3398,6 +3412,17 @@ class SessionAPIs {
           delete wquery.sort;
           wquery.aggregations = {};
 
+          // Per-widget metric: when a numeric field is selected, sum it per
+          // bucket and order Top/Bottom N by that sum; otherwise order by count.
+          const widgetAggs = { ...extraAggs };
+          let termsOrder;
+          if (spec.metricDbField) {
+            widgetAggs.metricValue = { sum: { field: spec.metricDbField } };
+            termsOrder = { metricValue: spec.order };
+          } else {
+            termsOrder = { _count: spec.order };
+          }
+
           if (spec.isSpecial) {
             // Special fields use Painless scripts (no direct dbField mapping)
             const source = spec.field === 'ip'
@@ -3407,9 +3432,9 @@ class SessionAPIs {
               terms: {
                 script: { source, lang: 'painless' },
                 size: spec.length,
-                order: { _count: spec.order }
+                order: termsOrder
               },
-              aggs: extraAggs
+              aggs: widgetAggs
             };
           } else {
             // Regular field aggregations
@@ -3417,9 +3442,9 @@ class SessionAPIs {
               terms: {
                 field: spec.dbField,
                 size: spec.length,
-                order: { _count: spec.order }
+                order: termsOrder
               },
-              aggs: extraAggs
+              aggs: widgetAggs
             };
           }
 
@@ -3435,7 +3460,7 @@ class SessionAPIs {
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration
           };
-          let data = convert(phase2.aggregations[spec.aggName], spec.length);
+          let data = convert(phase2.aggregations[spec.aggName], spec.length, spec.metricDbField ? 'metricValue' : undefined);
           if (spec.field === 'ip.dst:port') {
             data = data.map(ipDstPortProcessor);
           }

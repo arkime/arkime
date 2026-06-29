@@ -87,7 +87,7 @@ The grid is a fixed 4 columns wide; widgets span 1-4 columns and 1-4 rows.
 | `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
 | `data.widgets[].field` | string | Arkime field expression (e.g. `source.ip`, `protocols`) |
 | `data.widgets[].viewMode` | string | Widget display mode (`bar`, `pie`, `table`, `heatmap`, `treemap`). Default: `bar` |
-| `data.widgets[].metricType` | string | Metric to display (`sessions`, `packets`, `bytes`). Default: `sessions` |
+| `data.widgets[].metricType` | string | Quantity the bar/pie chart visualizes: `sessions` (session count) or any numeric (integer) field exp (e.g. `bytes`, `packets`, `databytes`, `dns.query.cnt`), summed per value. Top/Bottom N is ordered by this metric. Default: `sessions` |
 | `data.widgets[].length` | number | Max results for this widget (10, 20, 50, 100). Default: `20` |
 | `data.widgets[].order` | string | Sort order: `asc` (Bottom) or `desc` (Top). Default: `desc` |
 | `data.widgets[].expression` | string | Optional local filter expression, ANDed with the global search (and with `view` if set) |

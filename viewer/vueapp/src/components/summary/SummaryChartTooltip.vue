@@ -29,18 +29,17 @@
             <span class="stat-label">{{ $t('sessions.summary.sessions') }}:</span>
             <span class="stat-value">{{ formatNumber(data.sessions) }}</span>
           </div>
-          <div class="stat-row">
-            <span class="stat-label">{{ $t('sessions.summary.packets') }}:</span>
-            <span class="stat-value">{{ formatNumber(data.packets) }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">{{ $t('sessions.summary.bytes') }}:</span>
-            <span class="stat-value">{{ formatBytes(data.bytes) }}</span>
+          <!-- The widget's selected metric (when it isn't the session count) -->
+          <div
+            v-if="showMetricRow"
+            class="stat-row">
+            <span class="stat-label">{{ metricLabel }}:</span>
+            <span class="stat-value">{{ formattedMetric }}</span>
           </div>
           <div
             v-if="percentage !== null"
             class="stat-row">
-            <span class="stat-label">{{ percentageLabel }}:</span>
+            <span class="stat-label">{{ $t('sessions.summary.percentOfTotal') }}:</span>
             <span class="stat-value">{{ percentage.toFixed(1) }}%</span>
           </div>
         </div>
@@ -51,11 +50,9 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import ArkimeSessionField from '../sessions/SessionField.vue';
-
-const { t } = useI18n();
+import FieldService from '../search/FieldService';
 
 const props = defineProps({
   visible: {
@@ -80,12 +77,32 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
   }
 });
 
 defineEmits(['close']);
+
+// The selected metric's field config (null when the metric is the session count)
+const metricField = computed(() => {
+  if (!props.metricType || props.metricType === 'sessions') { return null; }
+  return FieldService.getField(props.metricType, true);
+});
+
+const metricLabel = computed(() => metricField.value?.friendlyName || props.metricType);
+
+// Byte-valued metrics get human-readable formatting; everything else is a count
+const metricIsBytes = computed(() => {
+  if (!props.metricType) { return false; }
+  return /bytes/i.test(props.metricType) || /bytes/i.test(metricField.value?.dbField || '');
+});
+
+const showMetricRow = computed(() => metricField.value != null && props.data?.value != null);
+
+const formattedMetric = computed(() => {
+  const v = props.data?.value || 0;
+  return metricIsBytes.value ? humanReadableBytes(v) : commaString(v);
+});
 
 const tooltipStyle = computed(() => {
   // Position tooltip to the top-right of the pointer
@@ -100,15 +117,6 @@ const tooltipStyle = computed(() => {
 const formatNumber = (num) => {
   return commaString(num || 0);
 };
-
-const formatBytes = (bytes) => {
-  return humanReadableBytes(bytes || 0);
-};
-
-const percentageLabel = computed(() => {
-  const key = `sessions.summary.${props.metricType}Percent`;
-  return t(key);
-});
 </script>
 
 <style scoped>

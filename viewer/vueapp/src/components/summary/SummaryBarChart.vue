@@ -33,8 +33,7 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
   },
   colorScheme: {
     type: String,
@@ -120,7 +119,7 @@ const renderChart = async () => {
     .padding(0.1);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(props.data, d => d[props.metricType])])
+    .domain([0, d3.max(props.data, d => d.value)])
     .range([height, 0]);
 
   // Dashboard palette (shared with the pie/treemap charts)
@@ -136,8 +135,8 @@ const renderChart = async () => {
     .attr('class', 'bar')
     .attr('x', d => x(d.item))
     .attr('width', x.bandwidth())
-    .attr('y', d => y(d[props.metricType]))
-    .attr('height', d => height - y(d[props.metricType]))
+    .attr('y', d => y(d.value))
+    .attr('height', d => height - y(d.value))
     .attr('fill', (d, i) => colors(i))
     .style('cursor', 'pointer')
     .on('mouseover', handlers.mouseover)
