@@ -1219,7 +1219,7 @@ class Auth {
     const signature = Buffer.from(parts[2], 'hex');
     const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-    if (!crypto.timingSafeEqual(signature, h)) {
+    if (signature.length !== h.length || !crypto.timingSafeEqual(signature, h)) {
       throw new Error('Incorrect signature');
     }
 
