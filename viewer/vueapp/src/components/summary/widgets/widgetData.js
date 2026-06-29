@@ -10,12 +10,29 @@ filter and the global time window.
 import { fetchWrapper } from '@common/fetchWrapper.js';
 
 /**
- * Combine the global search expression with a widget's local filter expression.
+ * A widget's local filter = its saved View's expression AND its own expression
+ * (either may be unset). The View is resolved from store.state.views by id/name.
+ * @returns {string|undefined} the combined local expression (or undefined)
+ */
+export function widgetLocalExpression (widget, views) {
+  const parts = [];
+  if (widget?.view) {
+    const v = (views || []).find(x => x.id === widget.view || x.name === widget.view);
+    if (v?.expression) { parts.push(v.expression); }
+  }
+  if (widget?.expression) { parts.push(widget.expression); }
+  if (!parts.length) { return undefined; }
+  return parts.length === 1 ? parts[0] : parts.map(p => `(${p})`).join(' && ');
+}
+
+/**
+ * Combine the global search expression with a widget's local filter (View +
+ * expression).
  * @returns {string|undefined} the combined expression (or undefined if neither)
  */
-export function combinedExpression (route, widget) {
+export function combinedExpression (route, store, widget) {
   const globalExp = route.query.expression;
-  const localExp = widget?.expression;
+  const localExp = widgetLocalExpression(widget, store.state.views);
   if (globalExp && localExp) { return `(${globalExp}) && (${localExp})`; }
   return localExp || globalExp || undefined;
 }
@@ -27,7 +44,7 @@ export function combinedExpression (route, widget) {
 export function buildWidgetParams (route, store, widget, extra = {}) {
   const params = { ...extra };
 
-  const exp = combinedExpression(route, widget);
+  const exp = combinedExpression(route, store, widget);
   if (exp) { params.expression = exp; }
 
   for (const p of ['view', 'bounding', 'interval', 'cluster']) {

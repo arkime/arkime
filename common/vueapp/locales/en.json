@@ -422,6 +422,9 @@
         "double": "Double",
         "localFilter": "Local filter",
         "localFilterTip": "A search expression applied on top of the global search, only for this widget",
+        "localView": "View",
+        "noView": "No view",
+        "noViewsHint": "No views configured — create one in the search bar to apply it to a widget",
         "fieldRequired": "A field is required"
       },
       "config": {

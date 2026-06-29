@@ -60,6 +60,7 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
   "type": "summaryConfig",
   "data": {
     "columnCount": 2,
+    "colorScheme": "rainbow",
     "widgets": [
       {
         "id": "ab12cd34",
@@ -69,6 +70,7 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
         "length": 20,
         "order": "desc",
         "expression": "protocols == tls",
+        "view": "",
         "height": "standard",
         "width": "standard",
         "title": ""
@@ -81,13 +83,15 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
 | Field | Type | Description |
 |-------|------|-------------|
 | `data.columnCount` | number | Grid column count (`2` or `3`). Default: `2` |
+| `data.colorScheme` | string | Dashboard chart palette (`rainbow`, `tableau10`, `category10`, `viridis`, `cool`, `warm`, `spectral`). Default: `rainbow` |
 | `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
 | `data.widgets[].field` | string | Arkime field expression (e.g. `source.ip`, `protocols`) |
-| `data.widgets[].viewMode` | string | Widget display mode (`bar`, `pie`, `table`). Default: `bar` |
+| `data.widgets[].viewMode` | string | Widget display mode (`bar`, `pie`, `table`, `heatmap`, `treemap`). Default: `bar` |
 | `data.widgets[].metricType` | string | Metric to display (`sessions`, `packets`, `bytes`). Default: `sessions` |
 | `data.widgets[].length` | number | Max results for this widget (10, 20, 50, 100). Default: `20` |
 | `data.widgets[].order` | string | Sort order: `asc` (Bottom) or `desc` (Top). Default: `desc` |
-| `data.widgets[].expression` | string | Optional local filter, ANDed with the global search |
+| `data.widgets[].expression` | string | Optional local filter expression, ANDed with the global search (and with `view` if set) |
+| `data.widgets[].view` | string | Optional saved-view id used as a local filter; its expression is ANDed with the global search |
 | `data.widgets[].height` | string | Grid row span: `standard` or `double`. Default: `standard` |
 | `data.widgets[].width` | string | Grid column span: `standard` or `double`. Default: `standard` |
 | `data.widgets[].title` | string | Optional custom widget title (overrides the field name) |

@@ -248,6 +248,7 @@ import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode } from './widgets/viewModes';
+import { widgetLocalExpression } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -357,13 +358,15 @@ const makeEntry = (def) => ({
   error: null
 });
 
-// Map a widget definition to the request payload (only what the server needs)
+// Map a widget definition to the request payload (only what the server needs).
+// The View (if any) is folded into the local expression here; the server ANDs
+// it with the global search.
 const toRequestWidget = (w) => ({
   id: w.id,
   field: w.field,
   length: w.length,
   order: w.order,
-  expression: w.expression || undefined
+  expression: widgetLocalExpression(w, store.state.views)
 });
 
 // Cancel an in-progress summary stream
@@ -1127,7 +1130,8 @@ const onEditSave = (updated) => {
     prev.field !== updated.field ||
     prev.length !== updated.length ||
     prev.order !== updated.order ||
-    (prev.expression || '') !== (updated.expression || ''));
+    (prev.expression || '') !== (updated.expression || '') ||
+    (prev.view || '') !== (updated.view || ''));
 
   summary.value.fields[index] = { ...prev, ...updated };
   emitWidgetConfigChange();
@@ -1169,6 +1173,7 @@ const getWidgets = () => {
     length: w.length,
     order: w.order,
     expression: w.expression || '',
+    view: w.view || '',
     height: w.height || 'standard',
     width: w.width || 'standard',
     title: w.title || ''

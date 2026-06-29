@@ -102,7 +102,27 @@ SPDX-License-Identifier: Apache-2.0
             style="min-width: 150px" />
         </div>
 
-        <!-- Local filter expression -->
+        <!-- Local filter: optional saved View + expression (combined with AND,
+             on top of the global search) -->
+        <v-select
+          v-if="viewsSupported"
+          v-model="form.view"
+          :items="viewItems"
+          :label="$t('sessions.summary.widget.localView')"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="mb-3">
+          <template #append-item>
+            <v-list-item
+              v-if="!hasViews"
+              disabled
+              class="text-caption text-medium-emphasis">
+              {{ $t('sessions.summary.widget.noViewsHint') }}
+            </v-list-item>
+          </template>
+        </v-select>
+
         <div class="arkime-input-group arkime-input-group--fluid mb-1">
           <span
             id="widgetExpression"
@@ -194,7 +214,8 @@ const blankForm = () => ({
   order: 'desc',
   width: 'standard',
   height: 'standard',
-  expression: ''
+  expression: '',
+  view: ''
 });
 
 const form = ref(blankForm());
@@ -245,6 +266,17 @@ const sizeItems = computed(() => [
   { title: t('sessions.summary.widget.double'), value: 'double' }
 ]);
 
+// views are supported unless the user backend is redis/lmdb (then state.views
+// is undefined); show the picker whenever supported, even with no views yet
+const viewsSupported = computed(() => Array.isArray(store.state.views));
+const hasViews = computed(() => (store.state.views?.length || 0) > 0);
+
+// saved Views the user can use as a per-widget filter
+const viewItems = computed(() => [
+  { title: t('sessions.summary.widget.noView'), value: '' },
+  ...(store.state.views || []).map(v => ({ title: v.name, value: v.id }))
+]);
+
 watch(() => props.show, (isOpen) => {
   if (isOpen && props.widget) {
     error.value = '';
@@ -252,6 +284,7 @@ watch(() => props.show, (isOpen) => {
       ...blankForm(),
       ...props.widget,
       expression: props.widget.expression || '',
+      view: props.widget.view || '',
       title: props.widget.title || ''
     };
   }
@@ -276,7 +309,8 @@ const save = () => {
     order: form.value.order,
     width: form.value.width,
     height: form.value.height,
-    expression: form.value.expression?.trim() || ''
+    expression: form.value.expression?.trim() || '',
+    view: form.value.view || ''
   });
 };
 </script>

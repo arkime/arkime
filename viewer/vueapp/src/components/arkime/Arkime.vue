@@ -297,6 +297,7 @@ export default {
         length: 20,
         order: 'desc',
         expression: '',
+        view: '',
         height: 'standard',
         width: 'standard',
         title: '',
@@ -314,6 +315,7 @@ export default {
         length: w.length || 20,
         order: w.order || 'desc',
         expression: w.expression || '',
+        view: w.view || '',
         height: w.height || 'standard',
         width: w.width || 'standard',
         title: w.title || ''
