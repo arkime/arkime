@@ -49,14 +49,12 @@
       </div>
 
       <!-- Skeleton Field Widgets -->
-      <div
-        class="charts-container charts-grid"
-        :style="gridStyle">
+      <div class="charts-container charts-grid">
         <div
           v-for="w in widgets"
           :key="w.id"
           class="widget-wrapper"
-          :class="spanClass(w)">
+          :style="spanStyle(w)">
           <SummaryWidget
             :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
             :data="[]"
@@ -174,15 +172,15 @@
       <div
         v-else
         ref="widgetContainer"
-        class="charts-container charts-grid"
-        :style="gridStyle">
+        class="charts-container charts-grid">
         <!-- Widgets rendered via v-for -->
         <div
           v-for="w in summary.fields"
           :key="w.id"
           :data-widget-id="w.id"
           class="widget-wrapper"
-          :class="[spanClass(w), { 'widget-flash': w.id === flashWidgetId }]">
+          :class="{ 'widget-flash': w.id === flashWidgetId }"
+          :style="spanStyle(w)">
           <span
             class="widget-handle"
             :title="$t('sessions.summary.dragToReorder')">
@@ -283,11 +281,6 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  // number of grid columns (2 or 3)
-  columnCount: {
-    type: Number,
-    default: 2
-  },
   // dashboard-wide chart color palette
   colorScheme: {
     type: String,
@@ -309,13 +302,10 @@ const user = computed(() => store.state.user);
 const timezone = computed(() => user.value?.settings?.timezone || 'local');
 const showMs = computed(() => user.value?.settings?.ms === true);
 
-// Grid column count exposed to CSS
-const gridStyle = computed(() => ({ '--summary-cols': props.columnCount || 2 }));
-
-// Per-widget grid span classes (height/width presets)
-const spanClass = (w) => ({
-  'span-h-2': w?.height === 'double',
-  'span-w-2': w?.width === 'double'
+// Per-widget grid span: 1-4 columns / 1-4 rows (clamped; grid is 4 cols wide)
+const spanStyle = (w) => ({
+  gridColumn: `span ${Math.min(4, Math.max(1, w?.width || 2))}`,
+  gridRow: `span ${Math.min(4, Math.max(1, w?.height || 1))}`
 });
 
 // Reactive state
@@ -1174,8 +1164,8 @@ const getWidgets = () => {
     order: w.order,
     expression: w.expression || '',
     view: w.view || '',
-    height: w.height || 'standard',
-    width: w.width || 'standard',
+    height: w.height || 1,
+    width: w.width || 2,
     title: w.title || ''
   }));
 };
@@ -1348,29 +1338,24 @@ defineExpose({
   min-height: 450px; /* Minimum height for readability */
 }
 
-/* Explicit column-count grid driven by --summary-cols (2 or 3) */
+/* Fixed 4-column grid; widgets span 1-4 cols/rows via inline grid-column/-row
+   (CSS clamps spans to the available columns on narrower breakpoints) */
 .charts-grid {
-  grid-template-columns: repeat(var(--summary-cols, 2), minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-rows: 480px;
 }
 
-/* Single column on narrow viewports regardless of column setting */
-@media (max-width: 1200px) {
+/* charts have a ~400px min width, so step down columns on narrower viewports
+   to avoid clipping (widget col-spans clamp to the available columns) */
+@media (max-width: 1700px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  /* double-width spans are meaningless in a single column */
-  .widget-wrapper.span-w-2 {
-    grid-column: auto;
-  }
-}
-
-/* Per-widget height/width spans */
-.widget-wrapper.span-h-2 {
-  grid-row: span 2;
-}
-.widget-wrapper.span-w-2 {
-  grid-column: span 2;
 }
 
 /* Widget wrapper for drag-and-drop */

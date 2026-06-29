@@ -212,8 +212,8 @@ const blankForm = () => ({
   metricType: 'sessions',
   length: 20,
   order: 'desc',
-  width: 'standard',
-  height: 'standard',
+  width: 2,
+  height: 1,
   expression: '',
   view: ''
 });
@@ -261,10 +261,8 @@ const orderItems = computed(() => [
   { title: t('sessions.summary.bottom'), value: 'asc' }
 ]);
 
-const sizeItems = computed(() => [
-  { title: t('sessions.summary.widget.standard'), value: 'standard' },
-  { title: t('sessions.summary.widget.double'), value: 'double' }
-]);
+// widgets span 1-4 columns / 1-4 rows
+const sizeItems = [1, 2, 3, 4].map(n => ({ title: String(n), value: n }));
 
 // views are supported unless the user backend is redis/lmdb (then state.views
 // is undefined); show the picker whenever supported, even with no views yet

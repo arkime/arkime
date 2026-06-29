@@ -59,7 +59,6 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
 {
   "type": "summaryConfig",
   "data": {
-    "columnCount": 2,
     "colorScheme": "rainbow",
     "widgets": [
       {
@@ -71,8 +70,8 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
         "order": "desc",
         "expression": "protocols == tls",
         "view": "",
-        "height": "standard",
-        "width": "standard",
+        "height": 1,
+        "width": 1,
         "title": ""
       }
     ]
@@ -80,9 +79,10 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
 }
 ```
 
+The grid is a fixed 4 columns wide; widgets span 1-4 columns and 1-4 rows.
+
 | Field | Type | Description |
 |-------|------|-------------|
-| `data.columnCount` | number | Grid column count (`2` or `3`). Default: `2` |
 | `data.colorScheme` | string | Dashboard chart palette (`rainbow`, `tableau10`, `category10`, `viridis`, `cool`, `warm`, `spectral`). Default: `rainbow` |
 | `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
 | `data.widgets[].field` | string | Arkime field expression (e.g. `source.ip`, `protocols`) |
@@ -92,8 +92,8 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
 | `data.widgets[].order` | string | Sort order: `asc` (Bottom) or `desc` (Top). Default: `desc` |
 | `data.widgets[].expression` | string | Optional local filter expression, ANDed with the global search (and with `view` if set) |
 | `data.widgets[].view` | string | Optional saved-view id used as a local filter; its expression is ANDed with the global search |
-| `data.widgets[].height` | string | Grid row span: `standard` or `double`. Default: `standard` |
-| `data.widgets[].width` | string | Grid column span: `standard` or `double`. Default: `standard` |
+| `data.widgets[].width` | number | Column span, 1-4. Default: `1` |
+| `data.widgets[].height` | number | Row span, 1-4. Default: `1` |
 | `data.widgets[].title` | string | Optional custom widget title (overrides the field name) |
 
 > **Legacy shape:** older configs use `data.fields[] + data.resultsLimit + data.order`

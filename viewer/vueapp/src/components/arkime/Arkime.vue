@@ -14,34 +14,6 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- toolbar row -->
           <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav">
-            <!-- column count toggle -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  size="large"
-                  variant="flat"
-                  color="secondary">
-                  <v-icon
-                    start
-                    icon="mdi-view-column" />
-                  {{ columnCount }}
-                  <v-icon
-                    end
-                    icon="mdi-menu-down" />
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="n in [2, 3]"
-                  :key="n"
-                  :active="columnCount === n"
-                  @click="setColumnCount(n)">
-                  <v-list-item-title>{{ $t('sessions.summary.columns', { n }) }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-
             <!-- chart color palette -->
             <v-menu>
               <template #activator="{ props }">
@@ -167,7 +139,6 @@ SPDX-License-Identifier: Apache-2.0
         v-if="configLoaded"
         ref="summaryView"
         :widgets="widgets"
-        :column-count="columnCount"
         :color-scheme="colorScheme"
         @update-visualizations="updateVisualizationsData"
         @widget-config-changed="updateWidgetConfigs"
@@ -218,6 +189,12 @@ import { DEFAULT_VIEW_MODES } from '../summary/widgets/viewModes';
 
 const DashboardService = createShareableService('summaryConfig');
 
+// widgets span 1-4 columns/rows; anything missing/invalid falls back to `def`
+const spanOrDefault = (v, def) => {
+  const n = parseInt(v, 10);
+  return n >= 1 && n <= 4 ? n : def;
+};
+
 export default {
   name: 'Arkime',
   components: {
@@ -232,7 +209,6 @@ export default {
     return {
       // Dashboard configuration
       widgets: [],
-      columnCount: 2,
       colorScheme: 'rainbow',
       palettes: CHART_PALETTES,
       // Visualization data
@@ -264,7 +240,6 @@ export default {
     // Current dashboard configuration for saving (layout + widgets)
     currentDashboardConfig: function () {
       return {
-        columnCount: this.columnCount,
         colorScheme: this.colorScheme,
         widgets: this.widgets
       };
@@ -298,8 +273,8 @@ export default {
         order: 'desc',
         expression: '',
         view: '',
-        height: 'standard',
-        width: 'standard',
+        height: 1,
+        width: 2,
         title: '',
         ...overrides
       };
@@ -316,8 +291,8 @@ export default {
         order: w.order || 'desc',
         expression: w.expression || '',
         view: w.view || '',
-        height: w.height || 'standard',
-        width: w.width || 'standard',
+        height: spanOrDefault(w.height, 1),
+        width: spanOrDefault(w.width, 2),
         title: w.title || ''
       });
     },
@@ -332,10 +307,6 @@ export default {
      */
     loadSummary: function () {
       this.reloadSummaryView();
-    },
-    setColumnCount: function (n) {
-      this.columnCount = n;
-      this.saveDashboardConfig();
     },
     setColorScheme: function (scheme) {
       this.colorScheme = scheme;
@@ -369,7 +340,7 @@ export default {
     /**
      * Applies a saved config object to local state. Tolerates the legacy
      * shape ({ fields, resultsLimit, order }) and the new shape
-     * ({ columnCount, widgets }).
+     * ({ colorScheme, widgets }).
      */
     applyConfig: function (cfg) {
       if (Array.isArray(cfg?.widgets) && cfg.widgets.length) {
@@ -391,9 +362,6 @@ export default {
       for (const w of this.widgets) {
         if (!w.id || seen.has(w.id)) { w.id = Utils.createRandomString(); }
         seen.add(w.id);
-      }
-      if (cfg?.columnCount === 2 || cfg?.columnCount === 3) {
-        this.columnCount = cfg.columnCount;
       }
       this.colorScheme = normalizePalette(cfg?.colorScheme);
     },
@@ -438,7 +406,7 @@ export default {
     },
     resetSummaryToDefaults: function () {
       this.widgets = this.defaultWidgets();
-      this.columnCount = 2;
+      this.colorScheme = 'rainbow';
       this.reloadSummaryView();
       this.saveDashboardConfig();
     },

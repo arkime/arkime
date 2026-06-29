@@ -102,8 +102,6 @@ SPDX-License-Identifier: Apache-2.0
           <div class="mt-1 small">
             <span class="text-medium-emphasis">{{ $t('sessions.summary.config.widgetsCount') }}:</span>
             {{ config?.widgets?.length || 0 }}
-            <span class="ms-3 text-medium-emphasis">{{ $t('sessions.summary.config.columns') }}:</span>
-            {{ config?.columnCount || 2 }}
           </div>
           <div class="mt-1 small text-medium-emphasis">
             {{ fieldsList }}
