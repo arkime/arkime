@@ -2004,6 +2004,15 @@ class SessionAPIs {
       return res.serverError(403, `Bad 'field' parameter`, 'api.sessions.badFieldParam');
     }
 
+    // Optional metric (dashboard widgets): a numeric field exp whose per-value
+    // sum drives heatmap intensity / treemap size. Resolve it to a dbField and
+    // stash it so buildQuery sums it and graphMerge emits a <dbField>Histo series
+    // (reusing the timeline-data-filter machinery). 'sessions' uses doc_count.
+    if (ArkimeUtil.isString(req.query.metric) && req.query.metric !== 'sessions') {
+      const metricField = Config.getFieldsMap()[req.query.metric];
+      if (metricField?.dbField) { req.query.metricField = metricField.dbField; }
+    }
+
     BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
       if (bsqErr) {

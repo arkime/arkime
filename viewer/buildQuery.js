@@ -393,7 +393,12 @@ class BuildQuery {
       if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
         query.aggregations.dbHisto = { aggregations: {} };
 
-        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        const filters = [...(req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters)];
+        // a dashboard widget can request an extra metric field (resolved dbField)
+        // so its per-bucket sum is available alongside the user's timeline filters
+        if (reqQuery.metricField && !filters.includes(reqQuery.metricField)) {
+          filters.push(reqQuery.metricField);
+        }
         for (let i = 0; i < filters.length; i++) {
           const filter = filters[i];
 

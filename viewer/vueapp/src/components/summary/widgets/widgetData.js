@@ -8,6 +8,19 @@ summary stream). Combines the global search expression with the widget's local
 filter and the global time window.
 */
 import { fetchWrapper } from '@common/fetchWrapper.js';
+import FieldService from '../../search/FieldService';
+
+/**
+ * The graph/histo key a SPIGraph-backed widget visualizes for its metric:
+ * 'sessionsHisto' (session count) by default, else the chosen numeric field's
+ * `<dbField>Histo` series (which the backend emits when sent `metric`).
+ */
+export function metricHistoKey (widget) {
+  const metric = widget?.metricType;
+  if (!metric || metric === 'sessions') { return 'sessionsHisto'; }
+  const dbField = FieldService.getField(metric, true)?.dbField;
+  return dbField ? `${dbField}Histo` : 'sessionsHisto';
+}
 
 /**
  * A widget's local filter = its saved View's expression AND its own expression
@@ -68,9 +81,13 @@ export function buildWidgetParams (route, store, widget, extra = {}) {
  * items come back sorted by doc_count. Returns { items, graph, ... }.
  */
 export async function fetchSpigraph (route, store, widget, { signal } = {}) {
-  const data = buildWidgetParams(route, store, widget, {
-    exp: widget.field,
-    size: widget.length
-  });
+  const extra = { exp: widget.field, size: widget.length };
+  // a numeric metric drives heatmap intensity / treemap size; the server sums it
+  // per value into a <dbField>Histo series and we order Top-N by it
+  if (widget.metricType && widget.metricType !== 'sessions') {
+    extra.metric = widget.metricType;
+    extra.sort = metricHistoKey(widget);
+  }
+  const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
 }

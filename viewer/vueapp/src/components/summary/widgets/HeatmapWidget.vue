@@ -22,7 +22,7 @@ a time series (a "timeline applied to a field"). Self-fetches /api/spigraph
       :items="items"
       :graph="graph"
       :field-obj="fieldObj"
-      metric="sessionsHisto"
+      :metric="metricKey"
       :timeline-data-filters="timelineDataFilters"
       :color-scheme="colorScheme"
       sort-by="graph" />
@@ -36,6 +36,7 @@ import WidgetCard from './WidgetCard.vue';
 import ArkimeHeatmap from '../../spigraph/Heatmap.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
+import { metricHistoKey } from './widgetData';
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -60,9 +61,18 @@ const fieldObj = computed(() => FieldService.getField(props.widget.field, true))
 const title = computed(() => props.widget.title || fieldObj.value?.friendlyName || props.widget.field);
 const hasData = computed(() => !!graph.value && items.value.length > 0);
 
+// which histo series the heatmap colors by (sessions, or the chosen metric)
+const metricKey = computed(() => metricHistoKey(props.widget));
+
 const timelineDataFilters = computed(() => {
-  const filters = store.state.user?.settings?.timelineDataFilters;
-  if (!filters) { return []; }
-  return filters.map(i => FieldService.getField(i));
+  const filters = store.state.user?.settings?.timelineDataFilters || [];
+  const objs = filters.map(i => FieldService.getField(i)).filter(Boolean);
+  // include the widget's metric field so the heatmap can label its series
+  const metric = props.widget.metricType;
+  if (metric && metric !== 'sessions') {
+    const mf = FieldService.getField(metric, true);
+    if (mf && !objs.some(o => o?.dbField === mf.dbField)) { objs.push(mf); }
+  }
+  return objs;
 });
 </script>

@@ -1,4 +1,4 @@
-use Test::More tests => 96;
+use Test::More tests => 100;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -148,3 +148,14 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     $json = get("/spigraph.json?date=-1&field=ip.dst:port&expression=" . uri_escape("file=$pwd/socks5-reverse.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     cmp_ok ($json->{recordsTotal}, '>=', 318);
     cmp_ok ($json->{recordsFiltered}, '==', 6);
+
+# metric param (dashboard widgets): a numeric field not in the default timeline
+# filters gets summed into a <dbField>Histo series + per-item total, only when requested
+    my $mexpr = "file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap";
+    my $withMetric = viewerPost("/api/spigraph", to_json({ date => -1, field => "node", metric => "tcpflags.syn", sort => "tcpflags.synHisto", expression => $mexpr }));
+    ok (exists $withMetric->{graph}->{"tcpflags.synHisto"}, "metric param adds the field's histo series to the graph");
+    ok (defined $withMetric->{items}->[0]->{"tcpflags.synHisto"}, "metric param yields a per-item metric total");
+    cmp_ok ($withMetric->{recordsFiltered}, '==', 6, "metric spigraph still filters correctly");
+
+    my $noMetric = viewerPost("/api/spigraph", to_json({ date => -1, field => "node", expression => $mexpr }));
+    ok (!exists $noMetric->{graph}->{"tcpflags.synHisto"}, "without the metric param the field's histo is absent");

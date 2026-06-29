@@ -59,9 +59,10 @@ card; instance-safe (no shared DOM ids). Hover shows the shared chart popover.
 import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
 import WidgetCard from './WidgetCard.vue';
 import FieldService from '../../search/FieldService';
-import { commaString } from '@common/vueFilters.js';
+import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import { colorRange } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
+import { metricHistoKey } from './widgetData';
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -88,6 +89,13 @@ const fieldObj = computed(() => FieldService.getField(props.widget.field, true))
 const title = computed(() => props.widget.title || fieldObj.value?.friendlyName || props.widget.field);
 const hasData = computed(() => items.value.length > 0);
 
+// metric drives rectangle size: session count by default, else the chosen
+// numeric field's per-value total (the <dbField>Histo sum from spigraph)
+const metricKey = computed(() => metricHistoKey(props.widget));
+const isBytesMetric = computed(() => /bytes/i.test(metricKey.value));
+const itemValue = (i) => (metricKey.value === 'sessionsHisto' ? i.count : (i[metricKey.value] || 0));
+const formatValue = (v) => (isBytesMetric.value ? humanReadableBytes(v) : commaString(v));
+
 const measure = () => {
   if (!container.value) { return; }
   size.value = { w: container.value.clientWidth, h: container.value.clientHeight };
@@ -96,7 +104,7 @@ const measure = () => {
 const layout = async () => {
   if (!items.value.length || !size.value.w || !size.value.h) { leaves.value = []; return; }
   if (!d3lib) { d3lib = await import('d3'); }
-  const root = d3lib.hierarchy({ children: items.value.map(i => ({ name: i.name, value: i.count, src: i })) })
+  const root = d3lib.hierarchy({ children: items.value.map(i => ({ name: i.name, value: itemValue(i), src: i })).filter(d => d.value > 0) })
     .sum(d => d.value)
     .sort((a, b) => b.value - a.value);
   d3lib.treemap().size([size.value.w, size.value.h]).paddingInner(2).round(true)(root);
@@ -113,7 +121,8 @@ const layout = async () => {
       h,
       name: l.data.name,
       src: l.data.src,
-      valueLabel: commaString(l.value),
+      value: l.value,
+      valueLabel: formatValue(l.value),
       fill: colors(l.data.name),
       showLabel: w > 44 && h > 24
     };
@@ -141,12 +150,11 @@ const onHover = (e, leaf) => {
     data: {
       item: leaf.name,
       sessions: leaf.src.count,
-      packets: leaf.src['network.packetsHisto'],
-      bytes: leaf.src['network.bytesHisto']
+      value: leaf.value
     },
     position: { x: e.clientX + 1, y: e.clientY + 1 },
     fieldConfig: fieldObj.value,
-    metricType: 'sessions'
+    metricType: props.widget.metricType || 'sessions'
   });
 };
 

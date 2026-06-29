@@ -87,6 +87,12 @@ class ViewerUtils {
     // Convert old names to new names locally
     filters = filters.map(x => filterNameMap[x] ?? x);
 
+    // a dashboard widget can request an extra metric field (resolved dbField);
+    // include it so its <dbField>Histo series is emitted for this request
+    if (req.query?.metricField && !filters.includes(req.query.metricField)) {
+      filters = [...filters, req.query.metricField];
+    }
+
     const graph = {
       xmin: req.query.startTime * 1000 || null,
       xmax: req.query.stopTime * 1000 || null,

@@ -26,5 +26,6 @@ export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap'];
 /** True for stream-mode (bar/pie/table) widgets, false for self-fetch ones. */
 export const isStreamMode = (viewMode) => !SELF_FETCH_VIEW_MODES.includes(viewMode);
 
-// View modes that have no sessions/packets/bytes metric basis
-export const METRICLESS_VIEW_MODES = ['table', 'heatmap', 'treemap'];
+// View modes with no selectable metric. Table is inherently multi-column
+// (sessions/packets/bytes); bar/pie/heatmap/treemap all visualize one metric.
+export const METRICLESS_VIEW_MODES = ['table'];

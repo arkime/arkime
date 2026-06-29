@@ -43,7 +43,7 @@ export function useSpigraphWidget (getWidget, getReloadNonce, onResult) {
 
   watch(() => {
     const w = getWidget();
-    return [getReloadNonce(), w.field, w.expression, w.length, w.view];
+    return [getReloadNonce(), w.field, w.expression, w.length, w.view, w.metricType];
   }, fetchData);
 
   onMounted(fetchData);
