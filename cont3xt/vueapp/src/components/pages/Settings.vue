@@ -167,6 +167,16 @@ SPDX-License-Identifier: Apache-2.0
             :active="visibleTab === 'themes'">
             <v-icon icon="mdi-brush mdi-fw" />Themes
           </v-btn>
+          <v-btn
+            v-if="roles.includes('cont3xtAdmin')"
+            @click="openView('banner')"
+            block
+            class="cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'banner'">
+            <v-icon icon="mdi-bullhorn mdi-fw" />Banner
+          </v-btn>
         </div>
       </v-col>
 
@@ -756,6 +766,11 @@ SPDX-License-Identifier: Apache-2.0
             @update:model-value="onThemeChange"
             @update:custom-theme="onCustomThemeChange" />
         </div> <!-- /theme settings -->
+        <!-- banner settings -->
+        <div
+          v-if="visibleTab === 'banner' && roles.includes('cont3xtAdmin')">
+          <banner-settings />
+        </div> <!-- /banner settings -->
       </v-col>
       <!-- messages -->
       <v-alert
@@ -794,6 +809,7 @@ import CommonUserService from '@common/UserService';
 import TransferResource from '@common/TransferResource.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
 import ThemePicker from '@common/ThemePicker.vue';
+import BannerSettings from '@common/BannerSettings.vue';
 import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
@@ -827,7 +843,8 @@ export default {
     CreateLinkGroupModal,
     TransferResource,
     DragUpdateList,
-    ThemePicker
+    ThemePicker,
+    BannerSettings
   },
   data () {
     return {

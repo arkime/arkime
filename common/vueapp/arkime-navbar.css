@@ -27,11 +27,13 @@ SPDX-License-Identifier: Apache-2.0
 
 :root {
   --arkime-navbar-height: 36px;
+  /* set by viewer's AppBanner when a top banner is showing, else 0 */
+  --app-banner-height: 0px;
 }
 
 .arkime-navbar {
   position: fixed;
-  top: 0;
+  top: var(--app-banner-height);
   left: 0;
   right: 0;
   height: var(--arkime-navbar-height);
@@ -41,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
   padding-left: 0.5rem;
 }
 .navbarOffset {
-  padding-top: var(--arkime-navbar-height);
+  padding-top: calc(var(--arkime-navbar-height) + var(--app-banner-height));
 }
 
 /* brand (logo) -- router-link, intentionally narrow; the 40px-tall

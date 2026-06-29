@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div id="app">
     <template v-if="compatibleBrowser">
+      <app-banner />
       <parliament-navbar />
       <router-view />
       <parliament-footer />
@@ -19,6 +20,7 @@ import ParliamentService from './components/parliament.service.js';
 import UserService from './components/user.service.js';
 import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
 import ParliamentFooter from '@common/Footer.vue';
+import AppBanner from '@common/AppBanner.vue';
 import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
@@ -26,7 +28,8 @@ export default {
   components: {
     ParliamentNavbar,
     ParliamentUpgradeBrowser,
-    ParliamentFooter
+    ParliamentFooter,
+    AppBanner
   },
   data: function () {
     return {

@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div id="app">
     <template v-if="compatibleBrowser">
+      <app-banner />
       <wise-navbar />
       <router-view />
       <wise-footer />
@@ -17,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 import WiseNavbar from './components/Navbar.vue';
 import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
 import WiseFooter from '@common/Footer.vue';
+import AppBanner from '@common/AppBanner.vue';
 import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
@@ -24,7 +26,8 @@ export default {
   components: {
     WiseNavbar,
     WiseUpgradeBrowser,
-    WiseFooter
+    WiseFooter,
+    AppBanner
   },
   data: function () {
     return {
