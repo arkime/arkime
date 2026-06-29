@@ -2068,7 +2068,7 @@ app.get( // reverse dns endpoint
 // uploads apis ---------------------------------------------------------------
 app.post(
   ['/api/upload'],
-  [checkCookieToken, logAction(), multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
+  [checkCookieToken, logAction(), MiscAPIs.checkUpload, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
   MiscAPIs.upload
 );
 
