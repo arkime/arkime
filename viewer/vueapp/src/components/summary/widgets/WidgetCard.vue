@@ -28,34 +28,50 @@ The widget content is provided via the default slot.
     class="widget-card widget-error widget-loaded">
     <!-- keep Edit/Remove reachable so a persistently-erroring widget
          (bad field/expression) can still be fixed or removed -->
-    <div class="d-flex justify-end align-center mb-2">
-      <h4 class="flex-grow-1">
+    <div class="d-flex align-center mb-2">
+      <h4 class="widget-title flex-grow-1">
         {{ title }}
       </h4>
-      <div class="no-wrap">
-        <v-menu>
-          <template #activator="{ props: activatorProps }">
-            <v-btn
-              v-bind="activatorProps"
-              variant="outlined"
-              size="large"
-              icon
-              title="Settings">
-              <v-icon icon="mdi-cog" />
-            </v-btn>
-          </template>
-          <v-list density="compact">
-            <v-list-item @click="$emit('edit')">
-              <span><v-icon icon="mdi-pencil" /> {{ $t('sessions.summary.editWidget') }}</span>
-            </v-list-item>
-            <v-divider />
-            <v-list-item @click="$emit('remove')">
-              <v-icon
-                icon="mdi-close"
-                class="text-danger" /> {{ $t('sessions.summary.removeWidget') }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
+      <div class="widget-actions no-wrap d-flex align-center ga-2">
+        <span
+          v-if="infoItems.length"
+          class="widget-info-icon"
+          tabindex="0">
+          <v-icon
+            icon="mdi-information-outline"
+            class="text-medium-emphasis" />
+          <v-tooltip
+            activator="parent"
+            location="bottom end"
+            open-delay="100"
+            max-width="340">
+            <div
+              v-for="row in infoItems"
+              :key="row.label"
+              class="widget-info-row">
+              <span class="widget-info-label">{{ row.label }}:</span>
+              <span class="widget-info-value">{{ row.value }}</span>
+            </div>
+          </v-tooltip>
+        </span>
+        <v-btn
+          variant="outlined"
+          size="large"
+          icon
+          :title="$t('sessions.summary.editWidget')"
+          @click="$emit('edit')">
+          <v-icon icon="mdi-pencil" />
+        </v-btn>
+        <v-btn
+          variant="outlined"
+          size="large"
+          icon
+          :title="$t('sessions.summary.removeWidget')"
+          @click="$emit('remove')">
+          <v-icon
+            icon="mdi-close"
+            class="text-danger" />
+        </v-btn>
       </div>
     </div>
     <div class="error-content">
@@ -85,40 +101,59 @@ The widget content is provided via the default slot.
   <div
     v-else
     class="widget-card widget-loaded">
-    <div class="d-flex justify-end align-center mb-2">
-      <h4 class="flex-grow-1">
+    <div class="d-flex align-center mb-2">
+      <h4 class="widget-title flex-grow-1">
         {{ title }}
       </h4>
-      <div class="no-wrap">
-        <v-menu>
-          <template #activator="{ props: activatorProps }">
-            <v-btn
-              v-bind="activatorProps"
-              variant="outlined"
-              size="large"
-              icon
-              title="Settings">
-              <v-icon icon="mdi-cog" />
-            </v-btn>
-          </template>
-          <v-list density="compact">
-            <v-list-item @click="$emit('edit')">
-              <span><v-icon icon="mdi-pencil" /> {{ $t('sessions.summary.editWidget') }}</span>
-            </v-list-item>
-            <template v-if="showExport">
-              <v-divider />
-              <v-list-item @click="$emit('export')">
-                <v-icon icon="mdi-download" /> {{ exportLabel || $t('sessions.summary.downloadPNG') }}
-              </v-list-item>
-            </template>
-            <v-divider />
-            <v-list-item @click="$emit('remove')">
-              <v-icon
-                icon="mdi-close"
-                class="text-danger" /> {{ $t('sessions.summary.removeWidget') }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
+      <div class="widget-actions no-wrap d-flex align-center ga-2">
+        <span
+          v-if="infoItems.length"
+          class="widget-info-icon"
+          tabindex="0">
+          <v-icon
+            icon="mdi-information-outline"
+            class="text-medium-emphasis" />
+          <v-tooltip
+            activator="parent"
+            location="bottom end"
+            open-delay="100"
+            max-width="340">
+            <div
+              v-for="row in infoItems"
+              :key="row.label"
+              class="widget-info-row">
+              <span class="widget-info-label">{{ row.label }}:</span>
+              <span class="widget-info-value">{{ row.value }}</span>
+            </div>
+          </v-tooltip>
+        </span>
+        <v-btn
+          variant="outlined"
+          size="large"
+          icon
+          :title="$t('sessions.summary.editWidget')"
+          @click="$emit('edit')">
+          <v-icon icon="mdi-pencil" />
+        </v-btn>
+        <v-btn
+          v-if="showExport"
+          variant="outlined"
+          size="large"
+          icon
+          :title="exportLabel || $t('sessions.summary.downloadPNG')"
+          @click="$emit('export')">
+          <v-icon icon="mdi-download" />
+        </v-btn>
+        <v-btn
+          variant="outlined"
+          size="large"
+          icon
+          :title="$t('sessions.summary.removeWidget')"
+          @click="$emit('remove')">
+          <v-icon
+            icon="mdi-close"
+            class="text-danger" />
+        </v-btn>
       </div>
     </div>
 
@@ -153,13 +188,46 @@ defineProps({
   noDataMessage: { type: String, default: 'sessions.summary.noDataAvailable' },
   emptyText: { type: String, default: '' },
   // allow the body to scroll vertically for dense content (e.g. heatmap rows)
-  scroll: { type: Boolean, default: false }
+  scroll: { type: Boolean, default: false },
+  // [{ label, value }] rows shown in the header info tooltip (config not
+  // otherwise visible: metric / limit / local filter / view)
+  infoItems: { type: Array, default: () => [] }
 });
 
 defineEmits(['edit', 'remove', 'export', 'retry']);
 </script>
 
 <style scoped>
+.widget-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.widget-info-icon {
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  margin-right: 2px;
+}
+
+.widget-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.widget-info-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.widget-info-value {
+  text-align: right;
+  word-break: break-word;
+}
+
 .widget-card {
   background: rgb(var(--v-theme-quaternary-lightest));
   padding: 1rem;

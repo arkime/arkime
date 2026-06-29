@@ -196,6 +196,7 @@
             :metric-type="w.metricType"
             :field="w.field"
             :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
             @show-tooltip="showTooltip"
             @export="handleWidgetExport(w, $event)"
             @edit="openEdit(w.id)"
@@ -206,6 +207,7 @@
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <TreemapWidget
@@ -213,6 +215,7 @@
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -245,7 +248,7 @@ import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode } from './widgets/viewModes';
+import { isStreamMode, METRICLESS_VIEW_MODES } from './widgets/viewModes';
 import { widgetLocalExpression } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -359,6 +362,39 @@ const toRequestWidget = (w) => ({
   metricType: w.metricType,
   expression: widgetLocalExpression(w, store.state.views)
 });
+
+// Rows describing a widget's configuration that isn't visible on the card
+// itself (metric, limit/order, local filter, saved view), shown in the header
+// info tooltip.
+const widgetInfo = (w) => {
+  if (!w) { return []; }
+  const rows = [];
+
+  const fieldName = FieldService.getField(w.field, true)?.friendlyName || w.field;
+  if (fieldName) { rows.push({ label: t('sessions.summary.widget.field'), value: fieldName }); }
+
+  // metric only applies to the count-based charts (bar/pie)
+  if (!METRICLESS_VIEW_MODES.includes(w.viewMode)) {
+    const metric = w.metricType || 'sessions';
+    const metricName = metric === 'sessions'
+      ? t('sessions.summary.sessions')
+      : (FieldService.getField(metric, true)?.friendlyName || metric);
+    rows.push({ label: t('sessions.summary.widget.metric'), value: metricName });
+  }
+
+  const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
+  rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${w.length || 20}` });
+
+  if (w.view) {
+    const v = (store.state.views || []).find(x => x.id === w.view || x.name === w.view);
+    rows.push({ label: t('sessions.summary.widget.localView'), value: v?.name || w.view });
+  }
+  if (w.expression) {
+    rows.push({ label: t('sessions.summary.widget.localFilter'), value: w.expression });
+  }
+
+  return rows;
+};
 
 // Cancel an in-progress summary stream
 const cancelLoading = () => {

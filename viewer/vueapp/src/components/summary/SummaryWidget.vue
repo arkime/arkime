@@ -8,6 +8,7 @@
     :export-label="exportLabel"
     :empty-text="emptyText"
     :no-data-message="noDataMessage"
+    :info-items="infoItems"
     @edit="$emit('edit')"
     @export="$emit('export', svgId)"
     @remove="$emit('remove-field')"
@@ -120,6 +121,10 @@ const props = defineProps({
   colorScheme: {
     type: String,
     default: 'rainbow'
+  },
+  infoItems: {
+    type: Array,
+    default: () => []
   }
 });
 

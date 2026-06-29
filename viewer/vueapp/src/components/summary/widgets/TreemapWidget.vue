@@ -13,6 +13,7 @@ card; instance-safe (no shared DOM ids). Hover shows the shared chart popover.
     :loading="loading"
     :error="error"
     :has-data="hasData"
+    :info-items="infoItems"
     @edit="$emit('edit')"
     @remove="$emit('remove')"
     @retry="fetchData">
@@ -65,7 +66,8 @@ import { useSpigraphWidget } from './useSpigraphWidget';
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  colorScheme: { type: String, default: 'rainbow' }
+  colorScheme: { type: String, default: 'rainbow' },
+  infoItems: { type: Array, default: () => [] }
 });
 const emit = defineEmits(['edit', 'remove', 'show-tooltip']);
 

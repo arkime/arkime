@@ -12,6 +12,7 @@ a time series (a "timeline applied to a field"). Self-fetches /api/spigraph
     :loading="loading"
     :error="error"
     :has-data="hasData"
+    :info-items="infoItems"
     scroll
     @edit="$emit('edit')"
     @remove="$emit('remove')"
@@ -39,7 +40,8 @@ import { useSpigraphWidget } from './useSpigraphWidget';
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  colorScheme: { type: String, default: 'rainbow' }
+  colorScheme: { type: String, default: 'rainbow' },
+  infoItems: { type: Array, default: () => [] }
 });
 defineEmits(['edit', 'remove']);
 
