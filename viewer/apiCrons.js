@@ -185,6 +185,7 @@ class CronAPIs {
       res.send(queries);
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Error retrieving periodic queries', 'api.crons.retrieveFailed');
     }
   }
 

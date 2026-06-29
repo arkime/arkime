@@ -1,3 +1,4 @@
 leak:Py_NewInterpreterFromConfig
 leak:new_interpreter
 leak:pcre2_jit_compile_8
+leak:_tlv_get_addr

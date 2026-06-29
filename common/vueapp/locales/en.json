@@ -1772,6 +1772,7 @@
       "usersMustBeString": "Users field must be a string",
       "created": "Created query!",
       "createFailed": "Create query failed",
+      "retrieveFailed": "Error retrieving periodic queries",
       "badKey": "Bad query key",
       "missingKey": "Missing query key",
       "updated": "Updated periodic query!",

@@ -1452,16 +1452,18 @@ LOCAL ArkimePacketRC arkime_packet_sll(ArkimePacketBatch_t *batch, ArkimePacket_
     int ethertype = data[14] << 8 | data[15];
     switch (ethertype) {
     case ETHERTYPE_VLAN:
-        if (len < 21) {
+        if (len < 20) {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Too short for VLAN %d", len);
 #endif
             return ARKIME_PACKET_CORRUPT;
         }
-        if ((data[20] & 0xf0) == 0x60)
-            return arkime_packet_ip6(batch, packet, data + 20, len - 20);
-        else
-            return arkime_packet_ip4(batch, packet, data + 20, len - 20);
+        if (!packet->vlan) {
+            packet->vlan = (data[16] << 8 | data[17]) & 0xfff;
+            packet->vlanCopy = 1;
+        }
+        // dispatch the VLAN payload by its encapsulated ethertype (bytes 18-19)
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 20, len - 20, data[18] << 8 | data[19], "SLL");
     default:
         return arkime_packet_run_ethernet_cb(batch, packet, data + 16, len - 16, ethertype, "SLL");
     } // switch
@@ -1579,7 +1581,7 @@ LOCAL ArkimePacketRC arkime_packet_radiotap(ArkimePacketBatch_t *batch, ArkimePa
     if (data[0] != 0 || len < 36)
         return ARKIME_PACKET_UNKNOWN_ETHER;
 
-    int hl = data[2];
+    int hl = data[2] | (data[3] << 8); // it_len is a little-endian uint16 at bytes 2-3
     if (hl + 24 + 8 >= len)
         return ARKIME_PACKET_UNKNOWN_ETHER;
 

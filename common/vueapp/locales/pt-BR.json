@@ -1772,6 +1772,7 @@
       "usersMustBeString": "O campo de usuários deve ser uma string",
       "created": "Consulta criada!",
       "createFailed": "Falha ao criar consulta",
+      "retrieveFailed": "Erro ao recuperar consultas periódicas",
       "badKey": "Chave de consulta inválida",
       "missingKey": "Chave de consulta ausente",
       "updated": "Consulta periódica atualizada!",

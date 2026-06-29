@@ -79,11 +79,11 @@ LOCAL void opcua_parse_hel(ArkimeSession_t *session, const uint8_t *p, uint32_t 
     BSB bsb;
     BSB_INIT(bsb, p + OPCUA_HEADER_LEN + OPCUA_HEL_PRELUDE, msgLen - OPCUA_HEADER_LEN - OPCUA_HEL_PRELUDE);
 
-    int32_t urlLen = 0;
+    uint32_t urlLen = 0;
     BSB_LIMPORT_u32(bsb, urlLen);
     if (BSB_IS_ERROR(bsb))
         return;
-    if (urlLen <= 0 || urlLen > OPCUA_MAX_URL || (uint32_t)urlLen > BSB_REMAINING(bsb))
+    if (urlLen == 0 || urlLen > OPCUA_MAX_URL || urlLen > BSB_REMAINING(bsb))
         return;
     arkime_field_string_add(endpointUrlField, session, (const char *)BSB_WORK_PTR(bsb), urlLen, TRUE);
 }
@@ -104,27 +104,27 @@ LOCAL void opcua_parse_opn(ArkimeSession_t *session, const uint8_t *p, uint32_t 
     BSB_INIT(bsb, p + OPCUA_HEADER_LEN, msgLen - OPCUA_HEADER_LEN);
     BSB_IMPORT_skip(bsb, 4);                    /* SecureChannelId */
 
-    int32_t sLen = 0;
+    uint32_t sLen = 0;
     BSB_LIMPORT_u32(bsb, sLen);
     if (BSB_IS_ERROR(bsb))
         return;
 
-    if (sLen > 0 && sLen <= OPCUA_MAX_URL && (uint32_t)sLen <= BSB_REMAINING(bsb)) {
+    if (sLen > 0 && sLen <= OPCUA_MAX_URL && sLen <= BSB_REMAINING(bsb)) {
         arkime_field_string_add(securityPolicyField, session,
                                 (const char *)BSB_WORK_PTR(bsb), sLen, TRUE);
         BSB_IMPORT_skip(bsb, sLen);
-    } else if (sLen > 0) {
-        /* length set but exceeds our cap or remaining bytes - stream is suspect */
+    } else if ((sLen & 0x80000000) == 0 && sLen != 0) {
+        /* positive length that exceeds our cap or remaining bytes - stream is suspect */
         return;
     }
-    /* sLen == 0 (empty) or sLen == -1 (null) both fall through to SenderCertificate */
+    /* sLen == 0 (empty) or high bit set (null) both fall through to SenderCertificate */
 
-    int32_t cLen = 0;
+    uint32_t cLen = 0;
     BSB_LIMPORT_u32(bsb, cLen);
     if (BSB_IS_ERROR(bsb))
         return;
 
-    if (cLen > 0 && cLen <= OPCUA_MAX_CERT && (uint32_t)cLen <= BSB_REMAINING(bsb)) {
+    if (cLen > 0 && cLen <= OPCUA_MAX_CERT && cLen <= BSB_REMAINING(bsb)) {
         arkime_parsers_call_named_func(tls_process_single_certificate_func,
                                        session, BSB_WORK_PTR(bsb), cLen, NULL);
     }

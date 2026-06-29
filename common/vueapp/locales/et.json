@@ -1772,6 +1772,7 @@
       "usersMustBeString": "Kasutajate väli peab olema sõne",
       "created": "Päring loodud!",
       "createFailed": "Päringu loomine ebaõnnestus",
+      "retrieveFailed": "Viga perioodiliste päringute toomisel",
       "badKey": "Vigane päringu võti",
       "missingKey": "Päringu võti puudub",
       "updated": "Perioodiline päring uuendatud!",
