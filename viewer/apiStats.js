@@ -735,8 +735,26 @@ class StatsAPIs {
         cluster: req.query.cluster
       };
 
-      // wait for no more relocating shards
+      // wait for no more relocating shards, but give up after ~2 hours so a stuck
+      // relocation or repeatedly failing health check doesn't leak the interval forever
+      let shrinkCheckAttempts = 0;
+      const shrinkCheckMaxAttempts = 720; // 720 * 10s = ~2 hours
       const shrinkCheckInterval = setInterval(() => {
+        if (++shrinkCheckAttempts > shrinkCheckMaxAttempts) {
+          clearInterval(shrinkCheckInterval);
+          console.log(`ERROR - ${req.method} /api/esindices/%s/shrink gave up waiting for relocating shards`, ArkimeUtil.sanitizeStr(req.params.index));
+          // roll back the write block and allocation requirement so the index isn't left stuck read-only
+          Db.setIndexSettings(req.params.index, {
+            body: {
+              'index.blocks.write': null,
+              'index.routing.allocation.require._name': null
+            },
+            cluster: req.query.cluster
+          }).catch((err) => {
+            console.log(`ERROR - ${req.method} /api/esindices/%s/shrink rollback`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
+          });
+          return;
+        }
         Db.healthCache(req.query.cluster).then(async (result) => {
           if (result.relocating_shards === 0) {
             clearInterval(shrinkCheckInterval);
