@@ -93,9 +93,10 @@ jobs:
             -DBUILD_captype=OFF \
             ..
 
-          make -j"$(nproc)"
+          make -j
           rm -rf /opt/arkime
           make install
+          cd ..
 
           ls -lR /opt/arkime
 
@@ -121,7 +122,7 @@ jobs:
             --url "https://arkime.com" \
             --description "Arkime tshark build from Wireshark source" \
             "${fpm_dep_args[@]}" \
-            -p "tshark-arkime-${WIRESHARK_VERSION}-${GITHUB_RUN_ID}.${{ matrix.version }}.rpm" \
+            -p "tshark-arkime-${WIRESHARK_VERSION}.${{ matrix.version }}.rpm" \
             /opt/arkime
 
           ls -l *.rpm
