@@ -107,10 +107,19 @@ jobs:
               | awk '/=>/ && $3 ~ /^\// {print $3}' \
               | sort -u \
               | while read -r lib; do
-                  rpm -qf --qf '%{NAME}\n' "$lib" 2>/dev/null || true
+                  pkg=$(rpm -qf --qf '%{NAME}\n' "$lib" 2>/dev/null || true)
+                  if echo "$pkg" | grep -qE '^[A-Za-z0-9._+-]+$'; then
+                    echo "$pkg"
+                  fi
                 done \
               | sort -u
           )
+          echo "Detected runtime RPM dependencies:"
+          if [ "${#dep_pkgs[@]}" -eq 0 ]; then
+            echo "  (none)"
+          else
+            printf '  %s\n' "${dep_pkgs[@]}"
+          fi
           fpm_dep_args=()
           for pkg in "${dep_pkgs[@]}"; do
             [ -n "$pkg" ] && fpm_dep_args+=(-d "$pkg")
@@ -119,12 +128,12 @@ jobs:
           fpm -s dir -t rpm --rpm-digest sha256 \
             -n tshark-arkime \
             -v "${WIRESHARK_VERSION}" \
-            --iteration "${GITHUB_RUN_ID}" \
+            --iteration "1" \
             --rpm-rpmbuild-define "_build_id_links none" \
             --url "https://arkime.com" \
             --description "Arkime tshark build from Wireshark source" \
             "${fpm_dep_args[@]}" \
-            -p "tshark-arkime-${WIRESHARK_VERSION}.${{ matrix.version }}.rpm" \
+            -p "tshark-arkime-${WIRESHARK_VERSION}-1.${{ matrix.version }}.rpm" \
             /opt/arkime
 
           pwd
