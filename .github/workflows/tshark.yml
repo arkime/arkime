@@ -56,6 +56,11 @@ jobs:
       WIRESHARK_VERSION: ${{ github.event.inputs.wireshark_version }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+
       - name: Build tshark from Wireshark source
         run: |
           set -euo pipefail
@@ -92,19 +97,21 @@ jobs:
           rm -rf /opt/arkime
           make install
 
-          if ! command -v fpm >/dev/null 2>&1; then
-            gem install --no-document fpm
-          fi
+          ls -lR /opt/arkime
 
-          deps=""
-          while read -r pkg; do
-            deps="${deps} -d ${pkg}"
-          done < <(
+          mapfile -t dep_pkgs < <(
             ldd /opt/arkime/bin/tshark \
               | awk '/=>/ && $3 ~ /^\// {print $3}' \
-              | xargs -r rpm -q --qf '%{NAME}\n' -f \
+              | sort -u \
+              | while read -r lib; do
+                  rpm -qf --qf '%{NAME}\n' "$lib" 2>/dev/null || true
+                done \
               | sort -u
           )
+          fpm_dep_args=()
+          for pkg in "${dep_pkgs[@]}"; do
+            [ -n "$pkg" ] && fpm_dep_args+=(-d "$pkg")
+          done
 
           fpm -s dir -t rpm --rpm-digest sha256 \
             -n tshark-arkime \
@@ -113,7 +120,7 @@ jobs:
             --rpm-rpmbuild-define "_build_id_links none" \
             --url "https://arkime.com" \
             --description "Arkime tshark build from Wireshark source" \
-            ${deps} \
+            "${fpm_dep_args[@]}" \
             -p "tshark-arkime-${WIRESHARK_VERSION}-${GITHUB_RUN_ID}.${{ matrix.version }}.rpm" \
             /opt/arkime
 
