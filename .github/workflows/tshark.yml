@@ -96,7 +96,9 @@ jobs:
           make -j
           rm -rf /opt/arkime
           make install
-          cd ..
+
+          # Undo cd wireshark-${WIRESHARK_VERSION}/build
+          cd ../..
 
           ls -lR /opt/arkime
 
@@ -125,6 +127,7 @@ jobs:
             -p "tshark-arkime-${WIRESHARK_VERSION}.${{ matrix.version }}.rpm" \
             /opt/arkime
 
+          pwd
           ls -l *.rpm
 
       - name: Set Arkime major version
