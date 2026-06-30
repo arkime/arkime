@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          dnf install -y cmake glib2-devel libpcap-devel libgcrypt-devel libssh-devel c-ares-devel libxml2-devel speexdsp-devel
+          dnf install -y cmake glib2-devel libpcap-devel libgcrypt-devel c-ares-devel libxml2-devel speexdsp-devel
 
           curl -fsSLO "https://2.na.dl.wireshark.org/src/wireshark-${WIRESHARK_VERSION}.tar.xz"
           tar -xf "wireshark-${WIRESHARK_VERSION}.tar.xz"
@@ -88,6 +88,7 @@ jobs:
             -DBUILD_dftest=OFF \
             -DBUILD_randpkt=OFF \
             -DBUILD_mmdbresolve=OFF \
+            -DBUILD_extcap=OFF \
             -DENABLE_APPLICATION_BUNDLE=OFF \
             -DBUILD_sharkd=OFF \
             -DBUILD_captype=OFF \
