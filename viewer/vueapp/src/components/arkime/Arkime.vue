@@ -102,24 +102,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </div>
       </ArkimeCollapsible>
-      <!-- pinned visualizations land here (teleported from below) -->
-      <div id="viz-pin-anchor" />
     </template>
-
-    <!-- visualizations: pinned = chrome row above the scroll container,
-         unpinned = scrolls away with the content -->
-    <teleport
-      defer
-      to="#viz-pin-anchor"
-      :disabled="!stickyViz">
-      <arkime-visualizations
-        v-if="graphData && showToolBars"
-        :primary="true"
-        :map-data="mapData"
-        :graph-data="graphData"
-        :timeline-data-filters="timelineDataFilters"
-        @spanning-change="reloadSummaryView" />
-    </teleport> <!-- /visualizations -->
 
     <!-- error message -->
     <v-alert
@@ -140,7 +123,6 @@ SPDX-License-Identifier: Apache-2.0
         ref="summaryView"
         :widgets="widgets"
         :color-scheme="colorScheme"
-        @update-visualizations="updateVisualizationsData"
         @widget-config-changed="updateWidgetConfigs"
         @streaming-state="summaryStreaming = $event"
         @canceled-state="summaryCanceled = $event" />
@@ -177,11 +159,9 @@ SPDX-License-Identifier: Apache-2.0
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
-import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 import Utils from '../utils/utils';
-import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
@@ -189,10 +169,11 @@ import { DEFAULT_VIEW_MODES } from '../summary/widgets/viewModes';
 
 const DashboardService = createShareableService('summaryConfig');
 
-// widgets span 1-4 columns/rows; anything missing/invalid falls back to `def`
-const spanOrDefault = (v, def) => {
+// widgets span 1-4 columns and 1-8 rows; anything missing/invalid falls back to
+// `def` (rows allow a larger max since the grid uses a fine 160px row unit)
+const spanOrDefault = (v, def, max = 4) => {
   const n = parseInt(v, 10);
-  return n >= 1 && n <= 4 ? n : def;
+  return n >= 1 && n <= max ? n : def;
 };
 
 export default {
@@ -201,7 +182,6 @@ export default {
     ArkimeSearch,
     ArkimeCollapsible,
     PageLayout,
-    ArkimeVisualizations,
     ArkimeSummaryView,
     SummaryConfigDropdown
   },
@@ -211,9 +191,6 @@ export default {
       widgets: [],
       colorScheme: 'rainbow',
       palettes: CHART_PALETTES,
-      // Visualization data
-      mapData: undefined,
-      graphData: undefined,
       // UI state
       error: '',
       configLoaded: false,
@@ -222,20 +199,8 @@ export default {
     };
   },
   computed: {
-    showToolBars: function () {
-      return this.$store.state.showToolBars;
-    },
-    stickyViz: function () {
-      return this.$store.state.stickyViz;
-    },
     user: function () {
       return this.$store.state.user;
-    },
-    timelineDataFilters: function () {
-      if (!this.user?.settings?.timelineDataFilters) {
-        return [];
-      }
-      return this.user.settings.timelineDataFilters.map(i => FieldService.getField(i));
     },
     // Current dashboard configuration for saving (layout + widgets)
     currentDashboardConfig: function () {
@@ -246,11 +211,6 @@ export default {
     }
   },
   watch: {
-    '$store.state.stickyViz': function () {
-      // pin toggle teleports the viz between chrome and scroll content;
-      // charts/map cache geometry, so nudge their resize handling
-      this.$nextTick(() => window.dispatchEvent(new Event('resize')));
-    },
     // Handle fetch viz data button click (re-fetch visualizations)
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.reloadSummaryView(); }
@@ -267,13 +227,14 @@ export default {
       return {
         id: Utils.createRandomString(),
         field: fieldExp,
+        fields: fieldExp ? [fieldExp] : [], // 1-3 fields for multi-field widgets
         viewMode: DEFAULT_VIEW_MODES[fieldExp] || 'bar',
         metricType: 'sessions',
         length: 20,
         order: 'desc',
         expression: '',
         view: '',
-        height: 1,
+        height: 3, // 3 × 160px row unit = 480px (chart default)
         width: 2,
         title: '',
         ...overrides
@@ -283,24 +244,38 @@ export default {
      * Ensures a saved widget has an id and all expected fields
      */
     normalizeWidget: function (w) {
-      return this.makeWidgetDef(w.field, {
+      // fields[] is the source of truth (1-3); field stays = fields[0] for back-compat
+      const fields = Array.isArray(w.fields) && w.fields.length
+        ? w.fields.slice(0, 3)
+        : (w.field ? [w.field] : []);
+      return this.makeWidgetDef(fields[0] || '', {
         id: w.id || Utils.createRandomString(),
+        fields,
         viewMode: w.viewMode || DEFAULT_VIEW_MODES[w.field] || 'bar',
         metricType: w.metricType || 'sessions',
         length: w.length || 20,
         order: w.order || 'desc',
         expression: w.expression || '',
         view: w.view || '',
-        height: spanOrDefault(w.height, 1),
+        height: spanOrDefault(w.height, 3, 8),
         width: spanOrDefault(w.width, 2),
         title: w.title || ''
       });
     },
     /**
-     * Default set of widgets when no saved config exists
+     * Default set of widgets when no saved config exists: the session-wide
+     * visualizations (capture stats, time, timeline, map) followed by the
+     * default field widgets — mirrors the pre-widget Arkime tab layout.
      */
     defaultWidgets: function () {
-      return Utils.getDefaultSummaryFields().map(f => this.makeWidgetDef(f));
+      const sessionWidgets = [
+        this.makeWidgetDef('', { viewMode: 'stats', width: 2, height: 1 }),
+        this.makeWidgetDef('', { viewMode: 'time', width: 2, height: 1 }),
+        this.makeWidgetDef('', { viewMode: 'timeline', width: 3, height: 2 }),
+        this.makeWidgetDef('', { viewMode: 'map', width: 1, height: 2 })
+      ];
+      const fieldWidgets = Utils.getDefaultSummaryFields().map(f => this.makeWidgetDef(f));
+      return [...sessionWidgets, ...fieldWidgets];
     },
     /**
      * Loads summary data when search is triggered
@@ -418,10 +393,6 @@ export default {
     },
     exportAllPNG: function () {
       this.$refs.summaryView?.exportAllPNG?.();
-    },
-    updateVisualizationsData: function (data) {
-      this.mapData = data.mapData;
-      this.graphData = data.graphData;
     }
   }
 };

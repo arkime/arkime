@@ -12,12 +12,38 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('sessions.summary.editWidget') }}
       </v-card-title>
       <v-card-text>
-        <!-- Field selector -->
-        <div class="arkime-input-group arkime-input-group--fluid mb-3">
+        <!-- Visualization type leads: it decides which inputs below apply -->
+        <v-select
+          v-model="form.viewMode"
+          :items="viewModeItems"
+          :label="$t('sessions.summary.widget.viewMode')"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="mb-3" />
+
+        <!-- Field selector: a chips multi-select (up to 3) for pie/treemap/table/
+             intersection, otherwise a single typeahead. Grayed for session types. -->
+        <div
+          class="arkime-input-group arkime-input-group--fluid mb-3"
+          :class="{ 'input-disabled': !fieldMode }">
           <span class="arkime-input-label">
-            {{ $t('sessions.summary.widget.field') }}<sup>*</sup>
+            {{ multiField ? $t('sessions.summary.widget.fields') : $t('sessions.summary.widget.field') }}<sup v-if="fieldMode">*</sup>
           </span>
+          <v-autocomplete
+            v-if="multiField"
+            v-model="form.fields"
+            :items="fieldItems"
+            :placeholder="$t('sessions.summary.widget.fieldsHint')"
+            multiple
+            chips
+            closable-chips
+            density="compact"
+            variant="outlined"
+            hide-details
+            auto-select-first />
           <ArkimeFieldTypeahead
+            v-else
             :fields="fields"
             :initial-value="fieldFriendlyName"
             @field-selected="onFieldSelected" />
@@ -32,26 +58,16 @@ SPDX-License-Identifier: Apache-2.0
             v-model="form.title"
             type="text"
             class="arkime-input-control"
-            :placeholder="fieldFriendlyName">
+            :placeholder="titlePlaceholder">
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3">
-          <!-- View mode -->
-          <v-select
-            v-model="form.viewMode"
-            :items="viewModeItems"
-            :label="$t('sessions.summary.widget.viewMode')"
-            density="compact"
-            variant="outlined"
-            hide-details
-            style="min-width: 150px" />
-
           <!-- Metric basis: Sessions count, or any numeric field summed per value -->
           <v-autocomplete
             v-model="form.metricType"
             :items="metricItems"
             :label="$t('sessions.summary.widget.metric')"
-            :disabled="metricDisabled"
+            :disabled="!metricEnabled"
             density="compact"
             variant="outlined"
             hide-details
@@ -60,21 +76,23 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3">
-          <!-- Data limit -->
+          <!-- Data limit (Top/Bottom N) -->
           <v-select
             v-model="form.length"
             :items="lengthItems"
             :label="$t('sessions.summary.widget.limit')"
+            :disabled="!aggEnabled"
             density="compact"
             variant="outlined"
             hide-details
             style="min-width: 120px" />
 
-          <!-- Order -->
+          <!-- Order (direction) -->
           <v-select
             v-model="form.order"
             :items="orderItems"
             :label="$t('sessions.summary.widget.order')"
+            :disabled="!aggEnabled"
             density="compact"
             variant="outlined"
             hide-details
@@ -85,7 +103,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- Width -->
           <v-select
             v-model="form.width"
-            :items="sizeItems"
+            :items="widthItems"
             :label="$t('sessions.summary.widget.width')"
             density="compact"
             variant="outlined"
@@ -95,7 +113,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- Height -->
           <v-select
             v-model="form.height"
-            :items="sizeItems"
+            :items="heightItems"
             :label="$t('sessions.summary.widget.height')"
             density="compact"
             variant="outlined"
@@ -103,13 +121,15 @@ SPDX-License-Identifier: Apache-2.0
             style="min-width: 150px" />
         </div>
 
-        <!-- Local filter: optional saved View + expression (combined with AND,
-             on top of the global search) -->
+        <!-- Local filter: optional saved View + expression (combined with AND, on
+             top of the global search). Disabled for session-wide widgets, which
+             always describe the whole result set. -->
         <v-select
           v-if="viewsSupported"
           v-model="form.view"
           :items="viewItems"
           :label="$t('sessions.summary.widget.localView')"
+          :disabled="!localFilterEnabled"
           density="compact"
           variant="outlined"
           hide-details
@@ -124,7 +144,9 @@ SPDX-License-Identifier: Apache-2.0
           </template>
         </v-select>
 
-        <div class="arkime-input-group arkime-input-group--fluid mb-1">
+        <div
+          class="arkime-input-group arkime-input-group--fluid mb-1"
+          :class="{ 'input-disabled': !localFilterEnabled }">
           <span
             id="widgetExpression"
             class="arkime-input-label cursor-help">
@@ -138,6 +160,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             class="arkime-input-control"
             spellcheck="false"
+            :disabled="!localFilterEnabled"
             placeholder="protocols == tls">
         </div>
 
@@ -185,7 +208,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { METRICLESS_VIEW_MODES } from './widgets/viewModes';
+import { hasMetric, hasAgg, isFieldMode, allowsMultiField } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -208,13 +231,14 @@ const error = ref('');
 const blankForm = () => ({
   id: undefined,
   field: '',
+  fields: [],
   title: '',
   viewMode: 'bar',
   metricType: 'sessions',
   length: 20,
   order: 'desc',
   width: 2,
-  height: 1,
+  height: 3,
   expression: '',
   view: ''
 });
@@ -229,16 +253,35 @@ const fieldFriendlyName = computed(() => {
   return FieldService.getField(form.value.field, true)?.friendlyName || form.value.field;
 });
 
+// pie/treemap/table/intersection accept up to 3 fields (chips multi-select)
+const multiField = computed(() => allowsMultiField(form.value.viewMode));
+const fieldItems = computed(() => fields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
+
+// Capability flags drive which inputs are enabled for the chosen visualization type
+const fieldMode = computed(() => isFieldMode(form.value.viewMode));
+const metricEnabled = computed(() => hasMetric(form.value.viewMode));
+const aggEnabled = computed(() => hasAgg(form.value.viewMode));
+// session-wide widgets (timeline/map/stats/time) describe the whole result set
+const localFilterEnabled = computed(() => fieldMode.value);
+
+const titlePlaceholder = computed(() => fieldFriendlyName.value || viewModeLabel(form.value.viewMode));
+
+function viewModeLabel (vm) {
+  return viewModeItems.value.find(i => i.value === vm)?.title || vm;
+}
+
 const viewModeItems = computed(() => [
   { title: t('sessions.summary.barChart'), value: 'bar' },
   { title: t('sessions.summary.pieChart'), value: 'pie' },
   { title: t('sessions.summary.tableView'), value: 'table' },
+  { title: t('sessions.summary.intersectionView'), value: 'intersection' },
   { title: t('sessions.summary.heatmapView'), value: 'heatmap' },
-  { title: t('sessions.summary.treemapView'), value: 'treemap' }
+  { title: t('sessions.summary.treemapView'), value: 'treemap' },
+  { title: t('sessions.summary.timelineView'), value: 'timeline' },
+  { title: t('sessions.summary.mapView'), value: 'map' },
+  { title: t('sessions.summary.statsView'), value: 'stats' },
+  { title: t('sessions.summary.timeView'), value: 'time' }
 ]);
-
-// metric basis only applies to the count-based charts (not table/heatmap/treemap)
-const metricDisabled = computed(() => METRICLESS_VIEW_MODES.includes(form.value.viewMode));
 
 // Metric basis: session count plus every numeric (integer) field, summed per
 // value. Mirrors the timeline graph's metric set — Settings.vue uses the same
@@ -269,8 +312,9 @@ const orderItems = computed(() => [
   { title: t('sessions.summary.bottom'), value: 'asc' }
 ]);
 
-// widgets span 1-4 columns / 1-4 rows
-const sizeItems = [1, 2, 3, 4].map(n => ({ title: String(n), value: n }));
+// widgets span 1-4 columns (grid is 4 wide) and 1-8 rows (160px row unit)
+const widthItems = [1, 2, 3, 4].map(n => ({ title: String(n), value: n }));
+const heightItems = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ title: String(n), value: n }));
 
 // views are supported unless the user backend is redis/lmdb (then state.views
 // is undefined); show the picker whenever supported, even with no views yet
@@ -289,6 +333,9 @@ watch(() => props.show, (isOpen) => {
     form.value = {
       ...blankForm(),
       ...props.widget,
+      fields: Array.isArray(props.widget.fields) && props.widget.fields.length
+        ? [...props.widget.fields]
+        : (props.widget.field ? [props.widget.field] : []),
       expression: props.widget.expression || '',
       view: props.widget.view || '',
       title: props.widget.title || ''
@@ -296,18 +343,34 @@ watch(() => props.show, (isOpen) => {
   }
 });
 
+// cap multi-field selection at 3
+watch(() => form.value.fields, (v) => {
+  if (Array.isArray(v) && v.length > 3) { form.value.fields = v.slice(0, 3); }
+});
+
 const onFieldSelected = (field) => {
   form.value.field = field.exp;
 };
 
 const save = () => {
-  if (!form.value.field) {
+  // resolve the field list for the chosen type
+  let fieldList;
+  if (multiField.value) {
+    fieldList = (form.value.fields || []).slice(0, 3);
+  } else if (fieldMode.value) {
+    fieldList = form.value.field ? [form.value.field] : [];
+  } else {
+    fieldList = []; // session-wide widgets have no field
+  }
+  // field-bound types require at least one field
+  if (fieldMode.value && fieldList.length === 0) {
     error.value = t('sessions.summary.widget.fieldRequired');
     return;
   }
   emit('save', {
     ...props.widget,
-    field: form.value.field,
+    field: fieldList[0] || '',
+    fields: fieldList,
     title: form.value.title?.trim() || '',
     viewMode: form.value.viewMode,
     metricType: form.value.metricType,
@@ -315,8 +378,17 @@ const save = () => {
     order: form.value.order,
     width: form.value.width,
     height: form.value.height,
-    expression: form.value.expression?.trim() || '',
-    view: form.value.view || ''
+    // local filter only applies to field-bound widgets
+    expression: localFilterEnabled.value ? (form.value.expression?.trim() || '') : '',
+    view: localFilterEnabled.value ? (form.value.view || '') : ''
   });
 };
 </script>
+
+<style scoped>
+/* grayed, non-interactive state for inputs that don't apply to the chosen type */
+.input-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+</style>

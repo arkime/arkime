@@ -79,21 +79,24 @@ Summary/Arkime tab modular dashboard configuration (layout + per-widget settings
 }
 ```
 
-The grid is a fixed 4 columns wide; widgets span 1-4 columns and 1-4 rows.
+The grid is a fixed 4 columns wide; widgets span 1-4 columns and 1-8 rows (each
+row is a 160px unit, so a chart's default 3 rows ≈ 480px and short widgets like
+capture stats / time fit a single ~160px row).
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `data.colorScheme` | string | Dashboard chart palette (`rainbow`, `tableau10`, `category10`, `viridis`, `cool`, `warm`, `spectral`). Default: `rainbow` |
 | `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
-| `data.widgets[].field` | string | Arkime field expression (e.g. `source.ip`, `protocols`) |
-| `data.widgets[].viewMode` | string | Widget display mode (`bar`, `pie`, `table`, `heatmap`, `treemap`). Default: `bar` |
-| `data.widgets[].metricType` | string | Quantity the widget visualizes (bar height, pie slice, heatmap intensity, treemap size): `sessions` (session count) or any numeric (integer) field exp (e.g. `bytes`, `packets`, `databytes`, `dns.query.cnt`), summed per value. Top/Bottom N is ordered by this metric. Not used by `table` (multi-column). Default: `sessions` |
+| `data.widgets[].field` | string | Primary Arkime field expression (e.g. `source.ip`, `protocols`) = `fields[0]`. Empty (`""`) for session-wide types (`timeline`, `map`, `stats`, `time`), which describe the whole result set rather than one field. |
+| `data.widgets[].fields` | string[] | 1–3 field exps. `pie`/`treemap`/`intersection`/`table` accept up to 3 (nested combinations for pie/treemap/intersection; side-by-side per-field columns for table). Other types use a single field (`= [field]`). |
+| `data.widgets[].viewMode` | string | Visualization type. Field-bound: `bar`, `pie`, `table`, `intersection` (spigraph unique-values table), `heatmap`, `treemap`. Session-wide: `timeline`, `map`, `stats` (capture statistics), `time` (time information). Default: `bar` |
+| `data.widgets[].metricType` | string | Quantity the widget visualizes (bar height, pie slice, table column, heatmap intensity, treemap size): `sessions` (session count) or any numeric (integer) field exp (e.g. `bytes`, `packets`, `databytes`, `dns.query.cnt`), summed per value. Top/Bottom N is ordered by this metric. Not used by `intersection` (count) or session-wide types. Default: `sessions` |
 | `data.widgets[].length` | number | Max results for this widget (10, 20, 50, 100). Default: `20` |
 | `data.widgets[].order` | string | Sort order: `asc` (Bottom) or `desc` (Top). Default: `desc` |
 | `data.widgets[].expression` | string | Optional local filter expression, ANDed with the global search (and with `view` if set) |
 | `data.widgets[].view` | string | Optional saved-view id used as a local filter; its expression is ANDed with the global search |
-| `data.widgets[].width` | number | Column span, 1-4. Default: `1` |
-| `data.widgets[].height` | number | Row span, 1-4. Default: `1` |
+| `data.widgets[].width` | number | Column span, 1-4. Default: `2` |
+| `data.widgets[].height` | number | Row span, 1-8 (160px row unit). Default: `3` (≈480px). Short session widgets (stats/time) use `1`. |
 | `data.widgets[].title` | string | Optional custom widget title (overrides the field name) |
 
 > **Legacy shape:** older configs use `data.fields[] + data.resultsLimit + data.order`

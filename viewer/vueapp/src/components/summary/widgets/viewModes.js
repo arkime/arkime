@@ -2,8 +2,10 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Single source of truth for dashboard field-widget view-mode metadata, shared by
-Arkime.vue (page), Summary.vue (host) and SummaryWidgetEditModal.vue.
+Single source of truth for dashboard widget visualization-type metadata, shared
+by Arkime.vue (page), Summary.vue (host) and SummaryWidgetEditModal.vue. Each
+view mode advertises its capabilities (field-bound? metric? top-N? how it's fed)
+so the edit modal can gray out inapplicable inputs and the host can dispatch.
 */
 
 // Default chart view mode per field expression (mirrors the server's fieldMetadata)
@@ -20,12 +22,44 @@ export const DEFAULT_VIEW_MODES = {
   'dns.query.host': 'table'
 };
 
-// View modes that fetch their own data (vs. the batched summary stream)
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap'];
+// Field-bound types: aggregate one field's top-N values (require a field).
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
 
-/** True for stream-mode (bar/pie/table) widgets, false for self-fetch ones. */
-export const isStreamMode = (viewMode) => !SELF_FETCH_VIEW_MODES.includes(viewMode);
+// Session-wide types: describe the whole result set (no field, fed by the host's
+// global stats chunk).
+export const SESSION_VIEW_MODES = ['timeline', 'map', 'stats', 'time'];
 
-// View modes with no selectable metric. Table is inherently multi-column
-// (sessions/packets/bytes); bar/pie/heatmap/treemap all visualize one metric.
-export const METRICLESS_VIEW_MODES = ['table'];
+// Types that visualize a single selectable metric (Sessions or a numeric field).
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap'];
+
+// Types that honor a Top/Bottom N (length) + order (direction).
+export const AGG_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
+
+// Types rendered from the batched /api/sessions/summary stream (vs. self-fetch).
+export const STREAM_VIEW_MODES = ['bar', 'pie', 'table'];
+
+// Types that fetch their own endpoint (spigraph / spigraphhierarchy).
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'intersection'];
+
+// Types that accept multiple fields (up to 3) — nested combinations (pie/treemap/
+// intersection via spigraphhierarchy) or side-by-side columns (table via summary).
+// bar is single-dimension; heatmap has no combination-over-time data path.
+export const MULTI_FIELD_VIEW_MODES = ['pie', 'treemap', 'table', 'intersection'];
+
+/** True for stream-mode (bar/pie/table) widgets fed by the summary stream. */
+export const isStreamMode = (viewMode) => STREAM_VIEW_MODES.includes(viewMode);
+
+/** True when the widget aggregates a chosen field (needs a field selection). */
+export const isFieldMode = (viewMode) => FIELD_VIEW_MODES.includes(viewMode);
+
+/** True for session-wide widgets (timeline/map/stats/time) — no field, host-fed. */
+export const isSessionMode = (viewMode) => SESSION_VIEW_MODES.includes(viewMode);
+
+/** True when the widget exposes a metric selector. */
+export const hasMetric = (viewMode) => METRIC_VIEW_MODES.includes(viewMode);
+
+/** True when the widget exposes Top/Bottom N (length) + order (direction). */
+export const hasAgg = (viewMode) => AGG_VIEW_MODES.includes(viewMode);
+
+/** True when the widget accepts up to 3 fields (chips multi-select). */
+export const allowsMultiField = (viewMode) => MULTI_FIELD_VIEW_MODES.includes(viewMode);

@@ -236,7 +236,7 @@ defineEmits(['edit', 'remove', 'export', 'retry']);
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 450px;
+  min-height: 0; /* height comes from the grid row span (160px units) */
 }
 
 .widget-body {

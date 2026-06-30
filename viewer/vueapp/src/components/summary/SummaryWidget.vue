@@ -160,7 +160,20 @@ const exportLabel = computed(() => {
     : t('sessions.summary.downloadPNG');
 });
 
-// Generate table columns from fieldConfig
+// The selected metric's column label + formatting (mirrors the chart tooltip)
+const metricLabel = computed(() => {
+  const m = props.metricType || 'sessions';
+  if (m === 'sessions') { return t('sessions.summary.sessions'); }
+  return FieldService.getField(m, true)?.friendlyName || m;
+});
+const metricIsBytes = computed(() => {
+  const m = props.metricType || 'sessions';
+  if (m === 'sessions') { return false; }
+  return /bytes/i.test(m) || /bytes/i.test(FieldService.getField(m, true)?.dbField || '');
+});
+
+// Table columns: the grouping field + the selected metric (single metric for now;
+// a future tableColumns[] enables multi-metric). Metric value is data[].value.
 const columns = computed(() => [
   {
     key: 'item',
@@ -169,9 +182,7 @@ const columns = computed(() => [
     useSessionField: true,
     ...(fieldConfig.value?.exp && { expr: fieldConfig.value.exp })
   },
-  { key: 'sessions', header: 'Sessions', align: 'end', format: 'number' },
-  { key: 'packets', header: 'Packets', align: 'end', format: 'number' },
-  { key: 'bytes', header: 'Bytes', align: 'end', format: 'bytes' }
+  { key: 'value', header: metricLabel.value, align: 'end', format: metricIsBytes.value ? 'bytes' : 'number' }
 ]);
 
 // ResizeObserver for dynamic chart sizing

@@ -11,6 +11,15 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 import FieldService from '../../search/FieldService';
 
 /**
+ * A widget's field list (1-3 field exps). Multi-field widgets store `fields`;
+ * single-field widgets store `field` (= fields[0]). Always returns an array.
+ */
+export function widgetFields (widget) {
+  if (Array.isArray(widget?.fields) && widget.fields.length) { return widget.fields.slice(0, 3); }
+  return widget?.field ? [widget.field] : [];
+}
+
+/**
  * The graph/histo key a SPIGraph-backed widget visualizes for its metric:
  * 'sessionsHisto' (session count) by default, else the chosen numeric field's
  * `<dbField>Histo` series (which the backend emits when sent `metric`).
@@ -90,4 +99,64 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
   }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+}
+
+/**
+ * Fetch SPIGraph hierarchy data for one field (the "Intersection" table). For a
+ * single field the endpoint returns `tableResults` as a flat list of
+ * { name, size, parents: [] } — one row per unique value. Returns the raw
+ * response ({ tableResults, hierarchicalResults }).
+ */
+export async function fetchHierarchy (route, store, widget, { signal } = {}) {
+  const data = buildWidgetParams(route, store, widget, {
+    exp: widgetFields(widget).join(','), // 1-3 nested fields
+    size: widget.length
+  });
+  return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
+}
+
+/**
+ * Fetch each of a widget's fields' top-N (with the chosen metric) in a single
+ * /api/sessions/summary batch (one sub-widget per field) for the side-by-side
+ * multi-field table. The summary response is a JSON array of chunks; field chunks
+ * carry `id` + `data`. Returns one entry per field: { exp, friendlyName, data, error }.
+ */
+export async function fetchSummaryFields (route, store, widget, { signal } = {}) {
+  const fields = widgetFields(widget);
+  const localExp = widgetLocalExpression(widget, store.state.views);
+  const body = {
+    facets: 1,
+    noStats: true,
+    widgets: fields.map((exp, i) => ({
+      id: `f${i}`,
+      field: exp,
+      length: widget.length,
+      order: widget.order,
+      metricType: widget.metricType,
+      ...(localExp ? { expression: localExp } : {})
+    }))
+  };
+  if (route.query.expression) { body.expression = route.query.expression; } // global search
+  for (const p of ['view', 'bounding', 'interval', 'cluster']) {
+    if (route.query[p]) { body[p] = route.query[p]; }
+  }
+  if (route.query.spanning === 'true') { body.spanning = true; }
+  if (parseInt(store.state.timeRange, 10) === -1) {
+    body.date = store.state.timeRange;
+  } else {
+    body.startTime = store.state.time.startTime;
+    body.stopTime = store.state.time.stopTime;
+  }
+
+  const res = await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal });
+  const chunks = Array.isArray(res) ? res : [];
+  return fields.map((exp, i) => {
+    const chunk = chunks.find(c => c && c.id === `f${i}`);
+    return {
+      exp,
+      friendlyName: FieldService.getField(exp, true)?.friendlyName || exp,
+      data: chunk?.data || [],
+      error: chunk?.error || null
+    };
+  });
 }

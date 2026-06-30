@@ -10,44 +10,6 @@
     <div
       v-if="loading && !summary && !error"
       class="summary-content m-2">
-      <div class="stats-container mb-3 placeholder-glow">
-        <!-- Main Statistics Skeleton -->
-        <div class="summary-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.captureStatistics') }}
-          </h4>
-          <div class="stats-grid">
-            <div
-              v-for="n in 5"
-              :key="n"
-              class="stat-card">
-              <div class="stat-label">
-                <span class="placeholder col-8" />
-              </div>
-              <div class="stat-value">
-                <span class="placeholder col-6" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Time Statistics Skeleton -->
-        <div class="time-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.timeInformation') }}
-          </h4>
-          <div class="time-grid">
-            <div
-              v-for="n in 4"
-              :key="n"
-              class="time-item">
-              <span class="placeholder col-4" />
-              <span class="placeholder col-6" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Skeleton Field Widgets -->
       <div class="charts-container charts-grid">
         <div
@@ -68,83 +30,6 @@
     <div
       v-if="!error && summary"
       class="summary-content m-2">
-      <!-- Statistics Container -->
-      <div class="stats-container mb-3">
-        <!-- Main Statistics -->
-        <div class="summary-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.captureStatistics') }}
-          </h4>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.sessions') }}
-              </div>
-              <div class="stat-value">
-                {{ formatNumber(summary.sessions) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.totalPackets') }}
-              </div>
-              <div class="stat-value">
-                {{ formatNumber(summary.packets) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.dataBytes') }}
-              </div>
-              <div class="stat-value">
-                {{ formatBytes(summary.dataBytes) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.totalBytes') }}
-              </div>
-              <div class="stat-value">
-                {{ formatBytes(summary.bytes) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.downloadBytes') }}
-              </div>
-              <div class="stat-value">
-                {{ formatBytes(summary.downloadBytes) }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Time Statistics -->
-        <div class="time-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.timeInformation') }}
-          </h4>
-          <div class="time-grid">
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.duration') }}:</span>
-              <span class="time-value">{{ formatDuration(summary.firstPacket, summary.lastPacket) }}</span>
-            </div>
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.firstPacket') }}:</span>
-              <span class="time-value">{{ formatTimestamp(summary.firstPacket) }}</span>
-            </div>
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.lastPacket') }}:</span>
-              <span class="time-value">{{ formatTimestamp(summary.lastPacket) }}</span>
-            </div>
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.currentTime') }}:</span>
-              <span class="time-value">{{ getCurrentTime() }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Shared tooltip for all charts -->
       <SummaryChartTooltip
         :visible="tooltipVisible"
@@ -186,8 +71,40 @@
             :title="$t('sessions.summary.dragToReorder')">
             <v-icon icon="mdi-view-grid" />
           </span>
+          <!-- drag-to-resize handles: right edge (width), bottom edge (height),
+               corner (both); snap to the 4-col / 160px-row grid -->
+          <span
+            class="widget-resize widget-resize--e"
+            :title="$t('sessions.summary.dragToResize')"
+            @mousedown.stop.prevent="startResize(w, $event, 'x')" />
+          <span
+            class="widget-resize widget-resize--s"
+            :title="$t('sessions.summary.dragToResize')"
+            @mousedown.stop.prevent="startResize(w, $event, 'y')" />
+          <span
+            class="widget-resize widget-resize--se"
+            :title="$t('sessions.summary.dragToResize')"
+            @mousedown.stop.prevent="startResize(w, $event, 'both')" />
+          <!-- multi-field (2-3) nested pie/treemap -->
+          <HierarchyWidget
+            v-if="isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap')"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- multi-field (2-3) side-by-side table -->
+          <MultiFieldTableWidget
+            v-else-if="isMultiField(w) && w.viewMode === 'table'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <SummaryWidget
-            v-if="isStreamMode(w.viewMode)"
+            v-else-if="isStreamMode(w.viewMode)"
             :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
             :data="w.data"
             :loading="w.loading"
@@ -219,6 +136,44 @@
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <IntersectionWidget
+            v-else-if="w.viewMode === 'intersection'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- session-wide widgets: fed by the host's global stats chunk -->
+          <TimelineWidget
+            v-else-if="w.viewMode === 'timeline'"
+            :graph-data="summary.graph"
+            :timeline-data-filters="timelineDataFilters"
+            :title="w.title"
+            :info-items="widgetInfo(w)"
+            @time-range="onTimeRange"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <MapWidget
+            v-else-if="w.viewMode === 'map'"
+            :map-data="summary.map"
+            :title="w.title"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <StatsWidget
+            v-else-if="w.viewMode === 'stats'"
+            :stats="summary"
+            :title="w.title"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <TimeWidget
+            v-else-if="w.viewMode === 'time'"
+            :stats="summary"
+            :title="w.title"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
         </div>
       </div> <!-- /charts-container -->
     </div>
@@ -236,7 +191,7 @@
 // external dependencies
 import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { themedColor } from '@common/themes/themedColor.js';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import Sortable from 'sortablejs';
@@ -247,13 +202,20 @@ import SummaryWidget from './SummaryWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
+import IntersectionWidget from './widgets/IntersectionWidget.vue';
+import HierarchyWidget from './widgets/HierarchyWidget.vue';
+import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
+import TimelineWidget from './widgets/TimelineWidget.vue';
+import MapWidget from './widgets/MapWidget.vue';
+import StatsWidget from './widgets/StatsWidget.vue';
+import TimeWidget from './widgets/TimeWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, METRICLESS_VIEW_MODES } from './widgets/viewModes';
-import { widgetLocalExpression } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, hasMetric, hasAgg, allowsMultiField } from './widgets/viewModes';
+import { widgetLocalExpression, widgetFields } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
-import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
+import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 
 // Streaming response helpers
 
@@ -274,6 +236,7 @@ const parseChunk = (chunk) => {
 
 // Access route and store
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
 const { t } = useI18n();
 
@@ -292,7 +255,7 @@ const props = defineProps({
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations', 'widget-config-changed', 'streaming-state', 'canceled-state']);
+const emit = defineEmits(['widget-config-changed', 'streaming-state', 'canceled-state']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
@@ -302,14 +265,76 @@ let sortableInstance = null;
 
 // Computed properties
 const user = computed(() => store.state.user);
-const timezone = computed(() => user.value?.settings?.timezone || 'local');
-const showMs = computed(() => user.value?.settings?.ms === true);
 
-// Per-widget grid span: 1-4 columns / 1-4 rows (clamped; grid is 4 cols wide)
+// Timeline-data-filter field objects for the timeline widget's series selector
+// (the user's configured timeline metrics, resolved to field objects)
+const timelineDataFilters = computed(() => (user.value?.settings?.timelineDataFilters || [])
+  .map(f => FieldService.getField(f)).filter(Boolean));
+
+// A timeline widget's drag-select updates the dashboard time range (mirrors the
+// old pinned timeline): commit the new range and push it onto the URL to reload.
+const onTimeRange = (times) => {
+  if (!times?.startTime || !times?.stopTime) { return; }
+  store.commit('setTimeRange', 0); // custom range
+  store.commit('setTime', times);
+  if (route.query.date !== undefined ||
+      route.query.startTime !== times.startTime || route.query.stopTime !== times.stopTime) {
+    router.push({
+      query: { ...route.query, date: undefined, startTime: times.startTime, stopTime: times.stopTime }
+    });
+  }
+};
+
+// Per-widget grid span: 1-4 columns (grid is 4 cols wide) / 1-8 rows. Rows are a
+// fine 160px unit, so a chart (default 3 rows) is 480px while short widgets
+// (stats/time) can be a single ~160px row.
 const spanStyle = (w) => ({
   gridColumn: `span ${Math.min(4, Math.max(1, w?.width || 2))}`,
-  gridRow: `span ${Math.min(4, Math.max(1, w?.height || 1))}`
+  gridRow: `span ${Math.min(8, Math.max(1, w?.height || 3))}`
 });
+
+// True when a widget has 2-3 fields and a view mode that nests/compares them
+// (pie/treemap → HierarchyWidget; table → MultiFieldTableWidget).
+const isMultiField = (w) => allowsMultiField(w?.viewMode) && widgetFields(w).length > 1;
+
+// Drag-to-resize: a handle on the right edge changes width (1-4 cols), the bottom
+// edge changes height (1-8 rows), the corner does both. Deltas snap to the grid
+// (4 equal columns + 16px gap; 160px row unit). Persists on release.
+const GRID_GAP = 16; // 1rem gap between cells
+const ROW_UNIT = 160; // grid-auto-rows
+const startResize = (w, evt, axis) => {
+  const wrapperEl = evt.currentTarget.closest('.widget-wrapper');
+  if (!wrapperEl) { return; }
+  const startRect = wrapperEl.getBoundingClientRect();
+  const startCols = Math.min(4, Math.max(1, w.width || 2));
+  const cellW = (startRect.width - (startCols - 1) * GRID_GAP) / startCols;
+
+  const onMove = (e) => {
+    // re-read position each frame so reflow (wrapping) doesn't skew the math
+    const r = wrapperEl.getBoundingClientRect();
+    if (axis !== 'y') {
+      const cols = Math.round((e.clientX - r.left + GRID_GAP) / (cellW + GRID_GAP));
+      w.width = Math.min(4, Math.max(1, cols));
+    }
+    if (axis !== 'x') {
+      const rows = Math.round((e.clientY - r.top + GRID_GAP) / (ROW_UNIT + GRID_GAP));
+      w.height = Math.min(8, Math.max(1, rows));
+    }
+  };
+  const onUp = () => {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    emitWidgetConfigChange(); // persist new spans
+    window.dispatchEvent(new Event('resize')); // nudge chart/map reflow
+  };
+
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = axis === 'x' ? 'ew-resize' : (axis === 'y' ? 'ns-resize' : 'nwse-resize');
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+};
 
 // Reactive state
 const summary = ref(null);
@@ -347,7 +372,9 @@ let saveSvgAsPng;
 const makeEntry = (def) => ({
   ...def,
   data: [],
-  loading: !!def.field && isStreamMode(def.viewMode),
+  // only single-field stream widgets are fed by the host stream; multi-field
+  // pie/table and self-fetch modes manage their own loading
+  loading: !!def.field && isStreamMode(def.viewMode) && !isMultiField(def),
   error: null
 });
 
@@ -370,11 +397,14 @@ const widgetInfo = (w) => {
   if (!w) { return []; }
   const rows = [];
 
-  const fieldName = FieldService.getField(w.field, true)?.friendlyName || w.field;
-  if (fieldName) { rows.push({ label: t('sessions.summary.widget.field'), value: fieldName }); }
+  const exps = widgetFields(w);
+  if (exps.length) {
+    const names = exps.map(e => FieldService.getField(e, true)?.friendlyName || e).join(', ');
+    rows.push({ label: t(exps.length > 1 ? 'sessions.summary.widget.fields' : 'sessions.summary.widget.field'), value: names });
+  }
 
-  // metric only applies to the count-based charts (bar/pie)
-  if (!METRICLESS_VIEW_MODES.includes(w.viewMode)) {
+  // metric only applies to the metric-driven charts
+  if (hasMetric(w.viewMode)) {
     const metric = w.metricType || 'sessions';
     const metricName = metric === 'sessions'
       ? t('sessions.summary.sessions')
@@ -382,8 +412,11 @@ const widgetInfo = (w) => {
     rows.push({ label: t('sessions.summary.widget.metric'), value: metricName });
   }
 
-  const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
-  rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${w.length || 20}` });
+  // Top/Bottom N only applies to the aggregating widgets
+  if (hasAgg(w.viewMode)) {
+    const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
+    rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${w.length || 20}` });
+  }
 
   if (w.view) {
     const v = (store.state.views || []).find(x => x.id === w.view || x.name === w.view);
@@ -458,8 +491,12 @@ const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
     body.stopTime = store.state.time.stopTime;
   }
 
-  Utils.setFacetsQuery(body, 'sessions');
-  Utils.setMapQuery(body);
+  // The Arkime dashboard always aggregates: its timeline/map/stats widgets need
+  // the graph + map, so bypass the large-dataset "fetch viz" toggle that the
+  // sessions page uses to disable facets/map. Always request both.
+  body.facets = 1;
+  body.map = true;
+  store.commit('setDisabledAggregations', false);
 
   return body;
 };
@@ -599,9 +636,9 @@ const generateSummary = async () => {
     // Create unique cancel id to make cancel req for corresponding es task
     const cancelId = Utils.createRandomString();
 
-    // Stream only configured stream-mode widgets (heatmap/treemap self-fetch).
-    // An empty list still returns the stats chunk for the capture-stats band.
-    const fieldDefs = props.widgets.filter(w => w.field && isStreamMode(w.viewMode));
+    // Stream only single-field stream-mode widgets; heatmap/treemap/intersection
+    // and multi-field pie/table self-fetch. An empty list still returns the stats chunk.
+    const fieldDefs = props.widgets.filter(w => w.field && isStreamMode(w.viewMode) && !isMultiField(w));
     const body = buildRequestBody(fieldDefs, cancelId);
 
     // Create abort controller for request cancellation
@@ -637,17 +674,12 @@ const generateSummary = async () => {
         throw new Error(chunk.bsqErr);
       }
 
-      // First chunk has summary stats (sessions, packets, bytes, etc.)
+      // First chunk has summary stats (sessions, packets, bytes, etc.) + map/graph
+      // which now feed the stats/time/timeline/map widgets directly.
       if (chunk.sessions !== undefined) {
         // Initialize render entries for all configured widgets (loading state)
         chunk.fields = props.widgets.map(makeEntry);
         summary.value = chunk;
-
-        // Emit map/graph data immediately
-        emit('update-visualizations', {
-          mapData: chunk.map,
-          graphData: chunk.graph
-        });
 
         // Hide loading overlay once we have summary stats (widgets show their own loading)
         loading.value = false;
@@ -698,30 +730,6 @@ const generateSummary = async () => {
     error.value = err.text || err.message || String(err);
     loading.value = false;
   }
-};
-
-const formatNumber = (num) => {
-  return commaString(num || 0);
-};
-
-const formatBytes = (bytes) => {
-  return humanReadableBytes(bytes || 0);
-};
-
-const formatDuration = (start, end) => {
-  if (!start || !end) return 'N/A';
-  return readableTime(end - start);
-};
-
-const formatTimestamp = (timestamp) => {
-  if (!timestamp) return 'N/A';
-  // Convert seconds to milliseconds if needed (Arkime stores timestamps in seconds)
-  const ms = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
-  return timezoneDateString(ms, timezone.value, showMs.value);
-};
-
-const getCurrentTime = () => {
-  return timezoneDateString(Date.now(), timezone.value, showMs.value);
 };
 
 // Shared tooltip methods
@@ -1127,14 +1135,15 @@ const openEdit = (id) => {
 };
 
 /**
- * Close the edit modal. If a just-added widget was never configured (no field),
- * drop it so cancel doesn't leave a dangling "configure me" card.
+ * Close the edit modal. If a just-added field-bound widget was never configured
+ * (no field), drop it so cancel doesn't leave a dangling "configure me" card.
+ * Session-wide widgets (timeline/map/stats/time) are valid without a field.
  */
 const onEditClose = () => {
   editModalShow.value = false;
   const id = editingWidget.value?.id;
   const entry = id && summary.value?.fields?.find(f => f.id === id);
-  if (entry && !entry.field) {
+  if (entry && isFieldMode(entry.viewMode) && !entry.field) {
     removeWidgetLocal(entry);
   }
 };
@@ -1152,8 +1161,11 @@ const onEditSave = (updated) => {
   // self-fetch view modes (heatmap/treemap) react to the replaced entry on their
   // own; stream-mode widgets refetch here when the aggregation changed — including
   // when switching back from a self-fetch mode (they have no streamed data yet)
+  // self-fetch modes (heatmap/treemap/intersection + multi-field pie/table) react
+  // to the replaced entry via their own watchers; only single-field stream widgets
+  // refetch through the host here.
   const becameStream = isStreamMode(updated.viewMode) && !isStreamMode(prev.viewMode);
-  const needsRefetch = isStreamMode(updated.viewMode) && (
+  const needsRefetch = isStreamMode(updated.viewMode) && !isMultiField(updated) && (
     becameStream ||
     prev.field !== updated.field ||
     prev.length !== updated.length ||
@@ -1197,13 +1209,14 @@ const getWidgets = () => {
   return (summary.value?.fields || []).map(w => ({
     id: w.id,
     field: w.field,
+    fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, 3) : (w.field ? [w.field] : []),
     viewMode: w.viewMode,
     metricType: w.metricType,
     length: w.length,
     order: w.order,
     expression: w.expression || '',
     view: w.view || '',
-    height: w.height || 1,
+    height: w.height || 3,
     width: w.width || 2,
     title: w.title || ''
   }));
@@ -1228,9 +1241,10 @@ const addWidget = (def) => {
   }
 
   summary.value.fields.push(makeEntry(def));
-  // configured stream-mode widgets fetch immediately; self-fetch view modes
-  // (heatmap/treemap) fetch themselves and an unconfigured widget waits for its editor
-  if (def.field && isStreamMode(def.viewMode)) {
+  // configured single-field stream widgets fetch immediately; self-fetch modes
+  // (heatmap/treemap/intersection + multi-field pie/table) fetch themselves and an
+  // unconfigured widget waits for its editor
+  if (def.field && isStreamMode(def.viewMode) && !isMultiField(def)) {
     fetchWidgets([def]);
   }
   // bring the new widget into view + flash it (it may be below the fold)
@@ -1371,17 +1385,19 @@ defineExpose({
   display: grid;
 }
 
-/* Ensure grid items stretch to fill and have minimum height */
+/* Ensure grid items stretch to fill; height comes from the row span, not a floor */
 .charts-container > * {
   min-width: 0;      /* Prevent grid blowout */
-  min-height: 450px; /* Minimum height for readability */
+  min-height: 0;
 }
 
-/* Fixed 4-column grid; widgets span 1-4 cols/rows via inline grid-column/-row
-   (CSS clamps spans to the available columns on narrower breakpoints) */
+/* Fixed 4-column grid; widgets span 1-4 cols and 1-8 rows via inline
+   grid-column/-row. Rows are a fine 160px unit so short widgets (stats/time)
+   can be a single row while charts span 3 (480px). (CSS clamps column spans to
+   the available columns on narrower breakpoints.) */
 .charts-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: 480px;
+  grid-auto-rows: 160px;
 }
 
 /* charts have a ~400px min width, so step down columns on narrower viewports
@@ -1427,6 +1443,50 @@ defineExpose({
 }
 .widget-wrapper:hover .widget-handle {
   visibility: visible;
+}
+
+/* Drag-to-resize handles (shown on hover) */
+.widget-resize {
+  position: absolute;
+  z-index: 11;
+  visibility: hidden;
+}
+.widget-wrapper:hover .widget-resize {
+  visibility: visible;
+}
+.widget-resize--e {
+  top: 0;
+  right: -3px;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.widget-resize--s {
+  left: 0;
+  bottom: -3px;
+  height: 8px;
+  width: 100%;
+  cursor: ns-resize;
+}
+.widget-resize--se {
+  right: -3px;
+  bottom: -3px;
+  width: 18px;
+  height: 18px;
+  z-index: 12;
+  cursor: nwse-resize;
+}
+/* visible L-grip for the corner handle */
+.widget-resize--se::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid rgb(var(--v-theme-neutral));
+  border-bottom: 2px solid rgb(var(--v-theme-neutral));
+  border-bottom-right-radius: 3px;
 }
 
 /* Visual feedback during drag */

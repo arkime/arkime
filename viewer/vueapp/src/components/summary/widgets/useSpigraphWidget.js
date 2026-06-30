@@ -16,9 +16,11 @@ import { fetchSpigraph } from './widgetData';
  * @param {() => object} getWidget       returns the current widget definition
  * @param {() => number} getReloadNonce  returns the dashboard reload nonce
  * @param {(res: object) => void} onResult  handles a successful response
+ * @param {(route, store, widget, opts) => Promise<object>} [fetcher]  endpoint
+ *        fetcher (defaults to fetchSpigraph; pass fetchHierarchy for Intersection)
  * @returns {{ loading: import('vue').Ref<boolean>, error: import('vue').Ref<string>, fetchData: () => Promise<void> }}
  */
-export function useSpigraphWidget (getWidget, getReloadNonce, onResult) {
+export function useSpigraphWidget (getWidget, getReloadNonce, onResult, fetcher = fetchSpigraph) {
   const route = useRoute();
   const store = useStore();
   const loading = ref(true);
@@ -31,7 +33,7 @@ export function useSpigraphWidget (getWidget, getReloadNonce, onResult) {
     if (controller) { controller.abort(); }
     controller = new AbortController();
     try {
-      const res = await fetchSpigraph(route, store, getWidget(), { signal: controller.signal });
+      const res = await fetcher(route, store, getWidget(), { signal: controller.signal });
       loading.value = false;
       onResult(res);
     } catch (err) {
@@ -43,7 +45,7 @@ export function useSpigraphWidget (getWidget, getReloadNonce, onResult) {
 
   watch(() => {
     const w = getWidget();
-    return [getReloadNonce(), w.field, w.expression, w.length, w.view, w.metricType];
+    return [getReloadNonce(), w.field, (w.fields || []).join(','), w.expression, w.length, w.view, w.metricType];
   }, fetchData);
 
   onMounted(fetchData);
