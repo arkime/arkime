@@ -59,7 +59,7 @@ class WiseIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   async doFetch (user, item, type) {
-    const response = await axios.get(`${this.#wiseUrl}/${type}/${item}`);
+    const response = await axios.get(`${this.#wiseUrl}/${type}/${encodeURIComponent(item)}`);
 
     const results = response.data.map(e => {
       return {

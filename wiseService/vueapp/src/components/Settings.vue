@@ -37,6 +37,14 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             Themes
           </v-tab>
+          <v-tab
+            v-if="isAdmin"
+            value="banner">
+            <v-icon
+              icon="mdi-bullhorn"
+              class="me-1" />
+            {{ $t('settings.banner.title') }}
+          </v-tab>
         </v-tabs>
       </v-col> <!-- /navigation -->
 
@@ -63,6 +71,9 @@ SPDX-License-Identifier: Apache-2.0
             @update:model-value="onThemeChange"
             @update:custom-theme="onCustomThemeChange" />
         </div>
+        <div v-if="visibleTab === 'banner' && isAdmin">
+          <banner-settings />
+        </div>
       </v-col>
     </v-row>
   </div>
@@ -72,16 +83,19 @@ SPDX-License-Identifier: Apache-2.0
 import { mapGetters } from 'vuex';
 
 import ThemePicker from '@common/ThemePicker.vue';
+import BannerSettings from '@common/BannerSettings.vue';
+import WiseService from './wise.service';
 import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 export default {
   name: 'WiseSettings',
-  components: { ThemePicker },
+  components: { ThemePicker, BannerSettings },
   data: function () {
     return {
       visibleTab: 'themes',
-      themes: THEMES
+      themes: THEMES,
+      isAdmin: false
     };
   },
   computed: {
@@ -89,7 +103,10 @@ export default {
   },
   mounted: function () {
     const tab = window.location.hash.replace(/^#/, '');
-    if (tab === 'themes') this.visibleTab = tab;
+    if (tab === 'themes' || tab === 'banner') this.visibleTab = tab;
+    WiseService.getCurrentUser().then((user) => {
+      this.isAdmin = !!(user && (user.roles || []).includes('wiseAdmin'));
+    }).catch(() => { /* anonymous / unauthenticated */ });
   },
   methods: {
     openView (tabName) {

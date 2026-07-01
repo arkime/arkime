@@ -82,6 +82,9 @@ class Auth {
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
+   * @param {string} options.hostVar The name of this service's *Host config variable (e.g. 'viewHost') -
+   *                                 used only to print a security warning when header auth is enabled and
+   *                                 the service isn't restricted to loopback
    */
   static async initialize (options) {
     // Make sure all options we need below are set
@@ -205,6 +208,16 @@ class Auth {
     } else if (Auth.mode.startsWith('header')) {
       Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
       Auth.#userAuthIps.add('::1', 128, 1);
+
+      // No explicit userAuthIps set, so we're relying on the loopback-only default above.
+      // If this service is also listening on a non-loopback host, warn - a reverse proxy or
+      // trustProxy misconfiguration could let a remote client's header be trusted.
+      if (options.hostVar) {
+        const hostVal = ArkimeConfig.get(options.hostVar);
+        if (hostVal !== undefined && hostVal !== 'localhost' && hostVal !== '127.0.0.1' && hostVal !== '::1') {
+          console.log(`SECURITY WARNING - When using any form of header auth, ${options.hostVar} (currently '${hostVal}') should be localhost OR make sure you have set authIps correctly.`);
+        }
+      }
     } else {
       Auth.#userAuthIps.add('::', 0, 1);
     }
@@ -1219,7 +1232,7 @@ class Auth {
     const signature = Buffer.from(parts[2], 'hex');
     const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-    if (!crypto.timingSafeEqual(signature, h)) {
+    if (signature.length !== h.length || !crypto.timingSafeEqual(signature, h)) {
       throw new Error('Incorrect signature');
     }
 

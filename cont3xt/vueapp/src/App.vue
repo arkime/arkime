@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="compatibleBrowser"
       class="d-flex flex-column h-100">
+      <app-banner />
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
         <router-view class="flex-grow-1 w-100" />
@@ -87,6 +88,7 @@ import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
+import AppBanner from '@common/AppBanner.vue';
 import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
@@ -94,7 +96,8 @@ export default {
   components: {
     Cont3xtNavbar,
     KeyboardShortcuts,
-    Cont3xtUpgradeBrowser
+    Cont3xtUpgradeBrowser,
+    AppBanner
   },
   data: function () {
     return {

@@ -17,6 +17,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Locales = require('../common/locales');
+const Banner = require('../common/banner');
 const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
@@ -199,7 +200,8 @@ async function setupAuth () {
   await Auth.initialize({
     appAdminRole: 'wiseAdmin',
     passwordSecretSection: 'wiseService',
-    basePath: internals.webBasePath
+    basePath: internals.webBasePath,
+    hostVar: 'wiseHost'
   });
 
   if (Auth.mode === 'anonymous') {
@@ -227,6 +229,8 @@ async function setupAuth () {
       basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
     });
   }
+
+  Banner.initialize({ app: 'wise', prefix: ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime')) });
 }
 
 // ----------------------------------------------------------------------------
@@ -1514,6 +1518,10 @@ if (internals.webconfig) {
     [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
     User.apiUpdateSettings
   );
+
+  app.get('/api/banner', [ArkimeUtil.noCacheJson, isWiseUser], Banner.apiGetBanner);
+  app.put('/api/banner', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiUpdateBanner);
+  app.post('/api/banner/sync', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiSyncBanner);
 
   // ----------------------------------------------------------------------------
   /**

@@ -62,6 +62,7 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
+const Banner = require('../common/banner');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -1558,6 +1559,25 @@ app.post( // test notifier endpoint
   Notifier.apiTestNotifier
 );
 
+// banner apis ----------------------------------------------------------------
+app.get( // get banner endpoint
+  ['/api/banner'],
+  [ArkimeUtil.noCacheJson],
+  Banner.apiGetBanner
+);
+
+app.put( // update banner endpoint (admin only)
+  ['/api/banner'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  Banner.apiUpdateBanner
+);
+
+app.post( // sync banner to all apps endpoint (admin only)
+  ['/api/banner/sync'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  Banner.apiSyncBanner
+);
+
 // history apis ---------------------------------------------------------------
 app.get( // get histories endpoint
   ['/api/histories'],
@@ -2084,7 +2104,7 @@ app.get( // reverse dns endpoint
 // uploads apis ---------------------------------------------------------------
 app.post(
   ['/api/upload'],
-  [checkCookieToken, logAction(), multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
+  [checkCookieToken, logAction(), MiscAPIs.checkUpload, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
   MiscAPIs.upload
 );
 
@@ -2266,9 +2286,6 @@ async function main () {
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
   const viewHost = Config.get('viewHost', undefined);
-  if (internals.userNameHeader !== undefined && viewHost !== 'localhost' && viewHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables');
-  }
 
   const server = ArkimeUtil.createHttpServer(app, viewHost, Config.get('viewPort', '8005'));
   server.setTimeout(20 * 60 * 1000);
@@ -2336,6 +2353,11 @@ async function premain () {
   });
 
   Notifier.initialize({
+    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+  });
+
+  Banner.initialize({
+    app: 'viewer',
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
   });
 

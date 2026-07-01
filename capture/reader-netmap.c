@@ -181,28 +181,41 @@ void reader_netmap_init(char *UNUSED(name))
             LOG("Netmap opened on interface %s with %d RX rings", config.interface[i], nmd->nifp->ni_rx_rings);
         }
 
-        uint16_t ringsPerThread = nmd->nifp->ni_rx_rings / threadsPerInterface;
-        if (ringsPerThread == 0) {
-            ringsPerThread = 1;
+        if (nmd->nifp->ni_rx_rings == 0) {
+            CONFIGEXIT("Interface %s reports 0 RX rings", config.interface[i]);
         }
 
+        // Don't create more threads than there are rings - any extra threads
+        // would have no rings to read from
+        int numThreads = threadsPerInterface;
+        if (numThreads > nmd->nifp->ni_rx_rings) {
+            LOG("WARNING - netmapThreads (%d) is more than the %d RX rings available on %s, using %d threads instead",
+                numThreads, nmd->nifp->ni_rx_rings, config.interface[i], nmd->nifp->ni_rx_rings);
+            numThreads = nmd->nifp->ni_rx_rings;
+        }
+
+        // Evenly distribute rings across threads - the first `extraRings` threads
+        // get one extra ring each so no single thread is overloaded and every
+        // ring index handed out is guaranteed to be < ni_rx_rings
+        const uint16_t ringsPerThread = nmd->nifp->ni_rx_rings / numThreads;
+        const uint16_t extraRings = nmd->nifp->ni_rx_rings % numThreads;
+
         // Create reader threads with assigned rings
-        for (int t = 0; t < threadsPerInterface; t++) {
+        uint16_t nextRing = 0;
+        for (int t = 0; t < numThreads; t++) {
             if (numReaders >= MAX_NETMAP_READERS) {
                 CONFIGEXIT("Too many reader threads, max is %d", MAX_NETMAP_READERS);
             }
+
+            const uint16_t thisThreadRings = ringsPerThread + (t < extraRings ? 1 : 0);
 
             ArkimeNetmap_t *reader = &readers[numReaders];
             reader->nmd = nmd;
             reader->interfacePos = i;
             reader->threadNum = t;
-            reader->ringStart = t * ringsPerThread;
-            reader->ringEnd = (t + 1) * ringsPerThread - 1;
-
-            // Last thread gets any remaining rings
-            if (t == threadsPerInterface - 1) {
-                reader->ringEnd = nmd->nifp->ni_rx_rings - 1;
-            }
+            reader->ringStart = nextRing;
+            reader->ringEnd = nextRing + thisThreadRings - 1;
+            nextRing += thisThreadRings;
 
             if (config.debug) {
                 LOG("Thread %d for interface %s assigned rings %u-%u", t, config.interface[i], reader->ringStart, reader->ringEnd);

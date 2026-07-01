@@ -265,6 +265,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                     BSB_IMPORT_bsb(compBsb, invBsb, MIN(compLen, BSB_REMAINING(compBsb)));
 
                     int currentOpcode = -1;
+                    int sawInvokeId = 0;
                     while (BSB_REMAINING(invBsb) >= 3) {
                         uint8_t invTag = 0;
                         BSB_IMPORT_u08(invBsb, invTag);
@@ -283,7 +284,13 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                             }
                         }
 
-                        if (invTag == 0x02 && invLen >= 1 && invLen <= 2) {
+                        if (invTag == 0x02 && invLen >= 1 && invLen <= 2 && !sawInvokeId) {
+                            // The first INTEGER in an Invoke/ReturnResult component is the
+                            // invokeID (ITU-T Q.773), not the operationCode; skip it so it
+                            // isn't mis-recorded as a camel.op / tcap.opcode value.
+                            sawInvokeId = 1;
+                            BSB_IMPORT_skip(invBsb, invLen);
+                        } else if (invTag == 0x02 && invLen >= 1 && invLen <= 2) {
                             int opcode = 0;
                             for (uint32_t i = 0; i < invLen && BSB_REMAINING(invBsb) > 0; i++) {
                                 uint8_t b = 0;

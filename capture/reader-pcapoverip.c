@@ -268,7 +268,16 @@ LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(co
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
-        LOGEXIT("ERROR - Error accepting pcap-over-ip: %s", error ? error->message : "unknown error");
+        if (error) {
+            LOG("ERROR - Error accepting pcap-over-ip: %s", error->message);
+            g_error_free(error);
+        } else {
+            LOG("ERROR - Error accepting pcap-over-ip");
+        }
+        // Transient accept errors (e.g. ECONNABORTED, EMFILE/ENFILE) shouldn't take down
+        // the whole capture process - keep the listening socket watch alive so future
+        // connections can still be accepted.
+        return TRUE;
     }
 
     POIClient_t *poic = ARKIME_TYPE_ALLOC0(POIClient_t);

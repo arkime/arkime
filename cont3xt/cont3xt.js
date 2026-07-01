@@ -18,6 +18,7 @@ const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
+const Banner = require('../common/banner');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -267,6 +268,10 @@ app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
 app.get('/api/settings', apiGetSettings);
 app.put('/api/settings', [jsonParser, checkCookieToken], apiPutSettings);
+
+app.get('/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/api/banner', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiUpdateBanner);
+app.post('/api/banner/sync', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiSyncBanner);
 app.get('/api/integration/settings', [setCookie], Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser, checkCookieToken], Integration.apiPutSettings);
 app.get('/api/integration/stats', [setCookie], Integration.apiStats);
@@ -508,7 +513,8 @@ async function setupAuth () {
   await Auth.initialize({
     appAdminRole: 'cont3xtAdmin',
     passwordSecretSection: 'cont3xt',
-    basePath: internals.webBasePath
+    basePath: internals.webBasePath,
+    hostVar: 'cont3xtHost'
   });
 
   User.initialize({
@@ -524,6 +530,8 @@ async function setupAuth () {
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth'))
   });
+
+  Banner.initialize({ app: 'cont3xt', prefix: ArkimeConfig.get('usersPrefix') });
 
   Audit.initialize({
     expireHistoryDays: ArkimeConfig.get('expireHistoryDays', 180)
@@ -560,9 +568,6 @@ async function main () {
   setupHSTS();
 
   const cont3xtHost = ArkimeConfig.get('cont3xtHost');
-  if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
-  }
 
   ArkimeUtil.createHttpServer(app, cont3xtHost, ArkimeConfig.get('port', 3218));
 }

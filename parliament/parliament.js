@@ -35,6 +35,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const Notifier = require('../common/notifier');
+const Banner = require('../common/banner');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
@@ -1155,6 +1156,8 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
+
   Parliament.initialize({
     name: internals.parliamentName,
     prefix: ArkimeConfig.get('usersPrefix')
@@ -1720,6 +1723,11 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiU
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
 
+// Banner
+app.get('/parliament/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/parliament/api/banner', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiUpdateBanner);
+app.post('/parliament/api/banner/sync', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiSyncBanner);
+
 // user endpoints
 app.get('/parliament/api/user', User.apiGetUser);
 app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
@@ -2139,7 +2147,8 @@ app.use((err, req, res, next) => {
 async function setupAuth () {
   await Auth.initialize({
     appAdminRole: 'parliamentAdmin',
-    passwordSecretSection: 'parliament'
+    passwordSecretSection: 'parliament',
+    hostVar: 'parliamentHost'
   });
 
   User.initialize({
@@ -2250,9 +2259,6 @@ async function main () {
   await setupAuth();
 
   const parliamentHost = ArkimeConfig.get('parliamentHost');
-  if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
-  }
 
   ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), async () => {
     if (ArkimeConfig.debug) {

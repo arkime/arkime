@@ -102,6 +102,15 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             {{ $t('settings.nav.password') }}
           </v-tab>
+          <v-tab
+            v-if="!multiviewer || hasUsersES"
+            v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}"
+            value="totp">
+            <v-icon
+              icon="mdi-two-factor-authentication"
+              class="me-1" />
+            {{ $t('settings.totp.title') }}
+          </v-tab>
           <v-divider class="my-1" />
           <v-tab value="views">
             <v-icon
@@ -132,6 +141,14 @@ SPDX-License-Identifier: Apache-2.0
               icon="mdi-bell"
               class="me-1" />
             {{ $t('settings.nav.notifiers') }}
+          </v-tab>
+          <v-tab
+            v-has-role="{user:user,roles:'arkimeAdmin'}"
+            value="banner">
+            <v-icon
+              icon="mdi-bullhorn"
+              class="me-1" />
+            {{ $t('settings.nav.banner') }}
           </v-tab>
         </v-tabs>
       </v-col> <!-- /navigation -->
@@ -1114,141 +1131,144 @@ SPDX-License-Identifier: Apache-2.0
               </span>
             </v-col>
           </v-row> <!-- /change password button/error -->
+        </form> <!-- /password settings -->
 
-          <!-- TOTP Two-Factor Authentication (only for admins) -->
-          <div v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}">
-            <hr class="my-4">
-            <div class="d-flex align-center mb-1">
-              <h4 class="mb-0 me-2">
-                {{ $t('settings.totp.title') }}
-              </h4>
-              <!-- Enroll button (when not enrolled) -->
-              <v-btn
-                v-if="!totpEnabled && !totpSetupMode"
-                variant="flat"
-                size="large"
-                color="primary"
-                @click="startTotpSetup">
-                {{ $t('settings.totp.enroll') }}
-              </v-btn>
-              <!-- Enabled status + Unenroll button (when enrolled) -->
+        <!-- two-factor (TOTP) settings -->
+        <form
+          v-if="visibleTab === 'totp' && (!multiviewer || hasUsersES)"
+          v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}"
+          id="totp">
+          <h3 class="d-flex align-center">
+            <span class="me-2">{{ $t('settings.totp.title') }}</span>
+            <!-- Enroll button (when not enrolled) -->
+            <v-btn
+              v-if="!totpEnabled && !totpSetupMode"
+              variant="flat"
+              size="large"
+              color="primary"
+              @click="startTotpSetup">
+              {{ $t('settings.totp.enroll') }}
+            </v-btn>
+            <!-- Enabled status + Unenroll button (when enrolled) -->
+            <span
+              v-if="totpEnabled && !totpSetupMode"
+              class="text-success me-2">
+              <v-icon icon="mdi-check" /> {{ $t('settings.totp.enabled') }}
+            </span>
+            <v-btn
+              v-if="totpEnabled && !totpSetupMode"
+              color="error"
+              variant="flat"
+              size="large"
+              @click="showTotpDisable = true">
+              {{ $t('settings.totp.unenroll') }}
+            </v-btn>
+            <!-- Cancel button (when in setup mode) -->
+            <v-btn
+              v-if="totpSetupMode"
+              color="warning"
+              variant="flat"
+              size="large"
+              @click="cancelTotpSetup">
+              {{ $t('common.cancel') }}
+            </v-btn>
+          </h3>
+
+          <hr>
+
+          <p class="mb-3">
+            {{ $t('settings.totp.description') }}
+          </p>
+
+          <!-- TOTP Setup (QR Code + Verification) -->
+          <div
+            v-if="totpSetupMode"
+            class="mb-3">
+            <div class="my-2">
+              <img
+                v-if="totpQRDataUrl"
+                :src="totpQRDataUrl"
+                alt="TOTP QR Code"
+                class="rounded p-2"
+                style="border: 1px solid rgb(var(--v-theme-foreground)); background-color: rgb(var(--v-theme-background));">
               <span
-                v-if="totpEnabled && !totpSetupMode"
-                class="text-success me-2">
-                <v-icon icon="mdi-check" /> {{ $t('settings.totp.enabled') }}
-              </span>
+                v-else>{{ $t('settings.totp.generatingQR') }}</span>
+            </div>
+            <div class="small mb-2">
+              {{ $t('settings.totp.manualEntry') }}: <code>{{ totpSecret }}</code>
+            </div>
+            <div
+              class="arkime-input-group"
+              style="width: 400px;">
+              <span class="arkime-input-label">{{ $t('settings.totp.verifyCode') }}</span>
+              <input
+                type="text"
+                maxlength="6"
+                class="arkime-input-control"
+                v-model="totpVerifyCode"
+                :placeholder="$t('settings.totp.codePlaceholder')"
+                @keyup.enter="confirmTotpSetup">
               <v-btn
-                v-if="totpEnabled && !totpSetupMode"
+                color="success"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :disabled="!totpVerifyCode || totpVerifyCode.length !== 6"
+                @click="confirmTotpSetup">
+                {{ $t('settings.totp.verify') }}
+              </v-btn>
+            </div>
+            <span
+              v-if="totpError"
+              class="small text-danger d-block mt-2">
+              <v-icon icon="mdi-alert" />&nbsp;
+              {{ totpError }}
+            </span>
+          </div>
+
+          <!-- TOTP Disable Confirmation -->
+          <div
+            v-if="showTotpDisable"
+            class="mb-3">
+            <div
+              class="arkime-input-group"
+              style="width: 400px;">
+              <span class="arkime-input-label">{{ $t('settings.totp.confirmDisable') }}</span>
+              <input
+                type="text"
+                maxlength="6"
+                class="arkime-input-control"
+                v-model="totpDisableCode"
+                :placeholder="$t('settings.totp.codePlaceholder')"
+                @keyup.enter="disableTotp">
+              <v-btn
                 color="error"
                 variant="flat"
-                size="large"
-                @click="showTotpDisable = true">
-                {{ $t('settings.totp.unenroll') }}
-              </v-btn>
-              <!-- Cancel button (when in setup mode) -->
-              <v-btn
-                v-if="totpSetupMode"
-                color="warning"
-                variant="flat"
-                size="large"
-                @click="cancelTotpSetup">
-                {{ $t('common.cancel') }}
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :disabled="!totpDisableCode || totpDisableCode.length !== 6"
+                @click="disableTotp">
+                {{ $t('settings.totp.confirmUnenroll') }}
               </v-btn>
             </div>
-            <p class="small mb-3">
-              {{ $t('settings.totp.description') }}
-            </p>
-
-            <!-- TOTP Setup (QR Code + Verification) -->
-            <div
-              v-if="totpSetupMode"
-              class="mb-3">
-              <div class="my-2">
-                <img
-                  v-if="totpQRDataUrl"
-                  :src="totpQRDataUrl"
-                  alt="TOTP QR Code"
-                  class="rounded p-2"
-                  style="border: 1px solid rgb(var(--v-theme-foreground)); background-color: rgb(var(--v-theme-background));">
-                <span
-                  v-else>{{ $t('settings.totp.generatingQR') }}</span>
-              </div>
-              <div class="small mb-2">
-                {{ $t('settings.totp.manualEntry') }}: <code>{{ totpSecret }}</code>
-              </div>
-              <div
-                class="arkime-input-group"
-                style="width: 400px;">
-                <span class="arkime-input-label">{{ $t('settings.totp.verifyCode') }}</span>
-                <input
-                  type="text"
-                  maxlength="6"
-                  class="arkime-input-control"
-                  v-model="totpVerifyCode"
-                  :placeholder="$t('settings.totp.codePlaceholder')"
-                  @keyup.enter="confirmTotpSetup">
-                <v-btn
-                  color="success"
-                  variant="flat"
-                  size="small"
-                  density="comfortable"
-                  class="me-1"
-                  :disabled="!totpVerifyCode || totpVerifyCode.length !== 6"
-                  @click="confirmTotpSetup">
-                  {{ $t('settings.totp.verify') }}
-                </v-btn>
-              </div>
-              <span
-                v-if="totpError"
-                class="small text-danger d-block mt-2">
-                <v-icon icon="mdi-alert" />&nbsp;
-                {{ totpError }}
-              </span>
-            </div>
-
-            <!-- TOTP Disable Confirmation -->
-            <div
-              v-if="showTotpDisable"
-              class="mb-3">
-              <div
-                class="arkime-input-group"
-                style="width: 400px;">
-                <span class="arkime-input-label">{{ $t('settings.totp.confirmDisable') }}</span>
-                <input
-                  type="text"
-                  maxlength="6"
-                  class="arkime-input-control"
-                  v-model="totpDisableCode"
-                  :placeholder="$t('settings.totp.codePlaceholder')"
-                  @keyup.enter="disableTotp">
-                <v-btn
-                  color="error"
-                  variant="flat"
-                  size="small"
-                  density="comfortable"
-                  class="me-1"
-                  :disabled="!totpDisableCode || totpDisableCode.length !== 6"
-                  @click="disableTotp">
-                  {{ $t('settings.totp.confirmUnenroll') }}
-                </v-btn>
-              </div>
-              <v-btn
-                color="grey"
-                variant="flat"
-                size="large"
-                class="mt-2"
-                @click="showTotpDisable = false; totpDisableCode = ''">
-                {{ $t('common.cancel') }}
-              </v-btn>
-              <span
-                v-if="totpError"
-                class="small text-danger d-block mt-2">
-                <v-icon icon="mdi-alert" />&nbsp;
-                {{ totpError }}
-              </span>
-            </div>
-          </div> <!-- /TOTP Two-Factor Authentication (only for admins) -->
-        </form> <!-- /password settings -->
+            <v-btn
+              color="grey"
+              variant="flat"
+              size="large"
+              class="mt-2"
+              @click="showTotpDisable = false; totpDisableCode = ''">
+              {{ $t('common.cancel') }}
+            </v-btn>
+            <span
+              v-if="totpError"
+              class="small text-danger d-block mt-2">
+              <v-icon icon="mdi-alert" />&nbsp;
+              {{ totpError }}
+            </span>
+          </div>
+        </form> <!-- /two-factor settings -->
 
         <!-- notifiers settings -->
         <Notifiers
@@ -1258,6 +1278,12 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
           help-intl-id="settings.notifiers.helpViewer" />
+
+        <!-- banner settings -->
+        <BannerSettings
+          id="banner"
+          v-if="visibleTab === 'banner'"
+          v-has-role="{user:user,roles:'arkimeAdmin'}" />
 
         <!-- shortcut settings -->
         <Shortcuts
@@ -1303,6 +1329,7 @@ import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shortcuts from './Shortcuts.vue';
+import BannerSettings from '@common/BannerSettings.vue';
 import Views from './Views.vue';
 
 let clockInterval;
@@ -1323,6 +1350,7 @@ export default {
     PeriodicQueries,
     Shortcuts,
     Notifiers,
+    BannerSettings,
     Views
   },
   data: function () {
@@ -1456,11 +1484,13 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts') {
+        tab === 'spiview' || tab === 'notifiers' || tab === 'banner' || tab === 'shortcuts' ||
+        tab === 'totp') {
         this.visibleTab = tab;
       }
 
-      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer)) {
+      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer) ||
+        (tab === 'totp' && this.multiviewer && !this.hasUsersES)) {
         // multiviewer user can't change password or configure periodic queries
         this.openView('general');
       }

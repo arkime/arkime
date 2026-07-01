@@ -75,7 +75,8 @@ LOCAL DedupSeconds_t *seconds;
 /******************************************************************************/
 int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 {
-    // Cap headerLen to prevent large stack VLA on attacker-controlled IPv6 ext headers
+    // Cap headerLen so the headerLen-derived copies below can't overflow the
+    // fixed-size md[]/buf[] stack buffers
     if (headerLen <= 0 || headerLen > 256) {
         return 0;
     }
