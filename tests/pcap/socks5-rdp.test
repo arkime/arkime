@@ -133,9 +133,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -158,7 +159,38 @@
     "user" : [
      "xxx"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "socks5-rdp / bt-udp / bigendian src ip",
+      "indicator" : "10.0.0.3",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.socks"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 4
    },
    "header" : {
     "index" : {

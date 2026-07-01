@@ -500,9 +500,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "socks:password"
+     "socks:password",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 8,
      "ae" : 0,
@@ -521,7 +522,18 @@
      "dst" : 0,
      "src" : 2170244552
     },
-    "totDataBytes" : 1785
+    "totDataBytes" : 1785,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

@@ -214,9 +214,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "smtp:statuscode:250"
+     "smtp:statuscode:250",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 8,
      "ae" : 0,
@@ -235,7 +236,38 @@
      "dst" : 0,
      "src" : 3113073819
     },
-    "totDataBytes" : 2172
+    "totDataBytes" : 2172,
+    "zeekintel" : [
+     {
+      "desc" : "socks5-rdp / bt-udp / bigendian src ip",
+      "indicator" : "10.0.0.3",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.email"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.email"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 4
    },
    "header" : {
     "index" : {

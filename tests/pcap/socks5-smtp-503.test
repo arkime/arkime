@@ -151,9 +151,10 @@
     "tags" : [
      "dstip",
      "smtp:authlogin",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 3,
+    "tagsCnt" : 4,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,
@@ -172,7 +173,24 @@
      "dst" : 0,
      "src" : 3832188485
     },
-    "totDataBytes" : 327
+    "totDataBytes" : 327,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {

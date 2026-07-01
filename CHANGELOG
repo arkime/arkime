@@ -77,6 +77,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4089 Fix netmap reader out-of-bounds ring index when netmapThreads doesn't evenly divide the interface's RX ring count
   - #4089 Fix file reader silently stopping on EINTR instead of retrying
   - #4089 Fix directory monitor leaking watch state when a watched directory is deleted
+  - #4090 Add new zeekintel plugin that can read Zeek intel framework files and tag/annotate sessions whose ips, hosts, urls, emails or hashes match a loaded indicator
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt

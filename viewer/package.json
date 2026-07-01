@@ -41,7 +41,8 @@
       "./views/",
       "../common/",
       "../tests/config.test.ini",
-      "../capture/parsers/"
+      "../capture/parsers/",
+      "../capture/plugins/"
     ]
   },
   "browserslist": [

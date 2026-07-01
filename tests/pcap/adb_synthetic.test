@@ -171,9 +171,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -212,7 +213,31 @@
       "16777226:40001,33554442:5555"
      ]
     },
-    "totDataBytes" : 428
+    "totDataBytes" : 428,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -418,9 +443,10 @@
     "tags" : [
      "adb:sync",
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 3,
+    "tagsCnt" : 4,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -459,7 +485,31 @@
       "16777226:40002,33554442:5555"
      ]
     },
-    "totDataBytes" : 632
+    "totDataBytes" : 632,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -634,9 +684,10 @@
     "tags" : [
      "adb:shell-v2",
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 3,
+    "tagsCnt" : 4,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -675,7 +726,31 @@
       "16777226:40003,33554442:5555"
      ]
     },
-    "totDataBytes" : 341
+    "totDataBytes" : 341,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -858,9 +933,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -899,7 +975,31 @@
       "16777226:40004,33554442:5555"
      ]
     },
-    "totDataBytes" : 284
+    "totDataBytes" : 284,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -1060,9 +1160,10 @@
      "adb:tls",
      "adb:tls-encrypted",
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 4,
+    "tagsCnt" : 5,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -1138,7 +1239,31 @@
      ],
      "versionCnt" : 1
     },
-    "totDataBytes" : 337
+    "totDataBytes" : 337,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -1256,6 +1381,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -1274,7 +1403,31 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 48
+    "totDataBytes" : 48,
+    "zeekintel" : [
+     {
+      "desc" : "socks5-rdp / bt-udp / bigendian src ip",
+      "indicator" : "10.0.0.3",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {

@@ -145,6 +145,14 @@ sub sortObj {
             if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
+            } elsif ($key eq "zeekintel") {
+                my @tmp = sort {
+                    ($a->{indicator_type} // '') cmp ($b->{indicator_type} // '')
+                        || ($a->{indicator} // '') cmp ($b->{indicator} // '')
+                        || ($a->{where} // '') cmp ($b->{where} // '')
+                        || ($a->{source} // '') cmp ($b->{source} // '')
+                } (@{$obj->{$key}});
+                $obj->{$key} = \@tmp;
             } else {
                 my @tmp = sort (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;

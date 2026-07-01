@@ -2618,7 +2618,7 @@ class SessionAPIs {
    */
   static getSessionById (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
-    options._source = ['cert', 'dns'];
+    options._source = ['cert', 'dns', 'zeekintel'];
     options.fields = ['*'];
     options.arkime_unflatten = parseInt(req.query.flatten) !== 1;
     Db.getSession(req.params.id, options, (err, session) => {
@@ -2643,7 +2643,7 @@ class SessionAPIs {
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
-    options._source = ['cert', 'dns'];
+    options._source = ['cert', 'dns', 'zeekintel'];
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
