@@ -274,14 +274,30 @@ LOCAL ZeekIntelType_t zeekintel_type_lookup(const char *type)
     const char *rest = type + ZEEK_INTEL_PREFIX_LEN;
 
     switch (rest[0]) {
-    case 'A': if (strcmp(rest, "ADDR")        == 0) return ZEEK_INTEL_ADDR;        break;
-    case 'S': if (strcmp(rest, "SUBNET")      == 0) return ZEEK_INTEL_SUBNET;      break;
-    case 'D': if (strcmp(rest, "DOMAIN")      == 0) return ZEEK_INTEL_DOMAIN;      break;
-    case 'U': if (strcmp(rest, "URL")         == 0) return ZEEK_INTEL_URL;         break;
-    case 'E': if (strcmp(rest, "EMAIL")       == 0) return ZEEK_INTEL_EMAIL;       break;
-    case 'F': if (strcmp(rest, "FILE_HASH")   == 0) return ZEEK_INTEL_FILE_HASH;   break;
-    case 'C': if (strcmp(rest, "CERT_HASH")   == 0) return ZEEK_INTEL_CERT_HASH;   break;
-    case 'P': if (strcmp(rest, "PUBKEY_HASH") == 0) return ZEEK_INTEL_PUBKEY_HASH; break;
+    case 'A':
+        if (strcmp(rest, "ADDR")        == 0) return ZEEK_INTEL_ADDR;
+        break;
+    case 'S':
+        if (strcmp(rest, "SUBNET")      == 0) return ZEEK_INTEL_SUBNET;
+        break;
+    case 'D':
+        if (strcmp(rest, "DOMAIN")      == 0) return ZEEK_INTEL_DOMAIN;
+        break;
+    case 'U':
+        if (strcmp(rest, "URL")         == 0) return ZEEK_INTEL_URL;
+        break;
+    case 'E':
+        if (strcmp(rest, "EMAIL")       == 0) return ZEEK_INTEL_EMAIL;
+        break;
+    case 'F':
+        if (strcmp(rest, "FILE_HASH")   == 0) return ZEEK_INTEL_FILE_HASH;
+        break;
+    case 'C':
+        if (strcmp(rest, "CERT_HASH")   == 0) return ZEEK_INTEL_CERT_HASH;
+        break;
+    case 'P':
+        if (strcmp(rest, "PUBKEY_HASH") == 0) return ZEEK_INTEL_PUBKEY_HASH;
+        break;
     }
     return ZEEK_INTEL_INVALID;
 }
@@ -730,7 +746,7 @@ LOCAL void zeekintel_match_str_field(ArkimeSession_t *session, ZeekIntelStringHa
         const ArkimeStringHashStd_t *shash = session->fields[pos]->shash;
         ArkimeString_t *hstring;
         HASH_FORALL2(s_, *shash, hstring)
-            zeekintel_match_str_value(session, hash, hstring->str, lower, where);
+        zeekintel_match_str_value(session, hash, hstring->str, lower, where);
         break;
     }
     case ARKIME_FIELD_TYPE_STR_GHASH: {
