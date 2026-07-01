@@ -467,6 +467,13 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
         if (BSB_REMAINING(*bsb) < 64) {
             return 1;
         }
+        if (*remlen < 64) {
+            // Message declared less data (via the NETBIOS length) than a full SMB2 header
+            // needs - malformed/too short. Skip it rather than reading past remlen and
+            // underflowing *remlen below.
+            *state = SMB_SKIP;
+            break;
+        }
         BSB_IMPORT_skip(*bsb, 12);
         BSB_LIMPORT_u16(*bsb, cmd);
         BSB_IMPORT_skip(*bsb, 2);

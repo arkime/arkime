@@ -669,7 +669,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             hstring->len = len;
             hstring->utf8 = 0;
             hstring->uw = 0;
-            HASH_ADD(s_, *hash, hstring->str, hstring);
+            HASH_ADD_HASH(s_, *hash, arkime_string_hash_len(hstring->str, hstring->len), hstring->str, hstring);
             goto added;
         case ARKIME_FIELD_TYPE_STR_GHASH:
             field->ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -861,7 +861,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
             hstring->len = len;
             hstring->utf8 = 0;
             hstring->uw = uw;
-            HASH_ADD(s_, *hash, hstring->str, hstring);
+            HASH_ADD_HASH(s_, *hash, arkime_string_hash_len(hstring->str, hstring->len), hstring->str, hstring);
             if (info->ruleEnabled)
                 arkime_rules_run_field_set(session, pos, (const gpointer) string);
             return string;

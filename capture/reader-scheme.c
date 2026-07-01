@@ -101,7 +101,7 @@ void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
     actions->refs++;
 }
 /******************************************************************************/
-LOCAL void reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
+void arkime_reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
 {
     if (!actions)
         return;
@@ -297,7 +297,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
     fileInfo[readerState.readerPos].extra = g_strdup(extraInfo);
 
     if (schemeActions[readerState.readerPos])
-        reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
+        arkime_reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
 
     schemeActions[readerState.readerPos] = actions;
     arkime_reader_scheme_actions_ref(actions);
@@ -463,7 +463,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         currentProcessingUri = NULL;
         ARKIME_UNLOCK(laterLock);
         g_free(item->uri);
-        reader_scheme_actions_deref(item->actions);
+        arkime_reader_scheme_actions_deref(item->actions);
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
 

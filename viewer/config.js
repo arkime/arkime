@@ -309,6 +309,7 @@ class Config {
         appAdminRole: 'arkimeAdmin',
         basePath: Config.basePath(),
         passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
+        hostVar: 'viewHost',
         s2s: true,
         s2sRegressionTests: !!Config.get('s2sRegressionTests')
       });

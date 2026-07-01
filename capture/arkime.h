@@ -1739,6 +1739,7 @@ typedef void (*ArkimeSchemeExit)();
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_actions_deref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
