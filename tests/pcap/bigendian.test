@@ -83,7 +83,21 @@
      255
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 128
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 128,
+    "zeekintel" : [
+     {
+      "desc" : "bigendian.pcap source ip",
+      "indicator" : "192.168.177.160",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

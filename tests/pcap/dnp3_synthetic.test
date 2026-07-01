@@ -120,9 +120,10 @@
     "tags" : [
      "dstip",
      "srcip",
-     "truncated-pcap"
+     "truncated-pcap",
+     "zeek:intel"
     ],
-    "tagsCnt" : 3,
+    "tagsCnt" : 4,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -161,7 +162,31 @@
       "16777226:12345,33554442:20000"
      ]
     },
-    "totDataBytes" : 101
+    "totDataBytes" : 101,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -277,7 +302,35 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 70
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 70,
+    "zeekintel" : [
+     {
+      "desc" : "socks5-rdp / bt-udp / bigendian src ip",
+      "indicator" : "10.0.0.3",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -382,6 +435,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -400,7 +457,24 @@
      "dst" : 0,
      "src" : 0
     },
-    "totDataBytes" : 28
+    "totDataBytes" : 28,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {

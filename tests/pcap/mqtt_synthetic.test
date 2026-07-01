@@ -112,6 +112,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -134,7 +138,17 @@
     "user" : [
      "admin"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -246,6 +260,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -264,7 +282,17 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 95
+    "totDataBytes" : 95,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -373,6 +401,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -395,7 +427,17 @@
     "user" : [
      "gateway_user"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -512,6 +554,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -530,7 +576,17 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 103
+    "totDataBytes" : 103,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -644,6 +700,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -666,7 +726,17 @@
     "user" : [
      "modern_user"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -769,6 +839,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -791,7 +865,17 @@
     "user" : [
      "gateway_user"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

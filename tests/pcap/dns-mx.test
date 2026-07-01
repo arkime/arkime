@@ -174,7 +174,21 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 198
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 198,
+    "zeekintel" : [
+     {
+      "desc" : "dns-mx.pcap MX answer host",
+      "indicator" : "cluster5.us.messagelabs.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "where" : "host.dns.mailserver"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

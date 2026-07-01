@@ -109,14 +109,25 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "dstip"
+     "dstip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "totDataBytes" : 0,
     "vni" : [
      123
     ],
-    "vniCnt" : 1
+    "vniCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "arp.ip"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -287,9 +298,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "test" : {
      "ASN" : [
       "AS0 This is neat"
@@ -314,7 +326,31 @@
     "vni" : [
      123
     ],
-    "vniCnt" : 1
+    "vniCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {

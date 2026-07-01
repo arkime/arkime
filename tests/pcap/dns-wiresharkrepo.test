@@ -581,7 +581,30 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 1212
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1212,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "dns.host"
+     },
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "dns.query.host"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {

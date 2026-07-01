@@ -109,9 +109,10 @@
      "srcip",
      "yara:Pop3Yara",
      "yara:tag1",
-     "yara:tag2"
+     "yara:tag2",
+     "zeek:intel"
     ],
-    "tagsCnt" : 5,
+    "tagsCnt" : 6,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -150,7 +151,31 @@
       "16777226:2464,33554442:110"
      ]
     },
-    "totDataBytes" : 16
+    "totDataBytes" : 16,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {

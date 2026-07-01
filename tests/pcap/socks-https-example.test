@@ -366,9 +366,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert:certificate-authority"
+     "cert:certificate-authority",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 15,
      "ae" : 0,
@@ -424,7 +425,18 @@
      ],
      "versionCnt" : 1
     },
-    "totDataBytes" : 8920
+    "totDataBytes" : 8920,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -795,9 +807,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert:certificate-authority"
+     "cert:certificate-authority",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 15,
      "ae" : 0,
@@ -853,7 +866,26 @@
      ],
      "versionCnt" : 1
     },
-    "totDataBytes" : 8911
+    "totDataBytes" : 8911,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     },
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.socks"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {
@@ -1233,9 +1265,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert:certificate-authority"
+     "cert:certificate-authority",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 16,
      "ae" : 0,
@@ -1291,7 +1324,18 @@
      ],
      "versionCnt" : 1
     },
-    "totDataBytes" : 8929
+    "totDataBytes" : 8929,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
