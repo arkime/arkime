@@ -26,9 +26,9 @@ SPDX-License-Identifier: Apache-2.0
              intersection, otherwise a single typeahead. Grayed for session types. -->
         <div
           class="arkime-input-group arkime-input-group--fluid mb-3"
-          :class="{ 'input-disabled': !fieldMode }">
+          :class="{ 'input-disabled': !needsField }">
           <span class="arkime-input-label">
-            {{ multiField ? $t('sessions.summary.widget.fields') : $t('sessions.summary.widget.field') }}<sup v-if="fieldMode">*</sup>
+            {{ multiField ? $t('sessions.summary.widget.fields') : $t('sessions.summary.widget.field') }}<sup v-if="needsField">*</sup>
           </span>
           <v-autocomplete
             v-if="multiField"
@@ -42,6 +42,12 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             hide-details
             auto-select-first />
+          <!-- map: geo fields only -->
+          <ArkimeFieldTypeahead
+            v-else-if="geoMode"
+            :fields="geoFields"
+            :initial-value="fieldFriendlyName"
+            @field-selected="onFieldSelected" />
           <ArkimeFieldTypeahead
             v-else
             :fields="fields"
@@ -208,7 +214,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasAgg, isFieldMode, allowsMultiField } from './widgets/viewModes';
+import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, hasLocalFilter } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -259,10 +265,19 @@ const fieldItems = computed(() => fields.value.map(f => ({ title: f.friendlyName
 
 // Capability flags drive which inputs are enabled for the chosen visualization type
 const fieldMode = computed(() => isFieldMode(form.value.viewMode));
+// the map takes a single geo field (country/*.geo) rather than a general field
+const geoMode = computed(() => isGeoFieldMode(form.value.viewMode));
+// a field selection is required by both general field-bound and geo (map) types
+const needsField = computed(() => fieldMode.value || geoMode.value);
 const metricEnabled = computed(() => hasMetric(form.value.viewMode));
 const aggEnabled = computed(() => hasAgg(form.value.viewMode));
-// session-wide widgets (timeline/map/stats/time) describe the whole result set
-const localFilterEnabled = computed(() => fieldMode.value);
+// field-bound, geo (map) and timeline widgets all support a local filter; only
+// the global capture-stats widgets (stats/time) don't
+const localFilterEnabled = computed(() => hasLocalFilter(form.value.viewMode));
+
+// geo fields (country codes) offered for the map: exp `country.*` or a *GEO dbField
+const geoFields = computed(() => fields.value.filter(f =>
+  f.exp?.startsWith('country.') || /GEO$/.test(f.dbField || '') || /GEO$/.test(f.dbField2 || '')));
 
 const titlePlaceholder = computed(() => fieldFriendlyName.value || viewModeLabel(form.value.viewMode));
 
@@ -364,13 +379,13 @@ const save = () => {
   let fieldList;
   if (multiField.value) {
     fieldList = (form.value.fields || []).slice(0, 3);
-  } else if (fieldMode.value) {
+  } else if (needsField.value) { // single field-bound types + the map's geo field
     fieldList = form.value.field ? [form.value.field] : [];
   } else {
     fieldList = []; // session-wide widgets have no field
   }
-  // field-bound types require at least one field
-  if (fieldMode.value && fieldList.length === 0) {
+  // field-bound types (incl. the map's geo field) require at least one field
+  if (needsField.value && fieldList.length === 0) {
     error.value = t('sessions.summary.widget.fieldRequired');
     return;
   }

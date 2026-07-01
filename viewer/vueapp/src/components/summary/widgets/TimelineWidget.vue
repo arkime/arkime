@@ -2,33 +2,30 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Session-wide widget: the search timeline, fed by the host's global stats chunk
-(graph histos). A small selector picks which series to show (sessions or one of
-the user's timeline data filters); drag-select emits a new time range to the host.
+Field widget: the search timeline. Self-fetches its own graph (global search AND
+the widget's local filter) so it can plot any numeric field's metric and apply a
+per-widget View/expression. The plotted series follows the widget's metric:
+'sessions' -> sessionsHisto, else the field's <dbField>Histo. Drag-select emits a
+new time range to the host.
 -->
 <template>
   <WidgetCard
     :title="displayTitle"
+    :loading="loading"
+    :error="error"
     :has-data="hasData"
     :info-items="infoItems"
     @edit="$emit('edit')"
-    @remove="$emit('remove')">
+    @remove="$emit('remove')"
+    @retry="fetchData">
     <div class="timeline-widget">
-      <div class="timeline-widget__controls">
-        <v-select
-          v-model="graphType"
-          :items="graphTypeItems"
-          density="compact"
-          variant="outlined"
-          hide-details
-          style="max-width: 240px" />
-      </div>
       <div class="timeline-widget__plot">
         <TimelineGraph
           :graph-data="graphData"
           :graph-type="graphType"
           series-type="bars"
           y-scale="linear"
+          fit-height
           :timeline-data-filters="timelineDataFilters"
           :timezone="timezone"
           @update-time-range="$emit('time-range', $event)" />
@@ -43,29 +40,39 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import TimelineGraph from '../../visualizations/TimelineGraph.vue';
+import { useSpigraphWidget } from './useSpigraphWidget';
+import { metricHistoKey, fetchGraph } from './widgetData';
 
 const { t } = useI18n();
 const store = useStore();
 
 const props = defineProps({
-  graphData: { type: Object, default: () => null },
+  widget: { type: Object, required: true },
+  reloadNonce: { type: Number, default: 0 },
   timelineDataFilters: { type: Array, default: () => [] },
-  title: { type: String, default: '' },
   infoItems: { type: Array, default: () => [] }
 });
 
 defineEmits(['edit', 'remove', 'time-range']);
 
-const hasData = computed(() => !!props.graphData);
-const displayTitle = computed(() => props.title || t('sessions.summary.timelineView'));
+const graphData = ref(null);
+
+// self-fetch the graph; re-runs on metric/expression/view/time change (the
+// useSpigraphWidget dependency key) so a field change updates without a refresh
+const { loading, error, fetchData } = useSpigraphWidget(
+  () => props.widget,
+  () => props.reloadNonce,
+  (res) => { graphData.value = res.graph || null; },
+  fetchGraph
+);
+
+const hasData = computed(() => !!graphData.value);
+const displayTitle = computed(() => props.widget.title || t('sessions.summary.timelineView'));
 const timezone = computed(() => store.state.user?.settings?.timezone || 'local');
 
-// which series to plot: sessions, or one of the user's timeline data filters
-const graphType = ref('sessionsHisto');
-const graphTypeItems = computed(() => [
-  { title: t('common.sessions'), value: 'sessionsHisto' },
-  ...props.timelineDataFilters.map(f => ({ title: f.friendlyName, value: `${f.dbField}Histo` }))
-]);
+// series to plot follows the widget's metric: sessions -> sessionsHisto, else
+// the numeric field's <dbField>Histo (the graph fetch requests it via `metric`)
+const graphType = computed(() => metricHistoKey({ metricType: props.widget.metricType }));
 </script>
 
 <style scoped>
@@ -75,13 +82,10 @@ const graphTypeItems = computed(() => [
   flex: 1;
   min-height: 0;
 }
-.timeline-widget__controls {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 4px;
-}
+/* fill the card: the plot grows/shrinks with the widget's configured row span
+   (TimelineGraph reads this height via fit-height) */
 .timeline-widget__plot {
   flex: 1;
-  min-height: 200px;
+  min-height: 0;
 }
 </style>

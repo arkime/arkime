@@ -26,11 +26,15 @@ export const DEFAULT_VIEW_MODES = {
 export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
-// global stats chunk).
-export const SESSION_VIEW_MODES = ['timeline', 'map', 'stats', 'time'];
+// global stats chunk). (map is field-bound — it plots a chosen geo field.)
+export const SESSION_VIEW_MODES = ['timeline', 'stats', 'time'];
+
+// Field-bound to a geo field only (country/*.geo): the map choropleth.
+export const GEO_FIELD_VIEW_MODES = ['map'];
 
 // Types that visualize a single selectable metric (Sessions or a numeric field).
-export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap'];
+// timeline plots the metric's <dbField>Histo series over time.
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline'];
 
 // Types that honor a Top/Bottom N (length) + order (direction).
 export const AGG_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
@@ -39,7 +43,7 @@ export const AGG_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'int
 export const STREAM_VIEW_MODES = ['bar', 'pie', 'table'];
 
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy).
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'intersection'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'intersection', 'map'];
 
 // Types that accept multiple fields (up to 3) — nested combinations (pie/treemap/
 // intersection via spigraphhierarchy) or side-by-side columns (table via summary).
@@ -52,8 +56,11 @@ export const isStreamMode = (viewMode) => STREAM_VIEW_MODES.includes(viewMode);
 /** True when the widget aggregates a chosen field (needs a field selection). */
 export const isFieldMode = (viewMode) => FIELD_VIEW_MODES.includes(viewMode);
 
-/** True for session-wide widgets (timeline/map/stats/time) — no field, host-fed. */
+/** True for session-wide widgets (timeline/stats/time) — no field, host-fed. */
 export const isSessionMode = (viewMode) => SESSION_VIEW_MODES.includes(viewMode);
+
+/** True when the widget aggregates a chosen geo field (the map choropleth). */
+export const isGeoFieldMode = (viewMode) => GEO_FIELD_VIEW_MODES.includes(viewMode);
 
 /** True when the widget exposes a metric selector. */
 export const hasMetric = (viewMode) => METRIC_VIEW_MODES.includes(viewMode);
@@ -63,3 +70,8 @@ export const hasAgg = (viewMode) => AGG_VIEW_MODES.includes(viewMode);
 
 /** True when the widget accepts up to 3 fields (chips multi-select). */
 export const allowsMultiField = (viewMode) => MULTI_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True when the widget fetches its own data and can take a per-widget local
+ *  filter (a saved View + expression). Only the global capture-stats widgets
+ *  (stats/time), which describe the whole result set, can't. */
+export const hasLocalFilter = (viewMode) => !['stats', 'time'].includes(viewMode);

@@ -29,13 +29,18 @@ The widget content is provided via the default slot.
     <!-- keep Edit/Remove reachable so a persistently-erroring widget
          (bad field/expression) can still be fixed or removed -->
     <div class="d-flex align-center mb-2">
-      <h4 class="widget-title flex-grow-1">
-        {{ title }}
-      </h4>
-      <div class="widget-actions no-wrap d-flex align-center ga-2">
+      <div class="widget-heading d-flex align-baseline">
+        <v-icon
+          icon="mdi-drag-vertical"
+          size="large"
+          class="widget-drag"
+          :title="$t('sessions.summary.dragToReorder')" />
+        <h4 class="widget-title">
+          {{ title }}
+        </h4>
         <span
           v-if="infoItems.length"
-          class="widget-info-icon"
+          class="widget-info-icon ps-1"
           tabindex="0">
           <v-icon
             icon="mdi-information-outline"
@@ -54,6 +59,8 @@ The widget content is provided via the default slot.
             </div>
           </v-tooltip>
         </span>
+      </div>
+      <div class="widget-actions no-wrap d-flex align-center ga-2">
         <v-btn
           variant="outlined"
           size="large"
@@ -102,13 +109,18 @@ The widget content is provided via the default slot.
     v-else
     class="widget-card widget-loaded">
     <div class="d-flex align-center mb-2">
-      <h4 class="widget-title flex-grow-1">
-        {{ title }}
-      </h4>
-      <div class="widget-actions no-wrap d-flex align-center ga-2">
+      <div class="widget-heading d-flex align-baseline">
+        <v-icon
+          icon="mdi-drag-vertical"
+          size="large"
+          class="widget-drag"
+          :title="$t('sessions.summary.dragToReorder')" />
+        <h4 class="widget-title">
+          {{ title }}
+        </h4>
         <span
           v-if="infoItems.length"
-          class="widget-info-icon"
+          class="widget-info-icon ps-1"
           tabindex="0">
           <v-icon
             icon="mdi-information-outline"
@@ -127,6 +139,8 @@ The widget content is provided via the default slot.
             </div>
           </v-tooltip>
         </span>
+      </div>
+      <div class="widget-actions no-wrap d-flex align-center ga-2">
         <v-btn
           variant="outlined"
           size="large"
@@ -198,6 +212,32 @@ defineEmits(['edit', 'remove', 'export', 'retry']);
 </script>
 
 <style scoped>
+/* title + info icon share the left; actions sit on the right */
+.widget-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* reorder grip: a dots handle in the header, left of the title. Always present
+   (discoverable, doesn't blend into the widget above like a floating tab did);
+   brightens on hover. */
+.widget-drag {
+  cursor: move;
+  color: rgb(var(--v-theme-neutral));
+  align-self: center;
+  flex-shrink: 0;
+  /* pull toward the card's left edge and tighten the gap to the title */
+  margin-left: -15px;
+  margin-right: -2px;
+  margin-bottom: 6px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.widget-drag:hover {
+  opacity: 1;
+  color: rgb(var(--v-theme-foreground-accent));
+}
+
 .widget-title {
   min-width: 0;
   overflow: hidden;
@@ -205,11 +245,12 @@ defineEmits(['edit', 'remove', 'export', 'retry']);
   white-space: nowrap;
 }
 
+/* info icon sits just to the right of the (possibly truncated) title */
 .widget-info-icon {
   display: inline-flex;
   align-items: center;
   cursor: help;
-  margin-right: 2px;
+  flex-shrink: 0;
 }
 
 .widget-info-row {

@@ -102,6 +102,22 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
 }
 
 /**
+ * Fetch just the timeline graph for a query (the Timeline widget). Reuses the
+ * spigraph endpoint, which resolves `metric` into a <dbField>Histo series and
+ * honors the widget's local filter (combinedExpression); we read the top-level
+ * `graph` and ignore the per-value items. `exp: node` + `size: 1` keeps the
+ * terms aggregation minimal. Returns { graph, ... }.
+ */
+export async function fetchGraph (route, store, widget, { signal } = {}) {
+  const extra = { exp: 'node', size: 1 };
+  if (widget.metricType && widget.metricType !== 'sessions') {
+    extra.metric = widget.metricType;
+  }
+  const data = buildWidgetParams(route, store, widget, extra);
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+}
+
+/**
  * Fetch SPIGraph hierarchy data for one field (the "Intersection" table). For a
  * single field the endpoint returns `tableResults` as a flat list of
  * { name, size, parents: [] } — one row per unique value. Returns the raw

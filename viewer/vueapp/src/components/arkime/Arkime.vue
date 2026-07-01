@@ -165,7 +165,7 @@ import Utils from '../utils/utils';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
-import { DEFAULT_VIEW_MODES } from '../summary/widgets/viewModes';
+import { DEFAULT_VIEW_MODES, isFieldMode } from '../summary/widgets/viewModes';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -213,7 +213,9 @@ export default {
     // Session-wide widgets (timeline/map/stats/time) have no v6 equivalent and
     // are omitted from fields[]. See SHAREABLES.md.
     currentDashboardConfig: function () {
-      const fieldWidgets = this.widgets.filter(w => w.field);
+      // only true v6-style chart widgets (bar/pie/table/...) project into the
+      // legacy fields[]; the map's geo field and session-wide widgets do not
+      const fieldWidgets = this.widgets.filter(w => w.field && isFieldMode(w.viewMode));
       return {
         colorScheme: this.colorScheme,
         widgets: this.widgets,
@@ -289,7 +291,7 @@ export default {
         this.makeWidgetDef('', { viewMode: 'stats', width: 2, height: 1 }),
         this.makeWidgetDef('', { viewMode: 'time', width: 2, height: 1 }),
         this.makeWidgetDef('', { viewMode: 'timeline', width: 3, height: 2 }),
-        this.makeWidgetDef('', { viewMode: 'map', width: 1, height: 2 })
+        this.makeWidgetDef('country.src', { viewMode: 'map', width: 1, height: 2 })
       ];
       const fieldWidgets = Utils.getDefaultSummaryFields().map(f => this.makeWidgetDef(f));
       return [...sessionWidgets, ...fieldWidgets];

@@ -92,7 +92,10 @@ export default {
     mapData: { type: Object, default: () => ({}) },
     src: { type: Boolean, default: true },
     dst: { type: Boolean, default: true },
-    xffGeo: { type: Boolean, default: false }
+    xffGeo: { type: Boolean, default: false },
+    // single pre-merged layer { alpha2Code: count } (dashboard geo-field map);
+    // when set it replaces the src/dst/xffGeo layers
+    layerValues: { type: Object, default: null }
   },
   emits: ['regionClick', 'updateLegend'],
   data () {
@@ -136,6 +139,7 @@ export default {
   },
   watch: {
     mapData: { handler () { this.recomputeValues(); }, deep: true },
+    layerValues: { handler () { this.recomputeValues(); }, deep: true },
     src () { this.recomputeValues(); },
     dst () { this.recomputeValues(); },
     xffGeo () { this.recomputeValues(); }
@@ -195,15 +199,20 @@ export default {
       this.pathGen = this.d3.geoPath(projection);
     },
     recomputeValues () {
-      if (!this.mapData) return;
       const tot = {};
-      const add = (bucket) => {
-        if (!bucket) return;
-        for (const k in bucket) tot[k] = (tot[k] || 0) + bucket[k];
-      };
-      if (this.src) add(this.mapData.src);
-      if (this.dst) add(this.mapData.dst);
-      if (this.xffGeo) add(this.mapData.xffGeo);
+      if (this.layerValues) {
+        // single pre-merged geo-field layer (dashboard map widget)
+        for (const k in this.layerValues) tot[k] = this.layerValues[k];
+      } else {
+        if (!this.mapData) return;
+        const add = (bucket) => {
+          if (!bucket) return;
+          for (const k in bucket) tot[k] = (tot[k] || 0) + bucket[k];
+        };
+        if (this.src) add(this.mapData.src);
+        if (this.dst) add(this.mapData.dst);
+        if (this.xffGeo) add(this.mapData.xffGeo);
+      }
 
       // Convert alpha-2 keys to numeric M49 ids for topojson lookup.
       const numericValues = {};

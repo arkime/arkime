@@ -66,11 +66,7 @@
           class="widget-wrapper"
           :class="{ 'widget-flash': w.id === flashWidgetId }"
           :style="spanStyle(w)">
-          <span
-            class="widget-handle"
-            :title="$t('sessions.summary.dragToReorder')">
-            <v-icon icon="mdi-view-grid" />
-          </span>
+          <!-- reorder handle lives in the card header (.widget-drag) -->
           <!-- drag-to-resize handles: right edge (width), bottom edge (height),
                corner (both); snap to the 4-col / 160px-row grid -->
           <span
@@ -146,17 +142,17 @@
           <!-- session-wide widgets: fed by the host's global stats chunk -->
           <TimelineWidget
             v-else-if="w.viewMode === 'timeline'"
-            :graph-data="summary.graph"
+            :widget="w"
+            :reload-nonce="reloadNonce"
             :timeline-data-filters="timelineDataFilters"
-            :title="w.title"
             :info-items="widgetInfo(w)"
             @time-range="onTimeRange"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <MapWidget
             v-else-if="w.viewMode === 'map'"
-            :map-data="summary.map"
-            :title="w.title"
+            :widget="w"
+            :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -210,7 +206,7 @@ import MapWidget from './widgets/MapWidget.vue';
 import StatsWidget from './widgets/StatsWidget.vue';
 import TimeWidget from './widgets/TimeWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, hasMetric, hasAgg, allowsMultiField } from './widgets/viewModes';
+import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasAgg, allowsMultiField } from './widgets/viewModes';
 import { widgetLocalExpression, widgetFields } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -465,7 +461,6 @@ const cancelLoading = () => {
 const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
   const body = {
     cancelId,
-    facets: 1,
     widgets: widgetDefs.map(toRequestWidget)
   };
 
@@ -491,11 +486,10 @@ const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
     body.stopTime = store.state.time.stopTime;
   }
 
-  // The Arkime dashboard always aggregates: its timeline/map/stats widgets need
-  // the graph + map, so bypass the large-dataset "fetch viz" toggle that the
-  // sessions page uses to disable facets/map. Always request both.
-  body.facets = 1;
-  body.map = true;
+  // The dashboard's visualizations fetch their own data — timeline & map
+  // self-fetch spigraph, stats/time use the top-level counts — so the global
+  // stats fetch no longer needs the graph (facets) or map aggregations. Still
+  // bypass the sessions-page large-dataset toggle so the stat counts aggregate.
   store.commit('setDisabledAggregations', false);
 
   return body;
@@ -1041,7 +1035,7 @@ const initializeDragDrop = () => {
 
   sortableInstance = Sortable.create(widgetContainer.value, {
     animation: 100,
-    handle: '.widget-handle',
+    handle: '.widget-drag',
     draggable: '.widget-wrapper',
     ghostClass: 'widget-ghost',
     chosenClass: 'widget-chosen',
@@ -1143,7 +1137,7 @@ const onEditClose = () => {
   editModalShow.value = false;
   const id = editingWidget.value?.id;
   const entry = id && summary.value?.fields?.find(f => f.id === id);
-  if (entry && isFieldMode(entry.viewMode) && !entry.field) {
+  if (entry && (isFieldMode(entry.viewMode) || isGeoFieldMode(entry.viewMode)) && !entry.field) {
     removeWidgetLocal(entry);
   }
 };
@@ -1411,6 +1405,11 @@ defineExpose({
   .charts-grid > .widget-wrapper {
     grid-column: 1 / -1 !important;
   }
+  /* single-column layout: no reorder/resize, so drop the drag + resize handles */
+  .widget-resize,
+  :deep(.widget-drag) {
+    display: none;
+  }
 }
 
 /* Widget wrapper for drag-and-drop */
@@ -1428,22 +1427,7 @@ defineExpose({
   100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
 }
 
-/* Drag handle for reordering widgets */
-.widget-handle {
-  visibility: hidden;
-  color: rgb(var(--v-theme-neutral));
-  cursor: move;
-  position: absolute;
-  top: -20px;
-  left: 0;
-  z-index: 10;
-  background: rgb(var(--v-theme-quaternary-lightest));
-  padding: 2px 6px;
-  border-radius: 4px 4px 0 0;
-}
-.widget-wrapper:hover .widget-handle {
-  visibility: visible;
-}
+/* reorder handle now lives inside the card header (.widget-drag in WidgetCard) */
 
 /* Drag-to-resize handles (shown on hover) */
 .widget-resize {
@@ -1452,6 +1436,19 @@ defineExpose({
   visibility: hidden;
 }
 .widget-wrapper:hover .widget-resize {
+  visibility: visible;
+}
+
+/* Info icon + action buttons (edit/export/remove) reveal on hover like the drag
+   handle. :focus-within keeps them reachable by keyboard. */
+.widget-wrapper :deep(.widget-actions),
+.widget-wrapper :deep(.widget-info-icon) {
+  visibility: hidden;
+}
+.widget-wrapper:hover :deep(.widget-actions),
+.widget-wrapper:hover :deep(.widget-info-icon),
+.widget-wrapper:focus-within :deep(.widget-actions),
+.widget-wrapper:focus-within :deep(.widget-info-icon) {
   visibility: visible;
 }
 .widget-resize--e {

@@ -2,53 +2,25 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Session-wide widget: the world map of session geo data, fed by the host's global
-stats chunk. Src/Dst/XFF layer toggles reuse the shared store state; clicking a
-country adds a `country == <code>` term to the search (same as the pinned map).
+Field widget: a world-map choropleth of a chosen geo field (country codes).
+Self-fetches /api/spigraph for the field (global search AND the widget's local
+filter) and colors each country by its session count. Clicking a country adds a
+`<field> == <code>` term to the search.
 -->
 <template>
   <WidgetCard
-    :title="displayTitle"
+    :title="title"
+    :loading="loading"
+    :error="error"
     :has-data="hasData"
     :info-items="infoItems"
     @edit="$emit('edit')"
-    @remove="$emit('remove')">
+    @remove="$emit('remove')"
+    @retry="fetchData">
     <div class="map-widget">
-      <div class="map-widget__toggles">
-        <v-btn
-          :variant="src ? 'flat' : 'outlined'"
-          :color="src ? 'primary' : undefined"
-          size="x-small"
-          @click="src = !src">
-          <strong>S</strong>
-          <v-tooltip activator="parent">
-            {{ $t('vis.toggleSrcCountry') }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn
-          :variant="dst ? 'flat' : 'outlined'"
-          :color="dst ? 'primary' : undefined"
-          size="x-small"
-          @click="dst = !dst">
-          <strong>D</strong>
-          <v-tooltip activator="parent">
-            {{ $t('vis.toggleDstCountry') }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn
-          :variant="xffGeo ? 'flat' : 'outlined'"
-          :color="xffGeo ? 'primary' : undefined"
-          size="x-small"
-          @click="xffGeo = !xffGeo">
-          <small>XFF</small>
-        </v-btn>
-      </div>
       <div class="map-widget__map">
         <WorldMap
-          :map-data="mapData"
-          :src="src"
-          :dst="dst"
-          :xff-geo="xffGeo"
+          :layer-values="values"
           @region-click="onRegionClick" />
       </div>
     </div>
@@ -56,33 +28,49 @@ country adds a `country == <code>` term to the search (same as the pinned map).
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
-import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import WorldMap from '../../visualizations/WorldMap.vue';
+import FieldService from '../../search/FieldService';
+import { useSpigraphWidget } from './useSpigraphWidget';
 
-const { t } = useI18n();
+// countries are ~250; ask for enough spigraph values to cover them all
+const MAP_TOP = 1000;
+
 const store = useStore();
 
 const props = defineProps({
-  mapData: { type: Object, default: () => null },
-  title: { type: String, default: '' },
+  widget: { type: Object, required: true },
+  reloadNonce: { type: Number, default: 0 },
   infoItems: { type: Array, default: () => [] }
 });
 
 defineEmits(['edit', 'remove']);
 
-const hasData = computed(() => !!props.mapData && Object.keys(props.mapData).length > 0);
-const displayTitle = computed(() => props.title || t('sessions.summary.mapView'));
+const values = ref({});
 
-// layer toggles share the global map state (same as the pinned map)
-const src = computed({ get: () => store.state.mapSrc, set: (v) => store.commit('toggleMapSrc', v) });
-const dst = computed({ get: () => store.state.mapDst, set: (v) => store.commit('toggleMapDst', v) });
-const xffGeo = computed({ get: () => store.state.xffGeo, set: (v) => store.commit('toggleMapXffGeo', v) });
+// self-fetch spigraph for the geo field; request all countries (ignore the
+// widget's top-N, which the map doesn't expose), then map value -> count
+const { loading, error, fetchData } = useSpigraphWidget(
+  () => ({ ...props.widget, length: MAP_TOP, metricType: 'sessions' }),
+  () => props.reloadNonce,
+  (res) => {
+    const v = {};
+    for (const it of res.items || []) {
+      if (it.count > 0) { v[it.name] = it.count; }
+    }
+    values.value = v;
+  }
+);
+
+const fieldObj = computed(() => FieldService.getField(props.widget.field, true));
+const title = computed(() => props.widget.title || fieldObj.value?.friendlyName || props.widget.field);
+const hasData = computed(() => Object.keys(values.value).length > 0);
 
 const onRegionClick = (code) => {
-  store.commit('addToExpression', { expression: `country == ${code}` });
+  if (!props.widget.field) { return; }
+  store.commit('addToExpression', { expression: `${props.widget.field} == ${code}` });
 };
 </script>
 
@@ -93,12 +81,6 @@ const onRegionClick = (code) => {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-}
-.map-widget__toggles {
-  display: flex;
-  justify-content: flex-end;
-  gap: 4px;
-  margin-bottom: 4px;
 }
 .map-widget__map {
   flex: 1;
