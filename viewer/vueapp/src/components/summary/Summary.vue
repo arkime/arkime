@@ -1393,23 +1393,23 @@ defineExpose({
 
 /* Fixed 4-column grid; widgets span 1-4 cols and 1-8 rows via inline
    grid-column/-row. Rows are a fine 160px unit so short widgets (stats/time)
-   can be a single row while charts span 3 (480px). (CSS clamps column spans to
-   the available columns on narrower breakpoints.) */
+   can be a single row while charts span 3 (480px). */
 .charts-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-rows: 160px;
 }
 
-/* charts have a ~400px min width, so step down columns on narrower viewports
-   to avoid clipping (widget col-spans clamp to the available columns) */
-@media (max-width: 1700px) {
-  .charts-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 900px) {
+/* Below 1200px the 4-col grid is too cramped for charts, so collapse to a single
+   stacked column; at/above it, the full 4-col designed layout. The per-widget
+   inline `grid-column: span N` must be overridden (!important) — otherwise a
+   span > 1 makes the grid create implicit columns and widgets stop filling the
+   width. Row spans (heights) are kept. */
+@media (max-width: 1199.98px) {
   .charts-grid {
     grid-template-columns: 1fr;
+  }
+  .charts-grid > .widget-wrapper {
+    grid-column: 1 / -1 !important;
   }
 }
 

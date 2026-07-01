@@ -176,6 +176,10 @@ const spanOrDefault = (v, def, max = 4) => {
   return n >= 1 && n <= max ? n : def;
 };
 
+// map v7-only field view modes to the closest mode a v6 viewer can render
+// (v6 knows only bar/pie/table) for the dual-written legacy fields[] shape
+const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar' };
+
 export default {
   name: 'Arkime',
   components: {
@@ -202,11 +206,24 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
-    // Current dashboard configuration for saving (layout + widgets)
+    // Current dashboard configuration for saving (layout + widgets). Also
+    // dual-writes the v6 summaryConfig shape (fields[]/resultsLimit/order) so a
+    // v6 viewer in a mixed-version cluster (or after a downgrade) can still read
+    // a dashboard saved by v7 — v6 reads fields[] and ignores widgets/colorScheme.
+    // Session-wide widgets (timeline/map/stats/time) have no v6 equivalent and
+    // are omitted from fields[]. See SHAREABLES.md.
     currentDashboardConfig: function () {
+      const fieldWidgets = this.widgets.filter(w => w.field);
       return {
         colorScheme: this.colorScheme,
-        widgets: this.widgets
+        widgets: this.widgets,
+        fields: fieldWidgets.map(w => ({
+          field: w.field,
+          viewMode: V6_VIEW_MODES[w.viewMode] || 'bar',
+          metricType: w.metricType || 'sessions'
+        })),
+        resultsLimit: fieldWidgets[0]?.length || 20,
+        order: fieldWidgets[0]?.order || 'desc'
       };
     }
   },

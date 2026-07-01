@@ -99,11 +99,27 @@ capture stats / time fit a single ~160px row).
 | `data.widgets[].height` | number | Row span, 1-8 (160px row unit). Default: `3` (≈480px). Short session widgets (stats/time) use `1`. |
 | `data.widgets[].title` | string | Optional custom widget title (overrides the field name) |
 
-> **Legacy shape:** older configs use `data.fields[] + data.resultsLimit + data.order`
-> (no `widgets`/`columnCount`). The Arkime tab still reads that shape and migrates it
-> into widgets on load. A per-user copy of the active dashboard is also stored via
+> **Legacy shape (v6):** the v6 summary page uses `data.fields[] + data.resultsLimit + data.order`
+> (no `widgets`/`colorScheme`). A per-user copy of the active dashboard is also stored via
 > `POST /api/user/savestate?stateName=summary`, and the user's default landing
 > dashboard id is stored on `user.settings.defaultDashboardId`.
+>
+> **v6 ↔ v7 compatibility:**
+> - *Reading a v6 config in v7:* the Arkime tab migrates `data.fields[]` (+ the
+>   global `resultsLimit`/`order`) into per-widget objects on load. This migration
+>   is **lossy**: v6 rendered the timeline/map/capture-stats/time as a fixed band
+>   that was never part of `fields[]`, so a migrated v6 config contains only the
+>   field widgets — those session-wide widgets are **not** restored and must be
+>   re-added. (A v6 user with *no* saved config gets the full default dashboard,
+>   which seeds them.)
+> - *Reading a v7 config in v6:* v7 **dual-writes** the legacy shape — it emits
+>   `data.fields[]/resultsLimit/order` alongside `widgets[]/colorScheme` on every
+>   save (savestate, shareable, export). A v6 viewer reads `fields[]` and ignores
+>   the v7-only keys, so dashboards saved by v7 stay readable across a mixed-version
+>   cluster or a downgrade. Field-bound widgets project to `fields[]` (v7-only view
+>   modes map to the nearest v6 mode: `intersection`→`table`, `heatmap`/`treemap`→`bar`);
+>   session-wide widgets have no v6 equivalent and are omitted, and `resultsLimit`/`order`
+>   are taken from the first field widget.
 
 ---
 
