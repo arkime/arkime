@@ -390,7 +390,7 @@ export const readableTimeCompact = function (ms) {
 
 /**
  * Searches fields for a term
- * Looks for the term in field friendlyName, exp, and aliases
+ * Looks for the term in field friendlyName, exp, dbField(2), and aliases
  *
  * @example
  * '{{ searchFields('test', fields, true) }}'
@@ -424,6 +424,8 @@ export const searchFields = function (searchTerm, fields, excludeTokens, exclude
     searchTerm = searchTerm.toLowerCase();
     return field.friendlyName.toLowerCase().includes(searchTerm) ||
       field.exp.toLowerCase().includes(searchTerm) ||
+      (field.dbField && field.dbField.toLowerCase().includes(searchTerm)) ||
+      (field.dbField2 && field.dbField2.toLowerCase().includes(searchTerm)) ||
       (field.aliases && field.aliases.some(item => {
         return item.toLowerCase().includes(searchTerm);
       }));

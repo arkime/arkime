@@ -501,7 +501,7 @@ class UserAPIs {
   // version round-trips.
   static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', ...User.USER_SETTINGS_KEYS, 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
     'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
-    'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'];
+    'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes', 'defaultDashboardId'];
 
   /**
    * POST - /api/user/settings

@@ -8,6 +8,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { colorRange } from './widgets/chartColors';
 
 const props = defineProps({
   data: {
@@ -32,8 +33,11 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
+  },
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
   }
 });
 
@@ -99,11 +103,11 @@ const renderChart = async () => {
     .append('g')
     .attr('transform', `translate(${props.width / 2},${props.height / 2})`);
 
-  // Use D3 color scheme
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  // Dashboard palette (shared with the bar/treemap charts)
+  const color = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
 
   const pie = d3.pie()
-    .value(d => d[props.metricType])
+    .value(d => d.value)
     .sort(null);
 
   const arc = d3.arc()
@@ -150,7 +154,7 @@ const renderChart = async () => {
 };
 
 // Watch for data, metric type, or dimension changes
-watch([() => props.data, () => props.metricType, () => props.width, () => props.height], () => {
+watch([() => props.data, () => props.metricType, () => props.width, () => props.height, () => props.colorScheme], () => {
   renderChart();
 }, { deep: true });
 
