@@ -343,13 +343,20 @@ watch(() => props.show, (isOpen) => {
   }
 });
 
-// cap multi-field selection at 3
+// cap multi-field selection at 3, and mirror the first field into the single-field
+// model so switching between single/multi view types never persists a stale field
 watch(() => form.value.fields, (v) => {
-  if (Array.isArray(v) && v.length > 3) { form.value.fields = v.slice(0, 3); }
+  if (!Array.isArray(v)) { return; }
+  if (v.length > 3) { form.value.fields = v.slice(0, 3); return; }
+  form.value.field = v.length ? v[0] : '';
 });
 
 const onFieldSelected = (field) => {
-  form.value.field = field.exp;
+  const exp = field?.exp || '';
+  form.value.field = exp;
+  // keep the multi-field model in sync so a later switch to a multi-field view
+  // carries the just-picked field instead of the original
+  form.value.fields = exp ? [exp] : [];
 };
 
 const save = () => {

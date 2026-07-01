@@ -1,4 +1,4 @@
-use Test::More tests => 100;
+use Test::More tests => 102;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -159,3 +159,9 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
 
     my $noMetric = viewerPost("/api/spigraph", to_json({ date => -1, field => "node", expression => $mexpr }));
     ok (!exists $noMetric->{graph}->{"tcpflags.synHisto"}, "without the metric param the field's histo is absent");
+
+# a non-numeric metric field is ignored (not summed) instead of failing the whole
+# request with an ES aggregation error
+    my $badMetric = viewerPost("/api/spigraph", to_json({ date => -1, field => "node", metric => "protocols", expression => $mexpr }));
+    cmp_ok ($badMetric->{recordsFiltered}, '==', 6, "non-numeric metric is ignored, spigraph request still succeeds");
+    is (ref($badMetric->{items}), "ARRAY", "non-numeric metric spigraph still returns items");

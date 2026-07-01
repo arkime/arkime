@@ -1989,6 +1989,7 @@ class SessionAPIs {
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - The expression field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} metric - Optional numeric (integer) field exp (dashboard widgets). When set, its per-value sum is added as a <dbField>Histo timeline series and per-item total (drives heatmap intensity / treemap size). 'sessions' and non-numeric fields are ignored (doc_count is used).
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -2007,11 +2008,10 @@ class SessionAPIs {
     // Optional metric (dashboard widgets): a numeric field exp whose per-value
     // sum drives heatmap intensity / treemap size. Resolve it to a dbField and
     // stash it so buildQuery sums it and graphMerge emits a <dbField>Histo series
-    // (reusing the timeline-data-filter machinery). 'sessions' uses doc_count.
-    if (ArkimeUtil.isString(req.query.metric) && req.query.metric !== 'sessions') {
-      const metricField = Config.getFieldsMap()[req.query.metric];
-      if (metricField?.dbField) { req.query.metricField = metricField.dbField; }
-    }
+    // (reusing the timeline-data-filter machinery). 'sessions' and non-numeric
+    // fields resolve to undefined and are ignored (doc_count is used instead).
+    const metricDbField = ViewerUtils.metricDbField(req.query.metric);
+    if (metricDbField) { req.query.metricField = metricDbField; }
 
     BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
@@ -3146,12 +3146,19 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * GET - /api/sessions/summary
+   * POST/GET - /api/sessions/summary
    *
-   * Get summary info by id or by query.
+   * Backs the Arkime tab modular dashboard. Streams a JSON array whose first
+   * element is the top-level stats/map/graph chunk (omitted when noStats is set),
+   * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp summed per value), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
+   * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
+   * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
+   * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
+   * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, length, order, expression, data[] } or { id, field, error } on per-widget failure.
    *
    */
   static summary (req, res) {
@@ -3198,6 +3205,10 @@ class SessionAPIs {
       rawWidgets = req.body.fields
         .split(',').map(f => f.trim()).filter(f => f.length > 0)
         .map(f => ({ field: f }));
+      // an all-whitespace/comma fields string carries no field names
+      if (rawWidgets.length === 0) {
+        return res.status(400).send({ error: 'Fields parameter cannot be empty' });
+      }
     } else {
       return res.status(400).send({ error: 'Missing or invalid widgets/fields parameter in request body' });
     }
@@ -3238,10 +3249,8 @@ class SessionAPIs {
       // Metric basis: 'sessions' aggregates by session count (doc_count); any
       // other value is a numeric field exp that gets summed per bucket and used
       // to order the Top/Bottom N. Unknown/non-numeric metrics fall back to count.
-      if (spec.metricType && spec.metricType !== 'sessions') {
-        const metricField = fieldsMap[spec.metricType];
-        if (metricField?.dbField) { spec.metricDbField = metricField.dbField; }
-      }
+      const metricDbField = ViewerUtils.metricDbField(spec.metricType);
+      if (metricDbField) { spec.metricDbField = metricDbField; }
 
       widgetSpecs.push(spec);
     }

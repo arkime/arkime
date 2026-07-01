@@ -1,4 +1,4 @@
-use Test::More tests => 205;
+use Test::More tests => 210;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -535,3 +535,21 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
         $metricOrdered = 0 if $mBytes->{data}->[$k]->{value} > $mBytes->{data}->[$k - 1]->{value};
     }
     ok ($metricOrdered, "summary numeric metric Top N ordered by metric value desc");
+
+    # --- a non-numeric metricType falls back to session count instead of erroring ---
+    my $sumBadMetric = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [{ id => "mBad", field => "protocols", length => 100, metricType => "protocols" }]
+    }), $token);
+    my ($mBad) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mBad" } @$sumBadMetric;
+    ok (defined $mBad, "summary non-numeric metric widget present");
+    ok (!defined $mBad->{error}, "summary non-numeric metric does not error the widget");
+    cmp_ok (scalar(@{$mBad->{data}}), ">", 0, "summary non-numeric metric widget still returns data");
+    is ($mBad->{data}->[0]->{value}, $mBad->{data}->[0]->{sessions}, "summary non-numeric metric falls back to session count");
+
+    # --- an all-whitespace/comma fields string is rejected (dropped-guard regression) ---
+    my $sumBlankFields = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr, fields => " , "
+    }), $token);
+    ok (defined $sumBlankFields->{error}, "summary rejects an all-whitespace fields string");
