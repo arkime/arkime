@@ -2250,9 +2250,6 @@ async function main () {
   setInterval(() => createActions('field-actions', 'makeFieldActions', 'fieldActions'), 150 * 1000); // Check every 2.5 minutes
 
   const viewHost = Config.get('viewHost', undefined);
-  if (internals.userNameHeader !== undefined && viewHost !== 'localhost' && viewHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - when userNameHeader is set, viewHost should be localhost or use iptables');
-  }
 
   const server = ArkimeUtil.createHttpServer(app, viewHost, Config.get('viewPort', '8005'));
   server.setTimeout(20 * 60 * 1000);

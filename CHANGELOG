@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4072 Fix header/OIDC auth requests hanging when a dynamic role update fails
   - #4074 Harden user-auto-create/user-role-mappings expressions to run in strict mode
   - #4079 Fix relative time +1M (month) and @M snapping being silently ignored; lowercase m still means minutes
+  - #4089 Consolidate header auth non-localhost host security warning across viewer/cont3xt/parliament/wiseService
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
@@ -62,6 +63,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4078 Fix Linux cooked (SLL) VLAN frames misdispatching non-IP payloads to IP and not recording the VLAN id
   - #4078 Classify Control4 SDDP as sddp instead of mislabeling it ssdp
   - #4079 Fix CAMEL recording the TCAP invokeID as a bogus operation code, and ENIP CIP class extraction failing on routed request paths with a port segment
+  - #4089 Fix netmap reader out-of-bounds ring index when netmapThreads doesn't evenly divide the interface's RX ring count
+  - #4089 Fix file reader silently stopping on EINTR instead of retrying
+  - #4089 Fix directory monitor leaking watch state when a watched directory is deleted
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt

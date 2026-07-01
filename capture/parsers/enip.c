@@ -613,6 +613,10 @@ LOCAL int enip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
         }
 
         uint32_t total = (uint32_t)ENIP_HEADER_LEN + length;
+        if (total > (uint32_t)enip->bufMax) {
+            arkime_session_add_tag(session, "enip:message-too-long");
+            return ARKIME_PARSER_UNREGISTER;
+        }
         if (total > (uint32_t)enip->len[which]) {
             return 0;  // need more data
         }

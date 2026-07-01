@@ -147,8 +147,11 @@ LOCAL void adb_parse_sync_payload(ArkimeSession_t *session, const uint8_t *data,
         }
 
         /* For SEND/RECV/STAT/LIST, the arg is the path length, followed by path */
-        if ((id == SYNC_SEND || id == SYNC_RECV || id == SYNC_STAT || id == SYNC_LIST) && arg > 0 && arg < 4096) {
-            if (BSB_REMAINING(bsb) >= arg) {
+        if ((id == SYNC_SEND || id == SYNC_RECV || id == SYNC_STAT || id == SYNC_LIST) && arg > 0) {
+            if (BSB_REMAINING(bsb) < arg) {
+                break;
+            }
+            if (arg < 4096) {
                 const uint8_t *path = BSB_WORK_PTR(bsb);
                 int path_len = MIN(arg, 1023);
                 char path_str[1024];
@@ -162,10 +165,10 @@ LOCAL void adb_parse_sync_payload(ArkimeSession_t *session, const uint8_t *data,
                 }
 
                 arkime_field_string_add(syncPathField, session, path_str, -1, TRUE);
-                BSB_IMPORT_skip(bsb, arg);
-            } else {
-                break;
             }
+            /* Always skip the full path payload, even when arg is too large to
+             * record, so parsing of subsequent sync messages doesn't desync. */
+            BSB_IMPORT_skip(bsb, arg);
         } else if (id == SYNC_DATA && arg > 0) {
             /* DATA packet - skip the data payload */
             if (BSB_REMAINING(bsb) >= arg) {

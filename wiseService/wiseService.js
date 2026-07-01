@@ -199,7 +199,8 @@ async function setupAuth () {
   await Auth.initialize({
     appAdminRole: 'wiseAdmin',
     passwordSecretSection: 'wiseService',
-    basePath: internals.webBasePath
+    basePath: internals.webBasePath,
+    hostVar: 'wiseHost'
   });
 
   if (Auth.mode === 'anonymous') {
