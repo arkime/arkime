@@ -486,7 +486,8 @@ async function setupAuth () {
   await Auth.initialize({
     appAdminRole: 'cont3xtAdmin',
     passwordSecretSection: 'cont3xt',
-    basePath: internals.webBasePath
+    basePath: internals.webBasePath,
+    hostVar: 'cont3xtHost'
   });
 
   User.initialize({
@@ -538,9 +539,6 @@ async function main () {
   setupHSTS();
 
   const cont3xtHost = ArkimeConfig.get('cont3xtHost');
-  if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
-  }
 
   ArkimeUtil.createHttpServer(app, cont3xtHost, ArkimeConfig.get('port', 3218));
 }

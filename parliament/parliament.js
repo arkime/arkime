@@ -2124,7 +2124,8 @@ app.use((err, req, res, next) => {
 async function setupAuth () {
   await Auth.initialize({
     appAdminRole: 'parliamentAdmin',
-    passwordSecretSection: 'parliament'
+    passwordSecretSection: 'parliament',
+    hostVar: 'parliamentHost'
   });
 
   User.initialize({
@@ -2235,9 +2236,6 @@ async function main () {
   await setupAuth();
 
   const parliamentHost = ArkimeConfig.get('parliamentHost');
-  if (Auth.mode === 'header' && parliamentHost !== 'localhost' && parliamentHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - When using header auth, parliamentHost should be localhost or use iptables');
-  }
 
   ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), async () => {
     if (ArkimeConfig.debug) {

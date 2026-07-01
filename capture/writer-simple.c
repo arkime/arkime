@@ -238,6 +238,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
             info->file->zstd_completedBlockStart += writeSize;
             ninfo->file->zstd_out.dst = ninfo->buf;
             ninfo->file->zstd_out.pos = ninfo->bufpos;
+            break;
 #endif
         default:
             break;
@@ -391,6 +392,10 @@ LOCAL char *writer_simple_get_kekId ()
             continue;
         }
         i++;
+        if (kek[i] == 0) {
+            // Trailing unescaped '%' at end of string - stop, nothing more to parse
+            break;
+        }
         switch (kek[i]) {
         case 'y':
             okek[j] = '0' + (tmp.tm_year % 100) / 10;
