@@ -6417,6 +6417,31 @@ sub sessions3Update
           "type" : "long"
         }
       }
+    },
+    "zeekintel" : {
+      "properties" : {
+        "indicator" : {
+          "type" : "keyword"
+        },
+        "indicator_type" : {
+          "type" : "keyword"
+        },
+        "where" : {
+          "type" : "keyword"
+        },
+        "source" : {
+          "type" : "keyword"
+        },
+        "desc" : {
+          "type" : "keyword"
+        },
+        "url" : {
+          "type" : "keyword"
+        }
+      }
+    },
+    "zeekintelCnt" : {
+      "type" : "long"
     }
   }
 }

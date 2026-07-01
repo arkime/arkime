@@ -564,7 +564,7 @@ Db.getSession = async (id, options, cb) => {
 
   try {
     if (!options) {
-      options = { _source: ['cert', 'dns'], fields: ['*'] };
+      options = { _source: ['cert', 'dns', 'zeekintel'], fields: ['*'] };
     }
     const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -602,6 +602,9 @@ Db.getSession = async (id, options, cb) => {
     }
     if (session.fields && session._source && session._source.dns) {
       session.fields.dns = session._source.dns;
+    }
+    if (session.fields && session._source && session._source.zeekintel) {
+      session.fields.zeekintel = session._source.zeekintel;
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);

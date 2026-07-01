@@ -217,6 +217,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,
@@ -235,7 +239,18 @@
      "dst" : 0,
      "src" : 2934517489
     },
-    "totDataBytes" : 1754
+    "totDataBytes" : 1754,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -459,6 +474,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 7,
      "ae" : 0,
@@ -477,7 +496,26 @@
      "dst" : 0,
      "src" : 3112233030
     },
-    "totDataBytes" : 1770
+    "totDataBytes" : 1770,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     },
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.socks"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {
@@ -708,6 +746,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 7,
      "ae" : 0,
@@ -726,7 +768,18 @@
      "dst" : 0,
      "src" : 992474166
     },
-    "totDataBytes" : 1763
+    "totDataBytes" : 1763,
+    "zeekintel" : [
+     {
+      "desc" : "http host in socks-http-example / http-content-zip",
+      "indicator" : "www.example.com",
+      "indicator_type" : "domain",
+      "source" : "arkime-test",
+      "url" : "https://example.com",
+      "where" : "host.http"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

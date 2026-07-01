@@ -111,6 +111,7 @@ srcip, 4
 wisebyhost2, 7
 wisebyip1, 1
 wisebyip3, 2
+zeek:intel, 14
 ", "tags count", { context => 3 });
 
 #
