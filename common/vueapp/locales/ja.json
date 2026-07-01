@@ -419,6 +419,8 @@
         "title": "タイトル",
         "viewMode": "ビュー",
         "metric": "メトリック",
+        "metrics": "メトリクス",
+        "sortBy": "ソート順",
         "limit": "制限",
         "order": "順序",
         "width": "幅（列）",

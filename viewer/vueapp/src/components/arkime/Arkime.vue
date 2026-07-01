@@ -249,6 +249,8 @@ export default {
         fields: fieldExp ? [fieldExp] : [], // 1-3 fields for multi-field widgets
         viewMode: DEFAULT_VIEW_MODES[fieldExp] || 'bar',
         metricType: 'sessions',
+        metrics: [], // table multi-metric columns (falls back to metricType)
+        sortMetric: 'sessions',
         length: 20,
         order: 'desc',
         expression: '',
@@ -272,6 +274,8 @@ export default {
         fields,
         viewMode: w.viewMode || DEFAULT_VIEW_MODES[w.field] || 'bar',
         metricType: w.metricType || 'sessions',
+        metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
+        sortMetric: w.sortMetric || w.metricType || 'sessions',
         length: w.length || 20,
         order: w.order || 'desc',
         expression: w.expression || '',
@@ -282,19 +286,37 @@ export default {
       });
     },
     /**
-     * Default set of widgets when no saved config exists: the session-wide
-     * visualizations (capture stats, time, timeline, map) followed by the
-     * default field widgets — mirrors the pre-widget Arkime tab layout.
+     * Curated starter dashboard (no saved config): the capture-wide band
+     * (stats/time/timeline), a geo map + top-talkers bar, then one of each
+     * aggregating visualization spanning sessions / bytes / packets metrics.
      */
     defaultWidgets: function () {
-      const sessionWidgets = [
+      return [
+        // capture-wide summary band
         this.makeWidgetDef('', { viewMode: 'stats', width: 2, height: 1 }),
         this.makeWidgetDef('', { viewMode: 'time', width: 2, height: 1 }),
-        this.makeWidgetDef('', { viewMode: 'timeline', width: 3, height: 2 }),
-        this.makeWidgetDef('country.src', { viewMode: 'map', width: 1, height: 2 })
+        this.makeWidgetDef('', { viewMode: 'timeline', width: 4, height: 2 }),
+        // geo distribution + all-IP top talkers (bar)
+        this.makeWidgetDef('country.src', { viewMode: 'map', width: 2, height: 3 }),
+        this.makeWidgetDef('ip', { viewMode: 'bar', width: 2, height: 3, length: 15 }),
+        // protocols breakdown (pie)
+        this.makeWidgetDef('protocols', { viewMode: 'pie', width: 2, height: 3, length: 8 }),
+        // multi-metric table: Dst IP:Port ranked by bytes, with session/packet columns
+        this.makeWidgetDef('ip.dst:port', {
+          viewMode: 'table',
+          width: 2,
+          height: 3,
+          metrics: ['sessions', 'bytes', 'packets'],
+          sortMetric: 'bytes',
+          metricType: 'bytes'
+        }),
+        // Dst IP heatmap by packets over time
+        this.makeWidgetDef('ip.dst', { viewMode: 'heatmap', width: 2, height: 3, metricType: 'packets' }),
+        // Src IP treemap sized by bytes
+        this.makeWidgetDef('ip.src', { viewMode: 'treemap', width: 2, height: 3, metricType: 'bytes' }),
+        // Src → Dst IP combinations (intersection)
+        this.makeWidgetDef('ip.src', { viewMode: 'intersection', width: 4, height: 3, fields: ['ip.src', 'ip.dst'] })
       ];
-      const fieldWidgets = Utils.getDefaultSummaryFields().map(f => this.makeWidgetDef(f));
-      return [...sessionWidgets, ...fieldWidgets];
     },
     /**
      * Loads summary data when search is triggered

@@ -420,6 +420,8 @@
         "title": "Itletay",
         "viewMode": "Iewvay",
         "metric": "Etricmay",
+        "metrics": "Etricsmay",
+        "sortBy": "Ortsay ybay",
         "limit": "Imitlay",
         "order": "Orderway",
         "width": "Idthway (olumnscay)",

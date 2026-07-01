@@ -2,10 +2,10 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Table widget with 2-3 fields shown side by side: each selected field's independent
-top-N values with the chosen metric (NOT combinations). Self-fetches one
-/api/sessions/summary batch (a sub-widget per field) and renders a [Value | metric]
-column pair per field, rows aligned by rank.
+Table widget with 1-3 fields shown side by side: each selected field's independent
+top-N values (NOT combinations). Self-fetches one /api/sessions/summary batch (a
+sub-widget per field) and renders [Value | metric columns] per field, rows aligned
+by rank. Metric columns are the widget's metrics[] (falls back to metricType).
 -->
 <template>
   <WidgetCard
@@ -14,9 +14,12 @@ column pair per field, rows aligned by rank.
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :show-export="hasData"
+    :export-label="exportLabel"
     scroll
     @edit="$emit('edit')"
     @remove="$emit('remove')"
+    @export="exportCSV"
     @retry="fetchData">
     <table
       v-if="hasData"
@@ -36,8 +39,11 @@ column pair per field, rows aligned by rank.
                 class="ms-1"
                 :title="fd.error" />
             </th>
-            <th class="num">
-              {{ metricLabel }}
+            <th
+              v-for="m in metricCols"
+              :key="m"
+              class="num">
+              {{ metricLabel(m) }}
             </th>
           </template>
         </tr>
@@ -59,8 +65,11 @@ column pair per field, rows aligned by rank.
                 :session-btn="true"
                 :pull-left="true" />
             </td>
-            <td class="num">
-              {{ fd.data[r - 1] ? formatMetric(fd.data[r - 1].value) : '' }}
+            <td
+              v-for="m in metricCols"
+              :key="m"
+              class="num">
+              {{ fd.data[r - 1] ? formatCell(m, fd.data[r - 1]) : '' }}
             </td>
           </template>
         </tr>
@@ -76,7 +85,7 @@ import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchSummaryFields, formatMetricValue } from './widgetData';
+import { fetchSummaryFields, formatMetricValue, downloadCSV } from './widgetData';
 
 const { t } = useI18n();
 
@@ -105,13 +114,32 @@ const title = computed(() => props.widget.title ||
   fieldsData.value.map(fd => fd.friendlyName).join(' / ') ||
   props.widget.field);
 
-// the selected metric's column label + formatting (shared across all fields)
-const metricLabel = computed(() => {
-  const m = props.widget.metricType || 'sessions';
-  if (m === 'sessions') { return t('sessions.summary.sessions'); }
-  return FieldService.getField(m, true)?.friendlyName || m;
+// metric columns shown for every field block (widget-level, capped at 4). Fall
+// back to a legacy single metricType, else a lone Sessions column.
+const metricCols = computed(() => {
+  const m = props.widget.metrics;
+  if (Array.isArray(m) && m.length) { return m.slice(0, 4); }
+  const legacy = props.widget.metricType;
+  return (legacy && legacy !== 'sessions') ? [legacy] : ['sessions'];
 });
-const formatMetric = (v) => formatMetricValue(props.widget.metricType, v);
+const metricLabel = (exp) => (exp === 'sessions'
+  ? t('sessions.summary.sessions')
+  : (FieldService.getField(exp, true)?.friendlyName || exp));
+const cellValue = (exp, row) => (exp === 'sessions' ? row.sessions : (row.metricValues?.[exp] ?? 0));
+const formatCell = (exp, row) => formatMetricValue(exp, cellValue(exp, row));
+
+const exportLabel = computed(() => t('sessions.summary.downloadCSV'));
+const exportCSV = () => {
+  const headers = fieldsData.value.flatMap(fd => [fd.friendlyName, ...metricCols.value.map(metricLabel)]);
+  const rows = [];
+  for (let r = 0; r < maxRows.value; r++) {
+    rows.push(fieldsData.value.flatMap(fd => {
+      const row = fd.data[r];
+      return [row?.item ?? '', ...metricCols.value.map(m => (row ? cellValue(m, row) : ''))];
+    }));
+  }
+  downloadCSV(headers, rows, `arkime-summary-${props.widget.field || 'summary'}.csv`);
+};
 </script>
 
 <style scoped>

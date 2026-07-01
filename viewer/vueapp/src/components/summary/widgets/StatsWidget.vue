@@ -83,23 +83,23 @@ const formatBytes = (bytes) => humanReadableBytes(bytes || 0);
 <style scoped>
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 0.3rem;
   align-content: center;
   flex: 1;
 }
 .stat-card {
-  padding: 0.5rem;
+  padding: 0.25rem 0.4rem;
   border-radius: 6px;
   background: rgb(var(--v-theme-quaternary-lightest));
   text-align: center;
 }
 .stat-label {
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   opacity: 0.8;
 }
 .stat-value {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 </style>

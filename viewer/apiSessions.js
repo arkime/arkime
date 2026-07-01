@@ -3257,19 +3257,28 @@ class SessionAPIs {
         }
       }
 
-      // Metric basis: 'sessions' aggregates by session count (doc_count); any
-      // other value is a numeric field exp that gets summed per bucket and used
-      // to order the Top/Bottom N. Unknown/non-numeric metrics fall back to count.
-      const metricDbField = ViewerUtils.metricDbField(spec.metricType);
-      if (metricDbField) { spec.metricDbField = metricDbField; }
+      // numeric field exps summed per bucket. Tables send metrics[]; charts send
+      // one metricType. Non-numeric dropped; sortMetric orders Top-N (else count).
+      const requestedMetrics = (Array.isArray(w.metrics) && w.metrics.length)
+        ? w.metrics
+        : (spec.metricType && spec.metricType !== 'sessions' ? [spec.metricType] : []);
+      spec.metrics = [];
+      for (const exp of requestedMetrics) {
+        if (!ArkimeUtil.isString(exp) || exp === 'sessions') { continue; }
+        const dbField = ViewerUtils.metricDbField(exp);
+        if (dbField && !spec.metrics.some(m => m.exp === exp)) {
+          spec.metrics.push({ exp, dbField, aggKey: `m${spec.metrics.length}` });
+        }
+      }
+      const sortExp = ArkimeUtil.isString(w.sortMetric) ? w.sortMetric : spec.metrics[0]?.exp;
+      spec.sortAggKey = spec.metrics.find(m => m.exp === sortExp)?.aggKey;
 
       widgetSpecs.push(spec);
     }
 
-    // `metricKey` is the agg field holding the widget's selected metric sum
-    // (undefined when the metric is sessions/doc_count). `value` is the quantity
-    // the chart visualizes; sessions/bytes/packets remain for tooltip context.
-    function convert (agg, limit, metricKey) {
+    // `value` = the sort metric's sum (or session count). `metricValues` holds
+    // each requested metric keyed by exp (+ 'sessions') for the table's columns.
+    function convert (agg, limit, spec) {
       if (!agg || !agg.buckets) {
         return [];
       }
@@ -3277,12 +3286,17 @@ class SessionAPIs {
       const results = [];
       for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
         const bucket = agg.buckets[i];
+        const metricValues = { sessions: bucket.doc_count };
+        for (const m of (spec.metrics || [])) {
+          metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
+        }
         results.push({
           item: bucket.key,
           sessions: bucket.doc_count,
           bytes: bucket.bytes.value,
           packets: bucket.packets.value,
-          value: metricKey ? (bucket[metricKey]?.value ?? 0) : bucket.doc_count
+          value: spec.sortAggKey ? (bucket[spec.sortAggKey]?.value ?? 0) : bucket.doc_count,
+          metricValues
         });
       }
       return results;
@@ -3444,13 +3458,10 @@ class SessionAPIs {
           // Per-widget metric: when a numeric field is selected, sum it per
           // bucket and order Top/Bottom N by that sum; otherwise order by count.
           const widgetAggs = { ...extraAggs };
-          let termsOrder;
-          if (spec.metricDbField) {
-            widgetAggs.metricValue = { sum: { field: spec.metricDbField } };
-            termsOrder = { metricValue: spec.order };
-          } else {
-            termsOrder = { _count: spec.order };
+          for (const m of spec.metrics) {
+            widgetAggs[m.aggKey] = { sum: { field: m.dbField } };
           }
+          const termsOrder = spec.sortAggKey ? { [spec.sortAggKey]: spec.order } : { _count: spec.order };
 
           if (spec.isSpecial) {
             // Special fields use Painless scripts (no direct dbField mapping)
@@ -3489,7 +3500,7 @@ class SessionAPIs {
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration
           };
-          let data = convert(phase2.aggregations[spec.aggName], spec.length, spec.metricDbField ? 'metricValue' : undefined);
+          let data = convert(phase2.aggregations[spec.aggName], spec.length, spec);
           if (spec.field === 'ip.dst:port') {
             data = data.map(ipDstPortProcessor);
           }

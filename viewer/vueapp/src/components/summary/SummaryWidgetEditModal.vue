@@ -68,8 +68,34 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3">
-          <!-- Metric basis: Sessions count, or any numeric field summed per value -->
+          <!-- Metric basis: Sessions count, or numeric field(s) summed per value.
+               Tables take several metric columns + a sort-by; charts take one. -->
+          <template v-if="multiMetric">
+            <v-autocomplete
+              v-model="form.metrics"
+              :items="metricItems"
+              :label="$t('sessions.summary.widget.metrics')"
+              :disabled="!metricEnabled"
+              multiple
+              chips
+              closable-chips
+              density="compact"
+              variant="outlined"
+              hide-details
+              auto-select-first
+              style="min-width: 260px" />
+            <v-select
+              v-model="form.sortMetric"
+              :items="sortByItems"
+              :label="$t('sessions.summary.widget.sortBy')"
+              :disabled="!metricEnabled"
+              density="compact"
+              variant="outlined"
+              hide-details
+              style="min-width: 160px" />
+          </template>
           <v-autocomplete
+            v-else
             v-model="form.metricType"
             :items="metricItems"
             :label="$t('sessions.summary.widget.metric')"
@@ -214,7 +240,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, hasLocalFilter } from './widgets/viewModes';
+import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -241,6 +267,8 @@ const blankForm = () => ({
   title: '',
   viewMode: 'bar',
   metricType: 'sessions',
+  metrics: [],
+  sortMetric: 'sessions',
   length: 20,
   order: 'desc',
   width: 2,
@@ -270,6 +298,8 @@ const geoMode = computed(() => isGeoFieldMode(form.value.viewMode));
 // a field selection is required by both general field-bound and geo (map) types
 const needsField = computed(() => fieldMode.value || geoMode.value);
 const metricEnabled = computed(() => hasMetric(form.value.viewMode));
+// tables take multiple metric columns + a sort-by; charts take a single metric
+const multiMetric = computed(() => allowsMultiMetric(form.value.viewMode));
 const aggEnabled = computed(() => hasAgg(form.value.viewMode));
 // field-bound, geo (map) and timeline widgets all support a local filter; only
 // the global capture-stats widgets (stats/time) don't
@@ -311,6 +341,18 @@ const metricItems = computed(() => [
   ...numericFields.value
 ]);
 
+// Sort-by options for the table: Sessions plus the chosen metric columns
+const sortByItems = computed(() => {
+  const opts = [];
+  const seen = new Set();
+  for (const m of ['sessions', ...(form.value.metrics || [])]) {
+    if (seen.has(m)) { continue; }
+    seen.add(m);
+    opts.push({ title: m === 'sessions' ? t('sessions.summary.sessions') : (FieldService.getField(m, true)?.friendlyName || m), value: m });
+  }
+  return opts;
+});
+
 // Standard limits, plus the widget's current value if it's a legacy/imported
 // number outside the set (so the select doesn't render blank)
 const lengthItems = computed(() => {
@@ -351,6 +393,11 @@ watch(() => props.show, (isOpen) => {
       fields: Array.isArray(props.widget.fields) && props.widget.fields.length
         ? [...props.widget.fields]
         : (props.widget.field ? [props.widget.field] : []),
+      // migrate legacy single metricType into the metrics[] list
+      metrics: Array.isArray(props.widget.metrics) && props.widget.metrics.length
+        ? [...props.widget.metrics]
+        : (props.widget.metricType && props.widget.metricType !== 'sessions' ? [props.widget.metricType] : []),
+      sortMetric: props.widget.sortMetric || props.widget.metricType || 'sessions',
       expression: props.widget.expression || '',
       view: props.widget.view || '',
       title: props.widget.title || ''
@@ -364,6 +411,15 @@ watch(() => form.value.fields, (v) => {
   if (!Array.isArray(v)) { return; }
   if (v.length > 3) { form.value.fields = v.slice(0, 3); return; }
   form.value.field = v.length ? v[0] : '';
+});
+
+// cap metric columns at 4 and keep the sort-by pointed at a chosen metric (or Sessions)
+watch(() => form.value.metrics, (v) => {
+  if (!Array.isArray(v)) { return; }
+  if (v.length > 4) { form.value.metrics = v.slice(0, 4); return; }
+  if (form.value.sortMetric !== 'sessions' && !v.includes(form.value.sortMetric)) {
+    form.value.sortMetric = v[0] || 'sessions';
+  }
 });
 
 const onFieldSelected = (field) => {
@@ -389,13 +445,23 @@ const save = () => {
     error.value = t('sessions.summary.widget.fieldRequired');
     return;
   }
+  // resolve the metric(s): tables carry a metrics[] list + a sort-by; charts one.
+  // metricType stays the primary (sort) metric for charts + back-compat.
+  const metrics = multiMetric.value ? (form.value.metrics || []).slice(0, 4) : [];
+  let sortMetric = form.value.sortMetric || 'sessions';
+  if (multiMetric.value && sortMetric !== 'sessions' && !metrics.includes(sortMetric)) {
+    sortMetric = metrics[0] || 'sessions';
+  }
+  const metricType = multiMetric.value ? sortMetric : form.value.metricType;
   emit('save', {
     ...props.widget,
     field: fieldList[0] || '',
     fields: fieldList,
     title: form.value.title?.trim() || '',
     viewMode: form.value.viewMode,
-    metricType: form.value.metricType,
+    metricType,
+    metrics,
+    sortMetric: multiMetric.value ? sortMetric : metricType,
     length: form.value.length,
     order: form.value.order,
     width: form.value.width,
@@ -412,5 +478,12 @@ const save = () => {
 .input-disabled {
   opacity: 0.5;
   pointer-events: none;
+}
+
+/* the plain inputs are flat and vanish against the card (background === surface
+   in light themes); give them the themed input bg + border so they read as fields */
+.arkime-input-group {
+  background-color: rgb(var(--v-theme-input-bg));
+  border: 1px solid rgb(var(--v-theme-input-border));
 }
 </style>

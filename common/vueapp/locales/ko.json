@@ -419,6 +419,8 @@
         "title": "제목",
         "viewMode": "보기",
         "metric": "지표",
+        "metrics": "지표",
+        "sortBy": "정렬 기준",
         "limit": "제한",
         "order": "순서",
         "width": "너비(열)",

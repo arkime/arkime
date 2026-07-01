@@ -57,8 +57,8 @@ const showTooltip = (data, evt) => {
     metricType: props.metricType
   });
 };
-const MARGIN = { top: 20, right: 30, bottom: 120, left: 60 };
-const MAX_BAR_WIDTH = 80; // Maximum width per bar to prevent overly wide bars
+const MARGIN = { top: 12, right: 10, bottom: 120, left: 44 };
+const MAX_BAR_WIDTH = 120; // Maximum width per bar to prevent overly wide bars
 
 const createChartHoverHandlers = () => {
   return {

@@ -43,6 +43,28 @@ export function formatMetricValue (metricType, v) {
   return metricIsBytes(metricType) ? humanReadableBytes(v || 0) : commaString(v || 0);
 }
 
+// Neutralize CSV/spreadsheet formula injection (a cell starting with = + - @ TAB CR
+// can execute in Excel/Sheets), then quote cells containing comma/quote/newline.
+function escapeCSV (value) {
+  let s = String(value ?? '');
+  if (s.length > 0 && '=+-@\t\r'.includes(s[0])) { s = `'${s}`; }
+  if (s.includes('"') || s.includes(',') || s.includes('\n')) { return `"${s.replace(/"/g, '""')}"`; }
+  return s;
+}
+
+/** Build a CSV from header labels + row arrays and trigger a browser download. */
+export function downloadCSV (headers, rows, filename) {
+  const lines = [headers.map(escapeCSV).join(',')];
+  for (const row of rows) { lines.push(row.map(escapeCSV).join(',')); }
+  const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 /**
  * A widget's local filter = its saved View's expression AND its own expression
  * (either may be unset). The View is resolved from store.state.views by id/name.
@@ -161,6 +183,8 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
       length: widget.length,
       order: widget.order,
       metricType: widget.metricType,
+      metrics: widget.metrics,
+      sortMetric: widget.sortMetric,
       ...(localExp ? { expression: localExp } : {})
     }))
   };

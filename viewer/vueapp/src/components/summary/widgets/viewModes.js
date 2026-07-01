@@ -40,15 +40,21 @@ export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', '
 export const AGG_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
 
 // Types rendered from the batched /api/sessions/summary stream (vs. self-fetch).
-export const STREAM_VIEW_MODES = ['bar', 'pie', 'table'];
+export const STREAM_VIEW_MODES = ['bar', 'pie'];
 
-// Types that fetch their own endpoint (spigraph / spigraphhierarchy).
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'intersection', 'map'];
+// Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
+// table self-fetches (one summary sub-widget per field) so it can carry multiple
+// fields and multiple metric columns.
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'intersection', 'map', 'table'];
 
 // Types that accept multiple fields (up to 3) — nested combinations (pie/treemap/
 // intersection via spigraphhierarchy) or side-by-side columns (table via summary).
 // bar is single-dimension; heatmap has no combination-over-time data path.
 export const MULTI_FIELD_VIEW_MODES = ['pie', 'treemap', 'table', 'intersection'];
+
+// Types that accept multiple metric columns (the table's [value | m0 | m1 …]).
+// Charts visualize a single metric, so they stay single-select.
+export const MULTI_METRIC_VIEW_MODES = ['table'];
 
 /** True for stream-mode (bar/pie/table) widgets fed by the summary stream. */
 export const isStreamMode = (viewMode) => STREAM_VIEW_MODES.includes(viewMode);
@@ -70,6 +76,9 @@ export const hasAgg = (viewMode) => AGG_VIEW_MODES.includes(viewMode);
 
 /** True when the widget accepts up to 3 fields (chips multi-select). */
 export const allowsMultiField = (viewMode) => MULTI_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True when the widget accepts multiple metric columns (chips multi-select). */
+export const allowsMultiMetric = (viewMode) => MULTI_METRIC_VIEW_MODES.includes(viewMode);
 
 /** True when the widget fetches its own data and can take a per-widget local
  *  filter (a saved View + expression). Only the global capture-stats widgets

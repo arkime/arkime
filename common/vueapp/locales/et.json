@@ -419,6 +419,8 @@
         "title": "Pealkiri",
         "viewMode": "Vaade",
         "metric": "Mõõdik",
+        "metrics": "Mõõdikud",
+        "sortBy": "Sorteeri",
         "limit": "Piirang",
         "order": "Järjestus",
         "width": "Laius (veerud)",

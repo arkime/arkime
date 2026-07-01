@@ -76,9 +76,10 @@ const getCurrentTime = () => timezoneDateString(Date.now(), timezone.value, show
 .time-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.2rem;
   justify-content: center;
   flex: 1;
+  font-size: 0.85rem;
 }
 .time-item {
   display: flex;

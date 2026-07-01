@@ -419,6 +419,8 @@
         "title": "Title",
         "viewMode": "View",
         "metric": "Metric",
+        "metrics": "Metrics",
+        "sortBy": "Sort by",
         "limit": "Limit",
         "order": "Order",
         "width": "Width (columns)",

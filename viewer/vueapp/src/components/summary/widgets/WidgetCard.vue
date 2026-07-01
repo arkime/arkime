@@ -28,7 +28,7 @@ The widget content is provided via the default slot.
     class="widget-card widget-error widget-loaded">
     <!-- keep Edit/Remove reachable so a persistently-erroring widget
          (bad field/expression) can still be fixed or removed -->
-    <div class="d-flex align-center mb-2">
+    <div class="d-flex align-center mb-1">
       <div class="widget-heading d-flex align-baseline">
         <v-icon
           icon="mdi-drag-vertical"
@@ -108,7 +108,7 @@ The widget content is provided via the default slot.
   <div
     v-else
     class="widget-card widget-loaded">
-    <div class="d-flex align-center mb-2">
+    <div class="d-flex align-center mb-1">
       <div class="widget-heading d-flex align-baseline">
         <v-icon
           icon="mdi-drag-vertical"
@@ -271,7 +271,7 @@ defineEmits(['edit', 'remove', 'export', 'retry']);
 
 .widget-card {
   background: rgb(var(--v-theme-quaternary-lightest));
-  padding: 1rem;
+  padding: 0.5rem 0.6rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -288,10 +288,10 @@ defineEmits(['edit', 'remove', 'export', 'retry']);
   overflow: hidden;
 }
 
-/* dense content (e.g. heatmap with many rows) scrolls vertically */
+/* dense content (heatmap rows, wide multi-metric tables) scrolls both ways;
+   auto shows a scrollbar only when the content actually overflows */
 .widget-body--scroll {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
 }
 
 .loading-widget {
@@ -346,7 +346,7 @@ defineEmits(['edit', 'remove', 'export', 'retry']);
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 .empty-state-text {

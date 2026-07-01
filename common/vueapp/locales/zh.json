@@ -419,6 +419,8 @@
         "title": "标题",
         "viewMode": "视图",
         "metric": "指标",
+        "metrics": "指标",
+        "sortBy": "排序方式",
         "limit": "限制",
         "order": "排序",
         "width": "宽度（列）",

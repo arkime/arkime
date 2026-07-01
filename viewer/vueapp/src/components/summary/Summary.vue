@@ -91,9 +91,9 @@
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
-          <!-- multi-field (2-3) side-by-side table -->
+          <!-- table: 1-3 fields side by side, each with its metric column(s) -->
           <MultiFieldTableWidget
-            v-else-if="isMultiField(w) && w.viewMode === 'table'"
+            v-else-if="w.viewMode === 'table'"
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
@@ -295,8 +295,8 @@ const isMultiField = (w) => allowsMultiField(w?.viewMode) && widgetFields(w).len
 
 // Drag-to-resize: a handle on the right edge changes width (1-4 cols), the bottom
 // edge changes height (1-8 rows), the corner does both. Deltas snap to the grid
-// (4 equal columns + 16px gap; 160px row unit). Persists on release.
-const GRID_GAP = 16; // 1rem gap between cells
+// (4 equal columns + 8px gap; 160px row unit). Persists on release.
+const GRID_GAP = 8; // 0.5rem gap between cells (matches .charts-container gap)
 const ROW_UNIT = 160; // grid-auto-rows
 const startResize = (w, evt, axis) => {
   const wrapperEl = evt.currentTarget.closest('.widget-wrapper');
@@ -399,13 +399,16 @@ const widgetInfo = (w) => {
     rows.push({ label: t(exps.length > 1 ? 'sessions.summary.widget.fields' : 'sessions.summary.widget.field'), value: names });
   }
 
-  // metric only applies to the metric-driven charts
+  // metric only applies to the metric-driven charts / tables
   if (hasMetric(w.viewMode)) {
-    const metric = w.metricType || 'sessions';
-    const metricName = metric === 'sessions'
+    const metricName = (m) => (m === 'sessions'
       ? t('sessions.summary.sessions')
-      : (FieldService.getField(metric, true)?.friendlyName || metric);
-    rows.push({ label: t('sessions.summary.widget.metric'), value: metricName });
+      : (FieldService.getField(m, true)?.friendlyName || m));
+    const metricExps = (Array.isArray(w.metrics) && w.metrics.length) ? w.metrics : [w.metricType || 'sessions'];
+    rows.push({ label: t('sessions.summary.widget.metric'), value: metricExps.map(metricName).join(', ') });
+    if (metricExps.length > 1 && w.sortMetric) {
+      rows.push({ label: t('sessions.summary.widget.sortBy'), value: metricName(w.sortMetric) });
+    }
   }
 
   // Top/Bottom N only applies to the aggregating widgets
@@ -788,63 +791,9 @@ const exportChart = async (svgId, filename) => {
   }
 };
 
-// Helper function to escape CSV values
-const escapeCSV = (value) => {
-  let stringValue = String(value);
-  // Neutralize CSV/spreadsheet formula injection. A cell that begins with one of
-  // = + - @ TAB CR can execute as a formula when opened in Excel/Google Sheets.
-  // Since values can come from captured traffic, prefix risky cells with a single quote.
-  if (stringValue.length > 0 && '=+-@\t\r'.includes(stringValue[0])) {
-    stringValue = `'${stringValue}`;
-  }
-  // Escape quotes by doubling them and wrap in quotes if contains comma, quote, or newline
-  if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n')) {
-    return `"${stringValue.replace(/"/g, '""')}"`;
-  }
-  return stringValue;
-};
-
-// Export a table widget as CSV — [field, selected metric], matching the on-screen table
-const exportTableCSV = (widget, itemLabel, filename) => {
-  try {
-    const data = widget.data;
-    if (!data?.length) {
-      return;
-    }
-
-    const metric = widget.metricType || 'sessions';
-    const metricLabel = metric === 'sessions'
-      ? t('sessions.summary.sessions')
-      : (FieldService.getField(metric, true)?.friendlyName || metric);
-
-    let csv = [itemLabel, metricLabel].map(escapeCSV).join(',') + '\n';
-
-    data.forEach(item => {
-      csv += `${escapeCSV(item.item)},${escapeCSV(item.value)}\n`;
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    error.value = 'Failed to export CSV file';
-  }
-};
-
-// Simplified widget export handler
+// Chart (bar/pie) export → PNG. Table widgets self-fetch and own their CSV export.
 const handleWidgetExport = (widget, svgId) => {
-  const filename = widget.field;
-  const itemLabel = widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field;
-
-  if (widget.viewMode === 'table') {
-    exportTableCSV(widget, itemLabel, `arkime-summary-${filename}.csv`);
-  } else {
-    exportChart(svgId, filename);
-  }
+  exportChart(svgId, widget.field);
 };
 
 // Temporarily add count labels to an SVG for export, returns a cleanup function
@@ -1374,8 +1323,8 @@ defineExpose({
 }
 
 .charts-container {
-  gap: 1rem;
-  margin-top: 1.5rem; /* Extra margin to accommodate drag handles */
+  gap: 0.5rem;
+  margin-top: 0.75rem;
   display: grid;
 }
 

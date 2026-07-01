@@ -115,8 +115,16 @@ const render = async () => {
       .attr('class', 'hierarchy-sep')
       .style('cursor', 'pointer')
       .on('mouseover', onHover);
-    // leaf labels (only where they fit)
-    g.selectAll('text')
+    // parent (outer field) labels sit in the reserved top band of each group
+    g.selectAll('text.hierarchy-parent-label')
+      .data(root.descendants().filter(d => d.depth >= 1 && d.children && (d.x1 - d.x0) > 44))
+      .join('text')
+      .attr('x', d => d.x0 + 4)
+      .attr('y', d => d.y0 + 11)
+      .attr('class', 'hierarchy-parent-label')
+      .text(d => d.data.name);
+    // leaf (innermost) labels (only where they fit)
+    g.selectAll('text.hierarchy-label')
       .data(root.leaves().filter(d => (d.x1 - d.x0) > 44 && (d.y1 - d.y0) > 18))
       .join('text')
       .attr('x', d => d.x0 + 4)
@@ -173,16 +181,19 @@ onBeforeUnmount(() => { if (ro) { ro.disconnect(); } });
   min-height: 0;
   overflow: hidden;
 }
-.hierarchy-container :deep(.hierarchy-label) {
+.hierarchy-container :deep(.hierarchy-label),
+.hierarchy-container :deep(.hierarchy-parent-label) {
   fill: #fff;
   font-size: 10px;
-  font-weight: 600;
   paint-order: stroke;
   stroke: rgba(0, 0, 0, 0.55);
   stroke-width: 2px;
   stroke-linejoin: round;
   pointer-events: none;
 }
+.hierarchy-container :deep(.hierarchy-label) { font-weight: 600; }
+/* outer-field labels read a touch bolder so the nesting is legible */
+.hierarchy-container :deep(.hierarchy-parent-label) { font-weight: 700; }
 /* separators via a class so the theme var() resolves (an SVG stroke attr would not) */
 .hierarchy-container :deep(.hierarchy-sep) {
   stroke: rgb(var(--v-theme-background));
