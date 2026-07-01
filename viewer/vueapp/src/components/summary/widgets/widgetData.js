@@ -8,6 +8,7 @@ summary stream). Combines the global search expression with the widget's local
 filter and the global time window.
 */
 import { fetchWrapper } from '@common/fetchWrapper.js';
+import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 
 /**
@@ -29,6 +30,17 @@ export function metricHistoKey (widget) {
   if (!metric || metric === 'sessions') { return 'sessionsHisto'; }
   const dbField = FieldService.getField(metric, true)?.dbField;
   return dbField ? `${dbField}Histo` : 'sessionsHisto';
+}
+
+/** True when a widget's metric is a byte-valued field (wants human-readable formatting). */
+export function metricIsBytes (metricType) {
+  if (!metricType || metricType === 'sessions') { return false; }
+  return /bytes/i.test(metricType) || /bytes/i.test(FieldService.getField(metricType, true)?.dbField || '');
+}
+
+/** Format a widget metric value: human-readable bytes for byte metrics, else a comma count. */
+export function formatMetricValue (metricType, v) {
+  return metricIsBytes(metricType) ? humanReadableBytes(v || 0) : commaString(v || 0);
 }
 
 /**

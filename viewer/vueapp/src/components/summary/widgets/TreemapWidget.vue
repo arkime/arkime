@@ -59,10 +59,9 @@ card; instance-safe (no shared DOM ids). Hover shows the shared chart popover.
 import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
 import WidgetCard from './WidgetCard.vue';
 import FieldService from '../../search/FieldService';
-import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import { colorRange } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { metricHistoKey } from './widgetData';
+import { metricHistoKey, formatMetricValue } from './widgetData';
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -87,14 +86,17 @@ const { loading, error, fetchData } = useSpigraphWidget(
 
 const fieldObj = computed(() => FieldService.getField(props.widget.field, true));
 const title = computed(() => props.widget.title || fieldObj.value?.friendlyName || props.widget.field);
-const hasData = computed(() => items.value.length > 0);
 
 // metric drives rectangle size: session count by default, else the chosen
 // numeric field's per-value total (the <dbField>Histo sum from spigraph)
 const metricKey = computed(() => metricHistoKey(props.widget));
-const isBytesMetric = computed(() => /bytes/i.test(metricKey.value));
 const itemValue = (i) => (metricKey.value === 'sessionsHisto' ? i.count : (i[metricKey.value] || 0));
-const formatValue = (v) => (isBytesMetric.value ? humanReadableBytes(v) : commaString(v));
+const formatValue = (v) => formatMetricValue(props.widget.metricType, v);
+
+// only positive-metric values can be sized/drawn; drives hasData so an all-zero
+// metric shows the empty state, not a blank body
+const drawItems = computed(() => items.value.filter(i => itemValue(i) > 0));
+const hasData = computed(() => drawItems.value.length > 0);
 
 const measure = () => {
   if (!container.value) { return; }
@@ -102,14 +104,14 @@ const measure = () => {
 };
 
 const layout = async () => {
-  if (!items.value.length || !size.value.w || !size.value.h) { leaves.value = []; return; }
+  if (!drawItems.value.length || !size.value.w || !size.value.h) { leaves.value = []; return; }
   if (!d3lib) { d3lib = await import('d3'); }
-  const root = d3lib.hierarchy({ children: items.value.map(i => ({ name: i.name, value: itemValue(i), src: i })).filter(d => d.value > 0) })
+  const root = d3lib.hierarchy({ children: drawItems.value.map(i => ({ name: i.name, value: itemValue(i), src: i })) })
     .sum(d => d.value)
     .sort((a, b) => b.value - a.value);
   d3lib.treemap().size([size.value.w, size.value.h]).paddingInner(2).round(true)(root);
   // dashboard palette (shared with the bar/pie charts)
-  const colors = d3lib.scaleOrdinal(colorRange(d3lib, props.colorScheme, items.value.length));
+  const colors = d3lib.scaleOrdinal(colorRange(d3lib, props.colorScheme, drawItems.value.length));
   leaves.value = root.leaves().map((l, idx) => {
     const w = l.x1 - l.x0;
     const h = l.y1 - l.y0;

@@ -112,7 +112,7 @@ const render = async () => {
       .attr('height', d => Math.max(0, d.y1 - d.y0))
       .attr('fill', d => colors(topName(d)))
       .attr('fill-opacity', d => 0.45 + 0.45 * (d.depth / (root.height || 1)))
-      .attr('stroke', 'rgb(var(--v-theme-background))')
+      .attr('class', 'hierarchy-sep')
       .style('cursor', 'pointer')
       .on('mouseover', onHover);
     // leaf labels (only where they fit)
@@ -140,7 +140,7 @@ const render = async () => {
       .attr('d', arc)
       .attr('fill', d => colors(topName(d)))
       .attr('fill-opacity', d => 0.55 + 0.45 * (d.depth / (root.height || 1)))
-      .attr('stroke', 'rgb(var(--v-theme-background))')
+      .attr('class', 'hierarchy-sep')
       .style('cursor', 'pointer')
       .on('mouseover', onHover);
   }
@@ -182,5 +182,10 @@ onBeforeUnmount(() => { if (ro) { ro.disconnect(); } });
   stroke-width: 2px;
   stroke-linejoin: round;
   pointer-events: none;
+}
+/* separators via a class so the theme var() resolves (an SVG stroke attr would not) */
+.hierarchy-container :deep(.hierarchy-sep) {
+  stroke: rgb(var(--v-theme-background));
+  stroke-width: 1;
 }
 </style>

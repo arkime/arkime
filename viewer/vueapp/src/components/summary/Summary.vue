@@ -804,22 +804,23 @@ const escapeCSV = (value) => {
   return stringValue;
 };
 
-// Export table as CSV
-const exportTableCSV = (dataKeyOrData, headers, filename) => {
+// Export a table widget as CSV — [field, selected metric], matching the on-screen table
+const exportTableCSV = (widget, itemLabel, filename) => {
   try {
-    // Support both direct data and lookup by key
-    const data = typeof dataKeyOrData === 'string'
-      ? summary.value?.[dataKeyOrData]
-      : dataKeyOrData;
-
+    const data = widget.data;
     if (!data?.length) {
       return;
     }
 
-    let csv = headers.join(',') + '\n';
+    const metric = widget.metricType || 'sessions';
+    const metricLabel = metric === 'sessions'
+      ? t('sessions.summary.sessions')
+      : (FieldService.getField(metric, true)?.friendlyName || metric);
+
+    let csv = [itemLabel, metricLabel].map(escapeCSV).join(',') + '\n';
 
     data.forEach(item => {
-      csv += `${escapeCSV(item.item)},${item.sessions},${item.packets},${item.bytes}\n`;
+      csv += `${escapeCSV(item.item)},${escapeCSV(item.value)}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -840,8 +841,7 @@ const handleWidgetExport = (widget, svgId) => {
   const itemLabel = widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field;
 
   if (widget.viewMode === 'table') {
-    const headers = [itemLabel, 'Sessions', 'Packets', 'Bytes'];
-    exportTableCSV(widget.data, headers, `arkime-summary-${filename}.csv`);
+    exportTableCSV(widget, itemLabel, `arkime-summary-${filename}.csv`);
   } else {
     exportChart(svgId, filename);
   }

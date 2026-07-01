@@ -34,6 +34,7 @@ import WidgetCard from './WidgetCard.vue';
 import WorldMap from '../../visualizations/WorldMap.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
+import { fetchSummaryFields } from './widgetData';
 
 // countries are ~250; ask for enough spigraph values to cover them all
 const MAP_TOP = 1000;
@@ -50,18 +51,20 @@ defineEmits(['edit', 'remove']);
 
 const values = ref({});
 
-// self-fetch spigraph for the geo field; request all countries (ignore the
-// widget's top-N, which the map doesn't expose), then map value -> count
+// per-country counts via the summary endpoint (one terms agg) instead of
+// /api/spigraph, which runs a per-value msearch the map doesn't need
 const { loading, error, fetchData } = useSpigraphWidget(
   () => ({ ...props.widget, length: MAP_TOP, metricType: 'sessions' }),
   () => props.reloadNonce,
   (res) => {
     const v = {};
-    for (const it of res.items || []) {
-      if (it.count > 0) { v[it.name] = it.count; }
+    const rows = (Array.isArray(res) && res[0]?.data) || [];
+    for (const it of rows) {
+      if (it.value > 0) { v[it.item] = it.value; }
     }
     values.value = v;
-  }
+  },
+  fetchSummaryFields
 );
 
 const fieldObj = computed(() => FieldService.getField(props.widget.field, true));

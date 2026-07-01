@@ -200,8 +200,9 @@ const fieldsList = computed(() => {
   if (!props.config?.widgets?.length) return '';
   return props.config.widgets.map(w => {
     const fieldObj = FieldService.getField(w.field, true);
-    return w.title || fieldObj?.friendlyName || w.field;
-  }).join(', ');
+    // fall back to viewMode for field-less widgets so the preview has no blank segments
+    return w.title || fieldObj?.friendlyName || w.field || w.viewMode;
+  }).filter(Boolean).join(', ');
 });
 
 // Reset form when modal opens

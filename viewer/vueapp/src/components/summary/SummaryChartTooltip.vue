@@ -50,9 +50,10 @@
 
 <script setup>
 import { computed } from 'vue';
-import { commaString, humanReadableBytes } from '@common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 import ArkimeSessionField from '../sessions/SessionField.vue';
 import FieldService from '../search/FieldService';
+import { formatMetricValue } from './widgets/widgetData';
 
 const props = defineProps({
   visible: {
@@ -91,18 +92,9 @@ const metricField = computed(() => {
 
 const metricLabel = computed(() => metricField.value?.friendlyName || props.metricType);
 
-// Byte-valued metrics get human-readable formatting; everything else is a count
-const metricIsBytes = computed(() => {
-  if (!props.metricType) { return false; }
-  return /bytes/i.test(props.metricType) || /bytes/i.test(metricField.value?.dbField || '');
-});
-
 const showMetricRow = computed(() => metricField.value != null && props.data?.value != null);
 
-const formattedMetric = computed(() => {
-  const v = props.data?.value || 0;
-  return metricIsBytes.value ? humanReadableBytes(v) : commaString(v);
-});
+const formattedMetric = computed(() => formatMetricValue(props.metricType, props.data?.value));
 
 const tooltipStyle = computed(() => {
   // Position tooltip to the top-right of the pointer

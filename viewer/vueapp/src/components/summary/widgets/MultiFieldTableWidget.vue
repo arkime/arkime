@@ -26,7 +26,16 @@ column pair per field, rows aligned by rank.
           <template
             v-for="(fd, i) in fieldsData"
             :key="i">
-            <th>{{ fd.friendlyName }}</th>
+            <th>
+              {{ fd.friendlyName }}
+              <v-icon
+                v-if="fd.error"
+                icon="mdi-alert"
+                size="x-small"
+                color="error"
+                class="ms-1"
+                :title="fd.error" />
+            </th>
             <th class="num">
               {{ metricLabel }}
             </th>
@@ -66,9 +75,8 @@ import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
-import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchSummaryFields } from './widgetData';
+import { fetchSummaryFields, formatMetricValue } from './widgetData';
 
 const { t } = useI18n();
 
@@ -103,12 +111,7 @@ const metricLabel = computed(() => {
   if (m === 'sessions') { return t('sessions.summary.sessions'); }
   return FieldService.getField(m, true)?.friendlyName || m;
 });
-const metricIsBytes = computed(() => {
-  const m = props.widget.metricType || 'sessions';
-  if (m === 'sessions') { return false; }
-  return /bytes/i.test(m) || /bytes/i.test(FieldService.getField(m, true)?.dbField || '');
-});
-const formatMetric = (v) => (metricIsBytes.value ? humanReadableBytes(v || 0) : commaString(v || 0));
+const formatMetric = (v) => formatMetricValue(props.widget.metricType, v);
 </script>
 
 <style scoped>

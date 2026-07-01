@@ -2041,6 +2041,17 @@ class SessionAPIs {
         query.aggregations.field = { terms: { field, size: size * 2 } };
       }
 
+      // Rank the candidate Top-N pool by the sort metric. Without this the terms agg
+      // returns the top size*2 BY SESSION COUNT (ES default) before the metric sort
+      // runs, dropping high-metric/low-count values. Order by the <dbField>Histo sum.
+      const sortMetricField = /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
+        ? req.query.sort.replace(/Histo$/, '')
+        : undefined;
+      if (sortMetricField && !query.aggregations.field.aggregations) {
+        query.aggregations.field.aggregations = { metricValue: { sum: { field: sortMetricField } } };
+        query.aggregations.field.terms.order = { metricValue: 'desc' };
+      }
+
       Promise.all([
         Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {}),
         Db.searchSessions(indices, query, options)

@@ -60,6 +60,7 @@ import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
+import { metricIsBytes } from './widgets/widgetData';
 
 const { t } = useI18n();
 
@@ -166,11 +167,6 @@ const metricLabel = computed(() => {
   if (m === 'sessions') { return t('sessions.summary.sessions'); }
   return FieldService.getField(m, true)?.friendlyName || m;
 });
-const metricIsBytes = computed(() => {
-  const m = props.metricType || 'sessions';
-  if (m === 'sessions') { return false; }
-  return /bytes/i.test(m) || /bytes/i.test(FieldService.getField(m, true)?.dbField || '');
-});
 
 // Table columns: the grouping field + the selected metric (single metric for now;
 // a future tableColumns[] enables multi-metric). Metric value is data[].value.
@@ -182,7 +178,7 @@ const columns = computed(() => [
     useSessionField: true,
     ...(fieldConfig.value?.exp && { expr: fieldConfig.value.exp })
   },
-  { key: 'value', header: metricLabel.value, align: 'end', format: metricIsBytes.value ? 'bytes' : 'number' }
+  { key: 'value', header: metricLabel.value, align: 'end', format: metricIsBytes(props.metricType) ? 'bytes' : 'number' }
 ]);
 
 // ResizeObserver for dynamic chart sizing
