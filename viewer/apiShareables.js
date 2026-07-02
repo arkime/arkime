@@ -333,7 +333,7 @@ class ShareableAPIs {
       };
 
       const { data: items, total: recordsFiltered } = await Db.searchShareables(params);
-      const recordsTotal = await Db.numberOfShareables({ ...params, searchTerm: undefined });
+      const recordsTotal = await Db.numberOfShareables(params);
 
       const results = items.map(async (item) => {
         const shareable = item.source;

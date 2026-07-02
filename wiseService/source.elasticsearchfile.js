@@ -41,7 +41,7 @@ class ElasticsearchFileSource extends SimpleSource {
     axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth })
       .then((response) => {
         if (response.status === 404 || response?.data?._source === undefined) {
-          return cb(null, '{}', null, 2);
+          return cb(null, '{}');
         }
 
         return cb(null, JSON.stringify(response.data._source, null, 2));

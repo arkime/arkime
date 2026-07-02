@@ -381,7 +381,7 @@ class BuildQuery {
       query.aggregations = {};
 
       // only add map aggregations if requested
-      if (reqQuery.map === 'true' || reqQuery.map) {
+      if (reqQuery.map === 'true' || reqQuery.map === true) {
         query.aggregations = {
           mapG1: { terms: { field: 'source.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
           mapG2: { terms: { field: 'destination.geo.country_iso_code', size: 1000, min_doc_count: 1 } },

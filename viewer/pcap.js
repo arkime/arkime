@@ -1201,7 +1201,8 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   radiotap (buffer, obj, pos) {
-    const l = buffer[2] + 24 + 6;
+    // it_len is a little-endian uint16 at bytes 2-3
+    const l = (buffer[2] | (buffer[3] << 8)) + 24 + 6;
     const ethertype = buffer.readUInt16BE(l);
 
     if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
@@ -1224,13 +1225,7 @@ class Pcap {
         offset += advance;
       }
     }
-
-    const l = buffer[2] + 24;
-    if (buffer[l + 6] === 0x08 && buffer[l + 7] === 0x00) {
-      this.ip4(buffer.slice(l + 8), obj, pos + l + 8);
-    } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
-      this.ip6(buffer.slice(l + 8), obj, pos + l + 8);
-    }
+    // no payload TLV (type 9) found, nothing to decode
   }
 
   // --------------------------------------------------------------------------
@@ -1306,9 +1301,12 @@ class Pcap {
     case 274: // IEEE 802.3br mPackets
       this.mpacket(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
       break;
-    case 276: // SLL2
-      this.ip4(buffer.slice(36, obj.pcap.incl_len + 20), obj, 36);
+    case 276: { // SLL2
+      // dispatch on the SLL2 protocol field, payload starts 20 bytes into the SLL2 header
+      const sll2Ethertype = buffer.readUInt16BE(16);
+      this.ethertyperun(sll2Ethertype, buffer.slice(36, obj.pcap.incl_len + 16), obj, 36);
       break;
+    }
     default:
       console.log('Unsupported pcap file', this.filename, 'link type', linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
       break;

@@ -2409,7 +2409,7 @@ class SessionAPIs {
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|destination.ip:destination.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         for (const item2 of item.field2.buckets) {
@@ -3371,7 +3371,7 @@ class SessionAPIs {
         map,
         graph
       };
-      response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+      response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
       await send(response, false);
 
       /****************************************/

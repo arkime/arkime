@@ -739,12 +739,18 @@ class UserAPIs {
             console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
             return res.serverError(500, 'Note dismissal failed', 'api.users.dismissNoteFailed');
           }
+
           return res.json({
             success: true,
             text: `User, ${req.user.userId}, dismissed help note ${noteId}`,
             i18n: 'api.users.dismissedNote',
             i18nParams: { userId: req.user.userId, noteId }
           });
+        }
+
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
+          return res.serverError(500, 'Error dismissing message');
         }
 
         return res.json({

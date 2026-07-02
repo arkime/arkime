@@ -256,7 +256,8 @@ class WISESource {
    */
   parseJSONArray (json, setCb, endCb) {
     try {
-      if (this.keyPath === undefined) {
+      // keyPath often defaults to 0 via keyColumn, treat any non-string as unset
+      if (this.keyPath === undefined || this.keyPath === 0 || this.keyPath === '') {
         return endCb('No keyPath set');
       }
 
@@ -492,6 +493,11 @@ class WISESource {
       if (l > 250) {
         val = val.substring(0, 240);
         l = Buffer.byteLength(val);
+        // multibyte characters can still exceed the 1-byte length field, shrink until it fits
+        while (l > 250) {
+          val = val.substring(0, val.length - 10);
+          l = Buffer.byteLength(val);
+        }
       }
       vals.push(val);
       lens.push(l);

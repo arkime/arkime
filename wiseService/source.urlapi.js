@@ -38,12 +38,6 @@ class URLApiSource extends WISESource {
     this[this.api.funcName(this.type)] = this.sendResult;
     api.addSource(section, this, [this.type]);
 
-    this.sourceFields = [this.resultField];
-    for (const k in this.shortcuts) {
-      if (this.sourceFields.indexOf(k) === -1) {
-        this.sourceFields.push(k);
-      }
-    }
   }
 
   // ----------------------------------------------------------------------------

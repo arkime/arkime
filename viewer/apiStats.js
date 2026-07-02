@@ -1363,7 +1363,7 @@ class StatsAPIs {
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
       Db.getClusterSettingsCache(options),
       Db.loadESId2Info(options.cluster)
-    ]).then(([{ body: shards, esid2info }, { body: settings }]) => {
+    ]).then(([{ body: shards }, { body: settings }]) => {
       if (!Array.isArray(shards)) {
         return res.serverError(500, 'No results', 'api.stats.noResults');
       }

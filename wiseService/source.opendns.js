@@ -21,7 +21,8 @@ class OpenDNSSource extends WISESource {
     }
 
     this.waiting = [];
-    this.processing = {};
+    this.processing = new Map();
+    this.categories = {}; // filled async by getCategories
     this.statuses = { '-1': 'malicious', 0: 'unknown', 1: 'benign' };
 
     this.api.addSource('opendns', this, ['domain']);
@@ -65,7 +66,11 @@ class OpenDNSSource extends WISESource {
         response += chunk;
       });
       res.on('end', () => {
-        this.categories = JSON.parse(response);
+        try {
+          this.categories = JSON.parse(response);
+        } catch (e) {
+          console.log(this.section, '- ERROR parsing categories', e);
+        }
       });
     });
     request.on('error', (err) => {
@@ -95,9 +100,9 @@ class OpenDNSSource extends WISESource {
     // don't hang in processing forever
     const failBatch = (err) => {
       for (const domain of sent) {
-        const cbs = this.processing[domain];
+        const cbs = this.processing.get(domain);
         if (!cbs) { continue; }
-        delete this.processing[domain];
+        this.processing.delete(domain);
         let cb;
         while ((cb = cbs.shift())) {
           cb(err);
@@ -113,7 +118,7 @@ class OpenDNSSource extends WISESource {
       headers: {
         Authorization: 'Bearer ' + this.key,
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': postData.length
+        'Content-Length': Buffer.byteLength(postData)
       }
     };
 
@@ -133,13 +138,13 @@ class OpenDNSSource extends WISESource {
         }
 
         for (let result in results) {
-          const cbs = this.processing[result];
+          const cbs = this.processing.get(result);
           if (!cbs) {
             continue;
           }
-          delete this.processing[result];
+          this.processing.delete(result);
 
-          const args = [this.statusField, this.statuses[results[result].status]];
+          const args = [this.statusField, this.statuses[results[result].status] || ('' + results[result].status)];
 
           if (results[result].security_categories) {
             results[result].security_categories.forEach((value) => {
@@ -182,12 +187,12 @@ class OpenDNSSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   getDomain (domain, cb) {
-    if (domain in this.processing) {
-      this.processing[domain].push(cb);
+    if (this.processing.has(domain)) {
+      this.processing.get(domain).push(cb);
       return;
     }
 
-    this.processing[domain] = [cb];
+    this.processing.set(domain, [cb]);
     this.waiting.push(domain);
     if (this.waiting.length > 1000) {
       this.performQuery();

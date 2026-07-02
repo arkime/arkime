@@ -224,9 +224,6 @@ function createUnxorBruteGzip (options, context) {
           }
           if (j === gzip.length) {
             data = data.slice(d);
-            for (let i = 0; i < gzip.length + 4; i++) {
-              tmp[i] = data[d + i] ^ key[(i % key.length)];
-            }
             this.key = key;
             this.pos = 0;
             this.state = 1;
@@ -618,7 +615,7 @@ class ItemHTTPStream extends ItemTransform {
 
     case ItemHTTPStream.STATES.res:
       if (line.length === 0) {
-        if (this.code / 100 === 1 || this.code === 204 || this.code === 304) {
+        if (Math.floor(this.code / 100) === 1 || this.code === 204 || this.code === 304) {
           this.states[item.client] = ItemHTTPStream.STATES.start;
         } else if (this.method === undefined) {
           if (this.contentLength[item.client] > 0) {

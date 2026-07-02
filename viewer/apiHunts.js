@@ -102,7 +102,8 @@ class HuntAPIs {
       const packets = [];
       SessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
         if (options.src === options.dst) {
-          packets.push(buffer);
+          // strip the 16 byte pcap record header, only packet data should be searched
+          packets.push(buffer.slice(16));
         } else {
           const packet = {};
           pcap.decode(buffer, packet);
