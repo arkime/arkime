@@ -24,7 +24,7 @@ class WISESource {
    * @param {string} section - the section name
    * @param {object} options - All the options
    * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
-   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as don't
+   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dontCache
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
@@ -250,7 +250,7 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse JSON formatted data
-   * @param {string} body - the raw JSON data
+   * @param {array} json - the parsed JSON array
    * @param {function} setCb - the function to call for each row found
    * @param {function} endCb - all done parsing
    */
@@ -474,7 +474,7 @@ class WISESource {
   /**
    * Convert field ids and string values into the encoded form used in WISE.
    *
-   * This method tags a variable number of arguments, each in a pair of field id and string value.
+   * This method takes a variable number of arguments, each in a pair of field id and string value.
    * @returns {buffer} - the encoded results
    */
   static encodeResult () {

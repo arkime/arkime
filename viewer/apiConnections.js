@@ -148,7 +148,7 @@ class ConnectionAPIs {
   } // buildConnectionQuery
 
   // --------------------------------------------------------------------------
-  // dbConnectionQuerySearch(connQueries, resultId, cb)
+  // dbConnectionQuerySearch(connQueries, cb)
   //
   // Executes the query/queries specified in the connQueries array (elements are
   // of the type returned by buildConnectionQuery) by calling Db.searchSessions

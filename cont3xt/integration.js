@@ -621,7 +621,7 @@ class Integration {
    * @param {boolean} skipChildren - Don't query integrations for sub-indicators
    * @param {string[]} tags - Tags applied at the time of search
    * @param {string | undefined} viewId - The ID of the view at the time of search (if any)
-   * @returns {IntegrationChunk[]} results - An array data chunks with the data
+   * @returns {IntegrationChunk[]} results - An array of data chunks with the data
    */
   static async apiSearch (req, res, next) {
     if (!ArkimeUtil.isString(req.body.query)) {

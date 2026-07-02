@@ -359,7 +359,8 @@ ${Config.arkimeWebURL()}hunt
     async.forEachLimit(failedSessions, 3, (sessionId, cb) => {
       Db.getSession(sessionId, { arkime_unflatten: true, _source: false, fields: 'node,huntName,huntId,lastPacket,fileId'.split(',') }, async (err, session) => {
         if (err) {
-          const result = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
+          // session is undefined on error, pass a stub so #updateHuntStats doesn't throw
+          const result = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, {}, sessionId, searchedSessions);
           return cb(result);
         }
 
@@ -786,7 +787,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {number} matchedSessions - How many sessions contain packets that match the search text.
    * @property {number} searchedSessions - How many sessions have had their packets searched.
    * @property {number} totalSessions - The number of sessions to search.
-   * @property {number} lastPacketTime - The date of the last packet of the last searched session. Used to query for the next chunk of sessions to search. Format is seconds since Unix EPOCH.
+   * @property {number} lastPacketTime - The date of the last packet of the last searched session. Used to query for the next chunk of sessions to search. Format is milliseconds since Unix EPOCH.
    * @property {number} created - The time that the hunt was created. Format is seconds since Unix EPOCH.
    * @property {number} lastUpdated - The time that the hunt was last updated in the DB. Used to only update every 2 seconds. Format is seconds since Unix EPOCH.
    * @property {number} started - The time that the hunt was started (put into running state). Format is seconds since Unix EPOCH.
@@ -821,7 +822,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
      hex - search for hex text.
      regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
      hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
-   * @param {string} notifier - A comma separated list of notifier IDs to alert when there is an error or when the hunt is complete.
+   * @param {string[]} notifier - An array of notifier IDs to alert when there is an error or when the hunt is complete.
    * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
    * @returns {boolean} success - Whether the creation of the hunt was successful.
    * @returns {Hunt} hunt - The newly created hunt object.
@@ -1340,7 +1341,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * GET - /api/hunt/:nodeName/:huntId/remote/:sessionId
    *
    * Searches a session on a remote node.
-   * @name /:nodeName/hunt/:huntId/remote/:sessionId
+   * @name /hunt/:nodeName/:huntId/remote/:sessionId
    * @returns {boolean} matched - Whether searching the session packets resulted in a match with the search text.
    * @returns {string} error - If an error occurred, describes the error.
    */

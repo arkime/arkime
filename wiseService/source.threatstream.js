@@ -115,15 +115,10 @@ class ThreatStreamSource extends WISESource {
   // ----------------------------------------------------------------------------
   parseFile () {
     this.ips.clear();
-    this.ips.reserve(2000000);
     this.domains.clear();
-    this.domains.reserve(200000);
     this.emails.clear();
-    this.emails.reserve(200000);
     this.md5s.clear();
-    this.md5s.reserve(200000);
     this.urls.clear();
-    this.urls.reserve(200000);
 
     fs.createReadStream('/tmp/threatstream.zip')
       .pipe(unzipper.Parse())
@@ -172,8 +167,10 @@ class ThreatStreamSource extends WISESource {
             } else if (item.itype.match(/_md5/)) {
               this.md5s.set(item.md5, encoded);
             } else if (item.itype.match(/_url/)) {
-              if (item.url.lastIndexOf('http://', 0) === 0) {
+              if (item.url.startsWith('http://')) {
                 item.url = item.url.substring(7);
+              } else if (item.url.startsWith('https://')) {
+                item.url = item.url.substring(8);
               }
               this.urls.set(item.url, encoded);
             }
@@ -221,7 +218,6 @@ class ThreatStreamSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   getURLZip (url, cb) {
-    url = `http://${url}`;
     cb(null, this.urls.get(url));
   }
 
@@ -452,7 +448,7 @@ class ThreatStreamSource extends WISESource {
             this.db = null;
           }
 
-          // 5) Remove old .moloch and rename .tmp to .moloch
+          // 5) Remove old .moloch and rename .temp to .moloch
           execFile('/bin/rm', ['-f', `${dbFile}.moloch`], (err, subStdout, subStderr) => {
             execFile('/bin/mv', ['-f', `${dbFile}.temp`, `${dbFile}.moloch`], (err, subSubStdout, subSubStderr) => {
               // 6) open new .moloch file
