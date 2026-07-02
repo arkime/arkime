@@ -1369,7 +1369,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       }
 
       hunt = hunt._source;
-      session = session._source;
+      session = session.fields;
 
       const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
 

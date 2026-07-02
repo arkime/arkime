@@ -55,11 +55,14 @@ class PassiveTotalSource extends WISESource {
       console.log(this.section, '- Fetching', this.waiting.length);
     }
 
+    const sent = this.waiting.slice();
+    this.waiting.length = 0;
+
     const options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
       data: {
         additional: ['osint', 'malware'],
-        query: this.waiting
+        query: sent
       },
       auth: {
         username: this.user,
@@ -100,9 +103,18 @@ class PassiveTotalSource extends WISESource {
         }
       }).catch((err) => {
         console.log(this.section, err);
+        // Invoke and remove all callbacks for this batch so queries don't
+        // hang in processing forever
+        for (const key of sent) {
+          const cbs = this.processing[key];
+          if (!cbs) { continue; }
+          delete this.processing[key];
+          let cb;
+          while ((cb = cbs.shift())) {
+            cb(err);
+          }
+        }
       });
-
-    this.waiting.length = 0;
   };
 
   // ----------------------------------------------------------------------------

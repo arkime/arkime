@@ -515,15 +515,15 @@ class CronAPIs {
         await new Promise((resolve) => {
           const preq = client.request(url, reqOptions, (pres) => {
             pres.on('data', (chunk) => {
-              CronAPIs.#qlworking[url.path] = 'data';
+              CronAPIs.#qlworking[url.pathname] = 'data';
             });
             pres.on('end', () => {
-              delete CronAPIs.#qlworking[url.path];
+              delete CronAPIs.#qlworking[url.pathname];
               resolve();
             });
           });
           preq.on('error', (e) => {
-            delete CronAPIs.#qlworking[url.path];
+            delete CronAPIs.#qlworking[url.pathname];
             console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
             resolve();
           });
@@ -531,7 +531,7 @@ class CronAPIs {
           preq.write('ids=');
           preq.write(nodes[node].join(','));
           preq.end();
-          CronAPIs.#qlworking[url.path] = 'sent';
+          CronAPIs.#qlworking[url.pathname] = 'sent';
         });
       }
     });

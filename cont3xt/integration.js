@@ -461,6 +461,8 @@ class Integration {
       } catch (e) {
         console.log('WARNING - "%s" is not really an ip', query);
         shared.total -= integrations.length;
+        // Finish the response if this was the last outstanding work
+        checkWriteDone();
         return;
       }
       // I'm sure there is some function to do this with ipv6 but I couldn't find it

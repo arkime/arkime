@@ -2063,7 +2063,7 @@ class SessionAPIs {
         const sfilter = { term: {} };
         query.query.bool.filter.push(filter);
 
-        if (field === 'ip.dst:port') {
+        if (field === 'ip.dst:port' || field === 'fileand') {
           query.query.bool.filter.push(sfilter);
         }
 
@@ -2176,7 +2176,7 @@ class SessionAPIs {
           } else if (field === 'fileand') {
             filter.term.node = item.key;
             for (const sitem of item.sub.buckets) {
-              sfilter.term.fileand = sitem.key;
+              sfilter.term.fileId = sitem.key;
               intermediateResults.push({ key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
             }
           } else {

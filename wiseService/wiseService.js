@@ -488,7 +488,7 @@ class WISESourceAPI {
    * @property {boolean} [password=false] - Is it a password type field that should be hidden
    * @property {string} [multiline] - If set this should be split using the value and shown in the UI as a text area
    * @property {string} help - The help text to show the user about the field
-   * @property {string} [ifField] - Only show the field if the 'ifValue' field is set and is equal to 'ifValue'
+   * @property {string} [ifField] - Only show the field if the 'ifField' field is set and is equal to 'ifValue'
    * @property {string} [ifValue] - Only show the field if the 'ifValue' field is set and is equal to 'ifValue'
    * @property {string} [regex] - The value must match the regex to be considered valid
    */
