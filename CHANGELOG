@@ -74,7 +74,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4091 Fix MQTT parser PUBLISH issues
   - #4091 Fix s3:// directory listing silently dropping pages after the first when the bucket needs continuation requests
   - #4091 Rename misspelled protocol classifier stream-ihscp to steam-ihscp (Steam In-Home Streaming Control Protocol)
-  - #4092 Fix tagger and zeekintel plugins potentially cross-matching IPv4 and IPv6 entries whose leading bits coincide; IPv4 entries are now stored v4-mapped in the shared tree
+  - #4093 Fix tagger and zeekintel plugins potentially cross-matching IPv4 and IPv6 entries whose leading bits coincide; IPv4 entries are now stored v4-mapped in the shared tree
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt
