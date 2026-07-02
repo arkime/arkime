@@ -1,4 +1,4 @@
-h4.card-title General
+h4.session-card-title General
 dl
   dt Time
   dd
@@ -46,15 +46,19 @@ dl
 
   if (session.source.bytes || session.destination.bytes)
     dt
-      b-dropdown.clickable-label(text="Src", size="sm", variant="default")
-        +clickableLabelBody('packets.src', 'Src Packets')
-        +clickableFieldActions('packets.src', false)
-        b-dropdown-divider
-        +clickableLabelBody('bytes.src', 'Src Bytes')
-        +clickableFieldActions('bytes.src', false)
-        b-dropdown-divider
-        +clickableLabelBody('databytes.src', 'Src Databytes')
-        +clickableFieldActions('databytes.src', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Src
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('packets.src', 'Src Packets')
+          +clickableFieldActions('packets.src', false)
+          v-divider
+          +clickableLabelBody('bytes.src', 'Src Bytes')
+          +clickableFieldActions('bytes.src', false)
+          v-divider
+          +clickableLabelBody('databytes.src', 'Src Databytes')
+          +clickableFieldActions('databytes.src', false)
     dd
       span.no-wrap
         strong.ms-1 Packets
@@ -67,15 +71,19 @@ dl
         +clickableValue('databytes.src', session.client.bytes)
 
     dt
-      b-dropdown.clickable-label(text="Dst", size="sm", variant="default")
-        +clickableLabelBody('packets.dst', 'Dst Packets')
-        +clickableFieldActions('packets.dst', false)
-        b-dropdown-divider
-        +clickableLabelBody('bytes.dst', 'Dst Bytes')
-        +clickableFieldActions('bytes.dst', false)
-        b-dropdown-divider
-        +clickableLabelBody('databytes.dst', 'Dst Databytes')
-        +clickableFieldActions('databytes.dst', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Dst
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('packets.dst', 'Dst Packets')
+          +clickableFieldActions('packets.dst', false)
+          v-divider
+          +clickableLabelBody('bytes.dst', 'Dst Bytes')
+          +clickableFieldActions('bytes.dst', false)
+          v-divider
+          +clickableLabelBody('databytes.dst', 'Dst Databytes')
+          +clickableFieldActions('databytes.dst', false)
     dd
       span.no-wrap
         strong.ms-1 Packets
@@ -89,12 +97,16 @@ dl
 
   if (session.source.mac)
     dt
-      b-dropdown.clickable-label(text="Src Ethernet", size="sm", variant="default")
-        +clickableLabelBody('mac.src', 'Src Mac')
-        +clickableFieldActions('mac.src', false)
-        b-dropdown-divider
-        +clickableLabelBody('oui.src', 'Src OUI')
-        +clickableFieldActions('oui.src', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Src Ethernet
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('mac.src', 'Src Mac')
+          +clickableFieldActions('mac.src', false)
+          v-divider
+          +clickableLabelBody('oui.src', 'Src OUI')
+          +clickableFieldActions('oui.src', false)
     dd
       strong.ms-1 Mac
       +arrayPrint(session.source, "mac", "mac.src")
@@ -105,12 +117,16 @@ dl
 
   if (session.destination.mac)
     dt
-      b-dropdown.clickable-label(text="Dst Ethernet", size="sm", variant="default")
-        +clickableLabelBody('mac.dst', 'Dst Mac')
-        +clickableFieldActions('mac.dst', false)
-        b-dropdown-divider
-        +clickableLabelBody('oui.dst', 'Dst OUI')
-        +clickableFieldActions('oui.dst', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Dst Ethernet
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('mac.dst', 'Dst Mac')
+          +clickableFieldActions('mac.dst', false)
+          v-divider
+          +clickableLabelBody('oui.dst', 'Dst OUI')
+          +clickableFieldActions('oui.dst', false)
     dd
       strong.ms-1 Mac
       +arrayPrint(session.destination, "mac", "mac.dst")
@@ -121,48 +137,56 @@ dl
 
   if (session.dot1q != undefined || session.dot1ad != undefined || (session.network && session.network.vlan !== undefined))
     dt
-      b-dropdown.clickable-label(text="VLan", size="sm", variant="default")
-        if (session.network && session.network.vlan !== undefined)
-          +clickableLabelBody('vlan', 'VLan')
-          +clickableFieldActions('vlan', false)
-          b-dropdown-divider
-        if (session.dot1q)
-          +clickableLabelBody('vlan.dot1q', 'VLan dot1q')
-          +clickableFieldActions('vlan.dot1q', false)
-          b-dropdown-divider
-        if (session.dot1ad)
-          +clickableLabelBody('vlan.dot1ad', 'VLan dot1ad')
-          +clickableFieldActions('vlan.dot1ad', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | VLan
+        v-list.clickable-label-menu(density="compact")
+          if (session.network && session.network.vlan !== undefined)
+            +clickableLabelBody('vlan', 'VLan')
+            +clickableFieldActions('vlan', false)
+            v-divider
+          if (session.dot1q)
+            +clickableLabelBody('vlan.dot1q', 'VLan dot1q')
+            +clickableFieldActions('vlan.dot1q', false)
+            v-divider
+          if (session.dot1ad)
+            +clickableLabelBody('vlan.dot1ad', 'VLan dot1ad')
+            +clickableFieldActions('vlan.dot1ad', false)
 
     dd
       if (session.network && session.network.vlan !== undefined)
         +arrayPrint(session.network.vlan, "id", "vlan")
 
       if (session.dot1q)
-        strong.ml-1 dot1q
+        strong.ms-1 dot1q
         +arrayPrint(session.dot1q, "id", "vlan.dot1q")
 
       if (session.dot1ad)
-        strong.ml-1 dot1ad
+        strong.ms-1 dot1ad
         +arrayPrint(session.dot1ad, "id", "vlan.dot1ad")
 
   +arrayList(session, "vni", "VNI", "vni")
 
   if (session.srcOuterMac || session.srcOuterIp )
     dt
-      b-dropdown.clickable-label(text="Src Outer Layer", size="sm", variant="default")
-        if (session.srcOuterMac)
-          +clickableLabelBody('outermac.src', 'Outer Src Mac')
-          +clickableFieldActions('outermac.src', false)
-          b-dropdown-divider
-        if (session.srcOuterIp)
-          +clickableLabelBody('outerip.src', 'Outer Src IP')
-          +clickableFieldActions('outerip.src', false)
-          b-dropdown-divider
-        if (session.srcOuterOui)
-          +clickableLabelBody('outeroui.src', 'Outer Src OUI')
-          +clickableFieldActions('outeroui.src', false)
-          b-dropdown-divider
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Src Outer Layer
+        v-list.clickable-label-menu(density="compact")
+          if (session.srcOuterMac)
+            +clickableLabelBody('outermac.src', 'Outer Src Mac')
+            +clickableFieldActions('outermac.src', false)
+            v-divider
+          if (session.srcOuterIp)
+            +clickableLabelBody('outerip.src', 'Outer Src IP')
+            +clickableFieldActions('outerip.src', false)
+            v-divider
+          if (session.srcOuterOui)
+            +clickableLabelBody('outeroui.src', 'Outer Src OUI')
+            +clickableFieldActions('outeroui.src', false)
+            v-divider
     dd
       if (session.srcOuterMac)
         strong.ms-1 Mac
@@ -176,18 +200,22 @@ dl
 
   if (session.dstOuterMac || session.dstOuterIp )
     dt
-      b-dropdown.clickable-label(text="Dst Outer Layer", size="sm", variant="default")
-        if (session.dstOuterMac)
-          +clickableLabelBody('outermac.dst', 'Outer Dst Mac')
-          +clickableFieldActions('outermac.dst', false)
-          b-dropdown-divider
-        if (session.dstOuterIp)
-          +clickableLabelBody('outerip.dst', 'Outer Dst IP')
-          +clickableFieldActions('outerip.dst', false)
-          b-dropdown-divider
-        if (session.dstOuterOui)
-          +clickableLabelBody('outeroui.dst', 'Outer Dst OUI')
-          +clickableFieldActions('outeroui.dst', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Dst Outer Layer
+        v-list.clickable-label-menu(density="compact")
+          if (session.dstOuterMac)
+            +clickableLabelBody('outermac.dst', 'Outer Dst Mac')
+            +clickableFieldActions('outermac.dst', false)
+            v-divider
+          if (session.dstOuterIp)
+            +clickableLabelBody('outerip.dst', 'Outer Dst IP')
+            +clickableFieldActions('outerip.dst', false)
+            v-divider
+          if (session.dstOuterOui)
+            +clickableLabelBody('outeroui.dst', 'Outer Dst OUI')
+            +clickableFieldActions('outeroui.dst', false)
     dd
       if (session.dstOuterMac)
         strong.ms-1 Mac
@@ -200,60 +228,72 @@ dl
         +ipArrayPrint(session, "dstOuterIp", "outerip.dst")
 
   dt
-    b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
-      +clickableLabelBody('ip.src', 'Src IP')
-      b-dropdown-item(@click="exportUnique('ip.src:port.src', 0)")
-        | {{ $t('sessions.exportUnique', {name: "Src IP#{sep}Port"} ) }}
-      b-dropdown-item(@click="exportUnique('ip.src:port.src', 1)")
-        | {{ $t('sessions.exportUniqueCounts', {name: "Src IP#{sep}Port"} ) }}
-      +clickableFieldActions('ip.src', false)
-      b-dropdown-divider
-      +clickableLabelBody('port.src', 'Src Port')
-      +clickableFieldActions('port.src', false)
-      b-dropdown-divider
-      +clickableLabelBody('country.src', 'Src Country')
-      +clickableFieldActions('country.src', false)
-      b-dropdown-divider
-      +clickableLabelBody('source.as.full', 'Src ASN')
-      +clickableFieldActions('source.as.full', false)
-      b-dropdown-divider
-      +clickableLabelBody('rir.src', 'Src RIR')
-      +clickableFieldActions('rir.src', false)
+    v-menu
+      template(#activator="{ props: activatorProps }")
+        button.clickable-label(v-bind="activatorProps" type="button")
+          | Src IP/Port
+      v-list.clickable-label-menu(density="compact")
+        +clickableLabelBody('ip.src', 'Src IP')
+        v-list-item(@click="exportUnique('ip.src:port.src', 0)")
+          | {{ $t('sessions.exportUnique', {name: "Src IP#{sep}Port"} ) }}
+        v-list-item(@click="exportUnique('ip.src:port.src', 1)")
+          | {{ $t('sessions.exportUniqueCounts', {name: "Src IP#{sep}Port"} ) }}
+        +clickableFieldActions('ip.src', false)
+        v-divider
+        +clickableLabelBody('port.src', 'Src Port')
+        +clickableFieldActions('port.src', false)
+        v-divider
+        +clickableLabelBody('country.src', 'Src Country')
+        +clickableFieldActions('country.src', false)
+        v-divider
+        +clickableLabelBody('source.as.full', 'Src ASN')
+        +clickableFieldActions('source.as.full', false)
+        v-divider
+        +clickableLabelBody('rir.src', 'Src RIR')
+        +clickableFieldActions('rir.src', false)
 
   dd
     +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src", false, session.source.geo.region_iso_code, session.source.geo.city_name)
 
   dt
-    b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
-      +clickableLabelBody('ip.dst', 'Dst IP')
-      b-dropdown-item(@click="exportUnique('ip.dst:port.dst', 0)")
-        | {{ $t('sessions.exportUnique', {name: "Dst IP#{sep}Port"} ) }}
-      b-dropdown-item(@click="exportUnique('ip.dst:port.dst', 1)")
-        | {{ $t('sessions.exportUniqueCounts', {name: "Dst IP#{sep}Port"} ) }}
-      +clickableFieldActions('ip.dst', false)
-      b-dropdown-divider
-      +clickableLabelBody('port.dst', 'Dst Port')
-      +clickableFieldActions('port.dst', false)
-      b-dropdown-divider
-      +clickableLabelBody('country.dst', 'Dst Country')
-      +clickableFieldActions('country.dst', false)
-      b-dropdown-divider
-      +clickableLabelBody('destination.as.full', 'Dst ASN')
-      +clickableFieldActions('destination.as.full', false)
-      b-dropdown-divider
-      +clickableLabelBody('rir.dst', 'Dst RIR')
-      +clickableFieldActions('rir.dst', false)
+    v-menu
+      template(#activator="{ props: activatorProps }")
+        button.clickable-label(v-bind="activatorProps" type="button")
+          | Dst IP/Port
+      v-list.clickable-label-menu(density="compact")
+        +clickableLabelBody('ip.dst', 'Dst IP')
+        v-list-item(@click="exportUnique('ip.dst:port.dst', 0)")
+          | {{ $t('sessions.exportUnique', {name: "Dst IP#{sep}Port"} ) }}
+        v-list-item(@click="exportUnique('ip.dst:port.dst', 1)")
+          | {{ $t('sessions.exportUniqueCounts', {name: "Dst IP#{sep}Port"} ) }}
+        +clickableFieldActions('ip.dst', false)
+        v-divider
+        +clickableLabelBody('port.dst', 'Dst Port')
+        +clickableFieldActions('port.dst', false)
+        v-divider
+        +clickableLabelBody('country.dst', 'Dst Country')
+        +clickableFieldActions('country.dst', false)
+        v-divider
+        +clickableLabelBody('destination.as.full', 'Dst ASN')
+        +clickableFieldActions('destination.as.full', false)
+        v-divider
+        +clickableLabelBody('rir.dst', 'Dst RIR')
+        +clickableFieldActions('rir.dst', false)
 
   dd
     +ipPrint(session, session.destination.ip, session.destination.port, session.destination.geo.country_iso_code, session.destination.as.full, session.dstRIR, "dst", false, session.destination.geo.region_iso_code, session.destination.geo.city_name)
 
   if (session.srcPayload8 || session.dstPayload8)
     dt
-      b-dropdown.clickable-label(text="Payload8", size="sm", variant="default")
-        +clickableLabelBody('payload8.src.hex', 'Src Payload8')
-        b-dropdown-divider
-        +clickableLabelBody('payload8.dst.hex', 'Dst Payload8')
-        +clickableFieldActions('payload8.dst.hex', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Payload8
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('payload8.src.hex', 'Src Payload8')
+          v-divider
+          +clickableLabelBody('payload8.dst.hex', 'Dst Payload8')
+          +clickableFieldActions('payload8.dst.hex', false)
 
     dd
       - function isprint(char) { return !( /[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(char)); }
@@ -275,7 +315,7 @@ dl
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
-    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ms-1"><span class="fa fa-plus-circle"></span></div>')
+    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="arkime-tag-add-btn ms-1"><span class="mdi mdi-plus-circle"></span></div>')
 
   if (session.fileId && session.fileId.length > 0)
     +arrayList(session, "fileId", "Files", "file")
@@ -294,32 +334,40 @@ dl
 
   if (session.socks)
     dt
-      b-dropdown.clickable-label(text="Socks Dst", size="sm", variant="default")
-        +clickableLabelBody('ip.socks', 'Socks Dst')
-        +clickableFieldActions('ip.socks', false)
-        b-dropdown-divider
-        +clickableLabelBody('port.socks', 'Socks Port')
-        +clickableFieldActions('port.socks', false)
-        b-dropdown-divider
-        +clickableLabelBody('country.socks', 'Socks Country')
-        +clickableFieldActions('country.socks', false)
-        b-dropdown-divider
-        +clickableLabelBody('asn.socks', 'Socks ASN')
-        +clickableFieldActions('asn.socks', false)
-        b-dropdown-divider
-        +clickableLabelBody('rir.socks', 'Socks RIR')
-        +clickableFieldActions('rir.socks', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Socks Dst
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('ip.socks', 'Socks Dst')
+          +clickableFieldActions('ip.socks', false)
+          v-divider
+          +clickableLabelBody('port.socks', 'Socks Port')
+          +clickableFieldActions('port.socks', false)
+          v-divider
+          +clickableLabelBody('country.socks', 'Socks Country')
+          +clickableFieldActions('country.socks', false)
+          v-divider
+          +clickableLabelBody('asn.socks', 'Socks ASN')
+          +clickableFieldActions('asn.socks', false)
+          v-divider
+          +clickableLabelBody('rir.socks', 'Socks RIR')
+          +clickableFieldActions('rir.socks', false)
 
     dd
       +ipPrint(session, session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks", false)
 
     dt
-      b-dropdown.clickable-label(text="Socks Host", size="sm", variant="default")
-        +clickableLabelBody('host.socks', 'Socks Host')
-        +clickableFieldActions('host.socks', false)
-        b-dropdown-divider
-        +clickableLabelBody('port.socks', 'Socks Port')
-        +clickableFieldActions('port.socks', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | Socks Host
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('host.socks', 'Socks Host')
+          +clickableFieldActions('host.socks', false)
+          v-divider
+          +clickableLabelBody('port.socks', 'Socks Port')
+          +clickableFieldActions('port.socks', false)
 
     dd
       +clickableValue('host.socks', session.socks.host)
@@ -343,36 +391,40 @@ dl
 
   if (session.tcpflags)
     dt
-      b-dropdown.clickable-label(text="TCP Flags", size="sm", variant="default")
-        +clickableLabelBody('tcpflags.syn', 'SYN')
-        +clickableFieldActions('tcpflags.syn', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.syn-ack', 'SYN-ACK')
-        +clickableFieldActions('tcpflags.syn-ack', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.ack', 'ACK')
-        +clickableFieldActions('tcpflags.ack', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.psh', 'PSH')
-        +clickableFieldActions('tcpflags.psh', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.rst', 'RST')
-        +clickableFieldActions('tcpflags.rst', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.fin', 'FIN')
-        +clickableFieldActions('tcpflags.fin', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.urg', 'URG')
-        +clickableFieldActions('tcpflags.urg', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.ece', 'ECE')
-        +clickableFieldActions('tcpflags.ece', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.cwr', 'CWR')
-        +clickableFieldActions('tcpflags.cwr', false)
-        b-dropdown-divider
-        +clickableLabelBody('tcpflags.ae', 'AE')
-        +clickableFieldActions('tcpflags.ae', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | TCP Flags
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('tcpflags.syn', 'SYN')
+          +clickableFieldActions('tcpflags.syn', false)
+          v-divider
+          +clickableLabelBody('tcpflags.syn-ack', 'SYN-ACK')
+          +clickableFieldActions('tcpflags.syn-ack', false)
+          v-divider
+          +clickableLabelBody('tcpflags.ack', 'ACK')
+          +clickableFieldActions('tcpflags.ack', false)
+          v-divider
+          +clickableLabelBody('tcpflags.psh', 'PSH')
+          +clickableFieldActions('tcpflags.psh', false)
+          v-divider
+          +clickableLabelBody('tcpflags.rst', 'RST')
+          +clickableFieldActions('tcpflags.rst', false)
+          v-divider
+          +clickableLabelBody('tcpflags.fin', 'FIN')
+          +clickableFieldActions('tcpflags.fin', false)
+          v-divider
+          +clickableLabelBody('tcpflags.urg', 'URG')
+          +clickableFieldActions('tcpflags.urg', false)
+          v-divider
+          +clickableLabelBody('tcpflags.ece', 'ECE')
+          +clickableFieldActions('tcpflags.ece', false)
+          v-divider
+          +clickableLabelBody('tcpflags.cwr', 'CWR')
+          +clickableFieldActions('tcpflags.cwr', false)
+          v-divider
+          +clickableLabelBody('tcpflags.ae', 'AE')
+          +clickableFieldActions('tcpflags.ae', false)
     dd
       span.no-wrap
         strong.ms-1 SYN
@@ -407,13 +459,17 @@ dl
 
   if (session.tcpseq)
     dt
-      b-dropdown.clickable-label(text="TCP Initial Seq", size="sm", variant="default")
-        if (session.tcpseq.src !== undefined)
-          +clickableLabelBody('tcpseq.src', 'TCP Seq Src')
-          +clickableFieldActions('tcpseq.src', false)
-        if (session.tcpseq.dst !== undefined)
-          +clickableLabelBody('tcpseq.dst', 'TCP Seq Dst')
-          +clickableFieldActions('tcpseq.dst', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | TCP Initial Seq
+        v-list.clickable-label-menu(density="compact")
+          if (session.tcpseq.src !== undefined)
+            +clickableLabelBody('tcpseq.src', 'TCP Seq Src')
+            +clickableFieldActions('tcpseq.src', false)
+          if (session.tcpseq.dst !== undefined)
+            +clickableLabelBody('tcpseq.dst', 'TCP Seq Dst')
+            +clickableFieldActions('tcpseq.dst', false)
     dd
       if (session.tcpseq.src !== undefined)
         strong.ms-1 Src
@@ -424,12 +480,16 @@ dl
 
   if (session.icmp)
     dt
-      b-dropdown.clickable-label(text="ICMP", size="sm", variant="default")
-        +clickableLabelBody('icmp.type', 'ICMP Type')
-        +clickableFieldActions('icmp.type', false)
-        b-dropdown-divider
-        +clickableLabelBody('icmp.code', 'ICMP Code')
-        +clickableFieldActions('icmp.code', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | ICMP
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('icmp.type', 'ICMP Type')
+          +clickableFieldActions('icmp.type', false)
+          v-divider
+          +clickableLabelBody('icmp.code', 'ICMP Code')
+          +clickableFieldActions('icmp.code', false)
     dd
       strong.ms-1 Type
       +arrayPrint(session.icmp, "type", "icmp.type")
@@ -438,13 +498,17 @@ dl
 
   if (session.srcDscp || session.dstDscp)
     dt
-      b-dropdown.clickable-label(text="DSCP", size="sm", variant="default")
-        if (session.srcDscp)
-          +clickableLabelBody('dscp.src', 'Src DSCP')
-          +clickableFieldActions('dscp.src', false)
-        if (session.dstDscp)
-          +clickableLabelBody('dscp.dst', 'Dst DSCP')
-          +clickableFieldActions('dscp.dst', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | DSCP
+        v-list.clickable-label-menu(density="compact")
+          if (session.srcDscp)
+            +clickableLabelBody('dscp.src', 'Src DSCP')
+            +clickableFieldActions('dscp.src', false)
+          if (session.dstDscp)
+            +clickableLabelBody('dscp.dst', 'Dst DSCP')
+            +clickableFieldActions('dscp.dst', false)
     dd
       if (session.srcDscp)
         strong.ms-1 Src
@@ -455,15 +519,19 @@ dl
 
   if (session.srcTTL || session.dstTTL)
     dt
-      b-dropdown.clickable-label(text="IP TTL", size="sm", variant="default")
-        if (session.srcTTL)
-          +clickableLabelBody('ttl.src', 'Src TTL')
-          +clickableFieldActions('ttl.src', false)
-        if (session.srcTTL && session.dstTTL)
-          b-dropdown-divider
-        if (session.dstTTL)
-          +clickableLabelBody('ttl.dst', 'Dst TTL')
-          +clickableFieldActions('ttl.dst', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | IP TTL
+        v-list.clickable-label-menu(density="compact")
+          if (session.srcTTL)
+            +clickableLabelBody('ttl.src', 'Src TTL')
+            +clickableFieldActions('ttl.src', false)
+          if (session.srcTTL && session.dstTTL)
+            v-divider
+          if (session.dstTTL)
+            +clickableLabelBody('ttl.dst', 'Dst TTL')
+            +clickableFieldActions('ttl.dst', false)
     dd
       if (session.srcTTL)
         strong.ms-1 Src

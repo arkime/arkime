@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
+  <div class="arkime-container-fluid">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -11,13 +11,15 @@ SPDX-License-Identifier: Apache-2.0
       :message="error" />
 
     <div v-show="!error">
-      <span
+      <v-icon
         id="captureStatsHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
-        <BTooltip target="captureStatsHelp">
+        icon="mdi-help-circle-outline"
+        size="small"
+        class="cursor-help mt-2 float-right">
+        <v-tooltip activator="#captureStatsHelp">
           <span v-html="$t('stats.cstats.helpTipHtml')" />
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
 
       <arkime-paging
         v-if="stats"
@@ -44,18 +46,19 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="table-sm table-hover text-end small" />
+        table-classes="text-end small" />
     </div>
   </div>
 </template>
 
 <script>
 import '../../cubismoverrides.css';
+import { themedColor } from '@common/themes/themedColor.js';
 import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
 import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -139,7 +142,7 @@ export default {
       return [ // node stats table columns
         // default columns
         intl({ id: 'nodeName', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false }),
-        intl({ id: 'currentTime', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
+        intl({ id: 'currentTime', sort: 'currentTime', width: 210, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
         intl({ id: 'monitoring', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } }),
         intl({ id: 'freeSpaceM', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } }),
         intl({ id: 'cpu', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return round(item.cpu / 100.0, 1) + '%'; } }),
@@ -149,9 +152,9 @@ export default {
         intl({ id: 'esQueue', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.esQueue); } }),
         // deltaPackets, deltaSessions, deltaDropped use an id that doesn't match sort to not break saved columns
         intl({ id: 'deltaPackets', sort: 'deltaPacketsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaPacketsPerSec); } }),
-        intl({ id: 'deltaBytesPerSec', sort: 'deltaBytesPerSec', width: 80, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true }),
-        intl({ id: 'deltaSessions', sort: 'deltaSessionsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } }),
-        intl({ id: 'deltaDropped', sort: 'deltaDroppedPerSec', width: 130, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } }),
+        intl({ id: 'deltaBytesPerSec', sort: 'deltaBytesPerSec', width: 85, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true }),
+        intl({ id: 'deltaSessions', sort: 'deltaSessionsPerSec', width: 105, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } }),
+        intl({ id: 'deltaDropped', sort: 'deltaDroppedPerSec', width: 150, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } }),
         // all the rest of the available stats
         intl({ id: 'deltaBitsPerSec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBits(item.deltaBitsPerSec); } }),
         intl({ id: 'deltaWrittenBytesPerSec', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaWrittenBytesPerSec); } }),
@@ -181,15 +184,14 @@ export default {
     },
     colors: function () {
       // build colors array from css variables
-      const styles = window.getComputedStyle(document.body);
-      const primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      const primaryLight = styles.getPropertyValue('--color-primary').trim();
-      const primary = styles.getPropertyValue('--color-primary-dark').trim();
-      const primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      const secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      const secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      const secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      const secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      const primaryLighter = themedColor('primary-light');
+      const primaryLight = themedColor('primary');
+      const primary = themedColor('primary-dark');
+      const primaryDark = themedColor('primary-darker');
+      const secondaryLighter = themedColor('tertiary-light');
+      const secondaryLight = themedColor('tertiary');
+      const secondary = themedColor('tertiary-dark');
+      const secondaryDark = themedColor('tertiary-darker');
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
     },
     loading: {

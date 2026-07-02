@@ -3,111 +3,132 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="summary-config-dropdown d-inline-block">
-    <b-dropdown
-      size="sm"
-      no-caret
-      variant="theme-primary"
-      @show="loadConfigs">
-      <template #button-content>
-        <span
-          class="fa fa-save"
-          id="summary-config-dropdown-btn">
-          <BTooltip
-            target="summary-config-dropdown-btn"
-            noninteractive
-            placement="right">{{ $t('sessions.summary.config.configurations') }}</BTooltip>
-        </span>
-      </template>
+  <v-menu @update:model-value="(opened) => { if (opened) loadConfigs(); }">
+    <template #activator="{ props: activatorProps }">
+      <v-btn
+        v-bind="activatorProps"
+        id="summary-config-dropdown-btn">
+        <v-icon icon="mdi-content-save" />
+      </v-btn>
+      <v-tooltip
+        activator="#summary-config-dropdown-btn"
+        location="right">
+        {{ $t('sessions.summary.config.configurations') }}
+      </v-tooltip>
+    </template>
+
+    <v-list
+      density="compact"
+      class="summary-config-list">
       <!-- Loading indicator -->
-      <b-dropdown-item
+      <v-list-item
         v-if="loading"
         disabled>
-        <span class="fa fa-spinner fa-spin me-1" />
+        <v-icon
+          icon="mdi-loading"
+          class="mdi-spin me-1" />
         {{ $t('common.loading') }}
-      </b-dropdown-item>
+      </v-list-item>
 
       <!-- Error message -->
-      <b-dropdown-item
+      <v-list-item
         v-if="error && !loading"
         disabled
         class="text-danger">
-        <span class="fa fa-exclamation-triangle me-1" />
+        <v-icon
+          icon="mdi-alert"
+          class="me-1" />
         {{ error }}
-      </b-dropdown-item>
+      </v-list-item>
 
       <!-- Save current config -->
-      <b-dropdown-item @click="openSaveModal">
-        <span class="fa fa-save me-1" />
+      <v-list-item @click="openSaveModal">
+        <v-icon
+          icon="mdi-content-save"
+          class="me-1" />
         {{ $t('sessions.summary.config.saveCurrent') }}
-      </b-dropdown-item>
+      </v-list-item>
 
       <!-- Reset to defaults -->
-      <b-dropdown-item @click="resetToDefaults">
-        <span class="fa fa-refresh me-1" />
+      <v-list-item @click="resetToDefaults">
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         {{ $t('sessions.summary.config.resetToDefault') }}
-      </b-dropdown-item>
+      </v-list-item>
 
-      <b-dropdown-divider v-if="configs.length > 0" />
+      <v-divider v-if="configs.length > 0" />
 
       <!-- Saved configurations -->
-      <b-dropdown-item
+      <v-list-item
         v-for="config in configs"
         :key="config.id"
         @click="loadConfig(config)">
-        <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="d-flex justify-space-between align-center w-100">
           <span class="config-name">
-            <span
-              v-if="config.shared"
-              class="fa fa-share-square me-1" />
+            <v-icon
+              icon="mdi-share-all"
+              class="me-1"
+              v-if="config.shared" />
             {{ config.name }}
             <small
               v-if="config.creator && config.creator !== user.userId"
-              class="text-muted ms-1">
+              class="text-medium-emphasis ms-1">
               ({{ config.creator }})
             </small>
           </span>
           <span
             class="config-actions"
             @click.stop>
-            <button
+            <v-btn
               v-if="config.canEdit"
-              class="btn btn-xs btn-theme-tertiary ms-1"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              :style="tertiaryBtnStyle"
+              class="ms-1"
               :title="$t('sessions.summary.config.edit')"
               :aria-label="$t('sessions.summary.config.edit')"
               @click.stop="openEditModal(config)">
-              <span class="fa fa-pencil" />
-            </button>
-            <button
+              <v-icon icon="mdi-pencil" />
+            </v-btn>
+            <v-btn
               v-if="config.canDelete"
-              class="btn btn-xs btn-danger ms-1"
+              color="error"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              class="ms-1"
               :title="$t('sessions.summary.config.delete')"
               :aria-label="$t('sessions.summary.config.delete')"
               @click.stop="deleteConfig(config)">
-              <span class="fa fa-trash-o" />
-            </button>
+              <v-icon icon="mdi-trash-can-outline" />
+            </v-btn>
           </span>
         </div>
-      </b-dropdown-item>
+      </v-list-item>
 
       <!-- No configs message -->
-      <b-dropdown-item
+      <v-list-item
         v-if="!loading && !error && configs.length === 0"
         disabled>
-        <span class="text-muted">
+        <span class="text-medium-emphasis">
           {{ $t('sessions.summary.config.noConfigs') }}
         </span>
-      </b-dropdown-item>
-    </b-dropdown>
-
-    <!-- Save/Edit Modal -->
-    <SummaryConfigSaveModal
-      :show="showSaveModal"
-      :config="currentConfig"
-      :editing="editingConfig"
-      @close="closeSaveModal"
-      @saved="onConfigSaved" />
-  </div>
+      </v-list-item>
+    </v-list>
+  </v-menu>
+  <!-- Save/Edit Modal: rendered as a fragment sibling so it doesn't
+       wrap the v-menu (which would break the parent v-btn-group). The
+       v-dialog inside teleports to body anyway. -->
+  <SummaryConfigSaveModal
+    :show="showSaveModal"
+    :config="currentConfig"
+    :editing="editingConfig"
+    @close="closeSaveModal"
+    @saved="onConfigSaved" />
 </template>
 
 <script setup>
@@ -137,6 +158,14 @@ const error = ref('');
 const configs = ref([]);
 const showSaveModal = ref(false);
 const editingConfig = ref(null);
+
+// Arkime theme-color v-btn style for inline row-action buttons inside
+// the dropdown menu. The trigger button takes its color from the
+// parent v-btn-group.
+const tertiaryBtnStyle = {
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
+};
 
 // Get user from store
 const user = computed(() => store.state.user);
@@ -238,12 +267,7 @@ const deleteConfig = async (config) => {
   transition: opacity 0.15s;
 }
 
-.dropdown-item:hover .config-actions {
+.summary-config-list :deep(.v-list-item:hover) .config-actions {
   opacity: 1;
-}
-
-.btn-xs {
-  padding: 0.1rem 0.3rem;
-  font-size: 0.7rem;
 }
 </style>

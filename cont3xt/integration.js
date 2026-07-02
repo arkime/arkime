@@ -391,6 +391,7 @@ class Integration {
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
+        itypes: Object.keys(integration.itypes),
         card,
         order,
         tidbits: integration.tidbits?.fields || [],
@@ -881,6 +882,7 @@ class Integration {
         values,
         globalConfiged,
         homePage: integration.homePage,
+        icon: integration.icon,
         locked: integration.locked
       };
     }

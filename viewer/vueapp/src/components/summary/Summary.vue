@@ -169,7 +169,7 @@
           <span
             class="widget-handle"
             :title="$t('sessions.summary.dragToReorder')">
-            <span class="fa fa-th" />
+            <v-icon icon="mdi-view-grid" />
           </span>
           <SummaryWidget
             :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
@@ -193,7 +193,8 @@
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import { themedColor } from '@common/themes/themedColor.js';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
@@ -265,6 +266,8 @@ const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
 const widgetContainer = ref(null);
+// scroll container provided by the page shell (PageLayout)
+const pageScrollEl = inject('pageScrollEl', null);
 const canceled = ref(false);
 const streaming = ref(false);
 
@@ -681,9 +684,8 @@ const exportChart = async (svgId, filename) => {
     }
 
     // Get computed colors from CSS variables
-    const computedStyle = getComputedStyle(document.documentElement);
-    const foregroundColor = computedStyle.getPropertyValue('--color-foreground').trim() || '#000000';
-    const backgroundColor = computedStyle.getPropertyValue('--color-background').trim() || '#ffffff';
+    const foregroundColor = themedColor('foreground', '#000000');
+    const backgroundColor = themedColor('background', '#ffffff');
 
     // Find the SVG element
     const svgElement = document.getElementById(svgId);
@@ -839,9 +841,8 @@ const exportAllPNG = async () => {
     if (!widgetContainer.value) return;
 
     // Get computed colors from CSS variables
-    const computedStyle = getComputedStyle(document.documentElement);
-    const foregroundColor = computedStyle.getPropertyValue('--color-foreground').trim() || '#000000';
-    const backgroundColor = computedStyle.getPropertyValue('--color-background').trim() || '#ffffff';
+    const foregroundColor = themedColor('foreground', '#000000');
+    const backgroundColor = themedColor('background', '#ffffff');
 
     // Collect SVGs paired with their widget labels
     const wrappers = widgetContainer.value.querySelectorAll('.widget-wrapper');
@@ -952,13 +953,16 @@ const initializeDragDrop = () => {
   const minScrollSpeed = 50;
   const maxScrollSpeed = 300;
 
+  // the page shell's scroll container is the scroller (not the document)
+  const scrollTarget = () => pageScrollEl?.value || document.documentElement;
+
   sortableInstance = Sortable.create(widgetContainer.value, {
     animation: 100,
     handle: '.widget-handle',
     draggable: '.widget-wrapper',
     ghostClass: 'widget-ghost',
     chosenClass: 'widget-chosen',
-    scroll: document.documentElement,
+    scroll: scrollTarget(),
     scrollSensitivity,
     bubbleScroll: true,
     forceFallback: true,
@@ -967,18 +971,19 @@ const initializeDragDrop = () => {
       // Custom scroll function for dynamic speed based on cursor proximity to edge
       // offsetY is negative when near top, positive when near bottom
       if (offsetY !== 0 && originalEvent) {
-        const viewportHeight = window.innerHeight;
+        const el = scrollTarget();
+        const rect = el.getBoundingClientRect();
         const cursorY = originalEvent.clientY;
 
-        // Calculate distance from the edge being scrolled toward
-        const distanceFromEdge = offsetY < 0 ? cursorY : viewportHeight - cursorY;
+        // Calculate distance from the scroller edge being scrolled toward
+        const distanceFromEdge = offsetY < 0 ? cursorY - rect.top : rect.bottom - cursorY;
 
         // Calculate speed: closer to edge = faster scroll
         const ratio = 1 - (distanceFromEdge / scrollSensitivity);
         const speed = minScrollSpeed + (ratio * (maxScrollSpeed - minScrollSpeed));
 
         // Apply scroll in the appropriate direction
-        document.documentElement.scrollTop += offsetY > 0 ? speed : -speed;
+        el.scrollTop += offsetY > 0 ? speed : -speed;
       }
     },
     onSort: (evt) => {
@@ -1123,7 +1128,7 @@ defineExpose({
   flex: 1;
   padding: 0.75rem;
   border-radius: 6px;
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
 }
 
 .summary-stats h4 {
@@ -1141,8 +1146,8 @@ defineExpose({
   padding: 0.4rem;
   border-radius: 4px;
   text-align: center;
-  border: 1px solid var(--color-gray);
-  background: var(--color-background);
+  border: 1px solid rgb(var(--v-theme-neutral));
+  background: rgb(var(--v-theme-background));
 }
 
 .stat-label {
@@ -1159,7 +1164,7 @@ defineExpose({
   flex-shrink: 0;
   padding: 0.5rem;
   border-radius: 6px;
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
 }
 
 @media (min-width: 1200px) {
@@ -1185,8 +1190,8 @@ defineExpose({
   align-items: baseline;
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
-  background: var(--color-background);
-  border: 1px solid var(--color-gray);
+  background: rgb(var(--v-theme-background));
+  border: 1px solid rgb(var(--v-theme-neutral));
   font-size: 0.75rem;
   line-height: 1.3;
 }
@@ -1248,13 +1253,13 @@ defineExpose({
 /* Drag handle for reordering widgets */
 .widget-handle {
   visibility: hidden;
-  color: var(--color-gray);
+  color: rgb(var(--v-theme-neutral));
   cursor: move;
   position: absolute;
   top: -20px;
   left: 0;
   z-index: 10;
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
   padding: 2px 6px;
   border-radius: 4px 4px 0 0;
 }

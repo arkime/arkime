@@ -22,17 +22,25 @@
       {{ title }}
     </h4>
     <div class="error-content">
-      <span class="fa fa-exclamation-circle fa-2x text-danger mb-2" />
+      <v-icon
+        icon="mdi-alert-circle"
+        size="large"
+        class="text-danger mb-2" />
       <p class="text-danger mb-0">
         {{ error }}
       </p>
-      <button
-        type="button"
-        class="btn btn-success btn-xs mt-2"
+      <v-btn
+        color="success"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        class="mt-2"
         @click="emit('retry-field', field)">
-        <span class="fa fa-refresh" />&nbsp;
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         {{ $t('sessions.summary.retryField') }}
-      </button>
+      </v-btn>
     </div>
   </div>
 
@@ -41,83 +49,87 @@
     v-else
     class="chart-section widget-loaded">
     <!-- Header with title, view mode selector, and export button -->
-    <div class="d-flex justify-content-end align-items-center mb-2">
+    <div class="d-flex justify-end align-center mb-2">
       <h4 class="flex-grow-1">
         {{ title }}
       </h4>
       <div class="no-wrap">
         <!-- Consolidated Settings Dropdown -->
-        <b-dropdown
-          v-if="hasData"
-          size="sm"
-          variant="outline-secondary"
-          class="d-inline-block"
-          no-caret>
-          <template #button-content>
-            <span
-              class="fa fa-gear"
-              title="Settings" />
+        <v-menu v-if="hasData">
+          <template #activator="{ props: activatorProps }">
+            <v-btn
+              v-bind="activatorProps"
+              variant="outlined"
+              size="large"
+              icon
+              title="Settings">
+              <v-icon icon="mdi-cog" />
+            </v-btn>
           </template>
 
-          <!-- View Mode Options -->
-          <template v-if="enableViewMode">
-            <b-dropdown-item
-              :active="viewMode === 'pie'"
-              @click="$emit('change-mode', 'pie')">
-              <span><span class="fa fa-pie-chart" /> {{ $t('sessions.summary.pieChart') }}</span>
-            </b-dropdown-item>
+          <v-list density="compact">
+            <!-- View Mode Options -->
+            <template v-if="enableViewMode">
+              <v-list-item
+                :active="viewMode === 'pie'"
+                @click="$emit('change-mode', 'pie')">
+                <span><v-icon icon="mdi-chart-pie" /> {{ $t('sessions.summary.pieChart') }}</span>
+              </v-list-item>
 
-            <b-dropdown-item
-              :active="viewMode === 'bar'"
-              @click="$emit('change-mode', 'bar')">
-              <span><span class="fa fa-bar-chart" /> {{ $t('sessions.summary.barChart') }}</span>
-            </b-dropdown-item>
+              <v-list-item
+                :active="viewMode === 'bar'"
+                @click="$emit('change-mode', 'bar')">
+                <span><v-icon icon="mdi-chart-bar" /> {{ $t('sessions.summary.barChart') }}</span>
+              </v-list-item>
 
-            <b-dropdown-item
-              :active="viewMode === 'table'"
-              @click="$emit('change-mode', 'table')">
-              <span><span class="fa fa-table" /> {{ $t('sessions.summary.tableView') }}</span>
-            </b-dropdown-item>
+              <v-list-item
+                :active="viewMode === 'table'"
+                @click="$emit('change-mode', 'table')">
+                <span><v-icon icon="mdi-table" /> {{ $t('sessions.summary.tableView') }}</span>
+              </v-list-item>
 
-            <!-- Metric Selector Options (only for charts, not table) -->
-            <template v-if="viewMode !== 'table'">
-              <b-dropdown-divider />
+              <!-- Metric Selector Options (only for charts, not table) -->
+              <template v-if="viewMode !== 'table'">
+                <v-divider />
 
-              <b-dropdown-item
-                :active="metricType === 'sessions'"
-                @click="$emit('change-metric', 'sessions')">
-                <span>{{ $t('sessions.summary.sessions') }}</span>
-              </b-dropdown-item>
+                <v-list-item
+                  :active="metricType === 'sessions'"
+                  @click="$emit('change-metric', 'sessions')">
+                  <span>{{ $t('sessions.summary.sessions') }}</span>
+                </v-list-item>
 
-              <b-dropdown-item
-                :active="metricType === 'packets'"
-                @click="$emit('change-metric', 'packets')">
-                <span>{{ $t('sessions.summary.packets') }}</span>
-              </b-dropdown-item>
+                <v-list-item
+                  :active="metricType === 'packets'"
+                  @click="$emit('change-metric', 'packets')">
+                  <span>{{ $t('sessions.summary.packets') }}</span>
+                </v-list-item>
 
-              <b-dropdown-item
-                :active="metricType === 'bytes'"
-                @click="$emit('change-metric', 'bytes')">
-                <span>{{ $t('sessions.summary.bytes') }}</span>
-              </b-dropdown-item>
+                <v-list-item
+                  :active="metricType === 'bytes'"
+                  @click="$emit('change-metric', 'bytes')">
+                  <span>{{ $t('sessions.summary.bytes') }}</span>
+                </v-list-item>
+              </template>
             </template>
-          </template>
 
-          <!-- Export Option -->
-          <template v-if="showExport">
-            <b-dropdown-divider v-if="enableViewMode" />
+            <!-- Export Option -->
+            <template v-if="showExport">
+              <v-divider v-if="enableViewMode" />
 
-            <b-dropdown-item @click="$emit('export', svgId)">
-              <span class="fa fa-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
-            </b-dropdown-item>
-          </template>
+              <v-list-item @click="$emit('export', svgId)">
+                <v-icon icon="mdi-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
+              </v-list-item>
+            </template>
 
-          <!-- Remove Field Option -->
-          <b-dropdown-divider />
-          <b-dropdown-item @click="$emit('remove-field', field)">
-            <span class="fa fa-times text-danger" /> {{ $t('sessions.summary.removeField') }}
-          </b-dropdown-item>
-        </b-dropdown>
+            <!-- Remove Field Option -->
+            <v-divider />
+            <v-list-item @click="$emit('remove-field', field)">
+              <v-icon
+                icon="mdi-close"
+                class="text-danger" /> {{ $t('sessions.summary.removeField') }}
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </div>
 
@@ -125,7 +137,10 @@
     <div
       v-if="!hasValidField"
       class="empty-state">
-      <span class="fa fa-exclamation-triangle fa-4x mb-3 text-danger" />
+      <v-icon
+        icon="mdi-alert"
+        size="x-large"
+        class="mb-3 text-danger" />
       <p class="empty-state-text text-danger">
         Invalid field: {{ field }}
       </p>
@@ -166,8 +181,11 @@
     <div
       v-else
       class="empty-state">
-      <span class="fa fa-folder-open fa-4x mb-3 text-muted" />
-      <p class="empty-state-text text-muted">
+      <v-icon
+        icon="mdi-folder-open"
+        size="x-large"
+        class="mb-3 text-medium-emphasis" />
+      <p class="empty-state-text text-medium-emphasis">
         {{ $t(noDataMessage) }}
       </p>
     </div>
@@ -341,7 +359,7 @@ const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-toolti
 
 <style scoped>
 .chart-section {
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -414,7 +432,7 @@ const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-toolti
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--color-tertiary, #6c757d);
+  background: rgb(var(--v-theme-tertiary));
   animation: bounce 1.2s ease-in-out infinite;
 }
 

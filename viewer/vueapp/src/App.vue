@@ -4,9 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div v-if="compatibleBrowser">
+    <app-banner v-if="user" />
     <arkime-navbar />
     <router-view v-if="user" />
-    <div class="pull-right small app-info-error">
+    <div class="float-right small app-info-error">
       <arkime-toast
         class="me-1"
         type="danger"
@@ -30,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
         <br>
         <code>'G'</code> - jump to the SPI Graph page
         <br>
-        <code>'C'</code> - jump to the Connections page
+        <code>'C'</code> - jump to the Connections graph (SPI Graph)
         <br>
         <code>'H'</code> - jump to the Arkime Help page
         <br>
@@ -44,8 +45,7 @@ SPDX-License-Identifier: Apache-2.0
       </template>
     </keyboard-shortcuts>
     <arkime-footer :store="$store" />
-    <arkime-welcome-message
-      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)" />
+    <arkime-help-notes v-if="user" />
   </div>
   <div v-else>
     <arkime-upgrade-browser />
@@ -56,19 +56,28 @@ SPDX-License-Identifier: Apache-2.0
 import ConfigService from './components/utils/ConfigService.js';
 import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
+import AppBanner from '@common/AppBanner.vue';
 import ArkimeFooter from '@common/Footer.vue';
-import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
+import ArkimeHelpNotes from './components/utils/HelpNotes.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
+import UserService from './components/users/UserService.js';
+import {
+  pickStoredTheme,
+  VUETIFY_THEME_KEY,
+  VUETIFY_CUSTOM_THEME_KEY
+} from '@common/themes/customTheme.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 export default {
   name: 'App',
   components: {
     ArkimeToast,
     ArkimeNavbar,
+    AppBanner,
     ArkimeFooter,
     KeyboardShortcuts,
-    ArkimeWelcomeMessage,
+    ArkimeHelpNotes,
     ArkimeUpgradeBrowser
   },
   data: function () {
@@ -107,9 +116,7 @@ export default {
     // get the information for the entire app
     // the rest of the app should compute from $store.state
     ConfigService.getAppInfo().then((response) => {
-      if (!response.user.settings.theme || response.user.settings.theme === 'default-theme') {
-        this.setTheme();
-      }
+      this.applySavedTheme(response.user.settings);
     }).catch((error) => {
       // display appwide error that floats at the bottom right of the screen on top of everything
       this.appInfoMissing = 'Error fetching app info! Arkime will not work as intended.';
@@ -170,9 +177,17 @@ export default {
         }
         break;
       case 'c': // c
-        // open connections page if not on connections page
-        if (this.$route.name !== 'Connections') {
-          this.routeTo('/connections');
+        // open the connections graph (a Spigraph view) if not already there
+        if (this.$route.name !== 'Spigraph' || this.$route.query.spiGraphType !== 'connections') {
+          this.$router.push({
+            path: '/spigraph',
+            query: {
+              ...this.$route.query,
+              spiGraphType: 'connections',
+              expression: this.$store.state.expression
+            },
+            hash: this.$route.hash
+          });
         }
         break;
       case 'h': // h
@@ -208,11 +223,60 @@ export default {
         hash: this.$route.hash
       });
     },
-    // if the user doesn't have a theme preference, set dark/light theme based on OS color scheme
+    /* Activate the user's saved theme via Vuetify.
+     *
+     * v7+ persists the theme under `settings.vuetifyTheme` /
+     * `settings.vuetifyCustomTheme` so the legacy keys
+     * (`settings.theme` / `settings.customTheme`) remain untouched and
+     * usable by older arkime versions if the same user logs into both.
+     *
+     * Read order (pickStoredTheme):
+     *   1. vuetifyTheme / vuetifyCustomTheme           -- authoritative
+     *   2. legacy theme / customTheme (one-shot import) -- promoted into
+     *      the v7 keys on this load so subsequent loads skip the import
+     *   3. fallback to OS prefers-color-scheme           -- setTheme()
+     */
+    applySavedTheme (settings) {
+      const { themeId, customTheme, fromLegacy } = pickStoredTheme(settings);
+
+      const registerCustom = (themeObj) => {
+        registerVuetifyTheme(this.$vuetify, 'custom1', {
+          dark: !!themeObj.dark,
+          colors: { ...themeObj.colors }
+        });
+      };
+
+      // Register a stored custom theme (regardless of which theme is
+      // active) so the user can switch to it via the picker.
+      if (customTheme && customTheme.colors) {
+        registerCustom(customTheme);
+      }
+
+      // If we imported from the legacy keys, persist into the new keys
+      // so subsequent loads short-circuit at step 1 above. We never
+      // mutate the legacy keys -- old arkime still reads them.
+      if (fromLegacy) {
+        if (themeId) settings[VUETIFY_THEME_KEY] = themeId;
+        if (customTheme) settings[VUETIFY_CUSTOM_THEME_KEY] = customTheme;
+        UserService.saveSettings(settings).catch(() => { /* idempotent on retry */ });
+      }
+
+      if (!themeId) {
+        this.setTheme();
+        return;
+      }
+      const themesRecord = this.$vuetify.theme.themes.value || this.$vuetify.theme.themes;
+      if (themesRecord && themesRecord[themeId]) {
+        this.$vuetify.theme.change(themeId);
+      } else {
+        this.setTheme();
+      }
+    },
+    // OS-color-scheme fallback when the user has no saved theme.
     setTheme () {
       if (window.matchMedia) {
         const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.body.className = darkMode ? 'arkime-dark-theme' : 'arkime-light-theme';
+        this.$vuetify.theme.change(darkMode ? 'arkime-dark' : 'arkime-light');
       }
     },
     /* remove the message when user is done with it or duration ends */
@@ -229,245 +293,58 @@ html {
   position: relative;
   min-height: 100%;
 }
+:root {
+  --arkime-footer-height: 25px;
+}
 #app {
-  padding-bottom: 25px;
+  padding-bottom: var(--arkime-footer-height);
 }
 
 /* global font, colors, and vars */
 body {
-  color: var(--color-foreground);
-  background-color: var(--color-background);
+  color: rgb(var(--v-theme-foreground));
+  background-color: rgb(var(--v-theme-background));
 }
 
 /* text */
-.text-theme-accent    { color: var(--color-foreground-accent); }
-.text-theme-primary   { color: var(--color-primary); }
-.text-theme-secondary { color: var(--color-secondary); }
-.text-theme-tertiary  { color: var(--color-tertiary); }
-.text-theme-quaternary{ color: var(--color-quaternary); }
-.text-muted-more      { color: var(--color-gray); }
-.text-theme-white     { color: var(--color-white); }
-.text-theme-button    { color: var(--color-button, #FFF); }
+.text-theme-accent    { color: rgb(var(--v-theme-foreground-accent)); }
+.text-theme-primary   { color: rgb(var(--v-theme-primary)); }
+.text-theme-secondary { color: rgb(var(--v-theme-secondary)); }
+.text-theme-tertiary  { color: rgb(var(--v-theme-tertiary)); }
+.text-theme-quaternary{ color: rgb(var(--v-theme-quaternary)); }
+.text-muted-more      { color: rgb(var(--v-theme-neutral)); }
+.text-theme-white     { color: rgb(var(--v-theme-white)); }
+.text-theme-button    { color: rgb(var(--v-theme-button-fg)); }
 
 .text-theme-gray-hover:hover {
-  color: var(--color-gray);
+  color: rgb(var(--v-theme-neutral));
 }
 
-/* displaying */
-.fixed-header {
-  z-index: 5;
-  position: fixed;
-  left: 0;
-  right: 0;
-  background-color: var(--color-quaternary-lightest);
+/* toolbar chrome row on PageLayout pages: a normal flow row inside the
+   page shell */
+.page-toolbar {
+  background-color: rgb(var(--v-theme-quaternary-lightest));
+  box-shadow: 0 0 16px -2px black;
+}
 
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
+/* page sub-navbar band: the page-specific control row below the search
+   toolbar — a comfortable fixed-height band with vertically-centered
+   content, matching the Sessions paging bar. */
+.page-shell .page-subnav {
+  align-items: center;
+  min-height: 44px;
 }
 
 /* themed buttons */
-a[class*=' btn-theme'],
-div[class*=' btn-theme'],
-button[class*=' btn-theme'] {
-  color: var(--color-button, #FFF) !important;
-}
-
 .btn-clear-input {
-  color: var(--color-foreground, #555) !important;
-  background-color: var(--color-background, #EEE) !important;
-  border-color: var(--color-gray) !important;
-}
-
-.btn.btn-danger,
-.btn.btn-primary,
-.btn.btn-theme-primary {
-  color           : var(--color-button, #FFF);
-  background-color: var(--color-primary);
-  border-color    : var(--color-primary-dark);
-}
-.btn.btn-danger:hover,
-.btn.btn-primary:hover,
-.btn.btn-theme-primary:hover {
-  background-color: var(--color-primary-dark);
-  border-color    : var(--color-primary-darker);
-}
-.btn.btn-danger.active,
-.btn.btn-primary.active,
-.btn.btn-theme-primary.active {
-  background-color: var(--color-primary-darker);
-  border-color    : var(--color-primary-darker);
-}
-
-.btn.btn-warning,
-.btn.btn-theme-secondary {
-  color           : var(--color-button, #FFF);
-  background-color: var(--color-secondary);
-  border-color    : var(--color-secondary-dark);
-}
-.btn.btn-warning:hover,
-.btn.btn-theme-secondary:hover {
-  background-color: var(--color-secondary-dark);
-  border-color    : var(--color-secondary-darker);
-}
-.btn.btn-warning.active,
-.btn.btn-theme-secondary.active {
-  background-color: var(--color-secondary-darker);
-  border-color    : var(--color-secondary-darker);
-}
-
-.btn.btn-success,
-.btn.btn-theme-tertiary {
-  color           : var(--color-button, #FFF);
-  background-color: var(--color-tertiary);
-  border-color    : var(--color-tertiary-dark);
-}
-.btn.btn-success:hover,
-.btn.btn-theme-tertiary:hover {
-  background-color: var(--color-tertiary-dark);
-  border-color    : var(--color-tertiary-darker);
-}
-.btn.btn-success:active,
-.btn.btn-theme-tertiary.active {
-  background-color: var(--color-tertiary-darker);
-  border-color    : var(--color-tertiary-darker);
-}
-
-.btn.btn-info,
-.btn.btn-theme-quaternary {
-  color           : var(--color-button, #FFF);
-  background-color: var(--color-quaternary);
-  border-color    : var(--color-quaternary-dark);
-}
-.btn.btn-info:hover,
-.btn.btn-theme-quaternary:hover {
-  background-color: var(--color-quaternary-dark);
-  border-color    : var(--color-quaternary-darker);
-}
-.btn.btn-info.active,
-.btn.btn-theme-quaternary.active {
-  background-color: var(--color-quaternary-darker);
-  border-color    : var(--color-quaternary-darker);
-}
-
-/* themed radio/checkbox buttons */
-label.btn-radio,
-button.btn-checkbox,
-div.btn-checkbox > label,
-div.btn-group-toggle > label {
-  cursor: pointer;
-  background-image: none;
-  background-color: var(--color-background, white) !important;
-  border-color    : var(--color-primary) !important;
-  color           : var(--color-primary) !important;
-}
-label.btn-radio.active:hover:not(:disabled),
-button.btn-checkbox.active:hover:not(:disabled),
-div.btn-checkbox > label.active:hover:not(:disabled) {
-  background-color: var(--color-primary-darker) !important;
-  color: var(--color-button, #FFF) !important;
-}
-label.btn-radio:hover:not(:disabled),
-button.btn-checkbox:hover:not(:disabled),
-div.btn-checkbox > label:hover:not(:disabled) {
-  color           : var(--color-primary);
-  background-color: var(--color-primary-lightest) !important;
-}
-label.btn-radio.active:not(:disabled),
-button.btn-checkbox.active:not(:disabled),
-div.btn-checkbox > label.active:not(:disabled),
-.btn-group-checkboxes label.btn-secondary.active:not(:disabled) {
-  border-color    : var(--color-primary) !important;
-  background-color: var(--color-primary) !important;
-  color: var(--color-button, #FFF) !important;
-}
-label.btn-radio:disabled,
-button.btn-checkbox:disabled,
-div.btn-checkbox > label:disabled {
-  background-color: var(--color-background, white);
-  color: var(--color-gray);
-  border-color: var(--color-gray) !important;
-  cursor: not-allowed;
-}
-
-/* themed labels */
-.label.label-theme-primary {
-  background-color: var(--color-primary);
-}
-.label.label-theme-secondary {
-  background-color: var(--color-secondary);
-}
-.label.label-theme-tertiary {
-  background-color: var(--color-tertiary);
-}
-.label.label-theme-quaternary {
-  background-color: var(--color-quaternary);
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
+  border-color: rgb(var(--v-theme-neutral)) !important;
 }
 
 /* see top level common.css info area for usage */
-.info-area { color: var(--color-gray-dark); }
-.info-area > div { background-color: var(--color-gray-light); }
-
-/* small alert areas */
-.alert.alert-sm {
-  padding       : 4px 35px 3px 8px;
-  margin-top    : var(--px-none);
-  margin-bottom : var(--px-none);
-  font-size     : .85rem;
-}
-.alert.alert-sm button.btn-close {
-  padding: 0 .5rem;
-}
-
-/* theme alert areas */
-.alert.alert-info {
-  color: var(--color-primary);
-  border-color: var(--color-primary-darkest);
-  background-color: var(--color-primary-lightest);
-}
-.alert.alert-danger {
-  color: var(--color-secondary);
-  border-color: var(--color-secondary-darkest);
-  background-color: var(--color-secondary-lightest);
-}
-.alert.alert-success {
-  color: var(--color-tertiary);
-  border-color: var(--color-tertiary-darkest);
-  background-color: var(--color-tertiary-lightest);
-}
-.alert.alert-warning {
-  color: var(--color-quaternary);
-  border-color: var(--color-quaternary-darkest);
-  background-color: var(--color-quaternary-lightest);
-}
-
-/* version in navbar */
-.navbar-text {
-  color: var(--color-background);
-}
-
-/* sub navbars */
-.sub-navbar {
-  position: fixed;
-  top: 36px;
-  left: 0;
-  right: 0;
-  padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
-  background-color: var(--color-secondary-lightest);
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-.sub-navbar .sub-navbar-title {
-  font-size: 19px;
-  font-weight: bold;
-}
-.sub-navbar .sub-navbar-title .fa-stack {
-  margin-top: -14px;
-}
-.sub-navbar > .toast-container {
-  margin-top: -6px;
-}
+.info-area { color: rgb(var(--v-theme-neutral-dark)); }
+.info-area > div { background-color: rgb(var(--v-theme-neutral-light)); }
 
 /* description list styles */
 dl.dl-horizontal dt {
@@ -498,9 +375,9 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   z-index: 9;
   position: fixed;
   border-radius: 0 4px 4px 0;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-left: none;
-  background: var(--color-background, white);
+  background: rgb(var(--v-theme-background));
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
@@ -508,22 +385,16 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 
 /* make the shortcut letter the same size/position as the icon */
 .query-shortcut {
-  color: var(--color-tertiary-lighter);
+  color: rgb(var(--v-theme-tertiary-lighter));
   font-size: 14px;
   width: 20px;
 }
 .time-shortcut {
-  color: var(--color-tertiary-lighter);
+  color: rgb(var(--v-theme-tertiary-lighter));
   font-size: 14px;
   width: 20px;
 }
-/* make sure the width of the input prepend doesn't change */
-.input-group-text-fw {
-  width: 36px;
-}
-
 /* enter icon for search/refresh button to be displayed on shift hold */
-.search-btn { width: 62px; }
 .refresh-btn { width: 66px; }
 .enter-icon > .fa-long-arrow-left {
   position: relative;
@@ -533,30 +404,27 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   display: inline-block;
   height: 9px;
   width: 3px;
-  background-color: var(--color-white, #FFFFFF);
+  background-color: rgb(var(--v-theme-white));
   position: relative;
   top: -2px;
   right: 3px;
 }
 
-/* custom font awesome icons */
-.fa.fa-venn {
+/* custom venn-diagram composed icon: two overlapping circle outlines */
+.arkime-venn {
   position: relative;
   display: inline-block;
   vertical-align: middle;
-  width: 1.28571429em;
-  text-align: center;
+  width: 1.6em;
+  height: 1em;
 }
-.fa.fa-venn > span.fa-circle-o {
+.arkime-venn .v-icon {
   position: absolute;
-  top: -7px;
+  top: -2px;
+  font-size: 1.2em !important;
 }
-.fa.fa-venn> span.fa-circle-o:first-child {
-  left: 5px;
-}
-.fa.fa-venn> span.fa-circle-o:last-child {
-  right: 6px;
-}
+.arkime-venn .v-icon:first-child { left: 0; }
+.arkime-venn .v-icon:last-child  { right: 0; }
 
 /* info page (404 & upgrade) */
 .arkime-info {
@@ -584,12 +452,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 
 .arkime-info .well > h1 {
   margin-top: 0;
-  color: var(--color-primary);
-}
-
-/* apply theme foreground to tables */
-table.table {
-  color: var(--color-foreground, #555);
+  color: rgb(var(--v-theme-primary));
 }
 
 /* column resize grips */
@@ -610,35 +473,5 @@ table.table {
   z-index: 999;
   position: fixed;
 }
-.app-info-error > div.alert {
-  font-size: 17px;
-}
 
-/* special buttons for andy that have checkboxes or radios still visible */
-.form-check.buttons-with-boxes,
-.buttons-with-boxes > .form-check {
-  font-size: .8rem;
-  padding: .1em .5em .1em 2em;
-  color: var(--color-black);
-  background: var(--color-gray-light);
-}
-.buttons-with-boxes {
-  cursor: pointer;
-}
-.buttons-with-boxes label,
-.buttons-with-boxes input {
-  cursor: pointer;
-}
-.buttons-with-boxes > .form-check {
-  margin-right: 0px;
-}
-.buttons-with-boxes > .form-check {
-  border-radius: 0;
-}
-.buttons-with-boxes > .form-check:first-child {
-  border-radius: 4px 0 0 4px;
-}
-.buttons-with-boxes > .form-check:last-child {
-  border-radius: 0 4px 4px 0;
-}
 </style>

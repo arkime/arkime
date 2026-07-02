@@ -49,7 +49,6 @@ const store = createStore({
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
-    stickySessionsBtn: false,
     showCapStartTimes: true,
     capStartTimes: [{ nodeName: 'none', startTime: 1 }],
     roles: [],
@@ -194,9 +193,6 @@ const store = createStore({
     },
     setSelectedCluster (state, value) {
       state.esCluster.selectedCluster = value;
-    },
-    setStickySessionsBtn (state, value) {
-      state.stickySessionsBtn = value;
     },
     setShowCapStartTimes (state, value) {
       state.showCapStartTimes = value;

@@ -1,15 +1,14 @@
 if (session._err)
-  div.alert.alert-danger
-    span.fa.fa-exclamation-triangle
-    strong &nbsp; #{session._err}
+  v-alert(type="error" variant="tonal" density="compact")
+    strong #{session._err}
 else
   if (session.network.packets[0] > reqPackets)
     h5.text-theme-quaternary
-      span.fa.fa-info-circle.fa-lg
+      i.mdi.mdi-information.mdi-24px
       | &nbsp; Only showing first #{reqPackets} packets
 
-  div.row#textpacket
-    div.col-md-6
+  div.packet-row#textpacket
+    div.packet-cell.packet-cell--src
       h4
         span.srccol
           span.str
@@ -17,7 +16,7 @@ else
             span.small
               | &nbsp;(#{session.sourceKey})
           span.src-col-tip
-    div.col-md-6
+    div.packet-cell.packet-cell--dst
       h4
         span.dstcol
           span.str
@@ -28,9 +27,9 @@ else
 
   if (showFrames)
     each item, i in data
-      div.row
+      div.packet-row
         if (item.src)
-          div.col-md-6.sessionsrc
+          div.packet-cell.packet-cell--src.sessionsrc
             if (item.ts)
               div.session-detail-ts(value=item.ts)
                 em.ts-value #{item.ts}
@@ -39,12 +38,11 @@ else
                   each flag, key in item.tcpflags
                     if (flag > 0)
                      | &nbsp; #{key} &nbsp;
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}
-          div.col-md-6
         else
-          div.col-md-6.offset-md-6.sessiondst
+          div.packet-cell.packet-cell--dst.sessiondst
             if (item.ts)
               div.session-detail-ts(value=item.ts)
                 em.ts-value #{item.ts}
@@ -53,27 +51,26 @@ else
                   each flag, key in item.tcpflags
                     if (flag > 0)
                      | &nbsp; #{key} &nbsp;
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}
 
   else
     each item, i in data
-      div.row
+      div.packet-row
         if item.client == 0
-          div.col-md-6.sessionsrc
+          div.packet-cell.packet-cell--src.sessionsrc
             if (item.ts)
               div.session-detail-ts(value=item.ts)
                 em.ts-value #{item.ts}
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}
-          div.col-md-6
         else
-          div.col-md-6.offset-md-6.sessiondst
+          div.packet-cell.packet-cell--dst.sessiondst
             if (item.ts)
               div.session-detail-ts(value=item.ts)
                 em.ts-value #{item.ts}
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}

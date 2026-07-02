@@ -3,131 +3,149 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    class="arkime-page"
-    :class="{'hide-tool-bars': !showToolBars}">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <arkime-search
-          :hide-actions="true"
-          @change-search="loadSummary"
-          @recalc-collapse="$emit('recalc-collapse')" />
+  <page-layout class="arkime-page">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- search navbar -->
+          <arkime-search
+            :hide-actions="true"
+            @change-search="loadSummary" />
 
-        <!-- toolbar row -->
-        <div class="d-flex justify-content-start align-items-center m-1">
-          <!-- results per widget dropdown -->
-          <b-dropdown
-            size="sm"
-            variant="secondary"
-            class="ms-2"
-            :text="String(summaryResultsLimit)">
-            <b-dropdown-item
-              :active="summaryResultsLimit === 10"
-              @click="updateSummaryResultsLimit(10)">
-              10
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryResultsLimit === 20"
-              @click="updateSummaryResultsLimit(20)">
-              20
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryResultsLimit === 50"
-              @click="updateSummaryResultsLimit(50)">
-              50
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryResultsLimit === 100"
-              @click="updateSummaryResultsLimit(100)">
-              100
-            </b-dropdown-item>
-          </b-dropdown>
+          <!-- toolbar row -->
+          <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav">
+            <!-- results per widget dropdown -->
+            <v-menu>
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  size="large"
+                  variant="flat"
+                  color="secondary">
+                  {{ summaryResultsLimit }}
+                  <v-icon
+                    end
+                    icon="mdi-menu-down" />
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-for="opt in [10, 20, 50, 100]"
+                  :key="opt"
+                  :active="summaryResultsLimit === opt"
+                  @click="updateSummaryResultsLimit(opt)">
+                  <v-list-item-title>{{ opt }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
 
-          <!-- top/bottom results toggle -->
-          <b-dropdown
-            size="sm"
-            variant="secondary"
-            class="ms-2"
-            :text="summaryOrder === 'asc' ? 'Bottom' : 'Top'">
-            <b-dropdown-item
-              :active="summaryOrder === 'desc'"
-              @click="updateSummaryOrder('desc')">
-              Top
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryOrder === 'asc'"
-              @click="updateSummaryOrder('asc')">
-              Bottom
-            </b-dropdown-item>
-          </b-dropdown>
+            <!-- top/bottom results toggle -->
+            <v-menu>
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  size="large"
+                  variant="flat"
+                  color="secondary">
+                  {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
+                  <v-icon
+                    end
+                    icon="mdi-menu-down" />
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  :active="summaryOrder === 'desc'"
+                  @click="updateSummaryOrder('desc')">
+                  <v-list-item-title>Top</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  :active="summaryOrder === 'asc'"
+                  @click="updateSummaryOrder('asc')">
+                  <v-list-item-title>Bottom</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
 
-          <!-- export all charts as PNG -->
-          <button
-            id="exportAllPNGBtn"
-            :aria-label="$t('sessions.summary.exportAllPNG')"
-            class="btn btn-sm btn-secondary ms-2"
-            @click="exportAllPNG">
-            <span class="fa fa-download" />
-          </button>
-          <BTooltip target="exportAllPNGBtn">
-            {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
-          </BTooltip>
+            <!-- export all charts as PNG -->
+            <v-btn
+              :aria-label="$t('sessions.summary.exportAllPNG')"
+              size="large"
+              variant="flat"
+              color="secondary"
+              @click="exportAllPNG">
+              <v-icon icon="mdi-download" />
+              <v-tooltip
+                activator="parent"
+                :open-delay="500">
+                {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
+              </v-tooltip>
+            </v-btn>
 
-          <!-- summary field visibility dropdown -->
-          <FieldSelectDropdown
-            class="ms-2"
-            :selected-fields="summaryFields"
-            :tooltip-text="$t('sessions.summary.toggleFields')"
-            :search-placeholder="$t('sessions.summary.searchFields')"
-            :include-summary-fields="true"
-            field-id-key="exp"
-            @toggle="toggleSummaryField"
-            @clear="clearSummaryFields" />
+            <!-- summary field visibility + config group -->
+            <v-btn-group
+              divided
+              density="compact"
+              variant="flat"
+              color="secondary">
+              <FieldSelectDropdown
+                :selected-fields="summaryFields"
+                :tooltip-text="$t('sessions.summary.toggleFields')"
+                :search-placeholder="$t('sessions.summary.searchFields')"
+                :include-summary-fields="true"
+                field-id-key="exp"
+                @toggle="toggleSummaryField"
+                @clear="clearSummaryFields" />
+              <SummaryConfigDropdown
+                :current-config="currentSummaryConfig"
+                @load="loadSummaryConfigFromShareable"
+                @reset="resetSummaryToDefaults"
+                @message="displayMessage" />
+            </v-btn-group>
 
-          <!-- summary config dropdown -->
-          <SummaryConfigDropdown
-            class="ms-2"
-            :current-config="currentSummaryConfig"
-            @load="loadSummaryConfigFromShareable"
-            @reset="resetSummaryToDefaults"
-            @message="displayMessage" />
-
-          <!-- cancel loading button -->
-          <button
-            v-if="summaryStreaming"
-            type="button"
-            class="btn btn-sm btn-warning ms-2"
-            @click="cancelSummaryLoading">
-            <span class="fa fa-ban" />&nbsp;
-            {{ $t('common.cancel') }}
-          </button>
+            <!-- cancel loading button -->
+            <v-btn
+              v-if="summaryStreaming"
+              size="large"
+              variant="flat"
+              color="warning"
+              @click="cancelSummaryLoading">
+              <v-icon icon="mdi-cancel" />&nbsp;
+              {{ $t('common.cancel') }}
+            </v-btn>
+          </div>
         </div>
+      </ArkimeCollapsible>
+      <!-- pinned visualizations land here (teleported from below) -->
+      <div id="viz-pin-anchor" />
+    </template>
 
-      </span>
-    </ArkimeCollapsible>
-
-    <!-- visualizations -->
-    <arkime-visualizations
-      v-if="graphData && showToolBars"
-      :primary="true"
-      :map-data="mapData"
-      :graph-data="graphData"
-      :timeline-data-filters="timelineDataFilters"
-      @spanning-change="reloadSummaryView" />
+    <!-- visualizations: pinned = chrome row above the scroll container,
+         unpinned = scrolls away with the content -->
+    <teleport
+      defer
+      to="#viz-pin-anchor"
+      :disabled="!stickyViz">
+      <arkime-visualizations
+        v-if="graphData && showToolBars"
+        :primary="true"
+        :map-data="mapData"
+        :graph-data="graphData"
+        :timeline-data-filters="timelineDataFilters"
+        @spanning-change="reloadSummaryView" />
+    </teleport> <!-- /visualizations -->
 
     <!-- error message -->
-    <div
+    <v-alert
       v-if="error"
-      class="alert alert-danger mx-2">
-      <span class="fa fa-exclamation-triangle me-1" />
+      type="error"
+      variant="tonal"
+      density="compact"
+      closable
+      class="mx-2"
+      @click:close="error = ''">
       {{ error }}
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close float-end"
-        @click="error = ''" />
-    </div>
+    </v-alert>
 
     <!-- summary content -->
     <div class="arkime-content ms-2">
@@ -140,36 +158,40 @@ SPDX-License-Identifier: Apache-2.0
         @widget-config-changed="updateWidgetConfigs"
         @remove-field="toggleSummaryField"
         @streaming-state="summaryStreaming = $event"
-        @canceled-state="summaryCanceled = $event"
-        @recalc-collapse="$emit('recalc-collapse')" />
+        @canceled-state="summaryCanceled = $event" />
     </div>
 
     <!-- stale data warning after cancellation -->
-    <div
+    <v-alert
       v-if="summaryCanceled && !summaryStreaming"
-      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle me-2" />
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      @click:close="summaryCanceled = false">
       {{ $t('sessions.summary.canceledSearch') }}
       — {{ $t('sessions.summary.staleDataWarning') }}
-      <button
-        type="button"
-        class="btn btn-success btn-xs ms-2"
+      <v-btn
+        color="success"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        class="ms-2"
         @click="retryAllFailed">
-        <span class="fa fa-refresh" />&nbsp;
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         {{ $t('sessions.summary.retryAllFailed') }}
-      </button>
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close float-end"
-        @click="summaryCanceled = false" />
-    </div>
-  </div>
+      </v-btn>
+    </v-alert>
+  </page-layout>
 </template>
 
 <script>
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
@@ -183,12 +205,12 @@ export default {
   components: {
     ArkimeSearch,
     ArkimeCollapsible,
+    PageLayout,
     ArkimeVisualizations,
     ArkimeSummaryView,
     FieldSelectDropdown,
     SummaryConfigDropdown
   },
-  emits: ['recalc-collapse'],
   data: function () {
     return {
       // Summary configuration
@@ -209,6 +231,9 @@ export default {
   computed: {
     showToolBars: function () {
       return this.$store.state.showToolBars;
+    },
+    stickyViz: function () {
+      return this.$store.state.stickyViz;
     },
     user: function () {
       return this.$store.state.user;
@@ -241,6 +266,11 @@ export default {
     }
   },
   watch: {
+    '$store.state.stickyViz': function () {
+      // pin toggle teleports the viz between chrome and scroll content;
+      // charts/map cache geometry, so nudge their resize handling
+      this.$nextTick(() => window.dispatchEvent(new Event('resize')));
+    },
     // Handle browser back/forward navigation for summaryLength
     '$route.query.summaryLength': function (newValue) {
       const newLimit = parseInt(newValue) || 20;
@@ -401,10 +431,6 @@ export default {
 </script>
 
 <style scoped>
-.arkime-page.hide-tool-bars .fixed-header {
-  display: none;
-}
-
 .arkime-content {
   margin-right: 0.5rem;
 }

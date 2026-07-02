@@ -1,0 +1,141 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
+
+/*
+ * Shared navbar styles for arkime apps (viewer, cont3xt, parliament,
+ * wise). Viewer is the source of truth for navbar look; the styles
+ * live here so every app stays in lockstep instead of each carrying
+ * its own copy. Import from main.js.
+ *
+ * Markup contract:
+ *   <nav class="arkime-navbar d-flex align-center pe-2">
+ *     <router-link class="arkime-navbar-brand">
+ *       <img class="arkime-logo">
+ *     </router-link>
+ *     <div class="arkime-nav-list d-flex align-center">
+ *       ... v-btn.arkime-nav-btn entries ...
+ *     </div>
+ *     <v-spacer />
+ *     <div class="arkime-navbar-actions d-flex align-center">
+ *       ... right-side actions (Version, Logout, etc.) ...
+ *     </div>
+ *   </nav>
+ *   <div class="navbarOffset" />   <!-- pushes content below the fixed bar -->
+ */
+
+:root {
+  --arkime-navbar-height: 36px;
+  /* set by viewer's AppBanner when a top banner is showing, else 0 */
+  --app-banner-height: 0px;
+}
+
+.arkime-navbar {
+  position: fixed;
+  top: var(--app-banner-height);
+  left: 0;
+  right: 0;
+  height: var(--arkime-navbar-height);
+  z-index: 7;
+  background-color: rgb(var(--v-theme-primary-dark));
+  color: rgb(var(--v-theme-button-fg));
+  padding-left: 0.5rem;
+}
+.navbarOffset {
+  padding-top: calc(var(--arkime-navbar-height) + var(--app-banner-height));
+}
+
+/* brand (logo) -- router-link, intentionally narrow; the 40px-tall
+   logo is absolutely positioned relative to .arkime-navbar so it
+   overhangs the 36px bar. .arkime-nav-list margin-left clears it. */
+.arkime-navbar-brand {
+  display: inline-block;
+  height: 36px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.arkime-logo {
+  position: absolute;
+  height: 40px;
+  top: 2px;
+}
+/* Wide Logo_* assets overhang the 36px bar by design. Square Icon_*
+   assets are 1:1, so the 40px treatment makes them oversized inside
+   the navbar -- shrink them to fit the bar height. */
+.arkime-logo[src*="Icon"] {
+  height: 30px;
+  top: 3px;
+  left: 8px;
+}
+.arkime-logo[src*="Logo"] { left: 20px; }
+
+/* push the nav list off the logo */
+.arkime-nav-list {
+  margin-left: 3rem;
+}
+
+/* nav buttons -- typography only. Pill bg + text color handled by
+   :variant + :style on the v-btn (theme-adaptive via CSS vars). */
+.arkime-navbar .arkime-nav-btn {
+  text-transform: uppercase;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  margin: 0;
+  height: 26px !important;
+  padding: 0 12px !important;
+  border-radius: 5px;
+}
+
+/* shortcut letter (shown in place of logo when shift is held) */
+.text-shortcut {
+  color: rgb(var(--v-theme-tertiary-lighter)) !important;
+}
+
+/* right-side action group: fill the navbar height and force every
+   child (text, FA-icon spans, v-btns, Logout, LanguageSwitcher) to
+   center its content vertically. Without this each item aligns by
+   its own baseline / box height and they drift visually. */
+.arkime-navbar-actions {
+  height: 100%;
+}
+.arkime-navbar-actions > * {
+  display: flex;
+  align-items: center;
+  height: 28px;
+}
+
+/* uniform icon size + tight line-height so the glyph fills its own
+   box exactly (no leading shifting it off-center). */
+.arkime-navbar-actions .fa {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Bare FA icons (no v-btn wrapper) align on the text baseline; nudge
+   them up to match the geometrically-centered v-btn icons. */
+.arkime-navbar-actions .fa-info-circle {
+  transform: translateY(-2px);
+}
+
+/* Compact language picker that fits the navbar height. */
+.arkime-navbar-actions .btn-language {
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  min-height: 0;
+  height: 22px;
+  line-height: 1;
+}
+
+/* Help (?) icon button -- inherits the navbar foreground color so it's
+   readable against the primary-dark bg in every theme. Used in
+   parliament/wise/cont3xt navbars (viewer has its own treatment for
+   now). */
+.arkime-help-btn .v-icon {
+  color: rgb(var(--v-theme-button-fg));
+}
+.arkime-help-btn:hover .v-icon {
+  opacity: 0.8;
+}

@@ -6,13 +6,10 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <span class="fa fa-upload fa-stack-1x" />
-          <span class="fa fa-square-o fa-stack-2x" />
-        </span>&nbsp;
+        <v-icon icon="mdi-tray-arrow-up" />&nbsp;
         {{ $t('uploads.uploadFile') }}
       </span>
-      <div class="pull-right small toast-container">
+      <div class="float-right small toast-container">
         <arkime-toast
           class="me-1"
           :message="msg"
@@ -23,64 +20,80 @@ SPDX-License-Identifier: Apache-2.0
 
     <div class="container">
       <!-- demo mode -->
-      <div
+      <v-alert
         v-if="demoMode"
-        class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle me-1" />
+        type="warning"
+        variant="tonal"
+        density="compact">
         {{ $t('uploads.demoMode') }}
-      </div> <!-- /demo mode -->
+      </v-alert> <!-- /demo mode -->
 
-      <div class="row">
-        <div class="col-md-6 offset-md-3">
+      <v-row>
+        <v-col
+          cols="12"
+          md="6"
+          class="offset-md-3">
           <!-- file -->
-          <BFormFile
+          <v-file-input
             :label="$t('uploads.pcapFileUpload')"
-            :model-value="file"
-            placeholder="Choose file..."
-            @update:model-value="(val) => file = val" /> <!-- /file -->
+            v-model="file"
+            placeholder="Choose file..." /> <!-- /file -->
 
           <!-- tag(s) -->
-          <div class="form-group mt-2 mb-2">
-            <div class="input-group">
-              <span class="input-group-text">
+          <div class="mt-2 mb-2">
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span class="arkime-input-label">
                 {{ $t('uploads.tags') }}:
               </span>
               <input
                 type="text"
                 v-model="tags"
-                class="form-control"
+                class="arkime-input-control"
                 :placeholder="$t('uploads.tagsPlaceholder')">
             </div>
           </div> <!-- /tag(s) -->
 
           <!-- submit/cancel -->
-          <div class="form-group row">
-            <div class="col-md-12">
-              <button
-                class="btn btn-theme-primary pull-right ms-1"
+          <v-row class="mt-3">
+            <v-col
+              cols="12"
+              md="12"
+              class="text-end">
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="primaryBtnStyle"
                 type="submit"
                 :disabled="!this.file"
                 @click="uploadFile">
                 <span v-if="!uploading">
-                  <span class="fa fa-upload" />&nbsp;
+                  <v-icon
+                    icon="mdi-upload"
+                    class="me-1" />
                   {{ $t('common.upload') }}
                 </span>
                 <span v-else>
-                  <span class="fa fa-spinner fa-spin" />&nbsp;
+                  <v-icon
+                    icon="mdi-loading"
+                    class="mdi-spin me-1" />
                   {{ $t('common.uploading') }}
                 </span>
-              </button>
-            </div>
-          </div> <!-- /submit/cancel -->
-        </div>
-      </div>
+              </v-btn>
+            </v-col>
+          </v-row> <!-- /submit/cancel -->
+        </v-col>
+      </v-row>
 
       <!-- file upload error -->
-      <div
-        class="alert alert-danger mt-4"
-        v-if="error">
+      <v-alert
+        v-if="error"
+        type="error"
+        variant="tonal"
+        density="compact"
+        class="mt-4">
         <div v-html="error" />
-      </div> <!-- /file upload error -->
+      </v-alert> <!-- /file upload error -->
     </div>
   </div>
 </template>
@@ -96,13 +109,18 @@ export default {
   },
   data: function () {
     return {
-      file: '',
+      file: null,
       tags: '',
       uploading: false,
       error: '',
       msg: '',
       msgType: undefined,
-      demoMode: this.$constants.DEMO_MODE
+      demoMode: this.$constants.DEMO_MODE,
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   methods: {
@@ -132,7 +150,7 @@ export default {
           throw new Error(responseText || this.$t('uploads.uploadFailed'));
         }
 
-        this.file = '';
+        this.file = null;
         this.tags = '';
         this.error = '';
         this.uploading = false;

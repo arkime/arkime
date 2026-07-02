@@ -6,13 +6,11 @@
     <meta name="referrer" content="no-referrer">
     <meta property="csp-nonce" content="<%= nonce %>">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>" type="text/css">
+    <link rel="stylesheet" href="mdi-font/css/materialdesignicons.min.css" nonce="<%= nonce %>" type="text/css">
+    <link rel="stylesheet" href="mdi-font/css/materialdesignicons.min.css" nonce="<%= nonce %>" type="text/css">
     <title>Arkime</title>
     <% if (environment !== 'development') { %>
       <link rel="stylesheet" href="<%= manifest['viewer/vueapp/src/main.js'].css %>" />
-    <% } %>
-    <% if (themeUrl) { %>
-      <link rel="stylesheet" href="<%= themeUrl %>" />
     <% } %>
   </head>
   <script nonce="<%= nonce %>">
@@ -23,6 +21,7 @@
     const PATH = '<%= path %>';
     const MULTIVIEWER = <%= multiViewer %>;
     const HASUSERSES = <%= hasUsersES %>;
+    const HASTSHARK = <%= hasTshark %>;
     const HUNTWARN = <%= huntWarn %>;
     const HUNTLIMIT = <%= huntLimit %>;
     const ANONYMOUS_MODE = <%= anonymousMode %>;

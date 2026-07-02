@@ -56,11 +56,16 @@ jobs:
       WIRESHARK_VERSION: ${{ github.event.inputs.wireshark_version }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+
       - name: Build tshark from Wireshark source
         run: |
           set -euo pipefail
 
-          dnf install -y cmake glib2-devel libpcap-devel libgcrypt-devel libssh-devel c-ares-devel libxml2-devel speexdsp-devel
+          dnf install -y cmake glib2-devel libpcap-devel libgcrypt-devel c-ares-devel libxml2-devel speexdsp-devel
 
           curl -fsSLO "https://2.na.dl.wireshark.org/src/wireshark-${WIRESHARK_VERSION}.tar.xz"
           tar -xf "wireshark-${WIRESHARK_VERSION}.tar.xz"
@@ -83,40 +88,56 @@ jobs:
             -DBUILD_dftest=OFF \
             -DBUILD_randpkt=OFF \
             -DBUILD_mmdbresolve=OFF \
+            -DBUILD_extcap=OFF \
             -DENABLE_APPLICATION_BUNDLE=OFF \
             -DBUILD_sharkd=OFF \
             -DBUILD_captype=OFF \
             ..
 
-          make -j"$(nproc)"
+          make -j
           rm -rf /opt/arkime
           make install
 
-          if ! command -v fpm >/dev/null 2>&1; then
-            gem install --no-document fpm
-          fi
+          # Undo cd wireshark-${WIRESHARK_VERSION}/build
+          cd ../..
 
-          deps=""
-          while read -r pkg; do
-            deps="${deps} -d ${pkg}"
-          done < <(
+          ls -lR /opt/arkime
+
+          mapfile -t dep_pkgs < <(
             ldd /opt/arkime/bin/tshark \
               | awk '/=>/ && $3 ~ /^\// {print $3}' \
-              | xargs -r rpm -q --qf '%{NAME}\n' -f \
+              | sort -u \
+              | while read -r lib; do
+                  pkg=$(rpm -qf --qf '%{NAME}\n' "$lib" 2>/dev/null || true)
+                  if echo "$pkg" | grep -qE '^[A-Za-z0-9._+-]+$'; then
+                    echo "$pkg"
+                  fi
+                done \
               | sort -u
           )
+          echo "Detected runtime RPM dependencies:"
+          if [ "${#dep_pkgs[@]}" -eq 0 ]; then
+            echo "  (none)"
+          else
+            printf '  %s\n' "${dep_pkgs[@]}"
+          fi
+          fpm_dep_args=()
+          for pkg in "${dep_pkgs[@]}"; do
+            [ -n "$pkg" ] && fpm_dep_args+=(-d "$pkg")
+          done
 
           fpm -s dir -t rpm --rpm-digest sha256 \
             -n tshark-arkime \
             -v "${WIRESHARK_VERSION}" \
-            --iteration "${GITHUB_RUN_ID}" \
+            --iteration "1" \
             --rpm-rpmbuild-define "_build_id_links none" \
             --url "https://arkime.com" \
             --description "Arkime tshark build from Wireshark source" \
-            ${deps} \
-            -p "tshark-arkime-${WIRESHARK_VERSION}-${GITHUB_RUN_ID}.${{ matrix.version }}.rpm" \
+            "${fpm_dep_args[@]}" \
+            -p "tshark-arkime-${WIRESHARK_VERSION}-1.${{ matrix.version }}.rpm" \
             /opt/arkime
 
+          pwd
           ls -l *.rpm
 
       - name: Set Arkime major version

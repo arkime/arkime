@@ -32,8 +32,9 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@common': fileURLToPath(new URL('../common/vueapp', import.meta.url)),
-      '@real_common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
+      // Point at the SHARED common/vueapp (repo root) -- cont3xt no longer
+      // ships its own duplicate copy under cont3xt/common/vueapp.
+      '@common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       vue: fileURLToPath(new URL('../../node_modules/vue', import.meta.url))
     }

@@ -1,57 +1,52 @@
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
+  <div
+    class="d-flex flex-nowrap gap-1 align-start text-start"
     @keyup.stop.prevent.enter="exportPcapAction">
-    <BCol cols="auto">
-      <SegmentSelect v-model:segments="segments" />
-    </BCol>
+    <SegmentSelect v-model:segments="segments" />
 
-    <BCol
-      cols="auto"
-      class="flex-fill">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text">
-          {{ $t('sessions.exports.filename') }}
-        </span>
-        <b-form-input
-          autofocus
-          type="text"
-          :model-value="filename"
-          class="form-control"
-          :placeholder="$t('sessions.exports.filenamePlaceholder')"
-          @update:model-value="filename = $event" />
-      </div>
+    <div class="flex-fill">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        :model-value="filename"
+        :label="$t('sessions.exports.filename')"
+        :placeholder="$t('sessions.exports.filenamePlaceholder')"
+        @update:model-value="filename = $event" />
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
-      <button
-        class="btn btn-sm btn-theme-tertiary me-1"
-        @click="exportPcapAction"
-        type="button">
-        <span class="fa fa-paper-plane-o" />&nbsp;
+    <div class="d-flex gap-1">
+      <v-btn
+        size="large"
+        variant="flat"
+        :style="tertiaryBtnStyle"
+        @click="exportPcapAction">
+        <v-icon
+          icon="mdi-send-outline"
+          class="me-1" />
         {{ $t('sessions.exports.exportPCAP') }}
-      </button>
-      <button
+      </v-btn>
+      <v-btn
+        size="large"
         id="cancelExportPcap"
-        class="btn btn-sm btn-warning"
+        color="warning"
+        variant="flat"
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        type="button">
-        <span class="fa fa-ban" />
-        <BTooltip target="cancelExportPcap">
+        @click="$emit('done', null, false, false)">
+        <v-icon icon="mdi-cancel" />
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
-      </button>
-    </BCol>
-  </BRow>
+        </v-tooltip>
+      </v-btn>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -94,6 +89,12 @@ const emit = defineEmits(['done']);
 const error = ref('');
 const segments = ref('no');
 const filename = ref('sessions.pcap');
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
+};
 
 // Access route
 const route = useRoute();

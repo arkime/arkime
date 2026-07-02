@@ -10,12 +10,15 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const async = require('async');
+const { spawn, spawnSync } = require('child_process');
 const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 const PNG = require('pngjs').PNG;
 const pug = require('pug');
+const sax = require('sax');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -29,6 +32,7 @@ const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
+const RE2 = require('re2');
 const BuildQuery = require('./buildQuery');
 
 // Replace pug's escape with the same algorithm plus {. Detail HTML must be
@@ -374,6 +378,22 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  // searchType matches hunt's vocabulary; regex types pre-compile with RE2.
+  static #buildFindOptions (search, searchType) {
+    if (!search) { return undefined; }
+    searchType = searchType || 'ascii';
+    const findOpts = { search, searchType };
+    if (searchType === 'regex' || searchType === 'hexregex') {
+      try {
+        findOpts.regex = new RE2(search, searchType === 'regex' ? 'gi' : 'g');
+      } catch (e) {
+        return undefined; // invalid regex -> no highlighting
+      }
+    }
+    return findOpts;
+  }
+
+  // --------------------------------------------------------------------------
   static #localSessionDetailReturn (req, res, session, incoming) {
     // console.log("ALW", JSON.stringify(incoming));
     const numPackets = req.query.packets || 200;
@@ -398,6 +418,9 @@ class SessionAPIs {
       'ITEM-CB': {
       }
     };
+
+    const findOpts = SessionAPIs.#buildFindOptions(req.query.search, req.query.searchType);
+    if (findOpts) { options.find = findOpts; }
 
     if (req.query.needgzip) {
       options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');
@@ -1044,33 +1067,66 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #writePcapNg (res, id, writerOptions, doneCb) {
-    let b = Buffer.alloc(0xfffe);
+    // One buffered EPB must fit entirely: a max-length packet (16-byte pcap
+    // record header + up to ARKIME_PACKET_MAX_LEN=0x10000 bytes of frame) plus
+    // the EPB header, padding, and trailing block length. 0x10100 leaves room.
+    const ngBufSize = 0x10100;
+    let b = Buffer.alloc(ngBufSize);
     let boffset = 0;
+
+    // Map of link type -> interface id, shared across every session/file in this
+    // export (writerOptions persists for the whole download). This merges and
+    // dedups interfaces from multiple pcapng/pcap files: each distinct link type
+    // gets exactly one Interface Description Block, and each packet's EPB
+    // interface_id is remapped to it.
+    writerOptions.ngInterfaces ??= new Map();
+    const ngInterfaces = writerOptions.ngInterfaces;
+
+    // Emit one IDB (lazily) the first time a link type is seen. IDBs go straight
+    // to res, flushing any buffered EPBs first so they precede the EPBs that
+    // reference them.
+    const interfaceIdFor = (pcap, buffer) => {
+      const linkType = (buffer.ngLinkType !== undefined) ? buffer.ngLinkType : pcap.linkType;
+      let ifaceId = ngInterfaces.get(linkType);
+      if (ifaceId === undefined) {
+        ifaceId = ngInterfaces.size;
+        if (boffset > 0) {
+          res.write(b.slice(0, boffset));
+          boffset = 0;
+          b = Buffer.alloc(ngBufSize);
+        }
+        res.write(Pcap.makeIdbNg(linkType, 262144));
+        ngInterfaces.set(linkType, ifaceId);
+      }
+      return ifaceId;
+    };
 
     SessionAPIs.processSessionId(id, true, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
-        res.write(pcap.getHeaderNg());
+        res.write(Pcap.makeShbNg());
         writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb) => {
+      const interfaceId = interfaceIdFor(pcap, buffer);
+
       if (boffset + buffer.length + 20 > b.length) {
         res.write(b.slice(0, boffset));
         boffset = 0;
-        b = Buffer.alloc(0xfffe);
+        b = Buffer.alloc(ngBufSize);
       }
 
       /* Need to write the ng block, and convert the old timestamp */
       b.writeUInt32LE(0x00000006, boffset); // Block Type
       const len = ((buffer.length + 20 + 3) >> 2) << 2;
       b.writeUInt32LE(len, boffset + 4); // Block Len 1
-      b.writeUInt32LE(0, boffset + 8); // Interface Id
+      b.writeUInt32LE(interfaceId, boffset + 8); // Interface Id
 
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
       b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
       b.writeUInt32LE(time % 0x100000000, boffset + 16); // Timestamp Low
 
-      buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
+      buffer.copy(b, boffset + 20, 8, buffer.length); // cap_len, packet_len, frame
       b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
       boffset += len - 8;
 
@@ -2582,7 +2638,8 @@ class SessionAPIs {
    *
    * Gets SPI data for a session.
    * @name /session/:nodeName/:id/detail
-   * @returns {html} The html to display as session detail
+   * @returns {object} { html, info } - the detail html plus the session
+   * fields the client row may not carry (rootId, communityId, packets, etc.)
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
@@ -2625,16 +2682,81 @@ class SessionAPIs {
         }
         const html = sanitizeHtml(data, {
           parser: { decodeEntities: false }, // keep &#123; from pugEscapeVue so it survives to the client
-          allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
+          allowedTags: [
+            // Standard HTML
+            'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
+            'pre', 'span', 'br', 'img', 'ul', 'li', 'dl', 'dt', 'dd',
+            'template', 'button',
+            // Vuetify components used in the pug session-detail
+            'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
+            'v-alert', 'v-icon',
+            // Arkime / app components
+            'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions',
+            'arkime-export-pcap', 'arkime-remove-data',
+            'arkime-send-sessions', 'field-actions'
+          ],
           allowedClasses: {
-            '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
+            '*': [
+              // App-specific
+              'ts-value', 'text-theme-quaternary', 'file',
+              'sessionsrc', 'sessiondst', 'session-detail-ts',
+              'session-detail', 'session-detail-cards', 'session-detail-card',
+              'session-options', 'session-options-btn',
+              'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
+              'clickable-label', 'clickable-label-menu', 'detail-field',
+              'tag-list', 'session-card-title', 'no-wrap', 'str', 'bytes',
+              // Vuetify spacing/utility classes used inside the pug
+              'cursor-pointer',
+              'mb-2', 'mt-2', 'me-1', 'me-5', 'ms-1', 'ms-auto',
+              'float-end', 'small',
+              // Shared toolbar styling -- matches the .arkime-pcap-toolbar
+              // bar used by the Packets + tshark toolbars in SessionDetail.vue
+              'arkime-pcap-toolbar',
+              // Inline-HTML add-tag button (rendered by pug arrayList helper)
+              'arkime-tag-add-btn',
+              // Material Design Icons (sessionPackets.pug renders via v-html
+              // so it can't use <v-icon>; must use raw <i class="mdi ..."> form)
+              'mdi', 'mdi-information', 'mdi-24px', 'mdi-plus-circle'
+            ]
           },
           allowedAttributes: {
             img: ['src'],
-            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidepackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            '*': [
+              // Standard HTML / Vue
+              'class', 'style', 'title', 'value', 'target', 'href',
+              'download', 'type', 'disabled',
+              // Vue directives / bindings (incl. slot props for v-menu's
+              // #activator slot which uses v-bind="activatorProps")
+              'v-if', 'v-for', 'v-bind', 'v-on',
+              'v-has-permission', 'key', ':key',
+              ':href', ':download', '@click', '@done',
+              '#activator', '#default', '#button-content',
+              // Component custom props / slots used across the template
+              'sessionid', 'hidepackets', 'pull-left',
+              'expr', ':expr', ':separator', ':field',
+              ':sessions', ':cluster', ':single',
+              ':message', ':type', ':done', ':add',
+              'text', ':text', 'suffix', 'columns',
+              // Vuetify component props (v-btn, v-menu, v-list, v-alert, v-icon)
+              'variant', 'size', 'density', 'activator', 'location',
+              'icon', 'prepend-icon', 'append-icon'
+            ]
           }
         });
-        res.send(html);
+        // getDetail returns scalar fields, but be tolerant of array-shaped ones
+        const netPackets = session.network?.packets;
+        const info = {
+          id: session.id,
+          node: session.node,
+          cluster: session.cluster,
+          rootId: session.rootId,
+          communityId: session.network?.community_id,
+          firstPacket: session.firstPacket,
+          lastPacket: session.lastPacket,
+          packets: Array.isArray(netPackets) ? netPackets[0] : netPackets,
+          hasPackets: !!(session.packetPos && session.packetPos.length > 0)
+        };
+        res.send({ html, info });
       });
     });
   }
@@ -2654,6 +2776,242 @@ class SessionAPIs {
       SessionAPIs.#localSessionDetail(req, res);
     } else {
       return ViewerUtils.proxyRequest(req, res);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/:nodeName/:id/tshark
+   *
+   * Runs tshark against the session's pcap and streams a converted PDML
+   * dissection as NDJSON (one JSON object per packet per line). Always
+   * dispatched on the *central* viewer that received the request; the pcap is
+   * fetched from the owning node when needed.
+   *
+   * Each emitted line looks like:
+   *   {"layers":[
+   *     {"name":"frame","label":"Frame 1: ...","fields":[
+   *       {"name":"frame.len","label":"Frame Length: 197","show":"197","pos":0,"size":0},
+   *       ...]
+   *     },
+   *     {"name":"eth","label":"Ethernet II, ...","fields":[
+   *       {"name":"eth.dst","label":"Destination: ...","show":"...","value":"<hex>","pos":0,"size":6,
+   *        "fields":[...]}
+   *     ]},
+   *     ...
+   *   ]}
+   *
+   * @name /session/:nodeName/:id/tshark
+   * @param {string} hidden=false - "true" to include fields tshark marks hide="yes"
+   * @param {string} payload=false - "true" to include the raw "data" proto layer
+   *   for unparsed payload bytes (otherwise passes `--disable-protocol data`
+   *   to tshark)
+   * @param {number} length - number of packets to dissect, capped at the
+   *   `tsharkMaxPackets` config value (which is also the default)
+   * @returns {ndjson} One JSON-encoded packet per line
+   */
+  static async getTshark (req, res) {
+    ArkimeUtil.noCache(req, res, 'application/x-ndjson');
+
+    if (!internals.tsharkPath) {
+      res.status(503);
+      return res.end(JSON.stringify({ success: false, text: 'tshark not configured on this viewer' }));
+    }
+
+    const includeHidden = req.query.hidden === 'true';
+    const includePayload = req.query.payload === 'true';
+
+    // tshark refuses non-regular stdin (S_ISSOCK / S_ISFIFO can both trip it
+    // depending on version/build); Node's stdio 'pipe' is a socketpair on
+    // macOS and on some Linux configurations. Always go through a mkfifo'd
+    // named pipe so tshark sees a real openable path.
+    const useStdin = false;
+
+    let finished = false;
+    let child;
+    let writeStream;
+    let fifoPath;
+
+    const cleanup = () => {
+      if (writeStream && !writeStream.destroyed) { try { writeStream.destroy(); } catch (e) { /* ignore */ } }
+      if (fifoPath) { fs.unlink(fifoPath, () => {}); fifoPath = undefined; }
+    };
+    const finish = (errStatus, errText) => {
+      if (finished) { return; }
+      finished = true;
+      clearTimeout(timer);
+      if (child) { try { child.kill('SIGKILL'); } catch (e) { /* already exited */ } }
+      cleanup();
+      if (errStatus && !res.headersSent) {
+        res.status(errStatus);
+        res.end(JSON.stringify({ success: false, text: errText }));
+      } else if (!res.writableEnded) {
+        try { res.end(); } catch (e) { /* ignore */ }
+      }
+    };
+    const timer = setTimeout(() => {
+      finish(504, `tshark timed out after ${internals.tsharkTimeoutMs}ms`);
+    }, internals.tsharkTimeoutMs);
+    res.on('close', () => finish());
+
+    let pktLen = parseInt(req.query.length);
+    if (!Number.isFinite(pktLen) || pktLen <= 0) { pktLen = internals.tsharkMaxPackets; }
+    if (pktLen > internals.tsharkMaxPackets) { pktLen = internals.tsharkMaxPackets; }
+
+    const tsharkArgs = ['-T', 'pdml', '-n', '-c', String(pktLen)];
+    if (!includePayload) {
+      tsharkArgs.push('--disable-protocol', 'data');
+    }
+    if (useStdin) {
+      tsharkArgs.unshift('-r', '-');
+      try {
+        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+      writeStream = child.stdin;
+    } else {
+      fifoPath = path.join(os.tmpdir(), `arkime-tshark-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.fifo`);
+      const mk = spawnSync('mkfifo', ['-m', '600', fifoPath]);
+      if (mk.status !== 0) {
+        fifoPath = undefined;
+        return finish(500, 'mkfifo failed: ' + ArkimeUtil.safeStr((mk.stderr || '').toString().trim() || ('exit ' + mk.status)));
+      }
+      tsharkArgs.unshift('-r', fifoPath);
+      try {
+        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+    }
+
+    let stderrBuf = '';
+    child.stderr.on('data', (b) => {
+      if (stderrBuf.length < 8192) { stderrBuf += b.toString().slice(0, 8192 - stderrBuf.length); }
+    });
+
+    // --- PDML -> NDJSON streaming converter ---------------------------------
+    // SAX-stream tshark's PDML output. Build one packet at a time as a stack
+    // of proto/field nodes; on </packet> serialize a compact JSON line. We
+    // never buffer more than one packet at a time.
+    const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: true });
+    let packet = null;          // { layers: [...] } currently being built
+    let stack = null;           // array of containers we're inside (proto or field), top is current
+    parser.on('opentag', (node) => {
+      if (!packet) {
+        if (node.name === 'packet') { packet = { layers: [] }; stack = []; }
+        return;
+      }
+      const a = node.attributes;
+      if (node.name === 'proto') {
+        const proto = { name: a.name || '', label: a.showname || a.name || '', fields: [] };
+        if (a.pos !== undefined) { proto.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { proto.size = parseInt(a.size); }
+        packet.layers.push(proto);
+        stack.push(proto);
+      } else if (node.name === 'field') {
+        if (!includeHidden && a.hide === 'yes') { stack.push(null); return; }
+        const f = { name: a.name || '', label: a.showname || a.show || a.name || '' };
+        if (a.show !== undefined && a.show !== '') { f.show = a.show; }
+        if (a.value !== undefined && a.value !== '') { f.value = a.value; }
+        if (a.pos !== undefined) { f.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { f.size = parseInt(a.size); }
+        if (a.hide === 'yes') { f.hide = true; }
+        const cur = stack[stack.length - 1];
+        if (cur) {
+          if (!cur.fields) { cur.fields = []; }
+          cur.fields.push(f);
+        }
+        stack.push(f);
+      }
+    });
+    parser.on('closetag', (tagName) => {
+      if (!packet) { return; }
+      if (tagName === 'packet') {
+        // Drop empty fields arrays for compactness.
+        const stripEmpty = (n) => {
+          if (n && n.fields) {
+            if (n.fields.length === 0) { delete n.fields; }
+            else { for (const c of n.fields) { stripEmpty(c); } }
+          }
+        };
+        for (const l of packet.layers) { stripEmpty(l); }
+        if (!res.writableEnded) {
+          res.write(JSON.stringify(packet));
+          res.write('\n');
+        }
+        packet = null;
+        stack = null;
+      } else if (tagName === 'proto' || tagName === 'field') {
+        if (stack) { stack.pop(); }
+      }
+    });
+    parser.on('error', (err) => {
+      // Don't kill the response on bad XML — log and keep going if possible.
+      console.log('tshark pdml parse error:', err.message);
+      try { parser._parser.error = null; parser._parser.resume(); } catch (e) { /* ignore */ }
+    });
+
+    child.stdout.pipe(parser);
+    child.on('error', (err) => finish(500, 'tshark process error: ' + ArkimeUtil.safeStr(err.message)));
+    child.on('close', (code) => {
+      if (code !== 0 && !res.headersSent) {
+        finish(500, 'tshark exited ' + code + ': ' + ArkimeUtil.safeStr(stderrBuf.trim()));
+      } else {
+        finish();
+      }
+    });
+
+    const wireWriteStream = () => {
+      writeStream.on('error', (err) => {
+        if (err.code !== 'EPIPE') { finish(500, 'pcap stream error: ' + ArkimeUtil.safeStr(err.message)); }
+      });
+    };
+
+    const startPcapPump = async () => {
+      if (await ViewerUtils.isLocalView(req.params.nodeName)) {
+        const sink = {
+          write: (chunk, cb) => {
+            if (!writeStream || !writeStream.writable) { if (cb) { setImmediate(cb); } return false; }
+            return writeStream.write(chunk, cb);
+          },
+          status: () => sink
+        };
+        SessionAPIs.#writePcap(sink, req.params.id, { writeHeader: true }, (err) => {
+          if (err && !finished) {
+            return finish(500, 'failed to read local pcap: ' + ArkimeUtil.safeStr(err.message || err));
+          }
+          if (writeStream && writeStream.writable) { writeStream.end(); }
+        });
+      } else {
+        const remotePath = `/api/session/${encodeURIComponent(req.params.nodeName)}/${encodeURIComponent(req.params.id)}/pcap`;
+        ViewerUtils.makeStreamRequest(req.params.nodeName, remotePath, req.user, (pres) => {
+          if (pres.statusCode !== 200) {
+            finish(502, 'remote node returned status ' + pres.statusCode);
+            pres.resume();
+            return;
+          }
+          pres.on('error', (err) => finish(502, 'error streaming remote pcap: ' + ArkimeUtil.safeStr(err.message)));
+          pres.pipe(writeStream);
+        }, (err) => {
+          finish(502, 'error contacting remote node: ' + ArkimeUtil.safeStr(err.message || err));
+        }, req.query.cluster);
+      }
+    };
+
+    if (useStdin) {
+      wireWriteStream();
+      startPcapPump();
+    } else {
+      fs.open(fifoPath, fs.constants.O_WRONLY, (openErr, fd) => {
+        if (openErr) {
+          return finish(500, 'failed to open fifo: ' + ArkimeUtil.safeStr(openErr.message));
+        }
+        if (finished) { try { fs.closeSync(fd); } catch (e) { /* ignore */ } return; }
+        writeStream = fs.createWriteStream(null, { fd, autoClose: true });
+        wireWriteStream();
+        startPcapPump();
+      });
     }
   }
 

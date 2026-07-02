@@ -52,7 +52,6 @@ SPDX-License-Identifier: Apache-2.0
     <v-data-table
       hover
       must-sort
-      class="table-striped"
       hide-default-footer
       :search="search"
       :loading="loading"
@@ -64,18 +63,16 @@ SPDX-License-Identifier: Apache-2.0
       :header-props="{ class: 'text-right' }" />
 
     <!-- stats error -->
-    <div
+    <v-alert
       v-if="error.length"
-      class="mt-2 alert alert-warning">
-      <v-icon icon="mdi-alert" />&nbsp;
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      class="mt-2"
+      @click:close="error = ''">
       {{ error }}
-      <button
-        type="button"
-        @click="error = ''"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /stats error -->
+    </v-alert> <!-- /stats error -->
   </div>
 </template>
 
