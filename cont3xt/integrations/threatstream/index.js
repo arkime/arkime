@@ -114,7 +114,7 @@ class ThreatstreamIntegration extends Integration {
       uiSetting: true
     },
     host: {
-      help: 'The threatstream host to send queries. Only set if you have a on premise deployment.'
+      help: 'The threatstream host to send queries. Only set if you have an on-premise deployment.'
     },
     user: {
       help: 'Your threatstream api user',

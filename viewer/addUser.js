@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* addUser.js -- Create a new user in the database
  *
- * addUser.js <user id> <user friendly name> <password> [-noweb] [-admin]
+ * addUser.js [<config options>] <user id> <user friendly name> <password|-> [<options>]
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
@@ -45,7 +45,7 @@ function help (msg) {
   console.log('  --remove                  Can remove data (scrub, delete tags)');
   console.log('  --no-remove               Cannot remove data (scrub, delete tags)');
   console.log('  --roles <roles>           Comma separated list of roles');
-  console.log('  --timeLimit               Max time limit for searches in hours');
+  console.log('  --timeLimit <hours>       Max time limit for searches in hours');
   console.log('  --webauth                 Can auth using the web auth header or password');
   console.log('  --webauthonly             Can auth using the web auth header only, password ignored');
   console.log();

@@ -1936,7 +1936,7 @@ Db.session2Sid = function (item) {
   } else if (item._id.length < 31) {
     // sessions2 didn't have new arkime_ prefix
     if (ver === '2@' && internals.prefix === 'arkime_') {
-      // tests_sessions2-191021 191021-abcd => 3@191021:191021-abcd
+      // sessions2-191021 191021-abcd => 2@191021:191021-abcd
       return ver + item._index.substring(10) + ':' + item._id;
     } else if (item._index.startsWith('partial-')) {
       // partial-tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd

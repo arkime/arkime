@@ -195,7 +195,7 @@ function node2ESBasicAuth (node) {
   for (let p = 1; p < parts.length; p++) {
     const kv = parts[p].split(':');
     if (kv[0] === 'elasticsearchBasicAuth') {
-      return kv[1];
+      return kv.slice(1).join(':'); // value may be user:pass, keep everything after the key
     }
   }
   return null;
@@ -1380,7 +1380,7 @@ async function premain () {
       if (!esBasicAuth.includes(':')) {
         esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
       }
-      esBasicAuth = esBasicAuth.split(':');
+      esBasicAuth = ArkimeUtil.splitRemain(esBasicAuth, ':', 1);
       esClientOptions.auth = {
         username: esBasicAuth[0],
         password: esBasicAuth[1]

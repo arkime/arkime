@@ -232,7 +232,7 @@ class StatsAPIs {
    * @param {string} name - The name of the field to get the detailed stats for.
    * @param {number} start - The start time of data to return. Format is seconds since Unix EPOCH.
    * @param {number} stop  - The stop time of data to return. Format is seconds since Unix EPOCH.
-   * @param {number} step - The context step of the cubism graph in milliseconds.
+   * @param {number} step - The context step of the cubism graph in seconds.
    * @param {number} interval=60 - The time interval to search for.
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.

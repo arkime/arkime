@@ -55,7 +55,7 @@ class HistoryAPIs {
    * @param {string} userId - The ID of a user to request history results for. Admin can retrieve all users. Normal users can only retrieve their own.
    * @returns {History[]} data - The list of history results.
    * @returns {number} recordsTotal - The total number of history results stored.
-   * @returns {number} recordsFiltered - The number of history items returned in this result.
+   * @returns {number} recordsFiltered - The number of history items matching query.
    */
   static async getHistories (req, res) {
     try {

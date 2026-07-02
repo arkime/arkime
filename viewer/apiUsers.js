@@ -546,7 +546,7 @@ class UserAPIs {
    * @name /user/layouts/:type
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {object} layout - The new layout configuration.
+   * @returns {string} name - The name of the new layout.
    */
   static createUserLayout (req, res) {
     let result;

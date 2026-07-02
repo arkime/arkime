@@ -90,17 +90,25 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4073 Fix integration cacheTimeout values specified in milliseconds being treated as seconds (1000x too long); short-TTL integrations like DNS now expire on time
   - #4073 Fix csv/json integrations sometimes failing to load JSON feeds over http/elasticsearch/opensearch
   - #4073 Fix ClickHouse integration being broken (wrong search method name and unawaited result parsing)
+## Multies
+  - #4092 Fix plaintext user:pass elasticsearchBasicAuth never working, and passwords containing a colon being truncated
 ## Viewer
   - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
   - #4071 Fix negative numbers being rejected in expressions
   - #4076 Fix raw packet search hunts hanging when a session's PCAP is missing or unreadable
   - #4079 Fix /api/upload storing the upload to disk before authorization
   - #4079 Fix /api/esindices/:index/shrink leaving the index read-only when shard relocation stalls
+  - #4092 Fix periodic queries silently processing at most 1000 sessions per run
+  - #4092 Fix hunts stalling instead of skipping the session when a failed session can't be fetched on retry
+  - #4092 Fix GRE packets with the routing bit set being misparsed in the viewer pcap decoder
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
   - #4072 Fix databricks periodic mode never running the initial query and crashing on refresh
   - #4072 Fix caching md5/sha256 results without contentType, and crashes on repeated hashes params and on viewing an empty redisfile source
+  - #4092 Fix threatstream zip mode not working
+  - #4092 Fix virustotal v2 issues
+  - #4092 Fix opendns content category field being labeled Security instead of Content
 
 6.5.0 2026/06/15
 ## Breaking
