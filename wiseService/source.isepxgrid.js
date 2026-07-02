@@ -159,7 +159,8 @@ class ISEPxGridSource extends WISESource {
     this.keyFile = api.getConfig(section, 'keyFile', '');
     this.caFile = api.getConfig(section, 'caFile', '');
     this.nodeName = api.getConfig(section, 'nodeName', '');
-    this.logEvents = api.getConfig(section, 'logEvents', false);
+    const logEventsVal = api.getConfig(section, 'logEvents', false);
+    this.logEvents = logEventsVal === true || logEventsVal === 'true'; // ini values are strings
     this.cacheAgeMin = +api.getConfig(section, 'cacheAgeMin', 1440); // 24h default
 
     if (!this.host) {
@@ -373,8 +374,10 @@ class ISEPxGridSource extends WISESource {
 
         // Bulk-load all active sessions so the Map is immediately complete.
         // Subscribe first (above) so no events are missed during the load.
-        this._loadAllSessions().catch(err =>
-          console.log(this.section, '- WARN: initial session load failed:', err.message));
+        this._loadAllSessions().catch(err => {
+          console.log(this.section, '- WARN: initial session load failed:', err.message);
+          this._scheduleRefresh(); // retry on the refresh interval
+        });
       } catch (err) {
         console.log(this.section, '- STOMP connect error:', err.message);
         ws.close();
@@ -456,12 +459,18 @@ class ISEPxGridSource extends WISESource {
   async _refreshCache () {
     this._refreshTimer = null;
     console.log(this.section, `- Cache age reached ${this.cacheAgeMin}min, refreshing from ISE…`);
-    this.sessionMap.clear();
-    this.sidMap.clear();
+    // Swap in fresh maps only after a successful load so a failed refresh
+    // keeps serving the existing data instead of destroying it
+    const oldSessionMap = this.sessionMap;
+    const oldSidMap = this.sidMap;
+    this.sessionMap = new Map();
+    this.sidMap = new Map();
     try {
       await this._loadAllSessions();
     } catch (err) {
-      console.log(this.section, '- WARN: cache refresh failed:', err.message);
+      console.log(this.section, '- WARN: cache refresh failed, keeping previous data:', err.message);
+      this.sessionMap = oldSessionMap;
+      this.sidMap = oldSidMap;
       this._scheduleRefresh(); // retry on next interval
     }
   }

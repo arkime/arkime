@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 60;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -218,3 +218,21 @@ my ($url) = @_;
     ok (!exists $item->{body}->{password}, "Delete: should have no password item");
     ok (!exists $item->{body}->{newPassword}, "Delete: should have no newPassword item");
     ok (!exists $item->{body}->{currentPassword}, "Delete: should have no currentPassword item");
+
+# History records the view name + expression when a search uses a view
+    $json = viewerPostToken("/api/view", '{"name": "historyview", "expression": "tags == domainwise"}', $token);
+    is ($json->{success}, 1, "View: created");
+    my $viewId = $json->{view}->{id};
+
+    viewerGet("/sessions.json?date=-1&view=historyview&expression=" . uri_escape("file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap"));
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    $item = $json->{data}->[0];
+    is ($item->{view}->{name}, "historyview", "View: history has view name");
+    is ($item->{view}->{expression}, "tags == domainwise", "View: history has view expression");
+
+    $json = viewerDeleteToken("/api/view/$viewId", $token);
+    is ($json->{success}, 1, "View: deleted");

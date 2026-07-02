@@ -19,7 +19,8 @@ class ElasticsearchSource extends WISESource {
     this.esIndex = api.getConfig(section, 'esIndex');
     this.esTimestampField = api.getConfig(section, 'esTimestampField');
     this.esQueryField = api.getConfig(section, 'esQueryField');
-    this.esResultField = api.getConfig(section, 'esResultField', 0);
+    // no default so the required-check below can actually fire
+    this.esResultField = api.getConfig(section, 'esResultField');
     this.esMaxTimeMS = api.getConfig(section, 'esMaxTimeMS', 60 * 60 * 1000);
     this.elasticsearch = api.getConfig(section, 'elasticsearch');
 

@@ -344,7 +344,7 @@ class WISESourceAPI {
     const pos = internals.fields.length;
     newFieldsTS();
     internals.fields.push(field);
-    internals.fieldsSize += field.length + 10;
+    internals.fieldsSize += Buffer.byteLength(field) + 10; // UTF-8 bytes, not UTF-16 code units
 
     let offset;
     // Create version 0 of fields buf
@@ -948,7 +948,8 @@ async function processQuery (req, query, cb) {
       delete cacheResult[src.section];
 
       // If already in progress then add to the list and return, cb called later;
-      if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(valueKey)) {
+      src.srcInProgress[query.typeName] ??= new Map();
+      if (src.srcInProgress[query.typeName].has(valueKey)) {
         src.srcInProgress[query.typeName].get(valueKey).push(mapCb);
         return;
       }
@@ -1627,7 +1628,8 @@ if (internals.webconfig) {
     }
 
     // Make sure updateTime has increased in case of clock skew
-    config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
+    // updateTime may be a string from the config file, force numeric so + 1 doesn't concatenate
+    config.wiseService.updateTime = Math.max(Date.now(), +internals.updateTime + 1);
 
     ArkimeConfig.replace(config);
     ArkimeConfig.save((err) => {

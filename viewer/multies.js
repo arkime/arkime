@@ -626,8 +626,9 @@ app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     const obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].error) {
+      if (results[i].error || !results[i].hits) {
         console.log('ERROR - GET _search', req.query.index, req.query.type, results[i].error);
+        continue;
       }
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);

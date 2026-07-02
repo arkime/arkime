@@ -97,6 +97,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4092 Fix hunts stalling instead of skipping the session when a failed session can't be fetched on retry
   - #4092 Fix GRE packets with the routing bit set being misparsed in the viewer pcap decoder
   - #4093 Fix SPI Graph fileand rows showing node-level data instead of per-file data
+  - #4094 Fix history not recording the view name and expression used for a search since views moved to their own index
+  - #4094 Fix viewer pcap decoder issues: radiotap headers >= 256 bytes, NFLOG reading garbage offsets when no payload found, and SLL2 always decoding as IPv4
+  - #4094 Fix raw packet search hunts matching bytes in pcap record headers when searching both directions
+  - #4094 Fix multies GET _search crashing when one cluster returns an error
+  - #4094 Fix map data still being computed when map=false is sent with facets
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
@@ -109,6 +114,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4093 Fix wiseService crashing when a watched file source file is deleted
   - #4093 Fix isepxgrid serving stale identities for up to cacheAgeMin and disconnects deleting a reassigned IP's newer session
   - #4093 Fix elasticsearch source registering anyway after logging that required settings are missing
+  - #4094 Fix fieldactions/valueactions crashing wiseService when the watched file is deleted, and redis/elasticsearch content with a section header failing to load
+  - #4094 Fix databricks and splunk sources loading anyway when required settings are missing
 
 6.5.0 2026/06/15
 ## Breaking

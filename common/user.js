@@ -1133,8 +1133,8 @@ class User {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 
-    const storeHa1 = Auth.store2ha1(req.user.passStore);
-    const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword));
+    const storeHa1 = Auth.store2ha1(req.user.passStore, req.user.userId);
+    const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword), req.token.userId);
     if (!req.user.hasRole('usersAdmin') && (
       storeHa1.length !== reqHa1.length ||
       !cryptoLib.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(reqHa1)) ||
