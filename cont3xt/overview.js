@@ -130,8 +130,8 @@ class Overview {
     if (custom.pivot != null && typeof custom.pivot !== 'boolean') {
       return { msg: 'Custom pivot must be a boolean when present' };
     }
-    if (custom.join != null && typeof custom.join !== 'boolean') {
-      return { msg: 'Custom join must be a boolean when present' };
+    if (custom.join != null && !ArkimeUtil.isString(custom.join)) {
+      return { msg: 'Custom join must be a string when present' };
     }
     if (custom.filterEmpty != null && typeof custom.filterEmpty !== 'boolean') {
       return { msg: 'Custom filterEmpty must be a boolean when present' };
@@ -144,6 +144,9 @@ class Overview {
     }
 
     if (custom.fields != null) {
+      if (!Array.isArray(custom.fields)) {
+        return { msg: 'Custom fields must be an array when present' };
+      }
       for (let i = 0; i < custom.fields.length; i++) {
         const { custom: customSubField, msg } = this.verifyOverviewCustomField(custom.fields[i], depth + 1);
         if (msg) { return { msg }; }

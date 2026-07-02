@@ -1,4 +1,4 @@
-use Test::More tests => 96;
+use Test::More tests => 99;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -143,6 +143,11 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     is (scalar @{$json->{"items"}}, 3);
     is ($json->{"items"}->[0]->{name}, '/DIR/tests/pcap/socks-http-example.pcap');
     cmp_ok ($json->{recordsFiltered}, '==', 6);
+    # each item must show per-file session counts, not node-level totals
+    my %fileandCounts = map { $_->{name} => $_->{sessionsHisto} } @{$json->{"items"}};
+    is ($fileandCounts{'/DIR/tests/pcap/socks-http-example.pcap'}, 3, "fileand per-file sessions socks-http-example");
+    is ($fileandCounts{'/DIR/tests/pcap/bt-tcp.pcap'}, 2, "fileand per-file sessions bt-tcp");
+    is ($fileandCounts{'/DIR/tests/pcap/bigendian.pcap'}, 1, "fileand per-file sessions bigendian");
 
 # ip.dst:port works
     $json = get("/spigraph.json?date=-1&field=ip.dst:port&expression=" . uri_escape("file=$pwd/socks5-reverse.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

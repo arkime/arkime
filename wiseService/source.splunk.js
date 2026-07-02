@@ -81,7 +81,7 @@ class SplunkSource extends WISESource {
       }
 
       let cache;
-      if (merging) {
+      if (merging && this.cache !== undefined) {
         cache = this.cache;
       } else {
         if (this.type === 'ip') {

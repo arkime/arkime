@@ -148,7 +148,9 @@ class StompClient {
 class ISEPxGridSource extends WISESource {
   // -------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, {});
+    // dontCache: results come from the live in-memory sessionMap (STOMP push);
+    // wiseService result caching would serve stale identities for up to cacheAgeMin
+    super(api, section, { dontCache: true });
 
     // ---- Config ------------------------------------------------------------
     this.host = api.getConfig(section, 'host');
@@ -505,11 +507,17 @@ class ISEPxGridSource extends WISESource {
       const user = s.adUserResolvedIdentities || s.userName || '';
 
       if (s.state === 'DISCONNECTED' || s.state === 'TERMINATED') {
-        // Use sidMap to purge ALL IPs ever associated with this session
+        // Use sidMap to purge ALL IPs ever associated with this session, but
+        // only delete entries still owned by this session - the IP may have
+        // been reassigned to a newer session already
         const knownIps = (sid && this.sidMap.has(sid))
           ? [...this.sidMap.get(sid)]
           : newIps;
-        for (const ip of knownIps) this.sessionMap.delete(ip);
+        for (const ip of knownIps) {
+          if ((this.sessionMap.get(ip)?.auditSessionId || '') === sid) {
+            this.sessionMap.delete(ip);
+          }
+        }
         if (sid) this.sidMap.delete(sid);
 
         if (this.logEvents) {
@@ -518,11 +526,12 @@ class ISEPxGridSource extends WISESource {
       } else {
         if (!newIps.length) continue;
 
-        // Remove any STALE IPs for this session that are no longer in the new set
+        // Remove any STALE IPs for this session that are no longer in the new
+        // set, unless the IP was already reassigned to a different session
         const stalePurged = [];
         if (sid && this.sidMap.has(sid)) {
           for (const ip of this.sidMap.get(sid)) {
-            if (!newIps.includes(ip)) {
+            if (!newIps.includes(ip) && (this.sessionMap.get(ip)?.auditSessionId || '') === sid) {
               this.sessionMap.delete(ip);
               stalePurged.push(ip);
             }

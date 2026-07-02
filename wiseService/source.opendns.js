@@ -88,7 +88,22 @@ class OpenDNSSource extends WISESource {
     // http://stackoverflow.com/questions/6158933/how-to-make-an-http-post-request-in-node-js/6158966
     // console.log("doing query:", waiting.length, "current cache", Object.keys(cache).length);
     const postData = JSON.stringify(this.waiting);
+    const sent = this.waiting.slice(); // for error cleanup
     this.waiting.length = 0;
+
+    // On failure invoke and remove all callbacks for this batch so queries
+    // don't hang in processing forever
+    const failBatch = (err) => {
+      for (const domain of sent) {
+        const cbs = this.processing[domain];
+        if (!cbs) { continue; }
+        delete this.processing[domain];
+        let cb;
+        while ((cb = cbs.shift())) {
+          cb(err);
+        }
+      }
+    };
 
     const postOptions = {
       host: 'sgraph.api.opendns.com',
@@ -113,13 +128,14 @@ class OpenDNSSource extends WISESource {
           results = JSON.parse(response);
         } catch (e) {
           console.log(this.section, 'Error parsing for request:\n', postData, '\nresponse:\n', response);
-          results = {};
+          failBatch('opendns parse error');
+          return;
         }
 
         for (let result in results) {
           const cbs = this.processing[result];
           if (!cbs) {
-            return;
+            continue;
           }
           delete this.processing[result];
 
@@ -156,6 +172,7 @@ class OpenDNSSource extends WISESource {
     });
     request.on('error', (err) => {
       console.log(this.section, err);
+      failBatch(err);
     });
 
     // post the data

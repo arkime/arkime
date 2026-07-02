@@ -52,6 +52,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4074 Harden user-auto-create/user-role-mappings expressions to run in strict mode
   - #4079 Fix relative time +1M (month) and @M snapping being silently ignored; lowercase m still means minutes
   - #4089 Consolidate header auth non-localhost host security warning across viewer/cont3xt/parliament/wiseService
+  - #4093 Fix page load failing with a 500 in OIDC mode when the issuer has no end_session_endpoint
+  - #4093 Fix user-role-mappings changes not taking effect until the next request; granted roles now apply and revoked roles stop working on the same request
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
@@ -72,6 +74,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4091 Fix MQTT parser PUBLISH issues
   - #4091 Fix s3:// directory listing silently dropping pages after the first when the bucket needs continuation requests
   - #4091 Rename misspelled protocol classifier stream-ihscp to steam-ihscp (Steam In-Home Streaming Control Protocol)
+  - #4092 Fix tagger and zeekintel plugins potentially cross-matching IPv4 and IPv6 entries whose leading bits coincide; IPv4 entries are now stored v4-mapped in the shared tree
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt
@@ -79,6 +82,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4073 Fix integration cacheTimeout values specified in milliseconds being treated as seconds (1000x too long); short-TTL integrations like DNS now expire on time
   - #4073 Fix csv/json integrations sometimes failing to load JSON feeds over http/elasticsearch/opensearch
   - #4073 Fix ClickHouse integration being broken (wrong search method name and unawaited result parsing)
+  - #4093 Fix cont3xt crash with a malformed custom overview field, and custom overview join separators being rejected
+  - #4093 Fix searches hanging when an invalid IP (e.g. 300.1.2.3) is the only indicator queried
+  - #4093 Fix ipqs array fields not displaying comma-joined, the virustotal hash scans table never rendering, and the wise integration ignoring wiseURL
 ## Multies
   - #4092 Fix plaintext user:pass elasticsearchBasicAuth never working, and passwords containing a colon being truncated
 ## Viewer
@@ -90,6 +96,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4092 Fix periodic queries silently processing at most 1000 sessions per run
   - #4092 Fix hunts stalling instead of skipping the session when a failed session can't be fetched on retry
   - #4092 Fix GRE packets with the routing bit set being misparsed in the viewer pcap decoder
+  - #4093 Fix SPI Graph fileand rows showing node-level data instead of per-file data
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
@@ -98,6 +105,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4092 Fix threatstream zip mode not working
   - #4092 Fix virustotal v2 issues
   - #4092 Fix opendns content category field being labeled Security instead of Content
+  - #4093 Fix opendns, passivetotal, and virustotal queries hanging forever when an upstream request fails
+  - #4093 Fix wiseService crashing when a watched file source file is deleted
+  - #4093 Fix isepxgrid serving stale identities for up to cacheAgeMin and disconnects deleting a reassigned IP's newer session
+  - #4093 Fix elasticsearch source registering anyway after logging that required settings are missing
 
 6.5.0 2026/06/15
 ## Breaking

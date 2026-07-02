@@ -1776,6 +1776,12 @@ class User {
     }
 
     this.roles = newRoles;
+    // Clear memoized permission state so expandFromRoles recomputes from the
+    // new roles instead of early-returning on the startup expansion
+    this.#allRoles = undefined;
+    this.#allExpression = undefined;
+    this.#allTimeLimit = undefined;
+    this.#allSettings = {};
     await this.expandFromRoles();
     await new Promise((resolve, reject) => {
       this.save((err) => {
