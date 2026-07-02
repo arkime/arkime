@@ -69,7 +69,7 @@ LOCAL void s3_enqueue(S3ItemHead *head, const char *url)
     ARKIME_LOCK(head->lock);
     S3Item *item = ARKIME_TYPE_ALLOC0(S3Item);
     item->url = g_strdup(url);
-    DLL_PUSH_TAIL(item_, s3Items, item);
+    DLL_PUSH_TAIL(item_, head, item);
 
     ARKIME_COND_SIGNAL(head->lock);
     ARKIME_UNLOCK(head->lock);
@@ -326,7 +326,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         ARKIME_UNLOCK(waitingdir);
     } while (req.tryAgain);
 
-    while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
+    while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0 || req.continuation) {
         if (req.continuation) {
             char *uri2;
 
@@ -338,6 +338,11 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
 
             g_free(req.continuation);
             req.continuation = NULL;
+
+            // Another page is coming, clear done before it can be set again
+            ARKIME_LOCK(s3Items->lock);
+            s3Items->done = 0;
+            ARKIME_UNLOCK(s3Items->lock);
 
             scheme_s3_request(server, creds, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
             g_free(uri2);
@@ -460,7 +465,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     curl_free(path);
     curl_url_cleanup(h);
 
-    while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
+    while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0 || req.continuation) {
         if (req.continuation) {
             char *uri2;
 
@@ -472,6 +477,11 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 
             g_free(req.continuation);
             req.continuation = NULL;
+
+            // Another page is coming, clear done before it can be set again
+            ARKIME_LOCK(s3Items->lock);
+            s3Items->done = 0;
+            ARKIME_UNLOCK(s3Items->lock);
 
             scheme_s3_request(server, creds, uri2 + strlen(shpb), paths[1], &req, TRUE, NULL);
             g_free(uri2);

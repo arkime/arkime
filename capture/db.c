@@ -518,7 +518,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
 
     if (ARKIME_SESSION_IS_v6(session)) {
         static const uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
-                                                 255, 140, 139, 255, 255, 255, 145, 145, 255
+                                                 255, 140, 139, 255, 255, 255, 145, 144, 255
                                                 };
 
         if (port1 >= 128 && port1 - 128 < ARRAY_LEN(port2Mapping) && port2Mapping[port1 - 128] != 255) {
@@ -783,6 +783,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     BSB jbsb = dbInfo[thread].bsb;
+    const BSB savedBsb = jbsb; // For restoring on error, drops just this record
 
     startPtr = BSB_WORK_PTR(jbsb);
 
@@ -1472,6 +1473,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (BSB_IS_ERROR(jbsb)) {
         LOG("ERROR - Ran out of memory creating DB record supposed to be %u", jsonSize);
+        jbsb = savedBsb; // Drop this record, keep the previously buffered ones valid
+        dbInfo[thread].cnt--;
         goto cleanup;
     }
 
@@ -2306,12 +2309,12 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
 
     BSB_EXPORT_u08(jbsb, '}');
 
+    if (config.logFileCreation)
+        LOG("Creating file %u with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
+
     arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
 
     ARKIME_UNLOCK(nextFileNum);
-
-    if (config.logFileCreation)
-        LOG("Creating file %u with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
 
     *id = num;
 

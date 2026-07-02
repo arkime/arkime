@@ -1690,7 +1690,8 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                                     arkime_db_js0n_str_unquoted(jbsb, g_ptr_array_index(alpnValues, i), -1, TRUE);
                                     BSB_EXPORT_u08(*jbsb, ',');
                                 }
-                                BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
+                                if (alpnValues->len > 0)
+                                    BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
                                 BSB_EXPORT_cstr(*jbsb, " ");
                                 g_ptr_array_free(alpnValues, TRUE);
                             }
@@ -1707,7 +1708,8 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                                     uint32_t ip = g_array_index(ipv4Values, uint32_t, i);
                                     BSB_EXPORT_sprintf(*jbsb, "%u.%u.%u.%u,", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
                                 }
-                                BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
+                                if (ipv4Values->len > 0)
+                                    BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
                                 BSB_EXPORT_cstr(*jbsb, " ");
                                 g_array_free(ipv4Values, TRUE);
                             }
@@ -1724,7 +1726,8 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                                     }
                                     BSB_EXPORT_sprintf(*jbsb, "%s,", ipAAAA);
                                 }
-                                BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
+                                if (ipv6Values->len > 0)
+                                    BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
                                 BSB_EXPORT_cstr(*jbsb, " ");
                                 g_ptr_array_free(ipv6Values, TRUE);
                             }

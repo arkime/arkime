@@ -778,8 +778,8 @@ LOCAL void arkime_rules_load_complete()
             GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
-                g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
-                rule->bpf = g_strndup(bpfs[i], start_pos - 1);
+                g_match_info_fetch_pos (match_info, 0, &start_pos, NULL);
+                rule->bpf = g_strndup(bpfs[i], start_pos);
                 char *fetched = g_match_info_fetch(match_info, 1);
                 arkime_field_ops_add(&rule->ops, pos, fetched, -1);
                 g_free(fetched);
@@ -804,8 +804,8 @@ LOCAL void arkime_rules_load_complete()
             GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
-                g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
-                rule->bpf = g_strndup(bpfs[i], start_pos - 1);
+                g_match_info_fetch_pos (match_info, 0, &start_pos, NULL);
+                rule->bpf = g_strndup(bpfs[i], start_pos);
                 char *fetched = g_match_info_fetch(match_info, 1);
                 arkime_field_ops_add(&rule->ops, pos, fetched, -1);
                 g_free(fetched);
@@ -1385,7 +1385,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 break;
             case ARKIME_FIELD_TYPE_INT:
                 good = arkime_rules_check_int_match(rule, p, (long)value, logStr);
-                RULE_LOG_INT((long)value);
                 break;
             case ARKIME_FIELD_TYPE_STR:
                 good = arkime_rules_check_str_match(rule, p, value, logStr);
@@ -1447,7 +1446,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
 
         case ARKIME_FIELD_TYPE_INT:
             good = arkime_rules_check_int_match(rule, p, session->fields[p]->i, logStr);
-            RULE_LOG_INT(session->fields[p]->i);
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
         case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:

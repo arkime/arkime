@@ -1198,7 +1198,7 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
                 arkime_command_respond(cc, "Too many ops\n", -1);
                 return 1;
             }
-            if (i == argc - 1) {
+            if (i == argc - 2) {
                 arkime_command_respond(cc, "Missing argument to -op\n", -1);
                 return 1;
             }

@@ -2555,7 +2555,7 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
         return;
 
     if (which == -1) {
-        const int port = (htons(session->port1) * htons(session->port2)) & 0xffff;
+        const int port = ((uint32_t)htons(session->port1) * (uint32_t)htons(session->port2)) & 0xffff;
         if (ARKIME_SESSION_IS_v6(session)) {
             arkime_drophash_add(&packetDrop6S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
         } else {

@@ -289,7 +289,7 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         if (MAGIC_MATCH(0, "PK\005\006")) {
             return MAGIC_RESULT("application/zip");
         }
-        if (MAGIC_MATCH_LEN(0, "PK\007\008PK")) {
+        if (MAGIC_MATCH_LEN(0, "PK\x07\x08PK")) {
             return MAGIC_RESULT("application/zip");
         }
         break;

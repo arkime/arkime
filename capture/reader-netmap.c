@@ -155,7 +155,7 @@ void reader_netmap_exit()
 }
 
 /******************************************************************************/
-void reader_netmap_init(char *UNUSED(name))
+void reader_netmap_init(const char *UNUSED(name))
 {
     arkime_config_check("netmap", "netmapThreads", NULL);
 
@@ -235,4 +235,4 @@ void reader_netmap_init(char *UNUSED(name))
     arkime_reader_stats = reader_netmap_stats;
 }
 
-#endif // __linux__ || __FreeBSD__
+#endif // __FreeBSD__

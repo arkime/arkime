@@ -752,6 +752,9 @@ added:
 /******************************************************************************/
 gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const char *string, int len)
 {
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     if (len < 0)
         len = strlen(string);
 
@@ -770,6 +773,9 @@ gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const 
 /******************************************************************************/
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len)
 {
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     if (len < 0)
         len = strlen(string);
 
@@ -789,6 +795,9 @@ gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const 
 gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *string, int len)
 {
     char *host;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
 
     if (len < 0) {
         len = strlen(string);

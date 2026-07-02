@@ -321,7 +321,15 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         if (packetType == 3) {
             int skipLen = mqtt_parse_publish(session, mqtt, which, &bsb, flags, remainingLen);
             if (skipLen == -1) {
-                // Need more data; rewind so we re-parse the fixed header next time.
+                // Need more data. If add() truncated this read the header can
+                // never fit (fixed header + topic exceed bufMax), so unregister
+                // instead of stalling forever.
+                if (truncated) {
+                    arkime_session_add_tag(session, "mqtt:message-too-long");
+                    arkime_parsers_unregister(session, mqtt);
+                    return 0;
+                }
+                // Rewind so we re-parse the fixed header next time.
                 bsb = headerStart;
                 break;
             }
