@@ -23,11 +23,14 @@ class ElasticsearchSource extends WISESource {
     this.esMaxTimeMS = api.getConfig(section, 'esMaxTimeMS', 60 * 60 * 1000);
     this.elasticsearch = api.getConfig(section, 'elasticsearch');
 
+    let missing = false;
     ['esIndex', 'esTimestampField', 'esQueryField', 'esResultField', 'elasticsearch'].forEach((item) => {
       if (this[item] === undefined) {
         console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
+        missing = true;
       }
     });
+    if (missing) { return; }
 
     this[this.api.funcName(this.type)] = this.sendResult;
 

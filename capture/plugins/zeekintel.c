@@ -245,8 +245,34 @@ LOCAL void zeekintel_hash_add(ZeekIntelStringHash_t *hash, const char *key, Zeek
     g_ptr_array_add(s->items, item);
 }
 /******************************************************************************/
+/*
+ * Insert an ADDR/SUBNET indicator.  IPv4 indicators are stored v4-mapped
+ * (::ffff:a.b.c.d, a /n subnet becomes /(96+n)) so both families live in the
+ * one 128 bit tree without cross-family bit collisions - patricia compares
+ * raw bits and ignores prefix->family, and session addresses are already
+ * v4-mapped in6_addrs.
+ */
 LOCAL void zeekintel_ip_add(patricia_tree_t *tree, const char *indicator, ZeekIntelItem_t *item)
 {
+    char mapped[80];
+
+    if (!strchr(indicator, ':')) {
+        const char *slash = strchr(indicator, '/');
+        if (slash) {
+            int bits = atoi(slash + 1);
+            if (bits < 0 || bits > 32 || slash - indicator >= 40) {
+                if (config.debug)
+                    LOG("Invalid IPv4 indicator %s", indicator);
+                zeekintel_item_free(item);
+                return;
+            }
+            snprintf(mapped, sizeof(mapped), "::ffff:%.*s/%d", (int)(slash - indicator), indicator, 96 + bits);
+        } else {
+            snprintf(mapped, sizeof(mapped), "::ffff:%s", indicator);
+        }
+        indicator = mapped;
+    }
+
     patricia_node_t *node = make_and_lookup(tree, (char *)indicator);
     if (!node) {
         if (config.debug)
@@ -665,18 +691,11 @@ LOCAL void zeekintel_match_ip(ArkimeSession_t *session, ZeekIntelDB_t *db, const
     patricia_node_t *nodes[PATRICIA_MAXBITS + 1];
     prefix_t         prefix;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    if (IN6_IS_ADDR_V4MAPPED(addr)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*addr);
-    } else {
-        prefix.family = AF_INET6;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, addr, 16);
-    }
-#pragma GCC diagnostic pop
+    // Session addresses are v4-mapped in6_addrs, matching how v4 indicators
+    // are stored, so everything is searched as a single 128 bit family.
+    prefix.family = AF_INET6;
+    prefix.bitlen = 128;
+    memcpy(&prefix.add.sin6.s6_addr, addr, 16);
 
     int cnt = patricia_search_all(db->ips, &prefix, 1, nodes);
     for (int i = 0; i < cnt; i++) {

@@ -109,6 +109,32 @@ LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos, int 
 }
 /******************************************************************************/
 /*
+ * Insert an ip[/mask] entry into the tree.  IPv4 entries are stored v4-mapped
+ * (::ffff:a.b.c.d, a /n mask becomes /(96+n)) so both families live in the
+ * one 128 bit tree without cross-family bit collisions - patricia compares
+ * raw bits and ignores prefix->family, and session addresses are already
+ * v4-mapped in6_addrs.
+ */
+LOCAL patricia_node_t *tagger_make_and_lookup(patricia_tree_t *tree, const char *ip)
+{
+    char mapped[80];
+
+    if (!strchr(ip, ':')) {
+        const char *slash = strchr(ip, '/');
+        if (slash) {
+            int bits = atoi(slash + 1);
+            if (bits < 0 || bits > 32 || slash - ip >= 40)
+                return NULL;
+            snprintf(mapped, sizeof(mapped), "::ffff:%.*s/%d", (int)(slash - ip), ip, 96 + bits);
+        } else {
+            snprintf(mapped, sizeof(mapped), "::ffff:%s", ip);
+        }
+        ip = mapped;
+    }
+    return make_and_lookup(tree, (char *)ip);
+}
+/******************************************************************************/
+/*
  * Called by arkime when a session is about to be saved
  */
 LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
@@ -121,33 +147,18 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     int i;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr1);
-    } else {
-        prefix.family = AF_INET6;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, &session->addr1, 16);
-    }
+    // Session/XFF addresses are v4-mapped in6_addrs, matching how v4 entries
+    // are stored, so everything is searched as a single 128 bit family.
+    prefix.family = AF_INET6;
+    prefix.bitlen = 128;
 
+    memcpy(&prefix.add.sin6.s6_addr, &session->addr1, 16);
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
         tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, srcIpField);
     }
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr2);
-    } else {
-        prefix.family = AF_INET6;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, &session->addr2, 16);
-    }
-
+    memcpy(&prefix.add.sin6.s6_addr, &session->addr2, 16);
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
         tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, dstIpField);
@@ -161,23 +172,13 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         ghash = session->fields[httpXffField]->ghash;
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                prefix.family = AF_INET;
-                prefix.bitlen = 32;
-                prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-            } else {
-                prefix.family = AF_INET6;
-                prefix.bitlen = 128;
-                memcpy(&prefix.add.sin6.s6_addr, ikey, 16);
-            }
-
+            memcpy(&prefix.add.sin6.s6_addr, ikey, 16);
             cnt = patricia_search_all(allIps, &prefix, 1, nodes);
             for (i = 0; i < cnt; i++) {
                 tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, httpXffField);
             }
         }
     }
-#pragma GCC diagnostic pop
 
     ArkimeString_t *hstring;
     if (httpHostField != -1 && session->fields[httpHostField]) {
@@ -560,7 +561,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
         TaggerStringHash_t *hash = 0;
         switch (file->type[0]) {
         case 'i':
-            node = make_and_lookup(allIps, parts[0]);
+            node = tagger_make_and_lookup(allIps, parts[0]);
             if (!node) {
                 LOG("Couldn't create node for %s", parts[0]);
                 tagger_info_free(info);

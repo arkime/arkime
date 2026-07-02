@@ -83,7 +83,11 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.getURL = ThreatStreamSource.prototype.getURLSqlite3;
       this.loadTypes(true);
       api.app.get('/threatstream/_reload', (req, res) => {
-        this.openDb.bind(this)();
+        if (this.mode === 'sqlite3-copy') {
+          this.openDbCopy();
+        } else {
+          this.openDb();
+        }
         res.send('Ok');
       });
       break;
@@ -251,7 +255,6 @@ class ThreatStreamSource extends WISESource {
     this.inProgress++;
     axios(options)
       .then((response) => {
-        this.inProgress--;
         const body = response.data;
 
         if (body.objects.length === 0) {
@@ -280,6 +283,8 @@ class ThreatStreamSource extends WISESource {
       }).catch((err) => {
         console.log(this.section, 'problem fetching ', options, err);
         return cb(null, WISESource.emptyResult);
+      }).finally(() => {
+        this.inProgress--;
       });
   }
 
@@ -512,18 +517,20 @@ class ThreatStreamSource extends WISESource {
 
     this.checkMd5Index(this.db, dbFile);
 
-    setInterval(() => {
-      try {
-        const result = this.db.pragma('main.wal_checkpoint(TRUNCATE)');
-        console.log('Threatstream Truncate - ', result);
-        if (result.length > 0 && result[0].busy) {
-          const result2 = this.db.pragma('main.wal_checkpoint(PASSIVE)');
-          console.log('Threatstream Passive Truncate - ', result2);
+    if (this.checkpointInterval === undefined) { // only one checkpoint timer, openDb can be called repeatedly
+      this.checkpointInterval = setInterval(() => {
+        try {
+          const result = this.db.pragma('main.wal_checkpoint(TRUNCATE)');
+          console.log('Threatstream Truncate - ', result);
+          if (result.length > 0 && result[0].busy) {
+            const result2 = this.db.pragma('main.wal_checkpoint(PASSIVE)');
+            console.log('Threatstream Passive Truncate - ', result2);
+          }
+        } catch (err) {
+          console.log('Threatstream truncate error', err);
         }
-      } catch (err) {
-        console.log('Threatstream truncate error', err);
-      }
-    }, 5 * 60 * 1000);
+      }, 5 * 60 * 1000);
+    }
   }
 }
 

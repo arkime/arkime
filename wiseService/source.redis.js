@@ -51,21 +51,25 @@ class RedisSource extends WISESource {
         return cb(null, undefined);
       }
 
-      let found = false;
+      let answered = false;
+      const rowResults = [];
       try {
         this.parse(reply, (ignorekey, result) => {
-          found = true;
-          const newresult = WISESource.combineResults([result, this.tagsResult]);
-          return cb(null, newresult);
+          // Collect every row; cb must only be invoked once per query
+          rowResults.push(result);
         }, (err) => {
           if (err) {
             console.log(`${this.section} -`, err);
+            answered = true;
             return cb(null, undefined);
           }
-          if (!found) {
+          if (rowResults.length === 0) {
             console.log(`${this.section} - The keyPath ${this.keyPath} wasn't found even though document was returned`, reply);
+            answered = true;
             return cb(null, undefined);
           }
+          answered = true;
+          return cb(null, WISESource.combineResults([...rowResults, this.tagsResult]));
         });
       } catch (err) {
         if (err) {
@@ -73,7 +77,7 @@ class RedisSource extends WISESource {
         }
         // parse threw before producing a result; complete the query so the
         // wiseService in-progress entry isn't left hanging until the timeout
-        if (!found) {
+        if (!answered) {
           return cb(null, undefined);
         }
       }

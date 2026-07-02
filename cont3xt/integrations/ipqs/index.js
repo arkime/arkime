@@ -173,8 +173,8 @@ class IPQSEmailIntegration extends Integration {
       { label: 'Recent Abuse', field: 'recent_abuse' },
       makeSamples('domain_age'),
       makeSamples('first_seen'),
-      { label: 'A Records', field: 'a_records', type: 'array', separator: ', ' },
-      { label: 'MX Records', field: 'mx_records', type: 'array', separator: ', ' }
+      { label: 'A Records', field: 'a_records', type: 'array', join: ', ' },
+      { label: 'MX Records', field: 'mx_records', type: 'array', join: ', ' }
     ]
   };
 
@@ -272,7 +272,7 @@ class IPQSEmailLeakIntegration extends Integration {
     title: 'IPQS Email Leak Records for %{query}',
     fields: [
       { label: 'Exposed', field: 'exposed', type: 'boolean' },
-      { label: 'Source', field: 'source', type: 'array', separator: ', ' },
+      { label: 'Source', field: 'source', type: 'array', join: ', ' },
       { label: 'Plain Text Password', field: 'plain_text_password', type: 'boolean' },
       makeSamples('first_seen')
     ]
@@ -380,9 +380,9 @@ class IPQSUrlIntegration extends Integration {
       { label: 'Adult', field: 'adult', type: 'boolean' },
       { label: 'Country Code', field: 'country_code' },
       makeSamples('domain_age'),
-      { label: 'A Records', field: 'a_records', type: 'array', separator: ', ' },
-      { label: 'MX Records', field: 'mx_records', type: 'array', separator: ', ' },
-      { label: 'NS Records', field: 'ns_records', type: 'array', separator: ', ' }
+      { label: 'A Records', field: 'a_records', type: 'array', join: ', ' },
+      { label: 'MX Records', field: 'mx_records', type: 'array', join: ', ' },
+      { label: 'NS Records', field: 'ns_records', type: 'array', join: ', ' }
     ]
   };
 
