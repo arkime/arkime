@@ -2248,7 +2248,7 @@ class SessionAPIs {
           }
         }
 
-        // There is 1 entry per row, the entry is determine by the leafs, with an array of parents.
+        // There is 1 entry per row, the entry is determined by the leaves, with an array of parents.
         // This uses a depth first search.
         const tableResults = [];
         function addDataToTable (parents, buckets) {

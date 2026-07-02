@@ -695,8 +695,8 @@ class Pcap {
     if (obj.gre.flags_version & 0x4000) {
       while (true) {
         bpos += 3;
-        if (bpos + 2 > buffer.length) { break; }
-        const len = buffer.readUInt16BE(bpos);
+        if (bpos + 1 > buffer.length) { break; }
+        const len = buffer[bpos]; // SRE Length is 1 byte (RFC 1701)
         bpos++;
         if (len === 0) { break; }
         bpos += len;

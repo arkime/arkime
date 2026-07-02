@@ -127,7 +127,7 @@ function processArgs (argv) {
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
       console.log('  --webcode <code>            Set the web config code instead of random');
-      console.log('  --workers <b>               Number of worker processes to create');
+      console.log('  --workers <num>             Number of worker processes to create');
       console.log('  --insecure                  Disable certificate verification for https calls');
 
       process.exit(0);
@@ -495,7 +495,7 @@ class WISESourceAPI {
    * This is used by the UI to generate what to display to the admin.
    * @typedef {Object} WISESourceAPI~SourceConfig
    * @property {string} name - The name of the source
-   * @property {boolean} singleton - Can there be multiple instances of this source
+   * @property {boolean} singleton - Only one instance of this source can be configured
    * @property {string} description - Friendly text about the source
    * @property {Array} types - List of WISE types the source supports
    * @property {boolean} [cacheable=true] - Can the source be cached by WISE
@@ -1022,7 +1022,7 @@ function processQueryResponse0 (req, res, queries, results) {
 // ----------------------------------------------------------------------------
 // pos len value
 // 0   4   flags
-// 4   2   2
+// 4   4   2
 // 8   32  md5 of fields
 // 40  2   count of fields if md5 unknown
 // 42  L   fields info

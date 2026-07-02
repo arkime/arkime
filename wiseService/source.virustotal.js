@@ -149,9 +149,9 @@ class VirusTotalSource extends WISESource {
 
 // ----------------------------------------------------------------------------
 const reportApi = function (req, res) {
-  source.getMd5(req.query.resource, (err, result) => {
+  source.getMd5({ value: req.query.resource }, (err, result) => {
     // console.log(err, result);
-    if (result[0] === 0) {
+    if (err || result === undefined || result[0] === 0) {
       res.send({ response_code: 0, resource: req.query.resource, verbose_msg: 'The requested resource is not among the finished, queued or pending scans' });
     } else {
       const obj = { scans: {} };
