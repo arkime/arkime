@@ -298,6 +298,23 @@ LOCAL void tagger_free_ip (TaggerIP_t *tip)
 }
 /******************************************************************************/
 /*
+ * Free a TaggerFile_t and all its members
+ */
+LOCAL void tagger_file_free(gpointer data)
+{
+    TaggerFile_t *file = data;
+
+    free(file->str);
+    g_free(file->md5);
+    g_free(file->type);
+    if (file->tags)
+        g_strfreev(file->tags);
+    if (file->elements)
+        g_strfreev(file->elements);
+    ARKIME_TYPE_FREE(TaggerFile_t, file);
+}
+/******************************************************************************/
+/*
  * Called by arkime when arkime is quitting
  */
 LOCAL void tagger_plugin_exit()
@@ -329,25 +346,26 @@ LOCAL void tagger_plugin_exit()
 
     TaggerFile_t *file;
     HASH_FORALL_POP_HEAD2(s_, allFiles, file) {
-        free(file->str);
-        g_free(file->md5);
-        g_free(file->type);
-        if (file->tags)
-            g_strfreev(file->tags);
-        g_strfreev(file->elements);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        tagger_file_free(file);
     }
 
     Destroy_Patricia(allIps, (patricia_fn_data_t)tagger_free_ip);
 }
 
 /******************************************************************************/
+LOCAL void tagger_info_free(gpointer data);
 LOCAL void tagger_remove_file(GPtrArray *infos, const TaggerFile_t *file)
 {
     int f;
     for (f = 0; f < (int)infos->len; f++) {
         if (file == ((TaggerInfo_t *)g_ptr_array_index(infos, f))->file) {
+            TaggerInfo_t *info = g_ptr_array_index(infos, f);
+            // Steal without invoking the free func; packet threads may still
+            // be reading this info in tagger_plugin_save, so free later
+            g_ptr_array_set_free_func(infos, NULL);
             g_ptr_array_remove_index_fast(infos, f);
+            g_ptr_array_set_free_func(infos, tagger_info_free);
+            arkime_free_later(info, tagger_info_free);
             return;
         }
     }
@@ -409,18 +427,20 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
         }
     }
 
-    g_free(file->md5);
+    // Packet threads may still be reading these via TaggerInfo_t pointers
+    // (file->tags in tagger_process_match, ops values pointing into elements)
+    arkime_free_later(file->md5, g_free);
     file->md5 = NULL;
 
-    g_free(file->type);
+    arkime_free_later(file->type, g_free);
     file->type = NULL;
 
     if (file->tags) {
-        g_strfreev(file->tags);
+        arkime_free_later(file->tags, (GDestroyNotify)g_strfreev);
         file->tags = NULL;
     }
 
-    g_strfreev(file->elements);
+    arkime_free_later(file->elements, (GDestroyNotify)g_strfreev);
     file->elements = NULL;
 }
 /******************************************************************************/
@@ -446,8 +466,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     memset(out, 0, sizeof(out));
     if (!data_len || !data) {
         HASH_REMOVE(s_, allFiles, file);
-        free(file->str);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        arkime_free_later(file, tagger_file_free);
         return;
     }
 
@@ -455,8 +474,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     if ((rc = js0n(data, data_len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d in >%.*s<\n", rc, data_len, data);
         HASH_REMOVE(s_, allFiles, file);
-        free(file->str);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        arkime_free_later(file, tagger_file_free);
         return;
     }
 
@@ -494,12 +512,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     if (!file->type || !file->elements) {
         LOG("WARNING - Tagger file %s missing required 'type' or 'data' field", file->str);
         HASH_REMOVE(s_, allFiles, file);
-        free(file->str);
-        if (file->md5) g_free(file->md5);
-        if (file->type) g_free(file->type);
-        if (file->tags) g_strfreev(file->tags);
-        if (file->elements) g_strfreev(file->elements);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        arkime_free_later(file, tagger_file_free);
         return;
     }
 

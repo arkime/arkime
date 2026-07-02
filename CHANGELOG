@@ -67,6 +67,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4089 Fix file reader silently stopping on EINTR instead of retrying
   - #4089 Fix directory monitor leaking watch state when a watched directory is deleted
   - #4090 Add new zeekintel plugin that can read Zeek intel framework files and tag/annotate sessions whose ips, hosts, urls, emails or hashes match a loaded indicator
+  - #4091 Fix ICMPv6 home-agent-reply (type 145) community-id not matching other tools or the reverse direction
+  - #4091 Fix IKEv2 parsing issues
+  - #4091 Fix MQTT parser PUBLISH issues
+  - #4091 Fix s3:// directory listing silently dropping pages after the first when the bucket needs continuation requests
+  - #4091 Rename misspelled protocol classifier stream-ihscp to steam-ihscp (Steam In-Home Streaming Control Protocol)
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt

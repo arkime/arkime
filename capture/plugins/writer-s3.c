@@ -73,6 +73,11 @@ SavepcapS3File_t            *currentFiles[ARKIME_MAX_PACKET_THREADS];
 LOCAL  ARKIME_LOCK_DEFINE(fileQ);
 LOCAL  SavepcapS3File_t      fileQ;
 
+// Guards per-file uploadId/partNumber/partNumberResponses/outputQ/doClose,
+// which are accessed from both packet threads (flush) and the http thread
+// (init/part callbacks)
+LOCAL  ARKIME_LOCK_DEFINE(uploadState);
+
 LOCAL  void                 *s3Server = 0;
 LOCAL  void                 *metadataServer = 0;
 LOCAL  char                  *s3Region;
@@ -202,6 +207,7 @@ LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
     if (config.debug)
         LOG("Part-Response: %d %s %d", code, file->outputFileName, len);
 
+    ARKIME_LOCK(uploadState);
     file->partNumberResponses++;
 
     if (file->doClose && file->partNumber == file->partNumberResponses) {
@@ -224,6 +230,7 @@ LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
         if (config.debug > 1)
             LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
     }
+    ARKIME_UNLOCK(uploadState);
 
 }
 /******************************************************************************/
@@ -325,6 +332,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     }
     GMatchInfo *match_info;
     g_regex_match_full(regex, (char *)data, len, 0, 0, &match_info, NULL);
+    ARKIME_LOCK(uploadState);
     if (g_match_info_matches(match_info)) {
         file->uploadId = g_match_info_fetch(match_info, 1);
         file->partNumber = 1;
@@ -343,6 +351,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
         writer_s3_request("PUT", file->outputPath, qs, output->buf, output->len, FALSE, writer_s3_part_cb, file);
         ARKIME_TYPE_FREE(SavepcapS3Output_t, output);
     }
+    ARKIME_UNLOCK(uploadState);
 }
 /******************************************************************************/
 LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
@@ -768,6 +777,7 @@ LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 #endif
     }
 
+    ARKIME_LOCK(uploadState);
     if (s3file->uploadId) {
         char qs[1000];
 
@@ -785,7 +795,10 @@ LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 
     if (end) {
         s3file->doClose = TRUE;
-    } else {
+    }
+    ARKIME_UNLOCK(uploadState);
+
+    if (!end) {
         s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
         s3file->outputPos = 0;
 

@@ -776,7 +776,7 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
     http->which = dir;
 #ifdef HTTPDEBUG
-    LOG("HTTPDEBUG: enter %d - %d %.*s", http->dir, remaining, remaining, data);
+    LOG("HTTPDEBUG: enter %d - %d %.*s", dir, remaining, remaining, data);
 #endif
 
     if (http->isConnect) {

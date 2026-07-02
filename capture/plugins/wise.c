@@ -284,6 +284,17 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         int cnt = 0;
         BSB_IMPORT_u16(bsb, cnt);
 
+        if (BSB_IS_ERROR(bsb)) {
+            LOG("ERROR - Wise server response too short for ver 2 header");
+            ARKIME_LOCK(item);
+            for (i = 0; i < request->numItems; i++) {
+                wise_remove_item_locked(request->items[i]);
+            }
+            ARKIME_UNLOCK(item);
+            ARKIME_TYPE_FREE(WiseRequest_t, request);
+            return;
+        }
+
         if (cnt > ARKIME_FIELDS_MAX) {
             LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
         }

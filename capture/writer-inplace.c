@@ -36,9 +36,11 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 {
     const char *readerName = offlineInfo[packet->readerPos].filename;
 
-    uint32_t outputId;
+    uint32_t outputId = 0;
     if (config.pcapReprocess) {
-        arkime_db_file_exists(readerName, &outputId);
+        if (!arkime_db_file_exists(readerName, &outputId)) {
+            LOGEXIT("ERROR - Can't reprocess %s, no files record found in OpenSearch/Elasticsearch for node %s", readerName, config.nodeName);
+        }
     } else {
         char *filename;
         filename = arkime_db_create_file_full(&packet->ts, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
