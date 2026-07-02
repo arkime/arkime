@@ -636,14 +636,23 @@ function logAction (uiPage) {
       log.range = req.query.stopTime - req.query.startTime;
     }
 
-    if (req.query.view && req.user.views) {
-      const view = req.user.views[req.query.view];
-      if (view) {
-        log.view = {
-          name: req.query.view,
-          expression: view.expression
-        };
-      }
+    // Views live in their own index now; resolve async and let finish() await it
+    let viewPromise;
+    if (req.query.view) {
+      viewPromise = (async () => {
+        try {
+          const roles = [...await req.user.getRoles()];
+          const view = await Db.getViewByIdOrName(req.query.view, req.user.userId, roles);
+          if (view) {
+            log.view = {
+              name: view.name,
+              expression: view.expression
+            };
+          }
+        } catch (err) {
+          // Not finding the view is not a reason to skip logging
+        }
+      })();
     }
 
     // save the request body
@@ -667,13 +676,15 @@ function logAction (uiPage) {
 
     req._arkimeStartTime = new Date();
 
-    function finish () {
+    async function finish () {
       res.removeListener('finish', finish);
 
       log.queryTime = new Date() - req._arkimeStartTime;
 
       if (req._arkimeESQuery) { log.esQuery = req._arkimeESQuery; }
       if (req._arkimeESQueryIndices) { log.esQueryIndices = req._arkimeESQueryIndices; }
+
+      if (viewPromise) { await viewPromise; }
 
       try {
         Db.historyIt(log, req.body.cluster ?? req.query.cluster);

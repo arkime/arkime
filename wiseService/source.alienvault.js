@@ -87,7 +87,7 @@ class AlienVaultSource extends WISESource {
       // If statusCode isn't success or not changed then try again if not already
       if (statusCode !== 200 && statusCode !== 304) {
         if (!this.retry) {
-          this.retry = setTimeout(this.loadFile.bind(this), 5 * 60 * 1000);
+          this.retry = setTimeout(() => { delete this.retry; this.loadFile(); }, 5 * 60 * 1000);
         }
         return;
       }
@@ -109,7 +109,7 @@ class AlienVaultSource extends WISESource {
             delete this.retry;
           } else {
             if (!this.retry) {
-              this.retry = setTimeout(this.loadFile.bind(this), 5 * 60 * 1000); // Failed to load data file, try again in 5 minutes
+              this.retry = setTimeout(() => { delete this.retry; this.loadFile(); }, 5 * 60 * 1000); // Failed to load data file, try again in 5 minutes
             }
           }
         });

@@ -118,22 +118,59 @@ class ThreatStreamSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseFile () {
-    this.ips.clear();
-    this.domains.clear();
-    this.emails.clear();
-    this.md5s.clear();
-    this.urls.clear();
+    // Build into fresh maps and swap at the end so a failed load keeps prior data
+    const ips = new Map();
+    const domains = new Map();
+    const emails = new Map();
+    const md5s = new Map();
+    const urls = new Map();
 
+    let bad = false;
     fs.createReadStream('/tmp/threatstream.zip')
+      .on('error', (err) => {
+        console.log(this.section, "- Couldn't read /tmp/threatstream.zip", err);
+      })
       .pipe(unzipper.Parse())
+      .on('error', (err) => {
+        bad = true;
+        console.log(this.section, '- Error unzipping', err);
+      })
       .on('entry', (entry) => {
         const bufs = [];
         entry.on('data', (buf) => {
           bufs.push(buf);
         }).on('end', () => {
-          const json = JSON.parse(Buffer.concat(bufs));
+          let json;
+          try {
+            json = JSON.parse(Buffer.concat(bufs));
+          } catch (e) {
+            bad = true;
+            console.log(this.section, 'ERROR - parsing', entry.path, e);
+            return;
+          }
           json.objects.forEach((item) => {
             if (item.state !== 'active') {
+              return;
+            }
+
+            // Figure out where the item goes and its indicator value first
+            let hash, indicator;
+            if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
+              hash = ips; indicator = item.srcip;
+            } else if (item.itype.match(/_domain|_dns/)) {
+              hash = domains; indicator = item.domain;
+            } else if (item.itype.match(/_email/)) {
+              hash = emails; indicator = item.email;
+            } else if (item.itype.match(/_md5/)) {
+              hash = md5s; indicator = item.md5;
+            } else if (item.itype.match(/_url/)) {
+              hash = urls; indicator = item.url;
+              if (indicator.startsWith('http://')) {
+                indicator = indicator.substring(7);
+              } else if (indicator.startsWith('https://')) {
+                indicator = indicator.substring(8);
+              }
+            } else {
               return;
             }
 
@@ -141,6 +178,7 @@ class ThreatStreamSource extends WISESource {
             try {
               if (item.maltype && item.maltype !== 'null') {
                 encoded = WISESource.encodeResult(
+                  this.indicatorField, '' + indicator,
                   this.severityField, item.severity.toLowerCase(),
                   this.confidenceField, '' + item.confidence,
                   this.idField, '' + item.id,
@@ -150,6 +188,7 @@ class ThreatStreamSource extends WISESource {
                 );
               } else {
                 encoded = WISESource.encodeResult(
+                  this.indicatorField, '' + indicator,
                   this.severityField, item.severity.toLowerCase(),
                   this.confidenceField, '' + item.confidence,
                   this.idField, '' + item.id,
@@ -162,27 +201,21 @@ class ThreatStreamSource extends WISESource {
               return;
             }
 
-            if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-              this.ips.set(item.srcip, encoded);
-            } else if (item.itype.match(/_domain|_dns/)) {
-              this.domains.set(item.domain, encoded);
-            } else if (item.itype.match(/_email/)) {
-              this.emails.set(item.email, encoded);
-            } else if (item.itype.match(/_md5/)) {
-              this.md5s.set(item.md5, encoded);
-            } else if (item.itype.match(/_url/)) {
-              if (item.url.startsWith('http://')) {
-                item.url = item.url.substring(7);
-              } else if (item.url.startsWith('https://')) {
-                item.url = item.url.substring(8);
-              }
-              this.urls.set(item.url, encoded);
-            }
+            hash.set(indicator, encoded);
           });
           // console.log(this.section, "- Done", entry.path);
         });
       })
       .on('close', () => {
+        if (bad) {
+          console.log(this.section, '- Load failed, keeping previous data');
+          return;
+        }
+        this.ips = ips;
+        this.domains = domains;
+        this.emails = emails;
+        this.md5s = md5s;
+        this.urls = urls;
         console.log(this.section, '- Done Loading');
       });
   }
@@ -228,14 +261,17 @@ class ThreatStreamSource extends WISESource {
   // ----------------------------------------------------------------------------
   dumpZip (res) {
     res.write('{');
-    ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey) => {
-      res.write(`${ckey}: [\n`);
+    ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey, cindex) => {
+      if (cindex > 0) { res.write(',\n'); }
+      res.write(`"${ckey}": [\n`);
+      let first = true;
       this[ckey].forEach((value, key) => {
-        const str = `{"key": ${JSON.stringify(key)}, "ops":\n` +
-          WISESource.result2JSON(value) + '},\n';
+        const str = (first ? '' : ',\n') + `{"key": ${JSON.stringify(key)}, "ops":\n` +
+          WISESource.result2JSON(value) + '}';
+        first = false;
         res.write(str);
       });
-      res.write('],\n');
+      res.write(']');
     });
     res.write('}');
     res.end();
@@ -271,7 +307,7 @@ class ThreatStreamSource extends WISESource {
             this.sourceField, item.source
           );
 
-          if (item.maltype !== undefined && item.maltype !== 'null') {
+          if (item.maltype != null && item.maltype !== 'null') {
             args.push(this.maltypeField, item.maltype.toLowerCase());
           }
           if (item.severity !== undefined) {

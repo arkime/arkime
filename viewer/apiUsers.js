@@ -792,6 +792,11 @@ class UserAPIs {
           console.log(`${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
         }
 
+        if (err) {
+          console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
+          return res.serverError(500, 'Error dismissing message');
+        }
+
         return res.json({
           success: true,
           text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`,
