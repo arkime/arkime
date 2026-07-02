@@ -128,12 +128,14 @@ LOCAL int MHS_request(lua_State *L)
                               mhs_http_response_cb,
                               lhttp);
 
-    if (!result) {
+    // arkime_http_send returns 0 on success, non-zero when dropped
+    if (result != 0) {
+        // Request dropped, the callback will never fire
         luaL_unref(L, LUA_REGISTRYINDEX, lhttp->ref);
         ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
     }
 
-    lua_pushboolean(L, result);
+    lua_pushboolean(L, result == 0);
     return 1;
 }
 /******************************************************************************/

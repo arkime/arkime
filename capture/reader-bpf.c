@@ -219,7 +219,7 @@ void reader_bpf_exit()
 }
 
 /******************************************************************************/
-void reader_bpf_init(char *UNUSED(name))
+void reader_bpf_init(const char *UNUSED(name))
 {
     arkime_config_check("bpf", "", "bpfBufferSize", NULL);
 

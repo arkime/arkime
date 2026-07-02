@@ -197,7 +197,7 @@ void reader_tpacketv3_exit()
     }
 }
 /******************************************************************************/
-void reader_tpacketv3_init(char *UNUSED(name))
+void reader_tpacketv3_init(const char *UNUSED(name))
 {
     arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", NULL);
 

@@ -55,6 +55,7 @@ LOCAL const char *ikev2ExchangeTypes[] = {
     [37] = "informational"
 };
 
+// IKEv1 attribute type 1 values (RFC 2409 Appendix A)
 LOCAL const char *encryptionAlgorithms[] = {
     [1] = "des-cbc",
     [2] = "idea-cbc",
@@ -63,15 +64,36 @@ LOCAL const char *encryptionAlgorithms[] = {
     [5] = "3des-cbc",
     [6] = "cast-cbc",
     [7] = "aes-cbc",
-    [8] = "camellia-cbc",
-    [12] = "aes-ctr",
-    [13] = "aes-ccm-8",
-    [14] = "aes-ccm-12",
-    [15] = "aes-ccm-16",
+    [8] = "camellia-cbc"
+};
+
+// IKEv2 Transform Type 1 (ENCR) IDs (IANA IKEv2 Parameters)
+LOCAL const char *encryptionAlgorithmsV2[] = {
+    [1]  = "des-iv64",
+    [2]  = "des",
+    [3]  = "3des",
+    [4]  = "rc5",
+    [5]  = "idea",
+    [6]  = "cast",
+    [7]  = "blowfish",
+    [8]  = "3idea",
+    [9]  = "des-iv32",
+    [11] = "null",
+    [12] = "aes-cbc",
+    [13] = "aes-ctr",
+    [14] = "aes-ccm-8",
+    [15] = "aes-ccm-12",
+    [16] = "aes-ccm-16",
     [18] = "aes-gcm-8",
     [19] = "aes-gcm-12",
     [20] = "aes-gcm-16",
-    [23] = "chacha20-poly1305"
+    [21] = "null-auth-aes-gmac",
+    [23] = "camellia-cbc",
+    [24] = "camellia-ctr",
+    [25] = "camellia-ccm-8",
+    [26] = "camellia-ccm-12",
+    [27] = "camellia-ccm-16",
+    [28] = "chacha20-poly1305"
 };
 
 LOCAL const char *hashAlgorithms[] = {
@@ -251,8 +273,8 @@ LOCAL void ike_parse_transform_v2(ArkimeSession_t *session, BSB *bsb)
 
     switch (transformType) {
     case 1: // ENCR
-        if (transformId < ARRAY_LEN(encryptionAlgorithms) && encryptionAlgorithms[transformId])
-            arkime_field_string_add(encryptionField, session, encryptionAlgorithms[transformId], -1, TRUE);
+        if (transformId < ARRAY_LEN(encryptionAlgorithmsV2) && encryptionAlgorithmsV2[transformId])
+            arkime_field_string_add(encryptionField, session, encryptionAlgorithmsV2[transformId], -1, TRUE);
         break;
     case 2: // PRF
         if (transformId < ARRAY_LEN(prfAlgorithms) && prfAlgorithms[transformId])
@@ -468,8 +490,9 @@ LOCAL int ike_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
     if (exchangeStr)
         arkime_field_string_add(exchangeTypeField, session, exchangeStr, -1, TRUE);
 
-    // Check if encrypted
-    int encrypted = isV2 ? (flags & 0x08) : (flags & 0x01);
+    // Check if encrypted. IKEv2 has no header-level encrypted bit (0x08 is the
+    // Initiator flag); only IKE_SA_INIT (34) exchanges are cleartext.
+    int encrypted = isV2 ? (exchangeType != 34) : (flags & 0x01);
     if (encrypted)
         return 0;
 
