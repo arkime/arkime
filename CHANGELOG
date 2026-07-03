@@ -75,6 +75,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4091 Fix s3:// directory listing silently dropping pages after the first when the bucket needs continuation requests
   - #4091 Rename misspelled protocol classifier stream-ihscp to steam-ihscp (Steam In-Home Streaming Control Protocol)
   - #4093 Fix tagger and zeekintel plugins potentially cross-matching IPv4 and IPv6 entries whose leading bits coincide; IPv4 entries are now stored v4-mapped in the shared tree
+  - #4095 Fix python packet callbacks crashing capture when the callback returns a non-int (e.g. None)
+  - #4095 Fix s3:// reader dropping the X-Amz-Security-Token header with s3PathAccessStyle, breaking STS/IAM temporary credentials
+  - #4095 Fix pcap-over-IP treating nanosecond pcap timestamps as microseconds
+  - #4095 Fix tpacketv3 fanout ids overflowing into the fanout mode with multiple interfaces and a large tpacketv3ClusterId
+  - #4095 Fix ARKIME_ env vars whose value contains __ creating garbage config sections
+  - #4095 Fix lua plugin crashing at startup when luaFiles is present but empty
+  - #4095 Fix lua tcpflags.fin/tcpflags.urg session gets returning nil, and a Lua registry leak on every completed HttpService request
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt

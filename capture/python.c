@@ -1511,7 +1511,8 @@ LOCAL ArkimePacketRC arkime_python_packet_cb(ArkimePacketBatch_t *batch, ArkimeP
         PyErr_Print(); // Print any unhandled Python exceptions from the callback
         LOG("Error calling Python callback function from C");
     } else {
-        r = PyLong_AsLong(result);
+        if (PyLong_Check(result))
+            r = PyLong_AsLong(result);
         Py_DECREF(result); // Decrement reference count of the Python result object
     }
 
