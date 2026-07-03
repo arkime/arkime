@@ -120,6 +120,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4094 Fix raw packet search hunts matching bytes in pcap record headers when searching both directions
   - #4094 Fix multies GET _search crashing when one cluster returns an error
   - #4094 Fix map data still being computed when map=false is sent with facets
+  - #4096 Speed up the Connections and SPIView pages when there are 1000s of fields by lazily rendering field menus/categories and batching SPIView show/hide-all toggling
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors

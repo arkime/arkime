@@ -190,7 +190,8 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
                 <input
                   type="text"
-                  v-model="fieldQuery"
+                  :value="fieldQuery"
+                  @input="debouncedSetFieldQuery($event.target.value)"
                   class="arkime-input-control"
                   :placeholder="$t('common.searchForFields')">
               </div>
@@ -827,6 +828,17 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    /**
+     * Debounces updates to the field-visibility search filter so filtering
+     * (which can run over 1000s of fields) doesn't run on every keystroke
+     * @param {string} value The raw input value
+     */
+    debouncedSetFieldQuery: function (value) {
+      if (this._fieldQueryTimer) { clearTimeout(this._fieldQueryTimer); }
+      this._fieldQueryTimer = setTimeout(() => {
+        this.fieldQuery = value;
+      }, 300);
+    },
     /**
      * Cancels the pending session query (if it's still pending) and runs a new
      * query if requested
