@@ -304,7 +304,7 @@ uint32_t arkime_session_hash(const void *key)
         uint32_t k1 = *p;
         k1 *= 0xcc9e2d51;
         k1 = (k1 << 15) | (k1 >> 17); // Rotate left 15 bits
-        k1 *= 0x1b873531;
+        k1 *= 0x1b873593;
 
         h1 ^= k1;
         h1 = (h1 << 13) | (h1 >> 19); // Rotate left 13 bits

@@ -1,0 +1,74 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 34997,
+    "fileId" : [],
+    "firstPacket" : 1704067200000,
+    "ipProtocol" : 0,
+    "lastPacket" : 1704067200003,
+    "length" : 3,
+    "network" : {
+     "bytes" : 260,
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     81,
+     81,
+     81,
+     81
+    ],
+    "packetPos" : [
+     24,
+     105,
+     186,
+     267
+    ],
+    "packetRange" : {
+     "gte" : 1704067200000,
+     "lte" : 1704067200003
+    },
+    "protocol" : [
+     "unknown-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 260,
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-24m01"
+    }
+   }
+  }
+ ]
+}
+

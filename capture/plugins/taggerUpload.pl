@@ -28,7 +28,7 @@ if ($ARGV[0] eq "--insecure") {
 
 my $host = $ARGV[0];
 
-if ($host !~ /(http:|https)/) {
+if ($host !~ m{^https?://}) {
     $host = "http://$ARGV[0]";
 }
 

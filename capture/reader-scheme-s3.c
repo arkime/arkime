@@ -225,20 +225,18 @@ LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, con
         LOG("objectkey: %s", objectkey);
 
     char *headers[8];
-    headers[0] = "Expect:";
-    if (pathStyle) {
-        headers[1] = NULL;
-    } else {
-        headers[1] = "Content-Type:";
+    int   hi = 0;
+    headers[hi++] = "Expect:";
+    if (!pathStyle) {
+        headers[hi++] = "Content-Type:";
     }
-    headers[2] = NULL;
-    headers[3] = NULL;
 
     char tokenHeader[1000];
     if (creds->token) {
         snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
-        headers[2] = tokenHeader;
+        headers[hi++] = tokenHeader;
     }
+    headers[hi] = NULL;
 
     req->first = TRUE;
     req->tryAgain = FALSE;

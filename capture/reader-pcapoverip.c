@@ -38,6 +38,7 @@ typedef struct {
     uint16_t                state: 1;
     uint16_t                needSwap: 1;
     uint16_t                isClient: 1;
+    uint16_t                isNanosecond: 1;
 } POIClient_t;
 
 LOCAL int                   isConnected[MAX_INTERFACES];
@@ -93,6 +94,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             }
 
             poic->needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
+            poic->isNanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
 
             // TODO: Really we should save the header per connection and do stuff
             if (first) {
@@ -133,6 +135,9 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             packet->ts.tv_sec = ph->ts.tv_sec;
             packet->ts.tv_usec = ph->ts.tv_usec;
         }
+
+        if (poic->isNanosecond)
+            packet->ts.tv_usec = packet->ts.tv_usec / 1000;
 
         if (unlikely(caplen != origlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
             LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u\n"

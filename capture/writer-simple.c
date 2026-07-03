@@ -1012,7 +1012,7 @@ void writer_simple_init(const char *name)
     arkime_writer_exit         = writer_simple_exit;
     arkime_writer_write        = writer_simple_write;
 
-    arkime_config_check("simple", "simpleKEKId", "simpleMaxQ", "simpleEncoding", "simpleCompression", "simpleGzipLevel", "simpleZstdLevel", "simpleCompressionBlockSize", "simpleShortHeader", "simpleFreeOutputBuffers", NULL);
+    arkime_config_check("simple", "simpleKEKId", "simpleMaxQ", "simpleEncoding", "simpleDEKEncoding", "simpleCompression", "simpleGzipLevel", "simpleZstdLevel", "simpleCompressionBlockSize", "simpleShortHeader", "simpleFreeOutputBuffers", NULL);
 
     simpleMaxQ = arkime_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
     char *mode = arkime_config_str(NULL, "simpleEncoding", NULL);
@@ -1109,7 +1109,7 @@ void writer_simple_init(const char *name)
     config.gapPacketPos = arkime_config_boolean(NULL, "gapPacketPos", TRUE);
 
     simpleShortHeader = arkime_config_boolean(NULL, "simpleShortHeader", FALSE);
-    if (simpleShortHeader && config.maxFileTimeM > 60) {
+    if (simpleShortHeader && (config.maxFileTimeM == 0 || config.maxFileTimeM > 60)) {
         config.maxFileTimeM = 60;
         LOG("INFO: Resetting maxFileTimeM to 60 since using simpleShortHeader");
     }
