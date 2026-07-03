@@ -161,6 +161,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="!loading">
               <!-- node fields button -->
               <b-dropdown
+                lazy
                 size="sm"
                 no-flip
                 no-caret
@@ -178,11 +179,12 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </template>
                 <b-dropdown-header>
-                  <input
-                    type="text"
+                  <BFormInput
+                    size="sm"
+                    debounce="300"
                     v-model="fieldQuery"
-                    class="form-control form-control-sm dropdown-typeahead"
-                    :placeholder="$t('common.searchForFields')">
+                    class="dropdown-typeahead"
+                    :placeholder="$t('common.searchForFields')" />
                 </b-dropdown-header>
                 <b-dropdown-divider />
                 <b-dropdown-item
@@ -199,10 +201,10 @@ SPDX-License-Identifier: Apache-2.0
                     {{ key }}
                   </b-dropdown-header>
                   <template
-                    v-for="(field, k) in group"
-                    :key="key + k + 'itemnode'">
+                    v-for="field in group"
+                    :key="'node-' + field.exp">
                     <b-dropdown-item
-                      :id="key + k + 'itemnode'"
+                      :id="'node-' + field.exp"
                       :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
                       @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
                       {{ field.friendlyName }}
@@ -211,7 +213,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="field.help"
                         :delay="{show: 300, hide: 0}"
                         noninteractive
-                        :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
+                        :target="'node-' + field.exp">{{ field.help }}</BTooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -219,6 +221,7 @@ SPDX-License-Identifier: Apache-2.0
 
               <!-- link fields button -->
               <b-dropdown
+                lazy
                 size="sm"
                 no-flip
                 no-caret
@@ -236,11 +239,12 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </template>
                 <b-dropdown-header>
-                  <input
-                    type="text"
+                  <BFormInput
+                    size="sm"
+                    debounce="300"
                     v-model="fieldQuery"
-                    class="form-control form-control-sm dropdown-typeahead"
-                    :placeholder="$t('common.searchForFields')">
+                    class="dropdown-typeahead"
+                    :placeholder="$t('common.searchForFields')" />
                 </b-dropdown-header>
                 <b-dropdown-divider />
                 <b-dropdown-item
@@ -257,10 +261,10 @@ SPDX-License-Identifier: Apache-2.0
                     {{ key }}
                   </b-dropdown-header>
                   <template
-                    v-for="(field, k) in group"
-                    :key="key + k + 'itemlink'">
+                    v-for="field in group"
+                    :key="'link-' + field.exp">
                     <b-dropdown-item
-                      :id="key + k + 'itemlink'"
+                      :id="'link-' + field.exp"
                       :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
                       @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
                       {{ field.friendlyName }}
@@ -269,7 +273,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="field.help"
                         :delay="{show: 300, hide: 0}"
                         noninteractive
-                        :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
+                        :target="'link-' + field.exp">{{ field.help }}</BTooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
