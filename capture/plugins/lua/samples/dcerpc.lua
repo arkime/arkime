@@ -46,7 +46,7 @@ endpointMap = {
     ["2c9273e0-1dc3-11d3-b364-00105a1f8177"] = "IWbemRefreshingServices interface",
     ["423ec01e-2e35-11d2-b604-00104b703efd"] = "IWbemWCOSmartEnum interface",
     ["1c1c45ee-4395-11d2-b60b-00104b703efd"] = "IWbemFetchSmartEnum interface",
-    ["541679AB-2E5F-11d3-B34E-00104BCC4B4A"] = "IWbemLoginHelper interface",
+    ["541679ab-2e5f-11d3-b34e-00104bcc4b4a"] = "IWbemLoginHelper interface",
     ["51c82175-844e-4750-b0d8-ec255555bc06"] = "KMS",
     ["50abc2a4-574d-40b3-9d66-ee4fd5fba076"] = "dnsserver",
     ["3faf4738-3a21-4307-b46c-fdda9bb8c0d5"] = "AudioSrv",
@@ -1372,7 +1372,7 @@ opCodeMap["afa8bd80-7d8a-11c9-bef4-08002b102989"][0x03] = "stop_server_listening
 opCodeMap["afa8bd80-7d8a-11c9-bef4-08002b102989"][0x04] = "inq_princ_name"
 
 function dcerpcClassify(session, str, direction)
-    if str:sub(1,3) == string.char(0x05, 0x00, 0x0b) then
+    if str:len() >= 48 and str:sub(1,3) == string.char(0x05, 0x00, 0x0b) then
     ctx = (string.format('%02X%02X%02X%02X', str:sub(33,36):reverse():byte(1,4)) .. "-" ..
             string.format('%02X%02X', str:sub(37,38):reverse():byte(1,2)) .. "-" ..
             string.format('%02X%02X', str:sub(39,40):reverse():byte(1,2)) .. "-" ..

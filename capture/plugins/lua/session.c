@@ -716,9 +716,9 @@ LOCAL int MS_get(lua_State *L)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
             else if (strcmp(exp + 9, "rst") == 0)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST]);
-            else if (strcmp(exp + 9, "FIN") == 0)
+            else if (strcasecmp(exp + 9, "fin") == 0)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
-            else if (strcmp(exp + 9, "URG") == 0)
+            else if (strcasecmp(exp + 9, "urg") == 0)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]);
             else
                 break;

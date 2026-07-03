@@ -289,7 +289,9 @@ void reader_tpacketv3_init(const char *UNUSED(name))
                 CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
 
             int fanout_type = PACKET_FANOUT_HASH;
-            int fanout_arg = ((fanout_group_id + i) | (fanout_type << 16));
+            if (fanout_group_id > 0xffff)
+                CONFIGEXIT("Fanout group id %d is too large, you must use a lower tpacketv3ClusterId", fanout_group_id);
+            int fanout_arg = (fanout_group_id | (fanout_type << 16));
             if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
                 CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }

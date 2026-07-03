@@ -70,6 +70,7 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
         LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
     }
 
+    luaL_unref(L, LUA_REGISTRYINDEX, lhttp->ref);
     arkime_http_free_response(lhttp->data);
     ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
 }

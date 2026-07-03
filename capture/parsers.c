@@ -879,6 +879,7 @@ int arkime_parsers_load()
     HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
 
     ArkimeString_t *hstring;
+    int count = 0;
 
     char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
     for (int d = 0; disableParsers[d]; d++) {
@@ -954,6 +955,7 @@ int arkime_parsers_load()
             hstring->str = files[i].filename;
             hstring->len = strlen(files[i].filename);
             HASH_ADD(s_, loaded, hstring->str, hstring);
+            count++;
 
             if (config.debug)
                 LOG("Loaded %s", path);
@@ -967,8 +969,6 @@ int arkime_parsers_load()
         ArkimeExtensions_t *ext = (ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e);
         ext->loaded = 1;
     }
-
-    int count = HASH_COUNT(s_, loaded);
 
     HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
         g_free(hstring->str);

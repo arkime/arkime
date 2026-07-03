@@ -167,7 +167,7 @@ function parseSMB2(session, str, direction)
     return 0
   end
   if str:byte(21) % 2 == 0 then
-    if str:byte(17) == string.char(0x00) then
+    if str:byte(17) == 0x00 then
       return 0
     end
     local tbl = session:table()
@@ -176,7 +176,7 @@ function parseSMB2(session, str, direction)
       table.insert(tbl.opcodes,SMB2_CMD[str:byte(17)]["name"])
       session:add_string("smb.opcode",SMB2_CMD[str:byte(17)]["name"])
       if SMB2_CMD[str:byte(17)]["cmdpos"] == nil or
-         SMB2_CMD[str:byte(17)]["cmdpos"] == nil then
+         SMB2_CMD[str:byte(17)]["cmdlen"] == nil then
          return 0
       end
       if str:len() < SMB2_CMD[str:byte(17)]["cmdpos"] + SMB2_CMD[str:byte(17)]["cmdlen"] - 1 then
