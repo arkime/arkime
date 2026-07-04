@@ -126,7 +126,7 @@ void arkime_parser_init()
                                               NULL,
                                               600);
 
-    msgTypeField = arkime_field_define("ospf", "lotermfield",
+    msgTypeField = arkime_field_define("ospf", "termfield",
                                        "ospf.msgType", "OSPF Msg Type", "ospf.msgType",
                                        "OSPF packet type",
                                        ARKIME_FIELD_TYPE_STR_GHASH, 0,

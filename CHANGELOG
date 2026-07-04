@@ -90,6 +90,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4097 Fix RDP parser silently desyncing when the reassembly buffer overflows (now tagged rdp:frame-too-long)
   - #4097 Fix S7comm reading fields from the next buffered TPKT frame when COTP/S7 lengths are bogus
   - #4097 Fix SCTP reassembly corrupting messages when fragments of different streams interleave
+  - #4098 Fix M2UA Protocol Data 2 messages including the length-indicator octet in the MTP3 payload, corrupting decoded SS7 fields
+  - #4098 Fix MQTT parser desyncing on messages too large for the reassembly buffer (now tagged mqtt:message-too-long)
+  - #4098 Fix NBNS only parsing the first packet in each direction of a session
+  - #4098 Fix synchrophasor CFG-3 frames misparsing PMU names after the first (digital channel name count and PHSCALE size)
+  - #4098 Fix ospf.msgType exact searches failing because the field was declared lowercase but stores mixed-case values
+  - #4098 Fix tagger plugin not removing IPv4 ip entries when a tagger file is reloaded or removed
+  - #4098 Fix session detail issues: RADIUS missing Msg Type/NAS IPs/NAS Port fields, SIP User-Agent menus building a nonexistent sip.useragent expression, and cert JA4x_r row layout
+  - #4098 Fix lua sample smb.lua FSCTL and Find subcommand names never matching
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt
@@ -118,6 +126,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4094 Fix multies GET _search crashing when one cluster returns an error
   - #4094 Fix map data still being computed when map=false is sent with facets
   - #4096 Speed up the Connections and SPIView pages when there are 1000s of fields by lazily rendering field menus/categories and batching SPIView show/hide-all toggling
+  - #4098 Fix hunts configured with multiple notifiers only notifying the first one
+  - #4098 Fix stats gathering polluting the shared nodes-stats cache with a bogus timestamp pseudo-node that showed up as an extra ES node
+  - #4098 Fix viewer pcap decoder GTP inner packet byte positions being off by 8 (UDP header not counted)
+  - #4098 Fix expression list values with multiple escaped commas or backslashes only unescaping the first one
+  - #4098 Fix IP field Add Exists menu items building queries with the database field name instead of the expression
+  - #4098 Fix session detail Src/Dst payload preview not replacing unprintable characters
+  - #4098 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when the S3 object is gone
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors

@@ -75,6 +75,14 @@ LOCAL const uint8_t *m3ua_parse_m2ua(const uint8_t *data, int len, int *mtp3Len)
         // Protocol Data 1 (0x0300) or Protocol Data 2 (0x0301)
         if (paramTag == 0x0300 || paramTag == 0x0301) {
             if (BSB_REMAINING(bsb) >= dataLen) {
+                if (paramTag == 0x0301) {
+                    // RFC 3331: Protocol Data 2 starts with a 1-byte Length
+                    // Indicator (LI) octet before the MTP2-user message
+                    if (dataLen < 2)
+                        return NULL;
+                    *mtp3Len = dataLen - 1;
+                    return BSB_WORK_PTR(bsb) + 1;
+                }
                 *mtp3Len = dataLen;
                 return BSB_WORK_PTR(bsb);
             }

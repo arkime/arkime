@@ -432,7 +432,12 @@ ${Config.arkimeWebURL()}hunt
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
-          Notifier.issueAlert(hunt.notifier, message, continueProcess);
+          // Handle multiple notifiers (stored as comma-separated string)
+          const notifiers = hunt.notifier.split(',');
+          for (const notifierId of notifiers) {
+            Notifier.issueAlert(notifierId, message, () => {});
+          }
+          continueProcess();
         } else {
           return continueProcess();
         }

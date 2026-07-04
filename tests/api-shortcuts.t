@@ -38,7 +38,7 @@ is($json->{text}, "Missing token", "create shortcut requires token");
 # create shortcut
 $json = viewerPostToken("/api/shortcut", '{"name":"test_shortcut~!@#$%^&*()+={}[]:;<>?,./","type":"string","value":"udp"}', $token);
 ok($json->{success}, "create shortcut success");
-ok(exists $json->{shortcut}->{id}, "returns shorcut with id");
+ok(exists $json->{shortcut}->{id}, "returns shortcut with id");
 my $shortcut1Id = $json->{shortcut}->{id}; # save id for cleanup later
 
 # remove special chars from shortcut name

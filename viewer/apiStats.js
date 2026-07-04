@@ -493,8 +493,9 @@ class StatsAPIs {
         }
       }
 
-      nodesStats.nodes.timestamp = new Date().getTime();
-      StatsAPIs.#previousNodesStats.push(nodesStats.nodes);
+      // Copy so the shared Db.nodesStats cache entry isn't polluted with a
+      // bogus "timestamp" pseudo-node for other consumers
+      StatsAPIs.#previousNodesStats.push({ ...nodesStats.nodes, timestamp: new Date().getTime() });
 
       res.send({
         data: stats,
@@ -1797,8 +1798,7 @@ class StatsAPIs {
       const { body: info } = await Db.nodesStats({
         metric: 'jvm,process,fs,os,indices,thread_pool'
       });
-      info.nodes.timestamp = new Date().getTime();
-      StatsAPIs.#previousNodesStats.push(info.nodes);
+      StatsAPIs.#previousNodesStats.push({ ...info.nodes, timestamp: new Date().getTime() });
     } catch (err) {
       console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
     }

@@ -1,4 +1,4 @@
-use Test::More tests => 133;
+use Test::More tests => 134;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -175,8 +175,8 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/api/esshards");
-    eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes empty");
-    eq_or_diff($shards->{ipExcludes}, ["1.2.3.4"], "esshard: ipExcludes empty");
+    eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes thenode");
+    eq_or_diff($shards->{ipExcludes}, ["1.2.3.4"], "esshard: ipExcludes 1.2.3.4");
 
     $result = viewerPost("/api/esshards/ip/1.2.3.4/include", "");
     is($result->{success}, 0, "esshard: include no token");
@@ -191,7 +191,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.nodeIncluded", "esshard: include node i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include", "", $token);
-    is($result->{success}, 0, "esshard: include foodbar");
+    is($result->{success}, 0, "esshard: include foobar");
     is($result->{i18n}, "api.stats.unknownIncludeType", "esshard: include foodbar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?arkimeRegressionUser=test1", "", $test1Token);
@@ -330,7 +330,8 @@ my $test1Token = getTokenCookie("test1");
 # parliament.json
     my $stats = viewerGet("/api/parliament");
     is (@{$stats->{data}}, 1, "parliament.json data set ");
-    is (@{$stats->{esNodes}}, 2, "parliament.json esNodes set ");
+    is (@{$stats->{esNodes}}, 1, "parliament.json esNodes set ");
+    ok (defined $stats->{esNodes}->[0]->{nodeName}, "parliament.json esNodes has no junk timestamp entry");
     is ($stats->{recordsTotal}, 1, "parliament.json recordsTotal");
     is ($stats->{data}->[0]->{id}, "test", "parliament.json name");
 

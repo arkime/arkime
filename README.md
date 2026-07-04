@@ -87,13 +87,13 @@ Access to Arkime is protected by using HTTPS with digest passwords or by using a
 
 * Arkime machines should be locked down; however, they need to communicate with each other (port 8005) and the OpenSearch/Elasticsearch machines (ports 9200-920x). Additionally, the web interface needs to be open (port 8005).
 
-* Arkime `viewer`` should be configured to use TLS.
+* Arkime ``viewer`` should be configured to use TLS.
 
   - It's easiest to use a single certificate with multiple DNs or a wildcard.
   - Make sure you protect the cert on the filesystem with proper file permissions.
   - Edit certFile and keyFile settings in ``/opt/arkime/etc/config.ini`` to enable.
 
-* For large deployments it is possible to set up a Arkime ``viewer`` on a central machine that doesn't capture any data, instead the machine gateways all UI requests.
+* For large deployments it is possible to set up an Arkime ``viewer`` on a central machine that doesn't capture any data, instead the machine gateways all UI requests.
 
   - Using a reverse proxy (Caddy, Apache, ...) can handle the authentication and pass the username on to Arkime, this is how we deploy it.
 

@@ -1458,6 +1458,59 @@ def sec_smb1_malformed_delete():
     return build()
 
 
+def sec_nbns_response():
+    # NBNS query + positive name response in ONE session
+    # (10.20.8.10:49200 <-> 10.20.8.1:137). Regression for nbns_udp_classify
+    # never parsing the response direction: nbns.host/nbns.ip stayed empty
+    # for normal query->response sessions (host TESTHOST, ip 10.20.8.77).
+    import struct
+
+    QUERY = bytes.fromhex('beef011000010000000000002046454546464446454549455046444645434143414341434143414341434141410000200001')
+    RESP = bytes.fromhex('beef8580000000010000000020464545464644464545494550464446454341434143414341434143414341414100002000010000012c000600000a14084d')
+
+    CLI_IP = '10.20.8.10'
+    SRV_IP = '10.20.8.1'
+    CLI_PORT = 49200
+    SRV_PORT = 137
+    TS_START = 1700009300.0
+    CLI_MAC = bytes.fromhex('02aa00001201')
+    SRV_MAC = bytes.fromhex('02aa00001202')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_udp(src, dst, smac, dmac, sport, dport, payload):
+        udplen = 8 + len(payload)
+        iplen = 20 + udplen
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 17, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        udp = struct.pack('>HHHH', sport, dport, udplen, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 17, udplen)
+        ck = csum(pseudo + udp + payload)
+        udp = udp[:6] + struct.pack('>H', ck if ck else 0xffff)
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+    pkts = [
+        eth_ip_udp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT, QUERY),
+        eth_ip_udp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT, RESP),
+    ]
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -1472,6 +1525,7 @@ def main():
     out += sec_sctp_interleave()
     out += sec_smb1_dialect0()
     out += sec_smb1_malformed_delete()
+    out += sec_nbns_response()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

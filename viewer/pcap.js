@@ -640,9 +640,9 @@ class Pcap {
       if (offset >= data.length) { return; }
 
       if ((data[offset] & 0xf0) === 0x60) {
-        this.ip6(data.slice(offset), obj, pos + offset);
+        this.ip6(data.slice(offset), obj, pos + 8 + offset);
       } else {
-        this.ip4(data.slice(offset), obj, pos + offset);
+        this.ip4(data.slice(offset), obj, pos + 8 + offset);
       }
     }
   }

@@ -26,7 +26,7 @@ We expect participants in this community to conduct themselves professionally. S
 
 ### Unacceptable Behaviors
 Participants remain in good standing when they do not engage in misconduct or harassment. To elaborate:
-* **Don't be a bigot.** Calling out project members by their identity or background in a negative or insulting manner. This includes, but is not limited to, slurs or insinuations related to protected or suspect classes e.g. race, color, citizenship, national origin, political belief, religion, sexual orientation, gender identity and expression, age, size, culture, ethnicity, genetic features, language, profession, national minority statue, mental or physical ability.
+* **Don't be a bigot.** Calling out project members by their identity or background in a negative or insulting manner. This includes, but is not limited to, slurs or insinuations related to protected or suspect classes e.g. race, color, citizenship, national origin, political belief, religion, sexual orientation, gender identity and expression, age, size, culture, ethnicity, genetic features, language, profession, national minority status, mental or physical ability.
 * **Don't insult.** Insulting remarks about a person’s lifestyle practices.
 * **Don't dox.** Revealing private information about other participants without explicit permission.
 * **Don't intimidate.** Threats of violence or intimidation of any project member.
@@ -43,7 +43,7 @@ If you experience or witness misconduct, or have any other concerns about the co
 * Your account of what occurred, and if the incident is ongoing. Please provide links to or transcripts of the publicly available records (e.g. a mailing list archive or a public IRC logger), so that we can review it.
 * Any additional information that may be helpful to achieve resolution.
 
-After filing a report, a representative will contact you directly to review the incident and ask additional questions. If a member of the Oath Response Team is named in an incident report, that member will be recused from handling your incident. If the complaint originates from a member of the Response Team, it will be addressed by a different member of the Response Team. We will consider reports to be confidential for the purpose of protecting victims of abuse.
+After filing a report, a representative will contact you directly to review the incident and ask additional questions. If a member of the project's Response Team is named in an incident report, that member will be recused from handling your incident. If the complaint originates from a member of the Response Team, it will be addressed by a different member of the Response Team. We will consider reports to be confidential for the purpose of protecting victims of abuse.
 
 ### Scope
 Yahoo will assign a Response Team member with admin rights on the project and legal rights on the project copyright. The Response Team is empowered to restrict some privileges to the project as needed. Since this project is governed by an open source license, any participant may fork the code under the terms of the project license. The Response Team’s goal is to preserve the project if possible, and will restrict or remove participation from those who disrupt the project.

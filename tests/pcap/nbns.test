@@ -38,21 +38,24 @@
       "ARIN"
      ],
      "host" : [
-      "MDJR98"
+      "MDJR98",
+      "WORKGROUP"
      ],
-     "hostCnt" : 1,
+     "hostCnt" : 2,
      "ip" : [
       "192.168.239.129"
      ],
      "ipCnt" : 1,
      "name" : [
-      "MDJR98"
+      "MDJR98",
+      "WORKGROUP"
      ],
-     "nameCnt" : 1,
+     "nameCnt" : 2,
      "queryHost" : [
-      "MDJR98"
+      "MDJR98",
+      "WORKGROUP"
      ],
-     "queryHostCnt" : 1,
+     "queryHostCnt" : 2,
      "queryType" : [
       "NB"
      ],
@@ -240,21 +243,24 @@
       "ARIN"
      ],
      "host" : [
-      "MDJR98"
+      "MDJR98",
+      "WORKGROUP"
      ],
-     "hostCnt" : 1,
+     "hostCnt" : 2,
      "ip" : [
       "192.168.239.129"
      ],
      "ipCnt" : 1,
      "name" : [
-      "MDJR98"
+      "MDJR98",
+      "WORKGROUP"
      ],
-     "nameCnt" : 1,
+     "nameCnt" : 2,
      "queryHost" : [
-      "MDJR98"
+      "MDJR98",
+      "WORKGROUP"
      ],
-     "queryHostCnt" : 1,
+     "queryHostCnt" : 2,
      "queryType" : [
       "NB"
      ],
@@ -494,21 +500,24 @@
       "ARIN"
      ],
      "host" : [
+      "MARTIN ROSENAU",
       "WORKGROUP"
      ],
-     "hostCnt" : 1,
+     "hostCnt" : 2,
      "ip" : [
       "192.168.239.129"
      ],
      "ipCnt" : 1,
      "name" : [
+      "MARTIN ROSENAU",
       "WORKGROUP"
      ],
-     "nameCnt" : 1,
+     "nameCnt" : 2,
      "queryHost" : [
+      "MARTIN ROSENAU",
       "WORKGROUP"
      ],
-     "queryHostCnt" : 1,
+     "queryHostCnt" : 2,
      "queryType" : [
       "NB"
      ],
@@ -611,21 +620,27 @@
       "ARIN"
      ],
      "host" : [
-      "WORKGROUP"
+      "MARTIN ROSENAU",
+      "WORKGROUP",
+      "__MSBROWSE__"
      ],
-     "hostCnt" : 1,
+     "hostCnt" : 3,
      "ip" : [
       "192.168.239.129"
      ],
      "ipCnt" : 1,
      "name" : [
-      "WORKGROUP"
+      "MARTIN ROSENAU",
+      "WORKGROUP",
+      "__MSBROWSE__"
      ],
-     "nameCnt" : 1,
+     "nameCnt" : 3,
      "queryHost" : [
-      "WORKGROUP"
+      "MARTIN ROSENAU",
+      "WORKGROUP",
+      "__MSBROWSE__"
      ],
-     "queryHostCnt" : 1,
+     "queryHostCnt" : 3,
      "queryType" : [
       "NB"
      ],

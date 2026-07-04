@@ -115,23 +115,31 @@ LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos, int 
  * raw bits and ignores prefix->family, and session addresses are already
  * v4-mapped in6_addrs.
  */
+LOCAL int tagger_map_v4(const char *ip, char *mapped, size_t size)
+{
+    if (strchr(ip, ':')) {
+        g_strlcpy(mapped, ip, size);
+        return 1;
+    }
+    const char *slash = strchr(ip, '/');
+    if (slash) {
+        int bits = atoi(slash + 1);
+        if (bits < 0 || bits > 32 || slash - ip >= 40)
+            return 0;
+        snprintf(mapped, size, "::ffff:%.*s/%d", (int)(slash - ip), ip, 96 + bits);
+    } else {
+        snprintf(mapped, size, "::ffff:%s", ip);
+    }
+    return 1;
+}
+/******************************************************************************/
 LOCAL patricia_node_t *tagger_make_and_lookup(patricia_tree_t *tree, const char *ip)
 {
     char mapped[80];
 
-    if (!strchr(ip, ':')) {
-        const char *slash = strchr(ip, '/');
-        if (slash) {
-            int bits = atoi(slash + 1);
-            if (bits < 0 || bits > 32 || slash - ip >= 40)
-                return NULL;
-            snprintf(mapped, sizeof(mapped), "::ffff:%.*s/%d", (int)(slash - ip), ip, 96 + bits);
-        } else {
-            snprintf(mapped, sizeof(mapped), "::ffff:%s", ip);
-        }
-        ip = mapped;
-    }
-    return make_and_lookup(tree, (char *)ip);
+    if (!tagger_map_v4(ip, mapped, sizeof(mapped)))
+        return NULL;
+    return make_and_lookup(tree, mapped);
 }
 /******************************************************************************/
 /*
@@ -380,9 +388,12 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
     int i;
     if (file->type[0] == 'i') {
         prefix_t prefix;
+        char     mapped[80];
 
         for (i = 0; file->elements[i]; i++) {
-            if (!ascii2prefix2(0, file->elements[i], &prefix)) {
+            // Entries were inserted v4-mapped; search the same way
+            if (!tagger_map_v4(file->elements[i], mapped, sizeof(mapped)) ||
+                !ascii2prefix2(0, mapped, &prefix)) {
                 LOG("Couldn't unload %s", file->elements[i]);
                 continue;
             }

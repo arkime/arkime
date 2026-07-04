@@ -335,9 +335,9 @@ class Parliament {
    * The Parliament settings.
    * @typedef ParliamentSettings
    * @type {object}
-   * @property {boolean} noPackets - The minimum number of packets that the capture node must receive. If the capture node is not receiving enough packets, a Low Packets issue is added to the cluster. You can set this value to -1 to ignore this issue altogether.
+   * @property {number} noPackets - The minimum number of packets that the capture node must receive. If the capture node is not receiving enough packets, a Low Packets issue is added to the cluster. You can set this value to -1 to ignore this issue altogether.
    * @property {number} noPacketsLength - The time range for how long the no packets issue must persist before adding an issue to the cluster. The default for this setting is 0 packets for 10 seconds.
-   * @property {boolean} outOfDate - How behind a node's cluster's timestamp can be from the current time. If the timestamp exceeds this time setting, an Out Of Date issue is added to the cluster. The default for this setting is 30 seconds.
+   * @property {number} outOfDate - How behind a node's cluster's timestamp can be from the current time. If the timestamp exceeds this time setting, an Out Of Date issue is added to the cluster. The default for this setting is 30 seconds.
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
