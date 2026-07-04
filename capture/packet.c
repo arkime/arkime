@@ -556,10 +556,8 @@ LOCAL void *arkime_packet_thread(void *threadp)
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 
         // Only process commands if the packetQ is less than 75% full or every 8 packets
-        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPackets75) || (skipCount & 0x7) == 0) {
+        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPackets75) || (++skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
-        } else {
-            skipCount++;
         }
 
         if (!packet)
