@@ -262,7 +262,7 @@ void reader_bpf_init(const char *UNUSED(name))
             CONFIGEXIT("Failed to bind BPF to interface %s: %s", config.interface[i], strerror(errno));
         }
 
-        // Set non-blocking mode
+        // Set immediate mode
         int n = 1;
         if (ioctl(reader->fd, BIOCIMMEDIATE, &n) < 0) {
             CONFIGEXIT("Failed to set BPF immediate mode: %s", strerror(errno));

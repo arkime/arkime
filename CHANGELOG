@@ -93,6 +93,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4095 Fix ARKIME_ env vars whose value contains __ creating garbage config sections
   - #4095 Fix lua plugin crashing at startup when luaFiles is present but empty
   - #4095 Fix lua tcpflags.fin/tcpflags.urg session gets returning nil, and a Lua registry leak on every completed HttpService request
+  - #4097 Fix session-command processing throttle never engaging when the packet queue is 75% full
+  - #4097 Fix s3:// directory listing stopping early when a listing page contains no pcap files
+  - #4097 Fix ARP and NBNS session-detail IP clicks/exports building nonexistent ip.arp/ip.nbns expressions
+  - #4097 Fix cert:certificate-authority testing the cRLSign keyUsage bit instead of keyCertSign, and keyUsage being ignored when subjectAltName precedes it
+  - #4097 Fix HTTP CONNECT tunnels hashing server tunnel bytes into http.md5/sha256 and never releasing the http parser
+  - #4097 Fix RDP parser silently desyncing when the reassembly buffer overflows (now tagged rdp:frame-too-long)
+  - #4097 Fix S7comm reading fields from the next buffered TPKT frame when COTP/S7 lengths are bogus
+  - #4097 Fix SCTP reassembly corrupting messages when fragments of different streams interleave
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt

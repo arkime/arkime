@@ -352,6 +352,8 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         }
         if (DLL_COUNT(item_, s3Items) == 0) {
             ARKIME_UNLOCK(s3Items->lock);
+            if (req.continuation) // Empty page, but more pages to fetch
+                continue;
             break;
         }
         S3Item *item;
@@ -491,6 +493,8 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
         }
         if (DLL_COUNT(item_, s3Items) == 0) {
             ARKIME_UNLOCK(s3Items->lock);
+            if (req.continuation) // Empty page, but more pages to fetch
+                continue;
             break;
         }
         S3Item *item;

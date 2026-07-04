@@ -1557,7 +1557,7 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     case ARKIME_FIELD_TYPE_STR_HASH:
         return HASH_COUNT(s_, *(field->shash));
     case ARKIME_FIELD_TYPE_INT_HASH:
-        return HASH_COUNT(s_, *(field->ihash));
+        return HASH_COUNT(i_, *(field->ihash));
     case ARKIME_FIELD_TYPE_IP_GHASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
     case ARKIME_FIELD_TYPE_STR_GHASH:
