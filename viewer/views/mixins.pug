@@ -152,7 +152,7 @@ mixin ipArrayList(container, field, title, expr, max)
         b-dropdown-item(@click="openSpiGraph('" + expr  + ".rir')")
           | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
         b-dropdown-divider
-        b-dropdown-item(@click="fieldExists('" + field  + "', '==')")
+        b-dropdown-item(@click="fieldExists('" + expr  + "', '==')")
           | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
 
     dd

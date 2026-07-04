@@ -219,7 +219,7 @@ LOCAL int sip_parse_request(ArkimeSession_t *session, const uint8_t *line, int l
     if (!sip_is_method(method, methodEnd))
         return -1;
 
-    // Verify SIP/2.0 at end
+    // Verify the request line contains SIP/2.0
     if (lineLen < methodEnd + 10)
         return -1;
 

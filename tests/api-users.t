@@ -25,7 +25,7 @@ my $json;
 
 # users
     my $users = viewerPost("/api/users", "");
-    is (@{$users->{data}}, 1, "anonymous, superAdmin");
+    is (@{$users->{data}}, 1, "anonymous");
 
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
@@ -46,7 +46,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $json = viewerDeleteToken("/api/user/sac-csvinj", $token);
 
-# Can't create system rule
+# Can't create system role
     $json = viewerPostToken("/api/user", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password"}', $token);
     eq_or_diff($json, from_json('{"text": "User ID can\'t be a system role id", "success": false}'));
 
@@ -56,7 +56,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerPostToken("/api/user/sac-usersAdmin!", '{"userId": "usersAdmin\u001b", "userName": "UserName", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
     eq_or_diff($json, from_json('{"text": "User not found", "success": false}'));
 
-# Create Missing/Emptry fields
+# Create Missing/Empty fields
     $json = viewerPostToken("/api/user", '{"userName": "UserName", "enabled":true, "password":"password"}', $token);
     eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
 
@@ -266,12 +266,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     is ($users->{recordsFiltered}, 5);
 
     $users = viewerPost("/api/users", "start=0&length=1");
-    is (@{$users->{data}}, 1, "start=1&length=1");
+    is (@{$users->{data}}, 1, "start=0&length=1");
     is ($users->{recordsTotal}, 5);
     is ($users->{recordsFiltered}, 5);
 
     $users = viewerPost("/api/users", "start=666&length=100000");
-    is (@{$users->{data}}, 0, "start=0&length=100000");
+    is (@{$users->{data}}, 0, "start=666&length=100000");
     is ($users->{recordsTotal}, 0);
     is ($users->{recordsFiltered}, 0);
 
@@ -497,11 +497,11 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     # not a user:
     $json = viewerGet("/api/fieldActions?arkimeRegressionUser=test100");
-    eq_or_diff($json, from_json('{"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"},"ALLTEST":{"name":"All Field Action %FIELDNAME%!","url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true}}'), 'not a fieldActions user:');
+    eq_or_diff($json, from_json('{"ALLTESTWISE":{"url":"http://www.example.com","all":true,"name":"AllWiseTest"},"ALLTEST":{"name":"All Field Action %FIELDNAME%!","url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true}}'), 'not a fieldActions user:');
 
     # notUser:
     $json = viewerGet("/api/fieldActions?arkimeRegressionUser=test101");
-    eq_or_diff($json, from_json('{"ALLTEST":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true,"name":"All Field Action %FIELDNAME%!"},"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"}}'), 'notUser fieldActions');
+    eq_or_diff($json, from_json('{"ALLTEST":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true,"name":"All Field Action %FIELDNAME%!"},"ALLTESTWISE":{"url":"http://www.example.com","all":true,"name":"AllWiseTest"}}'), 'notUser fieldActions');
 
 # reverseDNS tests
     my $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns?ip=thisisnotanip")->content;

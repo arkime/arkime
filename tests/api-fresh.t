@@ -15,7 +15,7 @@ use strict;
     viewerPost2("/regressionTests/flushCache");
     countTest2(0, "date=-1");
 
-# Now test the APIs, basically making sure viewer dosn't crash
+# Now test the APIs, basically making sure viewer doesn't crash
 my $json;
 
     $json = viewerGet2("/eshealth.json");
@@ -25,13 +25,13 @@ my $json;
     is ($json->{recordsTotal}, 1, "Correct number of stats");
 
     $json = viewerGet2("/stats.json");
-    is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
+    is ($json->{recordsTotal}, 0, "Correct files recordsTotal");
 
     $json = viewerGet2("/dstats.json");
     is (scalar %{$json}, 0, "Empty dstats");
 
     $json = viewerGet2("/api/files");
-    is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
+    is ($json->{recordsTotal}, 0, "Correct files recordsTotal");
 
     $json = viewerGet2("/sessions.json?date=-1");
     is ($json->{recordsTotal}, 0, "Correct sessions.json recordsTotal");

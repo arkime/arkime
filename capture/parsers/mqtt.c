@@ -120,8 +120,6 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt,
     int hasWill = (flags & 0x04) != 0;
     int cleanSession = (flags & 0x02) != 0;
 
-    (void)willRetain;
-
     if (hasWill) {
         arkime_field_string_add(flagsField, session, "hasWill", -1, TRUE);
         if (willQoS <= 2) {
@@ -398,6 +396,12 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         int processed = BSB_WORK_PTR(bsb) - mqtt->buf[which];
         arkime_parser_buf_del(mqtt, which, processed);
         BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
+    }
+
+    if (truncated) {
+        // add() dropped tail bytes; anything after the gap can't be trusted
+        arkime_session_add_tag(session, "mqtt:message-too-long");
+        arkime_parsers_unregister(session, mqtt);
     }
 
     return 0;

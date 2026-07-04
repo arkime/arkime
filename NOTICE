@@ -84,7 +84,7 @@ capture/thirdparty/patricia.*
  */
 
 ================================================================================
-viewer/public/cubmism.v1.js - Apache License 2.0 - http://square.github.com/cubism/
+viewer/public/cubism.v1.min.js - Apache License 2.0 - http://square.github.com/cubism/
 
 Copyright 2012 Square, Inc.
 
