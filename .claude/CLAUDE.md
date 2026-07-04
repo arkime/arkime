@@ -226,7 +226,7 @@ Multiple auth modes via common/auth.js:
 ## Testing Infrastructure
 
 ### Test Framework
-Custom Perl framework: tests/ArkimeTest.pm (~26,000 lines)
+Custom Perl framework: tests/ArkimeTest.pm
 - 47 test files (*.t)
 - Uses LWP::UserAgent for HTTP testing
 - Helper functions: viewerGet(), viewerPost(), esGet(), countTest()
@@ -356,10 +356,10 @@ git config --local core.hooksPath .githooks/
 5. Add i18n translations to common/vueapp/locales/*.json
 
 ### Adding a Cont3xt Integration
-1. Create new file in cont3xt/integrations/
-2. Extend Integration class from integration.js
-3. Implement doFetch() method
-4. Register in cont3xt.js
+1. Create a new directory cont3xt/integrations/<name>/ with an index.js
+2. Extend the Integration class from cont3xt/integration.js
+3. Declare an itypes map pointing at your fetch methods (e.g. fetchDomain)
+4. Integrations are auto-discovered at startup (no registration step)
 5. Add tests
 
 ### Adding a WISE Source

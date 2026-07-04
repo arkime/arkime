@@ -224,7 +224,7 @@ LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
     BSB_INIT(bsb, data + 20, msgLen);
 
     // Add message type using method/class lookup
-    // Method: bits 0-3, 5-8, 11; Class: bits 4, 9
+    // Method: bits 0-3, 5-7, 9-13; Class: bits 4, 8
     int method = ((msgType & 0x000F) | ((msgType & 0x00E0) >> 1) | ((msgType & 0x3E00) >> 2));
     int msgClass = ((msgType & 0x0010) >> 4) | ((msgType & 0x0100) >> 7);
     const char *methodName = stun_method_name(method);

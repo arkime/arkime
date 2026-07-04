@@ -166,10 +166,86 @@ def sec_m3ua_sctp_ooo():
     return build()
 
 
+def sec_m2ua_pd2():
+    # M2UA MAUP-DATA carrying Protocol Data 2 (tag 0x0301), which per
+    # RFC 3331 starts with a 1-byte Length Indicator before the MTP2-user
+    # message. Calling digits patched to 4s so the session is identifiable
+    # (camel.calling == 444444444).
+    # Regression for m3ua.c parsing PD2 like PD1 (LI octet read as the SIO).
+    # Session 10.20.1.1:2906 -> 10.20.1.2:2906, SCTP ppid 2.
+    import struct
+
+    M2UA_PD2 = bytes.fromhex(
+        '0100060100000070030100683f8314006400090003070b044364000a044314000a4e'
+        '62504804123456786b262824060700118605010101a019601780020780a109060704'
+        '000001003201be062804060251016c1ca11a02011002010030128007912143658709'
+        'f18307914444444444f4')
+
+    CRC_TABLE = []
+    for i in range(256):
+        c = i
+        for _ in range(8):
+            c = (c >> 1) ^ 0x82F63B78 if c & 1 else c >> 1
+        CRC_TABLE.append(c)
+
+    def crc32c(data):
+        c = 0xffffffff
+        for b in data:
+            c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >> 8)
+        return c ^ 0xffffffff
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    ETH = bytes.fromhex('02aa000011020 2aa00001101'.replace(' ','')) + b'\x08\x00'
+    ETH_R = bytes.fromhex('02aa000011010 2aa00001102'.replace(' ','')) + b'\x08\x00'
+
+    def sctp_packet(src, dst, eth, vtag, chunks):
+        sctp = struct.pack('>HHII', 2906, 2906, vtag, 0)
+        body = b''
+        for c in chunks:
+            body += c + b'\0' * ((4 - len(c) % 4) % 4)
+        crc = crc32c(sctp[:8] + b'\0\0\0\0' + body)
+        sctp = sctp[:8] + struct.pack('<I', crc) + body
+        iplen = 20 + len(sctp)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 132, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return eth + ip + sctp
+
+    def chunk(ctype, flags, body):
+        return struct.pack('>BBH', ctype, flags, 4+len(body)) + body
+
+    def data_chunk(tsn, ppid, payload):
+        return chunk(0, 0x03, struct.pack('>IHHI', tsn, 0, 0, ppid) + payload)
+
+    CLI, SRV = '10.20.1.1', '10.20.1.2'
+    pkts = [
+        sctp_packet(CLI, SRV, ETH, 0, [chunk(1, 0, struct.pack('>IIHHI', 0x31313131, 65535, 4, 4, 100))]),
+        sctp_packet(SRV, CLI, ETH_R, 0x31313131, [chunk(2, 0, struct.pack('>IIHHI', 0x32323232, 65535, 4, 4, 200))]),
+        sctp_packet(CLI, SRV, ETH, 0x32323232, [data_chunk(100, 2, M2UA_PD2)]),
+    ]
+
+    out = b''
+    ts = 1781049000.0
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/m3ua_synthetic.pcap'
     out = LEGACY
     out += sec_m3ua_sctp_ooo()
+    out += sec_m2ua_pd2()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

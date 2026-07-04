@@ -152,9 +152,9 @@ Add a string value to a session
 * returns = true if added, false if already there
 
 ### session:add_int(fieldexpressionOrFieldId, value)
-Add a integer value to a session
+Add an integer value to a session
 * fieldExpressionOrFieldId = the field expression or a fieldId.
-* value = the string to add
+* value = the integer to add
 * returns = true if added, false if already there
 
 ### session:add_tag(tag)

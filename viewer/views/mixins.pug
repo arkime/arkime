@@ -160,9 +160,8 @@ mixin ipArrayList(container, field, title, expr, max)
           v-list-item(@click="openSpiGraph('" + expr  + ".rir')")
             | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
           v-divider
-          v-list-item(@click="fieldExists('" + field  + "', '==')")
+          v-list-item(@click="fieldExists('" + expr  + "', '==')")
             | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
-
     dd
       - fieldShort = (field.endsWith("Ip") ? field.slice(0, -2) : field)
       each ip,i in container[field]

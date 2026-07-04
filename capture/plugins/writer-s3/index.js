@@ -199,6 +199,19 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         s3.getObject(data.params, async function (err, s3data) {
           if (err) {
             console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
+            // Clear the in-progress markers and wake any queued waiters so
+            // later reads of the same blocks don't hang forever
+            for (let i = 0; i < data.subPackets.length; i++) {
+              const sp = data.subPackets[i];
+              const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+              const cip = CacheInProgress[decompressedCacheKey];
+              delete CacheInProgress[decompressedCacheKey];
+              if (cip && cip !== true) {
+                for (let j = 0; j < cip.length; j++) {
+                  cip[j]();
+                }
+              }
+            }
             return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
           }
           const body = Buffer.from(await s3data.Body.transformToByteArray());

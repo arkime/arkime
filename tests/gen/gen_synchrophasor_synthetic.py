@@ -43,9 +43,83 @@ LEGACY = zlib.decompress(base64.b64decode(
 
 
 
+def sec_cfg3():
+    # CFG-3 frame (IEEE C37.118.2) with 2 PMUs, spec-correct layout:
+    #   PMU-ALPHA: 1 phasor, 1 analog, 1 digital word -> CHNAM has
+    #   1+1+16 names, PHSCALE is 12 bytes/phasor
+    #   PMU-BRAVO: 0/0/0, then DATA_RATE 30
+    # Regression for synchrophasor.c CFG-3 using dgnmr (not 16*dgnmr) name
+    # count and 8-byte (not 12) PHSCALE: the buggy parser desyncs and never
+    # reaches PMU-BRAVO / DATA_RATE.
+    # Session 10.0.0.3:50001 -> 10.0.0.4:4712, frame sent twice (classify+parse).
+    import struct
+
+    CFG3 = bytes.fromhex(
+        'aa5200f400076553f100000000000000000f4240000209504d552d414c5048410001'
+        '0000000000000000000000000000000000000001000100010350483003414e300344'
+        '30300344303103443032034430330344303403443035034430360344303703443038'
+        '03443039034431300344313103443132034431330344313403443135000000000000'
+        '0000000000000000000000000000000000000000000000000000000000004d000000'
+        '00000000000000000109504d552d425241564f000100000000000000000000000000'
+        '00000000000000000000000000000000000000000000004d00000000000000000000'
+        '0001001e0a0a')
+
+    CLI_IP = '10.0.0.3'
+    SRV_IP = '10.0.0.4'
+    CLI_PORT = 50001
+    SRV_PORT = 4712
+    TS_START = 1700008000.0
+    CLI_MAC = bytes.fromhex('02aa00001001')
+    SRV_MAC = bytes.fromhex('02aa00001002')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    pkts = []
+    cseq, sseq = 0x1000, 0x2000
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT, cseq, 0, 0x02))
+    cseq += 1
+    pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT, sseq, cseq, 0x12))
+    sseq += 1
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT, cseq, sseq, 0x10))
+    pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT, sseq, cseq, 0x18, CFG3))
+    sseq += len(CFG3)
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT, cseq, sseq, 0x10))
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT, cseq, sseq, 0x11))
+    cseq += 1
+    pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT, sseq, cseq, 0x11))
+    sseq += 1
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT, cseq, sseq, 0x10))
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/synchrophasor_synthetic.pcap'
     out = LEGACY
+    out += sec_cfg3()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

@@ -196,7 +196,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   is($json->{notifier}->{roles}->[0], "arkimeUser", "roles updated");
   is($json->{notifier}->{roles}->[1], "parliamentUser", "roles updated");
 
-# sac-notadmin user can now see see id4 notifier
+# sac-notadmin user can now see id4 notifier
   $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=sac-notadmin", $notAdminToken);
   is (@{$notifiers}, 2, "2 notifiers shared with sac-notadmin user (one by user sharing and one by role sharing)");
   is (${notifiers}->[0]->{name}, "test3", 'can see notifier shared by users');

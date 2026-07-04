@@ -1,6 +1,6 @@
-Moloch has both capture and viewer regression tests that are run seperately.
+Moloch has both capture and viewer regression tests that are run separately.
 
-* Requires Test::Differences pacakge: `yum install perl-Test-Differences` or `cpan Test::Differences`
+* Requires Test::Differences package: `yum install perl-Test-Differences` or `cpan Test::Differences`
 
 1) Capture
 Tests if the capture pcap parsers produce consistent results.

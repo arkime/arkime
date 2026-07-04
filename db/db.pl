@@ -185,7 +185,7 @@ sub showHelp($)
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
     print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
     print "    --compression <mode>       - The compression codec\n";
-    print "  wipe [<init opts>]           - Same as init, but leaves configs,user,views,parliament indices untouched\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves configs,users,queries,parliament indices untouched\n";
     print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";

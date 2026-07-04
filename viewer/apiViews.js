@@ -100,7 +100,6 @@ class ViewAPIs {
    * @name /view
    * @returns {boolean} success - Whether the create view operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} viewName - The name of the new view.
    * @returns {ArkimeView} view - The new view data.
    */
   static async apiCreateView (req, res) {

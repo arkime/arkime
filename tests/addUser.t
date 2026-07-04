@@ -37,7 +37,7 @@ my $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminT
 diag Dumper($users) if ($users->{recordsTotal} != 10);
 
 # validate the flags
-eq_or_diff($users->{recordsTotal}, 10, "Should have 11 users");
+eq_or_diff($users->{recordsTotal}, 10, "Should have 10 users");
 eq_or_diff($users->{data}->[0]->{roles}, from_json('["superAdmin"]'));
 is($users->{data}->[1]->{userId}, 'role:role');
 eq_or_diff($users->{data}->[2]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
@@ -65,7 +65,7 @@ is($user1->{id}, "test1");
 addUser("-n testuser test1 test1 test1 --email");
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is($users->{data}->[2]->{id}, "test1");
-ok($users->{data}->[2]->{emailSearch}, "Can update exiting user");
+ok($users->{data}->[2]->{emailSearch}, "Can update existing user");
 
 
 #### Auth Header tests
@@ -346,7 +346,7 @@ $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
-is (@{$users->{data}}, 7, "Two supers plus 4 role mappings left");
+is (@{$users->{data}}, 7, "Two supers plus 4 role mappings plus anonymous left");
 
 viewerGet("/regressionTests/deleteAllUsers");
 

@@ -285,7 +285,7 @@ class CsvJsonIntegration extends Integration {
 
     // Watch for file changes, debounce over 1000ms
     if (!this.#watch) {
-      // Need to as variable because of 'this'
+      // Needs to be a variable because of 'this'
       const watchCb = () => {
         clearTimeout(this.#watchTimer);
         this.#watchTimer = setTimeout(() => {

@@ -343,13 +343,13 @@ if (0) {
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length=[908493,908494]"));
 }
 
-# vlan tests
+# vni tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni=123"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni.cnt=1"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni<124"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni>124"));
 
-# vni tests
+# vlan tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan=500"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan.cnt=1"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan<501"));

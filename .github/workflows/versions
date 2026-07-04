@@ -1,7 +1,7 @@
 ---
 # This file contains all the versions of Arkime that are built and tested
 # Arguments:
-#   version - Unique identifier for the version, will be used in the filename, must be {platform}{seperator}{architecture}
+#   version - Unique identifier for the version, will be used in the filename, must be {platform}{separator}{architecture}
 #   buildopt: The options to use with easybutton-build.sh
 #   container - Docker container to use for building the package
 #   runson - The name of the runner to use for the build

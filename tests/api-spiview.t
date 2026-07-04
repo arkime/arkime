@@ -64,7 +64,7 @@ my $pwd = "*/pcap";
     eq_or_diff($json->{spi}->{"source.ip"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"10.180.156.185"}]}'), "short source.ip");
     eq_or_diff($json->{spi}->{"destination.ip"}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"10.180.156.249"}]}'), "short destination.ip");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"tcp"}]}'), "short ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"/DIR/tests/pcap/socks-http-example.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"/DIR/tests/pcap/socks-http-example.pcap"}]})), "short fileand");
 
     eq_or_diff($json, $mjson, "single doesn't match multi", { context => 3 });
 
@@ -78,8 +78,8 @@ my $pwd = "*/pcap";
     eq_or_diff($json->{protocols}, from_json('{"http": 3, "socks": 3, "tcp": 3}'), "protocols medium");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004260000", 3]]'), "sessionsHisto medium");
     eq_or_diff($json->{graph}->{"source.packetsHisto"}, from_json('[["1386004260000", 26]]'), "source.packetsHisto medium");
-    eq_or_diff($json->{graph}->{"destination.packetsHisto"}, from_json('[["1386004260000", 20]]'), "source.packetsHisto medium");
-    eq_or_diff($json->{graph}->{"client.bytesHisto"}, from_json('[["1386004260000", 486]]'), "server.bytesHisto medium");
+    eq_or_diff($json->{graph}->{"destination.packetsHisto"}, from_json('[["1386004260000", 20]]'), "destination.packetsHisto medium");
+    eq_or_diff($json->{graph}->{"client.bytesHisto"}, from_json('[["1386004260000", 486]]'), "client.bytesHisto medium");
     eq_or_diff($json->{graph}->{"server.bytesHisto"}, from_json('[["1386004260000", 4801]]'), "server.bytesHisto medium");
     is ($json->{recordsFiltered}, 3, "records medium");
     is ($json->{graph}->{interval}, 60, "correct interval medium");
@@ -125,7 +125,7 @@ my $pwd = "*/pcap";
             "buckets":[{"doc_count":3, "key":"10.180.156.249"}, {"doc_count":1, "key":"10.0.0.2"}, {"doc_count":1, "key":"10.11.11.11"}, {"doc_count":1, "key":"10.64.11.49"}]}'), "ALL destination.ip");
     eq_or_diff($json->{spi}->{ipProtocol}, from_json('{"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0,
             "buckets":[{"doc_count":5, "key":"tcp"}, {"doc_count":1, "key":"icmp"}]}'), "ALL ipProtocol");
-    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"/DIR/tests/pcap/socks-http-example.pcap"}, {"doc_count":2, "key":"/DIR/tests/pcap/bt-tcp.pcap"},{"doc_count":1, "key":"/DIR/tests/pcap/bigendian.pcap"}]})), "bigendian fileand");
+    eq_or_diff($json->{spi}->{fileand}, from_json(qq({"doc_count_error_upper_bound": 0, "sum_other_doc_count": 0, "buckets":[{"doc_count":3, "key":"/DIR/tests/pcap/socks-http-example.pcap"}, {"doc_count":2, "key":"/DIR/tests/pcap/bt-tcp.pcap"},{"doc_count":1, "key":"/DIR/tests/pcap/bigendian.pcap"}]})), "ALL fileand");
 
     my @buckets = sort {$a->{key} cmp $b->{key}} @{$json->{spi}->{tags}->{buckets}};
     $json->{spi}->{tags}->{buckets} = \@buckets;

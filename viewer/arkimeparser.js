@@ -371,7 +371,7 @@ function parseIpPort (yy, field, ipPortStr) {
     let singleObj;
 
     if (typeof (singlePort) === 'string' && singlePort.match(/[^0-9]/)) {
-      throw singlePort + ' not a valid singlePort';
+      throw singlePort + ' not a valid port';
     }
 
     if (singleIp !== undefined) {
@@ -1101,7 +1101,7 @@ function ListToArray (text, always) {
   // JS doesn't have negative look behind
   const strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/).filter(part => part.trim()[0] !== '$');
   for (let i = 0; i < strs.length; i++) {
-    strs[i] = strs[i].replace('**COMMA**', ',').replace('**BACKSLASH**', '\\');
+    strs[i] = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
   }
   return strs;
 }
@@ -1123,7 +1123,7 @@ function ListToArrayShortcuts (yy, text) {
   const strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/).filter(part => part.trim()[0] === '$');
   const nstrs = [];
   for (let i = 0; i < strs.length; i++) {
-    const str = strs[i].replace('**COMMA**', ',').replace('**BACKSLASH**', '\\');
+    const str = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
 
     if (str.match(/[*?]/)) {
       const re = new RE2('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');

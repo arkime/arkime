@@ -1,37 +1,53 @@
-#include <string.h>
-#include <ctype.h>
+/* SPDX-License-Identifier: Apache-2.0
+ *
+ * Template for a new TCP protocol parser. Replace changeme/CHANGEME with
+ * your protocol name. See the other parsers in this directory for real
+ * examples (pana.c and s7comm.c are small and modern).
+ */
 #include "arkime.h"
 
+extern ArkimeConfig_t   config;
+
 typedef struct {
+    int somePerSessionState;
 } CHANGEMEInfo_t;
 
 /******************************************************************************/
-void changeme_parser(ArkimeSession_t *session, void *uw, const unsigned char *data, int remaining)
+LOCAL int changeme_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    CHANGEMEInfo_t            *changeme          = uw;
+    CHANGEMEInfo_t *changeme = uw;
+
+    (void)session;
+    (void)changeme;
+    (void)data;
+    (void)remaining;
+    (void)which;
+
+    // Return ARKIME_PARSER_UNREGISTER when done parsing this session
+    return 0;
 }
 /******************************************************************************/
-void changeme_free(ArkimeSession_t UNUSED(*session), void *uw)
+LOCAL void changeme_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
-    CHANGEMEInfo_t            *changeme          = uw;
+    CHANGEMEInfo_t *changeme = uw;
 
     ARKIME_TYPE_FREE(CHANGEMEInfo_t, changeme);
 }
 /******************************************************************************/
-void changeme_classify(ArkimeSession_t *session, const unsigned char *data, int UNUSED(len))
+LOCAL void changeme_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if (arkime_nids_has_tag(session, ARKIME_FIELD_TAGS, "protocol:changeme"))
+    if (arkime_session_has_protocol(session, "changeme"))
         return;
 
-    arkime_nids_add_tag(session, ARKIME_FIELD_TAGS, "protocol:changeme");
+    arkime_session_add_protocol(session, "changeme");
 
-    CHANGEMEInfo_t            *changeme          = ARKIME_TYPE_ALLOC0(CHANGEMEInfo_t);
+    CHANGEMEInfo_t *changeme = ARKIME_TYPE_ALLOC0(CHANGEMEInfo_t);
 
     arkime_parsers_register(session, changeme_parser, changeme, changeme_free);
 }
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_tcp("changeme", 0, "\x12", 1, changeme_classify);
+    // Classify TCP sessions whose payload starts with the given bytes
+    arkime_parsers_classifier_register_tcp("changeme", NULL, 0, (const uint8_t *)"\x12", 1, changeme_classify);
 }
-

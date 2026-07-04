@@ -71,7 +71,7 @@ exports.upgrade = async function (parliament, issues, Parliament) {
       }
 
       // if the notifier has no values, it's not being used, so remove it
-      if (!hasValues) { parliament.settings.notifiers[n] = undefined; }
+      if (!hasValues) { delete parliament.settings.notifiers[n]; }
     }
   }
 

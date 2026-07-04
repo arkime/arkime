@@ -77,7 +77,6 @@ function process_md5(key: string, fi: Notice::FileInfo)
 
 function requestWise()
 {
-    print "MOLOCH", |wise_matched|, |wise_lookingup|, |wise_next_lookups["ip"]|, |wise_next_lookups["md5"]|;
     for (wtype in wise_next_lookups) {
 	if (|wise_next_lookups[wtype]| == 0) {
 	    next;

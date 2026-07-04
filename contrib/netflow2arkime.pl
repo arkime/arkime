@@ -189,7 +189,7 @@ Options:
   --esuser USER[:PASS]  ES username and password (prompts if password omitted)
   --esapikey KEY        ES API key (same as elasticsearchAPIKey in config)
   --insecure            Disable SSL certificate verification
-  --prefix PREFIX       Arkime index prefix (default: none)
+  --prefix PREFIX       Arkime index prefix (default: arkime_)
   --node NAME           Node name for sessions (default: netflow)
   --tag TAG             Tag to add to sessions (default: netflow)
   --batch SIZE          Batch size for bulk inserts (default: 1000)

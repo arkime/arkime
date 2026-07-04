@@ -202,7 +202,7 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse tagger formatted data
-   * @param {string} body - the raw CSV data
+   * @param {string} body - the raw tagger data
    * @param {function} setCb - the function to call for each row found
    * @param {function} endCb - all done parsing
    */
