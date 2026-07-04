@@ -214,8 +214,7 @@ LOCAL void pcapoverip_client_connect(int interface)
 
         if (error && error->code != G_IO_ERROR_PENDING) {
             g_clear_error(&error);
-            g_object_unref(conn);
-            conn = NULL;
+            g_clear_object(&conn);
         } else {
             g_socket_set_blocking(conn, FALSE);
             if (config.debug > 0)

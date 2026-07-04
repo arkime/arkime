@@ -290,8 +290,10 @@ LOCAL void certinfo_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
     while (BSB_REMAINING(*bsb) >= 2) {
         const uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
-        if (value && atag == 4 && alen == 4)
-            certs->isCA = (value[3] & 0x02);
+        // OCTET STRING wrapping a BIT STRING {0x03, len, unusedBits, bits...};
+        // keyCertSign is 0x04 in the first bits byte
+        if (value && atag == 4 && alen >= 4 && value[0] == 3)
+            certs->isCA = (value[3] & 0x04);
     }
 }
 /******************************************************************************/
@@ -312,9 +314,6 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
             certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1);
-            if (certs->alt.s_count > 0) {
-                return;
-            }
         } else if (atag == 6) {
             arkime_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.15") == 0) {

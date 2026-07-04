@@ -148,7 +148,10 @@ LOCAL int s7comm_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
 {
     ArkimeParserBuf_t *buf = uw;
 
-    arkime_parser_buf_add(buf, which, data, len);
+    if (arkime_parser_buf_add(buf, which, data, len) < 0) {
+        arkime_session_add_tag(session, "s7comm:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (buf->len[which] >= TPKT_HDR_LEN) {
         BSB bsb;
@@ -177,6 +180,10 @@ LOCAL int s7comm_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
         if (tpktLen > buf->len[which]) {
             return 0; // Need more data
         }
+
+        // Clamp parsing to this TPKT frame so bogus COTP/S7 lengths can't
+        // read into the next buffered frame
+        BSB_INIT(bsb, buf->buf[which] + TPKT_HDR_LEN, tpktLen - TPKT_HDR_LEN);
 
         // Parse COTP header
         if (BSB_REMAINING(bsb) < 2) {

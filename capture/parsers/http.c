@@ -600,6 +600,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;
     char                   version[20];
+    int                    skipBody = 0;
 
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG: which: %d code: %d method: %d upgrade: %d", http->which, parser->status_code, parser->method, parser->upgrade);
@@ -608,6 +609,13 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
     if (parser->method == HTTP_CONNECT) {
         http->reclassify |= (1 << http->which);
         http->isConnect |= (1 << http->which);
+    } else if (http->isConnect && parser->status_code >= 200 && parser->status_code < 300) {
+        // Successful response to a CONNECT: this direction becomes tunnel bytes
+        // after the headers, so mark it for reclassify and skip the fake
+        // EOF-terminated body so tunnel bytes aren't hashed as http body
+        http->reclassify |= (1 << http->which);
+        http->isConnect |= (1 << http->which);
+        skipBody = 1;
     }
 
     int len = arkime_snprintf_len(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
@@ -750,10 +758,12 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
     if (pluginsCbs & ARKIME_PLUGIN_HP_OHC)
         arkime_plugins_cb_hp_ohc(session, parser);
 
-    return 0;
+    return skipBody;
 }
 
 /*############################## SHARED ##############################*/
+/******************************************************************************/
+LOCAL void http_save(ArkimeSession_t *session, void *uw, int final);
 /******************************************************************************/
 LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
@@ -787,6 +797,7 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
             // Both sides have been reclassified, remove http parser
             if (http->reclassify == 0 && http->isConnect == 0x3) {
+                http_save(session, http, FALSE); // flush method counts before unregister
                 arkime_parsers_unregister(session, uw);
             }
             return 0;

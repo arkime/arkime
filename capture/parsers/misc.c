@@ -47,7 +47,7 @@ LOCAL void jabber_classify(ArkimeSession_t *session, const uint8_t *data, int le
 /******************************************************************************/
 LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    //If a USER packet must have not NICK or +iw with it so we don't pickup IRC
+    // A USER packet must not have NICK or +iw with it so we don't pick up IRC
     if (len <= 5 || arkime_memstr((char *)data, len, "\nNICK ", 6) || arkime_memstr((char *)data, len, " +iw ", 5)) {
         return;
     }

@@ -98,10 +98,6 @@
       "1.0"
      ],
      "clientVersionCnt" : 1,
-     "md5" : [
-      "5b5052b32a057616f2d5f7ccb3619c5b"
-     ],
-     "md5Cnt" : 1,
      "method" : [
       "CONNECT"
      ],
@@ -132,10 +128,6 @@
       "1.0"
      ],
      "serverVersionCnt" : 1,
-     "sha256" : [
-      "f14e6e40eb29ee29b25c87422010231d8161b9d63048da94f37873f1915bcd23"
-     ],
-     "sha256Cnt" : 1,
      "statuscode" : [
       200
      ],
