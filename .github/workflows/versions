@@ -184,7 +184,7 @@ include:
 
   ############# FreeBSD #############
   - version: freebsd14.x86_64
-    freebsdrelease: "14.3"
+    freebsdrelease: "14.4"
     buildopt: "--kafka"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2 -d curl"
     ja4plus: true

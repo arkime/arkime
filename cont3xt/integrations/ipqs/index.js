@@ -350,7 +350,7 @@ class IPQSEmailLeakIntegration extends Integration {
 class IPQSUrlIntegration extends Integration {
   name = 'IPQS URL Reputation';
   icon = 'integrations/ipqs/icon.png';
-  order = 605;
+  order = 608;
   configName = 'IPQualityScore';
 
   itypes = {

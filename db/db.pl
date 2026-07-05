@@ -100,6 +100,11 @@ my $VERSION = 86;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
+# Normalize an env-provided prefix the same way --prefix is normalized below
+if (defined $PREFIX && $PREFIX ne "") {
+    $PREFIX .= "_" if ($PREFIX !~ /_$/);
+    $OLDPREFIX = $PREFIX;
+}
 my $SECURE = 1;
 my $CLIENTCERT = "";
 my $CLIENTKEY = "";
@@ -8401,7 +8406,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $historysBytes = 0;
     my @historys = grep /^(${PREFIX}history_v1-|${OLDPREFIX}history_v1-)/, keys %{$status->{indices}};
     foreach my $index (@historys) {
-        next if ($index !~ /^${PREFIX}history_v1-/);
         $historys += $status->{indices}->{$index}->{primaries}->{docs}->{count};
         $historysBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }

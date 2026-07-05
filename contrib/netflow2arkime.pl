@@ -677,10 +677,13 @@ sub combine_or_queue {
         }
     }
     
-    # Queue this flow and wait for reverse
+    # Queue this flow and wait for reverse. If a same-direction flow with
+    # this key is already queued (same 5-tuple exported twice in the combine
+    # window), return the old one so it still gets sent instead of dropped.
+    my $old = $pending_flows{$key};
     $pending_flows{$key} = $flow;
     $pending_times{$key} = time();
-    return undef;
+    return $old;
 }
 
 sub flush_expired_pending {
@@ -1191,7 +1194,9 @@ if ($LISTEN_PORT) {
 }
 
 # Flush any remaining pending flows
+my $pending_unmatched = 0;
 if ($COMBINE_BIDIR) {
+    $pending_unmatched = scalar(keys %pending_flows);
     for my $flow (flush_all_pending()) {
         queue_flow($flow);
     }
@@ -1208,6 +1213,6 @@ print STDERR "\nSummary:\n";
 print STDERR "  Total flows read: $total_flows\n";
 print STDERR "  Sessions sent to ES: $total_sent\n";
 print STDERR "  Flows skipped (dedup): $total_skipped\n" if $DEDUP && $total_skipped;
-print STDERR "  Pending unmatched: " . scalar(keys %pending_flows) . "\n" if $COMBINE_BIDIR && %pending_flows;
+print STDERR "  Pending unmatched: $pending_unmatched\n" if $COMBINE_BIDIR && $pending_unmatched;
 
 exit(0);

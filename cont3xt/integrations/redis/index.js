@@ -76,6 +76,7 @@ class RedisIntegration extends Integration {
         }
       };
     } catch (e) {
+      console.log(this.name, item, e);
       return Integration.NoResult;
     }
   }

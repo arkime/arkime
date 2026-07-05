@@ -368,7 +368,7 @@ def smb1_setup_andx_secblob(blob):
     #   AndXCommand(1) AndXReserved(1) AndXOffset(2) MaxBufferSize(2)
     #   MaxMpxCount(2) VcNumber(2) SessionKey(4) SecurityBlobLength(2)
     #   Reserved(4) Capabilities(4)
-    words = struct.pack('<BBHHHHIHIA' if False else '<BBHHHHIHII',
+    words = struct.pack('<BBHHHHIHII',
                         0xff, 0, 0, 4356, 50, 1, 0,
                         len(blob), 0, 0x800000d4)
     # Data: SecurityBlob then native OS/LanMan/Domain (unicode, NUL-terminated).

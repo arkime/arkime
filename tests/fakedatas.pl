@@ -519,7 +519,7 @@ sub generateHTTP()
 
 ################################################################################
 my $HTTP = 100;
-for (my $pos;$pos <= $#ARGV; $pos++) {
+for (my $pos = 0;$pos <= $#ARGV; $pos++) {
     if ($ARGV[$pos] eq "--debug") {
         $DEBUG = 1;
     } elsif ($ARGV[$pos] eq "--http") {

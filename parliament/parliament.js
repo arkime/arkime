@@ -1257,11 +1257,10 @@ function cleanUpIssues () {
       if (issue.provisional && timeSinceLastNoticed >= 10000) {
         issuesRemoved = true;
         issues.splice(len, 1);
-      }
 
       // remove all issues that have not been seen again for the removeIssuesAfter time, and
       // remove all acknowledged issues that have not been seen again for the removeAcknowledgedAfter time
-      if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
+      } else if ((!issue.acknowledged && timeSinceLastNoticed > removeIssuesAfter) ||
           (issue.acknowledged && timeSinceLastNoticed > removeAcknowledgedAfter)) {
         issuesRemoved = true;
         issues.splice(len, 1);
@@ -1482,6 +1481,10 @@ async function getStats (cluster) {
             // if this issue has not been encountered yet, make a record of it
             noPacketsMap.set(id, Date.now());
           }
+        } else {
+          // the node is seeing packets again, clear the record so a future
+          // dip has to persist for noPacketsLength again
+          noPacketsMap.delete(cluster.title + ':' + stat.nodeName);
         }
 
         if (stat.deltaESDroppedPerSec > 0) {

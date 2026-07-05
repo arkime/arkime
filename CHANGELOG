@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #4066 Node 22.23.1
   - #4056 Add Fedora 44 builds
+  - #4102 FreeBSD 14 builds use 14.4
 ## All
   - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
   - #4072 Fix header/OIDC auth requests hanging when a dynamic role update fails
@@ -54,6 +55,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4089 Consolidate header auth non-localhost host security warning across viewer/cont3xt/parliament/wiseService
   - #4093 Fix page load failing with a 500 in OIDC mode when the issuer has no end_session_endpoint
   - #4093 Fix user-role-mappings changes not taking effect until the next request; granted roles now apply and revoked roles stop working on the same request
+  - #4102 Fix concurrent requests during the first roles-cache population getting an undefined roles list
+  - #4102 Fix users CSV export header using comma-space separators while data rows use commas
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
@@ -127,8 +130,18 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4093 Fix cont3xt crash with a malformed custom overview field, and custom overview join separators being rejected
   - #4093 Fix searches hanging when an invalid IP (e.g. 300.1.2.3) is the only indicator queried
   - #4093 Fix ipqs array fields not displaying comma-joined, the virustotal hash scans table never rendering, and the wise integration ignoring wiseURL
+  - #4102 Fix DNS integration decoding the CAA critical flag as decimal instead of hex
+  - #4102 Fix builtwith/greynoise/redis integrations silently swallowing errors (bad key, rate limit, outages) as no data; they now log
+  - #4102 Fix db errors without ES metadata throwing inside index-creation error handlers
+## db.pl
+  - #4102 Fix ARKIME__prefix/ARKIME_default__prefix env prefixes not being normalized like --prefix (missing trailing _)
+  - #4102 Fix info command counting old-prefix history indices but excluding their docs/bytes from Histories
 ## Multies
   - #4092 Fix plaintext user:pass elasticsearchBasicAuth never working, and passwords containing a colon being truncated
+## Parliament
+  - #4102 Fix parliament upgrade polluting the shared settings defaults, which broke restoring default settings until restart
+  - #4102 Fix issue cleanup sometimes removing an extra unrelated issue in the same pass
+  - #4102 Fix noPackets tracking not resetting when a node recovers, so a later dip alerted immediately instead of waiting noPacketsLength
 ## Viewer
   - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
   - #4071 Fix negative numbers being rejected in expressions
@@ -153,6 +166,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4098 Fix session detail Src/Dst payload preview not replacing unprintable characters
   - #4098 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when the S3 object is gone
   - #4101 Fix s3ExpireDays never expiring anything in the writer-s3 plugin
+  - #4102 Fix pcap scrub silently skipping packets larger than 5000 bytes (jumbo frames / large snaplen)
+  - #4102 Fix pcap scrub on short-header pcap files leaving the first 10 payload bytes unscrubbed
+  - #4102 Fix session packets requests with an unknown decode option hanging forever; they now return a 400
+  - #4102 Fix a session packets error when an SMTP MIME header continuation line lands on a packet chunk boundary
+  - #4102 Fix multiviewer sessions refresh dropping each cluster's index prefix, so prefixed clusters were never refreshed
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
@@ -167,6 +185,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4093 Fix elasticsearch source registering anyway after logging that required settings are missing
   - #4094 Fix fieldactions/valueactions crashing wiseService when the watched file is deleted, and redis/elasticsearch content with a section header failing to load
   - #4094 Fix databricks and splunk sources loading anyway when required settings are missing
+  - #4102 Fix isepxgrid showing a duplicate cacheAgeMin field in the config UI
+  - #4102 Fix taggerUpload.pl corrupting keys from CRLF files and building invalid JSON when data contains quotes or backslashes
 
 6.5.0 2026/06/15
 ## Breaking

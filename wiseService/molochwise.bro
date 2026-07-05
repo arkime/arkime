@@ -83,7 +83,6 @@ function requestWise()
 	}
 	local data = "";
 	for (key in wise_next_lookups[wtype]) {
-	    delete(wise_next_lookups[wtype][key]);
 	    add(wise_lookingup[key]);
 	    if (data == "") {
 		data += key;
@@ -91,6 +90,8 @@ function requestWise()
 		data += "," + key;
 	    }
 	}
+	# Clear after iterating; deleting while iterating a set is unsafe
+	wise_next_lookups[wtype] = set();
 
 	local url = fmt("%s/bro/%s?items=%s", base_url, wtype, data);
 	local req: ActiveHTTP::Request = ActiveHTTP::Request($url=url, $method="GET");

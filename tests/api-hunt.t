@@ -9,7 +9,7 @@ use strict;
 
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
-my $nonadminToken = getTokenCookie2('user3');
+my $nonadminToken = getTokenCookie('user3');
 my $json;
 
 

@@ -418,7 +418,7 @@ class User {
    * Return all available roles using cache
    */
   static async allRolesCache () {
-    if (User.#rolesCache._timeStamp > Date.now() - User.#userCacheTimeout) {
+    if (User.#rolesCache.roles && User.#rolesCache._timeStamp > Date.now() - User.#userCacheTimeout) {
       return User.#rolesCache.roles;
     }
 
@@ -645,7 +645,7 @@ class User {
     ]).then(([users, total]) => {
       if (users.error) { throw users.error; }
       const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit'.split(',');
-      res.write(columns.join(', '));
+      res.write(columns.join(','));
       res.write('\r\n');
       users = users.users;
       for (let u = 0; u < users.length; u++) {
