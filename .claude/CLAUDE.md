@@ -105,7 +105,7 @@ Arkime is a modular network analysis system with these components:
 - auth.js - Authentication (digest, basic, OIDC, header, form)
 - user.js - User management
 - vueapp/ - Shared Vue components (Search.vue, Users.vue, etc.)
-- vueapp/locales/ - i18n translations (11 languages: en, es, fr, de, ja, ko, zh, etc.)
+- vueapp/locales/ - i18n translations (9 languages + x-pl pseudo-locale: en, es, fr, de, ja, ko, zh, et, pt-BR)
 
 ## Frontend Architecture
 
@@ -137,7 +137,7 @@ viewer/vueapp/
 All services follow this pattern. Common components live in common/vueapp/.
 
 ### Development Workflow
-- Frontend: Vite dev server with hot reload (port configured in parentapp/vueapp/vite.config.js)
+- Frontend: Vite dev server with hot reload (port configured in parentapp/vueapp/vite.config.mjs)
 - Backend: nodemon auto-restarts on changes
 - Proxy: Vite proxies API requests to backend
 
@@ -227,7 +227,7 @@ Multiple auth modes via common/auth.js:
 
 ### Test Framework
 Custom Perl framework: tests/ArkimeTest.pm
-- 47 test files (*.t)
+- 52 test files (*.t)
 - Uses LWP::UserAgent for HTTP testing
 - Helper functions: viewerGet(), viewerPost(), esGet(), countTest()
 
@@ -238,7 +238,7 @@ tests/
 │   ├── api-sessions.t   # Session API tests
 │   ├── api-stats.t      # Stats API tests
 │   ├── dns.t            # Protocol parser tests
-│   └── [47 total]
+│   └── [52 total]
 ├── config.test.ini      # Viewer test config
 ├── config.test.json     # WISE test config
 └── cont3xt.ini          # Cont3xt test config

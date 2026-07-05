@@ -474,7 +474,9 @@ app.delete('/:index', simpleGather1Cluster);
 app.delete('/MULTIPREFIX_hunts/_doc/:id', simpleGather1Cluster);
 
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
-  req.url = '/sessions*/_refresh';
+  // Keep the MULTIPREFIX_ placeholder so each node's real prefix is
+  // substituted in simpleGather; collapse the index list to one pattern
+  req.url = '/MULTIPREFIX_sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
 

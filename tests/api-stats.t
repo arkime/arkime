@@ -288,17 +288,17 @@ my $test1Token = getTokenCookie("test1");
 
     # Verify the endpoint correctly identifies primary vs replica by checking shard data structure
     my $foundPrimary = 0;
-    my $foundReplica = 0;
+    my $badPrirep = 0;
     foreach my $index (@{$shardsData->{indices}}) {
         foreach my $node (keys %{$index->{nodes}}) {
             foreach my $shard (@{$index->{nodes}->{$node}}) {
                 $foundPrimary = 1 if defined $shard->{prirep} && $shard->{prirep} eq 'p';
-                $foundReplica = 1 if defined $shard->{prirep} && $shard->{prirep} eq 'r';
+                $badPrirep = 1 if defined $shard->{prirep} && $shard->{prirep} !~ /^[pr]$/;
             }
         }
     }
     ok($foundPrimary, "esshard: shard data includes primary shard information");
-    ok($foundReplica || 1, "esshard: shard data includes replica information (or no replicas configured)");
+    ok(!$badPrirep, "esshard: prirep values are all p or r");
 
     # Test edge case: shard number 0 (valid shard number)
     $result = viewerPostToken("/api/esshards/nonexistentindex/0/delete", "", $token);

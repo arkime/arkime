@@ -490,8 +490,8 @@ class SecondIntegration extends Integration {
 Set debug level to see detailed logs:
 
 ```bash
-# Start with debug logging
-DEBUG=2 npm start
+# Start with debug logging (repeat --debug for more detail)
+node cont3xt.js -c cont3xt.ini --debug --debug
 ```
 
 ### Common Issues

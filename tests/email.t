@@ -76,7 +76,7 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # email.mime-version
     countTest(1, "date=-1&expression=" . uri_escape("$files&&email.mime-version==\"1.0 (Apple Message framework v1283)\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&email.mime-version==\"1.0 (Apple Message framework v1283)\""));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&email.mime-version==\"1.0 (apple message framework v1283)\""));
     countTest(5, "date=-1&expression=" . uri_escape("$files&&email.mime-version.cnt==1"));
 
 # email.src
@@ -92,5 +92,5 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==smtp"));
 
 # host.email
     countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email==\"xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net\""));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email==\"xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net\""));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&host.email==\"Xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net\""));
     countTest(2, "date=-1&expression=" . uri_escape("$files&&host.email.cnt==2"));

@@ -154,7 +154,7 @@ $info = viewerGet("/api/shareables?type=test2&arkimeRegressionUser=sac-test2");
 is($info->{recordsTotal}, 0, "viewOnly=true (default) excludes editRoles access");
 
 # list with viewOnly=false shows editRoles access
-$info = viewerGet("/api/shareables?type=test2&viewOnly=false&arkimeRegressionUser=sac-test1");
+$info = viewerGet("/api/shareables?type=test2&viewOnly=false&arkimeRegressionUser=sac-test2");
 is($info->{recordsTotal}, 1, "viewOnly=false includes editRoles access");
 
 # admin can always delete

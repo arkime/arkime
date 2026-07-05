@@ -198,11 +198,12 @@ exports.upgrade = async function (parliament, issues, Parliament) {
   }
 
   // Fill in missing settings with defaults BEFORE saving to ES
+  // (copies so the shared static defaults object isn't mutated below)
   if (!parliament.settings) {
-    parliament.settings = Parliament.settingsDefault;
+    parliament.settings = structuredClone(Parliament.settingsDefault);
   }
   if (!parliament.settings.general) {
-    parliament.settings.general = Parliament.settingsDefault.general;
+    parliament.settings.general = structuredClone(Parliament.settingsDefault.general);
   }
 
   const defaults = Parliament.settingsDefault.general;
