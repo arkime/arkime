@@ -152,6 +152,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4098 Fix IP field Add Exists menu items building queries with the database field name instead of the expression
   - #4098 Fix session detail Src/Dst payload preview not replacing unprintable characters
   - #4098 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when the S3 object is gone
+  - #4101 Fix s3ExpireDays never expiring anything in the writer-s3 plugin
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
