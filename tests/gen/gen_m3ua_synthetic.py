@@ -241,11 +241,270 @@ def sec_m2ua_pd2():
     return out
 
 
+def sec_m3ua_v6_pd1():
+    # M3UA draft-v6 DATA carrying Protocol Data 1 (tag 0x0002), whose payload
+    # is a raw MTP3 message (SIO + routing label), NOT the RFC 4666 structured
+    # OPC/DPC/SI/NI/MP/SLS layout. Calling/called digits patched to 7s so the
+    # session is identifiable (camel.calling == 777777777).
+    # Regression for m3ua.c parsing tag 0x0002 with the RFC 4666 layout.
+    # Session 10.20.2.1:2905 -> 10.20.2.2:2905, SCTP ppid 3.
+    import struct
+
+    # Raw MTP3: SIO 0x83 (NI=international spare, SI=3 SCCP) + ITU label,
+    # then SCCP UDT + TCAP + CAMEL initialDP with 7s digits.
+    MTP3 = bytes.fromhex(
+        '8314006400090003070b044364000a044314000a4e'
+        '62504804123456786b262824060700118605010101a019601780020780a109060704'
+        '000001003201be062804060251016c1ca11a020110020100301280079177777777'
+        '77f78307917777777777f7')
+
+    m3uaLen = 8 + 4 + len(MTP3)
+    pad = (4 - len(MTP3) % 4) % 4
+    M3UA_V6_PD1 = (struct.pack('>BBBBI', 1, 0, 1, 1, m3uaLen + pad) +
+                   struct.pack('>HH', 0x0002, 4 + len(MTP3)) + MTP3 + b'\0' * pad)
+
+    CRC_TABLE = []
+    for i in range(256):
+        c = i
+        for _ in range(8):
+            c = (c >> 1) ^ 0x82F63B78 if c & 1 else c >> 1
+        CRC_TABLE.append(c)
+
+    def crc32c(data):
+        c = 0xffffffff
+        for b in data:
+            c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >> 8)
+        return c ^ 0xffffffff
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    ETH = bytes.fromhex('02aa000012020 2aa00001201'.replace(' ','')) + b'\x08\x00'
+    ETH_R = bytes.fromhex('02aa000012010 2aa00001202'.replace(' ','')) + b'\x08\x00'
+
+    def sctp_packet(src, dst, eth, vtag, chunks):
+        sctp = struct.pack('>HHII', 2905, 2905, vtag, 0)
+        body = b''
+        for c in chunks:
+            body += c + b'\0' * ((4 - len(c) % 4) % 4)
+        crc = crc32c(sctp[:8] + b'\0\0\0\0' + body)
+        sctp = sctp[:8] + struct.pack('<I', crc) + body
+        iplen = 20 + len(sctp)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 132, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return eth + ip + sctp
+
+    def chunk(ctype, flags, body):
+        return struct.pack('>BBH', ctype, flags, 4+len(body)) + body
+
+    def data_chunk(tsn, ppid, payload):
+        return chunk(0, 0x03, struct.pack('>IHHI', tsn, 0, 0, ppid) + payload)
+
+    CLI, SRV = '10.20.2.1', '10.20.2.2'
+    pkts = [
+        sctp_packet(CLI, SRV, ETH, 0, [chunk(1, 0, struct.pack('>IIHHI', 0x41414141, 65535, 4, 4, 100))]),
+        sctp_packet(SRV, CLI, ETH_R, 0x41414141, [chunk(2, 0, struct.pack('>IIHHI', 0x42424242, 65535, 4, 4, 200))]),
+        sctp_packet(CLI, SRV, ETH, 0x42424242, [data_chunk(100, 3, M3UA_V6_PD1)]),
+    ]
+
+    out = b''
+    ts = 1781049100.0
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_m3ua_asp_handshake():
+    # M3UA association captured from the start: ASPUP / ASPUP-ACK (class 3
+    # ASPSM) are the first DATA chunks in each direction, followed by a
+    # TRANSFER/DATA message (digits 8s, camel.calling == 888888888).
+    # Regression for the classifier rejecting the one-shot SCTP classify
+    # because the first chunk isn't TRANSFER/DATA, leaving the session
+    # untagged and unparsed despite PPID 3.
+    # Session 10.20.3.1:2905 -> 10.20.3.2:2905, SCTP ppid 3.
+    import struct
+
+    # ASPUP (class 3 type 1) and ASPUP-ACK (class 3 type 4), header only
+    ASPUP = struct.pack('>BBBBI', 1, 0, 3, 1, 8)
+    ASPUP_ACK = struct.pack('>BBBBI', 1, 0, 3, 4, 8)
+
+    # RFC 4666 TRANSFER/DATA + Protocol Data 0x0210 with SI=3 SCCP, 8s digits
+    SCCP = bytes.fromhex(
+        '090003070b044364000a044314000a4e'
+        '62504804123456786b262824060700118605010101a019601780020780a109060704'
+        '000001003201be062804060251016c1ca11a020110020100301280079188888888'
+        '88f88307918888888888f8')
+    pd = struct.pack('>IIBBBB', 0x258, 0x1f4, 3, 0, 0, 0) + SCCP
+    pdPad = (4 - len(pd) % 4) % 4
+    m3uaLen = 8 + 4 + len(pd) + pdPad
+    M3UA_DATA = (struct.pack('>BBBBI', 1, 0, 1, 1, m3uaLen) +
+                 struct.pack('>HH', 0x0210, 4 + len(pd)) + pd + b'\0' * pdPad)
+
+    CRC_TABLE = []
+    for i in range(256):
+        c = i
+        for _ in range(8):
+            c = (c >> 1) ^ 0x82F63B78 if c & 1 else c >> 1
+        CRC_TABLE.append(c)
+
+    def crc32c(data):
+        c = 0xffffffff
+        for b in data:
+            c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >> 8)
+        return c ^ 0xffffffff
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    ETH = bytes.fromhex('02aa000013020 2aa00001301'.replace(' ','')) + b'\x08\x00'
+    ETH_R = bytes.fromhex('02aa000013010 2aa00001302'.replace(' ','')) + b'\x08\x00'
+
+    def sctp_packet(src, dst, eth, vtag, chunks):
+        sctp = struct.pack('>HHII', 2905, 2905, vtag, 0)
+        body = b''
+        for c in chunks:
+            body += c + b'\0' * ((4 - len(c) % 4) % 4)
+        crc = crc32c(sctp[:8] + b'\0\0\0\0' + body)
+        sctp = sctp[:8] + struct.pack('<I', crc) + body
+        iplen = 20 + len(sctp)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 132, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return eth + ip + sctp
+
+    def chunk(ctype, flags, body):
+        return struct.pack('>BBH', ctype, flags, 4+len(body)) + body
+
+    def data_chunk(tsn, ssn, ppid, payload):
+        return chunk(0, 0x03, struct.pack('>IHHI', tsn, 0, ssn, ppid) + payload)
+
+    CLI, SRV = '10.20.3.1', '10.20.3.2'
+    pkts = [
+        sctp_packet(CLI, SRV, ETH, 0, [chunk(1, 0, struct.pack('>IIHHI', 0x51515151, 65535, 4, 4, 100))]),
+        sctp_packet(SRV, CLI, ETH_R, 0x51515151, [chunk(2, 0, struct.pack('>IIHHI', 0x52525252, 65535, 4, 4, 200))]),
+        sctp_packet(CLI, SRV, ETH, 0x52525252, [data_chunk(100, 0, 3, ASPUP)]),
+        sctp_packet(SRV, CLI, ETH_R, 0x51515151, [data_chunk(200, 0, 3, ASPUP_ACK)]),
+        sctp_packet(CLI, SRV, ETH, 0x52525252, [data_chunk(101, 1, 3, M3UA_DATA)]),
+    ]
+
+    out = b''
+    ts = 1781049200.0
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_m3ua_mixed_si():
+    # M3UA association carrying both ISUP (SI=5) and SCCP (SI=3) DATA
+    # messages. Regression for the TUP/ISUP sub-parser unregistering the
+    # whole m3ua parser after the first message, so the following SCCP/CAMEL
+    # message was never parsed (camel.calling == 999999999).
+    # Session 10.20.4.1:2905 -> 10.20.4.2:2905, SCTP ppid 3.
+    import struct
+
+    def m3ua_data(si, payload):
+        pd = struct.pack('>IIBBBB', 0x258, 0x1f4, si, 0, 0, 0) + payload
+        pad = (4 - len(pd) % 4) % 4
+        mlen = 8 + 4 + len(pd) + pad
+        return (struct.pack('>BBBBI', 1, 0, 1, 1, mlen) +
+                struct.pack('>HH', 0x0210, 4 + len(pd)) + pd + b'\0' * pad)
+
+    ISUP = bytes.fromhex('0001000a020100')  # minimal ISUP-ish bytes
+    SCCP = bytes.fromhex(
+        '090003070b044364000a044314000a4e'
+        '62504804123456786b262824060700118605010101a019601780020780a109060704'
+        '000001003201be062804060251016c1ca11a020110020100301280079199999999'
+        '99f98307919999999999f9')
+
+    MSG_ISUP = m3ua_data(5, ISUP)
+    MSG_SCCP = m3ua_data(3, SCCP)
+
+    CRC_TABLE = []
+    for i in range(256):
+        c = i
+        for _ in range(8):
+            c = (c >> 1) ^ 0x82F63B78 if c & 1 else c >> 1
+        CRC_TABLE.append(c)
+
+    def crc32c(data):
+        c = 0xffffffff
+        for b in data:
+            c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >> 8)
+        return c ^ 0xffffffff
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    ETH = bytes.fromhex('02aa000014020 2aa00001401'.replace(' ','')) + b'\x08\x00'
+    ETH_R = bytes.fromhex('02aa000014010 2aa00001402'.replace(' ','')) + b'\x08\x00'
+
+    def sctp_packet(src, dst, eth, vtag, chunks):
+        sctp = struct.pack('>HHII', 2905, 2905, vtag, 0)
+        body = b''
+        for c in chunks:
+            body += c + b'\0' * ((4 - len(c) % 4) % 4)
+        crc = crc32c(sctp[:8] + b'\0\0\0\0' + body)
+        sctp = sctp[:8] + struct.pack('<I', crc) + body
+        iplen = 20 + len(sctp)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 132, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return eth + ip + sctp
+
+    def chunk(ctype, flags, body):
+        return struct.pack('>BBH', ctype, flags, 4+len(body)) + body
+
+    def data_chunk(tsn, ssn, ppid, payload):
+        return chunk(0, 0x03, struct.pack('>IHHI', tsn, 0, ssn, ppid) + payload)
+
+    CLI, SRV = '10.20.4.1', '10.20.4.2'
+    pkts = [
+        sctp_packet(CLI, SRV, ETH, 0, [chunk(1, 0, struct.pack('>IIHHI', 0x61616161, 65535, 4, 4, 100))]),
+        sctp_packet(SRV, CLI, ETH_R, 0x61616161, [chunk(2, 0, struct.pack('>IIHHI', 0x62626262, 65535, 4, 4, 200))]),
+        sctp_packet(CLI, SRV, ETH, 0x62626262, [data_chunk(100, 0, 3, MSG_ISUP)]),
+        sctp_packet(CLI, SRV, ETH, 0x62626262, [data_chunk(101, 1, 3, MSG_SCCP)]),
+    ]
+
+    out = b''
+    ts = 1781049300.0
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/m3ua_synthetic.pcap'
     out = LEGACY
     out += sec_m3ua_sctp_ooo()
     out += sec_m2ua_pd2()
+    out += sec_m3ua_v6_pd1()
+    out += sec_m3ua_asp_handshake()
+    out += sec_m3ua_mixed_si()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

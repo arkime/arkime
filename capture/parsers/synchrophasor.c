@@ -180,7 +180,10 @@ LOCAL int synchrophasor_tcp_parser(ArkimeSession_t *session, void *uw, const uin
 {
     ArkimeParserBuf_t *buf = uw;
 
-    arkime_parser_buf_add(buf, which, data, len);
+    if (arkime_parser_buf_add(buf, which, data, len) < 0) {
+        arkime_session_add_tag(session, "synchrophasor:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (buf->len[which] >= SYNCHROPHASOR_MIN_LEN) {
         // Check for sync byte

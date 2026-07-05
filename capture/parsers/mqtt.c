@@ -213,9 +213,10 @@ LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, 
     if (headerNeeded > (int)remainingLen)
         return -2; // Malformed
 
-    // If header itself can never fit in the parser buffer, it's not parseable
+    // If header itself can never fit in the parser buffer, it's too large
+    // to parse (topics may legally be up to 64KB), not malformed
     if (headerNeeded > (int)mqtt->bufMax)
-        return -2;
+        return -3;
 
     if (BSB_REMAINING(*bsb) < headerNeeded)
         return -1; // Need more data
@@ -330,6 +331,10 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 // Rewind so we re-parse the fixed header next time.
                 bsb = headerStart;
                 break;
+            }
+            if (skipLen == -3) {
+                arkime_session_add_tag(session, "mqtt:message-too-long");
+                return ARKIME_PARSER_UNREGISTER;
             }
             if (skipLen < 0) {
                 arkime_session_add_tag(session, "mqtt:bad-publish");

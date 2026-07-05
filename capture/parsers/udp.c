@@ -61,8 +61,10 @@ LOCAL int udp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     packet->direction = (dir &&
                          session->port1 == ntohs(udphdr->uh_sport) &&
                          session->port2 == ntohs(udphdr->uh_dport)) ? 0 : 1;
-    session->databytes[packet->direction] += MIN(ntohs(udphdr->uh_ulen),
-                                                 packet->pktlen - packet->payloadOffset) - 8;
+    const int dblen = MIN(ntohs(udphdr->uh_ulen),
+                          packet->pktlen - packet->payloadOffset) - 8;
+    if (dblen > 0)
+        session->databytes[packet->direction] += dblen;
 
     return 0;
 }

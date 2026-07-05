@@ -289,6 +289,11 @@ LOCAL void molua_http_on_message_complete(ArkimeSession_t *session, http_parser 
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_MESSAGE_COMPLETE, session, hp, NULL, 0);
+
+    // Allow MESSAGE_BEGIN to fire again for the next message (keep-alive)
+    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    if (mp)
+        mp->done_message_begin[hp->type] = 0;
 }
 /******************************************************************************/
 LOCAL void MS_register_all_http_cbs()
