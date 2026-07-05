@@ -1,4 +1,4 @@
-use Test::More tests => 102;
+use Test::More tests => 105;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
