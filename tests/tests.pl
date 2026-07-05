@@ -270,7 +270,7 @@ my ($json) = @_;
         }
 
         if (exists $body->{dns}) {
-            for (my $i; $i < @{$body->{dns}}; $i++) {
+            for (my $i = 0; $i < @{$body->{dns}}; $i++) {
                 if (exists $body->{dns}[$i]->{ip}) {
                     for (my $j = 0; $j < @{$body->{dns}[$i]->{ip}}; $j++) {
                         if ($body->{dns}[$i]->{ip}[$j] =~ /:/) {
@@ -603,7 +603,7 @@ if ($main::cmd eq "--fix") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
     print "  --elasticsearch <url>  Set elasticsearch URL\n";
-    print "  --debug                Turn on debuggin\n";
+    print "  --debug                Turn on debugging\n";
     print "  --valgrind             Use valgrind on capture\n";
     print "\n";
     print "Commands:\n";

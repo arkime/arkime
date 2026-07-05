@@ -281,7 +281,6 @@ sub parse_command {
     } else {
         # Inline command
         my $eol = index($buf, "\r\n", $pos);
-        return (undef, 0) if $eol < 0;
         # Also accept bare \n
         if ($eol < 0) {
             $eol = index($buf, "\n", $pos);

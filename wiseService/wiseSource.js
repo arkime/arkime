@@ -24,7 +24,7 @@ class WISESource {
    * @param {string} section - the section name
    * @param {object} options - All the options
    * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
-   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as don't
+   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dontCache
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
@@ -202,7 +202,7 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse tagger formatted data
-   * @param {string} body - the raw CSV data
+   * @param {string} body - the raw tagger data
    * @param {function} setCb - the function to call for each row found
    * @param {function} endCb - all done parsing
    */
@@ -250,13 +250,14 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse JSON formatted data
-   * @param {string} body - the raw JSON data
+   * @param {array} json - the parsed JSON array
    * @param {function} setCb - the function to call for each row found
    * @param {function} endCb - all done parsing
    */
   parseJSONArray (json, setCb, endCb) {
     try {
-      if (this.keyPath === undefined) {
+      // keyPath often defaults to 0 via keyColumn, treat any non-string as unset
+      if (this.keyPath === undefined || this.keyPath === 0 || this.keyPath === '') {
         return endCb('No keyPath set');
       }
 
@@ -474,7 +475,7 @@ class WISESource {
   /**
    * Convert field ids and string values into the encoded form used in WISE.
    *
-   * This method tags a variable number of arguments, each in a pair of field id and string value.
+   * This method takes a variable number of arguments, each in a pair of field id and string value.
    * @returns {buffer} - the encoded results
    */
   static encodeResult () {
@@ -492,6 +493,11 @@ class WISESource {
       if (l > 250) {
         val = val.substring(0, 240);
         l = Buffer.byteLength(val);
+        // multibyte characters can still exceed the 1-byte length field, shrink until it fits
+        while (l > 250) {
+          val = val.substring(0, val.length - 10);
+          l = Buffer.byteLength(val);
+        }
       }
       vals.push(val);
       lens.push(l);

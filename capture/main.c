@@ -1150,12 +1150,14 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_plugins_init();
     arkime_field_init();
     arkime_db_init();
+    arkime_python_init();
     arkime_mprotocol_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
+    arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
@@ -1192,6 +1194,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.pcapReadOffline = 1;
     config.hostName = strdup("fuzz.example.com");
     config.nodeName = strdup("fuzz");
+    config.ignoreErrors = 1;
 
     hashSalt = 0;
     arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
@@ -1208,6 +1211,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_plugins_init();
     arkime_field_init();
     arkime_db_init();
+    arkime_python_init();
     arkime_mprotocol_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
@@ -1255,7 +1259,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         packet->pktlen         = len;
         packet->pkt            = ptr;
         packet->ts.tv_sec      = ts >> 4;
-        packet->ts.tv_usec     = ts & 0x8;
+        packet->ts.tv_usec     = ts & 0xf;
         ts++;
         packet->readerFilePos  = 0;
         packet->readerPos      = 0;

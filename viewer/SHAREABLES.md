@@ -161,7 +161,7 @@ DB Nodes (Elasticsearch nodes) tab column layout.
   "type": "esnodes-columns",
   "data": {
     "columns": ["name", "docs", "storeSize", "freeSize", "heapSize", "load", "cpu", "read", "write", "searches"],
-    "order": [["nodeName", "asc"]]
+    "order": [["name", "asc"]]
   }
 }
 ```

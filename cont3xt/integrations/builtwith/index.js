@@ -88,6 +88,7 @@ class BuiltWithIntegration extends Integration {
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
+      console.log(this.name, query, err);
       return null;
     }
   }

@@ -317,15 +317,15 @@ function apiGetSettings (req, res, next) {
 
 // verify selectedOverviews, on error returns { msg: <errorMsg> }, on success returns { selectedOverviews }
 function verifySelectedOverviews (selectedOverviews) {
+  if (typeof selectedOverviews !== 'object' || selectedOverviews === null || Array.isArray(selectedOverviews)) {
+    return { msg: 'selectedOverviews must be an object' };
+  }
+
   selectedOverviews = (
     ({ // only allow these properties in selectedOverviews
       domain, ip, url, email, phone, hash, text
     }) => ({ domain, ip, url, email, phone, hash, text })
   )(selectedOverviews);
-
-  if (typeof selectedOverviews !== 'object') {
-    return { msg: 'selectedOverviews must be an object' };
-  }
 
   for (const selectedId of Object.values(selectedOverviews)) {
     if (!ArkimeUtil.isString(selectedId)) {

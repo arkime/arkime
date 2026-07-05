@@ -361,8 +361,11 @@ class VirusTotalHashIntegration extends Integration {
       'verbose_msg',
       {
         label: 'scans',
+        field: 'scans',
+        type: 'table',
+        postProcess: { keyedToArrayWith: 'engine' },
         fields: [
-          'scan type',
+          'engine',
           'detected',
           'result',
           'update',

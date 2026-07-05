@@ -45,7 +45,7 @@
      ],
      "dhGroupCnt" : 1,
      "encryption" : [
-      "aes-ctr"
+      "aes-cbc"
      ],
      "encryptionCnt" : 1,
      "exchangeType" : [

@@ -199,6 +199,19 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         s3.getObject(data.params, async function (err, s3data) {
           if (err) {
             console.log('WARNING - Only have SPI data, PCAP file no longer available', data.info.name, err);
+            // Clear the in-progress markers and wake any queued waiters so
+            // later reads of the same blocks don't hang forever
+            for (let i = 0; i < data.subPackets.length; i++) {
+              const sp = data.subPackets[i];
+              const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+              const cip = CacheInProgress[decompressedCacheKey];
+              delete CacheInProgress[decompressedCacheKey];
+              if (cip && cip !== true) {
+                for (let j = 0; j < cip.length; j++) {
+                  cip[j]();
+                }
+              }
+            }
             return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
           }
           const body = Buffer.from(await s3data.Body.transformToByteArray());
@@ -331,7 +344,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   }
 }
 /// ///////////////////////////////////////////////////////////////////////////////
-async function s3Expire () {
+async function s3Expire (expireDays) {
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node'],
     from: '0',
@@ -339,7 +352,7 @@ async function s3Expire () {
     query: {
       bool: {
         must: [
-          { range: { first: { lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24) } } },
+          { range: { first: { lte: Math.floor(Date.now() / 1000 - expireDays * 60 * 60 * 24) } } },
           { prefix: { name: 's3://' } }
         ],
         must_not: { term: { locked: 1 } }
@@ -349,7 +362,7 @@ async function s3Expire () {
   };
 
   try {
-    const { body: data } = await Db.search('files', query);
+    const data = await Db.search('files', query);
     if (!data.hits || !data.hits.hits) {
       return;
     }
@@ -390,9 +403,24 @@ exports.init = function (config, emitter, api) {
   Pcap = api.getPcap();
 
   if (Config.get('s3ExpireDays') !== undefined) {
-    s3Expire().catch(err => console.log('ERROR - s3Expire initial run failed:', err));
+    s3Expire(+Config.get('s3ExpireDays')).catch(err => console.log('ERROR - s3Expire initial run failed:', err));
     setInterval(() => {
-      s3Expire().catch(err => console.log('ERROR - s3Expire interval run failed:', err));
+      s3Expire(+Config.get('s3ExpireDays')).catch(err => console.log('ERROR - s3Expire interval run failed:', err));
     }, 600 * 1000);
+  }
+
+  if (Config.regressionTests) {
+    api.getPrePluginRouter().post('/regressionTests/s3Expire', async (req, res) => {
+      const days = parseFloat(req.query.days);
+      if (isNaN(days)) {
+        return res.status(400).send(JSON.stringify({ success: false, text: 'Missing days' }));
+      }
+      try {
+        await s3Expire(days);
+        res.send('{}');
+      } catch (err) {
+        res.status(500).send(JSON.stringify({ success: false, text: err.toString() }));
+      }
+    });
   }
 };

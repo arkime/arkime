@@ -37,6 +37,7 @@ typedef struct {
     uint8_t                  threadNum;
     uint16_t                 ringStart;
     uint16_t                 ringEnd;
+    uint64_t                 packets;
 } ArkimeNetmap_t;
 
 #define MAX_NETMAP_READERS (MAX_INTERFACES * MAX_THREADS_PER_INTERFACE)
@@ -54,11 +55,10 @@ int reader_netmap_stats(ArkimeReaderStats_t *stats)
     ARKIME_LOCK(gStats);
     memset(&gStats, 0, sizeof(gStats));
 
-    for (int i = 0; config.interface[i]; i++) {
-        if (nmdPerInterface[i]) {
-            gStats.total += nmdPerInterface[i]->st.ps_recv;
-            gStats.dropped += nmdPerInterface[i]->st.ps_drop;
-        }
+    // nm_desc.st is only maintained by libnetmap's nm_dispatch/nm_nextpkt;
+    // we read the rings directly, so count packets ourselves
+    for (int i = 0; i < numReaders; i++) {
+        gStats.total += readers[i].packets;
     }
     *stats = gStats;
     ARKIME_UNLOCK(gStats);
@@ -110,6 +110,7 @@ LOCAL void *reader_netmap_thread(gpointer readerv)
                 packet->readerPos = reader->interfacePos;
 
                 arkime_packet_batch(&batch, packet);
+                reader->packets++;
 
                 ring->head = ring->cur = nm_ring_next(ring, i);
             }
@@ -155,7 +156,7 @@ void reader_netmap_exit()
 }
 
 /******************************************************************************/
-void reader_netmap_init(char *UNUSED(name))
+void reader_netmap_init(const char *UNUSED(name))
 {
     arkime_config_check("netmap", "netmapThreads", NULL);
 
@@ -235,4 +236,4 @@ void reader_netmap_init(char *UNUSED(name))
     arkime_reader_stats = reader_netmap_stats;
 }
 
-#endif // __linux__ || __FreeBSD__
+#endif // __FreeBSD__

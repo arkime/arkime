@@ -232,7 +232,7 @@ class StatsAPIs {
    * @param {string} name - The name of the field to get the detailed stats for.
    * @param {number} start - The start time of data to return. Format is seconds since Unix EPOCH.
    * @param {number} stop  - The stop time of data to return. Format is seconds since Unix EPOCH.
-   * @param {number} step - The context step of the cubism graph in milliseconds.
+   * @param {number} step - The context step of the cubism graph in seconds.
    * @param {number} interval=60 - The time interval to search for.
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.
@@ -493,8 +493,9 @@ class StatsAPIs {
         }
       }
 
-      nodesStats.nodes.timestamp = new Date().getTime();
-      StatsAPIs.#previousNodesStats.push(nodesStats.nodes);
+      // Copy so the shared Db.nodesStats cache entry isn't polluted with a
+      // bogus "timestamp" pseudo-node for other consumers
+      StatsAPIs.#previousNodesStats.push({ ...nodesStats.nodes, timestamp: new Date().getTime() });
 
       res.send({
         data: stats,
@@ -1363,7 +1364,7 @@ class StatsAPIs {
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
       Db.getClusterSettingsCache(options),
       Db.loadESId2Info(options.cluster)
-    ]).then(([{ body: shards, esid2info }, { body: settings }]) => {
+    ]).then(([{ body: shards }, { body: settings }]) => {
       if (!Array.isArray(shards)) {
         return res.serverError(500, 'No results', 'api.stats.noResults');
       }
@@ -1797,8 +1798,7 @@ class StatsAPIs {
       const { body: info } = await Db.nodesStats({
         metric: 'jvm,process,fs,os,indices,thread_pool'
       });
-      info.nodes.timestamp = new Date().getTime();
-      StatsAPIs.#previousNodesStats.push(info.nodes);
+      StatsAPIs.#previousNodesStats.push({ ...info.nodes, timestamp: new Date().getTime() });
     } catch (err) {
       console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
     }

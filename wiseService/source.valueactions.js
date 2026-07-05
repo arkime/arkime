@@ -78,8 +78,10 @@ class ValueActionsSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   process (data) {
+    // content may optionally be wrapped in a [valueactions] section header
+    data = data.valueactions || data;
     const keys = Object.keys(data);
-    if (!keys) { return; }
+    if (keys.length === 0) { return; }
 
     keys.forEach((key) => {
       const obj = {};
@@ -126,10 +128,16 @@ class ValueActionsSource extends WISESource {
       clearTimeout(this.watchTimeout);
       if (e === 'rename') {
         this.watch.close();
-        setTimeout(() => {
+        // File may be briefly missing (atomic replace/delete); retry until it's back
+        const rearm = () => {
+          if (!fs.existsSync(this.url)) {
+            setTimeout(rearm, 500);
+            return;
+          }
           this.load();
           this.watch = fs.watch(this.url, watchCb);
-        }, 500);
+        };
+        setTimeout(rearm, 500);
       } else {
         this.watchTimeout = setTimeout(() => {
           this.watchTimeout = null;
@@ -148,9 +156,8 @@ class ValueActionsSource extends WISESource {
     }
 
     const config = ArkimeUtil.parseIniSync(this.url);
-    const data = config.valueactions || config;
 
-    this.process(data);
+    this.process(config);
   }
 
   // ----------------------------------------------------------------------------

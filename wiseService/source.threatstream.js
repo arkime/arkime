@@ -83,7 +83,11 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.getURL = ThreatStreamSource.prototype.getURLSqlite3;
       this.loadTypes(true);
       api.app.get('/threatstream/_reload', (req, res) => {
-        this.openDb.bind(this)();
+        if (this.mode === 'sqlite3-copy') {
+          this.openDbCopy();
+        } else {
+          this.openDb();
+        }
         res.send('Ok');
       });
       break;
@@ -114,27 +118,59 @@ class ThreatStreamSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseFile () {
-    this.ips.clear();
-    this.ips.reserve(2000000);
-    this.domains.clear();
-    this.domains.reserve(200000);
-    this.emails.clear();
-    this.emails.reserve(200000);
-    this.md5s.clear();
-    this.md5s.reserve(200000);
-    this.urls.clear();
-    this.urls.reserve(200000);
+    // Build into fresh maps and swap at the end so a failed load keeps prior data
+    const ips = new Map();
+    const domains = new Map();
+    const emails = new Map();
+    const md5s = new Map();
+    const urls = new Map();
 
+    let bad = false;
     fs.createReadStream('/tmp/threatstream.zip')
+      .on('error', (err) => {
+        console.log(this.section, "- Couldn't read /tmp/threatstream.zip", err);
+      })
       .pipe(unzipper.Parse())
+      .on('error', (err) => {
+        bad = true;
+        console.log(this.section, '- Error unzipping', err);
+      })
       .on('entry', (entry) => {
         const bufs = [];
         entry.on('data', (buf) => {
           bufs.push(buf);
         }).on('end', () => {
-          const json = JSON.parse(Buffer.concat(bufs));
+          let json;
+          try {
+            json = JSON.parse(Buffer.concat(bufs));
+          } catch (e) {
+            bad = true;
+            console.log(this.section, 'ERROR - parsing', entry.path, e);
+            return;
+          }
           json.objects.forEach((item) => {
             if (item.state !== 'active') {
+              return;
+            }
+
+            // Figure out where the item goes and its indicator value first
+            let hash, indicator;
+            if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
+              hash = ips; indicator = item.srcip;
+            } else if (item.itype.match(/_domain|_dns/)) {
+              hash = domains; indicator = item.domain;
+            } else if (item.itype.match(/_email/)) {
+              hash = emails; indicator = item.email;
+            } else if (item.itype.match(/_md5/)) {
+              hash = md5s; indicator = item.md5;
+            } else if (item.itype.match(/_url/)) {
+              hash = urls; indicator = item.url;
+              if (indicator.startsWith('http://')) {
+                indicator = indicator.substring(7);
+              } else if (indicator.startsWith('https://')) {
+                indicator = indicator.substring(8);
+              }
+            } else {
               return;
             }
 
@@ -142,6 +178,7 @@ class ThreatStreamSource extends WISESource {
             try {
               if (item.maltype && item.maltype !== 'null') {
                 encoded = WISESource.encodeResult(
+                  this.indicatorField, '' + indicator,
                   this.severityField, item.severity.toLowerCase(),
                   this.confidenceField, '' + item.confidence,
                   this.idField, '' + item.id,
@@ -151,6 +188,7 @@ class ThreatStreamSource extends WISESource {
                 );
               } else {
                 encoded = WISESource.encodeResult(
+                  this.indicatorField, '' + indicator,
                   this.severityField, item.severity.toLowerCase(),
                   this.confidenceField, '' + item.confidence,
                   this.idField, '' + item.id,
@@ -163,25 +201,21 @@ class ThreatStreamSource extends WISESource {
               return;
             }
 
-            if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
-              this.ips.set(item.srcip, encoded);
-            } else if (item.itype.match(/_domain|_dns/)) {
-              this.domains.set(item.domain, encoded);
-            } else if (item.itype.match(/_email/)) {
-              this.emails.set(item.email, encoded);
-            } else if (item.itype.match(/_md5/)) {
-              this.md5s.set(item.md5, encoded);
-            } else if (item.itype.match(/_url/)) {
-              if (item.url.lastIndexOf('http://', 0) === 0) {
-                item.url = item.url.substring(7);
-              }
-              this.urls.set(item.url, encoded);
-            }
+            hash.set(indicator, encoded);
           });
           // console.log(this.section, "- Done", entry.path);
         });
       })
       .on('close', () => {
+        if (bad) {
+          console.log(this.section, '- Load failed, keeping previous data');
+          return;
+        }
+        this.ips = ips;
+        this.domains = domains;
+        this.emails = emails;
+        this.md5s = md5s;
+        this.urls = urls;
         console.log(this.section, '- Done Loading');
       });
   }
@@ -221,21 +255,23 @@ class ThreatStreamSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   getURLZip (url, cb) {
-    url = `http://${url}`;
     cb(null, this.urls.get(url));
   }
 
   // ----------------------------------------------------------------------------
   dumpZip (res) {
     res.write('{');
-    ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey) => {
-      res.write(`${ckey}: [\n`);
+    ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey, cindex) => {
+      if (cindex > 0) { res.write(',\n'); }
+      res.write(`"${ckey}": [\n`);
+      let first = true;
       this[ckey].forEach((value, key) => {
-        const str = `{"key": ${JSON.stringify(key)}, "ops":\n` +
-          WISESource.result2JSON(value) + '},\n';
+        const str = (first ? '' : ',\n') + `{"key": ${JSON.stringify(key)}, "ops":\n` +
+          WISESource.result2JSON(value) + '}';
+        first = false;
         res.write(str);
       });
-      res.write('],\n');
+      res.write(']');
     });
     res.write('}');
     res.end();
@@ -255,7 +291,6 @@ class ThreatStreamSource extends WISESource {
     this.inProgress++;
     axios(options)
       .then((response) => {
-        this.inProgress--;
         const body = response.data;
 
         if (body.objects.length === 0) {
@@ -272,7 +307,7 @@ class ThreatStreamSource extends WISESource {
             this.sourceField, item.source
           );
 
-          if (item.maltype !== undefined && item.maltype !== 'null') {
+          if (item.maltype != null && item.maltype !== 'null') {
             args.push(this.maltypeField, item.maltype.toLowerCase());
           }
           if (item.severity !== undefined) {
@@ -284,6 +319,8 @@ class ThreatStreamSource extends WISESource {
       }).catch((err) => {
         console.log(this.section, 'problem fetching ', options, err);
         return cb(null, WISESource.emptyResult);
+      }).finally(() => {
+        this.inProgress--;
       });
   }
 
@@ -452,7 +489,7 @@ class ThreatStreamSource extends WISESource {
             this.db = null;
           }
 
-          // 5) Remove old .moloch and rename .tmp to .moloch
+          // 5) Remove old .moloch and rename .temp to .moloch
           execFile('/bin/rm', ['-f', `${dbFile}.moloch`], (err, subStdout, subStderr) => {
             execFile('/bin/mv', ['-f', `${dbFile}.temp`, `${dbFile}.moloch`], (err, subSubStdout, subSubStderr) => {
               // 6) open new .moloch file
@@ -516,18 +553,20 @@ class ThreatStreamSource extends WISESource {
 
     this.checkMd5Index(this.db, dbFile);
 
-    setInterval(() => {
-      try {
-        const result = this.db.pragma('main.wal_checkpoint(TRUNCATE)');
-        console.log('Threatstream Truncate - ', result);
-        if (result.length > 0 && result[0].busy) {
-          const result2 = this.db.pragma('main.wal_checkpoint(PASSIVE)');
-          console.log('Threatstream Passive Truncate - ', result2);
+    if (this.checkpointInterval === undefined) { // only one checkpoint timer, openDb can be called repeatedly
+      this.checkpointInterval = setInterval(() => {
+        try {
+          const result = this.db.pragma('main.wal_checkpoint(TRUNCATE)');
+          console.log('Threatstream Truncate - ', result);
+          if (result.length > 0 && result[0].busy) {
+            const result2 = this.db.pragma('main.wal_checkpoint(PASSIVE)');
+            console.log('Threatstream Passive Truncate - ', result2);
+          }
+        } catch (err) {
+          console.log('Threatstream truncate error', err);
         }
-      } catch (err) {
-        console.log('Threatstream truncate error', err);
-      }
-    }, 5 * 60 * 1000);
+      }, 5 * 60 * 1000);
+    }
   }
 }
 

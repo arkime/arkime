@@ -359,8 +359,9 @@ LOCAL void adb_parse_open(ArkimeSession_t *session, const uint8_t *data, int rem
             arkime_session_add_tag(session, "adb:sync");
         }
 
-        /* Check for shell v2 */
-        if (strncmp(service_str, "shell,v2:", 9) == 0 || strncmp(service_str, "shell,V2:", 9) == 0) {
+        /* Check for shell v2 — service string is "shell,v2[,args...]:[command]" */
+        if ((strncmp(service_str, "shell,v2", 8) == 0 || strncmp(service_str, "shell,V2", 8) == 0) &&
+            (service_str[8] == ':' || service_str[8] == ',')) {
             adb->shellV2[which] = 1;
             arkime_session_add_tag(session, "adb:shell-v2");
         }

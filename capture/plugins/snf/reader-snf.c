@@ -80,10 +80,13 @@ LOCAL void *reader_snf_thread(gpointer posv)
     ArkimePacketBatch_t batch;
     arkime_packet_batch_init(&batch);
     while (!config.quitting) {
-        int err = snf_ring_recv(ring, -1, &req);
+        int err = snf_ring_recv(ring, 1000, &req);
         if (err) {
-            if (err == EBUSY || err == EAGAIN || err == EINTR)
+            if (err == EBUSY || err == EAGAIN || err == EINTR) {
+                // Idle, make sure any batched packets are processed
+                arkime_packet_batch_flush(&batch);
                 continue;
+            }
             LOG("SNF quitting %d", err);
             arkime_quit();
             break;

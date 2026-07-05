@@ -255,7 +255,7 @@ my @IPS = qw(10.0.0.1 10.0.0.10 10.0.0.11 10.0.0.12 10.0.0.16 10.0.0.17 10.0.0.2
 sub ip() { return $IPS[ rand @IPS ]; }
 
 ################################################################################
-my @ASNS = ("AS10052 Kyungpook National University", "AS10755 Dartmouth College", "AS10913 Internap Corporation", "AS11590 Cumberland Technologies International", "AS13335 Cloudflare, Inc.", "AS13489 EPM Telecomunicaciones S.A. E.S.P.", "AS14618 Amazon.com, Inc.", "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business", "AS15169 Google LLC", "AS15733 Zumtobel Group AG", "AS16150 Availo Networks AB", "AS16509 Amazon.com, Inc.", "AS16625 Akamai Technologies, Inc.", "AS203476 GANDI SAS", "AS20940 Akamai International B.V.", "AS23028 Team Cymru Inc.", "AS26496 GoDaddy.com, LLC", "AS2830 Verizon Nederland B.V.", "AS3 Massachusetts Institute of Technology", "AS32934 Facebook, Inc.", "AS36459 GitHub, Inc.", "AS43515 Google Ireland Limited", "AS4385 Rochester Institute of Technology", "AS4589 EASYNET Easynet Global Services", "AS4657 StarHub Ltd", "AS46636 NatCoWeb Corp.", "AS4766 Korea Telecom", "AS4816 China Telecom (Group)", "AS7018 AT&T Services, Inc.", "AS7233 Yahoo", "AS9270 National Infomation Society Agency");
+my @ASNS = ("AS10052 Kyungpook National University", "AS10755 Dartmouth College", "AS10913 Internap Corporation", "AS11590 Cumberland Technologies International", "AS13335 Cloudflare, Inc.", "AS13489 EPM Telecomunicaciones S.A. E.S.P.", "AS14618 Amazon.com, Inc.", "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business", "AS15169 Google LLC", "AS15733 Zumtobel Group AG", "AS16150 Availo Networks AB", "AS16509 Amazon.com, Inc.", "AS16625 Akamai Technologies, Inc.", "AS203476 GANDI SAS", "AS20940 Akamai International B.V.", "AS23028 Team Cymru Inc.", "AS26496 GoDaddy.com, LLC", "AS2830 Verizon Nederland B.V.", "AS3 Massachusetts Institute of Technology", "AS32934 Facebook, Inc.", "AS36459 GitHub, Inc.", "AS43515 Google Ireland Limited", "AS4385 Rochester Institute of Technology", "AS4589 EASYNET Easynet Global Services", "AS4657 StarHub Ltd", "AS46636 NatCoWeb Corp.", "AS4766 Korea Telecom", "AS4816 China Telecom (Group)", "AS7018 AT&T Services, Inc.", "AS7233 Yahoo", "AS9270 National Information Society Agency");
 sub asn() { return $ASNS[ rand @ASNS ]; }
 
 ################################################################################
@@ -519,7 +519,7 @@ sub generateHTTP()
 
 ################################################################################
 my $HTTP = 100;
-for (my $pos;$pos <= $#ARGV; $pos++) {
+for (my $pos = 0;$pos <= $#ARGV; $pos++) {
     if ($ARGV[$pos] eq "--debug") {
         $DEBUG = 1;
     } elsif ($ARGV[$pos] eq "--http") {
@@ -569,9 +569,9 @@ for (my $pos;$pos <= $#ARGV; $pos++) {
         print "--sticky-src [<ip>]    - All src ips will be the same, which can be optionally provided\n";
         print "--sticky-dst [<ip>]    - All dst ips will be the same, which can be optionally provided\n";
         print "--sticky-user [<user>] - All users will be the same, which can be optionally provided\n";
-        print "--sticky-path [<path>] - The first path for each suession will be the same, which can be optionally provided\n";
+        print "--sticky-path [<path>] - The first path for each session will be the same, which can be optionally provided\n";
         print "--sticky-last [<ms>]   - All items will have the same lastPacket time, which can be optionally provided\n";
-        print "--tag <tag>            - All session will have this tag, default: $TAG\n";
+        print "--tag <tag>            - All sessions will have this tag, default: $TAG\n";
         exit(0);
     }
 }

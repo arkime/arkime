@@ -128,7 +128,7 @@ function processArgs (argv) {
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
       console.log('  --webcode <code>            Set the web config code instead of random');
-      console.log('  --workers <b>               Number of worker processes to create');
+      console.log('  --workers <num>             Number of worker processes to create');
       console.log('  --insecure                  Disable certificate verification for https calls');
 
       process.exit(0);
@@ -347,7 +347,7 @@ class WISESourceAPI {
     const pos = internals.fields.length;
     newFieldsTS();
     internals.fields.push(field);
-    internals.fieldsSize += field.length + 10;
+    internals.fieldsSize += Buffer.byteLength(field) + 10; // UTF-8 bytes, not UTF-16 code units
 
     let offset;
     // Create version 0 of fields buf
@@ -488,7 +488,7 @@ class WISESourceAPI {
    * @property {boolean} [password=false] - Is it a password type field that should be hidden
    * @property {string} [multiline] - If set this should be split using the value and shown in the UI as a text area
    * @property {string} help - The help text to show the user about the field
-   * @property {string} [ifField] - Only show the field if the 'ifValue' field is set and is equal to 'ifValue'
+   * @property {string} [ifField] - Only show the field if the 'ifField' field is set and is equal to 'ifValue'
    * @property {string} [ifValue] - Only show the field if the 'ifValue' field is set and is equal to 'ifValue'
    * @property {string} [regex] - The value must match the regex to be considered valid
    */
@@ -498,7 +498,7 @@ class WISESourceAPI {
    * This is used by the UI to generate what to display to the admin.
    * @typedef {Object} WISESourceAPI~SourceConfig
    * @property {string} name - The name of the source
-   * @property {boolean} singleton - Can there be multiple instances of this source
+   * @property {boolean} singleton - Only one instance of this source can be configured
    * @property {string} description - Friendly text about the source
    * @property {Array} types - List of WISE types the source supports
    * @property {boolean} [cacheable=true] - Can the source be cached by WISE
@@ -951,7 +951,8 @@ async function processQuery (req, query, cb) {
       delete cacheResult[src.section];
 
       // If already in progress then add to the list and return, cb called later;
-      if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(valueKey)) {
+      src.srcInProgress[query.typeName] ??= new Map();
+      if (src.srcInProgress[query.typeName].has(valueKey)) {
         src.srcInProgress[query.typeName].get(valueKey).push(mapCb);
         return;
       }
@@ -1025,7 +1026,7 @@ function processQueryResponse0 (req, res, queries, results) {
 // ----------------------------------------------------------------------------
 // pos len value
 // 0   4   flags
-// 4   2   2
+// 4   4   2
 // 8   32  md5 of fields
 // 40  2   count of fields if md5 unknown
 // 42  L   fields info
@@ -1668,7 +1669,8 @@ if (internals.webconfig) {
     }
 
     // Make sure updateTime has increased in case of clock skew
-    config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
+    // updateTime may be a string from the config file, force numeric so + 1 doesn't concatenate
+    config.wiseService.updateTime = Math.max(Date.now(), +internals.updateTime + 1);
 
     ArkimeConfig.replace(config);
     ArkimeConfig.save((err) => {

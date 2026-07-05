@@ -79,7 +79,7 @@ class YourServiceIntegration extends Integration {
     // Tidbit configuration (see Tidbit Configuration section)
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;   // Cache results (milliseconds)
+  cacheTimeout = '24h';   // Cache results (seconds or a time string like '24h')
 
   constructor () {
     super();
@@ -117,20 +117,20 @@ new YourServiceIntegration();
 - **`settings`**: User configuration options (see Authentication section)
 - **`card`**: How to display detailed results (see Card Configuration)
 - **`tidbits`**: Small bits of info shown in the indicator result tree
-- **`cacheTimeout`**: How long to cache results in milliseconds
+- **`cacheTimeout`**: How long to cache results, in seconds or as a time string like `'24h'`
 - **`configName`**: Use settings from another integration (for shared credentials)
 
 ### Cache Timeout Guidelines
 
 ```javascript
 // Standard: 24 hours (most services)
-cacheTimeout = 24 * 60 * 60 * 1000;
+cacheTimeout = '24h';
 
 // Extended: 1 week (for flaky, slow, expensive, or rate-limited services)
-cacheTimeout = 7 * 24 * 60 * 60 * 1000;
+cacheTimeout = '1w';
 
 // Short: 1 hour (for rapidly changing data)
-cacheTimeout = 60 * 60 * 1000;
+cacheTimeout = '1h';
 ```
 
 ## Card Configuration
@@ -201,7 +201,7 @@ card = {
   label: 'Complex Field',
   field: 'path.to.data',
   type: 'string',
-  defang: true,                          // Change http->hXXp, .->[-]
+  defang: true,                          // Change http->hXXp, .->[.]
   pivot: true,                           // Add pivot dropdown menu
   defaultSortField: 'name',              // For tables, default sort column
   defaultSortDirection: 'asc',           // Sort direction
@@ -490,8 +490,8 @@ class SecondIntegration extends Integration {
 Set debug level to see detailed logs:
 
 ```bash
-# Start with debug logging
-DEBUG=2 npm start
+# Start with debug logging (repeat --debug for more detail)
+node cont3xt.js -c cont3xt.ini --debug --debug
 ```
 
 ### Common Issues

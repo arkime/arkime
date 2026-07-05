@@ -142,7 +142,7 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.rpm /data/moloch
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.rpm /data/moloch
           ls -l *.rpm
 
       - name: package deb
@@ -176,7 +176,7 @@ jobs:
 
             A db.pl upgrade is required when upgrading from Arkime 5 or earlier
 
-            Support Arkime's ongoing development! Become a **[GitHub Sponsor!](https://github.com/sponsors/awick)**
+            Support Arkime's ongoing development! Become a **[Sponsor!](https://arkime.com/sponsor)**
 
             # :sparkles: What's new :sparkles:
 
@@ -249,9 +249,10 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           fetch-depth: 0
+          ref: "refs/tags/v${{ github.event.inputs.release_tag }}"
 
       - name: Build on FreeBSD
-        uses: vmactions/freebsd-vm@4807432c7cab1c3f97688665332c0b932062d31f # v1.4.3
+        uses: vmactions/freebsd-vm@4441bea20b31bfa77329a5af583199362489567e # v1.4.9
         with:
           release: ${{ matrix.freebsdrelease }}
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}

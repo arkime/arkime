@@ -133,7 +133,7 @@ done
 
 
 ################################################################################
-# Default node setting, reset to unofficial builds below for Centos 7, Ubuntu 18, Alpine
+# Default node setting, reset to unofficial builds below for Alpine
 NODEHOST=nodejs.org
 case "$(uname -m)" in
     "x86_64")

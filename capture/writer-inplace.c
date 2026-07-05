@@ -37,9 +37,11 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
     const ArkimeFileInfo_t *fi = &fileInfo[packet->readerPos];
     const char *readerName = fi->filename;
 
-    uint32_t outputId;
+    uint32_t outputId = 0;
     if (config.pcapReprocess) {
-        arkime_db_file_exists(readerName, &outputId);
+        if (!arkime_db_file_exists(readerName, &outputId)) {
+            LOGEXIT("ERROR - Can't reprocess %s, no files record found in OpenSearch/Elasticsearch for node %s", readerName, config.nodeName);
+        }
     } else {
         // For pcapng sources, record each interface's IDB offset so the viewer
         // can find link types for read-back/export without rescanning.

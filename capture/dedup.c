@@ -232,7 +232,7 @@ void arkime_dedup_init()
     seconds = ARKIME_SIZE_ALLOC0("dedup seconds", sizeof(DedupSeconds_t) * dedupSeconds);
     for (uint32_t i = 0; i < dedupSeconds; i++) {
         ARKIME_LOCK_INIT(seconds[i].lock);
-        seconds[i].counts = ARKIME_SIZE_ALLOC("dedup counts", dedupSlots);
+        seconds[i].counts = ARKIME_SIZE_ALLOC0("dedup counts", dedupSlots);
         seconds[i].ctrl = ARKIME_SIZE_ALLOC("dedup ctrl", dedupSize);
         seconds[i].hashes = ARKIME_SIZE_ALLOC("dedup hashes", dedupSize * 16);
     }

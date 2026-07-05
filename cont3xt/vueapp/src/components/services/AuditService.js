@@ -24,7 +24,7 @@ export default {
 
   /**
    * Deletes a history log
-   * @param {String} id - The id of the view to delete
+   * @param {String} id - The id of the audit/history entry to delete
    * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   deleteAudit (id) {

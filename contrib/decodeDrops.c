@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <arpa/inet.h>
 
 int main(int argc, char *argv[]) 
 {
@@ -83,7 +84,13 @@ int main(int argc, char *argv[])
             }
 
             time_t texpire = last + goodFor;
-            printf("%24.24s %d.%d.%d.%d:%d\n", ctime(&texpire), key[0], key[1], key[2], key[3], htons(port));
+            if (isIp4) {
+                printf("%24.24s %d.%d.%d.%d:%d\n", ctime(&texpire), key[0], key[1], key[2], key[3], htons(port));
+            } else {
+                char ipstr[INET6_ADDRSTRLEN];
+                inet_ntop(AF_INET6, key, ipstr, sizeof(ipstr));
+                printf("%24.24s %s:%d\n", ctime(&texpire), ipstr, htons(port));
+            }
         }
     }
 }

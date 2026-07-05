@@ -102,6 +102,11 @@ my $VERSION = 88;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
+# Normalize an env-provided prefix the same way --prefix is normalized below
+if (defined $PREFIX && $PREFIX ne "") {
+    $PREFIX .= "_" if ($PREFIX !~ /_$/);
+    $OLDPREFIX = $PREFIX;
+}
 my $SECURE = 1;
 my $CLIENTCERT = "";
 my $CLIENTKEY = "";
@@ -185,7 +190,7 @@ sub showHelp($)
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
     print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
     print "    --compression <mode>       - The compression codec\n";
-    print "  wipe [<init opts>]           - Same as init, but leaves configs,user,views,parliament indices untouched\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves configs,users,queries,parliament indices untouched\n";
     print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
@@ -8410,7 +8415,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $historysBytes = 0;
     my @historys = grep /^(${PREFIX}history_v1-|${OLDPREFIX}history_v1-)/, keys %{$status->{indices}};
     foreach my $index (@historys) {
-        next if ($index !~ /^${PREFIX}history_v1-/);
         $historys += $status->{indices}->{$index}->{primaries}->{docs}->{count};
         $historysBytes += $status->{indices}->{$index}->{primaries}->{store}->{size_in_bytes};
     }

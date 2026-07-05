@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 104;
+use Test::More tests => 108;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -37,7 +37,7 @@ my $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminT
 diag Dumper($users) if ($users->{recordsTotal} != 10);
 
 # validate the flags
-eq_or_diff($users->{recordsTotal}, 10, "Should have 11 users");
+eq_or_diff($users->{recordsTotal}, 10, "Should have 10 users");
 eq_or_diff($users->{data}->[0]->{roles}, from_json('["superAdmin"]'));
 is($users->{data}->[1]->{userId}, 'role:role');
 eq_or_diff($users->{data}->[2]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
@@ -65,7 +65,7 @@ is($user1->{id}, "test1");
 addUser("-n testuser test1 test1 test1 --email");
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is($users->{data}->[2]->{id}, "test1");
-ok($users->{data}->[2]->{emailSearch}, "Can update exiting user");
+ok($users->{data}->[2]->{emailSearch}, "Can update existing user");
 
 
 #### Auth Header tests
@@ -262,6 +262,23 @@ is ($response->code, 200, "combouser with wrong header auth success");
 $response = viewerGet("/regressionTests/getUser/combouser");
 ok(!grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser loses role:combinedRole when expression is false");
 
+# Test dynamic roles take effect on the SAME request that grants/revokes them.
+# /api/user returns the in-memory expanded roles (#allRoles), so a stale
+# memoized expansion shows up here even though the saved user is correct.
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'samerequser', 'x-test-role' => 'special');
+is ($response->code, 200, "samerequser auth success");
+my $sameReq = from_json($response->content);
+ok(grep(/^role:headerRole$/, @{$sameReq->{roles}}), "samerequser has role:headerRole on the granting request");
+
+# Same user again WITHOUT the header - role must be gone on this same request
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'sameequser');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'sameequser', 'x-test-role' => 'special');
+$sameReq = from_json($response->content);
+ok(grep(/^role:headerRole$/, @{$sameReq->{roles}}), "sameequser gains role:headerRole on the granting request");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'sameequser');
+$sameReq = from_json($response->content);
+ok(!grep(/^role:headerRole$/, @{$sameReq->{roles}}), "sameequser loses role:headerRole on the revoking request");
+
 
 #### JWT Auth Header tests (test4 node on port 8127)
 
@@ -322,12 +339,14 @@ viewerDeleteToken("/api/user/normaluser", $token);
 viewerDeleteToken("/api/user/combouser", $token);
 viewerDeleteToken("/api/user/jwtuser1", $token);
 viewerDeleteToken("/api/user/jwtuser2", $token);
+viewerDeleteToken("/api/user/samerequser", $token);
+viewerDeleteToken("/api/user/sameequser", $token);
 
 $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
-is (@{$users->{data}}, 7, "Two supers plus 4 role mappings left");
+is (@{$users->{data}}, 7, "Two supers plus 4 role mappings plus anonymous left");
 
 viewerGet("/regressionTests/deleteAllUsers");
 

@@ -180,6 +180,8 @@ LOCAL int sip_is_method(const char *method, int methodLen)
     case 'P':
         if (methodLen == 5 && memcmp(method, "PRACK", 5) == 0)
             return 1;
+        if (methodLen == 7 && memcmp(method, "PUBLISH", 7) == 0)
+            return 1;
         break;
     case 'R':
         if (methodLen == 8 && memcmp(method, "REGISTER", 8) == 0)
@@ -219,7 +221,7 @@ LOCAL int sip_parse_request(ArkimeSession_t *session, const uint8_t *line, int l
     if (!sip_is_method(method, methodEnd))
         return -1;
 
-    // Verify SIP/2.0 at end
+    // Verify the request line contains SIP/2.0
     if (lineLen < methodEnd + 10)
         return -1;
 
@@ -330,11 +332,6 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
 
         int isResponse = 0;
         int contentLength = sip_process(session, sip->buf[which], endPos, &isResponse);
-
-        // Track serverWhich - server sends responses
-        if (isResponse) {
-            sip->serverWhich = which;
-        }
 
         // Delete headers
         arkime_parser_buf_del(sip, which, endPos);
@@ -459,5 +456,6 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"SIP/2.0", 7, sip_tcp_classify);
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"INVITE sip:", 11, sip_tcp_classify);
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"REGISTER sip:", 13, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"OPTIONS sip:", 12, sip_tcp_classify);
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"NOTIFY sip:", 11, sip_tcp_classify);
 }

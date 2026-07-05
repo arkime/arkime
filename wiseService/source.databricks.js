@@ -22,13 +22,17 @@ class DatabricksSource extends WISESource {
     this.query = api.getConfig(section, 'query');
     this.periodic = api.getConfig(section, 'periodic');
     this.mergeQuery = api.getConfig(section, 'mergeQuery');
-    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
+    // no default so the required-check below can actually fire
+    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn'));
 
+    let missing = false;
     ['host', 'path', 'token', 'query', 'keyPath'].forEach((item) => {
       if (this[item] === undefined) {
         console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
+        missing = true;
       }
     });
+    if (missing) { return; }
 
     if (this.periodic) {
       this.cacheTimeout = -1; // Don't cache

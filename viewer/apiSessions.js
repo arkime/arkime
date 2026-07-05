@@ -439,6 +439,9 @@ class SessionAPIs {
     }
     for (const key in decodeOptions) {
       if (ArkimeUtil.isPP(key)) { continue; }
+      if (!decode.isRegistered(key)) {
+        return res.serverError(400, 'Invalid decode parameter', 'api.sessions.invalidDecodeParam');
+      }
       if (key.match(/^ITEM/)) {
         options.order.push(key);
       } else {
@@ -1166,11 +1169,12 @@ class SessionAPIs {
   static #scrubbingBuffers;
   static async #pcapScrub (req, res, sid, whatToRemove) {
     if (SessionAPIs.#scrubbingBuffers === undefined) {
-      SessionAPIs.#scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
+      // Sized to the max packet incl_len readPacket allows (65535)
+      SessionAPIs.#scrubbingBuffers = [Buffer.alloc(65535), Buffer.alloc(65535), Buffer.alloc(65535)];
       SessionAPIs.#scrubbingBuffers[0].fill(0);
       SessionAPIs.#scrubbingBuffers[1].fill(1);
       const str = 'Scrubbed! Hoot! ';
-      for (let i = 0; i < 5000;) {
+      for (let i = 0; i < 65535 - str.length;) {
         i += SessionAPIs.#scrubbingBuffers[2].write(str, i);
       }
     }
@@ -2083,7 +2087,7 @@ class SessionAPIs {
         const sfilter = { term: {} };
         query.query.bool.filter.push(filter);
 
-        if (field === 'ip.dst:port') {
+        if (field === 'ip.dst:port' || field === 'fileand') {
           query.query.bool.filter.push(sfilter);
         }
 
@@ -2196,7 +2200,7 @@ class SessionAPIs {
           } else if (field === 'fileand') {
             filter.term.node = item.key;
             for (const sitem of item.sub.buckets) {
-              sfilter.term.fileand = sitem.key;
+              sfilter.term.fileId = sitem.key;
               intermediateResults.push({ key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
             }
           } else {
@@ -2324,7 +2328,7 @@ class SessionAPIs {
           }
         }
 
-        // There is 1 entry per row, the entry is determine by the leafs, with an array of parents.
+        // There is 1 entry per row, the entry is determined by the leaves, with an array of parents.
         // This uses a depth first search.
         const tableResults = [];
         function addDataToTable (parents, buckets) {
@@ -2429,7 +2433,7 @@ class SessionAPIs {
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|destination.ip:destination.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         for (const item2 of item.field2.buckets) {
@@ -3423,7 +3427,7 @@ class SessionAPIs {
           map,
           graph
         };
-        response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+        response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
         await send(response, false);
       }
 

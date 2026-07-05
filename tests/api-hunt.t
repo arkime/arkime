@@ -9,7 +9,7 @@ use strict;
 
 my $token = getTokenCookie();
 my $otherToken = getTokenCookie('user2');
-my $nonadminToken = getTokenCookie2('user3');
+my $nonadminToken = getTokenCookie('user3');
 my $json;
 
 
@@ -252,9 +252,9 @@ my $hToken = getTokenCookie('sac-huntuser');
 
 # verify viewHunt and badHunt
   is($viewHunt->{query}->{view}, $viewId, "hunt has a view applied");
-  is($viewHunt->{unrunnable}, undef, "hunt should be runable");
+  is($viewHunt->{unrunnable}, undef, "hunt should be runnable");
 
-  is($badHunt->{unrunnable}, 1, "hunt should be unrunable");
+  is($badHunt->{unrunnable}, 1, "hunt should be unrunnable");
 
 # add a hunt that is shared with another user
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
@@ -355,13 +355,13 @@ my $hToken = getTokenCookie('sac-huntuser');
   ok(exists $hunts->{data}->[3]->{id});
   isnt($hunts->{data}->[3]->{id}, "", "should have id field");
   ok(exists $hunts->{data}->[3]->{userId});
-  isnt($hunts->{data}->[3]->{userId}, "", "should be missing userId field");
+  isnt($hunts->{data}->[3]->{userId}, "", "should have userId field");
   ok(exists $hunts->{data}->[3]->{search});
-  isnt($hunts->{data}->[3]->{search}, "", "should be missing search field");
+  isnt($hunts->{data}->[3]->{search}, "", "should have search field");
   ok(exists $hunts->{data}->[3]->{searchType});
-  isnt($hunts->{data}->[3]->{searchType}, "", "should be missing searchType field");
+  isnt($hunts->{data}->[3]->{searchType}, "", "should have searchType field");
   ok(exists $hunts->{data}->[3]->{query});
-  isnt($hunts->{data}->[3]->{query}, undef, "should be missing query field");
+  isnt($hunts->{data}->[3]->{query}, undef, "should have query field");
 
   $hunts = multiGet("/api/hunts?all");
   is ($hunts->{recordsTotal}, 5, 'Wrong number of hunts');

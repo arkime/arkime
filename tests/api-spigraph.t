@@ -17,7 +17,7 @@ sub testMulti {
 
    eq_or_diff($mjson->{map}, $json->{map}, "single doesn't match multi map for $url", { context => 3 });
    eq_or_diff($mjson->{graph}, $json->{graph}, "single doesn't match multi graph for $url", { context => 3 });
-   eq_or_diff(\@mitems, \@items, "single doesn't match multi graph for $url", { context => 3 });
+   eq_or_diff(\@mitems, \@items, "single doesn't match multi items for $url", { context => 3 });
 
    return $json;
 }
@@ -70,7 +70,7 @@ my ($json, $mjson, $pjson);
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
     $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field":"node", "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
     eq_or_diff($json, $pjson, "GET and POST versions of spigraph endpoint are not the same");
-    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map field: no");
+    eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map field: node");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000, 1]]'), "sessionsHisto field: node");
     eq_or_diff($json->{graph}->{"source.packetsHisto"}, from_json('[["1335956400000", 2], ["1386003600000", 26], [1387742400000, 3], [1482552000000, 3]]'), "source.packetsHisto field: node");
     eq_or_diff($json->{graph}->{"destination.packetsHisto"}, from_json('[["1335956400000", 0], ["1386003600000", 20], [1387742400000, 1], [1482552000000, 1]]'), "destination.packetsHisto field: node");
@@ -143,6 +143,11 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     is (scalar @{$json->{"items"}}, 3);
     is ($json->{"items"}->[0]->{name}, '/DIR/tests/pcap/socks-http-example.pcap');
     cmp_ok ($json->{recordsFiltered}, '==', 6);
+    # each item must show per-file session counts, not node-level totals
+    my %fileandCounts = map { $_->{name} => $_->{sessionsHisto} } @{$json->{"items"}};
+    is ($fileandCounts{'/DIR/tests/pcap/socks-http-example.pcap'}, 3, "fileand per-file sessions socks-http-example");
+    is ($fileandCounts{'/DIR/tests/pcap/bt-tcp.pcap'}, 2, "fileand per-file sessions bt-tcp");
+    is ($fileandCounts{'/DIR/tests/pcap/bigendian.pcap'}, 1, "fileand per-file sessions bigendian");
 
 # ip.dst:port works
     $json = get("/spigraph.json?date=-1&field=ip.dst:port&expression=" . uri_escape("file=$pwd/socks5-reverse.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

@@ -670,26 +670,29 @@ class Pcap {
       pos += headerLen; // Don't delete pcap header
       len -= headerLen;
     } else {
+      let skip;
       switch (packet.ip.p) {
       case 1:
-        pos += (packet.icmp._pos + 8);
-        len -= (packet.icmp._pos + 8);
+        skip = packet.icmp._pos + 8;
         break;
       case 6:
-        pos += (packet.tcp._pos + 4 * packet.tcp.off);
-        len -= (packet.tcp._pos + 4 * packet.tcp.off);
+        skip = packet.tcp._pos + 4 * packet.tcp.off;
         break;
       case 17:
-        pos += (packet.udp._pos + 8);
-        len -= (packet.udp._pos + 8);
+        skip = packet.udp._pos + 8;
         break;
       case 132:
-        pos += (packet.sctp._pos + 8);
-        len -= (packet.sctp._pos + 8);
+        skip = packet.sctp._pos + 8;
         break;
       default:
         throw new Error("Unknown packet type, can't scrub");
       }
+      // decode() runs on the buffer readPacket rebuilds with a standard
+      // 16 byte header, so _pos values are 16-based even when the on-disk
+      // record header is 6 bytes
+      skip -= (16 - headerLen);
+      pos += skip;
+      len -= skip;
     }
 
     fs.writeSync(this.fd, buf, 0, len, pos);
@@ -831,9 +834,9 @@ class Pcap {
       if (offset >= data.length) { return; }
 
       if ((data[offset] & 0xf0) === 0x60) {
-        this.ip6(data.slice(offset), obj, pos + offset);
+        this.ip6(data.slice(offset), obj, pos + 8 + offset);
       } else {
-        this.ip4(data.slice(offset), obj, pos + offset);
+        this.ip4(data.slice(offset), obj, pos + 8 + offset);
       }
     }
   }
@@ -886,8 +889,8 @@ class Pcap {
     if (obj.gre.flags_version & 0x4000) {
       while (true) {
         bpos += 3;
-        if (bpos + 2 > buffer.length) { break; }
-        const len = buffer.readUInt16BE(bpos);
+        if (bpos + 1 > buffer.length) { break; }
+        const len = buffer[bpos]; // SRE Length is 1 byte (RFC 1701)
         bpos++;
         if (len === 0) { break; }
         bpos += len;
@@ -1201,7 +1204,8 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   radiotap (buffer, obj, pos) {
-    const l = buffer[2] + 24 + 6;
+    // it_len is a little-endian uint16 at bytes 2-3
+    const l = (buffer[2] | (buffer[3] << 8)) + 24 + 6;
     const ethertype = buffer.readUInt16BE(l);
 
     if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
@@ -1224,13 +1228,7 @@ class Pcap {
         offset += advance;
       }
     }
-
-    const l = buffer[2] + 24;
-    if (buffer[l + 6] === 0x08 && buffer[l + 7] === 0x00) {
-      this.ip4(buffer.slice(l + 8), obj, pos + l + 8);
-    } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
-      this.ip6(buffer.slice(l + 8), obj, pos + l + 8);
-    }
+    // no payload TLV (type 9) found, nothing to decode
   }
 
   // --------------------------------------------------------------------------
@@ -1306,9 +1304,12 @@ class Pcap {
     case 274: // IEEE 802.3br mPackets
       this.mpacket(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
       break;
-    case 276: // SLL2
-      this.ip4(buffer.slice(36, obj.pcap.incl_len + 20), obj, 36);
+    case 276: { // SLL2
+      // dispatch on the SLL2 protocol field, payload starts 20 bytes into the SLL2 header
+      const sll2Ethertype = buffer.readUInt16BE(16);
+      this.ethertyperun(sll2Ethertype, buffer.slice(36, obj.pcap.incl_len + 16), obj, 36);
       break;
+    }
     default:
       console.log('Unsupported pcap file', this.filename, 'link type', linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
       break;

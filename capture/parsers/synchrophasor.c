@@ -88,7 +88,7 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
     case 2:   // Config 1
     case 3:   // Config 2
     case 5: { // Config 3
-        // Skip TIME_BASE(4)
+        // CFG-3 has a CONT_IDX(2) before TIME_BASE
         if (frameType == 5 && payloadLen >= 6) {
             BSB_IMPORT_skip(bsb, 2); // CONT_IDX for CFG-3
         }
@@ -141,14 +141,14 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
             BSB_IMPORT_u16(bsb, dgnmr);
 
             if (frameType == 5) {
-                // CFG-3: variable length channel names
-                for (uint32_t j = 0; j < (uint32_t)phnmr + annmr + dgnmr && !BSB_IS_ERROR(bsb); j++) {
+                // CFG-3: variable length channel names, 16 names per digital word
+                for (uint32_t j = 0; j < (uint32_t)phnmr + annmr + 16 * dgnmr && !BSB_IS_ERROR(bsb); j++) {
                     uint8_t chNameLen = 0;
                     BSB_IMPORT_u08(bsb, chNameLen);
                     BSB_IMPORT_skip(bsb, chNameLen);
                 }
-                // PHUNIT(8*phnmr) + ANUNIT(8*annmr) + DIGUNIT(4*dgnmr)
-                BSB_IMPORT_skip(bsb, 8 * phnmr + 8 * annmr + 4 * dgnmr);
+                // PHSCALE(12*phnmr) + ANSCALE(8*annmr) + DIGUNIT(4*dgnmr)
+                BSB_IMPORT_skip(bsb, 12 * phnmr + 8 * annmr + 4 * dgnmr);
                 // lat(4) + lon(4) + elev(4) + svcClass(1) + window(4) + groupDelay(4)
                 BSB_IMPORT_skip(bsb, 21);
             } else {
@@ -180,7 +180,10 @@ LOCAL int synchrophasor_tcp_parser(ArkimeSession_t *session, void *uw, const uin
 {
     ArkimeParserBuf_t *buf = uw;
 
-    arkime_parser_buf_add(buf, which, data, len);
+    if (arkime_parser_buf_add(buf, which, data, len) < 0) {
+        arkime_session_add_tag(session, "synchrophasor:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (buf->len[which] >= SYNCHROPHASOR_MIN_LEN) {
         // Check for sync byte

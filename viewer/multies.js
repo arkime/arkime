@@ -195,7 +195,7 @@ function node2ESBasicAuth (node) {
   for (let p = 1; p < parts.length; p++) {
     const kv = parts[p].split(':');
     if (kv[0] === 'elasticsearchBasicAuth') {
-      return kv[1];
+      return kv.slice(1).join(':'); // value may be user:pass, keep everything after the key
     }
   }
   return null;
@@ -474,7 +474,9 @@ app.delete('/:index', simpleGather1Cluster);
 app.delete('/MULTIPREFIX_hunts/_doc/:id', simpleGather1Cluster);
 
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
-  req.url = '/sessions*/_refresh';
+  // Keep the MULTIPREFIX_ placeholder so each node's real prefix is
+  // substituted in simpleGather; collapse the index list to one pattern
+  req.url = '/MULTIPREFIX_sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
 
@@ -626,8 +628,9 @@ app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     const obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].error) {
+      if (results[i].error || !results[i].hits) {
         console.log('ERROR - GET _search', req.query.index, req.query.type, results[i].error);
+        continue;
       }
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
@@ -1380,7 +1383,7 @@ async function premain () {
       if (!esBasicAuth.includes(':')) {
         esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
       }
-      esBasicAuth = esBasicAuth.split(':');
+      esBasicAuth = ArkimeUtil.splitRemain(esBasicAuth, ':', 1);
       esClientOptions.auth = {
         username: esBasicAuth[0],
         password: esBasicAuth[1]

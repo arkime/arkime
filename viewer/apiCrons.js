@@ -508,21 +508,22 @@ class CronAPIs {
           agent: client === http ? internals.httpAgent : internals.httpsAgent
         };
 
-        Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
+        // Sign the path exactly as the remote node will see it in req.url
+        Auth.addS2SAuth(reqOptions, pOptions.user, node, url.pathname + (url.search ?? ''));
         ViewerUtils.addCaTrust(reqOptions, node);
 
         await new Promise((resolve) => {
           const preq = client.request(url, reqOptions, (pres) => {
             pres.on('data', (chunk) => {
-              CronAPIs.#qlworking[url.path] = 'data';
+              CronAPIs.#qlworking[url.pathname] = 'data';
             });
             pres.on('end', () => {
-              delete CronAPIs.#qlworking[url.path];
+              delete CronAPIs.#qlworking[url.pathname];
               resolve();
             });
           });
           preq.on('error', (e) => {
-            delete CronAPIs.#qlworking[url.path];
+            delete CronAPIs.#qlworking[url.pathname];
             console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
             resolve();
           });
@@ -530,7 +531,7 @@ class CronAPIs {
           preq.write('ids=');
           preq.write(nodes[node].join(','));
           preq.end();
-          CronAPIs.#qlworking[url.path] = 'sent';
+          CronAPIs.#qlworking[url.pathname] = 'sent';
         });
       }
     });
@@ -693,7 +694,7 @@ class CronAPIs {
 
           const query = {
             from: 0,
-            size: 1000,
+            size: 10000000, // >10000 forces searchSessionsIterator to scroll ALL hits in the window (2000/chunk)
             query: { bool: { filter: [{}] } },
             _source: ['_id', 'node']
           };

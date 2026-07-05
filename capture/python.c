@@ -193,11 +193,13 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map) {
+        // Copy name/match: the classifier stores the pointers permanently but
+        // they point into Python object internals that may be freed
         arkime_parsers_classifier_register_tcp (
-            name_str,
+            g_strdup(name_str),
             map,
             offset,
-            match_bytes,
+            g_memdup(match_bytes, match_len),
             (int)match_len,
             arkime_python_classify_cb
         );
@@ -248,10 +250,10 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
 
     if (map)
         arkime_parsers_classifier_register_udp (
-            name_str,
+            g_strdup(name_str),
             map,
             offset,
-            match_bytes,
+            g_memdup(match_bytes, match_len),
             (int)match_len,
             arkime_python_classify_cb
         );
@@ -301,10 +303,10 @@ LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), P
 
     if (map)
         arkime_parsers_classifier_register_sctp (
-            name_str,
+            g_strdup(name_str),
             map,
             offset,
-            match_bytes,
+            g_memdup(match_bytes, match_len),
             (int)match_len,
             arkime_python_classify_cb
         );
@@ -1509,7 +1511,8 @@ LOCAL ArkimePacketRC arkime_python_packet_cb(ArkimePacketBatch_t *batch, ArkimeP
         PyErr_Print(); // Print any unhandled Python exceptions from the callback
         LOG("Error calling Python callback function from C");
     } else {
-        r = PyLong_AsLong(result);
+        if (PyLong_Check(result))
+            r = PyLong_AsLong(result);
         Py_DECREF(result); // Decrement reference count of the Python result object
     }
 

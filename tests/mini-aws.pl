@@ -537,7 +537,9 @@ sub list_objects_resp {
     }
     my $prefix    = $params{prefix}    // '';
     my $delimiter = $params{delimiter} // '';
-    my $max_keys  = $params{'max-keys'} // 1000;
+    my $max_keys  = $params{'max-keys'} // 5;
+    my $start     = url_decode($params{'continuation-token'} // '0');
+    $start = 0 unless $start =~ /^\d+$/;
 
     my $bucket_data = $objects{$bucket} // {};
     my @all_keys = sort grep { $_ =~ /^\Q$prefix\E/ } keys %$bucket_data;
@@ -554,8 +556,10 @@ sub list_objects_resp {
         }
     }
 
-    @contents = splice(@contents, 0, $max_keys);
-    my $is_truncated = (@all_keys > $max_keys) ? 'true' : 'false';
+    my $total = scalar(@contents);
+    @contents = splice(@contents, $start, $max_keys);
+    my $next_start = $start + $max_keys;
+    my $is_truncated = ($next_start < $total) ? 'true' : 'false';
 
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <ListBucketResult>
@@ -564,6 +568,11 @@ sub list_objects_resp {
   <Delimiter>$delimiter</Delimiter>
   <MaxKeys>$max_keys</MaxKeys>
   <IsTruncated>$is_truncated</IsTruncated>};
+
+    if ($is_truncated eq 'true') {
+        $xml .= qq{
+  <NextContinuationToken>$next_start</NextContinuationToken>};
+    }
 
     for my $key (@contents) {
         my $obj  = $bucket_data->{$key};
