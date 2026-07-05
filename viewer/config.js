@@ -31,6 +31,10 @@ class Config {
     return ArkimeConfig.debug;
   }
 
+  static get regressionTests () {
+    return ArkimeConfig.regressionTests;
+  }
+
   static esProfile = false;
 
   static keyFileData;
