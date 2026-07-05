@@ -25,7 +25,10 @@ LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
 
     modbus->state[which]++;
 
-    arkime_parser_buf_add(modbus, which, data, len);
+    if (arkime_parser_buf_add(modbus, which, data, len) < 0) {
+        arkime_session_add_tag(session, "modbus:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (modbus->len[which] >= MODBUS_TCP_HEADER_LEN) {
         BSB bsb;
@@ -59,14 +62,18 @@ LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
         uint8_t functionCode = 0;
         BSB_IMPORT_u08(bsb, functionCode);
 
-        if (which == 1 && functionCode & 0x80) {
+        if (which == modbus->serverWhich && functionCode & 0x80) {
             functionCode = functionCode & 0x7f;
-            uint8_t exceptionCode = 0;
-            BSB_IMPORT_u08(bsb, exceptionCode);
-            arkime_field_int_add(exceptionCodeField, session, exceptionCode);
+            // A real exception response has modbusLen == 3; don't read the
+            // exception code from beyond a malformed shorter frame
+            if (modbusLen >= 3) {
+                uint8_t exceptionCode = 0;
+                BSB_IMPORT_u08(bsb, exceptionCode);
+                arkime_field_int_add(exceptionCodeField, session, exceptionCode);
+            }
         }
 
-        if (which == 0) {
+        if (which != modbus->serverWhich) {
             arkime_field_int_add(transactionIdField, session, transactionId);
             arkime_field_int_add(functionCodeField, session, functionCode);
         }
@@ -107,6 +114,9 @@ LOCAL void modbus_tcp_classify(ArkimeSession_t *session, const uint8_t *data, in
     arkime_session_add_protocol(session, "modbus");
 
     ArkimeParserBuf_t *info = arkime_parser_buf_create();
+    // Pin the server direction by port so mid-stream captures whose first
+    // packet is server->client still label requests/responses correctly
+    info->serverWhich = (session->port2 == 502) ? 1 : 0;
     arkime_parsers_register(session, modbus_tcp_parser, info, arkime_parser_buf_session_free);
 }
 /******************************************************************************/

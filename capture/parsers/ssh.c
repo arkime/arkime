@@ -178,14 +178,15 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         BSB_IMPORT_u08(bsb, sshCode);
 
         if (sshCode == 20) {
-            ssh_parse_keyinit(session, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), which);
+            // Only this record's content, not everything buffered
+            ssh_parse_keyinit(session, BSB_WORK_PTR(bsb), sshLen - 2, which);
         } else if (sshCode == 33) {
             ssh->done = 1;
 
             uint32_t keyLen = 0;
             BSB_IMPORT_u32(bsb, keyLen);
 
-            if (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) >= keyLen) {
+            if (!BSB_IS_ERROR(bsb) && sshLen >= 2 + 4 && keyLen <= sshLen - 2 - 4) {
                 char *str = g_base64_encode(BSB_WORK_PTR(bsb), keyLen);
                 if (!arkime_field_string_add(keyField, session, str, -1, FALSE)) {
                     g_free(str);

@@ -5,7 +5,9 @@ function http_mb(session, data, dir, meta, glo)
 end
 
 function http_header_field(session, data, dir)
-  table.insert(session:table().headers, tostring(data))
+  if dir == 0 then
+    table.insert(session:table().headers, tostring(data))
+  end
 end
 
 function http_hc(session, data, dir)

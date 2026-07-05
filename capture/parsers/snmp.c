@@ -160,14 +160,19 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &dataType, &alen);
 
-    if (value && dataType < ARRAY_LEN(types)) {
-        arkime_field_string_add(typeField, session, types[dataType], lens[dataType], TRUE);
-    } else {
+    if (!value || dataType >= ARRAY_LEN(types)) {
         // This is probably not a SNMP stream after all
         return ARKIME_PARSER_UNREGISTER;
     }
 
-    if (!apc || !value || !alen)
+    // A PDU is constructed/context-specific; don't record a type for
+    // primitive universal TLVs that just happen to have a small tag
+    if (!apc)
+        return 0;
+
+    arkime_field_string_add(typeField, session, types[dataType], lens[dataType], TRUE);
+
+    if (!alen)
         return 0;
 
     BSB_INIT(bsb, value, alen);
@@ -286,7 +291,8 @@ LOCAL void snmp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (!value || atag != 2 || alen != 1 || value[0] > 3)
+    // Match the parser's version check (2 is historic SNMPv2u, rejected there)
+    if (!value || atag != 2 || alen != 1 || value[0] > 3 || value[0] == 2)
         return;
 
     arkime_session_add_protocol(session, "snmp");

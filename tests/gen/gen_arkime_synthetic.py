@@ -1511,6 +1511,645 @@ def sec_nbns_response():
     return out
 
 
+def sec_ssh_kexinit_overrun():
+    # SSH session whose client KEXINIT has a corrupt final name-list length
+    # that runs past the record end, with a NEWKEYS record buffered in the
+    # same TCP segment. Regression for ssh.c passing all buffered bytes
+    # instead of the record length to the KEXINIT parse: hassh was computed
+    # over bytes of the following record.
+    # Session 10.9.7.1:49407 -> 10.9.7.2:22 (Ethernet linktype).
+
+    CLI_IP = '10.9.7.1'
+    SRV_IP = '10.9.7.2'
+    CLI_PORT = 49407
+    SRV_PORT = 22
+    TS_START = 1700007000.0
+
+    CLI_MAC = bytes.fromhex('02aa00000f01')
+    SRV_MAC = bytes.fromhex('02aa00000f02')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def nl(s):
+        return struct.pack('>I', len(s)) + s
+
+    def ssh_record(code, payload):
+        # packet_length(4) + padding_length(1) + code(1) + payload + padding
+        padlen = 4
+        body = bytes([padlen, code]) + payload + b'\0' * padlen
+        return struct.pack('>I', len(body)) + body
+
+    # KEXINIT payload: cookie + name-lists. The comp_c2s list (which is part
+    # of the client hassh) claims 12 bytes but only 8 remain in the record
+    # (4 content + 4 padding), so a parse using buffered bytes pulls 4 bytes
+    # of the following NEWKEYS record into the hash.
+    kexpay = (b'\x00' * 16 +
+              nl(b'curve25519-sha256') +          # kex (hashed)
+              nl(b'ssh-ed25519') +                # host key
+              nl(b'aes128-ctr') +                 # enc c2s (hashed)
+              nl(b'aes128-ctr') +                 # enc s2c
+              nl(b'hmac-sha2-256') +              # mac c2s (hashed)
+              nl(b'hmac-sha2-256') +              # mac s2c
+              struct.pack('>I', 12) + b'none')    # comp c2s: length overruns record
+    kexinit = ssh_record(20, kexpay)
+    # Follow-on bytes: under buffered-length parsing, comp_c2s (len 12) pulls
+    # the first 4 bytes and comp_s2c reads len 0 from the next 4, so a hassh
+    # polluted with cross-record bytes is stored
+    follow = bytes.fromhex('0000000C00000000')
+
+    def build():
+        pkts = []
+        cseq, sseq = 0x1000, 0x2000
+
+        def c(flags, payload=b''):
+            nonlocal cseq
+            pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT,
+                                   cseq, sseq, flags, payload))
+            cseq += len(payload)
+
+        def s(flags, payload=b''):
+            nonlocal sseq
+            pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT,
+                                   sseq, cseq, flags, payload))
+            sseq += len(payload)
+
+        pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT,
+                               cseq, 0, 0x02))                     # SYN
+        cseq += 1
+        pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT,
+                               sseq, cseq, 0x12))                  # SYN-ACK
+        sseq += 1
+        c(0x10)                                                    # ACK
+
+        c(0x18, b'SSH-2.0-hasshtest\r\n')
+        s(0x18, b'SSH-2.0-testserver\r\n')
+        # Corrupt KEXINIT and follow-on record bytes in one segment
+        c(0x18, kexinit + follow)
+        s(0x10)
+
+        c(0x11)                                                    # FIN
+        cseq += 1
+        s(0x11)                                                    # FIN
+        sseq += 1
+        c(0x10)
+
+        out = b''
+        ts = TS_START
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+
+        return out
+    return build()
+
+
+def sec_udp_zero_ulen():
+    # UDP session whose second packet claims uh_ulen == 0 (malformed, less
+    # than the 8-byte UDP header). Regression for udp.c udp_pre_process
+    # adding MIN(ulen, payload) - 8 == -8 to the uint64 databytes counter,
+    # wrapping it to ~1.8e19.
+    # Session 10.9.8.1:40100 -> 10.9.8.2:9999 (Ethernet linktype).
+
+    CLI_IP = '10.9.8.1'
+    SRV_IP = '10.9.8.2'
+    TS_START = 1700008000.0
+
+    CLI_MAC = bytes.fromhex('02aa00001001')
+    SRV_MAC = bytes.fromhex('02aa00001002')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def udp_pkt(payload, ulen=None):
+        if ulen is None:
+            ulen = 8 + len(payload)
+        udp = struct.pack('>HHHH', 40100, 9999, ulen, 0) + payload
+        iplen = 20 + len(udp)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 17, 0,
+                         bytes(map(int, CLI_IP.split('.'))), bytes(map(int, SRV_IP.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return SRV_MAC + CLI_MAC + b'\x08\x00' + ip + udp
+
+    pkts = [
+        udp_pkt(b'udplenokpayload!'),           # valid: 16 databytes
+        udp_pkt(b'udplenokpayload!', ulen=0),   # malformed ulen
+    ]
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_websocket_split():
+    # WebSocket session exercising frames that span TCP segments:
+    #   - masked Text frame split across two segments (was: sample lost)
+    #   - fragmented Text message with an interleaved Ping (was: the
+    #     continuation frame inherited the Ping opcode and lost its sample)
+    #   - server Close frame split across two segments (was: code/reason lost)
+    # Session 10.9.9.1:49500 -> 10.9.9.2:80 (Ethernet linktype).
+
+    CLI_IP = '10.9.9.1'
+    SRV_IP = '10.9.9.2'
+    CLI_PORT = 49500
+    SRV_PORT = 80
+    TS_START = 1700009000.0
+
+    CLI_MAC = bytes.fromhex('02aa00001101')
+    SRV_MAC = bytes.fromhex('02aa00001102')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def ws_frame(fin, opcode, payload, mask=None):
+        b0 = (0x80 if fin else 0) | opcode
+        b1 = len(payload) | (0x80 if mask else 0)
+        out = bytes([b0, b1])
+        if mask:
+            out += mask + bytes(payload[i] ^ mask[i & 3] for i in range(len(payload)))
+        else:
+            out += payload
+        return out
+
+    MASK = bytes.fromhex('11223344')
+    split_text = ws_frame(1, 1, b'SplitFrameSample', MASK)
+    frag1 = ws_frame(0, 1, b'FragHeadPart', MASK)
+    ping = ws_frame(1, 9, b'', MASK)
+    cont = ws_frame(1, 0, b'FragTailPart', MASK)
+    close = ws_frame(1, 8, struct.pack('>H', 1000) + b'bye-split')
+
+    def build():
+        pkts = []
+        cseq, sseq = 0x1000, 0x2000
+
+        def c(flags, payload=b''):
+            nonlocal cseq
+            pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT,
+                                   cseq, sseq, flags, payload))
+            cseq += len(payload)
+
+        def s(flags, payload=b''):
+            nonlocal sseq
+            pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT,
+                                   sseq, cseq, flags, payload))
+            sseq += len(payload)
+
+        pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, CLI_PORT, SRV_PORT,
+                               cseq, 0, 0x02))                     # SYN
+        cseq += 1
+        pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, SRV_PORT, CLI_PORT,
+                               sseq, cseq, 0x12))                  # SYN-ACK
+        sseq += 1
+        c(0x10)                                                    # ACK
+
+        c(0x18, b'GET /chat HTTP/1.1\r\n'
+                b'Host: ws.split.test\r\n'
+                b'Upgrade: websocket\r\n'
+                b'Connection: Upgrade\r\n'
+                b'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n'
+                b'Sec-WebSocket-Version: 13\r\n\r\n')
+        s(0x18, b'HTTP/1.1 101 Switching Protocols\r\n'
+                b'Upgrade: websocket\r\n'
+                b'Connection: Upgrade\r\n'
+                b'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n')
+        c(0x10)
+
+        # Text frame split mid-payload across two segments
+        c(0x18, split_text[:14])
+        s(0x10)
+        c(0x18, split_text[14:])
+        s(0x10)
+
+        # Fragmented text message with interleaved ping
+        c(0x18, frag1 + ping + cont)
+        s(0x10)
+
+        # Server close frame split mid-reason across two segments
+        s(0x18, close[:6])
+        c(0x10)
+        s(0x18, close[6:])
+        c(0x10)
+
+        c(0x11)                                                    # FIN
+        cseq += 1
+        s(0x11)                                                    # FIN
+        sseq += 1
+        c(0x10)
+
+        out = b''
+        ts = TS_START
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+
+        return out
+    return build()
+
+
+def sec_tls_ja3_edge():
+    # TLS sessions with degenerate hellos:
+    #   S1 10.9.10.1: server hello extensions block of 1 garbage byte - the
+    #      truncated header import appended a bogus "0" (fake SNI) to the
+    #      JA3S extension list
+    #   S2 10.9.11.1: client hello whose extensions are all GREASE - the
+    #      trailing-dash rewind on the empty list error-flagged the BSB and
+    #      suppressed JA3 entirely
+    #   S3 10.9.12.1: client hello with an all-GREASE supported-groups list
+    #      and an empty ec-point-formats list - same empty-rewind suppression
+    # (Ethernet linktype, port 443.)
+
+    TS_START = 1700010000.0
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def ext(etype, body):
+        return struct.pack('>HH', etype, len(body)) + body
+
+    def client_hello(ciphers, exts):
+        body = (b'\x03\x03' + bytes(range(32)) + b'\x00' +
+                struct.pack('>H', 2 * len(ciphers)) + b''.join(struct.pack('>H', c) for c in ciphers) +
+                b'\x01\x00' +
+                struct.pack('>H', len(exts)) + exts)
+        hs = b'\x01' + len(body).to_bytes(3, 'big') + body
+        return b'\x16\x03\x01' + struct.pack('>H', len(hs)) + hs
+
+    def server_hello(cipher, extbytes):
+        body = (b'\x03\x03' + bytes(range(32, 64)) + b'\x00' +
+                struct.pack('>H', cipher) + b'\x00' + extbytes)
+        hs = b'\x02' + len(body).to_bytes(3, 'big') + body
+        return b'\x16\x03\x03' + struct.pack('>H', len(hs)) + hs
+
+    CIPHERS = [0x1301, 0x1302]
+    sni = ext(0, b'\x00\x0f\x00\x00\x0cja3edge.test')
+
+    sessions = [
+        # S1: normal client, server ext block = length 1 + garbage byte
+        ('10.9.10.1', '10.9.10.2', 49601, bytes.fromhex('02aa00001201'), bytes.fromhex('02aa00001202'),
+         client_hello(CIPHERS, sni), server_hello(0x1301, b'\x00\x01\x00')),
+        # S2: client extensions all GREASE
+        ('10.9.11.1', '10.9.11.2', 49602, bytes.fromhex('02aa00001301'), bytes.fromhex('02aa00001302'),
+         client_hello(CIPHERS, ext(0x0a0a, b'') + ext(0x1a1a, b'')), server_hello(0x1301, b'')),
+        # S3: client supported-groups all GREASE + empty ec-point-formats
+        ('10.9.12.1', '10.9.12.2', 49603, bytes.fromhex('02aa00001401'), bytes.fromhex('02aa00001402'),
+         client_hello(CIPHERS, ext(0x000a, b'\x00\x02\x0a\x0a') + ext(0x000b, b'\x00')),
+         server_hello(0x1301, b'')),
+    ]
+
+    out = b''
+    ts = TS_START
+    for cli, srv, cport, cmac, smac, chello, shello in sessions:
+        pkts = []
+        cseq, sseq = 0x1000, 0x2000
+        pkts.append(eth_ip_tcp(cli, srv, cmac, smac, cport, 443, cseq, 0, 0x02))
+        cseq += 1
+        pkts.append(eth_ip_tcp(srv, cli, smac, cmac, 443, cport, sseq, cseq, 0x12))
+        sseq += 1
+        pkts.append(eth_ip_tcp(cli, srv, cmac, smac, cport, 443, cseq, sseq, 0x10))
+        pkts.append(eth_ip_tcp(cli, srv, cmac, smac, cport, 443, cseq, sseq, 0x18, chello))
+        cseq += len(chello)
+        pkts.append(eth_ip_tcp(srv, cli, smac, cmac, 443, cport, sseq, cseq, 0x18, shello))
+        sseq += len(shello)
+        pkts.append(eth_ip_tcp(cli, srv, cmac, smac, cport, 443, cseq, sseq, 0x11))
+        cseq += 1
+        pkts.append(eth_ip_tcp(srv, cli, smac, cmac, 443, cport, sseq, cseq, 0x11))
+        sseq += 1
+        pkts.append(eth_ip_tcp(cli, srv, cmac, smac, cport, 443, cseq, sseq, 0x10))
+
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+    return out
+
+
+def sec_modbus_edge():
+    # Modbus edge cases:
+    #   S1 10.9.13.1: server exception response with malformed modbusLen == 2
+    #      immediately followed by a valid frame in the same segment - the
+    #      exception code was read from the next frame's transactionId byte
+    #   S2 10.9.14.x: mid-stream capture whose first packet is the server
+    #      (port1 == 502) - requests/responses were labeled by raw direction,
+    #      recording the exception function code with the 0x80 bit set
+    # (Ethernet linktype.)
+
+    TS_START = 1700011000.0
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def mbap(tid, unit, pdu, mlen=None):
+        if mlen is None:
+            mlen = 1 + len(pdu)
+        return struct.pack('>HHHB', tid, 0, mlen, unit) + pdu
+
+    out = b''
+    ts = TS_START
+
+    # --- S1: normal direction, malformed short exception frame ---
+    CLI, SRV = '10.9.13.1', '10.9.13.2'
+    CMAC, SMAC = bytes.fromhex('02aa00001501'), bytes.fromhex('02aa00001502')
+    pkts = []
+    cseq, sseq = 0x1000, 0x2000
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 49700, 502, cseq, 0, 0x02)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 502, 49700, sseq, cseq, 0x12)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 49700, 502, cseq, sseq, 0x10))
+    req = mbap(0x0101, 1, b'\x03\x00\x00\x00\x01')
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 49700, 502, cseq, sseq, 0x18, req)); cseq += len(req)
+    # malformed: mlen 2 (unit+func only) with exception bit, then valid response
+    bad = mbap(0x0101, 1, b'\x81', mlen=2)
+    good = mbap(0x0102, 1, b'\x03\x02\x12\x34')
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 502, 49700, sseq, cseq, 0x18, bad + good)); sseq += len(bad + good)
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 49700, 502, cseq, sseq, 0x11)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 502, 49700, sseq, cseq, 0x11)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 49700, 502, cseq, sseq, 0x10))
+    for p in pkts:
+        sec = int(ts); usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+
+    # --- S2: connection initiated from the server side (addr1 = port 502),
+    #     e.g. active-open or the first captured direction being the server ---
+    SRV2, CLI2 = '10.9.14.2', '10.9.14.1'
+    S2MAC, C2MAC = bytes.fromhex('02aa00001602'), bytes.fromhex('02aa00001601')
+    pkts = []
+    sseq, cseq = 0x3000, 0x4000
+    pkts.append(eth_ip_tcp(SRV2, CLI2, S2MAC, C2MAC, 502, 49701, sseq, 0, 0x02)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI2, SRV2, C2MAC, S2MAC, 49701, 502, cseq, sseq, 0x12)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV2, CLI2, S2MAC, C2MAC, 502, 49701, sseq, cseq, 0x10))
+    # server exception response seen first: tid 0x0201, func 0x83, code 2
+    exc = mbap(0x0201, 1, b'\x83\x02')
+    pkts.append(eth_ip_tcp(SRV2, CLI2, S2MAC, C2MAC, 502, 49701, sseq, cseq, 0x18, exc)); sseq += len(exc)
+    # client request: tid 0x0202, func 4
+    req2 = mbap(0x0202, 1, b'\x04\x00\x10\x00\x02')
+    pkts.append(eth_ip_tcp(CLI2, SRV2, C2MAC, S2MAC, 49701, 502, cseq, sseq, 0x18, req2)); cseq += len(req2)
+    pkts.append(eth_ip_tcp(SRV2, CLI2, S2MAC, C2MAC, 502, 49701, sseq, cseq, 0x11)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI2, SRV2, C2MAC, S2MAC, 49701, 502, cseq, sseq, 0x11)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV2, CLI2, S2MAC, C2MAC, 502, 49701, sseq, cseq, 0x10))
+    for p in pkts:
+        sec = int(ts); usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+
+    return out
+
+
+def sec_oracle_big_connect():
+    # Oracle TNS CONNECT whose connect-data is > 255 bytes, so the 16-bit
+    # connect-data length/offset high bytes are nonzero. Regression for
+    # oracle.c reading only the low bytes (data[25]/data[27]): such sessions
+    # were never classified.
+    # Session 10.9.15.1:49800 -> 10.9.15.2:1521 (Ethernet linktype).
+
+    CLI_IP = '10.9.15.1'
+    SRV_IP = '10.9.15.2'
+    TS_START = 1700012000.0
+
+    CLI_MAC = bytes.fromhex('02aa00001701')
+    SRV_MAC = bytes.fromhex('02aa00001702')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    pad = '(PAD=' + 'x' * 200 + ')'
+    cdata = ('(DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=bigsvc.example.test)'
+             '(CID=(PROGRAM=sqlplus)(USER=bigoracleuser))' + pad +
+             ')(ADDRESS=(PROTOCOL=TCP)(HOST=bighost.example.test)(PORT=1521)))').encode()
+    assert len(cdata) > 255
+    cdoff = 34
+    tnslen = cdoff + len(cdata)
+    hdr = struct.pack('>HHBBH', tnslen, 0, 1, 0, 0)          # len, csum, type=CONNECT, rsvd, hdrcsum
+    body = struct.pack('>HHHHHHHHHH', 0x0138, 0x012c, 0, 2048, 32767, 0x4f98, 0, 1, len(cdata), cdoff)
+    body += struct.pack('>IH', 0, 0)                         # max recv, flags
+    connect = hdr + body + cdata
+    assert len(connect) == tnslen
+
+    pkts = []
+    cseq, sseq = 0x1000, 0x2000
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 49800, 1521, cseq, 0, 0x02)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, 1521, 49800, sseq, cseq, 0x12)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 49800, 1521, cseq, sseq, 0x10))
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 49800, 1521, cseq, sseq, 0x18, connect)); cseq += len(connect)
+    pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, 1521, 49800, sseq, cseq, 0x10))
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 49800, 1521, cseq, sseq, 0x11)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, 1521, 49800, sseq, cseq, 0x11)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 49800, 1521, cseq, sseq, 0x10))
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts); usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_sip_radius_edge():
+    # S1 10.9.16.x TCP 5060: session opening with "OPTIONS sip:" (was: TCP
+    #    classifier missing OPTIONS prefix, only classified via the server's
+    #    SIP/2.0 response so the request methods were lost) and a later
+    #    PUBLISH request (was: not in sip_is_method, never recorded)
+    # S2 10.9.17.x UDP 1812: RADIUS datagram with 2 trailing padding bytes
+    #    (was: classifier required exact length, never classified)
+    # S3 10.9.18.x UDP 1812: RADIUS with a malformed Framed-IP attribute
+    #    before valid attributes (was: attribute walk aborted, dropping them)
+
+    TS_START = 1700013000.0
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def eth_ip_udp(src, dst, smac, dmac, sport, dport, payload):
+        udp = struct.pack('>HHHH', sport, dport, 8 + len(payload), 0) + payload
+        iplen = 20 + len(udp)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 17, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return dmac + smac + b'\x08\x00' + ip + udp
+
+    out = b''
+    ts = TS_START
+
+    # --- S1: SIP over TCP ---
+    CLI, SRV = '10.9.16.1', '10.9.16.2'
+    CMAC, SMAC = bytes.fromhex('02aa00001801'), bytes.fromhex('02aa00001802')
+    options = (b'OPTIONS sip:probe@edge.test SIP/2.0\r\n'
+               b'Via: SIP/2.0/TCP 10.9.16.1:5060\r\n'
+               b'From: <sip:watcher@edge.test>\r\n'
+               b'To: <sip:probe@edge.test>\r\n'
+               b'Call-ID: opt1@edge.test\r\n'
+               b'CSeq: 1 OPTIONS\r\n'
+               b'Content-Length: 0\r\n\r\n')
+    ok200 = (b'SIP/2.0 200 OK\r\n'
+             b'Via: SIP/2.0/TCP 10.9.16.1:5060\r\n'
+             b'From: <sip:watcher@edge.test>\r\n'
+             b'To: <sip:probe@edge.test>\r\n'
+             b'Call-ID: opt1@edge.test\r\n'
+             b'CSeq: 1 OPTIONS\r\n'
+             b'Content-Length: 0\r\n\r\n')
+    publish = (b'PUBLISH sip:watcher@edge.test SIP/2.0\r\n'
+               b'Via: SIP/2.0/TCP 10.9.16.1:5060\r\n'
+               b'From: <sip:watcher@edge.test>\r\n'
+               b'To: <sip:watcher@edge.test>\r\n'
+               b'Call-ID: pub1@edge.test\r\n'
+               b'CSeq: 2 PUBLISH\r\n'
+               b'Event: presence\r\n'
+               b'Content-Length: 0\r\n\r\n')
+    pkts = []
+    cseq, sseq = 0x1000, 0x2000
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 5060, 5060, cseq, 0, 0x02)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 5060, 5060, sseq, cseq, 0x12)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 5060, 5060, cseq, sseq, 0x10))
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 5060, 5060, cseq, sseq, 0x18, options)); cseq += len(options)
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 5060, 5060, sseq, cseq, 0x18, ok200)); sseq += len(ok200)
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 5060, 5060, cseq, sseq, 0x18, publish)); cseq += len(publish)
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 5060, 5060, sseq, cseq, 0x10))
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 5060, 5060, cseq, sseq, 0x11)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 5060, 5060, sseq, cseq, 0x11)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, 5060, 5060, cseq, sseq, 0x10))
+    for p in pkts:
+        sec = int(ts); usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+
+    def attr(t, val):
+        return bytes([t, len(val) + 2]) + val
+
+    def radius(attrs, pad=0):
+        body = b''.join(attrs)
+        rlen = 20 + len(body)
+        return struct.pack('>BBH', 1, 1, rlen) + bytes(16) + body + b'\0' * pad
+
+    # --- S2: padded RADIUS ---
+    r2 = radius([attr(1, b'paduser'),
+                 attr(4, bytes(map(int, '10.9.17.2'.split('.')))),
+                 attr(8, bytes(map(int, '192.168.50.5'.split('.'))))], pad=2)
+    for _ in range(2):
+        p = eth_ip_udp('10.9.17.1', '10.9.17.2', bytes.fromhex('02aa00001901'),
+                       bytes.fromhex('02aa00001902'), 50100, 1812, r2)
+        sec = int(ts); usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+
+    # --- S3: malformed Framed-IP attr (6-byte value) before valid attrs ---
+    r3 = radius([attr(8, bytes(map(int, '192.168.60.6'.split('.'))) + b'\0\0'),
+                 attr(4, bytes(map(int, '10.9.18.2'.split('.')))),
+                 attr(1, b'badattruser')])
+    for _ in range(2):
+        p = eth_ip_udp('10.9.18.1', '10.9.18.2', bytes.fromhex('02aa00001a01'),
+                       bytes.fromhex('02aa00001a02'), 50101, 1812, r3)
+        sec = int(ts); usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -1526,6 +2165,13 @@ def main():
     out += sec_smb1_dialect0()
     out += sec_smb1_malformed_delete()
     out += sec_nbns_response()
+    out += sec_ssh_kexinit_overrun()
+    out += sec_udp_zero_ulen()
+    out += sec_websocket_split()
+    out += sec_tls_ja3_edge()
+    out += sec_modbus_edge()
+    out += sec_oracle_big_connect()
+    out += sec_sip_radius_edge()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)
