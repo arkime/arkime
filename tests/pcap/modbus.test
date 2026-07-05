@@ -886,16 +886,12 @@
     "lastPacket" : 1093523220676,
     "length" : 155114,
     "modbus" : {
-     "funccode" : [
-      "129",
-      "42"
+     "exccode" : [
+      "5",
+      "6"
      ],
-     "funccodeCnt" : 2,
+     "exccodeCnt" : 2,
      "protocolid" : 0,
-     "transactionid" : [
-      1
-     ],
-     "transactionidCnt" : 1,
      "unitid" : 10
     },
     "network" : {

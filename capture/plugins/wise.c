@@ -255,7 +255,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
     WiseRequest_t *request = uw;
     int             i;
 
-    inflight -= request->numItems;
+    ARKIME_THREAD_DECR_NUM(inflight, request->numItems);
 
     BSB_INIT(bsb, data, data_len);
 
@@ -422,6 +422,15 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
 
     if (request->numItems >= WISE_MAX_REQUEST_ITEMS)
         return;
+
+    // An item that can't fit in the request buffer would be silently
+    // truncated off the wire request; drop it instead
+    const int nlen = strlen(value);
+    const int needed = 1 + (type < INTEL_TYPE_NUM_PRE ? 0 : types[type].nameLen) + 2 + nlen;
+    if (needed > (int)BSB_REMAINING(request->bsb)) {
+        stats[type][INTEL_STAT_FAIL]++;
+        return;
+    }
 
     static int lookups = 0;
 
@@ -647,7 +656,7 @@ LOCAL void wise_flush_locked()
     if (!iRequest || iRequest->numItems == 0)
         return;
 
-    inflight += iRequest->numItems;
+    ARKIME_THREAD_INCR_NUM(inflight, iRequest->numItems);
     if (arkime_http_send(wiseService, "POST", wiseGetURI, -1, iBuf, BSB_LENGTH(iRequest->bsb), NULL, TRUE, wise_cb, iRequest) != 0) {
         LOG("Wise - request failed %p for %d items", iRequest, iRequest->numItems);
         wise_cb(500, NULL, 0, iRequest);

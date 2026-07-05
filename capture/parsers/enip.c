@@ -601,7 +601,10 @@ LOCAL int enip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
 {
     ArkimeParserBuf_t *enip = uw;
 
-    arkime_parser_buf_add(enip, which, data, len);
+    if (arkime_parser_buf_add(enip, which, data, len) < 0) {
+        arkime_session_add_tag(session, "enip:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (enip->len[which] >= ENIP_HEADER_LEN) {
         const uint8_t *buf = enip->buf[which];

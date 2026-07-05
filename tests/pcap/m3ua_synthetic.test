@@ -1364,6 +1364,366 @@
      "_index" : "tests_sessions3-26m06"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "camel" : {
+     "calling" : [
+      "777777777"
+     ],
+     "callingCnt" : 1,
+     "op" : [
+      "initialDP"
+     ],
+     "opCnt" : 1
+    },
+    "client" : {
+     "bytes" : 148
+    },
+    "destination" : {
+     "bytes" : 66,
+     "ip" : "10.20.2.2",
+     "mac" : [
+      "02:aa:00:00:12:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 2905
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1781049100000,
+    "ipProtocol" : 132,
+    "lastPacket" : 1781049100100,
+    "length" : 100,
+    "m3ua" : {
+     "si" : [
+      3
+     ],
+     "siCnt" : 1
+    },
+    "network" : {
+     "bytes" : 306,
+     "community_id" : "1:FF2T9X+SJRVtqh78no0tUNcfnNw=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     190
+    ],
+    "packetPos" : [
+     7812,
+     7894,
+     7976
+    ],
+    "packetRange" : {
+     "gte" : 1781049100000,
+     "lte" : 1781049100100
+    },
+    "protocol" : [
+     "camel",
+     "m3ua",
+     "sccp",
+     "sctp"
+    ],
+    "protocolCnt" : 4,
+    "sccp" : {
+     "dst" : [
+      100
+     ],
+     "dstCnt" : 1,
+     "src" : [
+      20
+     ],
+     "srcCnt" : 1
+    },
+    "sctp" : {
+     "protoId" : [
+      3
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 20
+    },
+    "source" : {
+     "bytes" : 240,
+     "ip" : "10.20.2.1",
+     "mac" : [
+      "02:aa:00:00:12:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 2905
+    },
+    "srcPayload8" : "0100010100000070",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcap" : {
+     "opcode" : [
+      0
+     ],
+     "opcodeCnt" : 1
+    },
+    "totDataBytes" : 168
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "camel" : {
+     "calling" : [
+      "888888888"
+     ],
+     "callingCnt" : 1,
+     "op" : [
+      "initialDP"
+     ],
+     "opCnt" : 1
+    },
+    "client" : {
+     "bytes" : 180
+    },
+    "destination" : {
+     "bytes" : 136,
+     "ip" : "10.20.3.2",
+     "mac" : [
+      "02:aa:00:00:13:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 2905
+    },
+    "dstPayload8" : "0100030400000008",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1781049200000,
+    "ipProtocol" : 132,
+    "lastPacket" : 1781049200200,
+    "length" : 200,
+    "m3ua" : {
+     "si" : [
+      3
+     ],
+     "siCnt" : 1
+    },
+    "network" : {
+     "bytes" : 454,
+     "community_id" : "1:5SY0bNEfr4Lqr7jFwC7/gyHPbZg=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     86,
+     86,
+     198
+    ],
+    "packetPos" : [
+     8166,
+     8248,
+     8330,
+     8416,
+     8502
+    ],
+    "packetRange" : {
+     "gte" : 1781049200000,
+     "lte" : 1781049200200
+    },
+    "protocol" : [
+     "camel",
+     "m3ua",
+     "sccp",
+     "sctp"
+    ],
+    "protocolCnt" : 4,
+    "sccp" : {
+     "dst" : [
+      100
+     ],
+     "dstCnt" : 1,
+     "src" : [
+      20
+     ],
+     "srcCnt" : 1
+    },
+    "sctp" : {
+     "protoId" : [
+      3
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 44
+    },
+    "source" : {
+     "bytes" : 318,
+     "ip" : "10.20.3.1",
+     "mac" : [
+      "02:aa:00:00:13:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 2905
+    },
+    "srcPayload8" : "0100030100000008",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcap" : {
+     "opcode" : [
+      0
+     ],
+     "opcodeCnt" : 1
+    },
+    "totDataBytes" : 224
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "camel" : {
+     "calling" : [
+      "999999999"
+     ],
+     "callingCnt" : 1,
+     "op" : [
+      "initialDP"
+     ],
+     "opCnt" : 1
+    },
+    "client" : {
+     "bytes" : 204
+    },
+    "destination" : {
+     "bytes" : 66,
+     "ip" : "10.20.4.2",
+     "mac" : [
+      "02:aa:00:00:14:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 2905
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1781049300000,
+    "ipProtocol" : 132,
+    "lastPacket" : 1781049300150,
+    "length" : 150,
+    "m3ua" : {
+     "si" : [
+      "3",
+      "5"
+     ],
+     "siCnt" : 2
+    },
+    "network" : {
+     "bytes" : 408,
+     "community_id" : "1:5kzXJH0D4+sTQpJ17+iU4ex5VmM=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     110,
+     198
+    ],
+    "packetPos" : [
+     8700,
+     8782,
+     8864,
+     8974
+    ],
+    "packetRange" : {
+     "gte" : 1781049300000,
+     "lte" : 1781049300150
+    },
+    "protocol" : [
+     "camel",
+     "isup",
+     "m3ua",
+     "sccp",
+     "sctp"
+    ],
+    "protocolCnt" : 5,
+    "sccp" : {
+     "dst" : [
+      100
+     ],
+     "dstCnt" : 1,
+     "src" : [
+      20
+     ],
+     "srcCnt" : 1
+    },
+    "sctp" : {
+     "protoId" : [
+      3
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 20
+    },
+    "source" : {
+     "bytes" : 342,
+     "ip" : "10.20.4.1",
+     "mac" : [
+      "02:aa:00:00:14:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 2905
+    },
+    "srcPayload8" : "0100010100000020",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcap" : {
+     "opcode" : [
+      0
+     ],
+     "opcodeCnt" : 1
+    },
+    "totDataBytes" : 224
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m06"
+    }
+   }
   }
  ]
 }

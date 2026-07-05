@@ -21,7 +21,6 @@ extern struct timeval initialPacket;
 typedef struct {
     int                 fd;
     struct sockaddr_in  addr;
-    uint32_t            seq;
 } NetflowDest_t;
 
 LOCAL int           netflowVersion;
@@ -30,6 +29,9 @@ LOCAL int           netflowSNMPOutput = 0;
 LOCAL int           numDests = 0;
 LOCAL NetflowDest_t dests[100];
 LOCAL int           headerSize;
+// All threads export over the same sockets, so the flow_sequence counter
+// must be shared or collectors see interleaved per-thread sequences
+LOCAL uint32_t      totalFlows;
 
 /******************************************************************************/
 
@@ -40,7 +42,6 @@ typedef struct {
     char            buf[1500];
     BSB             bsb;
     int             bufCount;
-    uint32_t        totalFlows;
 } ARKIME_CACHE_ALIGN NetflowThreadData_t;
 
 LOCAL NetflowThreadData_t netflowThreadData[ARKIME_MAX_PACKET_THREADS];
@@ -63,15 +64,18 @@ LOCAL void netflow_send(const int thread)
     BSB_EXPORT_u32(hbsb, td->lastTime.tv_sec);
     BSB_EXPORT_u32(hbsb, td->lastTime.tv_usec * 1000);
 
+    // Atomically claim this packet's sequence range across threads
+    uint32_t startSeq = ARKIME_THREAD_INCROLD_NUM(totalFlows, (uint32_t)td->bufCount);
+
     switch (netflowVersion) {
     case 5:
-        BSB_EXPORT_u32(hbsb, td->totalFlows); // flow_sequence
+        BSB_EXPORT_u32(hbsb, startSeq); // flow_sequence
         BSB_EXPORT_u08(hbsb, 0); // engine_type
         BSB_EXPORT_u08(hbsb, 0); // engine_id
         BSB_EXPORT_u16(hbsb, 0); // mode/interval
         break;
     case 7:
-        BSB_EXPORT_u32(hbsb, td->totalFlows); // flow_sequence
+        BSB_EXPORT_u32(hbsb, startSeq); // flow_sequence
         BSB_EXPORT_u32(hbsb, 0); // reserved
         break;
     }
@@ -85,7 +89,6 @@ LOCAL void netflow_send(const int thread)
         }
     }
 
-    td->totalFlows += td->bufCount;
     BSB_INIT(td->bsb, td->buf + headerSize, sizeof(td->buf) - headerSize);
     td->bufCount = 0;
 }
@@ -251,8 +254,8 @@ void arkime_plugin_init()
                           NULL
                          );
 
-    netflowSNMPInput = arkime_config_int(NULL, "netflowSNMPInput", 0, 0, 0xffffffff);
-    netflowSNMPOutput = arkime_config_int(NULL, "netflowSNMPOutput", 0, 0, 0xffffffff);
+    netflowSNMPInput = arkime_config_int(NULL, "netflowSNMPInput", 0, 0, 0xffff);
+    netflowSNMPOutput = arkime_config_int(NULL, "netflowSNMPOutput", 0, 0, 0xffff);
     netflowVersion = arkime_config_int(NULL, "netflowVersion", 5, 1, 7);
     LOG("version = %d", netflowVersion);
     if (netflowVersion != 1 && netflowVersion != 5 && netflowVersion != 7) {
@@ -287,7 +290,6 @@ void arkime_plugin_init()
         }
 
         dests[numDests].addr = *((struct sockaddr_in *) res->ai_addr);
-        dests[numDests].seq = 0;
 
         if ((dests[numDests].fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
             CONFIGEXIT("Socket failed: %s", strerror(errno));
