@@ -439,6 +439,9 @@ class SessionAPIs {
     }
     for (const key in decodeOptions) {
       if (ArkimeUtil.isPP(key)) { continue; }
+      if (!decode.isRegistered(key)) {
+        return res.serverError(400, 'Invalid decode parameter', 'api.sessions.invalidDecodeParam');
+      }
       if (key.match(/^ITEM/)) {
         options.order.push(key);
       } else {
@@ -1166,11 +1169,12 @@ class SessionAPIs {
   static #scrubbingBuffers;
   static async #pcapScrub (req, res, sid, whatToRemove) {
     if (SessionAPIs.#scrubbingBuffers === undefined) {
-      SessionAPIs.#scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
+      // Sized to the max packet incl_len readPacket allows (65535)
+      SessionAPIs.#scrubbingBuffers = [Buffer.alloc(65535), Buffer.alloc(65535), Buffer.alloc(65535)];
       SessionAPIs.#scrubbingBuffers[0].fill(0);
       SessionAPIs.#scrubbingBuffers[1].fill(1);
       const str = 'Scrubbed! Hoot! ';
-      for (let i = 0; i < 5000;) {
+      for (let i = 0; i < 65535 - str.length;) {
         i += SessionAPIs.#scrubbingBuffers[2].write(str, i);
       }
     }

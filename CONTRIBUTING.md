@@ -70,6 +70,8 @@ Arkime supports internationalization to make the application accessible to users
 * 🇯🇵 Japanese (ja)
 * 🇰🇷 Korean (ko)
 * 🇨🇳 Chinese (zh)
+* 🇪🇪 Estonian (et)
+* 🇧🇷 Brazilian Portuguese (pt-BR)
 
 **Getting started with translations:**
 1. Read the comprehensive [Internationalization Guide](INTERNATIONALIZATION.md)

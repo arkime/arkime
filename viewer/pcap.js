@@ -670,26 +670,29 @@ class Pcap {
       pos += headerLen; // Don't delete pcap header
       len -= headerLen;
     } else {
+      let skip;
       switch (packet.ip.p) {
       case 1:
-        pos += (packet.icmp._pos + 8);
-        len -= (packet.icmp._pos + 8);
+        skip = packet.icmp._pos + 8;
         break;
       case 6:
-        pos += (packet.tcp._pos + 4 * packet.tcp.off);
-        len -= (packet.tcp._pos + 4 * packet.tcp.off);
+        skip = packet.tcp._pos + 4 * packet.tcp.off;
         break;
       case 17:
-        pos += (packet.udp._pos + 8);
-        len -= (packet.udp._pos + 8);
+        skip = packet.udp._pos + 8;
         break;
       case 132:
-        pos += (packet.sctp._pos + 8);
-        len -= (packet.sctp._pos + 8);
+        skip = packet.sctp._pos + 8;
         break;
       default:
         throw new Error("Unknown packet type, can't scrub");
       }
+      // decode() runs on the buffer readPacket rebuilds with a standard
+      // 16 byte header, so _pos values are 16-based even when the on-disk
+      // record header is 6 bytes
+      skip -= (16 - headerLen);
+      pos += skip;
+      len -= skip;
     }
 
     fs.writeSync(this.fd, buf, 0, len, pos);

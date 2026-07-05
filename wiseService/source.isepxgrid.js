@@ -624,6 +624,7 @@ exports.initSource = function (api) {
     name: 'isepxgrid',
     description: 'Enriches IPs with user identity, MAC, OS, and posture from Cisco ISE pxGrid 2.0 sessions.',
     types: ['ip'],
+    cacheable: false,
     fields: [
       { name: 'host', required: true, help: 'ISE pxGrid node hostname' },
       { name: 'port', required: false, help: 'pxGrid port (default 8910)' },

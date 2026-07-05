@@ -229,7 +229,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createLinksIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
@@ -266,7 +266,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createViewsIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
@@ -300,7 +300,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createHistoryIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
@@ -347,7 +347,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createOverviewIndex', util.inspect(err, false, 10));
         process.exit(0);
       }

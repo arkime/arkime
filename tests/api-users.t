@@ -30,7 +30,7 @@ my $json;
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
+    eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
 anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 ', "CSV Users");
 
@@ -706,7 +706,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
+    eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
 anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
 role:sac-test1,UserName,true,false,false,"",,,,,,,,,

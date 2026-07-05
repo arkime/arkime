@@ -399,12 +399,12 @@ class ItemSMTPStream extends ItemTransform {
 
         this.buffers.push(lines[l]);
 
+        if (!mime) {
+          mime = { line: '', base64: 0, doit: 0 };
+        }
         if (lines[l][0] === ' ' || lines[l][0] === '\t') {
           mime.line += lines[l];
           continue;
-        }
-        if (!mime) {
-          mime = { line: '', base64: 0, doit: 0 };
         }
 
         if (mime.line.substr(0, 13).toLowerCase() === 'content-type:') {
@@ -957,6 +957,9 @@ exports.register = function (regName, ClassOrCreate, settings) {
 };
 exports.settings = function () {
   return internals.settings;
+};
+exports.isRegistered = function (regName) {
+  return internals.registry[regName] !== undefined;
 };
 
 exports.register('BODY-UNXORBRUTEGZ', createUnxorBruteGzip, { name: 'UnXOR Brute GZip Header' });

@@ -117,6 +117,8 @@ def get_query(req):
 def print_progress(cur, tot):
     if tot == 0:
         tot = 1
+    if cur == 0:
+        cur = 1
     pct = int(cur / tot * 100)
     now = datetime.now()
     elap = now - start_time
