@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #4066 Node 22.23.1
   - #4056 Add Fedora 44 builds
+  - #4102 FreeBSD 14 builds now use 14.4
 ## All
   - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
   - #4072 Fix header/OIDC auth requests hanging when a dynamic role update fails
