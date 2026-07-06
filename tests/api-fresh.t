@@ -1,5 +1,5 @@
 # Tests on a fresh install
-use Test::More tests => 42;
+use Test::More tests => 46;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -83,3 +83,10 @@ my $json;
 
     $json = multiGet("/api/clusters");
     eq_or_diff($json, from_json('{"inactive": [], "active": ["test", "test2"]}'));
+
+# payload8 hex and utf8 field definitions are all served to the UI (issue #3201)
+    $json = viewerGet2("/api/fields");
+    eq_or_diff($json->{"payload8.src.hex"}, from_json('{"friendlyName":"Payload Src Hex","type":"lotermfield","exp":"payload8.src.hex","help":"First 8 bytes of source payload in hex","dbField":"srcPayload8","group":"general","dbField2":"srcPayload8","aliases":["payload.src"]}'), "payload8.src.hex field");
+    eq_or_diff($json->{"payload8.src.utf8"}, from_json('{"friendlyName":"Payload Src UTF8","type":"termfield","exp":"payload8.src.utf8","help":"First 8 bytes of source payload in utf8","dbField":"srcPayload8","group":"general","dbField2":"srcPayload8","transform":"utf8ToHex","noFacet":"true"}'), "payload8.src.utf8 field");
+    eq_or_diff($json->{"payload8.dst.hex"}, from_json('{"friendlyName":"Payload Dst Hex","type":"lotermfield","exp":"payload8.dst.hex","help":"First 8 bytes of destination payload in hex","dbField":"dstPayload8","group":"general","dbField2":"dstPayload8","aliases":["payload.dst"]}'), "payload8.dst.hex field");
+    eq_or_diff($json->{"payload8.dst.utf8"}, from_json('{"friendlyName":"Payload Dst UTF8","type":"termfield","exp":"payload8.dst.utf8","help":"First 8 bytes of destination payload in utf8","dbField":"dstPayload8","group":"general","dbField2":"dstPayload8","transform":"utf8ToHex","noFacet":"true"}'), "payload8.dst.utf8 field");
