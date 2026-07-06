@@ -137,7 +137,7 @@ SPDX-License-Identifier: Apache-2.0
           placeholder="YYYY/MM/DD HH:mm:ss"
           @change="changeStartTime"
           @keyup.enter="changeStartTime"
-          :value="localStartTime.format('YYYY/MM/DD HH:mm:ss')">
+          :value="formatTimeInput(localStartTime, 'YYYY/MM/DD HH:mm:ss')">
         <BInputGroupText
           v-if="timezone !== 'local'"
           :id="`startTimeTimezone`"
@@ -165,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
             ref="startTimePickerInput"
             class="date-picker-input"
             @input="changeStartTime"
-            :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')">
+            :value="formatTimeInput(localStartTime, 'YYYY-MM-DDTHH:mm:ss')">
           <BTooltip
             target="startTimePicker"
             placement="bottom"
@@ -232,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
           placeholder="YYYY/MM/DD HH:mm:ss"
           @change="changeStopTime"
           @keyup.enter="changeStopTime"
-          :value="localStopTime.format('YYYY/MM/DD HH:mm:ss')">
+          :value="formatTimeInput(localStopTime, 'YYYY/MM/DD HH:mm:ss')">
         <BInputGroupText
           v-if="timezone !== 'local'"
           :id="`stopTimeTimezone`"
@@ -260,7 +260,7 @@ SPDX-License-Identifier: Apache-2.0
             ref="stopTimePickerInput"
             class="date-picker-input"
             @input="changeStopTime"
-            :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')">
+            :value="formatTimeInput(localStopTime, 'YYYY-MM-DDTHH:mm:ss')">
           <BTooltip
             target="stopTimePicker"
             placement="bottom"
@@ -421,6 +421,22 @@ import qs from 'qs';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
+
+// maps common timezone abbreviations to utc offsets for typed/pasted times;
+// ambiguous abbreviations (CST, IST, AST, ...) use the most common meaning
+const TZ_ABBREVIATIONS = {
+  Z: '+00:00', UT: '+00:00', UTC: '+00:00', GMT: '+00:00',
+  EST: '-05:00', EDT: '-04:00', CST: '-06:00', CDT: '-05:00',
+  MST: '-07:00', MDT: '-06:00', PST: '-08:00', PDT: '-07:00',
+  AKST: '-09:00', AKDT: '-08:00', HST: '-10:00', HDT: '-09:00',
+  AST: '-04:00', ADT: '-03:00', NST: '-03:30', NDT: '-02:30',
+  WET: '+00:00', WEST: '+01:00', BST: '+01:00', CET: '+01:00', CEST: '+02:00',
+  EET: '+02:00', EEST: '+03:00', MSK: '+03:00', IST: '+05:30',
+  HKT: '+08:00', SGT: '+08:00', JST: '+09:00', KST: '+09:00',
+  AWST: '+08:00', ACST: '+09:30', ACDT: '+10:30', AEST: '+10:00', AEDT: '+11:00',
+  NZST: '+12:00', NZDT: '+13:00'
+};
+
 let currentTimeSec;
 let dateChanged = false;
 let startDateCheck;
@@ -619,7 +635,7 @@ export default {
     changeStartTime: function (e) {
       const parsed = this.parseTimeInput(e.target.value);
       if (!parsed) { // invalid input - reset the display to the current value
-        e.target.value = this.localStartTime.format('YYYY/MM/DD HH:mm:ss');
+        e.target.value = this.formatTimeInput(this.localStartTime, 'YYYY/MM/DD HH:mm:ss');
         return;
       }
       const msDate = parsed.valueOf();
@@ -632,7 +648,7 @@ export default {
     changeStopTime: function (e) {
       const parsed = this.parseTimeInput(e.target.value);
       if (!parsed) { // invalid input - reset the display to the current value
-        e.target.value = this.localStopTime.format('YYYY/MM/DD HH:mm:ss');
+        e.target.value = this.formatTimeInput(this.localStopTime, 'YYYY/MM/DD HH:mm:ss');
         return;
       }
       const msDate = parsed.valueOf();
@@ -652,8 +668,47 @@ export default {
         'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DD HH:mm', 'YYYY-MM-DD',
         moment.ISO_8601
       ];
-      const parsed = moment(value, formats);
+
+      value = value.trim();
+
+      // bare timestamps are interpreted in the timezone the inputs display
+      let zone = this.timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone;
+      let offset;
+
+      // detect and strip a trailing timezone: Z or a numeric offset (+02:00,
+      // GMT+2), optionally attached (13:09:54Z), an abbreviation (UTC, EDT),
+      // or an IANA name (America/New_York)
+      const match = value.match(/^(.*\d)(?:\s*(?:(?:GMT|UTC)?([+-]\d{1,2}(?::?\d{2})?)|Z)|\s+(?:([A-Za-z]+(?:\/[A-Za-z_+-]+)+)|([A-Za-z]{1,5})))$/);
+      if (match) {
+        const [, text, numOffset, ianaName, abbreviation] = match;
+        if (numOffset !== undefined) {
+          const parts = numOffset.match(/^([+-])(\d{1,2}):?(\d{2})?$/);
+          offset = (parts[1] === '-' ? -1 : 1) * ((parseInt(parts[2]) * 60) + parseInt(parts[3] || '0'));
+        } else if (ianaName !== undefined) {
+          if (!moment.tz.zone(ianaName)) { return undefined; } // unrecognized timezone
+          zone = ianaName;
+        } else if (abbreviation !== undefined) {
+          offset = TZ_ABBREVIATIONS[abbreviation.toUpperCase()];
+          if (offset === undefined) { return undefined; } // unrecognized timezone
+        } else { // trailing Z
+          offset = 0;
+        }
+        value = text;
+      }
+
+      let parsed = moment.tz(value, formats, zone);
+      if (offset !== undefined) { parsed = parsed.utcOffset(offset, true); }
       return parsed.isValid() ? parsed : undefined;
+    },
+    /**
+     * Formats a time for display in the start/stop inputs using the timezone
+     * the user has configured (so UTC mode shows UTC wall clock time)
+     * @param {object} time a moment object
+     * @param {string} format the format string
+     * @returns {string} the formatted time
+     */
+    formatTimeInput: function (time, format) {
+      return this.findTimeInTimezone(time.valueOf()).format(format);
     },
     /**
      * Opens the native date picker attached to the calendar button
