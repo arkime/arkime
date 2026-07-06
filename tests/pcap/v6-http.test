@@ -905,9 +905,16 @@
       "indicator_type" : "addr",
       "source" : "arkime-test",
       "where" : "ip.dst"
+     },
+     {
+      "desc" : "v6-http.pcap dst subnet",
+      "indicator" : "2001:6f8:900:7c0::/64",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
      }
     ],
-    "zeekintelCnt" : 1
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {
