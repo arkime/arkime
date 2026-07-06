@@ -138,6 +138,20 @@ SPDX-License-Identifier: Apache-2.0
           @change="changeStartTime"
           @keyup.enter="changeStartTime"
           :value="localStartTime.format('YYYY/MM/DD HH:mm:ss')">
+        <BInputGroupText
+          v-if="timezone !== 'local'"
+          :id="`startTimeTimezone`"
+          class="cursor-help">
+          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
+          <BTooltip
+            target="startTimeTimezone"
+            placement="bottom"
+            :delay="{show: 500, hide: 0}"
+            noninteractive>
+            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+          </BTooltip>
+        </BInputGroupText>
         <BButton
           variant="outline-secondary"
           id="startTimePicker"
@@ -160,20 +174,6 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('search.openDatePickerTip') }}
           </BTooltip>
         </BButton>
-        <BInputGroupText
-          v-if="timezone !== 'local'"
-          :id="`startTimeTimezone`"
-          class="cursor-help">
-          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
-          <BTooltip
-            target="startTimeTimezone"
-            placement="bottom"
-            :delay="{show: 500, hide: 0}"
-            noninteractive>
-            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
-            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
-          </BTooltip>
-        </BInputGroupText>
         <BButton
           variant="outline-secondary"
           id="prevStartTime"
@@ -233,6 +233,20 @@ SPDX-License-Identifier: Apache-2.0
           @change="changeStopTime"
           @keyup.enter="changeStopTime"
           :value="localStopTime.format('YYYY/MM/DD HH:mm:ss')">
+        <BInputGroupText
+          v-if="timezone !== 'local'"
+          :id="`stopTimeTimezone`"
+          class="cursor-help">
+          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
+          <BTooltip
+            target="stopTimeTimezone"
+            placement="bottom"
+            :delay="{show: 500, hide: 0}"
+            noninteractive>
+            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+          </BTooltip>
+        </BInputGroupText>
         <BButton
           variant="outline-secondary"
           id="stopTimePicker"
@@ -255,20 +269,6 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('search.openDatePickerTip') }}
           </BTooltip>
         </BButton>
-        <BInputGroupText
-          v-if="timezone !== 'local'"
-          :id="`stopTimeTimezone`"
-          class="cursor-help">
-          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
-          <BTooltip
-            target="stopTimeTimezone"
-            placement="bottom"
-            :delay="{show: 500, hide: 0}"
-            noninteractive>
-            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
-            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
-          </BTooltip>
-        </BInputGroupText>
         <BButton
           variant="outline-secondary"
           id="prevStopTime"
