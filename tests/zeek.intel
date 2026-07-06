@@ -11,3 +11,5 @@ samples.example.com/UpdataConfig.dat	Intel::URL	arkime-test	http.uri in http-con
 12345678@aol.com	Intel::EMAIL	arkime-test	smtp test sender/recipient	-
 5ff7b2c69c3b22826a717cd5ea4c9f32	Intel::FILE_HASH	arkime-test	http body md5 (http-content-gzip / socks5-rdp)	-
 61479904e443b354d4427a51b990c696f731e341e4c63328e07c1a92658ba591	Intel::FILE_HASH	arkime-test	http body sha256	-
+10.0.0.0/xx	Intel::SUBNET	arkime-test	invalid mask, must never match anything	-
+2001:6f8:900:7c0::/64	Intel::SUBNET	arkime-test	v6-http.pcap dst subnet	-

@@ -214,24 +214,41 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             }
             return nextCb('Only have SPI data, PCAP file no longer available for ' + data.info.name);
           }
-          const body = Buffer.from(await s3data.Body.transformToByteArray());
           if (data.compressed) {
             // Need to decompress the block(s)
             const decompressed = {};
-            // First build a map from rangeStart to the decompressed block
-            for (let i = 0; i < data.subPackets.length; i++) {
-              const sp = data.subPackets[i];
-              if (!decompressed[sp.rangeStart]) {
-                const offset = sp.rangeStart - data.rangeStart;
-                if (data.compressed === COMPRESSED_GZIP) {
-                  decompressed[sp.rangeStart] = zlib.inflateRawSync(body.subarray(offset, offset + data.info.compressionBlockSize),
-                    { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-                } else if (data.compressed === COMPRESSED_ZSTD) {
-                  decompressed[sp.rangeStart] = zlib.zstdDecompressSync(body.subarray(offset, offset + data.info.compressionBlockSize),
-                    { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+            try {
+              const body = Buffer.from(await s3data.Body.transformToByteArray());
+              // First build a map from rangeStart to the decompressed block
+              for (let i = 0; i < data.subPackets.length; i++) {
+                const sp = data.subPackets[i];
+                if (!decompressed[sp.rangeStart]) {
+                  const offset = sp.rangeStart - data.rangeStart;
+                  if (data.compressed === COMPRESSED_GZIP) {
+                    decompressed[sp.rangeStart] = zlib.inflateRawSync(body.subarray(offset, offset + data.info.compressionBlockSize),
+                      { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                  } else if (data.compressed === COMPRESSED_ZSTD) {
+                    decompressed[sp.rangeStart] = zlib.zstdDecompressSync(body.subarray(offset, offset + data.info.compressionBlockSize),
+                      { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                  }
+                  const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
+                  lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
+                  const cip = CacheInProgress[decompressedCacheKey];
+                  delete CacheInProgress[decompressedCacheKey];
+                  if (cip && cip !== true) {
+                    for (let j = 0; j < cip.length; j++) {
+                      cip[j]();
+                    }
+                  }
                 }
+              }
+            } catch (decompressErr) {
+              console.log('WARNING - Error decompressing PCAP data', data.info.name, decompressErr);
+              // Clear the remaining in-progress markers and wake any queued
+              // waiters so later reads of the same blocks don't hang forever
+              for (let i = 0; i < data.subPackets.length; i++) {
+                const sp = data.subPackets[i];
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
-                lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
                 const cip = CacheInProgress[decompressedCacheKey];
                 delete CacheInProgress[decompressedCacheKey];
                 if (cip && cip !== true) {
@@ -240,6 +257,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
                   }
                 }
               }
+              return nextCb('Error decompressing PCAP data for ' + data.info.name);
             }
             async.each(data.subPackets, (sp, nextSubCb) => {
               const block = decompressed[sp.rangeStart];
@@ -250,6 +268,13 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
             },
             nextCb);
           } else {
+            let body;
+            try {
+              body = Buffer.from(await s3data.Body.transformToByteArray());
+            } catch (bodyErr) {
+              console.log('WARNING - Error reading PCAP data', data.info.name, bodyErr);
+              return nextCb('Error reading PCAP data for ' + data.info.name);
+            }
             async.each(data.subPackets, (sp, nextSubCb) => {
               const subPacketData = body.subarray(sp.packetStart - data.packetStart, sp.packetEnd - data.packetStart);
               const len = (pcap.bigEndian ? subPacketData.readUInt32BE(8) : subPacketData.readUInt32LE(8));
@@ -270,6 +295,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
 
       if (pos < 0) {
         const info = await Db.fileIdToFile(fields.node, pos * -1);
+        info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
         const parts = splitRemain(info.name, '/', 4);
         p = parseInt(p);
         let compressed = 0;

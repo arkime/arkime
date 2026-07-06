@@ -663,13 +663,15 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
             continue;
         }
 
-        char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
-
         uint32_t           md5_len;
         const uint8_t     *md5 = 0;
         md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
         if (!md5)
+            continue;
+
+        char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
+        if (!id)
             continue;
 
         if (*md5 == '[' && md5_len >= 4) {
