@@ -182,6 +182,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4102 Fix session packets requests with an unknown decode option hanging forever; they now return a 400
   - #4102 Fix a session packets error when an SMTP MIME header continuation line lands on a packet chunk boundary
   - #4102 Fix multiviewer sessions refresh dropping each cluster's index prefix, so prefixed clusters were never refreshed
+  - #4103 Time picker displays YYYY/MM/DD HH:mm:ss again instead of the browser locale format, allows typing/pasting dates, and adds a date picker button
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
