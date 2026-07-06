@@ -635,9 +635,9 @@ LOCAL void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, cha
 {
     // Skip leading http
     if (*url == 'h') {
-        if (memcmp(url, "http://", 7) == 0)
+        if (strncmp(url, "http://", 7) == 0)
             url += 7;
-        else if (memcmp(url, "https://", 8) == 0)
+        else if (strncmp(url, "https://", 8) == 0)
             url += 8;
     }
 

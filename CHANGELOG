@@ -120,6 +120,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4100 Fix kafka plugin only using the first bootstrap server of a semicolon-separated kafkaBootstrapServers list
   - #4100 Fix writer-s3 building corrupt CompleteMultipartUpload requests after a failed part upload (now aborts the upload), leaking queued buffers forever when multipart init fails, and capture exiting when a periodic credential refresh fails
   - #4100 Fix lua plugin HTTP MESSAGE_BEGIN callback only firing for the first message per direction on keep-alive connections
+  - #4104 Fix tagger plugin crashing when an ES poll hit has no _id, and a memory leak when a hit has no md5
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt
@@ -172,6 +173,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4102 Fix a session packets error when an SMTP MIME header continuation line lands on a packet chunk boundary
   - #4102 Fix multiviewer sessions refresh dropping each cluster's index prefix, so prefixed clusters were never refreshed
   - #4103 Time picker displays YYYY/MM/DD HH:mm:ss again instead of the browser locale format, allows typing/pasting dates, and adds a date picker button
+  - #4104 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when block decompression fails
+  - #4104 Fix writer-s3 PCAP retrieval of multi-file sessions with pre-compression file records computing bogus byte ranges
   - #4105 Fix time picker inputs showing local wall clock time in UTC mode; typed/pasted times are now interpreted in the displayed timezone and may include a timezone suffix (UTC, EDT, America/Chicago, +02:00)
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors

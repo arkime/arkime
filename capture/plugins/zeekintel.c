@@ -254,19 +254,31 @@ LOCAL void zeekintel_hash_add(ZeekIntelStringHash_t *hash, const char *key, Zeek
  */
 LOCAL void zeekintel_ip_add(patricia_tree_t *tree, const char *indicator, ZeekIntelItem_t *item)
 {
-    char mapped[80];
+    char        mapped[80];
+    const char *slash = strchr(indicator, '/');
+    size_t      addrLen = slash ? (size_t)(slash - indicator) : strlen(indicator);
+    gboolean    isV4 = !memchr(indicator, ':', addrLen);
 
-    if (!strchr(indicator, ':')) {
-        const char *slash = strchr(indicator, '/');
+    if (slash) {
+        char *end;
+        long  bits = strtol(slash + 1, &end, 10);
+        if (end == slash + 1 || *end != 0 || bits < 0 || bits > (isV4 ? 32 : 128)) {
+            if (config.debug)
+                LOG("Invalid indicator mask %s", indicator);
+            zeekintel_item_free(item);
+            return;
+        }
+    }
+
+    if (isV4) {
         if (slash) {
-            int bits = atoi(slash + 1);
-            if (bits < 0 || bits > 32 || slash - indicator >= 40) {
+            if (addrLen >= 40) {
                 if (config.debug)
                     LOG("Invalid IPv4 indicator %s", indicator);
                 zeekintel_item_free(item);
                 return;
             }
-            snprintf(mapped, sizeof(mapped), "::ffff:%.*s/%d", (int)(slash - indicator), indicator, 96 + bits);
+            snprintf(mapped, sizeof(mapped), "::ffff:%.*s/%ld", (int)addrLen, indicator, 96 + strtol(slash + 1, NULL, 10));
         } else {
             snprintf(mapped, sizeof(mapped), "::ffff:%s", indicator);
         }
