@@ -8779,6 +8779,140 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "2001:db8:900::2",
+     "mac" : [
+      "02:aa:00:00:16:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1700016000000,
+    "ipProtocol" : 4,
+    "lastPacket" : 1700016000000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 2138,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     2154
+    ],
+    "packetPos" : [
+     97739
+    ],
+    "packetRange" : {
+     "gte" : 1700016000000,
+     "lte" : 1700016000000
+    },
+    "protocol" : [
+     "corrupt-ip"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 2138,
+     "ip" : "2001:db8:900::1",
+     "mac" : [
+      "02:aa:00:00:16:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "2001:db8:901::2",
+     "mac" : [
+      "02:aa:00:00:16:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1700016100000,
+    "ipProtocol" : 41,
+    "lastPacket" : 1700016100000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 2158,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     2174
+    ],
+    "packetPos" : [
+     99893
+    ],
+    "packetRange" : {
+     "gte" : 1700016100000,
+     "lte" : 1700016100000
+    },
+    "protocol" : [
+     "corrupt-ip"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 2158,
+     "ip" : "2001:db8:901::1",
+     "mac" : [
+      "02:aa:00:00:16:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
      "bytes" : 29
     },
     "destination" : {

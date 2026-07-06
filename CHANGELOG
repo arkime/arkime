@@ -121,6 +121,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4100 Fix writer-s3 building corrupt CompleteMultipartUpload requests after a failed part upload (now aborts the upload), leaking queued buffers forever when multipart init fails, and capture exiting when a periodic credential refresh fails
   - #4100 Fix lua plugin HTTP MESSAGE_BEGIN callback only firing for the first message per direction on keep-alive connections
   - #4104 Fix tagger plugin crashing when an ES poll hit has no _id, and a memory leak when a hit has no md5
+  - #4107 Fix python per-session parsers (register_parser/register_parser_buf) crashing capture when the callback is freed at session end without a Python thread state
+  - #4107 Fix pcap-over-IP server exiting when a client sends truncated or oversized packet records; now skips the packet or closes just that connection
+  - #4107 Fix http:// and https:// scheme reader dropping the URL query string (breaking pre-signed S3 style links) and silently ignoring HTTP error responses
+  - #4107 Fix unknown-ether session ids reading past the end of short packets (e.g. truncated Frame Relay)
+  - #4107 Fix IPv6 headers past offset 2047 (deep encapsulation) recording wrong session addresses; now treated as corrupt like IPv4
+  - #4107 Add awsUseTokenForMetadata option to use IMDSv2 when fetching AWS credentials from the metadata service
 ## Capture/Viewer
   - #4054 Add mpacket link layer support
 ## Cont3xt
