@@ -175,6 +175,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4103 Time picker displays YYYY/MM/DD HH:mm:ss again instead of the browser locale format, allows typing/pasting dates, and adds a date picker button
   - #4104 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when block decompression fails
   - #4104 Fix writer-s3 PCAP retrieval of multi-file sessions with pre-compression file records computing bogus byte ranges
+  - #4106 Fix payload8 UTF8/Hex fields: the sessions column and info field showed the UTF8 label with the hex value, and clicking the value built a broken payload8.*.utf8 expression
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors

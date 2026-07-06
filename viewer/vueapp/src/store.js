@@ -224,16 +224,20 @@ const store = createStore({
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases
+      // noFacet fields (search-only variants like payload8.src.utf8) must not
+      // claim the db field keys over the field that matches the stored data
+      const setDbKey = (key, field) => {
+        if (key === undefined) { return; }
+        if (!state.fieldsMap[key] || !field.noFacet) {
+          state.fieldsMap[key] = field;
+        }
+      };
       for (const key in value.fieldsMap) {
         const field = value.fieldsMap[key];
         state.fieldsMap[field.exp] = field;
-        state.fieldsMap[field.dbField] = field;
-        if (field.dbField2 !== undefined) {
-          state.fieldsMap[field.dbField2] = field;
-        }
-        if (field.fieldECS !== undefined) {
-          state.fieldsMap[field.fieldECS] = field;
-        }
+        setDbKey(field.dbField, field);
+        setDbKey(field.dbField2, field);
+        setDbKey(field.fieldECS, field);
         (field.aliases || []).forEach((alias) => {
           state.fieldsAliasMap[alias] = field;
         });
