@@ -172,6 +172,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4102 Fix session packets requests with an unknown decode option hanging forever; they now return a 400
   - #4102 Fix a session packets error when an SMTP MIME header continuation line lands on a packet chunk boundary
   - #4102 Fix multiviewer sessions refresh dropping each cluster's index prefix, so prefixed clusters were never refreshed
+  - #4103 Time picker displays YYYY/MM/DD HH:mm:ss again instead of the browser locale format, allows typing/pasting dates, and adds a date picker button
   - #4104 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when block decompression fails
   - #4104 Fix writer-s3 PCAP retrieval of multi-file sessions with pre-compression file records computing bogus byte ranges
 ## WISE
