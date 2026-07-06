@@ -14,6 +14,11 @@ void arkime_python_exit() {}
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+// PyThreadState_GetUnchecked was made public in 3.13; 3.12 only has the private name
+#if PY_VERSION_HEX < 0x030D0000
+#define PyThreadState_GetUnchecked _PyThreadState_UncheckedGet
+#endif
+
 extern ArkimeConfig_t        config;
 
 typedef struct ArkimePyCbMap {
