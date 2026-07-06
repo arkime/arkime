@@ -214,6 +214,7 @@ LOCAL void aws_get_credentials(const char *service)
 /******************************************************************************/
 void arkime_cloud_init()
 {
+    awsUseTokenForMetadata = arkime_config_boolean(NULL, "awsUseTokenForMetadata", FALSE);
     arkime_credentials_register("aws", aws_get_credentials);
 }
 /******************************************************************************/

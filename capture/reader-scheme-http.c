@@ -22,8 +22,11 @@ LOCAL GHashTable            *servers;
 LOCAL ARKIME_LOCK_DEFINE(waiting);
 
 /******************************************************************************/
-LOCAL void scheme_http_done(int UNUSED(code), uint8_t UNUSED(*data), int UNUSED(data_len), gpointer uw)
+LOCAL void scheme_http_done(int code, uint8_t UNUSED(*data), int UNUSED(data_len), gpointer uw)
 {
+    HTTPRequest_t *req = (HTTPRequest_t *)uw;
+    if (code < 200 || code >= 300)
+        LOG("ERROR - HTTP status %d fetching %s", code, req->uri);
     ARKIME_TYPE_FREE(HTTPRequest_t, uw);
     ARKIME_UNLOCK(waiting);
 }
@@ -63,12 +66,16 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     char *path = NULL;
     rc += curl_url_get(h, CURLUPART_PATH, &path, 0);
 
+    char *query = NULL;
+    curl_url_get(h, CURLUPART_QUERY, &query, 0);
+
     if (rc) {
         LOG("Error parsing %s", uri);
         curl_free(scheme);
         curl_free(host);
         curl_free(port);
         curl_free(path);
+        curl_free(query);
         curl_url_cleanup(h);
         return 1;
     }
@@ -93,12 +100,20 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     HTTPRequest_t *req = ARKIME_TYPE_ALLOC(HTTPRequest_t);
     req->uri = uri;
     req->actions = actions;
-    arkime_http_schedule2(server, "GET", path, -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_NORMAL, scheme_http_done, scheme_http_read, req);
+
+    char pathquery[3000];
+    if (query)
+        snprintf(pathquery, sizeof(pathquery), "%s?%s", path, query);
+    else
+        snprintf(pathquery, sizeof(pathquery), "%s", path);
+
+    arkime_http_schedule2(server, "GET", pathquery, -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_NORMAL, scheme_http_done, scheme_http_read, req);
 
     curl_free(scheme);
     curl_free(host);
     curl_free(port);
     curl_free(path);
+    curl_free(query);
     curl_url_cleanup(h);
 
     ARKIME_LOCK(waiting);

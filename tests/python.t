@@ -1,7 +1,7 @@
 # Test python
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 5;
+use Test::More tests => 7;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -46,3 +46,11 @@ $out = runCapture("pythonpacketcb.py", "pcap/python-packet-cb.pcap");
 is(scalar @{$out->{sessions3}}, 1, "one session");
 is($out->{sessions3}->[0]->{body}->{network}->{packets}, 4, "all 4 packets processed");
 is($out->{sessions3}->[0]->{body}->{source}->{packets}, 4, "all 4 src packets");
+
+### Session parser free - registering a per-session closure parser must not
+### crash in Py_DECREF/func_dealloc when the session is freed without a
+### current Python thread state.
+$out = runCapture("pythongilrepro.py", "pcap/http-301-get.pcap");
+
+is(scalar @{$out->{sessions3}}, 1, "closure parser: one session, no crash");
+ok((grep { $_ eq "pygilrepro" } @{$out->{sessions3}->[0]->{body}->{protocol}}), "closure parser: classifier ran");
