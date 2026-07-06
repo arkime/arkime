@@ -2284,6 +2284,104 @@ def sec_dhcpv6_relay():
     return out
 
 
+def _deep_offset_common():
+    # Shared helpers for the deep-offset ipOffset guard sections.
+    # ArkimePacket_t.ipOffset is an 11-bit bitfield, so packet.c rejects any
+    # IP header that starts >= 2048 bytes from the start of the packet
+    # (arkime_packet_ip4 / arkime_packet_ip6 return ARKIME_PACKET_CORRUPT).
+    # We build an outer IPv6 packet whose destination-options extension
+    # header is the maximum 2048 bytes ((255 + 1) * 8), pushing the inner
+    # tunneled IP header to offset 14 (eth) + 40 (ip6) + 2048 = 2102.
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def dstopts(nxt, total):
+        # Build a destination-options header of exactly `total` bytes
+        # ([nxt][hdrExtLen] + PadN options) so tshark dissects it cleanly.
+        hdr = struct.pack('BB', nxt, (total >> 3) - 1)
+        pad = total - 2
+        opts = b''
+        while pad > 0:
+            if pad == 1:
+                opts += b'\x00'                      # Pad1
+                pad -= 1
+            else:
+                n = min(pad - 2, 255)
+                opts += struct.pack('BB', 1, n) + bytes(n)  # PadN
+                pad -= 2 + n
+        return hdr + opts
+
+    def outer(nxt, inner, src, dst):
+        ext = dstopts(nxt, 2048)
+        plen = len(ext) + len(inner)
+        ip6 = struct.pack('>IHBB', 0x60000000, plen, 60, 64) + \
+            socket.inet_pton(socket.AF_INET6, src) + \
+            socket.inet_pton(socket.AF_INET6, dst)
+        return ip6 + ext + inner
+
+    return csum, outer
+
+
+def sec_ip4_deep_offset():
+    # IPv4-in-IPv6 where the inner (structurally valid) IPv4 header starts at
+    # offset 2102 from the start of the packet, exercising the
+    # `(uint8_t *)data - packet->pkt >= 2048` CORRUPT guard in
+    # arkime_packet_ip4 (packet.c).  Classifies as a corrupt session.
+    # Outer 2001:db8:900::1 -> 2001:db8:900::2, inner 10.9.10.1:40200 -> 10.9.10.2:40201.
+
+    TS_START = 1700016000.0
+    CMAC = bytes.fromhex('02aa00001601')
+    SMAC = bytes.fromhex('02aa00001602')
+
+    csum, outer = _deep_offset_common()
+
+    payload = b'deep4!!!'
+    udp = struct.pack('>HHHH', 40200, 40201, 8 + len(payload), 0) + payload
+    iplen = 20 + len(udp)
+    ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 0x1601, 0, 64, 17, 0,
+                     socket.inet_aton('10.9.10.1'), socket.inet_aton('10.9.10.2'))
+    ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+    inner = ip + udp
+
+    p = SMAC + CMAC + b'\x86\xdd' + outer(4, inner, '2001:db8:900::1', '2001:db8:900::2')
+
+    sec = int(TS_START)
+    return struct.pack('<IIII', sec, 0, len(p), len(p)) + p
+
+
+def sec_ip6_deep_offset():
+    # IPv6-in-IPv6 where the inner (structurally valid) IPv6 header starts at
+    # offset 2102 from the start of the packet, exercising the
+    # `(uint8_t *)data - packet->pkt >= 2048` CORRUPT guard in
+    # arkime_packet_ip6 (packet.c).  Classifies as a corrupt session.
+    # Outer 2001:db8:901::1 -> 2001:db8:901::2, inner 2001:db8:902::1:40300 -> 2001:db8:902::2:40301.
+
+    TS_START = 1700016100.0
+    CMAC = bytes.fromhex('02aa00001603')
+    SMAC = bytes.fromhex('02aa00001604')
+
+    csum, outer = _deep_offset_common()
+
+    src = socket.inet_pton(socket.AF_INET6, '2001:db8:902::1')
+    dst = socket.inet_pton(socket.AF_INET6, '2001:db8:902::2')
+    payload = b'deep6!!!'
+    udp = struct.pack('>HHHH', 40300, 40301, 8 + len(payload), 0) + payload
+    pseudo = src + dst + struct.pack('>I', len(udp)) + b'\x00\x00\x00\x11'
+    udp = udp[:6] + struct.pack('>H', csum(pseudo + udp) or 0xffff) + udp[8:]
+    inner = struct.pack('>IHBB', 0x60000000, len(udp), 17, 64) + src + dst + udp
+
+    p = SMAC + CMAC + b'\x86\xdd' + outer(41, inner, '2001:db8:901::1', '2001:db8:901::2')
+
+    sec = int(TS_START)
+    return struct.pack('<IIII', sec, 0, len(p), len(p)) + p
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -2308,6 +2406,8 @@ def main():
     out += sec_sip_radius_edge()
     out += sec_tls_256ext()
     out += sec_dhcpv6_relay()
+    out += sec_ip4_deep_offset()
+    out += sec_ip6_deep_offset()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

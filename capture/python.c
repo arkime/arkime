@@ -604,10 +604,26 @@ LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, c
 }
 
 /******************************************************************************/
+// Free callbacks are invoked from pure C session-teardown paths where no
+// Python thread state is current, but can also run inside a Python callback
+// via arkime_parsers_unregister where it is. Deallocating (refcount 0)
+// without a thread state crashes in func_dealloc, so attach first if needed.
+LOCAL void arkime_python_decref_threaded(PyObject *obj)
+{
+    if (PyThreadState_GetUnchecked()) {
+        Py_DECREF(obj);
+    } else if (arkimePacketThread >= 0 && packetThreadState[arkimePacketThread]) {
+        PyEval_RestoreThread(packetThreadState[arkimePacketThread]);
+        Py_DECREF(obj);
+        PyEval_SaveThread();
+    }
+    // else: interpreter for this thread is gone (shutdown), leak the ref
+}
+/******************************************************************************/
 LOCAL void arkime_python_session_parsers_free_cb(ArkimeSession_t UNUSED(*session), void *uw)
 {
     PyObject *py_callback_obj = (PyObject *)uw;
-    Py_DECREF(py_callback_obj);
+    arkime_python_decref_threaded(py_callback_obj);
 }
 /******************************************************************************/
 LOCAL PyObject *arkime_python_session_register_parser(PyObject UNUSED(*self), PyObject *args)
@@ -691,7 +707,7 @@ LOCAL int arkime_python_session_parsers_buf_cb(ArkimeSession_t *session, void *u
 LOCAL void arkime_python_session_parsers_buf_free_cb(ArkimeSession_t UNUSED(*session), void *uw)
 {
     ArkimePyParserBufInfo_t *info = (ArkimePyParserBufInfo_t *)uw;
-    Py_DECREF(info->callback);
+    arkime_python_decref_threaded(info->callback);
     arkime_parser_buf_free(info->pb);
     ARKIME_TYPE_FREE(ArkimePyParserBufInfo_t, info);
 }

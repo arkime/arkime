@@ -184,6 +184,10 @@ LOCAL ArkimePacketRC unknown_ether_packet_enqueue(ArkimePacketBatch_t *UNUSED(ba
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
+    // Need src/dst MACs (12 bytes) + ethertype (2 bytes) at etherOffset
+    if ((int)packet->pktlen - (int)packet->etherOffset < 14)
+        return ARKIME_PACKET_CORRUPT;
+
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
 

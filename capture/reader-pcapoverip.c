@@ -140,20 +140,35 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             packet->ts.tv_usec = packet->ts.tv_usec / 1000;
 
         if (unlikely(caplen != origlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
-            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u\n"
+            // Don't exit, a remote peer shouldn't be able to kill the capture process
+            if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
+                // Packet too large to ever fit in the buffer, can't skip it, close connection
+                LOG("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u, closing connection\n"
                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                     caplen, origlen);
-        }
-
-        if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
-            if (!config.ignoreErrors) {
-                LOGEXIT("ERROR - The packet length %u is too large.", caplen);
-            } else {
                 arkime_packet_free(packet);
                 pcapoverip_client_free(poic);
                 return FALSE;
             }
+            if (poic->len - pos < 16 + caplen) { // Not enough data to skip packet yet
+                arkime_packet_free(packet);
+                break;
+            }
+            LOG_RATE(60, "ERROR - Arkime requires full packet captures caplen: %u pktlen: %u, skipping packet\n"
+                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
+                     caplen, origlen);
+            arkime_packet_free(packet);
+            pos += 16 + caplen;
+            continue;
+        }
 
+        if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
+            // Don't exit, a remote peer shouldn't be able to kill the capture process
+            if (!config.ignoreErrors)
+                LOG("ERROR - The packet length %u is too large, closing connection.", caplen);
+            arkime_packet_free(packet);
+            pcapoverip_client_free(poic);
+            return FALSE;
         }
 
         if (poic->len - pos < 16 + caplen) { // Not enough data for packet

@@ -1111,6 +1111,10 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
 
+    // Make sure the offset of the ip header fits in the 11 bit ipOffset field
+    if ((uint8_t *)data - packet->pkt >= 2048)
+        return ARKIME_PACKET_CORRUPT;
+
     int ip_len = ntohs(ip6->ip6_plen);
     if (len < ip_len + (int)sizeof(struct ip6_hdr)) {
         return ARKIME_PACKET_CORRUPT;
