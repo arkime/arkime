@@ -1318,11 +1318,16 @@ class ESStore extends expressSession.Store {
   static #client;
   static #index;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
 
   constructor (options) {
     super();
     setTimeout(async () => {
       ESStore.#client = User.getClient();
+      if (!ESStore.#client) {
+        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
+        return;
+      }
       ESStore.start();
     }, 100);
     const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
@@ -1391,6 +1396,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.destroy(sid, callback);
+    }
     ESStore.#client.delete({
       index: ESStore.#index,
       id: sid
@@ -1401,6 +1409,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.get(sid, callback);
+    }
     ESStore.#client.get({
       index: ESStore.#index,
       id: sid
@@ -1423,6 +1434,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.set(sid, session, callback);
+    }
     session._timestamp = new Date().getTime();
     ESStore.#client.index({
       index: ESStore.#index,
