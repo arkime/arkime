@@ -2988,7 +2988,8 @@ class SessionAPIs {
           if (writeStream && writeStream.writable) { writeStream.end(); }
         });
       } else {
-        const remotePath = `/api/session/${encodeURIComponent(req.params.nodeName)}/${encodeURIComponent(req.params.id)}/pcap`;
+        // makeStreamRequest already encodeURI()s the path; encodeURIComponent on the id would double-encode '@' (%40 -> %2540) and 500 the owning node
+        const remotePath = `/api/session/${encodeURIComponent(req.params.nodeName)}/${req.params.id}/pcap`;
         ViewerUtils.makeStreamRequest(req.params.nodeName, remotePath, req.user, (pres) => {
           if (pres.statusCode !== 200) {
             finish(502, 'remote node returned status ' + pres.statusCode);
