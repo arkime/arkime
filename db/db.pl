@@ -143,8 +143,8 @@ my $IFNEEDED = 0;
 #use LWP::ConsoleLogger::Everywhere ();
 
 ################################################################################
-sub MIN ($$) { $_[$_[0] > $_[1]] }
-sub MAX ($$) { $_[$_[0] < $_[1]] }
+sub MIN ($$) { return ($_[0] < $_[1]) ? $_[0] : $_[1]; }
+sub MAX ($$) { return ($_[0] > $_[1]) ? $_[0] : $_[1]; }
 
 sub commify {
     scalar reverse join ',',
@@ -1142,7 +1142,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in hex",
       "type": "lotermfield",
       "dbField2": "fballhex",
-      "regex": "^payload8.(src|dst).hex$"
+      "regex": "^payload8\\\\.(src|dst)\\\\.hex$"
     }');
     esPost("/${PREFIX}fields_v30/_doc/payload8.utf8?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Payload UTF8",
@@ -1150,7 +1150,7 @@ sub fieldsUpdate
       "help": "First 8 bytes of payload in utf8",
       "type": "lotermfield",
       "dbField2": "fballutf8",
-      "regex": "^payload8.(src|dst).utf8$"
+      "regex": "^payload8\\\\.(src|dst)\\\\.utf8$"
     }');
     esPost("/${PREFIX}fields_v30/_doc/scrubbed.by?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Scrubbed By",
@@ -8621,7 +8621,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^add-?alias$/) {
     my $results = esGet("/${PREFIX}stats/_doc/$ARGV[2]", 1);
     die "Node $ARGV[2] already exists, must remove first" if ($results->{found});
-    esPost("/${PREFIX}stats/_doc/$ARGV[2]", '{"nodeName": "' . $ARGV[2] . '", "hostname": "' . $ARGV[3] . '", "hide": true}');
+    esPost("/${PREFIX}stats/_doc/$ARGV[2]", to_json({ nodeName => $ARGV[2], hostname => $ARGV[3], hide => JSON::true }));
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?missing$/) {
     my $dir = $ARGV[3];

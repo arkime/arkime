@@ -768,40 +768,9 @@ class Auth {
         return done('S2S auth header corrupt');
       }
 
-      if (!ArkimeUtil.isString(obj.path)) {
-        return done('S2S bad path');
-      }
-
-      if (!ArkimeUtil.isString(obj.user)) {
-        return done('S2S bad user');
-      }
-
-      if (typeof (obj.date) !== 'number') {
-        return done('S2S bad date');
-      }
-
-      if (obj.user.startsWith('role:')) {
-        return done('Cannot authenticate with role');
-      }
-
-      let objPath = obj.path;
-      if (Auth.#basePath.length > 1 && obj.path.startsWith(Auth.#basePath)) {
-        objPath = obj.path.substring(Auth.#basePath.length);
-      }
-      if (obj.path !== req.url && objPath !== req.url) {
-        console.log('ERROR - mismatch url object:', obj.path, 'request:', ArkimeUtil.sanitizeStr(req.url));
-        return done('Unauthorized based on bad url');
-      }
-
-      // Backwards compatible: only enforce method when the signed token includes it
-      if (obj.method !== undefined && obj.method !== req.method.toUpperCase()) {
-        console.log('ERROR - mismatch method object:', obj.method, 'request:', ArkimeUtil.sanitizeStr(req.method));
-        return done('Unauthorized based on bad method');
-      }
-
-      if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
-        console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
-        return done('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
+      const s2sError = Auth.validateS2SObj(obj, req);
+      if (s2sError) {
+        return done(s2sError);
       }
 
       // Don't look up user for receiveSession
@@ -991,6 +960,10 @@ class Auth {
     const passportAuthOptionsExtra = {};
     if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
       passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+    }
+    // receiveSession's s2s placeholder user has no userId, so never try to session-serialize it
+    if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
+      passportAuthOptionsExtra.session = false;
     }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
@@ -1248,6 +1221,56 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // Validate a decoded x-arkime-auth object as a genuine s2s token for this
+  // request: bound to this path/method, from a real (non-role) user, with a
+  // recent timestamp. auth2obj()/JSON.parse only proves the token decrypts/parses
+  // with the serverSecret, which on its own is not sufficient. Returns an error
+  // string when invalid, or undefined when the token is a valid s2s token.
+  static validateS2SObj (obj, req) {
+    if (obj === null || typeof obj !== 'object') {
+      return 'S2S auth header corrupt';
+    }
+
+    if (!ArkimeUtil.isString(obj.path)) {
+      return 'S2S bad path';
+    }
+
+    if (!ArkimeUtil.isString(obj.user)) {
+      return 'S2S bad user';
+    }
+
+    if (typeof (obj.date) !== 'number') {
+      return 'S2S bad date';
+    }
+
+    if (obj.user.startsWith('role:')) {
+      return 'Cannot authenticate with role';
+    }
+
+    let objPath = obj.path;
+    if (Auth.#basePath.length > 1 && obj.path.startsWith(Auth.#basePath)) {
+      objPath = obj.path.substring(Auth.#basePath.length);
+    }
+    if (obj.path !== req.url && objPath !== req.url) {
+      console.log('ERROR - mismatch url object:', obj.path, 'request:', ArkimeUtil.sanitizeStr(req.url));
+      return 'Unauthorized based on bad url';
+    }
+
+    // Backwards compatible: only enforce method when the signed token includes it
+    if (obj.method !== undefined && obj.method !== req.method.toUpperCase()) {
+      console.log('ERROR - mismatch method object:', obj.method, 'request:', ArkimeUtil.sanitizeStr(req.method));
+      return 'Unauthorized based on bad method';
+    }
+
+    if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
+      console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
+      return 'Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks';
+    }
+
+    return undefined;
+  }
+
+  // ----------------------------------------------------------------------------
   static addS2SAuth (options, user, node, path, secret) {
     if (!options.headers) {
       options.headers = {};
@@ -1299,11 +1322,16 @@ class ESStore extends expressSession.Store {
   static #client;
   static #index;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
 
   constructor (options) {
     super();
     setTimeout(async () => {
       ESStore.#client = User.getClient();
+      if (!ESStore.#client) {
+        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
+        return;
+      }
       ESStore.start();
     }, 100);
     const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
@@ -1372,6 +1400,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.destroy(sid, callback);
+    }
     ESStore.#client.delete({
       index: ESStore.#index,
       id: sid
@@ -1382,6 +1413,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.get(sid, callback);
+    }
     ESStore.#client.get({
       index: ESStore.#index,
       id: sid
@@ -1404,6 +1438,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.set(sid, session, callback);
+    }
     session._timestamp = new Date().getTime();
     ESStore.#client.index({
       index: ESStore.#index,
