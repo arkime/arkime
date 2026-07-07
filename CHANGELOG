@@ -183,6 +183,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4104 Fix writer-s3 PCAP retrieval of multi-file sessions with pre-compression file records computing bogus byte ranges
   - #4105 Fix time picker inputs showing local wall clock time in UTC mode; typed/pasted times are now interpreted in the displayed timezone and may include a timezone suffix (UTC, EDT, America/Chicago, +02:00)
   - #4106 Fix payload8 UTF8/Hex fields: the sessions column and info field showed the UTF8 label with the hex value, and clicking the value built a broken payload8.*.utf8 expression
+  - #4108 Fix receive endoint S2S auth bypass via browser session - fully validate auth token (path/user/date/method)
 ## WISE
   - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
   - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
