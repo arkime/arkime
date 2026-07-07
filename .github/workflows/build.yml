@@ -169,7 +169,9 @@ jobs:
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           sleep 30
           cat /tmp/os
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+          curl http://localhost:9200/_cat/health
+          free -h || true
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
 
       - name: viewer test arkimedb
         if: ${{ matrix.viewertest == 'packetpocket' }}

@@ -542,8 +542,14 @@ class Auth {
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
+        const ha1 = Auth.store2ha1(user.passStore, user.userId);
+        if (!ha1) {
+          console.log('AUTH: User', userId, 'passStore could not be decrypted, denying digest auth (check passwordSecret or reset the password)');
+          return done(null, false);
+        }
+
         user.setLastUsed();
-        return done(null, user, { ha1: Auth.store2ha1(user.passStore, user.userId) });
+        return done(null, user, { ha1 });
       });
     }, (poptions, done) => {
       return done(null, true);
