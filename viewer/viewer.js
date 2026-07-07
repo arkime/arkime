@@ -303,10 +303,17 @@ app.use(async (req, res, next) => {
       return res.status(401).send('receive session only allowed s2s');
     }
     try {
+      let s2sObj;
       if (Config.get('s2sRegressionTests')) {
-        JSON.parse(req.headers['x-arkime-auth']);
+        s2sObj = JSON.parse(req.headers['x-arkime-auth']);
       } else {
-        Auth.auth2obj(req.headers['x-arkime-auth']);
+        s2sObj = Auth.auth2obj(req.headers['x-arkime-auth']);
+      }
+      // A decryptable token is not enough: when a request is session-authenticated
+      // the s2s passport strategy is bypassed, so this gate is the only s2s check.
+      // Fully validate the token here too, not just that it decrypts/parses.
+      if (Auth.validateS2SObj(s2sObj, req)) {
+        return res.status(401).send('receive session only allowed s2s');
       }
       return next();
     } catch (e) {
