@@ -957,6 +957,10 @@ class Auth {
     if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
       passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
     }
+    // receiveSession's s2s placeholder user has no userId, so never try to session-serialize it
+    if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
+      passportAuthOptionsExtra.session = false;
+    }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
       if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
