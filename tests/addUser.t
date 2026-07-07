@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 108;
+use Test::More tests => 124;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -317,6 +317,62 @@ ok(grep(/^role:securityTeam$/, @{$response->{roles}}), "jwtuser2 has role:securi
 ok(grep(/^arkimeUser$/, @{$response->{roles}}), "jwtuser2 still has arkimeUser");
 
 
+#### Form Auth tests (test5 node on port 8128)
+
+addUser("-n test5 formuser formuser formuser --roles arkimeUser");
+addUser("-n test5 formuser8 formuser8 formuser8 --roles 'parliamentUser' ");
+esGet("/_refresh");
+
+sub formLogin {
+    my ($user, $pass) = @_;
+    my $r = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8128/api/login", { username => $user, password => $pass });
+    my $sc = $r->header('Set-Cookie');
+    my ($c) = $sc ? $sc =~ /^([^;]+)/ : ();
+    return ($r, $c);
+}
+
+# No session - unauthenticated GET is redirected to the login page
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/");
+is ($response->code, 200, "no session redirected to login page");
+ok ($response->content =~ /LOGIN!/, "no session shows login form");
+
+# Bad password
+my ($loginResp, $badCookie) = formLogin('formuser', 'wrongpassword');
+is ($loginResp->code, 302, "bad password still redirects");
+ok (!defined $badCookie, "bad password does not set a session cookie");
+
+# Unknown user
+($loginResp, $badCookie) = formLogin('nosuchuser', 'nosuchuser');
+is ($loginResp->code, 302, "unknown user still redirects");
+ok (!defined $badCookie, "unknown user does not set a session cookie");
+
+# role: prefixed users cannot log in via form
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8128/api/login", { username => 'role:role', password => 'role:role' });
+is ($response->code, 403, "role: user rejected");
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
+
+# Good password
+my ($loginResponse, $cookie) = formLogin('formuser', 'formuser');
+is ($loginResponse->code, 302, "good password redirects to app");
+ok (defined $cookie && $cookie =~ /^ARKIME-SID=/, "good password sets a session cookie");
+
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $cookie);
+is ($response->code, 200, "session cookie authenticates");
+
+# No arkimeUser role
+(undef, my $noRoleCookie) = formLogin('formuser8', 'formuser8');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $noRoleCookie);
+is ($response->content, "Need arkimeUser role assigned");
+is ($response->code, 403);
+
+# Logout destroys the session
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8128/logout", 'Cookie' => $cookie);
+is ($response->code, 302, "logout redirects");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $cookie);
+is ($response->code, 200, "logged out session redirected to login page");
+ok ($response->content =~ /LOGIN!/, "logged out session shows login form");
+
+
 # cleanup
 my $token = getTokenCookie();
 $response = viewerDeleteToken("/api/user/role:role", $token);
@@ -341,6 +397,8 @@ viewerDeleteToken("/api/user/jwtuser1", $token);
 viewerDeleteToken("/api/user/jwtuser2", $token);
 viewerDeleteToken("/api/user/samerequser", $token);
 viewerDeleteToken("/api/user/sameequser", $token);
+viewerDeleteToken("/api/user/formuser", $token);
+viewerDeleteToken("/api/user/formuser8", $token);
 
 $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));

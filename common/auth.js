@@ -957,6 +957,10 @@ class Auth {
     if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
       passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
     }
+    // receiveSession's s2s placeholder user has no userId, so never try to session-serialize it
+    if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
+      passportAuthOptionsExtra.session = false;
+    }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
       if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
@@ -1314,11 +1318,16 @@ class ESStore extends expressSession.Store {
   static #client;
   static #index;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
 
   constructor (options) {
     super();
     setTimeout(async () => {
       ESStore.#client = User.getClient();
+      if (!ESStore.#client) {
+        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
+        return;
+      }
       ESStore.start();
     }, 100);
     const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
@@ -1387,6 +1396,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.destroy(sid, callback);
+    }
     ESStore.#client.delete({
       index: ESStore.#index,
       id: sid
@@ -1397,6 +1409,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.get(sid, callback);
+    }
     ESStore.#client.get({
       index: ESStore.#index,
       id: sid
@@ -1419,6 +1434,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.set(sid, session, callback);
+    }
     session._timestamp = new Date().getTime();
     ESStore.#client.index({
       index: ESStore.#index,
