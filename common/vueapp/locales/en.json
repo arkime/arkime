@@ -677,6 +677,7 @@
     "stopTime": "End",
     "startTimeTip": "Beginning time",
     "stopTimeTip": "Ending time",
+    "openDatePickerTip": "Open the date picker",
     "prevStartTimeTip": "Beginning of Current Day / Previous Day",
     "nextStartTimeTip": "Beginning of Next Day",
     "prevStopTimeTip": "Ending of Previous Day",

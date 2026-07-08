@@ -14,6 +14,9 @@ Layout:
   - s7comm_frameclamp (8 packets)
   - sctp_interleave (5 packets)
   - smb1_dialect0 (8 packets)
+  - ... (see main() for the full section list)
+  - tls_256ext (8 packets)
+  - dhcpv6_relay (6 packets)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -2150,6 +2153,235 @@ def sec_sip_radius_edge():
     return out
 
 
+def sec_tls_256ext():
+    # TLS session whose ServerHello carries exactly 256 non-GREASE extensions
+    # (types 0x0000-0x00ff, all empty).  Exercises the ja4plus JA4S extension
+    # hashing buffer: with tmpBuf[5*256] the 256th "%04x," snprintf lacked NUL
+    # space, error-flagging the BSB and hashing 255 extensions plus a trailing
+    # comma.  (Ethernet linktype, port 443, client 10.9.19.1.)
+
+    TS_START = 1700014000.0
+
+    CMAC = bytes.fromhex('02aa00001b01')
+    SMAC = bytes.fromhex('02aa00001b02')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def tls_rec(hs_type, body):
+        hs = bytes([hs_type]) + len(body).to_bytes(3, 'big') + body
+        return b'\x16\x03\x03' + struct.pack('>H', len(hs)) + hs
+
+    chello = tls_rec(1, (b'\x03\x03' + bytes(range(32)) + b'\x00' +
+                         b'\x00\x02\x13\x01' +      # 1 cipher
+                         b'\x01\x00' +              # compression
+                         b'\x00\x00'))              # no extensions
+
+    exts = b''.join(struct.pack('>HH', t, 0) for t in range(256))
+    shello = tls_rec(2, (b'\x03\x03' + bytes(range(32, 64)) + b'\x00' +
+                         b'\x13\x02' + b'\x00' +
+                         struct.pack('>H', len(exts)) + exts))
+
+    CLI, SRV, CPORT = '10.9.19.1', '10.9.19.2', 49621
+    pkts = []
+    cseq, sseq = 0x1000, 0x2000
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, CPORT, 443, cseq, 0, 0x02)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 443, CPORT, sseq, cseq, 0x12)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, CPORT, 443, cseq, sseq, 0x10))
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, CPORT, 443, cseq, sseq, 0x18, chello)); cseq += len(chello)
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 443, CPORT, sseq, cseq, 0x18, shello)); sseq += len(shello)
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, CPORT, 443, cseq, sseq, 0x11)); cseq += 1
+    pkts.append(eth_ip_tcp(SRV, CLI, SMAC, CMAC, 443, CPORT, sseq, cseq, 0x11)); sseq += 1
+    pkts.append(eth_ip_tcp(CLI, SRV, CMAC, SMAC, CPORT, 443, cseq, sseq, 0x10))
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_dhcpv6_relay():
+    # DHCPv6 sessions exercising message types beyond the basic client set:
+    #   S1 fe80::9:1: Solicit (1) - baseline
+    #   S2 fe80::9:2: Leasequery (14) - dropped by parsers that reject type > 11
+    #   S3 fe80::9:3: Relay-Forward (12) - 34-byte relay header (msg-type,
+    #      hop-count, link-address, peer-address) before the options; parsers
+    #      that skip only 4 bytes read the link address as garbage TLVs
+    # Covers capture/parsers/dhcp.c dhcpv6_process relay handling and the
+    # ja4plus JA4D6 type/header fixes.  Each datagram is sent twice since the
+    # first packet of a UDP session only runs the port classifier.
+
+    TS_START = 1700015000.0
+
+    CMAC = bytes.fromhex('02aa00001c01')
+    SMAC = bytes.fromhex('02aa00001c02')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip6_udp(src_str, dst_str, sport, dport, payload):
+        src = socket.inet_pton(socket.AF_INET6, src_str)
+        dst = socket.inet_pton(socket.AF_INET6, dst_str)
+        udp = struct.pack('!HHHH', sport, dport, 8 + len(payload), 0) + payload
+        pseudo = src + dst + struct.pack('!I', len(udp)) + b'\x00\x00\x00\x11'
+        udp = udp[:6] + struct.pack('!H', csum(pseudo + udp) or 0xffff) + udp[8:]
+        ip = struct.pack('!IHBB', (6 << 28), len(udp), 17, 64) + src + dst
+        return SMAC + CMAC + b'\x86\xdd' + ip + udp
+
+    def opt(t, v):
+        return struct.pack('>HH', t, len(v)) + v
+
+    duid = opt(1, bytes.fromhex('000100012aabbccdd00112233445'))   # clientid
+    oro = opt(6, struct.pack('>HH', 23, 24))                       # req opts 23,24
+    elap = opt(8, b'\x00\x00')
+
+    solicit = b'\x01\xaa\xbb\xcc' + duid + elap + oro + opt(3, bytes(12))
+    leasequery = b'\x0e\x11\x22\x33' + duid + oro
+    relayfwd = (b'\x0c\x00' +
+                socket.inet_pton(socket.AF_INET6, '2001:db8::1') +
+                socket.inet_pton(socket.AF_INET6, 'fe80::211:22ff:fe33:4455') +
+                opt(9, solicit) + opt(18, b'eth0'))
+
+    datagrams = [
+        ('fe80::9:1', 'ff02::1:2', 546, 547, solicit),
+        ('fe80::9:2', 'ff02::1:2', 546, 547, leasequery),
+        ('fe80::9:3', '2001:db8::99', 547, 547, relayfwd),
+    ]
+
+    out = b''
+    ts = TS_START
+    for src, dst, sport, dport, payload in datagrams:
+        for _ in range(2):
+            p = eth_ip6_udp(src, dst, sport, dport, payload)
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+    return out
+
+
+def _deep_offset_common():
+    # Shared helpers for the deep-offset ipOffset guard sections.
+    # ArkimePacket_t.ipOffset is an 11-bit bitfield, so packet.c rejects any
+    # IP header that starts >= 2048 bytes from the start of the packet
+    # (arkime_packet_ip4 / arkime_packet_ip6 return ARKIME_PACKET_CORRUPT).
+    # We build an outer IPv6 packet whose destination-options extension
+    # header is the maximum 2048 bytes ((255 + 1) * 8), pushing the inner
+    # tunneled IP header to offset 14 (eth) + 40 (ip6) + 2048 = 2102.
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def dstopts(nxt, total):
+        # Build a destination-options header of exactly `total` bytes
+        # ([nxt][hdrExtLen] + PadN options) so tshark dissects it cleanly.
+        hdr = struct.pack('BB', nxt, (total >> 3) - 1)
+        pad = total - 2
+        opts = b''
+        while pad > 0:
+            if pad == 1:
+                opts += b'\x00'                      # Pad1
+                pad -= 1
+            else:
+                n = min(pad - 2, 255)
+                opts += struct.pack('BB', 1, n) + bytes(n)  # PadN
+                pad -= 2 + n
+        return hdr + opts
+
+    def outer(nxt, inner, src, dst):
+        ext = dstopts(nxt, 2048)
+        plen = len(ext) + len(inner)
+        ip6 = struct.pack('>IHBB', 0x60000000, plen, 60, 64) + \
+            socket.inet_pton(socket.AF_INET6, src) + \
+            socket.inet_pton(socket.AF_INET6, dst)
+        return ip6 + ext + inner
+
+    return csum, outer
+
+
+def sec_ip4_deep_offset():
+    # IPv4-in-IPv6 where the inner (structurally valid) IPv4 header starts at
+    # offset 2102 from the start of the packet, exercising the
+    # `(uint8_t *)data - packet->pkt >= 2048` CORRUPT guard in
+    # arkime_packet_ip4 (packet.c).  Classifies as a corrupt session.
+    # Outer 2001:db8:900::1 -> 2001:db8:900::2, inner 10.9.10.1:40200 -> 10.9.10.2:40201.
+
+    TS_START = 1700016000.0
+    CMAC = bytes.fromhex('02aa00001601')
+    SMAC = bytes.fromhex('02aa00001602')
+
+    csum, outer = _deep_offset_common()
+
+    payload = b'deep4!!!'
+    udp = struct.pack('>HHHH', 40200, 40201, 8 + len(payload), 0) + payload
+    iplen = 20 + len(udp)
+    ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 0x1601, 0, 64, 17, 0,
+                     socket.inet_aton('10.9.10.1'), socket.inet_aton('10.9.10.2'))
+    ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+    inner = ip + udp
+
+    p = SMAC + CMAC + b'\x86\xdd' + outer(4, inner, '2001:db8:900::1', '2001:db8:900::2')
+
+    sec = int(TS_START)
+    return struct.pack('<IIII', sec, 0, len(p), len(p)) + p
+
+
+def sec_ip6_deep_offset():
+    # IPv6-in-IPv6 where the inner (structurally valid) IPv6 header starts at
+    # offset 2102 from the start of the packet, exercising the
+    # `(uint8_t *)data - packet->pkt >= 2048` CORRUPT guard in
+    # arkime_packet_ip6 (packet.c).  Classifies as a corrupt session.
+    # Outer 2001:db8:901::1 -> 2001:db8:901::2, inner 2001:db8:902::1:40300 -> 2001:db8:902::2:40301.
+
+    TS_START = 1700016100.0
+    CMAC = bytes.fromhex('02aa00001603')
+    SMAC = bytes.fromhex('02aa00001604')
+
+    csum, outer = _deep_offset_common()
+
+    src = socket.inet_pton(socket.AF_INET6, '2001:db8:902::1')
+    dst = socket.inet_pton(socket.AF_INET6, '2001:db8:902::2')
+    payload = b'deep6!!!'
+    udp = struct.pack('>HHHH', 40300, 40301, 8 + len(payload), 0) + payload
+    pseudo = src + dst + struct.pack('>I', len(udp)) + b'\x00\x00\x00\x11'
+    udp = udp[:6] + struct.pack('>H', csum(pseudo + udp) or 0xffff) + udp[8:]
+    inner = struct.pack('>IHBB', 0x60000000, len(udp), 17, 64) + src + dst + udp
+
+    p = SMAC + CMAC + b'\x86\xdd' + outer(41, inner, '2001:db8:901::1', '2001:db8:901::2')
+
+    sec = int(TS_START)
+    return struct.pack('<IIII', sec, 0, len(p), len(p)) + p
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -2172,6 +2404,10 @@ def main():
     out += sec_modbus_edge()
     out += sec_oracle_big_connect()
     out += sec_sip_radius_edge()
+    out += sec_tls_256ext()
+    out += sec_dhcpv6_relay()
+    out += sec_ip4_deep_offset()
+    out += sec_ip6_deep_offset()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

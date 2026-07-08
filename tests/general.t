@@ -1,4 +1,4 @@
-use Test::More tests => 723;
+use Test::More tests => 737;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -329,6 +329,16 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=HTTP*"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*TP.*/"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*NOT.*/"));
+
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=\"HTTP/1.1\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=HTTP*"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=/HTTP.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=/.*NOT.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=\"GET / HT\""));
+
+# payload8 hex and utf8 expressions match the same session (issue #3201)
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.src.hex==474554202f204854&&payload8.src.utf8=\"GET / HT\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.hex==485454502f312e31&&payload8.dst.utf8=\"HTTP/1.1\""));
 
 if (0) {
 # session.segments tests

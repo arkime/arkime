@@ -327,7 +327,7 @@ arkime/
 │   │   ├── zh.json                     # Chinese
 │   │   ├── et.json                     # Estonian
 │   │   ├── pt-BR.json                  # Brazilian Portuguese
-│   │   └── x-pl.json                   # Pseudo-locale (testing)
+│   │   └── x-pl.json                   # Pig-Latin (testing)
 │   ├── LanguageSwitcher.vue           # Shared language selector component
 │   └── I18nExample.vue                # Shared usage examples
 └── viewer/vueapp/src/

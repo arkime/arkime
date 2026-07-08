@@ -677,6 +677,7 @@
     "stopTime": "종료",
     "startTimeTip": "시작 시간",
     "stopTimeTip": "종료 시간",
+    "openDatePickerTip": "날짜 선택기 열기",
     "prevStartTimeTip": "현재 날짜의 시작 / 이전 날짜",
     "nextStartTimeTip": "다음 날짜의 시작",
     "prevStopTimeTip": "이전 날짜의 종료",

@@ -677,6 +677,7 @@
     "stopTime": "Lõpp",
     "startTimeTip": "Algusaeg",
     "stopTimeTip": "Lõpuaeg",
+    "openDatePickerTip": "Ava kuupäevavalija",
     "prevStartTimeTip": "Praeguse päeva algus / Eelmise päeva algus",
     "nextStartTimeTip": "Järgmise päeva algus",
     "prevStopTimeTip": "Eelmise päeva lõpp",

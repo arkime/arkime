@@ -677,6 +677,7 @@
     "stopTime": "終了",
     "startTimeTip": "開始時刻",
     "stopTimeTip": "終了時刻",
+    "openDatePickerTip": "日付ピッカーを開く",
     "prevStartTimeTip": "当日/前日の開始",
     "nextStartTimeTip": "翌日の開始",
     "prevStopTimeTip": "前日の終了",

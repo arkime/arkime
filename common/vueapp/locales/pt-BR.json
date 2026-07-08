@@ -677,6 +677,7 @@
     "stopTime": "Fim",
     "startTimeTip": "Hora de início",
     "stopTimeTip": "Hora de término",
+    "openDatePickerTip": "Abrir o seletor de data",
     "prevStartTimeTip": "Início do Dia Atual / Dia Anterior",
     "nextStartTimeTip": "Início do Próximo Dia",
     "prevStopTimeTip": "Fim do Dia Anterior",
