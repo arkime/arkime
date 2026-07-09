@@ -80,12 +80,38 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // Resolve a dashboard metric field exp to its dbField, but only when it names a
+  // numeric (integer) field whose per-value sum is meaningful — matching the metric
+  // set the widget editor and timeline data filters offer. Returns undefined for
+  // 'sessions', unknown, or non-numeric fields so callers fall back to a
+  // session-count metric instead of building an invalid sum aggregation.
+  static metricDbField (metricExp) {
+    if (!ArkimeUtil.isString(metricExp) || metricExp === 'sessions') { return undefined; }
+    const field = Config.getFieldsMap()[metricExp];
+    return (field?.dbField && field.type === 'integer') ? field.dbField : undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  // A dashboard widget can request an extra metric field (already resolved to a
+  // dbField via metricDbField); append it to the timeline data filters so its
+  // per-bucket sum / <dbField>Histo series is built alongside the user's filters.
+  static withMetricField (filters, reqQuery) {
+    const metricField = reqQuery?.metricField;
+    if (metricField && !filters.includes(metricField)) {
+      return [...filters, metricField];
+    }
+    return filters;
+  }
+
+  // ----------------------------------------------------------------------------
   static graphMerge (req, query, aggregations) {
     const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
     let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
     // Convert old names to new names locally
     filters = filters.map(x => filterNameMap[x] ?? x);
+
+    filters = ViewerUtils.withMetricField(filters, req.query);
 
     const graph = {
       xmin: req.query.startTime * 1000 || null,

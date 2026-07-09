@@ -16,14 +16,16 @@ SPDX-License-Identifier: Apache-2.0
           class="heatmap-count-toggle me-auto" />
         <span class="heatmap-legend-label">{{ metricLabel }}</span>
         <span class="heatmap-legend-min">0</span>
-        <span class="heatmap-legend-bar" />
+        <span
+          class="heatmap-legend-bar"
+          :style="legendGradient" />
         <span class="heatmap-legend-max">{{ formatVal(maxVal) }}</span>
       </div>
 
       <div class="heatmap-body">
         <div
           class="heatmap-labels"
-          :style="{ flex: '0 0 ' + labelW + 'px', width: labelW + 'px' }">
+          :style="{ flex: '0 0 ' + labelW + 'px', width: labelW + 'px', paddingTop: axisH + 'px' }">
           <div
             v-for="(row, r) in rows"
             :key="row.name"
@@ -53,29 +55,45 @@ SPDX-License-Identifier: Apache-2.0
           class="heatmap-grid">
           <svg
             :width="gridWidth"
-            :height="rows.length * rowH + axisH"
+            :height="rows.length * rowH + axisH * 2"
             @mousemove="onMove"
             @mouseleave="tooltip = null">
-            <rect
-              v-for="(row, r) in rows"
-              :key="'t' + r"
-              x="0"
-              :y="r * rowH"
-              :width="gridWidth"
-              :height="rowH"
-              :class="['heatmap-track', { 'heatmap-track-alt': r % 2 }]" />
-            <rect
-              v-for="cell in cells"
-              :key="cell.k"
-              :x="cell.x"
-              :y="cell.y"
-              :width="cell.w"
-              :height="rowH - 2"
-              :style="{ fill: cell.fill }" />
-            <g :transform="`translate(0, ${rows.length * rowH})`">
+            <!-- top time axis -->
+            <g>
               <text
                 v-for="tick in ticks"
-                :key="tick.x"
+                :key="'top' + tick.x"
+                :x="tick.x"
+                y="14"
+                class="heatmap-tick"
+                :text-anchor="tick.anchor">
+                {{ tick.label }}
+              </text>
+            </g>
+            <!-- rows + cells (offset below the top axis) -->
+            <g :transform="`translate(0, ${axisH})`">
+              <rect
+                v-for="(row, r) in rows"
+                :key="'t' + r"
+                x="0"
+                :y="r * rowH"
+                :width="gridWidth"
+                :height="rowH"
+                :class="['heatmap-track', { 'heatmap-track-alt': r % 2 }]" />
+              <rect
+                v-for="cell in cells"
+                :key="cell.k"
+                :x="cell.x"
+                :y="cell.y"
+                :width="cell.w"
+                :height="rowH - 2"
+                :style="{ fill: cell.fill }" />
+            </g>
+            <!-- bottom time axis -->
+            <g :transform="`translate(0, ${axisH + rows.length * rowH})`">
+              <text
+                v-for="tick in ticks"
+                :key="'bot' + tick.x"
                 :x="tick.x"
                 y="14"
                 class="heatmap-tick"
@@ -100,7 +118,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import moment from 'moment-timezone';
 import { metricHistoKeys } from '../visualizations/metrics.js';
+import { heatmapInterpolator } from '../summary/widgets/chartColors';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 
 const ROW_H = 26;
@@ -116,7 +136,10 @@ export default {
     fieldObj: { type: Object, required: true },
     metric: { type: String, default: 'sessionsHisto' },
     timelineDataFilters: { type: Array, default: () => [] },
-    sortBy: { type: String, default: 'graph' } // 'name' | 'graph'
+    sortBy: { type: String, default: 'graph' }, // 'name' | 'graph'
+    // optional dashboard palette; maps to a sequential interpolator for the
+    // cells. Empty / categorical-only palettes keep the themed accent intensity.
+    colorScheme: { type: String, default: '' }
   },
   data () {
     return {
@@ -125,7 +148,8 @@ export default {
       gridWidth: 600,
       labelW: LABEL_W,
       showCount: true,
-      tooltip: null
+      tooltip: null,
+      interp: null // sequential interpolator from colorScheme (or null)
     };
   },
   computed: {
@@ -139,6 +163,12 @@ export default {
       if (this.metric === 'sessionsHisto') { return this.$t('spigraph.sessions'); }
       const filter = this.timelineDataFilters.find(f => f.dbField === this.metric.slice(0, -5));
       return filter?.friendlyName || this.metric;
+    },
+    // legend bar gradient matching the cell palette (empty -> CSS accent gradient)
+    legendGradient () {
+      if (!this.interp) { return {}; }
+      const stops = [0, 0.25, 0.5, 0.75, 1].map(t => this.interp(0.12 + 0.88 * t));
+      return { background: `linear-gradient(to right, ${stops.join(', ')})` };
     },
     isBytes () {
       return this.metric.toLowerCase().includes('bytes');
@@ -234,6 +264,16 @@ export default {
       }
       return out;
     },
+    // compact axis-tick format chosen by the visible time span: time-of-day for
+    // sub-day ranges, MM/DD within a year, otherwise YYYY/MM/DD
+    tickFormat () {
+      const { xmin, xmax } = this.bounds;
+      const span = (xmax || 0) - (xmin || 0);
+      const DAY = 86400000;
+      if (!span || span <= 2 * DAY) { return 'HH:mm'; }
+      if (span <= 365 * DAY) { return 'MM/DD'; }
+      return 'YYYY/MM/DD';
+    },
     ticks () {
       if (!this.cols.length) { return []; }
       const count = Math.min(6, this.cols.length);
@@ -243,7 +283,7 @@ export default {
         const x = idx * this.colW + this.colW / 2;
         out.push({
           x,
-          label: timezoneDateString(this.cols[idx], this.timezone),
+          label: this.formatTick(this.cols[idx]),
           anchor: i === 0 ? 'start' : (i === count - 1 ? 'end' : 'middle')
         });
       }
@@ -254,6 +294,13 @@ export default {
     // resizing the label gutter changes the grid width — remeasure after layout
     labelW () {
       this.$nextTick(() => this.measure());
+    },
+    // resolve the dashboard palette to a sequential interpolator (or null)
+    colorScheme: {
+      immediate: true,
+      async handler (scheme) {
+        this.interp = await heatmapInterpolator(scheme);
+      }
     }
   },
   mounted () {
@@ -294,16 +341,29 @@ export default {
     },
     cellFill (v) {
       const norm = this.maxVal > 0 ? v / this.maxVal : 0;
+      // dashboard palette: sequential interpolator encodes intensity by hue
+      if (this.interp) { return this.interp(0.12 + 0.88 * norm); }
+      // default: themed accent intensity encoded by opacity
       const alpha = (0.12 + 0.88 * norm).toFixed(3);
       return `rgba(var(--v-theme-foreground-accent), ${alpha})`;
     },
     formatVal (v) {
       return this.isBytes ? humanReadableBytes(v) : humanReadableNumber(v);
     },
+    // short axis-tick label (tickFormat) honoring the user's timezone setting
+    formatTick (ms) {
+      const fmt = this.tickFormat;
+      if (this.timezone === 'gmt') { return moment.tz(ms, 'utc').format(fmt); }
+      if (this.timezone === 'localtz') {
+        return moment.tz(ms, Intl.DateTimeFormat().resolvedOptions().timeZone).format(fmt);
+      }
+      return moment(ms).format(fmt);
+    },
     onMove (e) {
       const svgRect = e.currentTarget.getBoundingClientRect();
       const c = Math.floor((e.clientX - svgRect.left) / this.colW);
-      const r = Math.floor((e.clientY - svgRect.top) / this.rowH);
+      // rows are offset below the top axis band
+      const r = Math.floor((e.clientY - svgRect.top - this.axisH) / this.rowH);
       if (r < 0 || r >= this.rows.length || c < 0 || c >= this.cols.length) {
         this.tooltip = null;
         return;

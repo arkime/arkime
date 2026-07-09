@@ -3,7 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="timeline-graph">
+  <div
+    class="timeline-graph"
+    :class="{ 'timeline-graph--fit': fitHeight }">
     <div
       ref="host"
       class="timeline-host" />
@@ -40,7 +42,10 @@ export default {
     timelineDataFilters: { type: Array, required: true },
     capStartTimes: { type: Array, default: () => [] },
     showCapStartTimes: { type: Boolean, default: false },
-    timezone: { type: String, default: 'local' }
+    timezone: { type: String, default: 'local' },
+    // fill the container height (dashboard timeline widget) instead of the fixed
+    // 180px host; the ResizeObserver rebuilds at the new height as the card resizes
+    fitHeight: { type: Boolean, default: false }
   },
   emits: ['updateTimeRange'],
   data () {
@@ -315,7 +320,7 @@ export default {
 
       const opts = {
         width: host.clientWidth || 800,
-        height: HOST_HEIGHT,
+        height: this.fitHeight ? Math.max(120, host.clientHeight || HOST_HEIGHT) : HOST_HEIGHT,
         // [top, right, bottom, left] — chart hugs left/bottom; tiny top
         // gap is just enough to keep the y-axis top tick from getting
         // clipped by the canvas edge.
@@ -575,6 +580,14 @@ export default {
      fix so chart-side overflow (long tooltips, etc.) can't propagate up. */
   overflow: hidden;
   box-sizing: border-box;
+}
+/* dashboard timeline widget: fill the card instead of the fixed 180px host */
+.timeline-graph--fit {
+  height: 100%;
+  margin-bottom: 0;
+}
+.timeline-graph--fit .timeline-host {
+  height: 100%;
 }
 .timeline-host {
   width: 100%;

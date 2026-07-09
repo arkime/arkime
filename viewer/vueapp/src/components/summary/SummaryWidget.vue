@@ -1,154 +1,22 @@
 <template>
-  <!-- Loading state - bouncing dots with field name -->
-  <div
-    v-if="loading"
-    class="chart-section loading-widget"
-    aria-hidden="true">
-    <h4 class="loading-title">
-      {{ title }}
-    </h4>
-    <div class="bouncing-dots">
-      <span class="dot" />
-      <span class="dot" />
-      <span class="dot" />
-    </div>
-  </div>
-
-  <!-- Error state - show error message for this field -->
-  <div
-    v-else-if="error"
-    class="chart-section widget-error widget-loaded">
-    <h4 class="mb-3">
-      {{ title }}
-    </h4>
-    <div class="error-content">
-      <v-icon
-        icon="mdi-alert-circle"
-        size="large"
-        class="text-danger mb-2" />
-      <p class="text-danger mb-0">
-        {{ error }}
-      </p>
-      <v-btn
-        color="success"
-        variant="flat"
-        size="x-small"
-        density="comfortable"
-        class="mt-2"
-        @click="emit('retry-field', field)">
-        <v-icon
-          icon="mdi-refresh"
-          class="me-1" />
-        {{ $t('sessions.summary.retryField') }}
-      </v-btn>
-    </div>
-  </div>
-
-  <!-- Normal widget content (fades in when data arrives) -->
-  <div
-    v-else
-    class="chart-section widget-loaded">
-    <!-- Header with title, view mode selector, and export button -->
-    <div class="d-flex justify-end align-center mb-2">
-      <h4 class="flex-grow-1">
-        {{ title }}
-      </h4>
-      <div class="no-wrap">
-        <!-- Consolidated Settings Dropdown -->
-        <v-menu v-if="hasData">
-          <template #activator="{ props: activatorProps }">
-            <v-btn
-              v-bind="activatorProps"
-              variant="outlined"
-              size="large"
-              icon
-              title="Settings">
-              <v-icon icon="mdi-cog" />
-            </v-btn>
-          </template>
-
-          <v-list density="compact">
-            <!-- View Mode Options -->
-            <template v-if="enableViewMode">
-              <v-list-item
-                :active="viewMode === 'pie'"
-                @click="$emit('change-mode', 'pie')">
-                <span><v-icon icon="mdi-chart-pie" /> {{ $t('sessions.summary.pieChart') }}</span>
-              </v-list-item>
-
-              <v-list-item
-                :active="viewMode === 'bar'"
-                @click="$emit('change-mode', 'bar')">
-                <span><v-icon icon="mdi-chart-bar" /> {{ $t('sessions.summary.barChart') }}</span>
-              </v-list-item>
-
-              <v-list-item
-                :active="viewMode === 'table'"
-                @click="$emit('change-mode', 'table')">
-                <span><v-icon icon="mdi-table" /> {{ $t('sessions.summary.tableView') }}</span>
-              </v-list-item>
-
-              <!-- Metric Selector Options (only for charts, not table) -->
-              <template v-if="viewMode !== 'table'">
-                <v-divider />
-
-                <v-list-item
-                  :active="metricType === 'sessions'"
-                  @click="$emit('change-metric', 'sessions')">
-                  <span>{{ $t('sessions.summary.sessions') }}</span>
-                </v-list-item>
-
-                <v-list-item
-                  :active="metricType === 'packets'"
-                  @click="$emit('change-metric', 'packets')">
-                  <span>{{ $t('sessions.summary.packets') }}</span>
-                </v-list-item>
-
-                <v-list-item
-                  :active="metricType === 'bytes'"
-                  @click="$emit('change-metric', 'bytes')">
-                  <span>{{ $t('sessions.summary.bytes') }}</span>
-                </v-list-item>
-              </template>
-            </template>
-
-            <!-- Export Option -->
-            <template v-if="showExport">
-              <v-divider v-if="enableViewMode" />
-
-              <v-list-item @click="$emit('export', svgId)">
-                <v-icon icon="mdi-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
-              </v-list-item>
-            </template>
-
-            <!-- Remove Field Option -->
-            <v-divider />
-            <v-list-item @click="$emit('remove-field', field)">
-              <v-icon
-                icon="mdi-close"
-                class="text-danger" /> {{ $t('sessions.summary.removeField') }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </div>
-    </div>
-
-    <!-- Content, error, or empty state -->
+  <WidgetCard
+    :title="title"
+    :loading="loading"
+    :error="error"
+    :has-data="cardHasData"
+    :show-export="showExport"
+    :export-label="exportLabel"
+    :empty-text="emptyText"
+    :no-data-message="noDataMessage"
+    :info-items="infoItems"
+    @edit="$emit('edit')"
+    @export="$emit('export', svgId)"
+    @remove="$emit('remove-field')"
+    @retry="$emit('retry-field', field)">
     <div
-      v-if="!hasValidField"
-      class="empty-state">
-      <v-icon
-        icon="mdi-alert"
-        size="x-large"
-        class="mb-3 text-danger" />
-      <p class="empty-state-text text-danger">
-        Invalid field: {{ field }}
-      </p>
-    </div>
-    <div
-      v-else-if="hasData"
       ref="chartContainerRef"
-      class="chart-content">
+      class="chart-content"
+      :class="{ 'chart-content--scroll': viewMode === 'table' }">
       <!-- Pie Chart -->
       <SummaryPieChart
         v-if="viewMode === 'pie'"
@@ -158,6 +26,7 @@
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
+        :color-scheme="colorScheme"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
       <!-- Bar Chart -->
@@ -169,6 +38,7 @@
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
+        :color-scheme="colorScheme"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
       <!-- Table -->
@@ -178,27 +48,21 @@
         :columns="columns"
         :field-config="fieldConfig" />
     </div>
-    <div
-      v-else
-      class="empty-state">
-      <v-icon
-        icon="mdi-folder-open"
-        size="x-large"
-        class="mb-3 text-medium-emphasis" />
-      <p class="empty-state-text text-medium-emphasis">
-        {{ $t(noDataMessage) }}
-      </p>
-    </div>
-  </div>
+  </WidgetCard>
 </template>
 
 <script setup>
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
+import WidgetCard from './widgets/WidgetCard.vue';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
+import { metricIsBytes } from './widgets/widgetData';
+
+const { t } = useI18n();
 
 // Chart dimension constants
 const MIN_CHART_SIZE = 400;
@@ -237,10 +101,6 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  enableViewMode: {
-    type: Boolean,
-    default: true
-  },
   viewMode: {
     type: String,
     default: 'pie',
@@ -248,8 +108,7 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
   },
   // Data and visualization props
   data: {
@@ -259,8 +118,18 @@ const props = defineProps({
   field: {
     type: String,
     required: true
+  },
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
+  },
+  infoItems: {
+    type: Array,
+    default: () => []
   }
 });
+
+defineEmits(['export', 'show-tooltip', 'remove-field', 'retry-field', 'edit']);
 
 // Fetch field configuration from FieldService
 const fieldConfig = computed(() => {
@@ -272,12 +141,35 @@ const hasValidField = computed(() => {
   return fieldConfig.value !== null && fieldConfig.value !== undefined;
 });
 
-// Computed hasData - check if data array has items
-const hasData = computed(() => {
-  return props.data && Array.isArray(props.data) && props.data.length > 0;
+// Whether the card should render chart content (valid field + has rows)
+const cardHasData = computed(() => {
+  return hasValidField.value && Array.isArray(props.data) && props.data.length > 0;
 });
 
-// Generate table columns from fieldConfig
+// Message shown in the card's empty state for unconfigured/invalid fields
+const emptyText = computed(() => {
+  if (hasValidField.value) { return ''; } // fall back to the default no-data message
+  return props.field
+    ? `${t('sessions.summary.invalidField')}: ${props.field}`
+    : t('sessions.summary.configureWidget');
+});
+
+// Export menu label depends on the view mode (CSV for tables, PNG for charts)
+const exportLabel = computed(() => {
+  return props.viewMode === 'table'
+    ? t('sessions.summary.downloadCSV')
+    : t('sessions.summary.downloadPNG');
+});
+
+// The selected metric's column label + formatting (mirrors the chart tooltip)
+const metricLabel = computed(() => {
+  const m = props.metricType || 'sessions';
+  if (m === 'sessions') { return t('sessions.summary.sessions'); }
+  return FieldService.getField(m, true)?.friendlyName || m;
+});
+
+// Table columns: the grouping field + the selected metric (single metric for now;
+// a future tableColumns[] enables multi-metric). Metric value is data[].value.
 const columns = computed(() => [
   {
     key: 'item',
@@ -286,9 +178,7 @@ const columns = computed(() => [
     useSessionField: true,
     ...(fieldConfig.value?.exp && { expr: fieldConfig.value.exp })
   },
-  { key: 'sessions', header: 'Sessions', align: 'end', format: 'number' },
-  { key: 'packets', header: 'Packets', align: 'end', format: 'number' },
-  { key: 'bytes', header: 'Bytes', align: 'end', format: 'bytes' }
+  { key: 'value', header: metricLabel.value, align: 'end', format: metricIsBytes(props.metricType) ? 'bytes' : 'number' }
 ]);
 
 // ResizeObserver for dynamic chart sizing
@@ -333,15 +223,16 @@ const setupResizeObserver = () => {
   });
 };
 
-// Watch loading state to manage ResizeObserver lifecycle
-// - When loading becomes true: cleanup observer (element will be removed from DOM)
-// - When loading becomes false: setup observer (element is now available)
+// Manage ResizeObserver lifecycle as the chart content appears/disappears
 watch(() => props.loading, (isLoading) => {
   if (isLoading) {
     cleanupResizeObserver();
   } else {
     setupResizeObserver();
   }
+});
+watch(cardHasData, (has) => {
+  if (has) { setupResizeObserver(); } else { cleanupResizeObserver(); }
 });
 
 // Setup on mount if not loading
@@ -353,137 +244,20 @@ onMounted(() => {
 
 // Cleanup on unmount
 onBeforeUnmount(cleanupResizeObserver);
-
-const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-field', 'retry-field']);
 </script>
 
 <style scoped>
-.chart-section {
-  background: rgb(var(--v-theme-quaternary-lightest));
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: visible; /* Allow dropdowns to overflow */
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 450px;
-}
-
 .chart-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 400px;
-  overflow: visible; /* Allow dropdowns to overflow */
+  min-height: 0;       /* allow the body to shrink within its grid cell */
+  overflow: hidden;    /* charts fit their container, never scroll */
 }
 
-.loading-widget {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.5;
-  filter: saturate(0.3);
-}
-
-.widget-loaded {
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.widget-error {
-  display: flex;
-  flex-direction: column;
-}
-
-.error-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
-}
-
-.loading-title {
-  margin-bottom: 1.5rem;
-  font-size: 1.1rem;
-}
-
-.bouncing-dots {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: rgb(var(--v-theme-tertiary));
-  animation: bounce 1.2s ease-in-out infinite;
-}
-
-.dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes bounce {
-  0%, 50%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  8% {
-    transform: translateY(-20px) scale(1.15, 0.85);
-  }
-  16% {
-    transform: translateY(0) scale(0.85, 1.15);
-  }
-  20% {
-    transform: translateY(0) scale(1);
-  }
-  28% {
-    transform: translateY(-8px) scale(1.08, 0.92);
-  }
-  36% {
-    transform: translateY(0) scale(0.92, 1.08);
-  }
-  42% {
-    transform: translateY(0) scale(1);
-  }
-}
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  padding: 2rem;
-}
-
-.empty-state-text {
-  font-size: 1.1rem;
-  margin: 0;
+/* Only table widgets scroll internally (e.g. Top 50) */
+.chart-content--scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>
