@@ -60,6 +60,8 @@ foreach my $line (split("\n", $viewer)) {
 delete $settings{'updateTime'}; # a wise fake setting
 delete $settings{'user-setting-defaults'};
 delete $settings{'Maxmind'};
+delete $settings{'summaryChunkDelay'};
+delete $settings{'huntThrottleMs'};
 
 foreach my $setting (keys (%settings)) {
     if ($setting =~ /[^0-9a-zA-Z_-]/) {

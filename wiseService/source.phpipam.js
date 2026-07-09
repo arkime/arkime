@@ -48,7 +48,6 @@ class PHPIPAMSource extends WISESource {
     this.url = api.getConfig(section, 'url');
     this.appId = api.getConfig(section, 'appId');
     this.appCode = api.getConfig(section, 'appCode');
-    // ArkimeConfig.getFull auto-converts 'true'/'false' strings to booleans
     this.useSessionAuth = api.getConfig(section, 'useSessionAuth', false) === true;
     this.verifyTLS = api.getConfig(section, 'verifyTLS', true) !== false;
     this.preloadAddresses = api.getConfig(section, 'preloadAddresses', true) !== false;
