@@ -35,9 +35,9 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.5.1 2026/07/xx
+6.6.0 2026/07/09
 ## Breaking
-  - #4072 WISE reversedns now saves resolved names that match none of the stripDomains entries in
+  - #4072 WISE reversedns now returns resolved names that match none of the stripDomains entries in
           full (as documented) instead of silently dropping them
   - #4073 The cont3xt Arkime integration searchDays setting now searches that many days instead of 7x that many.
            Existing configs that relied on the wider window must increase searchDays to keep the previous range.
@@ -60,7 +60,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
   - #4055 Fix DNS memory leak when parsing malformed answers
-  - #4063 Fix pcapNG reader bugs: out-of-bounds read on blocks claiming >2GB, Simple Packet Block length including 32-bit padding, and Section Header Block lost when split across reads
   - #4068 Add some missing http methods to parser
   - #4074 Fix Geneve packets with protocol type 0 adding bogus 00:00:00:00:00:00 MACs
   - #4074 Fix pcap-over-IP client reader not connecting to IPv6 endpoints
