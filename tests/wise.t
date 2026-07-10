@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 160;
+use Test::More tests => 167;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -269,13 +269,48 @@ $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:mac/mac/
 eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 {"field":"tags","len":7,"value":"macwise"}]',"file:mac query");
 
+# Splunk source (non-periodic, per-key oneshot search against mini-wise-source.js)
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/splunktest/66.66.66.66")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":14,"value":"splunk-malware"},
+{"field":"tags","len":10,"value":"splunkwise"}]'), "splunk 66.66.66.66");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/splunktest/66.66.66.67")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":13,"value":"splunk-botnet"},
+{"field":"tags","len":10,"value":"splunkwise"}]'), "splunk 66.66.66.67");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/splunktest/1.2.3.4")->content;
+eq_or_diff($wise, '[]', "splunk miss");
+
+# Databricks source (periodic full-table query, cached at startup, against mini-wise-source.js)
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/databrickstest/77.77.77.77")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":13,"value":"databricks-c2"},
+{"field":"tags","len":14,"value":"databrickswise"}]'), "databricks 77.77.77.77");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/databrickstest/77.77.77.78")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":16,"value":"databricks-phish"},
+{"field":"tags","len":14,"value":"databrickswise"}]'), "databricks 77.77.77.78");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/databrickstest/9.9.9.9")->content;
+eq_or_diff($wise, '[]', "databricks miss");
+
+$wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/databricks:test")->content . "]";
+@wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
+eq_or_diff(\@wise, from_json('[
+{"key":"77.77.77.77","ops":[{"field":"tags","len":14,"value":"databrickswise"},{"field":"tags","len":13,"value":"databricks-c2"}]},
+{"key":"77.77.77.78","ops":[{"field":"tags","len":14,"value":"databrickswise"},{"field":"tags","len":16,"value":"databricks-phish"}]}
+]', {relaxed=>1}), "databricks:test dump");
+
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
-eq_or_diff($wise, '["domain","email","ip","ja3","mac","md5","sha256","url"]',"types");
+eq_or_diff($wise, '["databrickstest","domain","email","ip","ja3","mac","md5","sha256","splunktest","url"]',"types");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types/file:ip")->content;
 eq_or_diff($wise, '["ip"]',"types file:ip");
