@@ -762,6 +762,7 @@ SPDX-License-Identifier: Apache-2.0
           class="sticky-sessions"
           v-if="stickySessions.length"
           :ms="user.settings.ms"
+          :viz-visible="vizVisible"
           :sessions="stickySessions"
           @close-session="closeSession"
           @close-all-sessions="closeAllSessions" />
@@ -997,6 +998,14 @@ export default {
     },
     hideViz: function () {
       return this.$store.state.hideViz;
+    },
+    // any visualization (timeline graph and/or map) is showing when there's
+    // graph data, the toolbars/viz are shown, and viz isn't hidden/disabled —
+    // StickySessions drops its tab below the viz then. disabledAggregations
+    // shows a centered "hide graph" alert instead, so the tab stays up there.
+    vizVisible: function () {
+      return !!this.graphData && this.showToolBars && !this.hideViz &&
+        !this.$store.state.disabledAggregations;
     },
     dlWidth: {
       get: function () {

@@ -5,17 +5,29 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <!-- search/paging/download chrome -->
-    <div class="d-flex align-center mt-3 mb-2 ga-2">
-      <v-text-field
-        autofocus
-        density="compact"
-        variant="outlined"
-        hide-details
-        clearable
-        prepend-inner-icon="mdi:mdi-magnify"
-        v-model="searchTerm"
-        :placeholder="$t('users.searchPlaceholder')"
-        class="flex-grow-1 align-self-center" />
+    <div class="d-flex align-center mt-2 mb-2 ga-2">
+      <div class="arkime-input-group arkime-input-group--fluid align-self-center ms-1">
+        <span class="arkime-input-label arkime-input-label-fw">
+          <v-icon icon="mdi-magnify" />
+        </span>
+        <input
+          type="text"
+          class="arkime-input-control"
+          v-focus="true"
+          v-model="searchTerm"
+          :placeholder="$t('users.searchPlaceholder')">
+        <v-btn
+          v-if="searchTerm"
+          variant="text"
+          size="x-small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn"
+          :aria-label="$t('common.clear')"
+          @click="searchTerm = ''">
+          <v-icon icon="mdi-close" />
+        </v-btn>
+      </div>
       <ArkimePaging
         class="align-self-center"
         :records-filtered="recordsFiltered"
@@ -26,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
         size="small"
         color="secondary"
         variant="outlined"
-        class="align-self-center"
+        class="align-self-center me-1"
         @click="download"
         :title="$t('users.downloadCSVTip')">
         <v-icon icon="mdi:mdi-download" />
@@ -459,6 +471,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import Focus from './Focus.vue';
 import HasRole from './HasRole.vue';
 import UserCreate from './UserCreate.vue';
 import UserService from './UserService.js';
@@ -474,7 +487,7 @@ let userChangeTimeout;
 
 export default {
   name: 'UsersCommon',
-  directives: { HasRole },
+  directives: { HasRole, Focus },
   components: {
     UserCreate,
     RoleDropdown,

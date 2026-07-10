@@ -11,15 +11,11 @@ SPDX-License-Identifier: Apache-2.0
     <teleport to="body">
       <div
         class="sticky-session-btn bounce"
-        :style="showToolBars ? null : { top: '4px', zIndex: 8 }"
+        :style="btnStyle"
         ref="stickyContainer"
         @click="toggleStickySessions"
-        v-if="sortedSessions && sortedSessions.length > 0">
-        <v-icon
-          icon="mdi-chevron-double-left"
-          v-if="!open" /><v-icon
-            icon="mdi-chevron-double-right"
-            v-else />&nbsp;
+        v-if="!open && sortedSessions && sortedSessions.length > 0">
+        <v-icon icon="mdi-chevron-double-left" />&nbsp;
         <small>{{ sortedSessions.length }}</small>
         <v-tooltip activator="parent">
           {{ $t('sessions.sticky.toggleOpenTip') }}
@@ -37,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         <ul class="sticky-list">
           <li class="sticky-list-item sticky-list-header">
             <div class="d-flex align-center gap-1">
-              <h4 class="mb-0 flex-grow-1">
+              <h4 class="mb-0 me-auto">
                 {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
               </h4>
               <div class="arkime-input-group sort-by-select">
@@ -79,6 +75,17 @@ SPDX-License-Identifier: Apache-2.0
                 <v-icon icon="mdi-chevron-down" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortAscTip') }}
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="toggleStickySessions">
+                <v-icon icon="mdi-chevron-double-right" />
+                <v-tooltip activator="parent">
+                  {{ $t('sessions.sticky.toggleOpenTip') }}
                 </v-tooltip>
               </v-btn>
               <v-btn
@@ -150,6 +157,10 @@ export default {
     ms: {
       type: Boolean,
       default: false
+    },
+    vizVisible: {
+      type: Boolean,
+      default: false
     }
   },
   data: function () {
@@ -191,6 +202,15 @@ export default {
     // button/panel up to the top
     showToolBars: function () {
       return this.$store.state.showToolBars;
+    },
+    // tab position: rides to the top when the toolbar is collapsed; drops
+    // below the visualization (timeline/map) when any viz is showing so it
+    // clears the viz's top-right controls; otherwise sits just below the
+    // toolbar chrome.
+    btnStyle: function () {
+      if (!this.showToolBars) { return { top: '4px', zIndex: 8 }; }
+      if (this.vizVisible) { return { top: 'calc(var(--arkime-navbar-height, 36px) + 300px)' }; }
+      return { top: 'calc(var(--arkime-navbar-height, 36px) + 105px)' };
     },
     /**
      * Orders the sessions by start or stop time
@@ -261,14 +281,16 @@ export default {
 </script>
 
 <style scoped>
-/* viewport-fixed: the button (body-teleported) paints over the toolbar
-   chrome; the panel stays in the overlay and slides under it (chrome z5 >
-   overlay z4). When the toolbar collapses, :style rides both up to the top. */
+/* viewport-fixed tab handle: sits just below the toolbar chrome at the
+   top of the panel so it clears the fetch-viz gear that floats in the
+   paging bar above. Body-teleported; the panel slides in beneath it
+   (btn z5 > panel z4). When the toolbar collapses, :style rides both up
+   to the top. Kept in sync with .sticky-session-detail's top. */
 .sticky-session-btn {
   width: 100px;
   display: block;
   position: fixed;
-  top: 86px;
+  top: calc(var(--arkime-navbar-height, 36px) + 96px);
   right: 0;
   z-index: 5;
   margin-right: -50px;
@@ -287,7 +309,9 @@ export default {
 .sticky-session-detail {
   overflow-y: auto;
   position: fixed;
-  top: 168px;
+  /* navbar height + page-toolbar (search bar + paging bar) so the panel
+     starts right below the chrome */
+  top: calc(var(--arkime-navbar-height, 36px) + 96px);
   right: 0;
   bottom: 0;
   z-index: 4;
