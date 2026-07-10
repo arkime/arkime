@@ -17,6 +17,7 @@ class DatabricksSource extends WISESource {
     super(api, section, { typeSetting: true, tagsSetting: true });
 
     this.host = api.getConfig(section, 'host');
+    this.port = api.getConfig(section, 'port');
     this.path = api.getConfig(section, 'path');
     this.token = api.getConfig(section, 'token');
     this.query = api.getConfig(section, 'query');
@@ -46,6 +47,7 @@ class DatabricksSource extends WISESource {
 
     client.connect({
       host: this.host,
+      port: this.port,
       path: this.path,
       token: this.token
     }).then(async (client2) => {
@@ -196,6 +198,7 @@ exports.initSource = function (api) {
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'host', required: true, help: 'The Databricks hostname' },
+      { name: 'port', required: false, help: 'The Databricks port (defaults to 443)' },
       { name: 'path', required: true, help: 'The Databricks path' },
       { name: 'token', required: true, password: true, help: 'The Databricks token' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },

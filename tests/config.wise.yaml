@@ -68,6 +68,27 @@ file:url:
   tags: urlwise
   type: url
   format: tagger
+splunk:test:
+  type: splunktest
+  tags: splunkwise
+  host: localhost
+  port: 9998
+  username: admin
+  password: admin
+  keyPath: ip
+  query: search index=threats ip="%%SEARCHTERM%%" | fields ip, threat
+  fields: field:tags;shortcut:threat
+databricks:test:
+  type: databrickstest
+  tags: databrickswise
+  host: localhost
+  port: 9998
+  path: /sql
+  token: mock-token
+  keyPath: ip
+  periodic: 1000000
+  query: SELECT ip, threat FROM threats
+  fields: field:tags;shortcut:threat
 reversedns:
   ips: 0.0.0.0/32
   field: asset
