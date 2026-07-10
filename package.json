@@ -101,7 +101,7 @@
     "parliament:lint-fix": "eslint --fix parliament common",
     "wise:bundle": "cd wiseService && npm run bundle",
     "wise:bundle:min": "cd wiseService && npm run bundle:min",
-    "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.json",
+    "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.wise.yaml",
     "prewise:start": "npm run wise:bundle",
     "wise:dev": "cd wiseService && npm run dev",
     "wise:devdebug": "cd wiseService && npm run dev_back_debug",
