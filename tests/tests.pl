@@ -391,9 +391,9 @@ my ($cmd) = @_;
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/arkime.wise &");
+            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /tmp/arkime.wise &");
         } else {
-            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /dev/null &");
+            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /dev/null &");
         }
 
         waitFor($ArkimeTest::host, 8081, 1);
