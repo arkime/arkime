@@ -2829,6 +2829,12 @@ int arkime_db_can_quit()
         return 1;
     }
 
+    if (arkime_db_ch_queue_length() > 0) {
+        if (config.debug)
+            LOG("Can't quit, arkime_db_ch_queue_length() %d", arkime_db_ch_queue_length());
+        return 1;
+    }
+
     return 0;
 }
 /******************************************************************************/

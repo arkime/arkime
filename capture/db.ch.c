@@ -141,3 +141,10 @@ void arkime_db_ch_init(void)
     g_free(hostUrl);
     g_free(userpwd);
 }
+/******************************************************************************/
+/* Outstanding CH requests; checked by arkime_db_can_quit so capture doesn't
+ * exit while the final session batch is still in flight */
+int arkime_db_ch_queue_length(void)
+{
+    return chServer ? arkime_http_queue_length(chServer) : 0;
+}
