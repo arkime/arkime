@@ -119,13 +119,14 @@ class Audit {
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
     // default query parameters
-    if (!req.query.page) { req.query.page = 1; }
-    if (!req.query.itemsPerPage) { req.query.itemsPerPage = 100; }
-    if (req.query.itemsPerPage === '-1') { req.query.itemsPerPage = 10000; }
-    if (!req.query.sortBy) { req.query.sortBy = 'issuedAt'; }
-    if (!req.query.sortOrder) { req.query.sortOrder = 'desc'; }
+    const query = { ...req.query };
+    query.page ??= 1;
+    query.itemsPerPage ??= 100;
+    if (query.itemsPerPage === '-1') { query.itemsPerPage = 10000; }
+    query.sortBy ??= 'issuedAt';
+    query.sortOrder ??= 'desc';
 
-    const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], req.query);
+    const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], query);
     res.send({ success: true, audits, total });
   }
 

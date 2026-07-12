@@ -100,7 +100,7 @@ class HuntAPIs {
       return cb(null, false);
     } else if (options.type === 'raw') {
       const packets = [];
-      SessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
+      SessionAPIs.processSessionId(sessionId, false, null, (pcap, buffer, processSessionIdCb, i) => {
         if (options.src === options.dst) {
           // strip the 16 byte pcap record header, only packet data should be searched
           packets.push(buffer.slice(16));
@@ -1366,7 +1366,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     // fetch hunt and session
     Promise.all([
       Db.get('hunts', huntId),
-      Db.getSession(sessionId)
+      Db.getSession(sessionId, { _source: false, fields: ['node'] })
     ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {
         console.log('HUNT - remoteHunt error', hunt.error || session.error);

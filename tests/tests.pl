@@ -17,6 +17,8 @@ use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
 $main::userAgent = LWP::UserAgent->new(timeout => 20, keep_alive => 10);
+# Allow the self-signed cert used by mini-wise-source.js (https shutdown, etc)
+$main::userAgent->ssl_opts(SSL_verify_mode => 0, verify_hostname => 0);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $USERSELASTICSEARCH = $ENV{USERSELASTICSEARCH} || $ELASTICSEARCH;
@@ -362,6 +364,7 @@ sub doShutdown {
     $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
     if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
     eval { $main::userAgent->get("http://localhost:4566/_shutdown"); };
+    eval { $main::userAgent->get("https://localhost:9998/_shutdown"); };
 }
 
 sub doViewer {
@@ -398,16 +401,23 @@ my ($cmd) = @_;
         if ($main::debug) {
             system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
             system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
+            system("node mini-wise-source.js --debug 9998 > /tmp/arkime.wisesource 2>&1 &");
         } else {
             system("perl mini-redis.pl 7379 &");
             system("perl mini-aws.pl 4566 &");
+            system("node mini-wise-source.js 9998 > /dev/null &");
         }
+
+        # WISE connects to the mock Splunk/Databricks server at startup, so wait for it first
+        waitFor($ArkimeTest::host, 9998, 1);
+
+        # NODE_TLS_REJECT_UNAUTHORIZED=0 lets the databricks SDK accept the mock's self-signed cert
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/arkime.wise &");
+            system("cd ../wiseService ; NODE_TLS_REJECT_UNAUTHORIZED=0 $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /tmp/arkime.wise &");
         } else {
-            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /dev/null &");
+            system("cd ../wiseService ; NODE_TLS_REJECT_UNAUTHORIZED=0 $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /dev/null &");
         }
 
         waitFor($ArkimeTest::host, 8081, 1);

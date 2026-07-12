@@ -1075,6 +1075,11 @@ $json = cont3xtGet('/api/audits?sortBy=issuedAt&sortOrder=desc');
 is($json->{success}, 1);
 ok($json->{audits}->[0]->{issuedAt} >= $json->{audits}->[-1]->{issuedAt}, "sorted descending by issuedAt");
 
+# default sort (no sortBy/sortOrder) is issuedAt descending
+$json = cont3xtGet('/api/audits');
+is($json->{success}, 1);
+ok($json->{audits}->[0]->{issuedAt} >= $json->{audits}->[-1]->{issuedAt}, "default sorted descending by issuedAt");
+
 # pagination
 $json = cont3xtGet('/api/audits?page=1&itemsPerPage=2');
 is($json->{success}, 1);
@@ -1084,6 +1089,11 @@ is ($json->{total}, 3, "total is still 3");
 $json = cont3xtGet('/api/audits?page=2&itemsPerPage=2');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 1, "page 2 has 1 item");
+
+# itemsPerPage=-1 returns all audits
+$json = cont3xtGet('/api/audits?itemsPerPage=-1');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 3, "itemsPerPage=-1 returns all items");
 
 # combined date range + search
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1) . "&searchTerm=goodtag");
