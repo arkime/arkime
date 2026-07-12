@@ -61,19 +61,66 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
                 else
                     arkime_field_string_add(authTypeField, session, "simple", 6, TRUE);
                 break;
-            case 3:
+            case 3: {
                 arkime_field_string_add(authTypeField, session, "sasl", 4, TRUE);
+                /* SaslCredentials ::= SEQUENCE { mechanism LDAPString,
+                 *                                credentials OCTET STRING OPTIONAL }
+                 * Tag 3 is context-specific IMPLICIT, so the value is the inner
+                 * sequence contents directly. */
+                BSB sbsb;
+                BSB_INIT(sbsb, ivalue, ilen);
+                uint32_t spc, stag, slen;
+                uint8_t *svalue = arkime_parsers_asn_get_tlv(&sbsb, &spc, &stag, &slen);
+                if (svalue && stag == 4) {
+                    svalue = arkime_parsers_asn_get_tlv(&sbsb, &spc, &stag, &slen);
+                    /* For now only handle NTLMSSP blobs delivered directly
+                     * (mechanism "NTLM"); SPNEGO/GSSAPI wrapping not yet
+                     * unwrapped. */
+                    if (svalue && stag == 4 && slen >= 8 &&
+                        memcmp(svalue, "NTLMSSP\0", 8) == 0) {
+                        arkime_parsers_ntlm_decode(session, svalue, slen);
+                    }
+                }
                 break;
+            }
             case 10:
                 arkime_field_string_add(authTypeField, session, "ntlmsspNegotiate", 16, TRUE); // from wireshark
+                arkime_parsers_ntlm_decode(session, ivalue, ilen);
                 break;
             case 11:
                 arkime_field_string_add(authTypeField, session, "ntlmsspAuth", 11, TRUE); // from wireshark
+                arkime_parsers_ntlm_decode(session, ivalue, ilen);
                 break;
             default:
                 snprintf(str, sizeof(str), "%d", (int)itag);
                 arkime_field_string_add(authTypeField, session, str, -1, TRUE);
 
+            }
+        } else if (protocolOp == 1) {
+            /* BindResponse: look for NTLMSSP Type 2 challenge in either the
+             * matchedDN field (AD hack) or the [7] serverSaslCreds field. */
+            BSB rbsb;
+            BSB_INIT(rbsb, ivalue, ilen);
+            uint32_t rpc, rtag, rlen;
+            // resultCode (ENUMERATED)
+            arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            // matchedDN (OCTET STRING)
+            uint8_t *rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            if (rvalue && rlen >= 8 && memcmp(rvalue, "NTLMSSP\0", 8) == 0) {
+                arkime_parsers_ntlm_decode(session, rvalue, rlen);
+            }
+            // diagnosticMessage (OCTET STRING)
+            arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            // optional referral [3] or serverSaslCreds [7]
+            while (BSB_REMAINING(rbsb) > 2) {
+                rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+                if (!rvalue)
+                    break;
+                if (rtag == 7 && rlen >= 8 &&
+                    memcmp(rvalue, "NTLMSSP\0", 8) == 0) {
+                    arkime_parsers_ntlm_decode(session, rvalue, rlen);
+                    break;
+                }
             }
         } else if (protocolOp == 23) {
             int len = BSB_REMAINING(obsb);

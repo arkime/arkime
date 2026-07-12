@@ -1069,6 +1069,7 @@ void writer_simple_init(const char *name)
         simpleDEKMode = ARKIME_DEK_AES256GCM;
     } else if (strcmp(dekMode, "aes-192-cbc") == 0) {
         simpleDEKMode = ARKIME_DEK_AES192CBC;
+        LOG("WARNING - simpleDEKEncoding aes-192-cbc is INSECURE, set simpleDEKEncoding=aes-256-gcm once all instances are upgraded to Arkime 6.2.0 or later");
     } else {
         CONFIGEXIT("Unknown simpleDEKEncoding '%s', must be 'aes-256-gcm' or 'aes-192-cbc'", dekMode);
     }

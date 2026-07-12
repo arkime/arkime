@@ -322,6 +322,167 @@
      "packets" : 0,
      "port" : 5353
     },
+    "dns" : [
+     {
+      "answers" : [
+       {
+        "class" : "IN",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "HINFO"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:a9d2:1782:1995:b63b",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "HINFO"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:a9d2:1782:1995:b63b",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "name" : "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa",
+        "ttl" : 120,
+        "type" : "PTR"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:999:39d7:ce98:6e1",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "name" : "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa",
+        "ttl" : 120,
+        "type" : "PTR"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:999:39d7:ce98:6e1",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:a9d2:1782:1995:b63b",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "name" : "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa",
+        "ttl" : 120,
+        "type" : "PTR"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:999:39d7:ce98:6e1",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:a9d2:1782:1995:b63b",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
+        "name" : "linux.local",
+        "ttl" : 120,
+        "type" : "AAAA"
+       }
+      ],
+      "answersCnt" : 20,
+      "headerFlags" : [
+       "AA"
+      ],
+      "opcode" : "QUERY",
+      "qc" : "(null)",
+      "qt" : "(null)",
+      "queryHost" : "<root>",
+      "status" : "NOERROR"
+     },
+     {
+      "host" : [
+       "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "ANY",
+      "queryHost" : "1.e.6.0.8.9.e.c.7.d.9.3.9.9.9.0.0.0.0.0.d.2.0.1.8.f.6.0.1.0.0.2.ip6.arpa"
+     }
+    ],
+    "dnsCnt" : 2,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1186341099605,
@@ -397,10 +558,6 @@
      255
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dns:qdcount-not-1"
-    ],
-    "tagsCnt" : 1,
     "totDataBytes" : 1286
    },
    "header" : {

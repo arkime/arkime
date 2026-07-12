@@ -17,8 +17,10 @@ import binascii
 import concurrent.futures
 from datetime import datetime
 from elasticsearch import Elasticsearch
+import getpass
 import ipaddress
 import json
+import os
 import re
 import requests
 from requests.auth import HTTPDigestAuth
@@ -44,9 +46,15 @@ parser.add_argument("-t", "--timeout", help="Elasticsearch scroll timeout", defa
 parser.add_argument("--esurl", help="Elasticsearch URL (proto://host:port)", required=True)
 parser.add_argument("--molurl", help="Moloch node (proto://host:port)", required=True)
 parser.add_argument("--apiuser", help="Moloch API username", required=True)
-parser.add_argument("--apipass", help="Moloch API password", required=True)
+parser.add_argument("--apipass",
+                    help="Moloch API password. INSECURE: visible via `ps`. "
+                         "Omit to be prompted.",
+                    default=None)
 
 args = parser.parse_args()
+
+if args.apipass is None:
+    args.apipass = getpass.getpass("Moloch API password: ")
 
 sess = requests.Session()  # Http(s) connection to Moloch for finding sessions
 s = None  # Placeholder for worker http(s) sessions

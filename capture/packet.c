@@ -51,6 +51,7 @@ LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
 LOCAL gboolean               disableIp4Defrag;
+LOCAL gboolean               trimEthernetPadding;
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
 LOCAL patricia_tree_t       *ipTree6 = 0;
@@ -368,8 +369,12 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
     } else {
         // If we hit stopSaving for this session and try and save 1 more packet then
         // add truncated-pcap tag to the session
-        if (packets - 1 == session->stopSaving) {
+        if (session->stopSaving != 0 && packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
+        }
+        if (packets >= config.maxPackets || session->midSave) {
+            arkime_session_mid_save(session, packet->ts.tv_sec);
+            session->stopSaving = 0;
         }
         packetThreadData[thread].unwrittenBytes += packet->pktlen;
     }
@@ -544,6 +549,13 @@ LOCAL void *arkime_packet_thread(void *threadp)
             ARKIME_THREAD_DECR(oi->finishWaiting);
             if (oi->finishWaiting == 0) {
                 arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
+                if (oi->notifyClientRef) {
+                    arkime_command_notify_file_done(oi->notifyClientRef, oi->notifyFilename, oi->lastBytes, oi->lastPackets);
+                    arkime_command_client_decref(oi->notifyClientRef);
+                    g_free(oi->notifyFilename);
+                    oi->notifyClientRef = NULL;
+                    oi->notifyFilename = NULL;
+                }
             }
             ARKIME_UNLOCK(offlineInfoLock);
             arkime_packet_free(packet);
@@ -909,6 +921,20 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
+
+    // Optionally strip Ethernet padding/FCS at the outermost IP layer so
+    // saved pcap and byte counts match the on-wire IP datagram length.
+    // ipOffset is still 0 here on the first IP layer; tunneled inner IPs
+    // already have it set by the enclosing call. Done after structural
+    // validation so we don't mutate pktlen for packets we'd reject.
+    if (trimEthernetPadding && packet->ipOffset == 0 && len > ip_len) {
+        int trim = len - ip_len;
+        if (packet->pktlen > trim) {
+            packet->pktlen -= trim;
+            len = ip_len;
+        }
+    }
+
     if (ipTree4) {
         const patricia_node_t *node;
 
@@ -1020,8 +1046,12 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
             packet->payloadLen = ip_len - ip_hdr_len;
         }
 
-        if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
-            return ARKIME_PACKET_DUPLICATE_DROPPED;
+        if (config.enablePacketDedup) {
+            // Include up to 12 bytes of UDP payload in the dedup hash.
+            const int extra = MIN(12, MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr));
+            if (arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr) + extra))
+                return ARKIME_PACKET_DUPLICATE_DROPPED;
+        }
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan, packet->vni);
@@ -1063,6 +1093,19 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     // Corrupt ip6 header
     if ((ip6->ip6_vfc & 0xf0) != 0x60) {
         return ARKIME_PACKET_CORRUPT;
+    }
+
+    // Optionally strip Ethernet padding/FCS at the outermost IP layer so
+    // saved pcap and byte counts match the on-wire IP datagram length.
+    // Done after structural validation so we don't mutate pktlen for
+    // packets we'd reject. ip_len > 0 skips RFC 2675 jumbograms.
+    if (trimEthernetPadding && packet->ipOffset == 0 && ip_len > 0 &&
+        len > ip_len + (int)sizeof(struct ip6_hdr)) {
+        int trim = len - (ip_len + (int)sizeof(struct ip6_hdr));
+        if (packet->pktlen > trim) {
+            packet->pktlen -= trim;
+            len = ip_len + (int)sizeof(struct ip6_hdr);
+        }
     }
 
     if (ipTree6) {
@@ -1233,8 +1276,12 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                 packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
             }
 
-            if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
-                return ARKIME_PACKET_DUPLICATE_DROPPED;
+            if (config.enablePacketDedup) {
+                // Include up to 12 bytes of UDP payload in the dedup hash.
+                const int extra = MIN(12, MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr));
+                if (arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr) + extra))
+                    return ARKIME_PACKET_DUPLICATE_DROPPED;
+            }
 
             packet->mProtocol = udpMProtocol;
             done = 1;
@@ -1850,6 +1897,7 @@ void arkime_packet_init()
     nextLogPackets = config.logEveryXPackets;
 
     disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
+    trimEthernetPadding = arkime_config_boolean(NULL, "trimEthernetPadding", FALSE);
 
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
@@ -1862,16 +1910,16 @@ void arkime_packet_init()
     arkime_packet_thread_exit_func = arkime_get_named_func("arkime_packet_thread_exit");
 
     char filename[PATH_MAX];
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.4", config.nodeName);
     arkime_drophash_init(&packetDrop4, filename, 4);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.6", config.nodeName);
     arkime_drophash_init(&packetDrop6, filename, 16);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4S", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.4S", config.nodeName);
     arkime_drophash_init(&packetDrop4S, filename, 12);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6S", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.6S", config.nodeName);
     arkime_drophash_init(&packetDrop6S, filename, 36);
 
     g_timeout_add_seconds(10, arkime_packet_save_drophash, 0);

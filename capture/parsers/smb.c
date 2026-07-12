@@ -83,6 +83,13 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
 {
     BSB bsb;
 
+    /* Some clients put raw NTLMSSP directly in the SMB security blob (no
+     * GSS-API/SPNEGO wrapping); detect and dispatch to the shared decoder. */
+    if (len >= 8 && memcmp(data, "NTLMSSP\0", 8) == 0) {
+        arkime_parsers_ntlm_decode(session, data, len);
+        return;
+    }
+
     BSB_INIT(bsb, data, len);
 
     uint32_t apc, atag, alen;
@@ -107,6 +114,10 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
 
     if (!value || atag != 4 || alen < 7 || memcmp("NTLMSSP", value, 7) != 0)
         return;
+
+    /* Also feed the full NTLMSSP blob to the shared decoder so user/host/domain
+     * land in the global ntlm.* fields alongside the legacy smb.* fields. */
+    arkime_parsers_ntlm_decode(session, value, alen);
 
     /* Woot, have the part we need to decode */
     BSB_INIT(bsb, value, alen);

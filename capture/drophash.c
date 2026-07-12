@@ -203,7 +203,8 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
 
     group->file = g_strdup(file);
 
-    if (!g_file_test(file, G_FILE_TEST_EXISTS))
+    FILE *fp = arkime_state_file_open(group->file, "r");
+    if (!fp)
         return;
 
     struct timespec currentTime;
@@ -217,12 +218,6 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
     uint32_t goodFor;
     uint16_t flags;
     uint16_t port;
-
-    FILE *fp;
-    if (!(fp = fopen(group->file, "r"))) {
-        LOG("ERROR - Couldn't open `%s` to load drophash", group->file);
-        return;
-    }
 
     if (!fread(&ver, 4, 1, fp)) {
         fclose(fp);
@@ -293,8 +288,7 @@ void arkime_drophash_save(ArkimeDropHashGroup_t *group)
     if (!group->file)
         return;
 
-    if (!(fp = fopen(group->file, "w"))) {
-        LOG("ERROR - Couldn't open `%s` to save drophash", group->file);
+    if (!(fp = arkime_state_file_open(group->file, "w"))) {
         return;
     }
     ARKIME_LOCK(group->lock);

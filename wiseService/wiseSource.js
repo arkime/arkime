@@ -262,14 +262,6 @@ class WISESource {
 
       const keyPath = this.keyPath.split('.');
 
-      // Convert shortcuts into array of key path
-      const shortcuts = [];
-      const shortcutsValue = [];
-      for (const k in this.shortcuts) {
-        shortcuts.push(k.split('.'));
-        shortcutsValue.push(this.shortcuts[k]);
-      }
-
       for (let i = 0; i < json.length; i++) {
         // Walk the key path
         let key = json[i];
@@ -281,34 +273,7 @@ class WISESource {
           continue;
         }
 
-        const args = [];
-        // Check each shortcut
-        for (let k = 0; k < shortcuts.length; k++) {
-          let objs = json[i];
-          // Walk the shortcut path
-          for (let j = 0; objs && j < shortcuts[k].length; j++) {
-            objs = objs[shortcuts[k][j]];
-          }
-
-          // Always pretend we have an array
-          if (!Array.isArray(objs)) {
-            objs = [objs];
-          }
-
-          for (let o = 0; o < objs.length; o++) {
-            const obj = objs[o];
-            if (obj !== undefined && obj !== null && obj !== '') {
-              args.push(shortcutsValue[k].pos);
-              if (shortcutsValue[k].mod === 1) {
-                args.push(obj.toLowerCase());
-              } else if (shortcutsValue[k].mod === 2) {
-                args.push(obj.toUpperCase());
-              } else {
-                args.push(obj);
-              }
-            }
-          }
-        }
+        const args = this.parseJSONElement(json[i]);
 
         if (Array.isArray(key)) {
           key.forEach((part) => {
@@ -322,6 +287,73 @@ class WISESource {
     } catch (e) {
       endCb(e);
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Util function to walk a JSON object using the configured shortcuts and
+   * build an args array suitable for {@link WISESource.encodeResult}.
+   *
+   * Each shortcut path may traverse intermediate arrays as well as a final
+   * array value: e.g. with shortcut `a.b.c`, the input
+   *   `{ a: [ { b: { c: "v1" } }, { b: { c: "v2" } } ] }`
+   * yields both `v1` and `v2`. With shortcut `d.e`, the input
+   *   `{ d: { e: ["v3", "v4"] } }`
+   * yields both `v3` and `v4`.
+   *
+   * @param {object} json - the JSON object (single element) to extract from
+   * @returns {Array} alternating pos/value entries for encodeResult
+   */
+  parseJSONElement (json) {
+    const args = [];
+    for (const k in this.shortcuts) {
+      const path = k.split('.');
+      const sv = this.shortcuts[k];
+      const values = [];
+      WISESource.#collectShortcutValues(json, path, 0, values);
+
+      for (let o = 0; o < values.length; o++) {
+        let val = values[o];
+        if (val === undefined || val === null || val === '') {
+          continue;
+        }
+        if (typeof val !== 'string') {
+          val = val.toString();
+        }
+        if (sv.mod === 1) {
+          val = val.toLowerCase();
+        } else if (sv.mod === 2) {
+          val = val.toUpperCase();
+        }
+        args.push(sv.pos);
+        args.push(val);
+      }
+    }
+    return args;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Recursively walk obj following path, expanding any arrays encountered
+   * along the way (including a final array value), and push leaf values
+   * into out.
+   * @private
+   */
+  static #collectShortcutValues (obj, path, idx, out) {
+    if (obj === undefined || obj === null) {
+      return;
+    }
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        WISESource.#collectShortcutValues(obj[i], path, idx, out);
+      }
+      return;
+    }
+    if (idx === path.length) {
+      out.push(obj);
+      return;
+    }
+    WISESource.#collectShortcutValues(obj[path[idx]], path, idx + 1, out);
   }
 
   // ----------------------------------------------------------------------------

@@ -1,0 +1,695 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "6c:2b:1a:38:4e:18:84:5a:dd:8a:5e:88:e5:2b:39:61:76:b6:50:c2",
+      "issuerCN" : [
+       "arkime.test"
+      ],
+      "issuerON" : [
+       "Arkime"
+      ],
+      "issuerOU" : [
+       "Test"
+      ],
+      "notAfter" : 1841616800000,
+      "notBefore" : 1778544800000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 968,
+      "remainingSeconds" : 83679200,
+      "serial" : "00eafe13b1b1f8cf87",
+      "subjectCN" : [
+       "arkime.test"
+      ],
+      "subjectON" : [
+       "Arkime"
+      ],
+      "subjectOU" : [
+       "Test"
+      ],
+      "validDays" : 730,
+      "validSeconds" : 63072000
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 123
+    },
+    "destination" : {
+     "bytes" : 943,
+     "ip" : "198.51.100.20",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 4444
+    },
+    "dstPayload8" : "4053455256455249",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1757937600001,
+    "http" : {
+     "host" : [
+      "arkime.test"
+     ],
+     "hostCnt" : 1
+    },
+    "ipProtocol" : 17,
+    "lastPacket" : 1757937600004,
+    "length" : 3,
+    "network" : {
+     "bytes" : 1150,
+     "community_id" : "1:6tK8ZKbHx4B7qxPusP8CEUde9S4=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     72,
+     84,
+     167,
+     891
+    ],
+    "packetPos" : [
+     24,
+     96,
+     180,
+     347
+    ],
+    "packetRange" : {
+     "gte" : 1757937600001,
+     "lte" : 1757937600004
+    },
+    "protocol" : [
+     "openvpn",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 859
+    },
+    "source" : {
+     "bytes" : 207,
+     "ip" : "203.0.113.5",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 51000
+    },
+    "srcPayload8" : "38434c49454e5449",
+    "srcRIR" : "APNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "tls" : {
+     "cipher" : [
+      "TLS_RSA_WITH_AES_128_CBC_SHA"
+     ],
+     "cipherCnt" : 1,
+     "ja3" : [
+      "feb53fe05f3e7852942a6e3cb98e8b45"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "5397c414a9ebeaff1bf18b70ca22eaa0"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,47,"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,47-49199-156,0-43,,"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "q12d030200_f81807f6db74_b9a491fefe05"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "q12d030200_002f,009c,c02f_002b"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1.2"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 982
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m09"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "6c:2b:1a:38:4e:18:84:5a:dd:8a:5e:88:e5:2b:39:61:76:b6:50:c2",
+      "issuerCN" : [
+       "arkime.test"
+      ],
+      "issuerON" : [
+       "Arkime"
+      ],
+      "issuerOU" : [
+       "Test"
+      ],
+      "notAfter" : 1841616800000,
+      "notBefore" : 1778544800000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 968,
+      "remainingSeconds" : 83679200,
+      "serial" : "00eafe13b1b1f8cf87",
+      "subjectCN" : [
+       "arkime.test"
+      ],
+      "subjectON" : [
+       "Arkime"
+      ],
+      "subjectOU" : [
+       "Test"
+      ],
+      "validDays" : 730,
+      "validSeconds" : 63072000
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 179
+    },
+    "destination" : {
+     "bytes" : 1039,
+     "ip" : "2001:db8:2::20",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 5555
+    },
+    "dstPayload8" : "4053455256455249",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1757937600005,
+    "http" : {
+     "host" : [
+      "arkime.test"
+     ],
+     "hostCnt" : 1
+    },
+    "ipProtocol" : 17,
+    "lastPacket" : 1757937600007,
+    "length" : 2,
+    "network" : {
+     "bytes" : 1342,
+     "community_id" : "1:0kJKDiWpxt+/Kvn35pm3ryZEh9g=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     120,
+     132,
+     215,
+     939
+    ],
+    "packetPos" : [
+     1238,
+     1358,
+     1490,
+     1705
+    ],
+    "packetRange" : {
+     "gte" : 1757937600005,
+     "lte" : 1757937600007
+    },
+    "protocol" : [
+     "openvpn",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 915
+    },
+    "source" : {
+     "bytes" : 303,
+     "ip" : "2001:db8:1::5",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 51001
+    },
+    "srcPayload8" : "38434c49454e5449",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "tls" : {
+     "cipher" : [
+      "TLS_RSA_WITH_AES_128_CBC_SHA"
+     ],
+     "cipherCnt" : 1,
+     "ja3" : [
+      "feb53fe05f3e7852942a6e3cb98e8b45"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "5397c414a9ebeaff1bf18b70ca22eaa0"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,47,"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,47-49199-156,0-43,,"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "q12d030200_f81807f6db74_b9a491fefe05"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "q12d030200_002f,009c,c02f_002b"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1.2"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 1094
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m09"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "6c:2b:1a:38:4e:18:84:5a:dd:8a:5e:88:e5:2b:39:61:76:b6:50:c2",
+      "issuerCN" : [
+       "arkime.test"
+      ],
+      "issuerON" : [
+       "Arkime"
+      ],
+      "issuerOU" : [
+       "Test"
+      ],
+      "notAfter" : 1841616800000,
+      "notBefore" : 1778544800000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 968,
+      "remainingSeconds" : 83679200,
+      "serial" : "00eafe13b1b1f8cf87",
+      "subjectCN" : [
+       "arkime.test"
+      ],
+      "subjectON" : [
+       "Arkime"
+      ],
+      "subjectOU" : [
+       "Test"
+      ],
+      "validDays" : 730,
+      "validSeconds" : 63072000
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 207
+    },
+    "destination" : {
+     "bytes" : 1105,
+     "ip" : "198.51.100.22",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 8443
+    },
+    "dstPayload8" : "0042405345525645",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1757937600008,
+    "http" : {
+     "host" : [
+      "arkime.test"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1757937600014,
+    "length" : 6,
+    "network" : {
+     "bytes" : 1528,
+     "community_id" : "1:PXW6kS1z7UomFNXMxp+t6fmlEew=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     126,
+     138,
+     221,
+     945
+    ],
+    "packetPos" : [
+     2644,
+     2714,
+     2784,
+     2854,
+     2980,
+     3118,
+     3339
+    ],
+    "packetRange" : {
+     "gte" : 1757937600008,
+     "lte" : 1757937600014
+    },
+    "protocol" : [
+     "openvpn",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 943
+    },
+    "source" : {
+     "bytes" : 423,
+     "ip" : "203.0.113.7",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 51002
+    },
+    "srcPayload8" : "003638434c49454e",
+    "srcRIR" : "APNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_RSA_WITH_AES_128_CBC_SHA"
+     ],
+     "cipherCnt" : 1,
+     "ja3" : [
+      "feb53fe05f3e7852942a6e3cb98e8b45"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "5397c414a9ebeaff1bf18b70ca22eaa0"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,47,"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,47-49199-156,0-43,,"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t12d030200_f81807f6db74_b9a491fefe05"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t12d030200_002f,009c,c02f_002b"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1.2"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 1150
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m09"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "6c:2b:1a:38:4e:18:84:5a:dd:8a:5e:88:e5:2b:39:61:76:b6:50:c2",
+      "issuerCN" : [
+       "arkime.test"
+      ],
+      "issuerON" : [
+       "Arkime"
+      ],
+      "issuerOU" : [
+       "Test"
+      ],
+      "notAfter" : 1841616800000,
+      "notBefore" : 1778544800000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 968,
+      "remainingSeconds" : 83679200,
+      "serial" : "00eafe13b1b1f8cf87",
+      "subjectCN" : [
+       "arkime.test"
+      ],
+      "subjectON" : [
+       "Arkime"
+      ],
+      "subjectOU" : [
+       "Test"
+      ],
+      "validDays" : 730,
+      "validSeconds" : 63072000
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 271
+    },
+    "destination" : {
+     "bytes" : 1229,
+     "ip" : "2001:db8:2::22",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 6666
+    },
+    "dstPayload8" : "0062405345525645",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1757937600015,
+    "http" : {
+     "host" : [
+      "arkime.test"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1757937600021,
+    "length" : 6,
+    "network" : {
+     "bytes" : 1796,
+     "community_id" : "1:PaqD5bBhh6pxCol7GDWP9n+U0Ow=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     90,
+     90,
+     178,
+     190,
+     273,
+     997
+    ],
+    "packetPos" : [
+     4284,
+     4374,
+     4464,
+     4554,
+     4732,
+     4922,
+     5195
+    ],
+    "packetRange" : {
+     "gte" : 1757937600015,
+     "lte" : 1757937600021
+    },
+    "protocol" : [
+     "openvpn",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1007
+    },
+    "source" : {
+     "bytes" : 567,
+     "ip" : "2001:db8:1::7",
+     "mac" : [
+      "02:00:00:00:00:01",
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 51003
+    },
+    "srcPayload8" : "005638434c49454e",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_RSA_WITH_AES_128_CBC_SHA"
+     ],
+     "cipherCnt" : 1,
+     "ja3" : [
+      "feb53fe05f3e7852942a6e3cb98e8b45"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "5397c414a9ebeaff1bf18b70ca22eaa0"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,47,"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,47-49199-156,0-43,,"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t12d030200_f81807f6db74_b9a491fefe05"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t12d030200_002f,009c,c02f_002b"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1.2"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 1278
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m09"
+    }
+   }
+  }
+ ]
+}
+

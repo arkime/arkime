@@ -1367,6 +1367,77 @@ void arkime_field_free(ArkimeSession_t *session)
     session->fields = 0;
 }
 /******************************************************************************/
+void arkime_field_free_one(ArkimeSession_t *session, int pos)
+{
+    ArkimeString_t             *hstring;
+    ArkimeStringHashStd_t      *shash;
+    ArkimeInt_t                *hint;
+    ArkimeIntHashStd_t         *ihash;
+    ArkimeFieldObject_t        *ho;
+    ArkimeFieldObjectHashStd_t *ohash;
+    ArkimeFieldObjectFreeFunc   freeCB;
+    ArkimeField_t              *field;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return;
+    if (!(field = session->fields[pos]))
+        return;
+
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_STR:
+        g_free(field->str);
+        break;
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+        g_ptr_array_free(field->sarray, TRUE);
+        break;
+    case ARKIME_FIELD_TYPE_STR_HASH:
+        shash = field->shash;
+        HASH_FORALL_POP_HEAD2(s_, *shash, hstring) {
+            g_free(hstring->str);
+            ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+        }
+        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, shash);
+        break;
+    case ARKIME_FIELD_TYPE_INT:
+        break;
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+        g_array_free(field->iarray, TRUE);
+        break;
+    case ARKIME_FIELD_TYPE_INT_HASH:
+        ihash = field->ihash;
+        HASH_FORALL_POP_HEAD2(i_, *ihash, hint) {
+            ARKIME_TYPE_FREE(ArkimeInt_t, hint);
+        }
+        ARKIME_TYPE_FREE(ArkimeIntHashStd_t, ihash);
+        break;
+    case ARKIME_FIELD_TYPE_FLOAT:
+        break;
+    case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
+        g_array_free(field->farray, TRUE);
+        break;
+    case ARKIME_FIELD_TYPE_IP:
+        g_free(field->ip);
+        break;
+    case ARKIME_FIELD_TYPE_IP_GHASH:
+    case ARKIME_FIELD_TYPE_INT_GHASH:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH:
+        g_hash_table_destroy(field->ghash);
+        break;
+    case ARKIME_FIELD_TYPE_OBJECT:
+        freeCB = config.fields[pos]->object_free;
+        ohash = field->ohash;
+        HASH_FORALL_POP_HEAD2(o_, *ohash, ho) {
+            freeCB(ho);
+        }
+        ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
+        break;
+    }
+    ARKIME_TYPE_FREE(ArkimeField_t, field);
+    session->fields[pos] = NULL;
+}
+/******************************************************************************/
 int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp)
 {
     int object_pos;

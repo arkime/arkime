@@ -1,0 +1,7 @@
+if (session.ftp)
+  div.sessionDetailMeta.bold FTP
+  dl.sessionDetailMeta
+    +arrayList(session.ftp, "banner", "Banner", "ftp.banner")
+    +arrayList(session.ftp, "command", "Commands", "ftp.command")
+    +arrayList(session.ftp, "filename", "Filenames", "ftp.filename")
+    +arrayList(session.ftp, "responseCode", "Response Codes", "ftp.responseCode")

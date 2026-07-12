@@ -115,15 +115,14 @@ void arkime_parser_init()
 
     userField = arkime_field_define("mysql", "lotermfield",
                                     "mysql.user", "User", "mysql.user",
-                                    "Mysql user name",
+                                    "MySQL user name",
                                     ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                     "category", "user",
                                     (char *)NULL);
 
     versionField = arkime_field_define("mysql", "termfield",
                                        "mysql.ver", "Version", "mysql.version",
-                                       "Mysql server version string",
+                                       "MySQL server version string",
                                        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                        (char *)NULL);
 }
-

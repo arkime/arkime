@@ -34,6 +34,7 @@ class Auth {
   static #basePath;
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
+  static #requiredAuthHeaderHmacs;
   static #userAutoCreateTmpl;
   static #userAutoCreateFuncs;
   static #userAuthIps;
@@ -144,9 +145,10 @@ class Auth {
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
+    Auth.#requiredAuthHeaderHmacs = Auth.#requiredAuthHeaderVal?.map(v => crypto.createHmac('sha256', 'compare').update(v).digest());
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     if (Auth.#userAutoCreateTmpl) {
-      console.log('WARNING - userAutoCreateTmpl is deprecated, use [user-auto-create] section instead');
+      console.log('WARNING - userAutoCreateTmpl is deprecated and INSECURE, use [user-auto-create] section instead. This functionality will be removed in Arkime 7.');
     }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
@@ -200,7 +202,7 @@ class Auth {
           process.exit(1);
         }
       }
-    } else if (Auth.mode === 'header' || Auth.mode === 'header-jwt') {
+    } else if (Auth.mode.startsWith('header')) {
       Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
       Auth.#userAuthIps.add('::1', 128, 1);
     } else {
@@ -543,20 +545,23 @@ class Auth {
         return done(null, false);
       }
 
-      if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderVal !== undefined) {
+      if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderHmacs !== undefined) {
         const authHeader = req.headers[Auth.#requiredAuthHeader];
         if (authHeader === undefined) {
           return done('Missing authorization header');
         }
-        const authorized = authHeader.split(',').some(headerVal => Auth.#requiredAuthHeaderVal.includes(headerVal.trim()));
+        const authorized = authHeader.split(',').some(headerVal => {
+          const h = crypto.createHmac('sha256', 'compare').update(headerVal.trim()).digest();
+          return Auth.#requiredAuthHeaderHmacs.some(expected => crypto.timingSafeEqual(expected, h));
+        });
         if (!authorized) {
-          console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
+          console.log(`The required auth header '${Auth.#requiredAuthHeader}' did not match an expected value, got `, ArkimeUtil.sanitizeStr(authHeader));
           return done('Bad authorization header');
         }
       }
 
       let userId;
-      let vals = req.headers;
+      let vals;
 
       if (Auth.mode === 'header-jwt') {
         // No signature verification — the upstream proxy (ALB, Cloudflare Access, etc.)
@@ -575,7 +580,14 @@ class Auth {
           return done('Failed to decode JWT');
         }
       } else {
-        userId = req.headers[Auth.#userNameHeader].trim();
+        // Node decodes HTTP header values as ISO-8859-1 (RFC 7230). Reverse proxies
+        // (Caddy, nginx, oauth2-proxy, ALB OIDC, etc.) typically write UTF-8 bytes
+        // directly into headers, so non-ASCII characters arrive as mojibake. Re-decode
+        // each string header from latin-1 bytes back to UTF-8 so auto-create
+        // expressions, dynamic roles, and downstream consumers see the original UTF-8
+        // string. Pure-ASCII values are unchanged.
+        vals = Auth.#utf8Headers(req.headers);
+        userId = vals[Auth.#userNameHeader].trim();
       }
 
       if (!userId || userId === '') {
@@ -822,6 +834,18 @@ class Auth {
     }
 
     return 0;
+  }
+
+  // ----------------------------------------------------------------------------
+  // Re-decode header values from latin-1 (Node's default) back to UTF-8.
+  // Pure-ASCII values are unchanged; UTF-8 bytes that Node mis-decoded as latin-1
+  // (e.g. "AndrÃ©" -> "André") are restored to the original UTF-8 string.
+  static #utf8Headers (headers) {
+    const out = {};
+    for (const [k, v] of Object.entries(headers)) {
+      out[k] = typeof v === 'string' ? Buffer.from(v, 'latin1').toString('utf8') : v;
+    }
+    return out;
   }
 
   // ----------------------------------------------------------------------------
@@ -1100,22 +1124,7 @@ class Auth {
   // Encrypt an object into an auth string
   // IV.E.H
   static obj2auth (obj, secret) {
-    // HACK: Remove in future, for cookies use Next since local
-    if (obj.pid !== undefined) { return Auth.obj2authNext(obj, secret); }
-
-    if (secret) {
-      secret = crypto.createHash('sha256').update(secret).digest();
-    } else {
-      secret = Auth.#serverSecret256;
-    }
-
-    const iv = crypto.randomBytes(16);
-    const c = crypto.createCipheriv('aes-256-cbc', secret, iv);
-    let e = c.update(JSON.stringify(obj), 'utf8', 'hex');
-    e += c.final('hex');
-    e = iv.toString('hex') + '.' + e;
-    const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
-    return e + '.' + h;
+    return Auth.obj2authNext(obj, secret);
   }
 
   // ----------------------------------------------------------------------------

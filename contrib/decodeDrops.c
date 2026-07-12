@@ -20,11 +20,21 @@ int main(int argc, char *argv[])
     int ver, cnt, i;
     char isIp4;
 
-    fread(&ver, 4, 1, fp);
+    if (fread(&ver, 4, 1, fp) != 1) {
+        fprintf(stderr, "Failed to read version\n");
+        exit(1);
+    }
     printf ("Version: %d\n", ver);
     if (ver == 1) {
-        fread(&cnt, 4, 1, fp);
+        if (fread(&cnt, 4, 1, fp) != 1) {
+            fprintf(stderr, "Failed to read count\n");
+            exit(1);
+        }
         printf ("Count: %d\n", cnt);
+        if (cnt < 0 || cnt > 10000000) {
+            fprintf(stderr, "Implausible count %d; aborting\n", cnt);
+            exit(1);
+        }
         
         unsigned short port;
         unsigned char  key[16];
@@ -32,19 +42,29 @@ int main(int argc, char *argv[])
         unsigned short flags;
         
         for (i = 0; i < cnt; i++) {
-            fread(&port, 2, 1, fp);
-            fread(key, 4, 1, fp);
-            fread(&expire, 4, 1, fp);
-            fread(&flags, 2, 1, fp);
+            if (fread(&port, 2, 1, fp) != 1 ||
+                fread(key, 4, 1, fp) != 1 ||
+                fread(&expire, 4, 1, fp) != 1 ||
+                fread(&flags, 2, 1, fp) != 1) {
+                fprintf(stderr, "Truncated record at index %d\n", i);
+                exit(1);
+            }
 
             time_t texpire = expire;
             printf("%24.24s %d.%d.%d.%d:%d\n", ctime(&texpire), key[0], key[1], key[2], key[3], htons(port));
         }
     } else if (ver == 2) {
-        fread(&isIp4, 1, 1, fp);
-        fread(&cnt, 4, 1, fp);
+        if (fread(&isIp4, 1, 1, fp) != 1 ||
+            fread(&cnt, 4, 1, fp) != 1) {
+            fprintf(stderr, "Failed to read header\n");
+            exit(1);
+        }
         printf ("isIp4: %d\n", isIp4);
         printf ("Count: %d\n", cnt);
+        if (cnt < 0 || cnt > 10000000) {
+            fprintf(stderr, "Implausible count %d; aborting\n", cnt);
+            exit(1);
+        }
         
         unsigned short port;
         unsigned char  key[16];
@@ -53,11 +73,14 @@ int main(int argc, char *argv[])
         unsigned short flags;
         
         for (i = 0; i < cnt; i++) {
-            fread(&port, 2, 1, fp);
-            fread(key, (isIp4?4:16), 1, fp);
-            fread(&last, 4, 1, fp);
-            fread(&goodFor, 4, 1, fp);
-            fread(&flags, 2, 1, fp);
+            if (fread(&port, 2, 1, fp) != 1 ||
+                fread(key, (isIp4?4:16), 1, fp) != 1 ||
+                fread(&last, 4, 1, fp) != 1 ||
+                fread(&goodFor, 4, 1, fp) != 1 ||
+                fread(&flags, 2, 1, fp) != 1) {
+                fprintf(stderr, "Truncated record at index %d\n", i);
+                exit(1);
+            }
 
             time_t texpire = last + goodFor;
             printf("%24.24s %d.%d.%d.%d:%d\n", ctime(&texpire), key[0], key[1], key[2], key[3], htons(port));

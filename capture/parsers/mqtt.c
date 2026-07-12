@@ -20,6 +20,7 @@ LOCAL int userField;
 LOCAL int willTopicField;
 LOCAL int qosField;
 LOCAL int flagsField;
+LOCAL int connackCodeField;
 
 // MQTT packet types
 LOCAL const char *mqttTypes[] = {
@@ -363,6 +364,16 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         case 1: // CONNECT
             mqtt_parse_connect(session, mqtt, &packetBsb);
             break;
+        case 2: // CONNACK
+            if (BSB_REMAINING(packetBsb) >= 2) {
+                BSB_IMPORT_skip(packetBsb, 1); // ack flags
+                uint8_t code = 0;
+                BSB_IMPORT_u08(packetBsb, code);
+                if (BSB_NOT_ERROR(packetBsb)) {
+                    arkime_field_int_add(connackCodeField, session, code);
+                }
+            }
+            break;
         case 8: // SUBSCRIBE
             mqtt_parse_subscribe(session, &packetBsb, mqtt->version);
             break;
@@ -470,6 +481,12 @@ void arkime_parser_init()
                                      "MQTT connection flags",
                                      ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
+
+    connackCodeField = arkime_field_define("mqtt", "integer",
+                                           "mqtt.connackCode", "CONNACK Code", "mqtt.connackCode",
+                                           "MQTT CONNACK return/reason code (0=Accepted; non-zero=rejected/error)",
+                                           ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
     userField = arkime_field_by_db("user");
 

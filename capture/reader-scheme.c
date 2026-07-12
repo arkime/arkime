@@ -61,6 +61,7 @@ LOCAL int                    offlineDispatchAfter;
 extern void                 *esServer;
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
+extern ARKIME_LOCK_EXTERN(offlineInfoLock);
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
 ArkimeSchemeAction_t       *schemeActions[256];
@@ -136,9 +137,16 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
+/******************************************************************************/
+/* Tracks recursion depth of load_thread on the scheme thread. depth==1 means
+ * the outermost call (i.e. add-file/add-dir top level). Nested calls happen
+ * when reading a directory: outer load_thread(DIRHINT) -> readerScheme->load
+ * -> arkime_reader_scheme_load(file) -> inner load_thread(no DIRHINT). */
+LOCAL int loadThreadDepth;
 /* Actually call the scheme load function. This is guaranteed to be on the scheme thread */
 LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
+    loadThreadDepth++;
     reader_scheme_pause();
 
     LOG("Processing %s", uri);
@@ -147,7 +155,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         LOG("ERROR - Unknown scheme for %s", uri);
         if (actions && actions->notifyClientRef)
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
-        return;
+        goto cleanup;
     }
 
     readerState.startPos = 0;
@@ -163,7 +171,17 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     int rcl = readerScheme->load(uri, flags, actions);
 
-    if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerState.readerPos].didBatch) {
+    gboolean notifyHandedOff = FALSE;
+    if (rcl == 0 && offlineInfo[readerState.readerPos].didBatch) {
+        // Stash an async file-done notification on the offlineInfo slot. The
+        // packet thread will fire file-done + decref when the last packet of
+        // this file has been processed.
+        if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
+            arkime_command_client_incref(actions->notifyClientRef);
+            offlineInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
+            offlineInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
+            notifyHandedOff = TRUE;
+        }
         arkime_packet_batch_end_of_file(readerState.readerPos);
     }
 
@@ -180,25 +198,30 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         }
     }
 
-    // Send async completion notification if requested via command socket.
-    // Skip for directory entries (DIRHINT) — only individual files get notifications.
-    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
+    // Synchronous notification path: load failed or no packets batched. The
+    // packet thread won't fire FILE_DONE so we notify inline. We don't touch
+    // actions->notifyClientRef — for add-dir it's shared across files.
+    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef && !notifyHandedOff) {
         if (rcl != 0) {
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
         } else {
-            arkime_command_notify_file_done(
-                actions->notifyClientRef, uri,
-                offlineInfo[readerState.readerPos].lastBytes,
-                offlineInfo[readerState.readerPos].lastPackets);
-        }
-        // Release the schemeActions slot — the idle callback holds its own client ref.
-        // Without this, schemeActions keeps actions alive (holding a client ref) until
-        // this slot wraps around, preventing the socket from closing.
-        if (schemeActions[readerState.readerPos]) {
-            reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
-            schemeActions[readerState.readerPos] = NULL;
+            arkime_command_notify_file_done(actions->notifyClientRef, uri,
+                                            offlineInfo[readerState.readerPos].lastBytes,
+                                            offlineInfo[readerState.readerPos].lastPackets);
         }
     }
+
+cleanup:
+    // Outermost load_thread call (depth==1 going to 0): release the client ref
+    // that was attached to actions when --notify was specified. Per-file
+    // notifications already incref'd their own copy onto offlineInfo, so it's
+    // safe to drop the actions-held ref here. Done at outermost depth so that
+    // recursive directory iteration can continue using actions->notifyClientRef.
+    if (loadThreadDepth == 1 && actions && actions->notifyClientRef) {
+        arkime_command_client_decref(actions->notifyClientRef);
+        actions->notifyClientRef = NULL;
+    }
+    loadThreadDepth--;
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
@@ -236,13 +259,38 @@ LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags
 /******************************************************************************/
 LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
-    readerState.readerPos++;
+    uint8_t nextPos = readerState.readerPos + 1;
+
+    // readerPos is uint8_t (wraps at 256). Before reusing a slot, wait until
+    // the prior file occupying it has been fully drained: packet threads
+    // have processed FILE_DONE (finishWaiting==0) AND the FILE_DONE handler
+    // has released the lock. Hold offlineInfoLock across the wait + cleanup
+    // so we can't race with the FILE_DONE handler in arkime_packet_thread,
+    // which also touches notifyClientRef/notifyFilename under this lock and
+    // does a slow arkime_db_update_file before the decref.
+    ARKIME_LOCK(offlineInfoLock);
+    while (!config.quitting && offlineInfo[nextPos].finishWaiting > 0) {
+        ARKIME_UNLOCK(offlineInfoLock);
+        LOG_RATE(5, "Waiting for reader slot %u to drain, finishWaiting=%u",
+                 nextPos, offlineInfo[nextPos].finishWaiting);
+        usleep(5000);
+        ARKIME_LOCK(offlineInfoLock);
+    }
+
+    readerState.readerPos = nextPos;
     // We've wrapped around all 256 reader items, clear the previous file information
     if (offlineInfo[readerState.readerPos].filename) {
         g_free(offlineInfo[readerState.readerPos].filename);
         g_free(offlineInfo[readerState.readerPos].extra);
+        if (offlineInfo[readerState.readerPos].notifyFilename) {
+            g_free(offlineInfo[readerState.readerPos].notifyFilename);
+        }
+        if (offlineInfo[readerState.readerPos].notifyClientRef) {
+            arkime_command_client_decref(offlineInfo[readerState.readerPos].notifyClientRef);
+        }
         memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
+    ARKIME_UNLOCK(offlineInfoLock);
     offlineInfo[readerState.readerPos].filename = g_strdup(uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);

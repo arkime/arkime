@@ -161,6 +161,48 @@
      "xorMappedRIR" : [
       "ARIN"
      ],
+     "xorPeerASN" : [
+      "---",
+      "AS13335 Cloudflare, Inc.",
+      "AS13335 Cloudflare, Inc.",
+      "AS13335 Cloudflare, Inc.",
+      "AS13335 Cloudflare, Inc.",
+      "AS701 MCI Communications Services, Inc. d/b/a Verizon Business"
+     ],
+     "xorPeerGEO" : [
+      "---",
+      "US",
+      "US",
+      "US",
+      "US",
+      "US"
+     ],
+     "xorPeerIp" : [
+      "104.30.146.131",
+      "104.30.147.234",
+      "104.30.147.248",
+      "104.30.150.190",
+      "108.56.17.155",
+      "192.168.1.1"
+     ],
+     "xorPeerIpCnt" : 6,
+     "xorPeerPort" : [
+      "40669",
+      "43377",
+      "43499",
+      "44080",
+      "44279",
+      "45360"
+     ],
+     "xorPeerPortCnt" : 6,
+     "xorPeerRIR" : [
+      "ARIN",
+      "ARIN",
+      "ARIN",
+      "ARIN",
+      "ARIN",
+      "ARIN"
+     ],
      "xorRelayedASN" : [
       "AS13335 Cloudflare, Inc."
      ],
@@ -179,6 +221,10 @@
       "ARIN"
      ]
     },
+    "tags" : [
+     "stun:nat-discovered"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 10,
      "ae" : 0,

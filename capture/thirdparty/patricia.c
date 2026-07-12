@@ -39,7 +39,6 @@ my_inet_pton(int af, const char *src, void *dst)
         int             i,
                         c,
                         val;
-	/* not thread safe */
         u_char          xp[4] = { 0, 0, 0, 0 };
 
         for (i = 0;; i++) {
@@ -121,9 +120,6 @@ ascii2prefix2(int family, char *string, prefix_t *prefix)
     char           *cp;
     struct in_addr  sin;
     struct in6_addr sin6;
-    /*
-     * not thread safe
-     */
     char save[MAXLINE];
 
     if (string == NULL)
@@ -145,7 +141,8 @@ ascii2prefix2(int family, char *string, prefix_t *prefix)
 
     if ((cp = strchr(string, '/')) != NULL) {
         bitlen = atol(cp + 1);
-        assert(cp - string < MAXLINE);
+        if (cp - string >= MAXLINE)
+            return (NULL);
         memcpy(save, string, cp - string);
         save[cp - string] = '\0';
         string = save;

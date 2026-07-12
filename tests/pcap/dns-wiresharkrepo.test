@@ -104,7 +104,9 @@
         "class" : "IN",
         "name" : "google.com",
         "ttl" : 270,
-        "txt" : "v=spf1 ptr ?all",
+        "txt" : [
+         "v=spf1 ptr ?all"
+        ],
         "type" : "TXT"
        }
       ],

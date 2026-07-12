@@ -44,42 +44,52 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
     // Lots of info from http://www.freetds.org/tds.html
     if (tds->version == 7) {
-        // TDS 7.0+ - look for LOGIN7 packet (type 0x10) in the stream
-        // May have prelogin (0x12) packets before LOGIN7
-        const uint8_t *ptr = tds->buf[0];
+        // TDS 7.0+: walk packets in this direction's buffer.
+        // Client (which==0): may have PRELOGIN(0x12), LOGIN7(0x10), SSPI(0x11 with Type 3)
+        // Server (which==1): may have SSPI(0x11 with Type 2)
+        const uint8_t *ptr = tds->buf[which];
         int pos = 0;
 
-        while (pos + 8 <= tds->len[0]) {
+        while (pos + 8 <= tds->len[which]) {
             uint8_t pktType = ptr[pos];
             uint16_t pktLen = (ptr[pos + 2] << 8) | ptr[pos + 3];
 
             if (pktLen < 8 || pktLen > tds->bufMax) {
-                // Malformed - too small or larger than buffer can ever hold
                 arkime_session_add_tag(session, "tds:packet-too-long");
                 arkime_parsers_unregister(session, uw);
                 return 0;
             }
-            if (pos + pktLen > tds->len[0]) {
-                // Need more data
+            if (pos + pktLen > tds->len[which]) {
                 break;
             }
 
-            if (pktType == 0x10) {
-                // LOGIN7 packet found
-                // Need at least 8-byte header + 86 bytes of fixed login7 structure
+            if (pktType == 0x10 && which == 0) {
+                // LOGIN7
                 if (pktLen >= 8 + 86) {
-                    const uint8_t *pkt = ptr + pos + 8;  // Skip 8-byte TDS header
+                    const uint8_t *pkt = ptr + pos + 8;
                     int pktDataLen = pktLen - 8;
 
-                    // Offsets are at fixed positions in LOGIN7 structure (relative to start of login7 data)
-                    // Username: offset at byte 40, length at byte 42
                     uint16_t userOffset = pkt[40] | (pkt[41] << 8);
                     uint16_t userLen    = pkt[42] | (pkt[43] << 8);
-
                     tds7_add_string_field(session, userField, pkt, pktDataLen, userOffset, userLen);
+
+                    // SSPI: offset@78, length@80. cbSSPI==0xFFFF -> use cbSSPILong@90.
+                    uint16_t sspiOffset = pkt[78] | (pkt[79] << 8);
+                    uint32_t sspiLen    = pkt[80] | (pkt[81] << 8);
+                    if (sspiLen == 0xFFFF && pktDataLen >= 94) {
+                        sspiLen = pkt[90] | (pkt[91] << 8) |
+                                  (pkt[92] << 16) | (pkt[93] << 24);
+                    }
+                    if (sspiLen >= 12 && sspiOffset <= (uint32_t)pktDataLen &&
+                        sspiLen <= (uint32_t)pktDataLen - sspiOffset) {
+                        arkime_parsers_ntlm_decode(session, pkt + sspiOffset, sspiLen);
+                    }
                 }
-                arkime_parsers_unregister(session, uw);
-                return 0;
+            } else if (pktType == 0x11) {
+                // SSPI message - raw NTLMSSP payload
+                if (pktLen > 8) {
+                    arkime_parsers_ntlm_decode(session, ptr + pos + 8, pktLen - 8);
+                }
             }
 
             pos += pktLen;

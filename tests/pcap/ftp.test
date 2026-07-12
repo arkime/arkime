@@ -45,6 +45,23 @@
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1454301530932,
+    "ftp" : {
+     "banner" : [
+      "Welcome to mirrors.rit.edu."
+     ],
+     "bannerCnt" : 1,
+     "command" : [
+      "PASS",
+      "USER"
+     ],
+     "commandCnt" : 2,
+     "responseCode" : [
+      "220",
+      "230",
+      "331"
+     ],
+     "responseCodeCnt" : 3
+    },
     "initRTT" : 12,
     "ipProtocol" : 6,
     "lastPacket" : 1454301531009,
@@ -111,6 +128,10 @@
      63
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "ftp:password"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,

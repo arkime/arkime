@@ -112,7 +112,14 @@ exports.sendSnmpAlert = function (config, message, links, cb) {
     }
   }
 
-  const port = parseInt(config.port, 10) || 162;
+  let port = 162;
+  if (config.port !== undefined && config.port !== null && config.port !== '') {
+    port = parseInt(config.port, 10);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      if (cb) { cb({ errors: { snmp: 'Invalid port (must be 1-65535)' } }); }
+      return;
+    }
+  }
   const trapOid = config.trapOid || DEFAULT_TRAP_OID;
 
   let session;

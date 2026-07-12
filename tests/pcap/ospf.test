@@ -638,13 +638,26 @@
     "fileId" : [],
     "firstPacket" : 1571662508795,
     "ipProtocol" : 89,
-    "lastPacket" : 1571662609191,
-    "length" : 100396,
+    "lastPacket" : 1571662608769,
+    "length" : 99974,
     "network" : {
-     "bytes" : 4876,
-     "packets" : 54
+     "bytes" : 2398,
+     "packets" : 27
     },
     "node" : "test",
+    "ospf" : {
+     "areaId" : [
+      "0.0.0.0"
+     ],
+     "msgType" : [
+      "DBDesc",
+      "Hello",
+      "LSReq"
+     ],
+     "routerId" : [
+      "172.16.0.2"
+     ]
+    },
     "packetLen" : [
      98,
      98,
@@ -653,113 +666,59 @@
      98,
      98,
      98,
-     98,
-     98,
-     98,
-     98,
-     98,
-     98,
-     98,
      94,
-     98,
      82,
-     122,
      86,
-     138,
      122,
-     86,
-     82,
      94,
      126,
-     94,
-     150,
      138,
      138,
      94,
-     150,
      94,
-     94,
-     98,
      82,
-     122,
      86,
-     138,
      122,
-     86,
-     82,
      94,
      126,
-     94,
-     150,
      138,
      138,
      94,
-     150,
-     94,
-     98,
-     98,
      98,
      98
     ],
     "packetPos" : [
      374,
-     472,
      10362,
-     10628,
      20313,
-     20495,
      31563,
-     31941,
      41830,
-     41928,
      50554,
-     50652,
      62872,
-     63054,
      75080,
-     75565,
      75663,
-     75745,
      75867,
-     75953,
      76091,
-     76213,
-     76299,
      76381,
      76475,
-     76782,
-     76876,
      77026,
      82788,
-     82926,
-     83020,
      83170,
      87423,
-     87740,
      87838,
-     87920,
      88042,
-     88128,
      88266,
-     88388,
-     88474,
      88556,
      88650,
-     88957,
-     89051,
      89201,
      93373,
-     93511,
-     93605,
      93755,
      98169,
-     98267,
-     110103,
-     110285
+     110103
     ],
     "packetRange" : {
      "gte" : 1571662508795,
-     "lte" : 1571662609191
+     "lte" : 1571662608769
     },
     "protocol" : [
      "ospf"
@@ -777,17 +736,16 @@
        "name" : "Cool Beans!"
       }
      },
-     "bytes" : 4876,
+     "bytes" : 2398,
      "geo" : {
       "country_iso_code" : "CA"
      },
      "ip" : "10.0.0.2",
      "mac" : [
-      "08:00:27:1f:08:22",
       "08:00:27:76:e3:69"
      ],
-     "mac-cnt" : 2,
-     "packets" : 54,
+     "mac-cnt" : 1,
+     "packets" : 27,
      "port" : 0
     },
     "srcDscp" : [
@@ -804,9 +762,186 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "dstip"
+     "dstip",
+     "ospf:auth-null"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.5",
+     "mac" : [
+      "01:00:5e:00:00:05"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662509191,
+    "ipProtocol" : 89,
+    "lastPacket" : 1571662609191,
+    "length" : 100000,
+    "network" : {
+     "bytes" : 2478,
+     "packets" : 27
+    },
+    "node" : "test",
+    "ospf" : {
+     "areaId" : [
+      "0.0.0.0"
+     ],
+     "msgType" : [
+      "DBDesc",
+      "Hello",
+      "LSReq",
+      "LSUpdate"
+     ],
+     "routerId" : [
+      "172.16.0.1"
+     ]
+    },
+    "packetLen" : [
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     122,
+     138,
+     86,
+     82,
+     94,
+     150,
+     94,
+     150,
+     98,
+     122,
+     138,
+     86,
+     82,
+     94,
+     150,
+     94,
+     150,
+     98,
+     98
+    ],
+    "packetPos" : [
+     472,
+     10628,
+     20495,
+     31941,
+     41928,
+     50652,
+     63054,
+     75565,
+     75745,
+     75953,
+     76213,
+     76299,
+     76782,
+     76876,
+     82926,
+     83020,
+     87740,
+     87920,
+     88128,
+     88388,
+     88474,
+     88957,
+     89051,
+     93511,
+     93605,
+     98267,
+     110285
+    ],
+    "packetRange" : {
+     "gte" : 1571662509191,
+     "lte" : 1571662609191
+    },
+    "protocol" : [
+     "ospf"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 2478,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "08:00:27:1f:08:22"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 27,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "ospf:auth-null",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      83886304
+     ],
+     "string.snow" : [
+      "16777226:0,83886304:0"
+     ]
+    },
     "totDataBytes" : 0
    },
    "header" : {

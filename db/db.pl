@@ -834,7 +834,7 @@ sub fieldsUpdate
       "help": "Search all port fields",
       "type": "integer",
       "dbField2": "portall",
-      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
+      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$|Port$)"
     }');
     esPost("/${PREFIX}fields_v30/_doc/rir?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All rir fields",
@@ -4517,6 +4517,12 @@ sub sessions3Update
         "originRealmCnt" : {
           "type" : "long"
         },
+        "resultCode" : {
+          "type" : "long"
+        },
+        "resultCodeCnt" : {
+          "type" : "long"
+        },
         "sessionId" : {
           "type" : "keyword"
         },
@@ -4869,6 +4875,34 @@ sub sessions3Update
     },
     "dstOuterASN" : {
       "type" : "keyword"
+    },
+    "ftp" : {
+      "properties" : {
+        "banner" : {
+          "type" : "keyword"
+        },
+        "bannerCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "filename" : {
+          "type" : "keyword"
+        },
+        "filenameCnt" : {
+          "type" : "long"
+        },
+        "responseCode" : {
+          "type" : "integer"
+        },
+        "responseCodeCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "http" : {
       "properties" : {
@@ -5255,10 +5289,62 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "src" : {
           "type" : "long"
         },
         "srcCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "enip" : {
+      "properties" : {
+        "class" : {
+          "type" : "keyword"
+        },
+        "classCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "deviceType" : {
+          "type" : "keyword"
+        },
+        "deviceTypeCnt" : {
+          "type" : "long"
+        },
+        "product" : {
+          "type" : "keyword"
+        },
+        "productCnt" : {
+          "type" : "long"
+        },
+        "service" : {
+          "type" : "keyword"
+        },
+        "serviceCnt" : {
+          "type" : "long"
+        },
+        "status" : {
+          "type" : "long"
+        },
+        "statusCnt" : {
+          "type" : "long"
+        },
+        "vendor" : {
+          "type" : "keyword"
+        },
+        "vendorCnt" : {
           "type" : "long"
         }
       }
@@ -5307,6 +5393,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "clientIdCnt" : {
+          "type" : "long"
+        },
+        "connackCode" : {
+          "type" : "long"
+        },
+        "connackCodeCnt" : {
           "type" : "long"
         },
         "flags" : {
@@ -5411,6 +5503,19 @@ sub sessions3Update
     },
     "node" : {
       "type" : "keyword"
+    },
+    "ospf" : {
+      "properties" : {
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "routerId" : {
+          "type" : "keyword"
+        },
+        "areaId" : {
+          "type" : "keyword"
+        }
+      }
     },
     "oracle" : {
       "properties" : {
@@ -5568,6 +5673,24 @@ sub sessions3Update
         "macCnt" : {
           "type" : "long"
         },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "nasIp" : {
+          "type" : "ip"
+        },
+        "nasIpCnt" : {
+          "type" : "long"
+        },
+        "nasPort" : {
+          "type" : "integer"
+        },
+        "nasPortCnt" : {
+          "type" : "long"
+        },
         "user" : {
           "type" : "keyword"
         }
@@ -5714,6 +5837,12 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "opcode" : {
           "type" : "long"
         },
@@ -5799,10 +5928,22 @@ sub sessions3Update
         "communityCnt" : {
           "type" : "long"
         },
+        "engineId" : {
+          "type" : "keyword"
+        },
+        "engineIdCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "keyword"
         },
         "errorCnt" : {
+          "type" : "long"
+        },
+        "secLevel" : {
+          "type" : "keyword"
+        },
+        "secLevelCnt" : {
           "type" : "long"
         },
         "trapOid" : {
@@ -5881,6 +6022,12 @@ sub sessions3Update
     },
     "stun" : {
       "properties" : {
+        "attributes" : {
+          "type" : "keyword"
+        },
+        "attributesCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "long"
         },
@@ -5933,6 +6080,18 @@ sub sessions3Update
           "type" : "long"
         },
         "xorMappedPortCnt" : {
+          "type" : "long"
+        },
+        "xorPeerIp" : {
+          "type" : "ip"
+        },
+        "xorPeerIpCnt" : {
+          "type" : "long"
+        },
+        "xorPeerPort" : {
+          "type" : "long"
+        },
+        "xorPeerPortCnt" : {
           "type" : "long"
         },
         "xorRelayedIp" : {
@@ -6177,6 +6336,43 @@ sub sessions3Update
     },
     "userCnt" : {
       "type" : "long"
+    },
+    "websocket" : {
+      "properties" : {
+        "opcode" : {
+          "type" : "keyword"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "closeCode" : {
+          "type" : "long"
+        },
+        "closeCodeCnt" : {
+          "type" : "long"
+        },
+        "closeReason" : {
+          "type" : "keyword"
+        },
+        "closeReasonCnt" : {
+          "type" : "long"
+        },
+        "textSample" : {
+          "type" : "keyword"
+        },
+        "textSampleCnt" : {
+          "type" : "long"
+        },
+        "frameCnt" : {
+          "type" : "long"
+        },
+        "payloadBytes" : {
+          "type" : "long"
+        },
+        "maskedFromClient" : {
+          "type" : "long"
+        }
+      }
     }
   }
 }
@@ -7562,7 +7758,7 @@ sub verify {
 }
 
 if ($ARGV[0] =~ /^urlinfile:\/\//) {
-    open( my $file, substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
+    open( my $file, '<', substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
     $main::elasticsearch = <$file>;
     chomp $main::elasticsearch;
     close ($file);
@@ -8239,7 +8435,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
         foreach my $hit (@{$results->{hits}->{hits}}) {
-            my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
+            my $script = to_json({script => {source => 'ctx._source.name = params.n; ctx._source.locked = 1', params => {n => $ARGV[3]}}});
             esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
         }
         logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";

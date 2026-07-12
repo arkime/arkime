@@ -53,14 +53,6 @@ class URLApiSource extends WISESource {
 
     url = url.replace(/{value}/g, encodeURIComponent(key));
 
-    // Convert shortcuts into array of key path
-    const shortcuts = [];
-    const shortcutsValue = [];
-    for (const k in this.shortcuts) {
-      shortcuts.push(k.split('.'));
-      shortcutsValue.push(this.shortcuts[k]);
-    }
-
     axios.get(url, { headers: this.headers })
       .then((response) => {
         if (response.status === 404) {
@@ -72,26 +64,7 @@ class URLApiSource extends WISESource {
         if (eskey === undefined) {
           return cb(null, undefined);
         }
-        const args = [];
-
-        for (let k = 0; k < shortcuts.length; k++) {
-          let objs = json;
-          // Walk the shortcut path
-          for (let j = 0; objs && j < shortcuts[k].length; j++) {
-            objs = objs[shortcuts[k][j]];
-          }
-
-          if (!objs) continue;
-
-          args.push(shortcutsValue[k].pos);
-          if (Array.isArray(objs)) {
-            args.push(objs[0]);
-          } else if (typeof objs !== 'string') {
-            args.push(objs.toString());
-          } else {
-            args.push(objs);
-          }
-        }
+        const args = this.parseJSONElement(json);
         const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
         return cb(null, newresult);
       }).catch((err) => {

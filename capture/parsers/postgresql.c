@@ -109,21 +109,20 @@ void arkime_parser_init()
 
     userField = arkime_field_define("postgresql", "termfield",
                                     "postgresql.user", "User", "postgresql.user",
-                                    "Postgresql user name",
+                                    "PostgreSQL user name",
                                     ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                     "category", "user",
                                     (char *)NULL);
 
     dbField = arkime_field_define("postgresql", "termfield",
                                   "postgresql.db", "Database", "postgresql.db",
-                                  "Postgresql database",
+                                  "PostgreSQL database",
                                   ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                   (char *)NULL);
 
     appField = arkime_field_define("postgresql", "termfield",
                                    "postgresql.app", "Application", "postgresql.app",
-                                   "Postgresql application",
+                                   "PostgreSQL application",
                                    ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                    (char *)NULL);
 }
-

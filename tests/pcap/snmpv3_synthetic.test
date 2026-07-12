@@ -43,6 +43,14 @@
      "bytes" : 0
     },
     "snmp" : {
+     "engineId" : [
+      "80001f8880123456789abc"
+     ],
+     "engineIdCnt" : 1,
+     "secLevel" : [
+      "noAuthNoPriv"
+     ],
+     "secLevelCnt" : 1,
      "version" : [
       3
      ],
@@ -189,6 +197,14 @@
      "bytes" : 0
     },
     "snmp" : {
+     "engineId" : [
+      "80001f8880123456789abc"
+     ],
+     "engineIdCnt" : 1,
+     "secLevel" : [
+      "noAuthNoPriv"
+     ],
+     "secLevelCnt" : 1,
      "version" : [
       3
      ],
@@ -339,6 +355,14 @@
      "bytes" : 0
     },
     "snmp" : {
+     "engineId" : [
+      "80001f8880123456789abc"
+     ],
+     "engineIdCnt" : 1,
+     "secLevel" : [
+      "noAuthNoPriv"
+     ],
+     "secLevelCnt" : 1,
      "version" : [
       3
      ],

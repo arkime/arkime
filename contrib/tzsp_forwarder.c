@@ -44,10 +44,11 @@ void packet_handler(u_char *user_data, const struct pcap_pkthdr *pkthdr, const u
     // Add END tag (0x01)
     tzsp_packet[offset++] = 0x01;
 
-    // Defensive bound: even though pcap is opened with SNAP_LEN, never trust caplen
+    // Defensive bound: cap caplen to actual remaining buffer space after header offset
     unsigned int caplen = pkthdr->caplen;
-    if (caplen > SNAP_LEN)
-        caplen = SNAP_LEN;
+    unsigned int max_caplen = (unsigned int)(sizeof(tzsp_packet) - offset);
+    if (caplen > max_caplen)
+        caplen = max_caplen;
 
     // Copy packet data
     memcpy(tzsp_packet + offset, packet, caplen);

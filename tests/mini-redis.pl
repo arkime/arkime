@@ -29,6 +29,7 @@ my %conn_db;   # fileno => db number
 my %conn_buf;  # fileno => read buffer
 
 my $server = IO::Socket::INET->new(
+    LocalAddr => '127.0.0.1',
     LocalPort => $port,
     Proto     => 'tcp',
     Listen    => 128,

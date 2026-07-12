@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 151;
+use Test::More tests => 153;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -83,6 +83,22 @@ eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwise-comma"},
 {"field":"tags","len":18,"value":"ipwise-jsonl-comma"},
 {"field":"tags","len":10,"value":"ipwisejson"},
 {"field":"tags","len":11,"value":"ipwisejsonl"}]'));
+
+# Nested-object array shortcut walking: shortcut "info.tag" over
+# { "info": [ {"tag": "nested-v1"}, {"tag": "nested-v2"} ] }
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.99.0.1")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwisenested"},
+{"field":"tags","len":9,"value":"nested-v1"},
+{"field":"tags","len":9,"value":"nested-v2"}]'), "ipjsonnested intermediate array of objects");
+
+# Final-value array shortcut walking: shortcut "info.tag" over
+# { "info": { "tag": ["final-v3", "final-v4"] } }
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.99.0.2")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":8,"value":"final-v3"},
+{"field":"tags","len":8,"value":"final-v4"},
+{"field":"tags","len":12,"value":"ipwisenested"}]'), "ipjsonnested final value array");
 
 # IP File jsonl Dump
 $wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/file:ipjsonl")->content . "]";
@@ -255,7 +271,7 @@ eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;

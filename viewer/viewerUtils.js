@@ -20,6 +20,7 @@ const internals = require('./internals');
 class ViewerUtils {
   static #oldDBFields = new Map();
   static #caTrustCerts = new Map();
+  static #hostnameRE = /^(?:[a-zA-Z0-9._-]+|\[[0-9a-fA-F:]+\])$/;
 
   // ----------------------------------------------------------------------------
   static addCaTrust (options, node) {
@@ -267,6 +268,10 @@ class ViewerUtils {
 
     if (Config.debug > 1) {
       console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
+    }
+
+    if (!stat.hostname || !ViewerUtils.#hostnameRE.test(stat.hostname)) {
+      throw new Error(`Invalid hostname for node ${ArkimeUtil.sanitizeStr(node)} from stats index: ${ArkimeUtil.sanitizeStr(stat.hostname)}`);
     }
 
     isHttps = Config.isHTTPS(node);

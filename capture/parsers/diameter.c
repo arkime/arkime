@@ -14,6 +14,7 @@ LOCAL int sessionIdField;
 LOCAL int userNameField;
 LOCAL int cmdCodeField;
 LOCAL int appIdField;
+LOCAL int resultCodeField;
 
 #define DIAMETER_MAX_MSG_LEN 8192
 
@@ -190,6 +191,12 @@ LOCAL void diameter_parse_avps(ArkimeSession_t *session, const uint8_t *data, in
             break;
         case 296: // Origin-Realm
             arkime_field_string_add(originRealmField, session, (char *)avpData, dataLen, TRUE);
+            break;
+        case 268: // Result-Code
+            if (dataLen == 4) {
+                uint32_t resultCode = (avpData[0] << 24) | (avpData[1] << 16) | (avpData[2] << 8) | avpData[3];
+                arkime_field_int_add(resultCodeField, session, resultCode);
+            }
             break;
         }
     }
@@ -399,6 +406,12 @@ void arkime_parser_init()
                                      "Diameter Application ID",
                                      ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
+
+    resultCodeField = arkime_field_define("diameter", "integer",
+                                          "diameter.resultCode", "Result Code", "diameter.resultCode",
+                                          "Diameter Result-Code AVP (268): 2xxx success, 3xxx protocol error, 4xxx transient failure, 5xxx permanent failure",
+                                          ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     // Register for TCP port 3868
     arkime_parsers_classifier_register_port("diameter", NULL, 3868, ARKIME_PARSERS_PORT_TCP, diameter_tcp_classify);

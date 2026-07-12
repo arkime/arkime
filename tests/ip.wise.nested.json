@@ -1,0 +1,10 @@
+[
+  {
+    "ip": "10.99.0.1",
+    "info": [ {"tag": "nested-v1"}, {"tag": "nested-v2"} ]
+  },
+  {
+    "ip": "10.99.0.2",
+    "info": { "tag": ["final-v3", "final-v4"] }
+  }
+]

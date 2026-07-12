@@ -15,6 +15,7 @@ extern ArkimeConfig_t        config;
 
 LOCAL  int rosctrField;
 LOCAL  int funcField;
+LOCAL  int funcNameField;
 LOCAL  int pduRefField;
 LOCAL  int errorClassField;
 LOCAL  int errorCodeField;
@@ -29,6 +30,39 @@ LOCAL  int s7plusOpcodeField;
 /* S7comm protocol IDs */
 #define S7COMM_PROTOCOL_ID      0x32
 #define S7COMM_PLUS_PROTOCOL_ID 0x72
+
+// S7comm Job/Ack_Data function codes
+LOCAL const char *s7comm_func_name(uint8_t code)
+{
+    switch (code) {
+    case 0x00:
+        return "Setup communication";
+    case 0x04:
+        return "Read Var";
+    case 0x05:
+        return "Write Var";
+    case 0x1a:
+        return "Request download";
+    case 0x1b:
+        return "Download block";
+    case 0x1c:
+        return "Download ended";
+    case 0x1d:
+        return "Start upload";
+    case 0x1e:
+        return "Upload";
+    case 0x1f:
+        return "End upload";
+    case 0x28:
+        return "PLC Control";
+    case 0x29:
+        return "PLC Stop";
+    case 0xf0:
+        return "Setup communication";
+    default:
+        return NULL;
+    }
+}
 
 /******************************************************************************/
 LOCAL void s7comm_parse_pdu(ArkimeSession_t *session, BSB *bsb)
@@ -79,6 +113,10 @@ LOCAL void s7comm_parse_pdu(ArkimeSession_t *session, BSB *bsb)
             uint8_t funcCode = 0;
             BSB_IMPORT_u08(*bsb, funcCode);
             arkime_field_int_add(funcField, session, funcCode);
+            const char *fname = s7comm_func_name(funcCode);
+            if (fname) {
+                arkime_field_string_add(funcNameField, session, fname, -1, TRUE);
+            }
         }
     } else if (protocolId == S7COMM_PLUS_PROTOCOL_ID) {
         if (!arkime_session_has_protocol(session, "s7comm-plus"))
@@ -247,6 +285,12 @@ void arkime_parser_init()
                                     "S7comm Function Codes",
                                     ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                     (char *)NULL);
+
+    funcNameField = arkime_field_define("s7comm", "termfield",
+                                        "s7comm.funcName", "S7comm Function Name", "s7comm.funcName",
+                                        "S7comm Function Names (Read Var, Write Var, PLC Stop, etc)",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     pduRefField = arkime_field_define("s7comm", "integer",
                                       "s7comm.pduref", "S7comm PDU Reference", "s7comm.pduref",

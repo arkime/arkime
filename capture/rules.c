@@ -49,7 +49,7 @@ typedef struct {
     char                *filename;
     char                *name;
     char                *bpf;                        // String version of bpf
-    struct bpf_program   bpfp;
+    struct bpf_program  *bpfp;                       // Atomic pointer; rebuilt on recompile, old defer-freed
     GHashTable          *hash[ARKIME_FIELDS_MAX];    // For each non ip field in rule
     GHashTable          *hashNOT[ARKIME_FIELDS_MAX]; // For each non ip field in rule
     GPtrArray           *match[ARKIME_FIELDS_MAX];   // For any string fields with , modifier or int fields range
@@ -823,6 +823,14 @@ LOCAL void arkime_rules_load_complete()
     memset(&loading, 0, sizeof(loading));
 }
 /******************************************************************************/
+LOCAL void arkime_rules_bpfp_free(gpointer data)
+{
+    struct bpf_program *bpfp = data;
+    if (bpfp->bf_len)
+        pcap_freecode(bpfp);
+    g_free(bpfp);
+}
+/******************************************************************************/
 LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
 {
     for (int i = 0; i < ARKIME_FIELDS_MAX; i++) {
@@ -849,6 +857,8 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
             g_free(rule->name);
             if (rule->bpf)
                 g_free(rule->bpf);
+            if (rule->bpfp)
+                arkime_rules_bpfp_free(rule->bpfp);
 
             free(rule->fields);
             free(rule->fieldsNOT);
@@ -922,7 +932,11 @@ LOCAL void arkime_rules_load(char **names)
     arkime_free_later(freeing, (GDestroyNotify) arkime_rules_free);
 }
 /******************************************************************************/
-/* Called at the start on main thread or each time a new file is open on single thread */
+/* Called on main thread at startup, and on the scheme thread each time a new
+ * offline file is opened. Packet threads may concurrently read rule->bpfp via
+ * arkime_rules_run_session_setup, so we never mutate a live program in place.
+ * Build a fresh struct bpf_program, atomically swap the pointer, and let
+ * arkime_free_later release the old one after readers have quiesced. */
 void arkime_rules_recompile()
 {
     if (deadPcap)
@@ -937,14 +951,17 @@ void arkime_rules_recompile()
             if (!rule->bpf)
                 continue;
 
-            pcap_freecode(&rule->bpfp);
+            struct bpf_program *newbpfp = g_new0(struct bpf_program, 1);
             if (pcapFileHeader.dlt != DLT_NFLOG) {
-                if (pcap_compile(deadPcap, &rule->bpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1 && !config.ignoreErrors) {
+                if (pcap_compile(deadPcap, newbpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1 && !config.ignoreErrors) {
                     CONFIGEXIT("Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
                 }
-            } else {
-                rule->bpfp.bf_len = 0;
             }
+
+            struct bpf_program *oldbpfp = rule->bpfp;
+            ARKIME_THREAD_ATOMIC_STORE(rule->bpfp, newbpfp);
+            if (oldbpfp)
+                arkime_free_later(oldbpfp, arkime_rules_bpfp_free);
         }
     }
 }
@@ -1623,8 +1640,11 @@ void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *pa
         ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_SESSION_SETUP], r);
         if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
-        } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-            arkime_rules_match(session, rule);
+        } else if (rule->bpfp) {
+            struct bpf_program *bpfp = ARKIME_THREAD_ATOMIC_LOAD(rule->bpfp);
+            if (bpfp && bpfp->bf_len && bpf_filter(bpfp->bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+                arkime_rules_match(session, rule);
+            }
         }
     }
 }

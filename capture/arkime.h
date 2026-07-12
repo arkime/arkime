@@ -313,6 +313,9 @@ typedef struct {
 #define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1)
 #define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num)
 
+#define ARKIME_THREAD_ATOMIC_STORE(var, val) __atomic_store_n(&(var), (val), __ATOMIC_RELEASE)
+#define ARKIME_THREAD_ATOMIC_LOAD(var)       __atomic_load_n(&(var), __ATOMIC_ACQUIRE)
+
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, use jemalloc and increase the number of threads used for reading packets.
  * https://arkime.com/faq#why-am-i-dropping-packets
@@ -662,6 +665,8 @@ typedef struct {
     uint32_t        sessionsPresent;
     uint8_t         didBatch;
     uint8_t         finishWaiting;
+    void           *notifyClientRef; // command-socket --notify: client to receive file-done
+    char           *notifyFilename;  // filename to report in the notification
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef enum {
@@ -1012,6 +1017,7 @@ void arkime_quit();
 uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
+FILE *arkime_state_file_open(const char *name, const char *mode);
 
 typedef void (*ArkimeCredentialsGet)(const char *service);
 void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
@@ -1189,6 +1195,8 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
 int arkime_parsers_asn_sequence_to_int(ArkimeASNSeq_t *seq);
 void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len);
 uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, uint8_t *value, uint32_t len);
+void arkime_parsers_ntlm_decode(ArkimeSession_t *session, const uint8_t *buf, uint32_t len);
+gboolean arkime_parsers_ntlm_decode_base64(ArkimeSession_t *session, const char *b64, int b64len);
 void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which);
@@ -1607,6 +1615,7 @@ int  arkime_field_count(int pos, ArkimeSession_t *session);
 void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value);
 GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, const char *key);
 void arkime_field_free(ArkimeSession_t *session);
+void arkime_field_free_one(ArkimeSession_t *session, int pos);
 void arkime_field_exit();
 
 int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);

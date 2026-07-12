@@ -48,7 +48,7 @@ typedef struct {
     uint16_t         isConnect: 2; // Keep track of each side that is CONNECT and completed headers
     uint16_t         reclassify: 2; // Keep track of each side that needs to reclassify still
     uint16_t         http2Upgrade: 1;
-    uint16_t         websocketUpgrade: 1;
+    uint16_t         websocketUpgrade: 2;
 } HTTPInfo_t;
 
 extern ArkimeConfig_t        config;
@@ -56,6 +56,7 @@ LOCAL  http_parser_settings  parserSettings;
 extern uint32_t              pluginsCbs;
 LOCAL  ArkimeStringHashStd_t httpReqHeaders;
 LOCAL  ArkimeStringHashStd_t httpResHeaders;
+LOCAL  GHashTable           *httpSubParsers;
 
 LOCAL  int cookieKeyField;
 LOCAL  int cookieValueField;
@@ -354,6 +355,15 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
 
     arkime_field_string_add_lower(atField, session, str, space - str);
 
+    if (strncasecmp("ntlm", str, 4) == 0 || strncasecmp("negotiate", str, 9) == 0) {
+        const char *scheme_end = space;
+        const char *b64 = scheme_end;
+        while (*b64 && isspace((unsigned char) * b64)) b64++;
+        if (*b64)
+            arkime_parsers_ntlm_decode_base64(session, b64, strlen(b64));
+        return;
+    }
+
     if (strncasecmp("basic", str, 5) == 0) {
         str += 5;
         while (isspace(*str)) str++;
@@ -547,6 +557,18 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             else
                 HTTP_GSTR_APPEND(http->proxyAuthString, at, length);
         }
+    } else {
+        if (strcasecmp("www-authenticate", http->header[http->which]) == 0) {
+            if (!http->authString)
+                http->authString = g_string_new_len(at, length);
+            else
+                HTTP_GSTR_APPEND(http->authString, at, length);
+        } else if (strcasecmp("proxy-authenticate", http->header[http->which]) == 0) {
+            if (!http->proxyAuthString)
+                http->proxyAuthString = g_string_new_len(at, length);
+            else
+                HTTP_GSTR_APPEND(http->proxyAuthString, at, length);
+        }
     }
 
     if (http->pos[http->which]) {
@@ -708,6 +730,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 
     if (http->websocketUpgrade && parser->status_code == 101) {
         arkime_session_add_protocol(session, "websocket");
+        http->websocketUpgrade = 2; // signal http_parse to hand off to websocket parser
     }
 
     if (pluginsCbs & ARKIME_PLUGIN_HP_OHC)
@@ -724,6 +747,14 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
     if (http->http2Upgrade) {
         arkime_parsers_classify_tcp(session, data, remaining, which);
+        return ARKIME_PARSER_UNREGISTER;
+    }
+
+    if (http->websocketUpgrade == 2) {
+        ArkimeParserInfo_t *info = g_hash_table_lookup(httpSubParsers, "websocket");
+        if (info && info->parserFunc) {
+            info->parserFunc(session, info->uw, data, remaining, which);
+        }
         return ARKIME_PARSER_UNREGISTER;
     }
 
@@ -854,6 +885,8 @@ LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), 
 /******************************************************************************/
 void arkime_parser_init()
 {
+    httpSubParsers = arkime_parsers_get_sub("http");
+
     static const char *method_strings[] = {
 #define XX(num, name, string) #string,
         HTTP_METHOD_MAP(XX)
