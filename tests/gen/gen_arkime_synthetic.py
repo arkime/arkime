@@ -7,6 +7,7 @@ Layout:
   - icmpv6_haad (3 packets)
   - ikev2_sa_init (3 packets)
   - dns_https_empty_alpn (3 packets)
+  - dns_https_trailing_empty_param (3 packets, appended last)
   - certs_keyusage (30 packets)
   - imap_crsplit (16 packets)
   - krb5_biglen (10 packets)
@@ -667,6 +668,91 @@ def sec_dns_https_empty_alpn():
             build_udp('10.0.91.1', '10.0.91.2', 41000, 53, q),
             build_udp('10.0.91.1', '10.0.91.2', 41000, 53, q),  # retransmit, parsed
             build_udp('10.0.91.2', '10.0.91.1', 53, 41000, r),
+        ]
+
+        out = b''
+        ts = TS_START
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.1
+
+        return out
+    return build()
+
+
+def sec_dns_https_trailing_empty_param():
+    # Append a DNS HTTPS-RR session whose SVCB RDATA ENDS in a zero-length
+    # SvcParam, exercising the dns.c parse-loop fix where the guard was
+    # `while (BSB_REMAINING(bsb) > 4 ...)` (needs >=5 bytes) and silently
+    # dropped a valid trailing param that is exactly 4 bytes (key + len=0).
+    # The record is `alpn=h2` followed by a trailing zero-length `ipv4hint`
+    # (keeps SvcParamKeys in ascending order: alpn=1 < ipv4hint=4). With the
+    # bug the trailing param is dropped ("HTTPS 1 . alpn=h2"); with the fix it
+    # is parsed and rendered ("HTTPS 1 . alpn=h2 ipv4hint=").
+    #
+    # Session 10.0.92.1:41001 -> 10.0.92.2:53 (UDP):
+
+    TS_START = 1700009300.0
+
+    CMAC = bytes.fromhex('001122334466')
+    SMAC = bytes.fromhex('66778899aabc')
+
+    QNAME = b'svc-trailing-empty' + b'\x07example\x03com\x00'
+
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+
+    def dns_query():
+        hdr = struct.pack('!HHHHHH', 0x9121, 0x0100, 1, 0, 0, 0)
+        qname = bytes([18]) + QNAME
+        return hdr + qname + struct.pack('!HH', 65, 1)  # type HTTPS, class IN
+
+
+    def dns_response():
+        hdr = struct.pack('!HHHHHH', 0x9121, 0x8180, 1, 1, 0, 0)
+        qname = bytes([18]) + QNAME
+        question = qname + struct.pack('!HH', 65, 1)
+        # RDATA: priority 1, target "." (root), then SvcParams
+        rdata = struct.pack('!H', 1) + b'\x00'
+        rdata += struct.pack('!HH', 1, 3) + b'\x02h2'  # alpn=h2
+        rdata += struct.pack('!HH', 4, 0)              # ipv4hint, EMPTY, trailing
+        answer = b'\xc0\x0c' + struct.pack('!HHIH', 65, 1, 300, len(rdata)) + rdata
+        return hdr + question + answer
+
+
+    def build_udp(src_str, dst_str, sport, dport, payload):
+        src = bytes(map(int, src_str.split('.')))
+        dst = bytes(map(int, dst_str.split('.')))
+        udp_len = 8 + len(payload)
+        udp = struct.pack('!HHHH', sport, dport, udp_len, 0)
+        pseudo = src + dst + struct.pack('!BBH', 0, 17, udp_len)
+        udp = udp[:6] + struct.pack('!H', csum(pseudo + udp + payload))
+
+        total_len = 20 + udp_len
+        ip = struct.pack('!BBHHHBBH4s4s', 0x45, 0, total_len, 0x9101, 0, 64, 17,
+                         0, src, dst)
+        ip = ip[:10] + struct.pack('!H', csum(ip)) + ip[12:]
+
+        eth = SMAC + CMAC + b'\x08\x00'
+        return eth + ip + udp + payload
+
+
+    def build():
+        q = dns_query()
+        r = dns_response()
+        pkts = [
+            build_udp('10.0.92.1', '10.0.92.2', 41001, 53, q),
+            build_udp('10.0.92.1', '10.0.92.2', 41001, 53, q),  # retransmit, parsed
+            build_udp('10.0.92.2', '10.0.92.1', 53, 41001, r),
         ]
 
         out = b''
@@ -2408,6 +2494,7 @@ def main():
     out += sec_dhcpv6_relay()
     out += sec_ip4_deep_offset()
     out += sec_ip6_deep_offset()
+    out += sec_dns_https_trailing_empty_param()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

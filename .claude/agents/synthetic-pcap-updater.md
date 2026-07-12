@@ -14,136 +14,138 @@ description: |
 
 ## Overview
 
-`tests/pcap/arkime_synthetic.pcap` is the synthetic test pcap that exercises protocol parser fields.
-New sessions are added by writing temporary scapy Python scripts that append packets, then deleting the scripts after validation.
+`tests/pcap/arkime_synthetic.pcap` is regenerated **in full** from a committed generator,
+`tests/gen/gen_arkime_synthetic.py`. This is the source of truth.
+
+Do **NOT** hand-edit the `.pcap`, and do **NOT** append with throwaway scapy scripts. To add or
+change a session you edit a section function in the generator and re-run it, so the pcap stays
+reproducible and reviewable. Each session (or small group) is produced by a `sec_<name>()` function
+that returns raw pcap-record bytes; `main()` concatenates a `LEGACY` blob plus every section in
+order and writes the file.
+
+The golden expected output, `tests/pcap/arkime_synthetic.test`, is regenerated separately with
+`./tests.pl --make` (see below) — never by hand and never with a raw capture pipe.
 
 ## File Locations
 
-- **Pcap file**: `tests/pcap/arkime_synthetic.pcap`
+- **Generator (edit this)**: `tests/gen/gen_arkime_synthetic.py`
+- **Pcap (generated artifact)**: `tests/pcap/arkime_synthetic.pcap`
+- **Golden output (generated artifact)**: `tests/pcap/arkime_synthetic.test`
 - **Parser sources**: `capture/parsers/*.c` and `capture/*.c` — contain `arkime_field_define` calls
 
-## Approach
+## Workflow: add or modify a session
 
-To add new sessions to the pcap, write a temporary Python (scapy) generator script that appends packets.
-Run the script from the `capture/` directory, then validate and delete the script when done.
-If the user asks to rebuild entirely, generate a single script that creates all needed packets from scratch.
+Run all `python3`/`./tests.pl` commands from the `tests/` directory.
 
-## Testing & Validation
+1. **Add a section function** `def sec_<name>():` in `gen/gen_arkime_synthetic.py`, modeled on an
+   existing one (e.g. `sec_dns_https_empty_alpn`). It must return the concatenated per-packet pcap
+   records — each is `struct.pack('<IIII', sec, usec, caplen, wirelen) + packet_bytes`. Sections use
+   pure `struct` (no scapy) with local `csum()` / `build_udp()` / `eth_ip_tcp()` helpers that fill in
+   IP total length, UDP/TCP length, and checksums.
 
-### Test with Arkime capture
-```bash
-cd capture
-./capture --tests -o parsersDir=parsers -r ../tests/pcap/arkime_synthetic.pcap
-```
-- Output is JSON to stdout with `{"sessions3": [...]}`
-- Stderr has log lines prefixed with month name; filter with `grep -v "^[A-Z][a-z][a-z] "`
+2. **Register it in `main()`.** **Append the call LAST**, after the current final section. This keeps
+   every existing packet at the same byte offset, so the golden `.test` diff is just your new session
+   instead of a reshuffle of every `filePos`/`packetPos`.
 
-### Validate with tshark (no malformed packets)
-```bash
-tshark -r tests/pcap/arkime_synthetic.pcap -T fields -e _ws.malformed 2>&1 | grep -i malform
-```
-Must produce zero output.
+3. **Update the header docstring** section list with a one-line entry for your section.
 
-### Validate with tcpdump (no truncated packets)
-```bash
-tcpdump -nn -r tests/pcap/arkime_synthetic.pcap 2>&1 | grep -iE "truncat|invalid|missing|bad"
-```
-Must produce zero output.
+4. **Regenerate the pcap:**
+   ```bash
+   python3 gen/gen_arkime_synthetic.py
+   ```
 
-### Verify specific fields
-```bash
-cd capture
-./capture --tests -o parsersDir=parsers -r ../tests/pcap/arkime_synthetic.pcap 2>/dev/null | \
-  grep -v "^[A-Z][a-z][a-z] " | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for s in data['sessions3']:
-    proto = s['body'].get('protocol', [])
-    print(proto, s['body'].get('source',{}).get('ip',''))
-"
-```
+5. **Rebuild any parser you changed** so the golden reflects current behavior:
+   ```bash
+   (cd ../capture && make)
+   # if make says "Nothing to be done", force it: touch ../capture/parsers/<x>.c then make
+   ```
 
-## Writing Generator Scripts
+6. **Regenerate the golden `.test`** — use `--make`, NOT a manual pipe and NOT `--fix` directly
+   (those produce the wrong, non-canonical format):
+   ```bash
+   ./tests.pl --make pcap/arkime_synthetic.pcap
+   ```
 
-When adding new sessions, write a temporary scapy Python script, run it, validate, then delete it.
+7. **Validate the test passes:**
+   ```bash
+   ./tests.pl pcap/arkime_synthetic.pcap        # expect: ok 1 - pcap/arkime_synthetic
+   ```
 
-### UDP protocol template
+8. **Sanity-check the golden diff is minimal** (only your new session; deletions should be 0):
+   ```bash
+   git -C .. diff --numstat tests/pcap/arkime_synthetic.test
+   ```
+
+### Proving the test guards a parser fix (recommended)
+
+If the session exists to lock in a parser fix, confirm it actually fails on the OLD behavior:
+temporarily revert the parser line, `make`, run `./tests.pl pcap/arkime_synthetic.pcap` (expect
+`not ok` with the exact field diff), then restore the fix and rebuild.
+
+## Section function template (committed struct style)
+
 ```python
-#!/usr/bin/env python3
-"""Generate PROTOCOL packets and append to arkime_synthetic.pcap"""
-import struct
-from scapy.all import Ether, IP, UDP, Raw, wrpcap
+def sec_<name>():
+    # One-line description of the session and what parser path / field it exercises.
+    # Session 10.0.NN.1:PORT -> 10.0.NN.2:DPORT (UDP):
+    TS_START = 1700009300.0                       # unique, after existing timestamps
+    CMAC = bytes.fromhex('001122334466')
+    SMAC = bytes.fromhex('66778899aabc')
 
-PCAP = "../tests/pcap/arkime_synthetic.pcap"
-SMAC = "6a:70:c5:af:f1:f9"
-DMAC = "94:2a:6f:ee:8c:83"
-T = UNIQUE_TIMESTAMP  # pick a timestamp that doesn't overlap existing packets
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
 
-def pkt(src_ip, dst_ip, sport, dport, payload, ts):
-    p = Ether(src=SMAC, dst=DMAC) / IP(src=src_ip, dst=dst_ip, ttl=64) / UDP(sport=sport, dport=dport) / Raw(load=payload)
-    p = Ether(bytes(p))  # CRITICAL: rebuild to fix lengths
-    p.time = ts
-    return p
+    def build_udp(src_str, dst_str, sport, dport, payload):
+        src = bytes(map(int, src_str.split('.')))
+        dst = bytes(map(int, dst_str.split('.')))
+        udp_len = 8 + len(payload)
+        udp = struct.pack('!HHHH', sport, dport, udp_len, 0)
+        pseudo = src + dst + struct.pack('!BBH', 0, 17, udp_len)
+        udp = udp[:6] + struct.pack('!H', csum(pseudo + udp + payload))
+        total_len = 20 + udp_len
+        ip = struct.pack('!BBHHHBBH4s4s', 0x45, 0, total_len, 0x9101, 0, 64, 17, 0, src, dst)
+        ip = ip[:10] + struct.pack('!H', csum(ip)) + ip[12:]
+        return SMAC + CMAC + b'\x08\x00' + ip + udp + payload
 
-pkts = []
-# ... build packets with protocol-correct payloads ...
-wrpcap(PCAP, pkts, append=True)
-print(f"Appended {len(pkts)} PROTOCOL packets")
+    def build():
+        pkts = [ build_udp('10.0.NN.1', '10.0.NN.2', PORT, DPORT, PAYLOAD) ]  # add both directions
+        out = b''
+        ts = TS_START
+        for p in pkts:
+            sec = int(ts); usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.1
+        return out
+    return build()
 ```
 
-### TCP protocol template (with 3-way handshake)
-```python
-#!/usr/bin/env python3
-"""Generate PROTOCOL packets and append to arkime_synthetic.pcap"""
-from scapy.all import Ether, IP, TCP, Raw, wrpcap
+For TCP sessions, mirror the existing `eth_ip_tcp()`-based sections (e.g. `sec_certs_keyusage`,
+`sec_imap_crsplit`) — they include a 3-way handshake and track seq/ack.
 
-PCAP = "../tests/pcap/arkime_synthetic.pcap"
-SMAC = "6a:70:c5:af:f1:f9"
-DMAC = "94:2a:6f:ee:8c:83"
-T = UNIQUE_TIMESTAMP
+## Critical rules
 
-CLIP = "10.X.Y.100"  # unique subnet per protocol
-SRIP = "10.X.Y.1"
-CPORT = 50000
-SPORT = WELL_KNOWN_PORT
+- **Edit the generator, never the `.pcap` by hand;** re-run `python3 gen/gen_arkime_synthetic.py`.
+- **Append new sections LAST** in `main()` to avoid churning existing `filePos`/`packetPos` in the golden.
+- **Regenerate the golden with `./tests.pl --make`** (canonical, pretty-printed, sorted). A raw
+  `capture | ./tests.pl --fix` redirect produces the wrong format and will clobber the golden.
+- **Unique 5-tuple per session**: a unique `10.X.Y.z` subnet + ports so sessions stay separate.
+- **Unique, non-overlapping timestamps** after existing ones.
+- **Content-based matching**: parsers classify on payload content/magic bytes, not port numbers.
+- **At least 2 packets** (both directions) per session to exercise request and response.
 
-pkts = []
-seq_c = 1000
-seq_s = 5000
+## Validate no malformed / truncated packets
 
-def add_pkt(src, dst, sport, dport, flags, seq, ack, payload=b"", t=0):
-    p = Ether(src=SMAC, dst=DMAC) / IP(src=src, dst=dst, ttl=64) / TCP(sport=sport, dport=dport, flags=flags, seq=seq, ack=ack)
-    if payload:
-        p = p / Raw(load=payload)
-    p = Ether(bytes(p))  # CRITICAL: rebuild to fix lengths
-    p.time = t
-    pkts.append(p)
-    return len(payload) if payload else 0
-
-# TCP 3-way handshake
-add_pkt(CLIP, SRIP, CPORT, SPORT, "S", seq_c, 0, t=T)
-seq_c += 1
-add_pkt(SRIP, CLIP, SPORT, CPORT, "SA", seq_s, seq_c, t=T+1)
-seq_s += 1
-add_pkt(CLIP, SRIP, CPORT, SPORT, "A", seq_c, seq_s, t=T+2)
-
-# ... protocol data packets with proper seq/ack tracking ...
-
-wrpcap(PCAP, pkts, append=True)
-print(f"Appended {len(pkts)} PROTOCOL packets")
+```bash
+tshark -r tests/pcap/arkime_synthetic.pcap -T fields -e _ws.malformed 2>&1 | grep -i malform    # zero output
+tcpdump -nn -r tests/pcap/arkime_synthetic.pcap 2>&1 | grep -iE "truncat|invalid|missing|bad"    # zero output
 ```
 
-### Critical rules
-- **Always rebuild packets**: `p = Ether(bytes(p))` ensures caplen == wirelen (no truncation)
-- **Use `wrpcap(PCAP, pkts, append=True)`** to append to existing pcap
-- **Unique IP subnets**: Use a unique `10.X.Y.x` subnet per protocol to keep sessions separate
-- **Unique timestamps**: Check existing packet timestamps with `tshark -r tests/pcap/arkime_synthetic.pcap -T fields -e frame.time_epoch | sort -n | tail -5` and pick values after the last one
-- **At least 2 sessions** per transport type (TCP/UDP) to test both directions
-- **Content-based matching**: Arkime parsers match on packet content, not port numbers. Payloads must contain the correct protocol signatures/magic bytes that trigger classifiers
-- **Run from capture/ directory**: Scripts use relative path `../tests/pcap/arkime_synthetic.pcap`
-- **Clean up**: Delete the generator script after the pcap is validated and committed
-
-## Finding Fields to Cover
+## Finding fields to cover
 
 ### List all field definitions for a parser
 ```bash
