@@ -1490,8 +1490,8 @@ class SessionAPIs {
     return new Promise((resolve, reject) => {
       let packets = [];
       // fullSession=false: decode/reassembly only reads ipProtocol and
-      // source ip/port, all in the narrow field list; a full-field fetch is
-      // expensive per session on the CH backend
+      // source ip/port, all of which are in processSessionId's narrow field
+      // list; the full-field fetch is expensive per session
       SessionAPIs.processSessionId(id, false, null, (pcap, buffer, cb, i) => {
         let obj = {};
         if (buffer.length > 16) {
@@ -2513,7 +2513,7 @@ class SessionAPIs {
       if (err) {
         console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
         res.status(400);
-        return res.type('text/plain').end(err);
+        return res.type('text/plain').end(String(err.message ?? err));
       }
 
       delete query.sort;
@@ -2540,7 +2540,7 @@ class SessionAPIs {
         if (err) {
           console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
           res.status(400);
-          return res.type('text/plain').end(err);
+          return res.type('text/plain').end(String(err.message ?? err));
         }
 
         if (Config.debug > 2) {
@@ -3395,7 +3395,7 @@ class SessionAPIs {
               SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
-                  return res.type('text/plain').end(err);
+                  return res.type('text/plain').end(String(err.message ?? err));
                 } else if (item) {
                   ArkimeUtil.noCache(req, res, 'application/force-download');
                   res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
@@ -3448,7 +3448,7 @@ class SessionAPIs {
     SessionAPIs.#localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
       if (err) {
         res.status(400);
-        return res.type('text/plain').end(err);
+        return res.type('text/plain').end(String(err.message ?? err));
       } else if (item) {
         ArkimeUtil.noCache(req, res, 'application/force-download');
         res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));

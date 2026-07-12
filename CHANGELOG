@@ -36,6 +36,12 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.6.1 2026/08/xx
+## Capture
+  - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
+## Viewer
+  - #4120 Fix error responses crashing with an unhandled rejection when a session API handler passed an Error object to res.end
+  - #4120 Fix addTagsList/removeTagsList completion callback not being reliably called
+  - #4120 Hunts now fetch only the packet-related session fields instead of all fields, speeding up hunts on sessions with many fields
 
 6.6.0 2026/07/09
 ## Breaking

@@ -100,8 +100,6 @@ class HuntAPIs {
       return cb(null, false);
     } else if (options.type === 'raw') {
       const packets = [];
-      // fullSession=false: packet search only needs the narrow packet fields,
-      // and a full-field fetch is expensive per session on the CH backend
       SessionAPIs.processSessionId(sessionId, false, null, (pcap, buffer, processSessionIdCb, i) => {
         if (options.src === options.dst) {
           // strip the 16 byte pcap record header, only packet data should be searched
@@ -1365,8 +1363,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log('HUNT - incoming', huntId, sessionId);
     }
 
-    // fetch hunt and session (only existence/node matter here; #sessionHunt
-    // fetches what it needs itself, so skip the expensive full-field fetch)
+    // fetch hunt and session
     Promise.all([
       Db.get('hunts', huntId),
       Db.getSession(sessionId, { _source: false, fields: ['node'] })
