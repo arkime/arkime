@@ -322,10 +322,10 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all&cluster=test");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all&cluster=unknown");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
