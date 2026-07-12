@@ -121,7 +121,7 @@ void arkime_plugin_init()
     }
 
     char **names = arkime_config_str_list(NULL, "luaFiles", NULL);
-    if (names && *names[0]) {
+    if (names && names[0]) {
         int i;
         for (i = 0; names[i]; i++) {
             molua_load_file(names[i]);

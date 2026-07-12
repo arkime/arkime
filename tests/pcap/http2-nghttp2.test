@@ -33,6 +33,10 @@
     "fileId" : [],
     "firstPacket" : 1593995681271,
     "http" : {
+     "clientVersion" : [
+      "2.0"
+     ],
+     "clientVersionCnt" : 1,
      "host" : [
       "nghttp2.org"
      ],
@@ -43,9 +47,10 @@
      ],
      "md5Cnt" : 2,
      "method" : [
-      "GET"
+      "GET",
+      "PRI"
      ],
-     "methodCnt" : 1,
+     "methodCnt" : 2,
      "path" : [
       "/",
       "/stylesheets/screen.css"
@@ -175,6 +180,10 @@
       200
      ],
      "statuscodeCnt" : 1,
+     "uri" : [
+      "*"
+     ],
+     "uriCnt" : 1,
      "useragent" : [
       "nghttp2/1.41.0"
      ],
@@ -401,10 +410,11 @@
      "lte" : 1593995683015
     },
     "protocol" : [
+     "http",
      "http2",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 46136

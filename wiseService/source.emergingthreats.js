@@ -56,17 +56,21 @@ class EmergingThreatsSource extends WISESource {
         this.categories[data[i][0]] = data[i][1];
       }
     });
-    fs.createReadStream('/tmp/categories.txt').pipe(parser);
+    fs.createReadStream(fn).on('error', (err) => {
+      console.log(this.section, "- Couldn't read", fn, err);
+    }).pipe(parser);
   }
 
   // ----------------------------------------------------------------------------
-  parseRepData (fn, hash) {
+  parseRepData (fn, hashName) {
     const parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
       if (err) {
         console.log(this.section, "- Couldn't parse", fn, 'csv', err);
         return;
       }
 
+      // Build a fresh map and swap on success so a failed load keeps prior data
+      const hash = new Map();
       for (let i = 1; i < data.length; i++) {
         if (data[i].length !== 3) {
           continue;
@@ -85,31 +89,35 @@ class EmergingThreatsSource extends WISESource {
 
         hash.set(data[i][0], encoded);
       }
+      this[hashName] = hash;
       console.log(this.section, '- Done Loading', fn);
     });
-    fs.createReadStream(fn).pipe(parser);
+    fs.createReadStream(fn).on('error', (err) => {
+      console.log(this.section, "- Couldn't read", fn, err);
+    }).pipe(parser);
   }
 
   // ----------------------------------------------------------------------------
   loadFiles () {
     console.log(this.section, '- Downloading Files');
     WISESource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/categories.txt', '/tmp/categories.txt', (statusCode) => {
-      this.parseCategories('/tmp/categories.txt');
+      if (statusCode === 200 || !this.categoriesLoaded) {
+        this.categoriesLoaded = true;
+        this.parseCategories('/tmp/categories.txt');
+      }
     });
 
     WISESource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/iprepdata.csv', '/tmp/iprepdata.csv', (statusCode) => {
       if (statusCode === 200 || !this.ipsLoaded) {
         this.ipsLoaded = true;
-        this.ips.clear();
-        this.parseRepData('/tmp/iprepdata.csv', this.ips);
+        this.parseRepData('/tmp/iprepdata.csv', 'ips');
       }
     });
 
     WISESource.request('https://rules.emergingthreatspro.com/' + this.key + '/reputation/domainrepdata.csv', '/tmp/domainrepdata.csv', (statusCode) => {
       if (statusCode === 200 || !this.domainsLoaded) {
         this.domainsLoaded = true;
-        this.domains.clear();
-        this.parseRepData('/tmp/domainrepdata.csv', this.domains);
+        this.parseRepData('/tmp/domainrepdata.csv', 'domains');
       }
     });
   }

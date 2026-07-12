@@ -177,7 +177,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         BSB ebsb;
         BSB_IMPORT_bsb(bsb, ebsb, etotlen);
 
-        while (BSB_REMAINING(ebsb) > 0) {
+        while (BSB_REMAINING(ebsb) >= 4) {
             int etype = 0, elen = 0;
 
             BSB_IMPORT_u16(ebsb, etype);
@@ -207,7 +207,8 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
 
             BSB_IMPORT_skip(ebsb, elen);
         }
-        BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
+        if (BSB_LENGTH(eja3bsb) > 0)
+            BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
     }
 
     if (add12Later)
@@ -444,7 +445,8 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                             BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
                         }
                     }
-                    BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
+                    if (BSB_LENGTH(ecja3bsb) > 0)
+                        BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
                 } else if (etype == 0x000b) { // Elliptic Curves point formats
                     BSB bsb;
                     BSB_IMPORT_bsb(ebsb, bsb, elen);
@@ -457,7 +459,8 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                         BSB_IMPORT_u08(bsb, c);
                         BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
                     }
-                    BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
+                    if (BSB_LENGTH(ecfja3bsb) > 0)
+                        BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
                 } else if (etype == 0x000d) { // Signature Algorithms
                     BSB bsb;
                     BSB_IMPORT_bsb(ebsb, bsb, elen);
@@ -509,7 +512,8 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     BSB_IMPORT_skip(ebsb, elen);
                 }
             }
-            BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
+            if (BSB_LENGTH(eja3bsb) > 0)
+                BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
         }
     }
 
@@ -551,7 +555,8 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
 
     BSB_EXPORT_ptr(ja4_rbsb, ja4, 11);
 
-    char tmpBuf[5 * JA4_MAX_CIPHERS];
+    // Sized for the larger of the cipher leg and the extensions+algos leg
+    char tmpBuf[5 * ARRAY_LEN(ja4Extensions) + 1 + 5 * ARRAY_LEN(ja4Algos) + 5 * JA4_MAX_CIPHERS];
     BSB tmpBSB;
 
     // Sort ciphers, convert to hex, first 12 bytes of sha256

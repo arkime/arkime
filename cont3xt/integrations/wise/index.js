@@ -52,14 +52,16 @@ class WiseIntegration extends Integration {
     this.section = section;
     this.name = ArkimeConfig.getFull(section, 'name', section);
     this.icon = ArkimeConfig.getFull(section, 'icon', this.icon);
-    this.#wiseUrl = ArkimeConfig.getFull(section, 'arkimeUrl', 'http://localhost:8081');
+    // wiseURL is the standard key for pointing at a WISE server; arkimeUrl
+    // kept as a fallback since this integration historically misused it
+    this.#wiseUrl = ArkimeConfig.getFull(section, 'wiseURL') ?? ArkimeConfig.getFull(section, 'arkimeUrl', 'http://localhost:8081');
 
     Integration.register(this);
   }
 
   // ----------------------------------------------------------------------------
   async doFetch (user, item, type) {
-    const response = await axios.get(`${this.#wiseUrl}/${type}/${item}`);
+    const response = await axios.get(`${this.#wiseUrl}/${type}/${encodeURIComponent(item)}`);
 
     const results = response.data.map(e => {
       return {

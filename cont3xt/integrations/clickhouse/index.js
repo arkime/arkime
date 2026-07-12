@@ -67,14 +67,14 @@ class ClickHouseIntegration extends Integration {
     Integration.register(this);
   }
 
-  async searchMethod (user, item) {
+  async search (user, item) {
     const resultSet = await this.#client.query({
       query: this.#statement,
       format: 'JSONEachRow',
       query_params: { value: item }
     });
 
-    const hits = resultSet.json();
+    const hits = await resultSet.json();
     const data = {
       hits,
       _cont3xt: {

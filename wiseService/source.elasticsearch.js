@@ -19,15 +19,19 @@ class ElasticsearchSource extends WISESource {
     this.esIndex = api.getConfig(section, 'esIndex');
     this.esTimestampField = api.getConfig(section, 'esTimestampField');
     this.esQueryField = api.getConfig(section, 'esQueryField');
-    this.esResultField = api.getConfig(section, 'esResultField', 0);
+    // no default so the required-check below can actually fire
+    this.esResultField = api.getConfig(section, 'esResultField');
     this.esMaxTimeMS = api.getConfig(section, 'esMaxTimeMS', 60 * 60 * 1000);
     this.elasticsearch = api.getConfig(section, 'elasticsearch');
 
+    let missing = false;
     ['esIndex', 'esTimestampField', 'esQueryField', 'esResultField', 'elasticsearch'].forEach((item) => {
       if (this[item] === undefined) {
         console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
+        missing = true;
       }
     });
+    if (missing) { return; }
 
     this[this.api.funcName(this.type)] = this.sendResult;
 
@@ -107,7 +111,7 @@ exports.initSource = function (api) {
       { name: 'elasticsearch', required: true, help: 'Elasticsearch base url' },
       { name: 'esIndex', required: true, help: 'The index pattern to look at' },
       { name: 'esTimestampField', required: true, help: 'The field to use in queries that has the timestamp in ms' },
-      { name: 'esMaxTimeMS', required: false, help: 'Timestamp field must be less than this (default: 1hr)' },
+      { name: 'esMaxTimeMS', required: false, help: 'Maximum age in ms; only documents whose timestamp is newer than now minus this are matched (default: 1hr)' },
       { name: 'esResultField', required: true, help: 'Field that is required to be in the result' }
     ]
   });

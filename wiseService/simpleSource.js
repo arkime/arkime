@@ -30,7 +30,7 @@ class SimpleSource extends WISESource {
    * @param {WISESourceAPI} api - the api when source created passed to initSource
    * @param {string} section - the section name
    * @param {object} options - see WISESource constructor for common options
-   * @param {integer} options.reload - If greater to zero, call simpleSourceLoad every options.reload minutes
+   * @param {integer} options.reload - If greater than zero, call simpleSourceLoad every options.reload minutes
    */
   constructor (api, section, options) {
     options.typeSetting = true;

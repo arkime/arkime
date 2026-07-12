@@ -669,7 +669,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             hstring->len = len;
             hstring->utf8 = 0;
             hstring->uw = 0;
-            HASH_ADD(s_, *hash, hstring->str, hstring);
+            HASH_ADD_HASH(s_, *hash, arkime_string_hash_len(hstring->str, hstring->len), hstring->str, hstring);
             goto added;
         case ARKIME_FIELD_TYPE_STR_GHASH:
             field->ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -752,6 +752,9 @@ added:
 /******************************************************************************/
 gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const char *string, int len)
 {
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     if (len < 0)
         len = strlen(string);
 
@@ -770,6 +773,9 @@ gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const 
 /******************************************************************************/
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len)
 {
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     if (len < 0)
         len = strlen(string);
 
@@ -789,6 +795,9 @@ gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const 
 gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *string, int len)
 {
     char *host;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
 
     if (len < 0) {
         len = strlen(string);
@@ -861,7 +870,7 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
             hstring->len = len;
             hstring->utf8 = 0;
             hstring->uw = uw;
-            HASH_ADD(s_, *hash, hstring->str, hstring);
+            HASH_ADD_HASH(s_, *hash, arkime_string_hash_len(hstring->str, hstring->len), hstring->str, hstring);
             if (info->ruleEnabled)
                 arkime_rules_run_field_set(session, pos, (const gpointer) string);
             return string;
@@ -1548,7 +1557,7 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     case ARKIME_FIELD_TYPE_STR_HASH:
         return HASH_COUNT(s_, *(field->shash));
     case ARKIME_FIELD_TYPE_INT_HASH:
-        return HASH_COUNT(s_, *(field->ihash));
+        return HASH_COUNT(i_, *(field->ihash));
     case ARKIME_FIELD_TYPE_IP_GHASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
     case ARKIME_FIELD_TYPE_STR_GHASH:

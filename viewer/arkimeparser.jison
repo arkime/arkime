@@ -168,12 +168,12 @@ function getRegexInfoList (yy, info) {
 function parseIpPort (yy, field, ipPortStr) {
   const dbField = getFieldInfo(yy, field).dbField;
 
-  // Have just a single Ip, create obj for it
+  // Have just a single ip, create obj for it
   function parseSingleIp (exp, singleDbField, singleIp, singlePort) {
     let singleObj;
 
     if (typeof (singlePort) === 'string' && singlePort.match(/[^0-9]/)) {
-      throw singlePort + ' not a valid singlePort';
+      throw singlePort + ' not a valid port';
     }
 
     if (singleIp !== undefined) {
@@ -296,7 +296,6 @@ function parseIpPort (yy, field, ipPortStr) {
     }
 
     if (slash[1] === undefined) {
-      console.log(colons2.length, colons2, colons2.length, 16*colons2.length);
       slash[1] = `${16*colons2.length}`;
     }
 
@@ -474,10 +473,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
       if (field === 'ip') {
         const infos = getIpInfoList(yy, false);
         for (const ipInfo of infos) {
-          const newObj = formatShortcutsQuery(yy, ipInfo.exp, op, '$' + value, obj);
-          if (newObj) {
-            obj.bool[operation].concat(newObj);
-          }
+          formatShortcutsQuery(yy, ipInfo.exp, op, '$' + value, obj);
         }
       } else {
         terms[info.dbField] = {
@@ -698,7 +694,7 @@ function field2Raw (yy, field) {
   const dbField = info.dbField;
   if (info.rawField) { return info.rawField; }
 
-  if (dbField.indexOf('.snow', dbField.length - 5) === 0) { return dbField.substring(0, dbField.length - 5) + '.raw'; }
+  if (dbField.endsWith('.snow')) { return dbField.substring(0, dbField.length - 5) + '.raw'; }
 
   return dbField;
 }
@@ -907,7 +903,7 @@ function ListToArray (text, always) {
   // JS doesn't have negative look behind
   const strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/).filter(part => part.trim()[0] !== '$');
   for (let i = 0; i < strs.length; i++) {
-    strs[i] = strs[i].replace('**COMMA**', ',').replace('**BACKSLASH**', '\\');
+    strs[i] = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
   }
   return strs;
 }
@@ -929,7 +925,7 @@ function ListToArrayShortcuts (yy, text) {
   const strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/).filter(part => part.trim()[0] === '$');
   const nstrs = [];
   for (let i = 0; i < strs.length; i++) {
-    const str = strs[i].replace('**COMMA**', ',').replace('**BACKSLASH**', '\\');
+    const str = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
 
     if (str.match(/[*?]/)) {
       const re = new RE2('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
@@ -967,7 +963,7 @@ function termOrTermsInt (dbField, str) {
       obj = { range: {} };
       obj.range[dbField] = { gte: parseInt(match[1]), lte: parseInt(match[2]) };
       return obj;
-    } else if (str.match(/[^\d]+/)) {
+    } else if (!str.match(/^-?\d+$/)) {
       throw str + ' is not a number';
     }
     obj = { term: {} };

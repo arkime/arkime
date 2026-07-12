@@ -92,7 +92,7 @@ LOCAL void tcp_packet_finish(ArkimeSession_t *session)
     ArkimeTcpDataHead_t *const tcpData = &session->tcpData;
 
 #ifdef DEBUG_TCP
-    LOG("START %u %u", session->tcpSeq[0], session->tcpSeq[1]);
+    LOG("START %u %u", session->tcpData.tcpSeq[0], session->tcpData.tcpSeq[1]);
     DLL_FOREACH(td_, tcpData, ftd) {
         LOG("dir: %u seq: %8u ack: %8u len: %4u", ftd->packet->direction, ftd->seq, ftd->ack, ftd->len);
     }

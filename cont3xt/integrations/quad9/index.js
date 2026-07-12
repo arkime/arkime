@@ -13,7 +13,7 @@ class Quad9 extends Integration {
     domain: 'fetch'
   };
 
-  homePage = 'https://dns.quad9.net/dns-query';
+  homePage = 'https://quad9.net/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',

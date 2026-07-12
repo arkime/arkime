@@ -28,7 +28,7 @@ class PassiveTotalSource extends WISESource {
     }
 
     this.waiting = [];
-    this.processing = {};
+    this.processing = new Map();
 
     this.api.addSource('passivetotal', this, ['domain', 'ip']);
 
@@ -52,14 +52,17 @@ class PassiveTotalSource extends WISESource {
     }
 
     if (this.api.debug > 0) {
-      console.log(this.section, '- Fetching %d', this.waiting.length);
+      console.log(this.section, '- Fetching', this.waiting.length);
     }
+
+    const sent = this.waiting.slice();
+    this.waiting.length = 0;
 
     const options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
       data: {
         additional: ['osint', 'malware'],
-        query: this.waiting
+        query: sent
       },
       auth: {
         username: this.user,
@@ -73,11 +76,11 @@ class PassiveTotalSource extends WISESource {
         const results = response.data;
         for (const resultname in results.results) {
           const result = results.results[resultname];
-          const cbs = this.processing[resultname];
+          const cbs = this.processing.get(resultname);
           if (!cbs) {
             continue;
           }
-          delete this.processing[resultname];
+          this.processing.delete(resultname);
 
           let wiseResult;
           if (result.tags === undefined || result.tags.length === 0) {
@@ -100,19 +103,28 @@ class PassiveTotalSource extends WISESource {
         }
       }).catch((err) => {
         console.log(this.section, err);
+        // Invoke and remove all callbacks for this batch so queries don't
+        // hang in processing forever
+        for (const key of sent) {
+          const cbs = this.processing.get(key);
+          if (!cbs) { continue; }
+          this.processing.delete(key);
+          let cb;
+          while ((cb = cbs.shift())) {
+            cb(err);
+          }
+        }
       });
-
-    this.waiting.length = 0;
   };
 
   // ----------------------------------------------------------------------------
   fetch (key, cb) {
-    if (key in this.processing) {
-      this.processing[key].push(cb);
+    if (this.processing.has(key)) {
+      this.processing.get(key).push(cb);
       return;
     }
 
-    this.processing[key] = [cb];
+    this.processing.set(key, [cb]);
     this.waiting.push(key);
     if (this.waiting.length >= 25) {
       this.performQuery();

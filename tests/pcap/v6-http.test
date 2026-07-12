@@ -136,7 +136,21 @@
      255
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 1056
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1056,
+    "zeekintel" : [
+     {
+      "desc" : "IPv6 neighbor",
+      "indicator" : "fe80::211:25ff:fe82:95b5",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -636,7 +650,21 @@
      255
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 56
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 56,
+    "zeekintel" : [
+     {
+      "desc" : "IPv6 neighbor",
+      "indicator" : "fe80::211:25ff:fe82:95b5",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -847,6 +875,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -865,7 +897,24 @@
      "dst" : 0,
      "src" : 2883376736
     },
-    "totDataBytes" : 2499
+    "totDataBytes" : 2499,
+    "zeekintel" : [
+     {
+      "desc" : "v6-http.pcap dst ip",
+      "indicator" : "2001:6f8:900:7c0::2",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "v6-http.pcap dst subnet",
+      "indicator" : "2001:6f8:900:7c0::/64",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {

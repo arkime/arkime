@@ -38,6 +38,7 @@ typedef struct {
     uint8_t                  threadNum;
     uint16_t                 ringStart;
     uint16_t                 ringEnd;
+    uint64_t                 packets;
 } ArkimeNetmap_t;
 
 #define MAX_NETMAP_READERS (MAX_INTERFACES * MAX_THREADS_PER_INTERFACE)
@@ -55,11 +56,10 @@ int reader_netmap_stats(ArkimeReaderStats_t *stats)
     ARKIME_LOCK(gStats);
     memset(&gStats, 0, sizeof(gStats));
 
-    for (int i = 0; config.interface[i]; i++) {
-        if (nmdPerInterface[i]) {
-            gStats.total += nmdPerInterface[i]->st.ps_recv;
-            gStats.dropped += nmdPerInterface[i]->st.ps_drop;
-        }
+    // nm_desc.st is only maintained by libnetmap's nm_dispatch/nm_nextpkt;
+    // we read the rings directly, so count packets ourselves
+    for (int i = 0; i < numReaders; i++) {
+        gStats.total += readers[i].packets;
     }
     *stats = gStats;
     ARKIME_UNLOCK(gStats);
@@ -111,6 +111,7 @@ LOCAL void *reader_netmap_thread(gpointer readerv)
                 packet->readerPos = reader->interfacePos;
 
                 arkime_packet_batch(&batch, packet);
+                reader->packets++;
 
                 ring->head = ring->cur = nm_ring_next(ring, i);
             }
@@ -156,7 +157,7 @@ void reader_netmap_exit()
 }
 
 /******************************************************************************/
-void reader_netmap_init(char *UNUSED(name))
+void reader_netmap_init(const char *UNUSED(name))
 {
     arkime_config_check("netmap", "netmapThreads", NULL);
 
@@ -181,28 +182,41 @@ void reader_netmap_init(char *UNUSED(name))
             LOG("Netmap opened on interface %s with %d RX rings", config.interface[i], nmd->nifp->ni_rx_rings);
         }
 
-        uint16_t ringsPerThread = nmd->nifp->ni_rx_rings / threadsPerInterface;
-        if (ringsPerThread == 0) {
-            ringsPerThread = 1;
+        if (nmd->nifp->ni_rx_rings == 0) {
+            CONFIGEXIT("Interface %s reports 0 RX rings", config.interface[i]);
         }
 
+        // Don't create more threads than there are rings - any extra threads
+        // would have no rings to read from
+        int numThreads = threadsPerInterface;
+        if (numThreads > nmd->nifp->ni_rx_rings) {
+            LOG("WARNING - netmapThreads (%d) is more than the %d RX rings available on %s, using %d threads instead",
+                numThreads, nmd->nifp->ni_rx_rings, config.interface[i], nmd->nifp->ni_rx_rings);
+            numThreads = nmd->nifp->ni_rx_rings;
+        }
+
+        // Evenly distribute rings across threads - the first `extraRings` threads
+        // get one extra ring each so no single thread is overloaded and every
+        // ring index handed out is guaranteed to be < ni_rx_rings
+        const uint16_t ringsPerThread = nmd->nifp->ni_rx_rings / numThreads;
+        const uint16_t extraRings = nmd->nifp->ni_rx_rings % numThreads;
+
         // Create reader threads with assigned rings
-        for (int t = 0; t < threadsPerInterface; t++) {
+        uint16_t nextRing = 0;
+        for (int t = 0; t < numThreads; t++) {
             if (numReaders >= MAX_NETMAP_READERS) {
                 CONFIGEXIT("Too many reader threads, max is %d", MAX_NETMAP_READERS);
             }
+
+            const uint16_t thisThreadRings = ringsPerThread + (t < extraRings ? 1 : 0);
 
             ArkimeNetmap_t *reader = &readers[numReaders];
             reader->nmd = nmd;
             reader->interfacePos = i;
             reader->threadNum = t;
-            reader->ringStart = t * ringsPerThread;
-            reader->ringEnd = (t + 1) * ringsPerThread - 1;
-
-            // Last thread gets any remaining rings
-            if (t == threadsPerInterface - 1) {
-                reader->ringEnd = nmd->nifp->ni_rx_rings - 1;
-            }
+            reader->ringStart = nextRing;
+            reader->ringEnd = nextRing + thisThreadRings - 1;
+            nextRing += thisThreadRings;
 
             if (config.debug) {
                 LOG("Thread %d for interface %s assigned rings %u-%u", t, config.interface[i], reader->ringStart, reader->ringEnd);
@@ -222,4 +236,4 @@ void reader_netmap_init(char *UNUSED(name))
     arkime_reader_stats = reader_netmap_stats;
 }
 
-#endif // __linux__ || __FreeBSD__
+#endif // __FreeBSD__

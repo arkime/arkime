@@ -8,6 +8,7 @@
 'use strict';
 
 const http = require('http');
+const https = require('https');
 const axios = require('axios');
 const { LRUCache } = require('lru-cache');
 // const fs = require('fs');
@@ -18,11 +19,12 @@ const blocklru = new LRUCache({ max: 100 });
 const S3s = new Map();
 
 const httpAgent = new http.Agent({ family: 4 });
+const httpsAgent = new https.Agent({ family: 4 });
 
 // --------------------------------------------------------------------------
 async function getBlockHTTP (info, pos) {
   async function getBlockHttpInternal () {
-    const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize - 1}` } });
+    const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent, httpsAgent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize - 1}` } });
     return result.data;
   }
 

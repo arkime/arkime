@@ -35,7 +35,7 @@ class RedisIntegration extends Integration {
   #redisMethod;
   #keyTemplate;
 
-  constructor (section, isCSV) {
+  constructor (section) {
     super();
 
     this.section = section;
@@ -76,13 +76,14 @@ class RedisIntegration extends Integration {
         }
       };
     } catch (e) {
+      console.log(this.name, item, e);
       return Integration.NoResult;
     }
   }
 
   // ----------------------------------------------------------------------------
   async ipFetch (user, item) { return this.#fetch(user, item, 'ip'); }
-  async domainFetch (user, item) { return this.#fetch(user, item, 'domainip'); }
+  async domainFetch (user, item) { return this.#fetch(user, item, 'domain'); }
   async phoneFetch (user, item) { return this.#fetch(user, item, 'phone'); }
   async emailFetch (user, item) { return this.#fetch(user, item, 'email'); }
   async hashFetch (user, item) { return this.#fetch(user, item, 'hash'); }
@@ -93,5 +94,5 @@ class RedisIntegration extends Integration {
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^redis:/); });
 sections.forEach((section) => {
 
-  new RedisIntegration(section, true);
+  new RedisIntegration(section);
 });

@@ -34,10 +34,16 @@ class FileSource extends SimpleSource {
       clearTimeout(this.watchTimeout);
       if (e === 'rename') {
         this.watch.close();
-        setTimeout(() => {
+        // File may be briefly missing (atomic replace/delete); retry until it's back
+        const rearm = () => {
+          if (!fs.existsSync(this.file)) {
+            setTimeout(rearm, 500);
+            return;
+          }
           this.load();
           this.watch = fs.watch(this.file, watchCb);
-        }, 500);
+        };
+        setTimeout(rearm, 500);
       } else {
         this.watchTimeout = setTimeout(() => {
           this.watchTimeout = null;

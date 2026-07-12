@@ -24,7 +24,7 @@ class WISESource {
    * @param {string} section - the section name
    * @param {object} options - All the options
    * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
-   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as don't
+   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dontCache
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
@@ -165,7 +165,7 @@ class WISESource {
    * Util function to parse CSV formatted data
    * @param {string} body - the raw CSV data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseCSV (body, setCb, endCb) {
     csv.parse(body, { skip_empty_lines: true, comment: '#', relax_column_count: true }, (err, data) => {
@@ -202,9 +202,9 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse tagger formatted data
-   * @param {string} body - the raw CSV data
+   * @param {string} body - the raw tagger data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseTagger (body, setCb, endCb) {
     const lines = body.toString().split(/\r?\n/);
@@ -250,13 +250,14 @@ class WISESource {
   // ----------------------------------------------------------------------------
   /**
    * Util function to parse JSON formatted data
-   * @param {string} body - the raw JSON data
+   * @param {array} json - the parsed JSON array
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseJSONArray (json, setCb, endCb) {
     try {
-      if (this.keyPath === undefined) {
+      // keyPath often defaults to 0 via keyColumn, treat any non-string as unset
+      if (this.keyPath === undefined || this.keyPath === 0 || this.keyPath === '') {
         return endCb('No keyPath set');
       }
 
@@ -361,7 +362,7 @@ class WISESource {
    * Util function to parse JSON formatted data
    * @param {string} body - the raw JSON data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseJSON (body, setCb, endCb) {
     try {
@@ -393,7 +394,7 @@ class WISESource {
    * Util function to parse JSONL formatted data
    * @param {string} body - the raw JSONL data
    * @param {function} setCb - the function to call for each row found
-   * @param {function} endCB - all done parsing
+   * @param {function} endCb - all done parsing
    */
   parseJSONL (body, setCb, endCb) {
     const json = body.toString().split('\n').reduce((acc, line) => {
@@ -474,7 +475,7 @@ class WISESource {
   /**
    * Convert field ids and string values into the encoded form used in WISE.
    *
-   * This method tags a variable number of arguments, each in a pair of field id and string value.
+   * This method takes a variable number of arguments, each in a pair of field id and string value.
    * @returns {buffer} - the encoded results
    */
   static encodeResult () {
@@ -492,6 +493,11 @@ class WISESource {
       if (l > 250) {
         val = val.substring(0, 240);
         l = Buffer.byteLength(val);
+        // multibyte characters can still exceed the 1-byte length field, shrink until it fits
+        while (l > 250) {
+          val = val.substring(0, val.length - 10);
+          l = Buffer.byteLength(val);
+        }
       }
       vals.push(val);
       lens.push(l);
@@ -581,7 +587,7 @@ class WISESource {
    *
    * @param {string} url - The URL to download
    * @param {string} file - The file to save the results to
-   * @param {function} cb - (statusCode) The stats code result from the download
+   * @param {function} cb - (statusCode) The status code result from the download
    */
   static request (url, file, cb) {
     const headers = {};
@@ -589,7 +595,7 @@ class WISESource {
       if (fs.existsSync(file)) {
         const stat = fs.statSync(file);
 
-        // Don't download again if file is less than 1 minutes old
+        // Don't download again if file is less than 1 minute old
         if (Date.now() - stat.mtime.getTime() < 60000) {
           return setImmediate(cb, 304);
         }
@@ -653,8 +659,8 @@ class WISESource {
  */
 
 /**
- * Every source needs to implement this method. If a singleton it will just create the source object direction.
- * If not it should loop thru all keys that start with sourcekind:
+ * Every source needs to implement this method. If a singleton it will just create the source object directly.
+ * If not it should loop through all keys that start with sourcekind:
  * @method
  * @name WISESource.initSource
  * @param {WISESourceAPI} api - The api back into the WISE Service

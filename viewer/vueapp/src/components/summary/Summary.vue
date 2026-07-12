@@ -712,7 +712,13 @@ const exportChart = async (svgId, filename) => {
 
 // Helper function to escape CSV values
 const escapeCSV = (value) => {
-  const stringValue = String(value);
+  let stringValue = String(value);
+  // Neutralize CSV/spreadsheet formula injection. A cell that begins with one of
+  // = + - @ TAB CR can execute as a formula when opened in Excel/Google Sheets.
+  // Since values can come from captured traffic, prefix risky cells with a single quote.
+  if (stringValue.length > 0 && '=+-@\t\r'.includes(stringValue[0])) {
+    stringValue = `'${stringValue}`;
+  }
   // Escape quotes by doubling them and wrap in quotes if contains comma, quote, or newline
   if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n')) {
     return `"${stringValue.replace(/"/g, '""')}"`;

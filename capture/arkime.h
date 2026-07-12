@@ -303,15 +303,16 @@ typedef struct {
 #define ARKIME_COND_BROADCAST(var)      pthread_cond_broadcast(&var##_cond)
 #define ARKIME_COND_SIGNAL(var)         pthread_cond_signal(&var##_cond)
 
-#define ARKIME_THREAD_INCR(var)          __sync_add_and_fetch(&var, 1)
-#define ARKIME_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1)
-#define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1)
-#define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num)
+#define ARKIME_THREAD_INCR(var)              __sync_add_and_fetch(&var, 1)
+#define ARKIME_THREAD_INCRNEW(var)           __sync_add_and_fetch(&var, 1)
+#define ARKIME_THREAD_INCROLD(var)           __sync_fetch_and_add(&var, 1)
+#define ARKIME_THREAD_INCR_NUM(var, num)     __sync_add_and_fetch(&var, num)
+#define ARKIME_THREAD_INCROLD_NUM(var, num)  __sync_fetch_and_add(&var, num)
 
-#define ARKIME_THREAD_DECR(var)          __sync_sub_and_fetch(&var, 1)
-#define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1)
-#define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1)
-#define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num)
+#define ARKIME_THREAD_DECR(var)              __sync_sub_and_fetch(&var, 1)
+#define ARKIME_THREAD_DECRNEW(var)           __sync_sub_and_fetch(&var, 1)
+#define ARKIME_THREAD_DECROLD(var)           __sync_fetch_and_sub(&var, 1)
+#define ARKIME_THREAD_DECR_NUM(var, num)     __sync_sub_and_fetch(&var, num)
 
 #define ARKIME_THREAD_ATOMIC_STORE(var, val) __atomic_store_n(&(var), (val), __ATOMIC_RELEASE)
 #define ARKIME_THREAD_ATOMIC_LOAD(var)       __atomic_load_n(&(var), __ATOMIC_ACQUIRE)
@@ -1717,6 +1718,7 @@ typedef void (*ArkimeSchemeExit)();
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_actions_deref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/

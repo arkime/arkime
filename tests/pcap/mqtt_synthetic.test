@@ -112,6 +112,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -134,7 +138,17 @@
     "user" : [
      "admin"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -246,6 +260,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -264,7 +282,17 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 95
+    "totDataBytes" : 95,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -373,6 +401,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -395,7 +427,17 @@
     "user" : [
      "gateway_user"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -512,6 +554,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -530,7 +576,17 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 103
+    "totDataBytes" : 103,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -644,6 +700,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -666,7 +726,17 @@
     "user" : [
      "modern_user"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {
@@ -769,6 +839,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -791,7 +865,156 @@
     "user" : [
      "gateway_user"
     ],
-    "userCnt" : 1
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8239
+    },
+    "destination" : {
+     "bytes" : 160,
+     "ip" : "10.0.0.100",
+     "packets" : 4,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000100000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000100400,
+    "length" : 400,
+    "mqtt" : {
+     "clientId" : [
+      "iot-gateway-west"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "type" : [
+      "CONNECT",
+      "PUBLISH"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 8599,
+     "community_id" : "1:5a5VR0oFm7ht8h7skXP8yWt85Sw=",
+     "packets" : 9
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     100,
+     56,
+     4152,
+     56,
+     4155,
+     56
+    ],
+    "packetPos" : [
+     3677,
+     3733,
+     3789,
+     3845,
+     3945,
+     4001,
+     8153,
+     8209,
+     12364
+    ],
+    "packetRange" : {
+     "gte" : 1700000100000,
+     "lte" : 1700000100400
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 8439,
+     "ip" : "192.168.1.61",
+     "packets" : 5,
+     "port" : 55557
+    },
+    "srcPayload8" : "102a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "mqtt:message-too-long",
+     "zeek:intel"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 4,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 12288
+    },
+    "totDataBytes" : 8239,
+    "user" : [
+     "gateway_user"
+    ],
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

@@ -14,11 +14,13 @@ extern ArkimeConfig_t        config;
 /******************************************************************************/
 LOCAL char *oracle_get_item(const uint8_t *data, char *needle, int needle_len, int *len)
 {
-    const uint8_t *start = data + data[27];
+    const int cdlen = (data[24] << 8) | data[25];
+    const int cdoff = (data[26] << 8) | data[27];
+    const uint8_t *start = data + cdoff;
 
-    uint8_t *item = (uint8_t *)g_strstr_len((char *)start, data[25], (gchar *)needle);
+    uint8_t *item = (uint8_t *)g_strstr_len((char *)start, cdlen, (gchar *)needle);
     if (item) {
-        const uint8_t *paren = (uint8_t *)g_strstr_len((char *)item, data[25] - (item - start), ")");
+        const uint8_t *paren = (uint8_t *)g_strstr_len((char *)item, cdlen - (item - start), ")");
         if (paren) {
             *len = (paren - item) - needle_len;
             if (*len == 0)
@@ -32,11 +34,14 @@ LOCAL char *oracle_get_item(const uint8_t *data, char *needle, int needle_len, i
 /******************************************************************************/
 LOCAL void oracle_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
-    if (which != 0 || len <= 27 || len != (data[0] << 8 | data[1]) || (data[25] + data[27] != len)) {
+    // Connect-data length (bytes 24-25) and offset (bytes 26-27) are both
+    // big-endian 16-bit fields
+    if (which != 0 || len <= 27 || len != (data[0] << 8 | data[1]) ||
+        ((data[24] << 8 | data[25]) + (data[26] << 8 | data[27]) != len)) {
         return;
     }
 
-    char *buf;  // can't be more than 1 byte big
+    char *buf;
     int  blen;
 
     buf = oracle_get_item(data, "HOST=", 5, &blen); // Already lowercases

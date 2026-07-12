@@ -82,6 +82,14 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
     if (BSB_IS_ERROR(bsb))
         return ARKIME_PACKET_CORRUPT;
 
+    // GRE protocol type 0x0000 is reserved and is what GRE keepalive payloads
+    // carry; it is NOT Transparent Ethernet Bridging (0x6558). Don't hand it to
+    // the Ethernet handler, which is registered under ARKIME_ETHERTYPE_ETHER (== 0)
+    // and would otherwise parse the empty/zero keepalive payload as an Ethernet
+    // frame and emit bogus 00:00:00:00:00:00 MAC addresses.
+    if (type == 0)
+        return ARKIME_PACKET_UNKNOWN_ETHER;
+
     // Type I of ERSPAN doesn't have a ERSPAN header
     if (type == 0x88be && (flags_version & 0x1000) == 0) {
         type = ARKIME_ETHERTYPE_ETHER;

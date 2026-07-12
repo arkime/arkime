@@ -37,7 +37,7 @@ my ($json, $mjson);
 # ip.protocol unknown
     $json = viewerGet("/api/connections?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));
     my $pjson = viewerPost("/api/connections", '{"date":-1, "expression":"ip.protocol==blah"}');
-    eq_or_diff($json, $pjson, "GET and POST versions of connections endpoint are not the same");
+    eq_or_diff($json, $pjson, "GET and POST versions of connections endpoint are the same");
     eq_or_diff($json, from_json('{ "success": false,  "text": "Unknown protocol string blah" }', {relaxed => 1}), "ip.protocol==blah", { context => 3 });
 
     $mjson = multiGet("/api/connections?date=-1&expression=" . uri_escape("$files&&ip.protocol==blah"));

@@ -32,7 +32,7 @@ If the user asks to rebuild entirely, generate a single script that creates all 
 
 ### Test with Arkime capture
 ```bash
-cd ~/arkime/capture
+cd capture
 ./capture --tests -o parsersDir=parsers -r ../tests/pcap/arkime_synthetic.pcap
 ```
 - Output is JSON to stdout with `{"sessions3": [...]}`
@@ -52,7 +52,7 @@ Must produce zero output.
 
 ### Verify specific fields
 ```bash
-cd ~/arkime/capture
+cd capture
 ./capture --tests -o parsersDir=parsers -r ../tests/pcap/arkime_synthetic.pcap 2>/dev/null | \
   grep -v "^[A-Z][a-z][a-z] " | python3 -c "
 import sys, json
@@ -152,7 +152,7 @@ grep -n "arkime_field_define" capture/parsers/PROTOCOL.c
 
 ### Check which fields are already exercised
 ```bash
-cd ~/arkime/capture
+cd capture
 ./capture --tests -o parsersDir=parsers -r ../tests/pcap/arkime_synthetic.pcap 2>/dev/null | \
   grep -v "^[A-Z][a-z][a-z] " | python3 -c "
 import sys, json

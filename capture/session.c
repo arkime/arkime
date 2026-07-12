@@ -304,7 +304,7 @@ uint32_t arkime_session_hash(const void *key)
         uint32_t k1 = *p;
         k1 *= 0xcc9e2d51;
         k1 = (k1 << 15) | (k1 >> 17); // Rotate left 15 bits
-        k1 *= 0x1b873531;
+        k1 *= 0x1b873593;
 
         h1 ^= k1;
         h1 = (h1 << 13) | (h1 >> 19); // Rotate left 13 bits
@@ -1330,10 +1330,14 @@ void arkime_session_init()
     arkime_add_can_quit(arkime_session_close_outstanding, "session close outstanding");
     arkime_add_can_quit(arkime_session_need_save_outstanding, "session save outstanding");
 
-    g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
-
+    // The stopped-sessions state file persists "stop saving" decisions across
+    // restarts. In dryRun (e.g. --tests) we never write pcap, so reading/writing
+    // it only makes regression runs non-deterministic; skip it entirely.
     snprintf(stoppedFilename, sizeof(stoppedFilename), "%s.stoppedsessions", config.nodeName);
-    arkime_session_load_stopped();
+    if (!config.dryRun) {
+        g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
+        arkime_session_load_stopped();
+    }
     arkime_session_load_collapse();
 
     arkime_session_pre_save_func = arkime_parsers_get_named_func("arkime_session_pre_save");

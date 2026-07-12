@@ -9,7 +9,7 @@ This guide explains how to use and contribute to internationalization (i18n) in 
 Vue I18n is already configured and ready to use! The setup includes:
 
 - **Smart locale detection**: localStorage → browser language → fallback to English
-- **7 supported languages**: English, Spanish, French, German, Japanese, Korean, Chinese
+- **9 supported languages**: English, Spanish, French, German, Japanese, Korean, Chinese, Estonian, Brazilian Portuguese
 - **Composition API**: Modern Vue 3 approach with `useI18n()`
 - **Global injection**: Use `$t()` in templates
 - **Language persistence**: User preferences saved in localStorage
@@ -324,7 +324,10 @@ arkime/
 │   │   ├── de.json                     # German
 │   │   ├── ja.json                     # Japanese
 │   │   ├── ko.json                     # Korean
-│   │   └── zh.json                     # Chinese
+│   │   ├── zh.json                     # Chinese
+│   │   ├── et.json                     # Estonian
+│   │   ├── pt-BR.json                  # Brazilian Portuguese
+│   │   └── x-pl.json                   # Pig-Latin (testing)
 │   ├── LanguageSwitcher.vue           # Shared language selector component
 │   └── I18nExample.vue                # Shared usage examples
 └── viewer/vueapp/src/

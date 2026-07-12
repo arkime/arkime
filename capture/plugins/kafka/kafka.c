@@ -23,7 +23,6 @@
 LOCAL rd_kafka_t *rk = NULL; /* Producer instance handle */
 LOCAL rd_kafka_conf_t *conf; /* Temporary configuration object */
 LOCAL char errstr[512];      /* librdkafka API error reporting buffer */
-LOCAL const char *brokers;   /* Argument: broker list */
 LOCAL const char *topic;     /* Argument: topic to produce to */
 LOCAL char kafkaSSL;
 LOCAL const char *kafkaSSLCALocation;
@@ -154,7 +153,10 @@ void arkime_plugin_init()
                           NULL);
 
     conf = rd_kafka_conf_new();
-    brokers = *arkime_config_str_list(NULL, "kafkaBootstrapServers", "");
+    // Arkime config lists are ;-separated; librdkafka wants comma-separated
+    gchar **brokersList = arkime_config_str_list(NULL, "kafkaBootstrapServers", "");
+    gchar *brokers = g_strjoinv(",", brokersList);
+    g_strfreev(brokersList);
     topic = arkime_config_str(NULL, "kafkaTopic", "arkime-json");
 
     // See more config on https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
@@ -166,6 +168,8 @@ void arkime_plugin_init()
 
     if (config.debug)
         LOG("kafka broker %s", brokers);
+
+    g_free(brokers);
 
     kafkaSSL = arkime_config_boolean(NULL, "kafkaSSL", FALSE);
     if (kafkaSSL) {

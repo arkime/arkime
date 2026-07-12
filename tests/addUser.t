@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 104;
+use Test::More tests => 124;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -37,7 +37,7 @@ my $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminT
 diag Dumper($users) if ($users->{recordsTotal} != 10);
 
 # validate the flags
-eq_or_diff($users->{recordsTotal}, 10, "Should have 11 users");
+eq_or_diff($users->{recordsTotal}, 10, "Should have 10 users");
 eq_or_diff($users->{data}->[0]->{roles}, from_json('["superAdmin"]'));
 is($users->{data}->[1]->{userId}, 'role:role');
 eq_or_diff($users->{data}->[2]->{roles}, from_json('["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]'));
@@ -65,7 +65,7 @@ is($user1->{id}, "test1");
 addUser("-n testuser test1 test1 test1 --email");
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is($users->{data}->[2]->{id}, "test1");
-ok($users->{data}->[2]->{emailSearch}, "Can update exiting user");
+ok($users->{data}->[2]->{emailSearch}, "Can update existing user");
 
 
 #### Auth Header tests
@@ -145,15 +145,15 @@ is ($response->code, 403);
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'role:role', 'role:role' );
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->code, 403);
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'role:role');
 is ($response->code, 403);
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/?arkimeRegressionUser=role:role");
 is ($response->code, 403);
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 # s2s
 
@@ -184,7 +184,7 @@ is ($response->code, 403);
 
 # /receiveSession - user role
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/", "user": "role:authtest2", "date": 1}');
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 is ($response->code, 403);
 
 # /receiveSession - url mismatch
@@ -262,6 +262,23 @@ is ($response->code, 200, "combouser with wrong header auth success");
 $response = viewerGet("/regressionTests/getUser/combouser");
 ok(!grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser loses role:combinedRole when expression is false");
 
+# Test dynamic roles take effect on the SAME request that grants/revokes them.
+# /api/user returns the in-memory expanded roles (#allRoles), so a stale
+# memoized expansion shows up here even though the saved user is correct.
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'samerequser', 'x-test-role' => 'special');
+is ($response->code, 200, "samerequser auth success");
+my $sameReq = from_json($response->content);
+ok(grep(/^role:headerRole$/, @{$sameReq->{roles}}), "samerequser has role:headerRole on the granting request");
+
+# Same user again WITHOUT the header - role must be gone on this same request
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'sameequser');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'sameequser', 'x-test-role' => 'special');
+$sameReq = from_json($response->content);
+ok(grep(/^role:headerRole$/, @{$sameReq->{roles}}), "sameequser gains role:headerRole on the granting request");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/api/user", ':arkime_user' => 'sameequser');
+$sameReq = from_json($response->content);
+ok(!grep(/^role:headerRole$/, @{$sameReq->{roles}}), "sameequser loses role:headerRole on the revoking request");
+
 
 #### JWT Auth Header tests (test4 node on port 8127)
 
@@ -290,7 +307,7 @@ is ($response->content, '{"success":false,"text":"User name header is empty"}');
 # JWT with role: prefix in claim — should be rejected
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
 is ($response->code, 403, "JWT with role: prefix rejected");
-is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 # JWT with department claim — should get role:securityTeam via role mappings
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
@@ -298,6 +315,62 @@ is ($response->code, 200, "JWT with department claim auth success");
 $response = viewerGet("/regressionTests/getUser/jwtuser2");
 ok(grep(/^role:securityTeam$/, @{$response->{roles}}), "jwtuser2 has role:securityTeam from JWT department claim");
 ok(grep(/^arkimeUser$/, @{$response->{roles}}), "jwtuser2 still has arkimeUser");
+
+
+#### Form Auth tests (test5 node on port 8128)
+
+addUser("-n test5 formuser formuser formuser --roles arkimeUser");
+addUser("-n test5 formuser8 formuser8 formuser8 --roles 'parliamentUser' ");
+esGet("/_refresh");
+
+sub formLogin {
+    my ($user, $pass) = @_;
+    my $r = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8128/api/login", { username => $user, password => $pass });
+    my $sc = $r->header('Set-Cookie');
+    my ($c) = $sc ? $sc =~ /^([^;]+)/ : ();
+    return ($r, $c);
+}
+
+# No session - unauthenticated GET is redirected to the login page
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/");
+is ($response->code, 200, "no session redirected to login page");
+ok ($response->content =~ /LOGIN!/, "no session shows login form");
+
+# Bad password
+my ($loginResp, $badCookie) = formLogin('formuser', 'wrongpassword');
+is ($loginResp->code, 302, "bad password still redirects");
+ok (!defined $badCookie, "bad password does not set a session cookie");
+
+# Unknown user
+($loginResp, $badCookie) = formLogin('nosuchuser', 'nosuchuser');
+is ($loginResp->code, 302, "unknown user still redirects");
+ok (!defined $badCookie, "unknown user does not set a session cookie");
+
+# role: prefixed users cannot log in via form
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8128/api/login", { username => 'role:role', password => 'role:role' });
+is ($response->code, 403, "role: user rejected");
+is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
+
+# Good password
+my ($loginResponse, $cookie) = formLogin('formuser', 'formuser');
+is ($loginResponse->code, 302, "good password redirects to app");
+ok (defined $cookie && $cookie =~ /^ARKIME-SID=/, "good password sets a session cookie");
+
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $cookie);
+is ($response->code, 200, "session cookie authenticates");
+
+# No arkimeUser role
+(undef, my $noRoleCookie) = formLogin('formuser8', 'formuser8');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $noRoleCookie);
+is ($response->content, "Need arkimeUser role assigned");
+is ($response->code, 403);
+
+# Logout destroys the session
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8128/logout", 'Cookie' => $cookie);
+is ($response->code, 302, "logout redirects");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $cookie);
+is ($response->code, 200, "logged out session redirected to login page");
+ok ($response->content =~ /LOGIN!/, "logged out session shows login form");
 
 
 # cleanup
@@ -322,12 +395,16 @@ viewerDeleteToken("/api/user/normaluser", $token);
 viewerDeleteToken("/api/user/combouser", $token);
 viewerDeleteToken("/api/user/jwtuser1", $token);
 viewerDeleteToken("/api/user/jwtuser2", $token);
+viewerDeleteToken("/api/user/samerequser", $token);
+viewerDeleteToken("/api/user/sameequser", $token);
+viewerDeleteToken("/api/user/formuser", $token);
+viewerDeleteToken("/api/user/formuser8", $token);
 
 $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
-is (@{$users->{data}}, 7, "Two supers plus 4 role mappings left");
+is (@{$users->{data}}, 7, "Two supers plus 4 role mappings plus anonymous left");
 
 viewerGet("/regressionTests/deleteAllUsers");
 

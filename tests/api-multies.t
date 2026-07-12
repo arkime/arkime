@@ -17,7 +17,7 @@ my $json;
     ok (!exists $json->{status} || $json->{status} == 200, "ES no status or 200 status");
 
     $json = mesGet("/_template/MULTIPREFIX_sessions3_template?filter_path=**._meta");
-    cmp_ok($json->{MULTIPREFIX_sessions3_template}->{mappings}->{_meta}->{molochDbVersion}, '>=', 50, "dstats version is at least 50");
+    cmp_ok($json->{MULTIPREFIX_sessions3_template}->{mappings}->{_meta}->{molochDbVersion}, '>=', 50, "sessions3 template version is at least 50");
 
 #_stats
     $json = mesGet("/MULTIPREFIX_stats/_stats");
@@ -58,7 +58,7 @@ my $json;
 # _cluster/_doc/details
     $json = mesGet("/_cluster/_doc/details");
     is ($json->{available}->[0], "test", "Correct available ES cluster");
-    is ($json->{available}->[1], "test2", "Correct acvilable ES cluster");
+    is ($json->{available}->[1], "test2", "Correct available ES cluster");
     is ($json->{active}->[0], "test", "Correct active ES cluster");
     is ($json->{active}->[1], "test2", "Correct active ES cluster");
     is (scalar @{$json->{inactive}}, 0, "Correct number of ES cluster name");
@@ -87,7 +87,7 @@ my $json;
 
     $json = mesPost("/MULTIPREFIX_fields/_search?rest_total_hits_as_int=true", "{\"size\":1000}");
     cmp_ok($json->{hits}->{total}, '>=', 590, "fields count is at least 590");
-    cmp_ok($json->{hits}->{total}, '<',  900, "fields count is less then 900");
+    cmp_ok($json->{hits}->{total}, '<',  900, "fields count is less than 900");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v30", "Correct fields index name");
 
     $json = mesGet("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");

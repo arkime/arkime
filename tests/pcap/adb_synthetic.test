@@ -171,9 +171,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -212,7 +213,31 @@
       "16777226:40001,33554442:5555"
      ]
     },
-    "totDataBytes" : 428
+    "totDataBytes" : 428,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -418,9 +443,10 @@
     "tags" : [
      "adb:sync",
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 3,
+    "tagsCnt" : 4,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -459,7 +485,31 @@
       "16777226:40002,33554442:5555"
      ]
     },
-    "totDataBytes" : 632
+    "totDataBytes" : 632,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -634,9 +684,10 @@
     "tags" : [
      "adb:shell-v2",
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 3,
+    "tagsCnt" : 4,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -675,7 +726,31 @@
       "16777226:40003,33554442:5555"
      ]
     },
-    "totDataBytes" : 341
+    "totDataBytes" : 341,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -858,9 +933,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -899,7 +975,31 @@
       "16777226:40004,33554442:5555"
      ]
     },
-    "totDataBytes" : 284
+    "totDataBytes" : 284,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -1060,9 +1160,10 @@
      "adb:tls",
      "adb:tls-encrypted",
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 4,
+    "tagsCnt" : 5,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -1138,7 +1239,31 @@
      ],
      "versionCnt" : 1
     },
-    "totDataBytes" : 337
+    "totDataBytes" : 337,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {
@@ -1256,6 +1381,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -1274,7 +1403,272 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 48
+    "totDataBytes" : 48,
+    "zeekintel" : [
+     {
+      "desc" : "socks5-rdp / bt-udp / bigendian src ip",
+      "indicator" : "10.0.0.3",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 3
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-01m09"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "command" : [
+      "clse",
+      "cnxn",
+      "okay",
+      "open",
+      "wrte"
+     ],
+     "commandCnt" : 5,
+     "maxpayload" : [
+      "262144"
+     ],
+     "maxpayloadCnt" : 1,
+     "serial" : [
+      "SHELL02"
+     ],
+     "serialCnt" : 1,
+     "service" : [
+      "shell"
+     ],
+     "serviceCnt" : 1,
+     "shell.exitcode" : [
+      "0"
+     ],
+     "shell.exitcodeCnt" : 1,
+     "streamid" : [
+      "1",
+      "1-2",
+      "2-1"
+     ],
+     "streamidCnt" : 3,
+     "systemtype" : [
+      "device",
+      "host"
+     ],
+     "systemtypeCnt" : 2,
+     "version" : [
+      "0x01000001"
+     ],
+     "versionCnt" : 1
+    },
+    "client" : {
+     "bytes" : 163
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 551,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 5555
+    },
+    "dstPayload8" : "434e584e01000001",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000012810,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000012940,
+    "length" : 130,
+    "network" : {
+     "bytes" : 1200,
+     "community_id" : "1:ry+BkiI4uNzDPNFCJmCkvnDbSCw=",
+     "packets" : 16
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     127,
+     130,
+     94,
+     108,
+     94,
+     100,
+     94,
+     94,
+     94,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     8534,
+     8604,
+     8674,
+     8744,
+     8845,
+     8972,
+     9102,
+     9196,
+     9304,
+     9398,
+     9498,
+     9592,
+     9686,
+     9780,
+     9850,
+     9920
+    ],
+    "packetRange" : {
+     "gte" : 1000000012810,
+     "lte" : 1000000012940
+    },
+    "protocol" : [
+     "adb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 173
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 649,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 9,
+     "port" : 40007
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "434e584e01000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "adb:shell-v2",
+     "dstip",
+     "srcip",
+     "zeek:intel"
+    ],
+    "tagsCnt" : 4,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 10,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40007,33554442:5555"
+     ]
+    },
+    "totDataBytes" : 336,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {

@@ -188,7 +188,12 @@ LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 return ARKIME_PARSER_UNREGISTER;
             }
             g_string_append_len(imap->line[which], (const char *)data, lineLen);
-            imap_process_line(imap, session, imap->line[which]->str, imap->line[which]->len, which);
+            /* Strip CR if the buffered part ended with it (CRLF split across packets) */
+            int flen = imap->line[which]->len;
+            if (flen > 0 && imap->line[which]->str[flen - 1] == '\r') {
+                flen--;
+            }
+            imap_process_line(imap, session, imap->line[which]->str, flen, which);
             g_string_truncate(imap->line[which], 0);
         } else {
             imap_process_line(imap, session, (const char *)data, lineLen, which);

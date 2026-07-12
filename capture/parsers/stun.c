@@ -113,7 +113,7 @@ LOCAL const char *stunClasses[4] = {
 /******************************************************************************/
 // Returns TRUE if ip matches either endpoint of the session.
 // ip points to 4 bytes (AF_INET) or 16 bytes (AF_INET6).
-LOCAL gboolean stun_ip_matches_session(ArkimeSession_t *session, const uint8_t *ip, int family)
+LOCAL gboolean stun_ip_matches_session(const ArkimeSession_t *session, const uint8_t *ip, int family)
 {
     if (family == AF_INET && ARKIME_SESSION_IS_v4(session)) {
         uint32_t v4 = *(const uint32_t *)ip;
@@ -224,7 +224,7 @@ LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
     BSB_INIT(bsb, data + 20, msgLen);
 
     // Add message type using method/class lookup
-    // Method: bits 0-3, 5-8, 11; Class: bits 4, 9
+    // Method: bits 0-3, 5-7, 9-13; Class: bits 4, 8
     int method = ((msgType & 0x000F) | ((msgType & 0x00E0) >> 1) | ((msgType & 0x3E00) >> 2));
     int msgClass = ((msgType & 0x0010) >> 4) | ((msgType & 0x0100) >> 7);
     const char *methodName = stun_method_name(method);
@@ -491,6 +491,7 @@ void arkime_parser_init()
                                            "TURN XOR-PEER-ADDRESS port",
                                            ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                            "category", "port",
+                                           "aliases", "[\"stun.xor-peer-port\"]",
                                            (char *)NULL);
 
     attributesField = arkime_field_define("stun", "termfield",

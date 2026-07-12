@@ -195,9 +195,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "smtp:statuscode:250",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 7,
      "ae" : 0,
@@ -236,7 +237,24 @@
       "16777226:20720,-499061696:25"
      ]
     },
-    "totDataBytes" : 2329
+    "totDataBytes" : 2329,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 2
    },
    "header" : {
     "index" : {

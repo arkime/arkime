@@ -418,7 +418,7 @@ class User {
    * Return all available roles using cache
    */
   static async allRolesCache () {
-    if (User.#rolesCache._timeStamp > Date.now() - User.#userCacheTimeout) {
+    if (User.#rolesCache.roles && User.#rolesCache._timeStamp > Date.now() - User.#userCacheTimeout) {
       return User.#rolesCache.roles;
     }
 
@@ -645,7 +645,7 @@ class User {
     ]).then(([users, total]) => {
       if (users.error) { throw users.error; }
       const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit'.split(',');
-      res.write(columns.join(', '));
+      res.write(columns.join(','));
       res.write('\r\n');
       users = users.users;
       for (let u = 0; u < users.length; u++) {
@@ -1133,8 +1133,8 @@ class User {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 
-    const storeHa1 = Auth.store2ha1(req.user.passStore);
-    const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword));
+    const storeHa1 = Auth.store2ha1(req.user.passStore, req.user.userId);
+    const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword), req.token.userId);
     if (!req.user.hasRole('usersAdmin') && (
       storeHa1.length !== reqHa1.length ||
       !cryptoLib.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(reqHa1)) ||
@@ -1776,6 +1776,12 @@ class User {
     }
 
     this.roles = newRoles;
+    // Clear memoized permission state so expandFromRoles recomputes from the
+    // new roles instead of early-returning on the startup expansion
+    this.#allRoles = undefined;
+    this.#allExpression = undefined;
+    this.#allTimeLimit = undefined;
+    this.#allSettings = {};
     await this.expandFromRoles();
     await new Promise((resolve, reject) => {
       this.save((err) => {

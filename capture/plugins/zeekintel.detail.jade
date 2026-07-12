@@ -1,0 +1,30 @@
+if (session.zeekintel)
+  div.sessionDetailMeta.bold Zeek Intel
+  dl.sessionDetailMeta
+    if (Array.isArray(session.zeekintel))
+      each match in session.zeekintel
+        dt Match
+        dd
+          span.no-wrap
+            strong.ml-1 Indicator
+            +clickableValue('zeekintel.indicator', match.indicator)
+          - if (match.indicator_type)
+            span.no-wrap
+              strong.ml-1 Type
+              +clickableValue('zeekintel.type', match.indicator_type)
+          - if (match.where)
+            span.no-wrap
+              strong.ml-1 Where
+              +clickableValue('zeekintel.where', match.where)
+          - if (match.source)
+            span.no-wrap
+              strong.ml-1 Source
+              +clickableValue('zeekintel.source', match.source)
+          - if (match.desc)
+            span.no-wrap
+              strong.ml-1 Description
+              +clickableValue('zeekintel.desc', match.desc)
+          - if (match.url)
+            span.no-wrap
+              strong.ml-1 URL
+              +clickableValue('zeekintel.url', match.url)

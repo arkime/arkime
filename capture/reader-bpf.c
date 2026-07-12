@@ -151,25 +151,24 @@ LOCAL void *reader_bpf_thread(gpointer readerv)
 }
 
 /******************************************************************************/
-LOCAL char *find_bpf_device()
+LOCAL int open_bpf_device()
 {
-    static char bpf_device[256];
-    struct stat sb;
+    char bpf_device[256];
 
-    // Try numbered BPF devices
+    // Try numbered BPF devices; they are exclusive-open so skip busy ones
     for (int n = 0; n < 256; n++) {
         snprintf(bpf_device, sizeof(bpf_device), "/dev/bpf%d", n);
-        if (stat(bpf_device, &sb) == 0) {
-            return bpf_device;
+        int fd = open(bpf_device, O_RDONLY);
+        if (fd >= 0) {
+            return fd;
+        }
+        if (errno != EBUSY) { // e.g. ENOENT, no more numbered devices
+            break;
         }
     }
 
     // Fall back to generic BPF device
-    if (stat("/dev/bpf", &sb) == 0) {
-        return "/dev/bpf";
-    }
-
-    return NULL;
+    return open("/dev/bpf", O_RDONLY);
 }
 
 /******************************************************************************/
@@ -219,7 +218,7 @@ void reader_bpf_exit()
 }
 
 /******************************************************************************/
-void reader_bpf_init(char *UNUSED(name))
+void reader_bpf_init(const char *UNUSED(name))
 {
     arkime_config_check("bpf", "", "bpfBufferSize", NULL);
 
@@ -230,12 +229,6 @@ void reader_bpf_init(char *UNUSED(name))
     }
 
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
-
-    // Open BPF device
-    char *bpf_dev = find_bpf_device();
-    if (!bpf_dev) {
-        CONFIGEXIT("No BPF device found. Check permissions on /dev/bpf*");
-    }
 
     struct ifreq ifr;
     numReaders = 0;
@@ -249,10 +242,10 @@ void reader_bpf_init(char *UNUSED(name))
 
         reader->interfacePos = i;
 
-        // Open BPF device
-        reader->fd = open(bpf_dev, O_RDONLY);
+        // Open a free BPF device, they are exclusive-open
+        reader->fd = open_bpf_device();
         if (reader->fd < 0) {
-            CONFIGEXIT("Failed to open BPF device %s: %s", bpf_dev, strerror(errno));
+            CONFIGEXIT("Failed to open a BPF device: %s. Check permissions on /dev/bpf*", strerror(errno));
         }
 
         // Set buffer size
@@ -269,7 +262,7 @@ void reader_bpf_init(char *UNUSED(name))
             CONFIGEXIT("Failed to bind BPF to interface %s: %s", config.interface[i], strerror(errno));
         }
 
-        // Set non-blocking mode
+        // Set immediate mode
         int n = 1;
         if (ioctl(reader->fd, BIOCIMMEDIATE, &n) < 0) {
             CONFIGEXIT("Failed to set BPF immediate mode: %s", strerror(errno));

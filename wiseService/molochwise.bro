@@ -77,14 +77,12 @@ function process_md5(key: string, fi: Notice::FileInfo)
 
 function requestWise()
 {
-    print "MOLOCH", |wise_matched|, |wise_lookingup|, |wise_next_lookups["ip"]|, |wise_next_lookups["md5"]|;
     for (wtype in wise_next_lookups) {
 	if (|wise_next_lookups[wtype]| == 0) {
 	    next;
 	}
 	local data = "";
 	for (key in wise_next_lookups[wtype]) {
-	    delete(wise_next_lookups[wtype][key]);
 	    add(wise_lookingup[key]);
 	    if (data == "") {
 		data += key;
@@ -92,6 +90,8 @@ function requestWise()
 		data += "," + key;
 	    }
 	}
+	# Clear after iterating; deleting while iterating a set is unsafe
+	wise_next_lookups[wtype] = set();
 
 	local url = fmt("%s/bro/%s?items=%s", base_url, wtype, data);
 	local req: ActiveHTTP::Request = ActiveHTTP::Request($url=url, $method="GET");

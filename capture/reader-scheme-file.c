@@ -25,9 +25,28 @@ typedef struct {
 
 LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
+LOCAL void scheme_watch_free(gpointer data)
+{
+    SchemeWatch_t *sw = (SchemeWatch_t *)data;
+    g_free(sw->dirname);
+    arkime_reader_scheme_actions_deref(sw->actions);
+    ARKIME_TYPE_FREE(SchemeWatch_t, sw);
+}
+
 LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 {
     SchemeWatch_t *sw = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
+    if (!sw)
+        return;
+
+    // The watch is gone (directory deleted/unmounted, or explicitly removed).
+    // Drop our tracking entry now instead of waiting for the kernel to maybe
+    // reuse this wd number for an unrelated watch later.
+    if (event->mask & IN_IGNORED) {
+        g_hash_table_remove(wdHashTable, (void *)(long)event->wd);
+        return;
+    }
+
     gchar *fullfilename = g_build_filename (sw->dirname, event->name, NULL);
 
     if ((sw->flags & ARKIME_SCHEME_FLAG_RECURSIVE) &&
@@ -82,7 +101,7 @@ LOCAL void scheme_file_init_monitor()
     if (monitorFd < 0)
         LOGEXIT("ERROR - Couldn't init inotify %s", strerror(errno));
 
-    wdHashTable = g_hash_table_new (g_direct_hash, g_direct_equal);
+    wdHashTable = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, scheme_watch_free);
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, scheme_file_monitor_read, NULL);
 }
 /******************************************************************************/
@@ -260,6 +279,11 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
                 }
                 return 1;
             }
+        } else if (bytesRead < 0) {
+            if (errno == EINTR)
+                continue;
+            LOG("ERROR - pcap read failed - Couldn't read file: '%s' with %s (%d)", uri, strerror(errno), errno);
+            break;
         } else {
             break;
         }

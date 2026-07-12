@@ -229,7 +229,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createLinksIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
@@ -266,8 +266,8 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log('createViewIndex', util.inspect(err, false, 10));
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log('createViewsIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
     }
@@ -300,7 +300,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createHistoryIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
@@ -347,7 +347,7 @@ class DbESImplementation {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log('createOverviewIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
@@ -634,8 +634,8 @@ class DbESImplementation {
   async getMatchingAudits (userId, roles, reqQuery) {
     const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
     const filter = [];
-    const allowedSortBy = { issuedAt: 1, indicator: 1, iType: 1 };
-    const safeSortBy = allowedSortBy[sortBy] ? sortBy : 'issuedAt';
+    const allowedSortBy = ['issuedAt', 'indicator', 'iType'];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : 'issuedAt';
     const safeSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
     const query = {
       size: itemsPerPage || 1000,
@@ -689,7 +689,7 @@ class DbESImplementation {
       };
     } catch (err) {
       console.log('ERROR - fetching audit log history', util.inspect(err, false, 10));
-      return [];
+      return { audits: [], total: 0 };
     }
   }
 
@@ -913,7 +913,7 @@ class DbLMDBImplementation {
   async getMatchingAudits (userId, roles, reqQuery) {
     const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
     let audits = [...this.auditStore.getRange({})
-      .filter(({ _, value }) => {
+      .filter(({ value }) => {
         // remove entries outside the dateRange, if there is one
         if ((startMs != null && stopMs != null) && (value.issuedAt < startMs || value.issuedAt > stopMs)) {
           return false;
@@ -964,7 +964,7 @@ class DbLMDBImplementation {
 
   /* Overviews ---------------------------------------- */
   /**
-   * Get all the links that match the creator and set of roles
+   * Get all the overviews that match the creator and set of roles
    */
   async getMatchingOverviews (creator, roles, all) {
     const hits = [];

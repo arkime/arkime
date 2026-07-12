@@ -105,13 +105,13 @@ Arkime is a modular network analysis system with these components:
 - auth.js - Authentication (digest, basic, OIDC, header, form)
 - user.js - User management
 - vueapp/ - Shared Vue components (Search.vue, Users.vue, etc.)
-- vueapp/locales/ - i18n translations (11 languages: en, es, fr, de, ja, ko, zh, etc.)
+- vueapp/locales/ - i18n translations (9 languages + x-pl pseudo-locale: en, es, fr, de, ja, ko, zh, et, pt-BR)
 
 ## Frontend Architecture
 
 ### Tech Stack
 - **Vue 3** - Composition API ready
-- **Vite 7.x** - Modern bundler with HMR (replaces Webpack)
+- **Vite 8.x** - Modern bundler with HMR (replaces Webpack); uses Rolldown + Oxc internally
 - **Bootstrap Vue Next** - Bootstrap 5 components
 - **Vue Router 4** - SPA routing
 - **Vuex 4** - State management
@@ -137,7 +137,7 @@ viewer/vueapp/
 All services follow this pattern. Common components live in common/vueapp/.
 
 ### Development Workflow
-- Frontend: Vite dev server with hot reload (port configured in parentapp/vueapp/vite.config.js)
+- Frontend: Vite dev server with hot reload (port configured in parentapp/vueapp/vite.config.mjs)
 - Backend: nodemon auto-restarts on changes
 - Proxy: Vite proxies API requests to backend
 
@@ -226,8 +226,8 @@ Multiple auth modes via common/auth.js:
 ## Testing Infrastructure
 
 ### Test Framework
-Custom Perl framework: tests/ArkimeTest.pm (~26,000 lines)
-- 47 test files (*.t)
+Custom Perl framework: tests/ArkimeTest.pm
+- 52 test files (*.t)
 - Uses LWP::UserAgent for HTTP testing
 - Helper functions: viewerGet(), viewerPost(), esGet(), countTest()
 
@@ -238,7 +238,7 @@ tests/
 │   ├── api-sessions.t   # Session API tests
 │   ├── api-stats.t      # Stats API tests
 │   ├── dns.t            # Protocol parser tests
-│   └── [47 total]
+│   └── [52 total]
 ├── config.test.ini      # Viewer test config
 ├── config.test.json     # WISE test config
 └── cont3xt.ini          # Cont3xt test config
@@ -356,10 +356,10 @@ git config --local core.hooksPath .githooks/
 5. Add i18n translations to common/vueapp/locales/*.json
 
 ### Adding a Cont3xt Integration
-1. Create new file in cont3xt/integrations/
-2. Extend Integration class from integration.js
-3. Implement doFetch() method
-4. Register in cont3xt.js
+1. Create a new directory cont3xt/integrations/<name>/ with an index.js
+2. Extend the Integration class from cont3xt/integration.js
+3. Declare an itypes map pointing at your fetch methods (e.g. fetchDomain)
+4. Integrations are auto-discovered at startup (no registration step)
 5. Add tests
 
 ### Adding a WISE Source

@@ -465,7 +465,7 @@ async function fixPacketPos (fields) {
   try {
     const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
     if (internals.debug > 2) {
-      console.log('GETSESSION - fixPackPos', fileInfo);
+      console.log('GETSESSION - fixPacketPos', fileInfo);
     }
 
     if (!fileInfo || !fileInfo.packetPosEncoding) {
@@ -591,7 +591,7 @@ Db.getSession = async (id, options, cb) => {
 
   try {
     if (!options) {
-      options = { _source: ['cert', 'dns'], fields: ['*'] };
+      options = { _source: ['cert', 'dns', 'zeekintel'], fields: ['*'] };
     }
     const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -637,6 +637,9 @@ Db.getSession = async (id, options, cb) => {
     }
     if (session.fields && session._source && session._source.dns) {
       session.fields.dns = session._source.dns;
+    }
+    if (session.fields && session._source && session._source.zeekintel) {
+      session.fields.zeekintel = session._source.zeekintel;
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);
@@ -736,7 +739,7 @@ Db.searchScroll = async (index, query, options, cb) => {
     }
   }
 
-  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
   if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     if (!cb) {
       return Db.search(index, query, options);
@@ -813,7 +816,7 @@ Db.searchScrollIterator = async function* (index, query, options) {
     return;
   }
 
-  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
   if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     const result = await Db.search(index, query, options);
     yield result;
@@ -2035,7 +2038,7 @@ Db.session2Sid = function (item) {
   } else if (item._id.length < 31) {
     // sessions2 didn't have new arkime_ prefix
     if (ver === '2@' && internals.prefix === 'arkime_') {
-      // tests_sessions2-191021 191021-abcd => 3@191021:191021-abcd
+      // sessions2-191021 191021-abcd => 2@191021:191021-abcd
       return ver + item._index.substring(10) + ':' + item._id;
     } else if (item._index.startsWith('partial-')) {
       // partial-tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd

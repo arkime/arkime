@@ -83,7 +83,7 @@ SMB2_CMD = {
     ["00090244"] = "FSCTL_CSV_TUNNEL_REQUEST",
     ["0009027C"] = "FSCTL_GET_INTEGRITY_INFORMATION",
     ["00090284"] = "FSCTL_QUERY_FILE_REGIONS",
-    ["000902c8"] = "FSCTL_CSV_SYNC_TUNNEL_REQUEST",
+    ["000902C8"] = "FSCTL_CSV_SYNC_TUNNEL_REQUEST",
     ["00090300"] = "FSCTL_QUERY_SHARED_VIRTUAL_DISK_SUPPORT",
     ["00090304"] = "FSCTL_SVHDX_SYNC_TUNNEL_REQUEST",
     ["00090308"] = "FSCTL_SVHDX_SET_INITIATOR_INFORMATION",
@@ -123,7 +123,7 @@ SMB2_CMD = {
     ["00140204"] = "FSCTL_VALIDATE_NEGOTIATE_INFO",
     ["00144064"] = "FSCTL_SRV_ENUMERATE_SNAPSHOTS",
     ["001440F2"] = "FSCTL_SRV_COPYCHUNK",
-    ["001441bb"] = "FSCTL_SRV_READ_HASH",
+    ["001441BB"] = "FSCTL_SRV_READ_HASH",
     ["001480F2"] = "FSCTL_SRV_COPYCHUNK_WRITE"
   },
   [0x0c] = {
@@ -136,13 +136,13 @@ SMB2_CMD = {
     ["name"] = "Find",
     ["cmdpos"] = 71,
     ["cmdlen"] = 1,
-    [0x01] = "SMB2_FIND_DIRECTORY_INFO",
-    [0x02] = "SMB2_FIND_FULL_DIRECTORY_INFO",
-    [0x03] = "SMB2_FIND_BOTH_DIRECTORY_INFO",
-    [0x04] = "SMB2_FIND_INDEX_SPECIFIED",
-    [0x0C] = "SMB2_FIND_NAME_INFO",
-    [0x25] = "SMB2_FIND_ID_BOTH_DIRECTORY_INFO",
-    [0x26] = "SMB2_FIND_ID_FULL_DIRECTORY_INFO"
+    ["01"] = "SMB2_FIND_DIRECTORY_INFO",
+    ["02"] = "SMB2_FIND_FULL_DIRECTORY_INFO",
+    ["03"] = "SMB2_FIND_BOTH_DIRECTORY_INFO",
+    ["04"] = "SMB2_FIND_INDEX_SPECIFIED",
+    ["0C"] = "SMB2_FIND_NAME_INFO",
+    ["25"] = "SMB2_FIND_ID_BOTH_DIRECTORY_INFO",
+    ["26"] = "SMB2_FIND_ID_FULL_DIRECTORY_INFO"
   },
   [0x0f] = {
     ["name"] = "Notify"
@@ -167,7 +167,7 @@ function parseSMB2(session, str, direction)
     return 0
   end
   if str:byte(21) % 2 == 0 then
-    if str:byte(17) == string.char(0x00) then
+    if str:byte(17) == 0x00 then
       return 0
     end
     local tbl = session:table()
@@ -176,7 +176,7 @@ function parseSMB2(session, str, direction)
       table.insert(tbl.opcodes,SMB2_CMD[str:byte(17)]["name"])
       session:add_string("smb.opcode",SMB2_CMD[str:byte(17)]["name"])
       if SMB2_CMD[str:byte(17)]["cmdpos"] == nil or
-         SMB2_CMD[str:byte(17)]["cmdpos"] == nil then
+         SMB2_CMD[str:byte(17)]["cmdlen"] == nil then
          return 0
       end
       if str:len() < SMB2_CMD[str:byte(17)]["cmdpos"] + SMB2_CMD[str:byte(17)]["cmdlen"] - 1 then

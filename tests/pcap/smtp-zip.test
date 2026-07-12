@@ -229,9 +229,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "smtp:statuscode:250"
+     "smtp:statuscode:250",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 11,
      "ae" : 0,
@@ -250,7 +251,17 @@
      "dst" : 0,
      "src" : 3191149257
     },
-    "totDataBytes" : 1969
+    "totDataBytes" : 1969,
+    "zeekintel" : [
+     {
+      "desc" : "http body sha256",
+      "indicator" : "61479904e443b354d4427a51b990c696f731e341e4c63328e07c1a92658ba591",
+      "indicator_type" : "file_hash",
+      "source" : "arkime-test",
+      "where" : "email.sha256"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

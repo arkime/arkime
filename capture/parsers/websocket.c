@@ -131,7 +131,10 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     WebSocketInfo_t   *ws  = uw;
     ArkimeParserBuf_t *buf = ws->buf;
 
-    arkime_parser_buf_add(buf, which, data, len);
+    if (arkime_parser_buf_add(buf, which, data, len) < 0) {
+        arkime_session_add_tag(session, "websocket:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (buf->len[which] >= 2) {
         uint64_t payLen = 0;
@@ -157,8 +160,19 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
             for (int i = 0; i < 4; i++) maskKey[i] = hdr[koff + i];
         }
 
+        const uint64_t total = (uint64_t)hdrLen + payLen;
+        const int complete = total <= (uint64_t)buf->len[which];
+
+        // Frame incomplete but small enough to buffer - wait for the rest
+        // so text/close payloads spanning segments can still be extracted
+        if (!complete && total <= (uint64_t)buf->bufMax)
+            return 0;
+
         if (opcode != 0) {
-            ws->curOpcode[which & 1] = opcode;
+            // Control frames may interleave a fragmented message (RFC 6455
+            // 5.4); only data opcodes carry over to continuation frames
+            if (opcode == 1 || opcode == 2)
+                ws->curOpcode[which & 1] = opcode;
             if (opcode < (int)ARRAY_LEN(opcodeNames))
                 arkime_field_string_add(opcodeField, session, opcodeNames[opcode], -1, TRUE);
         }
@@ -172,7 +186,7 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
         // If this is a text frame and full payload fits in buf, extract a sample
         // (after unmasking).  Same handling for close frames.
         const int needFull = (effOpcode == 1 || opcode == 8);
-        if (needFull && (uint64_t)(buf->len[which] - hdrLen) >= payLen) {
+        if (needFull && complete) {
             const uint8_t *pay = buf->buf[which] + hdrLen;
 
             if (effOpcode == 1 && ws->textSampleCnt < websocketTextSampleCnt && payLen > 0) {
@@ -235,8 +249,7 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
 
         // Advance past this frame.  Use _skip so payloads larger than the
         // buffer still drain across subsequent segments.
-        uint64_t total = (uint64_t)hdrLen + payLen;
-        if (total <= (uint64_t)buf->len[which]) {
+        if (complete) {
             arkime_parser_buf_del(buf, which, (int)total);
         } else {
             arkime_parser_buf_skip(buf, which, (int)total);

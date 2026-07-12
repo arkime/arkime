@@ -12,7 +12,7 @@
   },
   "scripts": {
     "bundle": "(cd vueapp && vite build --minify false)",
-    "bundle:min": "(cd vueapp && vite build --minify esbuild)",
+    "bundle:min": "(cd vueapp && vite build --minify oxc)",
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "run_bundle": "cd ../ && npm run viewer:run_bundle",
     "predev": "cd ../ && npm run viewer:addtestuser",
@@ -38,7 +38,8 @@
       "./views/",
       "../common/",
       "../tests/config.test.ini",
-      "../capture/parsers/"
+      "../capture/parsers/",
+      "../capture/plugins/"
     ]
   },
   "browserslist": [

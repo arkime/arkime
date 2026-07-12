@@ -15,14 +15,13 @@ class RedisFileSource extends SimpleSource {
   constructor (api, section) {
     super(api, section, { reload: true });
     if (api.getConfig(section, 'redisURL') === undefined) {
-      console.log(this.section, '- ERROR not loading since no url specified in config file');
+      console.log(this.section, '- ERROR not loading since no redisURL specified in config file');
       return;
     }
     this.key = api.getConfig(section, 'key');
 
     if (this.key === undefined) {
       console.log(this.section, '- ERROR not loading since no key specified in config file');
-      delete this.client;
       return;
     }
 
@@ -64,7 +63,7 @@ exports.initSource = function (api) {
       { name: 'key', required: true, help: 'The document key in redis to fetch' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, or json', regex: '^(csv|tagger|json)$' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, or json', regex: '^(csv|tagger|jsonl|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: ['jsonl', 'json'] },
       { name: 'keyPath', required: false, help: 'The path of what field to use as the key', ifField: 'format', ifValue: ['jsonl', 'json'] },

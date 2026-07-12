@@ -126,14 +126,18 @@ SPDX-License-Identifier: Apache-2.0
           </BTooltip>
         </BInputGroupText>
         <input
-          type="datetime-local"
+          type="text"
           tabindex="4"
           id="startTime"
           ref="startTime"
           name="startTime"
-          class="form-control"
-          @input="changeStartTime"
-          :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')">
+          class="form-control time-input"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="YYYY/MM/DD HH:mm:ss"
+          @change="changeStartTime"
+          @keyup.enter="changeStartTime"
+          :value="formatTimeInput(localStartTime, 'YYYY/MM/DD HH:mm:ss')">
         <BInputGroupText
           v-if="timezone !== 'local'"
           :id="`startTimeTimezone`"
@@ -148,6 +152,28 @@ SPDX-License-Identifier: Apache-2.0
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </BTooltip>
         </BInputGroupText>
+        <BButton
+          variant="outline-secondary"
+          id="startTimePicker"
+          class="cursor-pointer date-picker-btn"
+          @click="openPicker('start')">
+          <span class="fa fa-calendar" />
+          <input
+            type="datetime-local"
+            step="1"
+            tabindex="-1"
+            ref="startTimePickerInput"
+            class="date-picker-input"
+            @input="changeStartTime"
+            :value="formatTimeInput(localStartTime, 'YYYY-MM-DDTHH:mm:ss')">
+          <BTooltip
+            target="startTimePicker"
+            placement="bottom"
+            :delay="{show: 500, hide: 0}"
+            noninteractive>
+            {{ $t('search.openDatePickerTip') }}
+          </BTooltip>
+        </BButton>
         <BButton
           variant="outline-secondary"
           id="prevStartTime"
@@ -195,14 +221,18 @@ SPDX-License-Identifier: Apache-2.0
           </BTooltip>
         </BInputGroupText>
         <input
-          type="datetime-local"
+          type="text"
           tabindex="5"
           id="stopTime"
           ref="stopTime"
           name="stopTime"
-          class="form-control"
-          @input="changeStopTime"
-          :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')">
+          class="form-control time-input"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="YYYY/MM/DD HH:mm:ss"
+          @change="changeStopTime"
+          @keyup.enter="changeStopTime"
+          :value="formatTimeInput(localStopTime, 'YYYY/MM/DD HH:mm:ss')">
         <BInputGroupText
           v-if="timezone !== 'local'"
           :id="`stopTimeTimezone`"
@@ -217,6 +247,28 @@ SPDX-License-Identifier: Apache-2.0
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </BTooltip>
         </BInputGroupText>
+        <BButton
+          variant="outline-secondary"
+          id="stopTimePicker"
+          class="cursor-pointer date-picker-btn"
+          @click="openPicker('stop')">
+          <span class="fa fa-calendar" />
+          <input
+            type="datetime-local"
+            step="1"
+            tabindex="-1"
+            ref="stopTimePickerInput"
+            class="date-picker-input"
+            @input="changeStopTime"
+            :value="formatTimeInput(localStopTime, 'YYYY-MM-DDTHH:mm:ss')">
+          <BTooltip
+            target="stopTimePicker"
+            placement="bottom"
+            :delay="{show: 500, hide: 0}"
+            noninteractive>
+            {{ $t('search.openDatePickerTip') }}
+          </BTooltip>
+        </BButton>
         <BButton
           variant="outline-secondary"
           id="prevStopTime"
@@ -369,6 +421,22 @@ import qs from 'qs';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
+
+// maps common timezone abbreviations to utc offsets for typed/pasted times;
+// ambiguous abbreviations (CST, IST, AST, ...) use the most common meaning
+const TZ_ABBREVIATIONS = {
+  Z: '+00:00', UT: '+00:00', UTC: '+00:00', GMT: '+00:00',
+  EST: '-05:00', EDT: '-04:00', CST: '-06:00', CDT: '-05:00',
+  MST: '-07:00', MDT: '-06:00', PST: '-08:00', PDT: '-07:00',
+  AKST: '-09:00', AKDT: '-08:00', HST: '-10:00', HDT: '-09:00',
+  AST: '-04:00', ADT: '-03:00', NST: '-03:30', NDT: '-02:30',
+  WET: '+00:00', WEST: '+01:00', BST: '+01:00', CET: '+01:00', CEST: '+02:00',
+  EET: '+02:00', EEST: '+03:00', MSK: '+03:00', IST: '+05:30',
+  HKT: '+08:00', SGT: '+08:00', JST: '+09:00', KST: '+09:00',
+  AWST: '+08:00', ACST: '+09:30', ACDT: '+10:30', AEST: '+10:00', AEDT: '+11:00',
+  NZST: '+12:00', NZDT: '+13:00'
+};
+
 let currentTimeSec;
 let dateChanged = false;
 let startDateCheck;
@@ -565,7 +633,12 @@ export default {
     },
     /* Fired when start datetime is changed */
     changeStartTime: function (e) {
-      const msDate = moment(e.target.value).valueOf();
+      const parsed = this.parseTimeInput(e.target.value);
+      if (!parsed) { // invalid input - reset the display to the current value
+        e.target.value = this.formatTimeInput(this.localStartTime, 'YYYY/MM/DD HH:mm:ss');
+        return;
+      }
+      const msDate = parsed.valueOf();
       this.localStartTime = moment(msDate);
       this.time.startTime = Math.floor(msDate / 1000);
       this.timeRange = '0'; // custom time range
@@ -573,11 +646,82 @@ export default {
     },
     /* Fired when stop datetime is changed */
     changeStopTime: function (e) {
-      const msDate = moment(e.target.value).valueOf();
+      const parsed = this.parseTimeInput(e.target.value);
+      if (!parsed) { // invalid input - reset the display to the current value
+        e.target.value = this.formatTimeInput(this.localStopTime, 'YYYY/MM/DD HH:mm:ss');
+        return;
+      }
+      const msDate = parsed.valueOf();
       this.localStopTime = moment(msDate);
       this.time.stopTime = Math.floor(msDate / 1000);
       this.timeRange = '0'; // custom time range
       this.validateDate();
+    },
+    /**
+     * Parses typed or pasted datetime text in several common formats
+     * @param {string} value the input text
+     * @returns {object|undefined} a valid moment or undefined
+     */
+    parseTimeInput: function (value) {
+      const formats = [
+        'YYYY/MM/DD HH:mm:ss', 'YYYY/MM/DD HH:mm', 'YYYY/MM/DD',
+        'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DD HH:mm', 'YYYY-MM-DD',
+        moment.ISO_8601
+      ];
+
+      value = value.trim();
+
+      // bare timestamps are interpreted in the timezone the inputs display
+      let zone = this.timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone;
+      let offset;
+
+      // detect and strip a trailing timezone: Z or a numeric offset (+02:00,
+      // GMT+2), optionally attached (13:09:54Z), an abbreviation (UTC, EDT),
+      // or an IANA name (America/New_York)
+      const match = value.match(/^(.*\d)(?:\s*(?:(?:GMT|UTC)?([+-]\d{1,2}(?::?\d{2})?)|Z)|\s+(?:([A-Za-z]+(?:\/[A-Za-z_+-]+)+)|([A-Za-z]{1,5})))$/);
+      if (match) {
+        const [, text, numOffset, ianaName, abbreviation] = match;
+        if (numOffset !== undefined) {
+          const parts = numOffset.match(/^([+-])(\d{1,2}):?(\d{2})?$/);
+          offset = (parts[1] === '-' ? -1 : 1) * ((parseInt(parts[2]) * 60) + parseInt(parts[3] || '0'));
+        } else if (ianaName !== undefined) {
+          if (!moment.tz.zone(ianaName)) { return undefined; } // unrecognized timezone
+          zone = ianaName;
+        } else if (abbreviation !== undefined) {
+          offset = TZ_ABBREVIATIONS[abbreviation.toUpperCase()];
+          if (offset === undefined) { return undefined; } // unrecognized timezone
+        } else { // trailing Z
+          offset = 0;
+        }
+        value = text;
+      }
+
+      let parsed = moment.tz(value, formats, zone);
+      if (offset !== undefined) { parsed = parsed.utcOffset(offset, true); }
+      return parsed.isValid() ? parsed : undefined;
+    },
+    /**
+     * Formats a time for display in the start/stop inputs using the timezone
+     * the user has configured (so UTC mode shows UTC wall clock time)
+     * @param {object} time a moment object
+     * @param {string} format the format string
+     * @returns {string} the formatted time
+     */
+    formatTimeInput: function (time, format) {
+      return this.findTimeInTimezone(time.valueOf()).format(format);
+    },
+    /**
+     * Opens the native date picker attached to the calendar button
+     * @param {string} which start or stop
+     */
+    openPicker: function (which) {
+      const input = which === 'start' ? this.$refs.startTimePickerInput : this.$refs.stopTimePickerInput;
+      if (!input) { return; }
+      try {
+        input.showPicker();
+      } catch (e) { // showPicker unsupported or blocked - focus instead
+        input.focus();
+      }
     },
     /**
      * Determines whether the supplied time is the start of a day
@@ -902,5 +1046,27 @@ export default {
 <style scoped>
 .time-range-display {
   font-size: 0.85rem;
+}
+
+.time-input {
+  min-width: 168px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* keep the native picker input rendered (showPicker needs it) but invisible
+   inside the calendar button */
+.date-picker-btn {
+  position: relative;
+}
+.date-picker-input {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border: none;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 </style>

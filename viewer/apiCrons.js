@@ -185,6 +185,7 @@ class CronAPIs {
       res.send(queries);
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Error retrieving periodic queries', 'api.crons.retrieveFailed');
     }
   }
 
@@ -507,21 +508,22 @@ class CronAPIs {
           agent: client === http ? internals.httpAgent : internals.httpsAgent
         };
 
-        Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
+        // Sign the path exactly as the remote node will see it in req.url
+        Auth.addS2SAuth(reqOptions, pOptions.user, node, url.pathname + (url.search ?? ''));
         ViewerUtils.addCaTrust(reqOptions, node);
 
         await new Promise((resolve) => {
           const preq = client.request(url, reqOptions, (pres) => {
             pres.on('data', (chunk) => {
-              CronAPIs.#qlworking[url.path] = 'data';
+              CronAPIs.#qlworking[url.pathname] = 'data';
             });
             pres.on('end', () => {
-              delete CronAPIs.#qlworking[url.path];
+              delete CronAPIs.#qlworking[url.pathname];
               resolve();
             });
           });
           preq.on('error', (e) => {
-            delete CronAPIs.#qlworking[url.path];
+            delete CronAPIs.#qlworking[url.pathname];
             console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
             resolve();
           });
@@ -529,7 +531,7 @@ class CronAPIs {
           preq.write('ids=');
           preq.write(nodes[node].join(','));
           preq.end();
-          CronAPIs.#qlworking[url.path] = 'sent';
+          CronAPIs.#qlworking[url.pathname] = 'sent';
         });
       }
     });
@@ -537,8 +539,8 @@ class CronAPIs {
 
   // --------------------------------------------------------------------------
   /* Process a single cron query.  At max it will process 24 hours worth of data
-   * to give other queries a chance to run.  Because its timestamp based and not
-   * lastPacket based since 1.0 it now search all indices each time.
+   * to give other queries a chance to run.  Because it's timestamp based and not
+   * lastPacket based since 1.0 it now searches all indices each time.
    */
   static async #processCronQuery (cq, options, query, endTime) {
     if (Config.debug > 2) {
@@ -692,7 +694,7 @@ class CronAPIs {
 
           const query = {
             from: 0,
-            size: 1000,
+            size: 10000000, // >10000 forces searchSessionsIterator to scroll ALL hits in the window (2000/chunk)
             query: { bool: { filter: [{}] } },
             _source: ['_id', 'node']
           };

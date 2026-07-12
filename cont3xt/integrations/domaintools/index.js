@@ -131,7 +131,7 @@ class DomainToolsWhoisIntegration extends Integration {
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();

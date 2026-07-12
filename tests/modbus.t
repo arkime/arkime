@@ -1,4 +1,4 @@
-use Test::More tests => 38;
+use Test::More tests => 40;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -18,7 +18,7 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==modbus"));
 
 # modbus.transactionid
     countTest(2, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid==0"));
-    countTest(4, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid==1"));
+    countTest(3, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid==1"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid==256"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.transactionid>1"));
 
@@ -34,6 +34,7 @@ countTest(6, "date=-1&expression=" . uri_escape("$files&&protocols==modbus"));
     countTest(2, "date=-1&expression=" . uri_escape("$files&&modbus.funccode==8"));
 
 # modbus.exccode
-    countTest(2, "date=-1&expression=" . uri_escape("$files&&modbus.exccode>0"));
+    countTest(3, "date=-1&expression=" . uri_escape("$files&&modbus.exccode>0"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.exccode==11"));
     countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.exccode==3"));
+    countTest(1, "date=-1&expression=" . uri_escape("$files&&modbus.exccode==5"));

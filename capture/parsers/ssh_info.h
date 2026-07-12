@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#define MAX_SSH_BUFFER 8196
+#define MAX_SSH_BUFFER (8192 + 4) // max record payload + 4-byte length field
 #define MAX_LENS 200
 
 typedef struct {

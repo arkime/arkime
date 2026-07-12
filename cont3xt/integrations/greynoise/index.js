@@ -116,6 +116,7 @@ class GreyNoiseIntegration extends Integration {
         return Integration.NoResult; // IP not found in riot dataset or noise
       }
 
+      console.log(this.name, ip, err);
       return undefined;
     }
   }

@@ -40,7 +40,7 @@ parser.add_argument("--regex", help="Regex to use on packet")
 parser.add_argument("--hexregex", help="Regex to use on the hexed packet")
 parser.add_argument("--limit", help="Only produce this manyish results (rounded up to pagesize)", type=int)
 parser.add_argument("-l", "--listfields", help="List allowed Moloch Fields for --fields", action="store_true")
-parser.add_argument("-c", "--concurrent", help="Number of concurrent packet's to search", type=int, default=10)
+parser.add_argument("-c", "--concurrent", help="Number of concurrent packets to search", type=int, default=10)
 parser.add_argument("-p", "--pagesize", help="Results to grab from elasticsearch at a time", type=int, default=1000)
 parser.add_argument("-t", "--timeout", help="Elasticsearch scroll timeout", default="2m")
 parser.add_argument("--esurl", help="Elasticsearch URL (proto://host:port)", required=True)
@@ -117,6 +117,8 @@ def get_query(req):
 def print_progress(cur, tot):
     if tot == 0:
         tot = 1
+    if cur == 0:
+        cur = 1
     pct = int(cur / tot * 100)
     now = datetime.now()
     elap = now - start_time
@@ -153,7 +155,7 @@ def print_tsv(hits, fields):
         print("\t".join(out))
 
 
-# Set up a fixed session per mulitprocess worker
+# Set up a fixed session per multiprocess worker
 def worker_init():
     global s
     s = requests.Session()

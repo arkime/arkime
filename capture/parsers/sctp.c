@@ -192,7 +192,6 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
         ArkimeSctpData_t *fsd = 0;
         int               totalsize = 0;
         int               state = 0;
-        uint32_t          tsn = 0;
 
         DLL_FOREACH(sd_, &session->sctpData, sd) {
             if (ARKIME_WHICH_GET_DIR(sd->which) != dir)
@@ -206,13 +205,12 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
                 if (!(sd->flags & SCTP_DATA_FLAG_B))
                     return;
                 fsd = sd;
-                tsn = sd->tsn + 1;
                 totalsize = sd->len;
                 state = 1;
-            } else { // Have start looking for end
-                if (sd->tsn != tsn)
-                    return;
-                tsn++;
+            } else { // Have start, looking for end on the same stream
+                // Fragments of messages on other streams may interleave TSN-wise
+                if (sd->which != fsd->which)
+                    continue;
                 totalsize += sd->len;
             }
             if (sd->flags & SCTP_DATA_FLAG_E) {
@@ -233,8 +231,8 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
 
         ArkimeSctpData_t *tmpsd;
         DLL_FOREACH_REMOVABLE_START(sd_, &session->sctpData, sd, tmpsd) {
-            // Only look at our direction
-            if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
+            // Only chunks of this message's direction+stream
+            if (sd->which != fwhich) {
                 continue;
             }
             memcpy(data + off, sd->data, sd->len);

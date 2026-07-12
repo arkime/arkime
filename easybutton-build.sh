@@ -26,7 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=22.22.3
+NODE=22.23.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -133,7 +133,7 @@ done
 
 
 ################################################################################
-# Default node setting, reset to unofficial builds below for Centos 7, Ubuntu 18, Alpine
+# Default node setting, reset to unofficial builds below for Alpine
 NODEHOST=nodejs.org
 case "$(uname -m)" in
     "x86_64")
@@ -210,6 +210,15 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
     export KAFKA_LIBS="-lrdkafka"
     KAFKABUILD="--with-kafka=no"
+  elif [[ "$ID" == "fedora" ]]; then
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libnghttp2-devel yara-devel lua-devel libzstd-devel librdkafka-devel python3-devel
+    DOTHIRDPARTY=0
+    export LUA_CFLAGS="-I/usr/include"
+    export LUA_LIBS="-llua"
+    with_lua=no
+    export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
+    export KAFKA_LIBS="-lrdkafka"
+    with_kafka=no
   fi
   sudo yum -y install --skip-broken curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then

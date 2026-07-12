@@ -61,20 +61,36 @@ class ThreatQSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseFile () {
-    this.ips.clear();
-    this.domains.clear();
-    this.emails.clear();
-    this.md5s.clear();
+    // Build into fresh maps and swap at the end so a failed load keeps prior data
+    const ips = new Map();
+    const domains = new Map();
+    const emails = new Map();
+    const md5s = new Map();
 
     let count = 0;
+    let bad = false;
     fs.createReadStream('/tmp/threatquotient.zip')
+      .on('error', (err) => {
+        console.log(this.section, "- Couldn't read /tmp/threatquotient.zip", err);
+      })
       .pipe(unzipper.Parse())
+      .on('error', (err) => {
+        bad = true;
+        console.log(this.section, '- Error unzipping', err);
+      })
       .on('entry', (entry) => {
         const bufs = [];
         entry.on('data', (buf) => {
           bufs.push(buf);
         }).on('end', () => {
-          const json = JSON.parse(Buffer.concat(bufs));
+          let json;
+          try {
+            json = JSON.parse(Buffer.concat(bufs));
+          } catch (err) {
+            bad = true;
+            console.log(this.section, '- Error parsing', err);
+            return;
+          }
           json.forEach((item) => {
             const args = [this.idField, '' + item.id, this.typeField, item.type];
 
@@ -94,18 +110,26 @@ class ThreatQSource extends WISESource {
 
             count++;
             if (item.type === 'IP Address') {
-              this.ips.set(item.indicator, encoded);
+              ips.set(item.indicator, encoded);
             } else if (item.type === 'FQDN') {
-              this.domains.set(item.indicator, encoded);
+              domains.set(item.indicator, encoded);
             } else if (item.type === 'Email Address') {
-              this.emails.set(item.indicator, encoded);
+              emails.set(item.indicator, encoded);
             } else if (item.type === 'MD5') {
-              this.md5s.set(item.indicator, encoded);
+              md5s.set(item.indicator, encoded);
             }
           });
         });
       })
       .on('close', () => {
+        if (bad) {
+          console.log(this.section, '- Load failed, keeping previous data');
+          return;
+        }
+        this.ips = ips;
+        this.domains = domains;
+        this.emails = emails;
+        this.md5s = md5s;
         console.log(this.section, '- Done Loading', count, 'elements');
       });
   }

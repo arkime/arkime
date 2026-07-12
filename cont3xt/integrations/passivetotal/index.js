@@ -27,7 +27,7 @@ class PassiveTotalIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -116,7 +116,7 @@ class PassiveTotalWhoisIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -189,7 +189,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -298,7 +298,7 @@ class PassiveTotalDNSIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();

@@ -120,8 +120,6 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt,
     int hasWill = (flags & 0x04) != 0;
     int cleanSession = (flags & 0x02) != 0;
 
-    (void)willRetain;
-
     if (hasWill) {
         arkime_field_string_add(flagsField, session, "hasWill", -1, TRUE);
         if (willQoS <= 2) {
@@ -215,9 +213,10 @@ LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, 
     if (headerNeeded > (int)remainingLen)
         return -2; // Malformed
 
-    // If header itself can never fit in the parser buffer, it's not parseable
+    // If header itself can never fit in the parser buffer, it's too large
+    // to parse (topics may legally be up to 64KB), not malformed
     if (headerNeeded > (int)mqtt->bufMax)
-        return -2;
+        return -3;
 
     if (BSB_REMAINING(*bsb) < headerNeeded)
         return -1; // Need more data
@@ -321,9 +320,21 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         if (packetType == 3) {
             int skipLen = mqtt_parse_publish(session, mqtt, which, &bsb, flags, remainingLen);
             if (skipLen == -1) {
-                // Need more data; rewind so we re-parse the fixed header next time.
+                // Need more data. If add() truncated this read the header can
+                // never fit (fixed header + topic exceed bufMax), so unregister
+                // instead of stalling forever.
+                if (truncated) {
+                    arkime_session_add_tag(session, "mqtt:message-too-long");
+                    arkime_parsers_unregister(session, mqtt);
+                    return 0;
+                }
+                // Rewind so we re-parse the fixed header next time.
                 bsb = headerStart;
                 break;
+            }
+            if (skipLen == -3) {
+                arkime_session_add_tag(session, "mqtt:message-too-long");
+                return ARKIME_PARSER_UNREGISTER;
             }
             if (skipLen < 0) {
                 arkime_session_add_tag(session, "mqtt:bad-publish");
@@ -390,6 +401,12 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         int processed = BSB_WORK_PTR(bsb) - mqtt->buf[which];
         arkime_parser_buf_del(mqtt, which, processed);
         BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
+    }
+
+    if (truncated) {
+        // add() dropped tail bytes; anything after the gap can't be trusted
+        arkime_session_add_tag(session, "mqtt:message-too-long");
+        arkime_parsers_unregister(session, mqtt);
     }
 
     return 0;

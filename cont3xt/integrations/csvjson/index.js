@@ -93,7 +93,7 @@ class CsvJsonIntegration extends Integration {
 
     if (this.#url[0] === '/' || this.#url.startsWith('./') || this.#url.startsWith('../')) {
       if (!fs.existsSync(this.#url)) {
-        console.log(this.section, '- ERROR not loading', this.section, 'since', this.#url, "doesn't exist");
+        console.log(this.section, '- ERROR not loading since', this.#url, "doesn't exist");
         return;
       }
       this.#load = this.#loadFile;
@@ -120,7 +120,7 @@ class CsvJsonIntegration extends Integration {
       this.#redisKey = redisParts.pop();
       this.#redisClient = ArkimeUtil.createRedisClient(redisParts.join('/'), section);
     } else {
-      console.log(this.section, '- ERROR not loading', this.section, `don't know how to open`, this.#url);
+      console.log(this.section, "- ERROR not loading, don't know how to open", this.#url);
       return;
     }
 
@@ -130,6 +130,7 @@ class CsvJsonIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   async getIp (user, item) {
+    if (!this.#ipCache) { return Integration.NoResult; }
     const result = this.#ipCache.find(item);
     if (!result) {
       return Integration.NoResult;
@@ -145,6 +146,7 @@ class CsvJsonIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   async getOther (user, item) {
+    if (!this.#otherCache) { return Integration.NoResult; }
     const result = this.#otherCache.get(item);
 
     if (!result) {
@@ -175,7 +177,7 @@ class CsvJsonIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   #parseJSON (data, setCb, endCb) {
-    let json = JSON.parse(data);
+    let json = typeof data === 'string' ? JSON.parse(data) : data;
     if (this.#arrayPath !== undefined) {
       const arrayPath = this.#arrayPath.split('.');
       for (let i = 0; i < arrayPath.length; i++) {
@@ -274,16 +276,16 @@ class CsvJsonIntegration extends Integration {
   // ----------------------------------------------------------------------------
   #loadFile () {
     if (!fs.existsSync(this.#url)) {
-      console.log(this.section, '- ERROR not loading', this.section, 'since', this.#url, "doesn't exist");
+      console.log(this.section, '- ERROR not loading since', this.#url, "doesn't exist");
       return;
     }
 
     // Process the file
     this.#process(fs.readFileSync(this.#url));
 
-    // Watch for file changes, debounce over 500ms
+    // Watch for file changes, debounce over 1000ms
     if (!this.#watch) {
-      // Need to as variable because of 'this'
+      // Needs to be a variable because of 'this'
       const watchCb = () => {
         clearTimeout(this.#watchTimer);
         this.#watchTimer = setTimeout(() => {

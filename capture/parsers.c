@@ -289,7 +289,7 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         if (MAGIC_MATCH(0, "PK\005\006")) {
             return MAGIC_RESULT("application/zip");
         }
-        if (MAGIC_MATCH_LEN(0, "PK\007\008PK")) {
+        if (MAGIC_MATCH_LEN(0, "PK\x07\x08PK")) {
             return MAGIC_RESULT("application/zip");
         }
         break;
@@ -707,8 +707,8 @@ LOCAL gboolean arkime_ntlm_secbuf(const uint8_t *msg, uint32_t msglen,
         return FALSE;
 
     BSB hdr;
-    uint16_t slen;
-    uint32_t soff;
+    uint16_t slen = 0;
+    uint32_t soff = 0;
     BSB_INIT(hdr, msg + pos, 8);
     BSB_LIMPORT_u16(hdr, slen);
     BSB_LIMPORT_skip(hdr, 2);              // skip MaxLen
@@ -751,7 +751,7 @@ void arkime_parsers_ntlm_decode(ArkimeSession_t *session,
     BSB_INIT(msg, data, dlen);
     BSB_LIMPORT_skip(msg, 8); // already validated NTLMSSP signature
 
-    uint32_t mtype;
+    uint32_t mtype = 0;
     BSB_LIMPORT_u32(msg, mtype);
     if (BSB_IS_ERROR(msg) || mtype < 1 || mtype > 3)
         return;
@@ -879,6 +879,7 @@ int arkime_parsers_load()
     HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
 
     ArkimeString_t *hstring;
+    int count = 0;
 
     char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
     for (int d = 0; disableParsers[d]; d++) {
@@ -954,6 +955,7 @@ int arkime_parsers_load()
             hstring->str = files[i].filename;
             hstring->len = strlen(files[i].filename);
             HASH_ADD(s_, loaded, hstring->str, hstring);
+            count++;
 
             if (config.debug)
                 LOG("Loaded %s", path);
@@ -967,8 +969,6 @@ int arkime_parsers_load()
         ArkimeExtensions_t *ext = (ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e);
         ext->loaded = 1;
     }
-
-    int count = HASH_COUNT(s_, loaded);
 
     HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
         g_free(hstring->str);

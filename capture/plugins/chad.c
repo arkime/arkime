@@ -140,7 +140,7 @@ LOCAL void chad_plugin_init(char **chads, char **ignores, gboolean http)
     int i;
     int p;
 
-    for (i = 0, p = 0; chads[i] && p < 64; i++) {
+    for (i = 0, p = 0; chads[i] && p < ARRAY_LEN(CHAD_ORDER_ARR) - 1; i++) {
         ChadToken_t *token;
         if (http)
             HASH_FIND(c_, chadTokens, chads[i], token);

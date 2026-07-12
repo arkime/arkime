@@ -35,7 +35,7 @@ class IPQSIntegration extends Integration {
     }
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -75,7 +75,7 @@ class IPQSIPIntegration extends Integration {
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
   constructor () {
     super();
     Integration.register(this);
@@ -160,7 +160,7 @@ class IPQSEmailIntegration extends Integration {
     }
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   card = {
     title: 'IPQS Email Reputation for %{query}',
@@ -173,8 +173,8 @@ class IPQSEmailIntegration extends Integration {
       { label: 'Recent Abuse', field: 'recent_abuse' },
       makeSamples('domain_age'),
       makeSamples('first_seen'),
-      { label: 'A Records', field: 'a_records', type: 'array', separator: ', ' },
-      { label: 'MX Records', field: 'mx_records', type: 'array', separator: ', ' }
+      { label: 'A Records', field: 'a_records', type: 'array', join: ', ' },
+      { label: 'MX Records', field: 'mx_records', type: 'array', join: ', ' }
     ]
   };
 
@@ -266,13 +266,13 @@ class IPQSEmailLeakIntegration extends Integration {
     }
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   card = {
     title: 'IPQS Email Leak Records for %{query}',
     fields: [
       { label: 'Exposed', field: 'exposed', type: 'boolean' },
-      { label: 'Source', field: 'source', type: 'array', separator: ', ' },
+      { label: 'Source', field: 'source', type: 'array', join: ', ' },
       { label: 'Plain Text Password', field: 'plain_text_password', type: 'boolean' },
       makeSamples('first_seen')
     ]
@@ -308,10 +308,10 @@ class IPQSEmailLeakIntegration extends Integration {
           console.error(`${this.name}: Email Leak API request failed for ${email}. Status: ${axiosError.response.status}, Data: ${JSON.stringify(axiosError.response.data)}`);
         } else if (axiosError.request) {
           errorMsg = 'No response received from the Email Leak API.';
-          console.error(`${this.name}: No response received from Darkweb API for ${email}. Request: ${JSON.stringify(axiosError.request)}`);
+          console.error(`${this.name}: No response received from Email Leak API for ${email}. Request: ${JSON.stringify(axiosError.request)}`);
         } else {
           errorMsg = `Request setup failed. Message: ${axiosError.message}`;
-          console.error(`${this.name}: Error setting up Darkweb API request for ${email}. Message: ${axiosError.message}`);
+          console.error(`${this.name}: Error setting up Email Leak API request for ${email}. Message: ${axiosError.message}`);
         }
 
         return {
@@ -328,7 +328,7 @@ class IPQSEmailLeakIntegration extends Integration {
         };
       }
       if (response.data?.success === false) {
-        console.error(`${this.name}: Darkweb API reported failure for ${email}. Message: ${response.data.message || 'No specific message.'}`);
+        console.error(`${this.name}: Email Leak API reported failure for ${email}. Message: ${response.data.message || 'No specific message.'}`);
         return {
           _cont3xt: { count: 0 },
           error: response.data.message || 'Invalid input'
@@ -338,7 +338,7 @@ class IPQSEmailLeakIntegration extends Integration {
       response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
-      console.error(`${this.name}: An unexpected error occurred while fetching darkweb data for ${email}:`, err);
+      console.error(`${this.name}: An unexpected error occurred while fetching Email Leak data for ${email}:`, err);
       return {
         _cont3xt: { count: 0 },
         error: `Unexpected error occurred while fetching data for ${email}.`
@@ -350,7 +350,7 @@ class IPQSEmailLeakIntegration extends Integration {
 class IPQSUrlIntegration extends Integration {
   name = 'IPQS URL Reputation';
   icon = 'integrations/ipqs/icon.png';
-  order = 605;
+  order = 608;
   configName = 'IPQualityScore';
 
   itypes = {
@@ -380,13 +380,13 @@ class IPQSUrlIntegration extends Integration {
       { label: 'Adult', field: 'adult', type: 'boolean' },
       { label: 'Country Code', field: 'country_code' },
       makeSamples('domain_age'),
-      { label: 'A Records', field: 'a_records', type: 'array', separator: ', ' },
-      { label: 'MX Records', field: 'mx_records', type: 'array', separator: ', ' },
-      { label: 'NS Records', field: 'ns_records', type: 'array', separator: ', ' }
+      { label: 'A Records', field: 'a_records', type: 'array', join: ', ' },
+      { label: 'MX Records', field: 'mx_records', type: 'array', join: ', ' },
+      { label: 'NS Records', field: 'ns_records', type: 'array', join: ', ' }
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -490,7 +490,7 @@ class IPQSPhoneIntegration extends Integration {
     ]
   };
 
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();

@@ -8,7 +8,7 @@
  *    bpf_filter defaults to "not (host <hostname> and port 37008)" if not provided, 
  *    which prevents forwarding packets that are already being sent to the destination.
  *
- * Compile: tzsp_forwarder.c -o tzsp_forwarder -l pcap
+ * Compile: cc tzsp_forwarder.c -o tzsp_forwarder -lpcap
  *
  * Copyright 2025 All rights reserved.
  *

@@ -39,7 +39,7 @@ class LinkGroup {
    * @param {string} _id - The id of the link group
    * @param {string} name - The name of the link group
    * @param {string} creator - The creator of the link group
-   * @param {Links[]} links - The array of links in this link group
+   * @param {Link[]} links - The array of links in this link group
    * @param {array} editRoles - The Arkime roles that can edit this link group
    * @param {array} viewRoles - The Arkime roles that can view this link group
    * @param {boolean} _editable - Whether the logged in user is allowed to edit this link group
@@ -116,20 +116,13 @@ class LinkGroup {
       return { msg: 'editRoles must be an array of strings' };
     }
 
-    if (lg.editRoles !== undefined) {
-      if (!Array.isArray(lg.editRoles)) {
-        return { msg: 'editRoles must be array' };
-      }
-
-      for (const editRole of lg.editRoles) {
-        if (!ArkimeUtil.isString(editRole)) {
-          return { msg: 'editRoles must contain strings' };
-        }
-      }
-    }
-
     for (let i = 0; i < lg.links.length; i++) {
       const link = lg.links[i];
+
+      if (typeof link !== 'object' || link === null) {
+        return { msg: 'Link must be object' };
+      }
+
       lg.links[i] = (
         ({ // only allow these properties in links
           // eslint-disable-next-line no-shadow
@@ -137,9 +130,6 @@ class LinkGroup {
         }) => ({ name, url, itypes, color, infoField, externalDocName, externalDocUrl })
       )(link);
 
-      if (typeof link !== 'object') {
-        return { msg: 'Link must be object' };
-      }
       if (!ArkimeUtil.isString(link.name)) {
         return { msg: 'Link missing name' };
       }

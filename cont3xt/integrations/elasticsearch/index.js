@@ -168,7 +168,7 @@ class ElasticsearchIntegration extends Integration {
     const results = await this.#client.get({
       index: this.#index,
       id: item
-    });
+    }, { ignore: [404] });
 
     if (results.statusCode !== 200 || !results?.body?._source) {
       return Integration.NoResult;

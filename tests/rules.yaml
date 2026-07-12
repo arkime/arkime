@@ -3,7 +3,7 @@
 # rules:
 #   name:       - Friendly name for stats
 
-#   when:       - must be one of the three
+#   when:       - must be one of the following
 #     sessionSetup     - first few packets
 #     afterClassify    - classify stage
 #     fieldSet         - check when a field is set
@@ -17,14 +17,14 @@
 #                        one from each field expression must be set
 #   <field expression1>:
 #     - <value1>
-#     - <vaule2>
+#     - <value2>
 #   <field expression2>:
 #     - <value1>
-#     - <vaule2>
+#     - <value2>
 #
 #   ops:                          - List of ops, 1 per line
 #     _dontSaveSPI                - Don't save SPI data for session
-#     _maxPacketsToSave           - Don't save more then X packets
+#     _maxPacketsToSave           - Don't save more than X packets
 #     _minPacketsBeforeSavingSPI  - Don't save SPI data unless this many packets
 #     <fieldname>                 - Add value to field
 #     -<fieldname>                - Remove value from field

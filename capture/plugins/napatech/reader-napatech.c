@@ -86,7 +86,6 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
 {
     NtStream_t *st = (NtStream_t *)streamv;
     NtNetBuf_t  hSegBuf;     /* handle to one segment (N packets) */
-    int         status;
 
     int threadNum = ARKIME_THREAD_INCROLD(ntThreadNum);
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
@@ -97,7 +96,7 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
 
     while (!config.quitting) {
         /* 100ms timeout so we can check config.quitting */
-        status = NT_NetRxGet(st->hStream, &hSegBuf, 100);
+        int status = NT_NetRxGet(st->hStream, &hSegBuf, 100);
 
         if (unlikely(status == NT_STATUS_TIMEOUT || status == NT_STATUS_TRYAGAIN)) {
             continue;
@@ -136,10 +135,10 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
          * ---------------------------------------------------------------- */
         uint64_t segLen  = NT_NET_GET_SEGMENT_LENGTH(hSegBuf);
         uint8_t *segBase = (uint8_t *)NT_NET_GET_SEGMENT_PTR(hSegBuf);
-        uint8_t *segEnd  = segBase + segLen;
+        const uint8_t *segEnd  = segBase + segLen;
 
         for (uint8_t *p = segBase; p < segEnd;) {
-            NtStd0Descr_t *d = (NtStd0Descr_t *)p;
+            const NtStd0Descr_t *d = (const NtStd0Descr_t *)p;
 
             /* storedLength is in BYTES (already 8-byte-aligned) and is the
              * full record stride: descriptor + captured payload + padding.

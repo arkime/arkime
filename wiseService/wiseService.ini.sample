@@ -61,5 +61,5 @@ tags=zeustracker,botnet
 type=domain
 reload=60
 
-[right-click]
-file=/opt/arkime/wiseService/right_click.ini.sample
+[valueactions:sample]
+file=/opt/arkime/wiseService/valueactionsfile.ini.sample

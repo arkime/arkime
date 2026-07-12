@@ -47,7 +47,7 @@ LOCAL void jabber_classify(ArkimeSession_t *session, const uint8_t *data, int le
 /******************************************************************************/
 LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    //If a USER packet must have not NICK or +iw with it so we don't pickup IRC
+    // A USER packet must not have NICK or +iw with it so we don't pick up IRC
     if (len <= 5 || arkime_memstr((char *)data, len, "\nNICK ", 6) || arkime_memstr((char *)data, len, " +iw ", 5)) {
         return;
     }
@@ -316,7 +316,6 @@ LOCAL void samsung_smartview_classify(ArkimeSession_t *session, const uint8_t *d
     arkime_session_add_protocol(session, "samsung-smartview");
 }
 /******************************************************************************/
-// NetBIOS Datagram Service (NBDS) - port 138
 // WireGuard VPN - classify on handshake messages only to avoid false positives
 LOCAL void wireguard_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -334,6 +333,7 @@ LOCAL void wireguard_classify(ArkimeSession_t *session, const uint8_t *data, int
     arkime_session_add_protocol(session, "wireguard");
 }
 /******************************************************************************/
+// NetBIOS Datagram Service (NBDS) - port 138
 // Wrapper protocol that can carry SMB mailslot messages
 LOCAL void nbds_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -424,11 +424,12 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_UDP("ssdp", "M-SEARCH ");
     SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY * ");
-    SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY ALIVE SDDP/");
     arkime_parsers_classifier_register_udp("ssdp", NULL, 0, (uint8_t *)"HTTP/1.", 7, ssdp_response_classify);
 
     SIMPLE_CLASSIFY_UDP("bsdp", "SEARCH BSDP/");
     SIMPLE_CLASSIFY_UDP("bsdp", "NOTIFY BSDP/");
+
+    SIMPLE_CLASSIFY_UDP("sddp", "NOTIFY ALIVE SDDP/");
 
     SIMPLE_CLASSIFY_UDP("plex-gdm", "UPDATE * ");
     SIMPLE_CLASSIFY_UDP("plex-gdm", "VUPDATE * ");
@@ -463,7 +464,7 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_UDP("steam-friends", "VS01");
     SIMPLE_CLASSIFY_UDP("valve-a2s", "\xff\xff\xff\xff\x54\x53\x6f\x75");
-    SIMPLE_CLASSIFY_TCP("stream-ihscp", "\xa4\x00\x00\x00\x56\x54\x30\x31");
+    SIMPLE_CLASSIFY_TCP("steam-ihscp", "\xa4\x00\x00\x00\x56\x54\x30\x31");
 
     SIMPLE_CLASSIFY_TCP("honeywell-tcc", "\x43\x42\x4b\x50\x50\x52\x05\x50");
 

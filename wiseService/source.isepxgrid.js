@@ -17,7 +17,7 @@
  * STOMP events:
  *   - CONNECT/STARTED event  → upsert (add or overwrite) all IPs for that session;
  *     stale IPs from the same auditSessionId that are no longer present are purged
- *   - DISCONNECT event → remove all IPs ever associated with that auditSessionId
+ *   - DISCONNECTED event → remove all IPs ever associated with that auditSessionId
  *
  * The cache is cleared and rebuilt from ISE on:
  *   - Restart (Maps start empty, bulk load runs after STOMP subscribe)
@@ -120,12 +120,13 @@ class StompClient {
 
     const command = frameStr.slice(0, nlIdx).trim();
     const rest = frameStr.slice(nlIdx + 1);
-    const blankIdx = rest.indexOf('\n\n');
-    const rawHdrs = blankIdx >= 0 ? rest.slice(0, blankIdx) : rest;
-    const body = blankIdx >= 0 ? rest.slice(blankIdx + 2) : '';
+    // STOMP 1.2 allows CRLF line endings, so split headers/body on either \n\n or \r\n\r\n
+    const sep = rest.match(/\r?\n\r?\n/);
+    const rawHdrs = sep ? rest.slice(0, sep.index) : rest;
+    const body = sep ? rest.slice(sep.index + sep[0].length) : '';
 
     const headers = {};
-    for (const line of rawHdrs.split('\n')) {
+    for (const line of rawHdrs.split(/\r?\n/)) {
       const colon = line.indexOf(':');
       if (colon > 0) headers[line.slice(0, colon)] = line.slice(colon + 1);
     }
@@ -147,7 +148,9 @@ class StompClient {
 class ISEPxGridSource extends WISESource {
   // -------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, {});
+    // dontCache: results come from the live in-memory sessionMap (STOMP push);
+    // wiseService result caching would serve stale identities for up to cacheAgeMin
+    super(api, section, { dontCache: true });
 
     // ---- Config ------------------------------------------------------------
     this.host = api.getConfig(section, 'host');
@@ -156,7 +159,8 @@ class ISEPxGridSource extends WISESource {
     this.keyFile = api.getConfig(section, 'keyFile', '');
     this.caFile = api.getConfig(section, 'caFile', '');
     this.nodeName = api.getConfig(section, 'nodeName', '');
-    this.logEvents = api.getConfig(section, 'logEvents', false);
+    const logEventsVal = api.getConfig(section, 'logEvents', false);
+    this.logEvents = logEventsVal === true || logEventsVal === 'true'; // ini values are strings
     this.cacheAgeMin = +api.getConfig(section, 'cacheAgeMin', 1440); // 24h default
 
     if (!this.host) {
@@ -370,8 +374,10 @@ class ISEPxGridSource extends WISESource {
 
         // Bulk-load all active sessions so the Map is immediately complete.
         // Subscribe first (above) so no events are missed during the load.
-        this._loadAllSessions().catch(err =>
-          console.log(this.section, '- WARN: initial session load failed:', err.message));
+        this._loadAllSessions().catch(err => {
+          console.log(this.section, '- WARN: initial session load failed:', err.message);
+          this._scheduleRefresh(); // retry on the refresh interval
+        });
       } catch (err) {
         console.log(this.section, '- STOMP connect error:', err.message);
         ws.close();
@@ -453,12 +459,18 @@ class ISEPxGridSource extends WISESource {
   async _refreshCache () {
     this._refreshTimer = null;
     console.log(this.section, `- Cache age reached ${this.cacheAgeMin}min, refreshing from ISE…`);
-    this.sessionMap.clear();
-    this.sidMap.clear();
+    // Swap in fresh maps only after a successful load so a failed refresh
+    // keeps serving the existing data instead of destroying it
+    const oldSessionMap = this.sessionMap;
+    const oldSidMap = this.sidMap;
+    this.sessionMap = new Map();
+    this.sidMap = new Map();
     try {
       await this._loadAllSessions();
     } catch (err) {
-      console.log(this.section, '- WARN: cache refresh failed:', err.message);
+      console.log(this.section, '- WARN: cache refresh failed, keeping previous data:', err.message);
+      this.sessionMap = oldSessionMap;
+      this.sidMap = oldSidMap;
       this._scheduleRefresh(); // retry on next interval
     }
   }
@@ -504,11 +516,17 @@ class ISEPxGridSource extends WISESource {
       const user = s.adUserResolvedIdentities || s.userName || '';
 
       if (s.state === 'DISCONNECTED' || s.state === 'TERMINATED') {
-        // Use sidMap to purge ALL IPs ever associated with this session
+        // Use sidMap to purge ALL IPs ever associated with this session, but
+        // only delete entries still owned by this session - the IP may have
+        // been reassigned to a newer session already
         const knownIps = (sid && this.sidMap.has(sid))
           ? [...this.sidMap.get(sid)]
           : newIps;
-        for (const ip of knownIps) this.sessionMap.delete(ip);
+        for (const ip of knownIps) {
+          if ((this.sessionMap.get(ip)?.auditSessionId || '') === sid) {
+            this.sessionMap.delete(ip);
+          }
+        }
         if (sid) this.sidMap.delete(sid);
 
         if (this.logEvents) {
@@ -517,11 +535,12 @@ class ISEPxGridSource extends WISESource {
       } else {
         if (!newIps.length) continue;
 
-        // Remove any STALE IPs for this session that are no longer in the new set
+        // Remove any STALE IPs for this session that are no longer in the new
+        // set, unless the IP was already reassigned to a different session
         const stalePurged = [];
         if (sid && this.sidMap.has(sid)) {
           for (const ip of this.sidMap.get(sid)) {
-            if (!newIps.includes(ip)) {
+            if (!newIps.includes(ip) && (this.sessionMap.get(ip)?.auditSessionId || '') === sid) {
               this.sessionMap.delete(ip);
               stalePurged.push(ip);
             }
@@ -605,6 +624,7 @@ exports.initSource = function (api) {
     name: 'isepxgrid',
     description: 'Enriches IPs with user identity, MAC, OS, and posture from Cisco ISE pxGrid 2.0 sessions.',
     types: ['ip'],
+    cacheable: false,
     fields: [
       { name: 'host', required: true, help: 'ISE pxGrid node hostname' },
       { name: 'port', required: false, help: 'pxGrid port (default 8910)' },

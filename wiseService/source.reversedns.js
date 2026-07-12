@@ -74,11 +74,18 @@ class ReverseDNSSource extends WISESource {
           const parts = domain.split('.');
           args.push(this.theField, parts[0].toLowerCase());
         } else {
+          let matched = false;
           for (let j = 0; j < this.stripDomains.length; j++) {
             const stripDomain = this.stripDomains[j];
             if (domain.indexOf(stripDomain, domain.length - stripDomain.length) !== -1) {
               args.push(this.theField, domain.slice(0, domain.length - stripDomain.length));
+              matched = true;
+              break;
             }
+          }
+          // No stripDomains matched, so save the resolved name in full
+          if (!matched) {
+            args.push(this.theField, domain);
           }
         }
       }
@@ -98,7 +105,7 @@ exports.initSource = function (api) {
     types: ['ip'],
     fields: [
       { name: 'field', required: true, help: 'The field to set with the hostname' },
-      { name: 'ips', required: true, multiline: ';', help: 'List of IPs or CIDRs that WISE will attempt to reverse lookup. IPs that don’t match this list will NOT be reverse lookup' },
+      { name: 'ips', required: true, multiline: ';', help: 'List of IPs or CIDRs that WISE will attempt to reverse lookup. IPs that don’t match this list will NOT be reverse looked up' },
       { name: 'servers', required: false, multiline: ';', help: 'List of ip addresses to use as the resolver. Default is to just use the OS configuration.' },
       { name: 'stripDomains', required: false, multiline: ';', help: 'If EMPTY then all domains are stripped after the FIRST period. When set ONLY domains that match the list of domain names are modified, and only the matching part is removed. Those that don’t match will be saved in full. The list is checked in order. A leading dot is recommended.' }
     ]

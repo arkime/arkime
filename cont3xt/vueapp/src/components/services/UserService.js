@@ -5,7 +5,7 @@ import { parseRoles } from '@common/vueFilters.js';
 
 export default {
   /**
-   * Fetches the list of user roles.
+   * Fetches the currently logged in user.
    * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getUser () {

@@ -96,7 +96,7 @@ class EmailReputationIntegration extends Integration {
     }
 
     try {
-      let result = await axios.get(`https://emailrep.io/${query}`, {
+      let result = await axios.get(`https://emailrep.io/${encodeURIComponent(query)}`, {
         headers: {
           'User-Agent': this.userAgent(),
           key

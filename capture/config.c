@@ -162,8 +162,8 @@ LOCAL IpProtocolEntry_t ipProtocols[] = {
     {"st", 5},
     {"stp", 118},
     {"sun-nd", 77},
-    {"tcp", 6},
     {"tcf", 87},
+    {"tcp", 6},
     {"tlsp", 56},
     {"tp++", 39},
     {"ttp", 84},
@@ -764,7 +764,10 @@ LOCAL gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **U
                 BSB_EXPORT_u08(bsb, 0);
                 if (BSB_IS_ERROR(bsb)) {
                     LOG("WARNING - YAML sequence value too long for %s:%s, truncating", section, key);
-                    buf[sizeof(buf) - 1] = 0;
+                    if (BSB_LENGTH(bsb) < (long)sizeof(buf))
+                        buf[BSB_LENGTH(bsb)] = 0;
+                    else
+                        buf[sizeof(buf) - 1] = 0;
                 }
 #ifdef CONFIG_DEBUG
                 LOG("%s:%s => %s", section, key, buf);
@@ -1085,7 +1088,7 @@ LOCAL void arkime_config_load()
         if (environ[e][7] == '_') {
             key = g_string_new_len(environ[e] + 8, equal - environ[e] - 8);
         } else {
-            const char *underunder = strstr(environ[e] + 7, "__");
+            const char *underunder = g_strstr_len(environ[e] + 7, equal - (environ[e] + 7), "__");
             if (!underunder)
                 continue;
 
@@ -1503,7 +1506,7 @@ LOCAL void arkime_config_parse_packet_ips(GKeyFile *keyFile)
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "drop", 4) == 0) {
 
-            } else if (strncmp(values[v], "allow", 4) == 0) {
+            } else if (strncmp(values[v], "allow", 5) == 0) {
                 mode = 1;
             } else {
                 CONFIGEXIT("Unknown argument to packet-drop-ips %s %s", keys[k], values[v]);

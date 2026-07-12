@@ -255,7 +255,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
     WiseRequest_t *request = uw;
     int             i;
 
-    inflight -= request->numItems;
+    ARKIME_THREAD_DECR_NUM(inflight, request->numItems);
 
     BSB_INIT(bsb, data, data_len);
 
@@ -283,6 +283,17 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 
         int cnt = 0;
         BSB_IMPORT_u16(bsb, cnt);
+
+        if (BSB_IS_ERROR(bsb)) {
+            LOG("ERROR - Wise server response too short for ver 2 header");
+            ARKIME_LOCK(item);
+            for (i = 0; i < request->numItems; i++) {
+                wise_remove_item_locked(request->items[i]);
+            }
+            ARKIME_UNLOCK(item);
+            ARKIME_TYPE_FREE(WiseRequest_t, request);
+            return;
+        }
 
         if (cnt > ARKIME_FIELDS_MAX) {
             LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
@@ -411,6 +422,15 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
 
     if (request->numItems >= WISE_MAX_REQUEST_ITEMS)
         return;
+
+    // An item that can't fit in the request buffer would be silently
+    // truncated off the wire request; drop it instead
+    const int nlen = strlen(value);
+    const int needed = 1 + (type < INTEL_TYPE_NUM_PRE ? 0 : types[type].nameLen) + 2 + nlen;
+    if (needed > (int)BSB_REMAINING(request->bsb)) {
+        stats[type][INTEL_STAT_FAIL]++;
+        return;
+    }
 
     static int lookups = 0;
 
@@ -615,9 +635,9 @@ LOCAL void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, cha
 {
     // Skip leading http
     if (*url == 'h') {
-        if (memcmp(url, "http://", 7) == 0)
+        if (strncmp(url, "http://", 7) == 0)
             url += 7;
-        else if (memcmp(url, "https://", 8) == 0)
+        else if (strncmp(url, "https://", 8) == 0)
             url += 8;
     }
 
@@ -636,7 +656,7 @@ LOCAL void wise_flush_locked()
     if (!iRequest || iRequest->numItems == 0)
         return;
 
-    inflight += iRequest->numItems;
+    ARKIME_THREAD_INCR_NUM(inflight, iRequest->numItems);
     if (arkime_http_send(wiseService, "POST", wiseGetURI, -1, iBuf, BSB_LENGTH(iRequest->bsb), NULL, TRUE, wise_cb, iRequest) != 0) {
         LOG("Wise - request failed %p for %d items", iRequest, iRequest->numItems);
         wise_cb(500, NULL, 0, iRequest);

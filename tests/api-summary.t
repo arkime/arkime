@@ -83,7 +83,7 @@ cmp_ok($summary->{lastPacket}, '>', 0, "lastPacket timestamp is positive");
 cmp_ok($summary->{lastPacket}, '>=', $summary->{firstPacket}, "lastPacket >= firstPacket");
 
 # Test downloadBytes calculation
-my $expectedDownloadBytes = 20 + $summary->{bytes} + 16 * $summary->{packets};
+my $expectedDownloadBytes = 24 + $summary->{bytes} + 16 * $summary->{packets};
 is($summary->{downloadBytes}, $expectedDownloadBytes, "downloadBytes calculated correctly");
 
 # Test field structure

@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 44;
 
 use Cwd;
 use URI::Escape;
@@ -28,7 +28,7 @@ my $pwd = "*/pcap";
     while ($sd =~ /ts-value/g) {
         $count++;
     }
-    is (12, $count);
+    is ($count, 12);
 
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural")->content;
     ok(bin2hex($sd) =~ /636f6c3a2038303a71756963.*08000000000002/, "encoding:natural");
@@ -224,3 +224,13 @@ ok($sd =~ m{Query A - &#123;constructor}s, "dns queryHost { escaped to &#123; in
 ok($sd !~ m{[^"]\{constructor}s, "dns queryHost has no raw { in /detail");
 
 sessionsDeleteByTag($noPcapIndex, $xssTag);
+
+# decode parameter validation
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-zip.pcap"));
+    $id = $sdId->{data}->[0]->{id};
+
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape('{"BODY-UNBASE64":{}}'));
+    is ($response->code, 200, "packets with valid decode key works");
+
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape('{"FOO":{}}'));
+    is ($response->code, 400, "packets with unknown decode key returns 400 instead of hanging");

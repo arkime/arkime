@@ -25,8 +25,8 @@ make
 sudo cp reader-napatech.so /opt/arkime/plugins/
 ```
 
-The `Makefile` detects libpcap headers via `pcap-config` or `pkg-config
-libpcap` automatically. To override the Napatech install path:
+The `Makefile` detects libpcap headers via `pcap-config` or `pkg-config libpcap`
+automatically. To override the Napatech install path:
 
 ```sh
 make NTDIR=/path/to/napatech3

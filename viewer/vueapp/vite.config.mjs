@@ -44,7 +44,9 @@ export default defineConfig({
     outDir: './viewer/vueapp/dist',
     manifest: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/main.js')
+      input: path.resolve(__dirname, 'src/main.js'),
+      // jQuery globals come from @rollup/plugin-inject (needed in dev too); silence rolldown's prefer-builtin advisory
+      checks: { preferBuiltinFeature: false }
     }
   },
   logLevel: 'warn',

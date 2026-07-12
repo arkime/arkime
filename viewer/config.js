@@ -31,6 +31,10 @@ class Config {
     return ArkimeConfig.debug;
   }
 
+  static get regressionTests () {
+    return ArkimeConfig.regressionTests;
+  }
+
   static esProfile = false;
 
   static keyFileData;
@@ -305,10 +309,11 @@ class Config {
     });
 
     if (options?.initAuth) {
-      Auth.initialize({
+      await Auth.initialize({
         appAdminRole: 'arkimeAdmin',
         basePath: Config.basePath(),
         passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
+        hostVar: 'viewHost',
         s2s: true,
         s2sRegressionTests: !!Config.get('s2sRegressionTests')
       });

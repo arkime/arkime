@@ -18,7 +18,7 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 **Then, get some test data!**
 
 * If using a VM/docker make sure your dev host has at least 2-3G of memory
-* Make sure `node` is in your path, currently main supports Node version 18 or 20 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
+* Make sure `node` is in your path, currently main supports Node version 22 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
 * Install [OpenSearch](https://opensearch.org/downloads.html) OR [Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (Use the latest version in "OpenSearch Versions" or "Elasticsearch versions" section of [CHANGELOG](CHANGELOG))
 * Start OpenSearch/Elasticsearch
 * If on a Mac install either [Homebrew](https://brew.sh) or [MacPorts](https://www.macports.org/)
@@ -38,7 +38,7 @@ If you want to run Arkime in non-anonymous mode:
 * Move to the top level Arkime directory
 * run `npm run viewer:dev` this will automatically add an admin user (username: admin, password: admin)
 
-> :clock1: _On first load, you will likely see this message: "No results or none that match your search within your time range." This is because the data that was loaded is from all time ranges, so make sure you search for ALL times ranges._
+> :clock1: _On first load, you will likely see this message: "No results or none that match your search within your time range." This is because the data that was loaded is from all time ranges, so make sure you search for ALL time ranges._
 
 For more information about running the Arkime Viewer web application, visit the [viewer README](viewer/README.md).
 
@@ -70,6 +70,8 @@ Arkime supports internationalization to make the application accessible to users
 * 🇯🇵 Japanese (ja)
 * 🇰🇷 Korean (ko)
 * 🇨🇳 Chinese (zh)
+* 🇪🇪 Estonian (et)
+* 🇧🇷 Brazilian Portuguese (pt-BR)
 
 **Getting started with translations:**
 1. Read the comprehensive [Internationalization Guide](INTERNATIONALIZATION.md)
@@ -96,7 +98,7 @@ See our [Internationalization Guide](INTERNATIONALIZATION.md) for detailed imple
 
 **Before submitting a bug report:**
 * Ensure the bug was not already reported by searching for [existing issues in Arkime](https://github.com/arkime/arkime/issues)
-  * If an issues is already open, make a comment that you are experiencing the same thing and provide any additional details
+  * If an issue is already open, make a comment that you are experiencing the same thing and provide any additional details
 * Check the [FAQs](https://arkime.com/faq) for a list of common questions and problems
 
 Bugs are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
@@ -130,10 +132,9 @@ To implement something new, please create an issue first so we can discuss it to
 * Provide a clear and descriptive title
 * Clearly describe the problem and solution
 * Include the relevant issue number(s) if applicable
-* If changes are made to the capture component, verify all tests in the tests direction pass by running `./tests.pl`
+* If changes are made to the capture component, verify all tests in the tests directory pass by running `./tests.pl`
 * Run `npm run lint` from the top level directory and correct any errors
 * For any viewer or parliament changes, verify that all API tests pass by running `./tests.pl --viewer`
-* For any viewer changes, verify that all UI tests pass by running `npm run viewer:testui`
 * The README file in the tests directory provides additional information on the test cases
 * When creating a Pull Request please follow [best practices](https://github.com/trein/dev-best-practices/wiki/Git-Commit-Best-Practices) for creating git commits.
 * When your code is ready to be submitted, submit a Pull Request to begin the code review process.
@@ -155,9 +156,9 @@ If you update or create an API, please document it thoroughly with these items:
 
 The documentation lives on our website at [arkime.com/api](https://arkime.com/api). It is generated using the code documentation. Follow these steps to update the API documentation:
 1. Check out the [arkimeweb repository](https://github.com/arkime/arkimeweb) in the same parent directory as the Arkime repository.
-2. Run `npm run viewer:doc` from the `arkime` directory. If you checked out the arkimeweb repository into a different location, you can run `npm run viewer:doc-location -- <path/to/arkimeweb/_wiki/api_docs.md>`.
+2. Run `npm run viewer:doc` from the `arkime` directory. The arkimeweb repository must be checked out at ../arkimeweb relative to the arkime repository.
 3. Run the arkime website locally (find out how [here](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md)) to make sure all of your documentation is correct.
-4. Make a PR to [arkime](https://github.com/arkime/arkime/blob/master/CONTRIBUTING.md) and [arkimeweb](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md) with your changes.
+4. Make a PR to [arkime](https://github.com/arkime/arkime/blob/main/CONTRIBUTING.md) and [arkimeweb](https://github.com/arkime/arkimeweb/blob/main/CONTRIBUTING.md) with your changes.
 
 ---
 

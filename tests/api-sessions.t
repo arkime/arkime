@@ -131,7 +131,7 @@ my ($url) = @_;
 
 # expression string
     $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression": 1}');
-    is($json->{error}, "Expression needs to be a string", "ip.protocol==blah");
+    is($json->{error}, "Expression needs to be a string", "expression not a string");
 
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;

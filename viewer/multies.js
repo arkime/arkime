@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* multies.js  -- Make multiple ES servers look like one but merging results
+/* multies.js  -- Make multiple ES servers look like one by merging results
  *
  * Copyright 2012-2016 AOL Inc. All rights reserved.
  *
@@ -196,7 +196,7 @@ function node2ESBasicAuth (node) {
   for (let p = 1; p < parts.length; p++) {
     const kv = parts[p].split(':');
     if (kv[0] === 'elasticsearchBasicAuth') {
-      return kv[1];
+      return kv.slice(1).join(':'); // value may be user:pass, keep everything after the key
     }
   }
   return null;
@@ -543,7 +543,9 @@ app.delete('/:index', simpleGather1Cluster);
 app.delete('/MULTIPREFIX_hunts/_doc/:id', simpleGather1Cluster);
 
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
-  req.url = '/sessions*/_refresh';
+  // Keep the MULTIPREFIX_ placeholder so each node's real prefix is
+  // substituted in simpleGather; collapse the index list to one pattern
+  req.url = '/MULTIPREFIX_sessions*/_refresh';
   return simpleGatherFirst(req, res);
 });
 
@@ -695,8 +697,9 @@ app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
   simpleGather(req, res, null, (err, results) => {
     const obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].error) {
+      if (results[i].error || !results[i].hits) {
         console.log('ERROR - GET _search', req.query.index, req.query.type, results[i].error);
+        continue;
       }
       obj.hits.total += results[i].hits.total;
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
@@ -1184,7 +1187,7 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
       const result = results[i];
 
       if (result.error) {
-        console.log('ERROR - GET /fields/field/_search', result.error);
+        console.log('ERROR - POST /fields/field/_search', result.error);
         return res.send(obj);
       }
 
@@ -1503,7 +1506,7 @@ async function premain () {
   for (let i = 0; i < nodes.length; i++) {
     const nodeName = node2Name(nodes[i]);
     if (!nodeName) {
-      console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-11>;http://example2:9200,name:<friendly-name-2>');
+      console.log('ERROR - name is missing in multiESNodes for', nodes[i], 'Set node name as multiESNodes=http://example1:9200,name:<friendly-name-1>;http://example2:9200,name:<friendly-name-2>');
       process.exit(1);
     }
     clusterList[i] = nodeName; // name
@@ -1541,7 +1544,7 @@ async function premain () {
       if (!esBasicAuth.includes(':')) {
         esBasicAuth = Buffer.from(esBasicAuth, 'base64').toString();
       }
-      esBasicAuth = esBasicAuth.split(':');
+      esBasicAuth = ArkimeUtil.splitRemain(esBasicAuth, ':', 1);
       esClientOptions.auth = {
         username: esBasicAuth[0],
         password: esBasicAuth[1]

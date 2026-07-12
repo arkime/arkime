@@ -148,7 +148,7 @@ export default {
    * Determines whether a user has role to perform a specific task
    * @param {Object} user The user to check roles for
    * @param {String} role The role(s) in question (comma separated list)
-   * @returns {Boolean} true if all roles are included
+   * @returns {Boolean} true if the user has any of the roles
    */
   hasRole (user, role) {
     if (!user) { return false; }

@@ -156,26 +156,29 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
         case 0x82: // [2] calledPartyNumber
         case 0xA2:
             if (lenVal > 2) {
-                int skip = (valData[0] & 0x80) ? 1 : 2;
-                if (lenVal > skip) {
-                    BSB_INIT(numbsb, numBuf, sizeof(numBuf));
-                    decode_tbcd(valData + skip, lenVal - skip, &numbsb);
-                    if (numBuf[0] && !BSB_IS_ERROR(numbsb))
-                        arkime_field_string_add(camelCalledField, session, numBuf, -1, TRUE);
-                }
+                // ISUP Q.763 format: 2 fixed header bytes; 0x80 in byte 0 is the
+                // odd digit-count indicator (last high nibble is filler)
+                BSB_INIT(numbsb, numBuf, sizeof(numBuf));
+                decode_tbcd(valData + 2, lenVal - 2, &numbsb);
+                int digits = (lenVal - 2) * 2 - ((valData[0] & 0x80) ? 1 : 0);
+                if (digits < (int)sizeof(numBuf))
+                    numBuf[digits] = 0;
+                if (numBuf[0] && !BSB_IS_ERROR(numbsb))
+                    arkime_field_string_add(camelCalledField, session, numBuf, -1, TRUE);
             }
             break;
 
         case 0x83: // [3] callingPartyNumber
         case 0xA3:
             if (lenVal > 2) {
-                int skip = (valData[0] & 0x80) ? 1 : 2;
-                if (lenVal > skip) {
-                    BSB_INIT(numbsb, numBuf, sizeof(numBuf));
-                    decode_tbcd(valData + skip, lenVal - skip, &numbsb);
-                    if (numBuf[0] && !BSB_IS_ERROR(numbsb))
-                        arkime_field_string_add(camelCallingField, session, numBuf, -1, TRUE);
-                }
+                // ISUP Q.763 format, same as calledPartyNumber above
+                BSB_INIT(numbsb, numBuf, sizeof(numBuf));
+                decode_tbcd(valData + 2, lenVal - 2, &numbsb);
+                int digits = (lenVal - 2) * 2 - ((valData[0] & 0x80) ? 1 : 0);
+                if (digits < (int)sizeof(numBuf))
+                    numBuf[digits] = 0;
+                if (numBuf[0] && !BSB_IS_ERROR(numbsb))
+                    arkime_field_string_add(camelCallingField, session, numBuf, -1, TRUE);
             }
             break;
 
@@ -265,6 +268,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                     BSB_IMPORT_bsb(compBsb, invBsb, MIN(compLen, BSB_REMAINING(compBsb)));
 
                     int currentOpcode = -1;
+                    int sawInvokeId = 0;
                     while (BSB_REMAINING(invBsb) >= 3) {
                         uint8_t invTag = 0;
                         BSB_IMPORT_u08(invBsb, invTag);
@@ -283,7 +287,13 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                             }
                         }
 
-                        if (invTag == 0x02 && invLen >= 1 && invLen <= 2) {
+                        if (invTag == 0x02 && invLen >= 1 && invLen <= 2 && !sawInvokeId) {
+                            // The first INTEGER in an Invoke/ReturnResult component is the
+                            // invokeID (ITU-T Q.773), not the operationCode; skip it so it
+                            // isn't mis-recorded as a camel.op / tcap.opcode value.
+                            sawInvokeId = 1;
+                            BSB_IMPORT_skip(invBsb, invLen);
+                        } else if (invTag == 0x02 && invLen >= 1 && invLen <= 2) {
                             int opcode = 0;
                             for (uint32_t i = 0; i < invLen && BSB_REMAINING(invBsb) > 0; i++) {
                                 uint8_t b = 0;

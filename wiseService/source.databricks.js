@@ -22,13 +22,17 @@ class DatabricksSource extends WISESource {
     this.query = api.getConfig(section, 'query');
     this.periodic = api.getConfig(section, 'periodic');
     this.mergeQuery = api.getConfig(section, 'mergeQuery');
-    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
+    // no default so the required-check below can actually fire
+    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn'));
 
+    let missing = false;
     ['host', 'path', 'token', 'query', 'keyPath'].forEach((item) => {
       if (this[item] === undefined) {
         console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
+        missing = true;
       }
     });
+    if (missing) { return; }
 
     if (this.periodic) {
       this.cacheTimeout = -1; // Don't cache
@@ -46,15 +50,22 @@ class DatabricksSource extends WISESource {
       token: this.token
     }).then(async (client2) => {
       this.session = await client2.openSession();
-    }).catch((err) => {
-      console.log(err);
-    });
 
-    api.addSource(section, this, [this.type]);
+      // Do the initial full query before registering so the cache is warm
+      if (this.periodic) {
+        await this.periodicRefresh(true);
+      }
+
+      api.addSource(section, this, [this.type]);
+    }).catch((err) => {
+      console.log(this.section, "- ERROR - Couldn't connect to databricks - ", err);
+    });
   }
 
   // ----------------------------------------------------------------------------
   async periodicRefresh (firstTime) {
+    if (!this.session) { return; }
+
     let query = this.query;
     let merging = false;
     if (this.mergeQuery && !firstTime) {
@@ -62,43 +73,47 @@ class DatabricksSource extends WISESource {
       merging = true;
     }
 
-    const queryOperation = await this.session.executeStatement(query);
-    const results = await queryOperation.fetchAll();
-    await queryOperation.close();
+    try {
+      const queryOperation = await this.session.executeStatement(query);
+      const results = await queryOperation.fetchAll();
+      await queryOperation.close();
 
-    if (results === undefined || results.length === 0) {
-      console.log(this.section, '- No results - ', results);
-      return;
-    }
-
-    let cache;
-    if (merging) {
-      cache = this.cache;
-    } else {
-      if (this.type === 'ip') {
-        cache = { items: new Map(), trie: new iptrie.IPTrie() };
-      } else {
-        cache = new Map();
+      if (results === undefined || results.length === 0) {
+        console.log(this.section, '- No results - ', results);
+        return;
       }
-    }
 
-    for (const item of results) {
-      const key = item[this.keyPath];
-      if (!key) { continue; }
-
-      const args = this.parseJSONElement(item);
-
-      const newitem = WISESource.encodeResult.apply(null, args);
-
-      if (this.type === 'ip') {
-        const parts = key.split('/');
-        cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), newitem);
-        cache.items.set(key, newitem);
+      let cache;
+      if (merging && this.cache !== undefined) {
+        cache = this.cache;
       } else {
-        cache.set(key, newitem);
+        if (this.type === 'ip') {
+          cache = { items: new Map(), trie: new iptrie.IPTrie() };
+        } else {
+          cache = new Map();
+        }
       }
+
+      for (const item of results) {
+        const key = item[this.keyPath];
+        if (!key) { continue; }
+
+        const args = this.parseJSONElement(item);
+
+        const newitem = WISESource.encodeResult.apply(null, args);
+
+        if (this.type === 'ip') {
+          const parts = key.split('/');
+          cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), newitem);
+          cache.items.set(key, newitem);
+        } else {
+          cache.set(key, newitem);
+        }
+      }
+      this.cache = cache;
+    } catch (err) {
+      console.log(this.section, '- ERROR', err);
     }
-    this.cache = cache;
   }
 
   // ----------------------------------------------------------------------------
@@ -148,19 +163,24 @@ class DatabricksSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   async sendResult (key, cb) {
-    const queryOperation = await this.session.executeStatement(this.query, { namedParameters: { SEARCHTERM: key } });
-    const results = await queryOperation.fetchAll();
-    await queryOperation.close();
+    try {
+      const queryOperation = await this.session.executeStatement(this.query, { namedParameters: { SEARCHTERM: key } });
+      const results = await queryOperation.fetchAll();
+      await queryOperation.close();
 
-    if (!results || results.length === 0) {
+      if (!results || results.length === 0) {
+        return cb(null, undefined);
+      }
+
+      const item = results[0];
+
+      const args = this.parseJSONElement(item);
+      const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
+      return cb(null, newresult);
+    } catch (err) {
+      console.log(this.section, '- ERROR', err);
       return cb(null, undefined);
     }
-
-    const item = results[0];
-
-    const args = this.parseJSONElement(item);
-    const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
-    return cb(null, newresult);
   }
 }
 
@@ -179,7 +199,7 @@ exports.initSource = function (api) {
       { name: 'path', required: true, help: 'The Databricks path' },
       { name: 'token', required: true, password: true, help: 'The Databricks token' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },
-      { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
+      { name: 'periodic', required: false, help: 'If set, the number of seconds between periodic full queries. If not set, an individual query is done per key.' },
       { name: 'query', required: true, help: 'The query to run against Databricks. For non periodic queries the parameter SEARCHTERM will be replaced with the key' },
       { name: 'mergeQuery', help: 'When in periodic mode, use this query after startup and merge the keyPath value into previous table' }
     ]

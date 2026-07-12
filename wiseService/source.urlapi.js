@@ -38,12 +38,6 @@ class URLApiSource extends WISESource {
     this[this.api.funcName(this.type)] = this.sendResult;
     api.addSource(section, this, [this.type]);
 
-    this.sourceFields = [this.resultField];
-    for (const k in this.shortcuts) {
-      if (this.sourceFields.indexOf(k) === -1) {
-        this.sourceFields.push(k);
-      }
-    }
   }
 
   // ----------------------------------------------------------------------------
@@ -55,11 +49,7 @@ class URLApiSource extends WISESource {
 
     axios.get(url, { headers: this.headers })
       .then((response) => {
-        if (response.status === 404) {
-          return cb(null, undefined);
-        }
-
-        const json = JSON.parse(response.data);
+        const json = (typeof response.data === 'string') ? JSON.parse(response.data) : response.data;
         const eskey = json[this.resultField];
         if (eskey === undefined) {
           return cb(null, undefined);
@@ -68,6 +58,10 @@ class URLApiSource extends WISESource {
         const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
         return cb(null, newresult);
       }).catch((err) => {
+        // axios rejects non-2xx, so a 404 (no result for this key) lands here
+        if (err.response && err.response.status === 404) {
+          return cb(null, undefined);
+        }
         return cb(err);
       });
   }
@@ -78,7 +72,7 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('urlapi', {
     singleton: false,
     name: 'urlapi',
-    description: 'Use a web url to load data into wise a single call at a time, not recommended.',
+    description: 'Use a web url to load data into WISE, a single call at a time, not recommended.',
     link: 'https://arkime.com/wise#url',
     cacheable: false,
     displayable: true,

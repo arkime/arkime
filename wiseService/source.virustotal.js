@@ -69,7 +69,7 @@ class VirusTotalSource extends WISESource {
     }
 
     if (this.api.debug > 0) {
-      console.log(this.section, '- Fetching %d', this.waiting.length);
+      console.log(this.section, '- Fetching', this.waiting.length);
     }
 
     const options = {
@@ -102,11 +102,13 @@ class VirusTotalSource extends WISESource {
         }
 
         results.forEach((result) => {
-          const cb = this.processing.get(result.md5);
+          // not-found results only have resource, found ones also have md5
+          const key = result.resource || result.md5;
+          const cb = this.processing.get(key);
           if (!cb) {
             return;
           }
-          this.processing.delete(result.md5);
+          this.processing.delete(key);
 
           let wiseResult;
           if (result.response_code === 0) {
@@ -129,6 +131,15 @@ class VirusTotalSource extends WISESource {
         });
       }).catch((err) => {
         console.log(this.section, err);
+        // Invoke and remove this batch's callbacks so queries don't hang
+        sent.forEach((md5) => {
+          const cb = this.processing.get(md5);
+          if (!cb) {
+            return;
+          }
+          this.processing.delete(md5);
+          cb(undefined, undefined);
+        });
       });
   };
 
@@ -138,20 +149,30 @@ class VirusTotalSource extends WISESource {
       return cb(null, undefined);
     }
 
-    this.processing.set(query.value, cb);
-    if (this.waiting.length < this.maxOutstanding) {
-      this.waiting.push(query.value);
-    } else {
+    const existing = this.processing.get(query.value);
+    if (existing !== undefined) {
+      // Same md5 already in flight - chain the callbacks, don't queue it twice
+      this.processing.set(query.value, (err, result) => {
+        existing(err, result);
+        cb(err, result);
+      });
+      return;
+    }
+
+    if (this.waiting.length >= this.maxOutstanding) {
       return cb('dropped');
     }
+
+    this.processing.set(query.value, cb);
+    this.waiting.push(query.value);
   }
 }
 
 // ----------------------------------------------------------------------------
 const reportApi = function (req, res) {
-  source.getMd5(req.query.resource, (err, result) => {
+  source.getMd5({ value: req.query.resource }, (err, result) => {
     // console.log(err, result);
-    if (result[0] === 0) {
+    if (err || result === undefined || result[0] === 0) {
       res.send({ response_code: 0, resource: req.query.resource, verbose_msg: 'The requested resource is not among the finished, queued or pending scans' });
     } else {
       const obj = { scans: {} };

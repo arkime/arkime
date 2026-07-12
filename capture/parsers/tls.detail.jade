@@ -78,7 +78,7 @@ if (session.tls || session.cert)
               +clickableValue('cert.issuer.ou', ou)
           - else if (cert.issuerOU)
             span.no-wrap
-              strong.ml-1 Issuer Org unit
+              strong.ml-1 Issuer Org Unit
               +clickableValue('cert.issuer.ou', cert.issuerOU)
           - if (cert.subjectCN && Array.isArray(cert.subjectCN))
             strong.ml-1 Subject Common
@@ -132,5 +132,6 @@ if (session.tls || session.cert)
               strong.ml-1 JA4x
               +clickableValue('cert.ja4x', cert.ja4x)
           - if (cert.ja4x_r)
-            strong.ml-1 JA4x_r
+            span.no-wrap
+              strong.ml-1 JA4x_r
               +clickableValue('cert.ja4x_r', cert.ja4x_r)

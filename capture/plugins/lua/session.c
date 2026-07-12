@@ -289,6 +289,11 @@ LOCAL void molua_http_on_message_complete(ArkimeSession_t *session, http_parser 
 {
     handle_missing_message_begin(session, hp);
     molua_http_cb(MOLUA_REF_HTTP_MESSAGE_COMPLETE, session, hp, NULL, 0);
+
+    // Allow MESSAGE_BEGIN to fire again for the next message (keep-alive)
+    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    if (mp)
+        mp->done_message_begin[hp->type] = 0;
 }
 /******************************************************************************/
 LOCAL void MS_register_all_http_cbs()
@@ -716,9 +721,9 @@ LOCAL int MS_get(lua_State *L)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
             else if (strcmp(exp + 9, "rst") == 0)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST]);
-            else if (strcmp(exp + 9, "FIN") == 0)
+            else if (strcasecmp(exp + 9, "fin") == 0)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
-            else if (strcmp(exp + 9, "URG") == 0)
+            else if (strcasecmp(exp + 9, "urg") == 0)
                 lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]);
             else
                 break;

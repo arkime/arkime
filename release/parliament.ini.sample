@@ -1,6 +1,6 @@
 [parliament]
 # Where to store issues
-file=../etc/parliament.dev.json
+file=../etc/parliament.json
 
 # Port to listen on
 #port=8008

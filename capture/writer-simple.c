@@ -238,6 +238,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
             info->file->zstd_completedBlockStart += writeSize;
             ninfo->file->zstd_out.dst = ninfo->buf;
             ninfo->file->zstd_out.pos = ninfo->bufpos;
+            break;
 #endif
         default:
             break;
@@ -391,6 +392,10 @@ LOCAL char *writer_simple_get_kekId ()
             continue;
         }
         i++;
+        if (kek[i] == 0) {
+            // Trailing unescaped '%' at end of string - stop, nothing more to parse
+            break;
+        }
         switch (kek[i]) {
         case 'y':
             okek[j] = '0' + (tmp.tm_year % 100) / 10;
@@ -1007,7 +1012,7 @@ void writer_simple_init(const char *name)
     arkime_writer_exit         = writer_simple_exit;
     arkime_writer_write        = writer_simple_write;
 
-    arkime_config_check("simple", "simpleKEKId", "simpleMaxQ", "simpleEncoding", "simpleCompression", "simpleGzipLevel", "simpleZstdLevel", "simpleCompressionBlockSize", "simpleShortHeader", "simpleFreeOutputBuffers", NULL);
+    arkime_config_check("simple", "simpleKEKId", "simpleMaxQ", "simpleEncoding", "simpleDEKEncoding", "simpleCompression", "simpleGzipLevel", "simpleZstdLevel", "simpleCompressionBlockSize", "simpleShortHeader", "simpleFreeOutputBuffers", NULL);
 
     simpleMaxQ = arkime_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
     char *mode = arkime_config_str(NULL, "simpleEncoding", NULL);
@@ -1104,7 +1109,7 @@ void writer_simple_init(const char *name)
     config.gapPacketPos = arkime_config_boolean(NULL, "gapPacketPos", TRUE);
 
     simpleShortHeader = arkime_config_boolean(NULL, "simpleShortHeader", FALSE);
-    if (simpleShortHeader && config.maxFileTimeM > 60) {
+    if (simpleShortHeader && (config.maxFileTimeM == 0 || config.maxFileTimeM > 60)) {
         config.maxFileTimeM = 60;
         LOG("INFO: Resetting maxFileTimeM to 60 since using simpleShortHeader");
     }

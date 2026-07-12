@@ -56,15 +56,18 @@ LOCAL gboolean aws_refresh_creds(gpointer UNUSED(user_data))
 
     if (credentials && clen) {
         // Now need to extract access key, secret key and token
-        const char *id = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
-        const char *key = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
-        const char *token = arkime_js0n_get_str(credentials, clen, "Token");
+        char *id = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
+        char *key = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
+        char *token = arkime_js0n_get_str(credentials, clen, "Token");
         if (config.debug)
             LOG("Found AccessKeyId %s", id ? id : "(null)");
 
         if (id && key) {
             arkime_credentials_set(id, key, token);
         }
+        g_free(id);
+        g_free(key);
+        g_free(token);
     }
     if (credentials)
         free((void *)credentials);
@@ -211,6 +214,7 @@ LOCAL void aws_get_credentials(const char *service)
 /******************************************************************************/
 void arkime_cloud_init()
 {
+    awsUseTokenForMetadata = arkime_config_boolean(NULL, "awsUseTokenForMetadata", FALSE);
     arkime_credentials_register("aws", aws_get_credentials);
 }
 /******************************************************************************/

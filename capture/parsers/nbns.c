@@ -224,6 +224,12 @@ LOCAL void nbns_parser(ArkimeSession_t *session, const uint8_t *data, int len)
     }
 }
 /******************************************************************************/
+LOCAL int nbns_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+{
+    nbns_parser(session, data, len);
+    return 0;
+}
+/******************************************************************************/
 LOCAL void nbns_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "nbns"))
@@ -243,7 +249,7 @@ LOCAL void nbns_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
             return;
     }
 
-    nbns_parser(session, data, len);
+    arkime_parsers_register(session, nbns_udp_parser, 0, 0);
 }
 /******************************************************************************/
 void arkime_parser_init()

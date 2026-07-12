@@ -78,12 +78,15 @@ class Auth {
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
-   * @param {string} options.userAutoCreateTmpl A javascript string function that is used to create users that don't exist
+   * @param {string} options.userAutoCreateTmpl A JavaScript string function that is used to create users that don't exist
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
+   * @param {string} options.hostVar The name of this service's *Host config variable (e.g. 'viewHost') -
+   *                                 used only to print a security warning when header auth is enabled and
+   *                                 the service isn't restricted to loopback
    */
-  static initialize (options) {
+  static async initialize (options) {
     // Make sure all options we need below are set
     options ??= {};
     options.mode ??= ArkimeConfig.get('authMode');
@@ -205,6 +208,16 @@ class Auth {
     } else if (Auth.mode.startsWith('header')) {
       Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
       Auth.#userAuthIps.add('::1', 128, 1);
+
+      // No explicit userAuthIps set, so we're relying on the loopback-only default above.
+      // If this service is also listening on a non-loopback host, warn - a reverse proxy or
+      // trustProxy misconfiguration could let a remote client's header be trusted.
+      if (options.hostVar) {
+        const hostVal = ArkimeConfig.get(options.hostVar);
+        if (hostVal !== undefined && hostVal !== 'localhost' && hostVal !== '127.0.0.1' && hostVal !== '::1') {
+          console.log(`SECURITY WARNING - When using any form of header auth, ${options.hostVar} (currently '${hostVal}') should be localhost OR make sure you have set authIps correctly.`);
+        }
+      }
     } else {
       Auth.#userAuthIps.add('::', 0, 1);
     }
@@ -291,7 +304,7 @@ class Auth {
       console.log('AUTH strategies', Auth.#strategies);
     }
 
-    Auth.#registerStrategies();
+    await Auth.#registerStrategies();
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
@@ -383,7 +396,7 @@ class Auth {
   // ----------------------------------------------------------------------------
   static logoutUrl (req) {
     let logoutUrl = Auth.#logoutUrl;
-    if (req.session?.id_token !== undefined) {
+    if (logoutUrl && req.session?.id_token !== undefined) {
       logoutUrl = logoutUrl.replace('ARKIME_ID_TOKEN', req.session.id_token);
     }
     if (ArkimeConfig.debug > 0) {
@@ -501,8 +514,8 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('basic', new BasicStrategy((userId, password, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`AUTH: User ${userId} Can not authenticate with role`);
-        return done('Can not authenticate with role');
+        console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+        return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
@@ -521,16 +534,22 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`AUTH: User ${userId} Can not authenticate with role`);
-        return done('Can not authenticate with role');
+        console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+        return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
+        const ha1 = Auth.store2ha1(user.passStore, user.userId);
+        if (!ha1) {
+          console.log('AUTH: User', userId, 'passStore could not be decrypted, denying digest auth (check passwordSecret or reset the password)');
+          return done(null, false);
+        }
+
         user.setLastUsed();
-        return done(null, user, { ha1: Auth.store2ha1(user.passStore, user.userId) });
+        return done(null, user, { ha1 });
       });
     }, (poptions, done) => {
       return done(null, true);
@@ -595,7 +614,7 @@ class Auth {
       }
 
       if (userId.startsWith('role:')) {
-        return done('Can not authenticate with role');
+        return done('Cannot authenticate with role');
       }
 
       async function headerAuthCheck (err, user) {
@@ -603,7 +622,12 @@ class Auth {
         if (!user.enabled) { return done('User not enabled'); }
         if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-        await user.updateDynamicRoles(vals);
+        try {
+          await user.updateDynamicRoles(vals);
+        } catch (e) {
+          console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
+          return done('Failed to update dynamic roles');
+        }
         user.setLastUsed();
         return done(null, user);
       }
@@ -661,8 +685,8 @@ class Auth {
         }
 
         if (userId.startsWith('role:')) {
-          console.log(`AUTH: User ${userId} Can not authenticate with role`);
-          return done('Can not authenticate with role');
+          console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+          return done('Cannot authenticate with role');
         }
 
         async function oidcAuthCheck (err, user) {
@@ -670,7 +694,12 @@ class Auth {
           if (!user.enabled) { return done('User not enabled'); }
           if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-          await user.updateDynamicRoles(userinfo);
+          try {
+            await user.updateDynamicRoles(userinfo);
+          } catch (e) {
+            console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
+            return done('Failed to update dynamic roles');
+          }
           user.setLastUsed();
           return done(null, user, { id_token: tokenSet.id_token });
         }
@@ -690,8 +719,8 @@ class Auth {
     // ----------------------------------------------------------------------------
     passport.use('form', new LocalStrategy((userId, password, done) => {
       if (userId.startsWith('role:')) {
-        console.log(`AUTH: User ${userId} Can not authenticate with role`);
-        return done('Can not authenticate with role');
+        console.log(`AUTH: User ${userId} Cannot authenticate with role`);
+        return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
@@ -711,7 +740,7 @@ class Auth {
     passport.use('regressionTests', new CustomStrategy((req, done) => {
       const userId = req?.query?.arkimeRegressionUser ?? 'anonymous';
       if (userId.startsWith('role:')) {
-        return done('Can not authenticate with role');
+        return done('Cannot authenticate with role');
       }
 
       User.getUserCache(userId, (err, user) => {
@@ -741,40 +770,9 @@ class Auth {
         return done('S2S auth header corrupt');
       }
 
-      if (!ArkimeUtil.isString(obj.path)) {
-        return done('S2S bad path');
-      }
-
-      if (!ArkimeUtil.isString(obj.user)) {
-        return done('S2S bad user');
-      }
-
-      if (typeof (obj.date) !== 'number') {
-        return done('S2S bad date');
-      }
-
-      if (obj.user.startsWith('role:')) {
-        return done('Can not authenticate with role');
-      }
-
-      let objPath = obj.path;
-      if (Auth.#basePath.length > 1 && obj.path.startsWith(Auth.#basePath)) {
-        objPath = obj.path.substring(Auth.#basePath.length);
-      }
-      if (obj.path !== req.url && objPath !== req.url) {
-        console.log('ERROR - mismatch url object:', obj.path, 'request:', ArkimeUtil.sanitizeStr(req.url));
-        return done('Unauthorized based on bad url');
-      }
-
-      // Backwards compatible: only enforce method when the signed token includes it
-      if (obj.method !== undefined && obj.method !== req.method.toUpperCase()) {
-        console.log('ERROR - mismatch method object:', obj.method, 'request:', ArkimeUtil.sanitizeStr(req.method));
-        return done('Unauthorized based on bad method');
-      }
-
-      if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
-        console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
-        return done('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
+      const s2sError = Auth.validateS2SObj(obj, req);
+      if (s2sError) {
+        return done(s2sError);
       }
 
       // Don't look up user for receiveSession
@@ -953,15 +951,21 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
-    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session) {
+    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session && req._parsedUrl.pathname !== '/auth/login/callback') {
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
     }
 
+    const savedOgurl = req.session?.ogurl;
+
     const passportAuthOptionsExtra = {};
     if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
       passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+    }
+    // receiveSession's s2s placeholder user has no userId, so never try to session-serialize it
+    if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
+      passportAuthOptionsExtra.session = false;
     }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
@@ -981,10 +985,15 @@ class Auth {
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {
-          if (req.body?.ogurl) {
+          const ogurlEncoded = req.body?.ogurl || req.session?.ogurl || savedOgurl;
+          if (ogurlEncoded) {
             try {
-              const ogurl = Auth.auth2objNext(Buffer.from(req.body.ogurl, 'base64').toString());
-              return res.redirect(ogurl);
+              const ogurl = Auth.auth2objNext(Buffer.from(ogurlEncoded, 'base64').toString());
+              // Only redirect to a local same-origin path; reject absolute, protocol-relative
+              // ('//') and backslash ('/\') targets to prevent an open redirect.
+              if (typeof ogurl === 'string' && ogurl[0] === '/' && ogurl[1] !== '/' && ogurl[1] !== '\\') {
+                return res.redirect(ogurl);
+              }
             } catch (e) {
               console.log('Error', e);
               // Fall through to redirect below
@@ -1055,7 +1064,7 @@ class Auth {
         return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section cannot decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
       return '';
     }
   }
@@ -1087,7 +1096,7 @@ class Auth {
         return null;
       }
     } catch (e) {
-      console.log(`passwordSecret can not decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
+      console.log(`passwordSecret cannot decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
       return null;
     }
   }
@@ -1198,7 +1207,7 @@ class Auth {
     const signature = Buffer.from(parts[2], 'hex');
     const h = crypto.createHmac('sha256', secret).update(parts[0] + '.' + parts[1]).digest();
 
-    if (!crypto.timingSafeEqual(signature, h)) {
+    if (signature.length !== h.length || !crypto.timingSafeEqual(signature, h)) {
       throw new Error('Incorrect signature');
     }
 
@@ -1211,6 +1220,56 @@ class Auth {
       console.log(error);
       throw new Error('Incorrect auth supplied');
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  // Validate a decoded x-arkime-auth object as a genuine s2s token for this
+  // request: bound to this path/method, from a real (non-role) user, with a
+  // recent timestamp. auth2obj()/JSON.parse only proves the token decrypts/parses
+  // with the serverSecret, which on its own is not sufficient. Returns an error
+  // string when invalid, or undefined when the token is a valid s2s token.
+  static validateS2SObj (obj, req) {
+    if (obj === null || typeof obj !== 'object') {
+      return 'S2S auth header corrupt';
+    }
+
+    if (!ArkimeUtil.isString(obj.path)) {
+      return 'S2S bad path';
+    }
+
+    if (!ArkimeUtil.isString(obj.user)) {
+      return 'S2S bad user';
+    }
+
+    if (typeof (obj.date) !== 'number') {
+      return 'S2S bad date';
+    }
+
+    if (obj.user.startsWith('role:')) {
+      return 'Cannot authenticate with role';
+    }
+
+    let objPath = obj.path;
+    if (Auth.#basePath.length > 1 && obj.path.startsWith(Auth.#basePath)) {
+      objPath = obj.path.substring(Auth.#basePath.length);
+    }
+    if (obj.path !== req.url && objPath !== req.url) {
+      console.log('ERROR - mismatch url object:', obj.path, 'request:', ArkimeUtil.sanitizeStr(req.url));
+      return 'Unauthorized based on bad url';
+    }
+
+    // Backwards compatible: only enforce method when the signed token includes it
+    if (obj.method !== undefined && obj.method !== req.method.toUpperCase()) {
+      console.log('ERROR - mismatch method object:', obj.method, 'request:', ArkimeUtil.sanitizeStr(req.method));
+      return 'Unauthorized based on bad method';
+    }
+
+    if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
+      console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
+      return 'Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks';
+    }
+
+    return undefined;
   }
 
   // ----------------------------------------------------------------------------
@@ -1265,11 +1324,16 @@ class ESStore extends expressSession.Store {
   static #client;
   static #index;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
 
   constructor (options) {
     super();
     setTimeout(async () => {
       ESStore.#client = User.getClient();
+      if (!ESStore.#client) {
+        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
+        return;
+      }
       ESStore.start();
     }, 100);
     const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
@@ -1338,6 +1402,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.destroy(sid, callback);
+    }
     ESStore.#client.delete({
       index: ESStore.#index,
       id: sid
@@ -1348,6 +1415,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.get(sid, callback);
+    }
     ESStore.#client.get({
       index: ESStore.#index,
       id: sid
@@ -1370,6 +1440,9 @@ class ESStore extends expressSession.Store {
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
+    if (!ESStore.#client) {
+      return ESStore.#memoryStore.set(sid, session, callback);
+    }
     session._timestamp = new Date().getTime();
     ESStore.#client.index({
       index: ESStore.#index,

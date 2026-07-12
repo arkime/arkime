@@ -257,19 +257,12 @@ class MiscAPIs {
 
   // upload apis --------------------------------------------------------------
   /**
-   * POST - /api/upload
-   *
-   * Uploads PCAP files to Arkime. This API is really only useful for demo sites and very special cases.
-   * Instead you almost always should just run capture locally, which will be much more
-   * efficient and not duplicate the PCAP. See https://arkime.com/faq#how-do-i-import-existing-pcaps
-   * @name /upload
-   * @param {string} tags - A comma separated list of tags to add to each session created.
+   * Middleware that validates an upload request before Multer stores the file
+   * to disk. Rejecting misconfigured or unauthorized requests here avoids
+   * writing the uploaded file, preventing a disk-fill DoS.
    */
-  static upload (req, res) {
-    const exec = require('child_process').exec;
-    const uploadCommand = Config.get('uploadCommand');
-
-    if (!uploadCommand) {
+  static checkUpload (req, res, next) {
+    if (!Config.get('uploadCommand')) {
       const msg = 'Need to set https://arkime.com/settings#uploadcommand in config file for uploads to work. However if you are trying to import pcap files from the command line, just use capture instead, https://arkime.com/faq#how-do-i-import-existing-pcaps';
       res.status(500);
       res.end(msg);
@@ -282,6 +275,22 @@ class MiscAPIs {
       res.status(403);
       return res.end('Not covered by role');
     }
+
+    return next();
+  }
+
+  /**
+   * POST - /api/upload
+   *
+   * Uploads PCAP files to Arkime. This API is really only useful for demo sites and very special cases.
+   * Instead you almost always should just run capture locally, which will be much more
+   * efficient and not duplicate the PCAP. See https://arkime.com/faq#how-do-i-import-existing-pcaps
+   * @name /upload
+   * @param {string} tags - A comma separated list of tags to add to each session created.
+   */
+  static upload (req, res) {
+    const exec = require('child_process').exec;
+    const uploadCommand = Config.get('uploadCommand');
 
     if (req.file === undefined) {
       res.status(403);

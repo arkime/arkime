@@ -38,6 +38,7 @@ typedef struct {
     uint16_t                state: 1;
     uint16_t                needSwap: 1;
     uint16_t                isClient: 1;
+    uint16_t                isNanosecond: 1;
 } POIClient_t;
 
 LOCAL int                   isConnected[MAX_INTERFACES];
@@ -93,6 +94,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             }
 
             poic->needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
+            poic->isNanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
 
             // TODO: Really we should save the header per connection and do stuff
             if (first) {
@@ -134,21 +136,39 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             packet->ts.tv_usec = ph->ts.tv_usec;
         }
 
+        if (poic->isNanosecond)
+            packet->ts.tv_usec = packet->ts.tv_usec / 1000;
+
         if (unlikely(caplen != origlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
-            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u\n"
+            // Don't exit, a remote peer shouldn't be able to kill the capture process
+            if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
+                // Packet too large to ever fit in the buffer, can't skip it, close connection
+                LOG("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u, closing connection\n"
                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                     caplen, origlen);
-        }
-
-        if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
-            if (!config.ignoreErrors) {
-                LOGEXIT("ERROR - The packet length %u is too large.", caplen);
-            } else {
                 arkime_packet_free(packet);
                 pcapoverip_client_free(poic);
                 return FALSE;
             }
+            if (poic->len - pos < 16 + caplen) { // Not enough data to skip packet yet
+                arkime_packet_free(packet);
+                break;
+            }
+            LOG_RATE(60, "ERROR - Arkime requires full packet captures caplen: %u pktlen: %u, skipping packet\n"
+                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
+                     caplen, origlen);
+            arkime_packet_free(packet);
+            pos += 16 + caplen;
+            continue;
+        }
 
+        if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
+            // Don't exit, a remote peer shouldn't be able to kill the capture process
+            if (!config.ignoreErrors)
+                LOG("ERROR - The packet length %u is too large, closing connection.", caplen);
+            arkime_packet_free(packet);
+            pcapoverip_client_free(poic);
+            return FALSE;
         }
 
         if (poic->len - pos < 16 + caplen) { // Not enough data for packet
@@ -199,27 +219,23 @@ LOCAL void pcapoverip_client_connect(int interface)
 
     GSocket *conn = NULL;
     while (!conn && (sockaddr = g_socket_address_enumerator_next (enumerator, NULL, &error))) {
-        conn = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
+        GSocketFamily family = g_socket_address_get_family(sockaddr);
+        conn = g_socket_new(family, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
 
         if (!error) {
-            g_socket_set_blocking (conn, TRUE);
+            g_socket_set_blocking(conn, TRUE);
             g_socket_connect(conn, sockaddr, NULL, &error);
         }
 
         if (error && error->code != G_IO_ERROR_PENDING) {
             g_clear_error(&error);
-            g_object_unref (conn);
-            conn = NULL;
+            g_clear_object(&conn);
         } else {
-            g_socket_set_blocking (conn, FALSE);
-            struct sockaddr_in localAddress, remoteAddress;
-            socklen_t addressLength = sizeof(localAddress);
-            getsockname(g_socket_get_fd(conn), (struct sockaddr *)&localAddress, &addressLength);
-            g_socket_address_to_native(sockaddr, &remoteAddress, addressLength, NULL);
+            g_socket_set_blocking(conn, FALSE);
             if (config.debug > 0)
                 LOG("connected %s:%d", config.interface[interface], port);
         }
-        g_object_unref (sockaddr);
+        g_object_unref(sockaddr);
     }
     g_object_unref (enumerator);
 
@@ -272,7 +288,16 @@ LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(co
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
-        LOGEXIT("ERROR - Error accepting pcap-over-ip: %s", error ? error->message : "unknown error");
+        if (error) {
+            LOG("ERROR - Error accepting pcap-over-ip: %s", error->message);
+            g_error_free(error);
+        } else {
+            LOG("ERROR - Error accepting pcap-over-ip");
+        }
+        // Transient accept errors (e.g. ECONNABORTED, EMFILE/ENFILE) shouldn't take down
+        // the whole capture process - keep the listening socket watch alive so future
+        // connections can still be accepted.
+        return TRUE;
     }
 
     POIClient_t *poic = ARKIME_TYPE_ALLOC0(POIClient_t);

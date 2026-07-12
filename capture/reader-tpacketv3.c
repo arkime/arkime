@@ -71,10 +71,10 @@ int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
     for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             socklen_t len = sizeof(tpstats);
-            getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
-
-            gStats.dropped += tpstats.tp_drops;
-            gStats.total += tpstats.tp_packets;
+            if (getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len) == 0) {
+                gStats.dropped += tpstats.tp_drops;
+                gStats.total += tpstats.tp_packets;
+            }
         }
     }
     *stats = gStats;
@@ -197,7 +197,7 @@ void reader_tpacketv3_exit()
     }
 }
 /******************************************************************************/
-void reader_tpacketv3_init(char *UNUSED(name))
+void reader_tpacketv3_init(const char *UNUSED(name))
 {
     arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", NULL);
 
@@ -270,7 +270,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             infos[i][t].map = mmap(NULL, (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
                                    PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
             if (unlikely(infos[i][t].map == MAP_FAILED)) {
-                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %" PRId64 " bytes (tpacketv3BlockSize: %d * 64) which was probably too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
+                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %zu bytes (tpacketv3BlockSize: %d * 64) which was probably too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
             }
             infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
 
@@ -289,7 +289,9 @@ void reader_tpacketv3_init(char *UNUSED(name))
                 CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
 
             int fanout_type = PACKET_FANOUT_HASH;
-            int fanout_arg = ((fanout_group_id + i) | (fanout_type << 16));
+            if (fanout_group_id > 0xffff)
+                CONFIGEXIT("Fanout group id %d is too large, you must use a lower tpacketv3ClusterId", fanout_group_id);
+            int fanout_arg = (fanout_group_id | (fanout_type << 16));
             if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
                 CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
         }

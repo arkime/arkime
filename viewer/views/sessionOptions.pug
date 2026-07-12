@@ -53,7 +53,7 @@ ul.nav.nav-pills.mb-3
       | {{ $t('sessions.tag.removeTags') }}
     b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
       | {{ $t('search.removeData') }}
-    b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
+    b-dropdown-item(v-for="(value, key) in remoteclusters", :key="key", @click="sendSession(key)")
       | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2

@@ -886,6 +886,8 @@ size_t http_parser_execute (http_parser *parser,
         parser->method = (enum http_method) 0;
         parser->index = 1;
         switch (ch) {
+          case 'A': parser->method = HTTP_ACL; break;
+          case 'B': parser->method = HTTP_BIND; break;
           case 'C': parser->method = HTTP_CONNECT; /* or COPY, CHECKOUT */ break;
           case 'D': parser->method = HTTP_DELETE; break;
           case 'G': parser->method = HTTP_GET; break;
@@ -895,9 +897,10 @@ size_t http_parser_execute (http_parser *parser,
           case 'N': parser->method = HTTP_NOTIFY; break;
           case 'O': parser->method = HTTP_OPTIONS; break;
           case 'P': parser->method = HTTP_POST;
-            /* or PROPFIND|PROPPATCH|PUT|PATCH|PURGE */
+            /* or PROPFIND|PROPPATCH|PUT|PATCH|PURGE|PRI */
             break;
-          case 'R': parser->method = HTTP_REPORT; break;
+          case 'Q': parser->method = HTTP_QUERY; break;
+          case 'R': parser->method = HTTP_REPORT; /* or REBIND */ break;
           case 'S': parser->method = HTTP_SUBSCRIBE; /* or SEARCH */ break;
           case 'T': parser->method = HTTP_TRACE; break;
           case 'U': parser->method = HTTP_UNLOCK; /* or UNSUBSCRIBE */ break;
@@ -942,18 +945,28 @@ size_t http_parser_execute (http_parser *parser,
             parser->method = HTTP_MSEARCH;
           } else if (parser->index == 2 && ch == 'A') {
             parser->method = HTTP_MKACTIVITY;
+          } else if (parser->index == 3 && ch == 'A') {
+            parser->method = HTTP_MKCALENDAR;
           } else {
             goto error;
           }
         } else if (parser->method == HTTP_SUBSCRIBE) {
           if (parser->index == 1 && ch == 'E') {
             parser->method = HTTP_SEARCH;
+          } else if (parser->index == 1 && ch == 'O') {
+            parser->method = HTTP_SOURCE;
+          } else {
+            goto error;
+          }
+        } else if (parser->method == HTTP_LOCK) {
+          if (parser->index == 1 && ch == 'I') {
+            parser->method = HTTP_LINK;
           } else {
             goto error;
           }
         } else if (parser->index == 1 && parser->method == HTTP_POST) {
           if (ch == 'R') {
-            parser->method = HTTP_PROPFIND; /* or HTTP_PROPPATCH */
+            parser->method = HTTP_PROPFIND; /* or HTTP_PROPPATCH or HTTP_PRI */
           } else if (ch == 'U') {
             parser->method = HTTP_PUT; /* or HTTP_PURGE */
           } else if (ch == 'A') {
@@ -966,7 +979,14 @@ size_t http_parser_execute (http_parser *parser,
             if (ch == 'R') parser->method = HTTP_PURGE;
           } else if (parser->method == HTTP_UNLOCK) {
             if (ch == 'S') parser->method = HTTP_UNSUBSCRIBE;
+            else if (ch == 'B') parser->method = HTTP_UNBIND;
+          } else if (parser->method == HTTP_PROPFIND) {
+            if (ch == 'I') parser->method = HTTP_PRI;
+          } else if (parser->method == HTTP_REPORT) {
+            if (ch == 'B') parser->method = HTTP_REBIND;
           }
+        } else if (parser->index == 3 && parser->method == HTTP_UNLOCK && ch == 'I') {
+          parser->method = HTTP_UNLINK;
         } else if (parser->index == 4 && parser->method == HTTP_PROPFIND && ch == 'P') {
           parser->method = HTTP_PROPPATCH;
         } else {

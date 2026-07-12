@@ -2,6 +2,9 @@ if (session.radius)
   div.sessionDetailMeta.bold radius
   dl.sessionDetailMeta
     +arrayList(session.radius, "user", "User", "radius.user")
-    +arrayList(session.radius, "mac", "Mac", "radius.mac")
+    +arrayList(session.radius, "mac", "MAC", "radius.mac")
+    +arrayList(session.radius, "msgType", "Msg Type", "radius.msgType")
     +ipArrayList(session.radius, "endpointIp", "Endpoint IPs", "radius.endpoint-ip")
     +ipArrayList(session.radius, "framedIp", "Framed IPs", "radius.framed-ip")
+    +ipArrayList(session.radius, "nasIp", "NAS IPs", "radius.nasIp")
+    +arrayList(session.radius, "nasPort", "NAS Port", "radius.nasPort")

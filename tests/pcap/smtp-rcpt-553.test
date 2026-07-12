@@ -137,9 +137,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -178,7 +179,31 @@
       "16777226:48012,682101824:587"
      ]
     },
-    "totDataBytes" : 789
+    "totDataBytes" : 789,
+    "zeekintel" : [
+     {
+      "desc" : "smtp test sender/recipient",
+      "indicator" : "12345678@aol.com",
+      "indicator_type" : "email",
+      "source" : "arkime-test",
+      "where" : "email.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {

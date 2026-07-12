@@ -91,7 +91,7 @@ class Audit {
     if (typeof (audit.userId) !== 'string') { return 'must have field userId of type string'; }
     if (typeof (audit.issuedAt) !== 'number') { return 'must have field issuedAt of type number (milliseconds)'; }
     if (typeof (audit.took) !== 'number') { return 'must have field took of type number (milliseconds)'; }
-    if (typeof (audit.resultCount) !== 'number') { return 'must have field resultCount of type number (milliseconds)'; }
+    if (typeof (audit.resultCount) !== 'number') { return 'must have field resultCount of type number'; }
     if (typeof (audit.iType) !== 'string') { return 'must have field iType of type string'; }
     if (typeof (audit.indicator) !== 'string') { return 'must have field indicator of type string'; }
     if (!Array.isArray(audit.tags)) { return 'must have field tags of type Array'; }

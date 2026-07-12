@@ -232,7 +232,7 @@ class StatsAPIs {
    * @param {string} name - The name of the field to get the detailed stats for.
    * @param {number} start - The start time of data to return. Format is seconds since Unix EPOCH.
    * @param {number} stop  - The stop time of data to return. Format is seconds since Unix EPOCH.
-   * @param {number} step - The context step of the cubism graph in milliseconds.
+   * @param {number} step - The context step of the cubism graph in seconds.
    * @param {number} interval=60 - The time interval to search for.
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.
@@ -414,7 +414,7 @@ class StatsAPIs {
 
         const writeInfo = node.thread_pool.bulk || node.thread_pool.write;
 
-        const oldnode = StatsAPIs.#previousNodesStats[0][nodeKeys[n]];
+        const oldnode = StatsAPIs.#previousNodesStats[0]?.[nodeKeys[n]];
         if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && 'total' in node.fs.io_stats) {
           const timediffsec = (node.timestamp - oldnode.timestamp) / 1000.0;
           read = Math.max(0, Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes) / timediffsec * 1024));
@@ -493,8 +493,9 @@ class StatsAPIs {
         }
       }
 
-      nodesStats.nodes.timestamp = new Date().getTime();
-      StatsAPIs.#previousNodesStats.push(nodesStats.nodes);
+      // Copy so the shared Db.nodesStats cache entry isn't polluted with a
+      // bogus "timestamp" pseudo-node for other consumers
+      StatsAPIs.#previousNodesStats.push({ ...nodesStats.nodes, timestamp: new Date().getTime() });
 
       res.send({
         data: stats,
@@ -696,7 +697,7 @@ class StatsAPIs {
    * @name /esindices/:index/shrink
    * @param {string} target - The index name to shrink the index to.
    * @param {number} numShards - The number of shards to shrink the index to.
-   * @returns {boolean} success - Whether the close shrink operation was successful.
+   * @returns {boolean} success - Whether the shrink operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async shrinkESIndex (req, res) {
@@ -735,8 +736,26 @@ class StatsAPIs {
         cluster: req.query.cluster
       };
 
-      // wait for no more relocating shards
+      // wait for no more relocating shards, but give up after ~2 hours so a stuck
+      // relocation or repeatedly failing health check doesn't leak the interval forever
+      let shrinkCheckAttempts = 0;
+      const shrinkCheckMaxAttempts = 720; // 720 * 10s = ~2 hours
       const shrinkCheckInterval = setInterval(() => {
+        if (++shrinkCheckAttempts > shrinkCheckMaxAttempts) {
+          clearInterval(shrinkCheckInterval);
+          console.log(`ERROR - ${req.method} /api/esindices/%s/shrink gave up waiting for relocating shards`, ArkimeUtil.sanitizeStr(req.params.index));
+          // roll back the write block and allocation requirement so the index isn't left stuck read-only
+          Db.setIndexSettings(req.params.index, {
+            body: {
+              'index.blocks.write': null,
+              'index.routing.allocation.require._name': null
+            },
+            cluster: req.query.cluster
+          }).catch((err) => {
+            console.log(`ERROR - ${req.method} /api/esindices/%s/shrink rollback`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
+          });
+          return;
+        }
         Db.healthCache(req.query.cluster).then(async (result) => {
           if (result.relocating_shards === 0) {
             clearInterval(shrinkCheckInterval);
@@ -850,7 +869,7 @@ class StatsAPIs {
         data: rtasks
       });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/estask`, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/estasks`, util.inspect(err, false, 50));
       return res.send({
         data: [],
         recordsTotal: 0,
@@ -1107,7 +1126,7 @@ class StatsAPIs {
       } else {
         const parts = req.body.value.split(',');
         if (parts.length !== 3) {
-          return res.serverError(500, 'Must be 3 piece of info', 'api.stats.mustBeThreePieces');
+          return res.serverError(500, 'Must be 3 pieces of info', 'api.stats.mustBeThreePieces');
         }
 
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = parts[0];
@@ -1227,7 +1246,7 @@ class StatsAPIs {
       await Db.reroute(req.query.cluster);
       return res.json({ success: true, text: 'Reroute successful', i18n: 'api.stats.rerouteSuccessful' });
     } catch (err) {
-      return res.json({ success: true, text: 'Reroute failed', i18n: 'api.stats.rerouteFailed' });
+      return res.json({ success: false, text: 'Reroute failed', i18n: 'api.stats.rerouteFailed' });
     }
   }
 
@@ -1345,7 +1364,7 @@ class StatsAPIs {
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
       Db.getClusterSettingsCache(options),
       Db.loadESId2Info(options.cluster)
-    ]).then(([{ body: shards, esid2info }, { body: settings }]) => {
+    ]).then(([{ body: shards }, { body: settings }]) => {
       if (!Array.isArray(shards)) {
         return res.serverError(500, 'No results', 'api.stats.noResults');
       }
@@ -1374,7 +1393,7 @@ class StatsAPIs {
       for (const shard of shards) {
         if (shard.node === null || shard.node === 'null') {
           if (shard.ud && shard.ud.startsWith('node_left [')) {
-            shard.oldNode = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster);
+            shard.oldNode = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), options.cluster);
           }
           shard.node = 'Unassigned';
         }
@@ -1530,9 +1549,9 @@ class StatsAPIs {
   /**
    * POST - /api/esshards/:index/:shard/delete
    *
-   * Delete OpenSearch/Elasticsearch (admin only).
+   * Deletes an OpenSearch/Elasticsearch shard (admin only).
    * @name /esshards/:index/:shard/delete
-   * @returns {boolean} success - Whether include node operation was successful.
+   * @returns {boolean} success - Whether the delete shard operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async deleteESShard (req, res) {
@@ -1779,8 +1798,7 @@ class StatsAPIs {
       const { body: info } = await Db.nodesStats({
         metric: 'jvm,process,fs,os,indices,thread_pool'
       });
-      info.nodes.timestamp = new Date().getTime();
-      StatsAPIs.#previousNodesStats.push(info.nodes);
+      StatsAPIs.#previousNodesStats.push({ ...info.nodes, timestamp: new Date().getTime() });
     } catch (err) {
       console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
     }

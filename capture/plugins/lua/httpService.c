@@ -70,6 +70,7 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
         LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
     }
 
+    luaL_unref(L, LUA_REGISTRYINDEX, lhttp->ref);
     arkime_http_free_response(lhttp->data);
     ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
 }
@@ -128,12 +129,14 @@ LOCAL int MHS_request(lua_State *L)
                               mhs_http_response_cb,
                               lhttp);
 
-    if (!result) {
+    // arkime_http_send returns 0 on success, non-zero when dropped
+    if (result != 0) {
+        // Request dropped, the callback will never fire
         luaL_unref(L, LUA_REGISTRYINDEX, lhttp->ref);
         ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
     }
 
-    lua_pushboolean(L, result);
+    lua_pushboolean(L, result == 0);
     return 1;
 }
 /******************************************************************************/

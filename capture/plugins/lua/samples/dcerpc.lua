@@ -46,7 +46,7 @@ endpointMap = {
     ["2c9273e0-1dc3-11d3-b364-00105a1f8177"] = "IWbemRefreshingServices interface",
     ["423ec01e-2e35-11d2-b604-00104b703efd"] = "IWbemWCOSmartEnum interface",
     ["1c1c45ee-4395-11d2-b60b-00104b703efd"] = "IWbemFetchSmartEnum interface",
-    ["541679AB-2E5F-11d3-B34E-00104BCC4B4A"] = "IWbemLoginHelper interface",
+    ["541679ab-2e5f-11d3-b34e-00104bcc4b4a"] = "IWbemLoginHelper interface",
     ["51c82175-844e-4750-b0d8-ec255555bc06"] = "KMS",
     ["50abc2a4-574d-40b3-9d66-ee4fd5fba076"] = "dnsserver",
     ["3faf4738-3a21-4307-b46c-fdda9bb8c0d5"] = "AudioSrv",
@@ -146,8 +146,8 @@ opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x0c] = "CreateClassEnum"
 opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x0d] = "CreateClassEnumAsync"
 opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x0e] = "PutInstance"
 opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x0f] = "PutInstanceAsync"
-opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x10] = "DeleteClass"
-opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x11] = "DeleteClassAsync"
+opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x10] = "DeleteInstance"
+opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x11] = "DeleteInstanceAsync"
 opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x12] = "CreateInstanceEnum"
 opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x13] = "CreateInstanceEnumAsync"
 opCodeMap["9556dc99-828c-11cf-a37e-00aa003240c7"][0x14] = "ExecQuery"
@@ -179,8 +179,8 @@ opCodeMap["00000143-0000-0000-c000-000000000046"][0x04] = "RemAddRef"
 opCodeMap["00000143-0000-0000-c000-000000000046"][0x05] = "RemRelease"
 opCodeMap["00000143-0000-0000-c000-000000000046"][0x06] = "RemQueryInterface2"
 opCodeMap["000001a0-0000-0000-c000-000000000046"][0x00] = "QueryInterfaceIRemoteSCMActivator"
-opCodeMap["000001a0-0000-0000-c000-000000000046"][0x01] = "AddRefIRemoteISCMActivator"
-opCodeMap["000001a0-0000-0000-c000-000000000046"][0x02] = "ReleaseIRemoteISCMActivator"
+opCodeMap["000001a0-0000-0000-c000-000000000046"][0x01] = "AddRefIRemoteSCMActivator"
+opCodeMap["000001a0-0000-0000-c000-000000000046"][0x02] = "ReleaseIRemoteSCMActivator"
 opCodeMap["000001a0-0000-0000-c000-000000000046"][0x03] = "RemoteGetClassObject"
 opCodeMap["000001a0-0000-0000-c000-000000000046"][0x04] = "RemoteCreateInstance"
 opCodeMap["12345678-1234-abcd-ef00-01234567cffb"][0x00] = "NetrLogonUasLogon"
@@ -934,7 +934,7 @@ opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x00] = "SSCatDBAddCatalog"
 opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x01] = "SSCatDBDeleteCatalog"
 opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x02] = "SSCatDBEnumCatalogs"
 opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x03] = "SSCatDBRegisterForChangeNotification"
-opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x04] = "KeyrCloseKeyService"
+opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x04] = "SSCatDBUnregisterForChangeNotification"
 opCodeMap["f50aac00-c7f3-428e-a022-a6b71bfb9d43"][0x05] = "SSCatDBRebuildDatabase"
 opCodeMap["12345778-1234-abcd-ef00-0123456789ab"][0x00] = "LsarClose"
 opCodeMap["12345778-1234-abcd-ef00-0123456789ab"][0x01] = "LsarDelete"
@@ -1372,7 +1372,7 @@ opCodeMap["afa8bd80-7d8a-11c9-bef4-08002b102989"][0x03] = "stop_server_listening
 opCodeMap["afa8bd80-7d8a-11c9-bef4-08002b102989"][0x04] = "inq_princ_name"
 
 function dcerpcClassify(session, str, direction)
-    if str:sub(1,3) == string.char(0x05, 0x00, 0x0b) then
+    if str:len() >= 48 and str:sub(1,3) == string.char(0x05, 0x00, 0x0b) then
     ctx = (string.format('%02X%02X%02X%02X', str:sub(33,36):reverse():byte(1,4)) .. "-" ..
             string.format('%02X%02X', str:sub(37,38):reverse():byte(1,2)) .. "-" ..
             string.format('%02X%02X', str:sub(39,40):reverse():byte(1,2)) .. "-" ..

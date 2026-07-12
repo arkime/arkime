@@ -43,13 +43,17 @@ class SplunkSource extends WISESource {
     this.query = api.getConfig(section, 'query');
     this.mergeQuery = api.getConfig(section, 'mergeQuery');
     // this.arrayPath = api.getConfig(section, 'arrayPath');
-    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn', 0));
+    // no default so the required-check below can actually fire
+    this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn'));
 
+    let missing = false;
     ['host', 'username', 'password', 'query', 'keyPath'].forEach((item) => {
       if (this[item] === undefined) {
         console.log(this.section, `- ERROR not loading since no ${item} specified in config file`);
+        missing = true;
       }
     });
+    if (missing) { return; }
 
     if (this.periodic) {
       this.cacheTimeout = -1; // Don't cache
@@ -81,7 +85,7 @@ class SplunkSource extends WISESource {
       }
 
       let cache;
-      if (merging) {
+      if (merging && this.cache !== undefined) {
         cache = this.cache;
       } else {
         if (this.type === 'ip') {
@@ -198,7 +202,7 @@ exports.initSource = function (api) {
       { name: 'host', required: true, help: 'The Splunk hostname' },
       // { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: 'json' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },
-      { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
+      { name: 'periodic', required: false, help: 'If set, the number of seconds between periodic full queries. If not set, an individual query is done per key.' },
       { name: 'port', required: true, help: 'The Splunk port' },
       { name: 'query', required: true, help: 'The query to run against Splunk. For non periodic queries the string %%SEARCHTERM%% will be replaced with the key' },
       { name: 'mergeQuery', help: 'When in periodic mode, use this query after startup and merge the keyPath value into previous table' },

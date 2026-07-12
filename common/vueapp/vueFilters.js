@@ -163,7 +163,7 @@ export const parseSeconds = function (str) {
   }
 
   let m, n;
-  if ((m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/))) {
+  if ((m = str.match(/^([+-])(\d*)([a-zA-Z]*)([@]*)([a-zA-Z0-9]*)/))) {
     const d = moment();
     const format = str2format(m[3]);
     const snap = str2format(m[5]);

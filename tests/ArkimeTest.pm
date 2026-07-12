@@ -462,7 +462,7 @@ my ($url, $debug) = @_;
 ################################################################################
 sub parliamentGetToken {
 my ($url, $token, $debug) = @_;
-    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8008$url", "x-parliament-token" => $token);
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8008$url", "x-parliament-cookie" => $token);
     diag $url, " response:", $response->content if ($debug);
     return my_from_json($url, $response->content, $debug);
 }
@@ -591,11 +591,11 @@ my ($host, $port, $extraSleep) = @_;
         if ($sock) {
             print "Success\n" if ($main::debug);
             close($sock);
+            sleep ($extraSleep) if (defined $extraSleep);
             return;
         };
         sleep 1;
     }
-    sleep ($extraSleep) if (defined $extraSleep);
 }
 ################################################################################
 sub addUser {

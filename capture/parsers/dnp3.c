@@ -140,7 +140,10 @@ LOCAL int dnp3_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
 {
     ArkimeParserBuf_t *dnp3 = uw;
 
-    arkime_parser_buf_add(dnp3, which, data, len);
+    if (arkime_parser_buf_add(dnp3, which, data, len) < 0) {
+        arkime_session_add_tag(session, "dnp3:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (dnp3->len[which] >= DNP3_MIN_LEN) {
         BSB bsb;

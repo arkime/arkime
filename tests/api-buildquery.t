@@ -1,4 +1,4 @@
-use Test::More tests => 182;
+use Test::More tests => 186;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -198,6 +198,9 @@ doTest('host.http == $stringshort1', qq({"terms":{"http.host":{"index":"tests_lo
 doTest('host.http == $stringshort*', qq({"bool":{"should":[{"terms":{"http.host":{"id":"$stringshort1","path":"string","index":"tests_lookups"}}},{"terms":{"http.host":{"id":"$stringshort2","path":"string","index":"tests_lookups"}}}]}}));
 doTest('host.http == [$stringshort*, "barney"]', qq({"bool":{"should":[{"terms":{"http.host":["barney"]}},{"terms":{"http.host":{"index":"tests_lookups","id":"$stringshort1","path":"string"}}},{"terms":{"http.host":{"path":"string","id":"$stringshort2","index":"tests_lookups"}}}]}}));
 
+# != with a mixed value+shortcut list collapses to a single must_not of positives
+doTest('host.http != [foo.example,$stringshort1]', qq({"bool":{"must_not":[{"terms":{"http.host":["foo.example"]}},{"terms":{"http.host":{"index":"tests_lookups","id":"$stringshort1","path":"string"}}}]}}));
+
 #### host.http.cnt
 doTest('host.http.cnt == 1', '{"term":{"http.hostCnt":1}}');
 doTest('host.http.cnt != 1', '{"bool":{"must_not":{"term":{"http.hostCnt":1}}}}');
@@ -287,6 +290,13 @@ doTest('http.reqbody == [/barney/,fred,fred*]', '{"bool":{"should":[{"regexp":{"
 doTest('http.reqbody == ["/barney/","fred","fred*"]', '{"bool":{"should":[{"terms":{"http.requestBody":["/barney/","fred"]}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
 doTest('http.reqbody == ]/barney/,fred,fred*[', '{"bool":{"filter":[{"regexp":{"http.requestBody":"barney"}},{"term":{"http.requestBody":"fred"}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
 doTest('http.reqbody == ]"/barney/","fred","fred*"[', '{"bool":{"filter":[{"term":{"http.requestBody":"/barney/"}},{"term":{"http.requestBody":"fred"}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
+
+# Multiple escaped commas within one list item must all be restored
+doTest('host.http == [a\,b\,c,d]', '{"terms":{"http.host":["a,b,c","d"]}}');
+doTest('host.http == [a\,b\,c\,d\,e]', '{"terms":{"http.host":["a,b,c,d,e"]}}');
+
+# Invalid port error message
+doTest('ip == 1.2.3.4:80x', '80x not a valid port');
 
 # Delete shortcuts
 viewerGet("/regressionTests/deleteAllShortcuts");

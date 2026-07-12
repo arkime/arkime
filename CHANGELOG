@@ -35,6 +35,172 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+6.6.0 2026/07/09
+## Breaking
+  - #4072 WISE reversedns now returns resolved names that match none of the stripDomains entries in
+          full (as documented) instead of silently dropping them
+  - #4073 The cont3xt Arkime integration searchDays setting now searches that many days instead of 7x that many.
+           Existing configs that relied on the wider window must increase searchDays to keep the previous range.
+  - #4073 The cont3xt redis integration now substitutes 'domain' (not 'domainip') for %type% in keyTemplate on domain lookups.
+          Deployments that stored domain data under the old 'domainip' key must re-key it as 'domain'.
+## Release
+  - #4066 Node 22.23.1
+  - #4056 Add Fedora 44 builds
+  - #4102 FreeBSD 14 builds use 14.4
+## All
+  - #4065 Fix OIDC login not preserving the redirect URL's query parameters (thanks @yanover)
+  - #4072 Fix header/OIDC auth requests hanging when a dynamic role update fails
+  - #4074 Harden user-auto-create/user-role-mappings expressions to run in strict mode
+  - #4079 Fix relative time +1M (month) and @M snapping being silently ignored; lowercase m still means minutes
+  - #4089 Consolidate header auth non-localhost host security warning across viewer/cont3xt/parliament/wiseService
+  - #4093 Fix page load failing with a 500 in OIDC mode when the issuer has no end_session_endpoint
+  - #4093 Fix user-role-mappings changes not taking effect until the next request; granted roles now apply and revoked roles stop working on the same request
+  - #4102 Fix concurrent requests during the first roles-cache population getting an undefined roles list
+  - #4102 Fix users CSV export header using comma-space separators while data rows use commas
+## Capture
+  - #4054 Fix GRE keepalive packets adding bogus 00:00:00:00:00:00 MACs
+  - #4055 Fix DNS memory leak when parsing malformed answers
+  - #4068 Add some missing http methods to parser
+  - #4074 Fix Geneve packets with protocol type 0 adding bogus 00:00:00:00:00:00 MACs
+  - #4074 Fix pcap-over-IP client reader not connecting to IPv6 endpoints
+  - #4078 Fix radiotap headers >= 256 bytes parsing at the wrong offset (it_len read as 8-bit instead of 16-bit)
+  - #4078 Fix Linux cooked (SLL) VLAN frames misdispatching non-IP payloads to IP and not recording the VLAN id
+  - #4078 Classify Control4 SDDP as sddp instead of mislabeling it ssdp
+  - #4079 Fix CAMEL recording the TCAP invokeID as a bogus operation code, and ENIP CIP class extraction failing on routed request paths with a port segment
+  - #4089 Fix netmap reader out-of-bounds ring index when netmapThreads doesn't evenly divide the interface's RX ring count
+  - #4089 Fix file reader silently stopping on EINTR instead of retrying
+  - #4089 Fix directory monitor leaking watch state when a watched directory is deleted
+  - #4090 Add new zeekintel plugin that can read Zeek intel framework files and tag/annotate sessions whose ips, hosts, urls, emails or hashes match a loaded indicator
+  - #4091 Fix ICMPv6 home-agent-reply (type 145) community-id not matching other tools or the reverse direction
+  - #4091 Fix IKEv2 parsing issues
+  - #4091 Fix MQTT parser PUBLISH issues
+  - #4091 Fix s3:// directory listing silently dropping pages after the first when the bucket needs continuation requests
+  - #4091 Rename misspelled protocol classifier stream-ihscp to steam-ihscp (Steam In-Home Streaming Control Protocol)
+  - #4093 Fix tagger and zeekintel plugins potentially cross-matching IPv4 and IPv6 entries whose leading bits coincide; IPv4 entries are now stored v4-mapped in the shared tree
+  - #4095 Fix python packet callbacks crashing capture when the callback returns a non-int (e.g. None)
+  - #4095 Fix s3:// reader dropping the X-Amz-Security-Token header with s3PathAccessStyle, breaking STS/IAM temporary credentials
+  - #4095 Fix pcap-over-IP treating nanosecond pcap timestamps as microseconds
+  - #4095 Fix tpacketv3 fanout ids overflowing into the fanout mode with multiple interfaces and a large tpacketv3ClusterId
+  - #4095 Fix ARKIME_ env vars whose value contains __ creating garbage config sections
+  - #4095 Fix lua plugin crashing at startup when luaFiles is present but empty
+  - #4095 Fix lua tcpflags.fin/tcpflags.urg session gets returning nil, and a Lua registry leak on every completed HttpService request
+  - #4097 Fix session-command processing throttle never engaging when the packet queue is 75% full
+  - #4097 Fix s3:// directory listing stopping early when a listing page contains no pcap files
+  - #4097 Fix ARP and NBNS session-detail IP clicks/exports building nonexistent ip.arp/ip.nbns expressions
+  - #4097 Fix cert:certificate-authority testing the cRLSign keyUsage bit instead of keyCertSign, and keyUsage being ignored when subjectAltName precedes it
+  - #4097 Fix HTTP CONNECT tunnels hashing server tunnel bytes into http.md5/sha256 and never releasing the http parser
+  - #4097 Fix RDP parser silently desyncing when the reassembly buffer overflows (now tagged rdp:frame-too-long)
+  - #4097 Fix S7comm reading fields from the next buffered TPKT frame when COTP/S7 lengths are bogus
+  - #4097 Fix SCTP reassembly corrupting messages when fragments of different streams interleave
+  - #4098 Fix M2UA Protocol Data 2 messages including the length-indicator octet in the MTP3 payload, corrupting decoded SS7 fields
+  - #4098 Fix MQTT parser desyncing on messages too large for the reassembly buffer (now tagged mqtt:message-too-long)
+  - #4098 Fix NBNS only parsing the first packet in each direction of a session
+  - #4098 Fix synchrophasor CFG-3 frames misparsing PMU names after the first (digital channel name count and PHSCALE size)
+  - #4098 Fix ospf.msgType exact searches failing because the field was declared lowercase but stores mixed-case values
+  - #4098 Fix tagger plugin not removing IPv4 ip entries when a tagger file is reloaded or removed
+  - #4098 Fix session detail issues: RADIUS missing Msg Type/NAS IPs/NAS Port fields, SIP User-Agent menus building a nonexistent sip.useragent expression, and cert JA4x_r row layout
+  - #4098 Fix lua sample smb.lua FSCTL and Find subcommand names never matching
+  - #4100 Fix draft-v6 M3UA Protocol Data (tags 2/3) being parsed with the RFC 4666 structured layout instead of as raw MTP3
+  - #4100 Fix M2UA/M3UA associations captured from the ASP handshake never being classified, and control messages unregistering the parser
+  - #4100 Fix SNMP recording a bogus GetResponse type for non-PDU content, and version-2u sessions being tagged snmp with no fields
+  - #4100 Fix SSH hassh being computed over bytes of the following record when a KEXINIT name-list length is corrupt
+  - #4100 Fix synchrophasor parser silently desyncing when the reassembly buffer overflows (now tagged synchrophasor:frame-too-long)
+  - #4100 Fix WebSocket text/close frames spanning TCP segments losing their sample/code/reason, and continuation frames after an interleaved Ping losing text samples
+  - #4100 Fix JA3/JA3S edge cases: truncated server extension header injected a fake extension into JA3S, and empty/all-GREASE extension or curve lists suppressed JA3 entirely
+  - #4100 Fix Modbus recording a bogus exception code from truncated exception frames, and mislabeling requests/responses when the server is the session initiator
+  - #4100 Fix modbus/dnp3/enip parsers silently desyncing when the reassembly buffer overflows (now tagged frame-too-long)
+  - #4100 Fix M2UA/M3UA associations carrying multiple service indicators (e.g. ISUP + SCCP) only parsing the first one
+  - #4100 Fix MQTT PUBLISH messages with topics too large to buffer being tagged mqtt:bad-publish instead of mqtt:message-too-long
+  - #4100 Fix Oracle TNS connect strings of 256 bytes or more never being classified
+  - #4100 Fix SIP over TCP not classifying sessions opening with OPTIONS, and PUBLISH requests not recording a method
+  - #4100 Fix padded RADIUS datagrams never being classified, and a malformed attribute dropping all attributes after it
+  - #4100 Fix netflow plugin exporting per-thread flow sequence numbers, which collectors saw as massive loss/duplication, and reject SNMP ifIndex settings over 65535 (16-bit on the wire)
+  - #4100 Fix wise plugin lookups too large for the request buffer being silently truncated off the wire request, and inflight counter races
+  - #4100 Fix kafka plugin only using the first bootstrap server of a semicolon-separated kafkaBootstrapServers list
+  - #4100 Fix writer-s3 building corrupt CompleteMultipartUpload requests after a failed part upload (now aborts the upload), leaking queued buffers forever when multipart init fails, and capture exiting when a periodic credential refresh fails
+  - #4100 Fix lua plugin HTTP MESSAGE_BEGIN callback only firing for the first message per direction on keep-alive connections
+  - #4104 Fix tagger plugin crashing when an ES poll hit has no _id, and a memory leak when a hit has no md5
+  - #4107 Fix python per-session parsers (register_parser/register_parser_buf) crashing capture when the callback is freed at session end without a Python thread state
+  - #4107 Fix pcap-over-IP server exiting when a client sends truncated or oversized packet records; now skips the packet or closes just that connection
+  - #4107 Fix http:// and https:// scheme reader dropping the URL query string (breaking pre-signed S3 style links) and silently ignoring HTTP error responses
+  - #4107 Fix unknown-ether session ids reading past the end of short packets (e.g. truncated Frame Relay)
+  - #4107 Fix IPv6 headers past offset 2047 (deep encapsulation) recording wrong session addresses; now treated as corrupt like IPv4
+  - #4107 Add awsUseTokenForMetadata option to use IMDSv2 when fetching AWS credentials from the metadata service
+## Capture/Viewer
+  - #4054 Add mpacket link layer support
+## Cont3xt
+  - #4073 Fix search and single-integration refresh hanging when an integration errors or returns no data
+  - #4073 Fix integration cacheTimeout values specified in milliseconds being treated as seconds (1000x too long); short-TTL integrations like DNS now expire on time
+  - #4073 Fix csv/json integrations sometimes failing to load JSON feeds over http/elasticsearch/opensearch
+  - #4073 Fix ClickHouse integration being broken (wrong search method name and unawaited result parsing)
+  - #4093 Fix cont3xt crash with a malformed custom overview field, and custom overview join separators being rejected
+  - #4093 Fix searches hanging when an invalid IP (e.g. 300.1.2.3) is the only indicator queried
+  - #4093 Fix ipqs array fields not displaying comma-joined, the virustotal hash scans table never rendering, and the wise integration ignoring wiseURL
+  - #4102 Fix DNS integration decoding the CAA critical flag as decimal instead of hex
+  - #4102 Fix builtwith/greynoise/redis integrations silently swallowing errors (bad key, rate limit, outages) as no data; they now log
+  - #4102 Fix db errors without ES metadata throwing inside index-creation error handlers
+## db.pl
+  - #4102 Fix ARKIME__prefix/ARKIME_default__prefix env prefixes not being normalized like --prefix (missing trailing _)
+  - #4102 Fix info command counting old-prefix history indices but excluding their docs/bytes from Histories
+## Multies
+  - #4092 Fix plaintext user:pass elasticsearchBasicAuth never working, and passwords containing a colon being truncated
+## Parliament
+  - #4102 Fix parliament upgrade polluting the shared settings defaults, which broke restoring default settings until restart
+  - #4102 Fix issue cleanup sometimes removing an extra unrelated issue in the same pass
+  - #4102 Fix noPackets tracking not resetting when a node recovers, so a later dip alerted immediately instead of waiting noPacketsLength
+## Viewer
+  - #4063 Fix CSV formula injection in the summary CSV export by neutralizing cells starting with = + - @
+  - #4071 Fix negative numbers being rejected in expressions
+  - #4076 Fix raw packet search hunts hanging when a session's PCAP is missing or unreadable
+  - #4079 Fix /api/upload storing the upload to disk before authorization
+  - #4079 Fix /api/esindices/:index/shrink leaving the index read-only when shard relocation stalls
+  - #4092 Fix periodic queries silently processing at most 1000 sessions per run
+  - #4092 Fix hunts stalling instead of skipping the session when a failed session can't be fetched on retry
+  - #4092 Fix GRE packets with the routing bit set being misparsed in the viewer pcap decoder
+  - #4093 Fix SPI Graph fileand rows showing node-level data instead of per-file data
+  - #4094 Fix history not recording the view name and expression used for a search since views moved to their own index
+  - #4094 Fix viewer pcap decoder issues: radiotap headers >= 256 bytes, NFLOG reading garbage offsets when no payload found, and SLL2 always decoding as IPv4
+  - #4094 Fix raw packet search hunts matching bytes in pcap record headers when searching both directions
+  - #4094 Fix multies GET _search crashing when one cluster returns an error
+  - #4094 Fix map data still being computed when map=false is sent with facets
+  - #4096 Speed up the Connections and SPIView pages when there are 1000s of fields by lazily rendering field menus/categories and batching SPIView show/hide-all toggling
+  - #4098 Fix hunts configured with multiple notifiers only notifying the first one
+  - #4098 Fix stats gathering polluting the shared nodes-stats cache with a bogus timestamp pseudo-node that showed up as an extra ES node
+  - #4098 Fix viewer pcap decoder GTP inner packet byte positions being off by 8 (UDP header not counted)
+  - #4098 Fix expression list values with multiple escaped commas or backslashes only unescaping the first one
+  - #4098 Fix IP field Add Exists menu items building queries with the database field name instead of the expression
+  - #4098 Fix session detail Src/Dst payload preview not replacing unprintable characters
+  - #4098 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when the S3 object is gone
+  - #4101 Fix s3ExpireDays never expiring anything in the writer-s3 plugin
+  - #4102 Fix pcap scrub silently skipping packets larger than 5000 bytes (jumbo frames / large snaplen)
+  - #4102 Fix pcap scrub on short-header pcap files leaving the first 10 payload bytes unscrubbed
+  - #4102 Fix session packets requests with an unknown decode option hanging forever; they now return a 400
+  - #4102 Fix a session packets error when an SMTP MIME header continuation line lands on a packet chunk boundary
+  - #4102 Fix multiviewer sessions refresh dropping each cluster's index prefix, so prefixed clusters were never refreshed
+  - #4103 Time picker displays YYYY/MM/DD HH:mm:ss again instead of the browser locale format, allows typing/pasting dates, and adds a date picker button
+  - #4104 Fix PCAP retrieval with the writer-s3 plugin hanging queued readers forever when block decompression fails
+  - #4104 Fix writer-s3 PCAP retrieval of multi-file sessions with pre-compression file records computing bogus byte ranges
+  - #4105 Fix time picker inputs showing local wall clock time in UTC mode; typed/pasted times are now interpreted in the displayed timezone and may include a timezone suffix (UTC, EDT, America/Chicago, +02:00)
+  - #4106 Fix payload8 UTF8/Hex fields: the sessions column and info field showed the UTF8 label with the hex value, and clicking the value built a broken payload8.*.utf8 expression
+  - #4108 Fix receive endoint S2S auth bypass via browser session - fully validate auth token (path/user/date/method)
+  - #4110 Fix S2S receive-session requests failing on form/oidc auth with "Failed to serialize user into session"
+## WISE
+  - #4072 Fix /get stalling the entire query batch until a timeout when a single source errors
+  - #4072 Fix urlapi source failing every lookup (double JSON parse) and reporting 404 misses as errors
+  - #4072 Fix databricks periodic mode never running the initial query and crashing on refresh
+  - #4072 Fix caching md5/sha256 results without contentType, and crashes on repeated hashes params and on viewing an empty redisfile source
+  - #4092 Fix threatstream zip mode not working
+  - #4092 Fix virustotal v2 issues
+  - #4092 Fix opendns content category field being labeled Security instead of Content
+  - #4093 Fix opendns, passivetotal, and virustotal queries hanging forever when an upstream request fails
+  - #4093 Fix wiseService crashing when a watched file source file is deleted
+  - #4093 Fix isepxgrid serving stale identities for up to cacheAgeMin and disconnects deleting a reassigned IP's newer session
+  - #4093 Fix elasticsearch source registering anyway after logging that required settings are missing
+  - #4094 Fix fieldactions/valueactions crashing wiseService when the watched file is deleted, and redis/elasticsearch content with a section header failing to load
+  - #4094 Fix databricks and splunk sources loading anyway when required settings are missing
+  - #4102 Fix isepxgrid showing a duplicate cacheAgeMin field in the config UI
+  - #4102 Fix taggerUpload.pl corrupting keys from CRLF files and building invalid JSON when data contains quotes or backslashes
+
 6.5.0 2026/06/15
 ## Breaking
   - #4005 userAuthIps is now correctly matched against the real connecting peer address.
@@ -46,7 +212,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4030 Fix hidePcap/hideFiles/hideStats/disablePcapDownload failing open for users with the permission inherited from multiple roles
   - #4031 Fix CSV formula injection in session, connection, and user CSV exports by neutralizing cells starting with = + - @
 ## Capture
-  - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
+  - #3996 Added missing ntlm.detail.jade for NTLM session detail rendering
   - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
   - #3997 Added IPFIX and sFlow v5 classifiers for flow telemetry visibility
   - #3997 Added DCERPC interface labels for AD CS (MS-WCCE/ICPR), PrintNightmare (MS-RPRN/MS-PAR), DfsCoerce, ShadowCoerce, WMI, BackupKey (BKRP), EventLog6, DFS-R (FRS2), and IObjectExporter

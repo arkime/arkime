@@ -57,6 +57,7 @@ typedef struct arkimehttpconn_t {
     short                    h_bucket;
 
     uint8_t                  sessionId[ARKIME_SESSIONID_LEN];
+    int                      fd;
 } ArkimeHttpConn_t;
 
 typedef struct arkimehttpconnhead_t {
@@ -644,6 +645,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
 
         HASH_ADD(h_, connections, sessionId, conn);
         memcpy(&conn->sessionId, sessionId, sessionId[0]);
+        conn->fd = fd;
         server->connections++;
     } else {
         char buf[1000];
@@ -689,35 +691,27 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     }
 
     struct sockaddr_storage localAddressStorage, remoteAddressStorage;
+    gboolean                haveAddrs = FALSE;
 
     socklen_t addressLength = sizeof(localAddressStorage);
-    int rc = getsockname(fd, (struct sockaddr *)&localAddressStorage, &addressLength);
-    if (rc != 0) {
-        long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
-        GSource *source = g_main_context_find_source_by_id(NULL, ev);
-        if (source)
-            g_source_destroy(source);
-        g_hash_table_remove(server->fd2ev, (void *)(long)fd);
-        close(fd);
-        return 0;
-    }
-
-    addressLength = sizeof(remoteAddressStorage);
-    rc = getpeername(fd, (struct sockaddr *)&remoteAddressStorage, &addressLength);
-    if (rc != 0) {
-        long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
-        GSource *source = g_main_context_find_source_by_id(NULL, ev);
-        if (source)
-            g_source_destroy(source);
-        g_hash_table_remove(server->fd2ev, (void *)(long)fd);
-        close(fd);
-        return 0;
+    if (getsockname(fd, (struct sockaddr *)&localAddressStorage, &addressLength) == 0) {
+        addressLength = sizeof(remoteAddressStorage);
+        if (getpeername(fd, (struct sockaddr *)&remoteAddressStorage, &addressLength) == 0)
+            haveAddrs = TRUE;
     }
 
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
-    int  localPort, remotePort;
-    char remoteIp[INET6_ADDRSTRLEN + 2];
-    if (localAddressStorage.ss_family == AF_INET) {
+    int  localPort = 0, remotePort = 0;
+    char remoteIp[INET6_ADDRSTRLEN + 2] = "-";
+    if (!haveAddrs) {
+        // Socket already dead (e.g. reset), can't compute the sessionId, but
+        // still must clean up the tracking state below, finding conn by fd
+        long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
+        GSource *source = g_main_context_find_source_by_id(NULL, ev);
+        if (source)
+            g_source_destroy(source);
+        g_hash_table_remove(server->fd2ev, (void *)(long)fd);
+    } else if (localAddressStorage.ss_family == AF_INET) {
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
         arkime_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
@@ -738,12 +732,23 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     }
 
 
-    ArkimeHttpConn_t *conn;
+    ArkimeHttpConn_t *conn = NULL;
     if ((unsigned)fd < ARRAY_LEN(connectionsSet) * 64)
         BIT_CLR(fd, connectionsSet);
 
     ARKIME_LOCK(connections);
-    HASH_FIND(h_, connections, sessionId, conn);
+    if (haveAddrs) {
+        HASH_FIND(h_, connections, sessionId, conn);
+    } else {
+        // Couldn't compute the sessionId, find the entry by fd instead
+        ArkimeHttpConn_t *c;
+        HASH_FORALL2(h_, connections, c) {
+            if (c->fd == fd) {
+                conn = c;
+                break;
+            }
+        }
+    }
     if (conn) {
         HASH_REMOVE(h_, connections, conn);
         ARKIME_TYPE_FREE(ArkimeHttpConn_t, conn);
@@ -846,7 +851,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         }
     }
 
-    request->priority = priority;
+    request->priority = MIN(priority, ARKIME_HTTP_PRIORITY_DROPABLE);
 
     if (priority == ARKIME_HTTP_PRIORITY_DROPABLE)
         request->retries = 0;
@@ -1121,6 +1126,7 @@ void arkime_http_set_aws_sigv4(void *serverV, const char *aws_sigv4)
 {
     ArkimeHttpServer_t        *server = serverV;
 
+    free(server->aws_sigv4);
     server->aws_sigv4 = strdup(aws_sigv4);
 }
 /******************************************************************************/

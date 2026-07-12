@@ -1,4 +1,4 @@
-use Test::More tests => 723;
+use Test::More tests => 737;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -225,7 +225,7 @@ my $pwd = "*/pcap";
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&packets.dst==1"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&packets.dst==0"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&packets.dst!=1"));
-    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&packets.dst!=1"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&packets.src!=1"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-https-example.pcap&&packets>0"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-https-example.pcap&&packets>30"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/socks-https-example.pcap&&packets.src>17"));
@@ -330,6 +330,16 @@ my $pwd = "*/pcap";
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*TP.*/"));
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.utf8=/.*NOT.*/"));
 
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=\"HTTP/1.1\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=HTTP*"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=/HTTP.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=/.*NOT.*/"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.utf8=\"GET / HT\""));
+
+# payload8 hex and utf8 expressions match the same session (issue #3201)
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.src.hex==474554202f204854&&payload8.src.utf8=\"GET / HT\""));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/http-301-get.pcap&&payload8.dst.hex==485454502f312e31&&payload8.dst.utf8=\"HTTP/1.1\""));
+
 if (0) {
 # session.segments tests
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.segments=2"));
@@ -343,13 +353,13 @@ if (0) {
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/long-session.pcap||file=$pwd/socks5-reverse.pcap)&&session.length=[908493,908494]"));
 }
 
-# vlan tests
+# vni tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni=123"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni.cnt=1"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni<124"));
     countTest(0, "date=-1&expression=" . uri_escape("(file=$pwd/vxlan.pcap||file=$pwd/dns-dnskey.pcap)&&vni>124"));
 
-# vni tests
+# vlan tests
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan=500"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan.cnt=1"));
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&vlan<501"));

@@ -503,7 +503,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
 
     if (ARKIME_SESSION_IS_v6(session)) {
         static const uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
-                                                 255, 140, 139, 255, 255, 255, 145, 145, 255
+                                                 255, 140, 139, 255, 255, 255, 145, 144, 255
                                                 };
 
         if (port1 >= 128 && port1 - 128 < ARRAY_LEN(port2Mapping) && port2Mapping[port1 - 128] != 255) {
@@ -768,6 +768,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     BSB jbsb = dbInfo[thread].bsb;
+    const BSB savedBsb = jbsb; // For restoring on error, drops just this record
 
     startPtr = BSB_WORK_PTR(jbsb);
 
@@ -1458,6 +1459,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (BSB_IS_ERROR(jbsb)) {
         LOG("ERROR - Ran out of memory creating DB record supposed to be %u", jsonSize);
+        jbsb = savedBsb; // Drop this record, keep the previously buffered ones valid
+        dbInfo[thread].cnt--;
         goto cleanup;
     }
 
@@ -1716,7 +1719,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
 
     for (int i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
-        statvfs(config.pcapDir[i], &vfs);
+        if (statvfs(config.pcapDir[i], &vfs) != 0)
+            continue;
         freeSpaceM += (uint64_t)((vfs.f_frsize / 1000.0) * (vfs.f_bavail / 1000.0));
         totalSpaceM += (uint64_t)((vfs.f_frsize / 1000.0) * (vfs.f_blocks / 1000.0));
     }
@@ -2145,7 +2149,7 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)arkime_char_to_hexstr[num % 256], 0, NULL);
         g_free(name1);
 
-        BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
+        BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
         key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     } else {
 
@@ -2237,7 +2241,7 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         snprintf(filename + flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u%s", config.nodeName, tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, num, name);
         name = 0;
 
-        BSB_EXPORT_sprintf(jbsb, "{\"num\":%d, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
+        BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
         key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     }
 
@@ -2291,12 +2295,12 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
 
     BSB_EXPORT_u08(jbsb, '}');
 
+    if (config.logFileCreation)
+        LOG("Creating file %u with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
+
     arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
 
     ARKIME_UNLOCK(nextFileNum);
-
-    if (config.logFileCreation)
-        LOG("Creating file %u with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
 
     *id = num;
 
@@ -3030,7 +3034,7 @@ void arkime_db_exit()
     g_regex_unref(numHexRegex);
 
     if (config.debug) {
-        LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+        LOG("totalPackets: %" PRIu64 " totalSessions: %" PRIu64 " writtenBytes: %" PRIu64 " unwrittenBytes: %" PRIu64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
             totalPackets, totalSessions, arkime_packet_written_bytes(), arkime_packet_unwritten_bytes(),
             packetStats[ARKIME_PACKET_DO_PROCESS],
             packetStats[ARKIME_PACKET_IP_DROPPED],

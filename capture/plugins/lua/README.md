@@ -7,7 +7,7 @@ Simple lua integration, currently experimental.  It supports (with more coming a
 To use:
 * install the lua package for your OS, requires at least 5.3
 * build the plugin by using ```make``` in the ```capture/plugins/lua``` directory
-* load the lua plugin by change configuration file so it has lua.so as a plugins ```plugins=lua.so```
+* load the lua plugin by changing the configuration file so it has lua.so as a plugin ```plugins=lua.so```
 * set ```luaFiles``` to a list of lua files to load
 
 
@@ -19,7 +19,7 @@ How it works:
 ## Callbacks:
 
 ### classifyFunction(session, str, direction)
-Callback when the initial part of the data stream matches the details set by either arkime_parsers_classifier_register_tcp or arkime_parsers_classifier_register_udp.  It may be called multiple times for the same session if the first packets in each direction matches.  It is only called with the first packet of data, you want to see more call arkime_parseres_register
+Callback when the initial part of the data stream matches the details set by either arkime_parsers_classifier_register_tcp or arkime_parsers_classifier_register_udp.  It may be called multiple times for the same session if the first packets in each direction matches.  It is only called with the first packet of data, you want to see more call arkime_parsers_register
 * session = A ArkimeSession object
 * str = A lua string with the binary data from start of session
 * direction = traffic direction
@@ -32,7 +32,7 @@ Callback that receives the stream of data for session.  Will be called multiple 
 * returns = -1 to stop parsing
  
 ### httpResponseFunction(code, str)
-Callback to arkime_http_request.  It received the full data response.
+Callback to arkime_http_request.  It receives the full data response.
 * code = response code
 * str = A lua string with full response
 
@@ -75,9 +75,9 @@ Create a glob pattern to use for matching
 * returns = the new ArkimeData object
 
 ### data:memmem(str)
-Is str inside of data
+Find str inside of data
 * str = the lua string to check for
-* returns = true if present
+* returns = offset of str within data, or -1 if not present
 
 ### data:pattern_ismatch(compiledPattern)
 Perform a glob match
@@ -141,7 +141,7 @@ Register to receive a callback before saving.  This function can call the incr_o
 * preSaveFunctionName = the string name of the lua function to call.  Function should implement the saveCallbackFunction signature above.
 
 ### ArkimeSession.register_save(saveFunctionName)
-Register to receive a callback as saving.  This function can NOT call the incr_outstanding on the session to pause the save.
+Register to receive a callback when saving.  This function can NOT call the incr_outstanding on the session to pause the save.
 * saveFunctionName = the string name of the lua function to call.  Function should implement the saveCallbackFunction signature above.
 
 
@@ -152,9 +152,9 @@ Add a string value to a session
 * returns = true if added, false if already there
 
 ### session:add_int(fieldexpressionOrFieldId, value)
-Add a integer value to a session
+Add an integer value to a session
 * fieldExpressionOrFieldId = the field expression or a fieldId.
-* value = the string to add
+* value = the integer to add
 * returns = true if added, false if already there
 
 ### session:add_tag(tag)

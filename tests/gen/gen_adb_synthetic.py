@@ -233,7 +233,7 @@ class TCPSession:
 
 
 def main():
-    outpath = sys.argv[1] if len(sys.argv) > 1 else 'adb_synthetic.pcap'
+    outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/adb_synthetic.pcap'
     pw = PcapWriter(outpath)
 
     # ==========================================================================
@@ -428,6 +428,32 @@ def main():
     svc2 = b'host:forward:tcp:8080;tcp:80'
     s.csend(('%04x' % len(svc2)).encode() + svc2)
 
+    s.fin()
+
+    pw.advance(2000)
+
+    # ==========================================================================
+    # Session 7: Shell v2 with parameters (port 5555)
+    # Tests: real-world "shell,v2,TERM=...,pty:" service string (params between
+    #        v2 and the colon) still sets the "adb:shell-v2" tag
+    # ==========================================================================
+    s = TCPSession(pw, '10.0.0.1', '10.0.0.2', 40007, 5555)
+    s.handshake()
+
+    s.csend(adb_msg(A_CNXN, 0x01000001, 262144, b'host::\x00'))
+    s.ssend(adb_msg(A_CNXN, 0x01000001, 262144, b'device:SHELL02:features=shell_v2\x00'))
+    # OPEN shell v2 with parameters (modern adb client format)
+    s.csend(adb_msg(A_OPEN, 1, 0, b'shell,v2,TERM=xterm-256color,pty:ls\x00'))
+    s.ssend(adb_msg(A_OKAY, 2, 1))
+
+    # WRTE with STDOUT then EXIT 0
+    s.ssend(adb_msg(A_WRTE, 2, 1, shell_v2_pkt(1, b'file.txt\n')))
+    s.csend(adb_msg(A_OKAY, 1, 2))
+    s.ssend(adb_msg(A_WRTE, 2, 1, shell_v2_pkt(3, b'\x00')))
+    s.csend(adb_msg(A_OKAY, 1, 2))
+
+    s.ssend(adb_msg(A_CLSE, 2, 1))
+    s.csend(adb_msg(A_CLSE, 1, 2))
     s.fin()
 
     pw.close()

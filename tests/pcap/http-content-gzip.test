@@ -249,9 +249,10 @@
     "srcTTLCnt" : 1,
     "tags" : [
      "dstip",
-     "srcip"
+     "srcip",
+     "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -290,7 +291,38 @@
       "16777226:50638,33554442:80"
      ]
     },
-    "totDataBytes" : 895
+    "totDataBytes" : 895,
+    "zeekintel" : [
+     {
+      "desc" : "http body md5 (http-content-gzip / socks5-rdp)",
+      "indicator" : "5ff7b2c69c3b22826a717cd5ea4c9f32",
+      "indicator_type" : "file_hash",
+      "source" : "arkime-test",
+      "where" : "http.md5"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "test.ip"
+     }
+    ],
+    "zeekintelCnt" : 4
    },
    "header" : {
     "index" : {

@@ -38,4 +38,4 @@ countTest(12, "date=-1&expression=" . uri_escape("$files&&protocols==socks"));
 
 # socks.user
     countTest(2, "date=-1&expression=" . uri_escape("$files&&socks.user==testuser"));
-    countTest(0, "date=-1&expression=" . uri_escape("$files&&socks.port==Testuser"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&socks.user==Testuser"));

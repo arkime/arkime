@@ -41,7 +41,7 @@ class ElasticsearchFileSource extends SimpleSource {
     axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth })
       .then((response) => {
         if (response.status === 404 || response?.data?._source === undefined) {
-          return cb(null, '{}', null, 2);
+          return cb(null, '{}');
         }
 
         return cb(null, JSON.stringify(response.data._source, null, 2));
@@ -81,7 +81,6 @@ exports.initSource = function (api) {
       { name: 'url', password: true, required: false, help: 'Format is http[s]://[user:password@]host:port/<index>/_doc/<document>' },
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'arrayPath', required: true, help: 'The path of where to find the array' },
       { name: 'keyPath', required: true, help: 'The path of what field to use as the key inside each item' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' }

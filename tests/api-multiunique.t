@@ -48,14 +48,14 @@ my $files = uri_escape($filestr);
 # empty
 my $txt = get("");
 my $ptxt = post('{}');
-is ($txt, "Missing exp parameter\n", "unique.txt node exp parameter");
+is ($txt, "Missing exp parameter\n", "multiunique.txt node exp parameter");
 eq_or_diff($txt, $ptxt, "GET and POST versions of multiunique endpoint are not the same");
 
 
 # empty exp
 $txt = get("exp=");
 $ptxt = post('{"exp": ""}');
-is ($txt, "Missing exp parameter\n", "unique.txt node exp empty");
+is ($txt, "Missing exp parameter\n", "multiunique.txt node exp empty");
 eq_or_diff($txt, $ptxt, "GET and POST versions of multiunique endpoint are not the same");
 
 # bad post - exp
@@ -111,6 +111,7 @@ srcip, 4
 wisebyhost2, 7
 wisebyip1, 1
 wisebyip3, 2
+zeek:intel, 14
 ", "tags count", { context => 3 });
 
 #

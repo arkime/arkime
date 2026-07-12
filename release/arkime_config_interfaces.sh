@@ -69,7 +69,7 @@ for interface in $interfaces ; do
             /sbin/ethtool -K "$interface" "$i" off || true
         done
     else
-        echo "\nATTENTION :\nNIC : $interface seems to be absent/incorrect, can not update interface settings."
-        echo "Please check your configuration file : $file\n"
+        printf "\nATTENTION :\nNIC : %s seems to be absent/incorrect, can not update interface settings.\n" "$interface"
+        printf "Please check your configuration file : %s\n\n" "$file"
     fi
 done

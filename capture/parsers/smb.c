@@ -263,6 +263,18 @@ LOCAL void smb1_parse_negotiate_request(SMBInfo_t *smb, char *buf, int len)
     }
 }
 /******************************************************************************/
+/* Subtract the bytes a command handler consumed from the declared NetBIOS
+ * message length. Malformed messages (bogus wordcount/offset/length fields)
+ * can consume past the message end; clamp instead of underflowing *remlen. */
+LOCAL void smb_remlen_consume(uint32_t *remlen, const uint8_t *start, const uint8_t *now)
+{
+    uint32_t consumed = (uint32_t)(now - start);
+    if (consumed > *remlen)
+        *remlen = 0;
+    else
+        *remlen -= consumed;
+}
+/******************************************************************************/
 LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
@@ -322,136 +334,155 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        BSB mbsb; // clamp parsing to this message so bogus lengths can't reach the next one
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
         int wordcount = 0;
-        BSB_IMPORT_u08(*bsb, wordcount);
-        BSB_IMPORT_skip(*bsb, wordcount * 2 + 3);
-        smb_add_string(session, fnField, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
-        *state = SMB_SKIP;
+        BSB_IMPORT_u08(mbsb, wordcount);
+        BSB_IMPORT_skip(mbsb, wordcount * 2 + 3);
+        if (!BSB_IS_ERROR(mbsb))
+            smb_add_string(session, fnField, (char *)BSB_WORK_PTR(mbsb), BSB_REMAINING(mbsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         break;
     }
     case SMB1_DELETE: {
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
         int wordcount = 0;
-        BSB_IMPORT_u08(*bsb, wordcount);
-        BSB_IMPORT_skip(*bsb, wordcount * 2 + 3);
-        if (BSB_IS_ERROR(*bsb))
-            return 1;
-        smb_add_string(session, fnField, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
-        *state = SMB_SKIP;
+        BSB_IMPORT_u08(mbsb, wordcount);
+        BSB_IMPORT_skip(mbsb, wordcount * 2 + 3);
+        if (!BSB_IS_ERROR(mbsb))
+            smb_add_string(session, fnField, (char *)BSB_WORK_PTR(mbsb), BSB_REMAINING(mbsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         break;
     }
     case SMB1_TREE_CONNECT_ANDX: {
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
         int passlength = 0;
-        BSB_IMPORT_skip(*bsb, 6);
-        BSB_IMPORT_u16(*bsb, passlength);
-        BSB_IMPORT_skip(*bsb, 2 + passlength);
+        BSB_IMPORT_skip(mbsb, 6);
+        BSB_IMPORT_u16(mbsb, passlength);
+        BSB_IMPORT_skip(mbsb, 2 + passlength);
 
-        uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0) ? 2 : 1;
+        uint32_t offset = (BSB_POSITION(mbsb) % 2 == 0) ? 2 : 1;
 
-        if (BSB_IS_ERROR(*bsb) || offset > BSB_REMAINING(*bsb)) {
-            return 1;
+        if (BSB_IS_ERROR(mbsb) || offset > BSB_REMAINING(mbsb)) {
+            break;
         }
-        smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb) + offset, BSB_REMAINING(*bsb) - offset, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
-        *state = SMB_SKIP;
+        smb_add_string(session, shareField, (char *)BSB_WORK_PTR(mbsb) + offset, BSB_REMAINING(mbsb) - offset, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         break;
     }
 
     case SMB1_SETUP_ANDX: { // http://msdn.microsoft.com/en-us/library/ee441849.aspx
         if (BSB_REMAINING(*bsb) < *remlen) {
-            BSB_SET_ERROR(*bsb);
             return 1;
         }
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
         int wordcount = 0;
-        BSB_IMPORT_u08(*bsb, wordcount);
+        BSB_IMPORT_u08(mbsb, wordcount);
 
         if (wordcount == 12) {
-            BSB_IMPORT_skip(*bsb, 14);
+            BSB_IMPORT_skip(mbsb, 14);
 
             int securitylen = 0;
-            BSB_LIMPORT_u16(*bsb, securitylen);
+            BSB_LIMPORT_u16(mbsb, securitylen);
 
-            BSB_IMPORT_skip(*bsb, 10);
+            BSB_IMPORT_skip(mbsb, 10);
 
-            if (securitylen > BSB_REMAINING(*bsb)) {
-                BSB_SET_ERROR(*bsb);
-                return 1;
+            if (BSB_IS_ERROR(mbsb) || securitylen > (int)BSB_REMAINING(mbsb)) {
+                break;
             }
-            smb_security_blob(session, BSB_WORK_PTR(*bsb), securitylen);
-            BSB_IMPORT_skip(*bsb, securitylen);
+            smb_security_blob(session, BSB_WORK_PTR(mbsb), securitylen);
+            BSB_IMPORT_skip(mbsb, securitylen);
 
-            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0) ? 0 : 1;
-            BSB_IMPORT_skip(*bsb, offset);
+            uint32_t offset = (BSB_POSITION(mbsb) % 2 == 0) ? 0 : 1;
+            BSB_IMPORT_skip(mbsb, offset);
 
-            if (!BSB_IS_ERROR(*bsb)) {
-                smb1_parse_osverdomain(session, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+            if (!BSB_IS_ERROR(mbsb)) {
+                smb1_parse_osverdomain(session, (char *)BSB_WORK_PTR(mbsb), BSB_REMAINING(mbsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
         } else if (wordcount == 13) {
-            BSB_IMPORT_skip(*bsb, 14);
+            BSB_IMPORT_skip(mbsb, 14);
 
             int ansipw = 0;
-            BSB_LIMPORT_u16(*bsb, ansipw);
+            BSB_LIMPORT_u16(mbsb, ansipw);
             int upw = 0;
-            BSB_LIMPORT_u16(*bsb, upw);
+            BSB_LIMPORT_u16(mbsb, upw);
 
-            BSB_IMPORT_skip(*bsb, 10 + ansipw + upw);
+            BSB_IMPORT_skip(mbsb, 10 + ansipw + upw);
 
-            uint32_t offset = ((BSB_WORK_PTR(*bsb) - start) % 2 == 0) ? 0 : 1;
-            BSB_IMPORT_skip(*bsb, offset);
+            uint32_t offset = (BSB_POSITION(mbsb) % 2 == 0) ? 0 : 1;
+            BSB_IMPORT_skip(mbsb, offset);
 
-            if (!BSB_IS_ERROR(*bsb)) {
-                smb1_parse_userdomainosver(session, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+            if (!BSB_IS_ERROR(mbsb)) {
+                smb1_parse_userdomainosver(session, (char *)BSB_WORK_PTR(mbsb), BSB_REMAINING(mbsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
         }
 
-        *state = SMB_SKIP;
         break;
     }
     case SMB1_NEGOTIATE_REQ: {
         if (BSB_REMAINING(*bsb) < *remlen) {
-            BSB_SET_ERROR(*bsb);
             return 1;
         }
-        BSB_LIMPORT_skip(*bsb, 1); // wordcount
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
+        BSB_LIMPORT_skip(mbsb, 1); // wordcount
 
         int bytecount = 0;
-        BSB_LIMPORT_u08(*bsb, bytecount);
+        BSB_LIMPORT_u16(mbsb, bytecount);
 
-        if (bytecount > 0)
-            smb1_parse_negotiate_request(smb, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb));
+        if (bytecount > 0 && !BSB_IS_ERROR(mbsb))
+            smb1_parse_negotiate_request(smb, (char *)BSB_WORK_PTR(mbsb), BSB_REMAINING(mbsb));
 
-        *state = SMB_SKIP;
         break;
     }
     case SMB1_NEGOTIATE_RSP: {
         if (BSB_REMAINING(*bsb) < *remlen) {
-            BSB_SET_ERROR(*bsb);
             return 1;
         }
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
         int wordcount = 0;
-        BSB_IMPORT_u08(*bsb, wordcount);
+        BSB_IMPORT_u08(mbsb, wordcount);
 
         if (wordcount < 13) {
-            *state = SMB_SKIP;
             break;
         }
 
         uint16_t dialect = 0;
-        BSB_IMPORT_u08(*bsb, dialect);
-        if (dialect < smb->dialectsLen) {
+        BSB_LIMPORT_u16(mbsb, dialect);
+        if (!BSB_IS_ERROR(mbsb) && dialect < smb->dialectsLen) {
             arkime_field_string_add(dialectField, session, smb->dialects[dialect], -1, TRUE);
         }
 
-        *state = SMB_SKIP;
         break;
     }
     } /* switch */
 
-    *remlen -= (BSB_WORK_PTR(*bsb) - start);
+    smb_remlen_consume(remlen, start, BSB_WORK_PTR(*bsb));
     return 0;
 }
 /******************************************************************************/
@@ -466,6 +497,13 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
 
         if (BSB_REMAINING(*bsb) < 64) {
             return 1;
+        }
+        if (*remlen < 64) {
+            // Message declared less data (via the NETBIOS length) than a full SMB2 header
+            // needs - malformed/too short. Skip it rather than reading past remlen and
+            // underflowing *remlen below.
+            *state = SMB_SKIP;
+            break;
         }
         BSB_IMPORT_skip(*bsb, 12);
         BSB_LIMPORT_u16(*bsb, cmd);
@@ -496,26 +534,28 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
 #ifdef SMBDEBUG
         LOG("%d cmd: %x flags: %x newstate: %d remlen: %u", which, cmd, flags, *state, *remlen);
 #endif
-        *remlen -= (BSB_WORK_PTR(*bsb) - start);
+        smb_remlen_consume(remlen, start, BSB_WORK_PTR(*bsb));
         break;
     }
     case SMB2_NEGOTIATE: {
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        BSB mbsb; // clamp parsing to this message so bogus lengths can't reach the next one
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
 
-        BSB_IMPORT_skip(*bsb, 4);
+        BSB_IMPORT_skip(mbsb, 4);
 
         uint16_t  dialect = 0;
-        BSB_LIMPORT_u16(*bsb, dialect);
-        if (dialect != 0 && dialect != 0x02FF) {
+        BSB_LIMPORT_u16(mbsb, dialect);
+        if (!BSB_IS_ERROR(mbsb) && dialect != 0 && dialect != 0x02FF) {
             char str[13];
             snprintf(str, sizeof(str), "SMB %d.%d.%d", (dialect >> 8) & 0xf, (dialect >> 4) & 0xf, dialect & 0xf);
             arkime_field_string_add(dialectField, session, str, -1, TRUE);
         }
 
-        *remlen -= (BSB_WORK_PTR(*bsb) - start);
-        *state = SMB_SKIP;
         break;
     }
     case SMB2_TREE_CONNECT: {
@@ -525,23 +565,24 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
-        BSB_IMPORT_skip(*bsb, 4);
-        BSB_LIMPORT_u16(*bsb, pathoffset);
-        BSB_LIMPORT_u16(*bsb, pathlen);
-        if (pathoffset < (64 + 8)) {
-            *remlen -= (BSB_WORK_PTR(*bsb) - start);
-            *state = SMB_SKIP;
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
+        BSB_IMPORT_skip(mbsb, 4);
+        BSB_LIMPORT_u16(mbsb, pathoffset);
+        BSB_LIMPORT_u16(mbsb, pathlen);
+        if (BSB_IS_ERROR(mbsb) || pathoffset < (64 + 8)) {
             break;
         }
         pathoffset -= (64 + 8);
-        BSB_IMPORT_skip(*bsb, pathoffset);
+        BSB_IMPORT_skip(mbsb, pathoffset);
 
-        if (!BSB_IS_ERROR(*bsb) && pathlen <= BSB_REMAINING(*bsb)) {
-            smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb), pathlen, TRUE); // SMB2 strings are always UTF-16LE
+        if (!BSB_IS_ERROR(mbsb) && pathlen <= BSB_REMAINING(mbsb)) {
+            smb_add_string(session, shareField, (char *)BSB_WORK_PTR(mbsb), pathlen, TRUE); // SMB2 strings are always UTF-16LE
         }
 
-        *remlen -= (BSB_WORK_PTR(*bsb) - start);
-        *state = SMB_SKIP;
         break;
     }
     case SMB2_CREATE: {
@@ -551,21 +592,24 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
-        BSB_IMPORT_skip(*bsb, 44);
-        BSB_LIMPORT_u16(*bsb, nameoffset);
-        BSB_LIMPORT_u16(*bsb, namelen);
-        if (nameoffset < (64 + 48)) {
-            *remlen -= (BSB_WORK_PTR(*bsb) - start);
-            *state = SMB_SKIP;
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
+        BSB_IMPORT_skip(mbsb, 44);
+        BSB_LIMPORT_u16(mbsb, nameoffset);
+        BSB_LIMPORT_u16(mbsb, namelen);
+        if (BSB_IS_ERROR(mbsb) || nameoffset < (64 + 48)) {
             break;
         }
         nameoffset -= (64 + 48);
-        BSB_IMPORT_skip(*bsb, nameoffset);
+        BSB_IMPORT_skip(mbsb, nameoffset);
 
-        if (!BSB_IS_ERROR(*bsb) && namelen <= BSB_REMAINING(*bsb)) {
+        if (!BSB_IS_ERROR(mbsb) && namelen <= BSB_REMAINING(mbsb)) {
             gsize bread, bwritten;
             GError      *error = 0;
-            char *out = g_convert((char *)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
+            char *out = g_convert((char *)BSB_WORK_PTR(mbsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
             if (error) {
                 LOG_RATE(5, "ERROR %s", error->message);
                 g_error_free(error);
@@ -576,8 +620,6 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
             }
         }
 
-        *remlen -= (BSB_WORK_PTR(*bsb) - start);
-        *state = SMB_SKIP;
         break;
     }
     }

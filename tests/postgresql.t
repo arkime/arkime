@@ -19,4 +19,4 @@ countTest(3, "date=-1&expression=" . uri_escape("$files&&protocols==postgresql")
 
 # postgresql.app
     countTest(1, "date=-1&expression=" . uri_escape("$files&&postgresql.app==psql"));
-    countTest(1, "date=-1&expression=" . uri_escape("$files&&postgresql.app==psql"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&postgresql.app==Psql"));

@@ -35,10 +35,10 @@ You should find that you have a new folder:
 
 **To run the web application, you must have an elasticsearch cluster running and already built and configured Arkime. Read the main [Arkime README](../README.md) for more information.**
 
-#### The simplest way to start the web app is:
+#### The simplest way to start the web app is (from the top level directory):
 
 ```
-npm run start:dev
+npm run viewer:dev
 ```
 
 For this command to work, your `tests/config.test.ini` must be valid.
@@ -50,10 +50,10 @@ Vite watches for changes to relevant Vue files, and re-bundles the Vue app after
 Now browse to the app at `http://localhost:8123` and login using username "admin" and password "admin".
 
 
-#### You can run the app as an anonymous user:
+#### You can run the app as an anonymous user (from the top level directory):
 
 ```
-npm run start:test
+npm run viewer:test
 ```
 
 For this command to work, your `tests/config.test.ini` must be valid.
@@ -65,10 +65,10 @@ Vite watches for changes to relevant Vue files, and re-bundles the Vue app after
 Now browse to the app at `http://localhost:8123`.
 
 
-#### You can also start the app with an existing config file:
+#### You can also start the app with an existing config file (from the top level directory):
 
 ```
-npm start
+npm run viewer:start
 ```
 
 For this command to work, your `config.ini` must be valid.
@@ -79,15 +79,6 @@ Now browse to the app at `http://localhost:8123`.
 
 ---
 
-### Running the UI Tests:
-
-```
-npm test
-```
-
-The UI tests use [Jest](https://jestjs.io) and [Vue Testing Library](https://testing-library.com/docs/vue-testing-library/intro). 
-
----
 
 ### External File Fixes:
 

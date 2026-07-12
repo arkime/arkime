@@ -169,7 +169,9 @@ jobs:
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           sleep 30
           cat /tmp/os
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+          curl http://localhost:9200/_cat/health
+          free -h || true
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
 
       - name: viewer test arkimedb
         if: ${{ matrix.viewertest == 'packetpocket' }}
@@ -257,7 +259,7 @@ jobs:
           yum install -y libubsan libasan
           (cd capture ; make clean; make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize; make install)
           mv -f /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -d libubsan -d libasan --rpm-rpmbuild-define "_build_id_links none" -p molochsanitize-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.rpm /data/moloch
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -d libubsan -d libasan --rpm-rpmbuild-define "_build_id_links none" -p molochsanitize-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.rpm /data/moloch
           mv molochsanitize*.rpm molochsanitize-main.${{matrix.version}}.rpm
           ls -l *.rpm
 
@@ -394,7 +396,7 @@ jobs:
           echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
 
       - name: Build on FreeBSD
-        uses: vmactions/freebsd-vm@4807432c7cab1c3f97688665332c0b932062d31f # v1.4.3
+        uses: vmactions/freebsd-vm@4441bea20b31bfa77329a5af583199362489567e # v1.4.9
         with:
           release: ${{ matrix.freebsdrelease }}
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}

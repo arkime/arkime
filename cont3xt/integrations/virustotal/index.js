@@ -22,7 +22,7 @@ class VirusTotalIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -148,7 +148,7 @@ class VirusTotalDomainIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -280,7 +280,7 @@ class VirusTotalIPIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();
@@ -361,8 +361,11 @@ class VirusTotalHashIntegration extends Integration {
       'verbose_msg',
       {
         label: 'scans',
+        field: 'scans',
+        type: 'table',
+        postProcess: { keyedToArrayWith: 'engine' },
         fields: [
-          'scan type',
+          'engine',
           'detected',
           'result',
           'update',
@@ -379,7 +382,7 @@ class VirusTotalHashIntegration extends Integration {
   };
 
   // Default cacheTimeout 24 hours
-  cacheTimeout = 24 * 60 * 60 * 1000;
+  cacheTimeout = '24h';
 
   constructor () {
     super();

@@ -54,7 +54,8 @@ class ValueActionsSource extends WISESource {
       this.getSourceRaw = this.getSourceRawRedis;
       this.putSourceRaw = this.putSourceRawRedis;
       const redisParts = this.url.split('/');
-      if (redisParts.length !== 5) {
+      const expectedParts = this.url.startsWith('redis-sentinel://') ? 6 : 5;
+      if (redisParts.length !== expectedParts) {
         throw new Error(`Invalid redis url - ${redisParts[0]}//[:pass@]redishost[:redisport]/redisDbNum/key`);
       }
       this.key = redisParts.pop();
@@ -68,7 +69,7 @@ class ValueActionsSource extends WISESource {
 
     setImmediate(this.load.bind(this));
 
-    if (this.url[0] === '/' || this.url.startsWith('../')) {
+    if (this.url[0] === '/' || this.url.startsWith('./') || this.url.startsWith('../')) {
       this.watchFile();
     } else {
       setInterval(this.load.bind(this), 5 * 1000 * 60);
@@ -77,8 +78,10 @@ class ValueActionsSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   process (data) {
+    // content may optionally be wrapped in a [valueactions] section header
+    data = data.valueactions || data;
     const keys = Object.keys(data);
-    if (!keys) { return; }
+    if (keys.length === 0) { return; }
 
     keys.forEach((key) => {
       const obj = {};
@@ -125,10 +128,16 @@ class ValueActionsSource extends WISESource {
       clearTimeout(this.watchTimeout);
       if (e === 'rename') {
         this.watch.close();
-        setTimeout(() => {
+        // File may be briefly missing (atomic replace/delete); retry until it's back
+        const rearm = () => {
+          if (!fs.existsSync(this.url)) {
+            setTimeout(rearm, 500);
+            return;
+          }
           this.load();
           this.watch = fs.watch(this.url, watchCb);
-        }, 500);
+        };
+        setTimeout(rearm, 500);
       } else {
         this.watchTimeout = setTimeout(() => {
           this.watchTimeout = null;
@@ -147,9 +156,8 @@ class ValueActionsSource extends WISESource {
     }
 
     const config = ArkimeUtil.parseIniSync(this.url);
-    const data = config.valueactions || config;
 
-    this.process(data);
+    this.process(config);
   }
 
   // ----------------------------------------------------------------------------

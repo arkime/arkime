@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 218;
+use Test::More tests => 223;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -89,6 +89,15 @@ $json = cont3xtPutToken("/api/linkGroup", to_json({
   viewRoles => ["cont3xtUser"],
   editRoles => ["superAdmin"],
   links => [1]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link must be object"}'));
+
+# a null link must be rejected, not throw (typeof null === 'object')
+$json = cont3xtPutToken("/api/linkGroup", to_json({
+  name => "Links1",
+  viewRoles => ["cont3xtUser"],
+  editRoles => ["superAdmin"],
+  links => [undef]
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "Link must be object"}'));
 
@@ -543,6 +552,68 @@ $json = cont3xtPutToken("/api/overview", to_json({
     }]
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "Custom field must not have alias"}'));
+
+# custom.fields must be an array - a string used to crash the process (iterated char-by-char then assigned to a string index)
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type   => "custom",
+        from => "Foo",
+        custom => {
+            label  => "foo name",
+            fields => "abc"
+        }
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Custom fields must be an array when present"}'));
+
+# custom.join is a string separator (like every integration card), not a boolean
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type   => "custom",
+        from => "Foo",
+        custom => {
+            label => "foo name",
+            field => "foo.bar",
+            type  => "array",
+            join  => JSON::true
+        }
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Custom join must be a string when present"}'));
+
+# custom.join with a string separator must be accepted
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "OverviewJoin",
+    title => "Overview of %{query}",
+    iType => "domain",
+    viewRoles => ["cont3xtUser"],
+    editRoles => ["superAdmin"],
+    fields => [{
+        type   => "custom",
+        from => "Foo",
+        custom => {
+            label => "foo name",
+            field => "foo.bar",
+            type  => "array",
+            join  => ", "
+        }
+    }]
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+$json = cont3xtGet('/api/overview');
+my $joinOverviewId = $json->{overviews}->[0]->{_id};
+$json = cont3xtDeleteToken("/api/overview/$joinOverviewId", "{}", $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
 
 $json = cont3xtPutToken("/api/overview", to_json({
     name => "Overview1",

@@ -25,7 +25,7 @@ output fields are supplied, it will return the total count of records matched.
     626
 
 If a set of output fields is supplied with the `-f` option it will output a tsv with the value of the fields to
-stdout. If the `-h` option is given, then a header row is added. To see the fields allowed in the output,
+stdout. If the `--headers` option is given, then a header row is added. To see the fields allowed in the output,
 run moloch\_query with the `-l` flag.
 
     > /opt/moloch_tools/moloch_query --apiuser user --apipass pass --molurl https://localhost:8005 --esurl http://localhost:9200 -s "2017-10-11 00:00:00" -e "2017-10-11 11:59:59" -f 'http.uri.path,host.http,tags' -q "host.http == *.yopmail.com" > out.tsv

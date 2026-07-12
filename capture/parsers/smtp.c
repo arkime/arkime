@@ -19,7 +19,9 @@ extern uint32_t         pluginsCbs;
 
 LOCAL  ArkimeStringHashStd_t emailHeaders;
 
-LOCAL  int receivedField;
+// Not a real field, just a sentinel for the emailHeaders dispatch; -1 can
+// never collide with a defined field id
+LOCAL  int receivedField = -1;
 LOCAL  int idField;
 LOCAL  int ipField;
 LOCAL  int hostField;
@@ -361,8 +363,8 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
     }
 
     if (BSB_IS_ERROR(bsb)) {
-        // Error is from being too long, just output what we have
-        arkime_field_string_add(pos, session, output, sizeof(output), TRUE);
+        // Shouldn't happen since the appends truncate, output what we have
+        arkime_field_string_add(pos, session, output, BSB_LENGTH(bsb), TRUE);
         return;
     }
 

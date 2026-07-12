@@ -57,7 +57,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// define csp headers - no-op in NODE_END=development, since csp will disable vite's HMR (hot module reloading)
+// define csp headers - no-op in NODE_ENV=development, since csp will disable vite's HMR (hot module reloading)
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
   : helmet.contentSecurityPolicy({
@@ -164,12 +164,12 @@ const integrationsStatic = express.static(
   { maxAge: dayMs, fallthrough: false }
 );
 app.use('/integrations', (req, res, next) => {
-  if (req.path.endsWith('.png')) {
+  if (req.path.endsWith('.png') || req.path.endsWith('.jpg') || req.path.endsWith('.jpeg')) {
     return integrationsStatic(req, res, (err) => {
       ArkimeUtil.missingResource(err, req, res);
     });
   }
-  return ArkimeUtil.missingResource('Not png', req, res);
+  return ArkimeUtil.missingResource('Not png or jpg', req, res);
 });
 
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
@@ -290,15 +290,15 @@ function apiGetSettings (req, res, next) {
 
 // verify selectedOverviews, on error returns { msg: <errorMsg> }, on success returns { selectedOverviews }
 function verifySelectedOverviews (selectedOverviews) {
+  if (typeof selectedOverviews !== 'object' || selectedOverviews === null || Array.isArray(selectedOverviews)) {
+    return { msg: 'selectedOverviews must be an object' };
+  }
+
   selectedOverviews = (
     ({ // only allow these properties in selectedOverviews
       domain, ip, url, email, phone, hash, text
     }) => ({ domain, ip, url, email, phone, hash, text })
   )(selectedOverviews);
-
-  if (typeof selectedOverviews !== 'object') {
-    return { msg: 'selectedOverviews must be an object' };
-  }
 
   for (const selectedId of Object.values(selectedOverviews)) {
     if (!ArkimeUtil.isString(selectedId)) {
@@ -350,6 +350,10 @@ function apiPutSettings (req, res, next) {
     }
 
     user.save((err) => {
+      if (err) {
+        console.log('ERROR - saving cont3xt settings', err);
+        return res.send({ success: false, text: 'Save failed' });
+      }
       res.send({ success: true, text: 'Saved' });
     });
   });
@@ -479,10 +483,11 @@ async function setupAuth () {
     basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
   });
 
-  Auth.initialize({
+  await Auth.initialize({
     appAdminRole: 'cont3xtAdmin',
     passwordSecretSection: 'cont3xt',
-    basePath: internals.webBasePath
+    basePath: internals.webBasePath,
+    hostVar: 'cont3xtHost'
   });
 
   User.initialize({
@@ -534,9 +539,6 @@ async function main () {
   setupHSTS();
 
   const cont3xtHost = ArkimeConfig.get('cont3xtHost');
-  if (Auth.mode === 'header' && cont3xtHost !== 'localhost' && cont3xtHost !== '127.0.0.1') {
-    console.log('SECURITY WARNING - When using header auth, cont3xtHost should be localhost or use iptables');
-  }
 
   ArkimeUtil.createHttpServer(app, cont3xtHost, ArkimeConfig.get('port', 3218));
 }

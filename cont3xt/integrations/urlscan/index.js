@@ -139,7 +139,7 @@ class URLScanIntegration extends Integration {
 
       const result = await axios.get('https://urlscan.io/api/v1/search/', {
         params: {
-          q: encodeURIComponent(query)
+          q: query
         },
         headers: {
           'API-Key': key,
@@ -152,7 +152,11 @@ class URLScanIntegration extends Integration {
       return result.data;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
-      console.log(this.name, query, err);
+      if (err?.response?.data) {
+        console.log(this.name, query, 'Error:', err.response.status, JSON.stringify(err.response.data));
+      } else {
+        console.log(this.name, query, 'Error:', err.message);
+      }
       return null;
     }
   }

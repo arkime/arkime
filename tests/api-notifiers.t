@@ -38,7 +38,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
   $json = viewerPostToken("/api/notifier", '{"name":"<>","type":"slack","fields":[]}', $token);
-  is($json->{text}, "Notifier name empty");
+  is($json->{text}, "Notifier name is empty");
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"foo", "fields": ["foo"]}', $token);
   is($json->{text}, "Unknown notifier type");
 
@@ -144,7 +144,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1a","type":"slack","fields":"badfields"}', $token);
   is($json->{text}, "Notifier fields must be an array", "notifier fields must be an array");
   $json = viewerPutToken("/api/notifier/$id1", '{"name":"<>","type":"slack","fields":[]}', $token);
-  is($json->{text}, "Notifier name empty");
+  is($json->{text}, "Notifier name is empty");
   $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1","type":"foo", "fields": ["foo"]}', $token);
   is($json->{text}, "Unknown notifier type");
 
@@ -196,7 +196,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   is($json->{notifier}->{roles}->[0], "arkimeUser", "roles updated");
   is($json->{notifier}->{roles}->[1], "parliamentUser", "roles updated");
 
-# sac-notadmin user can now see see id4 notifier
+# sac-notadmin user can now see id4 notifier
   $notifiers = viewerGetToken("/api/notifiers?arkimeRegressionUser=sac-notadmin", $notAdminToken);
   is (@{$notifiers}, 2, "2 notifiers shared with sac-notadmin user (one by user sharing and one by role sharing)");
   is (${notifiers}->[0]->{name}, "test3", 'can see notifier shared by users');

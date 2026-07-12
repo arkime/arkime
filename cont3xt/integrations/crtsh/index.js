@@ -82,7 +82,7 @@ class CrtShIntegration extends Integration {
 
   // Cache for 1 week due to crt.sh being a flaky service that frequently returns
   // 503 errors with database recovery conflicts and timeouts
-  cacheTimeout = 7 * 24 * 60 * 60 * 1000;
+  cacheTimeout = '1w';
 
   constructor () {
     super();

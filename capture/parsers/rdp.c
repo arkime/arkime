@@ -33,7 +33,6 @@ LOCAL int selectedProtocolField;
 #define RDP_STATE_GOT_REQUEST   1
 #define RDP_STATE_GOT_CONFIRM   2
 #define RDP_STATE_GOT_MCS       3
-#define RDP_STATE_DONE          4
 
 // RDP Negotiation types
 #define TYPE_RDP_NEG_REQ  0x01
@@ -206,7 +205,10 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 {
     ArkimeParserBuf_t *rdp = uw;
 
-    arkime_parser_buf_add(rdp, which, data, len);
+    if (arkime_parser_buf_add(rdp, which, data, len) < 0) {
+        arkime_session_add_tag(session, "rdp:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     BSB bsb;
     BSB_INIT(bsb, rdp->buf[which], rdp->len[which]);
@@ -335,21 +337,10 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         if (rdp->state[0] >= RDP_STATE_GOT_CONFIRM && rdp->state[1] >= RDP_STATE_GOT_CONFIRM) {
             return ARKIME_PARSER_UNREGISTER;
         }
-        if (rdp->state[0] == RDP_STATE_DONE && rdp->state[1] == RDP_STATE_DONE) {
-            return ARKIME_PARSER_UNREGISTER;
-        }
         if (rdp->state[which] == RDP_STATE_GOT_MCS) {
             if (rdp->state[(which + 1) % 2] >= RDP_STATE_GOT_CONFIRM) {
                 return ARKIME_PARSER_UNREGISTER;
             }
-        }
-    }
-
-    // If this side hit DONE (invalid data), unregister if other side also done or confirmed
-    if (rdp->state[which] == RDP_STATE_DONE) {
-        if (rdp->state[(which + 1) % 2] >= RDP_STATE_GOT_CONFIRM ||
-            rdp->state[(which + 1) % 2] == RDP_STATE_DONE) {
-            return ARKIME_PARSER_UNREGISTER;
         }
     }
 

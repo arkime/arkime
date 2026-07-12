@@ -362,8 +362,20 @@ LOCAL uint32_t cip_extract_class(const uint8_t *path, int pathBytes)
             int skip = dlen + (dlen & 1);
             BSB_IMPORT_skip(bsb, skip);
         } else if (segType == 0x00) {     // Port segment
-            uint8_t linkLen = (seg & 0x0F) ? 1 : 0; /* simplified */
-            BSB_IMPORT_skip(bsb, linkLen);
+            // Optional 2-byte extended port number (port id 0x0F), then either a
+            // 1-byte link address or, when the extended-link-address-size bit
+            // (0x10) is set, a 1-byte size followed by that many address bytes
+            // (the address is padded to keep the segment an even number of bytes).
+            if ((seg & 0x0F) == 0x0F)
+                BSB_IMPORT_skip(bsb, 2);
+
+            if (seg & 0x10) {
+                uint8_t linkSize = 0;
+                BSB_IMPORT_u08(bsb, linkSize);
+                BSB_IMPORT_skip(bsb, linkSize + (linkSize & 1));
+            } else {
+                BSB_IMPORT_skip(bsb, 1);
+            }
         } else {
             /* unknown / unsupported segment, stop */
             return 0xffffffff;
@@ -589,7 +601,10 @@ LOCAL int enip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
 {
     ArkimeParserBuf_t *enip = uw;
 
-    arkime_parser_buf_add(enip, which, data, len);
+    if (arkime_parser_buf_add(enip, which, data, len) < 0) {
+        arkime_session_add_tag(session, "enip:frame-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     while (enip->len[which] >= ENIP_HEADER_LEN) {
         const uint8_t *buf = enip->buf[which];
@@ -601,6 +616,10 @@ LOCAL int enip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
         }
 
         uint32_t total = (uint32_t)ENIP_HEADER_LEN + length;
+        if (total > (uint32_t)enip->bufMax) {
+            arkime_session_add_tag(session, "enip:message-too-long");
+            return ARKIME_PARSER_UNREGISTER;
+        }
         if (total > (uint32_t)enip->len[which]) {
             return 0;  // need more data
         }

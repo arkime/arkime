@@ -120,7 +120,7 @@ DB Nodes (Elasticsearch nodes) tab column layout.
   "type": "esnodes-columns",
   "data": {
     "columns": ["name", "docs", "storeSize", "freeSize", "heapSize", "load", "cpu", "read", "write", "searches"],
-    "order": [["nodeName", "asc"]]
+    "order": [["name", "asc"]]
   }
 }
 ```
@@ -163,7 +163,7 @@ DB Indices (Elasticsearch indices) tab column layout.
 
 ---
 
-### 5. `files-columns` — Files Tab Column Layout
+### `files-columns` (Alkeme TUI)
 
 Configures visible columns and sort order for the Files tab (PCAP file browser).
 

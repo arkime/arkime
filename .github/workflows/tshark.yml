@@ -1,0 +1,136 @@
+name: "build tshark"
+
+on:
+  workflow_dispatch:
+    inputs:
+      wireshark_version:
+        description: "Wireshark source version (example: 4.6.6)"
+        required: true
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate wireshark version input
+        env:
+          WIRESHARK_VERSION: ${{ github.event.inputs.wireshark_version }}
+        run: |
+          if ! echo "$WIRESHARK_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "ERROR - invalid wireshark_version '$WIRESHARK_VERSION', expected e.g. 4.6.6"
+            exit 1
+          fi
+
+  generate-matrix:
+    needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Generate Matrix JSON with yq
+        id: set-matrix
+        run: |
+          MATRIX=$(yq -o json eval '{"include": [.include[] | select(.tshark == true)]}' .github/workflows/versions | jq -c)
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  build-tshark:
+    needs: generate-matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+
+    container:
+      image: ${{ matrix.container }}
+
+    env:
+      WIRESHARK_VERSION: ${{ github.event.inputs.wireshark_version }}
+
+    steps:
+      - name: Build tshark from Wireshark source
+        run: |
+          set -euo pipefail
+
+          dnf install -y cmake glib2-devel libpcap-devel libgcrypt-devel libssh-devel c-ares-devel libxml2-devel speexdsp-devel
+
+          curl -fsSLO "https://2.na.dl.wireshark.org/src/wireshark-${WIRESHARK_VERSION}.tar.xz"
+          tar -xf "wireshark-${WIRESHARK_VERSION}.tar.xz"
+          cd "wireshark-${WIRESHARK_VERSION}"
+
+          mkdir build
+          cd build
+
+          cmake \
+            -DCMAKE_INSTALL_PREFIX=/opt/arkime \
+            -DBUILD_wireshark=OFF \
+            -DBUILD_tshark=ON \
+            -DENABLE_PCAP=OFF \
+            -DENABLE_CAP=OFF \
+            -DBUILD_capinfos=OFF \
+            -DBUILD_editcap=OFF \
+            -DBUILD_mergecap=OFF \
+            -DBUILD_reordercap=OFF \
+            -DBUILD_text2pcap=OFF \
+            -DBUILD_dftest=OFF \
+            -DBUILD_randpkt=OFF \
+            -DBUILD_mmdbresolve=OFF \
+            -DENABLE_APPLICATION_BUNDLE=OFF \
+            -DBUILD_sharkd=OFF \
+            -DBUILD_captype=OFF \
+            ..
+
+          make -j"$(nproc)"
+          rm -rf /opt/arkime
+          make install
+
+          if ! command -v fpm >/dev/null 2>&1; then
+            gem install --no-document fpm
+          fi
+
+          deps=""
+          while read -r pkg; do
+            deps="${deps} -d ${pkg}"
+          done < <(
+            ldd /opt/arkime/bin/tshark \
+              | awk '/=>/ && $3 ~ /^\// {print $3}' \
+              | xargs -r rpm -q --qf '%{NAME}\n' -f \
+              | sort -u
+          )
+
+          fpm -s dir -t rpm --rpm-digest sha256 \
+            -n tshark-arkime \
+            -v "${WIRESHARK_VERSION}" \
+            --iteration "${GITHUB_RUN_ID}" \
+            --rpm-rpmbuild-define "_build_id_links none" \
+            --url "https://arkime.com" \
+            --description "Arkime tshark build from Wireshark source" \
+            ${deps} \
+            -p "tshark-arkime-${WIRESHARK_VERSION}-${GITHUB_RUN_ID}.${{ matrix.version }}.rpm" \
+            /opt/arkime
+
+          ls -l *.rpm
+
+      - name: Set Arkime major version
+        run: |
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
+          echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+
+      - name: upload github
+        if: github.ref == 'refs/heads/dev7' || github.ref == 'refs/heads/arkime-tshark'
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
+        with:
+          tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.rpm

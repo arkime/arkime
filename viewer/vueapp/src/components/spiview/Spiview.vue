@@ -238,6 +238,7 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </b-card-header>
           <b-collapse
+            lazy
             :visible="categoryObjects[category].isopen"
             :id="category">
             <b-card-body>
@@ -276,6 +277,7 @@ SPDX-License-Identifier: Apache-2.0
                         :key="field.dbField">
                         <b-dropdown
                           split
+                          lazy
                           size="sm"
                           variant="default"
                           class="me-1 mb-1 field-dropdown"
@@ -298,8 +300,8 @@ SPDX-License-Identifier: Apache-2.0
                           <field-actions
                             :separator="true"
                             :expr="field.exp" />
-                          <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
                         </b-dropdown>
+                        <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
                       </span>
                     </template>
                   </transition-group>
@@ -326,6 +328,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="spi-buckets pe-1 ps-1 pb-1">
                       <!-- spiview field label button -->
                       <b-dropdown
+                        lazy
                         size="sm"
                         variant="default"
                         class="field-dropdown me-2"
@@ -564,10 +567,12 @@ export default {
      * @param {object} field      The field to get spi data for
      * @param {bool} issueQuery   Whether to issue query for the data
      * @param {bool} saveFields   Whether to save the visible fields
+     * @param {bool} updateQuery  Whether to update the spi query parameter
+     *                            (false lets callers batch the update)
      * @returns {string} spiQuery The query string for the toggled on fields
      *                            e.g. 'lp:200,fp:100'
      */
-    toggleSpiData: function (field, issueQuery, saveFields) {
+    toggleSpiData: function (field, issueQuery, saveFields, updateQuery = true) {
       field.active = !field.active;
 
       let spiData;
@@ -591,11 +596,14 @@ export default {
 
       // update spi query parameter by adding or removing field id
       if (addToQuery) {
-        if (this.spiQuery && this.spiQuery !== '') {
-          this.spiQuery += ',';
+        spiQuery = `${field.dbField}:100`;
+        if (updateQuery) {
+          if (this.spiQuery && this.spiQuery !== '') {
+            this.spiQuery += ',';
+          }
+          this.spiQuery += spiQuery;
         }
-        this.spiQuery += spiQuery += `${field.dbField}:100`;
-      } else {
+      } else if (updateQuery) {
         const spiParamsArray = this.spiQuery.split(',');
         for (let i = 0, len = spiParamsArray.length; i < len; ++i) {
           if (spiParamsArray[i].includes(field.dbField)) {
@@ -716,6 +724,12 @@ export default {
       let query = '';
       const category = this.categoryObjects[categoryName];
 
+      // batch the spi query parameter update: updating it inside
+      // toggleSpiData is O(query length) per field, so doing it once per
+      // field made toggling a whole category O(n^2)
+      const toggledOn = [];
+      const toggledOff = new Set();
+
       for (let i = 0, len = category.fields.length; i < len; ++i) {
         const field = category.fields[i];
         if (category.spi && category.spi[field.dbField]) {
@@ -724,12 +738,28 @@ export default {
              (!spiData.active && load)) {
             // the spi data for this field is already visible and we don't want
             // it to be, or it's NOT visible and we want it to be
-            this.toggleSpiData(field);
+            const seg = this.toggleSpiData(field, false, false, false);
+            if (seg) { toggledOn.push(seg); } else { toggledOff.add(field.dbField); }
           }
         } else if (load) { // spi data doesn't exist in the category
-          if (query) { query += ','; }
-          query += this.toggleSpiData(field);
+          const seg = this.toggleSpiData(field, false, false, false);
+          if (seg) {
+            if (query) { query += ','; }
+            query += seg;
+            toggledOn.push(seg);
+          }
         }
+      }
+
+      // update the spi query parameter once for all the toggled fields
+      if (toggledOn.length) {
+        const additions = toggledOn.join(',');
+        this.spiQuery = (this.spiQuery && this.spiQuery !== '') ? `${this.spiQuery},${additions}` : additions;
+      }
+      if (toggledOff.size) {
+        this.spiQuery = this.spiQuery.split(',').filter((param) => {
+          return !toggledOff.has(param.split(':')[0]);
+        }).join(',');
       }
 
       if (load && query) { this.getSpiData(query); }

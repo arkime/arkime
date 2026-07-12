@@ -77,7 +77,7 @@ class Integration {
    * Register an integration implementation
    * @param {string} integration.name The name of the integration
    * @param {object} integration.itypes An object of itypes to functions to call
-   * @param {boolean} integration.cacheable=true Should results be cache
+   * @param {boolean} integration.cacheable=true Should results be cached
    * @param {boolean} integration.noStats=false Should we not save stats
    * @param {number} integration.order=10000 What order should this integration be shown
    */
@@ -92,7 +92,7 @@ class Integration {
       return;
     }
 
-    // Can disable a integration globally
+    // Can disable an integration globally
     const disabled = integration.getConfig('disabled', false);
     if (disabled === true || disabled === 'true') {
       console.log(integration.name, 'disabled');
@@ -318,7 +318,7 @@ class Integration {
    * @typedef Integration
    * @type {object}
    * @param {string} cachePolicy - Who can access the cached results of this integration's data ("shared")
-   * @param {number} cacheTimeout - How long results will be cached, -1 not cached
+   * @param {number|string} cacheTimeout - How long results will be cached, as a time string (e.g. '1h', '1w') or a number of seconds, -1 not cached
    * @param {boolean} doable - Whether the user has access to execute this integration
    * @param {string} icon - The relative url to the integrations icon
    * @param {number} order - The order in which this integration displays in the UI
@@ -331,7 +331,7 @@ class Integration {
    *
    * List out all the integrations. Integrations without any itypes are skipped.
    * @name /integration
-   * @returns {Integrations[]} integrations - A map of integrations that the logged in user has configured
+   * @returns {Object.<string, Integration>} integrations - A map of integrations that the logged in user has configured
    * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiList (req, res, next) {
@@ -460,6 +460,8 @@ class Integration {
       } catch (e) {
         console.log('WARNING - "%s" is not really an ip', query);
         shared.total -= integrations.length;
+        // Finish the response if this was the last outstanding work
+        checkWriteDone();
         return;
       }
       // I'm sure there is some function to do this with ipv6 but I couldn't find it
@@ -474,7 +476,7 @@ class Integration {
     }
 
     for (const integration of integrations) {
-      // Can disable a integration per user
+      // Can disable an integration per user
       const disabled = keys?.[integration.name]?.disabled;
       if (disabled === true || disabled === 'true') {
         shared.total--;
@@ -563,15 +565,16 @@ class Integration {
         })
         .catch(err => {
           if (ArkimeConfig.debug > 0) {
-            console.log('failure in %s - itype: %s query: %s error:', integration.section, itype, query, err);
+            console.log('failure in %s - itype: %s query: %s error:', integration.name ?? integration.section, itype, query, err);
           } else {
-            console.log('failure in %s - itype: %s error:', integration.section, itype, err.message ?? err);
+            console.log('failure in %s - itype: %s error:', integration.name ?? integration.section, itype, err.message ?? err);
           }
           shared.sent++;
           stats.directError++;
           istats.directError++;
           shared.res.write(JSON.stringify({ purpose: 'fail', sent: shared.sent, total: shared.total, name: integration.name, indicator }));
           shared.res.write(',\n');
+          checkWriteDone();
         });
     }
   }
@@ -594,7 +597,7 @@ class Integration {
   /**
    * Integration Data Chunk object
    *
-   * An chunk of data returned from searching integrations
+   * A chunk of data returned from searching integrations
    * @typedef IntegrationChunk
    * @type {object}
    * @param {DataChunkPurpose} purpose - String discriminator to indicate the use of this data chunk
@@ -620,7 +623,7 @@ class Integration {
    * @param {boolean} skipChildren - Don't query integrations for sub-indicators
    * @param {string[]} tags - Tags applied at the time of search
    * @param {string | undefined} viewId - The ID of the view at the time of search (if any)
-   * @returns {IntegrationChunk[]} results - An array data chunks with the data
+   * @returns {IntegrationChunk[]} results - An array of data chunks with the data
    */
   static async apiSearch (req, res, next) {
     if (!ArkimeUtil.isString(req.body.query)) {
@@ -751,6 +754,19 @@ class Integration {
 
     const indicator = { itype, query };
 
+    let normalizedQuery = query;
+    if (itype === 'ip') {
+      try {
+        normalizedQuery = ipaddr.parse(query).toNormalizedString();
+      } catch (e) {
+        return res.send({ purpose: 'error', text: `query does not match itype ${itype}` });
+      }
+      // match the bulk-search zero-padding so the cache key lines up
+      if (normalizedQuery.includes(':')) {
+        normalizedQuery = normalizedQuery.split(':').map(x => x.padStart(4, '0')).join(':');
+      }
+    }
+
     const integration = Integration.#integrationsByName[req.params.integration];
 
     if (integration === undefined || integration.itypes[itype] === undefined) {
@@ -778,7 +794,7 @@ class Integration {
     stats.directLookup++;
     istats.directLookup++;
     const dStartTime = Date.now();
-    integration[integration.itypes[itype]](req.user, query)
+    integration[integration.itypes[itype]](req.user, normalizedQuery)
       .then(response => {
         updateTime(stats, istats, Date.now() - dStartTime, 'direct');
         stats.directFound++;
@@ -792,9 +808,11 @@ class Integration {
           response._cont3xt.createTime = Date.now();
           res.send({ purpose: 'data', indicator, name: integration.name, data: response });
           if (Integration.#cache && integration.cacheable) {
-            const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${query}`;
+            const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
             Integration.#cache.set(cacheKey, response);
           }
+        } else {
+          res.send({ purpose: 'data', indicator, name: integration.name, data: { _cont3xt: { createTime: Date.now() } } });
         }
       })
       .catch(err => {

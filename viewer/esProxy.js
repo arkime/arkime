@@ -453,7 +453,7 @@ function validateBulk (req) {
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else {
         console.log('Failed bulk', JSON.stringify(json, null, 2));
-        throw new Error('Missing create, update or index operation');
+        throw new Error('Missing create, update, delete or index operation');
       }
     } catch (err) {
       console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));

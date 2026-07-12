@@ -167,6 +167,10 @@
      62
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -185,7 +189,17 @@
      "dst" : 0,
      "src" : 3555308999
     },
-    "totDataBytes" : 312
+    "totDataBytes" : 312,
+    "zeekintel" : [
+     {
+      "desc" : "http.uri in http-content-zip / http-500-head",
+      "indicator" : "samples.example.com/UpdataConfig.dat",
+      "indicator_type" : "url",
+      "source" : "arkime-test",
+      "where" : "http.uri"
+     }
+    ],
+    "zeekintelCnt" : 1
    },
    "header" : {
     "index" : {

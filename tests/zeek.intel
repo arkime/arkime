@@ -1,0 +1,15 @@
+#fields	indicator	indicator_type	meta.source	meta.desc	meta.url
+#types	string	enum	string	string	string
+10.0.0.3	Intel::ADDR	arkime-test	socks5-rdp / bt-udp / bigendian src ip	-
+192.168.177.160	Intel::ADDR	arkime-test	bigendian.pcap source ip	-
+2001:6f8:900:7c0::2	Intel::ADDR	arkime-test	v6-http.pcap dst ip	-
+fe80::211:25ff:fe82:95b5	Intel::ADDR	arkime-test	IPv6 neighbor	-
+10.0.0.0/24	Intel::SUBNET	arkime-test	matches 10.0.0.x test traffic	-
+www.example.com	Intel::DOMAIN	arkime-test	http host in socks-http-example / http-content-zip	https://example.com
+cluster5.us.messagelabs.com	Intel::DOMAIN	arkime-test	dns-mx.pcap MX answer host	-
+samples.example.com/UpdataConfig.dat	Intel::URL	arkime-test	http.uri in http-content-zip / http-500-head	-
+12345678@aol.com	Intel::EMAIL	arkime-test	smtp test sender/recipient	-
+5ff7b2c69c3b22826a717cd5ea4c9f32	Intel::FILE_HASH	arkime-test	http body md5 (http-content-gzip / socks5-rdp)	-
+61479904e443b354d4427a51b990c696f731e341e4c63328e07c1a92658ba591	Intel::FILE_HASH	arkime-test	http body sha256	-
+10.0.0.0/xx	Intel::SUBNET	arkime-test	invalid mask, must never match anything	-
+2001:6f8:900:7c0::/64	Intel::SUBNET	arkime-test	v6-http.pcap dst subnet	-

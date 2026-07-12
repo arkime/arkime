@@ -109,6 +109,40 @@ LOCAL void tagger_process_match(ArkimeSession_t *session, GPtrArray *infos, int 
 }
 /******************************************************************************/
 /*
+ * Insert an ip[/mask] entry into the tree.  IPv4 entries are stored v4-mapped
+ * (::ffff:a.b.c.d, a /n mask becomes /(96+n)) so both families live in the
+ * one 128 bit tree without cross-family bit collisions - patricia compares
+ * raw bits and ignores prefix->family, and session addresses are already
+ * v4-mapped in6_addrs.
+ */
+LOCAL int tagger_map_v4(const char *ip, char *mapped, size_t size)
+{
+    if (strchr(ip, ':')) {
+        g_strlcpy(mapped, ip, size);
+        return 1;
+    }
+    const char *slash = strchr(ip, '/');
+    if (slash) {
+        int bits = atoi(slash + 1);
+        if (bits < 0 || bits > 32 || slash - ip >= 40)
+            return 0;
+        snprintf(mapped, size, "::ffff:%.*s/%d", (int)(slash - ip), ip, 96 + bits);
+    } else {
+        snprintf(mapped, size, "::ffff:%s", ip);
+    }
+    return 1;
+}
+/******************************************************************************/
+LOCAL patricia_node_t *tagger_make_and_lookup(patricia_tree_t *tree, const char *ip)
+{
+    char mapped[80];
+
+    if (!tagger_map_v4(ip, mapped, sizeof(mapped)))
+        return NULL;
+    return make_and_lookup(tree, mapped);
+}
+/******************************************************************************/
+/*
  * Called by arkime when a session is about to be saved
  */
 LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
@@ -121,33 +155,18 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
     int i;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr1);
-    } else {
-        prefix.family = AF_INET;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, &session->addr1, 16);
-    }
+    // Session/XFF addresses are v4-mapped in6_addrs, matching how v4 entries
+    // are stored, so everything is searched as a single 128 bit family.
+    prefix.family = AF_INET6;
+    prefix.bitlen = 128;
 
+    memcpy(&prefix.add.sin6.s6_addr, &session->addr1, 16);
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
         tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, srcIpField);
     }
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-        prefix.family = AF_INET;
-        prefix.bitlen = 32;
-        prefix.add.sin.s_addr = ARKIME_V6_TO_V4(session->addr2);
-    } else {
-        prefix.family = AF_INET;
-        prefix.bitlen = 128;
-        memcpy(&prefix.add.sin6.s6_addr, &session->addr2, 16);
-    }
-
+    memcpy(&prefix.add.sin6.s6_addr, &session->addr2, 16);
     cnt = patricia_search_all(allIps, &prefix, 1, nodes);
     for (i = 0; i < cnt; i++) {
         tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, dstIpField);
@@ -161,23 +180,13 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         ghash = session->fields[httpXffField]->ghash;
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                prefix.family = AF_INET;
-                prefix.bitlen = 32;
-                prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-            } else {
-                prefix.family = AF_INET6;
-                prefix.bitlen = 128;
-                memcpy(&prefix.add.sin6.s6_addr, ikey, 16);
-            }
-
+            memcpy(&prefix.add.sin6.s6_addr, ikey, 16);
             cnt = patricia_search_all(allIps, &prefix, 1, nodes);
             for (i = 0; i < cnt; i++) {
                 tagger_process_match(session, ((TaggerIP_t *)(nodes[i]->data))->infos, httpXffField);
             }
         }
     }
-#pragma GCC diagnostic pop
 
     ArkimeString_t *hstring;
     if (httpHostField != -1 && session->fields[httpHostField]) {
@@ -298,6 +307,23 @@ LOCAL void tagger_free_ip (TaggerIP_t *tip)
 }
 /******************************************************************************/
 /*
+ * Free a TaggerFile_t and all its members
+ */
+LOCAL void tagger_file_free(gpointer data)
+{
+    TaggerFile_t *file = data;
+
+    free(file->str);
+    g_free(file->md5);
+    g_free(file->type);
+    if (file->tags)
+        g_strfreev(file->tags);
+    if (file->elements)
+        g_strfreev(file->elements);
+    ARKIME_TYPE_FREE(TaggerFile_t, file);
+}
+/******************************************************************************/
+/*
  * Called by arkime when arkime is quitting
  */
 LOCAL void tagger_plugin_exit()
@@ -329,25 +355,26 @@ LOCAL void tagger_plugin_exit()
 
     TaggerFile_t *file;
     HASH_FORALL_POP_HEAD2(s_, allFiles, file) {
-        free(file->str);
-        g_free(file->md5);
-        g_free(file->type);
-        if (file->tags)
-            g_strfreev(file->tags);
-        g_strfreev(file->elements);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        tagger_file_free(file);
     }
 
     Destroy_Patricia(allIps, (patricia_fn_data_t)tagger_free_ip);
 }
 
 /******************************************************************************/
+LOCAL void tagger_info_free(gpointer data);
 LOCAL void tagger_remove_file(GPtrArray *infos, const TaggerFile_t *file)
 {
     int f;
     for (f = 0; f < (int)infos->len; f++) {
         if (file == ((TaggerInfo_t *)g_ptr_array_index(infos, f))->file) {
+            TaggerInfo_t *info = g_ptr_array_index(infos, f);
+            // Steal without invoking the free func; packet threads may still
+            // be reading this info in tagger_plugin_save, so free later
+            g_ptr_array_set_free_func(infos, NULL);
             g_ptr_array_remove_index_fast(infos, f);
+            g_ptr_array_set_free_func(infos, tagger_info_free);
+            arkime_free_later(info, tagger_info_free);
             return;
         }
     }
@@ -361,9 +388,12 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
     int i;
     if (file->type[0] == 'i') {
         prefix_t prefix;
+        char     mapped[80];
 
         for (i = 0; file->elements[i]; i++) {
-            if (!ascii2prefix2(0, file->elements[i], &prefix)) {
+            // Entries were inserted v4-mapped; search the same way
+            if (!tagger_map_v4(file->elements[i], mapped, sizeof(mapped)) ||
+                !ascii2prefix2(0, mapped, &prefix)) {
                 LOG("Couldn't unload %s", file->elements[i]);
                 continue;
             }
@@ -409,12 +439,21 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
         }
     }
 
-    g_free(file->md5);
-    g_free(file->type);
-    if (file->tags)
-        g_strfreev(file->tags);
-    g_strfreev(file->elements);
+    // Packet threads may still be reading these via TaggerInfo_t pointers
+    // (file->tags in tagger_process_match, ops values pointing into elements)
+    arkime_free_later(file->md5, g_free);
     file->md5 = NULL;
+
+    arkime_free_later(file->type, g_free);
+    file->type = NULL;
+
+    if (file->tags) {
+        arkime_free_later(file->tags, (GDestroyNotify)g_strfreev);
+        file->tags = NULL;
+    }
+
+    arkime_free_later(file->elements, (GDestroyNotify)g_strfreev);
+    file->elements = NULL;
 }
 /******************************************************************************/
 LOCAL void tagger_info_free(gpointer data)
@@ -439,8 +478,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     memset(out, 0, sizeof(out));
     if (!data_len || !data) {
         HASH_REMOVE(s_, allFiles, file);
-        free(file->str);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        arkime_free_later(file, tagger_file_free);
         return;
     }
 
@@ -448,8 +486,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     if ((rc = js0n(data, data_len, out, sizeof(out))) != 0) {
         LOG("ERROR: Parse error %d in >%.*s<\n", rc, data_len, data);
         HASH_REMOVE(s_, allFiles, file);
-        free(file->str);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        arkime_free_later(file, tagger_file_free);
         return;
     }
 
@@ -487,12 +524,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     if (!file->type || !file->elements) {
         LOG("WARNING - Tagger file %s missing required 'type' or 'data' field", file->str);
         HASH_REMOVE(s_, allFiles, file);
-        free(file->str);
-        if (file->md5) g_free(file->md5);
-        if (file->type) g_free(file->type);
-        if (file->tags) g_strfreev(file->tags);
-        if (file->elements) g_strfreev(file->elements);
-        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        arkime_free_later(file, tagger_file_free);
         return;
     }
 
@@ -540,7 +572,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
         TaggerStringHash_t *hash = 0;
         switch (file->type[0]) {
         case 'i':
-            node = make_and_lookup(allIps, parts[0]);
+            node = tagger_make_and_lookup(allIps, parts[0]);
             if (!node) {
                 LOG("Couldn't create node for %s", parts[0]);
                 tagger_info_free(info);
@@ -631,13 +663,15 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
             continue;
         }
 
-        char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
-
         uint32_t           md5_len;
         const uint8_t     *md5 = 0;
         md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
         if (!md5)
+            continue;
+
+        char     *id = arkime_js0n_get_str(hits + out[i], out[i + 1], "_id");
+        if (!id)
             continue;
 
         if (*md5 == '[' && md5_len >= 4) {

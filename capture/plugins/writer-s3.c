@@ -37,6 +37,7 @@ typedef struct writer_s3_file {
     int                        partNumber;
     int                        partNumberResponses;
     char                       doClose;
+    char                       uploadFailed;
     char                      *partNumbers[10001];
 
     char                      *outputBuffer;
@@ -72,6 +73,11 @@ SavepcapS3File_t            *currentFiles[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(fileQ);
 LOCAL  SavepcapS3File_t      fileQ;
+
+// Guards per-file uploadId/partNumber/partNumberResponses/outputQ/doClose,
+// which are accessed from both packet threads (flush) and the http thread
+// (init/part callbacks)
+LOCAL  ARKIME_LOCK_DEFINE(uploadState);
 
 LOCAL  void                 *s3Server = 0;
 LOCAL  void                 *metadataServer = 0;
@@ -146,7 +152,7 @@ LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_LOCK(fileQ);
 
     SavepcapS3File_t  *file = uw;
-    inprogress--;
+    ARKIME_THREAD_DECR(inprogress);
 
     if (code != 200) {
         LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
@@ -189,11 +195,40 @@ LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
+// AbortMultipartUpload response - free the file without recording it in the
+// files index since the object doesn't exist in S3
+LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
+{
+    ARKIME_LOCK(fileQ);
+
+    SavepcapS3File_t  *file = uw;
+    ARKIME_THREAD_DECR(inprogress);
+
+    if (code < 200 || code >= 300) {
+        LOG("Bad Abort Response: %d %s %.*s", code, file->outputFileName, len, data);
+    }
+
+    DLL_REMOVE(fs3_, &fileQ, file);
+    if (file->uploadId)
+        g_free(file->uploadId);
+    g_free(file->outputFileName);
+#ifdef HAVE_ZSTD
+    if (file->zstd_strm)
+        ZSTD_freeCStream(file->zstd_strm);
+#endif
+    if (compressionMode == ARKIME_COMPRESSION_GZIP)
+        deflateEnd(&file->z_strm);
+
+    ARKIME_TYPE_FREE(SavepcapS3File_t, file);
+
+    ARKIME_UNLOCK(fileQ);
+}
+/******************************************************************************/
 LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
-    inprogress--;
+    ARKIME_THREAD_DECR(inprogress);
 
     if (code != 200) {
         LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
@@ -202,28 +237,50 @@ LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
     if (config.debug)
         LOG("Part-Response: %d %s %d", code, file->outputFileName, len);
 
+    ARKIME_LOCK(uploadState);
     file->partNumberResponses++;
+
+    if (code != 200) {
+        // No ETag was captured for this part; the upload can't be completed
+        file->uploadFailed = 1;
+    }
 
     if (file->doClose && file->partNumber == file->partNumberResponses) {
         char qs[1000];
         snprintf(qs, sizeof(qs), "uploadId=%s", file->uploadId);
-        char *buf = arkime_http_get_buffer(1000000);
-        BSB bsb;
-
-        BSB_INIT(bsb, buf, 1000000);
-        BSB_EXPORT_cstr(bsb, "<CompleteMultipartUpload>\n");
         int i;
         const int last = MIN(file->partNumber, (int)ARRAY_LEN(file->partNumbers));
-        for (i = 1; i < last; i++) {
-            BSB_EXPORT_sprintf(bsb, "<Part><PartNumber>%d</PartNumber><ETag>%s</ETag></Part>\n", i, file->partNumbers[i]);
-            g_free(file->partNumbers[i]);
-        }
-        BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
 
-        writer_s3_request("POST", file->outputPath, qs, (uint8_t *)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
-        if (config.debug > 1)
-            LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
+        for (i = 1; i < last && !file->uploadFailed; i++) {
+            if (!file->partNumbers[i])
+                file->uploadFailed = 1;
+        }
+
+        if (file->uploadFailed) {
+            LOG("ERROR - aborting s3 upload of %s, a part upload failed", file->outputFileName);
+            for (i = 1; i < last; i++) {
+                g_free(file->partNumbers[i]);
+                file->partNumbers[i] = NULL;
+            }
+            writer_s3_request("DELETE", file->outputPath, qs, 0, 0, FALSE, writer_s3_abort_cb, file);
+        } else {
+            char *buf = arkime_http_get_buffer(1000000);
+            BSB bsb;
+
+            BSB_INIT(bsb, buf, 1000000);
+            BSB_EXPORT_cstr(bsb, "<CompleteMultipartUpload>\n");
+            for (i = 1; i < last; i++) {
+                BSB_EXPORT_sprintf(bsb, "<Part><PartNumber>%d</PartNumber><ETag>%s</ETag></Part>\n", i, file->partNumbers[i]);
+                g_free(file->partNumbers[i]);
+            }
+            BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
+
+            writer_s3_request("POST", file->outputPath, qs, (uint8_t *)buf, BSB_LENGTH(bsb), FALSE, writer_s3_complete_cb, file);
+            if (config.debug > 1)
+                LOG("Complete-Request: %s %.*s", file->outputFileName, (int)BSB_LENGTH(bsb), buf);
+        }
     }
+    ARKIME_UNLOCK(uploadState);
 
 }
 /******************************************************************************/
@@ -287,7 +344,10 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
         arkime_free_later(s3MetaCreds, (GDestroyNotify)writer_s3_free_creds);
         s3MetaCreds = newCreds;
     } else {
-        LOGEXIT("Cannot retrieve credentials from metadata service at %s\n", credURL);
+        // Transient metadata-service failure; keep the current credentials
+        // and let the next refresh try again
+        LOG("WARNING - Cannot retrieve credentials from metadata service at %s, keeping current credentials", credURL);
+        writer_s3_free_creds(newCreds);
     }
 
     free(credentials);
@@ -299,7 +359,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
-    inprogress--;
+    ARKIME_THREAD_DECR(inprogress);
 
     if (code != 200) {
         LOG("Bad Response: %d %s %.*s", code, file->outputFileName, len, data);
@@ -313,6 +373,17 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
             writer_s3_request("POST", file->outputPath, "uploads=", 0, 0, TRUE, writer_s3_init_cb, file);
         } else {
             LOG("ERROR - S3 init failed code=%d for %s, giving up", code, file->outputFileName);
+            // Drop the queued buffers so they stop counting as outstanding
+            // writes; the file struct itself stays in fileQ since a packet
+            // thread may still hold it as its current file
+            ARKIME_LOCK(uploadState);
+            file->uploadFailed = 1;
+            SavepcapS3Output_t *output;
+            while (DLL_POP_HEAD(os3_, &file->outputQ, output)) {
+                arkime_http_free_buffer(output->buf);
+                ARKIME_TYPE_FREE(SavepcapS3Output_t, output);
+            }
+            ARKIME_UNLOCK(uploadState);
         }
         return;
     }
@@ -325,6 +396,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     }
     GMatchInfo *match_info;
     g_regex_match_full(regex, (char *)data, len, 0, 0, &match_info, NULL);
+    ARKIME_LOCK(uploadState);
     if (g_match_info_matches(match_info)) {
         file->uploadId = g_match_info_fetch(match_info, 1);
         file->partNumber = 1;
@@ -343,6 +415,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
         writer_s3_request("PUT", file->outputPath, qs, output->buf, output->len, FALSE, writer_s3_part_cb, file);
         ARKIME_TYPE_FREE(SavepcapS3Output_t, output);
     }
+    ARKIME_UNLOCK(uploadState);
 }
 /******************************************************************************/
 LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
@@ -530,7 +603,7 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
 
     headers[nextHeader] = NULL;
 
-    inprogress++;
+    ARKIME_THREAD_INCR(inprogress);
     arkime_http_send(s3Server, method, fullpath, strlen(fullpath), (char *)data, len, headers, FALSE, cb, uw);
     g_checksum_free(checksum);
 }
@@ -768,6 +841,7 @@ LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 #endif
     }
 
+    ARKIME_LOCK(uploadState);
     if (s3file->uploadId) {
         char qs[1000];
 
@@ -776,6 +850,9 @@ LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
         if (config.debug)
             LOG("Part-Request: %s %s", s3file->outputFileName, qs);
         s3file->partNumber++;
+    } else if (s3file->uploadFailed) {
+        // Multipart init permanently failed; drop the data
+        arkime_http_free_buffer(s3file->outputBuffer);
     } else {
         SavepcapS3Output_t *output = ARKIME_TYPE_ALLOC0(SavepcapS3Output_t);
         output->buf = (uint8_t *)s3file->outputBuffer;
@@ -785,7 +862,10 @@ LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 
     if (end) {
         s3file->doClose = TRUE;
-    } else {
+    }
+    ARKIME_UNLOCK(uploadState);
+
+    if (!end) {
         s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
         s3file->outputPos = 0;
 
@@ -1045,7 +1125,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
 
         g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
-    } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
+    } else if (!s3ConfigCreds.s3SecretAccessKey) {
         CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
     }
 
@@ -1069,8 +1149,8 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         }
     }
 
-    // Support up to 1000 S3 parts
-    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 1000LL);
+    // Support up to 10000 S3 parts
+    config.maxFileSizeB = MIN(config.maxFileSizeB, config.pcapWriteSize * 10000LL);
 
     // S3 has a 5TiB max size
     config.maxFileSizeB = MIN(config.maxFileSizeB, 0x50000000000LL);
