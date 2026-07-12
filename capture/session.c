@@ -1331,10 +1331,9 @@ void arkime_session_init()
     arkime_add_can_quit(arkime_session_need_save_outstanding, "session save outstanding");
 
     // The stopped-sessions state file persists "stop saving" decisions across
-    // restarts. In dryRun (e.g. --tests) we never write pcap, so reading/writing
-    // it only makes regression runs non-deterministic; skip it entirely.
+    // restarts. Only write for live captures.
     snprintf(stoppedFilename, sizeof(stoppedFilename), "%s.stoppedsessions", config.nodeName);
-    if (!config.dryRun) {
+    if (!config.dryRun && !config.pcapReadOffline) {
         g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
         arkime_session_load_stopped();
     }
