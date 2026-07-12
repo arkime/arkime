@@ -257,7 +257,8 @@ LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t 
 {
     ArkimeParserBuf_t *pb = uw;
 
-    arkime_parser_buf_add(pb, which, data, remaining);
+    if (arkime_parser_buf_add(pb, which, data, remaining) < 0)
+        return ARKIME_PARSER_UNREGISTER;
 
     while (pb->len[which] >= 20) {
         const uint8_t *msg = pb->buf[which];

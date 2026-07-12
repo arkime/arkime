@@ -123,7 +123,7 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
         } else {
             LOG("ERROR - Error accepting command");
         }
-        return FALSE;
+        return TRUE;
     }
 
     CommandClient_t *cc = ARKIME_TYPE_ALLOC0(CommandClient_t);

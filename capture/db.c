@@ -734,6 +734,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         }
     }
 
+    // May be left empty when autoGenerateId==1; keep it a valid string for the %s warning path below
+    id[0] = 0;
     if (config.autoGenerateId == 2 && session->filePosArray->len > 1) {
         snprintf(id, sizeof(id), "%s-%s-%u-%" PRId64, dbInfo[thread].prefix, config.nodeName, (uint32_t)g_array_index(session->fileNumArray, uint32_t, 0), (int64_t)g_array_index(session->filePosArray, int64_t, 1));
 

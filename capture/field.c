@@ -148,6 +148,12 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
         }
     }
 
+    if (!info->dbField) {
+        LOG("WARNING - Field %s has no dbField2 or fieldECS, skipping", info->expression);
+        arkime_field_free_info(info);
+        return;
+    }
+
     if (info->kind) {
         if (strncmp(info->kind, "lo", 2) == 0) {
             info->strKind = ARKIME_FIELD_STRKIND_LOWER;
@@ -586,6 +592,9 @@ int arkime_field_by_exp(const char *exp)
             info->type = ARKIME_FIELD_TYPE_STR_HASH;
         }
         info->pos = ARKIME_THREAD_INCROLD(config.maxDbField);
+        if (config.maxDbField >= config.minInternalField) {
+            LOGEXIT("ERROR - Max Fields is too large %d", config.maxDbField);
+        }
         config.fields[info->pos] = info;
         return info->pos;
     }
@@ -610,6 +619,9 @@ int arkime_field_by_exp_ignore_error(const char *exp)
             info->type = ARKIME_FIELD_TYPE_STR_HASH;
         }
         info->pos = ARKIME_THREAD_INCROLD(config.maxDbField);
+        if (config.maxDbField >= config.minInternalField) {
+            LOGEXIT("ERROR - Max Fields is too large %d", config.maxDbField);
+        }
         config.fields[info->pos] = info;
         return info->pos;
     }
