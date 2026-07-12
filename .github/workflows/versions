@@ -26,6 +26,7 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs -d curl"
     uitest: true
     python: python3.12
+    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: el9.x86_64
@@ -88,6 +89,7 @@ include:
     package: arch
     viewertest: normal
     otherdbtest: "true"
+    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: al2023.x86_64
