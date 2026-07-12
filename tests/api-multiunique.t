@@ -1,4 +1,4 @@
-use Test::More tests => 40;
+use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -211,3 +211,11 @@ $txt = get("date=-1&exp=http.user-agent&view=unknown");
 eq_or_diff($txt,
 'Can\'t find view
 ');
+
+# A malformed expression makes arkimeparser.parse throw an Error object. That
+# Error used to be passed straight to res.end, which crashed the compression
+# middleware with an unhandled rejection (PR #4120). It should now come back as
+# a 400 with the parse-error text.
+my $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/multiunique.txt?date=-1&exp=node&expression=" . uri_escape("ip.src=="));
+is($res->code, 400, "multiunique malformed expression returns 400");
+ok($res->content =~ /Parse error/, "multiunique malformed expression returns parse-error text, not a crash");
