@@ -1107,6 +1107,7 @@ typedef struct {
 } ArkimeGeoInfo_t;
 
 void     arkime_db_init();
+void     arkime_db_ch_init(void);
 char    *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
@@ -1297,6 +1298,8 @@ void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKe
 void arkime_http_set_print_errors(void *server);
 void arkime_http_set_dont_free_response(void *server);
 void arkime_http_set_headers(void *server, char **headers);
+void arkime_http_set_insecure(void *server, gboolean insecure);
+void arkime_http_set_ca_trust_file(void *server, const char *caTrustFile);
 void arkime_http_set_header_cb(void *server, ArkimeHttpHeader_cb cb);
 void arkime_http_set_userpwd(void *server, const char *userpwd);
 void arkime_http_set_aws_sigv4(void *server, const char *aws_sigv4);

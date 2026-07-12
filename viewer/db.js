@@ -16,8 +16,10 @@ const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
+const Config = require('./config.js');
 const DbESImpl = require('./db.es');
 const DbSQLiteImpl = require('./db.sqlite');
+const DbCHImpl = require('./db.ch');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
@@ -56,6 +58,21 @@ function checkURLs (nodes) {
   }
 }
 
+function isClickHouseSessionsUrl (url) {
+  return /^clickhouse:\/\/|^chttps?:\/\//.test(url || '');
+}
+
+function isSessionsIndex (index) {
+  if (!index) { return false; }
+  if (Array.isArray(index)) { return index.some(isSessionsIndex); }
+  return String(index).split(',').some((item) => {
+    item = item.trim();
+    if (item === 'sessions*') { return true; }
+    if (item.startsWith('partial-')) { item = item.substring(8); }
+    return /(^|_)sessions[23]($|[-*])/.test(item);
+  });
+}
+
 Db.initialize = async (info) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   delete info.multiES;
@@ -73,6 +90,16 @@ Db.initialize = async (info) => {
 
   internals.prefix = ArkimeUtil.formatPrefix(info.prefix);
   internals.usersPrefix = ArkimeUtil.formatPrefix(info.usersPrefix ?? info.prefix);
+
+  const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
+  if (isClickHouseSessionsUrl(sessionsDbUrl) && !Config.get('multiES', false)) {
+    info.sessionsDbUrl = sessionsDbUrl;
+    internals.chImpl = new DbCHImpl(info);
+    internals.useChSessions = true;
+  } else {
+    internals.chImpl = undefined;
+    internals.useChSessions = false;
+  }
 
   internals.nodeName = info.nodeName;
   delete info.nodeName;
@@ -578,7 +605,12 @@ Db.getSession = async (id, options, cb) => {
 
     const index = Db.sid2Index(id, { multiple: true });
 
-    let results = await Db.search(index, query, params);
+    let results;
+    if (internals.useChSessions) {
+      results = await internals.chImpl.searchSessions(index, query, params);
+    } else {
+      results = await Db.search(index, query, params);
+    }
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', JSON.stringify(results, false, 2));
     }
@@ -588,6 +620,9 @@ Db.getSession = async (id, options, cb) => {
         return cb ? cb('Not found') : Promise.reject('Not found');
       }
       options.final = true;
+      if (internals.useChSessions) {
+        return cb ? cb('Not found') : Promise.reject('Not found');
+      }
       await new Promise((resolve) => {
         internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
           resolve();
@@ -686,6 +721,21 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
 };
 
 Db.searchScroll = async (index, query, options, cb) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    try {
+      // CH does not support ES-style scroll; fetch up to a large cap when scroll
+      // is requested and return a sentinel _scroll_id that Db.scroll resolves to empty.
+      const chQuery = options?.scroll ? { ...query, size: 1000000 } : query;
+      const result = await internals.chImpl.searchSessions(index, chQuery, options);
+      if (options?.scroll) { result._scroll_id = 'ch:done'; }
+      if (cb) { return cb(null, result); }
+      return result;
+    } catch (err) {
+      if (cb) { return cb(err); }
+      throw err;
+    }
+  }
+
   // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
   if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     if (!cb) {
@@ -758,6 +808,11 @@ Db.searchScroll = async (index, query, options, cb) => {
 };
 
 Db.searchScrollIterator = async function* (index, query, options) {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    yield * internals.chImpl.searchSessionsIterator(index, query, options);
+    return;
+  }
+
   // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
   if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     const result = await Db.search(index, query, options);
@@ -875,6 +930,10 @@ Db.searchSessionsIterator = async function* (index, query, options) {
 };
 
 Db.msearchSessions = async (index, queries, options) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.msearchSessions(index, queries, options);
+  }
+
   const body = [];
 
   for (let i = 0, ilen = queries.length; i < ilen; i++) {
@@ -894,12 +953,16 @@ Db.msearchSessions = async (index, queries, options) => {
 };
 
 Db.scroll = async (params) => {
+  if (params?.body?.scroll_id === 'ch:done') {
+    return { body: { _scroll_id: 'ch:done', hits: { total: 0, hits: [] } } };
+  }
   params.rest_total_hits_as_int = true;
   return internals.client7.scroll(params);
 };
 
 // Ignore errors when we try to clear a scroll that doesn't exist
 Db.clearScroll = async (params) => {
+  if (params?.body?.scroll_id === 'ch:done') { return; }
   try {
     await internals.client7.clearScroll(params);
   } catch (err) {
@@ -907,6 +970,10 @@ Db.clearScroll = async (params) => {
 };
 
 Db.deleteDocument = async (index, id, options) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.deleteDocument(index, id, options);
+  }
+
   const params = { index: fixIndex(index), id };
   Db.merge(params, options);
   return internals.client7.delete(params);
@@ -1112,6 +1179,10 @@ Db.update = async (index, id, doc, options) => {
 };
 
 Db.updateSession = async (index, id, doc) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.updateSession(index, id, doc);
+  }
+
   const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -1136,6 +1207,7 @@ Db.updateSession = async (index, id, doc) => {
 
 Db.close = async () => {
   User.close();
+  if (internals.chImpl?.close) { internals.chImpl.close(); }
   return internals.client7.close();
 };
 
@@ -1185,6 +1257,10 @@ Db.refresh = async (index, cluster) => {
 };
 
 Db.addTagsToSession = async (index, id, tags, cluster) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.addTagsToSession(index, id, tags);
+  }
+
   const body = {
     script: {
       source: `
@@ -1211,6 +1287,10 @@ Db.addTagsToSession = async (index, id, tags, cluster) => {
 };
 
 Db.removeTagsFromSession = async (index, id, tags, cluster) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.removeTagsFromSession(index, id, tags);
+  }
+
   const body = {
     script: {
       source: `
@@ -1237,6 +1317,10 @@ Db.removeTagsFromSession = async (index, id, tags, cluster) => {
 };
 
 Db.addHuntToSession = async (index, id, huntId, huntName) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.addHuntToSession(index, id, huntId, huntName);
+  }
+
   const body = {
     script: {
       source: `
@@ -1260,6 +1344,10 @@ Db.addHuntToSession = async (index, id, huntId, huntName) => {
 };
 
 Db.removeHuntFromSession = async (index, id, huntId, huntName) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.removeHuntFromSession(index, id, huntId, huntName);
+  }
+
   const body = {
     script: {
       source: `
@@ -1541,6 +1629,16 @@ Db.getShortcutsCache = async (user) => {
   for (const shortcut of shortcuts.hits) {
     // need the whole object to test for type mismatch
     shortcutsMap[shortcut._source.name] = shortcut;
+  }
+
+  // Keep the ClickHouse lookups table current so terms-lookup translation
+  // (IN subquery against the lookups table) sees these values.
+  if (internals.useChSessions) {
+    try {
+      await internals.chImpl.syncShortcuts(shortcuts.hits);
+    } catch (err) {
+      console.log('ERROR - syncing shortcuts to ClickHouse', util.inspect(err, false, 50));
+    }
   }
 
   internals.shortcutsCache.set(user.userId, shortcutsMap);
@@ -1826,6 +1924,10 @@ Db.getSequenceNumber = async (sName) => {
 };
 
 Db.numberOfDocuments = async (index, options) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    return internals.chImpl.numberOfDocuments(index, options);
+  }
+
   // count interface is slow for large data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
     const params = { index: fixIndex(index), ignore_unavailable: true };
@@ -2015,6 +2117,9 @@ Db.loadFields = async () => {
 };
 
 Db.getSessionIndices = function (excludeExtra) {
+  if (internals.useChSessions) {
+    return [`${internals.prefix}sessions3`];
+  }
   if (excludeExtra) {
     return ['sessions2-*', 'sessions3-*'];
   }
@@ -2169,6 +2274,10 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
 };
 
 Db.getMinValue = async (index, field) => {
+  if (internals.useChSessions && isSessionsIndex(index)) {
+    const result = await internals.chImpl.searchSessions(index, { size: 0, aggs: { min: { min: { field } } } });
+    return { body: result };
+  }
   const params = {
     index: fixIndex(index),
     body: { size: 0, aggs: { min: { min: { field } } } }

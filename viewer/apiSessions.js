@@ -1389,22 +1389,26 @@ class SessionAPIs {
       return doneCb ? doneCb(null) : null;
     }
 
-    await async.eachLimit(sessionList, 10, async (session) => {
-      if (!session.fields) {
-        console.log('No Fields in addTagsList', session);
-        return;
-      }
+    try {
+      await async.eachLimit(sessionList, 10, async (session) => {
+        if (!session.fields) {
+          console.log('No Fields in addTagsList', session);
+          return;
+        }
 
-      const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
+        const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      try {
-        await Db.addTagsToSession(session._index, session._id, allTagNames, cluster);
-      } catch (err) {
-        console.log('ERROR - addTagsList', session, util.inspect(err, false, 50));
-      }
-    }, (err) => {
-      return doneCb ? doneCb(err) : null;
-    });
+        try {
+          await Db.addTagsToSession(session._index, session._id, allTagNames, cluster);
+        } catch (err) {
+          console.log('ERROR - addTagsList', session, util.inspect(err, false, 50));
+        }
+      });
+    } catch (err) {
+      if (doneCb) { return doneCb(err); }
+      throw err;
+    }
+    if (doneCb) { return doneCb(null); }
   }
 
   // --------------------------------------------------------------------------
@@ -1414,29 +1418,36 @@ class SessionAPIs {
       return doneCb ? doneCb(null) : null;
     }
 
-    await async.eachLimit(sessionList, 10, async (session) => {
-      if (!session.fields) {
-        console.log('No Fields in removeTagsList', session);
-        return;
-      }
+    try {
+      await async.eachLimit(sessionList, 10, async (session) => {
+        if (!session.fields) {
+          console.log('No Fields in removeTagsList', session);
+          return;
+        }
 
-      const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
+        const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      try {
-        await Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster);
-      } catch (err) {
-        console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50));
-      }
-    }, (err) => {
-      return doneCb ? doneCb(err) : null;
-    });
+        try {
+          await Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster);
+        } catch (err) {
+          console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50));
+        }
+      });
+    } catch (err) {
+      if (doneCb) { return doneCb(err); }
+      throw err;
+    }
+    if (doneCb) { return doneCb(null); }
   }
 
   // --------------------------------------------------------------------------
   static async processSessionIdAndDecode (id, numPackets) {
     return new Promise((resolve, reject) => {
       let packets = [];
-      SessionAPIs.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
+      // fullSession=false: decode/reassembly only reads ipProtocol and
+      // source ip/port, all in the narrow field list; a full-field fetch is
+      // expensive per session on the CH backend
+      SessionAPIs.processSessionId(id, false, null, (pcap, buffer, cb, i) => {
         let obj = {};
         if (buffer.length > 16) {
           pcap.decode(buffer, obj);
@@ -2173,7 +2184,7 @@ class SessionAPIs {
         if (err) {
           console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
           res.status(400);
-          return res.type('text/plain').end(err);
+          return res.type('text/plain').end(String(err.message ?? err));
         }
 
         if (Config.debug > 2) {

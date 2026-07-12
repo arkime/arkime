@@ -724,7 +724,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
         if (session->rootId == GINT_TO_POINTER(1))
             session->rootId = g_strdup(id);
-    } else if (config.autoGenerateId != 1 || session->rootId == GINT_TO_POINTER(1)) {
+    } else if (config.autoGenerateId != 1 || sendIndexInDoc || session->rootId == GINT_TO_POINTER(1)) {
         id_len = arkime_snprintf_len(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
         uuid_generate(uuid);
@@ -821,6 +821,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (sendIndexInDoc) {
         BSB_EXPORT_sprintf(jbsb, "\"index\":\"%ssessions3-%s\",", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "\"_id\":\"%s\",", id);
     }
 
     if (session->ipProtocol == IPPROTO_TCP) {
@@ -2891,6 +2892,8 @@ void arkime_db_init()
 
         esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
         esBulkQueryLen = strlen(esBulkQuery);
+
+        arkime_db_ch_init();
 
         arkime_db_health_check(GINT_TO_POINTER(1));
     }

@@ -176,7 +176,7 @@ my $noPcapDoc = '{
   "tags": ["' . $noPcapTag . '"],
   "tagsCnt": 1
 }';
-esPost("/$noPcapIndex/_doc/$noPcapDocId?refresh=wait_for", $noPcapDoc);
+sessionsPost($noPcapIndex, $noPcapDocId, $noPcapDoc);
 
 my $noPcapList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$noPcapTag"));
 is (scalar @{$noPcapList->{data}}, 1, "no-pcap session indexed");
@@ -190,4 +190,4 @@ my $noPcapPackets = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/a
 is ($noPcapPackets->code, 200, "no-pcap /packets returns 200 (no crash)");
 ok($noPcapPackets->content !~ m{Cannot set properties of undefined}, "no-pcap /packets does not throw TypeError");
 
-esPost("/$noPcapIndex/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "tags": "' . $noPcapTag . '" } } }');
+sessionsDeleteByTag($noPcapIndex, $noPcapTag);

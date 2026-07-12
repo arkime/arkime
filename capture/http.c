@@ -100,6 +100,7 @@ struct arkimehttpserver_t {
     char                   **defaultHeaders;
     char                    *userpwd;
     char                    *aws_sigv4;
+    char                    *caTrustFile;
     uint64_t                 timeout;
     int                      snamesCnt;
     int                      snamesPos;
@@ -222,8 +223,8 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
-    if (config.caTrustFile) {
-        curl_easy_setopt(easy, CURLOPT_CAINFO, config.caTrustFile);
+    if (server->caTrustFile || config.caTrustFile) {
+        curl_easy_setopt(easy, CURLOPT_CAINFO, server->caTrustFile ? server->caTrustFile : config.caTrustFile);
     }
 
     // Send client certs if so configured
@@ -906,8 +907,8 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
-    if (config.caTrustFile) {
-        curl_easy_setopt(request->easy, CURLOPT_CAINFO, config.caTrustFile);
+    if (server->caTrustFile || config.caTrustFile) {
+        curl_easy_setopt(request->easy, CURLOPT_CAINFO, server->caTrustFile ? server->caTrustFile : config.caTrustFile);
     }
 
     // Send client certs if so configured
@@ -1031,6 +1032,8 @@ void arkime_http_free_server(void *serverV)
     if (server->clientAuth) {
         ARKIME_TYPE_FREE(ArkimeClientAuth_t, server->clientAuth);
     }
+    if (server->caTrustFile)
+        free(server->caTrustFile);
     // Free multi info
     curl_multi_cleanup(server->multi);
 
@@ -1050,6 +1053,22 @@ void arkime_http_set_headers(void *serverV, char **headers)
     ArkimeHttpServer_t        *server = serverV;
 
     server->defaultHeaders = headers;
+}
+/******************************************************************************/
+void arkime_http_set_insecure(void *serverV, gboolean insecure)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->insecure = insecure;
+}
+/******************************************************************************/
+void arkime_http_set_ca_trust_file(void *serverV, const char *caTrustFile)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    if (server->caTrustFile)
+        free(server->caTrustFile);
+    server->caTrustFile = caTrustFile ? strdup(caTrustFile) : NULL;
 }
 /******************************************************************************/
 void arkime_http_set_retries(void *serverV, uint16_t retries)

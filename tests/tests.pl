@@ -354,6 +354,23 @@ my ($cmd) = @_;
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression 2>&1 1>/dev/null");
         }
 
+        # Initialize ClickHouse if a sessionsDbUrl is configured for the test viewer
+        my $sessionsDbUrl = `grep -E '^sessionsDbUrl=' config.test.ini | head -1 | cut -d= -f2-`;
+        chomp $sessionsDbUrl;
+        if ($sessionsDbUrl =~ m{^clickhouse://(.+)$}) {
+            my $chUrl = "http://$1";
+            print ("Initializing ClickHouse at $chUrl\n");
+            # Test pcaps span two decades; partition none keeps the table at a
+            # handful of parts so per-part query overhead stays negligible.
+            my $chRc;
+            if ($main::debug) {
+                $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init");
+            } else {
+                $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init 2>&1 1>/dev/null");
+            }
+            die "ClickHouse init failed (is ClickHouse running at $chUrl?), aborting so tests don't run against stale sessions\n" if ($chRc != 0);
+        }
+
         print ("Loading tagger\n");
         print("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1\n");
         system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
@@ -390,7 +407,7 @@ my ($cmd) = @_;
     my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test,sessionsDbUrl:clickhouse://localhost:9100;$ELASTICSEARCH,prefix:tests2_,name:test2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
@@ -468,7 +485,7 @@ my ($cmd) = @_;
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
-    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0) });
+    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0), timer => ($ENV{HARNESS_TIMER} ? 1 : 0) });
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);

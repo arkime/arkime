@@ -19,6 +19,22 @@
 elasticsearch=ARKIME_ELASTICSEARCH
 # elasticsearchBasicAuth=
 
+# Optional: store/retrieve sessions in ClickHouse instead of OpenSearch/Elasticsearch.
+# When set, both capture and viewer route ONLY session SPI through ClickHouse;
+# users, files, fields, hunts, history, stats, shortcuts, views, crons, and
+# everything else still use the elasticsearch= cluster above. Initialize the
+# schema first with `db/ch.pl <url> init`.
+# Schemes: clickhouse://, chttp://, chttps://
+# sessionsDbUrl=clickhouse://localhost:8123
+# clickhouseUser=
+# clickhousePassword=
+# clickhouseDatabase=arkime
+# clickhouseSessionsTable=sessions3
+# clickhouseInsecure=false
+# clickhouseCABundle=
+# clickhouseMaxBatchDocs=200
+# clickhouseMaxBatchBytes=4194304
+
 # Where the user database is, the above is used if not set
 # For user/password use https://user:pass@host:port OR usersElasticsearchBasicAuth
 # usersElasticsearch=ARKIME_ELASTICSEARCH
