@@ -1334,7 +1334,9 @@ void arkime_session_init()
     // restarts. In dryRun (e.g. --tests) we never write pcap, so reading/writing
     // it only makes regression runs non-deterministic; skip it entirely.
     snprintf(stoppedFilename, sizeof(stoppedFilename), "%s.stoppedsessions", config.nodeName);
-    if (!config.dryRun) {
+    // Persisting stopped sessions is for live-capture restarts; offline pcap
+    // runs must not inherit stop-SPI tuples from unrelated previous runs
+    if (!config.dryRun && !config.pcapReadOffline) {
         g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
         arkime_session_load_stopped();
     }

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "arkime.h"
+#include <inttypes.h>
 
 LOCAL void *chServer;
 LOCAL char *chQueryPath;
@@ -11,24 +12,47 @@ LOCAL int   chQueryPathLen;
 
 extern ArkimeConfig_t config;
 
+LOCAL uint64_t chDocsSent;
+LOCAL uint64_t chDocsAcked;
+LOCAL uint64_t chDocsFailed;
 /******************************************************************************/
-LOCAL void arkime_db_ch_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer UNUSED(uw))
+LOCAL void arkime_db_ch_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer uw)
 {
-    if (code != 200)
-        LOG("ClickHouse bulk issue.  Code: %d\n%.*s", code, data_len, data);
-    else if (config.debug > 4)
-        LOG("ClickHouse Bulk Reply code:%d :>%.*s<", code, data_len, data);
+    const uint64_t docs = GPOINTER_TO_UINT(uw);
+    if (code != 200) {
+        ARKIME_THREAD_INCR_NUM(chDocsFailed, docs);
+        LOG("ClickHouse bulk issue.  Code: %d docs: %" PRIu64 "\n%.*s", code, docs, data_len, data);
+    } else {
+        ARKIME_THREAD_INCR_NUM(chDocsAcked, docs);
+        if (config.debug)
+            LOG("CH bulk ack docs=%" PRIu64 " total sent=%" PRIu64 " acked=%" PRIu64 " failed=%" PRIu64, docs, chDocsSent, chDocsAcked, chDocsFailed);
+        if (config.debug > 4)
+            LOG("ClickHouse Bulk Reply code:%d :>%.*s<", code, data_len, data);
+    }
 }
 /******************************************************************************/
 LOCAL void arkime_db_ch_send_bulk(char *json, int len)
 {
+    // Count documents (newline separated) for send/ack accounting
+    uint64_t docs = 0;
+    for (int i = 0; i < len; i++) {
+        if (json[i] == '\n')
+            docs++;
+    }
+    if (len > 0 && json[len - 1] != '\n')
+        docs++;
+
+    ARKIME_THREAD_INCR_NUM(chDocsSent, docs);
+
+    if (config.debug)
+        LOG("CH bulk send docs=%" PRIu64 " len=%d total sent=%" PRIu64, docs, len, chDocsSent);
     if (config.debug > 4)
         LOG("CH Bulk len=%d: %.*s", len, MIN(len, 800), json);
 
     arkime_http_schedule(chServer, "POST", chQueryPath, chQueryPathLen,
                          json, len, NULL,
                          ARKIME_HTTP_PRIORITY_NORMAL,
-                         arkime_db_ch_send_bulk_cb, NULL);
+                         arkime_db_ch_send_bulk_cb, GUINT_TO_POINTER((guint)docs));
 }
 /******************************************************************************/
 LOCAL gboolean arkime_db_ch_parse_url(const char *url, char **hostUrl, char **userpwd)
