@@ -196,7 +196,7 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt,
 /******************************************************************************/
 // Returns total bytes to skip (header + payload) on success,
 // -1 if need more data, -2 if malformed/oversized
-LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, int which, BSB *bsb, int flags, uint32_t remainingLen)
+LOCAL int mqtt_parse_publish(ArkimeSession_t *session, const ArkimeParserBuf_t *mqtt, int which, BSB *bsb, int flags, uint32_t remainingLen)
 {
     int qos = (flags >> 1) & 0x03;
 

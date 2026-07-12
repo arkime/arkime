@@ -459,7 +459,7 @@ LOCAL int zeekintel_parse_file(ZeekIntelDB_t *db, const char *filename)
                 if (*v)
                     sep = zeekintel_unescape_sep(v);
             } else if (strncmp(line, "#fields", 7) == 0) {
-                char sepstr[2] = {sep, 0};
+                const char sepstr[2] = {sep, 0};
                 gchar **cols = g_strsplit(line, sepstr, -1);
                 indicatorCol = typeCol = sourceCol = descCol = urlCol = -1;
                 for (int c = 1; cols[c]; c++) {
@@ -476,13 +476,13 @@ LOCAL int zeekintel_parse_file(ZeekIntelDB_t *db, const char *filename)
                 }
                 g_strfreev(cols);
             } else if (strncmp(line, "#unset_field", 12) == 0) {
-                char *v = strchr(line, sep);
+                const char *v = strchr(line, sep);
                 if (v) {
                     g_free(unset);
                     unset = g_strdup(v + 1);
                 }
             } else if (strncmp(line, "#empty_field", 12) == 0) {
-                char *v = strchr(line, sep);
+                const char *v = strchr(line, sep);
                 if (v) {
                     g_free(empty);
                     empty = g_strdup(v + 1);
@@ -495,7 +495,7 @@ LOCAL int zeekintel_parse_file(ZeekIntelDB_t *db, const char *filename)
         if (indicatorCol < 0 || typeCol < 0)
             continue;
 
-        char sepstr[2] = {sep, 0};
+        const char sepstr[2] = {sep, 0};
         gchar **vals = g_strsplit(line, sepstr, -1);
         guint   nvals = g_strv_length(vals);
 
@@ -775,7 +775,7 @@ LOCAL void zeekintel_match_str_field(ArkimeSession_t *session, ZeekIntelStringHa
         if (info->getCb)
             break;  // no getCb STR_HASH fields exist
         const ArkimeStringHashStd_t *shash = session->fields[pos]->shash;
-        ArkimeString_t *hstring;
+        const ArkimeString_t *hstring;
         HASH_FORALL2(s_, *shash, hstring)
         zeekintel_match_str_value(session, hash, hstring->str, lower, where);
         break;

@@ -976,7 +976,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
             return PyUnicode_FromString((const char *)value);
 
         case ARKIME_FIELD_TYPE_STR_ARRAY: {
-            GPtrArray *sarray = (GPtrArray *)value;
+            const GPtrArray *sarray = (const GPtrArray *)value;
 
             py_list = PyList_New(sarray->len);
             for (int i = 0; i < (int)sarray->len; i++) {
