@@ -7265,6 +7265,123 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
+     "bytes" : 96
+    },
+    "destination" : {
+     "bytes" : 116,
+     "ip" : "10.0.92.2",
+     "mac" : [
+      "00:11:22:33:44:66",
+      "66:77:88:99:aa:bc"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "answers" : [
+       {
+        "class" : "IN",
+        "https" : "HTTPS 1 . alpn=h2 ipv4hint=",
+        "name" : "svc-trailing-empty.example.com",
+        "ttl" : 300,
+        "type" : "HTTPS"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "svc-trailing-empty.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "HTTPS",
+      "queryHost" : "svc-trailing-empty.example.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOui" : [
+     "CIMSYS Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "9121818000010001",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700009300000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700009300200,
+    "length" : 200,
+    "network" : {
+     "bytes" : 296,
+     "community_id" : "1:FPJCwE2f5Bw3Ck9TEHUPpWt5iWs=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     106,
+     106,
+     132
+    ],
+    "packetPos" : [
+     102067,
+     102173,
+     102279
+    ],
+    "packetRange" : {
+     "gte" : 1700009300000,
+     "lte" : 1700009300200
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 74
+    },
+    "source" : {
+     "bytes" : 180,
+     "ip" : "10.0.92.1",
+     "mac" : [
+      "00:11:22:33:44:66",
+      "66:77:88:99:aa:bc"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 41001
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "9121010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 170
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
      "bytes" : 75
     },
     "destination" : {
