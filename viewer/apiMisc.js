@@ -297,12 +297,18 @@ class MiscAPIs {
       }
     }
 
+    // {ORIGINALNAME} is sanitized to a safe character set so it can be used in
+    // uploadCommand without risking shell injection from the uploaded filename.
+    const safeOriginalName = (req.file.originalname || '').replace(/[^-a-zA-Z0-9._]/g, '');
+
     // security-scanner-ignore: {INSECURE-ORIGINALNAME} is intentionally unsanitized.
     // Operators who use this template variable accept the risk — the variable name serves as the warning.
+    // Prefer the sanitized {ORIGINALNAME} variable instead.
     const cmd = uploadCommand
       .replace(/{TAGS}/g, tags)
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
+      .replace(/{ORIGINALNAME}/g, safeOriginalName)
       .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
       .replace(/{CONFIG}/g, ArkimeConfig.configFile);
 
@@ -360,7 +366,7 @@ class MiscAPIs {
    * GET - /api/appinfo
    *
    * Retrieves information that the app uses on every page:
-   * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldshistory
+   * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldhistory
    * @name /appinfo
    * @returns {ESHealth} eshealth - The OpenSearch/Elasticsearch cluster health status and information.
    * @returns {ArkimeUser} currentuser - The currently logged in user
@@ -369,7 +375,7 @@ class MiscAPIs {
    * @returns {Array} clusters - A list of known configured Arkime clusters (if in Multi Viewer mode)
    * @returns {Array} fields - Available database field objects pertaining to sessions
    * @returns {Array} fieldsmap - Available database field objects pertaining to sessions
-   * @returns {Object} fieldshistory - The user's field history for the search expression input
+   * @returns {Object} fieldhistory - The user's field history for the search expression input
    */
   static async getAppInfo (req, res) {
     try {

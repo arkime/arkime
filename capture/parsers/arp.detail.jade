@@ -1,0 +1,7 @@
+if (session.arp)
+  div.sessionDetailMeta.bold ARP
+  dl.sessionDetailMeta
+    +arrayList(session.arp, "opcode", "Opcode", "arp.opcode")
+    +ipArrayList(session.arp, "ip", "Sender IP", "arp")
+    +arrayList(session.arp, "mac", "Sender MAC", "arp.mac")
+    +arrayList(session.arp, "oui", "Sender OUI", "arp.oui")

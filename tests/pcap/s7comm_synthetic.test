@@ -555,11 +555,12 @@
      ],
      "funcCnt" : 4,
      "funcName" : [
+      "CPU services",
       "PLC Control",
       "PLC Stop",
       "Setup communication"
      ],
-     "funcNameCnt" : 3,
+     "funcNameCnt" : 4,
      "pduref" : [
       "1",
       "2",

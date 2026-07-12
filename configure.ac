@@ -1,4 +1,4 @@
-AC_INIT([arkime],[6.4.0])
+AC_INIT([arkime],[6.5.0])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -13,6 +13,7 @@ AC_CONFIG_FILES([
   capture/plugins/daq/Makefile
   capture/plugins/pfring/Makefile
   capture/plugins/snf/Makefile
+  capture/plugins/napatech/Makefile
   capture/plugins/lua/Makefile
   capture/plugins/kafka/Makefile
   capture/parsers/Makefile

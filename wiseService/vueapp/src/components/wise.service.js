@@ -16,6 +16,9 @@ export default {
   getCurrConfig: async function () {
     return await fetchWrapper({ url: 'config/get' });
   },
+  getCurrentUser: async function () {
+    return await fetchWrapper({ url: 'api/user' });
+  },
   getSourceFile: async function (sourceName) {
     return await fetchWrapper({ url: 'source/' + sourceName + '/get' });
   },

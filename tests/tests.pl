@@ -609,6 +609,7 @@ if ($main::cmd eq "--fix") {
     print "                         This will init local ES, import data, start a viewer, run tests\n";
     print "  --api-fast             API tests without reloading data (alias for --viewerstart)\n";
     print "  --viewer               (legacy) Same as --api-full\n";
+    print "  --viewerload           Init local ES and import data (like --api-full), then exit before running tests\n";
     print "  --viewerstart          (legacy) Same as --api-fast\n";
     print "  --fuzz [fuzzoptions]   Run fuzzloch\n";
     print "  --fuzz2pcap            Convert list of fuzzloch crash file into matching pcap file\n";

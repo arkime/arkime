@@ -1,0 +1,24 @@
+// Napatech NTPL configuration for Arkime capture on NT200A02 8x10G
+// Apply with: sudo /opt/napatech3/bin/ntpl -f arkime-streams.ntpl
+//
+// Port topology (8x10G breakout cables):
+//   Switch 1 and 2 (HA set 1) <-> NT ports 0 + 4   -> streams 0..3  (4-stream hash distribution)
+//   Switch 3 and 4 (HA set 2) <-> NT ports 1,2,5,6 -> streams 4..7  (4-stream hash distribution)
+//   Ports 3 + 7 are unused breakout lanes -> dropped in FPGA
+//
+
+Delete = All
+
+// 5-tuple sorted hash: all packets of a given flow (both directions) land on
+// the same stream, as required by Arkime's session engine.
+HashMode[Priority = 0; Layer3Type=IP; Layer4Type=TCP,UDP,SCTP] = Hash5TupleSorted
+HashMode[Priority = 1; Layer3Type=IP] = Hash2TupleSorted
+
+// Switch 1: distribute IP traffic across 4 capture streams
+Assign[Priority=0; StreamId=(0..3)] = port == 0 or port == 4 
+
+// Switch 2: distribute IP traffic across 4 capture streams
+Assign[Priority=0; StreamId=(4..7)] = port == 1 or port == 2 or port == 5 or port == 6
+
+// Drop unused breakout lanes (no host buffer cost)
+Assign[Priority=0; StreamId=drop] = port == 3 or port == 7

@@ -21,12 +21,20 @@ jobs:
       - name: Delete old package versions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          DAYS: ${{ inputs.days }}
         run: |
           #!/bin/bash
-          
-          DRY_RUN=${{ inputs.dry_run }}
-          DAYS=${{ inputs.days }}
-          
+
+          if ! echo "$DAYS" | grep -qE '^[0-9]+$'; then
+            echo "ERROR - invalid days '$DAYS', expected a non-negative integer"
+            exit 1
+          fi
+          if [ "$DRY_RUN" != "true" ] && [ "$DRY_RUN" != "false" ]; then
+            echo "ERROR - invalid dry_run '$DRY_RUN', expected true or false"
+            exit 1
+          fi
+
           page=1
           while true; do
             response=$(gh api \
@@ -42,7 +50,7 @@ jobs:
             jq -c '.[] | select(.metadata.container.tags[] | startswith("snapshot-")) | 
                 {id: .id, tag: .metadata.container.tags[0], created_at: .created_at, 
                  days_old: ((now - (.created_at | fromdateiso8601)) / 86400 | floor)}' | \
-            jq -c "select(.days_old > $DAYS)")
+            jq -c --argjson days "$DAYS" 'select(.days_old > $days)')
 
             if [ -n "$result" ]; then
               echo "$result" | while read -r package; do

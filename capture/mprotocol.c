@@ -6,8 +6,6 @@
  */
 
 #include "arkime.h"
-#include <netinet/ip.h>
-#include <netinet/ip6.h>
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;

@@ -284,6 +284,129 @@
      "_index" : "tests_sessions3-26m02"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 28
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.0.0.6",
+     "mac" : [
+      "00:aa:bb:cc:dd:ee"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 20000
+    },
+    "dnp3" : {
+     "dst" : [
+      20000
+     ],
+     "dstCnt" : 1,
+     "func" : [
+      1
+     ],
+     "funcCnt" : 1,
+     "funcName" : [
+      "Read"
+     ],
+     "funcNameCnt" : 1,
+     "src" : [
+      10
+     ],
+     "srcCnt" : 1
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1770163220000,
+    "initRTT" : 1000,
+    "ipProtocol" : 6,
+    "lastPacket" : 1770163224000,
+    "length" : 4000,
+    "network" : {
+     "bytes" : 298,
+     "community_id" : "1:1h8y07q7R28p/HQtU4GY+8PonJk=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     98,
+     70
+    ],
+    "packetPos" : [
+     1197,
+     1267,
+     1337,
+     1407,
+     1505
+    ],
+    "packetRange" : {
+     "gte" : 1770163220000,
+     "lte" : 1770163224000
+    },
+    "protocol" : [
+     "dnp3",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 190,
+     "ip" : "10.0.0.5",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 33100
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "05640500204e0a00",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 0
+    },
+    "totDataBytes" : 28
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m02"
+    }
+   }
   }
  ]
 }

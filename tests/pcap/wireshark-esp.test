@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 1080
     },
     "destination" : {
      "as" : {
@@ -14,7 +14,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1500,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -22,21 +22,17 @@
      },
      "ip" : "190.0.0.2",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:12"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435037629,
@@ -65,7 +61,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 1080
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -75,7 +71,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1500,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -83,17 +79,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:12"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -110,7 +110,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
      "as" : {
@@ -120,7 +120,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1340,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -128,21 +128,17 @@
      },
      "ip" : "190.0.0.3",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:13"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435056630,
@@ -171,7 +167,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -181,7 +177,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1340,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -189,17 +185,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:13"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -216,7 +216,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
      "as" : {
@@ -226,7 +226,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1340,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -234,21 +234,17 @@
      },
      "ip" : "190.0.0.4",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:14"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435075674,
@@ -277,7 +273,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -287,7 +283,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1340,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -295,17 +291,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:14"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -322,7 +322,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
      "as" : {
@@ -332,7 +332,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1220,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -340,21 +340,17 @@
      },
      "ip" : "190.0.0.5",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:15"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435094676,
@@ -383,7 +379,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -393,7 +389,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1220,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -401,17 +397,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:15"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -428,7 +428,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 1080
     },
     "destination" : {
      "as" : {
@@ -438,7 +438,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1500,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -446,21 +446,17 @@
      },
      "ip" : "190.0.0.12",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:12"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435199683,
@@ -489,7 +485,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 1080
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -499,7 +495,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1500,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -507,17 +503,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:12"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -534,7 +534,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
      "as" : {
@@ -544,7 +544,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1340,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -552,21 +552,17 @@
      },
      "ip" : "190.0.0.13",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:13"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435218685,
@@ -595,7 +591,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -605,7 +601,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1340,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -613,17 +609,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:13"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -640,7 +640,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
      "as" : {
@@ -650,7 +650,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1340,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -658,21 +658,17 @@
      },
      "ip" : "190.0.0.14",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:14"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435237736,
@@ -701,7 +697,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -711,7 +707,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1340,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -719,17 +715,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:14"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -746,7 +746,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
      "as" : {
@@ -756,7 +756,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1220,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -764,21 +764,17 @@
      },
      "ip" : "190.0.0.15",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:15"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435256758,
@@ -807,7 +803,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -817,7 +813,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1220,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -825,17 +821,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:15"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -852,7 +852,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 960
     },
     "destination" : {
      "as" : {
@@ -862,7 +862,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1380,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -870,21 +870,17 @@
      },
      "ip" : "190.0.0.22",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:12"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435361771,
@@ -913,7 +909,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 960
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -923,7 +919,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1380,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -931,17 +927,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:12"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -958,7 +958,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
      "as" : {
@@ -968,7 +968,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1220,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -976,21 +976,17 @@
      },
      "ip" : "190.0.0.23",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:13"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435380893,
@@ -1019,7 +1015,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -1029,7 +1025,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1220,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -1037,17 +1033,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:13"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1064,7 +1064,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
      "as" : {
@@ -1074,7 +1074,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1220,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -1082,21 +1082,17 @@
      },
      "ip" : "190.0.0.24",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:14"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435399895,
@@ -1125,7 +1121,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -1135,7 +1131,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1220,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -1143,17 +1139,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:14"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1170,7 +1170,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 680
     },
     "destination" : {
      "as" : {
@@ -1180,7 +1180,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 1100,
+     "bytes" : 0,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -1188,21 +1188,17 @@
      },
      "ip" : "190.0.0.25",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:15"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "LACNIC",
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1140435418897,
@@ -1231,7 +1227,7 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 680
+     "bytes" : 0
     },
     "source" : {
      "as" : {
@@ -1241,7 +1237,7 @@
        "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
      },
-     "bytes" : 0,
+     "bytes" : 1100,
      "geo" : {
       "city_name" : "Medellín",
       "country_iso_code" : "CO",
@@ -1249,17 +1245,21 @@
      },
      "ip" : "190.0.0.1",
      "mac" : [
-      "00:00:00:00:00:15"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "LACNIC",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1276,26 +1276,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 1080
     },
     "destination" : {
-     "bytes" : 1700,
+     "bytes" : 0,
      "ip" : "3ffe::2",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:02"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435683595,
@@ -1324,22 +1320,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 1080
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1700,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:02"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1356,26 +1356,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
-     "bytes" : 1540,
+     "bytes" : 0,
      "ip" : "3ffe::3",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:03"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435702637,
@@ -1404,22 +1400,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1540,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:03"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1436,26 +1436,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
-     "bytes" : 1540,
+     "bytes" : 0,
      "ip" : "3ffe::4",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:04"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435721711,
@@ -1484,22 +1480,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1540,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:04"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1516,26 +1516,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
-     "bytes" : 1420,
+     "bytes" : 0,
      "ip" : "3ffe::5",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:05"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435740713,
@@ -1564,22 +1560,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1420,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:05"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1596,26 +1596,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 1080
     },
     "destination" : {
-     "bytes" : 1700,
+     "bytes" : 0,
      "ip" : "3ffe::12",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:02"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435845816,
@@ -1644,22 +1640,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 1080
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1700,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:02"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1676,26 +1676,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
-     "bytes" : 1540,
+     "bytes" : 0,
      "ip" : "3ffe::13",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:03"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435864818,
@@ -1724,22 +1720,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1540,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:03"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1756,26 +1756,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 920
     },
     "destination" : {
-     "bytes" : 1540,
+     "bytes" : 0,
      "ip" : "3ffe::14",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:04"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435883839,
@@ -1804,22 +1800,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 920
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1540,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:04"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1836,26 +1836,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
-     "bytes" : 1420,
+     "bytes" : 0,
      "ip" : "3ffe::15",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:05"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140435902840,
@@ -1884,22 +1880,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1420,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:05"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1916,26 +1916,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 960
     },
     "destination" : {
-     "bytes" : 1580,
+     "bytes" : 0,
      "ip" : "3ffe::22",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:02"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140436007955,
@@ -1964,22 +1960,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 960
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1580,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:02"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -1996,26 +1996,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
-     "bytes" : 1420,
+     "bytes" : 0,
      "ip" : "3ffe::23",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:03"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140436026969,
@@ -2044,22 +2040,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1420,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:03"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -2076,26 +2076,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 800
     },
     "destination" : {
-     "bytes" : 1420,
+     "bytes" : 0,
      "ip" : "3ffe::24",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:04"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140436045975,
@@ -2124,22 +2120,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 800
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1420,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:04"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],
@@ -2156,26 +2156,22 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 680
     },
     "destination" : {
-     "bytes" : 1300,
+     "bytes" : 0,
      "ip" : "3ffe::25",
      "mac" : [
-      "00:11:43:4a:d7:0a"
+      "00:00:00:00:00:05"
      ],
      "mac-cnt" : 1,
-     "packets" : 10,
+     "packets" : 0,
      "port" : 0
     },
     "dstOui" : [
-     "Dell Inc."
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
     "dstOuiCnt" : 1,
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 34525,
     "fileId" : [],
     "firstPacket" : 1140436064977,
@@ -2204,22 +2200,26 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 680
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 1300,
      "ip" : "3ffe::1",
      "mac" : [
-      "00:00:00:00:00:05"
+      "00:11:43:4a:d7:0a"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 10,
      "port" : 0
     },
     "srcOui" : [
-     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+     "Dell Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "tags" : [
      "truncated-pcap"
     ],

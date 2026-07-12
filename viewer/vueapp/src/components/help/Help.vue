@@ -212,7 +212,7 @@ SPDX-License-Identifier: Apache-2.0
               class="no-decoration">table below</a> for list of all fields and operators supported.
           </dd>
           <dt>Grouping</dt>
-          <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 &amp;&amp; (field2==value2 || field3==value3)</code>).</dd>
+          <dd>You can use parentheses to group search terms (e.g. <code>field1==value1 &amp;&amp; (field2==value2 || field3==value3)</code>).</dd>
           <dt>Logical Operators</dt>
           <dd>Combine search terms using AND (&amp;&amp;) and OR (||).</dd>
           <dt>OR List Queries</dt>
@@ -250,7 +250,7 @@ SPDX-License-Identifier: Apache-2.0
         </dl>
         <p>
           The Interval drop down allows you to control how much time each column/point in the graph represents.
-          The auto setting will change the bucket sized based on the time range selected.
+          The auto setting will change the bucket size based on the time range selected.
         </p>
       </div>
       <div class="ms-4">
@@ -440,7 +440,7 @@ SPDX-License-Identifier: Apache-2.0
         </h6>
         <p>
           The magnifying glass ( <span class="fa fa-search" /> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
-          While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
+          While typing fieldnames into the query bar predictive typing will overlay with potential fieldname choices based on what has been typed so far.
           See the <a
             href="help#search"
             class="no-decoration">Search Bar section</a> for more in depth information.
@@ -528,7 +528,7 @@ SPDX-License-Identifier: Apache-2.0
         </h6>
         <div>
           The timeline graphs on the Sessions, SPIView, and SPIGraph pages
-          contain a visualisation of the query's output.
+          contain a visualization of the query's output.
           <ul>
             <li>
               View by Session count, Packets count, Bytes count, or Databytes count.
@@ -566,7 +566,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           Now we arrive at the meat of the Sessions page... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <span class="fa fa-th" /> ) button. By clicking this button an analyst may select
           any field that they wish to observe without opening a session fully by adding it as a column to the table. Predictive typing is also applied within this box. Example: An analyst is only investigating suspicious IRC sessions via the analyst's search query. Instead of drilling into each
-          session, that analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Pot, IRC Channel, and IRC Nickname. This column selection tool allows for an analyst to readily view the information which is important to them, configurable per investigation.
+          session, that analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Port, IRC Channel, and IRC Nickname. This column selection tool allows for an analyst to readily view the information which is important to them, configurable per investigation.
         </p>
         <p>
           <em>
@@ -587,7 +587,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus" /> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
           All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
-          If the sessions is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
+          If the session is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
           Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
           they may be downloaded and analyzed when necessary.
         </p>
@@ -624,7 +624,7 @@ SPDX-License-Identifier: Apache-2.0
         as well as deep dive analysis. For example, if you wanted to chart all of the currently recorded http.users within your current time window, select http.user from the SPI Graph selection typeahead.
         Data will be displayed based upon count of observances over the time period. Increasing the Max Elements setting will allow an analyst to see additional items if the investigated SPI type is noisy.
         An analyst can sort by either the noisiest value (graph) or by alphabetical order (name). This page also has the ability to update every X seconds.
-      </p>e name of the hun
+      </p>
       <p>
         This page also includes pie, table, and treemap views of the data. This data can be layered similar to the export intersection functionality in the action menu dropdown.
         This runs an aggregation of multiple unique fields and displays the data in the visualization of your choice.
@@ -810,7 +810,7 @@ SPDX-License-Identifier: Apache-2.0
         Stats
       </h3>
       <p>
-        There are several tabs that contain statistics about your capture node and Elasticsearch node and are enumerated below:
+        There are several tabs that contain statistics about your capture node and OpenSearch/Elasticsearch node and are enumerated below:
       </p>
       <div class="ms-4">
         <h6>
@@ -849,13 +849,13 @@ SPDX-License-Identifier: Apache-2.0
           <dt>Memory %</dt>
           <dd>Percentage of memory that Arkime is using</dd>
           <dt>Packet Q</dt>
-          <dd>Number of packets that are waiting to processed</dd>
+          <dd>Number of packets that are waiting to be processed</dd>
           <dt>Packets/s</dt>
           <dd>The number of packets that we've received that aren't corrupt that we try to add to a packetQ per second</dd>
           <dt>Bytes/s</dt>
-          <dd>The size of all the packets that we've received that aren't corrupt that we try add to a packetQ per second</dd>
+          <dd>The size of all the packets that we've received that aren't corrupt that we try to add to a packetQ per second</dd>
           <dt>Sessions/s</dt>
-          <dd>Number of sessions sent to Elasticsearch per second</dd>
+          <dd>Number of sessions sent to OpenSearch/Elasticsearch per second</dd>
           <dt>Packet Drops/s</dt>
           <dd>Number of dropped packets as reported by the OS or network card (Arkime never sees these) per second</dd>
           <dt>Overload Drops/s</dt>
@@ -881,7 +881,7 @@ SPDX-License-Identifier: Apache-2.0
           <dt>ES Q</dt>
           <dd>Number of elasticsearch requests that are waiting to be sent</dd>
           <dt>Closing Q</dt>
-          <dd>Number of TCP sessions that have received a FIN and Arkime is waiting to see if actually closed</dd>
+          <dd>Number of TCP sessions that have received a FIN and Arkime is waiting to see if it actually closed</dd>
           <dt>Waiting Q</dt>
           <dd>Number of sessions that are ready to be written but are waiting on an asynchronous request (wise, plugins) to finish</dd>
           <dt>Active Fragments</dt>
@@ -891,8 +891,8 @@ SPDX-License-Identifier: Apache-2.0
           <dt>Total Dropped/Sec</dt>
           <dd>Sum of the inputs dropped and overload metrics</dd>
           <dt>Written Bytes/Sec</dt>
-          <dd>The size of all the packets that Arkime is going write to disk</dd>
-          <dt>Unritten Bytes/Sec</dt>
+          <dd>The size of all the packets that Arkime is going to write to disk</dd>
+          <dt>Unwritten Bytes/Sec</dt>
           <dd>The size of all the packets that Arkime isn't going to write to disk, but that we processed</dd>
         </dl>
         <p>
@@ -906,7 +906,7 @@ SPDX-License-Identifier: Apache-2.0
           ES Nodes
         </h6>
         <p>
-          The ES Nodes tab displays a table containing information for each Elasticsearch node.
+          The ES Nodes tab displays a table containing information for each OpenSearch/Elasticsearch node.
           Please use the column config drop down to change which fields are shown.
         </p>
         <dl class="dl-horizontal">
@@ -915,9 +915,9 @@ SPDX-License-Identifier: Apache-2.0
           <dt>Documents</dt>
           <dd>The total number of documents that this node has ingested</dd>
           <dt>Disk Used</dt>
-          <dd>The disk used for Elasticsearch store</dd>
+          <dd>The disk used for OpenSearch/Elasticsearch store</dd>
           <dt>Disk Free</dt>
-          <dd>The disk free for Elasticsearch store</dd>
+          <dd>The disk free for OpenSearch/Elasticsearch store</dd>
           <dt>Heap Size</dt>
           <dd>JVM heap used in bytes</dd>
           <dt>OS Load</dt>
@@ -925,9 +925,9 @@ SPDX-License-Identifier: Apache-2.0
           <dt>CPU</dt>
           <dd>CPU usage in percent</dd>
           <dt>Reads/s</dt>
-          <dd>The number of bytes read across all devices used by Elasticsearch per second</dd>
+          <dd>The number of bytes read across all devices used by OpenSearch/Elasticsearch per second</dd>
           <dt>Writes/s</dt>
-          <dd>The number of bytes written across all devices used by Elasticsearch per second</dd>
+          <dd>The number of bytes written across all devices used by OpenSearch/Elasticsearch per second</dd>
           <dt>Searches/s</dt>
           <dd>Current query phase operations per second</dd>
           <dt>IP</dt>
@@ -944,7 +944,7 @@ SPDX-License-Identifier: Apache-2.0
           ES Indices
         </h6>
         <p>
-          The ES Indices tab displays a table containing information for each Elasticsearch index.
+          The ES Indices tab displays a table containing information for each OpenSearch/Elasticsearch index.
           Please use the column config drop down to change which fields are shown.
         </p>
         <dl class="dl-horizontal">
@@ -953,7 +953,7 @@ SPDX-License-Identifier: Apache-2.0
           <dt>Documents</dt>
           <dd>The number of documents in the index</dd>
           <dt>Disk Size</dt>
-          <dd>The size of the Elasticsearch store for this index</dd>
+          <dd>The size of the OpenSearch/Elasticsearch store for this index</dd>
           <dt>Shards</dt>
           <dd>Number of shards created for this index</dd>
           <dt>Segments</dt>
@@ -976,7 +976,7 @@ SPDX-License-Identifier: Apache-2.0
           ES Tasks
         </h6>
         <p>
-          The ES Task tab displays a table containing information for each Elasticsearch task.
+          The ES Task tab displays a table containing information for each OpenSearch/Elasticsearch task.
           Please use the column config drop down to change which fields are shown.
         </p>
         <dl class="dl-horizontal">
@@ -1024,9 +1024,9 @@ SPDX-License-Identifier: Apache-2.0
           ES Recovery
         </h6>
         <p>
-          The ES Recovery tab displays a table containing information for each Elasticsearch index
+          The ES Recovery tab displays a table containing information for each OpenSearch/Elasticsearch index
           recovery.  By default it only shows information about indices still waiting to be recovered.
-          It is a simple view of the <code>/_cat/recovery</code> Elasticssearch API.
+          It is a simple view of the <code>/_cat/recovery</code> OpenSearch/Elasticsearch API.
         </p>
         <dl class="dl-horizontal">
           <dt>Index</dt>
@@ -1286,7 +1286,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>Can use the Arkime viewer application</dd>
           <dt>cont3xtAdmin</dt>
           <dd>Can perform cont3xt configuration, view data for other Cont3xt users, and automatically assigned the cont3xtUser role.</dd>
-          <dt>contx3tUser</dt>
+          <dt>cont3xtUser</dt>
           <dd>Can use the Cont3xt application</dd>
           <dt>parliamentAdmin</dt>
           <dd>Can perform parliament configuration, automatically assigned the parliamentUser role.</dd>
@@ -1295,7 +1295,7 @@ SPDX-License-Identifier: Apache-2.0
           <dt>wiseAdmin</dt>
           <dd>Can perform wise configuration, automatically assigned the wiseUser.</dd>
           <dt>wiseUser</dt>
-          <dd>Can use the WISE UI to do queries and viewer stats</dd>
+          <dd>Can use the WISE UI to do queries and view stats</dd>
         </dl>
 
         <p>

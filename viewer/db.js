@@ -512,8 +512,8 @@ async function fixPacketPos (fields) {
             for (let i = 0; i < buffer.length; i++) {
               const x = buffer.readUInt8(i);
               // high bit set when last
-              if (x & 0x80) {
-                num = num + (x & 0x7f) * mult;
+              if (x & 0x80) { // eslint-disable-line no-bitwise
+                num = num + (x & 0x7f) * mult; // eslint-disable-line no-bitwise
                 if (num !== 0) {
                   lastgap = num;
                 }

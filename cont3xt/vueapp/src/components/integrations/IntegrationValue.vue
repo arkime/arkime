@@ -81,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-else-if="field.type === 'externalLink'">
         <v-btn
           target="_blank"
-          :href="value.value"
+          :href="safeUrl(value.value)"
           size="x-small"
           class="integration-external-link-button square-btn-xs"
           variant="outlined"
@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-else-if="field.type === 'url'">
         <a
           target="_blank"
-          :href="value.value"
+          :href="safeUrl(value.value)"
           rel="noopener noreferrer"
           data-testid="integration-url">
           <highlightable-text
@@ -146,6 +146,7 @@ import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 import DnsRecords from '@/utils/DnsRecords.vue';
 import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { safeUrl } from '@common/vueFilters';
 import { getHighlightsForValue, getHighlightsForArray } from '@/utils/highlightUtil';
 
 export default {
@@ -265,6 +266,7 @@ export default {
       this.tableFilteredData = newFilteredData;
     },
     /* helpers ------------------------------------------------------------- */
+    safeUrl,
     findValue (data, field) {
       return formatPostProcessedValue(data, field);
     },

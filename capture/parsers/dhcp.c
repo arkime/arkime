@@ -4,7 +4,6 @@
  */
 #include "arkime.h"
 #include <arpa/inet.h>
-#include <netinet/udp.h>
 
 extern ArkimeConfig_t        config;
 
@@ -40,10 +39,10 @@ LOCAL const char *const namesv6[] = {
     "LEASEQUERY_REPLY",
     "LEASEQUERY_DONE",
     "LEASEQUERY_DATA",
-    "LEASEQUERY_NO_DATA",
-    "LEASEQUERY_STATUS",
-    "LEASEQUERY_RECONF",
-    "LEASEQUERY_RECONF_REPLY"
+    "RECONFIGURE_REQUEST",
+    "RECONFIGURE_REPLY",
+    "DHCPV4_QUERY",
+    "DHCPV4_RESPONSE"
 };
 
 LOCAL char *const namesv4[] = {
@@ -221,8 +220,10 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         if (t == 0) // Pad, no length
             continue;
         BSB_IMPORT_u08(bsb, l);
-        if (BSB_IS_ERROR(bsb) || l > BSB_REMAINING(bsb) || l == 0)
+        if (BSB_IS_ERROR(bsb) || l > BSB_REMAINING(bsb))
             break;
+        if (l == 0) // Zero-length option (e.g. a flag option), nothing to read
+            continue;
         switch (t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);

@@ -95,6 +95,9 @@ export async function fetchWrapper (options) {
   }
 
   if (data?.error) { // check for a general error
+    if (typeof data.error === 'object') {
+      throw new ArkimeError(data.error.text || 'error', data.error);
+    }
     throw new Error(data.error);
   }
 

@@ -1026,7 +1026,7 @@ LOCAL void arkime_config_load()
 
         if (!data || code != 200) {
             free(data);
-            CONFIGEXIT("Couldn't download from code: %d host: %s url: %s", code, host, end);
+            CONFIGEXIT("Couldn't download, code: %d host: %s url: %s", code, host, end);
         }
 
         if (g_str_has_suffix(config.configFile, ".ini"))
@@ -1519,7 +1519,7 @@ void arkime_config_load_packet_ips()
 {
     GError *error = 0;
 
-    if (g_key_file_has_group(arkimeKeyFile, "packet-ips")) {
+    if (g_key_file_has_group(arkimeKeyFile, "packet-drop-ips")) {
         arkime_config_parse_packet_ips(arkimeKeyFile);
     }
 
@@ -2023,7 +2023,7 @@ void arkime_config_init()
     }
 
     if (!config.pcapDir || !config.pcapDir[0]) {
-        CONFIGEXIT("You must set a non empty pcapDir= in the config file(%s) to save files to. You need to fix this before Arkime can continue.", config.configFile);
+        CONFIGEXIT("You must set a non empty pcapDir= in the config file (%s) to save files to. You need to fix this before Arkime can continue.", config.configFile);
     }
 
     if (!config.dryRun) {

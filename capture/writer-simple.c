@@ -42,6 +42,11 @@ LOCAL  int                   simpleGzipLevel;
 LOCAL  int                   simpleZstdLevel;
 LOCAL  int                   simpleFreeOutputBuffers;
 
+// mmap output buffer size: pcapWriteSize plus room for one worst-case record
+// written past the flush threshold: a max packet body (ARKIME_PACKET_MAX_LEN)
+// plus its 16 byte pcap record header.
+#define ARKIME_SIMPLE_BUFSIZE (config.pcapWriteSize + ARKIME_PACKET_MAX_LEN + 16)
+
 // Information about the current file being written to, all items that are constant per file should be here
 typedef struct {
     EVP_CIPHER_CTX      *cipher_ctx;
@@ -70,7 +75,7 @@ typedef struct {
 // NOTE this points to the file structure, kind of backwards
 typedef struct arkimesimple {
     struct arkimesimple *simple_next, *simple_prev;
-    uint8_t             *buf;     // mmap buffer, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN
+    uint8_t             *buf;     // mmap buffer, ARKIME_SIMPLE_BUFSIZE bytes
     ArkimeSimpleFile_t  *file;
     uint32_t             bufpos;  // Where in buf we are writing to
     uint8_t              closing; // This is the last block, close file when done
@@ -122,7 +127,7 @@ LOCAL int                    openOptions;
  * controlled by simpleCompressionBlockSize.
  * uncompressedBits is calculated so it can hold simpleCompressionBlockSize.
  * The file pos for each packet is made of two parts
- *   X the location in the file of the start of the compress block, which
+ *   X the location in the file of the start of the compressed block, which
  *   is shifted uncompressedBits
  *   Y the location inside the uncompressed block of the packet start
  * A larger simpleCompressionBlockSize leads to better compression but slower read time.
@@ -150,7 +155,7 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
     if (!info) {
         // Freelist empty, allocate new
         info = ARKIME_TYPE_ALLOC0(ArkimeSimple_t);
-        info->buf = mmap (0, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+        info->buf = mmap (0, ARKIME_SIMPLE_BUFSIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
@@ -200,7 +205,7 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
         ARKIME_UNLOCK(freeList);
     } else {
         ARKIME_UNLOCK(freeList);
-        munmap(info->buf, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
+        munmap(info->buf, ARKIME_SIMPLE_BUFSIZE);
         ARKIME_TYPE_FREE(ArkimeSimple_t, info);
     }
 }
@@ -226,7 +231,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         case ARKIME_COMPRESSION_GZIP:
             // Start the gzip buffer after what we copied from previous buffer.
             ninfo->file->z_strm.next_out = (Bytef *) ninfo->buf + ninfo->bufpos;
-            ninfo->file->z_strm.avail_out = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN - ninfo->bufpos;
+            ninfo->file->z_strm.avail_out = ARKIME_SIMPLE_BUFSIZE - ninfo->bufpos;
             break;
 #ifdef HAVE_ZSTD
         case ARKIME_COMPRESSION_ZSTD:
@@ -506,7 +511,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
         static uint32_t notSaved;
         notSaved++;
-        LOG_RATE(60, "WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
+        LOG_RATE(60, "WARNING - Disk Q of %d is too large and exceeds simpleMaxQ setting so not saving %u packets. Check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
         return;
     }
 
@@ -541,7 +546,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             compressionArg = "gzip";
 
             info->file->z_strm.next_out = (Bytef *) info->buf;
-            info->file->z_strm.avail_out = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
+            info->file->z_strm.avail_out = ARKIME_SIMPLE_BUFSIZE;
             deflateInit2(&info->file->z_strm, simpleGzipLevel, Z_DEFLATED, 16 + 15, 9, Z_DEFAULT_STRATEGY);
             break;
 #ifdef HAVE_ZSTD
@@ -552,7 +557,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             compressionArg = "zstd";
 
             info->file->zstd_out.dst = info->buf;
-            info->file->zstd_out.size = config.pcapWriteSize + ARKIME_PACKET_MAX_LEN;
+            info->file->zstd_out.size = ARKIME_SIMPLE_BUFSIZE;
             info->file->zstd_out.pos = 0;
             info->file->zstd_completedBlockStart = 0;
             break;

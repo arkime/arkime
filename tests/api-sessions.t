@@ -1,4 +1,4 @@
-use Test::More tests => 167;
+use Test::More tests => 171;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -150,6 +150,13 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Arkime Node
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
+
+# csv ids error path must not crash viewer (write-after-end on error)
+    my $csvErr = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/sessions.csv?date=-1&segments=all&ids=" . $idQuery->{data}->[0]->{id} . "&expression=" . uri_escape("ip.protocol==blah"))->content;
+    like ($csvErr, qr/Can't get sessions from IDs/, "CSV Ids error message");
+    unlike ($csvErr, qr/IP Protocol/, "CSV Ids error has no csv header");
+    my $alive = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    is (scalar @{$alive->{data}}, 3, "viewer alive after CSV Ids error");
 
     my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
@@ -346,7 +353,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
 # TCP reassembly synthetic pcap tests
     my $json = get("/sessions.json?length=1000&date=-1&expression=" . uri_escape("file=$pwd/tcp-reassembly-synthetic.pcap"));
-    is ($json->{recordsFiltered}, 7, "tcp-reassembly 7 sessions");
+    is ($json->{recordsFiltered}, 11, "tcp-reassembly 11 sessions");
 
     # Build a hash of source port -> session id
     my %portToId;

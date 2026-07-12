@@ -813,22 +813,28 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #checkIps (req, res) {
-    if (req.ip === undefined) {
+    // userAuthIps restricts which connecting peer (typically the trusted auth
+    // proxy) may send requests. It MUST be checked against the real socket peer
+    // address, not req.ip: when trust proxy is enabled req.ip is derived from the
+    // client-supplied X-Forwarded-For header and is therefore spoofable, which
+    // would let an attacker bypass userAuthIps (e.g. the header-auth loopback default).
+    const ip = req.socket?.remoteAddress;
+    if (ip === undefined) {
       return 0;
     }
 
-    if (req.ip.includes(':')) {
-      if (!Auth.#userAuthIps.find(req.ip)) {
+    if (ip.includes(':')) {
+      if (!Auth.#userAuthIps.find(ip)) {
         res.status(403);
-        res.json({ success: false, text: `Not allowed by ip (${req.ip})` });
-        console.log('Blocked (userAuthIps setting) by ip', req.ip, req.url);
+        res.json({ success: false, text: `Not allowed by ip (${ip})` });
+        console.log('Blocked (userAuthIps setting) by ip', ip, req.url);
         return 1;
       }
     } else {
-      if (!Auth.#userAuthIps.find(`::ffff:${req.ip}`)) {
+      if (!Auth.#userAuthIps.find(`::ffff:${ip}`)) {
         res.status(403);
-        res.json({ success: false, text: `Not allowed by ip (${req.ip})` });
-        console.log('Blocked (userAuthIps setting) by ip', req.ip, req.url);
+        res.json({ success: false, text: `Not allowed by ip (${ip})` });
+        console.log('Blocked (userAuthIps setting) by ip', ip, req.url);
         return 1;
       }
     }
@@ -869,10 +875,6 @@ class Auth {
       }
     }
 
-    if (nuser.passStore === undefined) {
-      nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
-    }
-
     if (nuser.userId !== userId) {
       if (nuser.userId === undefined) {
         if (ArkimeConfig.debug > 0) {
@@ -882,6 +884,10 @@ class Auth {
         console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', resetting to use '${userId}'`);
       }
       nuser.userId = userId;
+    }
+
+    if (nuser.passStore === undefined) {
+      nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
     }
 
     if (nuser.userName === undefined || nuser.userName === 'undefined') {
@@ -1132,7 +1138,12 @@ class Auth {
   static auth2objNext (auth, secret) {
     secret ??= Auth.#serverSecret;
     try {
-      const { iv, salt, data, tag } = JSON.parse(auth);
+      const parsed = JSON.parse(auth);
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed) ||
+          ArkimeUtil.isPP(Object.keys(parsed))) {
+        throw new Error('Malformed auth token');
+      }
+      const { iv, salt, data, tag } = parsed;
 
       // Validate strict shapes BEFORE expensive PBKDF2 (DoS protection)
       const isHex = /^[0-9a-fA-F]+$/;
@@ -1223,11 +1234,6 @@ class Auth {
     let userId;
 
     if (!req.query.userId || req.query.userId === req.user.userId) {
-      if (Auth.regressionTests) {
-        req.settingUser = req.user;
-        return next();
-      }
-
       userId = req.user.userId;
     } else if (!req.user.hasRole('usersAdmin') || (!req.url.toLowerCase().startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
       // user is trying to get another user's settings without admin privilege

@@ -698,9 +698,11 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         field->str = (char *)string;
         goto added;
     case ARKIME_FIELD_TYPE_STR_ARRAY:
-        if (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST &&
-            strncmp(field->sarray->pdata[field->sarray->len - 1], string, len) == 0) {
-            return NULL;
+        if (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST) {
+            const char *last = g_ptr_array_index(field->sarray, field->sarray->len - 1);
+            if (strncmp(last, string, len) == 0 && last[len] == 0) {
+                return NULL;
+            }
         }
         if (copy)
             string = g_strndup(string, len);
@@ -1909,7 +1911,7 @@ LOCAL gboolean arkime_field_load_field_remap(gpointer UNUSED(user_data))
         return G_SOURCE_REMOVE;
 
     for (int i = 0; i < (int)keys_len; i++) {
-        int oldPos = arkime_field_by_exp(keys[i]);
+        int oldPos = arkime_field_by_exp_ignore_error(keys[i]);
         if (oldPos == -1) {
             LOG("WARNING - Unknown field '%s', not remapping", keys[i]);
             continue;
@@ -1928,12 +1930,12 @@ LOCAL gboolean arkime_field_load_field_remap(gpointer UNUSED(user_data))
             g_strchomp(key);
             while (isspace(*value)) value++;
             g_strchomp(value);
-            int matchPos = arkime_field_by_exp(key);
+            int matchPos = arkime_field_by_exp_ignore_error(key);
             if (matchPos == -1) {
                 LOG("WARNING - Unknown field '%s', not remapping", key);
                 continue;
             }
-            int newPos = arkime_field_by_exp(value);
+            int newPos = arkime_field_by_exp_ignore_error(value);
             if (newPos == -1) {
                 LOG("WARNING - Unknown field '%s', not remapping", value);
                 continue;
@@ -2138,7 +2140,7 @@ void arkime_field_exit()
     }
 
     // Remove those are only in exp
-    HASH_FORALL_POP_HEAD2(d_, fieldsByExp, info) {
-        g_free(info->expression);
+    HASH_FORALL_POP_HEAD2(e_, fieldsByExp, info) {
+        arkime_field_free_info(info);
     }
 }

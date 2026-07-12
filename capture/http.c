@@ -7,13 +7,8 @@
  */
 
 #define CURL_DISABLE_DEPRECATION
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/socket.h>
-#include <string.h>
-#include <ctype.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <arpa/inet.h>
 #include <curl/curl.h>
 #include "arkime.h"
@@ -249,6 +244,9 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
 
     if (headerList) {
         curl_easy_setopt(easy, CURLOPT_HTTPHEADER, headerList);
+    } else {
+        // Clear any headerList from a previous request on this reused easy handle
+        curl_easy_setopt(easy, CURLOPT_HTTPHEADER, NULL);
     }
 
     if (server->userpwd) {
@@ -324,7 +322,7 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         curl_easy_getinfo(easy, CURLINFO_SIZE_UPLOAD, &uploadSize);
         curl_easy_getinfo(easy, CURLINFO_SIZE_DOWNLOAD, &downloadSize);
 
-        LOG("%d/%d SYNC %ld %s %.0lf/%0.lf %.0lfms %.0lfms",
+        LOG("%d/%d SYNC %ld %s %.0lf/%.0lf %.0lfms %.0lfms",
             1, 1,
             responseCode,
             server->syncRequest.url,
@@ -1034,6 +1032,10 @@ void arkime_http_free_server(void *serverV)
     }
     if (server->caTrustFile)
         free(server->caTrustFile);
+
+    free(server->userpwd);
+    free(server->aws_sigv4);
+
     // Free multi info
     curl_multi_cleanup(server->multi);
 

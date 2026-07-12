@@ -1,0 +1,5 @@
+if (session.entropy)
+  div.sessionDetailMeta.bold Shannon Entropy
+  dl.sessionDetailMeta
+    +arrayList(session.entropy, "src", "Shannon Entropy Src (x100)", "entropy.src")
+    +arrayList(session.entropy, "dst", "Shannon Entropy Dst (x100)", "entropy.dst")

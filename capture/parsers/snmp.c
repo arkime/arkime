@@ -63,10 +63,11 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
     // Version
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (!value || atag != 2 || alen != 1 || value[0] > 3)
+    // Version: wire value 0=v1, 1=v2c, 3=v3 (2 is historic SNMPv2u/v2* and would
+    // otherwise be mismapped to v3, so reject it).
+    if (!value || atag != 2 || alen != 1 || value[0] > 3 || value[0] == 2)
         return ARKIME_PARSER_UNREGISTER;
 
-    // Version: wire value 0=v1, 1=v2c, 3=v3
     if (value[0] == 3) {
         version = 3;
     } else {

@@ -1100,6 +1100,617 @@
      "_index" : "tests_sessions3-23m11"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 39
+    },
+    "destination" : {
+     "bytes" : 185,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.2",
+     "mac" : [
+      "00:11:22:33:44:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dstOui" : [
+     "CIMSYS Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e30",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000070000,
+    "http" : {
+     "clientVersion" : [
+      "1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "test"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "d3accd33402becc720abebee93ebe193"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/tcp-reuse"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "serverVersion" : [
+      "1.0"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "9f2a59a60e65fbcd5a3e1b7248adf92890ce3a32b19e43fb4751c2657196de13"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "test/tcp-reuse"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000070006,
+    "length" : 6,
+    "network" : {
+     "bytes" : 494,
+     "community_id" : "1:V/q2grDm28lsxYksP+kDFncECuY=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     109,
+     93,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     6257,
+     6327,
+     6397,
+     6467,
+     6576,
+     6669,
+     6739,
+     6809
+    ],
+    "packetRange" : {
+     "gte" : 1700000070000,
+     "lte" : 1700000070006
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 23
+    },
+    "source" : {
+     "bytes" : 309,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.1",
+     "mac" : [
+      "00:11:22:33:44:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 40008
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f746370",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 20000
+    },
+    "totDataBytes" : 62
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 39
+    },
+    "destination" : {
+     "bytes" : 54,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.2",
+     "mac" : [
+      "00:11:22:33:44:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 80
+    },
+    "dstOui" : [
+     "CIMSYS Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000070007,
+    "http" : {
+     "clientVersion" : [
+      "1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "test"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/tcp-reuse"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "uri" : [
+      "test/tcp-reuse"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000070010,
+    "length" : 3,
+    "network" : {
+     "bytes" : 255,
+     "community_id" : "1:V/q2grDm28lsxYksP+kDFncECuY=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     109
+    ],
+    "packetPos" : [
+     6879,
+     6949,
+     7019,
+     7089
+    ],
+    "packetRange" : {
+     "gte" : 1700000070007,
+     "lte" : 1700000070010
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 201,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.1",
+     "mac" : [
+      "00:11:22:33:44:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 40008
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f746370",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 22000
+    },
+    "totDataBytes" : 39
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 39
+    },
+    "destination" : {
+     "bytes" : 185,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.2",
+     "mac" : [
+      "00:11:22:33:44:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dstOui" : [
+     "CIMSYS Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e30",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000070011,
+    "http" : {
+     "clientVersion" : [
+      "1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "test"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "d3accd33402becc720abebee93ebe193"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/tcp-reuse"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "serverVersion" : [
+      "1.0"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "9f2a59a60e65fbcd5a3e1b7248adf92890ce3a32b19e43fb4751c2657196de13"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "test/tcp-reuse"
+     ],
+     "uriCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000070018,
+    "length" : 7,
+    "network" : {
+     "bytes" : 494,
+     "community_id" : "1:yfl2SI444B97BXyi6t2FmqoepDA=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     109,
+     93,
+     70,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     7198,
+     7268,
+     7338,
+     7447,
+     7540,
+     7610,
+     7680,
+     7750
+    ],
+    "packetRange" : {
+     "gte" : 1700000070011,
+     "lte" : 1700000070018
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 23
+    },
+    "source" : {
+     "bytes" : 309,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.1",
+     "mac" : [
+      "00:11:22:33:44:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 40009
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f746370",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 31000,
+     "src" : 30000
+    },
+    "totDataBytes" : 62
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 31
+    },
+    "destination" : {
+     "bytes" : 54,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.2",
+     "mac" : [
+      "00:11:22:33:44:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 80
+    },
+    "dstOui" : [
+     "CIMSYS Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000080000,
+    "http" : {
+     "clientVersion" : [
+      "1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "t"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/wrap"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "uri" : [
+      "t/wrap"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000080004,
+    "length" : 4,
+    "network" : {
+     "bytes" : 301,
+     "community_id" : "1:W6Z20+NRjKM2IAajn6k3hplGoWo=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     70
+    ],
+    "packetPos" : [
+     7820,
+     7890,
+     7960,
+     8030,
+     8131
+    ],
+    "packetRange" : {
+     "gte" : 1700000080000,
+     "lte" : 1700000080004
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 247,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.1",
+     "mac" : [
+      "00:11:22:33:44:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 40010
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f777261",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 1,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 31
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
   }
  ]
 }

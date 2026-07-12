@@ -3,6 +3,30 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "arp" : {
+     "ASN" : [
+      "AS1 Cool Beans!"
+     ],
+     "GEO" : [
+      "CA"
+     ],
+     "RIR" : [
+      "TEST"
+     ],
+     "ip" : [
+      "10.0.0.2"
+     ],
+     "ipCnt" : 1,
+     "mac" : [
+      "4a:7f:01:3b:a2:71"
+     ],
+     "macCnt" : 1,
+     "opcode" : [
+      "1",
+      "2"
+     ],
+     "opcodeCnt" : 2
+    },
     "client" : {
      "bytes" : 0
     },
@@ -84,6 +108,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 0,
     "vni" : [
      123

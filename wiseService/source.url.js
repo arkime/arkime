@@ -9,6 +9,7 @@
 
 const SimpleSource = require('./simpleSource.js');
 const axios = require('axios');
+const RE2 = require('re2');
 
 class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
@@ -17,7 +18,16 @@ class URLSource extends SimpleSource {
     this.url = api.getConfig(section, 'url');
     this.urlScrapeRedirect = api.getConfig(section, 'urlScrapeRedirect');
     if (this.urlScrapeRedirect) {
-      this.urlScrapeRedirect = new RegExp(this.urlScrapeRedirect);
+      // Use RE2 to avoid catastrophic backtracking (ReDoS) when matching the
+      // admin-supplied pattern against full HTTP response bodies. Fall back to
+      // native RegExp if the pattern uses features RE2 doesn't support
+      // (e.g. backreferences or lookaround).
+      try {
+        this.urlScrapeRedirect = new RE2(this.urlScrapeRedirect);
+      } catch (e) {
+        console.log(this.section, '- WARNING urlScrapeRedirect could not be compiled with RE2, falling back to RegExp which is vulnerable to ReDoS:', e.message);
+        this.urlScrapeRedirect = new RegExp(this.urlScrapeRedirect);
+      }
     }
     this.urlScrapePrefix = api.getConfig(section, 'urlScrapePrefix', '');
     this.urlScrapeSuffix = api.getConfig(section, 'urlScrapeSuffix', '');

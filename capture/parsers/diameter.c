@@ -121,12 +121,14 @@ LOCAL const char *diameter_app_name(uint32_t appId)
         return "3GPP-S13";
     case 16777255:
         return "3GPP-SLg";
-    case 16777265:
+    case 16777264:
         return "3GPP-SWm";
-    case 16777272:
+    case 16777265:
         return "3GPP-SWx";
-    case 16777291:
+    case 16777272:
         return "3GPP-S6b";
+    case 16777291:
+        return "3GPP-SLh";
     default:
         return NULL;
     }

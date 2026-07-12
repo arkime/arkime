@@ -87,7 +87,7 @@ LOCAL int molua_load_file(const char *name)
         }
 
         if (lua_pcall(L, 0, 0, 0)) {
-            LOGEXIT("Error initing %s: %s", name, lua_tostring(L, -1));
+            LOGEXIT("Error initializing %s: %s", name, lua_tostring(L, -1));
         }
     }
     return 0;

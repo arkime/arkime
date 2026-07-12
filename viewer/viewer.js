@@ -285,6 +285,10 @@ app.get( // es health endpoint
   StatsAPIs.getESHealth
 );
 
+// pre-auth plugin router - plugins may register unauthenticated /plugin/* routes
+const prePluginRouter = express.Router();
+app.use('/plugin', prePluginRouter);
+
 // password, testing, or anonymous mode setup ---------------------------------
 Auth.app(app);
 
@@ -802,7 +806,9 @@ function loadPlugins () {
       schemes.set(scheme, info);
     },
     getDb: function () { return Db; },
-    getPcap: function () { return Pcap; }
+    getPcap: function () { return Pcap; },
+    getPrePluginRouter: function () { return prePluginRouter; },
+    getPostPluginRouter: function () { return postPluginRouter; }
   };
   const plugins = Config.getArray('viewerPlugins', '');
   const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
@@ -870,7 +876,7 @@ function sendSessionWorker (options, cb) {
     }
     if (!session) {
       console.log('no session', session, 'err', err, 'id', options.id);
-      return;
+      return cb();
     }
     session.id = options.id;
     session.packetPos = ps;
@@ -1177,6 +1183,11 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // ============================================================================
 // APIS
 // ============================================================================
+
+// post-auth plugin router - plugins may register authenticated /plugin/* routes
+const postPluginRouter = express.Router();
+app.use('/plugin', postPluginRouter);
+
 app.all([
   '/user/current',
   '/user/create',

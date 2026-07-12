@@ -250,6 +250,7 @@ function checkConfigCode (req, res, next) {
     }
   }
 
+  // TODO(Arkime 7): do not log the correct config PIN code - it leaks the secret to anyone with log access.
   console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
   return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
@@ -1075,10 +1076,12 @@ app.post('/get', function (req, res) {
         offset++;
 
         let typeName;
+        /* eslint-disable no-bitwise */
         if (type & 0x80) {
           typeName = buf.toString('utf8', offset, offset + (type & ~0x80));
           offset += (type & ~0x80);
         } else {
+        /* eslint-enable no-bitwise */
           typeName = internals.type2Name[type];
         }
 
@@ -1461,6 +1464,17 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
+   * GET - /api/user
+   *
+   * Fetches the currently logged in user, so the UI can gate admin-only actions.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   * @name "/api/user"
+   * @returns {ArkimeUser} The currently logged in user.
+   */
+  app.get('/api/user', [ArkimeUtil.noCacheJson, isWiseUser], User.apiGetUser);
+
+  // ----------------------------------------------------------------------------
+  /**
    * GET - Used by wise UI to retrieve the raw file being used by the section.
    *       This is an authenticated API and requires wiseService to be started with --webconfig.
    *
@@ -1622,7 +1636,7 @@ if (internals.webconfig) {
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
-  app.get(['/source/:source/get', '/config/get'], (req, res) => {
+  app.get(['/source/:source/get', '/config/get', '/api/user'], (req, res) => {
     return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   });
   app.put(['/source/:source/put', '/config/save'], (req, res) => {

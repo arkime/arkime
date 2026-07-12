@@ -635,51 +635,53 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 {
     ArkimeParserBuf_t    *tls          = uw;
 
+    // This side is done
+    if (tls->flags & (1 << which))
+        return 0;
+
     // Copy the data we have
     if (arkime_parser_buf_add(tls, which, data, remaining) < 0) {
         arkime_session_add_tag(session, "tls:record-too-long");
-        arkime_parsers_unregister(session, uw);
-        return 0;
+        return ARKIME_PARSER_UNREGISTER;
     }
 
-    // Make sure we have header
-    if (tls->len[which] < 5)
-        return 0;
-
-    // Not handshake protocol, stop looking
-    if (tls->buf[which][0] != 0x16) {
-        tls->len[which] = 0;
-        arkime_parsers_unregister(session, uw);
-        return 0;
-    }
-
-    // Need the whole record
-    int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
-    if (need > tls->bufMax) {
-        arkime_session_add_tag(session, "tls:record-too-long");
-        arkime_parsers_unregister(session, uw);
-        return 0;
-    }
-    if (need > tls->len[which])
-        return 0;
-
-    // Now actually process server or client records
-    if (which == tls->serverWhich) {
-        if (tls_process_server_handshake_record(session, tls->buf[which] + 5, need - 5)) {
+    while (tls->len[which] >= 5) {
+        // Not handshake protocol, stop looking on this direction
+        if (tls->buf[which][0] != 0x16) {
             tls->len[which] = 0;
-            arkime_parsers_unregister(session, uw);
+            tls->flags |= (1 << which);
+            if ((tls->flags & 3) == 3)
+                return ARKIME_PARSER_UNREGISTER;
             return 0;
         }
-    } else {
-        if (tls->buf[which][5] == 1) {
-            tls_process_client(session, tls->buf[which], need);
-        }
-    }
 
-    // Remove current frame if more data
-    arkime_parser_buf_del(tls, which, need);
-    if (tls->len[which]) {
-        return 0;
+        // Need the whole record
+        int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
+        if (need > tls->bufMax) {
+            arkime_session_add_tag(session, "tls:record-too-long");
+            return ARKIME_PARSER_UNREGISTER;
+        }
+        if (need > tls->len[which])
+            return 0;
+
+        // Now actually process server or client records
+        if (which == tls->serverWhich) {
+            if (tls_process_server_handshake_record(session, tls->buf[which] + 5, need - 5)) {
+                tls->len[which] = 0;
+                tls->flags |= (1 << which);
+                if ((tls->flags & 3) == 3)
+                    return ARKIME_PARSER_UNREGISTER;
+                return 0;
+            }
+        } else {
+            // need >= 6 so we don't read byte 5 of a zero length record
+            if (need >= 6 && tls->buf[which][5] == 1) {
+                tls_process_client(session, tls->buf[which], need);
+            }
+        }
+
+        // Remove current frame
+        arkime_parser_buf_del(tls, which, need);
     }
 
     return 0;

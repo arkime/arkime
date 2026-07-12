@@ -52,6 +52,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
     if (config.debug)
         LOG("Monitor enqueuing %s", fullfilename);
     arkime_reader_scheme_load(fullfilename, sw->flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), sw->actions);
+    g_free(fullfilename);
 }
 /******************************************************************************/
 LOCAL gboolean scheme_file_monitor_read()
@@ -116,7 +117,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
     GDir     *dir = g_dir_open(dirname, 0, &error);
 
     if (error)
-        LOGEXIT("ERROR - Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
+        LOGEXIT("ERROR - Couldn't open pcap directory %s: %s", dirname, error->message);
 
     while (1) {
         const gchar *filename = g_dir_read_name(dir);
@@ -143,9 +144,9 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
 LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlags UNUSED(flags), ArkimeSchemeAction_t UNUSED(*actions))
 {
     if (config.commandSocket || config.commandList)
-        LOG_RATE(30, "ERROR - Monitoring not supporting on this OS - %s", dirname);
+        LOG_RATE(30, "ERROR - Monitoring not supported on this OS - %s", dirname);
     else
-        LOGEXIT("ERROR - Monitoring not supporting on this OS - %s", dirname);
+        LOGEXIT("ERROR - Monitoring not supported on this OS - %s", dirname);
 }
 #endif
 /******************************************************************************/
@@ -209,7 +210,8 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     }
 
     int fd;
-    if (strcmp(uri, "-") == 0) {
+    const int isStdin = strcmp(uri, "-") == 0;
+    if (isStdin) {
         fd = fileno(stdin);
     } else {
         LOCAL  char  filename[PATH_MAX + 1];
@@ -247,7 +249,8 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         ssize_t bytesRead = read(fd, buffer, sizeof(buffer));
         if (bytesRead > 0) {
             if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL, actions)) {
-                close(fd);
+                if (!isStdin)
+                    close(fd);
                 if (config.ignoreErrors && (flags & ARKIME_SCHEME_FLAG_DELETE)) { // ALW - Maybe this should always delete?
                     if (config.debug)
                         LOG("Deleting %s", uri);
@@ -262,7 +265,8 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         }
     } while (1);
 
-    close(fd);
+    if (!isStdin)
+        close(fd);
     if (flags & ARKIME_SCHEME_FLAG_DELETE) {
         if (config.debug)
             LOG("Deleting %s", uri);

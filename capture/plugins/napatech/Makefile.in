@@ -1,0 +1,17 @@
+INCLUDE_PCAP  = @PCAP_CFLAGS@
+
+INCLUDE_OTHER = -I../.. -I../../thirdparty \
+                @GLIB2_CFLAGS@
+
+NTDIR         ?= /opt/napatech3
+
+SRCS=$(wildcard *.c)
+SOS=$(patsubst %.c,../%.so,$(SRCS))
+
+../%.so : %.c ../../arkime.h ../../hash.h ../../dll.h
+	$(CC) -pthread @SHARED_FLAGS@ -I$(NTDIR)/include $(INCLUDE_PCAP) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $< -Wl,-rpath=$(NTDIR)/lib -L$(NTDIR)/lib -lntapi
+
+all:$(SOS)
+
+distclean realclean clean:
+	rm -f *.o $(SOS)

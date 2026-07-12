@@ -35,6 +35,67 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+6.5.0 2026/06/15
+## Breaking
+  - #4005 userAuthIps is now correctly matched against the real connecting peer address.
+          Deployments behind a proxy must ensure the proxy's own address is
+          covered by userAuthIps when authTrustProxy is used.
+## Release
+  - #4004 Fix Ubuntu 26.04 builds having the incorrect dependencies
+## All
+  - #4030 Fix hidePcap/hideFiles/hideStats/disablePcapDownload failing open for users with the permission inherited from multiple roles
+  - #4031 Fix CSV formula injection in session, connection, and user CSV exports by neutralizing cells starting with = + - @
+## Capture
+  - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
+  - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
+  - #3997 Added IPFIX and sFlow v5 classifiers for flow telemetry visibility
+  - #3997 Added DCERPC interface labels for AD CS (MS-WCCE/ICPR), PrintNightmare (MS-RPRN/MS-PAR), DfsCoerce, ShadowCoerce, WMI, BackupKey (BKRP), EventLog6, DFS-R (FRS2), and IObjectExporter
+  - #3998 Identify AD CS web enrollment over HTTP (ESC8) as protocols adcs-web/adcs-ndes/adcs-cep/adcs-ces based on URL path
+  - #3998 Identify RPC-over-HTTP (Outlook Anywhere / RPC Proxy) as protocol rpc-over-http via RPC_IN_DATA/RPC_OUT_DATA verb classifiers
+  - #3998 Identify WinRM / WS-Management (PowerShell Remoting, evil-winrm, WEF) as protocol winrm via POST /wsman
+  - #3999 Add DCERPC labels (even, mapi, iwbemlevel1login, msrp, dnsserver) and fix IRemUnknown/IRemUnknown2/ISystemActivator/ioxidresolver mislabels
+  - #4008 Extract arp.ip / arp.mac / arp.oui / arp.opcode from ARP packets
+  - #4010 Fix crash on startup when rootPlugins is set
+  - #4013 Add entropy plugin to calculate the Shannon entropy of the TCP/UDP data bytes per direction, with entropyChunkSize and entropyMaxUniqueValues options
+  - #4015 Initial napatech reader implementation (thanks @waynieack)
+  - #4019 Fix TCP flow split into two sessions when a reordered original SYN (arriving after FIN/RST, e.g. across multiple capture interfaces/reader threads) was mistaken for a port reuse
+  - #4021 Fix hunts and PCAP retrieval stalling with the writer-s3 plugin when a session's file is missing
+  - #4023 Fix TLS parser dropping the server hello/certificate  when the entire client direction was processed before the server's ServerHello
+  - #4024 Fix ESP sessions labeled with reverse direction
+  - #4024 Fix DNS/TLS templates
+  - #4024 Fix TCP/SCTP reassembly failure on U32 wrap in some cases
+  - #4024 Fix HTTP DELETE request Host/Cookie/Authorization headers being treated as response headers
+  - #4024 Fix SMTP Q-encoded header and AUTH decoding
+  - #4025 Fix HTTP request/response header mislabeling on reversed-direction sessions
+  - #4025 Fix S7comm function code 0x00 mislabeled as "Setup communication" (now "CPU services")
+  - #4025 Fix CAMEL/CAP operation code table to match 3GPP TS 29.078
+  - #4025 Fix DNS EDNS(0) extended RCODE (BADVERS..BADCOOKIE) not being decoded
+  - #4025 Fix TLS certificate enrichment crash when a cert has no extra fields
+  - #4025 Fix NetBIOS name decoding for embedded spaces, compressed names, and authority records
+  - #4026 Fix [packet-drop-ips] section in the main config file never being loaded (only packetDropIpsFiles worked)
+  - #4026 Fix IPv6 DSCP extraction using only the top 4 bits of the traffic class
+  - #4026 Fix rules file field modifier (contains/head/tail) on one field incorrectly applying to later fields in the same rule
+  - #4027 Fix wrong packetPos when reading truncated captures with readTruncatedPackets set
+  - #4030 Fix MQTT multi-topic UNSUBSCRIBE only extracting the first topic
+  - #4030 Fix SCTP reassembly losing messages after out-of-order delivery, causing spurious incomplete-sctp
+  - #4030 Fix SMB2 TREE_CONNECT share name not decoded for SMB2-only sessions
+  - #4030 Fix max-free-percent/max-free-bytes pcapDir selection lagging by one file
+## Cont3xt
+  - #3999 Fix logoutUrl when logoutUrlMethod=GET
+## Parliament
+  - #4028 Harden parliament against malicious Arkime clusters
+## Viewer
+  - #3994 Fix SPIView all not allowed error message
+  - #4007 Add sanitized {ORIGINALNAME} uploadCommand variable as a safe alternative to {INSECURE-ORIGINALNAME}
+  - #4018 Added support for preauth and postauth endpoint registration to plugins
+  - #4027 Fix viewer crash when /api/sessions/csv with ids fails to build the query
+  - #4027 Fix malformed TOTP codes causing a request error instead of being treated as invalid
+  - #4031 Fix potential stored XSS in session detail
+  - #4031 Fix stored XSS in hunt search string
+## Wise
+  - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
+  - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
+
 6.4.0 2026/05/20
 ## Breaking
   - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now

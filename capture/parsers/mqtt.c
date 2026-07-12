@@ -243,7 +243,7 @@ LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, 
     return consumed + (remainingLen - headerNeeded);
 }
 /******************************************************************************/
-LOCAL void mqtt_parse_subscribe(ArkimeSession_t *session, BSB *bsb, int version)
+LOCAL void mqtt_parse_subscribe(ArkimeSession_t *session, BSB *bsb, int version, gboolean isSubscribe)
 {
     // Packet identifier (skip)
     BSB_IMPORT_skip(*bsb, 2);
@@ -269,8 +269,9 @@ LOCAL void mqtt_parse_subscribe(ArkimeSession_t *session, BSB *bsb, int version)
             arkime_field_string_add(topicField, session, (char *)topic, topicLen, TRUE);
         }
 
-        // QoS (skip)
-        BSB_IMPORT_skip(*bsb, 1);
+        // SUBSCRIBE has a QoS/options byte per topic, UNSUBSCRIBE doesn't
+        if (isSubscribe)
+            BSB_IMPORT_skip(*bsb, 1);
     }
 }
 /******************************************************************************/
@@ -375,10 +376,10 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             }
             break;
         case 8: // SUBSCRIBE
-            mqtt_parse_subscribe(session, &packetBsb, mqtt->version);
+            mqtt_parse_subscribe(session, &packetBsb, mqtt->version, TRUE);
             break;
         case 10: // UNSUBSCRIBE
-            mqtt_parse_subscribe(session, &packetBsb, mqtt->version);
+            mqtt_parse_subscribe(session, &packetBsb, mqtt->version, FALSE);
             break;
         }
 

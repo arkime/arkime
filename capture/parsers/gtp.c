@@ -48,7 +48,6 @@ LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GTP;
 
-    // Should check for v4 vs v6 here
     BSB_IMPORT_u08(bsb, flags);
     BSB_IMPORT_rewind(bsb, 1);
 

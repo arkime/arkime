@@ -110,10 +110,10 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
 LOCAL int64_t sctp_tsn_diff(int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
-        return a + 0x100000000LL - b;
+        return b + 0x100000000LL - a;
 
     if (b > 0xc0000000 && a < 0x40000000)
-        return a - b - 0x100000000LL;
+        return b - a - 0x100000000LL;
 
     return b - a;
 }
@@ -173,74 +173,83 @@ LOCAL void sctp_send_data(ArkimeSession_t *const session, const uint8_t *data, i
 LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
 {
     int               dir = ARKIME_WHICH_GET_DIR(which);
-    int               state = 0;
-    ArkimeSctpData_t *sd = 0;
-    ArkimeSctpData_t *fsd;
-    int               totalsize = 0;
-    uint32_t          tsn;
+    ArkimeSctpData_t *sd;
 
-    /* First pass check if we have a full set and calculate size */
+    /* Advance the expected tsn past queued chunks that are now contiguous,
+     * so chunks that arrived out of order are counted as received */
     DLL_FOREACH(sd_, &session->sctpData, sd) {
-        // Only look at our direction
-        if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
+        if (ARKIME_WHICH_GET_DIR(sd->which) != dir)
             continue;
+        if (sd->tsn == session->sctpData.tsn[dir]) {
+            session->sctpData.tsn[dir]++;
+        } else if (sctp_tsn_diff(session->sctpData.tsn[dir], sd->tsn) > 0) {
+            break; // Gap before this chunk, can't advance further
         }
+    }
 
-        switch (state) {
-        case 0: // Looking for start
-            if (sd->flags & SCTP_DATA_FLAG_B) {
-                tsn = sd->tsn + 1;
-                state = 1;
-                totalsize = sd->len;
+    /* Deliver as many complete in-order messages as possible */
+    while (1) {
+        ArkimeSctpData_t *fsd = 0;
+        int               totalsize = 0;
+        int               state = 0;
+        uint32_t          tsn = 0;
+
+        DLL_FOREACH(sd_, &session->sctpData, sd) {
+            if (ARKIME_WHICH_GET_DIR(sd->which) != dir)
+                continue;
+
+            // Stop if the expected tsn hasn't passed this chunk yet - earlier chunks are missing
+            if (sctp_tsn_diff(sd->tsn, session->sctpData.tsn[dir]) <= 0)
+                return;
+
+            if (state == 0) { // Looking for start
+                if (!(sd->flags & SCTP_DATA_FLAG_B))
+                    return;
                 fsd = sd;
-            } else {
-                state = 3;
+                tsn = sd->tsn + 1;
+                totalsize = sd->len;
+                state = 1;
+            } else { // Have start looking for end
+                if (sd->tsn != tsn)
+                    return;
+                tsn++;
+                totalsize += sd->len;
             }
-            break;
-        case 1: // Have start looking for end
-            if (sd->tsn != tsn) {
-                state = 3;
-                break;
-            }
-            tsn++;
-            totalsize += sd->len;
             if (sd->flags & SCTP_DATA_FLAG_E) {
                 state = 2;
+                break;
             }
-            break;
-        } /* switch */
-        if (state >= 2) {
-            break;
         }
-    } /* DLL_FOREACH */
 
-    // Found a full set
-    if (state != 2)
-        return;
+        // No complete message at the head of the queue
+        if (state != 2)
+            return;
 
-    uint8_t *data = ARKIME_SIZE_ALLOC("sctp data", totalsize);
-    int     off = 0;
-    uint32_t protoId = fsd->protoId;
-    sd = fsd;
+        uint8_t *data = ARKIME_SIZE_ALLOC("sctp data", totalsize);
+        int     off = 0;
+        uint32_t protoId = fsd->protoId;
+        int      fwhich = fsd->which;
+        sd = fsd;
 
-    ArkimeSctpData_t *tmpsd;
-    DLL_FOREACH_REMOVABLE_START(sd_, &session->sctpData, sd, tmpsd) {
-        // Only look at our direction
-        if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
-            continue;
-        }
-        memcpy(data + off, sd->data, sd->len);
-        off += sd->len;
-        DLL_REMOVE(sd_, &session->sctpData, sd);
-        ARKIME_SIZE_FREE("sctp data", sd->data);
-        if (sd->flags & SCTP_DATA_FLAG_E) {
+        ArkimeSctpData_t *tmpsd;
+        DLL_FOREACH_REMOVABLE_START(sd_, &session->sctpData, sd, tmpsd) {
+            // Only look at our direction
+            if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
+                continue;
+            }
+            memcpy(data + off, sd->data, sd->len);
+            off += sd->len;
+            DLL_REMOVE(sd_, &session->sctpData, sd);
+            ARKIME_SIZE_FREE("sctp data", sd->data);
+            if (sd->flags & SCTP_DATA_FLAG_E) {
+                ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
+                break;
+            }
             ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
-            break;
         }
-        ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
+        sctp_send_data(session, data, totalsize, protoId, fwhich);
+        ARKIME_SIZE_FREE("sctp data", data);
     }
-    sctp_send_data(session, data, totalsize, protoId, which);
-    ARKIME_SIZE_FREE("sctp data", data);
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT

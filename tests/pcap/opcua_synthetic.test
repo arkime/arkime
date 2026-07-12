@@ -1,0 +1,695 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 208
+    },
+    "destination" : {
+     "bytes" : 298,
+     "ip" : "10.10.10.11",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 4840
+    },
+    "dstPayload8" : "41434b461c000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000010,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000000076,
+    "length" : 66,
+    "network" : {
+     "bytes" : 884,
+     "community_id" : "1:UKk98o2DcB8wbTNtPZXU9otFXfs=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "opcua" : {
+     "endpointUrl" : [
+      "opc.tcp://server.example.com:4840/synthetic1"
+     ],
+     "endpointUrlCnt" : 1,
+     "securityPolicyUri" : [
+      "http://opcfoundation.org/UA/SecurityPolicy#None"
+     ],
+     "securityPolicyUriCnt" : 1
+    },
+    "packetLen" : [
+     70,
+     70,
+     70,
+     146,
+     70,
+     98,
+     70,
+     202,
+     70,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     24,
+     94,
+     164,
+     234,
+     380,
+     450,
+     548,
+     618,
+     820,
+     890,
+     960,
+     1030
+    ],
+    "packetRange" : {
+     "gte" : 1700000000010,
+     "lte" : 1700000000076
+    },
+    "protocol" : [
+     "opcua",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 28
+    },
+    "source" : {
+     "bytes" : 586,
+     "ip" : "10.10.10.10",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 40001
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "48454c464c000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 236
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "9f:21:b7:54:07:8a:fd:14:56:55:96:14:d5:d7:81:68:06:63:43:cf",
+      "issuerCN" : [
+       "opcua-synthetic-client"
+      ],
+      "notAfter" : 2019686400000,
+      "notBefore" : 1704067200000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 3700,
+      "remainingSeconds" : 319686399,
+      "serial" : "11223344",
+      "subjectCN" : [
+       "opcua-synthetic-client"
+      ],
+      "validDays" : 3653,
+      "validSeconds" : 315619200
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 654
+    },
+    "destination" : {
+     "bytes" : 398,
+     "ip" : "fd00:10::2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 4840
+    },
+    "dstPayload8" : "41434b461c000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1700000001086,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000001152,
+    "length" : 66,
+    "network" : {
+     "bytes" : 1570,
+     "community_id" : "1:vZlM1Z5prQMwZXdjH44kc8y4I3U=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "opcua" : {
+     "endpointUrl" : [
+      "opc.tcp://[fd00::1]:4840/synthetic2"
+     ],
+     "endpointUrlCnt" : 1,
+     "securityPolicyUri" : [
+      "http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256"
+     ],
+     "securityPolicyUriCnt" : 1
+    },
+    "packetLen" : [
+     90,
+     90,
+     90,
+     157,
+     90,
+     118,
+     90,
+     677,
+     90,
+     90,
+     90,
+     90
+    ],
+    "packetPos" : [
+     1100,
+     1190,
+     1280,
+     1370,
+     1527,
+     1617,
+     1735,
+     1825,
+     2502,
+     2592,
+     2682,
+     2772
+    ],
+    "packetRange" : {
+     "gte" : 1700000001086,
+     "lte" : 1700000001152
+    },
+    "protocol" : [
+     "opcua",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 28
+    },
+    "source" : {
+     "bytes" : 1172,
+     "ip" : "fd00:10::1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 40002
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "48454c4643000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 682
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 164
+    },
+    "destination" : {
+     "bytes" : 298,
+     "ip" : "10.10.11.11",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 4840
+    },
+    "dstPayload8" : "41434b461c000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000002162,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000002228,
+    "length" : 66,
+    "network" : {
+     "bytes" : 840,
+     "community_id" : "1:d81bT/HOC8iQXVSDoa/kn8B/T9c=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "opcua" : {
+     "securityPolicyUri" : [
+      "http://opcfoundation.org/UA/SecurityPolicy#None"
+     ],
+     "securityPolicyUriCnt" : 1
+    },
+    "packetLen" : [
+     70,
+     70,
+     70,
+     102,
+     70,
+     98,
+     70,
+     202,
+     70,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     2862,
+     2932,
+     3002,
+     3072,
+     3174,
+     3244,
+     3342,
+     3412,
+     3614,
+     3684,
+     3754,
+     3824
+    ],
+    "packetRange" : {
+     "gte" : 1700000002162,
+     "lte" : 1700000002228
+    },
+    "protocol" : [
+     "opcua",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 28
+    },
+    "source" : {
+     "bytes" : 542,
+     "ip" : "10.10.11.10",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 40003
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "48454c4620000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 192
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "f7:ce:38:ac:b0:bb:f1:b4:b1:4a:58:e5:5c:9c:16:a5:be:4c:b5:ea",
+      "issuerCN" : [
+       "opcua-synthetic-a"
+      ],
+      "notAfter" : 2019686400000,
+      "notBefore" : 1704067200000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 3700,
+      "remainingSeconds" : 319686397,
+      "serial" : "11223344",
+      "subjectCN" : [
+       "opcua-synthetic-a"
+      ],
+      "validDays" : 3653,
+      "validSeconds" : 315619200
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 637
+    },
+    "destination" : {
+     "bytes" : 298,
+     "ip" : "10.10.12.11",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 4840
+    },
+    "dstPayload8" : "41434b461c000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000003238,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000003304,
+    "length" : 66,
+    "network" : {
+     "bytes" : 1313,
+     "community_id" : "1:tw5/rPcu6I/fHgpzuTWoUqRZePc=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "opcua" : {
+     "endpointUrl" : [
+      "opc.tcp://hostA.example:4840/"
+     ],
+     "endpointUrlCnt" : 1,
+     "securityPolicyUri" : [
+      "http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15"
+     ],
+     "securityPolicyUriCnt" : 1
+    },
+    "packetLen" : [
+     70,
+     70,
+     70,
+     131,
+     70,
+     98,
+     70,
+     646,
+     70,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     3894,
+     3964,
+     4034,
+     4104,
+     4235,
+     4305,
+     4403,
+     4473,
+     5119,
+     5189,
+     5259,
+     5329
+    ],
+    "packetRange" : {
+     "gte" : 1700000003238,
+     "lte" : 1700000003304
+    },
+    "protocol" : [
+     "opcua",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 28
+    },
+    "source" : {
+     "bytes" : 1015,
+     "ip" : "10.10.12.10",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 40004
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "48454c463d000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 665
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 164
+    },
+    "destination" : {
+     "bytes" : 398,
+     "ip" : "fd00:20::2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 4840
+    },
+    "dstPayload8" : "41434b461c000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1700000004314,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000004380,
+    "length" : 66,
+    "network" : {
+     "bytes" : 1080,
+     "community_id" : "1:bzIJF4w0LpdHiXBFVNymbyXXUvA=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "opcua" : {
+     "securityPolicyUri" : [
+      "http://opcfoundation.org/UA/SecurityPolicy#None"
+     ],
+     "securityPolicyUriCnt" : 1
+    },
+    "packetLen" : [
+     90,
+     90,
+     90,
+     122,
+     90,
+     118,
+     90,
+     222,
+     90,
+     90,
+     90,
+     90
+    ],
+    "packetPos" : [
+     5399,
+     5489,
+     5579,
+     5669,
+     5791,
+     5881,
+     5999,
+     6089,
+     6311,
+     6401,
+     6491,
+     6581
+    ],
+    "packetRange" : {
+     "gte" : 1700000004314,
+     "lte" : 1700000004380
+    },
+    "protocol" : [
+     "opcua",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 28
+    },
+    "source" : {
+     "bytes" : 682,
+     "ip" : "fd00:20::1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 40005
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "48454c4620000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 192
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  }
+ ]
+}
+

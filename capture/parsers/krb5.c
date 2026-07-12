@@ -105,7 +105,7 @@ LOCAL const char *krb5Errors[] = {
 };
 
 /******************************************************************************/
-/* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
+/* wireshark: k5.asn which is based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --PrincipalName ::= SEQUENCE {
 --      name-type[0]            NAME-TYPE,
 --      name-string[1]          SEQUENCE OF GeneralString
@@ -139,7 +139,7 @@ LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const 
     }
 }
 /******************************************************************************/
-/* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
+/* wireshark: k5.asn which is based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --KDC-REQ-BODY ::= SEQUENCE {
 --      kdc-options[0]          KDCOptions,
 --      cname[1]                PrincipalName OPTIONAL, - - Used only in AS-REQ
@@ -197,7 +197,7 @@ LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const uint8_t *data, in
 }
 
 /******************************************************************************/
-/* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
+/* wireshark: k5.asn which is based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --KDC-REQ ::= SEQUENCE {
 --      pvno[1]                 Krb5int32,
 --      msg-type[2]             MESSAGE-TYPE,
@@ -231,7 +231,7 @@ LOCAL void krb5_parse_req(ArkimeSession_t *session, const uint8_t *data, int len
     }
 }
 /******************************************************************************/
-/* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
+/* wireshark: k5.asn which is based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --KDC-REP ::= SEQUENCE {
 --      pvno[0]                 Krb5int32,
 --      msg-type[1]             MESSAGE-TYPE,
@@ -247,7 +247,7 @@ LOCAL void krb5_parse_rep(ArkimeSession_t *session, const uint8_t *UNUSED(data),
     arkime_session_add_protocol(session, "krb5");
 }
 /******************************************************************************/
-/* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
+/* wireshark: k5.asn which is based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --KRB-ERROR ::= [APPLICATION 30] SEQUENCE {
 --      pvno[0]                 Krb5int32,
 --      msg-type[1]             MESSAGE-TYPE,

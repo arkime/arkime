@@ -253,7 +253,8 @@ LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, const char *path)
 
         int i;
         for (i = 0; i < (int)node->values->len; i++) {
-            if (strncmp(path, ((YamlNode_t *)g_ptr_array_index(node->values, i))->key, len) == 0)
+            const char *key = ((YamlNode_t *)g_ptr_array_index(node->values, i))->key;
+            if (strncmp(path, key, len) == 0 && key[len] == 0)
                 break;
         }
         if (i == (int)node->values->len)
@@ -619,11 +620,11 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
         rule->bpf = g_strdup(bpf);
 
     if (fields) {
-        int mtype = 0;
         rule->fields = malloc((int)fields->len * 2);
         rule->fieldsNOT = malloc((int)fields->len * 2);
         for (int i = 0; i < (int)fields->len; i++) {
             YamlNode_t *node = g_ptr_array_index(fields, i);
+            int mtype = 0;
 
             if (node->key[0] == '!') {
                 arkime_rules_parser_load_add_field_not(filename, rule, node);
@@ -908,7 +909,7 @@ LOCAL void arkime_rules_load(char **names)
         yaml_parser_initialize(&parser);
         FILE *input = fopen(names[i], "rb");
         if (!input)
-            CONFIGEXIT("can not open rules file %s", names[i]);
+            CONFIGEXIT("cannot open rules file %s", names[i]);
 
         yaml_parser_set_input_file(&parser, input);
         YamlNode_t *parent = arkime_rules_parser_parse_yaml(names[i], NULL, &parser, FALSE);
@@ -1454,13 +1455,14 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
 
         case ARKIME_FIELD_TYPE_FLOAT:
-            good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[p]->f);
+            // ->i aliases ->f in the union, giving the float bit pattern used as hash key
+            good = g_hash_table_contains(rule->hash[p], (gpointer)(long)(uint32_t)session->fields[p]->i);
             RULE_LOG_FLOAT(session->fields[p]->f);
             break;
         case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
             good = 0;
             for (int i = 0; i < (int)session->fields[p]->farray->len; i++) {
-                if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->farray, float, i))) {
+                if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->farray, uint32_t, i))) {
                     good = 1;
                     RULE_LOG_FLOAT(g_array_index(session->fields[p]->farray, float, i));
                     break;

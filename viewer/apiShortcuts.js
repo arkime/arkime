@@ -371,8 +371,10 @@ class ShortcutAPIs {
       return res.serverError(403, 'Description must be a string');
     }
 
+    req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_]/g, '');
+
     const sentShortcut = {
-      name: req.body.name.replace(/[^-a-zA-Z0-9_]/g, ''),
+      name: req.body.name,
       description: req.body.description,
       type: req.body.type,
       value: req.body.value,

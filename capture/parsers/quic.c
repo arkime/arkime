@@ -543,9 +543,13 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     uint8_t out[3000];
     int outLen = sizeof(out);
 
+    // Only decrypt this packet's ciphertext (packet_len covers pn + payload + 16 byte tag),
+    // not the rest of the datagram which may hold coalesced packets; clamp to out[]
+    int cipherLen = MIN((int)(packet_len - pn_length - 16), (int)sizeof(out));
+
     pp_cipher_ctx = EVP_CIPHER_CTX_new();
     rc = EVP_DecryptInit(pp_cipher_ctx, pp_cipher, keyOkm, nonce);
-    rc += EVP_DecryptUpdate(pp_cipher_ctx, out, &outLen, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb) - 16);
+    rc += EVP_DecryptUpdate(pp_cipher_ctx, out, &outLen, BSB_WORK_PTR(bsb), cipherLen);
     //rc = EVP_DecryptFinal(pp_cipher_ctx, out, &outLen); --> Not sure why this isn't needed
     EVP_CIPHER_CTX_free(pp_cipher_ctx);
     if (rc != 2) {
@@ -605,8 +609,8 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
 /******************************************************************************/
 LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-// This is the most obfuscate protocol ever
-// Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
+// This is the most obfuscated protocol ever
+// Thank you wireshark/tshark/quicgo and other tools to verify (kind of) implementation
 
     if (arkime_parsers_has_registered(session, quic_ietf_udp_parser))
         return;

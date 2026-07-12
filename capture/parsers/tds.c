@@ -94,6 +94,14 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
             pos += pktLen;
         }
+
+        // Drop the packets we've fully processed; keep any trailing partial
+        // packet. Without this the buffer only grows, already-seen packets are
+        // reparsed on every call, and long sessions eventually hit a false
+        // tds:packet-too-long and unregister.
+        if (pos > 0) {
+            arkime_parser_buf_del(tds, which, pos);
+        }
     } else {
         // TDS 4.2/5.0 login packet
         if (tds->len[0] > 598) {

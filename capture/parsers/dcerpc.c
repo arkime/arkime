@@ -317,17 +317,34 @@ void arkime_parser_init()
     arkime_parsers_register_sub("dcerpc", "338cd001-2244-31f1-aaaa-900038001003", NULL, "winreg");       // Remote registry
     arkime_parsers_register_sub("dcerpc", "c681d488-d850-11d0-8c52-00c04fd90f7e", NULL, "efsrpc");       // EFS, PetitPotam
     arkime_parsers_register_sub("dcerpc", "df1941c5-fe89-4e79-bf10-463657acf44d", NULL, "efsr");         // EFS alt
+    arkime_parsers_register_sub("dcerpc", "12345678-1234-abcd-ef00-0123456789ab", NULL, "rprn");         // Print Spooler, PrinterBug/PrintNightmare
+    arkime_parsers_register_sub("dcerpc", "76f03f96-cdfd-44fc-a22c-64950a001209", NULL, "par");          // Print Async Remote, PrintNightmare
+    arkime_parsers_register_sub("dcerpc", "4fc742e0-4a10-11cf-8273-00aa004ae673", NULL, "dfsnm");        // DFS namespace, DfsCoerce
+    arkime_parsers_register_sub("dcerpc", "a8e0653c-2744-4389-a61d-7373df8b2292", NULL, "fsrvp");        // FS VSS, ShadowCoerce
+    arkime_parsers_register_sub("dcerpc", "9556dc99-828c-11cf-a37e-00aa003240c7", NULL, "wmi");          // WMI IWbemServices, wmiexec
+    arkime_parsers_register_sub("dcerpc", "91ae6020-9e3c-11cf-8d7c-00aa00c091be", NULL, "icertpassage"); // AD CS ICertPassage (MS-WCCE)
+    arkime_parsers_register_sub("dcerpc", "d99e6e71-fc88-11d0-b498-00a0c90312f3", NULL, "icertrequestd"); // AD CS ICertRequestD (MS-ICPR), ESC1-ESC15
+    arkime_parsers_register_sub("dcerpc", "7f1343fe-50a9-4927-a778-0c5859517bac", NULL, "icertrequestd2"); // AD CS ICertRequestD2 (MS-ICPR)
+    arkime_parsers_register_sub("dcerpc", "3dde7c30-165d-11d1-ab8f-00805f14db40", NULL, "bkrp");         // Backup Key Remote Protocol, DPAPI/Mimikatz
+    arkime_parsers_register_sub("dcerpc", "f6beaff7-1e19-4fbb-9f8f-b89e2018337c", NULL, "even6");        // Modern EventLog (MS-EVEN6)
+    arkime_parsers_register_sub("dcerpc", "897e2e5f-93f3-4376-9c9c-fd2277495c27", NULL, "frs2");         // DFS Replication (MS-FRS2)
+    arkime_parsers_register_sub("dcerpc", "99fcfec4-5260-101b-bbcb-00aa0021347a", NULL, "ioxidresolver");  // DCOM IObjectExporter / OXID resolver
     arkime_parsers_register_sub("dcerpc", "12345778-1234-abcd-ef00-0123456789ab", NULL, "lsarpc");       // LSA
     arkime_parsers_register_sub("dcerpc", "6bffd098-a112-3610-9833-46c3f87e345a", NULL, "wkssvc");       // Workstation service
     arkime_parsers_register_sub("dcerpc", "3919286a-b10c-11d0-9ba8-00c04fd92ef5", NULL, "dssetup");      // Domain setup
     arkime_parsers_register_sub("dcerpc", "e1af8308-5d1f-11c9-91a4-08002b14a0fa", NULL, "epmapper");     // Endpoint mapper
     arkime_parsers_register_sub("dcerpc", "86d35949-83c9-4044-b424-db363231fd0c", NULL, "itaskscheduler"); // Task scheduler v2
-    arkime_parsers_register_sub("dcerpc", "00000131-0000-0000-c000-000000000046", NULL, "ioxidresolver"); // DCOM resolver
-    arkime_parsers_register_sub("dcerpc", "00000134-0000-0000-c000-000000000046", NULL, "iremunknown");   // DCOM remote unknown
-    arkime_parsers_register_sub("dcerpc", "000001a0-0000-0000-c000-000000000046", NULL, "iremunknown2");  // DCOM remote unknown v2
+    arkime_parsers_register_sub("dcerpc", "00000131-0000-0000-c000-000000000046", NULL, "iremunknown");     // DCOM IRemUnknown (MS-DCOM)
+    arkime_parsers_register_sub("dcerpc", "00000134-0000-0000-c000-000000000046", NULL, "iremunknown2");    // DCOM IRemUnknown2 (MS-DCOM)
+    arkime_parsers_register_sub("dcerpc", "000001a0-0000-0000-c000-000000000046", NULL, "isystemactivator"); // DCOM ISystemActivator (MS-DCOM), DCOMExec
     arkime_parsers_register_sub("dcerpc", "ccd8c074-d0e5-4a40-92b4-d074faa6ba28", NULL, "witness");       // SMB Witness Service
     arkime_parsers_register_sub("dcerpc", "afa8bd80-7d8a-11c9-bef4-08002b102989", NULL, "mgmt");          // RPC management
     arkime_parsers_register_sub("dcerpc", "f5cc5a18-4264-101a-8c59-08002b2f8426", NULL, "nspi");          // Name Service Provider Interface
+    arkime_parsers_register_sub("dcerpc", "82273fdc-e32a-18c3-3f78-827929dc23ea", NULL, "even");          // Legacy EventLog (MS-EVEN)
+    arkime_parsers_register_sub("dcerpc", "a4f1db00-ca47-1067-b31f-00dd010662da", NULL, "mapi");          // Exchange MAPI (MS-OXCRPC)
+    arkime_parsers_register_sub("dcerpc", "f309ad18-d86a-11d0-a075-00c04fb68820", NULL, "iwbemlevel1login"); // WMI auth (MS-WMI)
+    arkime_parsers_register_sub("dcerpc", "5a7b91f8-ff00-11d0-a9b2-00c04fb6e6fc", NULL, "msrp");          // Messenger Service (MS-MSRP), net send
+    arkime_parsers_register_sub("dcerpc", "50abc2a4-574d-40b3-9d66-ee4fd5fba076", NULL, "dnsserver");     // DNS Server management (MS-DNSP)
 
     uuidField = arkime_field_define("dcerpc", "termfield",
                                     "dcerpc.uuid", "UUID", "dcerpc.uuid",

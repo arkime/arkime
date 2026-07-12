@@ -192,7 +192,7 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_NODB               0x0008
 /* Not a real field in capture, just in viewer */
 #define ARKIME_FIELD_FLAG_FAKE               0x0010
-/* Don't save this fields data into memory or ES */
+/* Don't save this field's data into memory or ES */
 #define ARKIME_FIELD_FLAG_DISABLED           0x0020
 /* Save in memory but not in db.c loop, saved another way */
 #define ARKIME_FIELD_FLAG_NOSAVE             0x0040
@@ -562,6 +562,7 @@ typedef struct {
     uint16_t bufMax;
     int      serverWhich;
     uint8_t  version;
+    uint8_t  flags;
 } ArkimeParserBuf_t;
 
 /******************************************************************************/
@@ -1134,7 +1135,7 @@ void     arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercen
 
 
 // Replace how SPI data is sent to ES.
-// The implementation must either call a arkime_http_free_buffer or another arkime_http routine that frees the buffer
+// The implementation must either call arkime_http_free_buffer or another arkime_http routine that frees the buffer
 typedef void (* ArkimeDbSendBulkFunc) (char *json, int len);
 // bulkHeader - include the bulk header
 // indexInDoc - add sessionIndex field to doc where arkime would index doc
@@ -1255,6 +1256,7 @@ typedef int (* ArkimeParserLoadFunc) (const char *path);
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
 
 void arkime_parsers_register_sub(const char *parserName, const char *hexKey, ArkimeParserFunc func, void *uw);
+int  arkime_parsers_add_protocol_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which);
 GHashTable *arkime_parsers_get_sub(const char *parserName);
 
 ArkimeParserBuf_t *arkime_parser_buf_create();
@@ -1508,7 +1510,7 @@ typedef uint32_t (* ArkimePluginOutstandingFunc) ();
 #define ARKIME_PLUGIN_SMTP_OHC     0x00200000
 
 void arkime_plugins_init();
-void arkime_plugins_load(char **plugins);
+void arkime_plugins_load(char **plugins, gboolean loadParsers);
 void arkime_plugins_reload();
 
 int  arkime_plugins_register_internal(const char *name, gboolean storeData, size_t sessionsize, int apiversion);
@@ -1522,7 +1524,7 @@ void arkime_plugins_set_cb(const char             *name,
                            ArkimePluginSaveFunc    saveFunc,
                            ArkimePluginNewFunc     newFunc,
                            ArkimePluginExitFunc    exitFunc,
-                           ArkimePluginExitFunc    reloadFunc);
+                           ArkimePluginReloadFunc  reloadFunc);
 
 void arkime_plugins_set_http_cb(const char              *name,
                                 ArkimePluginHttpFunc     on_message_begin,

@@ -228,9 +228,11 @@ LOCAL void pcapoverip_client_connect(int interface)
     } else if (error) {
         if (config.debug > 0)
             LOG("%s Error: %s", config.interface[interface], error->message);
+        g_clear_error(&error);
+        return;
     }
 
-    if (error || !conn) {
+    if (!conn) {
         return;
     }
 

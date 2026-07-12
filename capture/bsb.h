@@ -105,7 +105,10 @@ do {                                              \
 
 #define BSB_EXPORT_ptr_some(b, x, size)           \
 do {                                              \
-    if ((b).ptr && (x) != NULL &&                 \
+    if ((x) == NULL) {                            \
+        if (size != 0)                            \
+            BSB_SET_ERROR(b);                     \
+    } else if ((b).ptr &&                         \
         (b).ptr + size <= (b).end &&              \
         (b).ptr + size >= (b).buf) {              \
         memcpy((b).ptr, x, size);                 \
@@ -156,7 +159,7 @@ do {                                              \
                          __VA_ARGS__);            \
         if (l < 0) {                              \
             BSB_SET_ERROR(b);                     \
-        } else if (l <= (b).end - (b).ptr) {      \
+        } else if (l < (b).end - (b).ptr) {       \
             (b).ptr += l;                         \
         } else {                                  \
             BSB_SET_ERROR(b);                     \
@@ -174,7 +177,7 @@ do {                                              \
                          ##args);                 \
         if (l < 0) {                              \
             BSB_SET_ERROR(b);                     \
-        } else if (l <= (b).end - (b).ptr) {      \
+        } else if (l < (b).end - (b).ptr) {       \
             (b).ptr += l;                         \
         } else {                                  \
             BSB_SET_ERROR(b);                     \
@@ -374,14 +377,14 @@ do {                                              \
 #define BSB_memchr(b, ch, pos)                    \
 do {                                              \
     if (BSB_IS_ERROR(b)) {                        \
-        pos = 0;                                  \
+        pos = -1;                                 \
         break;                                    \
     }                                             \
     char *s = memchr((char*)(b).ptr, ch, BSB_REMAINING(b)); \
     if (s)                                        \
         pos = (char *)s - (char *)(b).ptr;        \
     else                                          \
-        pos = 0;                                  \
+        pos = -1;                                 \
 } while (0)
 
 #define BSB_memcmp(str, b, len) ((b).ptr && (b).ptr + len <= (b).end ? memcmp(str, (b).ptr, len) : -1)

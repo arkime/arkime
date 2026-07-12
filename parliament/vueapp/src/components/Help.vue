@@ -116,7 +116,7 @@ SPDX-License-Identifier: Apache-2.0
           <ul>
             <li>
               <strong>ES Down:</strong>
-              Elasticsearch was unreachable
+              OpenSearch/Elasticsearch was unreachable
               <em class="text-muted">(configurable in settings)</em>.
             </li>
             <li>
@@ -131,11 +131,11 @@ SPDX-License-Identifier: Apache-2.0
             </li>
             <li>
               <strong>ES Red:</strong>
-              The Elasticsearch status returned from the cluster health check was RED.
+              The OpenSearch/Elasticsearch status returned from the cluster health check was RED.
             </li>
             <li>
               <strong>ES Dropped:</strong>
-              The capture node is overloading Elasticsearch and is now dropping bulk inserts.
+              The capture node is overloading OpenSearch/Elasticsearch and is now dropping bulk inserts.
             </li>
             <li>
               <strong>Low Disk Space:</strong>
@@ -144,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
             </li>
             <li>
               <strong>ES Low Disk Space:</strong>
-              An Elasticsearch node has low disk space. Can be configured as a percentage or GB threshold. 15% default.
+              An OpenSearch/Elasticsearch node has low disk space. Can be configured as a percentage or GB threshold. 15% default.
               <em class="text-muted">(configurable in settings)</em>.
             </li>
           </ul>
@@ -187,7 +187,7 @@ SPDX-License-Identifier: Apache-2.0
                 </em>
               </li>
               <li>
-                <strong>Elasticsearch query timeout</strong> controls the maximum Elasticsearch
+                <strong>OpenSearch/Elasticsearch query timeout</strong> controls the maximum OpenSearch/Elasticsearch
                 status query duration. If the query exceeds this time setting, an
                 <strong>ES Down</strong> issue is added to the cluster.
                 <br>

@@ -68,7 +68,7 @@ LOCAL void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RUL
             fclose(rule_file);
 
             if (errors) {
-                exit(0);
+                CONFIGEXIT("yara could not compile rules file: %s", filename);
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
@@ -180,7 +180,7 @@ LOCAL void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RUL
             fclose(rule_file);
 
             if (errors) {
-                exit(0);
+                CONFIGEXIT("yara could not compile rules file: %s", filename);
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {
@@ -289,7 +289,7 @@ void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **r
             fclose(rule_file);
 
             if (errors) {
-                exit(0);
+                CONFIGEXIT("yara could not compile rules file: %s", filename);
             }
             yr_compiler_get_rules(*compiler, rules);
         } else {

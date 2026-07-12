@@ -138,7 +138,7 @@ void arkime_readers_start()
 
         int fieldPos = arkime_field_by_exp(filenameOpsStr[i]);
         if (fieldPos == -1) {
-            CONFIGEXIT("Must be FieldExpr=regex?value, Unknown field expression '%s'", filenameOpsStr[i]);
+            CONFIGEXIT("Must be FieldExpr=regex%%value, Unknown field expression '%s'", filenameOpsStr[i]);
         }
 
         readerFilenameOps[readerFilenameOpsNum].regex = g_regex_new(equal + 1, 0, 0, 0);

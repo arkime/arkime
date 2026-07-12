@@ -105,6 +105,42 @@
      ],
      "requestHeaderCnt" : 6,
      "requestHeaderField" : [
+      "accept",
+      "accept",
+      "accept-encoding",
+      "accept-encoding",
+      "cookie"
+     ],
+     "requestHeaderValue" : [
+      "*/*",
+      "*/*",
+      "deflate, gzip",
+      "deflate, gzip",
+      "nid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; pref=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+     ],
+     "requestHeaderValueCnt" : 5,
+     "response-location" : [
+      "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+     ],
+     "responseHeader" : [
+      "alternate-protocol",
+      "cache-control",
+      "content-encoding",
+      "content-length",
+      "content-type",
+      "date",
+      "expires",
+      "location",
+      "p3p",
+      "pragma",
+      "server",
+      "set-cookie",
+      "transfer-encoding",
+      "x-frame-options",
+      "x-xss-protection"
+     ],
+     "responseHeaderCnt" : 15,
+     "responseHeaderField" : [
       "alternate-protocol",
       "alternate-protocol",
       "cache-control",
@@ -129,7 +165,7 @@
       "x-xss-protection",
       "x-xss-protection"
      ],
-     "requestHeaderValue" : [
+     "responseHeaderValue" : [
       "-1",
       "1; mode=block",
       "1; mode=block",
@@ -154,43 +190,7 @@
       "wed, 11 dec 2013 19:32:57 gmt",
       "wed, 11 dec 2013 19:33:15 gmt"
      ],
-     "requestHeaderValueCnt" : 23,
-     "response-location" : [
-      "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-     ],
-     "responseHeader" : [
-      "alternate-protocol",
-      "cache-control",
-      "content-encoding",
-      "content-length",
-      "content-type",
-      "date",
-      "expires",
-      "location",
-      "p3p",
-      "pragma",
-      "server",
-      "set-cookie",
-      "transfer-encoding",
-      "x-frame-options",
-      "x-xss-protection"
-     ],
-     "responseHeaderCnt" : 15,
-     "responseHeaderField" : [
-      "accept",
-      "accept",
-      "accept-encoding",
-      "accept-encoding",
-      "cookie"
-     ],
-     "responseHeaderValue" : [
-      "*/*",
-      "*/*",
-      "deflate, gzip",
-      "deflate, gzip",
-      "nid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; pref=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-     ],
-     "responseHeaderValueCnt" : 5,
+     "responseHeaderValueCnt" : 23,
      "serverVersion" : [
       "1.1"
      ],

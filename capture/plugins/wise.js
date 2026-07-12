@@ -32,8 +32,12 @@ exports.init = function (Config, emitter) {
         if (res.statusCode !== 200) {
           return cb(null, {});
         }
-        const result = JSON.parse(body);
-        return cb(null, result);
+        try {
+          return cb(null, JSON.parse(body));
+        } catch (err) {
+          console.log('WISE Session Detail ERROR', err);
+          return cb(err, {});
+        }
       });
     });
     req.on('error', function (err) {
@@ -54,8 +58,12 @@ exports.init = function (Config, emitter) {
         if (res.statusCode !== 200) {
           return cb(null, {});
         }
-        const result = JSON.parse(body);
-        return cb(null, result);
+        try {
+          return cb(null, JSON.parse(body));
+        } catch (err) {
+          console.log('WISE Right Click ERROR', err);
+          return cb(err, {});
+        }
       });
     });
     req.on('error', function (err) {
@@ -76,12 +84,16 @@ exports.init = function (Config, emitter) {
         if (res.statusCode !== 200) {
           return cb(null, {});
         }
-        const result = JSON.parse(body);
-        return cb(null, result);
+        try {
+          return cb(null, JSON.parse(body));
+        } catch (err) {
+          console.log('WISE Field Actions ERROR', err);
+          return cb(err, {});
+        }
       });
     });
     req.on('error', function (err) {
-      console.log('WISE Right Click ERROR', err);
+      console.log('WISE Field Actions ERROR', err);
       return cb(err, {});
     });
     req.end();

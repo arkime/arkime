@@ -7,18 +7,12 @@
 
 
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <netdb.h>
-#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "arkime.h"
-#include "bsb.h"
 
 /******************************************************************************/
 

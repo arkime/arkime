@@ -46,7 +46,7 @@ typedef struct s3_request {
     ArkimeSchemeAction_t  *actions;
     const char            *url;
     char                  *continuation; // Continuation token, http thread -> scheme thread
-    uint8_t                isDir : 1;    // Doint a prefix match
+    uint8_t                isDir : 1;    // Doing a prefix match
     uint8_t                isS3 : 1;     // Use S3 URL
     uint8_t                tryAgain : 1; // Try again because wrong region
     uint8_t                first : 1;    // The first attempt at url
@@ -158,7 +158,7 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
 
     if (next) {
         const char *endNext = arkime_memstr((const char *)data, data_len, "</NextContinuationToken>", 24);
-        if (next < endNext) {
+        if (endNext && next < endNext) {
             next += 23;
             req->continuation = scheme_s3_escape(next, endNext - next);
         }
@@ -449,6 +449,8 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
         .tryAgain = FALSE,
         .first = TRUE
     };
+
+    s3Items->done = 0;
 
     scheme_s3_request(server, creds, uri + strlen(shpb), paths[1], &req, TRUE, NULL);
 

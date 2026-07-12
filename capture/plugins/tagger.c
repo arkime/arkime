@@ -1,5 +1,5 @@
 /* tagger.c  -- Simple plugin that tags sessions by using ip, hosts, md5s
- *              lists fetched from the ES database.  taggerUpdate.pl is
+ *              lists fetched from the ES database.  taggerUpload.pl is
  *              used to upload files to the database.  tagger checks
  *              once a minute to see if the files in the database have
  *              changed.
@@ -11,12 +11,7 @@
 
 
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 #include "patricia.h"
 #include "arkime.h"
 
@@ -368,7 +363,7 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
         prefix_t prefix;
 
         for (i = 0; file->elements[i]; i++) {
-            if (!ascii2prefix2(AF_INET, file->elements[i], &prefix)) {
+            if (!ascii2prefix2(0, file->elements[i], &prefix)) {
                 LOG("Couldn't unload %s", file->elements[i]);
                 continue;
             }
@@ -408,7 +403,7 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
             HASH_FIND(s_, *hash, file->elements[i], tstring);
             if (tstring) {
                 tagger_remove_file(tstring->infos, file);
-                // We could check if files is now empty and remove the node, but the
+                // We could check if infos is now empty and remove the node, but the
                 // theory is most of the time it will be just re-added in the load_file
             }
         }

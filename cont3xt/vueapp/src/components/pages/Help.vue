@@ -295,7 +295,7 @@ SPDX-License-Identifier: Apache-2.0
         <h5>Configuring Existing Fields</h5>
         <p>Simply provide the integration the field is from and the label of the field.</p>
 
-        <h5>Configuring  Custom Fields</h5>
+        <h5>Configuring Custom Fields</h5>
         <p>Set the integration name and field as <code>Custom</code> to create a custom field. This will open a JSON-edit box for custom configuration... use the following format:</p>
 
         <h6>JSON Custom Field Format</h6>
@@ -362,7 +362,7 @@ SPDX-License-Identifier: Apache-2.0
           <li>
             <strong>"altText"</strong> <c3-badge variant="success">
               type: externalLink
-            </c3-badge>: optional text to be display on tooltip instead of URL
+            </c3-badge>: optional text to be displayed in tooltip instead of URL
           </li>
           <li>
             <strong>"noSearch"</strong> <c3-badge variant="primary">
@@ -419,11 +419,11 @@ SPDX-License-Identifier: Apache-2.0
           <v-icon
             icon="mdi-link"
             class="mr-2" />
-          Links Groups
+          Link Groups
         </h3>
         <p>
           Create links to pivot into different tools!
-          Link groups are can be configured on the settings page and are
+          Link groups can be configured on the settings page and are
           displayed on the right of the Cont3xt results.
         </p>
         <p class="mb-0">

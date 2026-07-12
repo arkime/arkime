@@ -144,7 +144,8 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
 
         // Sanity: cap payloads we'll attempt to handle. Anything within
         // RFC limits is fine. We just don't want to wedge on absurd values.
-        if (payLen > (uint64_t)0x7fffffff) {
+        // The -14 keeps hdrLen + payLen within int range below.
+        if (payLen > (uint64_t)0x7fffffff - 14) {
             arkime_session_add_tag(session, "websocket:bad-length");
             return ARKIME_PARSER_UNREGISTER;
         }

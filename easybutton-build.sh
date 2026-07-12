@@ -230,6 +230,9 @@ if [ -f "/etc/debian_version" ]; then
   if [[ "$VERSION_CODENAME" == "trixie" ]]; then
       # D13
       sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  elif [[ "$VERSION_CODENAME" == "resolute" ]]; then
+      # U26
+      sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   else
       # D12, U22, U24
       sudo apt-get -qq install curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
@@ -692,6 +695,10 @@ fi
 
 if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
+fi
+
+if [ -f "/opt/napatech3/lib/libntos.so" ]; then
+    (cd capture/plugins/napatech; $MAKE)
 fi
 
 if [ $DOKAFKA -eq 1 ]; then

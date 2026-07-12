@@ -1,6 +1,6 @@
 /* tcp.c
  *
- * Since this used to be part of packet.c still a little more coupled then we would like
+ * Since this used to be part of packet.c still a little more coupled than we would like
  *
  * Copyright 2019 AOL Inc. All rights reserved.
  *
@@ -76,10 +76,10 @@ LOCAL void tcp_session_free(ArkimeSession_t *session)
 LOCAL int64_t tcp_sequence_diff(int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
-        return a + 0x100000000LL - b;
+        return b + 0x100000000LL - a;
 
     if (b > 0xc0000000 && a < 0x40000000)
-        return a - b - 0x100000000LL;
+        return b - a - 0x100000000LL;
 
     return b - a;
 }
@@ -218,6 +218,10 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 #endif
                 session->tcpData.tcpSeq[(packet->direction + 1) % 2] = ntohl(tcphdr->th_ack);
                 session->tcpData.synSeq[1] = seq;
+                // Record the client's initial seq (ISN) that this syn-ack acknowledges, so a
+                // reordered/retransmitted original client SYN can be recognized as belonging to
+                // this session instead of being mistaken for a port reuse.
+                session->tcpData.synSeq[0] = ntohl(tcphdr->th_ack) - 1;
             }
         } else {
             session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
@@ -340,7 +344,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
     td->dataOffset = packet->payloadOffset + 4 * tcphdr->th_off;
 
 #ifdef DEBUG_TCP
-    LOG("dir: %u seq: %u ack: %u len: %d diff0: %" PRIu64, packet->direction, seq, ack, len, diff);
+    LOG("dir: %u seq: %u ack: %u len: %d diff0: %" PRId64, packet->direction, seq, ack, len, diff);
 #endif
 
     if (DLL_COUNT(td_, tcpData) == 0) {
@@ -420,9 +424,13 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     const struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
-    // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
+    // If this is an old session that has RSTs/FINs and we get a syn, probably a port reuse, close old session.
+    // But if the syn's seq matches the original client ISN we already know about, this is just the original
+    // SYN arriving reordered (e.g. spread across capture interfaces/reader threads) or a retransmit - keep it
+    // in the same session instead of splitting one flow into two.
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
-        (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
+        (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]) &&
+        ntohl(tcphdr->th_seq) != session->tcpData.synSeq[0]) {
         return 1;
     }
 

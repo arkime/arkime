@@ -1,0 +1,5 @@
+if (session.opcua)
+  div.sessionDetailMeta.bold OPC UA
+  dl.sessionDetailMeta
+    +arrayList(session.opcua, "endpointUrl", "Endpoint URLs", "opcua.endpointUrl")
+    +arrayList(session.opcua, "securityPolicyUri", "Security Policies", "opcua.securityPolicyUri")

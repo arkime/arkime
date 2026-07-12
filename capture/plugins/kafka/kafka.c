@@ -205,7 +205,7 @@ void arkime_plugin_init()
         if (kafkaSSLKeyPassword) {
             if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
                                   errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
-                LOGEXIT("Error configuring kafka:ss.key.password, error = %s", errstr);
+                LOGEXIT("Error configuring kafka:ssl.key.password, error = %s", errstr);
             }
         }
     }

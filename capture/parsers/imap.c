@@ -5,7 +5,6 @@
  * Basic IMAP parser - parses email addresses from FETCH responses
  */
 #include "arkime.h"
-#include <ctype.h>
 
 extern ArkimeConfig_t   config;
 
@@ -15,7 +14,7 @@ LOCAL  int subjectField;
 LOCAL  int folderField;
 
 typedef struct {
-    GString  *line;
+    GString  *line[2];
     uint8_t   serverWhich;
     uint8_t   inFetch;
     uint8_t   inHeaders;
@@ -173,24 +172,24 @@ LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 lineLen--;
             }
         } else {
-            /* Incomplete line, buffer it (cap to prevent unbounded growth) */
-            if (imap->line->len + remaining > 16384) {
+            /* Incomplete line, buffer it per-direction (cap to prevent unbounded growth) */
+            if (imap->line[which]->len + remaining > 16384) {
                 arkime_session_add_tag(session, "imap:line-too-long");
                 return ARKIME_PARSER_UNREGISTER;
             }
-            g_string_append_len(imap->line, (const char *)data, remaining);
+            g_string_append_len(imap->line[which], (const char *)data, remaining);
             return 0;
         }
 
-        /* Combine with any buffered data */
-        if (imap->line->len > 0) {
-            if (imap->line->len + lineLen > 16384) {
+        /* Combine with any buffered data for this direction */
+        if (imap->line[which]->len > 0) {
+            if (imap->line[which]->len + lineLen > 16384) {
                 arkime_session_add_tag(session, "imap:line-too-long");
                 return ARKIME_PARSER_UNREGISTER;
             }
-            g_string_append_len(imap->line, (const char *)data, lineLen);
-            imap_process_line(imap, session, imap->line->str, imap->line->len, which);
-            g_string_truncate(imap->line, 0);
+            g_string_append_len(imap->line[which], (const char *)data, lineLen);
+            imap_process_line(imap, session, imap->line[which]->str, imap->line[which]->len, which);
+            g_string_truncate(imap->line[which], 0);
         } else {
             imap_process_line(imap, session, (const char *)data, lineLen, which);
         }
@@ -207,7 +206,8 @@ LOCAL void imap_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     IMAPInfo_t *imap = uw;
 
-    g_string_free(imap->line, TRUE);
+    g_string_free(imap->line[0], TRUE);
+    g_string_free(imap->line[1], TRUE);
     ARKIME_TYPE_FREE(IMAPInfo_t, imap);
 }
 /******************************************************************************/
@@ -229,7 +229,8 @@ LOCAL void imap_classify(ArkimeSession_t *session, const uint8_t *data, int len,
     arkime_session_add_protocol(session, "imap");
 
     IMAPInfo_t *imap = ARKIME_TYPE_ALLOC0(IMAPInfo_t);
-    imap->line = g_string_sized_new(256);
+    imap->line[0] = g_string_sized_new(256);
+    imap->line[1] = g_string_sized_new(256);
     imap->serverWhich = which;
 
     arkime_parsers_register(session, imap_parser, imap, imap_free);

@@ -1,0 +1,8 @@
+if (session.ntlm)
+  div.sessionDetailMeta.bold NTLM
+  dl.sessionDetailMeta(suffix="ntlm")
+    +arrayList(session.ntlm, "type", "Message Types", "ntlm.type")
+    +arrayList(session.ntlm, "domain", "Domains", "ntlm.domain")
+    +arrayList(session.ntlm, "host", "Hosts", "ntlm.host")
+    +arrayList(session.ntlm, "targetName", "Target Names", "ntlm.targetName")
+    +arrayList(session.ntlm, "version", "Versions", "ntlm.version")

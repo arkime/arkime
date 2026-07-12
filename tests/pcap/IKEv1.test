@@ -190,14 +190,14 @@
      },
      "ip" : "2003:51:6012::4",
      "mac" : [
-      "b4:0c:25:05:8e:10"
+      "08:5b:0e:3c:11:5d"
      ],
      "mac-cnt" : 1,
      "packets" : 148,
      "port" : 0
     },
     "dstOui" : [
-     "Palo Alto Networks"
+     "Fortinet, Inc."
     ],
     "dstOuiCnt" : 1,
     "dstTTL" : [
@@ -248,14 +248,14 @@
      },
      "ip" : "2003:51:6012::2",
      "mac" : [
-      "08:5b:0e:3c:11:5d"
+      "b4:0c:25:05:8e:10"
      ],
      "mac-cnt" : 1,
      "packets" : 148,
      "port" : 0
     },
     "srcOui" : [
-     "Fortinet, Inc."
+     "Palo Alto Networks"
     ],
     "srcOuiCnt" : 1,
     "srcTTL" : [

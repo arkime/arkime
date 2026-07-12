@@ -65,13 +65,17 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 	};
 	void **go = gostruct;
 
-	for(cur=js,end=js+len,oend=out+(olen/sizeof(*out)); cur<end && out<oend; cur++) // ALW - callers pass sizeof(out) which is bytes, convert to element count
+	if (olen < 2*sizeof(*out)) return 1; // ALW - Need room for the terminator pair
+
+	// ALW - callers pass sizeof(out) which is bytes, convert to element count.
+	// Reserve 2 elements so the terminator below always fits and can't write past the array.
+	for(cur=js,end=js+len,oend=out+(olen/sizeof(*out))-2; cur<end && out<oend; cur++)
 	{
 			goto *go[*cur];
 			l_loop:;
 	}
 
-	if(out < oend) out[0] = out[1] = 0; // ALW - Set length to 0 also
+	out[0] = out[1] = 0; // ALW - Set length to 0 also
 	return depth; // 0 if successful full parse, >0 for incomplete data
 
 	l_bad:

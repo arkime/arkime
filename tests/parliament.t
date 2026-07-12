@@ -1,4 +1,4 @@
-use Test::More tests => 101;
+use Test::More tests => 114;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -157,6 +157,10 @@ eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to rem
 $result = parliamentPutToken("/parliament/api/removeSelectedAcknowledgedIssues?arkimeRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);
 eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
 
+# ignoreIssues requires a finite numeric ms (rejects non-numeric ms before it corrupts ignoreUntil)
+$result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": "not-a-number"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"text": "ms must be a finite number.", "success": false}'));
+
 # parliament admin can access/update settings/parliament
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(exists $result->{settings}->{general});
@@ -183,6 +187,13 @@ $result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parl
 ok($result->{success});
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 eq_or_diff($result->{settings}->{general}->{noPacketsLength}, 100);
+
+# unknown settings keys are ignored, not written into settings.general (mass-assignment guard)
+$result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parliamentAdminP", '{"settings": { "general": { "noPacketsLength": 100, "evilKey": 99 } } }', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+eq_or_diff($result->{settings}->{general}->{noPacketsLength}, 100);
+ok(!exists $result->{settings}->{general}->{evilKey});
 
 # notifier types have been initiated
 $result = parliamentGetToken("/parliament/api/notifierTypes?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -269,15 +280,19 @@ eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": "' . $firstGro
 
 # Add cluster requires url
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or / (and not //)."}'));
 
 # Add cluster url must start with http or /
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "super/fancy/url"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or / (and not //)."}'));
 
 # Add cluster url must start with http or / - ftp
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "ftp://example.com"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or / (and not //)."}'));
+
+# Add cluster url must not be protocol-relative (// would render as an off-site link)
+$result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "//evil.com"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or / (and not //)."}'));
 
 # Add cluster with valid http url
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "http://super/fancy/url"}', $parliamentAdminToken);
@@ -286,11 +301,15 @@ ok ($result->{success});
 
 # Update cluster url must start with http or /
 $result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "gopher://evil"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or / (and not //)."}'));
 
 # Update cluster localUrl must start with http or /
 $result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "http://localhost:8123", "localUrl": "file:///etc/passwd"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"success":false,"text":"A cluster localUrl must start with http or /."}'));
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster localUrl must start with http or / (and not //)."}'));
+
+# Update cluster localUrl must not be protocol-relative
+$result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "http://localhost:8123", "localUrl": "//evil.com"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster localUrl must start with http or / (and not //)."}'));
 
 # Update cluster with valid url
 $result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "http://localhost:8123"}', $parliamentAdminToken);
@@ -314,6 +333,39 @@ ok ($result->{success});
 # Delete first group
 $result = parliamentDeleteToken("/parliament/api/groups/$firstGroupId?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 eq_or_diff($result, from_json('{"text": "Successfully removed group.", "success": true}'));
+
+# ---- /api/issues query param type confusion guards ----
+# seed persistent issues with two unreachable clusters so the filter/sort
+# code paths actually run over real issues
+$result = parliamentPostToken("/parliament/api/groups?arkimeRegressionUser=parliamentAdminP", '{"title": "issuetest"}', $parliamentAdminToken);
+my $issueGroupId = $result->{group}->{id};
+ok($result->{success});
+
+$result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "down1", "url": "http://127.0.0.1:1"}', $parliamentAdminToken);
+ok($result->{success});
+$result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "down2", "url": "http://127.0.0.1:1"}', $parliamentAdminToken);
+ok($result->{success});
+
+# two update cycles so the issues are no longer provisional and show up in /api/issues
+parliamentGet("/regressionTests/updateParliament");
+parliamentGet("/regressionTests/updateParliament");
+
+# sanity: there are issues to filter/sort over
+$result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+ok(scalar @{$result->{issues}} >= 2);
+
+# filter passed as an array is ignored instead of throwing (500) on .toLowerCase()
+$result = parliamentGetToken("/parliament/api/issues?filter=a&filter=b&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+ok(exists $result->{issues});
+
+# sort with an inherited prototype key is ignored instead of throwing (500) in the comparator
+# (toString instead of constructor, which auth's ppChecker middleware already rejects with a 403)
+$result = parliamentGetToken("/parliament/api/issues?sort=toString&order=asc&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+ok(exists $result->{issues});
+
+# clean up the issue test group
+$result = parliamentDeleteToken("/parliament/api/groups/$issueGroupId?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+ok($result->{success});
 
 # delete the added users
 viewerGet("/regressionTests/deleteAllUsers");

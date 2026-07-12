@@ -250,7 +250,7 @@ exports.initSource = function (api) {
     types: [], // This is a fake source, no types
     format: 'valueactions', // Which vueapp editor to use
     fields: [
-      { name: 'url', required: true, help: 'The file to load, can be a file path, redis url (Format is redis://[:password@]host:port/db-number/key, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number/key, or redis-cluster://[:password@]host:port/db-number/key), or elasticsearch url (elasticsearch://host:9200/INDEX/_doc/DOCNAME)' }
+      { name: 'url', required: true, password: true, help: 'The file to load, can be a file path, redis url (Format is redis://[:password@]host:port/db-number/key, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number/key, or redis-cluster://[:password@]host:port/db-number/key), or elasticsearch url (elasticsearch://host:9200/INDEX/_doc/DOCNAME)' }
     ]
   });
 

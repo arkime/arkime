@@ -76,7 +76,7 @@ function makeS3 (node, region, bucket) {
     s3Params.endpoint = 'https://' + s3Params.endpoint;
   }
 
-  // Lets hope that we can find a credential provider elsewhere
+  // Let's hope that we can find a credential provider elsewhere
   const rv = S3s[region + key] = new S3(s3Params);
   return rv;
 }
@@ -142,7 +142,8 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       });
     }
   } catch (error) {
-    return;
+    console.log('WARNING - Only have SPI data, PCAP file no longer available', fields.node, error);
+    return endCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + (fields.packetPos[0] * -1), fields);
   }
 
   function readyToProcess () {
@@ -248,7 +249,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       }
     }
 
-    // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
+    // First pass, convert packetPos and packetLen (if we have it) into packetData
     const packetData = [];
 
     async.eachLimit(Object.keys(fields.packetPos), limit || 1, async function (p) {
@@ -282,7 +283,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           if (compressed) {
             pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
             pd.rangeEnd = pd.rangeStart + info.compressionBlockSize;
-            pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
+            pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1); // eslint-disable-line no-bitwise
             pd.packetEnd = pd.packetStart + len;
           } else {
             pd.rangeStart = packetPos;

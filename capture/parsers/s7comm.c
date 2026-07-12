@@ -36,7 +36,7 @@ LOCAL const char *s7comm_func_name(uint8_t code)
 {
     switch (code) {
     case 0x00:
-        return "Setup communication";
+        return "CPU services";
     case 0x04:
         return "Read Var";
     case 0x05:

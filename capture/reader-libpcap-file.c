@@ -163,9 +163,9 @@ LOCAL void reader_libpcapfile_init_monitor()
 LOCAL void reader_libpcapfile_init_monitor()
 {
     if (config.commandSocket || config.commandList)
-        LOG("ERROR - Monitoring not supporting on this OS");
+        LOG("ERROR - Monitoring not supported on this OS");
     else
-        LOGEXIT("ERROR - Monitoring not supporting on this OS");
+        LOGEXIT("ERROR - Monitoring not supported on this OS");
 }
 #endif
 /******************************************************************************/
@@ -332,8 +332,10 @@ fileListsDone:
 
             // If recursive option and a directory then process all the files in that dir
             if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-                if (pcapGDirLevel >= 20)
+                if (pcapGDirLevel >= 20) {
+                    g_free(fullfilename);
                     continue;
+                }
                 pcapBase[pcapGDirLevel + 1] = fullfilename;
                 pcapGDirLevel++;
                 return reader_libpcapfile_next();
@@ -437,7 +439,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
     packet->ts.tv_usec    = h->ts.tv_usec;
-    packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
+    packet->readerFilePos = ftell(offlineFile) - 16 - h->caplen;
     packet->readerPos     = readerPos;
 
     offlineInfo[readerPos].lastBytes += packet->pktlen + 16;

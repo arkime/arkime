@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* dll.h  -- Double Linked List
+/* dll.h  -- Doubly Linked List
  *
  * Simple macro based DLL with counts that supports having a single item in
  * multiple lists by using a prefix.  Every element in the list needs to

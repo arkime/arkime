@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
               href="https://arkime.com/wise"
               class="no-decoration"
               target="_blank">
-              arkime.com/wise</a> for more options
+              arkime.com/wise</a> for more options.
             Sample:
             <pre>
               plugins=wise.so
@@ -214,7 +214,7 @@ SPDX-License-Identifier: Apache-2.0
       <p>
         The cache tab allows you to configure how WISE should cache results
         from sources that support it. Using a redis setup is especially useful
-        when there are multiple WISE servers or large amount of results to cache.
+        when there are multiple WISE servers or a large amount of results to cache.
       </p>
 
       <h6 id="configSources">
@@ -232,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
         </h6>
         <p>
           To add a source, simply click "Add Source". From there you can
-          continue to configure or any other source that has been added.
+          continue to configure it or any other source that has been added.
         </p>
         <h6>
           <span class="fa fa-download me-2" />

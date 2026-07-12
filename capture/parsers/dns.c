@@ -358,7 +358,7 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
 /******************************************************************************/
 LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t *data, int length)
 {
-    if (length < 10)
+    if (length < 3)
         return NULL;
 
     DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
@@ -542,7 +542,7 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
     }
 
     if (arkime_memstr((const char *)string, len, "xn--", 4)) {
-        HASH_FIND_HASH(s_, *(dns->punyHosts), arkime_string_hash_len(host, hostlen), string, hstring);
+        HASH_FIND(s_, *(dns->punyHosts), string, hstring);
         if (!hstring) {
             hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
             hstring->str = (char *)g_ascii_strdown((gchar *)string, len);
@@ -578,7 +578,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     const int resultRecordCount[3] = {an_prereqs_count, ns_update_count, ar_count};
 
 #ifdef DNSDEBUG
-    LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
+    LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update Record Count: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
 #endif
 
     switch (kind) {
@@ -826,6 +826,22 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
 
+            /* EDNS(0) OPT pseudo-record (RFC 6891 §6.1.3): the high byte of the
+             * TTL field holds the upper 8 bits of the extended RCODE. Combine it
+             * with the 4-bit header RCODE to form the full 12-bit RCODE, which is
+             * the only way rcodes 16-23 (BADVERS..BADCOOKIE) can be reached. */
+            if (antype == 41 && recordType == RESULT_RECORD_ADDITIONAL) {
+                const uint8_t extRcode = (anttl >> 24) & 0xff;
+                if (extRcode != 0) {
+                    const int fullRcode = (extRcode << 4) | (data[3] & 0x0f);
+                    if (fullRcode < 24) {
+                        dns->rcode_id = fullRcode;
+                        dns->rcode    = rcodes[fullRcode];
+                        ARKIME_RULES_RUN_FIELD_SET(session, dnsStatusField, dns->rcode);
+                    }
+                }
+            }
+
             if (anclass != CLASS_IN) {
                 BSB_IMPORT_skip(bsb, rdlength);
                 goto continueerr;
@@ -1028,7 +1044,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
             case DNS_RR_CAA: {
-                if (BSB_REMAINING(rdbsb) <= 3) {
+                if (BSB_REMAINING(rdbsb) < 3) {
                     goto continueerr;
                 }
 
@@ -1232,6 +1248,9 @@ continueerr:
             if (answer->name && answer->name != root) {
                 g_free(answer->name);
             }
+            if (answer->txts) {
+                g_ptr_array_free(answer->txts, TRUE);
+            }
             ARKIME_TYPE_FREE(DNSAnswer_t, answer);
         } // record loop
     } // record type loop
@@ -1251,7 +1270,7 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
     while (pb->len[which] >= 2) {
         int dnslength = ((pb->buf[which][0] & 0xff) << 8) | (pb->buf[which][1] & 0xff);
 
-        if (dnslength < 18)
+        if (dnslength < 17)
             return ARKIME_PARSER_UNREGISTER;
 
         int frameLen = dnslength + 2;
@@ -1407,14 +1426,21 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
     BSB_EXPORT_u08(*jbsb, '{');
 
 #ifdef DNSDEBUG
-    LOG("DNSDEBUG: Host: %s, Opcode: %s, QC: %s, QT: %s", dns->query.hostname, dns->query.opcode, dns->query.class, dns->query.type);
+    LOG("DNSDEBUG: Host: %s, Opcode: %s, QC ID: %u, QT ID: %u", dns->query.hostname, dns->query.opcode, dns->query.class_id, dns->query.type_id);
 #endif
 
     BSB_EXPORT_sprintf(*jbsb, "\"opcode\":\"%s\",", dns->query.opcode);
     BSB_EXPORT_sprintf(*jbsb, "\"queryHost\":");
     arkime_db_js0n_str(jbsb, (uint8_t *)dns->query.hostname, TRUE);
-    BSB_EXPORT_sprintf(*jbsb, ",\"qc\":\"%s\",", dns->query.class);
-    BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
+    BSB_EXPORT_u08(*jbsb, ',');
+    if (dns->query.class)
+        BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"%s\",", dns->query.class);
+    else if (dns->query.class_id) // RFC 3597 style for unknown classes, omit for reserved 0 (synthesized mDNS entries)
+        BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"CLASS%u\",", dns->query.class_id);
+    if (dns->query.type)
+        BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
+    else if (dns->query.type_id) // RFC 3597 style for unknown types, omit for reserved 0 (synthesized mDNS entries)
+        BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"TYPE%u\",", dns->query.type_id);
 
     if (HASH_COUNT(s_, dns->hosts) > 0) {
         SAVE_STRING_HASH(dns->hosts, "host");

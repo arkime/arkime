@@ -75,7 +75,7 @@ LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpoi
 }
 
 /******************************************************************************/
-void arkime_plugins_load(char **plugins)
+void arkime_plugins_load(char **plugins, gboolean loadParsers)
 {
 
     if (!config.pluginsDir)
@@ -131,8 +131,12 @@ void arkime_plugins_load(char **plugins)
         g_free (path);
     }
 
-    int arkime_parsers_load();
-    arkime_parsers_load();
+    // A plugin may register a new load extension (e.g. .lua), so reload parsers
+    // to pick those up. Skipped for rootPlugins, which run before parsers init.
+    if (loadParsers) {
+        int arkime_parsers_load();
+        arkime_parsers_load();
+    }
 }
 /******************************************************************************/
 LOCAL int arkime_plugins_load_so(const char *path)
@@ -147,7 +151,7 @@ LOCAL int arkime_plugins_load_so(const char *path)
     ArkimePluginInitFunc plugin_init;
 
     if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char *)&plugin_init) || plugin_init == NULL) {
-        LOG("ERROR - Module %s doesn't have a arkime_plugin_init", path);
+        LOG("ERROR - Module %s doesn't have an arkime_plugin_init", path);
         g_module_close(plugin);
         return 1;
     }

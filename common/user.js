@@ -382,7 +382,6 @@ class User {
   /**
    * Determines whether each user in the list of users is valid or invalid.
    * @param {Array} userIdList - Array of userIds
-   * @param {boolean} anonymousMode - Whether the app is running in anonymous mode (no users)
    * @returns {Object} - An object containing two lists, one of valid users and one of invalid users.
    *                     A valid user can be found in the user's db based on userId
    */
@@ -480,7 +479,7 @@ class User {
   }
 
   /**
-   * Web Api for getting current user
+   * Web API for getting current user
    */
   static async getCurrentUser (req) {
     const userProps = [
@@ -656,9 +655,12 @@ class User {
           if (value === undefined) {
             value = '';
           } else if (Array.isArray(value)) {
-            value = '"' + value.join(', ').replace(/"/g, '""') + '"';
-          } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
-            value = '"' + value.replace(/"/g, '""') + '"';
+            value = '"' + value.map(v => ArkimeUtil.csvSafeStr(String(v))).join(', ').replace(/"/g, '""') + '"';
+          } else if (typeof (value) === 'string') {
+            value = ArkimeUtil.csvSafeStr(value);
+            if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+              value = '"' + value.replace(/"/g, '""') + '"';
+            }
           }
           values.push(value);
         }
@@ -820,6 +822,15 @@ class User {
 
     req.body.roleAssigners ??= [];
 
+    // Validate timeLimit same as update path
+    let timeLimit;
+    if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
+      timeLimit = parseInt(req.body.timeLimit, 10);
+      if (!Number.isFinite(timeLimit) || timeLimit < 0) {
+        return res.serverError(422, 'timeLimit must be a non-negative integer');
+      }
+    }
+
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
         console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
@@ -831,7 +842,7 @@ class User {
         userName: req.body.userName,
         expression: req.body.expression,
         passStore: Auth.pass2store(req.body.userId, req.body.password),
-        timeLimit: req.body.timeLimit,
+        timeLimit,
         enabled: req.body.enabled === true,
         webEnabled: req.body.webEnabled === true,
         headerAuthEnabled: req.body.headerAuthEnabled === true,
@@ -973,7 +984,7 @@ class User {
         return res.serverError(403, 'Can not disable superAdmin unless you are superAdmin');
       }
 
-      // userAdmin can disable Admin roles but can not enable new ones
+      // usersAdmin can disable Admin roles but cannot enable new ones
       if (!iamSuperAdmin && adminRoles.some(v => rolesSet.has(v) && !user.hasRole(v))) {
         return res.serverError(403, 'Only superAdmin user can enable Admin roles on a user');
       }
@@ -1112,7 +1123,7 @@ class User {
    * POST - /api/user/password
    *
    * Update user password.
-   * NOTE: currentPassword is not required so that a usersAdmin can update anyone user's password.
+   * NOTE: currentPassword is not required so that a usersAdmin can update any user's password.
    * @name /user/password
    * @returns {boolean} success - Whether the update password operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1133,7 +1144,7 @@ class User {
 
     // Skip this check if we are a superAdmin
     if (!req.user.hasRole('superAdmin')) {
-      // Only change the password if we have the same admin roles(s)
+      // Only change the password if we have the same admin role(s)
       for (const role of adminRolesWithSuper) {
         if (!req.user.hasRole(role) && req.settingUser.hasRole(role)) {
           return res.serverError(403, `Not allowed to change ${role} password`);
@@ -1166,8 +1177,13 @@ class User {
     if (!secret) {
       return false;
     }
-    const result = otplib.verifySync({ secret, token, ...User.#totpOptions });
-    return result.valid;
+    try {
+      // verifySync throws on malformed tokens (non-digits, wrong length, etc)
+      const result = otplib.verifySync({ secret, token, ...User.#totpOptions });
+      return result.valid;
+    } catch (err) {
+      return false;
+    }
   }
 
   // Verify a TOTP code for this user (with rate limiting)
@@ -1473,7 +1489,9 @@ class User {
         }
 
         if (this.#allSettings[col] !== undefined) {
-          this.#allSettings[col] |= role.#allSettings[col];
+          // Keep booleans boolean - bitwise |= would yield 1, breaking the
+          // strict === true checks in checkPermissions
+          this.#allSettings[col] = this.#allSettings[col] || role.#allSettings[col];
         } else {
           this.#allSettings[col] = role.#allSettings[col];
         }
@@ -1714,7 +1732,7 @@ class User {
   }
 
   /**
-   * Return set of all roles expanded for ourself
+   * Return set of all roles expanded for ourselves
    */
   async getRoles () {
     if (this.#allRoles === undefined) {
@@ -1729,7 +1747,7 @@ class User {
   }
 
   /**
-   * Returns all roles that the currently this user has assignment access to
+   * Returns all roles that the current user has assignment access to
    */
   async getAssignableRoles (userId) {
     return await User.#implementation.getAssignableRoles(userId);
@@ -1813,12 +1831,12 @@ function cleanUser (user) {
   user.expression = user.expression || '';
   user.timeLimit = user.timeLimit || undefined;
 
-  // By default give to all user stuff if never had roles
+  // By default give access to all user stuff if the user never had roles
   if (user.roles === undefined) {
     user.roles = isRole ? [] : ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
   }
 
-  // Convert createEnable to usersAdmin role
+  // Convert createEnabled to usersAdmin role
   if (user.createEnabled && !user.roles.includes('usersAdmin')) {
     user.roles.push('usersAdmin');
   }

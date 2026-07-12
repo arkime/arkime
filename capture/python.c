@@ -41,6 +41,21 @@ LOCAL __thread int arkimeReaderThread = -1;
 LOCAL int loadingThread = -1;
 
 /******************************************************************************/
+// Convert an opaque Python integer handle (created with PyLong_FromVoidPtr) back
+// into a C pointer. PyLong_AsVoidPtr returns NULL and sets an exception when the
+// argument isn't a valid integer; without this guard a wrong Python argument
+// would be used as an invalid pointer. Sets a ValueError if the handle is NULL
+// without an exception already set (e.g. a literal 0), then returns NULL so the
+// exception propagates back to Python.
+#define ARKIME_PY_HANDLE(var, type, obj) \
+    type *var = (type *)PyLong_AsVoidPtr(obj); \
+    if (var == NULL) { \
+        if (!PyErr_Occurred()) \
+            PyErr_SetString(PyExc_ValueError, "Invalid Arkime handle"); \
+        return NULL; \
+    }
+
+/******************************************************************************/
 LOCAL void arkime_python_cb_map_free(gpointer data)
 {
     ARKIME_TYPE_FREE(ArkimePyCbMap_t, data);
@@ -604,6 +619,8 @@ LOCAL PyObject *arkime_python_session_register_parser(PyObject UNUSED(*self), Py
         return NULL;
     }
 
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+
     if (!PyCallable_Check(py_callback_obj)) {
         PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
         return NULL;
@@ -611,7 +628,7 @@ LOCAL PyObject *arkime_python_session_register_parser(PyObject UNUSED(*self), Py
     Py_INCREF(py_callback_obj);
 
     arkime_parsers_register2(
-        (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), // Convert PyObject* to ArkimeSession_t*
+        session,
         arkime_python_session_parsers_cb,
         py_callback_obj,
         arkime_python_session_parsers_free_cb,
@@ -686,6 +703,8 @@ LOCAL PyObject *arkime_python_session_register_parser_buf(PyObject UNUSED(*self)
         return NULL;
     }
 
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+
     if (!PyCallable_Check(py_callback_obj)) {
         PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
         return NULL;
@@ -697,7 +716,7 @@ LOCAL PyObject *arkime_python_session_register_parser_buf(PyObject UNUSED(*self)
     info->pb = arkime_parser_buf_create();
 
     arkime_parsers_register2(
-        (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj),
+        session,
         arkime_python_session_parsers_buf_cb,
         info,
         arkime_python_session_parsers_buf_free_cb,
@@ -715,7 +734,7 @@ LOCAL PyObject *arkime_python_parser_buf_del(PyObject UNUSED(*self), PyObject *a
         return NULL;
     }
 
-    ArkimeParserBuf_t *pb = (ArkimeParserBuf_t *)PyLong_AsVoidPtr(py_pb_obj);
+    ARKIME_PY_HANDLE(pb, ArkimeParserBuf_t, py_pb_obj);
     arkime_parser_buf_del(pb, which, len);
 
     Py_RETURN_NONE;
@@ -731,7 +750,7 @@ LOCAL PyObject *arkime_python_parser_buf_skip(PyObject UNUSED(*self), PyObject *
         return NULL;
     }
 
-    ArkimeParserBuf_t *pb = (ArkimeParserBuf_t *)PyLong_AsVoidPtr(py_pb_obj);
+    ARKIME_PY_HANDLE(pb, ArkimeParserBuf_t, py_pb_obj);
     arkime_parser_buf_skip(pb, which, skip);
 
     Py_RETURN_NONE;
@@ -747,10 +766,8 @@ LOCAL PyObject *arkime_python_session_add_tag(PyObject UNUSED(*self), PyObject *
     if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &tag_str)) {
         return NULL;
     }
-    arkime_session_add_tag(
-        (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), // Convert PyObject* to ArkimeSession_t*
-        tag_str
-    );
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    arkime_session_add_tag(session, tag_str);
     Py_RETURN_NONE;
 }
 /******************************************************************************/
@@ -762,10 +779,8 @@ LOCAL PyObject *arkime_python_session_add_protocol(PyObject UNUSED(*self), PyObj
     if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &protocol_str)) {
         return NULL;
     }
-    arkime_session_add_protocol(
-        (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), // Convert PyObject* to ArkimeSession_t*
-        protocol_str
-    );
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    arkime_session_add_protocol(session, protocol_str);
     Py_RETURN_NONE;
 }
 /******************************************************************************/
@@ -777,7 +792,8 @@ LOCAL PyObject *arkime_python_session_has_protocol(PyObject UNUSED(*self), PyObj
     if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &protocol_str)) {
         return NULL;
     }
-    if (arkime_session_has_protocol((ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), protocol_str)) {
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    if (arkime_session_has_protocol(session, protocol_str)) {
         Py_RETURN_TRUE;
     } else {
         Py_RETURN_FALSE;
@@ -810,7 +826,8 @@ LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *
         return NULL;
     }
 
-    gboolean result = arkime_field_int_add(pos, (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), value);
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    gboolean result = arkime_field_int_add(pos, session, value);
 
     if (result) {
         Py_RETURN_TRUE;
@@ -845,7 +862,8 @@ LOCAL PyObject *arkime_python_session_add_string(PyObject UNUSED(*self), PyObjec
         return NULL;
     }
 
-    const char *result = arkime_field_string_add(pos, (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), value, -1, TRUE);
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    const char *result = arkime_field_string_add(pos, session, value, -1, TRUE);
 
     if (result) {
         Py_RETURN_TRUE;
@@ -862,7 +880,8 @@ LOCAL PyObject *arkime_python_session_incref(PyObject UNUSED(*self), PyObject *a
         return NULL;
     }
 
-    arkime_session_incr_outstanding((ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj));
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    arkime_session_incr_outstanding(session);
     Py_RETURN_NONE;
 }
 /******************************************************************************/
@@ -874,7 +893,8 @@ LOCAL PyObject *arkime_python_session_decref(PyObject UNUSED(*self), PyObject *a
         return NULL;
     }
 
-    arkime_session_decr_outstanding((ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj));
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
+    arkime_session_decr_outstanding(session);
     Py_RETURN_NONE;
 }
 /******************************************************************************/
@@ -898,7 +918,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         return NULL;
     }
 
-    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
 
     int pos;
     if (isdigit(field[0]))
@@ -963,7 +983,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         Py_RETURN_NONE;
     }
 
-    // This session doesn't have this many fields or field isnt set
+    // This session doesn't have this many fields or field isn't set
     if (pos < 0 || pos >= session->maxFields || !session->fields[pos])
         Py_RETURN_NONE;
 
@@ -1114,7 +1134,7 @@ LOCAL PyObject *arkime_python_session_set_attr(PyObject UNUSED(*self), PyObject 
         return NULL;
     }
 
-    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
 
     if (!session->pythonAttrs) {
         session->pythonAttrs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_python_decref);
@@ -1135,7 +1155,7 @@ LOCAL PyObject *arkime_python_session_get_attr(PyObject UNUSED(*self), PyObject 
         return NULL;
     }
 
-    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+    ARKIME_PY_HANDLE(session, ArkimeSession_t, py_session_obj);
 
     if (!session->pythonAttrs) {
         Py_RETURN_NONE;
@@ -1295,7 +1315,7 @@ LOCAL PyObject *arkime_python_packet_get(PyObject UNUSED(*self), PyObject *args)
         return NULL;
     }
 
-    const ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+    ARKIME_PY_HANDLE(packet, const ArkimePacket_t, py_packet_obj);
 
     switch (field[0]) {
     case 'c':
@@ -1396,11 +1416,11 @@ LOCAL PyObject *arkime_python_packet_set(PyObject UNUSED(*self), PyObject *args)
     const char                  *field;
     uint32_t                     value;
 
-    if (!PyArg_ParseTuple(args, "Osk", &py_packet_obj, &field, &value)) {
+    if (!PyArg_ParseTuple(args, "OsI", &py_packet_obj, &field, &value)) {
         return NULL;
     }
 
-    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+    ARKIME_PY_HANDLE(packet, ArkimePacket_t, py_packet_obj);
 
     switch (field[0]) {
     case 'e':
@@ -1576,8 +1596,8 @@ LOCAL PyObject *arkime_python_run_ethernet_cb(PyObject UNUSED(*self), PyObject *
         return NULL;
     }
 
-    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)PyLong_AsVoidPtr(py_batch_obj);
-    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+    ARKIME_PY_HANDLE(batch, ArkimePacketBatch_t, py_batch_obj);
+    ARKIME_PY_HANDLE(packet, ArkimePacket_t, py_packet_obj);
 
     Py_buffer py_data_buf;
     if (PyObject_GetBuffer(py_packet_memview, &py_data_buf, PyBUF_SIMPLE) == -1) {
@@ -1605,8 +1625,8 @@ LOCAL PyObject *arkime_python_run_ip_cb(PyObject UNUSED(*self), PyObject *args)
         return NULL;
     }
 
-    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)PyLong_AsVoidPtr(py_batch_obj);
-    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+    ARKIME_PY_HANDLE(batch, ArkimePacketBatch_t, py_batch_obj);
+    ARKIME_PY_HANDLE(packet, ArkimePacket_t, py_packet_obj);
 
     Py_buffer py_data_buf;
     if (PyObject_GetBuffer(py_packet_memview, &py_data_buf, PyBUF_SIMPLE) == -1) {

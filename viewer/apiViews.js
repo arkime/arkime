@@ -249,9 +249,12 @@ class ViewAPIs {
       }
 
       // comma/newline separated value -> array of values
-      let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
-      users = await User.validateUserIds(users);
-      doc.users = users.validUsers;
+      // if users isn't sent, preserve the existing users list; an empty string clears it
+      let users = { validUsers: dbViewSource.users ?? [], invalidUsers: [] };
+      if (req.body.users !== undefined) {
+        users = await User.validateUserIds(ArkimeUtil.commaOrNewlineStringToArray(req.body.users));
+        doc.users = users.validUsers;
+      }
 
       try {
         await Db.setView(req.params.id, doc);

@@ -7,6 +7,7 @@
 //#define DTLSDEBUG 1
 
 extern ArkimeConfig_t        config;
+extern uint8_t               arkime_char_to_hexstr[256][3];
 
 LOCAL uint32_t tls_process_server_certificate_func;
 LOCAL uint32_t dtls_process_server_hello_func;
@@ -28,6 +29,22 @@ LOCAL int dtls_is_grease_value(uint32_t val)
         return 0;
 
     return 1;
+}
+/******************************************************************************/
+// JA4 encodes the first/last ALPN bytes, hex-escaping non-alphanumeric values
+LOCAL void dtls_alpn_to_ja4alpn(const uint8_t *alpn, int len, uint8_t *ja4alpn)
+{
+    if (len == 0)
+        return;
+
+    len--;  // len now the offset of last byte, which could be 0
+    if (isalnum(alpn[0]) && isalnum(alpn[len])) {
+        ja4alpn[0] = alpn[0];
+        ja4alpn[1] = alpn[len];
+    } else {
+        ja4alpn[0] = arkime_char_to_hexstr[alpn[0]][0];
+        ja4alpn[1] = arkime_char_to_hexstr[alpn[len]][1];
+    }
 }
 /******************************************************************************/
 LOCAL void dtls_ja4_version(uint16_t ver, char vstr[3])
@@ -205,8 +222,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
                 const uint8_t *astr = NULL;
                 BSB_IMPORT_ptr(bsb, astr, alen);
                 if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
-                    ja4ALPN[0] = astr[0];
-                    ja4ALPN[1] = astr[alen - 1];
+                    dtls_alpn_to_ja4alpn(astr, alen, ja4ALPN);
                 }
             } else if (etype == 0x2b) { // etype 0x2b is supported version
                 BSB bsb;
@@ -218,7 +234,13 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
                     uint16_t supported_version = 0;
                     BSB_IMPORT_u16(bsb, supported_version);
                     if (!dtls_is_grease_value(supported_version)) {
-                        ver = MAX(supported_version, ver);
+                        // DTLS version numbers are inverted (DTLS 1.3 = 0xfefc <
+                        // DTLS 1.2 = 0xfefd < DTLS 1.0 = 0xfeff), so the newest
+                        // offered version is the numerically smallest one.
+                        if (ver == 0)
+                            ver = supported_version;
+                        else
+                            ver = MIN(supported_version, ver);
                     }
                     llen -= 2;
                 }

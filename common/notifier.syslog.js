@@ -71,7 +71,10 @@ exports.buildSyslogMessage = function (config, message) {
   const hostname = require('os').hostname();
 
   // RFC 5424: <PRI>VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID STRUCTURED-DATA MSG
-  return `<${pri}>1 ${timestamp} ${hostname} ${tag} ${process.pid} - - ${message}`;
+  // Strip CR/LF and other control characters from the message to prevent
+  // syslog line injection/forging from attacker-controlled content.
+  const safeMessage = String(message).replace(/[\u0000-\u001f\u007f]/g, ' ');
+  return `<${pri}>1 ${timestamp} ${hostname} ${tag} ${process.pid} - - ${safeMessage}`;
 };
 
 exports.sendSyslogAlert = function (config, message, links, cb) {
