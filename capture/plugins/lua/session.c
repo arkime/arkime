@@ -158,7 +158,7 @@ LOCAL int MS_register_udp_classifier(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-LOCAL void molua_http_cb(int callback_type, ArkimeSession_t *session, http_parser *hp, const char *at, size_t length)
+LOCAL void molua_http_cb(int callback_type, ArkimeSession_t *session, const http_parser *hp, const char *at, size_t length)
 {
     MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     lua_State *L = Ls[session->thread];

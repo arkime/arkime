@@ -24,7 +24,7 @@ LOCAL ARKIME_LOCK_DEFINE(waiting);
 /******************************************************************************/
 LOCAL void scheme_http_done(int code, uint8_t UNUSED(*data), int UNUSED(data_len), gpointer uw)
 {
-    HTTPRequest_t *req = (HTTPRequest_t *)uw;
+    const HTTPRequest_t *req = (const HTTPRequest_t *)uw;
     if (code < 200 || code >= 300)
         LOG("ERROR - HTTP status %d fetching %s", code, req->uri);
     ARKIME_TYPE_FREE(HTTPRequest_t, uw);
