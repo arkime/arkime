@@ -118,6 +118,7 @@ function wildcardToLike (value) {
   return escapeLike(value).replace(/\\\*/g, '*').replace(/\\\?/g, '?').replace(/\*/g, '%').replace(/\?/g, '_');
 }
 
+/* eslint-disable no-bitwise -- IP address math below is inherently bitwise */
 const IP6_MAX = (1n << 128n) - 1n;
 
 // Parse an IPv6 address (optionally with an embedded trailing IPv4) into a
@@ -192,6 +193,7 @@ function ipRange (value) {
   const dotted = (x) => [x >>> 24, (x >>> 16) & 255, (x >>> 8) & 255, x & 255].join('.');
   return { lo: dotted(lo), hi: dotted(hi), exact: prefix === 32 && slash === -1 };
 }
+/* eslint-enable no-bitwise */
 
 // Index names carry a time suffix from capture's config.rotate
 // ("sessions3-060220", "-060220h04", "-99w03", "-99m03"). Map it to a
