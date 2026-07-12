@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import store from '@/store';
+import UserService from '@/components/users/UserService';
 import Stats from '@/components/stats/Stats.vue';
 import Help from '@/components/help/Help.vue';
 import Files from '@/components/files/Files.vue';
@@ -103,7 +104,17 @@ const router = createRouter({
     {
       path: '/upload',
       name: 'Upload',
-      component: Upload
+      component: Upload,
+      // the nav item is hidden when the user lacks canUpload; guard the
+      // route too so /upload can't be reached by typing the url directly.
+      // On a hard load the user isn't fetched yet, so pull it first.
+      beforeEnter: async () => {
+        let user = store.state.user;
+        if (!user) {
+          try { user = await UserService.getCurrent(); } catch { /* treated as no access */ }
+        }
+        if (!user?.canUpload) { return { name: 'Sessions' }; }
+      }
     },
     {
       path: '/hunt',
