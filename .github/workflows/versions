@@ -62,6 +62,7 @@ include:
     python: python3
     viewertest: sanitize
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: ubuntu2604_amd64
@@ -72,6 +73,7 @@ include:
     python: python3
     viewertest: normal
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: "arch-x86_64"
@@ -81,6 +83,7 @@ include:
     package: arch
     viewertest: normal
     otherdbtest: "true"
+    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: al2023.x86_64

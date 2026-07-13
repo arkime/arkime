@@ -35,7 +35,7 @@ extern ArkimeConfig_t config;
 /******************************************************************************
  * Message delivery report callback using the richer rd_kafka_message_t object.
  */
-LOCAL void kafka_msg_delivered_bulk_cb(rd_kafka_t *UNUSED(rk), const rd_kafka_message_t *rkmessage, void *UNUSED(opaque))
+LOCAL void kafka_msg_delivered_bulk_cb(rd_kafka_t *UNUSED(producer), const rd_kafka_message_t *rkmessage, void *UNUSED(opaque))
 {
     if (rkmessage->err) {
         LOG("Message delivery failed (broker %"PRId32"): %s",

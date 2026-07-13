@@ -986,19 +986,19 @@ uint8_t *arkime_http_get(void *serverV, const char *key, int key_len, size_t *ml
 /******************************************************************************/
 int arkime_http_queue_length(void *serverV)
 {
-    ArkimeHttpServer_t        *server = serverV;
+    const ArkimeHttpServer_t  *server = serverV;
     return server ? server->outstanding : 0;
 }
 /******************************************************************************/
 int arkime_http_queue_length_best(void *serverV)
 {
-    ArkimeHttpServer_t        *server = serverV;
+    const ArkimeHttpServer_t  *server = serverV;
     return server ? server->outstandingPri[ARKIME_HTTP_PRIORITY_BEST] : 0;
 }
 /******************************************************************************/
 uint64_t arkime_http_dropped_count(void *serverV)
 {
-    ArkimeHttpServer_t        *server = serverV;
+    const ArkimeHttpServer_t  *server = serverV;
     return server ? server->dropped : 0;
 }
 /******************************************************************************/
