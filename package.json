@@ -147,5 +147,8 @@
   "engines": {
     "node": ">= 22.15.0 < 23",
     "npm": ">= 3.0.0"
+  },
+  "overrides": {
+    "uuid": "$uuid"
   }
 }
