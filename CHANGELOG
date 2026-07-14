@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
   - #4121 Fix diameter parser not unregistering when its reassembly buffer overflowed
+  - #4126 Add --sorted option to process offline pcap directories in alphabetical order
 ## Viewer
   - #4120 Fix error responses crashing with an unhandled rejection when a session API handler passed an Error object to res.end
   - #4120 Fix addTagsList/removeTagsList completion callback not being reliably called
