@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 124;
+use Test::More tests => 129;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -371,6 +371,30 @@ is ($response->code, 302, "logout redirects");
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8128/", 'Cookie' => $cookie);
 is ($response->code, 200, "logged out session redirected to login page");
 ok ($response->content =~ /LOGIN!/, "logged out session shows login form");
+
+
+#### changePasswordSecret.js tests
+# reuse test1, whose passStore uses the [default] passwordSecret (password)
+my $cpsBefore = viewerGet("/regressionTests/getUser/test1");
+
+# wrong old secret -> user is skipped and left completely unchanged
+my $cpsOut = changePasswordSecret("wrongoldsecret", "whatever");
+like($cpsOut, qr/SKIP\s+- test1/, "test1 skipped when old passwordSecret is wrong");
+esGet("/_refresh");
+my $cpsWrong = viewerGet("/regressionTests/getUser/test1");
+eq_or_diff($cpsWrong->{passStore}, $cpsBefore->{passStore}, "passStore unchanged after wrong old secret");
+
+# correct old secret -> user is re-encrypted and logged
+$cpsOut = changePasswordSecret("password", "password2");
+like($cpsOut, qr/UPDATE - test1/, "test1 updated when old passwordSecret is correct");
+esGet("/_refresh");
+my $cpsAfter = viewerGet("/regressionTests/getUser/test1");
+ok($cpsAfter->{passStore} ne $cpsBefore->{passStore}, "passStore re-encrypted with new passwordSecret");
+
+# re-key back to the original secret so the rest of the suite is unaffected
+$cpsOut = changePasswordSecret("password2", "password");
+like($cpsOut, qr/UPDATE - test1/, "test1 re-keyed back to the original passwordSecret");
+esGet("/_refresh");
 
 
 # cleanup

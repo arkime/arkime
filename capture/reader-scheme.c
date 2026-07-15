@@ -395,6 +395,9 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     if (config.pcapDelete) {
         flags |= ARKIME_SCHEME_FLAG_DELETE;
     }
+    if (config.pcapSorted) {
+        flags |= ARKIME_SCHEME_FLAG_SORTED;
+    }
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
@@ -1166,6 +1169,9 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
     if (config.pcapDelete) {
         flags |= ARKIME_SCHEME_FLAG_DELETE;
     }
+    if (config.pcapSorted) {
+        flags |= ARKIME_SCHEME_FLAG_SORTED;
+    }
 
     for (int i = 1; i < argc - 1; i++) {
         const char *cmp = argv[i];
@@ -1189,6 +1195,10 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
             flags |= ARKIME_SCHEME_FLAG_DELETE;
         } else if (strcmp(cmp, "-nodelete") == 0) {
             flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DELETE);
+        } else if (strcmp(cmp, "-sorted") == 0) {
+            flags |= ARKIME_SCHEME_FLAG_SORTED;
+        } else if (strcmp(cmp, "-nosorted") == 0) {
+            flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_SORTED);
         } else if (strcmp(cmp, "-notify") == 0) {
             notify = TRUE;
         } else if (strcmp(cmp, "-nonotify") == 0) {
@@ -1209,6 +1219,11 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
             arkime_command_respond(cc, err, -1);
             return 1;
         }
+    }
+
+    if ((flags & ARKIME_SCHEME_FLAG_SORTED) && (flags & ARKIME_SCHEME_FLAG_MONITOR)) {
+        arkime_command_respond(cc, "--sorted cannot be used with --monitor\n", -1);
+        return 1;
     }
 
     ArkimeSchemeAction_t *actions = NULL;
@@ -1323,6 +1338,7 @@ void arkime_reader_scheme_init()
                                  "[--skip|--noskip]", "Override command line skip files already processed",
                                  "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",
                                  "[--recursive|--norecursive]", "Override command line Recurse subdirectories option",
+                                 "[--sorted|--nosorted]", "Override command line sort files alphabetically before processing (incompatible with --monitor)",
                                  "<dir>", "Directory to process",
                                  NULL);
 }

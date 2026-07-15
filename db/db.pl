@@ -235,6 +235,8 @@ sub showHelp($)
     print "     Same options as ilm command above\n";
     print "  reindex <src> [<dst>]        - Reindex OpenSearch/Elasticsearch indices\n";
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
+    print "  reindex-sessions2 <src> [<dst>] - Reindex sessions2 index(es) into ${PREFIX}sessions3, renaming fields to ECS\n";
+    print "                                    <src> may be a single index or a wildcard like 'sessions2-*'\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename> <opts>     - Backup everything but sessions/history; filenames created start with <basename>\n";
@@ -483,6 +485,41 @@ sub esScroll
         $id = $incoming->{_scroll_id};
     }
     return \@hits;
+}
+################################################################################
+# Send a _bulk NDJSON body and return the number of failed items.  Used by the
+# reindex-sessions2 command.
+sub esBulkSessions2
+{
+    my ($body) = @_;
+
+    return 0 if ($body eq "");
+
+    if ($NOCHANGES) {
+        logmsg "NOCHANGE: POST ${main::elasticsearch}/_bulk\n";
+        return 0;
+    }
+
+    logmsg "POST ${main::elasticsearch}/_bulk\n" if ($verbose > 2);
+    my $response = $main::userAgent->post("${main::elasticsearch}/_bulk", Content => $body, Content_Type => "application/x-ndjson");
+    if ($response->code != 200) {
+        logmsg "ERROR - _bulk failed with http status code " . $response->code . "\n";
+        logmsg $response->content, "\n" if ($verbose > 0);
+        return 1;
+    }
+
+    my $json = from_json($response->content);
+    my $errors = 0;
+    if ($json->{errors}) {
+        foreach my $item (@{$json->{items}}) {
+            my $status = $item->{index}->{status} // 200;
+            if ($status >= 300) {
+                $errors++;
+                logmsg "ERROR - _bulk item: " . to_json($item->{index}->{error}) . "\n" if ($verbose > 0);
+            }
+        }
+    }
+    return $errors;
 }
 ################################################################################
 sub esAlias
@@ -1352,6 +1389,54 @@ sub ecsFieldsUpdate
     foreach my $key (keys (%ECSPROP)) {
         esPut("/${OLDPREFIX}sessions2-*/_mapping", qq({"properties": {"$key":) .  to_json($ECSPROP{$key}) . qq(}}), 1);
     }
+}
+
+################################################################################
+# Set a possibly nested (dot separated) field in $doc to $value, creating any
+# intermediate hashes.  e.g. "source.geo.country_iso_code" => {source => {geo => {...}}}
+sub sessions2to3SetNested
+{
+    my ($doc, $path, $value) = @_;
+    my @parts = split(/\./, $path);
+    my $leaf = pop @parts;
+    my $ref = $doc;
+    foreach my $part (@parts) {
+        $ref->{$part} = {} if (ref ($ref->{$part}) ne "HASH");
+        $ref = $ref->{$part};
+    }
+    $ref->{$leaf} = $value;
+}
+
+################################################################################
+# Transform a single sessions2 _source doc (flat Arkime fields) into a
+# sessions3 _source doc (ECS nested fields).  Only the fields in the rename map
+# move, everything else (http.*, dns.*, node, packetPos, ...) is left as is.
+sub sessions2to3Doc
+{
+    my ($src, $map) = @_;
+
+    foreach my $v2 (keys (%{$map})) {
+        next if (!exists $src->{$v2});
+        my $value = delete $src->{$v2};
+        my $v3 = $map->{$v2};
+
+        # sessions2 stored ASN as a single "AS<num> <org>" string, sessions3
+        # splits it into as.number (long), as.full (string), and
+        # as.organization.name.
+        if (($v2 eq "srcASN" || $v2 eq "dstASN") && !ref ($value) && $value =~ /^AS(\d+)\s*(.*)$/) {
+            my ($num, $org) = ($1, $2);
+            my $base = $v3;
+            $base =~ s/\.full$//;
+            sessions2to3SetNested($src, "$base.number", $num + 0);
+            sessions2to3SetNested($src, "$base.full", $value);
+            sessions2to3SetNested($src, "$base.organization.name", $org) if ($org ne "");
+            next;
+        }
+
+        sessions2to3SetNested($src, $v3, $value);
+    }
+
+    return $src;
 }
 
 ################################################################################
@@ -7808,8 +7893,8 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -9096,6 +9181,109 @@ $policy = qq/{
     die "Not deleting src since would delete dst too" if ("${dst}*" eq "$src");
     esDelete("/$src", 1);
     print "Deleted $src\n";
+    exit 0;
+} elsif ($ARGV[1] =~ /^reindex-sessions2$/) {
+    # sessions2 (flat dbField) -> sessions3 (ECS nested path) rename map,
+    # derived from the same %ECSPROP table used to add ECS aliases during upgrade.
+    my %s2to3;
+    foreach my $ecs (keys (%ECSPROP)) {
+        $s2to3{$ECSPROP{$ecs}->{path}} = $ecs;
+    }
+
+    # Expand the source argument into a list of sessions2 indices
+    my $srcArg = $ARGV[2];
+    my @srcIndices;
+    if ($srcArg =~ /\*/) {
+        my $matches = esMatchingIndices($srcArg);
+        @srcIndices = sort grep {$_ ne ""} split(/,/, $matches);
+        die "No indices match '$srcArg'\n" if (@srcIndices == 0);
+    } else {
+        @srcIndices = ($srcArg);
+    }
+
+    if (scalar @ARGV == 4 && scalar @srcIndices != 1) {
+        showHelp("Can only supply a <dst> when <src> is a single index");
+    }
+
+    foreach my $src (@srcIndices) {
+        # sessions2-YYMMDD (optionally prefixed) => ${PREFIX}sessions3-YYMMDD
+        my $dst;
+        if (scalar @ARGV == 4) {
+            $dst = $ARGV[3];
+        } elsif ($src =~ /sessions2-(.+)$/) {
+            $dst = "${PREFIX}sessions3-$1";
+        } else {
+            logmsg "Skipping '$src', doesn't look like a sessions2 index\n";
+            next;
+        }
+
+        if (!esIndexExists($src)) {
+            logmsg "Skipping '$src', index does not exist\n";
+            next;
+        }
+
+        my $srcCount = esGet("/$src/_count", 1)->{count} // 0;
+        print scalar localtime(), " $src => $dst ($srcCount docs)\n";
+
+        # Scroll through the source index and bulk index into the destination,
+        # keeping the same _id and renaming fields to the sessions3 ECS layout.
+        my $done = 0;
+        my $errors = 0;
+        my $lastp = -1;
+        my $scrollId = "";
+        my $startTime = time();
+        while (1) {
+            my $url;
+            my $query;
+            if ($scrollId eq "") {
+                $url = "/$src/_search?scroll=10m&size=500";
+                $query = to_json({"sort" => ["_doc"]});
+            } else {
+                $url = "/_search/scroll";
+                $query = to_json({"scroll" => "10m", "scroll_id" => $scrollId});
+            }
+
+            my $incoming = esPost($url, $query, 1);
+            die "Scroll failed for $src: " . Dumper($incoming) if (! exists $incoming->{hits});
+            $scrollId = $incoming->{_scroll_id};
+            my @hits = @{$incoming->{hits}->{hits}};
+            last if (@hits == 0);
+
+            # Build the bulk body, splitting so each request stays well under
+            # the ES 100MB bulk limit.
+            my $body = "";
+            foreach my $hit (@hits) {
+                my $newdoc = sessions2to3Doc($hit->{_source}, \%s2to3);
+                my $meta = to_json({"index" => {"_index" => $dst, "_id" => $hit->{_id}}});
+                my $line = $meta . "\n" . to_json($newdoc) . "\n";
+
+                if (length($body) + length($line) > 90 * 1000 * 1000) {
+                    $errors += esBulkSessions2($body);
+                    $body = "";
+                }
+                $body .= $line;
+            }
+            $errors += esBulkSessions2($body) if (length($body) > 0);
+
+            $done += scalar @hits;
+
+            my $p = $srcCount > 0 ? int($done * 100 / $srcCount) : 100;
+            if ($p != $lastp) {
+                print scalar localtime(), " $src $p% ($done/$srcCount)\n";
+                $lastp = $p;
+            }
+        }
+
+        # Clear the scroll context
+        esPost("/_search/scroll", to_json({"scroll_id" => [$scrollId]}), 1) if ($scrollId ne "");
+
+        esGet("/${dst}/_flush", 1);
+        esGet("/${dst}/_refresh", 1);
+        my $dstCount = esGet("/$dst/_count", 1)->{count} // 0;
+        my $elapsed = time() - $startTime;
+        print scalar localtime(), " $src done: indexed $done, $errors errors, dst now has $dstCount docs (${elapsed}s)\n";
+        logmsg "WARNING - $src had $srcCount docs but $dst has $dstCount, check for errors above\n" if ($dstCount < $srcCount);
+    }
     exit 0;
 } elsif ($ARGV[1] =~ /^repair$/) {
     my @arkimeIndices = ({

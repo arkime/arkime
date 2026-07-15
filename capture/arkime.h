@@ -510,6 +510,7 @@ typedef struct arkime_config {
     char      noRefresh;
     char    **commandList;
     char      noConfigOption;
+    gboolean  pcapSorted;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -1725,7 +1726,8 @@ typedef enum {
     ARKIME_SCHEME_FLAG_MONITOR   = 0x0002,
     ARKIME_SCHEME_FLAG_RECURSIVE = 0x0004,
     ARKIME_SCHEME_FLAG_SKIP      = 0x0008,
-    ARKIME_SCHEME_FLAG_DELETE    = 0x0010
+    ARKIME_SCHEME_FLAG_DELETE    = 0x0010,
+    ARKIME_SCHEME_FLAG_SORTED    = 0x0020
 } ArkimeSchemeFlags;
 
 typedef struct {

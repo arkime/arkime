@@ -260,6 +260,18 @@ class User {
   }
 
   /**
+   * Return ALL users with their full raw data, including sensitive fields such
+   * as passStore and cont3xt keys. Unlike searchUsers/getUser this does NOT
+   * clean, filter, or expand roles. Intended for admin/maintenance tasks that
+   * need the stored document as-is (e.g. re-encrypting after a passwordSecret
+   * change). Pair with setUser to write changes back.
+   * @returns {Promise<Array>} every stored user/role document, unmodified
+   */
+  static getAllUsers () {
+    return User.#implementation.getAllUsers();
+  }
+
+  /**
    * @private
    * Create a user from thin air!
    */
@@ -2147,6 +2159,29 @@ class UserESImplementation {
     return { users: hits, total: users.hits.total };
   }
 
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const users = [];
+    let resp = await this.client.search({
+      index: this.prefix + 'users',
+      scroll: '5m',
+      body: { size: 1000, query: { match_all: {} } }
+    });
+
+    while (resp.body.hits.hits.length > 0) {
+      for (const hit of resp.body.hits.hits) {
+        users.push(hit._source);
+      }
+      resp = await this.client.scroll({ scroll_id: resp.body._scroll_id, scroll: '5m' });
+    }
+
+    if (resp.body?._scroll_id) {
+      try { await this.client.clearScroll({ body: { scroll_id: [resp.body._scroll_id] } }); } catch (err) { /* ignore */ }
+    }
+
+    return users;
+  }
+
   // Return a user from DB, callback only
   getUser (userId, cb) {
     this.client.get({ index: this.prefix + 'users', id: userId }, (err, result) => {
@@ -2284,6 +2319,15 @@ class UserLMDBImplementation {
     };
   }
 
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const users = [];
+    this.store.getRange({}).forEach(({ key, value }) => {
+      users.push(value);
+    });
+    return users;
+  }
+
   // Return a user from DB, callback only
   getUser (userId, cb) {
     try {
@@ -2395,6 +2439,18 @@ class UserRedisImplementation {
       total: hits.length,
       users: hits.slice(from, from + size)
     };
+  }
+
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const keys = await this.client.keys(this.prefix + '*');
+    const users = [];
+    for (const key of keys) {
+      const data = await this.client.get(key);
+      if (!data) { continue; }
+      users.push(JSON.parse(data));
+    }
+    return users;
   }
 
   // Return a user from DB, callback only
@@ -2515,6 +2571,12 @@ class UserSQLiteImplementation {
       total: hits.length,
       users: hits.slice(from, from + size)
     };
+  }
+
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const rows = this.db.prepare('SELECT json FROM users').all();
+    return rows.map(row => JSON.parse(row.json));
   }
 
   // Return a user from DB, callback only
