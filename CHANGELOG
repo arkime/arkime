@@ -49,6 +49,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4120 Fix error responses crashing with an unhandled rejection when a session API handler passed an Error object to res.end
   - #4120 Fix addTagsList/removeTagsList completion callback not being reliably called
   - #4120 Hunts now fetch only the packet-related session fields instead of all fields, speeding up hunts on sessions with many fields
+  - #4080 Add dbAdmin role that grants Elasticsearch/OpenSearch admin access; the esAdminUsers setting is now deprecated and will be removed in Arkime 7
 
 6.6.0 2026/07/09
 ## Breaking
