@@ -41,6 +41,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
   - #4121 Fix diameter parser not unregistering when its reassembly buffer overflowed
   - #4126 Add --sorted option to process offline pcap directories in alphabetical order
+## db.pl
+  - #4127 Add reindex-sessions2 command to reindex sessions2 indices into sessions3, renaming flat fields to the ECS nested layout
 ## Viewer
   - #4120 Fix error responses crashing with an unhandled rejection when a session API handler passed an Error object to res.end
   - #4120 Fix addTagsList/removeTagsList completion callback not being reliably called
