@@ -15,7 +15,7 @@ const otplib = require('otplib');
 const QRCode = require('qrcode');
 
 const systemRolesMapping = {
-  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
+  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser', 'dbAdmin'],
   usersAdmin: [],
   arkimeAdmin: ['arkimeUser'],
   arkimeUser: [],
@@ -24,11 +24,12 @@ const systemRolesMapping = {
   wiseAdmin: ['wiseUser'],
   wiseUser: [],
   cont3xtAdmin: ['cont3xtUser'],
-  cont3xtUser: []
+  cont3xtUser: [],
+  dbAdmin: []
 };
 
-const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
-const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
+const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
+const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
 
 const usersMissing = {
   userId: '',
@@ -462,7 +463,8 @@ class User {
    * superAdmin - has access to all the applications and can configure anything<br>
    * usersAdmin - has access to configure users<br>
    * wiseAdmin - has administrative access to WISE (can configure and update WISE)<br>
-   * wiseUser - has access to WISE
+   * wiseUser - has access to WISE<br>
+   * dbAdmin - has access to perform database administration tasks
    * @typedef ArkimeRole
    * @type {string}
    */

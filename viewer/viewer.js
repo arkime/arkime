@@ -601,6 +601,9 @@ async function checkHuntAccess (req, res, next) {
 }
 
 function checkEsAdminUser (req, res, next) {
+  if (req.user.hasRole('dbAdmin')) {
+    return next();
+  }
   if (internals.esAdminUsersSet) {
     if (internals.esAdminUsers.includes(req.user.userId)) {
       return next();

@@ -1292,6 +1292,8 @@ SPDX-License-Identifier: Apache-2.0
           <dd>Can perform wise configuration, automatically assigned the wiseUser.</dd>
           <dt>wiseUser</dt>
           <dd>Can use the WISE UI to do queries and view stats</dd>
+          <dt>dbAdmin</dt>
+          <dd>Can perform database administration tasks.</dd>
         </dl>
 
         <p>

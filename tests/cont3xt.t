@@ -820,7 +820,7 @@ $json = cont3xtGet('/api/roles');
 eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'));
 
 $json = cont3xtGetToken('/api/roles', $token);
-eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
+eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUser","cont3xtAdmin","cont3xtUser","dbAdmin","parliamentAdmin","parliamentUser","superAdmin","usersAdmin","wiseAdmin","wiseUser"]}'));
 
 ################################################################################
 ### INTEGRATION
