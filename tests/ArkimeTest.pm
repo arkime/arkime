@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser clearIndex generate_totp);
+@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -569,6 +569,32 @@ sub addUser {
     }
     waitpid($pid, 0);
     return $?;
+}
+
+# Run common/changePasswordSecret.js with the old/new secret given on the
+# command line and return its combined stdout/stderr so callers can check the
+# UPDATE/SKIP log lines.
+sub changePasswordSecret {
+    my ($old, $new) = @_;
+    my @es_args = (
+        '-o', "elasticsearch=$ArkimeTest::elasticsearch",
+        '-o', "usersElasticsearch=$ArkimeTest::usersElasticsearch",
+        '-o', "prefix=tests",
+    );
+    push @es_args, $ENV{INSECURE} if defined $ENV{INSECURE} && $ENV{INSECURE} ne '';
+
+    my $pid = open(my $fh, "-|");
+    die "fork: $!" if !defined $pid;
+    if ($pid == 0) {
+        chdir('../common') or die "chdir ../common: $!";
+        open(STDERR, ">&", STDOUT);
+        exec('node', 'changePasswordSecret.js', @es_args, '-c', '../tests/config.test.ini', $old, $new);
+        die "exec: $!";
+    }
+    local $/;
+    my $out = <$fh>;
+    close($fh);
+    return $out;
 }
 ################################################################################
 sub clearIndex {

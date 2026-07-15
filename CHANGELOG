@@ -36,6 +36,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.6.1 2026/08/xx
+## All
+  - #4128 Add changePasswordSecret.js to re-encrypt all users' passwords and cont3xt keys after changing the passwordSecret
 ## Capture
   - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
