@@ -56,6 +56,18 @@ function checkURLs (nodes) {
   }
 }
 
+// True if the index name (string, comma list, or array) refers to sessions
+function isSessionsIndex (index) {
+  if (!index) { return false; }
+  if (Array.isArray(index)) { return index.some(isSessionsIndex); }
+  return String(index).split(',').some((item) => {
+    item = item.trim();
+    if (item === 'sessions*') { return true; }
+    if (item.startsWith('partial-')) { item = item.substring(8); }
+    return /(^|_)sessions[23]($|[-*])/.test(item);
+  });
+}
+
 Db.initialize = async (info) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   delete info.multiES;
@@ -168,6 +180,12 @@ Db.initialize = async (info) => {
       process.exit(1);
     }
   }
+
+  // Initialize the sessions DB backend. sessionsImpl serves sessions indices
+  // and may be replaced by an alternate backend; esImpl always exists
+  // and serves everything else.
+  internals.esImpl = new DbESImpl(internals.client7, internals.prefix, { Db, internals, fixIndex });
+  internals.sessionsImpl = internals.esImpl;
 
   // Replace tag implementation
   if (internals.multiES) {
@@ -578,7 +596,7 @@ Db.getSession = async (id, options, cb) => {
 
     const index = Db.sid2Index(id, { multiple: true });
 
-    let results = await Db.search(index, query, params);
+    let results = await internals.sessionsImpl.searchSessions(index, query, params);
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', JSON.stringify(results, false, 2));
     }
@@ -588,11 +606,9 @@ Db.getSession = async (id, options, cb) => {
         return cb ? cb('Not found') : Promise.reject('Not found');
       }
       options.final = true;
-      await new Promise((resolve) => {
-        internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
-          resolve();
-        });
-      });
+      if (!await internals.sessionsImpl.refreshForNotFoundRetry(index)) {
+        return cb ? cb('Not found') : Promise.reject('Not found');
+      }
       return Db.getSession(id, options, cb);
     }
     const session = results.hits.hits[0];
@@ -689,143 +705,13 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
 };
 
 Db.searchScroll = async (index, query, options, cb) => {
-  // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
-  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
-    if (!cb) {
-      return Db.search(index, query, options);
-    }
-    try {
-      return cb(null, await Db.search(index, query, options));
-    } catch (err) {
-      return cb(err);
-    }
-  }
-
-  try {
-    // Now actually do the search scroll
-    const from = +query.from || 0;
-    const size = +query.size || 0;
-
-    const querySize = from + size;
-    delete query.from;
-
-    let totalResults;
-    const params = { scroll: '2m' };
-    Db.merge(params, options);
-    query.size = 1000; // Get 1000 items per scroll call
-    query.profile = internals.esProfile;
-
-    let response = await Db.search(index, query, params);
-
-    while (true) {
-      if (totalResults === undefined) {
-        totalResults = response;
-      } else {
-        Array.prototype.push.apply(totalResults.hits.hits, response.hits.hits);
-      }
-
-      if (totalResults.hits.total > 0 && totalResults.hits.hits.length < Math.min(response.hits.total, querySize)) {
-        try {
-          const { body: results } = await Db.scroll({
-            scroll: '2m', body: { scroll_id: response._scroll_id }
-          });
-          response = results;
-        } catch (err) {
-          console.log('ERROR - issuing scroll', err);
-          if (totalResults) {
-            totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
-          }
-          if (response._scroll_id) {
-            await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-          }
-          throw err;
-        }
-      } else {
-        break;
-      }
-    }
-
-    if (totalResults) {
-      totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
-    }
-    if (response._scroll_id) {
-      await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-    }
-
-    if (cb) { cb(null, totalResults); }
-    return totalResults;
-  } catch (err) {
-    if (cb) { cb(err); }
-    throw err;
-  }
+  const impl = isSessionsIndex(index) ? internals.sessionsImpl : internals.esImpl;
+  return impl.searchScroll(index, query, options, cb);
 };
 
 Db.searchScrollIterator = async function* (index, query, options) {
-  // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
-  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
-    const result = await Db.search(index, query, options);
-    yield result;
-    return;
-  }
-
-  let from = +query.from || 0;
-  const size = +query.size || 0;
-  delete query.from;
-
-  let yielded = 0;
-  const params = { scroll: '2m' };
-  Db.merge(params, options);
-  query.size = internals.regressionTests ? 20 : 2000;
-  query.profile = internals.esProfile;
-
-  let response = await Db.search(index, query, params);
-
-  while (true) {
-    let hits = response.hits.hits;
-
-    // Stop if no more results
-    if (hits.length === 0) {
-      break;
-    }
-
-    if (from === 0) {
-      // Don't do anything
-    } else if (from < hits.length) {
-      hits = hits.slice(from);
-      from = 0;
-    } else {
-      from -= hits.length;
-      hits = [];
-    }
-
-    if (hits.length > 0) {
-      response.hits.hits = hits.slice(0, size - yielded);
-      yielded += response.hits.hits.length;
-      yield response;
-
-      if (yielded >= size) {
-        break;
-      }
-    }
-
-    // Fetch next chunk
-    try {
-      const { body: results } = await Db.scroll({
-        scroll: '2m', body: { scroll_id: response._scroll_id }
-      });
-      response = results;
-    } catch (err) {
-      console.log('ERROR - issuing scroll', err);
-      if (response._scroll_id) {
-        await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-      }
-      throw err;
-    }
-  }
-
-  if (response._scroll_id) {
-    await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-  }
+  const impl = isSessionsIndex(index) ? internals.sessionsImpl : internals.esImpl;
+  yield * impl.searchScrollIterator(index, query, options);
 };
 
 Db.searchSessions = function (index, query, options, cb) {
@@ -878,22 +764,7 @@ Db.searchSessionsIterator = async function* (index, query, options) {
 };
 
 Db.msearchSessions = async (index, queries, options) => {
-  const body = [];
-
-  for (let i = 0, ilen = queries.length; i < ilen; i++) {
-    body.push({ index: fixIndex(index) });
-    body.push(queries[i]);
-  }
-
-  const params = { body, rest_total_hits_as_int: true };
-
-  let cancelId = null;
-  if (options && options.cancelId) {
-    // use opaqueId option so the task can be cancelled
-    cancelId = { opaqueId: options.cancelId };
-  }
-
-  return internals.client7.msearch(params, cancelId);
+  return internals.sessionsImpl.msearchSessions(index, queries, options);
 };
 
 Db.scroll = async (params) => {
@@ -910,9 +781,8 @@ Db.clearScroll = async (params) => {
 };
 
 Db.deleteDocument = async (index, id, options) => {
-  const params = { index: fixIndex(index), id };
-  Db.merge(params, options);
-  return internals.client7.delete(params);
+  const impl = isSessionsIndex(index) ? internals.sessionsImpl : internals.esImpl;
+  return impl.deleteDocument(index, id, options);
 };
 
 // This API does not call fixIndex
@@ -1115,30 +985,12 @@ Db.update = async (index, id, doc, options) => {
 };
 
 Db.updateSession = async (index, id, doc) => {
-  const params = {
-    retry_on_conflict: 3,
-    index: fixIndex(index),
-    body: doc,
-    id,
-    timeout: '10m'
-  };
-
-  try {
-    const { body: data } = await internals.client7.update(params);
-    return data;
-  } catch (err) {
-    if (err.statusCode !== 403) {
-      throw err;
-    }
-
-    await Db.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
-    const { body: retryData } = await internals.client7.update(params);
-    return retryData;
-  }
+  return internals.sessionsImpl.updateSession(index, id, doc);
 };
 
 Db.close = async () => {
   User.close();
+  internals.sessionsImpl.close();
   return internals.client7.close();
 };
 
@@ -1188,99 +1040,19 @@ Db.refresh = async (index, cluster) => {
 };
 
 Db.addTagsToSession = async (index, id, tags, cluster) => {
-  const body = {
-    script: {
-      source: `
-        if (ctx._source.tags != null) {
-          for (int i = 0; i < params.tags.length; i++) {
-            if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
-              ctx._source.tags.add(params.tags[i]);
-            }
-          }
-          ctx._source.tagsCnt = ctx._source.tags.length;
-        } else {
-          ctx._source.tags = params.tags;
-          ctx._source.tagsCnt = params.tags.length;
-        }
-      `,
-      lang: 'painless',
-      params: { tags }
-    }
-  };
-
-  if (cluster) { body.cluster = cluster; }
-
-  return Db.updateSession(index, id, body);
+  return internals.sessionsImpl.addTagsToSession(index, id, tags, cluster);
 };
 
 Db.removeTagsFromSession = async (index, id, tags, cluster) => {
-  const body = {
-    script: {
-      source: `
-        if (ctx._source.tags != null) {
-          for (int i = 0; i < params.tags.length; i++) {
-            int idx = ctx._source.tags.indexOf(params.tags[i]);
-            if (idx > -1) { ctx._source.tags.remove(idx); }
-          }
-          ctx._source.tagsCnt = ctx._source.tags.length;
-          if (ctx._source.tagsCnt == 0) {
-            ctx._source.remove("tags");
-            ctx._source.remove("tagsCnt");
-          }
-        }
-      `,
-      lang: 'painless',
-      params: { tags }
-    }
-  };
-
-  if (cluster) { body.cluster = cluster; }
-
-  return Db.updateSession(index, id, body);
+  return internals.sessionsImpl.removeTagsFromSession(index, id, tags, cluster);
 };
 
 Db.addHuntToSession = async (index, id, huntId, huntName) => {
-  const body = {
-    script: {
-      source: `
-        if (ctx._source.huntId != null) {
-          ctx._source.huntId.add(params.huntId);
-        } else {
-          ctx._source.huntId = [ params.huntId ];
-        }
-        if (ctx._source.huntName != null) {
-          ctx._source.huntName.add(params.huntName);
-        } else {
-          ctx._source.huntName = [ params.huntName ];
-        }
-      `,
-      lang: 'painless',
-      params: { huntId, huntName }
-    }
-  };
-
-  return Db.updateSession(index, id, body);
+  return internals.sessionsImpl.addHuntToSession(index, id, huntId, huntName);
 };
 
 Db.removeHuntFromSession = async (index, id, huntId, huntName) => {
-  const body = {
-    script: {
-      source: `
-        if (ctx._source.huntId != null) {
-          int idx = ctx._source.huntId.indexOf(params.huntId);
-          if (idx > -1) { ctx._source.huntId.remove(idx); }
-        }
-        if (ctx._source.huntName != null) {
-          int idx = ctx._source.huntName.indexOf(params.huntName);
-          if (idx > -1) { ctx._source.huntName.remove(idx); }
-        }
-      `,
-      lang: 'painless',
-      params: { huntId, huntName }
-    }
-  };
-
-  return Db.updateSession(index, id, body);
+  return internals.sessionsImpl.removeHuntFromSession(index, id, huntId, huntName);
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////
@@ -1829,26 +1601,8 @@ Db.getSequenceNumber = async (sName) => {
 };
 
 Db.numberOfDocuments = async (index, options) => {
-  // count interface is slow for large data sets, don't use for sessions unless multiES
-  if (index !== 'sessions2-*' || internals.multiES) {
-    const params = { index: fixIndex(index), ignore_unavailable: true };
-    Db.merge(params, options);
-    const { body: total } = await internals.client7.count(params);
-    return { count: total.count };
-  }
-
-  let count = 0;
-  const str = `${internals.prefix}sessions2-`;
-
-  const indices = await Db.indicesCache(options.cluster);
-
-  for (let i = 0; i < indices.length; i++) {
-    if (indices[i].index.includes(str)) {
-      count += parseInt(indices[i]['docs.count']);
-    }
-  }
-
-  return { count };
+  const impl = isSessionsIndex(index) ? internals.sessionsImpl : internals.esImpl;
+  return impl.numberOfDocuments(index, options);
 };
 
 Db.checkVersion = async function (minVersion) {
@@ -2018,10 +1772,7 @@ Db.loadFields = async () => {
 };
 
 Db.getSessionIndices = function (excludeExtra) {
-  if (excludeExtra) {
-    return ['sessions2-*', 'sessions3-*'];
-  }
-  return internals.sessionIndices;
+  return internals.sessionsImpl.getSessionIndices(excludeExtra);
 };
 
 Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices) => {
@@ -2172,11 +1923,8 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
 };
 
 Db.getMinValue = async (index, field) => {
-  const params = {
-    index: fixIndex(index),
-    body: { size: 0, aggs: { min: { min: { field } } } }
-  };
-  return internals.client7.search(params);
+  const impl = isSessionsIndex(index) ? internals.sessionsImpl : internals.esImpl;
+  return impl.getMinValue(index, field);
 };
 
 Db.getClusterDetails = async () => {
