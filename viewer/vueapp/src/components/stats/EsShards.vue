@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- column dropdown menu -->
                 <span
                   v-if="column.hasDropdown"
-                  v-has-role="{user:user,roles:'arkimeAdmin'}">
+                  v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
                   <v-menu location="bottom end">
                     <template #activator="{ props: activatorProps }">
                       <v-btn
@@ -107,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
             :key="stat.name">
             <td>
               <span
-                v-has-role="{user:user,roles:'arkimeAdmin'}"
+                v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
                 v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
                   <v-btn

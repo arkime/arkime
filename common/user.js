@@ -1716,6 +1716,19 @@ class User {
   }
 
   /**
+   * Denies access unless the requesting user has at least one of the required roles (OR logic)
+   */
+  static checkAnyRole (roles) {
+    return async (req, res, next) => {
+      if (!req.user.hasRole(roles)) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using any role ${roles}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
    * Denies access if the setting user lacks ANY of the required roles (OR logic)
    */
   static checkSettingUserAnyRole (roles) {

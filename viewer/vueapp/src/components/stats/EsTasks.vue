@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         size="small"
         density="comfortable"
         class="float-right"
-        v-has-role="{user:user,roles:'arkimeAdmin'}"
+        v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
         @click="cancelTasks">
         <v-icon
           icon="mdi-cancel"
@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
             size="small"
             density="comfortable"
             icon
-            v-has-role="{user:user,roles:'arkimeAdmin'}"
+            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
             @click="cancelTask(item.item.taskId)">
             <v-icon icon="mdi-trash-can-outline" />
           </v-btn>
