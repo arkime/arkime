@@ -126,7 +126,7 @@ jobs:
 
       - name: upload github
         if: github.ref == 'refs/heads/dev7' || github.ref == 'refs/heads/arkime-tshark'
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
           draft: false
