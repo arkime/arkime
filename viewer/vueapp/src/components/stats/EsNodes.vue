@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-dropdown
               size="xs"
               class="row-actions-btn d-inline"
-              v-has-role="{user:user,roles:'arkimeAdmin'}">
+              v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
               <b-dropdown-item
                 v-if="!item.item.nodeExcluded"
                 @click="exclude('name', item.item)">

@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
                   size="sm"
                   v-if="column.hasDropdown"
                   class="column-actions-btn pull-right mb-1"
-                  v-has-role="{user:user,roles:'arkimeAdmin'}">
+                  v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
                   <b-dropdown-item
                     v-if="!column.nodeExcluded"
                     @click="exclude('name', column)">
@@ -92,7 +92,7 @@ SPDX-License-Identifier: Apache-2.0
             :key="stat.name">
             <td>
               <span
-                v-has-role="{user:user,roles:'arkimeAdmin'}"
+                v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
                 v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
                   <BButton
