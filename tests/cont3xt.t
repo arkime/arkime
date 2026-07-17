@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 227;
+use Test::More tests => 231;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1232,6 +1232,24 @@ eq_or_diff($json, from_json('{"success": false, "text": "Nothing sent to change"
 # PUT settings with actual settings
 $json = cont3xtPutToken('/api/settings', '{"settings": {"foo": "bar"}}', $token);
 is($json->{success}, 1, "put settings success");
+
+################################################################################
+### Cross-app shared user settings
+viewerPostToken('/api/user', '{"userId": "sac-crossapp", "userName": "crossapp", "enabled":true, "webEnabled":true, "password":"password", "roles":["arkimeUser","cont3xtUser"]}', $token);
+my $crossappToken = getTokenCookie('sac-crossapp');
+
+viewerPostToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', '{"logo": "crossapp.png"}', $crossappToken);
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', $crossappToken);
+is($json->{logo}, "crossapp.png", "viewer set logo on the shared user");
+
+$json = cont3xtPostToken('/api/settings/update?arkimeRegressionUser=sac-crossapp', '{"vuetifyTheme": "cotton-candy"}', $crossappToken);
+is($json->{success}, 1, "cont3xt updated the shared vuetifyTheme");
+
+# flush viewer's user cache so cont3xt's cross-process write is visible
+viewerPost('/regressionTests/flushCache');
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', $crossappToken);
+is($json->{vuetifyTheme}, "cotton-candy", "cont3xt theme update is visible in viewer");
+is($json->{logo}, "crossapp.png", "viewer-set logo preserved after cont3xt theme update");
 
 ################################################################################
 ### Integration Stats

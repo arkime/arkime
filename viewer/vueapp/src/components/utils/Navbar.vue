@@ -3,79 +3,80 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span
-    :class="{
-      'hide-tool-bars': !showToolBars,
-      'show-sticky-sessions-btn': stickySessionsBtn
-    }">
-    <b-navbar
-      fixed="top"
-      class="pe-2"
-      :container="false">
+  <span>
+    <nav class="arkime-navbar d-flex align-center pe-2">
 
-      <b-navbar-brand>
-        <router-link
-          class="me-2"
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
-          <img
-            alt="hoot"
-            :src="userLogo"
-            id="tooltipHelp"
-            class="arkime-logo"
-            v-if="!shiftKeyHold">
-          <div
-            v-else
-            class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
-          <BTooltip target="tooltipHelp">{{ $t('navigation.tooltipHelpTip') }}</BTooltip>
-        </router-link>
-      </b-navbar-brand>
+      <router-link
+        :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }"
+        class="arkime-navbar-brand me-2">
+        <img
+          alt="hoot"
+          :src="userLogo"
+          class="arkime-logo"
+          v-if="!shiftKeyHold">
+        <div
+          v-else
+          class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
+        <v-tooltip activator="parent">{{ $t('navigation.tooltipHelpTip') }}</v-tooltip>
+      </router-link>
 
-      <b-navbar-nav class="ms-4">
+      <div class="arkime-nav-list d-flex align-center">
         <template
           v-for="item of menuOrder"
           :key="item">
-          <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
-            <!-- TODO i18n redo hotkey highlighting -->
-            <b-nav-item
-              :key="menu[item].link"
-              class="cursor-pointer"
-              :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
-              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-              {{ menu[item].title }}
-            </b-nav-item>
-          </template>
+          <v-btn
+            v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole"
+            :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
+            :active="menu[item].isActive"
+            :variant="menu[item].isActive ? 'flat' : 'text'"
+            :style="menu[item].isActive ? activePillStyle : null"
+            size="small"
+            class="arkime-nav-btn">
+            {{ menu[item].title }}
+          </v-btn>
         </template>
-      </b-navbar-nav>
+      </div>
 
-      <b-navbar-nav
-        class="ms-auto">
-        <small>
-          <Version :timezone="timezone" />
-        </small>
+      <v-spacer />
+
+      <div class="arkime-navbar-actions d-flex align-center">
+        <Version :timezone="timezone" />
         <LanguageSwitcher additional-classes="ms-2" />
-        <router-link
-          id="help"
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
-          <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
-          <BTooltip target="help">{{ $t('navigation.helpTip') }}</BTooltip>
-        </router-link>
-        <e-s-health />
-      </b-navbar-nav>
 
-      <span
-        v-if="isAToolBarPage"
-        id="toggleTopStuff"
-        class="toggle-chevrons text-theme-button text-theme-gray-hover"
-        @click="toggleToolBars">
-        <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
-        <BTooltip target="toggleTopStuff">{{ $t('navigation.toggleTopStuffTip') }}</BTooltip>
-      </span>
+        <v-btn
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="ms-2">
+          <v-icon
+            icon="mdi-help-circle"
+            class="help-link text-theme-button text-theme-gray-hover" />
+          <v-tooltip activator="parent">{{ $t('navigation.helpTip') }}</v-tooltip>
+        </v-btn>
 
-      <Logout
-        size="sm"
-        :base-path="path"
-        class="ms-2 me-2" />
-    </b-navbar>
+        <e-s-health class="ms-2" />
+
+        <v-btn
+          v-if="isAToolBarPage"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="ms-2 toggle-chevrons text-theme-button text-theme-gray-hover"
+          @click="toggleToolBars">
+          <v-icon :icon="showToolBars ? 'mdi-chevron-up-circle' : 'mdi-chevron-down-circle'" />
+          <v-tooltip activator="parent">{{ $t('navigation.toggleTopStuffTip') }}</v-tooltip>
+        </v-btn>
+
+        <Logout
+          size="sm"
+          :base-path="path"
+          class="ms-2 me-2" />
+      </div>
+    </nav>
+
     <div class="navbarOffset" />
   </span>
 </template>
@@ -101,9 +102,16 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'arkime', 'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
+        'arkime', 'sessions', 'spiview', 'spigraph', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
-      ]
+      ],
+      // active-pill colors -- use Arkime CSS vars so the pill flips
+      // between themes (white-on-dark in light theme, dark-on-light in
+      // dark theme) without us picking specific colors per theme.
+      activePillStyle: {
+        backgroundColor: 'rgb(var(--v-theme-button-fg))',
+        color: 'rgb(var(--v-theme-foreground))'
+      }
     };
   },
   computed: {
@@ -119,7 +127,6 @@ export default {
         sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
         spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
-        connections: { title: this.$t('navigation.connections'), link: 'connections', hotkey: ['Connections'], name: 'Connections' },
         files: { title: this.$t('navigation.files'), link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
         stats: { title: this.$t('navigation.stats'), link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
         upload: { title: this.$t('navigation.upload'), link: 'upload', permission: 'canUpload', name: 'Upload' },
@@ -162,6 +169,8 @@ export default {
             (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
           item.hasRole = !item.role || this.user.roles?.includes(item.role);
         }
+
+        item.isActive = this.$route.path === `/${item.link}`;
       }
 
       return menu;
@@ -208,9 +217,6 @@ export default {
     shiftKeyHold: function () {
       return this.$store.state.shiftKeyHold;
     },
-    stickySessionsBtn: function () {
-      return this.$store.state.stickySessionsBtn;
-    },
     timezone: function () {
       return this.$store.state?.user?.settings?.timezone || 'gmt';
     }
@@ -227,54 +233,13 @@ export default {
 </script>
 
 <style scoped>
-nav.navbar {
-  z-index: 7;
-}
-.navbarOffset {
-  padding-top: 36px;
-}
-/* icon logos (logo in circle) are wider */
-.arkime-logo[src*="Icon"] {
-  left: 8px;
-}
-.arkime-logo[src*="Logo"] {
-  left: 20px;
-}
+/* navbar shell + utility classes live in common/vueapp/arkime-navbar.css
+   so every app (viewer/cont3xt/parliament/wise) stays in lockstep on
+   look. Only viewer-specific helpers below. */
 .toggle-chevrons {
-  align-items: center;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  margin-top: 1px;
 }
 .help-link {
-  margin-left: 10px;
-}
-
-.navbar-text {
-  color: var(--color-button, #FFF);
-}
-
-a.nav-link > a {
-  text-decoration: none;
-  color: var(--color-button, #FFF);
-}
-/* shortcut letter styles */
-p { /* ::first-letter only works on blocks */
-  margin-bottom: -16px;
-  display: inline-block;
-}
-/* style the shortcut letter */
-p.shortcut-letter.holding-shift::first-letter {
-  color: var(--color-tertiary-lighter) !important;
-}
-.text-shortcut {
-  color: var(--color-tertiary-lighter) !important;
-}
-
-/* move the top nav content to the left to accommodate the sticky sessions
- button when the user has the toolbars collapsed and session(s) open */
-span.show-sticky-sessions-btn.hide-tool-bars > nav > div.navbar-collapse.collapse {
-  margin-right: 32px;
+  margin-left: 0;
 }
 </style>

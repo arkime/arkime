@@ -3,237 +3,277 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    class="sessions-page"
-    :class="{'hide-tool-bars': !showToolBars}">
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <arkime-search
-          :fields="headers"
-          :open-sessions="stickySessions"
-          :num-visible-sessions="query.length"
-          :num-matching-sessions="sessions.recordsFiltered"
-          :start="query.start"
-          @change-search="cancelAndLoad(true)"
-          @set-view="loadNewView"
-          @set-columns="loadColumns"
-          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
+  <page-layout
+    ref="pageLayout"
+    class="sessions-page">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <!-- search navbar -->
+          <arkime-search
+            :fields="headers"
+            :open-sessions="stickySessions"
+            :num-visible-sessions="query.length"
+            :num-matching-sessions="sessions.recordsFiltered"
+            :start="query.start"
+            @change-search="cancelAndLoad(true)"
+            @set-view="loadNewView"
+            @set-columns="loadColumns" /> <!-- /search navbar -->
 
-        <!-- paging navbar -->
-        <div class="d-flex justify-content-start align-items-baseline m-1">
-          <arkime-paging
-            style="height: 32px;"
-            class="ms-2"
-            :records-total="sessions.recordsTotal"
-            :records-filtered="sessions.recordsFiltered"
-            @change-paging="changePaging" />
-        </div> <!-- /paging navbar -->
-      </span>
-    </ArkimeCollapsible>
+          <!-- paging navbar -->
+          <div class="d-flex justify-start align-center paging-navbar">
+            <arkime-paging
+              :records-total="sessions.recordsTotal"
+              :records-filtered="sessions.recordsFiltered"
+              @change-paging="changePaging" />
+          </div> <!-- /paging navbar -->
+        </div>
+      </ArkimeCollapsible>
+      <!-- pinned visualizations land here (teleported from below) -->
+      <div id="viz-pin-anchor" />
+    </template>
 
-    <!-- visualizations -->
-    <arkime-visualizations
-      v-if="graphData && showToolBars"
-      :primary="true"
-      :map-data="mapData"
-      :graph-data="graphData"
-      @fetch-map-data="fetchMapData"
-      @spanning-change="loadData"
-      :timeline-data-filters="timelineDataFilters" />
-    <!-- /visualizations -->
+    <!-- visualizations: pinned = chrome row above the scroll container,
+         unpinned = scrolls away with the content -->
+    <teleport
+      defer
+      to="#viz-pin-anchor"
+      :disabled="!stickyViz">
+      <arkime-visualizations
+        v-if="graphData && showToolBars"
+        :primary="true"
+        :map-data="mapData"
+        :graph-data="graphData"
+        @fetch-map-data="fetchMapData"
+        @spanning-change="loadData"
+        :timeline-data-filters="timelineDataFilters" />
+    </teleport> <!-- /visualizations -->
 
-    <div
-      class="sessions-content ms-2"
-      id="sessions-content"
-      ref="sessionsContent">
+    <div class="sessions-content ms-2">
       <!-- table view -->
       <div>
-        <!-- sticky (opened) sessions -->
-        <transition name="leave">
-          <arkime-sticky-sessions
-            class="sticky-sessions"
-            v-if="stickySessions.length"
-            :ms="user.settings.ms"
-            :sessions="stickySessions"
-            @close-session="closeSession"
-            @close-all-sessions="closeAllSessions" />
-        </transition> <!-- /sticky (opened) sessions -->
-
         <!-- sessions results -->
         <table
-          class="table-striped sessions-table"
+          class="sessions-table"
           :style="`width:${tableWidth}px`"
-          :class="{'sticky-header':stickyHeader}"
+          :class="{'sticky-header':stickyViz}"
           ref="sessionsTable"
           id="sessionsTable">
-          <thead
-            ref="tableHeader"
-            id="sessions-table-header"
-            style="overflow:scroll">
+          <thead>
             <tr ref="draggableColumns">
-              <!-- table options -->
+              <!-- table options: single dropdown collapsing five separate
+                   controls (open/close all, fit, toggle columns, save
+                   layouts) into one menu with side-popping submenus -->
               <th
-                class="ignore-element"
+                class="ignore-element sessions-options-cell"
                 style="width:85px;">
-                <!-- table fit button -->
-                <div class="fit-btn-container">
-                  <template v-if="sessions.data && sessions.data.length <= 50">
-                    <button
-                      id="openAllSessions"
-                      @click="openAll"
-                      :aria-label="$t('sessions.sessions.openAll')"
-                      class="btn btn-xs btn-theme-tertiary open-all-btn">
-                      <span class="fa fa-plus-circle" />
-                      <BTooltip
-                        target="openAllSessions"
-                        noninteractive
-                        placement="right">
-                        {{ $t('sessions.sessions.openAll') }}
-                      </BTooltip>
-                    </button>
+                <v-menu
+                  :close-on-content-click="false"
+                  location="bottom start">
+                  <template #activator="{ props: activatorProps }">
+                    <v-btn
+                      v-bind="activatorProps"
+                      size="small"
+                      variant="text"
+                      icon
+                      class="sessions-options-btn ms-1"
+                      :aria-label="$t('sessions.sessions.tableOptions')">
+                      <v-icon
+                        icon="mdi-table-cog"
+                        size="large" />
+                      <v-tooltip
+                        activator="parent"
+                        location="right">
+                        {{ $t('sessions.sessions.tableOptions') }}
+                      </v-tooltip>
+                    </v-btn>
                   </template>
-                  <button
-                    id="closeAllSessions"
-                    @click="closeAll"
-                    v-if="!loading && stickySessions.length > 0"
-                    :aria-label="$t('sessions.sessions.closeAll')"
-                    class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
-                    <span class="fa fa-times-circle" />
-                    <BTooltip
-                      target="closeAllSessions"
-                      noninteractive
-                      placement="right">
+                  <v-list
+                    density="compact"
+                    min-width="220"
+                    class="sessions-options-menu">
+                    <!-- direct actions -->
+                    <v-list-item
+                      v-if="sessions.data && sessions.data.length <= 50"
+                      prepend-icon="mdi-plus-circle"
+                      @click="openAll">
+                      {{ $t('sessions.sessions.openAll') }}
+                    </v-list-item>
+                    <v-list-item
+                      v-if="!loading && stickySessions.length > 0"
+                      prepend-icon="mdi-close-circle"
+                      @click="closeAll">
                       {{ $t('sessions.sessions.closeAll') }}
-                    </BTooltip>
-                  </button>
-                  <button
-                    id="fitTable"
-                    @click="fitTable"
-                    v-if="showFitButton && !loading"
-                    :aria-label="$t('sessions.sessions.fitTable')"
-                    class="btn btn-xs btn-theme-quaternary fit-btn"
-                    :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
-                    <span class="fa fa-arrows-h" />
-                    <BTooltip
-                      target="fitTable"
-                      noninteractive
-                      placement="right">
+                    </v-list-item>
+                    <v-list-item
+                      v-if="showFitButton && !loading"
+                      prepend-icon="mdi-arrow-expand-horizontal"
+                      @click="fitTable">
                       {{ $t('sessions.sessions.fitTable') }}
-                    </BTooltip>
-                  </button>
-                </div> <!-- /table fit button -->
-                <!-- column visibility button -->
-                <FieldSelectDropdown
-                  class="me-1"
-                  :selected-fields="tableState.visibleHeaders"
-                  :tooltip-text="$t('sessions.sessions.toggleColumns')"
-                  :search-placeholder="$t('sessions.sessions.searchColumns')"
-                  :exclude-filename="true"
-                  :max-visible-fields="maxVisibleFields"
-                  field-id-key="dbField"
-                  @toggle="toggleColVis" />
-                <!-- /column visibility button -->
-                <!-- column save button -->
-                <b-dropdown
-                  lazy
-                  no-flip
-                  no-caret
-                  size="sm"
-                  menu-class="col-dropdown-menu"
-                  class="col-dropdown d-inline-block"
-                  variant="theme-secondary">
-                  <template #button-content>
-                    <span
-                      class="fa fa-save"
-                      id="colConfigMenu">
-                      <BTooltip
-                        target="colConfigMenu"
-                        noninteractive
-                        placement="right">{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
-                    </span>
-                  </template>
-                  <b-dropdown-header header-class="p-1">
-                    <div class="input-group input-group-sm">
-                      <b-input
-                        autofocus
-                        @click.stop
-                        maxlength="30"
-                        class="form-control"
-                        v-model="newColConfigName"
-                        :placeholder="$t('sessions.sessions.customColumnName')"
-                        @keydown.enter="saveColumnConfiguration" />
-                      <button
-                        type="button"
-                        :aria-label="$t('common.save')"
-                        class="btn btn-theme-secondary"
-                        :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration">
-                        <span class="fa fa-save" />
-                      </button>
-                    </div>
-                  </b-dropdown-header>
-                  <b-dropdown-divider />
-                  <transition-group
-                    name="list"
-                    tag="span">
-                    <b-dropdown-item
-                      id="colConfigDefault"
-                      key="col-config-default"
-                      @click.stop.prevent="loadColumnConfiguration(-1)">
-                      {{ $t('sessions.sessions.arkimeDefault') }}
-                      <BTooltip
-                        target="colConfigDefault"
-                        noninteractive
-                        placement="right">
-                        {{ $t('sessions.sessions.customColumnReset') }}
-                      </BTooltip>
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      v-for="(config, key) in colConfigs"
-                      :key="config.name"
-                      @click.self.stop.prevent="loadColumnConfiguration(key)">
-                      <button
-                        class="btn btn-xs btn-danger pull-right ms-1"
-                        type="button"
-                        :aria-label="$t('common.delete')"
-                        @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                        <span class="fa fa-trash-o" />
-                      </button>
-                      <button
-                        id="updateColumnConfiguration"
-                        :aria-label="$t('sessions.sessions.customColumnUpdate')"
-                        class="btn btn-xs btn-warning pull-right"
-                        type="button"
-                        @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                        <span class="fa fa-save" />
-                        <BTooltip
-                          target="updateColumnConfiguration"
-                          noninteractive
-                          placement="right">
-                          {{ $t('sessions.sessions.customColumnUpdate') }}
-                        </BTooltip>
-                      </button>
-                      {{ config.name }}
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      key="col-config-error"
-                      v-if="colConfigError">
-                      <span class="text-danger">
-                        <span class="fa fa-exclamation-triangle" />
-                        {{ colConfigError }}
-                      </span>
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      key="col-config-success"
-                      v-if="colConfigSuccess">
-                      <span class="text-success">
-                        <span class="fa fa-check" />
-                        {{ colConfigSuccess }}
-                      </span>
-                    </b-dropdown-item>
-                  </transition-group>
-                </b-dropdown> <!-- /column save button -->
+                    </v-list-item>
+                    <v-divider />
+
+                    <!-- submenu: toggle column visibility -->
+                    <v-list-item
+                      prepend-icon="mdi-view-column"
+                      append-icon="mdi-chevron-right">
+                      <v-list-item-title>{{ $t('sessions.sessions.toggleColumns') }}</v-list-item-title>
+                      <v-menu
+                        activator="parent"
+                        :close-on-content-click="false"
+                        location="end"
+                        open-on-click
+                        :open-on-hover="false">
+                        <FieldSelectDropdown
+                          body-only
+                          :selected-fields="tableState.visibleHeaders"
+                          :tooltip-text="$t('sessions.sessions.toggleColumns')"
+                          :search-placeholder="$t('sessions.sessions.searchColumns')"
+                          :exclude-filename="true"
+                          :max-visible-fields="maxVisibleFields"
+                          field-id-key="dbField"
+                          @toggle="toggleColVis" />
+                      </v-menu>
+                    </v-list-item>
+
+                    <!-- save current columns over the loaded config -->
+                    <v-list-item
+                      v-if="loadedColConfig"
+                      prepend-icon="mdi-content-save"
+                      @click="updateColumnConfiguration(loadedColConfig)">
+                      {{ $t('sessions.sessions.saveConfig', { name: loadedColConfig }) }}
+                      <v-tooltip
+                        activator="parent"
+                        location="end">
+                        {{ $t('sessions.sessions.customColumnUpdate') }}
+                      </v-tooltip>
+                    </v-list-item>
+
+                    <!-- submenu: save current columns as a new config -->
+                    <v-list-item
+                      prepend-icon="mdi-content-save-plus"
+                      append-icon="mdi-chevron-right">
+                      <v-list-item-title>{{ $t('sessions.sessions.saveConfigAs') }}</v-list-item-title>
+                      <v-menu
+                        activator="parent"
+                        :close-on-content-click="false"
+                        location="end"
+                        open-on-click
+                        :open-on-hover="false">
+                        <v-list
+                          density="compact"
+                          class="col-config-list">
+                          <div class="px-2 py-1">
+                            <div class="arkime-input-group arkime-input-group--fluid">
+                              <input
+                                autofocus
+                                @click.stop
+                                maxlength="30"
+                                type="text"
+                                class="arkime-input-control"
+                                v-model="newColConfigName"
+                                :placeholder="$t('sessions.sessions.customColumnName')"
+                                @keydown.enter="saveColumnConfiguration">
+                              <v-btn
+                                :aria-label="$t('common.save')"
+                                variant="flat"
+                                size="small"
+                                density="comfortable"
+                                icon
+                                class="arkime-input-append-btn"
+                                :style="secondaryBtnStyle"
+                                :disabled="!newColConfigName"
+                                @click="saveColumnConfiguration">
+                                <v-icon icon="mdi-content-save" />
+                              </v-btn>
+                            </div>
+                          </div>
+                        </v-list>
+                        <v-alert
+                          v-if="colConfigError"
+                          density="compact"
+                          variant="tonal"
+                          type="error"
+                          class="ma-1">
+                          {{ colConfigError }}
+                        </v-alert>
+                      </v-menu>
+                    </v-list-item>
+
+                    <!-- submenu: load a saved config (filterable) -->
+                    <v-list-item
+                      prepend-icon="mdi-folder-open"
+                      append-icon="mdi-chevron-right">
+                      <v-list-item-title>{{ $t('sessions.sessions.loadConfig') }}</v-list-item-title>
+                      <v-menu
+                        activator="parent"
+                        :close-on-content-click="false"
+                        location="end"
+                        open-on-click
+                        :open-on-hover="false">
+                        <v-list
+                          density="compact"
+                          class="col-config-list">
+                          <div
+                            v-if="colConfigs.length"
+                            class="px-2 py-1">
+                            <div class="arkime-input-group arkime-input-group--fluid">
+                              <input
+                                autofocus
+                                @click.stop
+                                type="text"
+                                class="arkime-input-control"
+                                v-model="colConfigQuery"
+                                :placeholder="$t('sessions.sessions.filterConfigs')">
+                            </div>
+                          </div>
+                          <v-divider v-if="colConfigs.length" />
+                          <v-list-item
+                            key="col-config-default"
+                            @click.stop.prevent="loadColumnConfiguration(-1)">
+                            {{ $t('sessions.sessions.arkimeDefault') }}
+                            <v-tooltip
+                              activator="parent"
+                              location="end">
+                              {{ $t('sessions.sessions.customColumnReset') }}
+                            </v-tooltip>
+                          </v-list-item>
+                          <v-list-item
+                            v-if="colConfigQuery && !filteredColConfigs.length"
+                            disabled>
+                            {{ $t('sessions.sessions.noConfigsMatch') }}
+                          </v-list-item>
+                          <v-list-item
+                            v-for="config in filteredColConfigs"
+                            :key="config.name"
+                            :active="config.name === loadedColConfig"
+                            @click.self.stop.prevent="loadColumnConfiguration(config)">
+                            <div
+                              class="d-flex align-center w-100"
+                              @click.self="loadColumnConfiguration(config)">
+                              <span
+                                class="flex-grow-1"
+                                @click="loadColumnConfiguration(config)">
+                                {{ config.name }}
+                              </span>
+                              <v-btn
+                                :aria-label="$t('common.delete')"
+                                color="error"
+                                variant="flat"
+                                size="small"
+                                density="comfortable"
+                                icon
+                                class="ms-1"
+                                @click.stop.prevent="deleteColumnConfiguration(config)">
+                                <v-icon icon="mdi-trash-can-outline" />
+                              </v-btn>
+                            </div>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </th> <!-- /table options -->
               <!-- table headers -->
               <template v-if="headers && headers.length">
@@ -251,281 +291,322 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- non-sortable column -->
                   <span
                     v-if="header.dbField === 'info'"
-                    class="cursor-pointer">
-                    {{ header.friendlyName }}
-                    <!-- info field config button -->
-                    <b-dropdown
-                      lazy
-                      right
-                      no-flip
-                      no-caret
-                      size="sm"
-                      variant="theme-secondary"
-                      menu-class="col-dropdown-menu"
-                      class="info-vis-menu pull-right col-dropdown">
-                      <template #button-content>
-                        <span
-                          class="fa fa-save"
-                          id="infoConfigMenuSave">
-                          <BTooltip
-                            target="infoConfigMenuSave"
-                            noninteractive
-                            placement="right">{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
-                        </span>
-                      </template>
-                      <b-dropdown-header header-class="p-1">
-                        <div class="input-group input-group-sm">
-                          <b-input
-                            autofocus
-                            @click.stop
-                            maxlength="30"
-                            class="form-control"
-                            v-model="newInfoConfigName"
-                            :placeholder="$t('sessions.sessions.customInfoName')"
-                            @keydown.enter="saveInfoFieldLayout" />
-                          <button
-                            type="button"
-                            :aria-label="$t('common.save')"
-                            class="btn btn-theme-secondary"
-                            :disabled="!newInfoConfigName"
-                            @click="saveInfoFieldLayout">
-                            <span class="fa fa-save" />
-                          </button>
-                        </div>
-                      </b-dropdown-header>
-                      <b-dropdown-divider />
-                      <b-dropdown-item
-                        key="infodefault"
-                        id="infodefault"
-                        @click.stop.prevent="resetInfoVisibility">
-                        {{ $t('sessions.sessions.arkimeDefault') }}
-                        <BTooltip
-                          target="infodefault"
-                          noninteractive
-                          placement="right">
-                          {{ $t('sessions.sessions.customInfoReset') }}
-                        </BTooltip>
-                      </b-dropdown-item>
-                      <transition-group
-                        name="list"
-                        tag="span">
-                        <b-dropdown-divider
-                          key="infodivider"
-                          v-if="infoConfigs.length" />
-                        <b-dropdown-item
-                          v-for="(config, key) in infoConfigs"
-                          :key="config.name"
-                          @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                          <button
-                            class="btn btn-xs btn-danger pull-right ms-1"
-                            type="button"
-                            :aria-label="$t('common.delete')"
-                            @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
-                            <span class="fa fa-trash-o" />
-                          </button>
-                          <button
-                            id="updateInfoFieldConfiguration"
-                            :aria-label="$t('sessions.sessions.customInfoUpdate')"
-                            class="btn btn-xs btn-warning pull-right"
-                            type="button"
-                            @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                            <span class="fa fa-save" />
-                            <BTooltip
-                              target="updateInfoFieldConfiguration"
-                              noninteractive
-                              placement="right">
-                              {{ $t('sessions.sessions.customInfoUpdate') }}
-                            </BTooltip>
-                          </button>
-                          {{ config.name }}
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          key="info-config-error"
-                          v-if="infoConfigError">
-                          <span class="text-danger">
-                            <span class="fa fa-exclamation-triangle" />
-                            {{ infoConfigError }}
-                          </span>
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          key="info-config-success"
-                          v-if="infoConfigSuccess">
-                          <span class="text-success">
-                            <span class="fa fa-check" />
-                            {{ infoConfigSuccess }}
-                          </span>
-                        </b-dropdown-item>
-                      </transition-group>
-                    </b-dropdown> <!-- /info field config button -->
-                    <!-- info field visibility button -->
-                    <b-dropdown
-                      lazy
-                      right
-                      no-flip
-                      no-caret
-                      size="sm"
-                      menu-class="col-dropdown-menu"
-                      class="info-vis-menu pull-right col-dropdown me-1"
-                      variant="theme-primary"
-                      @show="infoFieldVisMenuOpen = true"
-                      @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
-                      <template #button-content>
-                        <span
-                          class="fa fa-bars"
-                          id="infoConfigMenu">
-                          <BTooltip
-                            target="infoConfigMenu"
-                            noninteractive
-                            placement="right">
+                    class="cursor-pointer info-col-header-inner">
+                    <!-- info column: single dropdown collapsing the field-
+                         visibility menu and the save-layouts menu into one
+                         (mirrors the table-options menu in the first cell).
+                         Rendered before the label so the cog sits to the
+                         left of "Info". -->
+                    <v-menu
+                      :close-on-content-click="false"
+                      location="bottom end"
+                      class="info-col-actions">
+                      <template #activator="{ props: activatorProps }">
+                        <v-btn
+                          v-bind="activatorProps"
+                          variant="text"
+                          size="small"
+                          density="compact"
+                          icon
+                          class="info-vis-menu col-dropdown"
+                          :aria-label="$t('sessions.sessions.toggleInfoFields')">
+                          <v-icon icon="mdi-table-cog" />
+                          <v-tooltip
+                            activator="parent"
+                            location="right">
                             {{ $t('sessions.sessions.toggleInfoFields') }}
-                          </BTooltip>
-                        </span>
+                          </v-tooltip>
+                        </v-btn>
                       </template>
-                      <b-dropdown-header header-class="p-1">
-                        <b-input
-                          autofocus
-                          v-model="colQuery"
-                          @input="debounceInfoColQuery"
-                          @click.stop
-                          class="form-control form-control-sm dropdown-typeahead"
-                          :placeholder="$t('common.searchForFields')" />
-                      </b-dropdown-header>
-                      <b-dropdown-divider />
-                      <template v-if="infoFieldVisMenuOpen">
-                        <b-dropdown-item v-if="!filteredInfoFieldsCount">
-                          {{ $t('sessions.sessions.noFieldsMatch') }}
-                        </b-dropdown-item>
-                        <template
-                          v-for="(group, key) in visibleFilteredInfoFields"
-                          :key="key">
-                          <b-dropdown-header
-                            v-if="group.length"
-                            class="group-header"
-                            header-class="p-1 text-uppercase">
-                            {{ key }}
-                          </b-dropdown-header>
-                          <template
-                            v-for="(field, k) in group"
-                            :key="key + k + 'infoitem'">
-                            <b-dropdown-item
-                              :id="key + k + 'infoitem'"
-                              :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                              @click.prevent.stop="toggleInfoVis(field.dbField)">
-                              {{ field.friendlyName }}
-                              <small>({{ field.exp }})</small>
-                              <BTooltip
-                                v-if="field.help"
-                                :target="key + k + 'infoitem'"
-                                noninteractive
-                                placement="right">{{ field.help }}</BTooltip>
-                            </b-dropdown-item>
-                          </template>
-                        </template>
-                        <button
-                          v-if="hasMoreInfoFields"
-                          type="button"
-                          @click.stop="showAllInfoFields = true"
-                          class="dropdown-item text-center cursor-pointer">
-                          <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
-                        </button>
-                      </template>
-                    </b-dropdown> <!-- /info field visibility button -->
+                      <v-list
+                        density="compact"
+                        min-width="220"
+                        class="sessions-options-menu">
+                        <!-- submenu: toggle info field visibility -->
+                        <v-list-item
+                          prepend-icon="mdi-view-list"
+                          append-icon="mdi-chevron-right">
+                          <v-list-item-title>{{ $t('sessions.sessions.toggleInfoFields') }}</v-list-item-title>
+                          <v-menu
+                            activator="parent"
+                            :close-on-content-click="false"
+                            location="end"
+                            open-on-click
+                            :open-on-hover="false"
+                            @update:model-value="(open) => {
+                              infoFieldVisMenuOpen = open;
+                              if (!open) showAllInfoFields = false;
+                            }">
+                            <v-list
+                              density="compact"
+                              class="col-dropdown-menu">
+                              <div class="px-2 py-1">
+                                <div class="arkime-input-group arkime-input-group--fluid">
+                                  <input
+                                    autofocus
+                                    v-model="colQuery"
+                                    @input="debounceInfoColQuery"
+                                    @click.stop
+                                    type="text"
+                                    class="arkime-input-control"
+                                    :placeholder="$t('common.searchForFields')">
+                                </div>
+                              </div>
+                              <v-divider />
+                              <template v-if="infoFieldVisMenuOpen">
+                                <v-list-item
+                                  v-if="!filteredInfoFieldsCount"
+                                  disabled>
+                                  {{ $t('sessions.sessions.noFieldsMatch') }}
+                                </v-list-item>
+                                <template
+                                  v-for="(group, key) in visibleFilteredInfoFields"
+                                  :key="key">
+                                  <v-list-subheader
+                                    v-if="group.length"
+                                    class="group-header text-uppercase">
+                                    {{ key }}
+                                  </v-list-subheader>
+                                  <template
+                                    v-for="(field, k) in group"
+                                    :key="key + k + 'infoitem'">
+                                    <v-list-item
+                                      :data-tip-id="key + k + 'infoitem'"
+                                      :active="isInfoVisible(field.dbField) >= 0"
+                                      class="field-item"
+                                      @click.prevent.stop="toggleInfoVis(field.dbField)">
+                                      {{ field.friendlyName }}
+                                      <small>({{ field.exp }})</small>
+                                      <v-tooltip
+                                        v-if="field.help"
+                                        :activator="`[data-tip-id='${key + k + 'infoitem'}']`"
+                                        location="end">
+                                        {{ field.help }}
+                                      </v-tooltip>
+                                    </v-list-item>
+                                  </template>
+                                </template>
+                                <v-list-item
+                                  v-if="hasMoreInfoFields"
+                                  class="text-center"
+                                  @click.stop="showAllInfoFields = true">
+                                  <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
+                                </v-list-item>
+                              </template>
+                            </v-list>
+                          </v-menu>
+                        </v-list-item>
+
+                        <!-- save current info fields over the loaded config -->
+                        <v-list-item
+                          v-if="loadedInfoConfig"
+                          prepend-icon="mdi-content-save"
+                          @click="updateInfoFieldLayout(loadedInfoConfig)">
+                          {{ $t('sessions.sessions.saveConfig', { name: loadedInfoConfig }) }}
+                          <v-tooltip
+                            activator="parent"
+                            location="end">
+                            {{ $t('sessions.sessions.customInfoUpdate') }}
+                          </v-tooltip>
+                        </v-list-item>
+
+                        <!-- submenu: save current info fields as a new config -->
+                        <v-list-item
+                          prepend-icon="mdi-content-save-plus"
+                          append-icon="mdi-chevron-right">
+                          <v-list-item-title>{{ $t('sessions.sessions.saveConfigAs') }}</v-list-item-title>
+                          <v-menu
+                            activator="parent"
+                            :close-on-content-click="false"
+                            location="end"
+                            open-on-click
+                            :open-on-hover="false">
+                            <v-list
+                              density="compact"
+                              class="col-dropdown-menu">
+                              <div class="px-2 py-1">
+                                <div class="arkime-input-group arkime-input-group--fluid">
+                                  <input
+                                    autofocus
+                                    @click.stop
+                                    maxlength="30"
+                                    type="text"
+                                    class="arkime-input-control"
+                                    v-model="newInfoConfigName"
+                                    :placeholder="$t('sessions.sessions.customInfoName')"
+                                    @keydown.enter="saveInfoFieldLayout">
+                                  <v-btn
+                                    :aria-label="$t('common.save')"
+                                    variant="flat"
+                                    size="small"
+                                    density="comfortable"
+                                    icon
+                                    class="arkime-input-append-btn"
+                                    :style="secondaryBtnStyle"
+                                    :disabled="!newInfoConfigName"
+                                    @click="saveInfoFieldLayout">
+                                    <v-icon icon="mdi-content-save" />
+                                  </v-btn>
+                                </div>
+                              </div>
+                            </v-list>
+                            <v-alert
+                              v-if="infoConfigError"
+                              density="compact"
+                              variant="tonal"
+                              type="error"
+                              class="ma-1">
+                              {{ infoConfigError }}
+                            </v-alert>
+                          </v-menu>
+                        </v-list-item>
+
+                        <!-- submenu: load a saved info config (filterable) -->
+                        <v-list-item
+                          prepend-icon="mdi-folder-open"
+                          append-icon="mdi-chevron-right">
+                          <v-list-item-title>{{ $t('sessions.sessions.loadConfig') }}</v-list-item-title>
+                          <v-menu
+                            activator="parent"
+                            :close-on-content-click="false"
+                            location="end"
+                            open-on-click
+                            :open-on-hover="false">
+                            <v-list
+                              density="compact"
+                              class="col-dropdown-menu">
+                              <div
+                                v-if="infoConfigs.length"
+                                class="px-2 py-1">
+                                <div class="arkime-input-group arkime-input-group--fluid">
+                                  <input
+                                    autofocus
+                                    @click.stop
+                                    type="text"
+                                    class="arkime-input-control"
+                                    v-model="infoConfigQuery"
+                                    :placeholder="$t('sessions.sessions.filterConfigs')">
+                                </div>
+                              </div>
+                              <v-divider v-if="infoConfigs.length" />
+                              <v-list-item
+                                key="infodefault"
+                                data-tip-id="infodefault"
+                                @click.stop.prevent="resetInfoVisibility">
+                                {{ $t('sessions.sessions.arkimeDefault') }}
+                                <v-tooltip
+                                  activator="parent"
+                                  location="end">
+                                  {{ $t('sessions.sessions.customInfoReset') }}
+                                </v-tooltip>
+                              </v-list-item>
+                              <v-list-item
+                                v-if="infoConfigQuery && !filteredInfoConfigs.length"
+                                disabled>
+                                {{ $t('sessions.sessions.noConfigsMatch') }}
+                              </v-list-item>
+                              <v-list-item
+                                v-for="config in filteredInfoConfigs"
+                                :key="config.name"
+                                :active="config.name === loadedInfoConfig"
+                                @click.self.stop.prevent="loadInfoFieldLayout(config)">
+                                <div
+                                  class="d-flex align-center w-100"
+                                  @click.self="loadInfoFieldLayout(config)">
+                                  <span
+                                    class="flex-grow-1"
+                                    @click="loadInfoFieldLayout(config)">
+                                    {{ config.name }}
+                                  </span>
+                                  <v-btn
+                                    :aria-label="$t('common.delete')"
+                                    color="error"
+                                    variant="flat"
+                                    size="small"
+                                    density="comfortable"
+                                    icon
+                                    class="ms-1"
+                                    @click.stop.prevent="deleteInfoFieldLayout(config)">
+                                    <v-icon icon="mdi-trash-can-outline" />
+                                  </v-btn>
+                                </div>
+                              </v-list-item>
+                            </v-list>
+                          </v-menu>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu> <!-- /info column options menu -->
+                    {{ header.friendlyName }}
                   </span> <!-- /non-sortable column -->
                   <!-- column dropdown menu -->
-                  <b-dropdown
-                    lazy
-                    right
-                    no-flip
-                    size="sm"
-                    menu-class="col-dropdown-menu"
-                    class="pull-right col-dropdown">
-                    <b-dropdown-item
-                      @click="toggleColVis(header.dbField, header.sortBy)">
-                      {{ $t('sessions.hideColumn') }}
-                    </b-dropdown-item>
-                    <!-- single field column -->
-                    <template v-if="!header.children && header.type !== 'seconds'">
-                      <b-dropdown-divider />
-                      <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp, 0)">
-                        {{ $t('sessions.exportUnique', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp, 1)">
-                        {{ $t('sessions.exportUniqueCounts', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <template v-if="header.portField">
-                        <b-dropdown-item
-                          @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                          {{ $t('sessions.exportUniquePort', {name: header.friendlyName}) }}
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                          {{ $t('sessions.exportUniquePortCounts', {name: header.friendlyName}) }}
-                        </b-dropdown-item>
-                      </template>
-                      <b-dropdown-item
-                        @click="openSpiGraph(header.dbField)">
-                        {{ $t('sessions.openSpiGraph', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="fieldExists(header.exp, '==')">
-                        {{ $t('sessions.addExists', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="pivot(header.dbField, header.exp)">
-                        {{ $t('sessions.pivotOn', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <!-- field actions -->
-                      <field-actions
-                        :separator="true"
-                        :expr="header.exp" />
-                    </template> <!-- /single field column -->
-                    <!-- multiple field column -->
-                    <template v-else-if="header.children && header.type !== 'seconds'">
-                      <span
-                        v-for="(child, key) in header.children"
-                        :key="`child${key}`">
-                        <template v-if="child">
-                          <b-dropdown-divider />
-                          <b-dropdown-item
-                            @click="exportUnique(child.rawField || child.exp, 0)">
-                            {{ $t('sessions.exportUnique', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="exportUnique(child.rawField || child.exp, 1)">
-                            {{ $t('sessions.exportUniqueCounts', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <template v-if="child.portField">
-                            <b-dropdown-item
-                              @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                              {{ $t('sessions.exportUniquePort', {name: child.friendlyName}) }}
-                            </b-dropdown-item>
-                            <b-dropdown-item
-                              @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                              {{ $t('sessions.exportUniquePortCounts', {name: child.friendlyName}) }}
-                            </b-dropdown-item>
-                          </template>
-                          <b-dropdown-item
-                            @click="openSpiGraph(child.dbField)">
-                            {{ $t('sessions.openSpiGraph', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="fieldExists(child.exp, '==')">
-                            {{ $t('sessions.addExists', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="pivot(child.dbField, child.exp)">
-                            {{ $t('sessions.pivotOn', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <!-- field actions -->
-                          <field-actions
-                            :expr="child.exp"
-                            :separator="false" />
+                  <v-menu location="bottom end">
+                    <template #activator="{ props: activatorProps }">
+                      <v-btn
+                        v-bind="activatorProps"
+                        variant="tonal"
+                        size="small"
+                        density="comfortable"
+                        icon
+                        color="primary"
+                        :aria-label="$t('sessions.columnActions', 'Column actions')"
+                        class="float-right col-dropdown col-context-trigger">
+                        <v-icon icon="mdi-menu-down" />
+                      </v-btn>
+                    </template>
+                    <v-list
+                      density="compact"
+                      class="col-dropdown-menu">
+                      <v-list-item
+                        @click="toggleColVis(header.dbField, header.sortBy)">
+                        {{ $t('sessions.hideColumn') }}
+                      </v-list-item>
+                      <!-- per-field action group(s): one block per target.
+                           Single-field columns get [header]; multi-field
+                           columns get header.children. 'seconds' columns
+                           opt out entirely. -->
+                      <template
+                        v-for="(target, idx) in columnActionTargets(header)"
+                        :key="`col-actions-${idx}`">
+                        <v-divider />
+                        <v-list-item
+                          @click="exportUnique(target.rawField || target.exp, 0)">
+                          {{ $t('sessions.exportUnique', {name: target.friendlyName}) }}
+                        </v-list-item>
+                        <v-list-item
+                          @click="exportUnique(target.rawField || target.exp, 1)">
+                          {{ $t('sessions.exportUniqueCounts', {name: target.friendlyName}) }}
+                        </v-list-item>
+                        <template v-if="target.portField">
+                          <v-list-item
+                            @click="exportUnique(target.rawField || target.exp + ':' + target.portField, 0)">
+                            {{ $t('sessions.exportUniquePort', {name: target.friendlyName}) }}
+                          </v-list-item>
+                          <v-list-item
+                            @click="exportUnique(target.rawField || target.exp + ':' + target.portField, 1)">
+                            {{ $t('sessions.exportUniquePortCounts', {name: target.friendlyName}) }}
+                          </v-list-item>
                         </template>
-                      </span>
-                    </template> <!-- /multiple field column -->
-                  </b-dropdown> <!-- /column dropdown menu -->
+                        <v-list-item
+                          @click="openSpiGraph(target.dbField)">
+                          {{ $t('sessions.openSpiGraph', {name: target.friendlyName}) }}
+                        </v-list-item>
+                        <v-list-item
+                          @click="fieldExists(target.exp, '==')">
+                          {{ $t('sessions.addExists', {name: target.friendlyName}) }}
+                        </v-list-item>
+                        <v-list-item
+                          @click="pivot(target.dbField, target.exp)">
+                          {{ $t('sessions.pivotOn', {name: target.friendlyName}) }}
+                        </v-list-item>
+                        <!-- field actions: separator only for single-field
+                             columns (multi-field already gets dividers
+                             between children) -->
+                        <field-actions
+                          :expr="target.exp"
+                          :separator="!header.children" />
+                      </template>
+                    </v-list>
+                  </v-menu> <!-- /column dropdown menu -->
                   <!-- sortable column -->
                   <span
                     v-if="(header.exp || header.sortBy) && !header.unsortable"
@@ -534,18 +615,23 @@ SPDX-License-Identifier: Apache-2.0
                     @click="sortBy($event, header.sortBy || header.dbField)"
                     class="cursor-pointer">
                     <div class="header-sort">
-                      <span
-                        v-if="isSorted(header.sortBy || header.dbField) < 0"
-                        class="fa fa-sort text-muted-more" />
-                      <span
-                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                        class="fa fa-sort-asc" />
-                      <span
-                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                        class="fa fa-sort-desc" />
+                      <v-icon
+                        icon="mdi-chevron-up"
+                        size="x-small"
+                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'" />
+                      <v-icon
+                        icon="mdi-chevron-down"
+                        size="x-small"
+                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'" />
                     </div>
                     <div class="header-text">
                       {{ header.friendlyName }}
+                      <v-tooltip
+                        activator="parent"
+                        location="top"
+                        open-delay="500">
+                        {{ header.friendlyName }}
+                      </v-tooltip>
                     </div>
                   </span> <!-- /sortable column -->
                 </th> <!-- /table headers -->
@@ -553,35 +639,33 @@ SPDX-License-Identifier: Apache-2.0
             </tr>
           </thead>
 
-          <tbody
-            class="small"
-            id="sessions-table-body">
+          <tbody class="small">
             <!-- session + detail -->
             <template
-              v-for="(session, index) of sessions.data"
+              v-for="session of sessions.data"
               :key="session.id">
               <tr
                 class="sessions-scroll-margin"
-                :ref="`tableRow${index}`"
                 :id="`session${session.id}`">
                 <!-- toggle button and ip protocol -->
                 <td class="ignore-element">
-                  <toggle-btn
-                    class="mt-1"
-                    :opened="session.expanded"
-                    @toggle="toggleSessionDetail(session)" />
-                  <span v-if="session.ipProtocol === 0">
-                    not-ip
-                  </span>
-                  <arkime-session-field
-                    v-else
-                    :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                    :session="session"
-                    :expr="'ip.protocol'"
-                    :value="session.ipProtocol"
-                    :pull-left="true"
-                    :parse="true" />
-                &nbsp;
+                  <div class="d-flex align-center">
+                    <toggle-btn
+                      class="me-1"
+                      :opened="session.expanded"
+                      @toggle="toggleSessionDetail(session)" />
+                    <span v-if="session.ipProtocol === 0">
+                      not-ip
+                    </span>
+                    <arkime-session-field
+                      v-else
+                      :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                      :session="session"
+                      :expr="'ip.protocol'"
+                      :value="session.ipProtocol"
+                      :pull-left="true"
+                      :parse="true" />
+                  </div>
                 </td> <!-- /toggle button and ip protocol -->
                 <!-- field values -->
                 <td
@@ -628,7 +712,9 @@ SPDX-License-Identifier: Apache-2.0
                       @toggle-info-vis="toggleInfoVis" />
                     <template #fallback>
                       <div class="mt-1 mb-1 large">
-                        <span class="fa fa-spinner fa-spin me-2" />
+                        <v-icon
+                          icon="mdi-loading"
+                          class="mdi-spin me-2" />
                         {{ $t('sessions.sessions.loadingSessionDetail') }}
                       </div>
                     </template>
@@ -659,11 +745,32 @@ SPDX-License-Identifier: Apache-2.0
           :view="query.view" /> <!-- /no results -->
       </div> <!-- /table view -->
     </div>
-  </div>
+
+    <!-- save/load config feedback -->
+    <v-snackbar
+      v-model="configSnackbar.open"
+      location="bottom"
+      :color="configSnackbar.color"
+      :timeout="5000">
+      {{ configSnackbar.text }}
+    </v-snackbar>
+
+    <template #overlay>
+      <!-- sticky (opened) sessions -->
+      <transition name="leave">
+        <arkime-sticky-sessions
+          class="sticky-sessions"
+          v-if="stickySessions.length"
+          :ms="user.settings.ms"
+          :sessions="stickySessions"
+          @close-session="closeSession"
+          @close-all-sessions="closeAllSessions" />
+      </transition> <!-- /sticky (opened) sessions -->
+    </template>
+  </page-layout>
 </template>
 
 <script>
-// IMPORTANT: don't change the order of imports (it messes up the flot graph)
 // import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
@@ -673,13 +780,14 @@ import Utils from '../utils/utils';
 // import components
 import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeSessionDetail from './SessionDetail.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import PageLayout from '../utils/PageLayout.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
@@ -687,6 +795,7 @@ import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
+import { attachTableGrips } from '@common/composables/useColumnResize.js';
 // import external
 import Sortable from 'sortablejs';
 
@@ -715,99 +824,7 @@ const defaultColWidths = {
   info: 250
 };
 
-// column resize variables and functions
-let colResizeInitialized = false;
-let selectedColElem; // store selected column to watch drag and calculate new column width
-let colStartOffset; // store column offset width to calculate new column width
-let colWidthBeforeResize; // sore column width before resize to calculate diff
-let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
-let table; // store table element to update its width after column resize
-let cols; // store cols to add grip event handlers and save new widths
-let selectedGripElem; // store the grip to style it while resizing column
-
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, col) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedColElem = col;
-  colWidthBeforeResize = col.style.width.slice(0, -2);
-  tableWidthBeforeResize = table.style.width.slice(0, -2);
-  colStartOffset = col.offsetWidth - e.pageX;
-  selectedGripElem = col.getElementsByClassName('grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
-    selectedGripElem.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  if (selectedColElem && selectedGripElem) {
-    vueThis.loading = true;
-
-    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
-    selectedColElem.style.width = `${newWidth}px`;
-
-    let hasInfo = false;
-    for (let i = 0; i < cols.length; i++) { // get width of each col
-      const col = cols[i];
-      const colW = parseInt(col.style.width.slice(0, -2));
-      if (vueThis.headers[i]) {
-        const header = vueThis.headers[i];
-        if (header.exp === 'info') { // ignore info col, it resizes to fit the window
-          hasInfo = true;
-          continue;
-        }
-        header.width = colW;
-        vueThis.colWidths[header.dbField] = colW;
-      }
-    }
-
-    vueThis.saveColumnWidths();
-    vueThis.mapHeadersToFields();
-
-    // update the width of the table. need to do this or else the table
-    // cannot overflow its container
-    if (!hasInfo) { // if there is no info column update the table width
-      // if there is an info column, don't do anything, the info column
-      // resizes to take up the rest of the window
-      const diff = newWidth - colWidthBeforeResize;
-      table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
-    }
-
-    selectedGripElem.style.borderLeft = 'unset';
-    selectedGripElem.style.left = 'unset';
-
-    vueThis.loading = false;
-  }
-
-  selectedGripElem = undefined;
-  selectedColElem = undefined;
-}
-
-// fired when a scroll event is captured on this page
-// scrolls the table header and body together if the header is sticky
-function docScroll (e, vueThis) {
-  if (!vueThis.stickyHeader) { return; }
-
-  let sibling;
-  if (e.target.id === 'sessions-content') {
-    sibling = vueThis.$refs.tableHeader;
-  } else if (e.target.id === 'sessions-table-header') {
-    sibling = vueThis.$refs.sessionsContent;
-  } else {
-    return;
-  }
-  sibling.scrollLeft = e.target.scrollLeft;
-}
+const MIN_COL_WIDTH = 70;
 
 // save a pending promise to be able to cancel it
 let pendingPromise;
@@ -825,10 +842,10 @@ export default {
     ArkimeVisualizations,
     ArkimeStickySessions,
     ArkimeCollapsible,
+    PageLayout,
     FieldActions,
     FieldSelectDropdown
   },
-  emits: ['recalc-collapse'],
   data: function () {
     return {
       loading: true,
@@ -838,7 +855,7 @@ export default {
       colWidths: {},
       colConfigs: [],
       colConfigError: '',
-      colConfigSuccess: '',
+      colConfigQuery: '', // filter for saved column configs in the load menu
       headers: [],
       graphData: undefined,
       mapData: undefined,
@@ -848,8 +865,6 @@ export default {
       infoFields: customCols.info.children,
       colVisMenuOpen: false,
       infoFieldVisMenuOpen: false,
-      stickyHeader: false,
-      tableHeaderOverflow: undefined,
       showFitButton: false,
       tableWidth: window.innerWidth - 20, // account for margins
       filteredFields: [],
@@ -859,11 +874,29 @@ export default {
       infoConfigs: [],
       newInfoConfigName: '',
       infoConfigError: '',
-      infoConfigSuccess: '',
+      infoConfigQuery: '', // filter for saved info configs in the load menu
+      configSnackbar: { open: false, text: '', color: 'success' },
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
       showAllInfoFields: false,
-      tableState: Utils.getDefaultTableState()
+      tableState: Utils.getDefaultTableState(),
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   created: function () {
@@ -874,6 +907,11 @@ export default {
     // this is only registered when the user has not set widths for any
     // columns && the info column is visible
     windowResizeEvent = () => {
+      // Surface the Fit Table button when the viewport shrinks past the content.
+      // Cheap; runs every resize event so the affordance appears immediately.
+      if (Math.abs((this.tableWidth || 0) - this.availableTableWidth()) > 15) {
+        this.showFitButton = true;
+      }
       if (resizeTimeout) { clearTimeout(resizeTimeout); }
       resizeTimeout = setTimeout(() => {
         this.mapHeadersToFields();
@@ -887,6 +925,26 @@ export default {
     });
   },
   computed: {
+    /* name of the currently loaded column config (if it still exists) */
+    loadedColConfig: function () {
+      const configName = this.tableState.colConfigName;
+      return configName && this.colConfigs.some(c => c.name === configName) ? configName : '';
+    },
+    /* name of the currently loaded info field config (if it still exists) */
+    loadedInfoConfig: function () {
+      const configName = this.user?.settings?.infoFieldsConfigName;
+      return configName && this.infoConfigs.some(c => c.name === configName) ? configName : '';
+    },
+    filteredColConfigs: function () {
+      if (!this.colConfigQuery) { return this.colConfigs; }
+      const query = this.colConfigQuery.toLowerCase();
+      return this.colConfigs.filter(c => c.name.toLowerCase().includes(query));
+    },
+    filteredInfoConfigs: function () {
+      if (!this.infoConfigQuery) { return this.infoConfigs; }
+      const query = this.infoConfigQuery.toLowerCase();
+      return this.infoConfigs.filter(c => c.name.toLowerCase().includes(query));
+    },
     query: function () {
       return { // query defaults
         length: parseInt(this.$route.query.length || 50), // page length
@@ -926,10 +984,13 @@ export default {
       return this.$store.state.views;
     },
     tableWidthStyle () {
-      return { width: `${table.clientWidth}px` };
+      return { width: `${this.tableWidth}px` };
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
+    },
+    stickyViz: function () {
+      return this.$store.state.stickyViz;
     },
     fields: function () {
       return this.$store.state.fieldsMap;
@@ -1000,8 +1061,9 @@ export default {
   },
   watch: {
     '$store.state.stickyViz': function () {
-      this.stickyHeader = this.$store.state.stickyViz;
-      this.toggleStickyHeader();
+      // pin toggle teleports the viz between chrome and scroll content;
+      // charts/map cache geometry, so nudge their resize handling
+      this.$nextTick(() => window.dispatchEvent(new Event('resize')));
     },
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.fetchGraphData(); }
@@ -1015,23 +1077,13 @@ export default {
       this.tableState = JSON.parse(JSON.stringify(colConfig));
       this.loadData(true);
     },
-    /* show the overflow when a dropdown in a column header is shown. otherwise,
-     * the dropdown is cut off and scrolls vertically in the column header */
-    dropdownShowListener: function (bvEvent) {
-      if (!this.stickyHeader) { return; }
-      const target = $(bvEvent.target);
-      if (!target) { return; }
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow', 'visible');
-    },
-    /* when the column header dropdown is hidden, go back to the default scroll
-     * behavior so that the table can overflow the window width */
-    dropdownHideListener: function (bvEvent) {
-      if (!this.stickyHeader) { return; }
-      const target = $(bvEvent.target);
-      if (!target) { return; }
-      if (!target.parent().hasClass('col-dropdown')) { return; }
-      $('thead').css('overflow', 'scroll');
+    /* Width available to the table inside the page scroll container */
+    availableTableWidth: function () {
+      const scrollEl = this.$refs.pageLayout?.scrollEl;
+      if (scrollEl && scrollEl.clientWidth) {
+        return scrollEl.clientWidth - 20; // account for margins
+      }
+      return window.innerWidth - 20; // pre-mount fallback
     },
     /* exposed page functions ---------------------------------------------- */
     /* SESSIONS DATA */
@@ -1104,8 +1156,6 @@ export default {
         const index = this.stickySessions.indexOf(session);
         if (index >= 0) { this.stickySessions.splice(index, 1); }
       }
-
-      this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
     },
     expandSessionDetail: function (session) {
       if (session.expanded) { return; }
@@ -1126,7 +1176,6 @@ export default {
         if (session.id === sessionId) {
           session.expanded = false;
           this.stickySessions.splice(i, 1);
-          this.$store.commit('setStickySessionsBtn', !!this.stickySessions.length);
           return;
         }
       }
@@ -1335,6 +1384,9 @@ export default {
         this.tableState.visibleHeaders.push(id);
       }
 
+      // keep info column pinned as the last visible column
+      this.normalizeInfoColumnLast();
+
       this.mapHeadersToFields();
 
       this.saveTableState();
@@ -1365,6 +1417,11 @@ export default {
 
         this.newColConfigName = null;
         this.colConfigError = false;
+
+        // the new config is now the loaded one
+        this.tableState.colConfigName = data.name;
+        this.saveTableState();
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
         this.colConfigError = resolveMessage(error, this.$t);
       });
@@ -1372,15 +1429,15 @@ export default {
     /**
      * Loads a previously saved custom column configuration and
      * reloads table and table data
-     * If no index is given, loads the default columns
-     * @param {int} index The index in the array of the column config to load
+     * @param {object|int} config The column config to load (-1 loads the default columns)
      */
-    loadColumnConfiguration: function (index) {
+    loadColumnConfiguration: function (config) {
       this.loading = true;
 
-      if (index === -1) { // default columns
+      if (config === -1) { // default columns
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
         this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
+        delete this.tableState.colConfigName;
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1389,9 +1446,13 @@ export default {
           if (field) { field.width = defaultColWidths[headerId] || 100; }
         }
       } else {
-        this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
-        this.tableState.order = JSON.parse(JSON.stringify(this.colConfigs[index].order));
+        this.tableState.visibleHeaders = config.columns.slice();
+        this.tableState.order = JSON.parse(JSON.stringify(config.order));
+        this.tableState.colConfigName = config.name;
       }
+
+      // keep info column pinned as the last visible column
+      this.normalizeInfoColumnLast();
 
       this.sorts = this.tableState.order;
 
@@ -1401,23 +1462,29 @@ export default {
     },
     /**
      * Deletes a previously saved custom column configuration
-     * @param {string} colName  The name of the column config to remove
-     * @param {int} index       The index in the array of the column config to remove
+     * @param {object} config The column config to remove
      */
-    deleteColumnConfiguration: function (colName, index) {
-      UserService.deleteLayout('sessionstable', colName).then((response) => {
-        this.colConfigs.splice(index, 1);
-        this.colConfigError = false;
+    deleteColumnConfiguration: function (config) {
+      UserService.deleteLayout('sessionstable', config.name).then((response) => {
+        const index = this.colConfigs.indexOf(config);
+        if (index > -1) { this.colConfigs.splice(index, 1); }
+        if (this.tableState.colConfigName === config.name) {
+          delete this.tableState.colConfigName;
+          this.saveTableState();
+        }
       }).catch((error) => {
-        this.colConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /**
      * Updates a previously saved custom column configuration
-     * @param {string} colName  The name of the column config to update
-     * @param {int} index       The index in the array of the column config to update
+     * with the currently visible columns
+     * @param {string} colName The name of the column config to update
      */
-    updateColumnConfiguration: function (colName, index) {
+    updateColumnConfiguration: function (colName) {
+      const index = this.colConfigs.findIndex(c => c.name === colName);
+      if (index === -1) { return; }
+
       const data = {
         name: colName,
         columns: this.tableState.visibleHeaders.slice(),
@@ -1426,11 +1493,9 @@ export default {
 
       UserService.updateLayout('sessionstable', data).then((response) => {
         this.colConfigs[index] = data;
-        this.colConfigError = false;
-        this.colConfigSuccess = resolveMessage(response, this.$t);
-        setTimeout(() => { this.colConfigSuccess = ''; }, 5000);
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
-        this.colConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /**
@@ -1510,7 +1575,7 @@ export default {
     /* Saves a custom info field column configuration */
     saveInfoFieldLayout () {
       if (!this.newInfoConfigName) {
-        this.infoConfigError = 'You must name your new info field configuration';
+        this.infoConfigError = this.$t('sessions.sessions.nameInfoConfigErr');
         return;
       }
 
@@ -1524,53 +1589,63 @@ export default {
         this.infoConfigs.push(data);
         this.newInfoConfigName = null;
         this.infoConfigError = false;
+
+        // the new config is now the loaded one
+        this.user.settings.infoFieldsConfigName = data.name;
+        UserService.saveSettings(this.user.settings);
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
         this.infoConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
      * Loads a previously saved custom info field column configuration and updates the table
-     * @param {int} index The index in the array of the info field config to load
+     * @param {object} config The info field config to load
      */
-    loadInfoFieldLayout (index) {
+    loadInfoFieldLayout (config) {
       const fieldObjects = [];
-      for (const field of this.infoConfigs[index].fields) {
+      for (const field of config.fields) {
         fieldObjects.push(FieldService.getField(field));
       }
       this.infoFields = fieldObjects;
+      this.user.settings.infoFieldsConfigName = config.name;
       this.saveInfoFields();
     },
     /**
      * Deletes a previously saved custom info field column layout
-     * @param {string} layoutName  The name of the layout to remove
-     * @param {int} index          The index in the array of layouts to remove
+     * @param {object} config The info field config to remove
      */
-    deleteInfoFieldLayout (layoutName, index) {
-      UserService.deleteLayout('sessionsinfofields', layoutName).then((response) => {
-        this.infoConfigs.splice(index, 1);
-        this.infoConfigError = false;
+    deleteInfoFieldLayout (config) {
+      UserService.deleteLayout('sessionsinfofields', config.name).then((response) => {
+        const index = this.infoConfigs.indexOf(config);
+        if (index > -1) { this.infoConfigs.splice(index, 1); }
+        if (this.user.settings.infoFieldsConfigName === config.name) {
+          this.user.settings.infoFieldsConfigName = undefined;
+          UserService.saveSettings(this.user.settings);
+        }
       }).catch((error) => {
-        this.infoConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /**
       * Updates a previously saved custom info field layout
-      * @param {string} layoutName  The name of the layout to update
-      * @param {int} index          The index in the array of layouts to update
+      * with the currently visible info fields
+      * @param {string} layoutName The name of the layout to update
       */
-    updateInfoFieldLayout (layoutName, index) {
+    updateInfoFieldLayout (layoutName) {
+      const index = this.infoConfigs.findIndex(c => c.name === layoutName);
+      if (index === -1) { return; }
+
       const data = {
         name: layoutName,
-        fields: this.infoFields.slice()
+        fields: this.infoFields.map((field) => field.dbField)
       };
 
       UserService.updateLayout('sessionsinfofields', data).then((response) => {
         this.infoConfigs[index] = data;
-        this.infoConfigError = false;
-        this.infoConfigSuccess = resolveMessage(response, this.$t);
-        setTimeout(() => { this.infoConfigSuccess = ''; }, 5000);
+        this.showConfigSnackbar(resolveMessage(response, this.$t));
       }).catch((error) => {
-        this.infoConfigError = resolveMessage(error, this.$t);
+        this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
     },
     /* Resets the visible fields in the info column to the default */
@@ -1578,6 +1653,7 @@ export default {
       this.infoFields = defaultInfoFields;
       customCols.info.children = defaultInfoFields;
       this.user.settings.infoFields = undefined;
+      this.user.settings.infoFieldsConfigName = undefined;
 
       // make sure children of fields are field objects
       this.setupFields();
@@ -1596,26 +1672,37 @@ export default {
       customCols.info.children = this.infoFields;
       UserService.saveSettings(this.user.settings);
     },
-    /* Fits the table to the width of the current window size */
+    /* Fits the table to the width of the page scroll container */
     fitTable: function () {
-      const windowWidth = window.innerWidth - 20; // account for margins
-      const leftoverWidth = windowWidth - this.sumOfColWidths;
+      const targetWidth = this.availableTableWidth();
+      const leftoverWidth = targetWidth - this.sumOfColWidths;
       const percentChange = 1 + (leftoverWidth / this.sumOfColWidths);
 
       for (let i = 0, len = this.headers.length; i < len; ++i) {
         const header = this.headers[i];
-        const newWidth = Math.floor(header.width * percentChange);
+        // clamp to min so narrow viewports don't push columns past the grip floor
+        const newWidth = Math.max(MIN_COL_WIDTH, Math.floor(header.width * percentChange));
         header.width = newWidth;
         this.colWidths[header.dbField] = newWidth;
       }
 
-      this.tableWidth = windowWidth;
+      this.tableWidth = targetWidth;
       this.showFitButton = false;
 
-      this.$refs.sessionsTable.style.width = `${windowWidth}px`;
+      this.$refs.sessionsTable.style.width = `${targetWidth}px`;
 
       this.saveColumnWidths();
-      this.toggleStickyHeader();
+    },
+    /**
+     * Returns the list of field targets a column-context menu should render
+     * action items for. Single-field columns yield `[header]`; multi-field
+     * columns yield `header.children` (filtered for falsy entries).
+     * 'seconds'-typed columns return [] (no actions apply).
+     */
+    columnActionTargets: function (header) {
+      if (header.type === 'seconds') return [];
+      if (header.children) return header.children.filter(Boolean);
+      return [header];
     },
     /**
      * Opens the spi graph page in a new browser tab
@@ -1697,6 +1784,10 @@ export default {
     },
 
     /* helper functions ---------------------------------------------------- */
+    /* Shows transient feedback for save/load config actions */
+    showConfigSnackbar: function (text, color = 'success') {
+      this.configSnackbar = { open: true, text, color };
+    },
     reloadTable: function () {
       // disable resizable columns so it can be initialized after table reloads
       this.destroyColResizable();
@@ -1718,6 +1809,11 @@ export default {
         } else if (this.tableState.visibleHeaders[0] === '') {
           this.tableState.visibleHeaders.shift();
         }
+
+        // info column auto-fills slack space and has no right-edge resize
+        // grip, so force it to always be the last visible column (it would
+        // otherwise leave a non-resizable seam in the middle of the table)
+        this.normalizeInfoColumnLast();
 
         // update the sort order for the session table query
         this.sorts = this.tableState.order;
@@ -1860,7 +1956,7 @@ export default {
         }
 
         // initialize resizable columns now that there is data
-        if (!colResizeInitialized) { this.initializeColResizable(); }
+        if (!this._colResizeInitialized) { this.initializeColResizable(); }
 
         // initialize sortable table
         if (!colDragDropInitialized) { this.initializeColDragDrop(); }
@@ -1945,7 +2041,6 @@ export default {
       this.sumOfColWidths = Math.round(this.sumOfColWidths);
 
       this.calculateInfoColumnWidth(defaultColWidths.info);
-      this.toggleStickyHeader();
     },
     /* Opens up to 50 session details in the table */
     openAll: function () {
@@ -1986,7 +2081,12 @@ export default {
         preventOnFilter: false, // allow clicks within the ignored element
         onMove: (e) => { // col header is being dragged
           // don't allow a column to be dropped in the far left column
-          return !e.related.classList.contains('ignore-element');
+          if (e.related.classList.contains('ignore-element')) { return false; }
+          // info is always pinned to the end; don't allow drops onto/past it
+          if (e.related.classList.contains('info-col-header')) { return false; }
+          // don't allow info itself to be dragged off the end
+          if (e.dragged.classList.contains('info-col-header')) { return false; }
+          return true;
         },
         onEnd: (e) => { // dragged col header was dropped
           // nothing has changed, so don't do stuff
@@ -2001,6 +2101,10 @@ export default {
           this.tableState.visibleHeaders.splice(oldIdx, 1);
           this.tableState.visibleHeaders.splice(newIdx, 0, element);
 
+          // info column has no right-edge resize grip and absorbs slack,
+          // so keep it pinned as the last visible column
+          this.normalizeInfoColumnLast();
+
           this.mapHeadersToFields();
           this.saveTableState();
           this.reloadTable();
@@ -2013,47 +2117,54 @@ export default {
     },
     /* Initializes resizable columns */
     initializeColResizable () {
-      colResizeInitialized = true;
-
-      cols = document.getElementsByClassName('arkime-col-header');
-      table = this.$refs.sessionsTable;
-
-      for (const col of cols) { // listen for grip dragging
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.addEventListener('mousedown', (e) => gripClick(e, col));
+      this.destroyColResizable(); // idempotent re-init
+      this._colResizeInitialized = true;
+      // info column absorbs slack; skip table-width update so it can reflow.
+      const hasInfoColumn = () => this.headers.some(h => h.exp === 'info');
+      this._gripAttachment = attachTableGrips({
+        cols: document.getElementsByClassName('arkime-col-header'),
+        table: this.$refs.sessionsTable,
+        minWidth: MIN_COL_WIDTH,
+        shouldUpdateTable: () => !hasInfoColumn(),
+        onCommit: ({ cols }) => {
+          this.loading = true;
+          for (let i = 0; i < cols.length; i++) {
+            const w = cols[i].offsetWidth || parseInt(cols[i].style.width, 10) || 0;
+            const header = this.headers[i];
+            if (header && header.exp !== 'info') {
+              header.width = w;
+              this.colWidths[header.dbField] = w;
+            }
+          }
+          this.saveColumnWidths();
+          this.mapHeadersToFields();
+          this.loading = false;
         }
-      }
-
-      document.addEventListener('mousemove', gripDrag);
-      const self = this;
-      document.addEventListener('mouseup', (e) => gripUnclick(e, self));
-
-      document.addEventListener('scroll', (e) => docScroll(e, self), true);
+      });
     },
     destroyColResizable () {
-      if (!cols) return;
-
-      for (const col of cols) { // remove all grip dragging listeners
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.removeEventListener('mousedown', gripClick);
-        }
+      if (this._gripAttachment) {
+        this._gripAttachment.detach();
+        this._gripAttachment = null;
       }
-
-      // remove document listeners
-      document.removeEventListener('mousemove', gripDrag);
-      document.removeEventListener('mouseup', gripUnclick);
-      document.removeEventListener('scroll', docScroll);
-
-      cols = undefined;
-      table = undefined;
-      colResizeInitialized = false;
+      this._colResizeInitialized = false;
     },
     /* Saves the column widths */
     saveColumnWidths: function () {
       UserService.saveState(this.colWidths, 'sessionsColWidths')
         .catch((error) => { this.error = error; });
+    },
+    /* Ensures the info column (if visible) is pinned as the last visible
+     * column. The info column auto-fills slack space and has no right-edge
+     * resize grip, so placing anything to its right leaves a non-resizable
+     * seam in the middle of the table. */
+    normalizeInfoColumnLast: function () {
+      const vh = this.tableState && this.tableState.visibleHeaders;
+      if (!vh || !vh.length) { return; }
+      const idx = vh.indexOf('info');
+      if (idx < 0 || idx === vh.length - 1) { return; }
+      vh.splice(idx, 1);
+      vh.push('info');
     },
     /**
      * Calculates the info column's width based on the width of the window
@@ -2065,10 +2176,10 @@ export default {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
 
-      const windowWidth = window.innerWidth - 20; // account for margins
+      const availableWidth = this.availableTableWidth();
 
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
-        const fillWithInfoCol = windowWidth - this.sumOfColWidths;
+        const fillWithInfoCol = availableWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
         for (let i = 0, len = this.headers.length; i < len; ++i) {
           if (this.headers[i].dbField === 'info') {
@@ -2080,52 +2191,11 @@ export default {
         this.tableWidth = newTableWidth;
       } else {
         this.tableWidth = this.sumOfColWidths;
-        // display a button to fit the table to the width of the window
-        // if the table is more than 10 pixels larger or smaller than the window
-        if (Math.abs(this.tableWidth - windowWidth) > 10) {
+        // display a button to fit the table to the width of the container
+        // if the table is more than 10 pixels larger or smaller than it
+        if (Math.abs(this.tableWidth - availableWidth) > 10) {
           this.showFitButton = true;
         }
-      }
-    },
-    /* Toggles the sticky table header */
-    toggleStickyHeader: function () {
-      // Guard check: ensure refs are available before proceeding
-      if (!this.$refs.draggableColumns || !this.$refs.tableHeader || !this.$refs.tableRow0) {
-        return;
-      }
-
-      const firstTableRow = this.$refs.tableRow0;
-      if (this.stickyHeader) {
-        // calculate the height of the header row
-        const height = this.$refs.draggableColumns.clientHeight + 6;
-        const windowWidth = window.innerWidth - 20; // account for margins
-        // calculate how much the header row is under or overflowing the window
-        const tableHeaderOverflow = windowWidth - this.tableWidth;
-        if (tableHeaderOverflow !== 0) { // if it's overflowing the window
-          this.tableHeaderOverflow = tableHeaderOverflow;
-          // set the right style to the amount of the overflow
-          if (tableHeaderOverflow < 0) {
-            this.$refs.tableHeader.style.width = `${window.innerWidth}px`;
-            this.$refs.draggableColumns.style.width = `${table.clientWidth}px`;
-          }
-        } else { // otherwise unset it (default = auto, see css)
-          this.tableHeaderOverflow = undefined;
-          this.$refs.tableHeader.style = undefined;
-          this.$refs.draggableColumns.style = undefined;
-        }
-        if (firstTableRow && firstTableRow.length > 0) { // if there is a table row in the body
-          // set the margin top to the height of the header so it renders below it
-          firstTableRow[0].style.marginTop = `${height}px`;
-        }
-        // set the overflow to scroll so that the header can scroll horizontally
-        $('thead').css('overflow', 'scroll');
-      } else { // if the header is not sticky
-        if (firstTableRow && firstTableRow.length > 0) { // and there is a table row in the body
-          // unset the top margin because the table header won't overlay it
-          firstTableRow[0].style = undefined;
-        }
-        // set the overflow to visible so that the dropdowns overflow the header
-        $('thead').css('overflow', 'visible');
       }
     },
     /* event handlers ------------------------------------------------------ */
@@ -2150,6 +2220,8 @@ export default {
     }
 
     if (timeout) { clearTimeout(timeout); }
+    if (resizeTimeout) { clearTimeout(resizeTimeout); }
+    if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
 
     this.destroyColResizable();
 
@@ -2171,40 +2243,93 @@ export default {
   overflow-x: hidden;
 }
 
+/* column config save menu (Vuetify migrated) */
+.col-config-list {
+  overflow: auto;
+  min-width: 280px;
+  max-width: 350px;
+  max-height: 300px;
+}
+
+/* info-field visibility dropdown: same group-header → indented field
+   hierarchy as FieldSelectDropdownBody. v-list-subheader applies its own
+   padding so we tighten group-header here without the .field-item rule
+   stomping it. */
+.col-dropdown-menu .group-header {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.5rem 0.2rem;
+  color: rgb(var(--v-theme-foreground-accent));
+  min-height: 0;
+}
+.col-dropdown-menu .field-item {
+  padding-inline-start: 1.25rem !important;
+}
+
+/* Single dropdown that collapses the old open/close/fit/columns/save
+   button cluster in the top-left table cell. */
+table.sessions-table thead tr th.sessions-options-cell {
+  /* override the global vertical-align: top on thead th so the menu
+     button sits centered in the cell instead of pinned to the top */
+  vertical-align: middle;
+  text-align: center;
+}
+.sessions-options-btn {
+  margin: 0;
+  vertical-align: baseline;
+}
+.sessions-options-menu :deep(.v-list-item__prepend) {
+  min-width: 32px;
+}
+.sessions-options-menu :deep(.v-list-item__append .v-icon) {
+  opacity: 0.5;
+}
+
 /* needed for grips */
 .arkime-col-header {
   position: relative;
 }
 
 /* small dropdown buttons in column headers */
-.arkime-col-header .dropdown button.btn {
+.arkime-col-header .col-dropdown {
   padding: 0 6px;
 }
-.arkime-col-header .dropdown-menu {
-  max-height: 250px;
-  overflow: auto;
-}
 
-.arkime-col-header .dropdown:not(.info-vis-menu) {
+.arkime-col-header .col-dropdown:not(.info-vis-menu) {
   visibility: hidden;
   margin-left: -25px;
 }
 
-/* clear the box shadow above the sticky column headers */
-.sessions-page .sticky-viz .viz-container {
-  box-shadow: none !important;
+/* solid background on the column header dropdown trigger so the table
+   header text behind it doesn't bleed through the tonal overlay */
+.arkime-col-header .v-btn.col-context-trigger {
+  background-color: rgb(var(--v-theme-background)) !important;
 }
+
+/* the last column's chevron would otherwise float past the right edge of
+   the table (clipped by the viewport with no scrollbar, hidden under the
+   vertical scrollbar gutter when one is present). Pin it absolutely just
+   inside the th's right edge so it's visible in either case. */
+.arkime-col-header:last-child .col-dropdown.col-context-trigger {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(-100%, -50%);
+  float: none;
+  margin-left: 0;
+}
+
 </style>
 
 <style scoped>
-.sessions-page {
-  overflow: hidden;
+/* paging sub-navbar: fixed band height, controls centered within it */
+.paging-navbar {
+  height: 44px;
+  padding: 0 4px;
 }
 
 .sessions-content {
-  padding-top: 30px;
-  margin-top: -10px;
-  overflow-x: auto;
   min-height: 500px;
 }
 
@@ -2212,13 +2337,17 @@ export default {
 table.sessions-table {
   margin-bottom: 20px;
   table-layout: fixed;
+  /* separate borders so they travel with the sticky header cells */
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 /* borders for header */
 table.sessions-table thead tr th {
-  vertical-align: top;
-  border-bottom: 2px solid var(--color-gray);
-  border-right: 1px dotted var(--color-gray);
+  vertical-align: middle;
+  text-align: left;
+  border-bottom: 2px solid rgb(var(--v-theme-neutral));
+  border-right: 1px dotted rgb(var(--v-theme-neutral));
 }
 /* remove right border for first column because it is no resizeable */
 table.sessions-table thead tr th:first-child {
@@ -2226,27 +2355,30 @@ table.sessions-table thead tr th:first-child {
   padding: 0;
   vertical-align: middle;
 }
-/* remove scrollbar from table header */
-table.sessions-table thead::-webkit-scrollbar {
-  display: none;
+
+/* alternate-row striping */
+table.sessions-table tbody tr:nth-of-type(odd) td {
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
-/* table hover */
-table.sessions-table tbody tr:not(.session-detail-row):hover,
+/* table hover -- target the tds directly because the zebra rule above
+   paints each cell, which would otherwise hide a hover bg set on the
+   tr for the odd rows. */
+table.sessions-table tbody tr:not(.session-detail-row):hover td,
 table.sessions-table tbody tr:not(.session-detail-row):hover td.active {
-  background-color: var(--color-tertiary-lightest);
+  background-color: rgb(var(--v-theme-tertiary-lightest));
 }
 
 /* detail row background color */
 table.sessions-table tbody tr.session-detail-row {
-  background-color: var(--color-quaternary-lightest) !important;
+  background-color: rgb(var(--v-theme-quaternary-lightest)) !important;
 }
 
 /* condense the table and put values at the top of ceslls */
 table.sessions-table tbody tr td {
   padding: 0 2px;
   line-height: 1.42857143;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 /* leftmost column is always the same */
@@ -2257,53 +2389,56 @@ table.sessions-table tbody tr td.ignore-element {
 }
 
 /* sticky table header ----------------------- */
-table.sessions-table.sticky-header > thead {
-  left: 0;
+/* native sticky: the page-scroll container is the one scroller for both
+   axes, so the header pins vertically and stays aligned horizontally with
+   the body for free */
+table.sessions-table.sticky-header > thead th {
+  position: sticky;
+  top: 0;
   z-index: 2;
-  /* need to unset right because sometimes the header overflows the window */
-  right: auto;
-  position: fixed;
-  margin-top: -20px;
-  padding-top: 24px;
-  /* need x overflow for the table to be able to overflow the window width */
-  overflow-x: scroll;
-  padding-left: 8px;
   box-shadow: 0 6px 9px -6px black;
-  background-color: var(--color-background, white);
+  background-color: rgb(var(--v-theme-background));
 }
-table.sessions-table.sticky-header > thead > tr {
-  display: table;
-  /* need x overflow for the table to be able to overflow the window width */
-  overflow-x: scroll;
-  table-layout: fixed;
+/* each sticky th is its own stacking context; lift the dragged cell so
+   the grip's guide line isn't painted under the following cells */
+table.sessions-table.sticky-header > thead th.col-resizing {
+  z-index: 3;
 }
-/* need this to make sure that the body cells are the correct width */
-table.sessions-table.sticky-header > tbody > tr {
-  display: table;
-  table-layout: fixed;
-}
-/* need this when reloading the page with sticky headers */
-table.sessions-table.sticky-header > tbody {
-  display: block;
-  margin-top: 53px;
+/* keep the grip fully inside its cell — the overhanging half would
+   hit-test under the next (opaque) sticky th */
+table.sessions-table thead .grip {
+  right: 0;
 }
 
 /* table column headers -------------------- */
 .arkime-col-header {
   font-size: .9rem;
+  text-align: left;
 }
 
 .arkime-col-header.active {
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
 }
 
-.arkime-col-header:hover .dropdown {
+/* Hovering anywhere on the column header reveals the chevron with a
+   button-like background tint. The tint is 60% alpha (applied to the
+   background only, not via opacity on the whole button) so the caret
+   itself stays crisp / fully opaque. */
+.arkime-col-header:hover .col-dropdown {
   visibility: visible;
+  opacity: 1;
+  /* Use the base quaternary color at low alpha so it still reads as
+     tinted (not washed-out gray like quaternary-lighter at 60% was). */
+  background-color: rgba(var(--v-theme-quaternary), 0.6);
 }
 
 .arkime-col-header .header-text {
   display: inline-block;
   width: calc(100% - 24px);
+  /* one line max so the header height stays within scroll-margin-top */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .arkime-col-header .header-sort {
@@ -2312,31 +2447,19 @@ table.sessions-table.sticky-header > tbody {
   vertical-align: top;
 }
 
-.info-col-header .dropdown:not(.info-vis-menu) {
+.info-col-header .col-dropdown:not(.info-vis-menu) {
   margin-right: 4px;
 }
-.info-vis-menu {
-  margin-right: 10px;
-}
-.arkime-col-header:not(:last-child) .info-vis-menu {
+
+/* Info-column cog button sits to the left of the "Info" label; small
+   right margin separates it from the friendly name. */
+.info-col-actions {
   margin-right: 5px;
 }
-
-/* table fit button -------------------------- */
-div.fit-btn-container {
-  top: -18px;
-  z-index: 3;
-  position: relative;
-}
-div.fit-btn-container > button.fit-btn,
-div.fit-btn-container > button.open-all-btn,
-div.fit-btn-container > button.close-all-btn {
-  height: 16px;
-  line-height: 1;
-  position: absolute;
-}
-div.fit-btn-container > button.fit-btn.fit-btn-right {
-  left: 48px;
+.info-col-header-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* animate sticky sessions enter/leave */
@@ -2357,12 +2480,8 @@ div.fit-btn-container > button.fit-btn.fit-btn-right {
   opacity: 0;
 }
 
-/* set scroll margin offset for scrolling to sessions */
+/* keep scrolled-to sessions clear of the sticky column headers */
 .sessions-scroll-margin {
-  scroll-margin: 115px;
-}
-/* if there are no toolbars, there is no offset */
-.hide-tool-bars .sessions-scroll-margin {
-  scroll-margin: 0px;
+  scroll-margin-top: 40px;
 }
 </style>

@@ -11,6 +11,7 @@ const Config = require('./config.js');
 const EventEmitter = require('events').EventEmitter;
 const http = require('http');
 const https = require('https');
+const { spawn } = require('child_process');
 const RE2 = require('re2');
 const ArkimeConfig = require('../common/arkimeConfig');
 
@@ -25,6 +26,10 @@ const internals = {
   pluginEmitter: new EventEmitter(),
   writers: new Map(),
   uploadLimits: {},
+  // Minimum supported tshark version (4.6.4), encoded as major*10000 + minor*100 + patch.
+  //TSHARKMINVERSION: 40604,
+  // For now support debian 13
+  TSHARKMINVERSION: 40415,
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
@@ -122,6 +127,53 @@ ArkimeConfig.loaded(() => {
       internals.settingDefaults[key] = key === 'timelineDataFilters' ? userSettingDefault.split(';') : userSettingDefault;
     }
   }
+
+  // tshark integration -------------------------------------------------------
+  internals.tsharkMaxPackets = parseInt(Config.get('tsharkMaxPackets', 10000));
+  internals.tsharkTimeoutMs = parseInt(Config.get('tsharkTimeoutMs', 30000));
+  const tsharkCandidates = Config.getArray('tsharkPath', '/opt/arkime/bin/tshark;/usr/bin/tshark;/usr/local/bin/tshark;/opt/homebrew/bin/tshark;/Applications/Wireshark.app/Contents/MacOS/tshark');
+  const probeNext = (i) => {
+    if (i >= tsharkCandidates.length) {
+      console.log('tshark: no tshark binary >= 4.6.4 found in', tsharkCandidates.join(', '));
+      return;
+    }
+    const cand = tsharkCandidates[i].trim();
+    if (!cand) { return probeNext(i + 1); }
+    let stdout = '';
+    let proc;
+    let advanced = false;
+    const advance = () => {
+      if (advanced) { return; }
+      advanced = true;
+      probeNext(i + 1);
+    };
+    try {
+      proc = spawn(cand, ['-v'], { stdio: ['ignore', 'pipe', 'ignore'] });
+    } catch (e) {
+      return advance();
+    }
+    proc.stdout.on('data', (b) => { stdout += b.toString(); });
+    proc.on('error', advance);
+    proc.on('close', (code) => {
+      if (advanced) { return; }
+      if (code !== 0 || !/^TShark/m.test(stdout)) { return advance(); }
+      const m = stdout.match(/^TShark[^\n]*?((\d+)\.(\d+)(?:\.(\d+))?\S*)/m);
+      if (!m) {
+        console.log('tshark:', cand, 'unable to parse version, skipping');
+        return advance();
+      }
+      const versionNum = parseInt(m[2]) * 10000 + parseInt(m[3]) * 100 + parseInt(m[4] || '0');
+      if (versionNum < internals.TSHARKMINVERSION) {
+        console.log('tshark:', cand, 'version', m[1], 'is older than required 4.6.4, skipping');
+        return advance();
+      }
+      advanced = true;
+      internals.tsharkPath = cand;
+      internals.tsharkVersion = m[1];
+      console.log('tshark:', cand, 'version', m[1]);
+    });
+  };
+  probeNext(0);
 });
 
 module.exports = internals;

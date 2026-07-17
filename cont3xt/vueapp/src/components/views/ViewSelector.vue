@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="error"
-                        class="square-btn-xs float-right ml-1"
+                        class="float-right ml-1"
                         v-if="!confirmDeleteView[view._id]"
                         v-tooltip:top="'Delete this view.'"
                         @click.stop.prevent="toggleDeleteView(view._id)">
@@ -277,7 +277,7 @@ onMounted(() => {
   padding-inline: 0.25rem;
 }
 .top-searched-dropdown {
-  background-color: var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 .integration-view-hotkey-v {
   /* pad the V shown when shifting to keep the button the same size */

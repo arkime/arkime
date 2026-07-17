@@ -7,20 +7,20 @@ SPDX-License-Identifier: Apache-2.0
     class="color-picker-input"
     ref="colorpicker"
     @keyup.esc="hidePicker">
-    <div class="input-group input-group-sm">
-      <span class="input-group-text">
+    <div class="arkime-input-group">
+      <span class="arkime-input-label">
         {{ fieldName }}
       </span>
       <div
         class="cursor-pointer color"
         @click="togglePicker">
         <span
-          class="input-group-text"
+          class="color-swatch"
           :style="{'background-color':colorValue}">
           &nbsp;&nbsp;
-          <span
-            v-if="displayPicker"
-            class="fa fa-check" />
+          <v-icon
+            icon="mdi-check"
+            v-if="displayPicker" />
           &nbsp;&nbsp;
         </span>
       </div>
@@ -113,15 +113,14 @@ export default {
   position: absolute;
   z-index: 9999;
 }
-</style>
-
-<style>
-.color-picker-input > .input-group-text {
-  color: #333333 !important;
-  background-color: #F1F1F1 !important;
-}
-
-.color-picker-input .color > .input-group-text {
+/* the swatch cell sits inside the .arkime-input-group, after the label,
+   showing the current color. Flush against the right edge of the group. */
+.color-swatch {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 8px;
   border-radius: 0 4px 4px 0;
+  color: #333333;
 }
 </style>

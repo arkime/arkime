@@ -5,136 +5,136 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="help-content">
     <!-- Side navbar -->
-    <div class="nav nav-pills">
+    <div class="help-nav">
       <a
         href="help#about"
-        class="nav-link">
-        <span class="fa fa-fw fa-question-circle" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-help-circle" />&nbsp;
         About
       </a>
       <a
         href="help#links"
-        class="nav-link">
-        <span class="fa fa-fw fa-link" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-link" />&nbsp;
         Links
       </a>
       <a
         href="help#search"
-        class="nav-link">
-        <span class="fa fa-fw fa-search" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-magnify" />&nbsp;
         Search Bar
       </a>
       <a
         href="help#basic"
-        class="nav-link nested">
+        class="help-link nested">
         Basic Query
       </a>
       <a
         href="help#timebounding"
-        class="nav-link nested">
+        class="help-link nested">
         Time Range
       </a>
       <a
         href="help#stringSearch"
-        class="nav-link nested">
+        class="help-link nested">
         String
       </a>
       <a
         href="help#ipSearch"
-        class="nav-link nested">
+        class="help-link nested">
         IP
       </a>
       <a
         href="help#numericSearch"
-        class="nav-link nested">
+        class="help-link nested">
         Numeric
       </a>
       <a
         href="help#dateSearch"
-        class="nav-link nested">
+        class="help-link nested">
         Date
       </a>
       <a
         href="help#fieldExistsSearch"
-        class="nav-link nested">
+        class="help-link nested">
         Field Exists
       </a>
       <a
         href="help#examples"
-        class="nav-link nested">
+        class="help-link nested">
         Examples
       </a>
       <a
         href="help#sessions"
-        class="nav-link">
-        <span class="fa fa-fw fa-exchange" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-swap-horizontal" />&nbsp;
         Sessions
       </a>
       <a
         href="help#spiview"
-        class="nav-link">
-        <span class="fa fa-fw fa-eyedropper" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-eyedropper" />&nbsp;
         SPI View
       </a>
       <a
         href="help#spigraph"
-        class="nav-link">
-        <span class="fa fa-fw fa-bar-chart" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-chart-bar" />&nbsp;
         SPI Graph
       </a>
       <a
         href="help#connections"
-        class="nav-link">
-        <span class="fa fa-fw fa-sitemap" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-sitemap" />&nbsp;
         Connections
       </a>
       <a
         href="help#hunt"
-        class="nav-link">
-        <span class="fa fa-fw fa-eye" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-eye" />&nbsp;
         Hunt
       </a>
       <a
         href="help#files"
-        class="nav-link">
-        <span class="fa fa-fw fa-files-o" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-file-multiple-outline" />&nbsp;
         Files
       </a>
       <a
         href="help#stats"
-        class="nav-link">
-        <span class="fa fa-fw fa-line-chart" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-chart-line" />&nbsp;
         Stats
       </a>
       <a
         href="help#history"
-        class="nav-link">
-        <span class="fa fa-fw fa-history" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-history" />&nbsp;
         History
       </a>
       <a
         href="help#settings"
-        class="nav-link">
-        <span class="fa fa-fw fa-cog" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-cog" />&nbsp;
         Settings
       </a>
       <a
         href="help#users"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="nav-link">
-        <span class="fa fa-fw fa-users" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-account-multiple" />&nbsp;
         Users
       </a>
       <a
         href="help#hotkeys"
-        class="nav-link">
-        <span class="fa fa-fw fa-keyboard-o" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-keyboard-outline" />&nbsp;
         Hot Keys
       </a>
       <a
         href="help#fields"
-        class="nav-link">
-        <span class="fa fa-fw fa-list" />&nbsp;
+        class="help-link">
+        <v-icon icon="mdi-format-list-bulleted" />&nbsp;
         Fields
       </a>
     </div> <!-- End of navbar -->
@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- Page content -->
     <div class="mt-2 ms-4 me-4 navbar-offset">
       <h3 id="about">
-        <span class="fa fa-question-circle" />&nbsp;
+        <v-icon icon="mdi-help-circle" />&nbsp;
         About
       </h3>
       <p class="lead">
@@ -162,33 +162,25 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="links">
-        <span class="fa fa-fw fa-link" />&nbsp;
+        <v-icon icon="mdi-link" />&nbsp;
         Links
       </h3>
-      <div class="row">
-        <div class="col-sm-12">
-          <a
-            class="btn btn-link"
-            href="https://arkime.com">Home Page</a> |
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/faq">FAQ</a> |
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/learn">Docs</a> |
-          <a
-            class="btn btn-link"
-            href="https://github.com/arkime/arkime">GitHub</a> |
-          <a
-            class="btn btn-link"
-            href="https://slackinvite.arkime.com/">Request Slack Invite</a>
-        </div>
-      </div>
+      <v-row>
+        <v-col
+          cols="12"
+          sm="12">
+          <a href="https://arkime.com">Home Page</a> |
+          <a href="https://arkime.com/faq">FAQ</a> |
+          <a href="https://arkime.com/learn">Docs</a> |
+          <a href="https://github.com/arkime/arkime">GitHub</a> |
+          <a href="https://slackinvite.arkime.com/">Request Slack Invite</a>
+        </v-col>
+      </v-row>
 
       <hr>
 
       <h3 id="search">
-        <span class="fa fa-search" />&nbsp;
+        <v-icon icon="mdi-magnify" />&nbsp;
         Search Bar
       </h3>
       <div class="ms-4">
@@ -197,7 +189,7 @@ SPDX-License-Identifier: Apache-2.0
           Arkime uses a simple query language for building searches.
         </p>
         <h6 id="basic">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Basic Query
         </h6>
         <p>
@@ -223,7 +215,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <div class="ms-4">
         <h6 id="timebounding">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Time Range
         </h6>
         <p>
@@ -255,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <div class="ms-4">
         <h6 id="stringSearch">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           String Search
         </h6>
         <p>
@@ -306,7 +298,7 @@ SPDX-License-Identifier: Apache-2.0
           </dd>
         </dl>
         <h6 id="ipSearch">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           IP Search
         </h6>
         <p>
@@ -320,7 +312,7 @@ SPDX-License-Identifier: Apache-2.0
           If you only want to find ipv4 or ipv6 traffic, you can search using those tokens: <code>ip.src == ipv6</code>
         </p>
         <h6 id="numericSearch">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Numeric Search
         </h6>
         <p>
@@ -330,7 +322,7 @@ SPDX-License-Identifier: Apache-2.0
           Numeric fields also support both OR Lists and AND Lists. For example, <code>port == [80,443,23]</code>
         </p>
         <h6 id="dateSearch">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Date Search
         </h6>
         <p>
@@ -393,7 +385,7 @@ SPDX-License-Identifier: Apache-2.0
           </li>
         </ul>
         <h6 id="fieldExistsSearch">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Field Exists Search
         </h6>
         <p>
@@ -404,7 +396,7 @@ SPDX-License-Identifier: Apache-2.0
           <code>cert.issuer.cn != EXISTS! &amp;&amp; cert.issuer.on == EXISTS!</code>
         </p>
         <h6 id="examples">
-          <span class="fa fa-search" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Examples
         </h6>
         <div class="mt-2">
@@ -426,7 +418,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="sessions">
-        <span class="fa fa-fw fa-exchange" />&nbsp;
+        <v-icon icon="mdi-swap-horizontal" />&nbsp;
         Sessions
       </h3>
       <p>
@@ -435,18 +427,18 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-fw fa-exchange" />&nbsp;
+          <v-icon icon="mdi-swap-horizontal" />&nbsp;
           Search
         </h6>
         <p>
-          The magnifying glass ( <span class="fa fa-search" /> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
+          The magnifying glass ( <v-icon icon="mdi-magnify" /> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
           While typing fieldnames into the query bar predictive typing will overlay with potential fieldname choices based on what has been typed so far.
           See the <a
             href="help#search"
             class="no-decoration">Search Bar section</a> for more in depth information.
         </p>
         <h6>
-          <span class="fa fa-fw fa-exchange" />&nbsp;
+          <v-icon icon="mdi-swap-horizontal" />&nbsp;
           Paging
         </h6>
         <p>
@@ -454,7 +446,7 @@ SPDX-License-Identifier: Apache-2.0
           Hover over the records per page text for more information on how many total entries were searched.
         </p>
         <h6 id="views">
-          <span class="fa fa-fw fa-exchange" />&nbsp;
+          <v-icon icon="mdi-swap-horizontal" />&nbsp;
           Views
         </h6>
         <p>
@@ -469,11 +461,11 @@ SPDX-License-Identifier: Apache-2.0
         </p>
         <p>
           Additionally, a user can easily save a search expression as a view by clicking the save
-          button ( <span class="fa fa-save" /> ) to the right of the search expression input.
+          button ( <v-icon icon="mdi-content-save" /> ) to the right of the search expression input.
         </p>
         <div class="mt-2">
           To view your views, click the eyeball button
-          ( <span class="fa fa-eye" /> ). This menu allows an analyst to:
+          ( <v-icon icon="mdi-eye" /> ). This menu allows an analyst to:
           <ul>
             <li>
               Apply a view by clicking its name. This overlays the view onto the current query and issues a search.
@@ -484,31 +476,33 @@ SPDX-License-Identifier: Apache-2.0
             </li>
             <li>
               Update a view by clicking the edit button.
-              ( <span class="fa fa-edit" /> )
+              ( <v-icon icon="mdi-pencil-box" /> )
             </li>
             <li>
               Delete a view by clicking the delete button.
-              ( <span class="fa fa-trash-o" /> )
+              ( <v-icon icon="mdi-trash-can-outline" /> )
             </li>
 
             <li>
               Put the view's search expression into the search expression input
-              by clicking the apply expression button. ( <span class="fa fa-share fa-flip-horizontal" /> )
+              by clicking the apply expression button. ( <v-icon
+                icon="mdi-share"
+                class="mdi-flip-h" /> )
               Note: this does not issue a search.
             </li>
             <li>
               Apply this view's column configuration to the sessions table by clicking
-              the apply column button. ( <span class="fa fa-columns" /> )
+              the apply column button. ( <v-icon icon="mdi-view-column" /> )
               Note: this will issue a search and update the sessions table columns.
             </li>
           </ul>
         </div>
         <h6>
-          <span class="fa fa-fw fa-exchange" />&nbsp;
+          <v-icon icon="mdi-swap-horizontal" />&nbsp;
           Actions
         </h6>
         <div>
-          The down arrow ( <span class="fa fa-caret-down" /> ) button contains a few options:
+          The down arrow ( <v-icon icon="mdi-menu-down" /> ) button contains a few options:
           <ol>
             <li>Export a PCAP of the required sessions data.</li>
             <li>Data within the viewer may also be exported as a CSV for further review and manipulation.</li>
@@ -523,7 +517,7 @@ SPDX-License-Identifier: Apache-2.0
           any items visible (on the current page), or all items which have matched the query string.
         </div>
         <h6>
-          <span class="fa fa-fw fa-exchange" />&nbsp;
+          <v-icon icon="mdi-swap-horizontal" />&nbsp;
           Visualizations
         </h6>
         <div>
@@ -560,11 +554,11 @@ SPDX-License-Identifier: Apache-2.0
           </ul>
         </div>
         <h6>
-          <span class="fa fa-fw fa-exchange" />&nbsp;
+          <v-icon icon="mdi-swap-horizontal" />&nbsp;
           Sessions table
         </h6>
         <p>
-          Now we arrive at the meat of the Sessions page... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <span class="fa fa-th" /> ) button. By clicking this button an analyst may select
+          Now we arrive at the meat of the Sessions page... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <v-icon icon="mdi-view-grid" /> ) button. By clicking this button an analyst may select
           any field that they wish to observe without opening a session fully by adding it as a column to the table. Predictive typing is also applied within this box. Example: An analyst is only investigating suspicious IRC sessions via the analyst's search query. Instead of drilling into each
           session, that analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Port, IRC Channel, and IRC Nickname. This column selection tool allows for an analyst to readily view the information which is important to them, configurable per investigation.
         </p>
@@ -572,11 +566,11 @@ SPDX-License-Identifier: Apache-2.0
           <em>
             <strong>Tip:</strong>
             An analyst can save or load previously saved column configurations by clicking the save/load column configuration
-            ( <span class="fa fa-columns" /> ) button.
+            ( <v-icon icon="mdi-view-column" /> ) button.
           </em>
         </p>
         <div class="mt-2">
-          Hover over a column header and click the column action ( <span class="fa fa-caret-down" /> ) button to do a few things:
+          Hover over a column header and click the column action ( <v-icon icon="mdi-menu-down" /> ) button to do a few things:
           <ol>
             <li>Hide the column from the table</li>
             <li>Export the column values</li>
@@ -585,7 +579,7 @@ SPDX-License-Identifier: Apache-2.0
           </ol>
         </div>
         <p>
-          Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus" /> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
+          Viewing the sessions data of a specific network session is as easy as clicking the plus ( <v-icon icon="mdi-plus" /> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
           All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
           If the session is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
           Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
@@ -596,7 +590,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="spiview">
-        <span class="fa fa-fw fa-eyedropper" />&nbsp;
+        <v-icon icon="mdi-eyedropper" />&nbsp;
         SPI View
       </h3>
       <p>
@@ -610,13 +604,13 @@ SPDX-License-Identifier: Apache-2.0
       <p>
         <strong>Tip:</strong>
         The analyst can save or load the fields that they have displayed/hidden on the SPI View page by clicking the save/load field configuration
-        ( <span class="fa fa-columns" /> ) button.
+        ( <v-icon icon="mdi-view-column" /> ) button.
       </p>
 
       <hr>
 
       <h3 id="spigraph">
-        <span class="fa fa-fw fa-bar-chart" />&nbsp;
+        <v-icon icon="mdi-chart-bar" />&nbsp;
         SPI Graph
       </h3>
       <p>
@@ -633,7 +627,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="connections">
-        <span class="fa fa-fw fa-sitemap" />&nbsp;
+        <v-icon icon="mdi-sitemap" />&nbsp;
         Connections
       </h3>
       <p>
@@ -649,13 +643,13 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-mouse-pointer fa-fw" />&nbsp;
+          <v-icon icon="mdi-cursor-default" />&nbsp;
           Node/Link Info
         </h6>
         <p>
           Hover over a link or a node to view more information about it. You can configure the fields that you see in these information
-          popups by clicking the <span class="fa fa-circle-o" /> button to configure the node popups and the
-          <span class="fa fa-link" /> button to configure link popups.
+          popups by clicking the <v-icon icon="mdi-circle-outline" /> button to configure the node popups and the
+          <v-icon icon="mdi-link" /> button to configure link popups.
           <br>
           <em>
             <strong>Tip:</strong>
@@ -663,7 +657,7 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <h6>
-          <span class="fa fa-link fa-fw" />&nbsp;
+          <v-icon icon="mdi-link" />&nbsp;
           Node/Link Weight
         </h6>
         <p>
@@ -671,49 +665,49 @@ SPDX-License-Identifier: Apache-2.0
           "Node/Link Weight" dropdown menu.
         </p>
         <h6>
-          <span class="fa fa-lock fa-fw" />&nbsp;
+          <v-icon icon="mdi-lock" />&nbsp;
           Lock Nodes
         </h6>
         <p>
-          Click and drag nodes to lock them into place. Click the <span class="fa fa-unlock" />
+          Click and drag nodes to lock them into place. Click the <v-icon icon="mdi-lock-open" />
           button in the top right of the graph to unlock nodes.
         </p>
         <h6>
-          <span class="fa fa-download fa-fw" />&nbsp;
+          <v-icon icon="mdi-download" />&nbsp;
           Download Graph
         </h6>
         <p>
-          Click the <span class="fa fa-download fa-fw" /> button in the top right
+          Click the <v-icon icon="mdi-download" /> button in the top right
           of the graph to download a png of the visible parts of the graph.
         </p>
         <h6>
-          <span class="fa fa-arrows-v fa-fw" />&nbsp;
+          <v-icon icon="mdi-arrow-expand-vertical" />&nbsp;
           Link Length
         </h6>
         <p>
-          Click the <span class="fa fa-plus" /><span class="fa fa-arrows-v" /> and
-          <span class="fa fa-minus" /><span class="fa fa-arrows-v" /> buttons to increase or decrease the
+          Click the <v-icon icon="mdi-plus" /><v-icon icon="mdi-arrow-expand-vertical" /> and
+          <v-icon icon="mdi-minus" /><v-icon icon="mdi-arrow-expand-vertical" /> buttons to increase or decrease the
           distance between the nodes.
         </p>
         <h6>
-          <span class="fa fa-text-width fa-fw" />&nbsp;
+          <v-icon icon="mdi-format-letter-case" />&nbsp;
           Text Size
         </h6>
         <p>
-          Click the <span class="fa fa-long-arrow-up" /><span class="fa fa-font" /> and
-          <span class="fa fa-long-arrow-down" /><span class="fa fa-font" /> buttons to increase or decrease the
+          Click the <v-icon icon="mdi-arrow-up" /><v-icon icon="mdi-format-font" /> and
+          <v-icon icon="mdi-arrow-down" /><v-icon icon="mdi-format-font" /> buttons to increase or decrease the
           size of the labels beside each node.
         </p>
         <h6>
-          <span class="fa fa-search fa-fw" />&nbsp;
+          <v-icon icon="mdi-magnify" />&nbsp;
           Zoom
         </h6>
         <p>
-          Scroll up or down, or click the <span class="fa fa-search-plus" /> and
-          <span class="fa fa-search-minus" /> buttons to zoom in an out.
+          Scroll up or down, or click the <v-icon icon="mdi-magnify-plus" /> and
+          <v-icon icon="mdi-magnify-minus" /> buttons to zoom in an out.
         </p>
         <h6>
-          <span class="fa fa-magic fa-fw" />&nbsp;
+          <v-icon icon="mdi-magic-staff" />&nbsp;
           Baseline
         </h6>
         <div class="mt-2">
@@ -742,7 +736,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="hunt">
-        <span class="fa fa-fw fa-eye" />&nbsp;
+        <v-icon icon="mdi-eye" />&nbsp;
         Hunt
       </h3>
       <p>
@@ -796,7 +790,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="files">
-        <span class="fa fa-fw fa-files-o" />&nbsp;
+        <v-icon icon="mdi-file-multiple-outline" />&nbsp;
         Files
       </h3>
       <p>
@@ -806,7 +800,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="stats">
-        <span class="fa fa-fw fa-line-chart" />&nbsp;
+        <v-icon icon="mdi-chart-line" />&nbsp;
         Stats
       </h3>
       <p>
@@ -814,7 +808,7 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           Capture Graphs
         </h6>
         <p>
@@ -828,7 +822,7 @@ SPDX-License-Identifier: Apache-2.0
           Expand your browser window to at least 1500 pixels wide for best viewing or you will be shown a horizontal scroll bar (ew).
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           Capture Stats
         </h6>
         <p>
@@ -898,11 +892,11 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           <em>
             <strong>Tip:</strong>
-            Click the <span class="fa fa-plus" /> button to display graphs about the table information.
+            Click the <v-icon icon="mdi-plus" /> button to display graphs about the table information.
           </em>
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           ES Nodes
         </h6>
         <p>
@@ -940,7 +934,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>Memory being used that isn't on the heap</dd>
         </dl>
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           ES Indices
         </h6>
         <p>
@@ -972,7 +966,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>The internal UUID for the index</dd>
         </dl>
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           ES Tasks
         </h6>
         <p>
@@ -1001,7 +995,7 @@ SPDX-License-Identifier: Apache-2.0
           <em>
             <strong>Tip:</strong>
             If you have data removal privileges, you can cancel tasks by clicking the
-            <span class="fa fa-trash" /> button.
+            <v-icon icon="mdi-delete" /> button.
             This is useful when you run a query that is taking longer than intended.
             <br>
             You can also filter the table by only cancelable tasks by clicking the checkbox
@@ -1009,18 +1003,20 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           ES Shards
         </h6>
         <p>
           The ES Shards tab displays a matrix containing the ES indices and nodes.
           Each cell describes the number of shards that that index has in that particular node.
-          <span class="badge badge-pill bg-secondary">Gray</span> means it's an alternate shard and the
-          <span class="badge badge-pill bg-primary">other color</span> means it's a primary shard.
+          <span class="arkime-badge arkime-badge--grey">Gray</span> means it's an alternate shard and the
+          <span
+            class="arkime-badge"
+            :style="{backgroundColor: 'rgb(var(--v-theme-primary))', color: 'rgb(var(--v-theme-button-fg))'}">other color</span> means it's a primary shard.
           Hover over a cell to get more information.
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart" />&nbsp;
+          <v-icon icon="mdi-chart-line" />&nbsp;
           ES Recovery
         </h6>
         <p>
@@ -1079,7 +1075,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="history">
-        <span class="fa fa-fw fa-history" />&nbsp;
+        <v-icon icon="mdi-history" />&nbsp;
         History
       </h3>
       <p>
@@ -1089,7 +1085,7 @@ SPDX-License-Identifier: Apache-2.0
         user can view all users' actions.
       </p>
       <div class="ms-4">
-        <span class="fa fa-fw fa-search" />&nbsp;
+        <v-icon icon="mdi-magnify" />&nbsp;
         Use the search input at the top of the page to search for specific history items.
         <br>
         <em style="margin-left:2.75rem;">
@@ -1100,28 +1096,28 @@ SPDX-License-Identifier: Apache-2.0
         </em>
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa fa-clock-o" />&nbsp;
+        <v-icon icon="mdi-clock-outline" />&nbsp;
         Filter history by a time range by utilizing the time controls under the search bar.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa fa-sort" />&nbsp;
+        <v-icon icon="mdi-sort" />&nbsp;
         Sort history by clicking any column header.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-filter" />&nbsp;
+        <v-icon icon="mdi-filter" />&nbsp;
         Use the filter button to filter history by specific field values.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-check-square" />&nbsp;
+        <v-icon icon="mdi-checkbox-marked" />&nbsp;
         Use the checkboxes within column headers to display history items that
         always have a value for that field.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-plus" />&nbsp;
+        <v-icon icon="mdi-plus" />&nbsp;
         Use the expand button to display more information about a history item.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-folder-open" />&nbsp;
+        <v-icon icon="mdi-folder-open" />&nbsp;
         Use the open button to "go to" the history item. This will open the page
         that the action/query was issued from.
         <br>
@@ -1134,7 +1130,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="settings">
-        <span class="fa fa-fw fa-cog" />&nbsp;
+        <v-icon icon="mdi-cog" />&nbsp;
         Settings
       </h3>
       <p>
@@ -1143,7 +1139,7 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           General
         </h6>
         <div>
@@ -1161,7 +1157,7 @@ SPDX-License-Identifier: Apache-2.0
           </ol>
         </div>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Views
         </h6>
         <p>
@@ -1172,7 +1168,7 @@ SPDX-License-Identifier: Apache-2.0
             class="no-decoration">Views</a> section for more information.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Periodic Queries
         </h6>
         <p>
@@ -1184,21 +1180,21 @@ SPDX-License-Identifier: Apache-2.0
           updates have been completed for that session.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Column Configurations
         </h6>
         <p>
           Here, a user can view and remove their currently saved custom Sessions table column configurations.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           SPI View Field Configurations
         </h6>
         <p>
           Here, a user can view and remove their currently saved custom SPI View field configurations.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Themes
         </h6>
         <p>
@@ -1211,14 +1207,14 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Password
         </h6>
         <p>
           Here, a user can update their password.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Notifiers
         </h6>
         <p>
@@ -1228,7 +1224,7 @@ SPDX-License-Identifier: Apache-2.0
           Notifiers alert every <strong>10</strong> minutes if there are <strong>new</strong> matches.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog" />&nbsp;
+          <v-icon icon="mdi-cog" />&nbsp;
           Shortcuts
         </h6>
         <p>
@@ -1261,7 +1257,7 @@ SPDX-License-Identifier: Apache-2.0
       <h3
         id="users"
         v-has-role="{user:user,roles:'usersAdmin'}">
-        <span class="fa fa-fw fa-users" />&nbsp;
+        <v-icon icon="mdi-account-multiple" />&nbsp;
         Users
       </h3>
       <span v-has-role="{user:user,roles:'arkimeAdmin'}">
@@ -1333,7 +1329,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr v-has-role="{user:user,roles:'arkimeAdmin'}">
 
       <h3 id="hotkeys">
-        <span class="fa fa-fw fa-keyboard-o" />&nbsp;
+        <v-icon icon="mdi-keyboard-outline" />&nbsp;
         Keyboard Hot Keys
       </h3>
       <p class="ms-4">
@@ -1362,74 +1358,71 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <h3 id="fields">
-        <span class="fa fa-fw fa-list" />&nbsp;
-        Fields
-        <div class="input-group input-group-sm pull-right header-input">
-          <span class="input-group-text">
-            <span class="fa fa-search" />
+      <h3
+        id="fields"
+        class="d-flex align-center gap-2">
+        <span class="flex-grow-1">
+          <v-icon icon="mdi-format-list-bulleted" />&nbsp;
+          Fields
+        </span>
+        <div class="arkime-input-group header-input">
+          <span class="arkime-input-label arkime-input-label-fw">
+            <v-icon icon="mdi-magnify" />
           </span>
           <input
             type="text"
             v-model="searchFields"
-            class="form-control"
+            class="arkime-input-control"
             :placeholder="$t('common.searchForFields')">
         </div>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm pull-right me-1"
+        <v-btn
+          color="primary"
+          variant="flat"
+          size="small"
+          density="comfortable"
           @click="toggleDBFields">
           {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
-        </button>
+        </v-btn>
       </h3>
 
       <table
         v-if="!error && fields"
-        class="table table-sm table-striped table-hover">
+        class="arkime-table">
         <thead>
           <tr>
             <th
               class="cursor-pointer"
               @click="sortFields('friendlyName')">
               Name
-              <span
-                v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc"
-                class="fa fa-sort-asc" />
-              <span
-                v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc"
-                class="fa fa-sort-desc" />
-              <span
-                v-show="fieldQuery.sortField !== 'friendlyName'"
-                class="fa fa-sort" />
+              <v-icon
+                icon="mdi-chevron-up"
+                v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc" />
+              <v-icon
+                icon="mdi-chevron-down"
+                v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc" />
             </th>
             <th
               class="cursor-pointer"
               @click="sortFields('exp')">
               Field
-              <span
-                v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc"
-                class="fa fa-sort-asc" />
-              <span
-                v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc"
-                class="fa fa-sort-desc" />
-              <span
-                v-show="fieldQuery.sortField !== 'exp'"
-                class="fa fa-sort" />
+              <v-icon
+                icon="mdi-chevron-up"
+                v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc" />
+              <v-icon
+                icon="mdi-chevron-down"
+                v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc" />
             </th>
             <th
               v-if="showDBFields"
               class="cursor-pointer"
               @click="sortFields('dbField')">
               Database Field
-              <span
-                v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc"
-                class="fa fa-sort-asc" />
-              <span
-                v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc"
-                class="fa fa-sort-desc" />
-              <span
-                v-show="fieldQuery.sortField !== 'dbField'"
-                class="fa fa-sort" />
+              <v-icon
+                icon="mdi-chevron-up"
+                v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc" />
+              <v-icon
+                icon="mdi-chevron-down"
+                v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc" />
             </th>
             <th>
               Operators
@@ -1474,16 +1467,18 @@ SPDX-License-Identifier: Apache-2.0
       <div
         v-if="!filteredFields || !filteredFields.length"
         class="text-danger text-center mb-4">
-        <span class="fa fa-warning" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         No results match your search
       </div>
-      <div
+      <v-alert
         v-if="error"
-        class="alert alert-warning mt-3 mb-4">
-        <span class="fa fa-warning" />&nbsp;
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mt-3 mb-4">
         Error retrieving fields:
         {{ error }}
-      </div>
+      </v-alert>
     </div> <!-- End of page content -->
   </div> <!-- /help content -->
 </template>
@@ -1620,9 +1615,11 @@ export default {
 }
 
 /* help navigation */
-.help-content div.nav-pills {
+.help-content .help-nav {
+  display: flex;
+  flex-direction: column;
   width: 150px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0 8px 8px 0;
   position: fixed;
   top: 40px;
@@ -1630,10 +1627,23 @@ export default {
   overflow-x: hidden;
   overflow-y: auto;
   white-space: nowrap;
+  box-shadow: 0 0 16px -2px black;
+}
 
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
+.help-content .help-nav .help-link {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  color: rgb(var(--v-theme-foreground));
+  text-decoration: none;
+}
+.help-content .help-nav .help-link:hover {
+  background-color: rgb(var(--v-theme-neutral-light));
+}
+.help-content .help-nav .help-link.nested {
+  margin-left: 2.4em;
+  font-size: 0.85em;
+  padding: 2px 5px;
 }
 
 /* content offset for left nav */
@@ -1642,27 +1652,8 @@ export default {
   overflow-x: hidden;
 }
 
-.help-content .nav-pills .nav-link {
-  width: 100%;
-}
-
-.help-content div.nav-pills a {
-  padding: 5px 8px !important;
-}
-
-.help-content div.nav-pills a.nested {
-  margin-left: 2.4em;
-  font-size: 0.85em;
-  padding: 2px 5px !important;
-}
-
 .help-content .header-input {
   width: 70%;
-}
-
-.badge.bg-primary {
-  font-weight: bold;
-  background-color: var(--color-primary);
 }
 
 /* field table animation */

@@ -17,6 +17,8 @@ const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
+const Banner = require('../common/banner');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -141,7 +143,7 @@ app.use((req, res, next) => {
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 app.use('/mdi-font', express.static(
-  path.join(__dirname, '/../cont3xt/node_modules/@mdi/font'),
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -213,6 +215,9 @@ app.all([
   return res.serverError(403, 'Disabled in demo mode.');
 });
 
+// locales endpoint -- backs vue-i18n in the SPA via common/vueapp/i18nSetup.js
+app.get('/api/locales', ArkimeUtil.noCacheJson, Locales.getLocales);
+
 app.get('/api/appversion', (req, res, next) => {
   return res.send({ app: 'cont3xt', version: version.version });
 });
@@ -236,6 +241,24 @@ app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingU
 app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiConfirmTotp);
 app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiDisableTotp);
 
+/**
+ * POST - /api/settings/update
+ *
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are silently dropped. Lives off `/api/user/` so a userId like
+ * `settings` isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/api/settings/update',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettings
+);
+
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
@@ -245,6 +268,10 @@ app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
 app.get('/api/settings', apiGetSettings);
 app.put('/api/settings', [jsonParser, checkCookieToken], apiPutSettings);
+
+app.get('/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/api/banner', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiUpdateBanner);
+app.post('/api/banner/sync', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiSyncBanner);
 app.get('/api/integration/settings', [setCookie], Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser, checkCookieToken], Integration.apiPutSettings);
 app.get('/api/integration/stats', [setCookie], Integration.apiStats);
@@ -503,6 +530,8 @@ async function setupAuth () {
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth'))
   });
+
+  Banner.initialize({ app: 'cont3xt', prefix: ArkimeConfig.get('usersPrefix') });
 
   Audit.initialize({
     expireHistoryDays: ArkimeConfig.get('expireHistoryDays', 180)

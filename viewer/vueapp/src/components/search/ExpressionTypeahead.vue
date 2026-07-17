@@ -7,25 +7,24 @@ SPDX-License-Identifier: Apache-2.0
     class="mb-1"
     :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
-    <BInputGroup size="sm">
-      <BInputGroupText
+    <div class="arkime-input-group arkime-input-group--fluid">
+      <span
         id="searchExpressionTooltip"
-        class="cursor-help input-group-text-fw">
-        <span
-          v-if="!shiftKeyHold"
-          class="fa fa-search fa-fw" />
+        class="arkime-input-label arkime-input-label-fw cursor-help">
+        <v-icon
+          icon="mdi-magnify"
+          v-if="!shiftKeyHold" />
         <span
           v-else
           class="query-shortcut">
           Q
         </span>
-        <BTooltip
-          target="searchExpressionTooltip"
-          :delay="{show: 500, hide: 0}"
-          noninteractive>
+        <v-tooltip
+          activator="#searchExpressionTooltip"
+          :open-delay="500">
           <span v-html="$t('search.expressionTipHtml')" />
-        </BTooltip>
-      </BInputGroupText>
+        </v-tooltip>
+      </span>
       <input
         type="text"
         tabindex="1"
@@ -38,53 +37,64 @@ SPDX-License-Identifier: Apache-2.0
         @input="debounceExprChange"
         @keydown.enter.prevent.stop="enterClick"
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
-        class="form-control search-control">
-      <BButton
-        type="button"
+        class="arkime-input-control search-control">
+      <v-btn
         id="bigTypeaheadBtn"
-        @click="bigTypeahead = !bigTypeahead"
-        class="btn btn-outline-secondary btn-clear-input">
-        <span
-          class="fa"
-          :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
-        <BTooltip target="bigTypeaheadBtn">
+        variant="text"
+        size="small"
+        density="comfortable"
+        icon
+        class="arkime-input-append-btn"
+        @click="bigTypeahead = !bigTypeahead">
+        <v-icon :icon="bigTypeahead ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
+        <v-tooltip activator="#bigTypeaheadBtn">
           {{ $t('search.bigTypeaheadBtnTip') }}
-        </BTooltip>
-      </BButton>
+        </v-tooltip>
+      </v-btn>
       <template v-if="expression && expression.length > 200">
-        <BButton
-          type="button"
+        <v-btn
           id="longExpression"
           href="settings#shortcuts"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-question-circle" />
-          <BTooltip target="longExpression">
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn">
+          <v-icon icon="mdi-help-circle" />
+          <v-tooltip activator="#longExpression">
             {{ $t('search.longExpressionTip') }}
-          </BTooltip>
-        </BButton>
+          </v-tooltip>
+        </v-btn>
       </template>
-      <BButton
+      <v-btn
         id="saveExpression"
-        type="button"
-        @click="saveExpression"
+        variant="text"
+        size="small"
+        density="comfortable"
+        icon
+        class="arkime-input-append-btn"
         :disabled="!expression"
-        class="btn btn-outline-secondary btn-clear-input">
-        <span class="fa fa-save" />
-        <BTooltip target="saveExpression">
+        @click="saveExpression">
+        <v-icon icon="mdi-content-save" />
+        <v-tooltip activator="#saveExpression">
           {{ $t('search.saveExpressionTip') }}
-        </BTooltip>
-      </BButton>
-      <BButton
-        type="button"
-        @click="clear"
+        </v-tooltip>
+      </v-btn>
+      <v-btn
+        variant="text"
+        size="small"
+        density="comfortable"
+        icon
+        class="arkime-input-append-btn"
         :disabled="!expression"
         :title="$t('search.clearSearchTip')"
-        class="btn btn-outline-secondary btn-clear-input">
-        <span class="fa fa-close" />
-      </BButton>
-    </BInputGroup> <!-- /typeahead input -->
+        @click="clear">
+        <v-icon icon="mdi-close" />
+      </v-btn>
+    </div> <!-- /typeahead input -->
 
-    <!-- results dropdown -->
+    <!-- results dropdown (teleported to body via TypeaheadResults so it
+         can escape the search-bar's overflow:hidden container). -->
     <TypeaheadResults
       v-if="!bigTypeahead"
       :expression="expression"
@@ -94,68 +104,38 @@ SPDX-License-Identifier: Apache-2.0
       :autocompleting-field="autocompletingField"
       :add-to-query="addToQuery"
       :remove-from-field-history="removeFromFieldHistory"
-      :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
+      :big-typeahead="bigTypeahead"
+      :dropdown-style="dropdownStyle" /> <!-- /results dropdown -->
 
     <!-- error -->
     <div
-      class="dropdown-menu typeahead-results"
+      class="arkime-typeahead-results"
       v-show="expression && loadingError">
-      <a class="dropdown-item text-danger">
-        <span class="fa fa-warning" />&nbsp;
+      <a class="arkime-typeahead-item text-danger">
+        <v-icon icon="mdi-alert" />&nbsp;
         Error: {{ loadingError }}
       </a>
     </div> <!-- /error -->
 
     <!-- loading -->
     <div
-      class="dropdown-menu typeahead-results"
+      class="arkime-typeahead-results"
       v-show="expression && loadingValues">
-      <a class="dropdown-item">
-        <span class="fa fa-spinner fa-spin" />&nbsp;
+      <a class="arkime-typeahead-item">
+        <v-icon
+          icon="mdi-loading"
+          class="mdi-spin" />&nbsp;
         {{ $t('common.loading') }}
       </a>
     </div> <!-- /loading -->
 
-    <!-- big typeahead modal -->
-    <BModal
-      size="xl"
-      no-close-on-backdrop
-      :model-value="bigTypeahead"
-      @shown="showBigTypeahead"
-      @esc="closeBigTypeahead(false)">
-      <template #header>
-        <span class="fa fa-search fa-2x" />
-      </template>
-      <ExpressionAutocompleteInput
-        textarea
-        rows="5"
-        ref="bigAutocomplete"
-        :placeholder="$t('common.search')"
-        v-model="expression"
-        @apply="closeBigTypeahead(true)" />
-      <template #footer>
-        <div class="d-flex w-100 justify-content-between">
-          <div>
-            <BButton
-              variant="secondary"
-              @click="closeBigTypeahead(false)">
-              {{ $t('common.close') }}
-            </BButton>
-            <BButton
-              variant="warning"
-              class="ms-2"
-              @click="clearBigTypeahead">
-              {{ $t('common.clear') }}
-            </BButton>
-          </div>
-          <BButton
-            variant="theme-tertiary"
-            @click="closeBigTypeahead(true)">
-            {{ $t('common.search') }}
-          </BButton>
-        </div>
-      </template>
-    </BModal> <!-- /big typeahead modal -->
+    <!-- shared expanded-expression modal -->
+    <BigExpressionModal
+      v-model="bigTypeahead"
+      v-model:expression="expression"
+      :placeholder="$t('common.search')"
+      :apply-label="$t('common.search')"
+      @apply="onBigApply" /> <!-- /big typeahead modal -->
   </div>
 </template>
 
@@ -165,7 +145,7 @@ import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
 import Focus from '@common/Focus.vue';
 import TypeaheadResults from './TypeaheadResults.vue';
-import ExpressionAutocompleteInput from './ExpressionAutocompleteInput.vue';
+import BigExpressionModal from './BigExpressionModal.vue';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
 let tokens;
@@ -176,7 +156,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 export default {
   name: 'ExpressionTypeahead',
   emits: ['changeExpression', 'modView', 'applyExpression'],
-  components: { TypeaheadResults, ExpressionAutocompleteInput },
+  components: { TypeaheadResults, BigExpressionModal },
   directives: { CaretPos, Focus },
   data: function () {
     return {
@@ -192,7 +172,15 @@ export default {
       autocompletingField: false,
       // saved expression vars
       savedExpressions: [],
-      bigTypeahead: false
+      bigTypeahead: false,
+      // teleported-dropdown position (computed from the input's bounding
+      // rect on each results refresh).
+      dropdownPos: { top: 0, left: 0, width: 0 },
+      // Arkime theme-color v-btn style; Vuetify :color can't take CSS vars.
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {
@@ -223,6 +211,21 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsArr;
+    },
+    dropdownStyle () {
+      return {
+        position: 'fixed',
+        top: `${this.dropdownPos.top}px`,
+        left: `${this.dropdownPos.left}px`,
+        minWidth: `${this.dropdownPos.width}px`,
+        width: 'auto',
+        maxWidth: 'calc(100vw - 20px)',
+        // Above Vuetify's v-dialog content (~2400).
+        zIndex: 2500,
+        maxHeight: '500px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      };
     }
   },
   watch: {
@@ -238,6 +241,14 @@ export default {
 
       // notify parent
       this.$emit('changeExpression');
+    },
+    /* refresh the teleported dropdown's position whenever it's about
+       to show (results or history populated). */
+    results () {
+      this.$nextTick(this.updateDropdownPos);
+    },
+    fieldHistoryResults () {
+      this.$nextTick(this.updateDropdownPos);
     }
   },
   created: function () {
@@ -249,6 +260,19 @@ export default {
     // resultsElement will be looked up dynamically when needed
   },
   methods: {
+    /* Recompute the teleported TypeaheadResults dropdown position from
+       the input's bounding rect. Called whenever results change (so the
+       dropdown lands below the current input regardless of layout). */
+    updateDropdownPos () {
+      const input = this.$refs.expression;
+      if (!input) { return; }
+      const rect = input.getBoundingClientRect();
+      this.dropdownPos = {
+        top: rect.bottom,
+        left: rect.left,
+        width: rect.width
+      };
+    },
     /* exposed page functions ------------------------------------ */
     clear: function () {
       this.expression = undefined;
@@ -256,23 +280,12 @@ export default {
     saveExpression: function () {
       this.$emit('modView');
     },
-    closeBigTypeahead: function (apply) {
-      this.bigTypeahead = false;
-      // clear results under the small input when modal closes
+    /* fired by BigExpressionModal when the user accepts the expanded
+       expression (Apply button or @apply event). Re-issues a search and
+       drops any in-flight result list under the small input. */
+    onBigApply: function () {
       this.results = [];
-      if (apply) {
-        this.$emit('applyExpression');
-      }
-    },
-    clearBigTypeahead: function () {
-      this.clear();
-    },
-    showBigTypeahead: function () {
-      setTimeout(() => {
-        if (this.$refs.bigAutocomplete) {
-          this.$refs.bigAutocomplete.focus();
-        }
-      }, 100);
+      this.$emit('applyExpression');
     },
     /**
      * Fired when a value from the typeahead menu is selected
@@ -925,8 +938,22 @@ export default {
 </script>
 
 <style scoped>
-.input-group {
-  flex-wrap: none;
-  width: auto;
+.arkime-typeahead-results {
+  position: absolute;
+  background-color: rgb(var(--v-theme-background));
+  border: 1px solid rgb(var(--v-theme-neutral));
+  border-radius: 4px;
+  padding: 4px 0;
+  margin-top: 2px;
+  z-index: 1000;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.arkime-typeahead-item {
+  display: block;
+  padding: 4px 12px;
+  color: rgb(var(--v-theme-foreground));
+  text-decoration: none;
 }
 </style>

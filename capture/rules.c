@@ -49,7 +49,7 @@ typedef struct {
     char                *filename;
     char                *name;
     char                *bpf;                        // String version of bpf
-    struct bpf_program  *bpfp;                       // Atomic pointer; rebuilt on recompile, old defer-freed
+    struct bpf_program  *bpfp[ARKIME_DLT_MAX];       // Per-DLT compiled bpf; atomic pointers, rebuilt on recompile, old defer-freed
     GHashTable          *hash[ARKIME_FIELDS_MAX];    // For each non ip field in rule
     GHashTable          *hashNOT[ARKIME_FIELDS_MAX]; // For each non ip field in rule
     GPtrArray           *match[ARKIME_FIELDS_MAX];   // For any string fields with , modifier or int fields range
@@ -88,8 +88,7 @@ LOCAL ArkimeRulesInfo_t    current;
 LOCAL ArkimeRulesInfo_t    loading;
 LOCAL char               **rulesFiles;
 
-LOCAL pcap_t              *deadPcap;
-extern ArkimePcapFileHdr_t pcapFileHeader;
+extern ArkimeFileInfo_t    fileInfo[256];
 
 #define ARKIME_RULES_STR_MATCH_HEAD      1
 #define ARKIME_RULES_STR_MATCH_TAIL      2
@@ -822,6 +821,9 @@ LOCAL void arkime_rules_load_complete()
 
     memcpy(&current, &loading, sizeof(loading));
     memset(&loading, 0, sizeof(loading));
+
+    // Precompile each rule's bpf for every supported DLT now that current is set.
+    arkime_rules_recompile();
 }
 /******************************************************************************/
 LOCAL void arkime_rules_bpfp_free(gpointer data)
@@ -858,8 +860,10 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
             g_free(rule->name);
             if (rule->bpf)
                 g_free(rule->bpf);
-            if (rule->bpfp)
-                arkime_rules_bpfp_free(rule->bpfp);
+            for (int d = 0; d < ARKIME_DLT_MAX; d++) {
+                if (rule->bpfp[d])
+                    arkime_rules_bpfp_free(rule->bpfp[d]);
+            }
 
             free(rule->fields);
             free(rule->fieldsNOT);
@@ -933,17 +937,18 @@ LOCAL void arkime_rules_load(char **names)
     arkime_free_later(freeing, (GDestroyNotify) arkime_rules_free);
 }
 /******************************************************************************/
-/* Called on main thread at startup, and on the scheme thread each time a new
- * offline file is opened. Packet threads may concurrently read rule->bpfp via
- * arkime_rules_run_session_setup, so we never mutate a live program in place.
- * Build a fresh struct bpf_program, atomically swap the pointer, and let
- * arkime_free_later release the old one after readers have quiesced. */
+/* Called on the main thread once rules are (re)loaded. Packet threads may
+ * concurrently read rule->bpfp[] via arkime_rules_run_session_setup, so we never
+ * mutate a live program in place. Each rule's filter is precompiled once for
+ * every DLT Arkime supports (indexed by the supported-DLT index) and selected at
+ * match time by the packet's DLT, so no per-file recompile is needed. Build
+ * fresh programs, atomically swap each pointer, and let arkime_free_later release
+ * the old ones after readers have quiesced. */
 void arkime_rules_recompile()
 {
-    if (deadPcap)
-        pcap_close(deadPcap);
+    const int snaplen = config.snapLen > 0 ? config.snapLen : ARKIME_PACKET_MAX_LEN;
+    const int dltCount = arkime_packet_dlt_index_count();
 
-    deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
     for (int t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
         if (!current.rules[t])
             continue;
@@ -952,17 +957,39 @@ void arkime_rules_recompile()
             if (!rule->bpf)
                 continue;
 
-            struct bpf_program *newbpfp = g_new0(struct bpf_program, 1);
-            if (pcapFileHeader.dlt != DLT_NFLOG) {
-                if (pcap_compile(deadPcap, newbpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1 && !config.ignoreErrors) {
-                    CONFIGEXIT("Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
+            int compiled = 0;
+            int attempted = 0;
+            for (int d = 0; d < dltCount; d++) {
+                const int dlt = arkime_packet_index_to_dlt(d);
+
+                // BPF doesn't apply to NFLOG, leave an empty program so the
+                // rule simply never matches NFLOG packets.
+                struct bpf_program *newbpfp = g_new0(struct bpf_program, 1);
+                if (dlt != DLT_NFLOG) {
+                    attempted++;
+                    pcap_t *deadPcap = pcap_open_dead(dlt, snaplen);
+                    if (pcap_compile(deadPcap, newbpfp, rule->bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                        // The filter may be valid for some DLTs but not others
+                        // (e.g. "ether ..." on DLT_RAW); only treat it as fatal
+                        // below if it fails to compile for every DLT.
+                        newbpfp->bf_len = 0;
+                        newbpfp->bf_insns = NULL;
+                    } else {
+                        compiled++;
+                    }
+                    pcap_close(deadPcap);
                 }
+
+                struct bpf_program *oldbpfp = rule->bpfp[d];
+                ARKIME_THREAD_ATOMIC_STORE(rule->bpfp[d], newbpfp);
+                if (oldbpfp)
+                    arkime_free_later(oldbpfp, arkime_rules_bpfp_free);
             }
 
-            struct bpf_program *oldbpfp = rule->bpfp;
-            ARKIME_THREAD_ATOMIC_STORE(rule->bpfp, newbpfp);
-            if (oldbpfp)
-                arkime_free_later(oldbpfp, arkime_rules_bpfp_free);
+            if (attempted > 0 && compiled == 0 && !config.ignoreErrors) {
+                pcap_t *deadPcap = pcap_open_dead(DLT_EN10MB, snaplen);
+                CONFIGEXIT("Couldn't compile bpf filter %s: '%s' with %s", rule->filename, rule->bpf, pcap_geterr(deadPcap));
+            }
         }
     }
 }
@@ -1632,8 +1659,11 @@ void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *pa
         ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_SESSION_SETUP], r);
         if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
-        } else if (rule->bpfp) {
-            struct bpf_program *bpfp = ARKIME_THREAD_ATOMIC_LOAD(rule->bpfp);
+        } else if (rule->bpf) {
+            const int dltIndex = arkime_packet_dlt_index(packet);
+            if (dltIndex < 0)
+                continue;
+            struct bpf_program *bpfp = ARKIME_THREAD_ATOMIC_LOAD(rule->bpfp[dltIndex]);
             if (bpfp && bpfp->bf_len && bpf_filter(bpfp->bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
                 arkime_rules_match(session, rule);
             }

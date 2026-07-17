@@ -3,118 +3,109 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- wise navbar -->
-  <b-navbar
-    fixed="top"
-    variant="dark"
-    class="px-3"
-    :container="false">
-    <b-navbar-brand>
+  <span>
+    <nav class="arkime-navbar d-flex align-center pe-2">
       <router-link
         to="help"
-        class="me-2"
+        class="arkime-navbar-brand"
         exact>
         <img
           alt="hoot"
-          id="help-img"
           class="arkime-logo"
-          src="/assets/Arkime_Icon_ColorMint.png">
-        <BTooltip
-          target="help-img"
-          title="HOOT! Can I help you? Click me to see the help page" />
+          src="/assets/Arkime_Icon_Black.png">
+        <v-tooltip activator="parent">
+          HOOT! Can I help you? Click me to see the help page
+        </v-tooltip>
       </router-link>
-    </b-navbar-brand>
 
-    <!-- page links -->
-    <b-navbar-nav class="ms-4">
-      <b-nav-item
-        :to="{ path: '/', query: queryParams }"
-        :class="{'router-link-active': $route.path === '/'}"
-        class="nav-link"
-        exact>
-        {{ $t('navigation.stats') }}
-      </b-nav-item>
-      <b-nav-item
-        to="/query"
-        :class="{'router-link-active': $route.path === '/query'}"
-        class="nav-link">
-        {{ $t('navigation.query') }}
-      </b-nav-item>
-      <b-nav-item
-        to="config"
-        :class="{'router-link-active': $route.path === '/config'}"
-        class="nav-link">
-        {{ $t('navigation.config') }}
-      </b-nav-item>
-    </b-navbar-nav> <!-- /page links -->
+      <div class="arkime-nav-list d-flex align-center">
+        <v-btn
+          :to="{ path: '/', query: queryParams }"
+          :variant="$route.path === '/' ? 'flat' : 'text'"
+          :style="$route.path === '/' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn"
+          exact>
+          {{ $t('navigation.stats') }}
+        </v-btn>
+        <v-btn
+          to="/query"
+          :variant="$route.path === '/query' ? 'flat' : 'text'"
+          :style="$route.path === '/query' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn">
+          {{ $t('navigation.query') }}
+        </v-btn>
+        <v-btn
+          to="/config"
+          :variant="$route.path === '/config' ? 'flat' : 'text'"
+          :style="$route.path === '/config' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn">
+          {{ $t('navigation.config') }}
+        </v-btn>
+        <v-btn
+          to="/settings"
+          :variant="$route.path === '/settings' ? 'flat' : 'text'"
+          :style="$route.path === '/settings' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn">
+          Settings
+        </v-btn>
+      </div>
 
-    <b-navbar-nav
-      class="ms-auto d-flex align-items-center">
-      <!-- data refresh interval select -->
-      <div
-        v-if="$route.name === 'Stats'"
-        style="width:auto;"
-        class="input-group input-group-sm ms-1">
-        <span class="input-group-text">
-          {{ $t('wise.nav.refreshEvery') }}
-        </span>
-        <BFormSelect
-          size="sm"
-          v-model="statsDataInterval"
-          :options="[
-            { value: 0, text: $t('common.none') },
-            { value:5000, text: $t('common.secondCount', 5) },
-            { value:15000, text: $t('common.secondCount', 15) },
-            { value:30000, text: $t('common.secondCount', 30) },
-            { value:60000, text: $t('common.minuteCount', 1) }
-          ]" />
-      </div> <!-- /data interval select -->
+      <v-spacer />
 
-      <!-- version -->
-      <span class="ps-4">
+      <div class="arkime-navbar-actions d-flex align-center">
+        <!-- version (rainbow gradient via shared Version.vue) -->
         <Version timezone="local" />
-      </span>
 
-      <LanguageSwitcher additional-classes="me-2 ms-2" />
+        <!-- language switcher -->
+        <LanguageSwitcher additional-classes="ms-2" />
 
-      <!-- help -->
-      <router-link to="help">
-        <span
-          id="help-icon"
-          class="fa fa-2x fa-fw fa-question-circle me-2 help-link text-theme-button text-theme-gray-hover" />
-        <BTooltip
-          target="help-icon"
-          :title="$t('navigation.helpTip')" />
-      </router-link> <!-- /help -->
+        <!-- help button -->
+        <v-btn
+          to="/help"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="arkime-help-btn ms-2">
+          <v-icon icon="mdi-help-circle" />
+          <v-tooltip activator="parent">
+            {{ $t('navigation.helpTip') }}
+          </v-tooltip>
+        </v-btn>
 
-      <!-- dark/light mode -->
-      <button
-        type="button"
-        id="theme-toggle"
-        class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
-        @click="toggleTheme">
-        <span
-          v-if="wiseTheme === 'light'"
-          class="fa fa-sun-o fa-fw" />
-        <span
-          v-if="wiseTheme === 'dark'"
-          class="fa fa-moon-o fa-fw" />
-      </button>
-      <BTooltip
-        target="theme-toggle"
-        :title="$t('navigation.toggleLightDark')" />
-      <!-- /dark/light mode -->
-      <Logout
-        class="ms-2"
-        size="sm" />
-    </b-navbar-nav>
-  </b-navbar> <!-- /wise navbar -->
+        <!-- stats refresh interval (only on Stats route) -->
+        <v-select
+          v-if="$route.name === 'Stats'"
+          v-model="statsDataInterval"
+          :items="statsIntervalOptions"
+          item-title="label"
+          item-value="value"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="stats-interval-select ms-2"
+          prepend-inner-icon="mdi-refresh" />
+
+        <Logout
+          class="ms-2"
+          size="sm" />
+      </div>
+    </nav>
+
+    <div class="navbarOffset" />
+  </span>
 </template>
 
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
+import { THEMES } from '@common/themes/manifest.js';
 
 export default {
   name: 'WiseNavbar',
@@ -123,81 +114,74 @@ export default {
     Version,
     LanguageSwitcher
   },
-  data: function () {
+  data () {
     return {
-      queryParams: {}
+      queryParams: {},
+      // active-pill colors -- use button-fg + foreground so the pill
+      // flips between themes (white-on-dark in light theme, dark-on-light
+      // in dark theme) without picking specific colors per theme.
+      activePillStyle: {
+        backgroundColor: 'rgb(var(--v-theme-button-fg))',
+        color: 'rgb(var(--v-theme-foreground))'
+      }
     };
   },
   computed: {
-    wiseTheme: {
-      get () {
-        return this.$store.state.wiseTheme;
-      },
-      set (wiseTheme) {
-        this.$store.commit('SET_THEME', wiseTheme);
-      }
+    wiseTheme () {
+      return this.$store.state.wiseTheme || 'arkime-light';
     },
     statsDataInterval: {
-      get () {
-        return this.$store.state.statsDataInterval;
-      },
-      set (dataInterval) {
-        this.$store.commit('SET_STATS_DATA_INTERVAL', dataInterval);
-      }
+      get () { return this.$store.state.statsDataInterval; },
+      set (val) { this.$store.commit('SET_STATS_DATA_INTERVAL', val); }
+    },
+    statsIntervalOptions () {
+      return [
+        { value: 0, label: this.$t('common.none') },
+        { value: 5000, label: this.$t('common.secondCount', 5) },
+        { value: 15000, label: this.$t('common.secondCount', 15) },
+        { value: 30000, label: this.$t('common.secondCount', 30) },
+        { value: 60000, label: this.$t('common.minuteCount', 1) }
+      ];
     }
   },
   watch: {
-    '$route.query': function (newVal, oldVal) {
+    '$route.query': function (newVal) {
       this.queryParams = newVal;
-    }
-  },
-  mounted: function () {
-    if (this.wiseTheme === 'dark') {
-      document.body.classList = [this.wiseTheme];
-    }
-
-    this.queryParams = this.$route.query;
-  },
-  methods: {
-    /* page functions -------------------------------------------------------- */
-    toggleTheme: function () {
-      if (this.wiseTheme === 'light') {
-        this.wiseTheme = 'dark';
-        document.body.classList = [this.wiseTheme];
-      } else {
-        this.wiseTheme = 'light';
-        document.body.classList = [];
+    },
+    wiseTheme: {
+      immediate: true,
+      handler (val) {
+        if (this.$vuetify) {
+          // Register the saved custom palette before switching to it so
+          // theme.change('custom1') resolves -- the palette arrives async
+          // from the server via HYDRATE_THEME_FROM_SERVER.
+          if (val === 'custom1' && this.$store.state.customTheme?.colors) {
+            registerVuetifyTheme(this.$vuetify, 'custom1', this.$store.state.customTheme);
+          }
+          this.$vuetify.theme.change(val);
+        }
+        // legacy body.dark hook -- works for ANY dark theme (arkime-dark,
+        // dark-2, dark-3, v7-modern-dark, or custom1 with dark flag).
+        let dark = false;
+        if (val === 'custom1') {
+          dark = !!(this.$store.state.customTheme && this.$store.state.customTheme.dark);
+        } else {
+          const entry = THEMES.find(t => t.id === val);
+          dark = !!(entry && entry.dark);
+        }
+        document.body.classList = dark ? ['dark'] : [];
       }
     }
+  },
+  mounted () {
+    this.queryParams = this.$route.query;
   }
 };
 </script>
 
 <style scoped>
-/* animations -------------------------------- */
-.hide-login, .show-login {
-  transition: width 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940),
-              opacity 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-}
-.show-login {
-  width: 200px;
-}
-.hide-login {
-  width: 0px;
-  opacity: 0;
-  padding: 0;
-}
-</style>
-
-<style>
-nav.navbar li:hover {
-  background-color: black;
-}
-nav.navbar li a {
-  transition: all .4s;
-}
-nav.navbar ul.navbar-nav li.nav-link a.nav-link {
-  display: inline-block !important;
-  padding-top: 1px;
+/* navbar shell + nav-btn typography come from common/vueapp/arkime-navbar.css */
+.stats-interval-select {
+  max-width: 200px;
 }
 </style>

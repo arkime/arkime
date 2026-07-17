@@ -3,24 +3,16 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="input-group input-group-sm">
-    <select
-      role="listbox"
-      :value="segments"
-      class="form-control"
-      style="-webkit-appearance:none;"
-      @input="$emit('update:segments', $event.target.value)">
-      <option value="no">
-        {{ $t('sessions.segmentSelect.no') }}
-      </option>
-      <option value="time">
-        {{ $t('sessions.segmentSelect.time') }}
-      </option>
-      <option value="all">
-        {{ $t('sessions.segmentSelect.all') }}
-      </option>
-    </select>
-  </div>
+  <v-select
+    :model-value="segments"
+    :items="items"
+    item-title="title"
+    item-value="value"
+    density="compact"
+    variant="outlined"
+    hide-details
+    class="segment-select"
+    @update:model-value="$emit('update:segments', $event)" />
   <slot />
 </template>
 
@@ -33,6 +25,22 @@ export default {
       default: 'no'
     }
   },
-  emits: ['update:segments']
+  emits: ['update:segments'],
+  computed: {
+    items () {
+      return [
+        { value: 'no', title: this.$t('sessions.segmentSelect.no') },
+        { value: 'time', title: this.$t('sessions.segmentSelect.time') },
+        { value: 'all', title: this.$t('sessions.segmentSelect.all') }
+      ];
+    }
+  }
 };
 </script>
+
+<style scoped>
+.segment-select {
+  width: 200px;
+  flex: 0 0 auto;
+}
+</style>

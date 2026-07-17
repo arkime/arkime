@@ -7,16 +7,17 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="compatibleBrowser"
       class="d-flex flex-column h-100">
+      <app-banner />
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
-        <router-view />
+        <router-view class="flex-grow-1 w-100" />
         <keyboard-shortcuts
           @shift-hold-change="shiftHoldChange"
           shortcuts-class="cont3xt-shortcuts"
           shortcuts-btn-transition="cont3xt-shortcuts-slide"
           shortcuts-help-transition="cont3xt-shortcuts-slide-long">
           <template #content>
-            <span class="cont3xt-shortcuts-content ">
+            <span class="cont3xt-shortcuts-content\">
               <code>'Q'</code> - set focus to query bar
               <br>
               <code>'T'</code> - set focus to the start time field
@@ -87,13 +88,16 @@ import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
+import AppBanner from '@common/AppBanner.vue';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
   components: {
     Cont3xtNavbar,
     KeyboardShortcuts,
-    Cont3xtUpgradeBrowser
+    Cont3xtUpgradeBrowser,
+    AppBanner
   },
   data: function () {
     return {
@@ -121,7 +125,7 @@ export default {
     });
     LinkService.getLinkGroups();
     OverviewService.getOverviews();
-    UserService.getUser();
+    UserService.getUser().then((user) => { this.hydrateThemeFromUser(user); });
     UserService.getRoles();
     UserService.getUserSettings().then((response) => {
       this.$store.commit('SET_SELECTED_OVERVIEW_ID_MAP', response.selectedOverviews ?? {});
@@ -268,6 +272,11 @@ export default {
         hash: this.$route.hash,
         query: { ...this.$route.query }
       });
+    },
+    hydrateThemeFromUser (user) {
+      applyServerTheme(user?.settings, (themeId, customTheme) => {
+        this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
+      });
     }
   }
 };
@@ -289,8 +298,8 @@ body {
   z-index: 9;
   position: fixed;
   color: rgb(var(--v-theme-info));
-  border: var(--color-gray);
-  background: var(--color-light);
+  border: rgb(var(--v-theme-outline));
+  background: rgb(var(--v-theme-neutral-lighter));
   border-radius: 4px 0 0 4px;
   border-right: none;
   -webkit-box-shadow: 0 0 16px -2px black;

@@ -1,0 +1,1125 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 73
+    },
+    "destination" : {
+     "bytes" : 167,
+     "ip" : "10.20.0.2",
+     "mac" : [
+      "66:77:88:99:aa:bb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000010,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "a.example.com"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "49f68a5c8493ec2c0bf489821c21fc3b"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "responseHeader" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderCnt" : 3,
+     "responseHeaderField" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "2",
+      "arkime-test",
+      "text/plain"
+     ],
+     "responseHeaderValueCnt" : 3,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "a.example.com/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "arkime-multidlt-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 10,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000000050,
+    "length" : 40,
+    "network" : {
+     "bytes" : 392,
+     "community_id" : "1:8O0/8rudRYwEUBWZcnzUWN9I3O0=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     56,
+     60,
+     143,
+     143
+    ],
+    "packetPos" : [
+     148,
+     236,
+     308,
+     384,
+     544
+    ],
+    "packetRange" : {
+     "gte" : 1700000000010,
+     "lte" : 1700000000050
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 87
+    },
+    "source" : {
+     "bytes" : 225,
+     "ip" : "10.20.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 40001
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 160
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 31
+    },
+    "destination" : {
+     "bytes" : 75,
+     "ip" : "10.20.0.4",
+     "mac" : [
+      "66:77:88:99:aa:bb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "10.20.0.4",
+        "name" : "b.example.com",
+        "ttl" : 300,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "b.example.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "10.20.0.4"
+      ],
+      "ipCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "b.example.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstPayload8" : "1234818000010001",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000060,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000000070,
+    "length" : 10,
+    "network" : {
+     "bytes" : 148,
+     "community_id" : "1:IWrlEDZyTDx6iINlYhKc2mCPXkM=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     89,
+     91
+    ],
+    "packetPos" : [
+     704,
+     812
+    ],
+    "packetRange" : {
+     "gte" : 1700000000060,
+     "lte" : 1700000000070
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 47
+    },
+    "source" : {
+     "bytes" : 73,
+     "ip" : "10.20.0.3",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 40002
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "1234010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 78
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 73
+    },
+    "destination" : {
+     "bytes" : 195,
+     "ip" : "10.20.0.6",
+     "mac" : [
+      "66:77:88:99:aa:bb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000080,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "c.example.com"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "49f68a5c8493ec2c0bf489821c21fc3b"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "responseHeader" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderCnt" : 3,
+     "responseHeaderField" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "2",
+      "arkime-test",
+      "text/plain"
+     ],
+     "responseHeaderValueCnt" : 3,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "c.example.com/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "arkime-multidlt-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 10,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000000120,
+    "length" : 40,
+    "network" : {
+     "bytes" : 430,
+     "community_id" : "1:wtgDvlxOYNOW3Q4Xd5S175jRhRs=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     143,
+     157
+    ],
+    "packetPos" : [
+     920,
+     1008,
+     1096,
+     1184,
+     1344
+    ],
+    "packetRange" : {
+     "gte" : 1700000000080,
+     "lte" : 1700000000120
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 87
+    },
+    "source" : {
+     "bytes" : 235,
+     "ip" : "10.20.0.5",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 40003
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 160
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 31
+    },
+    "destination" : {
+     "bytes" : 89,
+     "ip" : "10.20.0.8",
+     "mac" : [
+      "66:77:88:99:aa:bb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "10.20.0.8",
+        "name" : "d.example.com",
+        "ttl" : 300,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "d.example.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "10.20.0.8"
+      ],
+      "ipCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "d.example.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstPayload8" : "1234818000010001",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000130,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000000140,
+    "length" : 10,
+    "network" : {
+     "bytes" : 162,
+     "community_id" : "1:ThPtgnG2jQsAs6n4aQamqK7IJOw=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     89,
+     105
+    ],
+    "packetPos" : [
+     1520,
+     1628
+    ],
+    "packetRange" : {
+     "gte" : 1700000000130,
+     "lte" : 1700000000140
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 47
+    },
+    "source" : {
+     "bytes" : 73,
+     "ip" : "10.20.0.7",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 40004
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "1234010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 78
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 73
+    },
+    "destination" : {
+     "bytes" : 167,
+     "ip" : "10.20.0.10",
+     "packets" : 2,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000000150,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "e.example.com"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "49f68a5c8493ec2c0bf489821c21fc3b"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "responseHeader" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderCnt" : 3,
+     "responseHeaderField" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "2",
+      "arkime-test",
+      "text/plain"
+     ],
+     "responseHeaderValueCnt" : 3,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "e.example.com/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "arkime-multidlt-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 10,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000000190,
+    "length" : 40,
+    "network" : {
+     "bytes" : 360,
+     "community_id" : "1:rZkq62pYc8QgI5TztA0fDQ9pqfs=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     129,
+     143
+    ],
+    "packetPos" : [
+     1752,
+     1824,
+     1896,
+     1968,
+     2116
+    ],
+    "packetRange" : {
+     "gte" : 1700000000150,
+     "lte" : 1700000000190
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 87
+    },
+    "source" : {
+     "bytes" : 193,
+     "ip" : "10.20.0.9",
+     "packets" : 3,
+     "port" : 40005
+    },
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 160
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 31
+    },
+    "destination" : {
+     "bytes" : 75,
+     "ip" : "10.20.0.12",
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "10.20.0.12",
+        "name" : "f.example.com",
+        "ttl" : 300,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "f.example.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "10.20.0.12"
+      ],
+      "ipCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "f.example.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstPayload8" : "1234818000010001",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000000200,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000000210,
+    "length" : 10,
+    "network" : {
+     "bytes" : 134,
+     "community_id" : "1:P+6tCsepD6znbsycjPMZcPys1F8=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     75,
+     91
+    ],
+    "packetPos" : [
+     2276,
+     2368
+    ],
+    "packetRange" : {
+     "gte" : 1700000000200,
+     "lte" : 1700000000210
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 47
+    },
+    "source" : {
+     "bytes" : 59,
+     "ip" : "10.20.0.11",
+     "packets" : 1,
+     "port" : 40006
+    },
+    "srcPayload8" : "1234010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 78
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 73
+    },
+    "destination" : {
+     "bytes" : 175,
+     "ip" : "10.20.0.14",
+     "packets" : 2,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000000220,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "g.example.com"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "49f68a5c8493ec2c0bf489821c21fc3b"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "responseHeader" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderCnt" : 3,
+     "responseHeaderField" : [
+      "content-length",
+      "content-type",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "2",
+      "arkime-test",
+      "text/plain"
+     ],
+     "responseHeaderValueCnt" : 3,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "g.example.com/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "arkime-multidlt-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 10,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000000260,
+    "length" : 40,
+    "network" : {
+     "bytes" : 380,
+     "community_id" : "1:Nn9Ml9L43HpgZSv07XFz1J9oN3A=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     60,
+     60,
+     60,
+     133,
+     147
+    ],
+    "packetPos" : [
+     2476,
+     2552,
+     2628,
+     2704,
+     2856
+    ],
+    "packetRange" : {
+     "gte" : 1700000000220,
+     "lte" : 1700000000260
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 87
+    },
+    "source" : {
+     "bytes" : 205,
+     "ip" : "10.20.0.13",
+     "packets" : 3,
+     "port" : 40007
+    },
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 160
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 31
+    },
+    "destination" : {
+     "bytes" : 79,
+     "ip" : "10.20.0.16",
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "10.20.0.16",
+        "name" : "h.example.com",
+        "ttl" : 300,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "h.example.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "10.20.0.16"
+      ],
+      "ipCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "h.example.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstPayload8" : "1234818000010001",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000000270,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000000280,
+    "length" : 10,
+    "network" : {
+     "bytes" : 142,
+     "community_id" : "1:oowJOqngMCI+6U8rqSIh/8NOvWc=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     79,
+     95
+    ],
+    "packetPos" : [
+     3020,
+     3116
+    ],
+    "packetRange" : {
+     "gte" : 1700000000270,
+     "lte" : 1700000000280
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 47
+    },
+    "source" : {
+     "bytes" : 63,
+     "ip" : "10.20.0.15",
+     "packets" : 1,
+     "port" : 40008
+    },
+    "srcPayload8" : "1234010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 78
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  }
+ ]
+}
+

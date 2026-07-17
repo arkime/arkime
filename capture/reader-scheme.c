@@ -9,7 +9,6 @@
 #include "arkime.h"
 #include "pcap.h"
 
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 
 LOCAL struct bpf_program     bpf;
 LOCAL pcap_t                *deadPcap;
@@ -60,8 +59,8 @@ enum ArkimeSchemeMode {
 LOCAL int                    offlineDispatchAfter;
 extern void                 *esServer;
 
-extern ArkimeOfflineInfo_t   offlineInfo[256];
-extern ARKIME_LOCK_EXTERN(offlineInfoLock);
+extern ArkimeFileInfo_t   fileInfo[256];
+extern ARKIME_LOCK_EXTERN(fileInfoLock);
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
 ArkimeSchemeAction_t       *schemeActions[256];
@@ -87,7 +86,7 @@ LOCAL struct {
     int                    tmpBufferLen;
     int32_t                blockSize;
     int                    haveInterface;
-    uint64_t               tsresol;
+    uint64_t               tsresol[ARKIME_MAX_INTERFACES_PER_FILE];
 } readerState;
 
 LOCAL void reader_scheme_pause();
@@ -172,14 +171,14 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     int rcl = readerScheme->load(uri, flags, actions);
 
     gboolean notifyHandedOff = FALSE;
-    if (rcl == 0 && offlineInfo[readerState.readerPos].didBatch) {
-        // Stash an async file-done notification on the offlineInfo slot. The
+    if (rcl == 0 && fileInfo[readerState.readerPos].didBatch) {
+        // Stash an async file-done notification on the fileInfo slot. The
         // packet thread will fire file-done + decref when the last packet of
         // this file has been processed.
         if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
             arkime_command_client_incref(actions->notifyClientRef);
-            offlineInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
-            offlineInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
+            fileInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
+            fileInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
             notifyHandedOff = TRUE;
         }
         arkime_packet_batch_end_of_file(readerState.readerPos);
@@ -206,15 +205,15 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
         } else {
             arkime_command_notify_file_done(actions->notifyClientRef, uri,
-                                            offlineInfo[readerState.readerPos].lastBytes,
-                                            offlineInfo[readerState.readerPos].lastPackets);
+                                            fileInfo[readerState.readerPos].lastBytes,
+                                            fileInfo[readerState.readerPos].lastPackets);
         }
     }
 
 cleanup:
     // Outermost load_thread call (depth==1 going to 0): release the client ref
     // that was attached to actions when --notify was specified. Per-file
-    // notifications already incref'd their own copy onto offlineInfo, so it's
+    // notifications already incref'd their own copy onto fileInfo, so it's
     // safe to drop the actions-held ref here. Done at outermost depth so that
     // recursive directory iteration can continue using actions->notifyClientRef.
     if (loadThreadDepth == 1 && actions && actions->notifyClientRef) {
@@ -264,38 +263,38 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
     // readerPos is uint8_t (wraps at 256). Before reusing a slot, wait until
     // the prior file occupying it has been fully drained: packet threads
     // have processed FILE_DONE (finishWaiting==0) AND the FILE_DONE handler
-    // has released the lock. Hold offlineInfoLock across the wait + cleanup
+    // has released the lock. Hold fileInfoLock across the wait + cleanup
     // so we can't race with the FILE_DONE handler in arkime_packet_thread,
     // which also touches notifyClientRef/notifyFilename under this lock and
     // does a slow arkime_db_update_file before the decref.
-    ARKIME_LOCK(offlineInfoLock);
-    while (!config.quitting && offlineInfo[nextPos].finishWaiting > 0) {
-        ARKIME_UNLOCK(offlineInfoLock);
+    ARKIME_LOCK(fileInfoLock);
+    while (!config.quitting && fileInfo[nextPos].finishWaiting > 0) {
+        ARKIME_UNLOCK(fileInfoLock);
         LOG_RATE(5, "Waiting for reader slot %u to drain, finishWaiting=%u",
-                 nextPos, offlineInfo[nextPos].finishWaiting);
+                 nextPos, fileInfo[nextPos].finishWaiting);
         usleep(5000);
-        ARKIME_LOCK(offlineInfoLock);
+        ARKIME_LOCK(fileInfoLock);
     }
 
     readerState.readerPos = nextPos;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (offlineInfo[readerState.readerPos].filename) {
-        g_free(offlineInfo[readerState.readerPos].filename);
-        g_free(offlineInfo[readerState.readerPos].extra);
-        if (offlineInfo[readerState.readerPos].notifyFilename) {
-            g_free(offlineInfo[readerState.readerPos].notifyFilename);
+    if (fileInfo[readerState.readerPos].filename) {
+        g_free(fileInfo[readerState.readerPos].filename);
+        g_free(fileInfo[readerState.readerPos].extra);
+        if (fileInfo[readerState.readerPos].notifyFilename) {
+            g_free(fileInfo[readerState.readerPos].notifyFilename);
         }
-        if (offlineInfo[readerState.readerPos].notifyClientRef) {
-            arkime_command_client_decref(offlineInfo[readerState.readerPos].notifyClientRef);
+        if (fileInfo[readerState.readerPos].notifyClientRef) {
+            arkime_command_client_decref(fileInfo[readerState.readerPos].notifyClientRef);
         }
-        memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
+        memset(&fileInfo[readerState.readerPos], 0, sizeof(ArkimeFileInfo_t));
     }
-    ARKIME_UNLOCK(offlineInfoLock);
-    offlineInfo[readerState.readerPos].filename = g_strdup(uri);
+    ARKIME_UNLOCK(fileInfoLock);
+    fileInfo[readerState.readerPos].filename = g_strdup(uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
-    offlineInfo[readerState.readerPos].scheme = readerScheme->name;
-    offlineInfo[readerState.readerPos].extra = g_strdup(extraInfo);
+    fileInfo[readerState.readerPos].scheme = readerScheme->name;
+    fileInfo[readerState.readerPos].extra = g_strdup(extraInfo);
 
     if (schemeActions[readerState.readerPos])
         arkime_reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
@@ -330,14 +329,14 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
         }
     }
 
-    arkime_packet_set_dltsnap(dlt, snaplen);
+    arkime_packet_set_interface(readerState.readerPos, 0, dlt, snaplen);
 
-    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
+    if (config.bpf && dlt != DLT_NFLOG) {
         if (deadPcap) {
             pcap_freecode(&bpf);
             pcap_close(deadPcap);
         }
-        deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
+        deadPcap = pcap_open_dead(dlt, fileInfo[readerState.readerPos].interfaces[0].snaplen);
         if (pcap_compile(deadPcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
             CONFIGEXIT("Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(deadPcap));
         }
@@ -558,9 +557,9 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
     // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
     if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
-        offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
+        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
-        offlineInfo[readerState.readerPos].lastBytes += len;
+        fileInfo[readerState.readerPos].lastBytes += len;
     }
 
     while (len > 0) {
@@ -587,7 +586,6 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             }
 
             readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
-            readerState.tsresol = 1000000; // default to microsecond resolution
 
             if (readerState.needSwap) {
                 readerState.fileHeaderLen = SWAP32(h->block_total_length);
@@ -668,9 +666,9 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 }
                 readerState.state = ARKIME_SCHEME_NG_INTERFACE;
             } else if (blockHeader->block_type == 0x0A0D0D0A) {
-                // New Section Header Block - reset interface and tsresol state
+                // New Section Header Block - restart interface numbering. The
+                // next IDB opens a fresh fileInfo slot via header_common.
                 readerState.haveInterface = -1;
-                readerState.tsresol = 1000000;
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
             } else {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
@@ -699,12 +697,13 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 snaplen = SWAP32(snaplen);
             }
 
-            // ALW TODO: Currently we don't support multiple different interface linktypes
-            if (readerState.haveInterface != -1 && readerState.haveInterface != linkType) {
-                LOG("ERROR - Multiple interfaces in pcapNG file '%s', not supported", uri);
-                return 1;
-            }
+            // The interface index for this IDB within the current section. The
+            // first IDB (index 0) opens the fileInfo slot via header_common, the
+            // rest are registered as additional interfaces. EPB interface_id
+            // selects between them.
+            const int ifaceIndex = readerState.haveInterface + 1;
 
+            uint64_t tsresol = 1000000; // default microsecond resolution
             uint8_t *options = readerState.tmpBuffer + 8;
             const uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8 - 4; // exclude trailing block_total_length
 
@@ -736,12 +735,12 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                         continue;
                     }
                     if (options[0] & 0x80) {
-                        readerState.tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
+                        tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
                     } else {
-                        readerState.tsresol = 1;
+                        tsresol = 1;
                         const int exp = MIN(options[0], 19);
                         for (int i = 0; i < exp; i++)
-                            readerState.tsresol *= 10;
+                            tsresol *= 10;
                     }
                 }
 
@@ -749,11 +748,26 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 options += (4 - (olen & 3)) & 3; // align to 32 bits
             }
 
-            if (readerState.haveInterface == -1)
+            if (ifaceIndex >= ARKIME_MAX_INTERFACES_PER_FILE) {
+                LOG("WARNING - pcapNG file '%s' has more than %d interfaces, ignoring interface %d",
+                    uri, ARKIME_MAX_INTERFACES_PER_FILE, ifaceIndex);
+            } else if (ifaceIndex == 0) {
+                // First interface of the section sets up the fileInfo slot
                 reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions);
+                readerState.tsresol[0] = tsresol;
+                fileInfo[readerState.readerPos].isPcapNG = 1;
+            } else {
+                // Additional interface within the same file/section
+                arkime_packet_set_interface(readerState.readerPos, ifaceIndex, arkime_packet_linktype_to_dlt(linkType), snaplen);
+                readerState.tsresol[ifaceIndex] = tsresol;
+            }
 
-            readerState.haveInterface = linkType;
+            // Record this interface's IDB file offset so read-back can find it
+            // without rescanning, and export can copy the IDB verbatim.
+            if (ifaceIndex < ARKIME_MAX_INTERFACES_PER_FILE)
+                fileInfo[readerState.readerPos].interfaces[ifaceIndex].blockOffset = readerState.startPos;
 
+            readerState.haveInterface = ifaceIndex;
             readerState.state = ARKIME_SCHEME_NG_HEADER;
             readerState.tmpBufferLen = 0;
             continue;
@@ -840,6 +854,22 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             readerState.packet->readerFilePos = readerState.startPos;
             readerState.packet->readerPos = readerState.readerPos;
 
+            // EPB interface_id selects which interface (IDB) the packet was
+            // captured on; it indexes fileInfo[readerPos].interfaces[].
+            uint32_t interfaceId;
+            memcpy(&interfaceId, readerState.tmpBuffer, 4);
+            if (readerState.needSwap) {
+                interfaceId = SWAP32(interfaceId);
+            }
+            if (interfaceId >= fileInfo[readerState.readerPos].numInterfaces) {
+                // Reference to an interface we never saw an IDB for; skip.
+                arkime_packet_free(readerState.packet);
+                readerState.packet = 0;
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+                continue;
+            }
+            readerState.packet->interfaceIndex = interfaceId;
+
             uint32_t tsh, tsl;
             memcpy(&tsh, readerState.tmpBuffer + 4, 4);
             memcpy(&tsl, readerState.tmpBuffer + 8, 4);
@@ -851,8 +881,11 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             uint64_t ts = ((uint64_t)tsh << 32) | tsl;
 
-            readerState.packet->ts.tv_sec = ts / readerState.tsresol;
-            readerState.packet->ts.tv_usec = (ts % readerState.tsresol) * 1000000 / readerState.tsresol;
+            uint64_t tsresol = readerState.tsresol[interfaceId];
+            if (tsresol == 0)
+                tsresol = 1000000;
+            readerState.packet->ts.tv_sec = ts / tsresol;
+            readerState.packet->ts.tv_usec = (ts % tsresol) * 1000000 / tsresol;
 
             readerState.tmpBufferLen = 0;
             readerState.state = ARKIME_SCHEME_NG_PACKET;
@@ -886,8 +919,8 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 readerState.tmpBufferLen = 0;
             }
             packets++;
-            offlineInfo[readerState.readerPos].lastPackets++;
-            offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
+            fileInfo[readerState.readerPos].lastPackets++;
+            fileInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && !bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
                 arkime_packet_free(readerState.packet);
             } else {
@@ -916,7 +949,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 processNG:
     // Record if any packets were batched
     if (batch.count > 0) {
-        offlineInfo[readerState.readerPos].didBatch = 1;
+        fileInfo[readerState.readerPos].didBatch = 1;
         arkime_packet_batch_flush(&batch);
     }
     return 0;
@@ -936,9 +969,9 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 
     // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
     if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
-        offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
+        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
-        offlineInfo[readerState.readerPos].lastBytes += len;
+        fileInfo[readerState.readerPos].lastBytes += len;
     }
 
     while (len > 0) {
@@ -1070,8 +1103,8 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 readerState.tmpBufferLen = 0;
             }
             packets++;
-            offlineInfo[readerState.readerPos].lastPackets++;
-            offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
+            fileInfo[readerState.readerPos].lastPackets++;
+            fileInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && !bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
                 arkime_packet_free(readerState.packet);
             } else {
@@ -1100,7 +1133,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 process:
     // Record if any packets were batched
     if (batch.count > 0) {
-        offlineInfo[readerState.readerPos].didBatch = 1;
+        fileInfo[readerState.readerPos].didBatch = 1;
         arkime_packet_batch_flush(&batch);
     }
     return 0;

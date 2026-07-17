@@ -181,19 +181,26 @@ sub sortJson {
 ################################################################################
 sub doTests {
     my @files = @ARGV;
-    @files = glob ("pcap/*.pcap") if ($#files == -1);
+    @files = (glob ("pcap/*.pcap"), glob ("pcap/*.pcapng")) if ($#files == -1);
 
     plan tests => scalar @files;
 
-    foreach my $filename (@files) {
-        $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+    foreach my $origfilename (@files) {
+        my $filename = $origfilename;
+        if ($filename =~ /\.pcapng$/) {
+            $filename = substr($filename, 0, -7);
+        } elsif ($filename =~ /\.pcap$/) {
+            $filename = substr($filename, 0, -5);
+        } else {
+            $origfilename = "$filename.pcap";
+        }
         die "Missing $filename.test" if (! -f "$filename.test");
 
         open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
         my $savedData = do { local $/; <$fh> };
         my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
 
-        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
@@ -296,17 +303,24 @@ my ($json) = @_;
 
 ################################################################################
 sub doMake {
-    foreach my $filename (@ARGV) {
-        $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+    foreach my $origfilename (@ARGV) {
+        my $filename = $origfilename;
+        if ($filename =~ /\.pcapng$/) {
+            $filename = substr($filename, 0, -7);
+        } elsif ($filename =~ /\.pcap$/) {
+            $filename = substr($filename, 0, -5);
+        } else {
+            $origfilename = "$filename.pcap";
+        }
         # Reject filenames with shell metacharacters / NUL since we still need
         # a shell to set up the pipe + redirection below.
-        if ($filename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
-            die "Invalid filename (contains shell metacharacter): $filename\n";
+        if ($origfilename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
+            die "Invalid filename (contains shell metacharacter): $origfilename\n";
         }
         if ($main::debug) {
-          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
+          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
-        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
+        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
     }
 }
 ################################################################################

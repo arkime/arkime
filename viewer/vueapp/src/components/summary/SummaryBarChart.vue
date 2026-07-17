@@ -8,6 +8,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { colorRange } from './widgets/chartColors';
 
 const props = defineProps({
   data: {
@@ -32,8 +33,11 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
+  },
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
   }
 });
 
@@ -53,8 +57,8 @@ const showTooltip = (data, evt) => {
     metricType: props.metricType
   });
 };
-const MARGIN = { top: 20, right: 30, bottom: 120, left: 60 };
-const MAX_BAR_WIDTH = 80; // Maximum width per bar to prevent overly wide bars
+const MARGIN = { top: 12, right: 10, bottom: 120, left: 44 };
+const MAX_BAR_WIDTH = 120; // Maximum width per bar to prevent overly wide bars
 
 const createChartHoverHandlers = () => {
   return {
@@ -115,11 +119,11 @@ const renderChart = async () => {
     .padding(0.1);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(props.data, d => d[props.metricType])])
+    .domain([0, d3.max(props.data, d => d.value)])
     .range([height, 0]);
 
-  // Use D3 color scheme
-  const colors = d3.scaleOrdinal(d3.schemeCategory10);
+  // Dashboard palette (shared with the pie/treemap charts)
+  const colors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
 
   const handlers = createChartHoverHandlers();
 
@@ -131,8 +135,8 @@ const renderChart = async () => {
     .attr('class', 'bar')
     .attr('x', d => x(d.item))
     .attr('width', x.bandwidth())
-    .attr('y', d => y(d[props.metricType]))
-    .attr('height', d => height - y(d[props.metricType]))
+    .attr('y', d => y(d.value))
+    .attr('height', d => height - y(d.value))
     .attr('fill', (d, i) => colors(i))
     .style('cursor', 'pointer')
     .on('mouseover', handlers.mouseover)
@@ -153,7 +157,7 @@ const renderChart = async () => {
 };
 
 // Watch for data, metric type, or dimension changes
-watch([() => props.data, () => props.metricType, () => props.width, () => props.height], () => {
+watch([() => props.data, () => props.metricType, () => props.width, () => props.height, () => props.colorScheme], () => {
   renderChart();
 }, { deep: true });
 

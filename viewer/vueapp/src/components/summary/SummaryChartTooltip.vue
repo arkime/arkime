@@ -12,10 +12,16 @@
           :value="data.item"
           :field="fieldConfig"
           :expr="fieldConfig.exp" />
-        <button
+        <v-btn
+          variant="text"
+          size="x-small"
+          density="comfortable"
+          icon
+          class="float-right mt-1"
           :aria-label="$t('common.close')"
-          class="btn-close btn-xs pull-right mt-1"
-          @click="$emit('close')" />
+          @click="$emit('close')">
+          <v-icon icon="mdi-close" />
+        </v-btn>
 
         <!-- Statistics in vertical format -->
         <div class="stats-container">
@@ -23,18 +29,17 @@
             <span class="stat-label">{{ $t('sessions.summary.sessions') }}:</span>
             <span class="stat-value">{{ formatNumber(data.sessions) }}</span>
           </div>
-          <div class="stat-row">
-            <span class="stat-label">{{ $t('sessions.summary.packets') }}:</span>
-            <span class="stat-value">{{ formatNumber(data.packets) }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">{{ $t('sessions.summary.bytes') }}:</span>
-            <span class="stat-value">{{ formatBytes(data.bytes) }}</span>
+          <!-- The widget's selected metric (when it isn't the session count) -->
+          <div
+            v-if="showMetricRow"
+            class="stat-row">
+            <span class="stat-label">{{ metricLabel }}:</span>
+            <span class="stat-value">{{ formattedMetric }}</span>
           </div>
           <div
             v-if="percentage !== null"
             class="stat-row">
-            <span class="stat-label">{{ percentageLabel }}:</span>
+            <span class="stat-label">{{ $t('sessions.summary.percentOfTotal') }}:</span>
             <span class="stat-value">{{ percentage.toFixed(1) }}%</span>
           </div>
         </div>
@@ -45,11 +50,10 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { commaString, humanReadableBytes } from '@common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 import ArkimeSessionField from '../sessions/SessionField.vue';
-
-const { t } = useI18n();
+import FieldService from '../search/FieldService';
+import { formatMetricValue } from './widgets/widgetData';
 
 const props = defineProps({
   visible: {
@@ -74,12 +78,23 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
   }
 });
 
 defineEmits(['close']);
+
+// The selected metric's field config (null when the metric is the session count)
+const metricField = computed(() => {
+  if (!props.metricType || props.metricType === 'sessions') { return null; }
+  return FieldService.getField(props.metricType, true);
+});
+
+const metricLabel = computed(() => metricField.value?.friendlyName || props.metricType);
+
+const showMetricRow = computed(() => metricField.value != null && props.data?.value != null);
+
+const formattedMetric = computed(() => formatMetricValue(props.metricType, props.data?.value));
 
 const tooltipStyle = computed(() => {
   // Position tooltip to the top-right of the pointer
@@ -94,23 +109,16 @@ const tooltipStyle = computed(() => {
 const formatNumber = (num) => {
   return commaString(num || 0);
 };
-
-const formatBytes = (bytes) => {
-  return humanReadableBytes(bytes || 0);
-};
-
-const percentageLabel = computed(() => {
-  const key = `sessions.summary.${props.metricType}Percent`;
-  return t(key);
-});
 </script>
 
 <style scoped>
 .summary-tooltip {
   position: fixed;
-  z-index: 9999;
-  background: var(--color-quaternary-lightest);
-  border: 1px solid var(--color-gray);
+  /* below Vuetify's overlay range (~2000+) so the session-field dropdown menu
+     inside the popover renders above it, not behind */
+  z-index: 1900;
+  background: rgb(var(--v-theme-quaternary-lightest));
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 3px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   padding: 0;
@@ -149,9 +157,4 @@ const percentageLabel = computed(() => {
   text-align: right;
 }
 
-.btn-close.btn-xs {
-  font-size: 10px;
-  padding: 2px 3px;
-  margin-left: 6px;
-}
 </style>

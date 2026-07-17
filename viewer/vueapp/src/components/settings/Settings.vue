@@ -6,26 +6,27 @@ SPDX-License-Identifier: Apache-2.0
   <!-- settings content -->
   <div class="settings-page">
     <!-- messages (success/error) displayed at bottom of page -->
-    <div
-      v-if="showMessage"
-      style="z-index: 2000;"
-      :class="`alert-${msgType}`"
-      class="alert position-fixed fixed-bottom m-0 rounded-0">
+    <v-snackbar
+      v-model="showMessage"
+      :color="vuetifyMsgType"
+      location="bottom"
+      timeout="-1"
+      variant="flat">
       {{ msg }}
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close pull-right"
-        @click="showMessage = false" />
-    </div> <!-- /messages -->
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="$close"
+          @click="showMessage = false" />
+      </template>
+    </v-snackbar> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <span class="fa fa-cogs fa-stack-1x" />
-          <span class="fa fa-square-o fa-stack-2x" />
-        </span>&nbsp;
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
         <span>
           {{ $t(displayName ? 'settings.settingsFor' : 'settings.settings', { user: displayName }) }}
         </span>
@@ -43,422 +44,596 @@ SPDX-License-Identifier: Apache-2.0
       class="settings-error" /> <!-- /page error -->
 
     <!-- content -->
-    <div
-      class="settings-content row"
+    <v-row
+      no-gutters
+      class="settings-content"
       v-if="!loading && !error && settings">
       <!-- navigation -->
-      <div
-        class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
+      <v-col
+        cols="12"
+        xl="1"
+        lg="2"
+        md="2"
+        sm="3"
         role="tablist"
         aria-orientation="vertical">
-        <div class="nav flex-column nav-pills">
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('general')"
-            :class="{'active':visibleTab === 'general'}">
-            <span class="fa fa-fw fa-cog" />&nbsp;
+        <v-tabs
+          :model-value="visibleTab"
+          @update:model-value="openView($event)"
+          direction="vertical"
+          density="compact"
+          color="primary"
+          selected-class="font-weight-bold">
+          <v-tab value="general">
+            <v-icon
+              icon="mdi-cog"
+              class="me-1" />
             {{ $t('settings.nav.general') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('col')"
-            :class="{'active':visibleTab === 'col'}">
-            <span class="fa fa-fw fa-columns" />&nbsp;
+          </v-tab>
+          <v-tab value="col">
+            <v-icon
+              icon="mdi-view-column"
+              class="me-1" />
             {{ $t('settings.nav.columnLayout') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('info')"
-            :class="{'active':visibleTab === 'info'}">
-            <span class="fa fa-fw fa-info" />&nbsp;
+          </v-tab>
+          <v-tab value="info">
+            <v-icon
+              icon="mdi-information"
+              class="me-1" />
             {{ $t('settings.nav.infoFieldLayout') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('spiview')"
-            :class="{'active':visibleTab === 'spiview'}">
-            <span class="fa fa-fw fa-eyedropper" />&nbsp;
+          </v-tab>
+          <v-tab value="spiview">
+            <v-icon
+              icon="mdi-eyedropper"
+              class="me-1" />
             {{ $t('settings.nav.spiViewLayout') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('theme')"
-            :class="{'active':visibleTab === 'theme'}">
-            <span class="fa fa-fw fa-paint-brush" />&nbsp;
+          </v-tab>
+          <v-tab value="theme">
+            <v-icon
+              icon="mdi-brush"
+              class="me-1" />
             {{ $t('settings.nav.themes') }}
-          </a>
-          <a
+          </v-tab>
+          <v-tab
             v-if="(!multiviewer || hasUsersES) && !disablePassword"
-            class="nav-link cursor-pointer"
-            @click="openView('password')"
-            :class="{'active':visibleTab === 'password'}">
-            <span class="fa fa-fw fa-lock" />&nbsp;
+            value="password">
+            <v-icon
+              icon="mdi-lock"
+              class="me-1" />
             {{ $t('settings.nav.password') }}
-          </a>
-          <hr class="hr-small nav-separator">
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('views')"
-            :class="{'active':visibleTab === 'views'}">
-            <span class="fa fa-fw fa-eye" />&nbsp;
-            {{ $t('settings.nav.views') }}
-          </a>
-          <a
+          </v-tab>
+          <v-tab
             v-if="!multiviewer || hasUsersES"
-            class="nav-link cursor-pointer"
-            @click="openView('shortcuts')"
-            :class="{'active':visibleTab === 'shortcuts'}">
-            <span class="fa fa-fw fa-list" />&nbsp;
+            v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}"
+            value="totp">
+            <v-icon
+              icon="mdi-two-factor-authentication"
+              class="me-1" />
+            {{ $t('settings.totp.title') }}
+          </v-tab>
+          <v-divider class="my-1" />
+          <v-tab value="views">
+            <v-icon
+              icon="mdi-eye"
+              class="me-1" />
+            {{ $t('settings.nav.views') }}
+          </v-tab>
+          <v-tab
+            v-if="!multiviewer || hasUsersES"
+            value="shortcuts">
+            <v-icon
+              icon="mdi-format-list-bulleted"
+              class="me-1" />
             {{ $t('settings.nav.shortcuts') }}
-          </a>
-          <a
+          </v-tab>
+          <v-tab
             v-if="!multiviewer"
-            class="nav-link cursor-pointer"
-            @click="openView('cron')"
-            :class="{'active':visibleTab === 'cron'}">
-            <span class="fa fa-fw fa-search" />&nbsp;
+            value="cron">
+            <v-icon
+              icon="mdi-magnify"
+              class="me-1" />
             {{ $t('settings.nav.cron') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
+          </v-tab>
+          <v-tab
             v-has-role="{user:user,roles:'arkimeAdmin'}"
-            @click="openView('notifiers')"
-            :class="{'active':visibleTab === 'notifiers'}">
-            <span class="fa fa-fw fa-bell" />&nbsp;
+            value="notifiers">
+            <v-icon
+              icon="mdi-bell"
+              class="me-1" />
             {{ $t('settings.nav.notifiers') }}
-          </a>
-        </div>
-      </div> <!-- /navigation -->
+          </v-tab>
+          <v-tab
+            v-has-role="{user:user,roles:'arkimeAdmin'}"
+            value="banner">
+            <v-icon
+              icon="mdi-bullhorn"
+              class="me-1" />
+            {{ $t('settings.nav.banner') }}
+          </v-tab>
+        </v-tabs>
+      </v-col> <!-- /navigation -->
 
-      <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+      <v-col
+        cols="12"
+        xl="11"
+        lg="10"
+        md="10"
+        sm="9"
+        class="settings-right-panel settings-content-pane">
         <!-- general settings -->
         <form
-          class="form-horizontal"
           v-if="visibleTab === 'general'"
           id="general">
-          <h3>
-            {{ $t('settings.general.title') }}
-            <button
-              type="button"
-              @click="resetSettings"
-              class="btn btn-theme-quaternary btn-sm pull-right ms-1">
-              <span class="fa fa-repeat me-2" />
+          <h3 class="d-flex align-center">
+            <span class="flex-grow-1">{{ $t('settings.general.title') }}</span>
+            <v-btn
+              variant="flat"
+              size="large"
+              color="warning"
+              @click="resetSettings">
+              <v-icon
+                icon="mdi-repeat"
+                class="me-2" />
               {{ $t('settings.general.reset') }}
-            </button>
+            </v-btn>
           </h3>
 
           <hr>
 
           <!-- timezone -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.timezoneFormat') }}
-            </label>
-            <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline me-2"
-                button-variant="outline-secondary"
-                :model-value="settings.timezone"
-                @update:model-value="updateTimezone"
-                :options="[
-                  { text: $t('settings.general.tz-local'), value: 'local' },
-                  { text: $t('settings.general.tz-localtz'), value: 'localtz' },
-                  { text: $t('settings.general.tz-gmt'), value: 'gmt' }
-                ]" />
-              <BFormCheckbox
-                button
-                size="sm"
-                class="d-inline"
-                id="millisecondsSetting"
-                :active="settings.ms"
-                :model-value="settings.ms"
-                @update:model-value="updateMs"
-                button-variant="outline-secondary">
-                {{ $t('common.milliseconds') }}
-                <BTooltip target="millisecondsSetting">
-                  {{ $t('settings.general.millisecondsSettingTip') }}
-                </BTooltip>
-              </BFormCheckbox>
-              <label class="ms-2 fw-bold text-theme-primary align-bottom">
-                {{ timezoneDateString(date, settings.timezone, settings.ms) }}
-              </label>
-            </div>
-          </div> <!-- /timezone -->
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <div class="d-inline-flex align-center">
+                <v-btn-toggle
+                  density="compact"
+                  divided
+                  variant="outlined"
+                  color="secondary"
+                  class="me-2"
+                  :model-value="settings.timezone"
+                  @update:model-value="updateTimezone"
+                  mandatory>
+                  <v-btn value="local">
+                    {{ $t('settings.general.tz-local') }}
+                  </v-btn>
+                  <v-btn value="localtz">
+                    {{ $t('settings.general.tz-localtz') }}
+                  </v-btn>
+                  <v-btn value="gmt">
+                    {{ $t('settings.general.tz-gmt') }}
+                  </v-btn>
+                </v-btn-toggle>
+                <v-btn-toggle
+                  density="compact"
+                  variant="outlined"
+                  color="secondary"
+                  multiple
+                  :model-value="settings.ms ? ['ms'] : []"
+                  @update:model-value="(val) => updateMs(val.includes('ms'))">
+                  <v-btn
+                    value="ms"
+                    id="millisecondsSetting">
+                    {{ $t('common.milliseconds') }}
+                    <v-tooltip
+                      activator="parent"
+                      location="top">
+                      {{ $t('settings.general.millisecondsSettingTip') }}
+                    </v-tooltip>
+                  </v-btn>
+                </v-btn-toggle>
+                <label class="ms-2 font-weight-bold text-theme-primary">
+                  {{ timezoneDateString(date, settings.timezone, settings.ms) }}
+                </label>
+              </div>
+            </v-col>
+          </v-row> <!-- /timezone -->
 
           <!-- session detail format -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.sessionDetailFormat') }}
-            </label>
-            <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.detailFormat"
                 @update:model-value="updateSessionDetailFormat"
-                :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
-                  { text: $t('settings.general.detail-natural'), value: 'natural' },
-                  { text: $t('settings.general.detail-ascii'), value: 'ascii' },
-                  { text: $t('settings.general.detail-utf8'), value: 'utf8' },
-                  { text: $t('settings.general.detail-hex'), value: 'hex' }
-                ]" />
-            </div>
-          </div> <!-- /session detail format -->
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="natural">
+                  {{ $t('settings.general.detail-natural') }}
+                </v-btn>
+                <v-btn value="ascii">
+                  {{ $t('settings.general.detail-ascii') }}
+                </v-btn>
+                <v-btn value="utf8">
+                  {{ $t('settings.general.detail-utf8') }}
+                </v-btn>
+                <v-btn value="hex">
+                  {{ $t('settings.general.detail-hex') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /session detail format -->
 
           <!-- number of packets -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.numberOfPackets') }}
-            </label>
-            <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.numPackets"
                 @update:model-value="updateNumberOfPackets"
-                :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
-                  { text: '50', value: '50' },
-                  { text: '200', value: '200' },
-                  { text: '500', value: '500' },
-                  { text: '1,000', value: '1000' },
-                  { text: '2,000', value: '2000' }
-                ]" />
-            </div>
-          </div> <!-- /number of packets -->
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="50">
+                  50
+                </v-btn>
+                <v-btn value="200">
+                  200
+                </v-btn>
+                <v-btn value="500">
+                  500
+                </v-btn>
+                <v-btn value="1000">
+                  1,000
+                </v-btn>
+                <v-btn value="2000">
+                  2,000
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /number of packets -->
 
           <!-- show packet timestamp -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.showPacketInfo') }}
-            </label>
-            <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.showTimestamps"
                 @update:model-value="updateShowPacketTimestamps"
-                :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
-                  { text: $t('settings.general.info-on'), value: 'on' },
-                  { text: $t('settings.general.info-off'), value: 'off' }
-                ]" />
-            </div>
-          </div> <!-- /show packet timestamp -->
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="on">
+                  {{ $t('settings.general.info-on') }}
+                </v-btn>
+                <v-btn value="off">
+                  {{ $t('settings.general.info-off') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /show packet timestamp -->
 
           <!-- issue query on initial page load -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.queryOnLoad') }}
-            </label>
-            <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
-                :options="[
-                  { text: $t('settings.general.query-false'), value: 'false' },
-                  { text: $t('settings.general.query-true'), value: 'true' }
-                ]" />
-            </div>
-          </div> <!-- /issue query on initial page load -->
+                mandatory>
+                <v-btn value="false">
+                  {{ $t('settings.general.query-false') }}
+                </v-btn>
+                <v-btn value="true">
+                  {{ $t('settings.general.query-true') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /issue query on initial page load -->
 
           <!-- session sort -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.sortSessionsBy') }}
-            </label>
-            <div class="col-sm-6">
-              <select
-                size="sm"
-                class="form-select form-select-sm"
-                v-model="settings.sortColumn"
-                @change="update">
-                <option value="last">
-                  {{ $t('settings.general.lastUsed') }}
-                </option>
-                <option
-                  v-for="field in sortableColumns"
-                  :key="field.dbField"
-                  :value="field.dbField">
-                  {{ field.friendlyName }}
-                </option>
-              </select>
-            </div>
-            <div class="col-sm-3">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <select
+                  class="arkime-input-control"
+                  v-model="settings.sortColumn"
+                  @change="update">
+                  <option value="last">
+                    {{ $t('settings.general.lastUsed') }}
+                  </option>
+                  <option
+                    v-for="field in sortableColumns"
+                    :key="field.dbField"
+                    :value="field.dbField">
+                    {{ field.friendlyName }}
+                  </option>
+                </select>
+              </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
+              <v-btn-toggle
                 v-if="settings.sortColumn !== 'last'"
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.sortDirection"
                 @update:model-value="updateSortDirection"
-                :options="[
-                  { text: $t('settings.general.sort-asc'), value: 'asc' },
-                  { text: $t('settings.general.sort-desc'), value: 'desc' }
-                ]" />
-            </div>
-          </div> <!-- /session sort -->
+                mandatory>
+                <v-btn value="asc">
+                  {{ $t('settings.general.sort-asc') }}
+                </v-btn>
+                <v-btn value="desc">
+                  {{ $t('settings.general.sort-desc') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /session sort -->
 
           <!-- default spi graph -->
-          <div
-            v-if="fields && settings.spiGraph"
-            class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row
+            v-if="fields && settings.spiGraph">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.defaultSPIGraph') }}
-            </label>
-            <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="fields"
-                query-param="field"
-                :initial-value="spiGraphTypeahead"
-                @field-selected="spiGraphFieldSelected" />
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="spiGraphTypeahead"
+                  @field-selected="spiGraphFieldSelected" />
+              </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 v-if="spiGraphField">
                 <label
                   id="spiGraphFieldSetting"
-                  class="badge bg-info cursor-help">
+                  class="arkime-badge arkime-badge--info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
-                  <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
+                  <v-tooltip activator="#spiGraphFieldSetting">{{ spiGraphField.help }}</v-tooltip>
                 </label>
               </h4>
-            </div>
-          </div> <!-- /default spi graph -->
+            </v-col>
+          </v-row> <!-- /default spi graph -->
 
           <!-- connections src field -->
-          <div
-            v-if="fields && settings.connSrcField"
-            class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row
+            v-if="fields && settings.connSrcField">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.connectionsSrc') }}
-            </label>
-            <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="fields"
-                query-param="field"
-                :initial-value="connSrcFieldTypeahead"
-                @field-selected="connSrcFieldSelected" />
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="connSrcFieldTypeahead"
+                  @field-selected="connSrcFieldSelected" />
+              </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 v-if="connSrcField">
                 <label
-                  class="badge bg-info cursor-help"
+                  class="arkime-badge arkime-badge--info cursor-help"
                   id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
-                  <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
+                  <v-tooltip activator="#connSrcFieldSetting">{{ connSrcField.help }}</v-tooltip>
                 </label>
               </h4>
-            </div>
-          </div> <!-- /connections src field -->
+            </v-col>
+          </v-row> <!-- /connections src field -->
 
           <!-- connections dst field -->
-          <div
-            v-if="fields && settings.connDstField"
-            class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row
+            v-if="fields && settings.connDstField">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.connectionsDst') }}
-            </label>
-            <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="fields"
-                query-param="field"
-                :initial-value="connDstFieldTypeahead"
-                @field-selected="connDstFieldSelected" />
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="connDstFieldTypeahead"
+                  @field-selected="connDstFieldSelected" />
+              </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 v-if="connDstField">
                 <label
-                  class="badge bg-info cursor-help"
+                  class="arkime-badge arkime-badge--info cursor-help"
                   id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
-                  <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
+                  <v-tooltip activator="#connDstFieldSetting">{{ connDstField.help }}</v-tooltip>
                 </label>
               </h4>
-            </div>
-          </div> <!-- /connections dst field -->
+            </v-col>
+          </v-row> <!-- /connections dst field -->
 
-          <div
-            v-if="integerFields"
-            class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row
+            v-if="integerFields">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.timelineDataFilters') }}
-            </label>
+            </v-col>
 
-            <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="integerFields"
-                :initial-value="filtersTypeahead"
-                query-param="field"
-                @field-selected="timelineFilterSelected" />
-            </div>
-            <div class="col-sm-3">
-              <h4 v-if="timelineDataFilters.length > 0">
-                <label
-                  class="badge bg-info cursor-help small-badge"
-                  v-for="filter in timelineDataFilters"
-                  :key="filter.dbField + 'DataFilterBadge'"
-                  @click="timelineFilterSelected(filter)"
-                  :id="filter.dbField + 'DataFilterBadge'">
-                  <span class="fa fa-times" />
-                  {{ filter.friendlyName || 'unknown field' }}
-                  <BTooltip :target="filter.dbField + 'DataFilterBadge'">{{ filter.help }}</BTooltip>
-                </label>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="integerFields"
+                  :initial-value="filtersTypeahead"
+                  query-param="field"
+                  @field-selected="timelineFilterSelected" />
+              </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
+              <h4 class="d-flex align-center gap-1">
+                <template v-if="timelineDataFilters.length > 0">
+                  <label
+                    class="arkime-badge arkime-badge--info cursor-help arkime-badge--sm"
+                    v-for="filter in timelineDataFilters"
+                    :key="filter.dbField + 'DataFilterBadge'"
+                    @click="timelineFilterSelected(filter)"
+                    :id="filter.dbField + 'DataFilterBadge'">
+                    <v-icon icon="mdi-close" />
+                    {{ filter.friendlyName || 'unknown field' }}
+                    <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
+                  </label>
+                </template>
+                <v-btn
+                  id="resetTimelineFilters"
+                  color="error"
+                  variant="flat"
+                  size="default"
+                  icon
+                  :aria-label="$t('settings.general.resetTimelineDataFilters')"
+                  @click="resetDefaultFilters">
+                  <v-icon icon="mdi-refresh" />
+                  <v-tooltip activator="#resetTimelineFilters">
+                    {{ $t('settings.general.resetTimelineDataFilters') }}
+                  </v-tooltip>
+                </v-btn>
               </h4>
-              <b-button
-                size="sm"
-                variant="danger"
-                @click="resetDefaultFilters">
-                {{ $t('settings.general.resetTimelineDataFilters') }}
-              </b-button>
-            </div>
-          </div>
+            </v-col>
+          </v-row>
 
           <!-- hide tags field -->
-          <div
-            v-if="fields"
-            class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row
+            v-if="fields">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.hideTags') }}
-            </label>
-            <div class="col-sm-6">
-              <input
-                type="text"
-                @change="update"
-                v-model="settings.hideTags"
-                class="form-control form-control-sm"
-                :placeholder="$t('settings.general.hideTagsPlaceholder')">
-            </div>
-          </div> <!-- /hide tags field -->
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="text"
+                  @change="update"
+                  v-model="settings.hideTags"
+                  class="arkime-input-control"
+                  :placeholder="$t('settings.general.hideTagsPlaceholder')">
+              </div>
+            </v-col>
+          </v-row> <!-- /hide tags field -->
         </form>
 
         <!-- col configs settings -->
         <form
           v-if="visibleTab === 'col'"
-          class="form-horizontal"
           id="col">
           <h3>{{ $t('settings.ccl.title') }}</h3>
 
           <p>{{ $t('settings.ccl.info') }}</p>
 
-          <table class="table table-striped table-sm">
+          <table class="arkime-table">
             <thead>
               <tr>
                 <th>{{ $t('settings.ccl.table-name') }}</th>
@@ -478,11 +653,11 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="col in defaultColConfig.visibleHeaders"
                     :key="col">
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
-                      <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${col}DefaultColConfigSetting']`">{{ fieldsMap[col].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -491,12 +666,12 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="order in defaultColConfig.order"
                     :key="order[0]">
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       v-if="fieldsMap[order[0]]"
-                      :id="`${order[0]}DefaultColConfigSetting`">
+                      :id="`${order[0]}DefaultColConfigSettingOrder`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
-                      <BTooltip :target="`${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${order[0]}DefaultColConfigSettingOrder']`">{{ fieldsMap[order[0]].help }}</v-tooltip>
                     </label>
                   </span>
                 </td>
@@ -515,11 +690,11 @@ SPDX-License-Identifier: Apache-2.0
                       v-for="col in config.columns"
                       :key="col">
                       <label
-                        class="badge bg-secondary me-1 help-cursor"
+                        class="arkime-badge arkime-badge--grey me-1 cursor-help"
                         v-if="fieldsMap[col]"
                         :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
-                        <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
+                        <v-tooltip :activator="`[id='${index}${col}ColConfigSetting']`">{{ fieldsMap[col].help }}</v-tooltip>
                       </label>
                     </template>
                   </td>
@@ -528,24 +703,29 @@ SPDX-License-Identifier: Apache-2.0
                       v-for="order in config.order"
                       :key="order[0]">
                       <label
-                        class="badge bg-secondary me-1 help-cursor"
+                        class="arkime-badge arkime-badge--grey me-1 cursor-help"
                         v-if="fieldsMap[order[0]]"
                         :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
-                        <BTooltip :target="`${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
+                        <v-tooltip :activator="`[id='${index}-${order[0]}ColConfigSetting']`">{{ fieldsMap[order[0]].help }}</v-tooltip>
                       </label>
                     </span>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-right"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
                       :title="$t('settings.ccl.deleteTip')">
-                      <span class="fa fa-trash-o" />&nbsp;
+                      <v-icon
+                        icon="mdi-trash-can-outline"
+                        class="me-1" />
                       {{ $t('common.delete') }}
-                    </button>
+                    </v-btn>
                   </td>
                 </tr>
               </template> <!-- /col configs -->
@@ -553,7 +733,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="colConfigError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ colConfigError }}
                   </p>
                 </td>
@@ -561,29 +741,29 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div
+          <v-alert
             v-if="!colConfigs || !colConfigs.length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg" />
+            type="info"
+            variant="tonal"
+            density="compact">
             <strong>
               {{ $t('settings.ccl.empty') }}
             </strong>
             <br>
             <br>
             <span v-html="$t('settings.ccl.howToHtml')" />
-          </div>
+          </v-alert>
         </form> <!-- /col configs settings -->
 
         <!-- info field configs settings -->
         <form
           v-if="visibleTab === 'info'"
-          class="form-horizontal"
           id="col">
           <h3>{{ $t('settings.infoLayout.title') }}</h3>
 
           <p>{{ $t('settings.infoLayout.info') }}</p>
 
-          <table class="table table-striped table-sm">
+          <table class="arkime-table">
             <thead>
               <tr>
                 <th>{{ $t('settings.infoLayout.table-name') }}</th>
@@ -602,11 +782,11 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="field in defaultInfoFieldLayout"
                     :key="field">
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
-                      <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${field}DefaultInfoFieldLayoutSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -625,23 +805,28 @@ SPDX-License-Identifier: Apache-2.0
                       v-for="field in config.fields"
                       :key="field">
                       <label
-                        class="badge bg-secondary me-1 help-cursor"
+                        class="arkime-badge arkime-badge--grey me-1 cursor-help"
                         :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
-                        <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
+                        <v-tooltip :activator="`[id='${field}InfoFieldLayoutSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                       </label>
                     </template>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-right"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
                       :title="$t('settings.infoLayout.deleteTip')">
-                      <span class="fa fa-trash-o" />&nbsp;
+                      <v-icon
+                        icon="mdi-trash-can-outline"
+                        class="me-1" />
                       {{ $t('common.delete') }}
-                    </button>
+                    </v-btn>
                   </td>
                 </tr>
               </template> <!-- /info field configs -->
@@ -649,7 +834,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="infoFieldLayoutError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ infoFieldLayoutError }}
                   </p>
                 </td>
@@ -657,29 +842,29 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div
+          <v-alert
             v-if="!infoFieldLayouts || !infoFieldLayouts.length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg" />
+            type="info"
+            variant="tonal"
+            density="compact">
             <strong>
               {{ $t('settings.infoLayout.empty') }}
             </strong>
             <br>
             <br>
             <span v-html="$t('settings.infoLayout.howToHtml')" />
-          </div>
+          </v-alert>
         </form> <!-- /info field configs settings -->
 
         <!-- spiview field configs settings -->
         <form
           v-if="visibleTab === 'spiview'"
-          class="form-horizontal"
           id="spiview">
           <h3>{{ $t('settings.spiview.title') }}</h3>
 
           <p>{{ $t('settings.spiview.info') }}</p>
 
-          <table class="table table-striped table-sm">
+          <table class="arkime-table">
             <thead>
               <tr>
                 <th>{{ $t('settings.spiview.table-name') }}</th>
@@ -700,9 +885,9 @@ SPDX-License-Identifier: Apache-2.0
                     <label
                       :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge bg-secondary me-1 help-cursor">
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help">
                       {{ fieldsMap[field].friendlyName }} (100)
-                      <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${field}DefaultSpiviewFieldConfigSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -718,24 +903,29 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
                       :key="fieldObj.dbField">
                       {{ fieldObj.friendlyName }}
                       ({{ fieldObj.count }})
-                      <BTooltip :target="`${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${fieldObj.dbField}SpiviewFieldConfigSetting']`">{{ fieldObj.help }}</v-tooltip>
                     </label>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-right"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
                       :title="$t('settings.spiview.deleteTip')">
-                      <span class="fa fa-trash-o" />&nbsp;
+                      <v-icon
+                        icon="mdi-trash-can-outline"
+                        class="me-1" />
                       {{ $t('common.delete') }}
-                    </button>
+                    </v-btn>
                   </td>
                 </tr>
               </template> <!-- /spiview field configs -->
@@ -743,7 +933,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="spiviewConfigError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ spiviewConfigError }}
                   </p>
                 </td>
@@ -751,148 +941,63 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div
+          <v-alert
             v-if="!spiviewConfigs || !spiviewConfigs.length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg" />
+            type="info"
+            variant="tonal"
+            density="compact">
             <strong>
               {{ $t('settings.spiview.empty') }}
             </strong>
             <br>
             <br>
             <span v-html="$t('settings.spiview.howToHtml')" />
-          </div>
+          </v-alert>
         </form> <!-- /spiview field configs settings -->
 
         <!-- theme settings -->
         <form
           v-if="visibleTab === 'theme'"
           id="theme">
-          <h3>{{ $t('settings.themes.title') }}</h3>
+          <h1 class="mb-3">
+            Themes
+          </h1>
+          <p class="text-medium-emphasis mb-4">
+            Choose a theme or build your own. Themes are saved to your
+            account and apply across all Arkime apps.
+          </p>
 
-          <p>{{ $t('settings.themes.pickTheme') }}</p>
-
-          <hr>
-
-          <!-- theme picker -->
-          <div class="row">
-            <div
-              class="col-lg-6 col-md-12"
-              v-for="theme in themeDisplays"
-              :class="theme.class"
-              :key="theme.class">
-              <div class="theme-display">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="custom-control custom-radio ms-1">
-                      <input
-                        type="radio"
-                        class="custom-control-input cursor-pointer"
-                        v-model="settings.theme"
-                        @change="changeTheme(theme.class)"
-                        :value="theme.class"
-                        :id="theme.class">
-                      <label
-                        class="custom-control-label cursor-pointer ms-2"
-                        :for="theme.class">
-                        {{ theme.name }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <nav class="navbar navbar-dark">
-                  <a class="navbar-brand cursor-pointer">
-                    <img
-                      :src="settings.logo"
-                      class="arkime-logo"
-                      alt="hoot">
-                  </a>
-                  <ul class="nav">
-                    <a class="nav-item cursor-pointer no-decoration active">
-                      Current Page
-                    </a>
-                    <a class="nav-item cursor-pointer no-decoration ms-3">
-                      Other Pages
-                    </a>
-                  </ul>
-                  <ul class="navbar-nav me-2">
-                    <span class="fa fa-info-circle fa-lg health-green" />
-                  </ul>
-                </nav>
-                <div class="display-sub-navbar">
-                  <div class="row">
-                    <div class="col-xl-5 col-lg-4 col-md-5">
-                      <div class="input-group input-group-sm ms-1">
-                        <span class="input-group-text">
-                          <span class="fa fa-search" />
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Search"
-                          class="form-control">
-                      </div>
-                    </div>
-                    <div class="col-xl-7 col-lg-8 col-sm-7">
-                      <div class="fw-bold text-theme-accent ms-1">
-                        Important text
-                      </div>
-                      <div class="pull-right display-sub-navbar-buttons">
-                        <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
-                          Search
-                        </a>
-                        <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
-                          <span class="fa fa-cog fa-lg" />
-                        </a>
-                        <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
-                          <span class="fa fa-eye fa-lg" />
-                        </a>
-                        <b-dropdown
-                          right
-                          size="sm"
-                          class="pull-right action-menu-dropdown"
-                          variant="theme-primary-display">
-                          <b-dropdown-item>
-                            Example
-                          </b-dropdown-item>
-                          <b-dropdown-item class="active">
-                            Active Example
-                          </b-dropdown-item>
-                        </b-dropdown>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="display-sub-sub-navbar">
-                  <div class="ms-1 mt-2 pb-2">
-                    <span class="field cursor-pointer">
-                      example field value
-                      <span class="fa fa-caret-down" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> <!-- /theme picker -->
+          <!-- theme picker (incl. Custom card) -->
+          <ThemePicker
+            :model-value="activeThemeId"
+            :themes="themes"
+            :custom-theme="settings.vuetifyCustomTheme || settings.customTheme || null"
+            @update:model-value="changeTheme"
+            @update:custom-theme="onCustomThemeChange" />
 
           <!-- logo picker -->
           <hr>
           <h3>{{ $t('settings.themes.logos') }}</h3>
           <p>{{ $t('settings.themes.pickLogo') }}</p>
-          <div class="row well logo-well me-1 ms-1">
-            <div
-              class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
+          <v-row class="well logo-well me-1 ms-1 mb-6">
+            <v-col
+              cols="12"
+              lg="3"
+              md="4"
+              sm="6"
+              class="mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <div class="custom-control custom-radio ms-1">
+              <div class="d-flex align-center ms-1">
                 <input
                   type="radio"
                   :id="logo.location"
                   :value="logo.location"
                   v-model="settings.logo"
                   @change="changeLogo(logo.location)"
-                  class="custom-control-input cursor-pointer">
+                  class="cursor-pointer">
                 <label
-                  class="custom-control-label cursor-pointer ms-2"
+                  class="cursor-pointer ms-2"
                   :for="logo.location">
                   {{ logo.name }}
                 </label>
@@ -900,418 +1005,32 @@ SPDX-License-Identifier: Apache-2.0
               <img
                 :src="logo.location"
                 :alt="logo.name">
-            </div>
-          </div> <!-- /logo picker -->
+            </v-col>
+          </v-row> <!-- /logo picker -->
 
           <div v-if="settings.shiftyEyes">
             <hr>
             <h3>
               Yahaha! You found me!
-              <button
-                class="btn btn-primary"
+              <v-btn
+                color="primary"
+                variant="flat"
+                size="large"
+                class="ms-2"
                 @click="toggleShiftyEyes">
                 Turn Me Off
-              </button>
+              </v-btn>
             </h3>
             <p>
               I am now watching you while data loads
             </p>
             <img :src="watching">
           </div>
-
-          <hr>
-
-          <!-- custom theme -->
-          <p v-if="!creatingCustom">
-            <span v-html="$t('settings.themes.moreControlHtml')" />
-            <a
-              href="javascript:void(0)"
-              class="cursor-pointer"
-              @click="creatingCustom = true">
-              {{ $t('settings.themes.createCustom') }}
-            </a>
-            <br><br>
-          </p>
-
-          <div v-if="creatingCustom">
-            <!-- custom theme display -->
-            <div class="row">
-              <div class="col-md-4">
-                <h3 class="mt-0 mb-3">
-                  Custom Theme
-                  <button
-                    type="button"
-                    class="btn btn-theme-tertiary pull-right"
-                    @click="displayHelp = !displayHelp">
-                    <span class="fa fa-question-circle" />&nbsp;
-                    <span v-if="displayHelp">
-                      Hide
-                    </span>
-                    <span v-else>
-                      Show
-                    </span>
-                    Help
-                  </button>
-                </h3>
-                <color-picker
-                  :color="background"
-                  @color-selected="changeColor"
-                  color-name="background"
-                  field-name="Background"
-                  :class="{'mb-2':!displayHelp}" />
-                <p
-                  class="help-block small"
-                  v-if="displayHelp">
-                  This color should either be very light or very dark.
-                </p>
-                <color-picker
-                  :color="foreground"
-                  @color-selected="changeColor"
-                  color-name="foreground"
-                  field-name="Foreground"
-                  :class="{'mb-2':!displayHelp}" />
-                <p
-                  class="help-block small"
-                  v-if="displayHelp">
-                  This color should be visible on the background.
-                </p>
-                <color-picker
-                  :color="foregroundAccent"
-                  @color-selected="changeColor"
-                  color-name="foregroundAccent"
-                  field-name="Foreground Accent" />
-                <p
-                  class="help-block small"
-                  v-if="displayHelp">
-                  This color should stand out.
-                  It displays session field values and important text in navbars.
-                </p>
-              </div>
-              <div class="col-md-8">
-                <div
-                  class="custom-theme"
-                  id="custom-theme-display">
-                  <div class="theme-display">
-                    <div class="navbar navbar-dark">
-                      <a class="navbar-brand cursor-pointer">
-                        <img
-                          :src="settings.logo"
-                          class="arkime-logo"
-                          alt="hoot">
-                      </a>
-                      <ul class="nav">
-                        <a class="nav-item cursor-pointer active">
-                          Current Page
-                        </a>
-                        <a class="nav-item cursor-pointer ms-3">
-                          Other Pages
-                        </a>
-                      </ul>
-                      <ul class="navbar-nav me-2">
-                        <span class="fa fa-info-circle fa-lg health-green" />
-                      </ul>
-                    </div>
-                    <div class="display-sub-navbar">
-                      <div class="row">
-                        <div class="col-xl-5 col-lg-4 col-md-5">
-                          <div class="input-group input-group-sm ms-1">
-                            <span class="input-group-text">
-                              <span class="fa fa-search" />
-                            </span>
-                            <input
-                              type="text"
-                              placeholder="Search"
-                              class="form-control">
-                          </div>
-                        </div>
-                        <div class="col-xl-7 col-lg-8 col-sm-7">
-                          <div class="fw-bold text-theme-accent ms-1">
-                            Important text
-                          </div>
-                          <div class="pull-right display-sub-navbar-buttons">
-                            <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
-                              Search
-                            </a>
-                            <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
-                              <span class="fa fa-cog fa-lg" />
-                            </a>
-                            <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
-                              <span class="fa fa-eye fa-lg" />
-                            </a>
-                            <b-dropdown
-                              right
-                              size="sm"
-                              class="pull-right action-menu-dropdown"
-                              variant="theme-primary-display">
-                              <b-dropdown-item>
-                                Example
-                              </b-dropdown-item>
-                              <b-dropdown-item class="active">
-                                Active Example
-                              </b-dropdown-item>
-                            </b-dropdown>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="display-sub-sub-navbar">
-                      <arkime-paging
-                        class="mt-1 ms-1"
-                        :records-total="200"
-                        :records-filtered="100" />
-                    </div>
-                    <div>
-                      <div class="ms-1 me-1 mt-2 pb-2">
-                        <span class="field cursor-pointer">
-                          example field value
-                          <span class="fa fa-caret-down" />
-                        </span>
-                        <br><br>
-                        <div class="row">
-                          <div class="col-md-6 sessionsrc">
-                            <small class="session-detail-ts fw-bold">
-                              <em class="ts-value">
-                                2013/11/18 03:06:52.831
-                              </em>
-                              <span class="pull-right">
-                                27 bytes
-                              </span>
-                            </small>
-                            <pre>Source packet text</pre>
-                          </div>
-                          <div class="col-md-6 sessiondst">
-                            <small class="session-detail-ts fw-bold">
-                              <em class="ts-value">
-                                2013/11/18 03:06:52.841
-                              </em>
-                              <span class="pull-right">
-                                160 bytes
-                              </span>
-                            </small>
-                            <pre>Destination packet text</pre>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> <!-- /custom theme display -->
-
-            <br>
-
-            <p
-              v-if="displayHelp"
-              class="help-block">
-              Main theme colors are lightened/darkened programmatically to
-              provide dark borders, active buttons, hover colors, etc.
-            </p>
-
-            <!-- main colors -->
-            <div class="row form-group">
-              <div class="col-md-3">
-                <color-picker
-                  :color="primary"
-                  @color-selected="changeColor"
-                  color-name="primary"
-                  field-name="Primary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Primary navbar, buttons, active item(s) in lists
-                </p>
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="secondary"
-                  @color-selected="changeColor"
-                  color-name="secondary"
-                  field-name="Secondary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Buttons
-                </p>
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="tertiary"
-                  @color-selected="changeColor"
-                  color-name="tertiary"
-                  field-name="Tertiary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Action buttons (search, apply, open, etc)
-                </p>
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="quaternary"
-                  @color-selected="changeColor"
-                  color-name="quaternary"
-                  field-name="Quaternary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Accent and all other buttons
-                </p>
-              </div>
-            </div> <!-- /main colors -->
-
-            <p
-              v-if="displayHelp"
-              class="help-block">
-              <em>Highlight colors should be similar to their parent color, above.</em>
-              <br>
-              For <strong>light themes</strong>, the highlight color should be <strong>lighter</strong> than the original.
-              For <strong>dark themes</strong>, the highlight color should be <strong>darker</strong> than original.
-            </p>
-
-            <!-- main color highlights/backgrounds -->
-            <div class="row form-group">
-              <div class="col-md-3">
-                <color-picker
-                  :color="primaryLightest"
-                  @color-selected="changeColor"
-                  color-name="primaryLightest"
-                  field-name="Highlight 1" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Backgrounds
-                </p>
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="secondaryLightest"
-                  @color-selected="changeColor"
-                  color-name="secondaryLightest"
-                  field-name="Highlight 2" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Search/Secondary navbar
-                </p>
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="tertiaryLightest"
-                  @color-selected="changeColor"
-                  color-name="tertiaryLightest"
-                  field-name="Highlight 3" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Tertiary navbar, table hover
-                </p>
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="quaternaryLightest"
-                  @color-selected="changeColor"
-                  color-name="quaternaryLightest"
-                  field-name="Highlight 4" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Session detail background
-                </p>
-              </div>
-            </div> <!-- /main color highlights/backgrounds -->
-
-            <br>
-
-            <div
-              v-if="displayHelp"
-              class="row">
-              <div class="col-6">
-                <p class="help-block">
-                  <em>Map colors</em>
-                  <br>
-                  These should be different to show contrast between land and water.
-                </p>
-              </div>
-              <div class="col-6">
-                <p class="help-block">
-                  <em>Packet colors</em>
-                  <br>
-                  These are displayed when viewing session packets and in the
-                  sessions timeline graph. They should be very different colors.
-                </p>
-              </div>
-            </div>
-
-            <div class="row form-group">
-              <!-- visualization colors -->
-              <div class="col-md-3">
-                <color-picker
-                  :color="water"
-                  @color-selected="changeColor"
-                  color-name="water"
-                  field-name="Map Water" />
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="land"
-                  @color-selected="changeColor"
-                  color-name="land"
-                  field-name="Map Land" />
-              </div> <!-- /visualization colors -->
-              <!-- packet colors -->
-              <div class="col-md-3">
-                <color-picker
-                  :color="src"
-                  @color-selected="changeColor"
-                  color-name="src"
-                  field-name="Source Packets" />
-              </div>
-              <div class="col-md-3">
-                <color-picker
-                  :color="dst"
-                  @color-selected="changeColor"
-                  color-name="dst"
-                  field-name="Destination Packets" />
-              </div> <!-- /packet colors -->
-            </div>
-
-            <br>
-
-            <div class="row mb-4">
-              <div class="col-md-12">
-                <label>
-                  Share your theme with others:
-                </label>
-                <div class="input-group input-group-sm">
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="themeString"
-                    @keyup.up.down.left.right.a.b="secretStuff">
-                  <button
-                    class="btn btn-theme-secondary"
-                    type="button"
-                    @click="copyValue(themeString)">
-                    <span class="fa fa-clipboard" />&nbsp;
-                    {{ $t('common.copy') }}
-                  </button>
-                  <button
-                    class="btn btn-theme-primary"
-                    type="button"
-                    @click="updateThemeString">
-                    <span class="fa fa-check" />&nbsp;
-                    {{ $t('common.apply') }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div> <!-- /custom theme -->
         </form> <!-- /theme settings -->
 
         <!-- password settings -->
         <form
           v-if="visibleTab === 'password' && (!multiviewer || hasUsersES) && !disablePassword"
-          class="form-horizontal"
           @keyup.enter="changePassword"
           id="password">
           <h3>{{ $t('settings.password.title') }}</h3>
@@ -1319,191 +1038,237 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
 
           <!-- current password -->
-          <div
-            v-if="!userId"
-            class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row
+            v-if="!userId">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.password.currentPassword') }}
-            </label>
-            <div class="col-sm-6">
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                v-model="currentPassword"
-                :placeholder="$t('settings.password.currentPasswordPlaceholder')">
-            </div>
-          </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="password"
+                  class="arkime-input-control"
+                  v-model="currentPassword"
+                  :placeholder="$t('settings.password.currentPasswordPlaceholder')">
+              </div>
+            </v-col>
+          </v-row>
 
           <!-- new password -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.password.newPassword') }}
-            </label>
-            <div class="col-sm-6">
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                v-model="newPassword"
-                :placeholder="$t('settings.password.newPasswordPlaceholder')">
-            </div>
-          </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="password"
+                  class="arkime-input-control"
+                  v-model="newPassword"
+                  :placeholder="$t('settings.password.newPasswordPlaceholder')">
+              </div>
+            </v-col>
+          </v-row>
 
           <!-- confirm new password -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.password.confirmPassword') }}
-            </label>
-            <div class="col-sm-6">
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                v-model="confirmNewPassword"
-                :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
-            </div>
-          </div>
+            </v-col>
+            <v-col
+              cols="12"
+              sm="6">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="password"
+                  class="arkime-input-control"
+                  v-model="confirmNewPassword"
+                  :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
+              </div>
+            </v-col>
+          </v-row>
 
           <!-- change password button/error -->
-          <div class="form-group row">
-            <label class="col-sm-3 col-form-label">&nbsp;</label>
-            <div class="col-sm-9">
-              <button
-                type="button"
-                class="btn btn-theme-tertiary"
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="align-self-center">
+&nbsp;
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn
+                variant="flat"
+                size="large"
+                color="tertiary"
                 @click="changePassword">
                 {{ $t('settings.password.changePassword') }}
-              </button>
+              </v-btn>
               <span
                 v-if="changePasswordError"
                 class="small text-danger ps-4">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
+                <v-icon icon="mdi-alert" />&nbsp;
                 {{ changePasswordError }}
               </span>
-            </div>
-          </div> <!-- /change password button/error -->
-
-          <!-- TOTP Two-Factor Authentication (only for admins) -->
-          <div v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}">
-            <hr class="my-4">
-            <div class="d-flex align-items-center mb-1">
-              <h4 class="mb-0 me-2">
-                {{ $t('settings.totp.title') }}
-              </h4>
-              <!-- Enroll button (when not enrolled) -->
-              <button
-                v-if="!totpEnabled && !totpSetupMode"
-                type="button"
-                class="btn btn-sm btn-theme-primary"
-                @click="startTotpSetup">
-                {{ $t('settings.totp.enroll') }}
-              </button>
-              <!-- Enabled status + Unenroll button (when enrolled) -->
-              <span
-                v-if="totpEnabled && !totpSetupMode"
-                class="text-success me-2">
-                <span class="fa fa-check" /> {{ $t('settings.totp.enabled') }}
-              </span>
-              <button
-                v-if="totpEnabled && !totpSetupMode"
-                type="button"
-                class="btn btn-sm btn-danger"
-                @click="showTotpDisable = true">
-                {{ $t('settings.totp.unenroll') }}
-              </button>
-              <!-- Cancel button (when in setup mode) -->
-              <button
-                v-if="totpSetupMode"
-                type="button"
-                class="btn btn-sm btn-warning"
-                @click="cancelTotpSetup">
-                {{ $t('common.cancel') }}
-              </button>
-            </div>
-            <p class="small mb-3">
-              {{ $t('settings.totp.description') }}
-            </p>
-
-            <!-- TOTP Setup (QR Code + Verification) -->
-            <div
-              v-if="totpSetupMode"
-              class="mb-3">
-              <div class="my-2">
-                <img
-                  v-if="totpQRDataUrl"
-                  :src="totpQRDataUrl"
-                  alt="TOTP QR Code"
-                  class="rounded p-2"
-                  style="border: 1px solid var(--color-foreground, #333); background-color: var(--color-background, #fff);">
-                <span
-                  v-else>{{ $t('settings.totp.generatingQR') }}</span>
-              </div>
-              <div class="small mb-2">
-                {{ $t('settings.totp.manualEntry') }}: <code>{{ totpSecret }}</code>
-              </div>
-              <div
-                class="input-group input-group-sm"
-                style="width: 400px;">
-                <span class="input-group-text">{{ $t('settings.totp.verifyCode') }}</span>
-                <input
-                  type="text"
-                  maxlength="6"
-                  class="form-control"
-                  v-model="totpVerifyCode"
-                  :placeholder="$t('settings.totp.codePlaceholder')"
-                  @keyup.enter="confirmTotpSetup">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-success"
-                  :disabled="!totpVerifyCode || totpVerifyCode.length !== 6"
-                  @click="confirmTotpSetup">
-                  {{ $t('settings.totp.verify') }}
-                </button>
-              </div>
-              <span
-                v-if="totpError"
-                class="small text-danger d-block mt-2">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
-                {{ totpError }}
-              </span>
-            </div>
-
-            <!-- TOTP Disable Confirmation -->
-            <div
-              v-if="showTotpDisable"
-              class="mb-3">
-              <div
-                class="input-group input-group-sm"
-                style="width: 400px;">
-                <span class="input-group-text">{{ $t('settings.totp.confirmDisable') }}</span>
-                <input
-                  type="text"
-                  maxlength="6"
-                  class="form-control"
-                  v-model="totpDisableCode"
-                  :placeholder="$t('settings.totp.codePlaceholder')"
-                  @keyup.enter="disableTotp">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
-                  :disabled="!totpDisableCode || totpDisableCode.length !== 6"
-                  @click="disableTotp">
-                  {{ $t('settings.totp.confirmUnenroll') }}
-                </button>
-              </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary mt-2"
-                @click="showTotpDisable = false; totpDisableCode = ''">
-                {{ $t('common.cancel') }}
-              </button>
-              <span
-                v-if="totpError"
-                class="small text-danger d-block mt-2">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
-                {{ totpError }}
-              </span>
-            </div>
-          </div> <!-- /TOTP Two-Factor Authentication (only for admins) -->
+            </v-col>
+          </v-row> <!-- /change password button/error -->
         </form> <!-- /password settings -->
+
+        <!-- two-factor (TOTP) settings -->
+        <form
+          v-if="visibleTab === 'totp' && (!multiviewer || hasUsersES)"
+          v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}"
+          id="totp">
+          <h3 class="d-flex align-center">
+            <span class="me-2">{{ $t('settings.totp.title') }}</span>
+            <!-- Enroll button (when not enrolled) -->
+            <v-btn
+              v-if="!totpEnabled && !totpSetupMode"
+              variant="flat"
+              size="large"
+              color="primary"
+              @click="startTotpSetup">
+              {{ $t('settings.totp.enroll') }}
+            </v-btn>
+            <!-- Enabled status + Unenroll button (when enrolled) -->
+            <span
+              v-if="totpEnabled && !totpSetupMode"
+              class="text-success me-2">
+              <v-icon icon="mdi-check" /> {{ $t('settings.totp.enabled') }}
+            </span>
+            <v-btn
+              v-if="totpEnabled && !totpSetupMode"
+              color="error"
+              variant="flat"
+              size="large"
+              @click="showTotpDisable = true">
+              {{ $t('settings.totp.unenroll') }}
+            </v-btn>
+            <!-- Cancel button (when in setup mode) -->
+            <v-btn
+              v-if="totpSetupMode"
+              color="warning"
+              variant="flat"
+              size="large"
+              @click="cancelTotpSetup">
+              {{ $t('common.cancel') }}
+            </v-btn>
+          </h3>
+
+          <hr>
+
+          <p class="mb-3">
+            {{ $t('settings.totp.description') }}
+          </p>
+
+          <!-- TOTP Setup (QR Code + Verification) -->
+          <div
+            v-if="totpSetupMode"
+            class="mb-3">
+            <div class="my-2">
+              <img
+                v-if="totpQRDataUrl"
+                :src="totpQRDataUrl"
+                alt="TOTP QR Code"
+                class="rounded p-2"
+                style="border: 1px solid rgb(var(--v-theme-foreground)); background-color: rgb(var(--v-theme-background));">
+              <span
+                v-else>{{ $t('settings.totp.generatingQR') }}</span>
+            </div>
+            <div class="small mb-2">
+              {{ $t('settings.totp.manualEntry') }}: <code>{{ totpSecret }}</code>
+            </div>
+            <div
+              class="arkime-input-group"
+              style="width: 400px;">
+              <span class="arkime-input-label">{{ $t('settings.totp.verifyCode') }}</span>
+              <input
+                type="text"
+                maxlength="6"
+                class="arkime-input-control"
+                v-model="totpVerifyCode"
+                :placeholder="$t('settings.totp.codePlaceholder')"
+                @keyup.enter="confirmTotpSetup">
+              <v-btn
+                color="success"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :disabled="!totpVerifyCode || totpVerifyCode.length !== 6"
+                @click="confirmTotpSetup">
+                {{ $t('settings.totp.verify') }}
+              </v-btn>
+            </div>
+            <span
+              v-if="totpError"
+              class="small text-danger d-block mt-2">
+              <v-icon icon="mdi-alert" />&nbsp;
+              {{ totpError }}
+            </span>
+          </div>
+
+          <!-- TOTP Disable Confirmation -->
+          <div
+            v-if="showTotpDisable"
+            class="mb-3">
+            <div
+              class="arkime-input-group"
+              style="width: 400px;">
+              <span class="arkime-input-label">{{ $t('settings.totp.confirmDisable') }}</span>
+              <input
+                type="text"
+                maxlength="6"
+                class="arkime-input-control"
+                v-model="totpDisableCode"
+                :placeholder="$t('settings.totp.codePlaceholder')"
+                @keyup.enter="disableTotp">
+              <v-btn
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :disabled="!totpDisableCode || totpDisableCode.length !== 6"
+                @click="disableTotp">
+                {{ $t('settings.totp.confirmUnenroll') }}
+              </v-btn>
+            </div>
+            <v-btn
+              color="grey"
+              variant="flat"
+              size="large"
+              class="mt-2"
+              @click="showTotpDisable = false; totpDisableCode = ''">
+              {{ $t('common.cancel') }}
+            </v-btn>
+            <span
+              v-if="totpError"
+              class="small text-danger d-block mt-2">
+              <v-icon icon="mdi-alert" />&nbsp;
+              {{ totpError }}
+            </span>
+          </div>
+        </form> <!-- /two-factor settings -->
 
         <!-- notifiers settings -->
         <Notifiers
@@ -1513,6 +1278,12 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
           help-intl-id="settings.notifiers.helpViewer" />
+
+        <!-- banner settings -->
+        <BannerSettings
+          id="banner"
+          v-if="visibleTab === 'banner'"
+          v-has-role="{user:user,roles:'arkimeAdmin'}" />
 
         <!-- shortcut settings -->
         <Shortcuts
@@ -1536,8 +1307,8 @@ SPDX-License-Identifier: Apache-2.0
           :user-id="userId"
           @display-message="displayMessage"
           v-if="visibleTab === 'cron' && !multiviewer" />
-      </div>
-    </div> <!-- /content -->
+      </v-col>
+    </v-row> <!-- /content -->
   </div> <!-- /settings content -->
 </template>
 
@@ -1552,11 +1323,13 @@ import customCols from '../sessions/customCols.json';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
-import ColorPicker from '../utils/ColorPicker.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ThemePicker from '@common/ThemePicker.vue';
+import { THEMES } from '@common/themes/manifest.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shortcuts from './Shortcuts.vue';
+import BannerSettings from '@common/BannerSettings.vue';
 import Views from './Views.vue';
 
 let clockInterval;
@@ -1573,11 +1346,11 @@ export default {
     ArkimeError,
     ArkimeLoading,
     ArkimeFieldTypeahead,
-    ColorPicker,
-    ArkimePaging,
+    ThemePicker,
     PeriodicQueries,
     Shortcuts,
     Notifiers,
+    BannerSettings,
     Views
   },
   data: function () {
@@ -1618,16 +1391,7 @@ export default {
       defaultSpiviewConfig,
       // theme settings vars
       watching: 'assets/watching.gif',
-      themeDisplays: [
-        { name: 'Arkime Light', class: 'arkime-light-theme' },
-        { name: 'Arkime Dark', class: 'arkime-dark-theme' },
-        { name: 'Purp-purp', class: 'purp-theme' },
-        { name: 'Blue', class: 'blue-theme' },
-        { name: 'Green', class: 'green-theme' },
-        { name: 'Cotton Candy', class: 'cotton-candy-theme' },
-        { name: 'Green on Black', class: 'dark-2-theme' },
-        { name: 'Dark Blue', class: 'dark-3-theme' }
-      ],
+      themes: THEMES, // from common/vueapp/themes/manifest.js
       logos: [
         { name: 'Arkime Light', location: 'assets/Arkime_Logo_Mark_White.png' },
         { name: 'Arkime Dark', location: 'assets/Arkime_Logo_Mark_Black.png' },
@@ -1638,7 +1402,6 @@ export default {
         { name: 'Arkime Circle Mint', location: 'assets/Arkime_Icon_ColorMint.png' },
         { name: 'Arkime Circle Blue', location: 'assets/Arkime_Icon_ColorBlue.png' }
       ],
-      creatingCustom: false,
       displayHelp: true,
       // password settings vars
       currentPassword: '',
@@ -1655,12 +1418,44 @@ export default {
       totpError: '',
       showTotpDisable: false,
       multiviewer: this.$constants.MULTIVIEWER,
-      hasUsersES: this.$constants.HASUSERSES
+      hasUsersES: this.$constants.HASUSERSES,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    // Vuetify v-alert accepts: success | info | warning | error.
+    // Map Bootstrap-flavored"danger" → Vuetify"error".
+    vuetifyMsgType: function () {
+      return this.msgType === 'danger' ? 'error' : (this.msgType || 'success');
+    },
+    /* The id that ThemePicker should show as selected. Normalizes
+       legacy '...-theme' suffix strings to bare manifest ids; falls
+       back to the manifest default for unknown values. */
+    activeThemeId: function () {
+      // Prefer the v7 key; fall back to the legacy key for users who
+      // haven't yet had applySavedTheme() promote their preference.
+      const raw = (this.settings && (this.settings.vuetifyTheme || this.settings.theme)) || '';
+      if (raw.startsWith('custom1')) { return 'custom1'; }
+      return raw.replace(/-theme$/, '') || 'arkime-light';
     },
     sortableColumns: function () {
       return this.columns.filter(column => !column.unsortable);
@@ -1689,17 +1484,17 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts') {
+        tab === 'spiview' || tab === 'notifiers' || tab === 'banner' || tab === 'shortcuts' ||
+        tab === 'totp') {
         this.visibleTab = tab;
       }
 
-      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer)) {
+      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer) ||
+        (tab === 'totp' && this.multiviewer && !this.hasUsersES)) {
         // multiviewer user can't change password or configure periodic queries
         this.openView('general');
       }
     }
-
-    this.getThemeColors();
 
     UserService.getCurrent().then((response) => {
       this.displayName = response.userId;
@@ -1792,7 +1587,7 @@ export default {
     },
     resetSettings: function () {
       // Choosing to skip reset of theme. UserService will save state to store
-      UserService.resetSettings(this.userId, this.settings.theme).then((response) => {
+      UserService.resetSettings(this.userId, this.settings.vuetifyTheme || this.settings.theme).then((response) => {
         // display success message to user
         this.displayMessage({ msg: response.text });
         this.getSettings(false);
@@ -1938,61 +1733,39 @@ export default {
     },
     /* THEMES ------------------------------------------ */
     setTheme: function () {
-      // default to default theme if the user has not set a theme
-      if (!this.settings.theme) { this.settings.theme = 'arkime-light-theme'; }
-      if (this.settings.theme.startsWith('custom')) {
-        this.creatingCustom = true;
+      // Default to the arkime-light theme if the user has not set one.
+      // Prefer the v7 key; if the user only has a legacy `theme` value
+      // (e.g. they've never set anything in v7), seed the v7 key from
+      // it -- normalizing any legacy '...-theme' suffix. We DO NOT
+      // mutate settings.theme so legacy arkime keeps reading it intact.
+      if (!this.settings.vuetifyTheme) {
+        const legacy = typeof this.settings.theme === 'string'
+          ? this.settings.theme.replace(/-theme$/, '')
+          : '';
+        this.settings.vuetifyTheme = legacy || 'arkime-light';
       }
       if (!this.settings.logo) {
         this.settings.logo = 'assets/Arkime_Logo_Mark_White.png';
       }
     },
-    /* changes the ui theme (picked from existing themes) */
-    changeTheme: function (newTheme) {
-      document.body.className = newTheme;
-      this.getThemeColors();
+    changeTheme: function (newThemeId) {
+      this.settings.vuetifyTheme = newThemeId;
+      this.$vuetify.theme.change(newThemeId);
       this.update();
     },
-    /* changes a color value of a custom theme and applies the theme */
-    changeColor: function (newColor) {
-      if (newColor) {
-        this[newColor.name] = newColor.value;
+    onCustomThemeChange: function (newCustomTheme) {
+      if (!newCustomTheme || typeof newCustomTheme.colors !== 'object' || !newCustomTheme.colors) return;
+      const safe = {
+        dark: !!newCustomTheme.dark,
+        colors: { ...newCustomTheme.colors }
+      };
+      registerVuetifyTheme(this.$vuetify, 'custom1', safe);
+      this.settings.vuetifyCustomTheme = safe;
+      if (this.settings.vuetifyTheme !== 'custom1') {
+        this.settings.vuetifyTheme = 'custom1';
+        this.$vuetify.theme.change('custom1');
       }
-
-      document.body.className = 'custom-theme';
-
-      this.setThemeString();
-
-      this.settings.theme = `custom1:${this.themeString}`;
-
-      this.update(true);
-    },
-    updateThemeString: function () {
-      const colors = this.themeString.split(',');
-
-      this.background = colors[0];
-      this.foreground = colors[1];
-      this.foregroundAccent = colors[2];
-
-      this.primary = colors[3];
-      this.primaryLightest = colors[4];
-
-      this.secondary = colors[5];
-      this.secondaryLightest = colors[6];
-
-      this.tertiary = colors[7];
-      this.tertiaryLightest = colors[8];
-
-      this.quaternary = colors[9];
-      this.quaternaryLightest = colors[10];
-
-      this.water = colors[11];
-      this.land = colors[12];
-
-      this.src = colors[13];
-      this.dst = colors[14];
-
-      this.changeColor();
+      this.update();
     },
     changeLogo: function (newLogoLocation) {
       this.settings.logo = newLogoLocation;
@@ -2128,37 +1901,6 @@ export default {
     },
 
     /* helper functions ---------------------------------------------------- */
-    /* retrieves the theme colors from the document body's property values */
-    getThemeColors: function () {
-      const styles = window.getComputedStyle(document.body);
-
-      this.background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-      this.foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
-      this.foregroundAccent = styles.getPropertyValue('--color-foreground-accent').trim();
-
-      this.primary = styles.getPropertyValue('--color-primary').trim();
-      this.primaryLightest = styles.getPropertyValue('--color-primary-lightest').trim();
-
-      this.secondary = styles.getPropertyValue('--color-secondary').trim();
-      this.secondaryLightest = styles.getPropertyValue('--color-secondary-lightest').trim();
-
-      this.tertiary = styles.getPropertyValue('--color-tertiary').trim();
-      this.tertiaryLightest = styles.getPropertyValue('--color-tertiary-lightest').trim();
-
-      this.quaternary = styles.getPropertyValue('--color-quaternary').trim();
-      this.quaternaryLightest = styles.getPropertyValue('--color-quaternary-lightest').trim();
-
-      this.water = styles.getPropertyValue('--color-water').trim();
-      this.land = styles.getPropertyValue('--color-land').trim() || this.primary;
-
-      this.src = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-      this.dst = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-
-      this.setThemeString();
-    },
-    setThemeString: function () {
-      this.themeString = `${this.background},${this.foreground},${this.foregroundAccent},${this.primary},${this.primaryLightest},${this.secondary},${this.secondaryLightest},${this.tertiary},${this.tertiaryLightest},${this.quaternary},${this.quaternaryLightest},${this.water},${this.land},${this.src},${this.dst}`;
-    },
     /* retrieves the specified user's settings */
     getSettings: function (initLoad) {
       UserService.getSettings(this.userId).then((response) => {
@@ -2182,7 +1924,7 @@ export default {
           this.settings.showTimestamps = 'last';
         }
         if (!response.manualQuery || response.manualQuery === 'last') {
-          this.settings.manualQuery = false;
+          this.settings.manualQuery = 'false';
         }
 
         this.setupFields().then(() => {
@@ -2341,10 +2083,18 @@ export default {
 
 <style>
 .settings-content {
-  margin-top: 90px;
   margin-left: 0;
   margin-right: 0;
   overflow-x: hidden;
+}
+
+/* Tighten the vertical tab strip. Vuetify's v-tab default sits at
+   ~48px (compact density: 36px) which feels loose for a side nav. */
+.settings-content .v-tab {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 0.85rem !important;
 }
 .settings-content .settings-right-panel {
   overflow-x: auto;
@@ -2364,16 +2114,6 @@ export default {
   cursor: pointer;
 }
 
-/* fixed tab buttons */
-.settings-page div.nav-pills {
-  position: fixed;
-}
-
-.settings-page .nav-separator {
-  width: 100%;
-  border-top: 1px solid var(--color-gray);
-}
-
 /* make sure the form is taller than the nav pills */
 .settings-page form:not(.b-dropdown-form) {
   min-height: 280px;
@@ -2387,8 +2127,8 @@ export default {
 /* apply theme color to notifier cards */
 .card {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
-  background-color: var(--color-gray-lighter);
-  border: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
 }
 
 /* theme displays ----------------- */
@@ -2418,904 +2158,4 @@ export default {
   font-weight: bolder;
 }
 
-.settings-page .theme-display {
-  overflow: hidden;
-  border-radius: 6px;
-  padding-bottom: 20px;
-}
-
-.settings-page .navbar {
-  min-height: 20px;
-  height: 36px;
-  border-radius: 6px 6px 0 0;
-  z-index: 1;
-}
-
-.settings-page .navbar .arkime-logo {
-  top: 0;
-  left: 20px;
-  height: 36px;
-  position: absolute;
-}
-/* icon logos (logo in circle) are wider */
-.settings-page .navbar .arkime-logo[src*="Icon"] {
-  left: 8px;
-}
-
-.settings-page .navbar .nav {
-  position: absolute;
-  left: 50px
-}
-
-.settings-page .navbar .navbar-nav {
-  margin-right: -8px;
-}
-
-.settings-page .navbar .navbar-nav .health-green {
-  color: #00aa00;
-}
-
-.settings-page .navbar-dark a {
-  padding: 6px;
-  color: #FFFFFF;
-}
-
-.settings-page .display-sub-navbar {
-  height: 40px;
-  position: relative;
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-.settings-page .display-sub-navbar .input-group {
-  padding-top: 4px;
-}
-
-.settings-page .display-sub-navbar .display-sub-navbar-buttons {
-  margin-top: 4px;
-  margin-right: 4px;
-  margin-left: -10px;
-}
-
-.settings-page .display-sub-navbar .text-theme-accent {
-  display: inline-block;
-  margin-left: -20px;
-  padding-top: 11px;
-  font-size: 12px;
-}
-
-.settings-page .display-sub-sub-navbar {
-  border-radius: 0 0 6px 6px;
-  margin-top: -6px;
-  padding-top: 6px;
-}
-
-/* arkime light (default) */
-.settings-page .arkime-light-theme .navbar {
-  background-color: #212121;
-  border-color: #111111;
-}
-
-.settings-page .arkime-light-theme .navbar-dark a:hover,
-.settings-page .arkime-light-theme .navbar-dark a.active {
-  background-color: #303030;
-}
-
-.settings-page .arkime-light-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .arkime-light-theme input.form-control,
-.settings-page .arkime-light-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
-}
-
-.settings-page .arkime-light-theme .display-sub-navbar {
-  background-color: #A4C2D6;
-}
-
-.settings-page .arkime-light-theme .display-sub-sub-navbar {
-  background-color: #E6F3EB;
-}
-
-.settings-page .arkime-light-theme .display-sub-navbar .text-theme-accent {
-  color: #004C83;
-}
-
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #303030;
-  border-color: #212121;
-}
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #004C83;
-  border-color: #003A64;
-}
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #66B689;
-  border-color: #52AC79;
-}
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #2F7D86;
-  border-color: #27686F;
-}
-
-.settings-page .arkime-light-theme .dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .arkime-light-theme .dropdown-menu .dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .arkime-light-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .arkime-light-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .arkime-light-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #303030;
-  color: #FFFFFF;
-}
-
-.settings-page .arkime-light-theme .field {
-  color: #004C83;
-}
-.settings-page .arkime-light-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .arkime-light-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* arkime dark */
-.settings-page .arkime-dark-theme .navbar {
-  background-color: #9E9E9E;
-  border-color: #8E8E8E;
-}
-
-.settings-page .arkime-dark-theme .navbar-dark a:hover,
-.settings-page .arkime-dark-theme .navbar-dark a.active {
-  background-color: #ADADAD;
-}
-
-.settings-page .arkime-dark-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #FFFFFF !important;
-  background-color: #303030 !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .arkime-dark-theme .display-sub-navbar {
-  background-color: #003B66;
-}
-
-.settings-page .arkime-dark-theme .display-sub-sub-navbar {
-  background-color: #237543;
-}
-
-.settings-page .arkime-dark-theme .display-sub-navbar .text-theme-accent {
-  color: #D1E9DC;
-}
-
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #ADADAD;
-  border-color: #9E9E9E;
-}
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #80A9C7;
-  border-color: #6B9BBE;
-}
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
-}
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #66B689;
-  border-color: #52AC79;
-}
-
-.settings-page .arkime-dark-theme .dropdown-menu {
-  background-color: #303030;
-  border-color: #555555;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item {
-  color: #FFFFFF;
-  padding: 2px 8px;
-}
-.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #555555;
-  color: #FFFFFF;
-}
-.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #555555;
-  color: #FFFFFF;
-}
-.settings-page .arkime-dark-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #ADADAD;
-  color: #303030;
-}
-
-.settings-page .arkime-dark-theme .field {
-  color: #D1E9DC;
-}
-.settings-page .arkime-dark-theme .field:hover {
-  background-color: #303030;
-  border-color: #555555;
-}
-
-.settings-page .arkime-dark-theme .btn {
-  color: #FFFFFF !important;
-}
-
-.settings-page .arkime-dark-theme input.form-control {
-  color: #FFFFFF !important;
-  background-color: #222222 !important;
-}
-.settings-page .arkime-dark-theme input.form-control::placeholder {
-  color: #CCC !important;
-}
-
-/* purp */
-.settings-page .purp-theme .navbar {
-  background-color: #530763;
-  border-color: #360540;
-}
-
-.settings-page .purp-theme .navbar-dark a:hover,
-.settings-page .purp-theme .navbar-dark a.active {
-  background-color: #830b9c;
-}
-
-.settings-page .purp-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .purp-theme input.form-control,
-.settings-page .purp-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
-}
-
-.settings-page .purp-theme .display-sub-navbar {
-  background-color: #EDFCFF;
-}
-
-.settings-page .purp-theme .display-sub-sub-navbar {
-  background-color: #FFF7E5;
-}
-
-.settings-page .purp-theme .display-sub-navbar .text-theme-accent {
-  color: #76207d;
-}
-
-.settings-page .purp-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #830B9C;
-  border-color: #530763;
-}
-.settings-page .purp-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #1F1FA5;
-  border-color: #1A1A87;
-}
-.settings-page .purp-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
-}
-.settings-page .purp-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #ECB30A;
-  border-color: #CD9A09;
-}
-
-.settings-page .purp-theme .dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .purp-theme .dropdown-menu .dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .purp-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .purp-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .purp-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #830B9C;
-  color: #FFFFFF;
-}
-
-.settings-page .purp-theme .field {
-  color: #76207d;
-}
-.settings-page .purp-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .purp-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* blue */
-.settings-page .blue-theme .navbar {
-  background-color: #163254;
-  border-color: #000000;
-}
-
-.settings-page .blue-theme .navbar-dark a:hover,
-.settings-page .blue-theme .navbar-dark a.active {
-  background-color: #214b78;
-}
-
-.settings-page .blue-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .blue-theme input.form-control,
-.settings-page .blue-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
-}
-
-.settings-page .blue-theme .display-sub-navbar {
-  background-color: #DBECE7;
-}
-
-.settings-page .blue-theme .display-sub-sub-navbar {
-  background-color: #FFF7E5;
-}
-
-.settings-page .blue-theme .display-sub-navbar .text-theme-accent {
-  color: #9A4E93;
-}
-
-.settings-page .blue-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #214B78;
-  border-color: #530763;
-}
-.settings-page .blue-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #3D7B7E;
-  border-color: #306264;
-}
-.settings-page .blue-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #42B7C5;
-  border-color: #33919b;
-}
-.settings-page .blue-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #ECB30A;
-  border-color: #CD9A09;
-}
-
-.settings-page .blue-theme .dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .blue-theme .dropdown-menu .dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .blue-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .blue-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .blue-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #214B78;
-  color: #FFFFFF;
-}
-
-.settings-page .green-theme .field {
-  color: #9A4E93;
-}
-.settings-page .green-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .blue-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* green */
-.settings-page .green-theme .navbar {
-  background-color: #2A6E3d;
-  border-color: #235A32;
-}
-
-.settings-page .green-theme .navbar-dark a:hover,
-.settings-page .green-theme .navbar-dark a.active {
-  background-color: #2a7847;
-}
-
-.settings-page .green-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .green-theme input.form-control,
-.settings-page .green-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
-}
-
-.settings-page .green-theme .display-sub-navbar {
-  background-color: #DBECE7;
-}
-
-.settings-page .green-theme .display-sub-sub-navbar {
-  background-color: #FDFFE2;
-}
-
-.settings-page .green-theme .display-sub-navbar .text-theme-accent {
-  color: #38738d;
-}
-
-.settings-page .green-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #2A7847;
-  border-color: #2A6E3d;
-}
-.settings-page .green-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #3D7B7E;
-  border-color: #306264;
-}
-.settings-page .green-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #91C563;
-  border-color: #7EAA57;
-}
-.settings-page .green-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #BECF14;
-  border-color: #ADBC12;
-}
-
-.settings-page .green-theme .dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .green-theme .dropdown-menu .dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .green-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .green-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .green-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #2A7847;
-  color: #FFFFFF;
-}
-
-.settings-page .blue-theme .field {
-  color: #38738d;
-}
-.settings-page .blue-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .green-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* cotton candy */
-.settings-page .cotton-candy-theme .navbar {
-  background-color: #B0346D;
-  border-color: #9B335A;
-}
-
-.settings-page .cotton-candy-theme .navbar-dark a:hover,
-.settings-page .cotton-candy-theme .navbar-dark a.active {
-  background-color: #c43d75;
-}
-
-.settings-page .cotton-candy-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .cotton-candy-theme input.form-control,
-.settings-page .cotton-candy-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
-}
-
-.settings-page .cotton-candy-theme .display-sub-navbar {
-  background-color: #D7F1FF;
-}
-
-.settings-page .cotton-candy-theme .display-sub-sub-navbar {
-  background-color: #FFF8DD;
-}
-
-.settings-page .cotton-candy-theme .display-sub-navbar .text-theme-accent {
-  color: #9A4E93;
-}
-
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #C43D75;
-  border-color: #B0346D;
-}
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #3CAED2;
-  border-color: #389BBE;
-}
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
-}
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #F39C12;
-  border-color: #D78A10;
-}
-
-.settings-page .cotton-candy-theme .dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .cotton-candy-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #C43D75;
-  color: #FFFFFF;
-}
-
-.settings-page .cotton-candy-theme .field {
-  color: #9A4E93;
-}
-.settings-page .cotton-candy-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .cotton-candy-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* green on black */
-.settings-page .dark-2-theme .navbar {
-  background-color: #363A7D;
-  border-color: #2F2F5F;
-}
-
-.settings-page .dark-2-theme .navbar-dark a:hover,
-.settings-page .dark-2-theme .navbar-dark a.active {
-  background-color: #444a9b;
-}
-
-.settings-page .dark-2-theme .display-sub-navbar {
-  background-color: #0F2237;
-}
-
-.settings-page .dark-2-theme .display-sub-sub-navbar {
-  background-color: #191919;
-}
-
-.settings-page .dark-2-theme .display-sub-navbar .text-theme-accent {
-  color: #00CA16;
-}
-
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #444A9B;
-  border-color: #363A7D;
-}
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #2E5D9B;
-  border-color: #264B7E;
-}
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #00BB20;
-  border-color: #009D1D;
-}
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #686868;
-  border-color: #4B4B4B;
-}
-
-.settings-page .dark-2-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #C7C7C7 !important;
-  background-color: #222222 !important;
-  border-color: #AAAAAA !important;
-}
-
-.settings-page .dark-2-theme .dropdown-menu {
-  background-color: #222222;
-  border-color: #555555;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item {
-  color: #C7C7C7;
-  padding: 2px 8px;
-}
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #555555;
-  color: #C7C7C7;
-}
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #222222;
-  color: #C7C7C7;
-}
-.settings-page .dark-2-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #444A9B;
-  color: #333333;
-}
-
-.settings-page .dark-2-theme .field {
-  color: #00CA16;
-}
-.settings-page .dark-2-theme .field:hover {
-  background-color: #222222;
-  border-color: #555555;
-}
-
-.settings-page .dark-2-theme .btn {
-  color: #FFFFFF !important;
-}
-
-.settings-page .dark-2-theme input.form-control {
-  color: #FFFFFF !important;
-  background-color: #111111 !important;
-}
-.settings-page .dark-2-theme input.form-control::placeholder {
-  color: #CCC !important;
-}
-
-/* Dark Blue */
-.settings-page .dark-3-theme .navbar {
-  background-color: #9F9F9F;
-  border-color: #C3C3C3;
-}
-
-.settings-page .dark-3-theme .navbar-dark a:hover,
-.settings-page .dark-3-theme .navbar-dark a.active {
-  background-color: #8A8A8A;
-}
-
-.settings-page .dark-3-theme .navbar-dark li.active a {
-  color: #FFFFFF;
-  background-color: #C3C3C3 !important;
-}
-
-.settings-page .dark-3-theme .display-sub-navbar {
-  background-color: #124B47;
-}
-
-.settings-page .dark-3-theme .display-sub-sub-navbar {
-  background-color: #460C3A;
-}
-.settings-page .dark-3-theme .display-sub-navbar .text-theme-accent{
-  color: #A6A8E2;
-}
-
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #8A8A8A;
-  border-color: #9F9F9F;
-}
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #2AA198;
-  border-color: #23837B;
-}
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #268BD2;
-  border-color: #1F76B4;
-}
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #D33682;
-  border-color: #B42C72;
-}
-
-.settings-page .dark-3-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #ADC1C3 !important;
-  background-color: #002833 !important;
-  border-color: #AAAAAA !important;
-}
-
-.settings-page .dark-3-theme .dropdown-menu {
-  background-color: #002833;
-  border-color: #555555;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item {
-  color: #ADC1C3;
-  padding: 2px 8px;
-}
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item:hover {
-  background-color: #555555;
-  color: #ADC1C3;
-}
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item:focus {
-  background-color: #002833;
-  color: #ADC1C3;
-}
-.settings-page .dark-3-theme .dropdown-menu li.active .dropdown-item {
-  background-color: #8A8A8A;
-  color: #333333;
-}
-
-.settings-page .dark-3-theme .field {
-  color: #A6A8E2;
-}
-.settings-page .dark-3-theme .field:hover {
-  background-color: #002833;
-  border-color: #555555;
-}
-
-.settings-page .dark-3-theme .btn {
-  color: #FFFFFF !important;
-}
-
-.settings-page .dark-3-theme input.form-control {
-  color: #EEEEEE !important;
-  background-color: #222222 !important;
-}
-.settings-page .dark-3-theme input.form-control::placeholder {
-  color: #CCC !important;
-}
-
-/* Custom */
-.settings-page .custom-theme .theme-display {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-
-.settings-page .custom-theme .navbar {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-darker);
-}
-.settings-page .custom-theme .navbar a.nav-item {
-  color: var(--color-button);
-}
-.settings-page .custom-theme .navbar a.nav-item:hover,
-.settings-page .custom-theme .navbar a.nav-item.active {
-  background-color: var(--color-primary);
-}
-
-.settings-page .custom-theme .display-sub-navbar {
-  background-color: var(--color-secondary-lightest);
-}
-
-.settings-page .custom-theme .display-sub-sub-navbar {
-  border-radius: 0;
-  height: 46px;
-  background-color: var(--color-quaternary-lightest);
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-
-.settings-page .custom-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: var(--color-primary);
-  border-color: var(--color-primary-dark);
-}
-.settings-page .custom-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: var(--color-secondary);
-  border-color: var(--color-secondary-dark);
-}
-.settings-page .custom-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: var(--color-tertiary);
-  border-color: var(--color-tertiary-dark);
-}
-.settings-page .custom-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: var(--color-quaternary);
-  border-color: var(--color-quaternary-dark);
-}
-
-.settings-page .custom-theme .dropdown-menu {
-  color: var(--color-foreground);
-  background-color: var(--color-background, #FFFFFF);
-  border-color: var(--color-gray-light);
-}
-
-.settings-page .custom-theme .field {
-  color: var(--color-foreground-accent);
-}
-.settings-page .custom-theme .field:hover {
-  z-index: 4;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-light);
-}
-
-.settings-page .custom-theme .session-detail-ts {
-  color: var(--color-foreground-accent);
-  padding: 0 4px;
-}
-.settings-page .custom-theme .sessionsrc > pre {
-  color: var(--color-src, #CA0404);
-  padding: 2px 4px;
-}
-.settings-page .custom-theme .sessiondst > pre {
-  color: var(--color-dst, #0000FF);
-  padding: 2px 4px;
-}
 </style>

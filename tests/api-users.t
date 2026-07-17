@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 266;
+use Test::More tests => 297;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -189,16 +189,39 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
     is($json->{success}, 1, "restore logo setting");
 
-# user css - no theme returns 404
-    my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
-    is($cssResponse->code, 404, "user css returns 404 without theme");
+# update user settings - vuetifyTheme is the shared cross-app theme key (string)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyTheme":"cotton-candy"}', $test1Token);
+    is($json->{success}, 1, "update vuetifyTheme setting");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{vuetifyTheme}, "cotton-candy", "vuetifyTheme string stored");
 
-# user css - with theme returns CSS
-    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"theme":"custom-theme:#000000,#FFFFFF,#CCCCCC,#007bff,#cce5ff,#28a745,#d4edda,#ffc107,#fff3cd,#dc3545,#f8d7da,#17a2b8,#d1ecf1,#6c757d,#e2e3e5"}', $test1Token);
-    is($json->{success}, 1, "update user settings with theme");
-    $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
-    is($cssResponse->code, 200, "user css returns 200 with theme");
-    like($cssResponse->content, qr/color/, "user css contains color styles");
+# update user settings - vuetifyCustomTheme is on the object allowlist, so its object value is kept
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":true,"colors":{"primary":"#ff00ff"}}}', $test1Token);
+    is($json->{success}, 1, "update vuetifyCustomTheme object setting");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#ff00ff", "vuetifyCustomTheme object stored");
+    ok($json->{vuetifyCustomTheme}->{dark}, "vuetifyCustomTheme dark flag stored");
+
+# update user settings - explicit null unsets the key (deleted, not stored as a literal null)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":null}', $test1Token);
+    is($json->{success}, 1, "unset vuetifyCustomTheme with null succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{vuetifyCustomTheme}, "vuetifyCustomTheme deleted by null, not stored as null");
+
+# update user settings - a key omitted from the body is preserved (partial save must not wipe siblings)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":false,"colors":{"primary":"#abcdef"}}}', $test1Token);
+    is($json->{success}, 1, "re-set vuetifyCustomTheme object");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyTheme":"arkime-dark"}', $test1Token);
+    is($json->{success}, 1, "partial update of vuetifyTheme only");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{vuetifyTheme}, "arkime-dark", "vuetifyTheme updated by partial save");
+    eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#abcdef", "omitted vuetifyCustomTheme preserved by partial save");
+
+# update user settings - keys not on the allowlist are silently dropped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"notARealSetting":"nope"}', $test1Token);
+    is($json->{success}, 1, "update with unknown key succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{notARealSetting}, "unknown setting key was dropped");
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
@@ -460,6 +483,72 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
+
+# Help notes
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge", '{"noteId":"sessions"}', $token2);
+    ok(!$info->{success}, "can't dismiss help note for another user");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"BAD ID!"}', $test1Token);
+    is($info->{success}, 0, "invalid note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "invalid note id i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":123}', $test1Token);
+    is($info->{success}, 0, "numeric note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "numeric note id i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"sessions"}', $test1Token);
+    ok($info->{success}, "dismiss help note");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions"]'), "dismissed help notes contains sessions");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"sessions"}', $test1Token);
+    ok($info->{success}, "dismiss help note repeat");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions"]'), "dismissed help notes deduped");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"v7"}', $test1Token);
+    ok($info->{success}, "dismiss help note with digit id");
+
+    # users schema has the field (db version 87)
+    $info = esGet("/tests_users_v30/_mapping");
+    is($info->{tests_users_v30}->{mappings}->{properties}->{dismissedHelpNotes}->{type}, "keyword", "users mapping has dismissedHelpNotes keyword");
+
+    # note id length boundary
+    my $noteId32 = 'a' x 32;
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", qq({"noteId":"$noteId32"}), $test1Token);
+    ok($info->{success}, "32 char note id accepted");
+
+    my $noteId33 = 'a' x 33;
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", qq({"noteId":"$noteId33"}), $test1Token);
+    is($info->{success}, 0, "33 char note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "33 char note id i18n");
+
+    # noteId wins when both noteId and msgNum are sent
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"msgNum":1,"noteId":"both"}', $test1Token);
+    is($info->{i18n}, "api.users.dismissedNote", "noteId takes precedence over msgNum");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{welcomeMsgNum}, 2, "msgNum ignored when noteId present");
+
+    # fill to the 50 entry cap (array already has sessions, v7, a x32, both)
+    for my $i (1..46) {
+        viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", qq({"noteId":"fill$i"}), $test1Token);
+    }
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    is(scalar @{$info->{dismissedHelpNotes}}, 50, "dismissed help notes at cap");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"overflow"}', $test1Token);
+    is($info->{success}, 0, "note dismissal rejected at cap");
+    is($info->{i18n}, "api.users.tooManyDismissedNotes", "too many dismissed notes i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"all"}', $test1Token);
+    ok($info->{success}, "dismiss all bypasses the cap");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    is(scalar @{$info->{dismissedHelpNotes}}, 51, "all added past the cap");
+    ok((grep { $_ eq "all" } @{$info->{dismissedHelpNotes}}), "dismissed help notes contains all");
 
 # user time limit
     $json = viewerPostToken("/api/user/sac-test2", '{"timeLimit":"72", "roles": ["arkimeUser"]}', $token);

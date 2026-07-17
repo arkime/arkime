@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
+  <div class="arkime-container-fluid">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -11,13 +11,15 @@ SPDX-License-Identifier: Apache-2.0
       :message="error" />
 
     <div v-show="!error">
-      <span
+      <v-icon
         id="captureGraphHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
-        <BTooltip target="captureGraphHelp">
+        icon="mdi-help-circle-outline"
+        size="small"
+        class="cursor-help mt-2 float-right">
+        <v-tooltip activator="#captureGraphHelp">
           <span v-html="$t('stats.cgraphs.helpTipHtml')" />
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
 
       <arkime-paging
         v-if="stats"
@@ -36,7 +38,10 @@ SPDX-License-Identifier: Apache-2.0
         class="text-center"
         v-if="!stats || !stats.recordsFiltered">
         <h3>
-          <span class="fa fa-folder-open fa-2x text-muted" />
+          <v-icon
+            icon="mdi-folder-open"
+            size="large"
+            class="text-medium-emphasis" />
         </h3>
         <h5 class="lead">
           {{ $t( cluster ? 'stats.cgraphs.noDataCluster' : 'stats.cgraphs.noData' ) }}
@@ -48,8 +53,9 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import '../../cubismoverrides.css';
+import { themedColor } from '@common/themes/themedColor.js';
 import Utils from '../utils/utils';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService.js';
@@ -115,15 +121,14 @@ export default {
   computed: {
     colors: function () {
       // build colors array from css variables
-      const styles = window.getComputedStyle(document.body);
-      const primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      const primaryLight = styles.getPropertyValue('--color-primary').trim();
-      const primary = styles.getPropertyValue('--color-primary-dark').trim();
-      const primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      const secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      const secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      const secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      const secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      const primaryLighter = themedColor('primary-light');
+      const primaryLight = themedColor('primary');
+      const primary = themedColor('primary-dark');
+      const primaryDark = themedColor('primary-darker');
+      const secondaryLighter = themedColor('tertiary-light');
+      const secondaryLight = themedColor('tertiary');
+      const secondary = themedColor('tertiary-dark');
+      const secondaryDark = themedColor('tertiary-darker');
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
     },
     loading: {

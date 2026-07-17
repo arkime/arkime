@@ -35,6 +35,17 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+7.0.0 2026/09/xx
+## Breaking
+  - offlineFilenameRegex default now also matches .pcapng files (previously .pcap/.cap only)
+  - Capture arkime_packet_set_dltsnap() was replaced by arkime_packet_set_interface(), so custom readers/plugins must be updated and rebuilt
+## Capture/Viewer
+  - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
+## Capture
+  - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
+  - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
+
+
 6.6.1 2026/08/xx
 ## All
   - #4128 Add changePasswordSecret.js to re-encrypt all users' passwords and cont3xt keys after changing the passwordSecret

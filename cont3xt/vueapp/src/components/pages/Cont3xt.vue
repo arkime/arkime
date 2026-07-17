@@ -157,7 +157,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-muted mr-2" />
+              class="text-medium-emphasis mr-2" />
             <strong class="text-warning cont3xt-welcome-text mr-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-muted ml-2" />
+              class="text-medium-emphasis ml-2" />
           </div>
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid">
@@ -182,11 +182,11 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h3>
                     <v-icon
-                      class="text-muted"
+                      class="text-medium-emphasis"
                       icon="mdi-pine-tree-variant"
                       size="x-large" />
                   </h3>
-                  <h1 class="display-4">
+                  <h1>
                     Indicator Result Tree
                   </h1>
                   <p class="lead">
@@ -211,9 +211,9 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       size="x-large"
                       icon="mdi-card-account-details"
-                      class="text-muted" />
+                      class="text-medium-emphasis" />
                   </h3>
-                  <h1 class="display-4">
+                  <h1>
                     Indicator Card Detail
                   </h1>
                   <p class="lead">
@@ -230,9 +230,9 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       size="x-large"
                       icon="mdi-link-variant"
-                      class="text-muted" />
+                      class="text-medium-emphasis" />
                   </h3>
-                  <h1 class="display-4">
+                  <h1>
                     Link Groups
                   </h1>
                   <p class="lead">
@@ -257,29 +257,26 @@ SPDX-License-Identifier: Apache-2.0
           v-if="error.length || getIntegrationsError.length"
           class="w-100 d-flex flex-column mt-2 mx-3">
           <!-- search error -->
-          <div
+          <v-alert
             v-if="error.length"
-            class="alert alert-warning">
-            <v-icon icon="mdi-alert" />&nbsp;
+            type="warning"
+            variant="tonal"
+            density="compact"
+            closable
+            @click:close="error = ''">
             {{ error }}
-            <button
-              tabindex="-1"
-              type="button"
-              @click="error = ''"
-              class="close cursor-pointer">
-              <span>&times;</span>
-            </button>
-          </div> <!-- /search error -->
+          </v-alert> <!-- /search error -->
 
           <!-- integration error -->
-          <div
+          <v-alert
             v-if="getIntegrationsError.length"
-            class="alert alert-danger">
-            <v-icon icon="mdi-alert" />&nbsp;
+            type="error"
+            variant="tonal"
+            density="compact">
             Error fetching integrations. Viewing data for integrations will not work!
             <br>
             {{ getIntegrationsError }}
-          </div> <!-- /integration error -->
+          </v-alert> <!-- /integration error -->
         </div>
         <!-- /errors -->
 
@@ -376,7 +373,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="small"
                 @click="toTop"
                 title="Go to top"
-                class="to-top-btn square-btn-sm"
+                class="to-top-btn\"
                 variant="text"
                 color="btn-link"
                 v-show="scrollPx > 100">
@@ -433,7 +430,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-select>
                     </div>
                     <v-btn
-                      class="mx-1 square-btn-sm"
+                      class="mx-1\"
                       v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
                       variant="outlined"
                       color="secondary"
@@ -448,7 +445,7 @@ SPDX-License-Identifier: Apache-2.0
                       tabindex="-1"
                       color="secondary"
                       variant="elevated"
-                      class="float-right square-btn-sm"
+                      class="float-right\"
                       @click="toggleLinkGroupsPanel"
                       v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
@@ -504,12 +501,12 @@ SPDX-License-Identifier: Apache-2.0
                     <!-- no link groups message -->
                     <span
                       v-else-if="hasLinkGroupWithItype"
-                      class="pa-1 text-muted">
+                      class="pa-1 text-medium-emphasis">
                       There are no Link Groups that match your search.
                     </span>
                     <span
                       v-else
-                      class="pa-1 text-muted">
+                      class="pa-1 text-medium-emphasis">
                       There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
                       <a
                         class="no-decoration"
@@ -1335,14 +1332,11 @@ export default {
   padding: 16px 16px 0 16px;
   margin-top: 50px !important;
 }
-body.dark {
-  background-color: #222;
-}
 
 .cont3xt-welcome .well {
   border-radius: 6px;
-  background-color: rgb(var(--v-theme-well));
-  border: 1px solid rgb(var(--v-theme-well-border));
+  background-color: rgb(var(--v-theme-surface-well));
+  border: 1px solid rgb(var(--v-theme-surface-well-border));
   overflow-x: hidden;
 }
 /* better text-wrapping on the welcome screen for browsers that support it */

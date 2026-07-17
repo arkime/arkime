@@ -52,12 +52,15 @@ export default {
 
     if (Array.isArray(fields)) {
       result = [...fields]; // shallow copy so we don't mutate data
-      result.unshift(ipDstPortField); // add at beginning for visibility
-      result.unshift(allIpField);
+      // skip a special field the list already defines — the built-in "All IP fields"
+      // (exp 'ip') collides with allIpField, dupe exps break the editor's multi-select
+      const exps = new Set(result.map(f => f.exp));
+      if (!exps.has(ipDstPortField.exp)) { result.unshift(ipDstPortField); } // add at beginning for visibility
+      if (!exps.has(allIpField.exp)) { result.unshift(allIpField); }
     } else {
       result = { ...fields }; // shallow copy so we don't mutate data
-      result[allIpField.exp] = allIpField;
-      result[ipDstPortField.exp] = ipDstPortField;
+      if (!(allIpField.exp in result)) { result[allIpField.exp] = allIpField; }
+      if (!(ipDstPortField.exp in result)) { result[ipDstPortField.exp] = ipDstPortField; }
     }
 
     return result;

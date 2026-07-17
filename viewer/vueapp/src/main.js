@@ -1,12 +1,12 @@
 import { createApp } from 'vue';
-import { createBootstrap } from 'bootstrap-vue-next';
+import { createVuetify } from 'vuetify/lib/framework.mjs';
+import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
 
 // css frameworks
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
+import 'vuetify/styles';
 
 // vue color picker styles
 import 'vue-color/style.css';
@@ -19,20 +19,22 @@ import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
 import { i18nValue, i18nBDD } from '@common/i18nHelpers.js';
+import { buildVuetifyThemes } from './theme.js';
 
 // common css
 import '../../../common/common.css';
-// bootstrap overrides
+// shared bridge classes (e.g. .arkime-input-group used across multiple
+// components in place of Bootstrap's .input-group). Lives in common/ so it
+// also reaches parliament + WISE which still consume common/vueapp/ files.
+import '../../../common/arkime-input-group.css';
+// shared navbar styles -- viewer is the source of truth for the
+// arkime-navbar look; every app imports this to stay in lockstep.
+import '@common/arkime-navbar.css';
+// arkime element + Vuetify-component bridge styles
 import './overrides.css';
-// themed css deps
-import './themes/purp.css';
-import './themes/blue.css';
-import './themes/green.css';
-import './themes/cotton-candy.css';
-import './themes/dark-2.css';
-import './themes/dark-3.css';
-import './themes/arkime-light.css';
-import './themes/arkime-dark.css';
+// Themes now live in common/vueapp/themes/manifest.js -- 10 Vuetify-native
+// themes (8 ports + 2 new v7) registered via buildVuetifyThemes() below.
+// The legacy per-theme CSS files in src/themes/*.css are gone.
 
 /**
  * Initialize the application with dynamically loaded locales
@@ -46,18 +48,31 @@ async function initializeApp() {
   app.use(store);
   app.use(router);
   app.use(i18n);
-  app.use(createBootstrap({
-    components: {
-      BTooltip: {
-        boundary: 'viewport',
-        teleportTo: 'body'
-      },
-      BDropdown: {
-        boundary: 'viewport',
-        teleportTo: 'body'
-      }
-    }
-  }));
+
+  // Icons: Material Design Icons (mdi) across all four apps.
+  const vuetify = createVuetify({
+    icons: {
+      defaultSet: 'mdi',
+      aliases: mdiAliases,
+      sets: { mdi: mdiSet }
+    },
+    defaults: {
+      VTextField: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },
+      VSelect: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },
+      VCheckbox: { density: 'compact', hideDetails: 'auto' },
+      VTooltip: { location: 'top', delay: 50, maxWidth: 400 },
+      VBtn: { density: 'compact', variant: 'flat' },
+      VDataTable: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
+      VDataTableServer: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
+      // tighter gutters everywhere — Vuetify's stock v-row uses 24px
+      // gutters which made the settings/PQ/hunt forms read airy compared
+      // to non-v-row pages (e.g. Views.vue). `dense` knocks that down to
+      // 8px which matches the rest of the app's density.
+      VRow: { dense: true }
+    },
+    theme: buildVuetifyThemes()
+  });
+  app.use(vuetify);
 
   app.directive('has-role', HasRole);
   app.directive('has-permission', HasPermission);
@@ -75,6 +90,7 @@ async function initializeApp() {
     PATH,
     MULTIVIEWER,
     HASUSERSES,
+    HASTSHARK,
     HUNTWARN,
     HUNTLIMIT,
     ANONYMOUS_MODE,

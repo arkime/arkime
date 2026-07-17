@@ -119,7 +119,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-alert> <!-- no template -->
     <!-- no data -->
     <template v-if="Object.keys(integrationData).length === 1 && integrationData._cont3xt.createTime">
-      <h5 class="display-4 text-center mt-4 mb-4 text-muted">
+      <h5 class="text-center mt-4 mb-4 text-medium-emphasis">
         <v-icon icon="mdi-folder-open" />
         <br>
         No data

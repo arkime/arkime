@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -35,59 +35,71 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
-            <b-dropdown
-              size="xs"
-              class="row-actions-btn d-inline"
-              v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
-              <b-dropdown-item
-                v-if="!item.item.nodeExcluded"
-                @click="exclude('name', item.item)">
-                {{ $t('stats.excludeNode') }}: {{ item.item.name }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-else
-                @click="include('name', item.item)">
-                {{ $t('stats.includeNode') }}: {{ item.item.name }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-if="!item.item.ipExcluded"
-                @click="exclude('ip', item.item)">
-                {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-else
-                @click="include('ip', item.item)">
-                {{ $t('stats.includeIp') }}: {{ item.item.ip }}
-              </b-dropdown-item>
-            </b-dropdown>
+            <span v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
+              <v-menu>
+                <template #activator="{ props: activatorProps }">
+                  <v-btn
+                    v-bind="activatorProps"
+                    variant="outlined"
+                    size="x-small"
+                    density="comfortable"
+                    icon
+                    class="row-actions-btn d-inline">
+                    <v-icon icon="mdi-menu-down" />
+                  </v-btn>
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    v-if="!item.item.nodeExcluded"
+                    @click="exclude('name', item.item)">
+                    {{ $t('stats.excludeNode') }}: {{ item.item.name }}
+                  </v-list-item>
+                  <v-list-item
+                    v-else
+                    @click="include('name', item.item)">
+                    {{ $t('stats.includeNode') }}: {{ item.item.name }}
+                  </v-list-item>
+                  <v-list-item
+                    v-if="!item.item.ipExcluded"
+                    @click="exclude('ip', item.item)">
+                    {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
+                  </v-list-item>
+                  <v-list-item
+                    v-else
+                    @click="include('ip', item.item)">
+                    {{ $t('stats.includeIp') }}: {{ item.item.ip }}
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </span>
             <span
-              class="node-badge badge bg-primary badge-pill ms-1"
+              class="node-badge ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
               <template v-if="item.item.isMaster">
                 <span :id="'mainMasterBadge' + item.item.name">
                   M
                 </span>
-                <BTooltip :target="'mainMasterBadge' + item.item.name">{{ $t('stats.esNodes.mainManaging') }}</BTooltip>
+                <v-tooltip :activator="`[id='mainMasterBadge${item.item.name}']`">{{ $t('stats.esNodes.mainManaging') }}</v-tooltip>
               </template>
               <template v-else>
                 <span :id="'masterBadge' + item.item.name">
                   m
                 </span>
-                <BTooltip :target="'masterBadge' + item.item.name">{{ $t('stats.esNodes.managing') }}</BTooltip>
+                <v-tooltip :activator="`[id='masterBadge${item.item.name}']`">{{ $t('stats.esNodes.managing') }}</v-tooltip>
               </template>
             </span>
             <span
-              class="node-badge badge bg-primary badge-pill ms-1"
+              class="node-badge ms-1"
               style="padding-left:.5rem;"
               :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span
                 v-if="item.item.roles.some(role => role.startsWith('data'))"
                 :id="'dataBadge' + item.item.name">
                 D
-                <BTooltip :target="'dataBadge' + item.item.name">{{ $t('stats.esNodes.data') }}</BTooltip>
+                <v-tooltip :activator="`[id='dataBadge${item.item.name}']`">{{ $t('stats.esNodes.data') }}</v-tooltip>
               </span>
               <span v-else>&nbsp;</span>
             </span>
@@ -103,7 +115,7 @@ import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
 import { roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -164,14 +176,14 @@ export default {
         // default columns
         intl({ id: 'name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 }),
         intl({ id: 'docs', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } }),
-        intl({ id: 'storeSize', sort: 'storeSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } }),
-        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } }),
-        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.heapSize); } }),
-        intl({ id: 'load', sort: 'load', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.load, 2); } }),
+        intl({ id: 'storeSize', sort: 'storeSize', doStats: true, default: true, width: 120, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } }),
+        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } }),
+        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return humanReadableBytes(item.heapSize); } }),
+        intl({ id: 'load', sort: 'load', doStats: true, default: true, width: 110, dataFunction: (item) => { return roundCommaString(item.load, 2); } }),
         intl({ id: 'cpu', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return roundCommaString(item.cpu, 1) + '%'; } }),
         intl({ id: 'read', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.read); } }),
         intl({ id: 'write', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.write); } }),
-        intl({ id: 'searches', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
+        intl({ id: 'searches', sort: 'searches', doStats: true, width: 105, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
         // all the rest of the available stats
         intl({ id: 'scrolls', sort: 'scrolls', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.scrolls); } }),
         intl({ id: 'ip', sort: 'ip', doStats: false, width: 100 }),
@@ -342,17 +354,22 @@ table.table tr.border-top-bold > td {
 }
 
 .node-badge {
+  display: inline-block;
   opacity: 0;
   width: 1.6rem;
+  padding: 0.2em 0.4em;
   line-height: 1.2;
   font-size: 0.75rem;
-  background-color: var(--color-primary);
-
+  font-weight: 700;
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-primary));
+  border-radius: 50rem;
+  text-align: center;
 }
 .node-badge.show-badge {
   opacity: 1;
 }
-.badge-master {
-  background-color: var(--color-quaternary) !important;
+.node-badge.badge-master {
+  background-color: rgb(var(--v-theme-quaternary)) !important;
 }
 </style>

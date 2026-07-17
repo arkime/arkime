@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
                   tabindex="0"
                   @click="removeTag(index)"
                   title="Remove tag"
-                  class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs">
+                  class="bg-error border-0 px-1 py-0 ma-0\">
                   <v-icon
                     icon="mdi-close"
                     class="mb-1" />

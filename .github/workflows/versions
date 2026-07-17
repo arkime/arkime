@@ -16,19 +16,10 @@
 #   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite/lmdb/redis
+#   tshark - if True then this build is used by the manual tshark workflow
 
 
 include:
-  - version: el8.x86_64
-    container: andywick/arkime-build-8:6.0.0-2
-    buildopt: "--thirdparty --kafka --pfring"
-    package: rpm
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs -d curl"
-    uitest: true
-    python: python3.12
-    runson: blacksmith-4vcpu-ubuntu-2404
-    prbuild: true
-
   - version: el9.x86_64
     container: andywick/arkime-build-9:6.0.0-2
     buildopt: "--thirdparty --kafka --pfring"
@@ -36,6 +27,7 @@ include:
     package: rpm
     python: python3
     prbuild: true
+    tshark: true
 
   - version: el10.x86_64
     container: andywick/arkime-build-10:6.0.0-2
@@ -45,6 +37,7 @@ include:
     python: python3
     notice: true
     prbuild: true
+    tshark: true
 
   - version: fc44.x86_64
     container: andywick/arkime-build-f44:6.0.0-6

@@ -3,140 +3,153 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BModal
-    size="lg"
+  <v-dialog
     :model-value="show"
-    @hidden="$emit('close')"
-    :title="editing ? $t('sessions.summary.config.editConfig') : $t('sessions.summary.config.saveConfig')">
-    <!-- Name input -->
-    <b-input-group
-      size="sm"
-      class="mb-2">
-      <b-input-group-text
-        id="configName"
-        class="cursor-help">
-        {{ $t('sessions.summary.config.name') }}<sup>*</sup>
-        <BTooltip target="configName">
-          {{ $t('sessions.summary.config.nameTip') }}
-        </BTooltip>
-      </b-input-group-text>
-      <b-form-input
-        v-model="configName"
-        :placeholder="$t('sessions.summary.config.namePlaceholder')" />
-    </b-input-group>
-
-    <!-- Description input -->
-    <b-input-group
-      size="sm"
-      class="mb-2">
-      <b-input-group-text
-        id="configDescription"
-        class="cursor-help">
-        {{ $t('sessions.summary.config.description') }}
-        <BTooltip target="configDescription">
-          {{ $t('sessions.summary.config.descriptionTip') }}
-        </BTooltip>
-      </b-input-group-text>
-      <b-form-input
-        v-model="configDescription"
-        :placeholder="$t('sessions.summary.config.descriptionPlaceholder')" />
-    </b-input-group>
-
-    <!-- Sharing controls -->
-    <div class="d-flex flex-wrap gap-2 mb-2">
-      <RoleDropdown
-        :roles="roles"
-        class="d-inline"
-        :selected-roles="viewRoles"
-        :display-text="$t('common.rolesCanView')"
-        @selected-roles-updated="viewRoles = $event" />
-      <RoleDropdown
-        :roles="roles"
-        class="d-inline"
-        :selected-roles="editRoles"
-        :display-text="$t('common.rolesCanEdit')"
-        @selected-roles-updated="editRoles = $event" />
-    </div>
-
-    <div class="d-flex gap-2 mb-2">
-      <b-input-group
-        size="sm"
-        class="flex-grow-1">
-        <b-input-group-text
-          id="configViewUsers"
-          class="cursor-help">
-          {{ $t('sessions.summary.config.viewUsers') }}
-          <BTooltip target="configViewUsers">
-            {{ $t('sessions.summary.config.viewUsersTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <b-form-input
-          v-model="viewUsers"
-          :placeholder="$t('sessions.summary.config.usersPlaceholder')" />
-      </b-input-group>
-
-      <b-input-group
-        size="sm"
-        class="flex-grow-1">
-        <b-input-group-text
-          id="configEditUsers"
-          class="cursor-help">
-          {{ $t('sessions.summary.config.editUsers') }}
-          <BTooltip target="configEditUsers">
-            {{ $t('sessions.summary.config.editUsersTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <b-form-input
-          v-model="editUsers"
-          :placeholder="$t('sessions.summary.config.usersPlaceholder')" />
-      </b-input-group>
-    </div>
-
-    <!-- Configuration preview -->
-    <div class="config-preview mt-3 p-2 border rounded bg-light">
-      <strong>{{ $t('sessions.summary.config.preview') }}</strong>
-      <div class="mt-1 small">
-        <span class="text-muted">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
-        {{ config?.fields?.length || 0 }}
-        <span class="ms-3 text-muted">{{ $t('sessions.summary.config.resultsLimit') }}:</span>
-        {{ config?.resultsLimit || 20 }}
-      </div>
-      <div class="mt-1 small text-muted">
-        {{ fieldsList }}
-      </div>
-    </div>
-
-    <!-- Error message -->
-    <div
-      v-if="error"
-      class="alert alert-danger alert-sm mt-2 mb-0">
-      <span class="fa fa-exclamation-triangle me-1" />
-      {{ error }}
-    </div>
-
-    <template #footer>
-      <div class="w-100 d-flex justify-content-between">
-        <b-button
-          variant="danger"
-          @click="$emit('close')">
-          <span class="fa fa-times" />
-          {{ $t('common.cancel') }}
-        </b-button>
-        <b-button
-          variant="success"
-          :disabled="saving"
-          @click="saveConfig">
+    @update:model-value="(val) => { if (!val) $emit('close'); }"
+    max-width="900">
+    <v-card density="compact">
+      <v-card-title>
+        {{ editing ? $t('sessions.summary.config.editConfig') : $t('sessions.summary.config.saveConfig') }}
+      </v-card-title>
+      <v-card-text>
+        <!-- Name input -->
+        <div class="arkime-input-group arkime-input-group--fluid mb-2">
           <span
-            v-if="saving"
-            class="fa fa-spinner fa-spin me-1" />
+            id="configName"
+            class="arkime-input-label cursor-help">
+            {{ $t('sessions.summary.config.name') }}<sup>*</sup>
+            <v-tooltip activator="#configName">
+              {{ $t('sessions.summary.config.nameTip') }}
+            </v-tooltip>
+          </span>
+          <input
+            type="text"
+            class="arkime-input-control"
+            v-model="configName"
+            :placeholder="$t('sessions.summary.config.namePlaceholder')">
+        </div>
+
+        <!-- Description input -->
+        <div class="arkime-input-group arkime-input-group--fluid mb-2">
           <span
-            v-else
-            class="fa fa-save me-1" />
-          {{ $t('common.save') }}
-        </b-button>
-      </div>
-    </template>
-  </BModal>
+            id="configDescription"
+            class="arkime-input-label cursor-help">
+            {{ $t('sessions.summary.config.description') }}
+            <v-tooltip activator="#configDescription">
+              {{ $t('sessions.summary.config.descriptionTip') }}
+            </v-tooltip>
+          </span>
+          <input
+            type="text"
+            class="arkime-input-control"
+            v-model="configDescription"
+            :placeholder="$t('sessions.summary.config.descriptionPlaceholder')">
+        </div>
+
+        <!-- Sharing controls -->
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <RoleDropdown
+            :roles="roles"
+            class="d-inline"
+            :selected-roles="viewRoles"
+            :display-text="$t('common.rolesCanView')"
+            @selected-roles-updated="viewRoles = $event" />
+          <RoleDropdown
+            :roles="roles"
+            class="d-inline"
+            :selected-roles="editRoles"
+            :display-text="$t('common.rolesCanEdit')"
+            @selected-roles-updated="editRoles = $event" />
+        </div>
+
+        <div class="d-flex gap-2 mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <span
+              id="configViewUsers"
+              class="arkime-input-label cursor-help">
+              {{ $t('sessions.summary.config.viewUsers') }}
+              <v-tooltip activator="#configViewUsers">
+                {{ $t('sessions.summary.config.viewUsersTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="arkime-input-control"
+              v-model="viewUsers"
+              :placeholder="$t('sessions.summary.config.usersPlaceholder')">
+          </div>
+
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <span
+              id="configEditUsers"
+              class="arkime-input-label cursor-help">
+              {{ $t('sessions.summary.config.editUsers') }}
+              <v-tooltip activator="#configEditUsers">
+                {{ $t('sessions.summary.config.editUsersTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="arkime-input-control"
+              v-model="editUsers"
+              :placeholder="$t('sessions.summary.config.usersPlaceholder')">
+          </div>
+        </div>
+
+        <!-- Configuration preview -->
+        <div class="config-preview mt-3 p-2 border rounded">
+          <strong>{{ $t('sessions.summary.config.preview') }}</strong>
+          <div class="mt-1 small">
+            <span class="text-medium-emphasis">{{ $t('sessions.summary.config.widgetsCount') }}:</span>
+            {{ config?.widgets?.length || 0 }}
+          </div>
+          <div class="mt-1 small text-medium-emphasis">
+            {{ fieldsList }}
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <v-alert
+          v-if="error"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mt-2 mb-0">
+          {{ error }}
+        </v-alert>
+      </v-card-text>
+      <v-card-actions>
+        <div class="w-100 d-flex justify-space-between">
+          <v-btn
+            color="error"
+            variant="flat"
+            size="large"
+            @click="$emit('close')">
+            <v-icon
+              icon="mdi-close"
+              class="me-1" />
+            {{ $t('common.cancel') }}
+          </v-btn>
+          <v-btn
+            color="success"
+            variant="flat"
+            size="large"
+            :disabled="saving"
+            @click="saveConfig">
+            <v-icon
+              icon="mdi-loading"
+              class="mdi-spin me-1"
+              v-if="saving" />
+            <v-icon
+              icon="mdi-content-save"
+              class="me-1"
+              v-else />
+            {{ $t('common.save') }}
+          </v-btn>
+        </div>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -182,13 +195,14 @@ const saving = ref(false);
 // Get roles from store
 const roles = computed(() => store.state.roles || []);
 
-// Preview text showing field friendly names
+// Preview text showing widget field friendly names
 const fieldsList = computed(() => {
-  if (!props.config?.fields?.length) return '';
-  return props.config.fields.map(f => {
-    const fieldObj = FieldService.getField(f.field, true);
-    return fieldObj?.friendlyName || f.field;
-  }).join(', ');
+  if (!props.config?.widgets?.length) return '';
+  return props.config.widgets.map(w => {
+    const fieldObj = FieldService.getField(w.field, true);
+    // fall back to viewMode for field-less widgets so the preview has no blank segments
+    return w.title || fieldObj?.friendlyName || w.field || w.viewMode;
+  }).filter(Boolean).join(', ');
 });
 
 // Reset form when modal opens
@@ -262,7 +276,7 @@ const saveConfig = async () => {
 
 <style scoped>
 .config-preview {
-  background-color: var(--color-quaternary-lightest) !important;
-  border-color: var(--color-gray) !important;
+  background-color: rgb(var(--v-theme-quaternary-lightest)) !important;
+  border-color: rgb(var(--v-theme-neutral)) !important;
 }
 </style>

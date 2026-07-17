@@ -10,12 +10,15 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const async = require('async');
+const { spawn, spawnSync } = require('child_process');
 const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 const PNG = require('pngjs').PNG;
 const pug = require('pug');
+const sax = require('sax');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -29,6 +32,7 @@ const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
+const RE2 = require('re2');
 const BuildQuery = require('./buildQuery');
 
 // Replace pug's escape with the same algorithm plus {. Detail HTML must be
@@ -374,6 +378,22 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  // searchType matches hunt's vocabulary; regex types pre-compile with RE2.
+  static #buildFindOptions (search, searchType) {
+    if (!search) { return undefined; }
+    searchType = searchType || 'ascii';
+    const findOpts = { search, searchType };
+    if (searchType === 'regex' || searchType === 'hexregex') {
+      try {
+        findOpts.regex = new RE2(search, searchType === 'regex' ? 'gi' : 'g');
+      } catch (e) {
+        return undefined; // invalid regex -> no highlighting
+      }
+    }
+    return findOpts;
+  }
+
+  // --------------------------------------------------------------------------
   static #localSessionDetailReturn (req, res, session, incoming) {
     // console.log("ALW", JSON.stringify(incoming));
     const numPackets = req.query.packets || 200;
@@ -398,6 +418,9 @@ class SessionAPIs {
       'ITEM-CB': {
       }
     };
+
+    const findOpts = SessionAPIs.#buildFindOptions(req.query.search, req.query.searchType);
+    if (findOpts) { options.find = findOpts; }
 
     if (req.query.needgzip) {
       options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');
@@ -1047,33 +1070,66 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #writePcapNg (res, id, writerOptions, doneCb) {
-    let b = Buffer.alloc(0xfffe);
+    // One buffered EPB must fit entirely: a max-length packet (16-byte pcap
+    // record header + up to ARKIME_PACKET_MAX_LEN=0x10000 bytes of frame) plus
+    // the EPB header, padding, and trailing block length. 0x10100 leaves room.
+    const ngBufSize = 0x10100;
+    let b = Buffer.alloc(ngBufSize);
     let boffset = 0;
+
+    // Map of link type -> interface id, shared across every session/file in this
+    // export (writerOptions persists for the whole download). This merges and
+    // dedups interfaces from multiple pcapng/pcap files: each distinct link type
+    // gets exactly one Interface Description Block, and each packet's EPB
+    // interface_id is remapped to it.
+    writerOptions.ngInterfaces ??= new Map();
+    const ngInterfaces = writerOptions.ngInterfaces;
+
+    // Emit one IDB (lazily) the first time a link type is seen. IDBs go straight
+    // to res, flushing any buffered EPBs first so they precede the EPBs that
+    // reference them.
+    const interfaceIdFor = (pcap, buffer) => {
+      const linkType = (buffer.ngLinkType !== undefined) ? buffer.ngLinkType : pcap.linkType;
+      let ifaceId = ngInterfaces.get(linkType);
+      if (ifaceId === undefined) {
+        ifaceId = ngInterfaces.size;
+        if (boffset > 0) {
+          res.write(b.slice(0, boffset));
+          boffset = 0;
+          b = Buffer.alloc(ngBufSize);
+        }
+        res.write(Pcap.makeIdbNg(linkType, 262144));
+        ngInterfaces.set(linkType, ifaceId);
+      }
+      return ifaceId;
+    };
 
     SessionAPIs.processSessionId(id, true, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
-        res.write(pcap.getHeaderNg());
+        res.write(Pcap.makeShbNg());
         writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb) => {
+      const interfaceId = interfaceIdFor(pcap, buffer);
+
       if (boffset + buffer.length + 20 > b.length) {
         res.write(b.slice(0, boffset));
         boffset = 0;
-        b = Buffer.alloc(0xfffe);
+        b = Buffer.alloc(ngBufSize);
       }
 
       /* Need to write the ng block, and convert the old timestamp */
       b.writeUInt32LE(0x00000006, boffset); // Block Type
       const len = ((buffer.length + 20 + 3) >> 2) << 2;
       b.writeUInt32LE(len, boffset + 4); // Block Len 1
-      b.writeUInt32LE(0, boffset + 8); // Interface Id
+      b.writeUInt32LE(interfaceId, boffset + 8); // Interface Id
 
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
       b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
       b.writeUInt32LE(time % 0x100000000, boffset + 16); // Timestamp Low
 
-      buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
+      buffer.copy(b, boffset + 20, 8, buffer.length); // cap_len, packet_len, frame
       b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
       boffset += len - 8;
 
@@ -1958,6 +2014,7 @@ class SessionAPIs {
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - The expression field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} metric - Optional numeric (integer) field exp (dashboard widgets). When set, its per-value sum is added as a <dbField>Histo timeline series and per-item total (drives heatmap intensity / treemap size). 'sessions' and non-numeric fields are ignored (doc_count is used).
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -1972,6 +2029,14 @@ class SessionAPIs {
     if (req.query.field !== undefined && !ArkimeUtil.isString(req.query.field, 0)) {
       return res.serverError(403, `Bad 'field' parameter`, 'api.sessions.badFieldParam');
     }
+
+    // Optional metric (dashboard widgets): a numeric field exp whose per-value
+    // sum drives heatmap intensity / treemap size. Resolve it to a dbField and
+    // stash it so buildQuery sums it and graphMerge emits a <dbField>Histo series
+    // (reusing the timeline-data-filter machinery). 'sessions' and non-numeric
+    // fields resolve to undefined and are ignored (doc_count is used instead).
+    const metricDbField = ViewerUtils.metricDbField(req.query.metric);
+    if (metricDbField) { req.query.metricField = metricDbField; }
 
     BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
@@ -1999,6 +2064,17 @@ class SessionAPIs {
         query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
       } else {
         query.aggregations.field = { terms: { field, size: size * 2 } };
+      }
+
+      // Rank the candidate Top-N pool by the sort metric. Without this the terms agg
+      // returns the top size*2 BY SESSION COUNT (ES default) before the metric sort
+      // runs, dropping high-metric/low-count values. Order by the <dbField>Histo sum.
+      const sortMetricField = /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
+        ? req.query.sort.replace(/Histo$/, '')
+        : undefined;
+      if (sortMetricField && !query.aggregations.field.aggregations) {
+        query.aggregations.field.aggregations = { metricValue: { sum: { field: sortMetricField } } };
+        query.aggregations.field.terms.order = { metricValue: 'desc' };
       }
 
       Promise.all([
@@ -2597,7 +2673,8 @@ class SessionAPIs {
    *
    * Gets SPI data for a session.
    * @name /session/:nodeName/:id/detail
-   * @returns {html} The html to display as session detail
+   * @returns {object} { html, info } - the detail html plus the session
+   * fields the client row may not carry (rootId, communityId, packets, etc.)
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
@@ -2640,16 +2717,81 @@ class SessionAPIs {
         }
         const html = sanitizeHtml(data, {
           parser: { decodeEntities: false }, // keep &#123; from pugEscapeVue so it survives to the client
-          allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
+          allowedTags: [
+            // Standard HTML
+            'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
+            'pre', 'span', 'br', 'img', 'ul', 'li', 'dl', 'dt', 'dd',
+            'template', 'button',
+            // Vuetify components used in the pug session-detail
+            'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
+            'v-alert', 'v-icon',
+            // Arkime / app components
+            'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions',
+            'arkime-export-pcap', 'arkime-remove-data',
+            'arkime-send-sessions', 'field-actions'
+          ],
           allowedClasses: {
-            '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
+            '*': [
+              // App-specific
+              'ts-value', 'text-theme-quaternary', 'file',
+              'sessionsrc', 'sessiondst', 'session-detail-ts',
+              'session-detail', 'session-detail-cards', 'session-detail-card',
+              'session-options', 'session-options-btn',
+              'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
+              'clickable-label', 'clickable-label-menu', 'detail-field',
+              'tag-list', 'session-card-title', 'no-wrap', 'str', 'bytes',
+              // Vuetify spacing/utility classes used inside the pug
+              'cursor-pointer',
+              'mb-2', 'mt-2', 'me-1', 'me-5', 'ms-1', 'ms-auto',
+              'float-end', 'small',
+              // Shared toolbar styling -- matches the .arkime-pcap-toolbar
+              // bar used by the Packets + tshark toolbars in SessionDetail.vue
+              'arkime-pcap-toolbar',
+              // Inline-HTML add-tag button (rendered by pug arrayList helper)
+              'arkime-tag-add-btn',
+              // Material Design Icons (sessionPackets.pug renders via v-html
+              // so it can't use <v-icon>; must use raw <i class="mdi ..."> form)
+              'mdi', 'mdi-information', 'mdi-24px', 'mdi-plus-circle'
+            ]
           },
           allowedAttributes: {
             img: ['src'],
-            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidepackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            '*': [
+              // Standard HTML / Vue
+              'class', 'style', 'title', 'value', 'target', 'href',
+              'download', 'type', 'disabled',
+              // Vue directives / bindings (incl. slot props for v-menu's
+              // #activator slot which uses v-bind="activatorProps")
+              'v-if', 'v-for', 'v-bind', 'v-on',
+              'v-has-permission', 'key', ':key',
+              ':href', ':download', '@click', '@done',
+              '#activator', '#default', '#button-content',
+              // Component custom props / slots used across the template
+              'sessionid', 'hidepackets', 'pull-left',
+              'expr', ':expr', ':separator', ':field',
+              ':sessions', ':cluster', ':single',
+              ':message', ':type', ':done', ':add',
+              'text', ':text', 'suffix', 'columns',
+              // Vuetify component props (v-btn, v-menu, v-list, v-alert, v-icon)
+              'variant', 'size', 'density', 'activator', 'location',
+              'icon', 'prepend-icon', 'append-icon'
+            ]
           }
         });
-        res.send(html);
+        // getDetail returns scalar fields, but be tolerant of array-shaped ones
+        const netPackets = session.network?.packets;
+        const info = {
+          id: session.id,
+          node: session.node,
+          cluster: session.cluster,
+          rootId: session.rootId,
+          communityId: session.network?.community_id,
+          firstPacket: session.firstPacket,
+          lastPacket: session.lastPacket,
+          packets: Array.isArray(netPackets) ? netPackets[0] : netPackets,
+          hasPackets: !!(session.packetPos && session.packetPos.length > 0)
+        };
+        res.send({ html, info });
       });
     });
   }
@@ -2669,6 +2811,243 @@ class SessionAPIs {
       SessionAPIs.#localSessionDetail(req, res);
     } else {
       return ViewerUtils.proxyRequest(req, res);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/:nodeName/:id/tshark
+   *
+   * Runs tshark against the session's pcap and streams a converted PDML
+   * dissection as NDJSON (one JSON object per packet per line). Always
+   * dispatched on the *central* viewer that received the request; the pcap is
+   * fetched from the owning node when needed.
+   *
+   * Each emitted line looks like:
+   *   {"layers":[
+   *     {"name":"frame","label":"Frame 1: ...","fields":[
+   *       {"name":"frame.len","label":"Frame Length: 197","show":"197","pos":0,"size":0},
+   *       ...]
+   *     },
+   *     {"name":"eth","label":"Ethernet II, ...","fields":[
+   *       {"name":"eth.dst","label":"Destination: ...","show":"...","value":"<hex>","pos":0,"size":6,
+   *        "fields":[...]}
+   *     ]},
+   *     ...
+   *   ]}
+   *
+   * @name /session/:nodeName/:id/tshark
+   * @param {string} hidden=false - "true" to include fields tshark marks hide="yes"
+   * @param {string} payload=false - "true" to include the raw "data" proto layer
+   *   for unparsed payload bytes (otherwise passes `--disable-protocol data`
+   *   to tshark)
+   * @param {number} length - number of packets to dissect, capped at the
+   *   `tsharkMaxPackets` config value (which is also the default)
+   * @returns {ndjson} One JSON-encoded packet per line
+   */
+  static async getTshark (req, res) {
+    ArkimeUtil.noCache(req, res, 'application/x-ndjson');
+
+    if (!internals.tsharkPath) {
+      res.status(503);
+      return res.end(JSON.stringify({ success: false, text: 'tshark not configured on this viewer' }));
+    }
+
+    const includeHidden = req.query.hidden === 'true';
+    const includePayload = req.query.payload === 'true';
+
+    // tshark refuses non-regular stdin (S_ISSOCK / S_ISFIFO can both trip it
+    // depending on version/build); Node's stdio 'pipe' is a socketpair on
+    // macOS and on some Linux configurations. Always go through a mkfifo'd
+    // named pipe so tshark sees a real openable path.
+    const useStdin = false;
+
+    let finished = false;
+    let child;
+    let writeStream;
+    let fifoPath;
+
+    const cleanup = () => {
+      if (writeStream && !writeStream.destroyed) { try { writeStream.destroy(); } catch (e) { /* ignore */ } }
+      if (fifoPath) { fs.unlink(fifoPath, () => {}); fifoPath = undefined; }
+    };
+    const finish = (errStatus, errText) => {
+      if (finished) { return; }
+      finished = true;
+      clearTimeout(timer);
+      if (child) { try { child.kill('SIGKILL'); } catch (e) { /* already exited */ } }
+      cleanup();
+      if (errStatus && !res.headersSent) {
+        res.status(errStatus);
+        res.end(JSON.stringify({ success: false, text: errText }));
+      } else if (!res.writableEnded) {
+        try { res.end(); } catch (e) { /* ignore */ }
+      }
+    };
+    const timer = setTimeout(() => {
+      finish(504, `tshark timed out after ${internals.tsharkTimeoutMs}ms`);
+    }, internals.tsharkTimeoutMs);
+    res.on('close', () => finish());
+
+    let pktLen = parseInt(req.query.length);
+    if (!Number.isFinite(pktLen) || pktLen <= 0) { pktLen = internals.tsharkMaxPackets; }
+    if (pktLen > internals.tsharkMaxPackets) { pktLen = internals.tsharkMaxPackets; }
+
+    const tsharkArgs = ['-T', 'pdml', '-n', '-c', String(pktLen)];
+    if (!includePayload) {
+      tsharkArgs.push('--disable-protocol', 'data');
+    }
+    if (useStdin) {
+      tsharkArgs.unshift('-r', '-');
+      try {
+        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+      writeStream = child.stdin;
+    } else {
+      fifoPath = path.join(os.tmpdir(), `arkime-tshark-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.fifo`);
+      const mk = spawnSync('mkfifo', ['-m', '600', fifoPath]);
+      if (mk.status !== 0) {
+        fifoPath = undefined;
+        return finish(500, 'mkfifo failed: ' + ArkimeUtil.safeStr((mk.stderr || '').toString().trim() || ('exit ' + mk.status)));
+      }
+      tsharkArgs.unshift('-r', fifoPath);
+      try {
+        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+    }
+
+    let stderrBuf = '';
+    child.stderr.on('data', (b) => {
+      if (stderrBuf.length < 8192) { stderrBuf += b.toString().slice(0, 8192 - stderrBuf.length); }
+    });
+
+    // --- PDML -> NDJSON streaming converter ---------------------------------
+    // SAX-stream tshark's PDML output. Build one packet at a time as a stack
+    // of proto/field nodes; on </packet> serialize a compact JSON line. We
+    // never buffer more than one packet at a time.
+    const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: true });
+    let packet = null;          // { layers: [...] } currently being built
+    let stack = null;           // array of containers we're inside (proto or field), top is current
+    parser.on('opentag', (node) => {
+      if (!packet) {
+        if (node.name === 'packet') { packet = { layers: [] }; stack = []; }
+        return;
+      }
+      const a = node.attributes;
+      if (node.name === 'proto') {
+        const proto = { name: a.name || '', label: a.showname || a.name || '', fields: [] };
+        if (a.pos !== undefined) { proto.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { proto.size = parseInt(a.size); }
+        packet.layers.push(proto);
+        stack.push(proto);
+      } else if (node.name === 'field') {
+        if (!includeHidden && a.hide === 'yes') { stack.push(null); return; }
+        const f = { name: a.name || '', label: a.showname || a.show || a.name || '' };
+        if (a.show !== undefined && a.show !== '') { f.show = a.show; }
+        if (a.value !== undefined && a.value !== '') { f.value = a.value; }
+        if (a.pos !== undefined) { f.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { f.size = parseInt(a.size); }
+        if (a.hide === 'yes') { f.hide = true; }
+        const cur = stack[stack.length - 1];
+        if (cur) {
+          if (!cur.fields) { cur.fields = []; }
+          cur.fields.push(f);
+        }
+        stack.push(f);
+      }
+    });
+    parser.on('closetag', (tagName) => {
+      if (!packet) { return; }
+      if (tagName === 'packet') {
+        // Drop empty fields arrays for compactness.
+        const stripEmpty = (n) => {
+          if (n && n.fields) {
+            if (n.fields.length === 0) { delete n.fields; }
+            else { for (const c of n.fields) { stripEmpty(c); } }
+          }
+        };
+        for (const l of packet.layers) { stripEmpty(l); }
+        if (!res.writableEnded) {
+          res.write(JSON.stringify(packet));
+          res.write('\n');
+        }
+        packet = null;
+        stack = null;
+      } else if (tagName === 'proto' || tagName === 'field') {
+        if (stack) { stack.pop(); }
+      }
+    });
+    parser.on('error', (err) => {
+      // Don't kill the response on bad XML — log and keep going if possible.
+      console.log('tshark pdml parse error:', err.message);
+      try { parser._parser.error = null; parser._parser.resume(); } catch (e) { /* ignore */ }
+    });
+
+    child.stdout.pipe(parser);
+    child.on('error', (err) => finish(500, 'tshark process error: ' + ArkimeUtil.safeStr(err.message)));
+    child.on('close', (code) => {
+      if (code !== 0 && !res.headersSent) {
+        finish(500, 'tshark exited ' + code + ': ' + ArkimeUtil.safeStr(stderrBuf.trim()));
+      } else {
+        finish();
+      }
+    });
+
+    const wireWriteStream = () => {
+      writeStream.on('error', (err) => {
+        if (err.code !== 'EPIPE') { finish(500, 'pcap stream error: ' + ArkimeUtil.safeStr(err.message)); }
+      });
+    };
+
+    const startPcapPump = async () => {
+      if (await ViewerUtils.isLocalView(req.params.nodeName)) {
+        const sink = {
+          write: (chunk, cb) => {
+            if (!writeStream || !writeStream.writable) { if (cb) { setImmediate(cb); } return false; }
+            return writeStream.write(chunk, cb);
+          },
+          status: () => sink
+        };
+        SessionAPIs.#writePcap(sink, req.params.id, { writeHeader: true }, (err) => {
+          if (err && !finished) {
+            return finish(500, 'failed to read local pcap: ' + ArkimeUtil.safeStr(err.message || err));
+          }
+          if (writeStream && writeStream.writable) { writeStream.end(); }
+        });
+      } else {
+        // makeStreamRequest already encodeURI()s the path; encodeURIComponent on the id would double-encode '@' (%40 -> %2540) and 500 the owning node
+        const remotePath = `/api/session/${req.params.nodeName}/${req.params.id}/pcap`;
+        ViewerUtils.makeStreamRequest(req.params.nodeName, remotePath, req.user, (pres) => {
+          if (pres.statusCode !== 200) {
+            finish(502, 'remote node returned status ' + pres.statusCode);
+            pres.resume();
+            return;
+          }
+          pres.on('error', (err) => finish(502, 'error streaming remote pcap: ' + ArkimeUtil.safeStr(err.message)));
+          pres.pipe(writeStream);
+        }, (err) => {
+          finish(502, 'error contacting remote node: ' + ArkimeUtil.safeStr(err.message || err));
+        }, req.query.cluster);
+      }
+    };
+
+    if (useStdin) {
+      wireWriteStream();
+      startPcapPump();
+    } else {
+      fs.open(fifoPath, fs.constants.O_WRONLY, (openErr, fd) => {
+        if (openErr) {
+          return finish(500, 'failed to open fifo: ' + ArkimeUtil.safeStr(openErr.message));
+        }
+        if (finished) { try { fs.closeSync(fd); } catch (e) { /* ignore */ } return; }
+        writeStream = fs.createWriteStream(null, { fd, autoClose: true });
+        wireWriteStream();
+        startPcapPump();
+      });
     }
   }
 
@@ -2804,39 +3183,33 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * GET - /api/sessions/summary
+   * POST/GET - /api/sessions/summary
    *
-   * Get summary info by id or by query.
+   * Backs the Arkime tab modular dashboard. Streams a JSON array whose first
+   * element is the top-level stats/map/graph chunk (omitted when noStats is set),
+   * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp summed per value), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
+   * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
+   * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
+   * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
+   * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, length, order, expression, data[] } or { id, field, error } on per-widget failure.
    *
    */
   static summary (req, res) {
-    let topNum = 20;
-    if (req.query.length) {
-      topNum = parseInt(req.query.length);
-    }
-    if (!Number.isFinite(topNum) || topNum <= 0) {
-      topNum = 20;
-    }
-    if (topNum > 1000) {
-      topNum = 1000;
+    // Clamp a requested top/bottom N to a sane range
+    function clampLength (val, fallback) {
+      let n = parseInt(val);
+      if (!Number.isFinite(n) || n <= 0) { n = fallback; }
+      if (n > 1000) { n = 1000; }
+      return n;
     }
 
-    const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
-
-    // Validate and parse fields parameter - should be a comma-separated string of field names
-    if (!req.body.fields || !ArkimeUtil.isString(req.body.fields)) {
-      return res.status(400).send({ error: 'Missing or invalid fields parameter in request body - must be a comma-separated string of field names' });
-    }
-
-    // Parse comma-separated string into array
-    const aggFields = req.body.fields.split(',').map(f => f.trim()).filter(f => f.length > 0);
-
-    if (aggFields.length === 0) {
-      return res.status(400).send({ error: 'Fields parameter cannot be empty' });
-    }
+    // Global limit/order are defaults for widgets that don't set their own
+    const defaultTopNum = clampLength(req.query.length, 20);
+    const defaultOrder = req.body.order === 'asc' ? 'asc' : 'desc';
 
     // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {
@@ -2858,47 +3231,98 @@ class SessionAPIs {
     // Special fields that don't have a direct database field mapping
     const specialFields = ['ip', 'ip.dst:port'];
 
-    // Build mapping of field exp to aggregation name and dbField
-    const fieldConfig = {};
-    for (const fieldExp of aggFields) {
-      let aggName;
-
-      // Handle special fields that use Painless scripts
-      if (specialFields.includes(fieldExp)) {
-        aggName = fieldExp === 'ip' ? 'allIp' : 'dstIpPort';
-        fieldConfig[fieldExp] = {
-          aggName,
-          isSpecial: true
-        };
-        continue;
+    // Build the list of widgets to aggregate. The modular dashboard sends a
+    // `widgets` array of per-widget specs ({id, field, length, order, expression,
+    // viewMode, metricType}); the legacy summary page sends a comma-separated
+    // `fields` string with a single global length/order. Both are supported.
+    let rawWidgets;
+    if (Array.isArray(req.body.widgets)) {
+      rawWidgets = req.body.widgets; // may be empty -> stats-only response
+    } else if (req.body.fields && ArkimeUtil.isString(req.body.fields)) {
+      rawWidgets = req.body.fields
+        .split(',').map(f => f.trim()).filter(f => f.length > 0)
+        .map(f => ({ field: f }));
+      // an all-whitespace/comma fields string carries no field names
+      if (rawWidgets.length === 0) {
+        return res.status(400).send({ error: 'Fields parameter cannot be empty' });
       }
-
-      // Handle regular fields from Config.getFieldsMap()
-      const field = fieldsMap[fieldExp];
-      if (!field) {
-        console.log(`Warning: Unknown field expression '${fieldExp}' in summary aggFields`);
-        continue;
-      }
-      // Create a unique aggregation name from the field expression
-      aggName = fieldExp.replace(/\./g, '_');
-      fieldConfig[fieldExp] = {
-        aggName,
-        dbField: field.dbField
-      };
+    } else {
+      return res.status(400).send({ error: 'Missing or invalid widgets/fields parameter in request body' });
     }
 
-    function convert (agg) {
+    // Normalize each requested widget into an aggregation spec
+    const widgetSpecs = [];
+    for (let i = 0; i < rawWidgets.length; i++) {
+      const w = rawWidgets[i] || {};
+      const fieldExp = w.field;
+      if (!ArkimeUtil.isString(fieldExp)) { continue; }
+
+      const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
+      const spec = {
+        id: ArkimeUtil.isString(w.id) ? w.id : `w${i}`,
+        field: fieldExp,
+        aggName: `agg${i}`,
+        length: clampLength(w.length, defaultTopNum),
+        order: w.order === 'asc' ? 'asc' : (w.order === 'desc' ? 'desc' : defaultOrder),
+        expression: ArkimeUtil.isString(w.expression) && w.expression.length > 0 ? w.expression : undefined,
+        // viewMode/metricType are owned by the client; the response only echoes
+        // sensible field-based defaults for the legacy fields-string callers.
+        viewMode: metadata.viewMode,
+        metricType: (ArkimeUtil.isString(w.metricType) && w.metricType.length > 0) ? w.metricType : metadata.metricType
+      };
+
+      if (specialFields.includes(fieldExp)) {
+        spec.isSpecial = true;
+      } else {
+        const field = fieldsMap[fieldExp];
+        if (!field) {
+          console.log(`Warning: Unknown field expression '${fieldExp}' in summary widgets`);
+          spec.unknown = true;
+        } else {
+          spec.dbField = field.dbField;
+        }
+      }
+
+      // numeric field exps summed per bucket. Tables send metrics[]; charts send
+      // one metricType. Non-numeric dropped; sortMetric orders Top-N (else count).
+      const requestedMetrics = (Array.isArray(w.metrics) && w.metrics.length)
+        ? w.metrics
+        : (spec.metricType && spec.metricType !== 'sessions' ? [spec.metricType] : []);
+      spec.metrics = [];
+      for (const exp of requestedMetrics) {
+        if (!ArkimeUtil.isString(exp) || exp === 'sessions') { continue; }
+        const dbField = ViewerUtils.metricDbField(exp);
+        if (dbField && !spec.metrics.some(m => m.exp === exp)) {
+          spec.metrics.push({ exp, dbField, aggKey: `m${spec.metrics.length}` });
+        }
+      }
+      const sortExp = ArkimeUtil.isString(w.sortMetric) ? w.sortMetric : spec.metrics[0]?.exp;
+      spec.sortAggKey = spec.metrics.find(m => m.exp === sortExp)?.aggKey;
+
+      widgetSpecs.push(spec);
+    }
+
+    // `value` = the sort metric's sum (or session count). `metricValues` holds
+    // each requested metric keyed by exp (+ 'sessions') for the table's columns.
+    function convert (agg, limit, spec) {
       if (!agg || !agg.buckets) {
         return [];
       }
 
       const results = [];
-      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+      for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
+        const bucket = agg.buckets[i];
+        const metricValues = { sessions: bucket.doc_count };
+        for (const m of (spec.metrics || [])) {
+          metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
+        }
         results.push({
-          item: agg.buckets[i].key,
-          sessions: agg.buckets[i].doc_count,
-          bytes: agg.buckets[i].bytes.value,
-          packets: agg.buckets[i].packets.value
+          item: bucket.key,
+          sessions: bucket.doc_count,
+          bytes: bucket.bytes.value,
+          packets: bucket.packets.value,
+          value: spec.sortAggKey ? (bucket[spec.sortAggKey]?.value ?? 0) : bucket.doc_count,
+          metricValues
         });
       }
       return results;
@@ -2978,126 +3402,139 @@ class SessionAPIs {
       /******************************/
       /* Phase 1, top level and map */
 
-      // Top level aggregations
-      const aggregations = {
-        firstPacket: {
-          min: {
-            field: 'firstPacket'
-          }
-        },
-        lastPacket: {
-          max: {
-            field: 'lastPacket'
-          }
-        },
-        bytes: {
-          sum: {
-            field: 'network.bytes'
-          }
-        },
-        dataBytes: {
-          sum: {
-            field: 'totDataBytes'
-          }
-        },
-        packets: {
-          sum: {
-            field: 'network.packets'
-          }
+      // Phase 1 (top-level stats + map + graph) is skipped for incremental
+      // single-widget fetches (noStats): the dashboard stats/viz don't change
+      // when adding/editing/retrying one widget, so the client omits them and
+      // ignores the stats chunk — recomputing them here would be wasted work.
+      const noStats = req.query.noStats === true || req.query.noStats === 'true';
+
+      if (!noStats) {
+        // Top level aggregations
+        const aggregations = {
+          firstPacket: { min: { field: 'firstPacket' } },
+          lastPacket: { max: { field: 'lastPacket' } },
+          bytes: { sum: { field: 'network.bytes' } },
+          dataBytes: { sum: { field: 'totDataBytes' } },
+          packets: { sum: { field: 'network.packets' } }
+        };
+        query.aggregations ??= {};
+        query.aggregations = { ...query.aggregations, ...aggregations };
+
+        const phase1 = await Db.searchSessions(indices, query, options);
+        const map = ViewerUtils.mapMerge(phase1.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
+
+        // Handle case where there's no data
+        if (!phase1.aggregations) {
+          return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
         }
-      };
-      query.aggregations ??= {};
-      query.aggregations = { ...query.aggregations, ...aggregations };
 
-      const phase1 = await Db.searchSessions(indices, query, options);
-      const map = ViewerUtils.mapMerge(phase1.aggregations);
-      const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
-
-      // Handle case where there's no data
-      if (!phase1.aggregations) {
-        return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
+        const response = {
+          firstPacket: phase1.aggregations.firstPacket.value,
+          lastPacket: phase1.aggregations.lastPacket.value,
+          sessions: phase1.hits.total,
+          bytes: phase1.aggregations.bytes.value,
+          dataBytes: phase1.aggregations.dataBytes.value,
+          packets: phase1.aggregations.packets.value,
+          map,
+          graph
+        };
+        response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
+        await send(response, false);
       }
 
-      const response = {
-        firstPacket: phase1.aggregations.firstPacket.value,
-        lastPacket: phase1.aggregations.lastPacket.value,
-        sessions: phase1.hits.total,
-        bytes: phase1.aggregations.bytes.value,
-        dataBytes: phase1.aggregations.dataBytes.value,
-        packets: phase1.aggregations.packets.value,
-        map,
-        graph
+      /*****************************************/
+      /* Phase 2 Requested widget aggregations */
+
+      // Per-widget local expressions are ANDed with the global search. Build (and
+      // cache) one base query per distinct combined expression so widgets that share
+      // a filter — or use none — don't rebuild the query.
+      const queryCache = new Map();
+      const globalExpression = req.query.expression;
+
+      const widgetBaseQuery = async (expression) => {
+        if (!expression) { return query; } // reuse the global base query
+        const combined = globalExpression ? `(${globalExpression}) && (${expression})` : expression;
+        if (queryCache.has(combined)) { return queryCache.get(combined); }
+        const override = { ...req.query, expression: combined };
+        const built = await BuildQuery.buildPromise(req, override);
+        queryCache.set(combined, built.query);
+        return built.query;
       };
-      response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
-      await send(response, false);
 
-      /****************************************/
-      /* Phase 2 Requested field aggregations */
-
-      // Field aggregations - dynamically added based on requested fields
-      for (const fieldExp in fieldConfig) {
+      // INVARIANT: this loop runs strictly sequentially (it awaits each search
+      // before the next). Each iteration mutates its base query in place
+      // (aggregations/size/_source) — both the shared no-expression `query` and
+      // the cached per-expression queries are reused across widgets. Do NOT
+      // parallelize without cloning the query per iteration.
+      for (const spec of widgetSpecs) {
         if (clientDisconnected || res.destroyed) { break; }
         try {
-          const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
-          const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
-          query.aggregations = {};
+          if (spec.unknown) {
+            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.field}` }, false);
+            continue;
+          }
 
-          if (isSpecial) {
-            // Handle special fields with Painless scripts
-            if (fieldExp === 'ip') {
-              query.aggregations[aggName] = {
-                terms: {
-                  script: {
-                    source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
-                    lang: 'painless'
-                  },
-                  size: topNum,
-                  order: { _count: sortOrder }
-                },
-                aggs: extraAggs
-              };
-            } else if (fieldExp === 'ip.dst:port') {
-              query.aggregations[aggName] = {
-                terms: {
-                  script: {
-                    source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
-                    lang: 'painless'
-                  },
-                  size: topNum,
-                  order: { _count: sortOrder }
-                },
-                aggs: extraAggs
-              };
-            }
+          const wquery = await widgetBaseQuery(spec.expression);
+          wquery._source = false;
+          wquery.size = 0;
+          delete wquery.sort;
+          wquery.aggregations = {};
+
+          // Per-widget metric: when a numeric field is selected, sum it per
+          // bucket and order Top/Bottom N by that sum; otherwise order by count.
+          const widgetAggs = { ...extraAggs };
+          for (const m of spec.metrics) {
+            widgetAggs[m.aggKey] = { sum: { field: m.dbField } };
+          }
+          const termsOrder = spec.sortAggKey ? { [spec.sortAggKey]: spec.order } : { _count: spec.order };
+
+          if (spec.isSpecial) {
+            // Special fields use Painless scripts (no direct dbField mapping)
+            const source = spec.field === 'ip'
+              ? "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];"
+              : "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];";
+            wquery.aggregations[spec.aggName] = {
+              terms: {
+                script: { source, lang: 'painless' },
+                size: spec.length,
+                order: termsOrder
+              },
+              aggs: widgetAggs
+            };
           } else {
             // Regular field aggregations
-            query.aggregations[aggName] = {
+            wquery.aggregations[spec.aggName] = {
               terms: {
-                field: dbField,
-                size: topNum,
-                order: { _count: sortOrder }
+                field: spec.dbField,
+                size: spec.length,
+                order: termsOrder
               },
-              aggs: extraAggs
+              aggs: widgetAggs
             };
           }
 
-          const phase2 = await Db.searchSessions(indices, query, options);
+          const phase2 = await Db.searchSessions(indices, wquery, options);
           const field = {
-            field: fieldExp,
-            viewMode: metadata.viewMode,
-            metricType: metadata.metricType,
+            id: spec.id,
+            field: spec.field,
+            viewMode: spec.viewMode,
+            metricType: spec.metricType,
+            length: spec.length,
+            order: spec.order,
+            expression: spec.expression,
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration
           };
-          if (fieldExp === 'ip.dst:port') {
-            field.data = convert(phase2.aggregations[aggName]).map(ipDstPortProcessor);
-          } else {
-            field.data = convert(phase2.aggregations[aggName]);
+          let data = convert(phase2.aggregations[spec.aggName], spec.length, spec);
+          if (spec.field === 'ip.dst:port') {
+            data = data.map(ipDstPortProcessor);
           }
+          field.data = data;
           await send(field, false);
         } catch (fieldErr) {
-          // Send error for this specific field, continue with others
-          await send({ field: fieldExp, error: fieldErr.message || String(fieldErr) }, false);
+          // Send error for this specific widget, continue with others
+          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr) }, false);
         }
       }
       if (!res.destroyed) {

@@ -1,4 +1,4 @@
-use Test::More tests => 171;
+use Test::More tests => 210;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -413,3 +413,143 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
         is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=hpBodyUser")->code,  403, "hidePcap blocks $url");
         is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=dpdBodyUser")->code, 403, "disablePcapDownload blocks $url");
     }
+
+################################################################################
+# /api/sessions/summary - modular dashboard widgets (#3971)
+#   Responses stream as a JSON array: [ {stats}, {widget}, ..., {} ]
+#   The endpoint is token protected (checkHeaderToken) so POST with a token.
+#   The startTime/stopTime window below matches the "short" facets test (3 sessions).
+################################################################################
+    my $sumExpr = "file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap";
+
+    # --- legacy fields-string path (back compat) ---
+    my $sumLegacy = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr, fields => "protocols,ip.src"
+    }), $token);
+
+    is (ref($sumLegacy), "ARRAY", "summary streams a JSON array");
+    is ($sumLegacy->[0]->{sessions}, 3, "summary legacy stats sessions");
+    ok (defined $sumLegacy->[0]->{bytes}, "summary legacy stats has bytes");
+    ok (defined $sumLegacy->[0]->{graph}, "summary legacy stats has graph");
+
+    my ($protoW) = grep { ref($_) eq "HASH" && ($_->{field} // "") eq "protocols" } @$sumLegacy;
+    ok (defined $protoW, "summary legacy has protocols widget");
+    is ($protoW->{viewMode}, "pie", "summary legacy protocols default viewMode");
+    is ($protoW->{metricType}, "sessions", "summary legacy protocols default metricType");
+    is (ref($protoW->{data}), "ARRAY", "summary legacy protocols data is an array");
+
+    my ($srcW) = grep { ref($_) eq "HASH" && ($_->{field} // "") eq "ip.src" } @$sumLegacy;
+    ok (defined $srcW, "summary legacy has ip.src widget");
+    is ($srcW->{viewMode}, "bar", "summary legacy ip.src default viewMode");
+
+    # --- per-widget widgets[] path: per-widget length + two widgets on one field ---
+    my $sumWidgets = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr,
+        widgets => [
+            { id => "wAll", field => "protocols", length => 100, order => "desc" },
+            { id => "wOne", field => "protocols", length => 1,   order => "desc" }
+        ]
+    }), $token);
+
+    is ($sumWidgets->[0]->{sessions}, 3, "summary widgets stats sessions");
+    my ($wAll) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "wAll" } @$sumWidgets;
+    my ($wOne) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "wOne" } @$sumWidgets;
+    ok (defined $wAll, "summary widgets wAll chunk present");
+    ok (defined $wOne, "summary widgets wOne chunk present (same field, distinct id)");
+    is ($wAll->{field}, "protocols", "wAll echoes field");
+    is ($wOne->{length}, 1, "wOne echoes per-widget length");
+    cmp_ok (scalar(@{$wOne->{data}}), "<=", 1, "wOne honors per-widget length 1");
+    cmp_ok (scalar(@{$wAll->{data}}), ">=", scalar(@{$wOne->{data}}), "wAll returns at least as many items as wOne");
+
+    # --- per-widget local expression is ANDed with the global search ---
+    # global = socks only; the andFilter widget adds file=bigendian, so the
+    # combined query matches nothing (a session is never in two files)
+    my $sumExpr2 = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => "file=$pwd/socks-http-example.pcap",
+        widgets => [
+            { id => "noFilter",  field => "protocols", length => 100 },
+            { id => "andFilter", field => "protocols", length => 100, expression => "file=$pwd/bigendian.pcap" }
+        ]
+    }), $token);
+
+    my ($noF)  = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "noFilter" } @$sumExpr2;
+    my ($andF) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "andFilter" } @$sumExpr2;
+    cmp_ok (scalar(@{$noF->{data}}), ">=", 1, "unfiltered widget returns data");
+    is (scalar(@{$andF->{data}}), 0, "per-widget expression is ANDed with global (no session is in both files)");
+
+    # --- missing widgets/fields -> 400 ---
+    my $sumErr = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr
+    }), $token);
+    ok (defined $sumErr->{error}, "summary requires fields or widgets");
+
+    # --- empty widgets[] -> stats chunk only (no widget chunks) ---
+    my $sumStatsOnly = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr, widgets => []
+    }), $token);
+    is (ref($sumStatsOnly), "ARRAY", "summary empty widgets returns an array");
+    is ($sumStatsOnly->[0]->{sessions}, 3, "summary empty widgets still returns stats");
+    my @sumWidgetChunks = grep { ref($_) eq "HASH" && defined $_->{id} } @$sumStatsOnly;
+    is (scalar @sumWidgetChunks, 0, "summary empty widgets has no widget chunks");
+
+    # --- noStats skips the stats chunk (incremental single-widget fetch) ---
+    my $sumNoStats = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, noStats => \1,
+        expression => $sumExpr, widgets => [{ id => "n1", field => "protocols", length => 10 }]
+    }), $token);
+    is (ref($sumNoStats), "ARRAY", "summary noStats returns an array");
+    my @noStatsBands = grep { ref($_) eq "HASH" && defined $_->{sessions} } @$sumNoStats;
+    is (scalar @noStatsBands, 0, "summary noStats omits the stats chunk");
+    my ($n1) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "n1" } @$sumNoStats;
+    ok (defined $n1, "summary noStats still returns the widget chunk");
+
+    # --- per-widget metric basis: 'sessions' (count) vs a numeric field (summed) ---
+    my $sumMetric = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "mSess",  field => "protocols", length => 100, metricType => "sessions" },
+            { id => "mBytes", field => "protocols", length => 100, metricType => "bytes", order => "desc" }
+        ]
+    }), $token);
+
+    my ($mSess)  = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mSess" }  @$sumMetric;
+    my ($mBytes) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mBytes" } @$sumMetric;
+    ok (defined $mSess,  "summary metric sessions widget present");
+    ok (defined $mBytes, "summary metric bytes widget present");
+    is ($mBytes->{metricType}, "bytes", "summary metric widget echoes selected metricType");
+    cmp_ok (scalar(@{$mSess->{data}}), ">", 0, "summary metric sessions widget has data");
+
+    # sessions metric: the visualized value mirrors the session (doc) count
+    is ($mSess->{data}->[0]->{value}, $mSess->{data}->[0]->{sessions}, "summary sessions metric value equals session count");
+
+    # numeric-field metric: each item carries a summed value, Top N ordered by it
+    ok (exists $mBytes->{data}->[0]->{value}, "summary numeric metric data item has value");
+    cmp_ok ($mBytes->{data}->[0]->{value}, ">=", 0, "summary numeric metric value is non-negative");
+    my $metricOrdered = 1;
+    for (my $k = 1; $k < scalar(@{$mBytes->{data}}); $k++) {
+        $metricOrdered = 0 if $mBytes->{data}->[$k]->{value} > $mBytes->{data}->[$k - 1]->{value};
+    }
+    ok ($metricOrdered, "summary numeric metric Top N ordered by metric value desc");
+
+    # --- a non-numeric metricType falls back to session count instead of erroring ---
+    my $sumBadMetric = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [{ id => "mBad", field => "protocols", length => 100, metricType => "protocols" }]
+    }), $token);
+    my ($mBad) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mBad" } @$sumBadMetric;
+    ok (defined $mBad, "summary non-numeric metric widget present");
+    ok (!defined $mBad->{error}, "summary non-numeric metric does not error the widget");
+    cmp_ok (scalar(@{$mBad->{data}}), ">", 0, "summary non-numeric metric widget still returns data");
+    is ($mBad->{data}->[0]->{value}, $mBad->{data}->[0]->{sessions}, "summary non-numeric metric falls back to session count");
+
+    # --- an all-whitespace/comma fields string is rejected (dropped-guard regression) ---
+    my $sumBlankFields = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr, fields => " , "
+    }), $token);
+    ok (defined $sumBlankFields->{error}, "summary rejects an all-whitespace fields string");

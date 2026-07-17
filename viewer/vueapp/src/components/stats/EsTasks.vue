@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -11,18 +11,23 @@ SPDX-License-Identifier: Apache-2.0
       :message="error" />
 
     <div v-show="!error">
-      <button
-        type="button"
+      <v-btn
         id="cancelAllTasks"
-        @click="cancelTasks"
+        color="warning"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        class="float-right"
         v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
-        class="pull-right btn btn-sm btn-warning">
-        <span class="fa fa-ban" />&nbsp;
+        @click="cancelTasks">
+        <v-icon
+          icon="mdi-cancel"
+          class="me-1" />
         {{ $t('stats.esTasks.cancelAll') }}
-        <BTooltip target="cancelAllTasks">
+        <v-tooltip activator="#cancelAllTasks">
           {{ $t('stats.esTasks.cancelAllTip') }}
-        </BTooltip>
-      </button>
+        </v-tooltip>
+      </v-btn>
 
       <arkime-paging
         v-if="stats"
@@ -44,15 +49,19 @@ SPDX-License-Identifier: Apache-2.0
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
-          <a
+          <v-btn
             v-if="item.item.cancellable"
-            class="btn btn-xs btn-danger"
-            @click="cancelTask(item.item.taskId)"
-            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
-            <span class="fa fa-trash-o" />
-          </a>
+            color="error"
+            variant="flat"
+            size="small"
+            density="comfortable"
+            icon
+            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
+            @click="cancelTask(item.item.taskId)">
+            <v-icon icon="mdi-trash-can-outline" />
+          </v-btn>
         </template>
       </arkime-table>
     </div>
@@ -64,7 +73,7 @@ import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
 import { roundCommaString, timezoneDateString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';

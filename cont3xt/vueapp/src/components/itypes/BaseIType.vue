@@ -158,7 +158,7 @@ export default {
 /* effects only the directly-hovered itype-card */
 /* (by checking that none of its children are hovered) */
 .itype-card:hover:not(:has(.itype-card:hover)) {
-  background: rgb(var(--v-theme-cont3xt-card-hover)) !important;
+  background: rgb(var(--v-theme-surface-card-hover)) !important;
 }
 .itype-card-active {
   outline: 1px solid rgb(var(--v-theme-error)) !important;

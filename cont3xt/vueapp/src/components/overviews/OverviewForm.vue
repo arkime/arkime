@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!noEdit"
       :value="rawEditText"
       @input="e => debounceRawEdit(e)"
-      class="form-control form-control-sm" />
+      class="cont3xt-textarea" />
     <pre v-else>{{ rawEditText }}</pre>
   </template>
   <v-form v-else>
@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
               :actions="createFieldActions(i)"
               color="primary"
               size="small"
-              class="ml-2 square-btn-sm"
+              class="ml-2\"
               v-tooltip="'Actions'" />
           </v-form>
           <template v-if="fieldRef.expanded">
@@ -183,7 +183,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               :value="getOrInitCustomText(fieldRef)"
               @input="e => debounceCustomRawEdit(fieldRef, e)"
-              class="form-control form-control-sm mt-2" />
+              class="cont3xt-textarea mt-2" />
             <v-alert
               color="warning"
               v-if="!!fieldRef._error"

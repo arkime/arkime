@@ -54,7 +54,6 @@ LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_THREADS_PER_INTERFACE];
 
 LOCAL int numThreads;
 
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 LOCAL struct bpf_program     bpf;
 
 LOCAL ArkimeReaderStats_t gStats;
@@ -212,9 +211,10 @@ void reader_tpacketv3_init(const char *UNUSED(name))
         CONFIGEXIT("tpacketv3BlockSize=%d not divisible by snapLen=%u", blocksize, config.snapLen);
     }
 
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, DLT_EN10MB, config.snapLen);
 
-    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
+    pcap_t *dpcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
 
     if (config.bpf) {
         if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
