@@ -15,7 +15,7 @@ const otplib = require('otplib');
 const QRCode = require('qrcode');
 
 const systemRolesMapping = {
-  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
+  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser', 'dbAdmin'],
   usersAdmin: [],
   arkimeAdmin: ['arkimeUser'],
   arkimeUser: [],
@@ -24,11 +24,12 @@ const systemRolesMapping = {
   wiseAdmin: ['wiseUser'],
   wiseUser: [],
   cont3xtAdmin: ['cont3xtUser'],
-  cont3xtUser: []
+  cont3xtUser: [],
+  dbAdmin: []
 };
 
-const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
-const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin'];
+const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
+const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
 
 const usersMissing = {
   userId: '',
@@ -252,6 +253,18 @@ class User {
   }
 
   /**
+   * Return ALL users with their full raw data, including sensitive fields such
+   * as passStore and cont3xt keys. Unlike searchUsers/getUser this does NOT
+   * clean, filter, or expand roles. Intended for admin/maintenance tasks that
+   * need the stored document as-is (e.g. re-encrypting after a passwordSecret
+   * change). Pair with setUser to write changes back.
+   * @returns {Promise<Array>} every stored user/role document, unmodified
+   */
+  static getAllUsers () {
+    return User.#implementation.getAllUsers();
+  }
+
+  /**
    * @private
    * Create a user from thin air!
    */
@@ -442,7 +455,8 @@ class User {
    * superAdmin - has access to all the applications and can configure anything<br>
    * usersAdmin - has access to configure users<br>
    * wiseAdmin - has administrative access to WISE (can configure and update WISE)<br>
-   * wiseUser - has access to WISE
+   * wiseUser - has access to WISE<br>
+   * dbAdmin - has access to perform database administration tasks
    * @typedef ArkimeRole
    * @type {string}
    */
@@ -1615,6 +1629,19 @@ class User {
   }
 
   /**
+   * Denies access unless the requesting user has at least one of the required roles (OR logic)
+   */
+  static checkAnyRole (roles) {
+    return async (req, res, next) => {
+      if (!req.user.hasRole(roles)) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using any role ${roles}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
    * Denies access if the setting user lacks ANY of the required roles (OR logic)
    */
   static checkSettingUserAnyRole (roles) {
@@ -2027,6 +2054,29 @@ class UserESImplementation {
     return { users: hits, total: users.hits.total };
   }
 
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const users = [];
+    let resp = await this.client.search({
+      index: this.prefix + 'users',
+      scroll: '5m',
+      body: { size: 1000, query: { match_all: {} } }
+    });
+
+    while (resp.body.hits.hits.length > 0) {
+      for (const hit of resp.body.hits.hits) {
+        users.push(hit._source);
+      }
+      resp = await this.client.scroll({ scroll_id: resp.body._scroll_id, scroll: '5m' });
+    }
+
+    if (resp.body?._scroll_id) {
+      try { await this.client.clearScroll({ body: { scroll_id: [resp.body._scroll_id] } }); } catch (err) { /* ignore */ }
+    }
+
+    return users;
+  }
+
   // Return a user from DB, callback only
   getUser (userId, cb) {
     this.client.get({ index: this.prefix + 'users', id: userId }, (err, result) => {
@@ -2164,6 +2214,15 @@ class UserLMDBImplementation {
     };
   }
 
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const users = [];
+    this.store.getRange({}).forEach(({ key, value }) => {
+      users.push(value);
+    });
+    return users;
+  }
+
   // Return a user from DB, callback only
   getUser (userId, cb) {
     try {
@@ -2275,6 +2334,18 @@ class UserRedisImplementation {
       total: hits.length,
       users: hits.slice(from, from + size)
     };
+  }
+
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const keys = await this.client.keys(this.prefix + '*');
+    const users = [];
+    for (const key of keys) {
+      const data = await this.client.get(key);
+      if (!data) { continue; }
+      users.push(JSON.parse(data));
+    }
+    return users;
   }
 
   // Return a user from DB, callback only
@@ -2395,6 +2466,12 @@ class UserSQLiteImplementation {
       total: hits.length,
       users: hits.slice(from, from + size)
     };
+  }
+
+  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
+  async getAllUsers () {
+    const rows = this.db.prepare('SELECT json FROM users').all();
+    return rows.map(row => JSON.parse(row.json));
   }
 
   // Return a user from DB, callback only

@@ -394,7 +394,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
 
     DLL_INIT(t_, &(svcbData->fieldValues));
 
-    while (BSB_REMAINING(bsb) > 4 && !BSB_IS_ERROR(bsb)) {
+    while (BSB_REMAINING(bsb) >= 4 && !BSB_IS_ERROR(bsb)) {
         uint16_t key = 0;
         BSB_IMPORT_u16(bsb, key);
         uint16_t len = 0;

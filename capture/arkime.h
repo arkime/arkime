@@ -510,6 +510,7 @@ typedef struct arkime_config {
     char      noRefresh;
     char    **commandList;
     char      noConfigOption;
+    gboolean  pcapSorted;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -1052,7 +1053,7 @@ void arkime_config_init();
 void arkime_config_load_override_ips();
 void arkime_config_load_packet_ips();
 void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos);
-void arkime_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, ArkimeStringHashStd_t *hash, int flags);
+void arkime_config_load_header(char *section, char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags);
 void arkime_config_exit();
 
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d);
@@ -1512,7 +1513,7 @@ typedef uint32_t (* ArkimePluginOutstandingFunc) ();
 #define ARKIME_PLUGIN_SMTP_OHC     0x00200000
 
 void arkime_plugins_init();
-void arkime_plugins_load(char **plugins, gboolean loadParsers);
+void arkime_plugins_load(char **pluginsList, gboolean loadParsers);
 void arkime_plugins_reload();
 
 int  arkime_plugins_register_internal(const char *name, gboolean storeData, size_t sessionsize, int apiversion);
@@ -1704,7 +1705,8 @@ typedef enum {
     ARKIME_SCHEME_FLAG_MONITOR   = 0x0002,
     ARKIME_SCHEME_FLAG_RECURSIVE = 0x0004,
     ARKIME_SCHEME_FLAG_SKIP      = 0x0008,
-    ARKIME_SCHEME_FLAG_DELETE    = 0x0010
+    ARKIME_SCHEME_FLAG_DELETE    = 0x0010,
+    ARKIME_SCHEME_FLAG_SORTED    = 0x0020
 } ArkimeSchemeFlags;
 
 typedef struct {

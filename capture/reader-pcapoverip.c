@@ -155,7 +155,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
                 break;
             }
             LOG_RATE(60, "ERROR - Arkime requires full packet captures caplen: %u pktlen: %u, skipping packet\n"
-                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
+                         "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                      caplen, origlen);
             arkime_packet_free(packet);
             pos += 16 + caplen;

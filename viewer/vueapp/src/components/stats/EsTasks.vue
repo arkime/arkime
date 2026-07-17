@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
         type="button"
         id="cancelAllTasks"
         @click="cancelTasks"
-        v-has-role="{user:user,roles:'arkimeAdmin'}"
+        v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
         class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban" />&nbsp;
         {{ $t('stats.esTasks.cancelAll') }}
@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="item.item.cancellable"
             class="btn btn-xs btn-danger"
             @click="cancelTask(item.item.taskId)"
-            v-has-role="{user:user,roles:'arkimeAdmin'}">
+            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
             <span class="fa fa-trash-o" />
           </a>
         </template>

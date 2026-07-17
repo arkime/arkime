@@ -38,9 +38,9 @@ SPDX-License-Identifier: Apache-2.0
           <b-dropdown
             size="xs"
             class="row-actions-btn"
-            v-has-role="{user:user,roles:'arkimeAdmin'}"
-            v-has-permission="'removeEnabled'">
+            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
             <b-dropdown-item
+              v-has-permission="'removeEnabled'"
               @click.stop.prevent="confirmDeleteIndex(item.item.index)">
               {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
             </b-dropdown-item>

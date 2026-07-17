@@ -496,7 +496,7 @@ LOCAL void arkime_session_hash_remove(ArkimeSessionHash_t *hash, ArkimeSession_t
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session);
-LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *UNUSED(hash))
+LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
 {
     if (config.debug)
         LOG("Resizing session hash table from %u to %u with %u items", hash->size, hash->size << 1, hash->count);

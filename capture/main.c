@@ -118,6 +118,7 @@ LOCAL  GOptionEntry entries[] = {
     { "skip",      's',                    0, G_OPTION_ARG_NONE,           &config.pcapSkip,      "Used with -R option and without --copy, skip files already processed", NULL },
     { "reprocess",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapReprocess, "In offline mode reprocess files, use the same files table entry", NULL },
     { "recursive",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
+    { "sorted",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapSorted,    "When in offline pcap directory mode, sort files alphabetically before processing", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,         &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host", NULL },
     { "host",        0,                    0, G_OPTION_ARG_STRING,         &config.hostName,      "Override hostname, this is what remote viewers will use to connect", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
@@ -342,6 +343,11 @@ LOCAL void parse_args(int argc, char **argv)
 
     if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket && !config.commandList) {
         printf("Must specify directories to monitor with -R\n");
+        exit(1);
+    }
+
+    if (config.pcapSorted && config.pcapMonitor) {
+        printf("--sorted cannot be used with --monitor\n");
         exit(1);
     }
 

@@ -1559,7 +1559,7 @@ void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos)
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
-void arkime_config_load_header(char *section, char *group, char *helpBase, char *expBase, char *aliasBase, char *dbBase, ArkimeStringHashStd_t *hash, int flags)
+void arkime_config_load_header(char *section, char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags)
 {
     GError   *error = 0;
     char      name[100];
@@ -1586,7 +1586,7 @@ void arkime_config_load_header(char *section, char *group, char *helpBase, char 
         ArkimeFieldType t = ARKIME_FIELD_TYPE_INT;
         int unique = 1;
         int count  = 0;
-        char *kind = 0;
+        const char *kind = 0;
         for (v = 0; v < values_len; v++) {
             if (strcmp(values[v], "type:integer") == 0 ||
                 strcmp(values[v], "type:seconds") == 0 ||

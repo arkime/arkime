@@ -169,6 +169,12 @@ LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlag
 }
 #endif
 /******************************************************************************/
+// g_ptr_array_sort passes pointers to the array elements (gchar **)
+LOCAL int scheme_file_name_cmp(gconstpointer a, gconstpointer b)
+{
+    return g_strcmp0(*(const gchar * const *)a, *(const gchar * const *)b);
+}
+/******************************************************************************/
 LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     GDir   *pcapGDir;
@@ -184,6 +190,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
         return 1;
     }
 
+    GPtrArray *files = (flags & ARKIME_SCHEME_FLAG_SORTED) ? g_ptr_array_new_with_free_func(g_free) : NULL;
     while (1) {
         const gchar *filename = g_dir_read_name(pcapGDir);
 
@@ -195,6 +202,11 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
         // Skip hidden files/directories
         if (filename[0] == '.')
             continue;
+
+        if (flags & ARKIME_SCHEME_FLAG_SORTED) {
+            g_ptr_array_add(files, g_strdup(filename));
+            continue;
+        }
 
         gchar *fullfilename = g_build_filename (dirname, filename, NULL);
 
@@ -214,6 +226,32 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
+
+    // Not sorted mode, everything was already processed above
+    if ((flags & ARKIME_SCHEME_FLAG_SORTED) == 0)
+        return 1;
+
+    g_ptr_array_sort(files, scheme_file_name_cmp);
+    for (guint i = 0; i < files->len; i++) {
+        const gchar *filename = files->pdata[i];
+        gchar *fullfilename = g_build_filename (dirname, filename, NULL);
+
+        // If recursive option and a directory then process all the files in that dir
+        if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+            scheme_file_dir(fullfilename, flags, actions);
+            g_free(fullfilename);
+            continue;
+        }
+
+        if (!g_regex_match(config.offlineRegex, filename, 0, NULL)) {
+            g_free(fullfilename);
+            continue;
+        }
+
+        arkime_reader_scheme_load(fullfilename, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
+        g_free(fullfilename);
+    }
+    g_ptr_array_free(files, TRUE);
     return 1;
 }
 /******************************************************************************/

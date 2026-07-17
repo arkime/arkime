@@ -51,6 +51,8 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname);
 LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 {
     gchar *dirname = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
+    if (!dirname)
+        return;
     gchar *fullfilename = g_build_filename(dirname, event->name, NULL);
 
     if (config.pcapRecursive &&

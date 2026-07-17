@@ -1388,6 +1388,47 @@ class DbCHImpl {
     return { result: 'deleted' };
   }
 
+  // Seam adapter: ClickHouse has no ES-style scroll. When scroll is
+  // requested, fetch up to a large cap in one shot and return a sentinel
+  // _scroll_id that Db.scroll/Db.clearScroll resolve to empty.
+  async searchScroll (index, query, options, cb) {
+    try {
+      const chQuery = options?.scroll ? { ...query, size: 1000000 } : query;
+      const result = await this.searchSessions(index, chQuery, options);
+      if (options?.scroll) { result._scroll_id = 'ch:done'; }
+      if (cb) { return cb(null, result); }
+      return result;
+    } catch (err) {
+      if (cb) { return cb(err); }
+      throw err;
+    }
+  }
+
+  async * searchScrollIterator (index, query, options) {
+    yield * this.searchSessionsIterator(index, query, options);
+  }
+
+  // ES refreshes the index and retries a not-found get; CH inserts are
+  // visible immediately, so a retry never helps.
+  async refreshForNotFoundRetry () {
+    return false;
+  }
+
+  getSessionIndices () {
+    return [`${this.prefix}${this.table}`];
+  }
+
+  // Index names are only time hints for CH; the bare table name carries no
+  // date suffix so searchSessions applies no index-based time pruning.
+  async getIndices () {
+    return `${this.prefix}${this.table}`;
+  }
+
+  async getMinValue (index, field) {
+    const result = await this.searchSessions(index, { size: 0, aggs: { min: { min: { field } } } });
+    return { body: result };
+  }
+
   async numberOfDocuments () {
     const result = await this.query(`SELECT count() AS count FROM ${this.tableName()}`);
     return { count: Number(result.data?.[0]?.count ?? 0) };
