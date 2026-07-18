@@ -14,6 +14,7 @@ use LWP::UserAgent;
 use JSON;
 use Getopt::Long;
 use Data::Dumper;
+use MIME::Base64;
 
 our $VERSION = 2;
 
@@ -107,30 +108,8 @@ sub urlDecode
 {
     my ($str) = @_;
 
-    $str =~ tr/+/ /;
     $str =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
     return $str;
-}
-
-################################################################################
-sub base64Encode
-{
-    my ($data) = @_;
-    my $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    my $out = "";
-
-    while (length($data) > 0) {
-        my $chunk = substr($data, 0, 3, "");
-        my $len = length($chunk);
-        my @bytes = unpack("C*", $chunk . "\0\0");
-        my $n = ($bytes[0] << 16) | ($bytes[1] << 8) | $bytes[2];
-        $out .= substr($chars, ($n >> 18) & 63, 1);
-        $out .= substr($chars, ($n >> 12) & 63, 1);
-        $out .= $len > 1 ? substr($chars, ($n >> 6) & 63, 1) : "=";
-        $out .= $len > 2 ? substr($chars, $n & 63, 1) : "=";
-    }
-
-    return $out;
 }
 
 ################################################################################
@@ -164,7 +143,7 @@ sub sqlTable
 sub validateOptions
 {
     die "--partition must be monthly, daily, or none\n" if ($PARTITION !~ /^(monthly|daily|none)$/);
-    die "--prefix can only contain letters, digits, and underscores\n" if ($PREFIX !~ /^[A-Za-z0-9_]*$/);
+    die "--prefix must start with a letter or underscore and contain only letters, digits, and underscores\n" if ($PREFIX !~ /^([A-Za-z_][A-Za-z0-9_]*)?$/);
     $PREFIX .= "_" if ($PREFIX ne "" && $PREFIX !~ /_$/);
     die "--database must start with a letter or underscore and contain only letters, digits, and underscores\n" if ($DATABASE !~ /^[A-Za-z_][A-Za-z0-9_]*$/);
 }
@@ -201,16 +180,10 @@ sub parseEndpoint
 ################################################################################
 sub chquery
 {
-    my ($verb, $sql, $body) = @_;
+    my ($verb, $sql) = @_;
 
     my $url = $endpoint . "/";
-    my $content;
-    if (defined $body) {
-        $url .= "?query=" . urlEncode($sql);
-        $content = $body;
-    } else {
-        $content = $sql;
-    }
+    my $content = $sql;
 
     logmsg "POST $url\n" if ($verbose > 2);
     logmsg "POST DATA: ", Dumper($content), "\n" if ($verbose > 3);
@@ -514,15 +487,14 @@ sub cmdInfo
 sub cmdInit
 {
     if (!$NO_PROMPT) {
-        logmsg "This will delete ALL Arkime ClickHouse data in database $DATABASE! (It does not delete the pcap files on disk.)\n\n";
+        logmsg "This will delete the Arkime ClickHouse tables $sessionsTable, $lookupsTable, and $schemaTable! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything");
     }
 
-    logmsg "Dropping database $DATABASE\n";
-    chquery("DROP DATABASE", "DROP DATABASE IF EXISTS " . sqlIdentifier($DATABASE));
-    createDatabase();
-    createSessionsTable();
-    createSchemaVersionTable();
+    logmsg "Dropping tables\n";
+    chquery("DROP TABLE", "DROP TABLE IF EXISTS $sessionsTable");
+    chquery("DROP TABLE", "DROP TABLE IF EXISTS $lookupsTable");
+    chquery("DROP TABLE", "DROP TABLE IF EXISTS $schemaTable");
     upgradeToCurrent();
 }
 
@@ -546,7 +518,7 @@ sub cmdExpire
     showHelp("expire requires a positive integer number of days") if (!defined $days || $days !~ /^\d+$/ || int($days) < 1);
 
     logmsg "Finding partitions fully older than $days days based on lastPacket\n";
-    my $result = chquery("SELECT", "SELECT partition FROM system.parts WHERE active AND database = " . sqlString($DATABASE) . " AND table = " . sqlString($PREFIX . "sessions3") . " AND partition NOT LIKE 'patch%' GROUP BY partition HAVING max(max_time) < now() - INTERVAL " . int($days) . " DAY ORDER BY partition FORMAT TSV");
+    my $result = chquery("SELECT", "SELECT partition FROM system.parts WHERE active AND database = " . sqlString($DATABASE) . " AND table = " . sqlString($PREFIX . "sessions3") . " AND partition NOT LIKE 'patch%' AND partition != 'tuple()' GROUP BY partition HAVING max(max_time) < now() - INTERVAL " . int($days) . " DAY ORDER BY partition FORMAT TSV");
     my @partitions = grep { $_ ne "" } split(/\n/, $result);
 
     foreach my $partition (@partitions) {
@@ -583,8 +555,8 @@ GetOptions(
     "help" => sub { showHelp("Help:"); }
 ) or showHelp("Unknown global option");
 
+showHelp("Help:") if (grep { $_ eq "help" } @ARGV);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Help:") if ($ARGV[1] eq "help");
 
 parseEndpoint($ARGV[0]);
 validateOptions();
@@ -595,7 +567,7 @@ $schemaTable = sqlTable($DATABASE, $PREFIX . "schema_version");
 
 $main::userAgent = LWP::UserAgent->new(timeout => $TIMEOUT, keep_alive => 5);
 if ($USER ne "" || $PASSWORD ne "") {
-    $main::userAgent->default_header('Authorization' => "Basic " . base64Encode("$USER:$PASSWORD"));
+    $main::userAgent->default_header('Authorization' => "Basic " . encode_base64("$USER:$PASSWORD", ""));
 }
 
 $main::userAgent->ssl_opts(

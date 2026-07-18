@@ -643,9 +643,9 @@ gboolean arkime_db_tokens_enabled(void)
 
 void arkime_db_set_tokens_field(int pos, const char *tokensKey)
 {
-    if (pos < 0 || pos >= ARKIME_FIELDS_MAX)
+    // Never free an old key: packet threads may be reading it
+    if (pos < 0 || pos >= ARKIME_FIELDS_MAX || !tokensEnabled)
         return;
-    g_free(tokensFieldKey[pos]);
     tokensFieldKey[pos] = g_strdup(tokensKey);
 }
 /******************************************************************************/
@@ -1253,7 +1253,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                                (uint8_t *)session->fields[pos]->str,
                                flags & ARKIME_FIELD_FLAG_FORCE_UTF8);
             BSB_EXPORT_u08(jbsb, ',');
-            if (tokensFieldKey[pos] && tokensEnabled) {
+            if (tokensFieldKey[pos]) {
                 SAVE_FIELD_TOKENS_BEGIN(pos);
                 arkime_db_export_tokens_str(&jbsb, session->fields[pos]->str);
                 SAVE_FIELD_TOKENS_END();
@@ -1301,7 +1301,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             break;
         case ARKIME_FIELD_TYPE_STR_HASH:
             SAVE_FIELD_STR_HASH(pos, flags);
-            if (tokensFieldKey[pos] && tokensEnabled) {
+            if (tokensFieldKey[pos]) {
                 SAVE_FIELD_TOKENS_BEGIN(pos);
                 HASH_FORALL2(s_, *shash, hstring) {
                     arkime_db_export_tokens_str(&jbsb, hstring->str);
@@ -1330,7 +1330,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
 
-            if (tokensFieldKey[pos] && tokensEnabled) {
+            if (tokensFieldKey[pos]) {
                 SAVE_FIELD_TOKENS_BEGIN(pos);
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {

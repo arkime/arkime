@@ -33,7 +33,7 @@ if ($ENV{INSECURE} eq "--insecure") {
 $ArkimeTest::sessionsDbUrl = $ENV{ARKIME_test__sessionsDbUrl} // "";
 if (!$ArkimeTest::sessionsDbUrl && open my $cfgFh, '<', "config.test.ini") {
     while (<$cfgFh>) {
-        if (/^sessionsDbUrl=(.*)$/) { $ArkimeTest::sessionsDbUrl = $1; last; }
+        if (/^sessionsDbUrl\s*=\s*(.*?)\s*$/) { $ArkimeTest::sessionsDbUrl = $1; last; }
     }
     close $cfgFh;
 }

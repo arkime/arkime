@@ -1,4 +1,4 @@
-use Test::More tests => 82;
+use Test::More tests => 86;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -37,6 +37,8 @@ my $files = "(file=$pwd/openssl-ssl3.pcap||file=$pwd/openssl-tls1.pcap||file=$pw
 
 # cert.notafter
     countTest(2, "date=-1&expression=" . uri_escape("$files&&cert.notafter==\"2018/08/21 00:00:00\""));
+    countTest(3, "date=-1&expression=" . uri_escape("$files&&cert.notafter==[\"2018/08/21 00:00:00\",\"2015/09/02 08:00:00\"]"));
+    countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.notafter==[\"1999/01/01 00:00:00\",\"1998/01/01 00:00:00\"]"));
     countTest(0, "date=-1&expression=" . uri_escape("$files&&cert.notafter==\"2018/08/21 11:11:11\""));
     countTest(4, "date=-1&expression=" . uri_escape("$files&&cert.notafter>=\"2018/08/21 00:00:00\""));
 

@@ -11,7 +11,7 @@
 #define MAX_IPS 2000
 
 #define DEFAULT_JSON_LEN 200
-#define HOST_IP_JSON_LEN 500 // covers host plus its hostTokens copy
+#define HOST_IP_JSON_LEN 800 // worst case: 255-char host emits ~258 bytes plus up to ~512 in hostTokens
 #define ANSWER_JSON_LEN 200
 
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)

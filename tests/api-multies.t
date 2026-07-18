@@ -72,7 +72,7 @@ my $json;
 
 # aliases
     SKIP: {
-        skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 2 if $ArkimeTest::sessionsDbUrl;
+        skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 2 if $ArkimeTest::sessionsDbUrl =~ m{^clickhouse://};
 
     $json = mesGet("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_alias");
     is (exists $json->{"MULTIPREFIX_sessions2-05m03"} || exists $json->{"MULTIPREFIX_sessions3-05m03"}, 1, "Correct session alias");
@@ -95,7 +95,7 @@ my $json;
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v30", "Correct fields index name");
 
     SKIP: {
-        skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 6 if $ArkimeTest::sessionsDbUrl;
+        skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 6 if $ArkimeTest::sessionsDbUrl =~ m{^clickhouse://};
 
     $json = mesGet("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
     if ($json->{hits}->{total} == 0) {

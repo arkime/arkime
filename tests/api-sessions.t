@@ -1,4 +1,4 @@
-use Test::More tests => 210;
+use Test::More tests => 213;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -553,3 +553,9 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
         startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr, fields => " , "
     }), $token);
     ok (defined $sumBlankFields->{error}, "summary rejects an all-whitespace fields string");
+
+# hostile fields param: a backtick in a field name must not break out of the
+# generated query, and __proto__ path segments must not be materialized
+    my $hostile = get("/api/sessions?date=-1&fields=" . uri_escape('source.ip,evil`--,__proto__.polluted') . "&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    cmp_ok ($hostile->{recordsFiltered}, '>=', 1, "hostile fields param still returns sessions");
+    is ($hostile->{data}->[0]->{source}->{ip}, "10.180.156.185", "hostile fields param returns requested fields");

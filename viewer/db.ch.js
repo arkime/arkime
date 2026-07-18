@@ -89,10 +89,6 @@ function quoteIdent (ident) {
   return '`' + String(ident).replace(/`/g, '``') + '`';
 }
 
-function escapeLike (value) {
-  return String(value).replace(/([%_\\])/g, '\\$1');
-}
-
 function sqlLiteral (value, field) {
   if (value === null || value === undefined) { return 'NULL'; }
   if (Array.isArray(value)) {
@@ -119,7 +115,15 @@ function sqlLiteral (value, field) {
 }
 
 function wildcardToLike (value) {
-  return escapeLike(value).replace(/\\\*/g, '*').replace(/\\\?/g, '?').replace(/\*/g, '%').replace(/\?/g, '_');
+  let out = '';
+  const str = String(value);
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (c === '\\' && (str[i + 1] === '*' || str[i + 1] === '?')) {
+      out += str[++i]; // user-escaped wildcard is a literal
+    } else if (c === '*') { out += '%'; } else if (c === '?') { out += '_'; } else if (c === '%' || c === '_' || c === '\\') { out += '\\' + c; } else { out += c; }
+  }
+  return out;
 }
 
 /* eslint-disable no-bitwise -- IP address math below is inherently bitwise */
@@ -199,7 +203,7 @@ function ipRange (value) {
 }
 /* eslint-enable no-bitwise */
 
-// Index names carry a time suffix from capture's config.rotate
+// Index names carry a time suffix from capture's rotateIndex setting
 // ("sessions3-060220", "-060220h04", "-99w03", "-99m03"). Map it to a
 // [startMs, endMs) lastPacket range so id lookups and updates prune to a few
 // partitions instead of scanning every day. Returns null when the index has
@@ -223,7 +227,7 @@ function timeRangeFromIndexName (index) {
   m = str.match(/-(\d{2})m(\d{2})$/); // monthly
   if (m) {
     const year = yearOf(+m[1]); const mon = +m[2];
-    return [Date.UTC(year, mon - 1, 1), Date.UTC(year + (mon === 12 ? 1 : 0), mon === 12 ? 0 : mon, 1)];
+    return [Date.UTC(year, mon - 1, 1), Date.UTC(year, mon, 1)]; // Date.UTC rolls month 12 into January
   }
   return null;
 }
@@ -358,7 +362,7 @@ class DbCHImpl {
       if (Config?.debug >= 1) { console.log('CH backend: typed path discovery failed:', err.message); }
     }
 
-    const sql = `SELECT distinctJSONPathsAndTypes(fields) AS p FROM ${quoteIdent(this.index)}`;
+    const sql = `SELECT distinctJSONPathsAndTypes(fields) AS p FROM ${this.tableName()}`;
     const res = await this.query(sql);
     const map = res?.data?.[0]?.p;
     if (!map || typeof map !== 'object') { return; }
@@ -398,6 +402,9 @@ class DbCHImpl {
     reqUrl.search = '';
     reqUrl.searchParams.set('database', this.database);
     reqUrl.searchParams.set('default_format', opts.format || 'JSON');
+    // Int64/UInt64 quote as strings by default; emit real JSON numbers so
+    // metric values and field values match the ES response shape
+    reqUrl.searchParams.set('output_format_json_quote_64bit_integers', '0');
     if (opts.mutationsSync) { reqUrl.searchParams.set('mutations_sync', '1'); }
 
     const body = opts.raw || opts.text ? sql : (opts.format === 'TabSeparated' ? sql : `${sql}\nFORMAT JSON`);
@@ -440,9 +447,6 @@ class DbCHImpl {
     // Typed paths declare their type in the DDL — most authoritative.
     const typed = this.typedPaths.get(field);
     if (typed) { return typed.startsWith('Array'); }
-    // Authoritative: trust the live JSON schema. capture/db.c writes nearly
-    // every non-counter field as an array, so any path discovered with an
-    // Array(...) type is multi-valued.
     if (ARRAY_PATH_FIELDS.has(field)) { return true; }
     if (ARRAY_FIELDS.has(field)) { return true; }
     if (nestedArrayParent(field)) { return true; }
@@ -463,7 +467,7 @@ class DbCHImpl {
 
   // Typed expression for use in WHERE / ORDER BY / aggregations.
   // Returns SQL that yields a real (non-Dynamic) typed value.
-  columnForField (field, forSort = false) {
+  columnForField (field) {
     const mat = MATERIALIZED[field];
     if (mat) {
       // Qualify with table to avoid alias-shadowing when SELECT exposes
@@ -530,17 +534,17 @@ class DbCHImpl {
     }
     const mat = MATERIALIZED[field];
     if (mat && mat.type === 'DateTime64') {
-      return `formatDateTime(${mat.col}, '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS \`${field}\``;
+      return `formatDateTime(${mat.col}, '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS ${quoteIdent(field)}`;
     }
-    if (mat) { return `${mat.col} AS \`${field}\``; }
+    if (mat) { return `${mat.col} AS ${quoteIdent(field)}`; }
     if (nestedArrayParent(field)) {
-      return `${this.columnForField(field)} AS \`${field}\``;
+      return `${this.columnForField(field)} AS ${quoteIdent(field)}`;
     }
     const info = dbFieldsMap()[field];
     if (info?.type === 'date') {
-      return `formatDateTime(fromUnixTimestamp64Milli(toInt64OrZero(toString(${jsonPath(field)})), 'UTC'), '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS \`${field}\``;
+      return `formatDateTime(fromUnixTimestamp64Milli(toInt64OrZero(toString(${jsonPath(field)})), 'UTC'), '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS ${quoteIdent(field)}`;
     }
-    return `${jsonPath(field)} AS \`${field}\``;
+    return `${jsonPath(field)} AS ${quoteIdent(field)}`;
   }
 
   scalarTypeForField (field) {
@@ -551,15 +555,6 @@ class DbCHImpl {
     if (DATE_FIELDS.has(field)) { return 'Int64'; }
     if (NUMERIC_HINTS.has(field) || /(?:Cnt|Bytes|Packets|-cnt|-bytes|-packets)$/.test(field)) { return 'Int64'; }
     return 'String';
-  }
-
-  jsonTypeForField (field) {
-    return this.scalarTypeForField(field);
-  }
-
-  // Legacy name kept for compatibility w/ older callers.
-  jsonExtract (field) {
-    return this.columnForField(field);
   }
 
   predicateForFieldValue (field, op, value) {
@@ -682,11 +677,14 @@ class DbCHImpl {
     if (!nested) { return null; }
     const info = dbFieldsMap()[field];
     if (info?.type !== 'date' && !DATE_FIELDS.has(field)) { return null; }
-    const ms = typeof value === 'number' ? value : Date.parse(value);
-    if (Number.isNaN(ms)) { return null; }
+    const values = (op === 'IN' ? value : [value]).map(v => typeof v === 'number' ? v : Date.parse(v));
+    if (values.some(ms => Number.isNaN(ms))) { return null; }
     const sub = subPath(nested.sub);
     const arr = `CAST(${jsonPath(nested.parent)} AS Array(JSON))`;
-    return `arrayExists(c -> CAST(c.${sub} AS Int64) ${op === 'IN' ? '=' : op} ${Math.trunc(ms)}, arrayFilter(c -> isNotNull(c.${sub}), ${arr}))`;
+    const body = op === 'IN'
+      ? `has([${values.map(ms => Math.trunc(ms)).join(', ')}], CAST(c.${sub} AS Int64))`
+      : `CAST(c.${sub} AS Int64) ${op} ${Math.trunc(values[0])}`;
+    return `arrayExists(c -> ${body}, arrayFilter(c -> isNotNull(c.${sub}), ${arr}))`;
   }
 
   basicPredicate (field, op, value) {
@@ -724,7 +722,9 @@ class DbCHImpl {
       if (typeof value !== 'string') { return null; }
       const r = ipRange(value);
       if (!r) { return null; }
-      return wrap((x) => `${norm(x)} ${op} toIPv6OrNull(${sqlLiteral(r.lo)})`);
+      // lte/gt include the whole CIDR block below/above: compare vs its top
+      const bound = (op === '<=' || op === '>') ? r.hi : r.lo;
+      return wrap((x) => `${norm(x)} ${op} toIPv6OrNull(${sqlLiteral(bound)})`);
     }
     if (op !== '=' && op !== 'IN') { return null; }
 
@@ -882,7 +882,7 @@ class DbCHImpl {
       const should = Array.isArray(bool.should) ? bool.should : [bool.should];
       const min = Number(bool.minimum_should_match ?? (parts.length ? 0 : 1));
       if (min > 1) { throw chError('bool minimum_should_match > 1'); }
-      if (min === 1) {
+      if (min === 1 && should.length) {
         parts.push(`(${should.map(item => `(${this.translateClause(item)})`).join(' OR ')})`);
       }
     }
@@ -903,6 +903,9 @@ class DbCHImpl {
       } else {
         const match = token.match(/^([^:]+):(.+)$/);
         if (!match) { throw chError('query_string free text'); }
+        // ES's default operator joins adjacent terms with OR
+        const prev = out[out.length - 1];
+        if (prev !== undefined && prev !== '(' && prev !== 'AND' && prev !== 'OR' && prev !== 'NOT') { out.push('OR'); }
         const field = match[1];
         let value = match[2].replace(/^"|"$/g, '');
         if (value.includes('*') || value.includes('?')) {
@@ -958,7 +961,7 @@ class DbCHImpl {
         const field = Object.keys(item)[0];
         if (field === '_doc') { continue; }
         const direction = String(item[field]?.order || item[field] || 'asc').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        order.push(`${this.columnForField(field, true)} ${direction}`);
+        order.push(`${this.columnForField(field)} ${direction}`);
       }
     }
     if (order.length === 0) { order.push(`${this.lastPacketCol()} DESC`); }
@@ -970,17 +973,21 @@ class DbCHImpl {
     const query = esQuery || {};
     const projection = this.projectionFromQuery(query);
     const select = projection.map(field => this.selectExpr(field));
-    if (!projection.includes('id')) { select.unshift(`\`_id\` AS \`id\``); }
 
-    const where = this.translateClause(query.query || { match_all: {} }) + (opts.timeClause || '');
+    const where = '(' + this.translateClause(query.query || { match_all: {} }) + ')' + (opts.timeClause || '');
     const order = this.translateSort(query.sort);
-    const size = Math.max(0, Number(opts.size ?? query.size ?? 10));
-    const from = Math.max(0, Number(opts.from ?? query.from ?? 0));
+    const size = Math.max(0, Number(opts.size ?? query.size ?? 10) || 0);
+    const from = Math.max(0, Number(opts.from ?? query.from ?? 0) || 0);
     if (from > 10000 && !opts.keyset) { throw chError('from pagination beyond 10000'); }
     let keyset = '';
     if (opts.searchAfter) {
       const idCol = `${quoteIdent(this.prefix + this.table)}.${quoteIdent('_id')}`;
       keyset = ` AND (${this.lastPacketCol()}, ${idCol}) < (${sqlLiteral(opts.searchAfter.lastPacket, 'lastPacket')}, ${sqlLiteral(opts.searchAfter.id)})`;
+    }
+    if (opts.keyset && !projection.includes('lastPacket')) {
+      // keyset pagination reads searchAfter.lastPacket from the row
+      projection.push('lastPacket');
+      select.push(this.selectExpr('lastPacket'));
     }
     if (projection.wantAll) {
       select.push(`toJSONString(fields) AS \`__fields_json__\``);
@@ -1100,12 +1107,15 @@ class DbCHImpl {
     const metricSelect = metricSubs.map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
 
     const size = Number(terms.size || 10);
-    const orderDir = String(terms.order?._count || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
     // ES tie-breaks equal counts by key; for ip-typed fields the key order is
     // the IP's binary value, not its string form
     const tieExpr = (!terms.script && field && this.isIpField(field)) ? 'toIPv6OrNull(key)' : 'key';
+    const orderKey = Object.keys(terms.order || {})[0] || '_count';
+    const orderDir = String(terms.order?.[orderKey] || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    let orderExpr = 'doc_count';
+    if (orderKey === '_key') { orderExpr = tieExpr; } else if (orderKey !== '_count' && metricSubs.some(([subName]) => subName === orderKey)) { orderExpr = quoteIdent(orderKey); }
     const select = [`${keyExpr} AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
-    const result = await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key WITH TOTALS ORDER BY doc_count ${orderDir}, ${tieExpr} ASC LIMIT ${size}`);
+    const result = await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key WITH TOTALS ORDER BY ${orderExpr} ${orderDir}, ${tieExpr} ASC LIMIT ${size}`);
     const rows = result.data || [];
     const totalDocCount = Number(result.totals?.doc_count ?? 0);
     const buckets = rows
@@ -1141,7 +1151,7 @@ class DbCHImpl {
     if (buckets.length === 0) { return; }
 
     const histo = subAgg.histogram || subAgg.date_histogram;
-    const intervalMs = histo.interval || this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
+    const intervalMs = typeof histo.interval === 'number' ? histo.interval : this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
     const intervalSeconds = Math.max(1, Math.floor(intervalMs / 1000));
     const hfield = histo.field === '@timestamp' ? 'timestamp' : histo.field;
     const slotExpr = `toUnixTimestamp(toStartOfInterval(${this.columnForField(hfield)}, INTERVAL ${intervalSeconds} second)) * 1000`;
@@ -1168,7 +1178,7 @@ class DbCHImpl {
 
   async runHistogramAgg (agg, where) {
     const histo = agg.histogram || agg.date_histogram;
-    const intervalMs = histo.interval || this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
+    const intervalMs = typeof histo.interval === 'number' ? histo.interval : this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
     const intervalSeconds = Math.max(1, Math.floor(intervalMs / 1000));
     const field = histo.field === '@timestamp' ? 'timestamp' : histo.field;
     if (histo.field === 'packetRange') {
@@ -1297,7 +1307,9 @@ class DbCHImpl {
     let searchAfter;
     const pageSize = Math.min(remaining || 2000, 2000);
     while (remaining > 0) {
-      const q = { ...query, size: Math.min(pageSize, remaining), from: 0, sort: query.sort || [{ lastPacket: { order: 'desc' } }] };
+      // Ordering is fixed to match the keyset filter; callers consume the
+      // whole result set, so the request's sort doesn't apply here
+      const q = { ...query, size: Math.min(pageSize, remaining), from: 0, sort: [{ lastPacket: { order: 'desc' } }] };
       const translated = this.translateQuery(q, { ...options, keyset: true, searchAfter, timeClause: this.timeClauseFromIndex(index) });
       const rowsResult = await this.query(translated.sql);
       const rows = rowsResult.data || [];
@@ -1338,8 +1350,13 @@ class DbCHImpl {
   }
 
   huntRemoveAssignment (huntId, huntName) {
-    const newIds = `arrayFilter(x -> x != ${sqlLiteral(huntId)}, CAST(fields.huntId AS Array(String)))`;
-    const newNames = `arrayFilter(x -> x != ${sqlLiteral(huntName)}, CAST(fields.huntName AS Array(String)))`;
+    const ids = 'CAST(fields.huntId AS Array(String))';
+    const names = 'CAST(fields.huntName AS Array(String))';
+    // huntId/huntName are parallel arrays; drop both entries at the id's
+    // position so two hunts sharing a name don't clobber each other
+    const idx = `indexOf(${ids}, ${sqlLiteral(huntId)})`;
+    const newIds = `arrayFilter(x -> x != ${sqlLiteral(huntId)}, ${ids})`;
+    const newNames = `arrayFilter((x, i) -> i != ${idx}, ${names}, arrayEnumerate(${names}))`;
     return `fields = CAST(JSONMergePatch(toJSONString(fields), concat('{"huntId":', toJSONString(${newIds}), ',"huntName":', toJSONString(${newNames}), '}')) AS JSON)`;
   }
 
@@ -1429,16 +1446,17 @@ class DbCHImpl {
   // requested, fetch up to a large cap in one shot and return a sentinel
   // _scroll_id that Db.scroll/Db.clearScroll resolve to empty.
   async searchScroll (index, query, options, cb) {
+    let result;
     try {
       const chQuery = options?.scroll ? { ...query, size: 1000000 } : query;
-      const result = await this.searchSessions(index, chQuery, options);
+      result = await this.searchSessions(index, chQuery, options);
       if (options?.scroll) { result._scroll_id = 'ch:done'; }
-      if (cb) { return cb(null, result); }
-      return result;
     } catch (err) {
       if (cb) { return cb(err); }
       throw err;
     }
+    if (cb) { return cb(null, result); }
+    return result;
   }
 
   async * searchScrollIterator (index, query, options) {
@@ -1472,12 +1490,8 @@ class DbCHImpl {
   }
 
   close () {
+    clearInterval(this.schemaRefreshTimer);
     this.agent.destroy();
-  }
-
-  decodeRawValue (value) {
-    if (value === undefined || value === null || value === '') { return undefined; }
-    try { return JSON.parse(value); } catch (e) { return value; }
   }
 
   flattenJson (obj, prefix, out) {
@@ -1487,12 +1501,7 @@ class DbCHImpl {
       const path = prefix ? prefix + '.' + key : key;
       if (Array.isArray(v)) {
         if (v.length === 0) { continue; }
-        if (typeof v[0] === 'object' && v[0] !== null && !Array.isArray(v[0])) {
-          // Array of objects: keep as-is (rare)
-          out[path] = v;
-        } else {
-          out[path] = v;
-        }
+        out[path] = v;
       } else if (typeof v === 'object') {
         this.flattenJson(v, path, out);
       } else {
@@ -1517,10 +1526,11 @@ class DbCHImpl {
       if (!source) { source = {}; }
       for (const field of projection) {
         if (field === 'id') { continue; }
-        let value = row[field];
+        const value = row[field];
         if (value === undefined || value === null) { continue; }
         fields[field] = Array.isArray(value) ? value : [value];
         const parts = field.split('.');
+        if (parts.some(p => p === '__proto__' || p === 'constructor' || p === 'prototype')) { continue; }
         let obj = source;
         for (let i = 0; i < parts.length - 1; i++) {
           if (obj[parts[i]] === undefined || obj[parts[i]] === null || typeof obj[parts[i]] !== 'object') {

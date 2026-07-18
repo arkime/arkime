@@ -82,13 +82,20 @@ LOCAL gboolean arkime_db_ch_parse_url(const char *url, char **hostUrl, char **us
         }
     }
 
+    // Split userinfo at the LAST '@' so unescaped '@' in a password works
     const char *hostStart = url;
-    const char *at = memchr(url, '@', authorityEnd - url);
+    const char *at = NULL;
+    for (const char *ptr = url; ptr < authorityEnd; ptr++) {
+        if (*ptr == '@')
+            at = ptr;
+    }
     if (at) {
-        char *userinfo = g_strndup(url, at - url);
-        char *unescaped = g_uri_unescape_string(userinfo, NULL);
-        *userpwd = unescaped ? unescaped : g_strdup(userinfo);
-        g_free(userinfo);
+        if (at > url) {
+            char *userinfo = g_strndup(url, at - url);
+            char *unescaped = g_uri_unescape_string(userinfo, NULL);
+            *userpwd = unescaped ? unescaped : g_strdup(userinfo);
+            g_free(userinfo);
+        }
         hostStart = at + 1;
     }
 
@@ -156,7 +163,7 @@ void arkime_db_ch_init(void)
     chQueryPath = g_strdup_printf("/?database=%s&query=%s", database, query);
     chQueryPathLen = strlen(chQueryPath);
 
-    config.dbBulkSize = maxBatchBytes;
+    config.dbBulkSize = maxBatchBytes; // clickhouseMaxBatchBytes replaces dbBulkSize for CH
     arkime_db_set_send_bulk2(arkime_db_ch_send_bulk, FALSE, TRUE, (uint16_t)maxBatchDocs);
     arkime_add_can_quit(arkime_db_ch_can_quit, "ClickHouse");
 

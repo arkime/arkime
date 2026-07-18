@@ -92,14 +92,6 @@ Db.initialize = async (info) => {
   internals.prefix = ArkimeUtil.formatPrefix(info.prefix);
   internals.usersPrefix = ArkimeUtil.formatPrefix(info.usersPrefix ?? info.prefix);
 
-  const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
-  if (isClickHouseSessionsUrl(sessionsDbUrl) && !Config.get('multiES', false)) {
-    info.sessionsDbUrl = sessionsDbUrl;
-    internals.sessionsImpl = new DbCHImpl(info);
-  } else {
-    internals.sessionsImpl = undefined;
-  }
-
   internals.nodeName = info.nodeName;
   delete info.nodeName;
   internals.hostName = info.hostName;
@@ -196,10 +188,23 @@ Db.initialize = async (info) => {
   }
 
   // Initialize the sessions DB backend. sessionsImpl serves sessions indices
-  // and may be replaced by an alternate backend; esImpl always exists
-  // and serves everything else.
+  // (ClickHouse when sessionsDbUrl says so, otherwise Elasticsearch); esImpl
+  // always exists and serves everything else.
   internals.esImpl = new DbESImpl(internals.client7, internals.prefix, { Db, internals, fixIndex });
-  internals.sessionsImpl ??= internals.esImpl;
+
+  const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
+  if (isClickHouseSessionsUrl(sessionsDbUrl) && !internals.multiES) {
+    info.sessionsDbUrl = sessionsDbUrl;
+    // The caller's info doesn't carry the clickhouse* options; capture reads
+    // the same names from config
+    for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable', 'clickhouseCABundle']) {
+      info[opt] ??= Config.get(opt);
+    }
+    info.clickhouseInsecure ??= ['true', '1', true].includes(Config.get('clickhouseInsecure', false));
+    internals.sessionsImpl = new DbCHImpl(info);
+  } else {
+    internals.sessionsImpl = internals.esImpl;
+  }
 
   // Replace tag implementation
   if (internals.multiES) {

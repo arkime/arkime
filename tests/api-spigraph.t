@@ -1,4 +1,4 @@
-use Test::More tests => 105;
+use Test::More tests => 113;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -170,3 +170,14 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     my $badMetric = viewerPost("/api/spigraph", to_json({ date => -1, field => "node", metric => "protocols", expression => $mexpr }));
     cmp_ok ($badMetric->{recordsFiltered}, '==', 6, "non-numeric metric is ignored, spigraph request still succeeds");
     is (ref($badMetric->{items}), "ARRAY", "non-numeric metric spigraph still returns items");
+
+# sort by metric: the Top-N candidate pool must be ranked by the sort metric,
+# not session count. 10.1.1.234 (modbus.pcap) has only 1 session but the most
+# bytes in this set, so a count-ranked size*2 pool would drop it entirely.
+    my $sortfiles = "(file=$pwd/socks-http-example.pcap||file=$pwd/socks-http-pass.pcap||file=$pwd/socks-https-example.pcap||file=$pwd/socks5-http-302.pcap||file=$pwd/socks5-rdp.pcap||file=$pwd/socks5-reverse.pcap||file=$pwd/socks5-smtp-503.pcap||file=$pwd/modbus.pcap)";
+    $json = get("/spigraph.json?date=-1&field=source.ip&size=2&sort=network.bytesHisto&expression=" . uri_escape($sortfiles));
+    is (scalar @{$json->{items}}, 2, "metric sort: 2 items");
+    is ($json->{items}->[0]->{name}, "10.1.1.234", "metric sort: highest-bytes ip first");
+    is ($json->{items}->[0]->{'network.bytesHisto'}, 104190, "metric sort: first item bytes sum");
+    is ($json->{items}->[1]->{name}, "10.180.156.185", "metric sort: second highest-bytes ip");
+    is ($json->{items}->[1]->{'network.bytesHisto'}, 46190, "metric sort: second item bytes sum");

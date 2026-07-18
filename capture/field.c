@@ -500,7 +500,8 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     if (flags & ARKIME_FIELD_FLAG_FAKE) {
         // A fake *Tokens field is the analyzed copy of its source field (ES
         // fills it via copy_to); record the pairing so db.c can emit the
-        // tokens itself for sessions stores without that machinery.
+        // tokens itself for sessions stores without that machinery. The
+        // source field must be defined before its Tokens field.
         if (g_str_has_suffix(dbField, "Tokens")) {
             const int srcLen = (int)strlen(dbField) - 6;
             for (int p = 0; p < config.maxDbField; p++) {
