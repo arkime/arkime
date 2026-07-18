@@ -1137,8 +1137,10 @@ typedef struct {
 } ArkimeGeoInfo_t;
 
 void     arkime_db_init();
-void     arkime_db_ch_init(void);
-int      arkime_db_ch_queue_length(void);
+void     arkime_db_set_tokens_enabled(gboolean enabled);
+gboolean arkime_db_tokens_enabled(void);
+void     arkime_db_set_tokens_field(int pos, const char *tokensKey);
+void     arkime_db_export_tokens_str(BSB *jbsb, const char *str);
 char    *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);

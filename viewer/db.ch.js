@@ -51,6 +51,10 @@ const DEFAULT_FIELDS = [
 // queries don't break before the first refresh completes.
 const NESTED_OBJECT_ARRAY_PARENTS = new Set(['cert', 'dns']);
 
+// Array-of-objects children inside a nested parent, e.g. each element of
+// fields.dns[] carries an answers[] array of objects (dnsOutputAnswers)
+const NESTED_OBJECT_SUB_ARRAYS = new Set(['dns.answers']);
+
 // Paths whose CH type is Array(...) — capture/db.c writes nearly every
 // non-counter field as a JSON array. Populated from the live schema by
 // refreshSchema(); this lets isArrayField default to "true" for any field we
@@ -445,7 +449,8 @@ class DbCHImpl {
     if (NUMERIC_HINTS.has(field) || DATE_FIELDS.has(field)) { return false; }
     const info = dbFieldsMap()[field];
     if (!info) { return false; }
-    if (['termfield', 'lotermfield', 'uptermfield', 'ip'].includes(info.type)) { return true; }
+    // textfield types are the *Tokens fields, which capture writes as arrays
+    if (['termfield', 'lotermfield', 'uptermfield', 'textfield', 'lotextfield', 'uptextfield', 'ip'].includes(info.type)) { return true; }
     return false;
   }
 
@@ -471,6 +476,14 @@ class DbCHImpl {
       // Unroll Array(JSON) parent and project the sub-path. Filter out
       // elements where sub is null so callers see a clean array of values.
       const subType = this.scalarTypeForField(field);
+      const subDot = nested.sub.indexOf('.');
+      if (subDot > 0 && NESTED_OBJECT_SUB_ARRAYS.has(`${nested.parent}.${nested.sub.substring(0, subDot)}`)) {
+        // Two-level unroll: fields.parent[].mid[].leaf
+        const mid = subPath(nested.sub.substring(0, subDot));
+        const leaf = subPath(nested.sub.substring(subDot + 1));
+        const inner = `arrayFlatten(arrayMap(a -> if(dynamicType(a.${leaf}) LIKE 'Array%', CAST(a.${leaf} AS Array(${subType})), [CAST(a.${leaf} AS ${subType})]), arrayFilter(a -> isNotNull(a.${leaf}), CAST(c.${mid} AS Array(JSON)))))`;
+        return `arrayFlatten(arrayMap(c -> ${inner}, arrayFilter(c -> isNotNull(c.${mid}), CAST(${jsonPath(nested.parent)} AS Array(JSON)))))`;
+      }
       const sub = subPath(nested.sub);
       const arr = `CAST(${jsonPath(nested.parent)} AS Array(JSON))`;
       const info = dbFieldsMap()[field];
@@ -558,8 +571,29 @@ class DbCHImpl {
       if (!Number.isNaN(parsed) && parsed % 1000 === 0) { value = parsed + 999; }
     }
     return this.nestedDatePredicate(field, op, value) ??
+      this.tokensPredicate(field, op, value) ??
       this.ipPredicate(field, op, value) ??
       this.basicPredicate(field, op, value);
+  }
+
+  // ES analyzes both sides of a *Tokens query (wordSplit analyzer: split on
+  // \W+, lowercase); capture stores these fields pre-tokenized, so tokenize
+  // the query value the same way and require every token to be present.
+  // Returns null for non-tokens fields.
+  tokensPredicate (field, op, value) {
+    const info = dbFieldsMap()[field];
+    if (!info?.type?.endsWith('textfield')) { return null; }
+    if (op !== '=' && op !== 'IN') { return null; }
+    const col = this.columnForField(field);
+    const tokensOf = (v) => String(v).toLowerCase().split(/[^a-z0-9_]+/).filter(Boolean);
+    const one = (v) => {
+      const toks = tokensOf(v);
+      if (toks.length === 0) { return '0'; }
+      if (toks.length === 1) { return `has(${col}, ${sqlLiteral(toks[0], field)})`; }
+      return `hasAll(${col}, [${toks.map(t => sqlLiteral(t, field)).join(', ')}])`;
+    };
+    const parts = (op === 'IN' ? value : [value]).map(one);
+    return parts.length === 1 ? parts[0] : `(${parts.join(' OR ')})`;
   }
 
   // A range with multiple bounds must be satisfied by a SINGLE value (ES
@@ -798,6 +832,9 @@ class DbCHImpl {
     if (clause.match_phrase) {
       const field = Object.keys(clause.match_phrase)[0];
       const value = clause.match_phrase[field]?.query ?? clause.match_phrase[field];
+      // *Tokens fields are stored pre-tokenized; phrase ≈ all tokens present
+      const tokens = this.tokensPredicate(field, '=', value);
+      if (tokens) { return tokens; }
       if (this.isJsonArrayField(field)) {
         return `arrayExists(x -> position(toString(x), ${sqlLiteral(value)}) > 0, ${this.columnForField(field)})`;
       }

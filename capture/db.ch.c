@@ -15,6 +15,8 @@ extern ArkimeConfig_t config;
 LOCAL uint64_t chDocsSent;
 LOCAL uint64_t chDocsAcked;
 LOCAL uint64_t chDocsFailed;
+
+LOCAL int arkime_db_ch_can_quit(void);
 /******************************************************************************/
 LOCAL void arkime_db_ch_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer uw)
 {
@@ -156,6 +158,11 @@ void arkime_db_ch_init(void)
 
     config.dbBulkSize = maxBatchBytes;
     arkime_db_set_send_bulk2(arkime_db_ch_send_bulk, FALSE, TRUE, (uint16_t)maxBatchDocs);
+    arkime_add_can_quit(arkime_db_ch_can_quit, "ClickHouse");
+
+    // ClickHouse has no equivalent of ES's copy_to+analyzer, so capture emits
+    // the *Tokens fields itself (see db.c)
+    arkime_db_set_tokens_enabled(TRUE);
 
     LOG("ClickHouse sessions enabled: %s %s.%s%s", hostUrl, clickhouseDatabase, config.prefix, clickhouseSessionsTable);
 
@@ -166,9 +173,14 @@ void arkime_db_ch_init(void)
     g_free(userpwd);
 }
 /******************************************************************************/
-/* Outstanding CH requests; checked by arkime_db_can_quit so capture doesn't
- * exit while the final session batch is still in flight */
-int arkime_db_ch_queue_length(void)
+/* Don't let capture exit while the final session batch is still in flight */
+LOCAL int arkime_db_ch_can_quit(void)
 {
-    return chServer ? arkime_http_queue_length(chServer) : 0;
+    const int queueLen = chServer ? arkime_http_queue_length(chServer) : 0;
+    if (queueLen > 0) {
+        if (config.debug)
+            LOG("Can't quit, ClickHouse queue length %d", queueLen);
+        return 1;
+    }
+    return 0;
 }

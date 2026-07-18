@@ -973,7 +973,14 @@ $json = cont3xtPost('/api/integration/ip/Maxmind/search', to_json({
 is($json->{data}->{asn}->{autonomous_system_number}, 15169);
 is($json->{data}->{country}->{country}->{names}->{en}, "United States");
 
-# elasticsearch tests
+# elasticsearch tests - create the fixture index the elasticsearch:test
+# integration queries, so the test doesn't depend on where sessions live
+esDelete("/tests_cont3xt");
+for my $i (1..11) {
+    esPost("/tests_cont3xt/_doc/fixture$i", '{"source": {"ip": "10.0.0.1"}}');
+}
+esGet("/_refresh");
+
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "10.0.0.1"
 }));

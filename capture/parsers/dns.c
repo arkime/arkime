@@ -11,7 +11,7 @@
 #define MAX_IPS 2000
 
 #define DEFAULT_JSON_LEN 200
-#define HOST_IP_JSON_LEN 250
+#define HOST_IP_JSON_LEN 500 // covers host plus its hostTokens copy
 #define ANSWER_JSON_LEN 200
 
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)
@@ -1570,6 +1570,19 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
         BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"TYPE%u\",", dns->query.type_id);
 
     if (HASH_COUNT(s_, dns->hosts) > 0) {
+        // ES fills hostTokens via copy_to+analyzer; emit it here for sessions
+        // stores without that machinery. Must run before SAVE_STRING_HASH,
+        // which frees the strings as it emits.
+        if (arkime_db_tokens_enabled()) {
+            BSB_EXPORT_cstr(*jbsb, "\"hostTokens\":[");
+            HASH_FORALL2(s_, dns->hosts, string) {
+                arkime_db_export_tokens_str(jbsb, string->str);
+            }
+            if (*(BSB_WORK_PTR(*jbsb) - 1) == ',') {
+                BSB_EXPORT_rewind(*jbsb, 1);
+            }
+            BSB_EXPORT_cstr(*jbsb, "],");
+        }
         SAVE_STRING_HASH(dns->hosts, "host");
     }
     if (HASH_COUNT(s_, *(dns->nsHosts)) > 0) {

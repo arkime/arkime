@@ -28,10 +28,10 @@ if ($ENV{INSECURE} eq "--insecure") {
     )
 }
 
-# Where session documents live: ClickHouse when config.test.ini has a
-# clickhouse sessionsDbUrl, otherwise Elasticsearch.
-$ArkimeTest::sessionsDbUrl = "";
-if (open my $cfgFh, '<', "config.test.ini") {
+# Where session documents live: ClickHouse when the environment (tests_ch.sh)
+# or config.test.ini has a clickhouse sessionsDbUrl, otherwise Elasticsearch.
+$ArkimeTest::sessionsDbUrl = $ENV{ARKIME_test__sessionsDbUrl} // "";
+if (!$ArkimeTest::sessionsDbUrl && open my $cfgFh, '<', "config.test.ini") {
     while (<$cfgFh>) {
         if (/^sessionsDbUrl=(.*)$/) { $ArkimeTest::sessionsDbUrl = $1; last; }
     }

@@ -386,8 +386,7 @@ my ($cmd) = @_;
         }
 
         # Initialize ClickHouse if a sessionsDbUrl is configured for the test viewer
-        my $sessionsDbUrl = `grep -E '^sessionsDbUrl=' config.test.ini | head -1 | cut -d= -f2-`;
-        chomp $sessionsDbUrl;
+        my $sessionsDbUrl = $ArkimeTest::sessionsDbUrl;
         if ($sessionsDbUrl =~ m{^clickhouse://(.+)$}) {
             my $chUrl = "http://$1";
             print ("Initializing ClickHouse at $chUrl\n");
@@ -445,7 +444,8 @@ my ($cmd) = @_;
     my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test,sessionsDbUrl:clickhouse://localhost:9100;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh;$ELASTICSEARCH,prefix:tests2_,name:test2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
