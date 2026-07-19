@@ -268,11 +268,11 @@ my ($url, $content, $debug) = @_;
 sub sessionsPost {
 my ($index, $id, $doc, $debug) = @_;
 
-    if ($ArkimeTest::sessionsDbUrl !~ m{^clickhouse://(.+)$}) {
+    if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
         return esPost("/$index/_doc/$id?refresh=wait_for", $doc, $debug);
     }
 
-    my $chUrl = "http://$1";
+    my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
     my $obj = from_json($doc);
     $obj->{'_id'} = $id;
     (my $table = $index) =~ s/-[^-]*$//;
@@ -286,11 +286,11 @@ my ($index, $id, $doc, $debug) = @_;
 sub sessionsDeleteByTag {
 my ($index, $tag, $debug) = @_;
 
-    if ($ArkimeTest::sessionsDbUrl !~ m{^clickhouse://(.+)$}) {
+    if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
         return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "tags": "' . $tag . '" } } }', $debug);
     }
 
-    my $chUrl = "http://$1";
+    my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
     (my $table = $index) =~ s/-[^-]*$//;
     my $sql = "DELETE FROM arkime.$table WHERE has(fields.tags, '$tag')";
     my $response = $ArkimeTest::userAgent->post("$chUrl/", Content => $sql, "Content-Type" => "text/plain;charset=UTF-8");

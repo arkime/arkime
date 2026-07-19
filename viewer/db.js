@@ -59,7 +59,7 @@ function checkURLs (nodes) {
 }
 
 function isClickHouseSessionsUrl (url) {
-  return /^clickhouse:\/\/|^chttps?:\/\//.test(url || '');
+  return /^clickhouses?:\/\/|^chttps?:\/\//.test(url || '');
 }
 
 // True if the index name (string, comma list, or array) refers to sessions
@@ -197,10 +197,9 @@ Db.initialize = async (info) => {
     info.sessionsDbUrl = sessionsDbUrl;
     // The caller's info doesn't carry the clickhouse* options; capture reads
     // the same names from config
-    for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable', 'clickhouseCABundle']) {
+    for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
       info[opt] ??= Config.get(opt);
     }
-    info.clickhouseInsecure ??= ['true', '1', true].includes(Config.get('clickhouseInsecure', false));
     internals.sessionsImpl = new DbCHImpl(info);
   } else {
     internals.sessionsImpl = internals.esImpl;

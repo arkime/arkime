@@ -61,7 +61,10 @@ LOCAL gboolean arkime_db_ch_parse_url(const char *url, char **hostUrl, char **us
 {
     const char *httpScheme;
 
-    if (g_str_has_prefix(url, "clickhouse://")) {
+    if (g_str_has_prefix(url, "clickhouses://")) {
+        httpScheme = "https";
+        url += 14;
+    } else if (g_str_has_prefix(url, "clickhouse://")) {
         httpScheme = "http";
         url += 13;
     } else if (g_str_has_prefix(url, "chttp://")) {
@@ -118,6 +121,7 @@ void arkime_db_ch_init(void)
 
     if (!sessionsDbUrl ||
         (!g_str_has_prefix(sessionsDbUrl, "clickhouse://") &&
+         !g_str_has_prefix(sessionsDbUrl, "clickhouses://") &&
          !g_str_has_prefix(sessionsDbUrl, "chttp://") &&
          !g_str_has_prefix(sessionsDbUrl, "chttps://"))) {
         return;
@@ -134,8 +138,6 @@ void arkime_db_ch_init(void)
     const char *clickhousePassword = arkime_config_str(NULL, "clickhousePassword", "");
     const char *clickhouseDatabase = arkime_config_str(NULL, "clickhouseDatabase", "arkime");
     const char *clickhouseSessionsTable = arkime_config_str(NULL, "clickhouseSessionsTable", "sessions3");
-    const char *clickhouseCABundle = arkime_config_str(NULL, "clickhouseCABundle", NULL);
-    gboolean clickhouseInsecure = arkime_config_boolean(NULL, "clickhouseInsecure", FALSE);
     uint32_t maxBatchDocs = arkime_config_int(NULL, "clickhouseMaxBatchDocs", 200, 1, 0xffff);
     uint32_t maxBatchBytes = arkime_config_int(NULL, "clickhouseMaxBatchBytes", 4 * 1024 * 1024, 1, 128 * 1024 * 1024);
 
@@ -150,12 +152,6 @@ void arkime_db_ch_init(void)
 
     if (userpwd)
         arkime_http_set_userpwd(chServer, userpwd);
-
-    if (clickhouseInsecure)
-        arkime_http_set_insecure(chServer, TRUE);
-
-    if (clickhouseCABundle)
-        arkime_http_set_ca_trust_file(chServer, clickhouseCABundle);
 
     char *insert = g_strdup_printf("INSERT INTO %s.%s%s (fields, `_id`, lastPacket) SELECT data, CAST(data.`_id` AS String), fromUnixTimestamp64Milli(toInt64OrZero(toString(data.lastPacket))) FROM input('data JSON') FORMAT JSONAsObject", clickhouseDatabase, config.prefix, clickhouseSessionsTable);
     char *query = g_uri_escape_string(insert, NULL, FALSE);

@@ -307,10 +307,10 @@ class DbCHImpl {
     if (!dbUrl) { throw new Error('CH backend: sessionsDbUrl is required'); }
 
     let normalized = dbUrl;
-    if (normalized.startsWith('clickhouse://') || normalized.startsWith('chttp://')) {
+    if (normalized.startsWith('clickhouses://') || normalized.startsWith('chttps://')) {
+      normalized = normalized.replace(/^[^:]+:\/\//, 'https://');
+    } else if (normalized.startsWith('clickhouse://') || normalized.startsWith('chttp://')) {
       normalized = normalized.replace(/^[^:]+:\/\//, 'http://');
-    } else if (normalized.startsWith('chttps://')) {
-      normalized = normalized.replace(/^chttps:\/\//, 'https://');
     }
     const url = new NodeURL(normalized);
 
@@ -321,9 +321,9 @@ class DbCHImpl {
     this.index = `${this.prefix}sessions3`;
     this.requestTimeout = (parseInt(info.requestTimeout, 10) + 30) * 1000 || 330000;
 
-    const agentOpts = { keepAlive: true, rejectUnauthorized: !info.insecure && !info.clickhouseInsecure };
-    const caFile = info.clickhouseCABundle || info.caTrustFile;
-    if (caFile) { agentOpts.ca = fs.readFileSync(caFile); }
+    // TLS trust follows the global insecure/caTrustFile settings, same as ES
+    const agentOpts = { keepAlive: true, rejectUnauthorized: !info.insecure };
+    if (info.caTrustFile) { agentOpts.ca = fs.readFileSync(info.caTrustFile); }
     this.httpModule = url.protocol === 'https:' ? https : http;
     this.agent = url.protocol === 'https:' ? new https.Agent(agentOpts) : new http.Agent({ keepAlive: true });
 

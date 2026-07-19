@@ -24,14 +24,12 @@ elasticsearch=ARKIME_ELASTICSEARCH
 # users, files, fields, hunts, history, stats, shortcuts, views, crons, and
 # everything else still use the elasticsearch= cluster above. Initialize the
 # schema first with `db/ch.pl <url> init`.
-# Schemes: clickhouse://, chttp://, chttps://
+# Schemes: clickhouse:// or chttp:// for http, clickhouses:// or chttps:// for https
 # sessionsDbUrl=clickhouse://localhost:8123
 # clickhouseUser=
 # clickhousePassword=
 # clickhouseDatabase=arkime
 # clickhouseSessionsTable=sessions3
-# clickhouseInsecure=false
-# clickhouseCABundle=
 # clickhouseMaxBatchDocs=200
 # clickhouseMaxBatchBytes=4194304
 

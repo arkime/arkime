@@ -153,6 +153,10 @@ sub parseEndpoint
 {
     my ($url) = @_;
 
+    # Accept the same scheme aliases as sessionsDbUrl in the config
+    $url =~ s{^(?:clickhouses|chttps)://}{https://};
+    $url =~ s{^(?:clickhouse|chttp)://}{http://};
+
     if ($url !~ m{^(https?)://([^/]+)(/[^?#]*)?}) {
         showHelp("You must specify the ClickHouse URL as the first argument: http://localhost:8123 or https://localhost:8123");
     }

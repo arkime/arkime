@@ -312,7 +312,7 @@ my $test1Token = getTokenCookie("test1");
     my $recovery = viewerGet("/api/esrecovery?show=all");
     # With sessions in ClickHouse there are no daily session indices in ES,
     # so far fewer shards show up in recovery
-    my $minRecovery = ($ArkimeTest::sessionsDbUrl =~ m{^clickhouse://}) ? 20 : 100;
+    my $minRecovery = ($ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://}) ? 20 : 100;
     cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = viewerGet("/api/esrecovery");

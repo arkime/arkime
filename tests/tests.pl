@@ -387,8 +387,8 @@ my ($cmd) = @_;
 
         # Initialize ClickHouse if a sessionsDbUrl is configured for the test viewer
         my $sessionsDbUrl = $ArkimeTest::sessionsDbUrl;
-        if ($sessionsDbUrl =~ m{^clickhouse://(.+)$}) {
-            my $chUrl = "http://$1";
+        if ($sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$}) {
+            my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
             print ("Initializing ClickHouse at $chUrl\n");
             # Test pcaps span two decades; partition none keeps the table at a
             # handful of parts so per-part query overhead stays negligible.
