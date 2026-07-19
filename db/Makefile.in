@@ -8,6 +8,7 @@ all:
 install:
 	$(MKDIR_P) "$(DBDIR)"
 	$(INSTALL) db.pl $(DBDIR)
+	$(INSTALL) ch.pl $(DBDIR)
 
 check:
 

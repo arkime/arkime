@@ -7,6 +7,10 @@ use Data::Dumper;
 use JSON;
 use strict;
 
+# This test curates its own ARKIME_ environment variables; scrub any inherited
+# ones (e.g. from tests_ch.sh) so they don't leak into the dumped config
+delete $ENV{$_} for grep { /^ARKIME_/ } keys %ENV;
+
 open(FH, '>', "testconfig.ini") or die $!;
 print FH <<EOF;
 [default]

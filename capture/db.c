@@ -53,6 +53,8 @@ LOCAL char             *rirs[256];
 
 void                   *esServer = 0;
 
+void arkime_db_ch_init(void); // db.ch.c, alternate sessions store
+
 LOCAL patricia_tree_t  *ipTree4 = 0;
 LOCAL patricia_tree_t  *ipTree6 = 0;
 
@@ -621,6 +623,61 @@ do { \
     BSB_EXPORT_cstr(jbsb, "],"); \
 } while(0)
 
+/* ES fills the *Tokens fields with copy_to + the wordSplit analyzer; sessions
+ * stores without that machinery enable tokens emission so capture writes the
+ * fields itself. tokensFieldKey maps a source field pos to its tokens JSON
+ * key (e.g. "hostTokens"), registered from field.c when the fake tokens field
+ * is defined. */
+LOCAL char    *tokensFieldKey[ARKIME_FIELDS_MAX];
+LOCAL gboolean tokensEnabled;
+
+void arkime_db_set_tokens_enabled(gboolean enabled)
+{
+    tokensEnabled = enabled;
+}
+
+gboolean arkime_db_tokens_enabled(void)
+{
+    return tokensEnabled;
+}
+
+void arkime_db_set_tokens_field(int pos, const char *tokensKey)
+{
+    // Never free an old key: packet threads may be reading it
+    if (pos < 0 || pos >= ARKIME_FIELDS_MAX || !tokensEnabled)
+        return;
+    tokensFieldKey[pos] = g_strdup(tokensKey);
+}
+/******************************************************************************/
+/* Emit the wordSplit-analyzer tokens of str as `"tok",` items: lowercased,
+ * split on anything outside [A-Za-z0-9_] to match ES's pattern tokenizer */
+void arkime_db_export_tokens_str(BSB *jbsb, const char *str)
+{
+    const char *s = str;
+    while (*s) {
+        while (*s && !g_ascii_isalnum(*s) && *s != '_')
+            s++;
+        if (!*s)
+            break;
+        BSB_EXPORT_u08(*jbsb, '"');
+        while (*s && (g_ascii_isalnum(*s) || *s == '_')) {
+            BSB_EXPORT_u08(*jbsb, g_ascii_tolower(*s));
+            s++;
+        }
+        BSB_EXPORT_u08(*jbsb, '"');
+        BSB_EXPORT_u08(*jbsb, ',');
+    }
+}
+
+#define SAVE_FIELD_TOKENS_BEGIN(POS) BSB_EXPORT_sprintf(jbsb, "\"%s\":[", tokensFieldKey[POS])
+#define SAVE_FIELD_TOKENS_END() \
+do { \
+    if (*(BSB_WORK_PTR(jbsb) - 1) == ',') { \
+        BSB_EXPORT_rewind(jbsb, 1); \
+    } \
+    BSB_EXPORT_cstr(jbsb, "],"); \
+} while(0)
+
 LOCAL int arkime_db_field_sort(const void *a, const void *b)
 {
     return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
@@ -676,6 +733,10 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     for (int pos = 0; pos < session->maxFields; pos++) {
         if (session->fields[pos]) {
             jsonSize += session->fields[pos]->jsonSize;
+            if (tokensFieldKey[pos]) {
+                // tokens copy of the value plus key/quote/comma overhead
+                jsonSize += session->fields[pos]->jsonSize + 32;
+            }
         }
     }
 
@@ -741,7 +802,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
         if (session->rootId == GINT_TO_POINTER(1))
             session->rootId = g_strdup(id);
-    } else if (config.autoGenerateId != 1 || session->rootId == GINT_TO_POINTER(1)) {
+    } else if (config.autoGenerateId != 1 || sendIndexInDoc || session->rootId == GINT_TO_POINTER(1)) {
         id_len = arkime_snprintf_len(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
         uuid_generate(uuid);
@@ -839,6 +900,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (sendIndexInDoc) {
         BSB_EXPORT_sprintf(jbsb, "\"index\":\"%ssessions3-%s\",", config.prefix, dbInfo[thread].prefix);
+        BSB_EXPORT_sprintf(jbsb, "\"_id\":\"%s\",", id);
     }
 
     if (session->ipProtocol == IPPROTO_TCP) {
@@ -1191,6 +1253,11 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                                (uint8_t *)session->fields[pos]->str,
                                flags & ARKIME_FIELD_FLAG_FORCE_UTF8);
             BSB_EXPORT_u08(jbsb, ',');
+            if (tokensFieldKey[pos]) {
+                SAVE_FIELD_TOKENS_BEGIN(pos);
+                arkime_db_export_tokens_str(&jbsb, session->fields[pos]->str);
+                SAVE_FIELD_TOKENS_END();
+            }
             if (freeField) {
                 g_free(session->fields[pos]->str);
             }
@@ -1234,6 +1301,13 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             break;
         case ARKIME_FIELD_TYPE_STR_HASH:
             SAVE_FIELD_STR_HASH(pos, flags);
+            if (tokensFieldKey[pos]) {
+                SAVE_FIELD_TOKENS_BEGIN(pos);
+                HASH_FORALL2(s_, *shash, hstring) {
+                    arkime_db_export_tokens_str(&jbsb, hstring->str);
+                }
+                SAVE_FIELD_TOKENS_END();
+            }
             if (freeField) {
                 HASH_FORALL_POP_HEAD2(s_, *shash, hstring) {
                     g_free(hstring->str);
@@ -1253,12 +1327,21 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 arkime_db_js0n_str(&jbsb, ikey, flags & ARKIME_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
             }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "],");
+
+            if (tokensFieldKey[pos]) {
+                SAVE_FIELD_TOKENS_BEGIN(pos);
+                g_hash_table_iter_init (&iter, ghash);
+                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                    arkime_db_export_tokens_str(&jbsb, ikey);
+                }
+                SAVE_FIELD_TOKENS_END();
+            }
 
             if (freeField) {
                 g_hash_table_destroy(ghash);
             }
-            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-            BSB_EXPORT_cstr(jbsb, "],");
             break;
         case ARKIME_FIELD_TYPE_INT_HASH:
             ihash = session->fields[pos]->ihash;
@@ -2967,6 +3050,8 @@ void arkime_db_init()
 
         esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
         esBulkQueryLen = strlen(esBulkQuery);
+
+        arkime_db_ch_init();
 
         arkime_db_health_check(GINT_TO_POINTER(1));
     }

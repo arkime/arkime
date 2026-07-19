@@ -498,6 +498,23 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     }
 
     if (flags & ARKIME_FIELD_FLAG_FAKE) {
+        // A fake *Tokens field is the analyzed copy of its source field (ES
+        // fills it via copy_to); record the pairing so db.c can emit the
+        // tokens itself for sessions stores without that machinery. The
+        // source field must be defined before its Tokens field.
+        if (g_str_has_suffix(dbField, "Tokens")) {
+            const int srcLen = (int)strlen(dbField) - 6;
+            for (int p = 0; p < config.maxDbField; p++) {
+                if (config.fields[p] &&
+                    strncmp(config.fields[p]->dbFieldFull, dbField, srcLen) == 0 &&
+                    config.fields[p]->dbFieldFull[srcLen] == 0) {
+
+                    const char *lastDot = strrchr(dbField, '.');
+                    arkime_db_set_tokens_field(p, lastDot ? lastDot + 1 : dbField);
+                    break;
+                }
+            }
+        }
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
         arkime_field_free_info(minfo);

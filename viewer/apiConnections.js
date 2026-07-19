@@ -439,6 +439,13 @@ class ConnectionAPIs {
               }
             }
 
+            if (ArkimeConfig.regressionTests) {
+              // Sort links deterministically so results are stable across
+              // backends (ES/CH may iterate hits in different orders, which
+              // affects the natural insertion order of `connects`).
+              links.sort((a, b) => (a.source - b.source) || (a.target - b.target));
+            }
+
             if (Config.debug) {
               console.log('buildConnections.nodesHash', nodesHash);
               console.log('buildConnections.connects', connects);

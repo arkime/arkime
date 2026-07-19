@@ -16,8 +16,10 @@ const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
+const Config = require('./config.js');
 const DbESImpl = require('./db.es');
 const DbSQLiteImpl = require('./db.sqlite');
+const DbCHImpl = require('./db.ch');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
@@ -54,6 +56,10 @@ function checkURLs (nodes) {
     console.log(`ERROR - endpoint url '${nodes}' must contain ://`);
     process.exit(1);
   }
+}
+
+function isClickHouseSessionsUrl (url) {
+  return /^clickhouses?:\/\/|^chttps?:\/\//.test(url || '');
 }
 
 // True if the index name (string, comma list, or array) refers to sessions
@@ -182,10 +188,22 @@ Db.initialize = async (info) => {
   }
 
   // Initialize the sessions DB backend. sessionsImpl serves sessions indices
-  // and may be replaced by an alternate backend; esImpl always exists
-  // and serves everything else.
+  // (ClickHouse when sessionsDbUrl says so, otherwise Elasticsearch); esImpl
+  // always exists and serves everything else.
   internals.esImpl = new DbESImpl(internals.client7, internals.prefix, { Db, internals, fixIndex });
-  internals.sessionsImpl = internals.esImpl;
+
+  const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
+  if (isClickHouseSessionsUrl(sessionsDbUrl) && !internals.multiES) {
+    info.sessionsDbUrl = sessionsDbUrl;
+    // The caller's info doesn't carry the clickhouse* options; capture reads
+    // the same names from config
+    for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
+      info[opt] ??= Config.get(opt);
+    }
+    internals.sessionsImpl = new DbCHImpl(info);
+  } else {
+    internals.sessionsImpl = internals.esImpl;
+  }
 
   // Replace tag implementation
   if (internals.multiES) {
@@ -768,12 +786,16 @@ Db.msearchSessions = async (index, queries, options) => {
 };
 
 Db.scroll = async (params) => {
+  if (params?.body?.scroll_id === 'ch:done') {
+    return { body: { _scroll_id: 'ch:done', hits: { total: 0, hits: [] } } };
+  }
   params.rest_total_hits_as_int = true;
   return internals.client7.scroll(params);
 };
 
 // Ignore errors when we try to clear a scroll that doesn't exist
 Db.clearScroll = async (params) => {
+  if (params?.body?.scroll_id === 'ch:done') { return; }
   try {
     await internals.client7.clearScroll(params);
   } catch (err) {
@@ -1316,6 +1338,17 @@ Db.getShortcutsCache = async (user) => {
   for (const shortcut of shortcuts.hits) {
     // need the whole object to test for type mismatch
     shortcutsMap[shortcut._source.name] = shortcut;
+  }
+
+  // Keep the ClickHouse lookups table current so terms-lookup translation
+  // (IN subquery against the lookups table) sees these values. ES resolves
+  // terms-lookup natively, so its impl has no syncShortcuts.
+  if (internals.sessionsImpl.syncShortcuts) {
+    try {
+      await internals.sessionsImpl.syncShortcuts(shortcuts.hits);
+    } catch (err) {
+      console.log('ERROR - syncing shortcuts to ClickHouse', util.inspect(err, false, 50));
+    }
   }
 
   internals.shortcutsCache.set(user.userId, shortcutsMap);

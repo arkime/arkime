@@ -12,7 +12,7 @@
 #   uitest - Should the UI tests be run
 #   python - instead of just 'python'
 #   notice - build the notice file, only need once
-#   viewertest - run the viewer tests can be normal, packetpocket or sanitize
+#   viewertest - run the viewer tests can be normal, packetpocket, sanitize or clickhouse
 #   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite/lmdb/redis
@@ -45,6 +45,8 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d glib2 -d libcurl -d libnghttp2 -d yara -d lua-libs -d python3-libs -d curl"
     package: rpm
     python: python3
+    viewertest: clickhouse
+    prbuild: true
 
   - version: ubuntu2204_amd64
     container: andywick/arkime-build-22:6.0.0-2
@@ -62,7 +64,7 @@ include:
     python: python3
     viewertest: sanitize
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
-    runson: blacksmith-4vcpu-ubuntu-2404
+#    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: ubuntu2604_amd64
@@ -73,7 +75,7 @@ include:
     python: python3
     viewertest: normal
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
-    runson: blacksmith-4vcpu-ubuntu-2404
+#    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: "arch-x86_64"
@@ -83,7 +85,7 @@ include:
     package: arch
     viewertest: normal
     otherdbtest: "true"
-    runson: blacksmith-4vcpu-ubuntu-2404
+#    runson: blacksmith-4vcpu-ubuntu-2404
     prbuild: true
 
   - version: al2023.x86_64

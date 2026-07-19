@@ -217,7 +217,7 @@ my $noPcapDoc = '{
   "tags": ["' . $noPcapTag . '"],
   "tagsCnt": 1
 }';
-esPost("/$noPcapIndex/_doc/$noPcapDocId?refresh=true", $noPcapDoc);
+sessionsPost($noPcapIndex, $noPcapDocId, $noPcapDoc);
 
 my $noPcapList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$noPcapTag"));
 is (scalar @{$noPcapList->{data}}, 1, "no-pcap session indexed");
@@ -232,7 +232,7 @@ my $noPcapPackets = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/a
 is ($noPcapPackets->code, 200, "no-pcap /packets returns 200 (no crash)");
 ok($noPcapPackets->content !~ m{Cannot set properties of undefined}, "no-pcap /packets does not throw TypeError");
 
-esPost("/$noPcapIndex/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "tags": "' . $noPcapTag . '" } } }');
+sessionsDeleteByTag($noPcapIndex, $noPcapTag);
 
 # Test we escape {
 my $xssTag = "dns-vue-xss-regression-tag";
@@ -255,7 +255,7 @@ my $xssDoc = '{
   "tags": ["' . $xssTag . '"],
   "tagsCnt": 1
 }';
-esPost("/$noPcapIndex/_doc/$xssDocId?refresh=true", $xssDoc);
+sessionsPost($noPcapIndex, $xssDocId, $xssDoc);
 
 my $xssList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$xssTag"));
 is (scalar @{$xssList->{data}}, 1, "dns xss session indexed");
@@ -265,7 +265,7 @@ $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/tes
 ok($sd =~ m{Query A - &#123;constructor}s, "dns queryHost { escaped to &#123; in /detail");
 ok($sd !~ m{[^"]\{constructor}s, "dns queryHost has no raw { in /detail");
 
-esDelete("/$noPcapIndex/_doc/$xssDocId?refresh=true");
+sessionsDeleteByTag($noPcapIndex, $xssTag);
 
 # decode parameter validation
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-zip.pcap"));
