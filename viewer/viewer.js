@@ -62,6 +62,8 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
+const MCPServer = require('../common/mcpServer');
+const MCPViewerAPIs = require('./apiMcp');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -71,6 +73,8 @@ app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'pug');
 
 app.use(ArkimeUtil.jsonParser);
+// must sit right after the parser so a bad /mcp body is a JSON-RPC parse error
+app.use(MCPServer.parseErrorMiddleware());
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(compression());
@@ -288,6 +292,25 @@ app.get( // es health endpoint
 // pre-auth plugin router - plugins may register unauthenticated /plugin/* routes
 const prePluginRouter = express.Router();
 app.use('/plugin', prePluginRouter);
+
+// mcp endpoint ---------------------------------------------------------------
+// Mounted before Auth.app() on purpose: MCP does its own bearer auth so that a
+// failure answers 401 + WWW-Authenticate. Auth.doAuth answers 403 and, in the
+// session based modes, redirects - and MCP clients don't follow redirects.
+// mcpEnabled is checked per request, not here: the config isn't loaded yet at
+// require time, main() only awaits Config.initialize() much later.
+MCPViewerAPIs.initialize({
+  middleware: { logAction, expToField, getSettingUserCache, sanitizeViewName, checkHeaderToken },
+  apis: { SessionAPIs, StatsAPIs, MiscAPIs, ConnectionAPIs, ViewAPIs, HuntAPIs, ShortcutAPIs, HistoryAPIs }
+});
+
+app.use('/mcp', MCPServer.router({
+  serviceName: 'arkime-viewer',
+  version: version.version,
+  serviceRole: 'arkimeUser',
+  tools: MCPViewerAPIs.tools,
+  enabled: () => ArkimeConfig.get('mcpEnabled', false)
+}));
 
 // password, testing, or anonymous mode setup ---------------------------------
 Auth.app(app);
