@@ -24,6 +24,8 @@ const Integration = require('./integration');
 const Audit = require('./audit');
 const Overview = require('./overview');
 const View = require('./view');
+const MCPServer = require('../common/mcpServer');
+const MCPCont3xtAPIs = require('./apiMcp');
 const Db = require('./db');
 const jsonParser = ArkimeUtil.jsonParser;
 const favicon = require('serve-favicon');
@@ -191,6 +193,23 @@ if (ArkimeConfig.regressionTests) {
     res.send({ success: true });
   });
 }
+
+// mcp endpoint --------------------------------------------------------------
+// Mounted before Auth.app() on purpose: MCP does its own bearer auth so a
+// failure can answer 401 + WWW-Authenticate rather than redirecting, which MCP
+// clients don't follow. mcpEnabled is checked per request because the config
+// isn't loaded yet at require time.
+MCPCont3xtAPIs.initialize({
+  apis: { Integration, View, Overview, LinkGroup }
+});
+
+app.use('/mcp', MCPServer.router({
+  serviceName: 'arkime-cont3xt',
+  version: version.version,
+  serviceRole: 'cont3xtUser',
+  tools: MCPCont3xtAPIs.tools,
+  enabled: () => ArkimeConfig.get('mcpEnabled', false)
+}));
 
 // Set up auth, all APIs registered below will use passport
 Auth.app(app);

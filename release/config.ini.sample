@@ -201,6 +201,20 @@ dropGroup=daemon
 #requiredAuthHeaderVal="ARKIME_ACCESS"
 #userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
 
+# MCP (Model Context Protocol) ################################################
+# Exposes POST /mcp so an AI assistant can query Arkime. Off by default.
+# Access is per user: the caller needs the mcpUser role on top of the service's
+# own role. Grant it in bulk with:
+#   db.pl <host:port> users-update '*' --addRole mcpUser --dryrun
+# mcpMaxQueryDays caps how much time a query may span, in days, floating point,
+# so 0.5 is 12 hours. Defaults to 7. Use -1 for no limit, which lets an
+# assistant ask for all data and can be expensive on a large cluster.
+# See https://arkime.com/settings#mcp for the auth modes, the authJwt* settings
+# and full Okta/Athenz/apache examples.
+#mcpEnabled=true
+#mcpAuthMode=header
+#mcpMaxQueryDays=7
+
 # Should we parse HTTP QS Values
 parseQSValue=false
 
