@@ -16,6 +16,7 @@ const MCPServer = require('../common/mcpServer');
 const ArkimeConfig = require('../common/arkimeConfig');
 const User = require('../common/user');
 const Auth = require('../common/auth');
+const BuildQuery = require('./buildQuery');
 const { MCPToolError } = MCPServer;
 
 // The standard SessionsQuery parameters, see apiSessions.js SessionsQuery
@@ -79,16 +80,7 @@ class MCPViewerAPIs {
   /**
    * Cap how much time an MCP query may span, mcpMaxQueryDays, default 7 days,
    * -1 for no limit. This is the width of the window, not how far back it
-   * reaches: a 1 day query about last year is fine, a 90 day one is not.
-   * Arkime is a retrospective tool, so limiting reach back would break the
-   * common case while doing nothing about the cost of a huge scan.
-   *
-   * This is deliberately a hard error rather than a silent clamp: quietly
-   * narrowing the range would hand the model fewer results than it asked for
-   * and it would report them as the whole picture.
-   *
-   * Note this is a deployment wide cap on top of, not instead of, the existing
-   * per user timeLimit that buildQuery.js already enforces in hours.
+   * reaches.
    */
   static #checkQueryDays (query) {
     const maxDays = parseFloat(ArkimeConfig.get('mcpMaxQueryDays', 7));
@@ -96,22 +88,17 @@ class MCPViewerAPIs {
 
     const limit = `mcpMaxQueryDays is ${maxDays}`;
 
-    if (query.startTime !== undefined && query.stopTime !== undefined) {
-      const spanDays = (query.stopTime - query.startTime) / 86400;
-      if (spanDays > maxDays) {
-        throw new MCPToolError(`Time range of ${spanDays.toFixed(2)} days is too large, ${limit}`);
-      }
-      return;
-    }
+    // Resolve the window exactly how the query itself will, so string dates,
+    // date=-1, segments=all and bad input can't slip past a hand rolled check
+    const [startSec, stopSec] = BuildQuery.determineQueryTimes({ ...query });
 
-    if (parseFloat(query.date) === -1) {
+    if (startSec === null || stopSec === null || isNaN(startSec) || isNaN(stopSec)) {
       throw new MCPToolError(`Searching all data is not allowed, ${limit}. Use date or startTime/stopTime.`);
     }
 
-    // date is in hours
-    const days = parseFloat(query.date) / 24;
-    if (days > maxDays) {
-      throw new MCPToolError(`Time range of ${days.toFixed(2)} days is too large, ${limit}`);
+    const spanDays = (stopSec - startSec) / 86400;
+    if (spanDays > maxDays) {
+      throw new MCPToolError(`Time range of ${spanDays.toFixed(2)} days is too large, ${limit}`);
     }
   }
 

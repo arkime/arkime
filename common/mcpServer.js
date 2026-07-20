@@ -336,7 +336,11 @@ class MCPServer {
 
     if (MCPServer.#ips === null) { return true; }
 
-    const ip = req.ip.includes(':') ? req.ip : `::ffff:${req.ip}`;
+    // Must be the real socket peer, not req.ip: with trust proxy on, req.ip
+    // comes from the client-supplied X-Forwarded-For and is spoofable
+    const peer = req.socket?.remoteAddress;
+    if (peer === undefined) { return false; }
+    const ip = peer.includes(':') ? peer : `::ffff:${peer}`;
     return !!MCPServer.#ips.find(ip);
   }
 

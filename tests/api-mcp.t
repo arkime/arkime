@@ -1,4 +1,4 @@
-use Test::More tests => 87;
+use Test::More tests => 90;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -285,6 +285,17 @@ is($json->{result}->{isError}, JSON::false, "an explicit window of 3 days is all
 # the cap applies to aggregations too, not just session search
 $json = mcp2("arkime_spigraph", '{"date":-1,"exp":"ip.dst"}');
 is($json->{result}->{isError}, JSON::true, "the cap also applies to arkime_spigraph");
+
+# the cap must resolve times the same way the query does, so it can't be bypassed
+# by passing dates as strings, a bad date, or segments=all
+$json = mcp2("arkime_sessions", '{"startTime":"2013-01-01","stopTime":"2014-12-31","length":1}');
+is($json->{result}->{isError}, JSON::true, "a multi year window passed as date strings is still capped");
+
+$json = mcp2("arkime_sessions", '{"date":"abc","length":1}');
+is($json->{result}->{isError}, JSON::true, "a non numeric date, which resolves to all data, is capped");
+
+$json = mcp2("arkime_sessions", '{"startTime":"garble","stopTime":"junk","length":1}');
+is($json->{result}->{isError}, JSON::true, "malformed date strings are capped");
 
 ################################################################################
 # mcpAuthMode=header - the test3 viewer on 8126 runs authMode=header, which is
