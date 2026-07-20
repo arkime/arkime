@@ -1,4 +1,4 @@
-use Test::More tests => 77;
+use Test::More tests => 87;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -248,7 +248,6 @@ $json = callTool("arkime_create_hunt", '{"name":"mcphunt","search":"zzz","search
 is($json->{result}->{isError}, JSON::true, "arkime_create_hunt requires a time window");
 
 viewerGet("/regressionTests/deleteAllViews");
-viewerGet("/regressionTests/deleteAllUsers");
 
 ################################################################################
 # mcpMaxQueryDays - the test2 viewer on 8124 sets nothing, so this exercises the
@@ -286,3 +285,45 @@ is($json->{result}->{isError}, JSON::false, "an explicit window of 3 days is all
 # the cap applies to aggregations too, not just session search
 $json = mcp2("arkime_spigraph", '{"date":-1,"exp":"ip.dst"}');
 is($json->{result}->{isError}, JSON::true, "the cap also applies to arkime_spigraph");
+
+################################################################################
+# mcpAuthMode=header - the test3 viewer on 8126 runs authMode=header, which is
+# the production shape when apache/nginx verifies the token and passes the user
+# name through. Users are auto created by autocreate.ini, which only grants
+# mcpUser when the x-test-mcp header says so.
+################################################################################
+my $MCP3 = "http://$ArkimeTest::host:8126/mcp";
+my $PING = '{"jsonrpc":"2.0","id":1,"method":"ping"}';
+
+# no username header at all
+$response = $ArkimeTest::userAgent->post($MCP3, Content => $PING, "Content-Type" => "application/json");
+is($response->code, 401, "header auth with no username header gets 401");
+is($response->header("WWW-Authenticate"), 'Bearer realm="arkime-viewer"', "and still sends WWW-Authenticate");
+ok(!$response->is_redirect, "and does not redirect");
+
+# a valid header user, but autocreate did not grant mcpUser
+$response = $ArkimeTest::userAgent->post($MCP3, Content => $PING, "Content-Type" => "application/json",
+    ':arkime_user' => 'sac-mcp-hdr1', ':arkime_user_name' => 'sac-mcp-hdr1');
+is($response->code, 403, "header user without mcpUser gets 403");
+like($response->content, qr/mcpUser/, "and is told which role is missing");
+
+# same flow, but x-test-mcp makes the role mapping grant mcpUser
+$response = $ArkimeTest::userAgent->post($MCP3, Content => $PING, "Content-Type" => "application/json",
+    ':arkime_user' => 'sac-mcp-hdr2', ':arkime_user_name' => 'sac-mcp-hdr2', ':x-test-mcp' => 'yes');
+is($response->code, 200, "header user with mcpUser is allowed");
+$json = from_json($response->content);
+eq_or_diff($json->{result}, from_json("{}"), "and gets a real JSON-RPC result");
+
+# and a real tool call authenticated purely by the proxy set header
+$response = $ArkimeTest::userAgent->post($MCP3,
+    Content => '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"arkime_fields","arguments":{}}}',
+    "Content-Type" => "application/json",
+    ':arkime_user' => 'sac-mcp-hdr2', ':arkime_user_name' => 'sac-mcp-hdr2', ':x-test-mcp' => 'yes');
+is($response->code, 200, "tools/call over header auth is 200");
+$json = from_json($response->content);
+is($json->{result}->{isError}, JSON::false, "the tool ran");
+ok(scalar @{$json->{result}->{structuredContent}} > 100, "and returned the field list");
+
+# header auth auto created users, clean up after everything
+viewerGet("/regressionTests/deleteAllViews");
+viewerGet("/regressionTests/deleteAllUsers");

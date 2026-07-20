@@ -483,6 +483,7 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 8123);
     waitFor($ArkimeTest::host, 8124);
     waitFor($ArkimeTest::host, 8125);
+    waitFor($ArkimeTest::host, 8126);
     waitFor($ArkimeTest::host, 8008);
     waitFor($ArkimeTest::host, 3218);
     waitFor($ArkimeTest::host, 7200);
