@@ -35,17 +35,24 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.6.1 2026/08/xx
+6.7.0 2026/08/xx
 ## All
   - #4128 Add changePasswordSecret.js to re-encrypt all users' passwords and cont3xt keys after changing the passwordSecret
+  - #4134 Fix a cleared (null) user permission being treated as a denial instead of falling back to the roles' value
 ## Capture
   - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
   - #4121 Fix diameter parser not unregistering when its reassembly buffer overflowed
   - #4126 Add --sorted option to process offline pcap directories in alphabetical order
+## Cont3xt/Viewer
+  - #4134 Add an MCP server at POST /mcp for viewer and cont3xt, off by default, enable with mcpEnabled.
+  - #4134 Add mcpUser role, required per user on top of the service role to use /mcp; superAdmin includes it, arkimeAdmin does not
 ## db.pl
   - #4127 Add reindex-sessions2 command to reindex sessions2 indices into sessions3, renaming flat fields to the ECS nested layout
+  - #4134 Add db.pl users-update command to bulk add/remove roles and set/unset fields on users matching a userId glob,
+          eg db.pl <host:port> users-update '*' --addRole mcpUser --dryrun
 ## Viewer
+  - #4134 Add mcpMaxQueryDays limiting how much time an MCP query may span, in days, default 7, -1 for no limit
   - #4120 Fix error responses crashing with an unhandled rejection when a session API handler passed an Error object to res.end
   - #4120 Fix addTagsList/removeTagsList completion callback not being reliably called
   - #4120 Hunts now fetch only the packet-related session fields instead of all fields, speeding up hunts on sessions with many fields

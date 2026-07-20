@@ -15,10 +15,11 @@ const otplib = require('otplib');
 const QRCode = require('qrcode');
 
 const systemRolesMapping = {
-  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser', 'dbAdmin'],
+  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser', 'dbAdmin', 'mcpUser'],
   usersAdmin: [],
   arkimeAdmin: ['arkimeUser'],
   arkimeUser: [],
+  mcpUser: [],
   parliamentAdmin: ['parliamentUser'],
   parliamentUser: [],
   wiseAdmin: ['wiseUser'],
@@ -1481,7 +1482,10 @@ class User {
     // First do settings
     const needSettings = [];
     for (const col of allSettingColumns) {
-      if (this[col] !== undefined) {
+      // null means cleared, which has to behave the same as never set or a
+      // cleared field would silently mean "denied, ignore my roles". Clearing a
+      // field is how db.pl users-update --unset restores role inheritance.
+      if (this[col] !== undefined && this[col] !== null) {
         this.#allSettings[col] = this[col];
       } else {
         needSettings.push(col);

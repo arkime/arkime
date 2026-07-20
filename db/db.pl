@@ -137,6 +137,12 @@ my $REFRESH = 60;
 my $ESAPIKEY = $ENV{ARKIME_default__elasticsearchAPIKey} || $ENV{ARKIME__elasticsearchAPIKey} || "";
 my $USERPASS = $ENV{ARKIME_default__elasticsearchBasicAuth} || $ENV{ARKIME__elasticsearchBasicAuth} || "";
 my $IFNEEDED = 0;
+my @ADDROLE = ();
+my @REMOVEROLE = ();
+my @SETPERM = ();
+my @UNSETPERM = ();
+my $USEREGEX = 0;
+my $DRYRUN = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -206,8 +212,6 @@ sub showHelp($)
     print "  optimize                     - Optimize all Arkime indices in OpenSearch/Elasticsearch\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  optimize-admin               - Optimize only admin indices in OpenSearch/Elasticsearch, use with ILM\n";
-    print "  disable-users <days>         - Disable user accounts that have not been active\n";
-    print "      days                     - Number of days of inactivity (integer)\n";
     print "  set-shortcut <name> <userid> <file> [<opts>]\n";
     print "       name                    - Name of the shortcut (no special characters except '-' and '_')\n";
     print "       userid                  - UserId of the user to add the shortcut for\n";
@@ -235,6 +239,20 @@ sub showHelp($)
     print "    --nopcap                   - Remove fields having to do with pcap files\n";
     print "  reindex-sessions2 <src> [<dst>] - Reindex sessions2 index(es) into ${PREFIX}sessions3, renaming fields to ECS\n";
     print "                                    <src> may be a single index or a wildcard like 'sessions2-*'\n";
+    print "\n";
+    print "User Commands:\n";
+    print "  disable-users <days>         - Disable user accounts that have not been active\n";
+    print "      days                     - Number of days of inactivity (integer)\n";
+    print "  users-update <pattern> <opts>- Bulk add/remove roles and set/unset fields on all users whose userId matches <pattern>\n";
+    print "      pattern                  - Glob matched against userId, '*' and '?' supported, use '*' for all users\n";
+    print "                                 Roles themselves are skipped unless <pattern> starts with 'role:'\n";
+    print "    --addRole <role>           - Role to add, may be repeated\n";
+    print "    --removeRole <role>        - Role to remove, may be repeated\n";
+    print "    --set <field>=<value>      - Set a user field, may be repeated (eg --set packetSearch=true)\n";
+    print "    --unset <field>            - Remove a user field so it falls back to any role value, may be repeated\n";
+    print "    --regex                    - Treat <pattern> as a regex instead of a glob\n";
+    print "    --dryrun                   - Print what would change without changing anything\n";
+    print "      eg: db.pl <host:port> users-update '*' --addRole mcpUser --dryrun\n";
     print "\n";
     print "Backup and Restore Commands:\n";
     print "  backup <basename> <opts>     - Backup everything but sessions/history; filenames created start with <basename>\n";
@@ -7769,6 +7787,22 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--compression") {
             $pos++;
             $COMPRESSION = $ARGV[$pos];
+        } elsif ($ARGV[$pos] eq "--addRole") {
+            $pos++;
+            push(@ADDROLE, $ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--removeRole") {
+            $pos++;
+            push(@REMOVEROLE, $ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--set") {
+            $pos++;
+            push(@SETPERM, $ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--unset") {
+            $pos++;
+            push(@UNSETPERM, $ARGV[$pos]);
+        } elsif ($ARGV[$pos] eq "--regex") {
+            $USEREGEX = 1;
+        } elsif ($ARGV[$pos] eq "--dryrun") {
+            $DRYRUN = 1;
         } else {
             logmsg "Unknown option '$ARGV[$pos]'\n";
         }
@@ -7884,8 +7918,8 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?update|users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -8261,6 +8295,130 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
       print "$rmcount user(s) disabled\n";
     }
 
+    exit 0;
+} elsif ($ARGV[1] =~ /^(users-?update)$/) {
+    parseArgs(3);
+
+    my $pattern = $ARGV[2];
+    showHelp("Must give at least one of --addRole, --removeRole, --set or --unset")
+        if (!@ADDROLE && !@REMOVEROLE && !@SETPERM && !@UNSETPERM);
+
+    # The users mapping is dynamic:strict, so a typo'd field name would be
+    # rejected by OpenSearch/Elasticsearch. Fail here with a useful message instead.
+    my %settable = map { $_ => 1 } qw(enabled webEnabled headerAuthEnabled emailSearch removeEnabled
+                                      packetSearch hideStats hideFiles hidePcap disablePcapDownload
+                                      expression timeLimit userName welcomeMsgNum);
+    my %systemRoles = map { $_ => 1 } qw(superAdmin usersAdmin arkimeAdmin arkimeUser parliamentAdmin
+                                         parliamentUser wiseAdmin wiseUser cont3xtAdmin cont3xtUser
+                                         dbAdmin mcpUser);
+
+    foreach my $role (@ADDROLE, @REMOVEROLE) {
+        showHelp("Role '$role' must be a system role or start with 'role:'")
+            if (!$systemRoles{$role} && $role !~ /^role:/);
+    }
+
+    my %sets;
+    foreach my $kv (@SETPERM) {
+        showHelp("--set must look like <field>=<value>, got '$kv'") if ($kv !~ /^([^=]+)=(.*)$/);
+        my ($field, $value) = ($1, $2);
+        showHelp("Unknown user field '$field', must be one of: " . join(", ", sort keys %settable)) if (!$settable{$field});
+        # Keep booleans/numbers typed, everything else stays a string
+        if ($value =~ /^(true|false)$/) {
+            $sets{$field} = $value eq "true" ? JSON::true : JSON::false;
+        } elsif ($value =~ /^-?\d+$/) {
+            $sets{$field} = int($value);
+        } else {
+            $sets{$field} = $value;
+        }
+    }
+
+    foreach my $field (@UNSETPERM) {
+        showHelp("Unknown user field '$field', must be one of: " . join(", ", sort keys %settable)) if (!$settable{$field});
+    }
+
+    # Glob by default since these are bulk edits and a stray regex '.' would
+    # match everyone. --regex is there when you really want it.
+    my $re;
+    if ($USEREGEX) {
+        $re = qr/^$pattern$/;
+    } else {
+        my $g = quotemeta($pattern);
+        $g =~ s/\\\*/.*/g;
+        $g =~ s/\\\?/./g;
+        $re = qr/^$g$/;
+    }
+
+    # Fetch the roles plus anything we might unset, so we only report users that
+    # actually have the field, without pulling every full user document
+    my $srcParam = join(",", "userId", "roles", @UNSETPERM);
+    my $users = esGet("/${PREFIX}users/_search?size=10000&_source=${srcParam}");
+    my $total = $users->{hits}->{total}->{value} // $users->{hits}->{total};
+    logmsg "WARNING - more than 10000 users, only the first 10000 were considered\n" if (defined $total && $total > 10000);
+
+    my $changed = 0;
+    my $matched = 0;
+
+    foreach my $hit (@{$users->{hits}->{hits}}) {
+        my $userId = $hit->{_source}->{userId};
+        next if (!defined $userId);
+        # Roles are stored as users too. Only touch them if asked for explicitly.
+        next if ($userId =~ /^role:/ && $pattern !~ /^role:/);
+        next if ($userId !~ $re);
+        $matched++;
+
+        my %doc;
+        my @what;
+
+        if (@ADDROLE || @REMOVEROLE) {
+            my @roles = @{$hit->{_source}->{roles} // []};
+            my %have = map { $_ => 1 } @roles;
+            my %remove = map { $_ => 1 } @REMOVEROLE;
+
+            foreach my $role (@ADDROLE) {
+                next if ($have{$role});
+                push(@roles, $role);
+                $have{$role} = 1;
+                push(@what, "+$role");
+            }
+
+            my @kept = grep { !$remove{$_} } @roles;
+            if (scalar @kept != scalar @roles) {
+                push(@what, map { "-$_" } grep { $have{$_} } @REMOVEROLE);
+                @roles = @kept;
+            }
+
+            $doc{roles} = \@roles if (@what);
+        }
+
+        foreach my $field (keys %sets) {
+            $doc{$field} = $sets{$field};
+            push(@what, "$field=" . (ref($sets{$field}) ? ($sets{$field} ? "true" : "false") : $sets{$field}));
+        }
+
+        # Only report fields that actually have a value. json null decodes to
+        # undef, so an already cleared field is correctly left alone and
+        # re-running the same command is a no-op.
+        my @unset = grep { defined $hit->{_source}->{$_} } @UNSETPERM;
+        push(@what, map { "unset $_" } @unset);
+
+        next if (!@what);
+
+        # null clears a field, which User treats the same as not being set at
+        # all, so the value falls back to whatever the user's roles give
+        $doc{$_} = undef foreach (@unset);
+
+        if ($DRYRUN) {
+            print "Would update $userId: " . join(", ", @what) . "\n";
+        } else {
+            print "Updating $userId: " . join(", ", @what) . "\n";
+            esPost("/${PREFIX}users/_update/$userId", to_json({doc => \%doc}));
+        }
+        $changed++;
+    }
+
+    esPost("/${PREFIX}users/_refresh", "") if ($changed && !$DRYRUN);
+
+    print "$matched user(s) matched '$pattern', $changed " . ($DRYRUN ? "would be changed" : "changed") . "\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
     showHelp("Invalid name $ARGV[2], names cannot have special characters except '-' and '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]/);
