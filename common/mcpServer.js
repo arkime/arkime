@@ -104,10 +104,8 @@ class MCPServer {
         return MCPServer.#unauthorized(res, options.serviceName);
       }
 
-      // Two gates: the service's own role, plus the MCP role. MCP access is an
-      // explicit per user grant, so being an arkimeUser is not enough on its own.
-      const required = [options.serviceRole, ArkimeConfig.get('mcpRequiredRole', 'mcpUser')].filter(r => r);
-      const missing = required.filter(r => !user.hasRole(r));
+      // Two gates: the service's own role, plus mcpUser
+      const missing = [options.serviceRole, 'mcpUser'].filter(r => r && !user.hasRole(r));
       if (missing.length) {
         return MCPServer.#error(res, 403, null, INVALID_REQUEST, `Requires ${missing.join(' and ')} role`);
       }

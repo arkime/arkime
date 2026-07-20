@@ -199,7 +199,6 @@ dropGroup=daemon
 # and full Okta/Athenz/apache examples.
 #mcpEnabled=true
 #mcpAuthMode=header
-#mcpRequiredRole=mcpUser
 #mcpMaxQueryDays=7
 
 # Should we parse HTTP QS Values
