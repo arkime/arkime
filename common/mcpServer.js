@@ -368,6 +368,26 @@ class MCPServer {
     return new Promise((resolve, reject) => {
       const url = options.url ?? '/';
 
+      // Express delivers every query value as a string, and handlers compare
+      // against that (buildQuery's date === '-1' for example). Tool arguments
+      // arrive as JSON numbers/booleans, so coerce scalars or those checks
+      // silently fail.
+      const stringifyQuery = (query) => {
+        const out = {};
+        for (const [key, value] of Object.entries(query)) {
+          if (value === undefined) {
+            continue;
+          } else if (Array.isArray(value)) {
+            out[key] = value.map((v) => (v !== null && typeof v === 'object') ? v : String(v));
+          } else if (value !== null && typeof value === 'object') {
+            out[key] = value;
+          } else {
+            out[key] = String(value);
+          }
+        }
+        return out;
+      };
+
       // Inherit from the real request so handlers still see headers, ip, etc,
       // but define our overrides as own data properties. Plain assignment would
       // hit express's getter-only accessors (path, query, ...) and throw.
@@ -378,7 +398,7 @@ class MCPServer {
         originalUrl: own(url),
         path: own(url),
         _parsedUrl: own({ pathname: url }),
-        query: own(options.query ?? {}),
+        query: own(stringifyQuery(options.query ?? {})),
         params: own(options.params ?? {}),
         body: own(options.body ?? {}),
         user: own(req.user),
