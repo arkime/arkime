@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         <cont3xt-field
           :decoded-value="indicator.decoded"
           :value="indicator.query"
-          class="align-self-center mr-1"
+          class="align-self-center me-1"
           :id="`${indicator.query}-${indicator.itype}`" />
         <integration-severity-counts :indicator-id="indicatorId" />
 
@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
       <div
         v-for="(tidbit, index) in labeledTidbits"
         :key="index"
-        class="row ml-3"
+        class="row ms-3"
         :class="{ 'mt-1': index > 0 }">
         <div class="col">
           <integration-tidbit

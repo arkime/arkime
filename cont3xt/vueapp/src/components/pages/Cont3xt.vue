@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="w-100 pb-1 d-flex justify-space-between">
           <!--    tag input      -->
           <v-text-field
-            class="input-connect-right medium-input"
+            class="input-connect-right medium-input ms-1"
             style="max-width: 150px; width: 150px"
             type="text"
             tabindex="0"
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             variant="flat"
             color="secondary"
-            class="btn-connect-left skinny-search-row-btn mr-1"
+            class="btn-connect-left skinny-search-row-btn me-1"
             tabindex="0"
             @click="toggleCollapseTagDisplay"
             title="Collapse tag display"
@@ -97,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
               </v-menu>
               <span
                 v-if="getShiftKeyHold"
-                class="search-query-shortcut text-warning ml-1">Q</span>
+                class="search-query-shortcut text-warning ms-1">Q</span>
             </template>
           </v-text-field>
           <v-btn
@@ -157,8 +157,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-medium-emphasis mr-2" />
-            <strong class="text-warning cont3xt-welcome-text mr-2">
+              class="text-medium-emphasis me-2" />
+            <strong class="text-warning cont3xt-welcome-text me-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
             <span
@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-medium-emphasis ml-2" />
+              class="text-medium-emphasis ms-2" />
           </div>
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid">
@@ -359,12 +359,12 @@ SPDX-License-Identifier: Apache-2.0
                   color="info"
                   class="text-center">
                   <v-icon
-                    icon="mdi-chevron-left mr-2"
+                    icon="mdi-chevron-left me-2"
                     size="x-large" />
                   No integrations selected.
                   View the Integrations panel on the far left to select integrations to query.
                   <v-icon
-                    icon="mdi-chevron-left ml-2"
+                    icon="mdi-chevron-left ms-2"
                     size="x-large" />
                 </v-alert>
               </div>
@@ -373,7 +373,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="small"
                 @click="toTop"
                 title="Go to top"
-                class="to-top-btn\"
+                class="to-top-btn"
                 variant="text"
                 color="btn-link"
                 v-show="scrollPx > 100">
@@ -385,7 +385,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               v-if="getLinkGroupsPanelOpen"
               class="link-group-pane">
-              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
+              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ms-3 overflow-hidden">
                 <div
                   v-if="getActiveIndicator"
                   class="mb-1 mx-2">
@@ -430,7 +430,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-select>
                     </div>
                     <v-btn
-                      class="mx-1\"
+                      class="mx-1"
                       v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
                       variant="outlined"
                       color="secondary"
@@ -445,7 +445,7 @@ SPDX-License-Identifier: Apache-2.0
                       tabindex="-1"
                       color="secondary"
                       variant="elevated"
-                      class="float-right\"
+                      class="float-right"
                       @click="toggleLinkGroupsPanel"
                       v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
@@ -458,6 +458,7 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- time range input for links -->
                   <time-range-input
                     v-model="timeRangeInfo"
+                    input-group-size="s"
                     :place-holder-tip="linkPlaceholderTip" />
                   <!-- /time range input for links -->
                 </div>
@@ -1458,6 +1459,7 @@ export default {
   border-top-left-radius: 5px;
 }
 .link-group-panel-shadow {
+  background-color: rgb(var(--v-theme-surface-panel));
   -webkit-box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
   box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
 }

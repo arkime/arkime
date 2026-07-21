@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /search -->
 
-    <div class="d-flex flex-row align-center ml-4">
+    <div class="d-flex flex-row align-center ms-4">
       <v-tabs
         content-class="mt-3"
         :model-value="activeTab"
@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
       v-model:sort-by="sortBy"
       :no-data-text="(statItems == null || statItems.length === 0) ? `There are no ${tableSubjects} to show stats for` : `There are no ${tableSubjects} that match the name: ${search}`"
       :items-per-page="-1"
-      :header-props="{ class: 'text-right' }" />
+      :header-props="{ class: 'text-end' }" />
 
     <!-- stats error -->
     <v-alert
@@ -138,8 +138,8 @@ const headers = [{
   key: 'cacheFound',
   value: format('cacheFound', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -147,8 +147,8 @@ const headers = [{
   key: 'cacheGood',
   value: format('cacheGood', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -156,8 +156,8 @@ const headers = [{
   key: 'cacheRecentAvgMS',
   value: format('cacheRecentAvgMS', commaStringRound),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -165,8 +165,8 @@ const headers = [{
   key: 'directLookup',
   value: format('directLookup', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -174,8 +174,8 @@ const headers = [{
   key: 'directFound',
   value: format('directFound', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -183,8 +183,8 @@ const headers = [{
   key: 'directGood',
   value: format('directGood', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -192,8 +192,8 @@ const headers = [{
   key: 'directError',
   value: format('directError', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -201,8 +201,8 @@ const headers = [{
   key: 'directRecentAvgMS',
   value: format('directRecentAvgMS', commaStringRound),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
@@ -210,8 +210,8 @@ const headers = [{
   key: 'total',
   value: format('total', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }];

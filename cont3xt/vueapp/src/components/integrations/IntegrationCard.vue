@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
           <template v-if="filteredSearchUrls.length === 1">
             <v-btn
               size="small"
-              class="ml-1"
+              class="ms-1"
               variant="outlined"
               color="primary"
               v-if="filteredSearchUrls[0]"
@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <v-btn
           size="small"
-          class="ml-1"
+          class="ms-1"
           tabindex="-1"
           @click="copy"
           v-tooltip="'Copy as raw JSON'"
@@ -64,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
         <v-btn
           size="small"
-          class="ml-1"
+          class="ms-1"
           tabindex="-1"
           @click="download"
           v-tooltip="'Download as raw JSON'"
@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
         <v-btn
           size="small"
-          class="ml-1"
+          class="ms-1"
           tabindex="-1"
           @click="refresh"
           v-tooltip="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`"
@@ -91,7 +91,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!!error"
       color="error"
       class="flex-grow-1">
-      <span class="pr-2">
+      <span class="pe-2">
         <v-icon
           icon="mdi-alert"
           size="large" />
@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-alert
       v-if="!card"
       color="warning">
-      <span class="pr-2">
+      <span class="pe-2">
         <v-icon
           icon="mdi-alert"
           size="large" />

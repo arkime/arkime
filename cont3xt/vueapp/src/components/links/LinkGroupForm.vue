@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
           :selected-roles="lg.viewRoles"
           @selected-roles-updated="updateViewRoles" />
         <RoleDropdown
-          class="ml-1"
+          class="ms-1"
           :roles="getRoles"
           display-text="Who Can Edit"
           :selected-roles="lg.editRoles"
@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-icon
           size="large"
           icon="mdi-information"
-          class="cursor-help ml-2 mr-1"
+          class="cursor-help ms-2 me-1"
           v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'" />
         <span v-if="!lg.creator || lg.creator === getUser.userId">
           As the creator, you can always view and edit your link groups.
@@ -61,14 +61,14 @@ SPDX-License-Identifier: Apache-2.0
             variant="tonal"
             class="pa-2">
             <div class="d-flex justify-space-between align-center">
-              <div class="mr-2">
+              <div class="me-2">
                 <ToggleBtn
                   class="lg-toggle-btn"
                   @toggle="expandLink(i)"
                   :opened="lg.links[i].expanded"
                   :class="{expanded: lg.links[i].expanded}" />
               </div>
-              <div class="mr-2 flex-grow-1 d-flex flex-row">
+              <div class="me-2 flex-grow-1 d-flex flex-row">
                 <trimmed-text-field
                   class="input-connect-right small-input"
                   label="Name"
@@ -162,8 +162,8 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </v-card>
           <template v-else>
-            <div class="d-flex justify-space-between align-center mr-2">
-              <div class="mr-4 flex-grow-1">
+            <div class="d-flex justify-space-between align-center me-2">
+              <div class="me-4 flex-grow-1">
                 <hr
                   class="link-separator"
                   :style="`border-color: ${link.color || '#777'}`">
@@ -181,7 +181,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="d-flex nowrap">
                 <color-picker
                   :index="i"
-                  class="d-inline mr-2"
+                  class="d-inline me-2"
                   :link-name="link.name"
                   @color-selected="changeColor"
                   :color="link.color || '#777'" />
@@ -439,10 +439,6 @@ export default {
 </script>
 
 <style scoped>
-.alert.alert-sm {
-  padding: 0.4rem 0.8rem;
-}
-
 .link-separator {
   border: 0;
   margin-block: 0;

@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-icon
       v-if="!noCaret"
       icon="mdi-menu-down"
-      class="ml-1" />
+      class="ms-1" />
 
     <v-menu
       v-model="menuOpen"
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="d-flex flex-row mw-75 flex-grow-1 justify-space-between align-center">
                     <v-icon
                       icon="mdi-share"
-                      class="mr-1 cursor-help"
+                      class="me-1 cursor-help"
                       v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
                       v-tooltip="`Shared with you by ${view.creator}`" />
                     <span class="ellipsis no-overflow">
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                         color="warning"
                         v-tooltip="'Cancel'"
                         title="Cancel"
-                        class="float-right ml-1"
+                        class="float-right ms-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="toggleDeleteView(view._id)">
                         <v-icon icon="mdi-cancel" />
@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                         color="error"
                         v-tooltip="'Are you sure?'"
                         title="Are you sure?"
-                        class="float-right ml-1"
+                        class="float-right ms-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="deleteView(view)">
                         <v-icon icon="mdi-check-bold" />
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="error"
-                        class="float-right ml-1"
+                        class="float-right ms-1"
                         v-if="!confirmDeleteView[view._id]"
                         v-tooltip:top="'Delete this view.'"
                         @click.stop.prevent="toggleDeleteView(view._id)">

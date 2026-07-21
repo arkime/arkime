@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
           shortcuts-btn-transition="cont3xt-shortcuts-slide"
           shortcuts-help-transition="cont3xt-shortcuts-slide-long">
           <template #content>
-            <span class="cont3xt-shortcuts-content\">
+            <span class="cont3xt-shortcuts-content">
               <code>'Q'</code> - set focus to query bar
               <br>
               <code>'T'</code> - set focus to the start time field

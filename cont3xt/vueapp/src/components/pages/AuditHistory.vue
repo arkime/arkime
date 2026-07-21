@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
       <div>
         <!-- time range inputs -->
         <time-range-input
-          class="ml-2 align-center"
+          class="ms-2 align-center"
           input-group-size="s"
           input-width="13rem"
           v-model="timeRangeInfo"
@@ -41,14 +41,14 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <v-btn
-        class="ml-2 search-row-btn"
+        class="ms-2 search-row-btn"
         color="primary"
         v-tooltip="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'"
         @click="seeAllChanged"
         v-if="roles.includes('cont3xtAdmin')"
         :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
         <v-icon
-          class="mr-1"
+          class="me-1"
           icon="mdi-account-circle" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} History
       </v-btn>
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="getUser && getUser.removeEnabled"
           @click="deleteLog(data.item._id)"
           size="small"
-          class="mini-table-button mr-1"
+          class="mini-table-button me-1"
           color="warning"
           variant="outlined"
           v-tooltip:top.close-on-content-click="'Delete history item'"
@@ -226,14 +226,14 @@ const headers = computed(() => {
       title: 'Results',
       key: 'resultCount',
       setWidth: '4rem',
-      tdClass: 'text-right',
+      tdClass: 'text-end',
       value: format('resultCount', orQuestionMark)
     },
     {
       title: 'Took',
       key: 'took',
       setWidth: '4rem',
-      cellProps: { class: 'text-right' },
+      cellProps: { class: 'text-end' },
       value: format('took', millisecondStr)
     }
   ];

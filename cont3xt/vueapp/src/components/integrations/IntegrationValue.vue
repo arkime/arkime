@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="-1"
         v-if="!hideLabel"
         @click="toggleValue"
-        :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pr-2'">
+        :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pe-2'">
         <span class="text-warning">
           {{ field.label }}
           <v-icon
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>
         <span
           v-if="field.type === 'table'"
-          class="ml-1"
+          class="ms-1"
           :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
           target="_blank"
           :href="safeUrl(value.value)"
           size="x-small"
-          class="integration-external-link-button\"
+          class="integration-external-link-button"
           variant="outlined"
           color="primary"
           v-tooltip="field.altText != null ? field.altText : value.value">

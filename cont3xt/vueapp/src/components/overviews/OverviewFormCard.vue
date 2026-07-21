@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="overview-header">
           <v-icon
             icon="mdi-share"
-            class="mr-1 cursor-help"
+            class="me-1 cursor-help"
             v-tooltip="`Shared with you by ${localOverview.creator}`" />
           {{ localOverview.name }}
         </div>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
             You can only view this Overview
           </small>
           <v-btn
-            class="ml-1"
+            class="ms-1"
             size="small"
             color="secondary"
             @click="rawEditMode = !rawEditMode"
@@ -49,17 +49,17 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="!rawEditMode">
         <div class="d-flex flex-row align-center">
           <h6>Title:</h6>
-          <span class="ml-1">{{ localOverview.title }}</span>
+          <span class="ms-1">{{ localOverview.title }}</span>
         </div>
         <div class="d-flex flex-row align-center">
           <h6>iType:</h6>
-          <span class="ml-1">{{ localOverview.iType }}</span>
+          <span class="ms-1">{{ localOverview.iType }}</span>
         </div>
         <div class="d-flex flex-row align-center">
           <h6>Fields:</h6>
           <c3-badge
             v-if="!localOverview.fields.length"
-            class="ml-1">
+            class="ms-1">
             None
           </c3-badge>
         </div>
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-card
             v-for="(field, i) in localOverview.fields"
             :key="i"
-            class="mb-1 pl-2 pr-2 pt-1 pb-1">
+            class="mb-1 ps-2 pe-2 pt-1 pb-1">
             <span class="text-warning bold">{{ field.from }}&nbsp;</span>
             <template v-if="field.type === 'custom'">
               <span class="text-primary">Custom</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>

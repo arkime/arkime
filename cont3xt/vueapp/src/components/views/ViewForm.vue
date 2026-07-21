@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
       @update:model-value="val => $emit('update-view', { ...localView, name: val })" />
     <div class="my-1 d-flex">
       <RoleDropdown
-        class="mr-1"
+        class="me-1"
         :roles="getRoles"
         display-text="Who Can View"
         :selected-roles="localView.viewRoles"
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-icon
         size="large"
         icon="mdi-information"
-        class="cursor-help ml-2 mr-1"
+        class="cursor-help ms-2 me-1"
         v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'" />
       <span v-if="!localView.creator">
         As the creator, you can always view and edit your views.
@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <v-icon
         icon="mdi-information"
-        class="ml-2 cursor-help"
+        class="ms-2 cursor-help"
         v-if="!localView.creator || (getUser && localView.creator === getUser.userId)"
         v-tooltip="'As the creator, you can always view and edit your views.'" />
     </div>

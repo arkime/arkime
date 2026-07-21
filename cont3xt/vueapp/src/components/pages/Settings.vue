@@ -140,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-icon
                   icon="mdi-menu"
                   :id="`${lg._id}-tt`"
-                  class="drag-handle mr-2" />
+                  class="drag-handle me-2" />
                 <id-tooltip :target="`${lg._id}-tt`">
                   Drag &amp; drop to reorder Link Groups
                 </id-tooltip>
@@ -191,12 +191,12 @@ SPDX-License-Identifier: Apache-2.0
         <div v-if="visibleTab === 'views'">
           <!-- view create form -->
           <create-view-modal v-model="viewModalOpen" />
-          <div class="mr-3 w-100 d-flex justify-space-between align-center">
+          <div class="me-3 w-100 d-flex justify-space-between align-center">
             <h1>
               Views
             </h1>
             <v-text-field
-              class="ml-4 mr-2 flex-grow-1 medium-input"
+              class="ms-4 me-2 flex-grow-1 medium-input"
               autofocus
               prepend-inner-icon="mdi-magnify"
               v-debounce="val => searchTerm = val"
@@ -208,7 +208,7 @@ SPDX-License-Identifier: Apache-2.0
               color="success">
               <v-icon
                 icon="mdi-plus-circle"
-                class="mr-1" />
+                class="me-1" />
               New View
             </v-btn>
 
@@ -222,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="roles.includes('cont3xtAdmin')"
               :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
               <v-icon
-                class="mr-1"
+                class="me-1"
                 icon="mdi-account-circle" />
               See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
             </v-btn>
@@ -313,20 +313,20 @@ SPDX-License-Identifier: Apache-2.0
                           color="success"
                           height="32px"
                           v-if="view.success"
-                          class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                          class="mb-0 mt-0 me-1 ms-1">
                           <v-icon
                             icon="mdi-check-bold"
-                            class="mr-2" />
+                            class="me-2" />
                           Saved!
                         </v-alert>
                         <v-alert
                           color="error"
                           height="32px"
                           v-if="view.error"
-                          class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                          class="mb-0 mt-0 me-1 ms-1">
                           <v-icon
                             icon="mdi-alert"
-                            class="mr-2" />
+                            class="me-2" />
                           Error!
                         </v-alert>
                         <div class="d-flex ga-1">
@@ -366,13 +366,13 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- integrations settings -->
         <div v-if="visibleTab === 'integrations'">
-          <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
+          <div class="ms-2 me-3 w-100 d-flex justify-space-between align-center">
             <h1>
               Integrations
             </h1>
             <v-text-field
               autofocus
-              class="ml-4 mr-2 medium-input"
+              class="ms-4 me-2 medium-input"
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
               density="compact"
@@ -380,15 +380,15 @@ SPDX-License-Identifier: Apache-2.0
               v-debounce="updateIntegrationSearchTerm"
               placeholder="Search integrations"
               clearable />
-            <div class="mr-3 no-wrap">
+            <div class="me-3 no-wrap">
               <v-btn
-                class="mr-1"
+                class="me-1"
                 variant="outlined"
                 color="warning"
                 @click="toggleRawIntegrationSettings">
                 <v-icon
                   icon="mdi-pencil-box"
-                  class="mr-2" />
+                  class="me-2" />
                 Raw Edit
               </v-btn>
               <v-btn
@@ -397,7 +397,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="saveIntegrationSettings">
                 <v-icon
                   icon="mdi-content-save"
-                  class="mr-2" />
+                  class="me-2" />
                 Save
               </v-btn>
             </div>
@@ -405,7 +405,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <template v-if="!rawIntegrationSettings">
             <!-- status summary strip -->
-            <div class="d-flex flex-wrap ga-2 ml-2 mr-3 mt-3 mb-1">
+            <div class="d-flex flex-wrap ga-2 ms-2 me-3 mt-3 mb-1">
               <v-chip
                 v-for="bucket in statusSummary"
                 :key="bucket.id"
@@ -426,13 +426,13 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- no results -->
             <div
-              class="lead ml-2 mt-4"
+              class="lead ms-2 mt-4"
               v-if="displayedIntegrationRows.length === 0">
               No integrations match your search.
             </div>
 
             <!-- integration list -->
-            <div class="integration-list ml-2 mr-3 mt-2">
+            <div class="integration-list ms-2 me-3 mt-2">
               <div
                 v-for="{ key, setting, status, itypes, icon } in displayedIntegrationRows"
                 :key="key"
@@ -481,7 +481,7 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       :icon="status.icon"
                       size="small"
-                      class="mr-1" />
+                      class="me-1" />
                     {{ status.label }}
                   </span>
                   <!-- home link -->
@@ -557,7 +557,7 @@ SPDX-License-Identifier: Apache-2.0
             no-resize
             hide-details
             variant="outlined"
-            class="raw-integration-edit ml-2 mr-3 mt-3"
+            class="raw-integration-edit ms-2 me-3 mt-3"
             :placeholder="rawEditPlaceholder"
             :model-value="createINI(rawIntegrationSettings)"
             @update:model-value="debounceRawEdit" />
@@ -567,7 +567,7 @@ SPDX-License-Identifier: Apache-2.0
         <div v-if="visibleTab === 'overviews'">
           <!-- overview create form -->
           <create-overview-modal v-model="overviewModalOpen" />
-          <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
+          <div class="ms-2 me-3 w-100 d-flex flex-row justify-space-between align-center">
             <h1>
               Overviews
             </h1>
@@ -589,7 +589,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="roles.includes('cont3xtAdmin')"
                 :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
                 <v-icon
-                  class="mr-1"
+                  class="me-1"
                   icon="mdi-account-circle" />
                 See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
               </v-btn>
@@ -602,11 +602,11 @@ SPDX-License-Identifier: Apache-2.0
             color="error"
             style="z-index: 2000;"
             v-model="overviewsError"
-            class="position-fixed bottom-0 mb-2 ml-2 left-0">
+            class="position-fixed bottom-0 mb-2 ms-2 left-0">
             {{ getOverviewsError }}
           </v-alert> <!-- /overview error -->
 
-          <div class="d-flex flex-wrap pl-4">
+          <div class="d-flex flex-wrap ps-4">
             <!-- overview-form-card uses :key to reset form when swapping active overview -->
             <overview-form-card
               v-if="activeOverviewId && activeUnModifiedOverview"
@@ -637,7 +637,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- link group create form -->
           <create-link-group-modal v-model="linkgroupModalOpen" />
           <!-- link groups -->
-          <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
+          <div class="ms-2 me-3 w-100 d-flex flex-row justify-space-between align-center">
             <h1>
               Link Groups
             </h1>
@@ -649,7 +649,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="openLinkGroupForm">
                 <v-icon
                   icon="mdi-plus-circle"
-                  class="mr-1" />
+                  class="me-1" />
                 New Group
               </v-btn>
               <v-btn
@@ -662,7 +662,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="roles.includes('cont3xtAdmin')"
                 :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
                 <v-icon
-                  class="mr-1"
+                  class="me-1"
                   icon="mdi-account-circle" />
                 See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
               </v-btn>
@@ -675,7 +675,7 @@ SPDX-License-Identifier: Apache-2.0
             color="error"
             style="z-index: 2000;"
             v-model="linkGroupsError"
-            class="position-fixed bottom-0 mb-2 ml-2 left-0">
+            class="position-fixed bottom-0 mb-2 ms-2 left-0">
             {{ getLinkGroupsError }}
           </v-alert> <!-- /link group error -->
 
@@ -775,7 +775,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- messages -->
       <v-alert
         v-if="!!msg"
-        class="position-fixed bottom-0 mb-2 ml-2"
+        class="position-fixed bottom-0 mb-2 ms-2"
         style="z-index: 2000;"
         :color="msgType"
         dismissible>
@@ -1488,10 +1488,6 @@ export default {
   float: left;
   z-index: 10;
   position: relative;
-}
-
-.alert.alert-sm {
-  padding: 0.2rem 0.8rem;
 }
 
 .integration-setting-img {

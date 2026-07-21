@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
       <tbody>
         <tr>
           <th
-            class="text-left"
+            class="text-start"
             @click="sortBy(field, true)"
             v-for="field in fields"
             :key="`${field.label}-header`"
