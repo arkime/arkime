@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <ArkimeCollapsible>
         <div class="page-toolbar">
           <!-- stats sub navbar -->
-          <v-row class="g-1 stats-form p-1 align-center justify-start page-subnav">
+          <v-row class="g-1 stats-form px-1 pt-2 pb-1 align-center justify-start page-subnav">
             <v-col
               cols="auto"
               class="flex-grow-1"
@@ -924,12 +924,12 @@ export default {
 <style>
 /* The tab strip lives inside its own sub-navbar bar -- a tinted
    horizontal band fixed at the top of the page that contains the
-   pill-style v-btn-toggle. Matches the visual rhythm of stats-form
-   (the search/cluster/refresh row above) but uses a different theme
-   tint so the two rows read as separate strata. */
+   pill-style v-btn-toggle. Uses the same quaternary-lightest tint as
+   the sub-navbars on sessions/spiview/arkime; the border + shadow keep
+   it visually distinct from the stats-form row above. */
 .stats-tabs .stats-tab-bar {
   padding: 6px 12px;
-  background-color: rgb(var(--v-theme-secondary-lightest));
+  background-color: rgb(var(--v-theme-quaternary-lightest));
   border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
@@ -1002,10 +1002,12 @@ export default {
 
 <style scoped>
 
-/* apply theme colors to subnavbar */
+/* search sub-navbar: secondary-lightest to match the search band on
+   sessions/spiview/arkime (the tab strip below is the quaternary-lightest
+   sub-sub navbar) */
 .stats-form {
   z-index : 6;
-  background-color: rgb(var(--v-theme-quaternary-lightest));
+  background-color: rgb(var(--v-theme-secondary-lightest));
 }
 
 /* remove browser styles on select box (mostly for border-radius) */

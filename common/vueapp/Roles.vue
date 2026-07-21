@@ -4,27 +4,39 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="container-fluid roles-page">
-    <div class="d-flex align-items-center mt-3 mb-2">
-      <div class="me-2 flex-grow-1">
-        <v-text-field
-          autofocus
-          density="compact"
-          variant="outlined"
-          hide-details
-          clearable
-          prepend-inner-icon="fa:fa-search"
-          v-model="searchTerm"
-          :placeholder="$t('users.rolesSearchPlaceholder')" />
+    <div class="d-flex align-center mt-2 mb-2">
+      <div class="ms-1 me-1 flex-grow-1">
+        <div class="arkime-input-group arkime-input-group--fluid">
+          <span class="arkime-input-label arkime-input-label-fw">
+            <v-icon icon="mdi-magnify" />
+          </span>
+          <input
+            type="text"
+            class="arkime-input-control"
+            v-focus="true"
+            v-model="searchTerm"
+            :placeholder="$t('users.rolesSearchPlaceholder')">
+          <v-btn
+            v-if="searchTerm"
+            variant="text"
+            size="x-small"
+            density="comfortable"
+            icon
+            class="arkime-input-append-btn"
+            :aria-label="$t('common.clear')"
+            @click="searchTerm = ''">
+            <v-icon icon="mdi-close" />
+          </v-btn>
+        </div>
       </div>
-      <h4>
-        <v-icon
-          icon="mdi-information"
-          class="ms-2 cursor-help"
-          id="roles-page-tip" />
-        <v-tooltip activator="#roles-page-tip">
-          <span v-html="$t('roles.pageTip')" />
-        </v-tooltip>
-      </h4>
+      <v-icon
+        icon="mdi-information"
+        size="large"
+        class="me-1 cursor-help align-self-center"
+        id="roles-page-tip" />
+      <v-tooltip activator="#roles-page-tip">
+        <span v-html="$t('roles.pageTip')" />
+      </v-tooltip>
     </div>
 
     <!-- loading -->
@@ -80,6 +92,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import Focus from './Focus.vue';
 import UserDropdown from './UserDropdown.vue';
 import UserService from './UserService';
 import { parseRoles, searchRoles } from './vueFilters.js';
@@ -87,6 +100,7 @@ import { parseRoles, searchRoles } from './vueFilters.js';
 export default {
   name: 'RolesCommon',
   emits: ['update-current-user'],
+  directives: { Focus },
   components: {
     UserDropdown
   },
