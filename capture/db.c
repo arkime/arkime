@@ -162,6 +162,37 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
 {
     BSB_EXPORT_u08(*bsb, '"');
     while (*in) {
+        // batch a run of bytes that pass through unchanged
+        const uint8_t *start = in;
+        while (*in) {
+            if (*in >= 0x20 && *in < 0x80 && *in != '"' && *in != '\\') {
+                in++;
+                continue;
+            }
+            if (utf8) {
+                // valid continuation bytes and not overlong/surrogate/>U+10FFFF
+                if ((*in & 0xf8) == 0xf0 && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 && (in[3] & 0xc0) == 0x80 &&
+                    *in <= 0xf4 && !(*in == 0xf0 && in[1] < 0x90) && !(*in == 0xf4 && in[1] > 0x8f)) {
+                    in += 4;
+                    continue;
+                }
+                if ((*in & 0xf0) == 0xe0 && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 &&
+                    !(*in == 0xe0 && in[1] < 0xa0) && !(*in == 0xed && in[1] > 0x9f)) {
+                    in += 3;
+                    continue;
+                }
+                if ((*in & 0xe0) == 0xc0 && *in >= 0xc2 && (in[1] & 0xc0) == 0x80) {
+                    in += 2;
+                    continue;
+                }
+            }
+            break;
+        }
+        if (in > start)
+            BSB_EXPORT_ptr(*bsb, start, in - start);
+        if (!*in)
+            break;
+
         switch (*in) {
         case '\b':
             BSB_EXPORT_cstr(*bsb, "\\b");
@@ -184,36 +215,13 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
         case '\\':
             BSB_EXPORT_cstr(*bsb, "\\\\");
             break;
-        case '/':
-            BSB_EXPORT_cstr(*bsb, "\\/");
-            break;
         default:
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
-            } else if (utf8) {
-                // require valid continuation bytes; else encode this byte alone
-                if ((*in & 0xf8) == 0xf0 && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 && (in[3] & 0xc0) == 0x80) {
-                    BSB_EXPORT_ptr(*bsb, in, 4);
-                    in += 3;
-                } else if ((*in & 0xf0) == 0xe0 && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80) {
-                    BSB_EXPORT_ptr(*bsb, in, 3);
-                    in += 2;
-                } else if ((*in & 0xe0) == 0xc0 && (in[1] & 0xc0) == 0x80) {
-                    BSB_EXPORT_ptr(*bsb, in, 2);
-                    in += 1;
-                } else if (*in < 0x80) {
-                    BSB_EXPORT_u08(*bsb, *in);
-                } else {
-                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
-                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
-                }
             } else {
-                if (*in & 0x80) {
-                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
-                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
-                } else {
-                    BSB_EXPORT_u08(*bsb, *in);
-                }
+                // invalid or non-utf8 high byte: latin1 -> utf8
+                BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
             }
             break;
         }
@@ -233,6 +241,37 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
     const uint8_t *end = in + len;
 
     while (in < end) {
+        // batch a run of bytes that pass through unchanged
+        const uint8_t *start = in;
+        while (in < end) {
+            if (*in >= 0x20 && *in < 0x80 && *in != '"' && *in != '\\') {
+                in++;
+                continue;
+            }
+            if (utf8) {
+                // valid continuation bytes and not overlong/surrogate/>U+10FFFF
+                if ((*in & 0xf8) == 0xf0 && in + 3 < end && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 && (in[3] & 0xc0) == 0x80 &&
+                    *in <= 0xf4 && !(*in == 0xf0 && in[1] < 0x90) && !(*in == 0xf4 && in[1] > 0x8f)) {
+                    in += 4;
+                    continue;
+                }
+                if ((*in & 0xf0) == 0xe0 && in + 2 < end && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 &&
+                    !(*in == 0xe0 && in[1] < 0xa0) && !(*in == 0xed && in[1] > 0x9f)) {
+                    in += 3;
+                    continue;
+                }
+                if ((*in & 0xe0) == 0xc0 && *in >= 0xc2 && in + 1 < end && (in[1] & 0xc0) == 0x80) {
+                    in += 2;
+                    continue;
+                }
+            }
+            break;
+        }
+        if (in > start)
+            BSB_EXPORT_ptr(*bsb, start, in - start);
+        if (in >= end)
+            break;
+
         switch (*in) {
         case '\b':
             BSB_EXPORT_cstr(*bsb, "\\b");
@@ -255,36 +294,13 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
         case '\\':
             BSB_EXPORT_cstr(*bsb, "\\\\");
             break;
-        case '/':
-            BSB_EXPORT_cstr(*bsb, "\\/");
-            break;
         default:
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
-            } else if (utf8) {
-                // require valid continuation bytes; else encode this byte alone
-                if ((*in & 0xf8) == 0xf0 && in + 3 < end && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 && (in[3] & 0xc0) == 0x80) {
-                    BSB_EXPORT_ptr(*bsb, in, 4);
-                    in += 3;
-                } else if ((*in & 0xf0) == 0xe0 && in + 2 < end && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80) {
-                    BSB_EXPORT_ptr(*bsb, in, 3);
-                    in += 2;
-                } else if ((*in & 0xe0) == 0xc0 && in + 1 < end && (in[1] & 0xc0) == 0x80) {
-                    BSB_EXPORT_ptr(*bsb, in, 2);
-                    in += 1;
-                } else if (*in < 0x80) {
-                    BSB_EXPORT_u08(*bsb, *in);
-                } else {
-                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
-                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
-                }
             } else {
-                if (*in & 0x80) {
-                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
-                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
-                } else {
-                    BSB_EXPORT_u08(*bsb, *in);
-                }
+                // invalid or non-utf8 high byte: latin1 -> utf8
+                BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
             }
             break;
         }
