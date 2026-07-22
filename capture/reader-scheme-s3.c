@@ -92,9 +92,19 @@ LOCAL void scheme_s3_parse_region(const uint8_t *data, int data_len, const char 
         wrong += 23;
         const char *end = arkime_memstr(wrong, data_len - (wrong - (char *)data), "'", 1);
         if (end) {
-            char *region = g_strndup(wrong, end - wrong);
-            g_hash_table_insert(bucket2Region, g_strdup(bucket), region);
-            req->tryAgain = TRUE;
+            int rlen = end - wrong;
+            gboolean ok = (rlen > 0 && rlen < 40);
+            for (int i = 0; ok && i < rlen; i++) {
+                char c = wrong[i];
+                if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-'))
+                    ok = FALSE;
+            }
+            if (ok) {
+                g_hash_table_insert(bucket2Region, g_strdup(bucket), g_strndup(wrong, rlen));
+                req->tryAgain = TRUE;
+            } else {
+                LOG("ERROR - Ignoring invalid region in S3 response");
+            }
         }
     } else {
         LOG("ERROR - %.*s", data_len, data);
