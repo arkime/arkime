@@ -274,8 +274,11 @@ int arkime_field_define_text_full(const char *field, const char *text, int *shor
     if (!group) {
         const char *dot = strchr(field, '.');
         if (dot) {
-            if (dot - field >= (int)sizeof(groupbuf) - 1)
-                LOGEXIT("ERROR - field '%s' too long", field);
+            if (dot - field >= (int)sizeof(groupbuf) - 1) {
+                LOG("ERROR - field '%s' too long", field);
+                g_strfreev(elements);
+                return -1;
+            }
             memcpy(groupbuf, field, dot - field);
             groupbuf[dot - field] = 0;
             group = groupbuf;
@@ -342,7 +345,7 @@ LOCAL int arkime_field_group_num(const char *group, int len)
     char       groupName[100];
 
     if (len + 1 >= (int)sizeof(groupName)) {
-        LOGEXIT("ERROR - field '%s' too long", group);
+        LOG("ERROR - field '%s' too long", group);
         return 0;
     }
     memcpy(groupName, group, len);

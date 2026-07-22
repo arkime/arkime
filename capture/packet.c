@@ -646,8 +646,8 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     ip_off &= IP_OFFMASK;
 
 
-    // we might be done once we receive the packets with no flags
-    if (ip_flags == 0) {
+    // Last fragment = MF clear; ignore DF/reserved bits
+    if ((ip_flags & IP_MF) == 0) {
         frags->haveNoFlags = 1;
     }
 

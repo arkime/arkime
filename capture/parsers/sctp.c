@@ -314,6 +314,11 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
                 if (SCTP_DATA_FLAG_SEND_NOW(chunkFlags)) {
                     sctp_send_data(session, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), payloadProtoId, which);
                 } else {
+                    if (DLL_COUNT(sd_, &session->sctpData) > maxSctpOutOfOrderPackets) {
+                        arkime_session_add_tag(session, "incomplete-sctp");
+                        session->stopTCP = 1;
+                        return 1;
+                    }
                     sctp_add_data(&session->sctpData, tsn, which, &cbsb, chunkFlags, payloadProtoId);
                 }
 

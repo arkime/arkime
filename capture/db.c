@@ -191,20 +191,21 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
-                if ((*in & 0xf8) == 0xf0) {
-                    if (!in[1] || !in[2] || !in[3]) goto end;
+                // require valid continuation bytes; else encode this byte alone
+                if ((*in & 0xf8) == 0xf0 && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 && (in[3] & 0xc0) == 0x80) {
                     BSB_EXPORT_ptr(*bsb, in, 4);
                     in += 3;
-                } else if ((*in & 0xf0) == 0xe0) {
-                    if (!in[1] || !in[2]) goto end;
+                } else if ((*in & 0xf0) == 0xe0 && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80) {
                     BSB_EXPORT_ptr(*bsb, in, 3);
                     in += 2;
-                } else if ((*in & 0xe0) == 0xc0) {
-                    if (!in[1]) goto end;
+                } else if ((*in & 0xe0) == 0xc0 && (in[1] & 0xc0) == 0x80) {
                     BSB_EXPORT_ptr(*bsb, in, 2);
                     in += 1;
-                } else {
+                } else if (*in < 0x80) {
                     BSB_EXPORT_u08(*bsb, *in);
+                } else {
+                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
                 }
             } else {
                 if (*in & 0x80) {
@@ -219,7 +220,6 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
         in++;
     }
 
-end:
     BSB_EXPORT_u08(*bsb, '"');
 }
 
@@ -262,20 +262,21 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
-                if ((*in & 0xf8) == 0xf0) {
-                    if (in + 3 >= end) return;
+                // require valid continuation bytes; else encode this byte alone
+                if ((*in & 0xf8) == 0xf0 && in + 3 < end && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80 && (in[3] & 0xc0) == 0x80) {
                     BSB_EXPORT_ptr(*bsb, in, 4);
                     in += 3;
-                } else if ((*in & 0xf0) == 0xe0) {
-                    if (in + 2 >= end) return;
+                } else if ((*in & 0xf0) == 0xe0 && in + 2 < end && (in[1] & 0xc0) == 0x80 && (in[2] & 0xc0) == 0x80) {
                     BSB_EXPORT_ptr(*bsb, in, 3);
                     in += 2;
-                } else if ((*in & 0xe0) == 0xc0) {
-                    if (in + 1 >= end) return;
+                } else if ((*in & 0xe0) == 0xc0 && in + 1 < end && (in[1] & 0xc0) == 0x80) {
                     BSB_EXPORT_ptr(*bsb, in, 2);
                     in += 1;
-                } else {
+                } else if (*in < 0x80) {
                     BSB_EXPORT_u08(*bsb, *in);
+                } else {
+                    BSB_EXPORT_u08(*bsb, (0xc0 | (*in >> 6)));
+                    BSB_EXPORT_u08(*bsb, (0x80 | (*in & 0x3f)));
                 }
             } else {
                 if (*in & 0x80) {

@@ -175,14 +175,16 @@ LOCAL void wise_load_fields()
 
     if (ver < 0 || ver > 1) {
         if (wiseURL) {
-            LOGEXIT("ERROR - Verify wiseURL value of `%s` version: %d - %s",
-                    wiseURL, ver,
-                    (ver == -1 ? "Couldn't connect to WISE" : "Unsupported version"));
+            LOG("ERROR - Verify wiseURL value of `%s` version: %d - %s",
+                wiseURL, ver,
+                (ver == -1 ? "Couldn't connect to WISE" : "Unsupported version"));
         } else {
-            LOGEXIT("ERROR - Verify wiseHost:wisePort value of `%s:%d` version: %d - %s",
-                    wiseHost, wisePort, ver,
-                    (ver == -1 ? "Couldn't connect to WISE" : "Unsupported version"));
+            LOG("ERROR - Verify wiseHost:wisePort value of `%s:%d` version: %d - %s",
+                wiseHost, wisePort, ver,
+                (ver == -1 ? "Couldn't connect to WISE" : "Unsupported version"));
         }
+        free(data);
+        return;
     }
 
     if (ver == 0) {
@@ -192,7 +194,9 @@ LOCAL void wise_load_fields()
     }
 
     if (cnt > ARKIME_FIELDS_MAX) {
-        LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
+        LOG("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
+        free(data);
+        return;
     }
 
     for (int i = 0; i < cnt; i++) {
@@ -296,7 +300,14 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         }
 
         if (cnt > ARKIME_FIELDS_MAX) {
-            LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
+            LOG_RATE(30, "ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
+            ARKIME_LOCK(item);
+            for (i = 0; i < request->numItems; i++) {
+                wise_remove_item_locked(request->items[i]);
+            }
+            ARKIME_UNLOCK(item);
+            ARKIME_TYPE_FREE(WiseRequest_t, request);
+            return;
         }
 
         ARKIME_LOCK(item);
@@ -308,10 +319,18 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         if (config.debug)
             LOG("WISE Response %32.32s cnt %d pos %d", hash, cnt, hashPos);
 
-        if (hashPos == FIELDS_MAP_MAX)
-            LOGEXIT("ERROR - Too many unique wise hashes");
+        if (hashPos == FIELDS_MAP_MAX) {
+            LOG_RATE(30, "ERROR - Too many unique wise hashes");
+            for (i = 0; i < request->numItems; i++) {
+                wise_remove_item_locked(request->items[i]);
+            }
+            ARKIME_UNLOCK(item);
+            ARKIME_TYPE_FREE(WiseRequest_t, request);
+            return;
+        }
 
-        if (hashPos == fieldsMapCnt) {
+        gboolean newHash = (hashPos == fieldsMapCnt);
+        if (newHash) {
             fieldsMapHash[hashPos] = g_strndup((gchar *)hash, 32);
             fieldsMapCnt++;
             g_strlcpy(wiseGetURI, "/get?ver=2", sizeof(wiseGetURI));
@@ -325,7 +344,8 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
             }
         }
 
-        if (cnt)
+        // cnt == 0 for an already known hash means reuse the cached map
+        if (cnt || newHash)
             memset(fieldsMap[hashPos], -1, sizeof(fieldsMap[hashPos]));
 
         for (i = 0; i < cnt; i++) {
