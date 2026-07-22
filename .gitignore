@@ -95,3 +95,6 @@ components.d.ts
 
 # claude
 docs/superpowers/
+
+# supacode
+supacode.json

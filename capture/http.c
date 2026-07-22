@@ -158,6 +158,8 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
         curl_easy_getinfo(request->easy, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
         if (cl < 0 || cl > 0x7FFFFFFF)
             cl = sz;
+        if (cl > 0x400000)
+            cl = 0x400000;
         request->used = sz;
         request->size = MAX(sz, (uint32_t)cl);
         request->dataIn = ARKIME_SIZE_ALLOC("dataIn", request->size + 1);
@@ -262,7 +264,10 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         key_len = strlen(key);
 
     if (key_len > 1000) {
-        LOGEXIT("ERROR - URL too long %.*s", key_len, key);
+        LOG("ERROR - Dropping request, URL too long: %.*s", key_len, key);
+        if (code)
+            *code = 0;
+        return NULL;
     }
 
     memcpy(server->syncRequest.key, key, key_len);
@@ -819,7 +824,12 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         key_len = strlen(key);
 
     if (key_len > 1000) {
-        LOGEXIT("ERROR - URL too long %.*s", key_len, key);
+        LOG("ERROR - Dropping request, URL too long: %.*s", key_len, key);
+        ARKIME_THREAD_INCR(server->dropped);
+        if (data) {
+            ARKIME_SIZE_FREE("data", data);
+        }
+        return 1;
     }
 
     // Are we overloaded

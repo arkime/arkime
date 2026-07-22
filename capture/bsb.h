@@ -13,13 +13,13 @@
 
 #define BSB_INIT(b, buffer, size)                 \
 do {                                              \
-    (b).buf = (unsigned char*)buffer;             \
+    (b).buf = (unsigned char*)(buffer);           \
     (b).ptr = (b).buf;                            \
-    int s = (int)size;                            \
+    int s = (int)(size);                          \
     if (((b).buf == NULL) || (s < 0))             \
         (b).end = 0;                              \
     else                                          \
-        (b).end = (b).buf + size;                 \
+        (b).end = (b).buf + s;                    \
 } while (0)
 
 #define BSB_SET_ERROR(b) ((b).end = NULL)
@@ -33,15 +33,15 @@ do {                                              \
 
 #define BSB_SHRINK_REMAINING(b, rem)              \
 do {                                              \
-    if ((b).end && ((b).ptr + rem < (b).end)) {   \
-        (b).end = (b).ptr + rem;                  \
+    if ((b).end && ((b).ptr + (rem) < (b).end)) { \
+        (b).end = (b).ptr + (rem);                \
     }                                             \
 } while (0)
 
 #define BSB_EXPORT_u08(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 1 <= (b).end) {      \
-        *(((b).ptr)++) = (unsigned char)x;        \
+        *(((b).ptr)++) = (unsigned char)(x);      \
     } else                                        \
         BSB_SET_ERROR(b);                         \
 } while (0)
@@ -49,7 +49,7 @@ do {                                              \
 #define BSB_EXPORT_u16(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 2 <= (b).end) {      \
-        uint16_t t = (uint16_t)x;                 \
+        uint16_t t = (uint16_t)(x);               \
         *(((b).ptr)++) = (t & 0xff00) >> 8;       \
         *(((b).ptr)++) = (t & 0x00ff);            \
     } else                                        \
@@ -59,7 +59,7 @@ do {                                              \
 #define BSB_EXPORT_u24(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 3 <= (b).end) {      \
-        uint32_t t = x;                           \
+        uint32_t t = (x);                         \
         *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
         *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
         *(((b).ptr)++) = (t & 0x000000ff);        \
@@ -70,7 +70,7 @@ do {                                              \
 #define BSB_EXPORT_u32(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
-        uint32_t t = x;                           \
+        uint32_t t = (x);                         \
         *(((b).ptr)++) = (t & 0xff000000) >> 24;  \
         *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
         *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
@@ -82,7 +82,7 @@ do {                                              \
 #define BSB_EXPORT_u40(b, x)                        \
 do {                                                \
     if ((b).ptr && (b).ptr + 5 <= (b).end) {        \
-        uint64_t t = x;                             \
+        uint64_t t = (x);                           \
         *(((b).ptr)++) = (t & 0xff00000000) >> 32;  \
         *(((b).ptr)++) = (t & 0x00ff000000) >> 24;  \
         *(((b).ptr)++) = (t & 0x0000ff0000) >> 16;  \
@@ -94,11 +94,11 @@ do {                                                \
 
 #define BSB_EXPORT_ptr(b, x, size)                \
 do {                                              \
-    if (((x) != NULL || size == 0) &&             \
-        (b).ptr + size <= (b).end &&              \
-        (b).ptr + size >= (b).buf) {              \
-        memcpy((b).ptr, x, size);                 \
-        (b).ptr += size;                          \
+    if (((x) != NULL || (size) == 0) &&           \
+        (b).ptr + (size) <= (b).end &&            \
+        (b).ptr + (size) >= (b).buf) {            \
+        memcpy((b).ptr, (x), (size));             \
+        (b).ptr += (size);                        \
     } else                                        \
         BSB_SET_ERROR(b);                         \
 } while (0)
@@ -106,25 +106,25 @@ do {                                              \
 #define BSB_EXPORT_ptr_some(b, x, size)           \
 do {                                              \
     if ((x) == NULL) {                            \
-        if (size != 0)                            \
+        if ((size) != 0)                          \
             BSB_SET_ERROR(b);                     \
     } else if ((b).ptr &&                         \
-        (b).ptr + size <= (b).end &&              \
-        (b).ptr + size >= (b).buf) {              \
-        memcpy((b).ptr, x, size);                 \
-        (b).ptr += size;                          \
+        (b).ptr + (size) <= (b).end &&            \
+        (b).ptr + (size) >= (b).buf) {            \
+        memcpy((b).ptr, (x), (size));             \
+        (b).ptr += (size);                        \
     } else if (BSB_NOT_ERROR(b)) {                \
         size_t _bsb_rem = BSB_REMAINING(b);       \
-        memcpy((b).ptr, x, _bsb_rem);             \
+        memcpy((b).ptr, (x), _bsb_rem);           \
         (b).ptr += _bsb_rem;                      \
     }                                             \
 } while (0)
 
 #define BSB_EXPORT_cstr(b, x)                     \
 do {                                              \
-    const int size = sizeof x - 1;                \
+    const int size = sizeof(x) - 1;               \
     if ((b).ptr && (b).ptr + size <= (b).end) {   \
-        memcpy((b).ptr, x, size);                 \
+        memcpy((b).ptr, (x), size);               \
         (b).ptr += size;                          \
     } else                                        \
         BSB_SET_ERROR(b);                         \
@@ -132,18 +132,18 @@ do {                                              \
 
 #define BSB_EXPORT_skip(b, size)                  \
 do {                                              \
-    if ((b).ptr + size <= (b).end &&              \
-        (b).ptr + size >= (b).buf) {              \
-        (b).ptr += size;                          \
+    if ((b).ptr + (size) <= (b).end &&            \
+        (b).ptr + (size) >= (b).buf) {            \
+        (b).ptr += (size);                        \
     } else                                        \
         BSB_SET_ERROR(b);                         \
 } while (0)
 
 #define BSB_EXPORT_rewind(b, size)                \
 do {                                              \
-    if ((b).ptr - size <= (b).end &&              \
-        (b).ptr - size >= (b).buf) {              \
-        (b).ptr -= size;                          \
+    if ((b).ptr - (size) <= (b).end &&            \
+        (b).ptr - (size) >= (b).buf) {            \
+        (b).ptr -= (size);                        \
     } else {                                      \
         BSB_SET_ERROR(b);                         \
     }                                             \
@@ -215,7 +215,7 @@ do {                                              \
 #define BSB_IMPORT_u08(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 1 <= (b).end) {      \
-        x = *(((b).ptr)++);                       \
+        (x) = *(((b).ptr)++);                     \
     } else                                        \
         BSB_SET_ERROR(b);                         \
 } while (0)
@@ -223,7 +223,7 @@ do {                                              \
 #define BSB_IMPORT_u16(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 2 <= (b).end) {      \
-        x = ((uint16_t)((b).ptr)[0]) << 8 |       \
+        (x) = ((uint16_t)((b).ptr)[0]) << 8 |     \
             ((uint16_t)((b).ptr)[1]);             \
         (b).ptr += 2;                             \
     } else                                        \
@@ -233,7 +233,7 @@ do {                                              \
 #define BSB_IMPORT_u24(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 3 <= (b).end) {      \
-        x = ((uint32_t)((b).ptr)[0]) << 16 |      \
+        (x) = ((uint32_t)((b).ptr)[0]) << 16 |    \
             ((uint32_t)((b).ptr)[1]) << 8  |      \
             ((uint32_t)((b).ptr)[2]);             \
         (b).ptr += 3;                             \
@@ -244,7 +244,7 @@ do {                                              \
 #define BSB_IMPORT_u32(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
-        x = ((uint32_t)((b).ptr)[0]) << 24 |      \
+        (x) = ((uint32_t)((b).ptr)[0]) << 24 |    \
             ((uint32_t)((b).ptr)[1]) << 16 |      \
             ((uint32_t)((b).ptr)[2]) << 8  |      \
             ((uint32_t)((b).ptr)[3]);             \
@@ -256,7 +256,7 @@ do {                                              \
 #define BSB_IMPORT_u64(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 8 <= (b).end) {      \
-        x = ((uint64_t)((b).ptr)[0]) << 56 |      \
+        (x) = ((uint64_t)((b).ptr)[0]) << 56 |    \
             ((uint64_t)((b).ptr)[1]) << 48 |      \
             ((uint64_t)((b).ptr)[2]) << 40 |      \
             ((uint64_t)((b).ptr)[3]) << 32 |      \
@@ -274,7 +274,7 @@ do {                                              \
 #define BSB_LEXPORT_u16(b, x)                     \
 do {                                              \
     if ((b).ptr && (b).ptr + 2 <= (b).end) {      \
-        uint16_t t = (uint16_t)x;                 \
+        uint16_t t = (uint16_t)(x);               \
         *(((b).ptr)++) = (t & 0x00ff);            \
         *(((b).ptr)++) = (t & 0xff00) >> 8;       \
     } else                                        \
@@ -284,7 +284,7 @@ do {                                              \
 #define BSB_LEXPORT_u32(b, x)                     \
 do {                                              \
     if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
-        uint32_t t = x;                           \
+        uint32_t t = (x);                         \
         *(((b).ptr)++) = (t & 0x000000ff);        \
         *(((b).ptr)++) = (t & 0x0000ff00) >> 8;   \
         *(((b).ptr)++) = (t & 0x00ff0000) >> 16;  \
@@ -298,7 +298,7 @@ do {                                              \
 #define BSB_LIMPORT_u16(b, x)                     \
 do {                                              \
     if ((b).ptr && (b).ptr + 2 <= (b).end) {      \
-        x = ((uint16_t)((b).ptr)[1]) << 8 |       \
+        (x) = ((uint16_t)((b).ptr)[1]) << 8 |     \
             ((uint16_t)((b).ptr)[0]);             \
         (b).ptr += 2;                             \
     } else                                        \
@@ -308,7 +308,7 @@ do {                                              \
 #define BSB_LIMPORT_u24(b, x)                     \
 do {                                              \
     if ((b).ptr && (b).ptr + 3 <= (b).end) {      \
-        x = ((uint32_t)((b).ptr)[2]) << 16 |      \
+        (x) = ((uint32_t)((b).ptr)[2]) << 16 |    \
             ((uint32_t)((b).ptr)[1]) << 8  |      \
             ((uint32_t)((b).ptr)[0]);             \
         (b).ptr += 3;                             \
@@ -319,7 +319,7 @@ do {                                              \
 #define BSB_LIMPORT_u32(b, x)                     \
 do {                                              \
     if ((b).ptr && (b).ptr + 4 <= (b).end) {      \
-        x = ((uint32_t)((b).ptr)[3]) << 24 |      \
+        (x) = ((uint32_t)((b).ptr)[3]) << 24 |    \
             ((uint32_t)((b).ptr)[2]) << 16 |      \
             ((uint32_t)((b).ptr)[1]) << 8  |      \
             ((uint32_t)((b).ptr)[0]);             \
@@ -331,7 +331,7 @@ do {                                              \
 #define BSB_LIMPORT_u64(b, x)                     \
 do {                                              \
     if ((b).ptr && (b).ptr + 8 <= (b).end) {      \
-        x = ((uint64_t)((b).ptr)[7]) << 56 |      \
+        (x) = ((uint64_t)((b).ptr)[7]) << 56 |    \
             ((uint64_t)((b).ptr)[6]) << 48 |      \
             ((uint64_t)((b).ptr)[5]) << 40 |      \
             ((uint64_t)((b).ptr)[4]) << 32 |      \
@@ -346,22 +346,22 @@ do {                                              \
 
 #define BSB_IMPORT_ptr(b, x, size)                \
 do {                                              \
-    if ((b).ptr + size <= (b).end &&              \
-        (b).ptr + size >= (b).buf) {              \
+    if ((b).ptr + (size) <= (b).end &&            \
+        (b).ptr + (size) >= (b).buf) {            \
         (x) = (b).ptr;                            \
-        (b).ptr += size;                          \
+        (b).ptr += (size);                        \
     } else {                                      \
         BSB_SET_ERROR(b);                         \
-        x = 0;                                    \
+        (x) = 0;                                  \
     }                                             \
 } while (0)
 
 #define BSB_IMPORT_bsb(b, x, size)                \
 do {                                              \
-    if ((b).ptr + size <= (b).end &&              \
-        (b).ptr + size >= (b).buf) {              \
-        BSB_INIT(x, (b).ptr, size);               \
-        (b).ptr += size;                          \
+    if ((b).ptr + (size) <= (b).end &&            \
+        (b).ptr + (size) >= (b).buf) {            \
+        BSB_INIT(x, (b).ptr, (size));             \
+        (b).ptr += (size);                        \
     } else {                                      \
         BSB_SET_ERROR(b);                         \
         (x).ptr = (x).buf = (x).end = NULL;       \
@@ -380,24 +380,24 @@ do {                                              \
         pos = -1;                                 \
         break;                                    \
     }                                             \
-    char *s = memchr((char*)(b).ptr, ch, BSB_REMAINING(b)); \
+    char *s = memchr((char*)(b).ptr, (ch), BSB_REMAINING(b)); \
     if (s)                                        \
         pos = (char *)s - (char *)(b).ptr;        \
     else                                          \
         pos = -1;                                 \
 } while (0)
 
-#define BSB_memcmp(str, b, len) ((b).ptr && (b).ptr + len <= (b).end ? memcmp(str, (b).ptr, len) : -1)
+#define BSB_memcmp(str, b, len) ((b).ptr && (b).ptr + (len) <= (b).end ? memcmp((str), (b).ptr, (len)) : -1)
 
 #define BSB_PEEK(b) ((b).ptr && (b).ptr + 1 <= (b).end ? (b).ptr[0] : -1)
 
 
 #define BSB_IMPORT_byte(b, x, size)               \
 do {                                              \
-    if ((b).ptr && (b).ptr + size <= (b).end &&   \
-        (b).ptr + size >= (b).buf) {              \
-        memcpy(x, (b).ptr, size);                 \
-        (b).ptr += size;                          \
+    if ((b).ptr && (b).ptr + (size) <= (b).end && \
+        (b).ptr + (size) >= (b).buf) {            \
+        memcpy((x), (b).ptr, (size));             \
+        (b).ptr += (size);                        \
     } else {                                      \
         BSB_SET_ERROR(b);                         \
     }                                             \
@@ -405,11 +405,11 @@ do {                                              \
 
 #define BSB_IMPORT_zbyte(b, x, size)              \
 do {                                              \
-    if ((b).ptr && (b).ptr + size <= (b).end &&   \
-        (b).ptr + size >= (b).buf) {              \
-        memcpy(x, (b).ptr, size);                 \
+    if ((b).ptr && (b).ptr + (size) <= (b).end && \
+        (b).ptr + (size) >= (b).buf) {            \
+        memcpy((x), (b).ptr, (size));             \
         (x)[size] = 0;                            \
-        (b).ptr += size;                          \
+        (b).ptr += (size);                        \
     } else {                                      \
         BSB_SET_ERROR(b);                         \
         (x)[0] = 0;                               \

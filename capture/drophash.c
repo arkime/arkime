@@ -68,7 +68,7 @@ LOCAL void arkime_drophash_make(ArkimeDropHashGroup_t *group, int port)
     hash->num     = size;
     hash->heads   = ARKIME_SIZE_ALLOC0("heads", size * sizeof(ArkimeDropHashItem_t *));
     hash->cnt     = 0;
-    group->drops[port] = hash;
+    ARKIME_THREAD_ATOMIC_STORE(group->drops[port], hash);
 done:
     ARKIME_UNLOCK(group->lock);
 }

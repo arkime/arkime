@@ -55,6 +55,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
   - #4121 Fix diameter parser not unregistering when its reassembly buffer overflowed
   - #4126 Add --sorted option to process offline pcap directories in alphabetical order
+  - #4143 Fix an over-long request URL (from a remote S3/SQS object key or IMDS role name) exiting capture instead of dropping the single request
+  - #4143 Fix SCTP in-order reassembly not bounding queued fragments, letting a stream of begin-without-end fragments grow memory unbounded
+  - #4143 Fix IPv4 fragment reassembly not recognizing the last fragment when it carried a DF or reserved flag bit, which could skip reassembly
+  - #4143 Fix the SQS reader holding a credentials pointer across its poll loop that could be freed after a credential refresh
+  - #4143 Fix a malformed or unreachable WISE server killing capture; WISE responses are now logged and skipped instead of exiting
+  - #4143 Fix a remote HTTP response's Content-Length pre-allocating up to 2GB; the response buffer now grows as data arrives
 ## Cont3xt/Viewer
   - #4134 Add an MCP server at POST /mcp for viewer and cont3xt, off by default, enable with mcpEnabled.
   - #4134 Add mcpUser role, required per user on top of the service role to use /mcp; superAdmin includes it, arkimeAdmin does not
