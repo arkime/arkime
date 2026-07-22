@@ -416,6 +416,8 @@ LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 {
     HTTP2Info_t            *http2          = uw;
 
+    which = ARKIME_WHICH_GET_DIR(which); // SCTP packs stream id into which; arrays below are [2]
+
 #ifdef HTTPDEBUG
     LOG("HTTPDEBUG which: %d used: %d len: %d", which, http2->used[which], len);
 #endif
@@ -495,7 +497,7 @@ LOCAL void http2_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data),
     arkime_session_add_protocol(session, "http2");
 
     HTTP2Info_t            *http2          = ARKIME_TYPE_ALLOC0(HTTP2Info_t);
-    http2->which = which;
+    http2->which = ARKIME_WHICH_GET_DIR(which);
 
     arkime_parsers_register2(session, http2_parse, http2, http2_free, http2_save);
 }
