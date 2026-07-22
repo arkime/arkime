@@ -655,6 +655,18 @@ typedef struct {
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
 
+// Global counters bumped with ARKIME_THREAD_INCR* by every reader thread.
+typedef struct {
+    ARKIME_CACHE_ALIGN uint64_t totalPackets;
+    uint64_t                    nextLogPackets; // read/written with totalPackets, same line on purpose
+    ARKIME_CACHE_ALIGN uint64_t totalBytes;
+    ARKIME_CACHE_ALIGN uint64_t totalSessions;
+    ARKIME_CACHE_ALIGN uint64_t totalSessionBytes;
+    ARKIME_CACHE_ALIGN uint64_t packetStats[ARKIME_PACKET_MAX];
+} ARKIME_CACHE_ALIGN ArkimeCounters_t;
+
+extern ArkimeCounters_t       arkimeCounters;
+
 typedef struct {
     char           *filename;
     char           *scheme;
