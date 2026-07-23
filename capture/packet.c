@@ -531,7 +531,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
         ArkimePacket_t  *packet;
 
         ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
-        __atomic_store_n(&packetThreadData[thread].inProgress, 0, __ATOMIC_RELAXED);
+        ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 0);
         if (DLL_COUNT(packet_, &packetThreadData[thread].packetQ) == 0) {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME_COARSE, &ts);
@@ -547,7 +547,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
                 arkimeThreadData[thread].lastPacketSecs = ts.tv_sec - 10;
             }
         }
-        __atomic_store_n(&packetThreadData[thread].inProgress, 1, __ATOMIC_RELAXED);
+        ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 1);
         DLL_POP_HEAD(packet_, &packetThreadData[thread].packetQ, packet);
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 
@@ -587,7 +587,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
     }
 
     arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
-    __atomic_store_n(&packetThreadData[thread].inProgress, 0, __ATOMIC_RELAXED); // Clear after calling exit function delaying can quit
+    ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 0); // Clear after calling exit function delaying can quit
 
     return NULL;
 }
@@ -1810,7 +1810,7 @@ int arkime_packet_outstanding()
 
     for (int t = 0; t < config.packetThreads; t++) {
         count += DLL_COUNT(packet_, &packetThreadData[t].packetQ);
-        count += __atomic_load_n(&packetThreadData[t].inProgress, __ATOMIC_RELAXED);
+        count += ARKIME_THREAD_ATOMIC_LOAD_RELAXED(packetThreadData[t].inProgress);
     }
     return count;
 }
