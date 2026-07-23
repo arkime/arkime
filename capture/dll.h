@@ -27,7 +27,7 @@
      (element)->name##prev          = (head)->name##prev, \
      (head)->name##prev->name##next = (element), \
      (head)->name##prev             = (element), \
-     (head)->name##count++ \
+     __atomic_store_n(&(head)->name##count, (head)->name##count + 1, __ATOMIC_RELAXED) \
     )
 
 #define DLL_PUSH_TAIL_DLL(name, head1, head2) \
@@ -35,7 +35,7 @@
      (head2)->name##next->name##prev = (head1)->name##prev, \
      (head1)->name##prev             = (head2)->name##prev, \
      (head2)->name##prev->name##next = (void *)(head1), \
-     (head1)->name##count += (head2)->name##count, \
+     __atomic_store_n(&(head1)->name##count, (head1)->name##count + (head2)->name##count, __ATOMIC_RELAXED), \
      DLL_INIT(name, head2) \
     )
 
@@ -44,7 +44,7 @@
      (element)->name##prev          = (void *)(head), \
      (head)->name##next->name##prev = (element), \
      (head)->name##next             = (element), \
-     (head)->name##count++ \
+     __atomic_store_n(&(head)->name##count, (head)->name##count + 1, __ATOMIC_RELAXED) \
     )
 
 #define DLL_ADD_AFTER(name, head, after, element) \
@@ -52,7 +52,7 @@
      (element)->name##prev            = (after), \
      (after)->name##next->name##prev  = (element), \
      (after)->name##next              = (element), \
-     (head)->name##count++ \
+     __atomic_store_n(&(head)->name##count, (head)->name##count + 1, __ATOMIC_RELAXED) \
     )
 
 #define DLL_ADD_BEFORE(name, head, before, element) \
@@ -60,7 +60,7 @@
      (element)->name##prev             = (before)->name##prev, \
      (before)->name##prev              = (element), \
      (element)->name##prev->name##next = (element), \
-     (head)->name##count++ \
+     __atomic_store_n(&(head)->name##count, (head)->name##count + 1, __ATOMIC_RELAXED) \
     )
 
 
@@ -69,7 +69,7 @@
      (element)->name##next->name##prev = (element)->name##prev, \
      (element)->name##prev             = 0, \
      (element)->name##next             = 0, \
-     (head)->name##count-- \
+     __atomic_store_n(&(head)->name##count, (head)->name##count - 1, __ATOMIC_RELAXED) \
     )
 
 #define DLL_MOVE_TAIL(name, head, element) \
@@ -94,7 +94,7 @@
     ((head)->name##count == 0 ? NULL : (head)->name##prev)
 
 #define DLL_COUNT(name, head) \
-    ((head)->name##count)
+    (__atomic_load_n(&(head)->name##count, __ATOMIC_RELAXED))
 
 #define DLL_FOREACH(name, head, element) \
       for ((element) = (head)->name##next; \
