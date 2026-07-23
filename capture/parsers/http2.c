@@ -9,6 +9,9 @@
 #include <arpa/inet.h>
 #include "nghttp2/nghttp2.h"
 
+#define OPENSSL_SUPPRESS_DEPRECATED
+#include <openssl/md5.h>
+
 //#define HTTPDEBUG 1
 
 #define MAX_URL_LENGTH 4096
@@ -18,8 +21,10 @@
 typedef struct {
     uint32_t                 id;
     uint8_t                  ended;
+    uint8_t                  md5Started;    // bit per which, streams are memset when reused
     const char              *magicString[2];
-    GChecksum               *checksum[4];
+    MD5_CTX                  md5Ctx[2];
+    GChecksum               *sha256[2];
 } HTTP2Stream_t;
 
 typedef enum {
@@ -99,12 +104,10 @@ LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
 
     for (int i = 0; i < http2->numStreams; i++) {
         if (streamId == http2->streams[i].id) {
-            g_checksum_free(http2->streams[i].checksum[0]);
-            g_checksum_free(http2->streams[i].checksum[1]);
-            if (config.supportSha256) {
-                g_checksum_free(http2->streams[i].checksum[2]);
-                g_checksum_free(http2->streams[i].checksum[3]);
-            }
+            if (http2->streams[i].sha256[0])
+                g_checksum_free(http2->streams[i].sha256[0]);
+            if (http2->streams[i].sha256[1])
+                g_checksum_free(http2->streams[i].sha256[1]);
             memset(&http2->streams[i], 0, sizeof(http2->streams[i]));
             return;
         }
@@ -304,28 +307,32 @@ LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, 
         http2->streams[spos].magicString[which] = arkime_parsers_magic(session, magicField, (char *)in, inlen);
     }
 
-    // Check if checksums are allocated and update with new data
-    if (!http2->streams[spos].checksum[which]) {
-        http2->streams[spos].checksum[which] = g_checksum_new(G_CHECKSUM_MD5);
-        if (config.supportSha256) {
-            http2->streams[spos].checksum[which + 2] = g_checksum_new(G_CHECKSUM_SHA256);
+    // Start the hashes on the first data for this stream/direction
+    if (!(http2->streams[spos].md5Started & (1 << which))) {
+        MD5_Init(&http2->streams[spos].md5Ctx[which]);
+        http2->streams[spos].md5Started |= (1 << which);
+        if (config.supportSha256 && !http2->streams[spos].sha256[which]) {
+            http2->streams[spos].sha256[which] = g_checksum_new(G_CHECKSUM_SHA256);
         }
     }
 
-    g_checksum_update(http2->streams[spos].checksum[which], (guchar *)in, inlen);
+    MD5_Update(&http2->streams[spos].md5Ctx[which], in, inlen);
     if (config.supportSha256) {
-        g_checksum_update(http2->streams[spos].checksum[which + 2], (guchar *)in, inlen);
+        g_checksum_update(http2->streams[spos].sha256[which], (guchar *)in, inlen);
     }
 
     // If the first packet in the frame said this is end and we've read them all, set the md5/sha fields
     if (http2->isEnd[which] && http2->dataNeeded[which] == 0) {
-        const char *md5 = g_checksum_get_string(http2->streams[spos].checksum[which]);
-        arkime_field_string_uw_add(md5Field, session, (char *)md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
-        g_checksum_reset(http2->streams[spos].checksum[which]);
+        uint8_t digest[MD5_DIGEST_LENGTH];
+        char    md5[MD5_DIGEST_LENGTH * 2 + 1];
+        MD5_Final(digest, &http2->streams[spos].md5Ctx[which]);
+        arkime_sprint_hex_string(md5, digest, MD5_DIGEST_LENGTH);
+        arkime_field_string_uw_add(md5Field, session, md5, 32, (gpointer)http2->streams[spos].magicString[which], TRUE);
+        http2->streams[spos].md5Started &= ~(1 << which);   // re-init on the next body
         if (config.supportSha256) {
-            const char *sha256 = g_checksum_get_string(http2->streams[spos].checksum[which + 2]);
+            const char *sha256 = g_checksum_get_string(http2->streams[spos].sha256[which]);
             arkime_field_string_uw_add(sha256Field, session, (char *)sha256, 64, (gpointer)http2->streams[spos].magicString[which], TRUE);
-            g_checksum_reset(http2->streams[spos].checksum[which + 2]);
+            g_checksum_reset(http2->streams[spos].sha256[which]);
         }
     }
 }
@@ -478,12 +485,10 @@ LOCAL void http2_free(ArkimeSession_t UNUSED(*session), void *uw)
         nghttp2_hd_inflate_del(http2->hd_inflater[1]);
     }
     for (int i = 0; i < http2->numStreams; i++) {
-        g_checksum_free(http2->streams[i].checksum[0]);
-        g_checksum_free(http2->streams[i].checksum[1]);
-        if (config.supportSha256) {
-            g_checksum_free(http2->streams[i].checksum[2]);
-            g_checksum_free(http2->streams[i].checksum[3]);
-        }
+        if (http2->streams[i].sha256[0])
+            g_checksum_free(http2->streams[i].sha256[0]);
+        if (http2->streams[i].sha256[1])
+            g_checksum_free(http2->streams[i].sha256[1]);
     }
     ARKIME_TYPE_FREE(HTTP2Info_t, http2);
 }

@@ -6,6 +6,11 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+// OpenSSL's MD5 is ~15% faster than g_checksum and needs no per session alloc,
+// see capture/parsers/http.c and capture/dedup.c
+#define OPENSSL_SUPPRESS_DEPRECATED
+#include <openssl/md5.h>
+
 //#define EMAILDEBUG
 
 #define SMTP_MAX_LINE_LEN 10000
@@ -50,7 +55,8 @@ typedef struct {
     gint               state64[2];
     guint              save64[2];
     guint              bdatRemaining[2];
-    GChecksum         *checksum[4];
+    MD5_CTX            md5Ctx[2];
+    GChecksum         *sha256[2];
 
     uint16_t           base64Decode: 2;
     uint16_t           firstInContent: 2;
@@ -780,10 +786,13 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
                 if (found) {
                     if (email->base64Decode & (1 << which)) {
-                        const char *md5 = g_checksum_get_string(email->checksum[which]);
-                        arkime_field_string_add(md5Field, session, (char *)md5, 32, TRUE);
+                        uint8_t digest[MD5_DIGEST_LENGTH];
+                        char    md5[MD5_DIGEST_LENGTH * 2 + 1];
+                        MD5_Final(digest, &email->md5Ctx[which]);
+                        arkime_sprint_hex_string(md5, digest, MD5_DIGEST_LENGTH);
+                        arkime_field_string_add(md5Field, session, md5, 32, TRUE);
                         if (config.supportSha256) {
-                            const char *sha256 = g_checksum_get_string(email->checksum[which + 2]);
+                            const char *sha256 = g_checksum_get_string(email->sha256[which]);
                             arkime_field_string_add(sha256Field, session, (char *)sha256, 64, TRUE);
                         }
                     }
@@ -791,9 +800,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     email->base64Decode &= ~(1 << which);
                     email->state64[which] = 0;
                     email->save64[which] = 0;
-                    g_checksum_reset(email->checksum[which]);
+                    MD5_Init(&email->md5Ctx[which]);
                     if (config.supportSha256) {
-                        g_checksum_reset(email->checksum[which + 2]);
+                        g_checksum_reset(email->sha256[which]);
                     }
                     *state = EMAIL_MIME;
                 } else if (*state == EMAIL_MIME_DATA_RETURN) {
@@ -803,9 +812,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                             gsize  b = g_base64_decode_step (line->str, line->len, buf,
                                                              &(email->state64[which]),
                                                              &(email->save64[which]));
-                            g_checksum_update(email->checksum[which], buf, b);
+                            MD5_Update(&email->md5Ctx[which], buf, b);
                             if (config.supportSha256) {
-                                g_checksum_update(email->checksum[which + 2], buf, b);
+                                g_checksum_update(email->sha256[which], buf, b);
                             }
 
                             if (email->firstInContent & (1 << which)) {
@@ -961,11 +970,9 @@ LOCAL void smtp_free(ArkimeSession_t UNUSED(*session), void *uw)
     g_string_free(email->line[0], TRUE);
     g_string_free(email->line[1], TRUE);
 
-    g_checksum_free(email->checksum[0]);
-    g_checksum_free(email->checksum[1]);
     if (config.supportSha256) {
-        g_checksum_free(email->checksum[2]);
-        g_checksum_free(email->checksum[3]);
+        g_checksum_free(email->sha256[0]);
+        g_checksum_free(email->sha256[1]);
     }
 
     while (DLL_POP_HEAD(s_, &email->boundaries, string)) {
@@ -996,11 +1003,11 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
         email->line[0] = g_string_sized_new(100);
         email->line[1] = g_string_sized_new(100);
 
-        email->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
-        email->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
+        MD5_Init(&email->md5Ctx[0]);
+        MD5_Init(&email->md5Ctx[1]);
         if (config.supportSha256) {
-            email->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
-            email->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
+            email->sha256[0] = g_checksum_new(G_CHECKSUM_SHA256);
+            email->sha256[1] = g_checksum_new(G_CHECKSUM_SHA256);
         }
 
         DLL_INIT(s_, &(email->boundaries));
