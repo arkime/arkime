@@ -895,7 +895,6 @@ LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), 
 
     HTTPInfo_t            *http          = ARKIME_TYPE_ALLOC0(HTTPInfo_t);
 
-    // md5Ctx lives in the struct, MD5_Init happens per message in on_message_begin
     if (config.supportSha256) {
         http->sha256[0] = g_checksum_new(G_CHECKSUM_SHA256);
         http->sha256[1] = g_checksum_new(G_CHECKSUM_SHA256);
