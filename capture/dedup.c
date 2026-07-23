@@ -163,7 +163,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 
     // First see if we need to clean up old slot, and block all new folks while we do
     // In theory no one should be using this slot because we hadn't been searching it for a second.
-    if (seconds[secondSlot].tv_sec != currentTime.tv_sec) {
+    if (ARKIME_THREAD_ATOMIC_LOAD(seconds[secondSlot].tv_sec) != currentTime.tv_sec) {
         ARKIME_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again inside the lock
             if (seconds[secondSlot].error) {
@@ -173,8 +173,11 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
                 LOG ("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", (dedupSlots + 1) * DEDUP_SLOT_FACTOR, pcount);
                 seconds[secondSlot].error = 0;
             }
+            // Invalidate before wiping so the lock free searchers below skip
+            // this slot until the wipe is done and published
+            ARKIME_THREAD_ATOMIC_STORE(seconds[secondSlot].tv_sec, 0);
             memset(seconds[secondSlot].counts, 0, dedupSlots);
-            seconds[secondSlot].tv_sec = currentTime.tv_sec;
+            ARKIME_THREAD_ATOMIC_STORE(seconds[secondSlot].tv_sec, (uint32_t)currentTime.tv_sec);
         }
         ARKIME_UNLOCK(seconds[secondSlot].lock);
     }
@@ -182,12 +185,12 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     // Search all valid slots
     for (uint32_t s = 0; s < dedupSeconds; s++) {
 
-        // If slot is too old just skip it
-        if (currentTime.tv_sec - dedupSeconds + 1 >= seconds[s].tv_sec) {
+        // If slot is too old, or mid wipe (tv_sec 0), just skip it
+        if (currentTime.tv_sec - dedupSeconds + 1 >= ARKIME_THREAD_ATOMIC_LOAD(seconds[s].tv_sec)) {
             continue;
         }
 
-        int count = seconds[s].counts[h];
+        int count = ARKIME_THREAD_ATOMIC_LOAD(seconds[s].counts[h]);
         const uint8_t *ctrl_base = seconds[s].ctrl + h * DEDUP_SIZE_FACTOR;
         for (int c = 0; c < count; c++) {
             if (tag == ctrl_base[c] && memcmp(md, seconds[s].hashes + 16 * (h * DEDUP_SIZE_FACTOR + c), 16) == 0) {
@@ -202,8 +205,11 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         return 0;
     }
 
-    // Race condition: a reader may see incremented count before stores complete.
-    // This is acceptable - fail-open means a duplicate packet may slip through briefly.
+    // Race condition: a searcher may see the incremented count before the ctrl/hash
+    // stores below complete. Usually the unfinished entry just doesn't match, so a
+    // duplicate can slip through briefly (fail open). The entry may also still hold
+    // the previous occupant from dedupSeconds ago, so a packet identical to one from
+    // back then can very rarely be dropped as a duplicate.
     int c = ARKIME_THREAD_INCROLD(seconds[secondSlot].counts[h]);
     if (c >= DEDUP_SIZE_FACTOR) {
         seconds[secondSlot].error = 1;

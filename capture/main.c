@@ -77,6 +77,7 @@ uint64_t                 arkime_has_named_func;
 LOCAL uint16_t           namedFuncsMax = 0;
 LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
 LOCAL GHashTable        *namedFuncsHash;
+LOCAL ARKIME_LOCK_DEFINE(namedFuncs);
 
 /******************************************************************************/
 LOCAL gboolean arkime_debug_flag()
@@ -1037,36 +1038,40 @@ ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idN
 /******************************************************************************/
 uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbuw)
 {
+    ARKIME_LOCK(namedFuncs);
     if (!namedFuncsHash)
         namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
-        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
-        info->funcs = g_ptr_array_new();
-        namedFuncsMax++; // Don't use 0
-        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+        if (namedFuncsMax + 1 >= MAX_NAMED_FUNCS) {
             LOGEXIT("ERROR - Too many named functions %s", name);
             return 0;
         }
-        info->id = namedFuncsMax;
-        namedFuncsArr[namedFuncsMax] = info;
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        info->id = namedFuncsMax + 1; // Don't use 0
+        namedFuncsArr[info->id] = info;
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+        // publish only after the arr slot is filled, callers read without the lock
+        ARKIME_THREAD_ATOMIC_STORE(namedFuncsMax, info->id);
     }
-    if (!func)
-        return info->id;
 
-    arkime_has_named_func |= (1ULL << info->id);
-    ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
-    funcInfo->cb = func;
-    funcInfo->cbuw = cbuw;
-    g_ptr_array_add(info->funcs, funcInfo);
-    return info->id;
+    uint32_t id = info->id;
+    if (func) {
+        ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
+        funcInfo->cb = func;
+        funcInfo->cbuw = cbuw;
+        g_ptr_array_add(info->funcs, funcInfo);
+        ARKIME_THREAD_ATOMIC_OR(arkime_has_named_func, 1ULL << id);
+    }
+    ARKIME_UNLOCK(namedFuncs);
+    return id;
 }
 /******************************************************************************/
 void arkime_call_named_func(uint32_t id, int thread, void *uw)
 {
-    if (id == 0 || id > namedFuncsMax || !ARKIME_HAS_NAMED_FUNC(id))
+    if (id == 0 || id > ARKIME_THREAD_ATOMIC_LOAD(namedFuncsMax) || !ARKIME_HAS_NAMED_FUNC(id))
         return;
     ArkimeNamedInfo_t *info = namedFuncsArr[id];
     for (int i = 0; i < (int)info->funcs->len; i++) {

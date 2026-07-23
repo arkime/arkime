@@ -31,8 +31,7 @@ LOCAL void writer_null_exit()
 LOCAL void writer_null_write(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
 {
     packet->writerFileNum = 0;
-    packet->writerFilePos = outputFilePos;
-    outputFilePos += 16 + packet->pktlen;
+    packet->writerFilePos = ARKIME_THREAD_INCROLD_NUM(outputFilePos, 16 + packet->pktlen);
 }
 /******************************************************************************/
 void writer_null_init(const char *UNUSED(name))

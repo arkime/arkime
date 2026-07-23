@@ -314,8 +314,11 @@ typedef struct {
 #define ARKIME_THREAD_DECROLD(var)           __sync_fetch_and_sub(&var, 1)
 #define ARKIME_THREAD_DECR_NUM(var, num)     __sync_sub_and_fetch(&var, num)
 
-#define ARKIME_THREAD_ATOMIC_STORE(var, val) __atomic_store_n(&(var), (val), __ATOMIC_RELEASE)
-#define ARKIME_THREAD_ATOMIC_LOAD(var)       __atomic_load_n(&(var), __ATOMIC_ACQUIRE)
+#define ARKIME_THREAD_ATOMIC_STORE(var, val)         __atomic_store_n(&(var), (val), __ATOMIC_RELEASE)
+#define ARKIME_THREAD_ATOMIC_LOAD(var)               __atomic_load_n(&(var), __ATOMIC_ACQUIRE)
+#define ARKIME_THREAD_ATOMIC_OR(var, val)            __atomic_or_fetch(&(var), (val), __ATOMIC_RELEASE)
+#define ARKIME_THREAD_ATOMIC_STORE_RELAXED(var, val) __atomic_store_n(&(var), (val), __ATOMIC_RELAXED)
+#define ARKIME_THREAD_ATOMIC_LOAD_RELAXED(var)       __atomic_load_n(&(var), __ATOMIC_RELAXED)
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, use jemalloc and increase the number of threads used for reading packets.
@@ -1037,7 +1040,7 @@ void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
 void arkime_credentials_set(const char *id, const char *key, const char *token);
 ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName);
 
-#define ARKIME_HAS_NAMED_FUNC(id) (arkime_has_named_func & (1ULL << id))
+#define ARKIME_HAS_NAMED_FUNC(id) (ARKIME_THREAD_ATOMIC_LOAD(arkime_has_named_func) & (1ULL << id))
 extern uint64_t arkime_has_named_func;
 typedef uint32_t (* ArkimeNamedFunc) (int thread, void *uw, void *cbuw);
 uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbuw);
