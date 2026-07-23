@@ -90,6 +90,14 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         if (MAGIC_MATCH_LEN(0, "\000\000\002\000\001\000")) {
             return MAGIC_RESULT("image/x-win-bitmap");
         }
+        if (MAGIC_MATCH(0, "\000asm")) {
+            return MAGIC_RESULT("application/wasm");
+        }
+        break;
+    case '\004':
+        if (MAGIC_MATCH(0, "\004\042M\030")) {
+            return MAGIC_RESULT("application/x-lz4");
+        }
         break;
     case '\032':
         if (MAGIC_MATCH(0, "\x1a\x45\xdf\xa3")) {
@@ -134,6 +142,16 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         }
         break;
 #endif
+    case '\050':
+        if (MAGIC_MATCH(0, "\050\265\057\375")) {
+            return MAGIC_RESULT("application/zstd");
+        }
+        break;
+    case '7':
+        if (MAGIC_MATCH_LEN(0, "7z\274\257\047\034")) {
+            return MAGIC_RESULT("application/x-7z-compressed");
+        }
+        break;
     case '!':
         if (MAGIC_MATCH_LEN(1, "<arch>\ndebian-binary")) {
             return MAGIC_RESULT("application/x-debian-package");
@@ -156,6 +174,9 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
     case '%':
         if (MAGIC_MATCH(0, "%PDF-")) {
             return MAGIC_RESULT("application/pdf");
+        }
+        if (MAGIC_MATCH(0, "%!PS")) {
+            return MAGIC_RESULT("application/postscript");
         }
         break;
     case '<':
@@ -206,6 +227,9 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         if (data[1] == '"' && isalpha(data[2])) {
             return MAGIC_RESULT("application/json");
         }
+        if (MAGIC_MATCH(0, "{\\rtf")) {
+            return MAGIC_RESULT("text/rtf");
+        }
         break;
     case '8':
         if (MAGIC_MATCH(0, "8BPS")) {
@@ -230,6 +254,9 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         if (MAGIC_MATCH(0, "FLV\001")) {
             return MAGIC_RESULT("video/x-flv");
         }
+        if (MAGIC_MATCH(0, "FWS")) {
+            return MAGIC_RESULT("application/x-shockwave-flash");
+        }
         break;
     case 'G':
         if (MAGIC_MATCH(0, "GIF8")) {
@@ -237,6 +264,11 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         }
         if (len > 188 && data[2] == 0 && data[188] == 'G') {
             return MAGIC_RESULT("video/mp2t");
+        }
+        break;
+    case 'f':
+        if (MAGIC_MATCH(0, "fLaC")) {
+            return MAGIC_RESULT("audio/flac");
         }
         break;
     case 'i':
@@ -248,6 +280,14 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         if (MAGIC_MATCH(0, "ID3")) {
             return MAGIC_RESULT("audio/mpeg");
         }
+        if (MAGIC_MATCH(0, "II*\000")) {
+            return MAGIC_RESULT("image/tiff");
+        }
+        break;
+    case 'L':
+        if (MAGIC_MATCH_LEN(0, "L\000\000\000\001\024\002\000")) {
+            return MAGIC_RESULT("application/x-ms-shortcut");
+        }
         break;
     case 'M':
         if (data[1] == 'Z') {
@@ -255,6 +295,12 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         }
         if (MAGIC_MATCH_LEN(0, "MSCF\000\000")) {
             return MAGIC_RESULT("application/vnd.ms-cab-compressed");
+        }
+        if (MAGIC_MATCH(0, "MM\000*")) {
+            return MAGIC_RESULT("image/tiff");
+        }
+        if (MAGIC_MATCH(0, "M<\262\241")) {
+            return MAGIC_RESULT("application/vnd.tcpdump.pcap");
         }
         break;
     case 'O':
@@ -295,10 +341,21 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         break;
     case 'R':
         if (MAGIC_MATCH(0, "RIFF")) {
+            if (MAGIC_MATCH_LEN(8, "WEBP")) {
+                return MAGIC_RESULT("image/webp");
+            }
+            if (MAGIC_MATCH_LEN(8, "AVI ")) {
+                return MAGIC_RESULT("video/x-msvideo");
+            }
             return MAGIC_RESULT("audio/x-wav");
         }
         if (MAGIC_MATCH(0, "Rar!\x1a")) {
             return MAGIC_RESULT("application/x-rar");
+        }
+        break;
+    case 'S':
+        if (MAGIC_MATCH_LEN(0, "SQLite format 3")) {
+            return MAGIC_RESULT("application/vnd.sqlite3");
         }
         break;
     case 'W':
@@ -317,6 +374,52 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
         }
         if (MAGIC_MATCH(0, "wOF2")) {
             return MAGIC_RESULT("application/font-woff2");
+        }
+        break;
+    case '\177':
+        if (len > 17 && MAGIC_MATCH(0, "\177ELF")) {
+            // e_type lives at offset 16, byte order comes from EI_DATA
+            const uint8_t etype = (data[5] == 2) ? data[17] : data[16];
+            if (etype == 3) { // ET_DYN, also how PIE executables are built
+                return MAGIC_RESULT("application/x-sharedlib");
+            }
+            return MAGIC_RESULT("application/x-executable");
+        }
+        break;
+    case '\xa1':
+        if (MAGIC_MATCH(0, "\xa1\xb2\xc3\xd4") || MAGIC_MATCH(0, "\xa1\xb2\x3c\x4d")) {
+            return MAGIC_RESULT("application/vnd.tcpdump.pcap");
+        }
+        break;
+    case '\xca':
+        if (MAGIC_MATCH(0, "\xca\xfe\xba\xbe")) {
+            // cafebabe is both a Mach-O universal binary and a java class file,
+            // Mach-O follows it with a small big endian architecture count
+            if (len > 7 && data[4] == 0 && data[5] == 0 && data[6] == 0 && (uint8_t)data[7] < 0x20) {
+                return MAGIC_RESULT("application/x-mach-binary");
+            }
+            return MAGIC_RESULT("application/x-java-applet");
+        }
+        break;
+    case '\xce':
+    case '\xcf':
+        if (MAGIC_MATCH(0, "\xce\xfa\xed\xfe") || MAGIC_MATCH(0, "\xcf\xfa\xed\xfe")) {
+            return MAGIC_RESULT("application/x-mach-binary");
+        }
+        break;
+    case '\xd0':
+        if (MAGIC_MATCH_LEN(0, "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1")) {
+            return MAGIC_RESULT("application/x-ole-storage");
+        }
+        break;
+    case '\xd4':
+        if (MAGIC_MATCH(0, "\xd4\xc3\xb2\xa1")) {
+            return MAGIC_RESULT("application/vnd.tcpdump.pcap");
+        }
+        break;
+    case '\xfe':
+        if (MAGIC_MATCH(0, "\xfe\xed\xfa\xce") || MAGIC_MATCH(0, "\xfe\xed\xfa\xcf")) {
+            return MAGIC_RESULT("application/x-mach-binary");
         }
         break;
     case '\x89':
