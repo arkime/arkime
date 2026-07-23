@@ -38,9 +38,6 @@ LOCAL const char      **geoASNOrgPath;
 #define ARKIME_MIN_DB_VERSION 85
 
 int                     arkimeDbVersion = 0;
-extern uint64_t         totalPackets;
-LOCAL  uint64_t         totalSessions ARKIME_CACHE_ALIGN = 0;
-LOCAL  uint64_t         totalSessionBytes ARKIME_CACHE_ALIGN;
 LOCAL  uint16_t         myPid;
 extern uint32_t         pluginsCbs;
 
@@ -83,8 +80,6 @@ LOCAL int               arkime_session_save_func;
 
 LOCAL GRegex           *numRegex;
 LOCAL GRegex           *numHexRegex;
-
-extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
@@ -757,7 +752,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         }
     }
 
-    ARKIME_THREAD_INCR(totalSessions);
+    ARKIME_THREAD_INCR(arkimeCounters.totalSessions);
     session->segments++;
 
     const int thread = session->thread;
@@ -1580,7 +1575,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         goto cleanup;
     }
 
-    ARKIME_THREAD_INCR_NUM(totalSessionBytes, (int)(BSB_WORK_PTR(jbsb) - dataPtr));
+    ARKIME_THREAD_INCR_NUM(arkimeCounters.totalSessionBytes, (int)(BSB_WORK_PTR(jbsb) - dataPtr));
 
     if (config.dryRun) {
         if (config.tests) {
@@ -1814,7 +1809,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t overloadDropped = arkime_packet_dropped_overload();
     uint64_t totalDropped    = arkime_packet_dropped_packets();
     uint64_t fragsDropped    = arkime_packet_dropped_frags();
-    uint64_t dupDropped      = packetStats[ARKIME_PACKET_DUPLICATE_DROPPED];
+    uint64_t dupDropped      = arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = arkime_http_dropped_count(esServer);
     uint64_t totalBytes      = arkime_packet_total_bytes();
     uint64_t writtenBytes    = arkime_packet_written_bytes();
@@ -1859,8 +1854,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage[n].ru_utime.tv_sec) * 1000 + ((int64_t)usage.ru_utime.tv_usec - (int64_t)lastUsage[n].ru_utime.tv_usec) / 1000 +
                          (usage.ru_stime.tv_sec - lastUsage[n].ru_stime.tv_sec) * 1000 + ((int64_t)usage.ru_stime.tv_usec - (int64_t)lastUsage[n].ru_stime.tv_usec) / 1000;
 
-    dbTotalPackets[n] += (totalPackets - lastPackets[n]);
-    dbTotalSessions[n] += (totalSessions - lastSessions[n]);
+    dbTotalPackets[n] += (arkimeCounters.totalPackets - lastPackets[n]);
+    dbTotalSessions[n] += (arkimeCounters.totalSessions - lastSessions[n]);
     dbTotalDropped[n] += (totalDropped - lastDropped[n]);
     dbTotalK[n] += (totalBytes - lastBytes[n]) / 1000;
 
@@ -1953,12 +1948,12 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                                        arkime_session_watch_count(SESSION_SCTP),
                                        arkime_session_watch_count(SESSION_ESP),
                                        arkime_session_watch_count(SESSION_OTHER),
-                                       (totalPackets - lastPackets[n]),
+                                       (arkimeCounters.totalPackets - lastPackets[n]),
                                        (totalBytes - lastBytes[n]),
                                        (writtenBytes - lastWrittenBytes[n]),
                                        (unwrittenBytes - lastUnwrittenBytes[n]),
-                                       (totalSessions - lastSessions[n]),
-                                       (totalSessionBytes - lastSessionBytes[n]),
+                                       (arkimeCounters.totalSessions - lastSessions[n]),
+                                       (arkimeCounters.totalSessionBytes - lastSessionBytes[n]),
                                        (totalDropped - lastDropped[n]),
                                        (fragsDropped - lastFragsDropped[n]),
                                        (overloadDropped - lastOverloadDropped[n]),
@@ -1972,9 +1967,9 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     lastBytes[n]           = totalBytes;
     lastWrittenBytes[n]    = writtenBytes;
     lastUnwrittenBytes[n]  = unwrittenBytes;
-    lastPackets[n]         = totalPackets;
-    lastSessions[n]        = totalSessions;
-    lastSessionBytes[n]    = totalSessionBytes;
+    lastPackets[n]         = arkimeCounters.totalPackets;
+    lastSessions[n]        = arkimeCounters.totalSessions;
+    lastSessionBytes[n]    = arkimeCounters.totalSessionBytes;
     lastDropped[n]         = totalDropped;
     lastFragsDropped[n]    = fragsDropped;
     lastOverloadDropped[n] = overloadDropped;
@@ -3199,15 +3194,15 @@ void arkime_db_exit()
 
     if (config.debug) {
         LOG("totalPackets: %" PRIu64 " totalSessions: %" PRIu64 " writtenBytes: %" PRIu64 " unwrittenBytes: %" PRIu64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
-            totalPackets, totalSessions, arkime_packet_written_bytes(), arkime_packet_unwritten_bytes(),
-            packetStats[ARKIME_PACKET_DO_PROCESS],
-            packetStats[ARKIME_PACKET_IP_DROPPED],
-            packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
-            packetStats[ARKIME_PACKET_CORRUPT],
-            packetStats[ARKIME_PACKET_UNKNOWN_ETHER],
-            packetStats[ARKIME_PACKET_UNKNOWN_IP],
-            packetStats[ARKIME_PACKET_IPPORT_DROPPED],
-            packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
+            arkimeCounters.totalPackets, arkimeCounters.totalSessions, arkime_packet_written_bytes(), arkime_packet_unwritten_bytes(),
+            arkimeCounters.packetStats[ARKIME_PACKET_DO_PROCESS],
+            arkimeCounters.packetStats[ARKIME_PACKET_IP_DROPPED],
+            arkimeCounters.packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+            arkimeCounters.packetStats[ARKIME_PACKET_CORRUPT],
+            arkimeCounters.packetStats[ARKIME_PACKET_UNKNOWN_ETHER],
+            arkimeCounters.packetStats[ARKIME_PACKET_UNKNOWN_IP],
+            arkimeCounters.packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+            arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
            );
     }
 }

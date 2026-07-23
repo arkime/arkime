@@ -665,6 +665,19 @@ typedef struct {
 // Max number of distinct DLTs Arkime dispatches/compiles BPF for. Must be >=
 // the number of entries in the supported-DLT table in packet.c.
 #define ARKIME_DLT_MAX 16
+
+// Global counters bumped with ARKIME_THREAD_INCR* by every reader thread.
+typedef struct {
+    ARKIME_CACHE_ALIGN uint64_t totalPackets;
+    uint64_t                    nextLogPackets; // read/written with totalPackets, same line on purpose
+    ARKIME_CACHE_ALIGN uint64_t totalBytes;
+    ARKIME_CACHE_ALIGN uint64_t totalSessions;
+    ARKIME_CACHE_ALIGN uint64_t totalSessionBytes;
+    ARKIME_CACHE_ALIGN uint64_t packetStats[ARKIME_PACKET_MAX];
+} ARKIME_CACHE_ALIGN ArkimeCounters_t;
+
+extern ArkimeCounters_t       arkimeCounters;
+
 typedef struct {
     uint32_t        dlt;                // data link type
     uint32_t        snaplen;            // snap length

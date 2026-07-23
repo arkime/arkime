@@ -20,12 +20,10 @@
 extern ArkimeConfig_t        config;
 extern ArkimeFileInfo_t      fileInfo[256];
 
-uint64_t                     totalPackets;
-LOCAL uint64_t               totalBytes;
+ArkimeCounters_t             arkimeCounters;
 
 LOCAL uint64_t               initialDropped = 0;
 LOCAL uint8_t                firstPacket = 0;
-LOCAL uint64_t               nextLogPackets;
 struct timeval               initialPacket; // Don't make LOCAL for now because of netflow plugin
 
 extern void                 *esServer;
@@ -81,8 +79,6 @@ extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 ARKIME_LOCK_DEFINE(fileInfoLock);
 
 /******************************************************************************/
-
-uint64_t                     packetStats[ARKIME_PACKET_MAX];
 
 typedef struct {
     ArkimePacketHead_t    packetQ;
@@ -775,7 +771,7 @@ LOCAL void arkime_packet_log(int mProtocol)
     ArkimeReaderStats_t stats;
     if (arkime_reader_stats(&stats)) {
         stats.dropped = 0;
-        stats.total = totalPackets;
+        stats.total = arkimeCounters.totalPackets;
     }
 
     uint32_t wql = arkime_writer_queue_length();
@@ -784,7 +780,7 @@ LOCAL void arkime_packet_log(int mProtocol)
     arkime_db_memory_info(FALSE, NULL, &memPercent);
 
     LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s mem: %.2f%%",
-        totalPackets,
+        arkimeCounters.totalPackets,
         arkime_session_watch_count(mProtocols[mProtocol].ses),
         arkime_session_monitoring(),
         arkime_session_idle_seconds(mProtocol),
@@ -798,13 +794,13 @@ LOCAL void arkime_packet_log(int mProtocol)
         arkime_session_need_save_outstanding(),
         arkime_packet_frags_outstanding(),
         arkime_packet_frags_size(),
-        packetStats[ARKIME_PACKET_DO_PROCESS],
-        packetStats[ARKIME_PACKET_IP_DROPPED],
-        packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
-        packetStats[ARKIME_PACKET_CORRUPT],
-        packetStats[ARKIME_PACKET_UNKNOWN_ETHER] + packetStats[ARKIME_PACKET_UNKNOWN_IP],
-        packetStats[ARKIME_PACKET_IPPORT_DROPPED],
-        packetStats[ARKIME_PACKET_DUPLICATE_DROPPED],
+        arkimeCounters.packetStats[ARKIME_PACKET_DO_PROCESS],
+        arkimeCounters.packetStats[ARKIME_PACKET_IP_DROPPED],
+        arkimeCounters.packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+        arkimeCounters.packetStats[ARKIME_PACKET_CORRUPT],
+        arkimeCounters.packetStats[ARKIME_PACKET_UNKNOWN_ETHER] + arkimeCounters.packetStats[ARKIME_PACKET_UNKNOWN_IP],
+        arkimeCounters.packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+        arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED],
         PACKAGE_VERSION,
         memPercent
        );
@@ -823,7 +819,7 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
     ArkimeReaderStats_t stats;
     if (arkime_reader_stats(&stats)) {
         stats.dropped = 0;
-        stats.total = totalPackets;
+        stats.total = arkimeCounters.totalPackets;
     }
 
     uint32_t wql = arkime_writer_queue_length();
@@ -860,7 +856,7 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        "Packets Duplicate Dropped: %" PRIu64 "\n",
 
                        PACKAGE_VERSION,
-                       totalPackets,
+                       arkimeCounters.totalPackets,
                        stats.total,
                        stats.dropped - initialDropped,
                        (stats.total ? (stats.dropped - initialDropped) * (double)100.0 / stats.total : 0),
@@ -882,14 +878,14 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        arkime_packet_frags_outstanding(),
                        arkime_packet_frags_size(),
 
-                       packetStats[ARKIME_PACKET_DO_PROCESS],
-                       packetStats[ARKIME_PACKET_IP_DROPPED],
-                       packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
-                       packetStats[ARKIME_PACKET_CORRUPT],
-                       packetStats[ARKIME_PACKET_UNKNOWN_ETHER],
-                       packetStats[ARKIME_PACKET_UNKNOWN_IP],
-                       packetStats[ARKIME_PACKET_IPPORT_DROPPED],
-                       packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
+                       arkimeCounters.packetStats[ARKIME_PACKET_DO_PROCESS],
+                       arkimeCounters.packetStats[ARKIME_PACKET_IP_DROPPED],
+                       arkimeCounters.packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+                       arkimeCounters.packetStats[ARKIME_PACKET_CORRUPT],
+                       arkimeCounters.packetStats[ARKIME_PACKET_UNKNOWN_ETHER],
+                       arkimeCounters.packetStats[ARKIME_PACKET_UNKNOWN_IP],
+                       arkimeCounters.packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+                       arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
                       );
 
     arkime_command_respond(cc, output, BSB_LENGTH(bsb));
@@ -1626,19 +1622,19 @@ void arkime_packet_batch_flush(ArkimePacketBatch_t *batch)
     }
     for (int i = 0; i < ARKIME_PACKET_MAX; i++) {
         if (batch->packetStats[i]) {
-            ARKIME_THREAD_INCR_NUM(packetStats[i], batch->packetStats[i]);
+            ARKIME_THREAD_INCR_NUM(arkimeCounters.packetStats[i], batch->packetStats[i]);
             batch->packetStats[i] = 0;
         }
     }
     if (batch->totalBytes) {
-        ARKIME_THREAD_INCR_NUM(totalBytes, batch->totalBytes);
+        ARKIME_THREAD_INCR_NUM(arkimeCounters.totalBytes, batch->totalBytes);
         batch->totalBytes = 0;
     }
     if (batch->totalPackets) {
-        ARKIME_THREAD_INCR_NUM(totalPackets, batch->totalPackets);
+        ARKIME_THREAD_INCR_NUM(arkimeCounters.totalPackets, batch->totalPackets);
         batch->totalPackets = 0;
-        if (unlikely(totalPackets >= nextLogPackets)) {
-            nextLogPackets = totalPackets + config.logEveryXPackets;
+        if (unlikely(arkimeCounters.totalPackets >= arkimeCounters.nextLogPackets)) {
+            arkimeCounters.nextLogPackets = arkimeCounters.totalPackets + config.logEveryXPackets;
             arkime_packet_log(tcpMProtocol);
         }
     }
@@ -1987,7 +1983,7 @@ void arkime_packet_init()
 {
     arkime_packet_freelist_init();
 
-    nextLogPackets = config.logEveryXPackets;
+    arkimeCounters.nextLogPackets = config.logEveryXPackets;
 
     disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
     trimEthernetPadding = arkime_config_boolean(NULL, "trimEthernetPadding", FALSE);
@@ -2329,7 +2325,7 @@ uint64_t arkime_packet_dropped_overload()
 /******************************************************************************/
 uint64_t arkime_packet_total_bytes()
 {
-    return totalBytes;
+    return arkimeCounters.totalBytes;
 }
 /******************************************************************************/
 uint64_t arkime_packet_written_bytes()
