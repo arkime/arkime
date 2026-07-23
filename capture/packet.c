@@ -531,7 +531,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
         ArkimePacket_t  *packet;
 
         ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
-        packetThreadData[thread].inProgress = 0;
+        ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 0);
         if (DLL_COUNT(packet_, &packetThreadData[thread].packetQ) == 0) {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME_COARSE, &ts);
@@ -547,7 +547,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
                 arkimeThreadData[thread].lastPacketSecs = ts.tv_sec - 10;
             }
         }
-        packetThreadData[thread].inProgress = 1;
+        ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 1);
         DLL_POP_HEAD(packet_, &packetThreadData[thread].packetQ, packet);
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 
@@ -587,7 +587,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
     }
 
     arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
-    packetThreadData[thread].inProgress = 0; // Clear after calling exit function delaying can quit
+    ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 0); // Clear after calling exit function delaying can quit
 
     return NULL;
 }
@@ -1631,10 +1631,10 @@ void arkime_packet_batch_flush(ArkimePacketBatch_t *batch)
         batch->totalBytes = 0;
     }
     if (batch->totalPackets) {
-        ARKIME_THREAD_INCR_NUM(arkimeCounters.totalPackets, batch->totalPackets);
+        const uint64_t totalPackets = ARKIME_THREAD_INCR_NUM(arkimeCounters.totalPackets, batch->totalPackets);
         batch->totalPackets = 0;
-        if (unlikely(arkimeCounters.totalPackets >= arkimeCounters.nextLogPackets)) {
-            arkimeCounters.nextLogPackets = arkimeCounters.totalPackets + config.logEveryXPackets;
+        if (unlikely(totalPackets >= ARKIME_THREAD_ATOMIC_LOAD(arkimeCounters.nextLogPackets))) {
+            ARKIME_THREAD_ATOMIC_STORE(arkimeCounters.nextLogPackets, totalPackets + config.logEveryXPackets);
             arkime_packet_log(tcpMProtocol);
         }
     }
@@ -1740,8 +1740,7 @@ skip_switch:
 process_packet:
     /* This packet we are going to process */
 
-    if (unlikely(!firstPacket)) {
-        firstPacket = 1;
+    if (unlikely(!ARKIME_THREAD_ATOMIC_LOAD(firstPacket)) && ARKIME_THREAD_INCROLD(firstPacket) == 0) {
         ArkimeReaderStats_t stats;
         if (!arkime_reader_stats(&stats)) {
             initialDropped = stats.dropped;
@@ -1812,7 +1811,7 @@ int arkime_packet_outstanding()
 
     for (int t = 0; t < config.packetThreads; t++) {
         count += DLL_COUNT(packet_, &packetThreadData[t].packetQ);
-        count += packetThreadData[t].inProgress;
+        count += ARKIME_THREAD_ATOMIC_LOAD_RELAXED(packetThreadData[t].inProgress);
     }
     return count;
 }

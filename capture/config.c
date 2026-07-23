@@ -1323,6 +1323,8 @@ LOCAL void arkime_config_load()
     char  *autoGenerateId        = arkime_config_str(keyfile, "autoGenerateId", "false");
     if (strcmp(autoGenerateId, "consistent") == 0) {
         config.autoGenerateId = 2;
+    } else if (strcmp(autoGenerateId, "sequential") == 0) {
+        config.autoGenerateId = 3;
     } else if (strcmp(autoGenerateId, "true") == 0 || strcmp(autoGenerateId, "1") == 0) {
         config.autoGenerateId = 1;
     } else {

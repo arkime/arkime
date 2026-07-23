@@ -63,6 +63,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4143 Fix a remote HTTP response's Content-Length pre-allocating up to 2GB; the response buffer now grows as data arrives
   - #4149 Add 24 new magicMode=basic matches, including ELF, Mach-O, java class, wasm, OLE, lnk, 7z, zstd, sqlite and pcap
   - #4149 Fix magicMode=basic returning audio/x-wav for every RIFF body, webp and avi are now identified correctly
+  - #4150 Add autoGenerateId=sequential, a lock free per thread session id generator that is much faster on session heavy traffic
 ## Cont3xt/Viewer
   - #4134 Add an MCP server at POST /mcp for viewer and cont3xt, off by default, enable with mcpEnabled.
   - #4134 Add mcpUser role, required per user on top of the service role to use /mcp; superAdmin includes it, arkimeAdmin does not
