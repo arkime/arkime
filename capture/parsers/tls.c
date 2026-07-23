@@ -2,6 +2,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#define OPENSSL_SUPPRESS_DEPRECATED
+#include <openssl/sha.h>
 #include "arkime.h"
 #include "tls-cipher.h"
 #include "openssl/objects.h"
@@ -572,12 +574,13 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
 
     BSB_EXPORT_u08(ja4_rbsb, '_');
 
-    GChecksum *const checksum = arkimeThreadData[session->thread].checksum256;
+    uint8_t digest[SHA256_DIGEST_LENGTH];
+    char    hex[SHA256_DIGEST_LENGTH * 2 + 1];
 
     if (BSB_LENGTH(tmpBSB) > 0) {
-        g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
-        memcpy(ja4 + 11, g_checksum_get_string(checksum), 12);
-        g_checksum_reset(checksum);
+        SHA256((uint8_t *)tmpBuf, BSB_LENGTH(tmpBSB), digest);
+        arkime_sprint_hex_string(hex, digest, 6);
+        memcpy(ja4 + 11, hex, 12);
     } else {
         memcpy(ja4 + 11, "000000000000", 12);
     }
@@ -605,9 +608,9 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
     BSB_EXPORT_u08(ja4_rbsb, 0);
 
     if (BSB_LENGTH(tmpBSB) > 0) {
-        g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
-        memcpy(ja4 + 24, g_checksum_get_string(checksum), 12);
-        g_checksum_reset(checksum);
+        SHA256((uint8_t *)tmpBuf, BSB_LENGTH(tmpBSB), digest);
+        arkime_sprint_hex_string(hex, digest, 6);
+        memcpy(ja4 + 24, hex, 12);
     } else {
         memcpy(ja4 + 24, "000000000000", 12);
     }

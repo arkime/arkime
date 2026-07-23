@@ -991,8 +991,6 @@ typedef struct {
     time_t                       currentTime;
     time_t                       lastPacketSecs;
     ArkimeSessionHead_t          tcpWriteQ;
-    GChecksum                   *checksum1;
-    GChecksum                   *checksum256;
 } ARKIME_CACHE_ALIGN ArkimeThreadData_t;
 extern ArkimeThreadData_t arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
