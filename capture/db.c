@@ -620,11 +620,22 @@ LOCAL int arkime_db_field_sort(const void *a, const void *b)
     return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
 }
 
+/******************************************************************************/
+/* State for autoGenerateId=sequential. uuid_generate is locked, so calling it
+ * per session serializes the packet threads; instead each thread draws one
+ * random uuid at startup and increments it per session. The high bytes, which
+ * the counter never reaches, are overwritten with the node name hash and the
+ * packet thread so two captures (even a fleet booting together with a cold RNG)
+ * and two threads on one capture cannot collide without relying on the random
+ * bits; the low bytes stay random + counter for uniqueness across restarts.
+ */
+LOCAL __thread uuid_t   idCur;
+LOCAL __thread gboolean idInit;
+/******************************************************************************/
 void arkime_db_save_session(ArkimeSession_t *session, int final)
 {
     char                   id[120];
     uint32_t               id_len;
-    uuid_t                 uuid;
     ArkimeString_t        *hstring;
     ArkimeInt_t           *hint;
     ArkimeStringHashStd_t *shash;
@@ -736,12 +747,31 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         if (session->rootId == GINT_TO_POINTER(1))
             session->rootId = g_strdup(id);
     } else if (config.autoGenerateId != 1 || session->rootId == GINT_TO_POINTER(1)) {
-        id_len = arkime_snprintf_len(id, sizeof(id), "%s-", dbInfo[thread].prefix);
+        uuid_t uuid;
+        const uint8_t *idBytes;
 
-        uuid_generate(uuid);
+        if (config.autoGenerateId == 3) {
+            // sequential: per thread, lock free -- see idCur comment above
+            if (unlikely(!idInit)) {
+                uuid_generate(idCur);
+                uint32_t nodeHash = arkime_string_hash(config.nodeName);
+                memcpy(idCur, &nodeHash, 4);  // high bytes: node identity ...
+                idCur[4] = (uint8_t)thread;   // ... then packet thread
+                idInit = TRUE;
+            } else {
+                for (int i = 15; i >= 0 && ++idCur[i] == 0; i--) // increment, carry toward high bytes
+                    ;
+            }
+            idBytes = idCur;
+        } else {
+            uuid_generate(uuid); // a fresh random uuid per session
+            idBytes = uuid;
+        }
+
+        id_len = arkime_snprintf_len(id, sizeof(id), "%s-", dbInfo[thread].prefix);
         gint state = 0, save = 0;
         id_len += g_base64_encode_step((guchar *)&myPid, 2, FALSE, id + id_len, &state, &save);
-        id_len += g_base64_encode_step(uuid, sizeof(uuid_t), FALSE, id + id_len, &state, &save);
+        id_len += g_base64_encode_step(idBytes, sizeof(uuid_t), FALSE, id + id_len, &state, &save);
         id_len += g_base64_encode_close(FALSE, id + id_len, &state, &save);
         id[id_len] = 0;
 
