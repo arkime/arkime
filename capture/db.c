@@ -5,6 +5,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#define OPENSSL_SUPPRESS_DEPRECATED
+#include <openssl/sha.h>
 #include "arkime.h"
 #include "arkimeconfig.h"
 #include <sys/types.h>
@@ -467,57 +469,56 @@ void arkime_db_set_send_bulk2(ArkimeDbSendBulkFunc func, gboolean bulkHeader, gb
 /******************************************************************************/
 gchar *arkime_db_community_id(const ArkimeSession_t *session)
 {
-    GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
+    SHA_CTX checksum;
+    SHA1_Init(&checksum);
 
     static uint16_t seed = 0;
     static uint8_t  zero = 0;
 
-    g_checksum_update(checksum, (guchar *)&seed, 2);
+    SHA1_Update(&checksum, &seed, 2);
 
     // SessionId layout: [len:1][vlan/vni:3][addr1][addr2][port1:2][port2:2]
     // IPv4: addr at +4 and +8 (4 bytes each), ports at +12 and +14
     // IPv6: addr at +4 and +20 (16 bytes each), ports at +36 and +38
     if (ARKIME_SESSION_IS_v6(session)) {
         // For v6 we sort the same as community id
-        g_checksum_update(checksum, (guchar *)session->sessionId + 4, 32);
-        g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-        g_checksum_update(checksum, (guchar *)&zero, 1);
-        g_checksum_update(checksum, (guchar *)session->sessionId + 36, 4);
+        SHA1_Update(&checksum, session->sessionId + 4, 32);
+        SHA1_Update(&checksum, &session->ipProtocol, 1);
+        SHA1_Update(&checksum, &zero, 1);
+        SHA1_Update(&checksum, session->sessionId + 36, 4);
     } else {
         // For v4 because of byte order we have a different sort for ip but not port
         int cmp = memcmp(session->sessionId + 4, session->sessionId + 8, 4);
 
         if (cmp <= 0) {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 4, 8);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 12, 4);
+            SHA1_Update(&checksum, session->sessionId + 4, 8);
+            SHA1_Update(&checksum, &session->ipProtocol, 1);
+            SHA1_Update(&checksum, &zero, 1);
+            SHA1_Update(&checksum, session->sessionId + 12, 4);
         }  else {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 8, 4);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 4, 4);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 14, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 12, 2);
+            SHA1_Update(&checksum, session->sessionId + 8, 4);
+            SHA1_Update(&checksum, session->sessionId + 4, 4);
+            SHA1_Update(&checksum, &session->ipProtocol, 1);
+            SHA1_Update(&checksum, &zero, 1);
+            SHA1_Update(&checksum, session->sessionId + 14, 2);
+            SHA1_Update(&checksum, session->sessionId + 12, 2);
         }
     }
 
-    guint8 digest[100];
-    gsize  digest_len = 100;
+    uint8_t digest[SHA_DIGEST_LENGTH];
 
-    g_checksum_get_digest(checksum, digest, &digest_len);
-    gchar *b64 = g_base64_encode(digest, digest_len);
-
-    g_checksum_reset(checksum);
-    return b64;
+    SHA1_Final(digest, &checksum);
+    return g_base64_encode(digest, sizeof(digest));
 }
 /******************************************************************************/
 // ICMP is a special case, we need to handle it differently
 // It remaps the ports and is kind of a hot mess.
 gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
 {
-    GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
-    int              cmp;
+    SHA_CTX checksum;
+    int     cmp;
+
+    SHA1_Init(&checksum);
 
     static uint16_t seed = 0;
     static uint8_t  zero = 0;
@@ -525,7 +526,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
     uint16_t port1;
     uint16_t port2;
 
-    g_checksum_update(checksum, (guchar *)&seed, 2);
+    SHA1_Update(&checksum, &seed, 2);
 
     port1 = session->icmpInfo[0];
     port2 = session->icmpInfo[1];
@@ -543,21 +544,21 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
         if (cmp < 0 || (cmp == 0 && port1 <= port2)) {
             port1 = htons(port1);
             port2 = htons(port2);
-            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr, 16);
-            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr, 16);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)&port1, 2);
-            g_checksum_update(checksum, (guchar *)&port2, 2);
+            SHA1_Update(&checksum, session->addr1.s6_addr, 16);
+            SHA1_Update(&checksum, session->addr2.s6_addr, 16);
+            SHA1_Update(&checksum, &session->ipProtocol, 1);
+            SHA1_Update(&checksum, &zero, 1);
+            SHA1_Update(&checksum, &port1, 2);
+            SHA1_Update(&checksum, &port2, 2);
         } else {
             port1 = htons(port1);
             port2 = htons(port2);
-            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr, 16);
-            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr, 16);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)&port2, 2);
-            g_checksum_update(checksum, (guchar *)&port1, 2);
+            SHA1_Update(&checksum, session->addr2.s6_addr, 16);
+            SHA1_Update(&checksum, session->addr1.s6_addr, 16);
+            SHA1_Update(&checksum, &session->ipProtocol, 1);
+            SHA1_Update(&checksum, &zero, 1);
+            SHA1_Update(&checksum, &port2, 2);
+            SHA1_Update(&checksum, &port1, 2);
         }
     } else {
         static const uint8_t port2Mapping[19] = {8, 255, 255, 255, 255, 255, 255, 255, 0, 10,
@@ -572,32 +573,28 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
         if (cmp < 0 || (cmp == 0 && port1 < port2)) {
             port1 = htons(port1);
             port2 = htons(port2);
-            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr + 12, 4);
-            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr + 12, 4);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)&port1, 2);
-            g_checksum_update(checksum, (guchar *)&port2, 2);
+            SHA1_Update(&checksum, session->addr1.s6_addr + 12, 4);
+            SHA1_Update(&checksum, session->addr2.s6_addr + 12, 4);
+            SHA1_Update(&checksum, &session->ipProtocol, 1);
+            SHA1_Update(&checksum, &zero, 1);
+            SHA1_Update(&checksum, &port1, 2);
+            SHA1_Update(&checksum, &port2, 2);
         }  else {
             port1 = htons(port1);
             port2 = htons(port2);
-            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr + 12, 4);
-            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr + 12, 4);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)&port2, 2);
-            g_checksum_update(checksum, (guchar *)&port1, 2);
+            SHA1_Update(&checksum, session->addr2.s6_addr + 12, 4);
+            SHA1_Update(&checksum, session->addr1.s6_addr + 12, 4);
+            SHA1_Update(&checksum, &session->ipProtocol, 1);
+            SHA1_Update(&checksum, &zero, 1);
+            SHA1_Update(&checksum, &port2, 2);
+            SHA1_Update(&checksum, &port1, 2);
         }
     }
 
-    guint8 digest[100];
-    gsize  digest_len = 100;
+    uint8_t digest[SHA_DIGEST_LENGTH];
 
-    g_checksum_get_digest(checksum, digest, &digest_len);
-    gchar *b64 = g_base64_encode(digest, digest_len);
-
-    g_checksum_reset(checksum);
-    return b64;
+    SHA1_Final(digest, &checksum);
+    return g_base64_encode(digest, sizeof(digest));
 }
 /******************************************************************************/
 typedef struct {
@@ -3129,9 +3126,6 @@ void arkime_db_init()
     for (int thread = 0; thread < config.packetThreads; thread++) {
         ARKIME_LOCK_INIT(dbInfo[thread].lock);
         dbInfo[thread].prefixTime = -1;
-        arkimeThreadData[thread].checksum1 = g_checksum_new(G_CHECKSUM_SHA1);
-        arkimeThreadData[thread].checksum256 = g_checksum_new(G_CHECKSUM_SHA256);
-
     }
 
     arkime_session_save_func = arkime_parsers_get_named_func("arkime_session_save");

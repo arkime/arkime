@@ -6,6 +6,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#define OPENSSL_SUPPRESS_DEPRECATED
+#include <openssl/md5.h>
+
 //#define HTTPDEBUG 1
 
 #define MAX_URL_LENGTH 4096
@@ -36,7 +39,8 @@ typedef struct {
     http_parser      parsers[2];
     uint16_t         methodCounts[HTTP_MAX_METHOD + 1];
 
-    GChecksum       *checksum[4];
+    MD5_CTX          md5Ctx[2];
+    GChecksum       *sha256[2];
     const char      *magicString[2];
 
     uint16_t         wParsers: 2;
@@ -286,9 +290,9 @@ LOCAL int arkime_hp_cb_on_message_begin (http_parser *parser)
     http->inHeader &= ~(1 << http->which);
     http->inValue  &= ~(1 << http->which);
     http->inBody   &= ~(1 << http->which);
-    g_checksum_reset(http->checksum[http->which]);
+    MD5_Init(&http->md5Ctx[http->which]);
     if (config.supportSha256) {
-        g_checksum_reset(http->checksum[http->which + 2]);
+        g_checksum_reset(http->sha256[http->which]);
     }
 
     if (pluginsCbs & ARKIME_PLUGIN_HP_OMB)
@@ -344,9 +348,9 @@ LOCAL int arkime_hp_cb_on_body (http_parser *parser, const char *at, size_t leng
 
     }
 
-    g_checksum_update(http->checksum[http->which], (guchar *)at, length);
+    MD5_Update(&http->md5Ctx[http->which], at, length);
     if (config.supportSha256) {
-        g_checksum_update(http->checksum[http->which + 2], (guchar *)at, length);
+        g_checksum_update(http->sha256[http->which], (guchar *)at, length);
     }
 
     if (pluginsCbs & ARKIME_PLUGIN_HP_OB)
@@ -434,10 +438,13 @@ LOCAL int arkime_hp_cb_on_message_complete (http_parser *parser)
         arkime_plugins_cb_hp_omc(session, parser);
 
     if (http->inBody & (1 << http->which)) {
-        const char *md5 = g_checksum_get_string(http->checksum[http->which]);
-        arkime_field_string_uw_add(md5Field, session, (char *)md5, 32, (gpointer)http->magicString[http->which], TRUE);
+        uint8_t digest[MD5_DIGEST_LENGTH];
+        char    md5[MD5_DIGEST_LENGTH * 2 + 1];
+        MD5_Final(digest, &http->md5Ctx[http->which]);
+        arkime_sprint_hex_string(md5, digest, MD5_DIGEST_LENGTH);
+        arkime_field_string_uw_add(md5Field, session, md5, 32, (gpointer)http->magicString[http->which], TRUE);
         if (config.supportSha256) {
-            const char *sha256 = g_checksum_get_string(http->checksum[http->which + 2]);
+            const char *sha256 = g_checksum_get_string(http->sha256[http->which]);
             arkime_field_string_uw_add(sha256Field, session, (char *)sha256, 64, (gpointer)http->magicString[http->which], TRUE);
         }
     }
@@ -871,11 +878,9 @@ LOCAL void http_free(ArkimeSession_t UNUSED(*session), void *uw)
         g_string_free(http->valueString[0], TRUE);
     if (http->valueString[1])
         g_string_free(http->valueString[1], TRUE);
-    g_checksum_free(http->checksum[0]);
-    g_checksum_free(http->checksum[1]);
     if (config.supportSha256) {
-        g_checksum_free(http->checksum[2]);
-        g_checksum_free(http->checksum[3]);
+        g_checksum_free(http->sha256[0]);
+        g_checksum_free(http->sha256[1]);
     }
 
     ARKIME_TYPE_FREE(HTTPInfo_t, http);
@@ -890,11 +895,9 @@ LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), 
 
     HTTPInfo_t            *http          = ARKIME_TYPE_ALLOC0(HTTPInfo_t);
 
-    http->checksum[0] = g_checksum_new(G_CHECKSUM_MD5);
-    http->checksum[1] = g_checksum_new(G_CHECKSUM_MD5);
     if (config.supportSha256) {
-        http->checksum[2] = g_checksum_new(G_CHECKSUM_SHA256);
-        http->checksum[3] = g_checksum_new(G_CHECKSUM_SHA256);
+        http->sha256[0] = g_checksum_new(G_CHECKSUM_SHA256);
+        http->sha256[1] = g_checksum_new(G_CHECKSUM_SHA256);
     }
 
     http_parser_init(&http->parsers[0], HTTP_BOTH);

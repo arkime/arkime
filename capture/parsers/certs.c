@@ -2,6 +2,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#define OPENSSL_SUPPRESS_DEPRECATED
+#include <openssl/sha.h>
 #include "arkime.h"
 #include <inttypes.h>
 #include "openssl/objects.h"
@@ -435,8 +437,6 @@ LOCAL void certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *data, u
 // Returns 0 on success, -1 on failure
 LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *data, int clen)
 {
-    GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
-
     int            badreason;
 
     ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
@@ -458,19 +458,13 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
     BSB            bsb;
     BSB_INIT(bsb, data, clen);
 
-    guchar digest[20];
-    gsize  dlen = sizeof(digest);
+    uint8_t digest[SHA_DIGEST_LENGTH];
 
-    g_checksum_update(checksum, data, clen);
-    g_checksum_get_digest(checksum, digest, &dlen);
-    g_checksum_reset(checksum);
-    if (dlen > 0) {
-        int i;
-        for (i = 0; i < 20; i++) {
-            certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
-            certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
-            certs->hash[i * 3 + 2] = ':';
-        }
+    SHA1(data, clen, digest);
+    for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
+        certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
+        certs->hash[i * 3 + 2] = ':';
     }
     certs->hash[59] = 0;
 
