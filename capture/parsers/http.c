@@ -6,9 +6,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-// OpenSSL's MD5 is ~15% faster than g_checksum and needs no per session alloc.
-// The low level API is deprecated in OpenSSL 3 but is the only one available on
-// EL8's 1.1.1, same as capture/dedup.c.
 #define OPENSSL_SUPPRESS_DEPRECATED
 #include <openssl/md5.h>
 
