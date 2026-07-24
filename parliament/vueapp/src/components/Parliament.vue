@@ -3,147 +3,168 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
+  <v-container fluid>
     <!-- page error -->
-    <b-alert
-      dismissible
-      :show="!!error"
-      variant="danger"
-      style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle me-2" />
+    <v-snackbar
+      :model-value="!!error"
+      color="error"
+      location="bottom"
+      :timeout="-1"
+      @update:model-value="(v) => { if (!v) error = '' }">
       {{ error }}
-    </b-alert> <!-- /page error -->
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="error = ''" />
+      </template>
+    </v-snackbar> <!-- /page error -->
 
     <!-- search & create group -->
-    <div class="d-flex flex-row justify-content-between align-items-center flex-nowrap">
+    <div class="d-flex flex-row align-center flex-nowrap mb-2 arkime-toolbar ga-2">
       <!-- search -->
-      <b-input-group class="me-2">
-        <b-input-group-text>
-          <span class="fa fa-search" />
-        </b-input-group-text>
-        <b-form-input
-          tabindex="8"
-          debounce="400"
-          v-model="searchTerm"
-          placeholder="Search clusters" />
-        <button
-          type="button"
-          @click="clear"
-          :disabled="!searchTerm"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-close" />
-        </button>
-      </b-input-group>  <!-- /search -->
+      <v-text-field
+        v-model="searchTerm"
+        prepend-inner-icon="mdi-magnify"
+        placeholder="Search clusters"
+        clearable
+        density="compact"
+        hide-details
+        class="me-2 flex-grow-1"
+        tabindex="8"
+        @click:clear="clear" /><!-- /search -->
       <div
         v-if="isAdmin"
-        class="no-wrap d-flex">
+        class="no-wrap d-flex align-center ga-1">
         <!-- create group -->
-        <a
+        <v-btn
           v-if="!showNewGroupForm && editMode"
-          @click="openNewGroupForm"
-          class="btn btn-outline-primary cursor-pointer me-1">
-          <span class="fa fa-plus-circle" />&nbsp;
+          variant="outlined"
+          color="primary"
+          @click="openNewGroupForm">
+          <v-icon
+            icon="mdi-plus-circle"
+            class="me-1" />
           {{ $t('parliament.newGroup') }}
-        </a>
+        </v-btn>
         <template v-else-if="editMode">
-          <a
-            @click="cancelCreateNewGroup"
-            class="btn btn-outline-warning cursor-pointer me-1">
-            <span class="fa fa-ban" />&nbsp;
+          <v-btn
+            variant="outlined"
+            color="warning"
+            @click="cancelCreateNewGroup">
+            <v-icon
+              icon="mdi-cancel"
+              class="me-1" />
             {{ $t('common.cancel') }}
-          </a>
-          <a
-            @click="createNewGroup"
-            class="btn btn-outline-success cursor-pointer me-1">
-            <span class="fa fa-plus-circle" />&nbsp;
+          </v-btn>
+          <v-btn
+            variant="outlined"
+            color="success"
+            @click="createNewGroup">
+            <v-icon
+              icon="mdi-plus-circle"
+              class="me-1" />
             {{ $t('common.create') }}
-          </a>
+          </v-btn>
         </template> <!-- /create group -->
         <!-- hide/show issues button -->
-        <button
-          @click="toggleHideAllIssues"
-          class="btn btn-sm btn-outline-secondary me-2"
-          id="hideIssuesBtn"
-          :aria-label="$t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues')">
-          <span
-            v-if="hideAllIssues"
-            class="fa fa-eye" />
-          <span
-            v-else
-            class="fa fa-eye-slash" />
-        </button>
-        <BTooltip
-          target="hideIssuesBtn"
-          placement="bottom">
-          {{ $t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues') }}
-        </BTooltip>
+        <v-btn
+          variant="outlined"
+          color="secondary"
+          class="me-2"
+          :aria-label="$t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues')"
+          @click="toggleHideAllIssues">
+          <v-icon :icon="hideAllIssues ? 'mdi-eye' : 'mdi-eye-off'" />
+          <v-tooltip
+            activator="parent"
+            location="bottom">
+            {{ $t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues') }}
+          </v-tooltip>
+        </v-btn>
         <!-- /hide/show issues button -->
         <!-- edit mode toggle -->
-        <span
-          @click="toggleEditMode"
-          class="fa fa-toggle-off fa-2x cursor-pointer mt-1"
-          :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
-          id="editModeToggle" />
-        <BTooltip
-          target="editModeToggle"
-          placement="bottom">
-          {{ $t('parliament.editModeToggleTip') }}
-        </BTooltip>
+        <v-switch
+          :model-value="editMode"
+          color="success"
+          density="compact"
+          hide-details
+          inset
+          class="ms-2 edit-mode-switch"
+          @update:model-value="toggleEditMode">
+          <v-tooltip
+            activator="parent"
+            location="bottom">
+            {{ $t('parliament.editModeToggleTip') }}
+          </v-tooltip>
+        </v-switch>
         <!-- /edit mode toggle -->
       </div>
     </div> <!-- /search & create group -->
 
-    <hr>
+    <v-divider class="mb-4" />
 
     <!-- new group form -->
     <div
       v-if="showNewGroupForm && isAdmin && editMode"
-      class="row">
-      <div class="col-md-12">
-        <div @keyup.enter="createNewGroup">
-          <div class="form-group row mb-1">
-            <label
-              for="newGroupTitle"
-              class="col-sm-2 col-form-label">
-              {{ $t('parliament.groupTitle') }}<sup class="text-danger">*</sup>
-            </label>
-            <div class="col-sm-10">
-              <input
-                type="text"
-                v-model="newGroupTitle"
-                class="form-control"
-                id="newGroupTitle"
-                :placeholder="$t('parliament.groupTitlePlaceholder')"
-                v-focus="focusGroupInput">
-            </div>
+      class="compact-form"
+      @keyup.enter="createNewGroup">
+      <v-row class="mb-1">
+        <v-col
+          cols="12"
+          sm="2"
+          tag="label"
+          for="newGroupTitle"
+          class="form-side-label">
+          {{ $t('parliament.groupTitle') }}<sup class="text-error">*</sup>
+        </v-col>
+        <v-col
+          cols="12"
+          sm="10">
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <input
+              type="text"
+              v-model="newGroupTitle"
+              class="arkime-input-control"
+              id="newGroupTitle"
+              :placeholder="$t('parliament.groupTitlePlaceholder')"
+              v-focus="focusGroupInput">
           </div>
-          <div class="form-group row mb-1">
-            <label
-              for="newGroupDescription"
-              class="col-sm-2 col-form-label">
-              {{ $t('parliament.groupDescription') }}
-            </label>
-            <div class="col-sm-10">
-              <textarea
-                rows="3"
-                v-model="newGroupDescription"
-                class="form-control"
-                id="newGroupDescription"
-                :placeholder="$t('parliament.groupDescriptionPlaceholder')" />
-            </div>
+        </v-col>
+      </v-row>
+      <v-row class="mb-1">
+        <v-col
+          cols="12"
+          sm="2"
+          tag="label"
+          for="newGroupDescription"
+          class="form-side-label">
+          {{ $t('parliament.groupDescription') }}
+        </v-col>
+        <v-col
+          cols="12"
+          sm="10">
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <textarea
+              rows="3"
+              v-model="newGroupDescription"
+              class="arkime-input-control"
+              id="newGroupDescription"
+              :placeholder="$t('parliament.groupDescriptionPlaceholder')" />
           </div>
-        </div>
-        <hr>
-      </div>
+        </v-col>
+      </v-row>
+      <v-divider class="my-3" />
     </div> <!-- /new group form -->
 
     <!-- no results for searchTerm filter -->
     <div
       v-if="searchTerm && !numFilteredClusters && parliament.groups && parliament.groups.length"
       class="info-area vertical-center">
-      <div class="text-muted">
-        <span class="fa fa-3x fa-folder-open text-muted-more" />
+      <div class="text-medium-emphasis">
+        <v-icon
+          icon="mdi-folder-open"
+          size="x-large"
+          class="text-muted-more" />
         {{ $t('parliament.noClustersMatch') }}
       </div>
     </div> <!-- /no results for searchTerm filter -->
@@ -152,8 +173,11 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="parliament.groups && !parliament.groups.length && !showNewGroupForm"
       class="info-area text-center vertical-center">
-      <div class="text-muted mt-5">
-        <span class="fa fa-3x fa-folder-open text-muted-more" />
+      <div class="text-medium-emphasis mt-5">
+        <v-icon
+          icon="mdi-folder-open"
+          size="x-large"
+          class="text-muted-more" />
         {{ $t('parliament.noClusters') }}
         <a
           v-if="isAdmin && editMode"
@@ -162,10 +186,14 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t('parliament.createGroup') }}
         </a>
         <template v-else-if="isAdmin">
-          <p class="d-flex justify-content-between align-items-center mb-0 mt-3">
-            <span class="fa fa-lock text-muted-more me-3" />
+          <p class="d-flex justify-space-between align-center mb-0 mt-3">
+            <v-icon
+              icon="mdi-lock"
+              class="text-muted-more me-3" />
             {{ $t('parliament.needEditMode') }}
-            <span class="fa fa-lock text-muted-more ms-3" />
+            <v-icon
+              icon="mdi-lock"
+              class="text-muted-more ms-3" />
           </p>
           <a
             @click="toggleEditMode"
@@ -185,190 +213,256 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-4">
         <!-- group title/description -->
         <div
-          class="row group"
+          class="group"
           v-if="!group.clusters || (group.clusters.length > 0 || (!group.clusters.length && !searchTerm))">
-          <div class="col-md-12">
-            <h5 class="mb-1 pb-1">
-              <span
-                v-if="isAdmin && !searchTerm && editMode"
-                class="group-handle fa fa-th" />
-              <!-- group action buttons -->
-              <span v-if="isAdmin && editMode">
-                <a
-                  v-if="groupAddingCluster !== group.id && groupBeingEdited !== group.id"
-                  @click="displayNewClusterForm(group)"
-                  class="btn btn-sm btn-outline-info pull-right cursor-pointer mb-1">
-                  <span class="fa fa-plus-circle" />&nbsp;
-                  {{ $t('parliament.newCluster') }}
-                </a>
-                <a
-                  v-if="groupAddingCluster === group.id"
-                  @click="createNewCluster(group)"
-                  class="btn btn-sm btn-outline-success cursor-pointer pull-right mb-1">
-                  <span class="fa fa-plus-circle" />&nbsp;
-                  {{ $t('common.create') }}
-                </a>
-                <a
-                  v-if="groupBeingEdited === group.id"
-                  @click="editGroup(group)"
-                  class="btn btn-sm btn-outline-success pull-right cursor-pointer me-1 mb-1">
-                  <span class="fa fa-save" />&nbsp;
-                  {{ $t('common.save') }}
-                </a>
-                <a
-                  v-if="groupAddingCluster === group.id || groupBeingEdited === group.id"
-                  @click="cancelUpdateGroup(group)"
-                  class="btn btn-sm btn-outline-warning cursor-pointer pull-right me-1 mb-1">
-                  <span class="fa fa-ban" />&nbsp;
-                  {{ $t('common.cancel') }}
-                </a>
-                <a
-                  v-if="groupBeingEdited !== group.id && groupAddingCluster !== group.id"
-                  @click="displayEditGroupForm(group)"
-                  class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1 mb-1">
-                  <span class="fa fa-pencil" />&nbsp;
-                  {{ $t('parliament.editGroup') }}
-                </a>
-              </span> <!-- /group action buttons -->
-              {{ group.title }}&nbsp;
+          <div class="d-flex align-center mb-1 pb-1 ga-2 flex-wrap">
+            <h4 class="d-flex align-center mb-0 flex-grow-1">
+              <v-icon
+                icon="mdi-view-grid"
+                class="group-handle me-2"
+                v-if="isAdmin && !searchTerm && editMode" />
+              {{ group.title }}
               <template v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode">
-                <a
-                  @click="deleteGroup(group)"
-                  :id="`deleteGroupTooltip-${group.id}`"
-                  class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
-                  <span class="fa fa-trash-o" />
-                </a>
-                <BTooltip
-                  :target="`deleteGroupTooltip-${group.id}`"
-                  placement="top">
-                  {{ $t('parliament.deleteGroupTip') }}
-                </BTooltip>
+                <v-btn
+                  variant="outlined"
+                  color="error"
+                  class="ms-2"
+                  @click="deleteGroup(group)">
+                  <v-icon icon="mdi-trash-can-outline" />
+                  <v-tooltip
+                    activator="parent"
+                    location="top">
+                    {{ $t('parliament.deleteGroupTip') }}
+                  </v-tooltip>
+                </v-btn>
               </template>
-            </h5>
-            <p class="mb-2">
-              {{ group.description }}
-            </p>
+            </h4>
+            <!-- group action buttons -->
+            <div
+              v-if="isAdmin && editMode"
+              class="d-flex align-center ga-1">
+              <v-btn
+                v-if="groupBeingEdited !== group.id && groupAddingCluster !== group.id"
+                variant="outlined"
+                color="warning"
+                @click="displayEditGroupForm(group)">
+                <v-icon
+                  icon="mdi-pencil"
+                  class="me-1" />
+                {{ $t('parliament.editGroup') }}
+              </v-btn>
+              <v-btn
+                v-if="groupBeingEdited === group.id"
+                variant="outlined"
+                color="success"
+                @click="editGroup(group)">
+                <v-icon
+                  icon="mdi-content-save"
+                  class="me-1" />
+                {{ $t('common.save') }}
+              </v-btn>
+              <v-btn
+                v-if="groupAddingCluster === group.id"
+                variant="outlined"
+                color="success"
+                @click="createNewCluster(group)">
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="me-1" />
+                {{ $t('common.create') }}
+              </v-btn>
+              <v-btn
+                v-if="groupAddingCluster === group.id || groupBeingEdited === group.id"
+                variant="outlined"
+                color="warning"
+                @click="cancelUpdateGroup(group)">
+                <v-icon
+                  icon="mdi-cancel"
+                  class="me-1" />
+                {{ $t('common.cancel') }}
+              </v-btn>
+              <v-btn
+                v-if="groupAddingCluster !== group.id && groupBeingEdited !== group.id"
+                variant="outlined"
+                color="info"
+                @click="displayNewClusterForm(group)">
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="me-1" />
+                {{ $t('parliament.newCluster') }}
+              </v-btn>
+            </div> <!-- /group action buttons -->
           </div>
+          <p class="mb-2">
+            {{ group.description }}
+          </p>
         </div> <!-- /group title/description -->
 
         <!-- edit group form -->
         <div
           v-if="isAdmin && groupBeingEdited === group.id && editMode"
-          class="row">
-          <div class="col-md-12">
-            <form>
-              <div class="form-group row mb-1">
-                <label
-                  for="editGroupTitle"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.groupTitle') }}<sup class="text-danger">*</sup>
-                </label>
-                <div class="col-sm-10">
+          class="compact-form">
+          <form>
+            <v-row class="mb-1">
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="editGroupTitle"
+                class="form-side-label">
+                {{ $t('parliament.groupTitle') }}<sup class="text-error">*</sup>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <input
                     type="text"
                     v-model="group.newTitle"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="editGroupTitle"
                     :placeholder="$t('parliament.groupTitlePlaceholder')"
                     v-focus="focusGroupInput">
                 </div>
-              </div>
-              <div class="form-group row mb-1">
-                <label
-                  for="editGroupDescription"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.groupDescription') }}
-                </label>
-                <div class="col-sm-10">
+              </v-col>
+            </v-row>
+            <v-row class="mb-1">
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="editGroupDescription"
+                class="form-side-label">
+                {{ $t('parliament.groupDescription') }}
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <textarea
                     rows="3"
                     v-model="group.newDescription"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="editGroupDescription"
                     :placeholder="$t('parliament.groupDescriptionPlaceholder')" />
                 </div>
-              </div>
-            </form>
-            <hr>
-          </div>
+              </v-col>
+            </v-row>
+          </form>
+          <v-divider class="my-3" />
         </div> <!-- /edit group form -->
 
         <!-- create cluster form -->
-        <div v-if="isAdmin && groupAddingCluster === group.id && editMode">
-          <div class="col-md-12">
-            <hr>
-            <form @keyup.enter="createNewCluster(group)">
-              <div class="form-group row mb-1">
-                <label
-                  for="newClusterTitle"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.clusterTitle') }}<sup class="text-danger">*</sup>
-                </label>
-                <div class="col-sm-10">
+        <div
+          v-if="isAdmin && groupAddingCluster === group.id && editMode"
+          class="compact-form">
+          <v-divider class="my-3" />
+          <form @keyup.enter="createNewCluster(group)">
+            <v-row class="mb-1">
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="newClusterTitle"
+                class="form-side-label">
+                {{ $t('parliament.clusterTitle') }}<sup class="text-error">*</sup>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <input
                     type="text"
                     v-model="group.newClusterTitle"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="newClusterTitle"
                     :placeholder="$t('parliament.clusterTitlePlaceholder')"
                     v-focus="focusClusterInput">
                 </div>
-              </div>
-              <div class="form-group row mb-1">
-                <label
-                  for="newClusterDescription"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.clusterDescription') }}
-                </label>
-                <div class="col-sm-10">
+              </v-col>
+            </v-row>
+            <v-row class="mb-1">
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="newClusterDescription"
+                class="form-side-label">
+                {{ $t('parliament.clusterDescription') }}
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <textarea
                     rows="3"
                     v-model="group.newClusterDescription"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="newClusterDescription"
                     :placeholder="$t('parliament.clusterDescriptionPlaceholder')" />
                 </div>
-              </div>
-              <div class="form-group row mb-1">
-                <label
-                  for="newClusterUrl"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.clusterUrl') }}<sup class="text-danger">*</sup>
-                </label>
-                <div class="col-sm-10">
+              </v-col>
+            </v-row>
+            <v-row class="mb-1">
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="newClusterUrl"
+                class="form-side-label">
+                {{ $t('parliament.clusterUrl') }}<sup class="text-error">*</sup>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <input
                     type="text"
                     v-model="group.newClusterUrl"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="newClusterUrl"
                     :placeholder="$t('parliament.clusterUrlPlaceholder')">
                 </div>
-              </div>
-              <div class="form-group row mb-1">
-                <label
-                  for="newClusterLocalUrl"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.clusterLocalUrl') }}
-                </label>
-                <div class="col-sm-10">
+              </v-col>
+            </v-row>
+            <v-row class="mb-1">
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="newClusterLocalUrl"
+                class="form-side-label">
+                {{ $t('parliament.clusterLocalUrl') }}
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <input
                     type="text"
                     v-model="group.newClusterLocalUrl"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="newClusterLocalUrl"
                     :placeholder="$t('parliament.clusterLocalUrlPlaceholder')">
                 </div>
-              </div>
-              <div class="row">
-                <label
-                  for="newClusterType"
-                  class="col-sm-2 col-form-label">
-                  {{ $t('parliament.clusterType') }}<sup class="text-danger">*</sup>
-                </label>
-                <div class="col-sm-10">
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col
+                cols="12"
+                sm="2"
+                tag="label"
+                for="newClusterType"
+                class="form-side-label">
+                {{ $t('parliament.clusterType') }}<sup class="text-error">*</sup>
+              </v-col>
+              <v-col
+                cols="12"
+                sm="10">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <select
                     v-model="group.newClusterType"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="newClusterType">
                     <option value="undefined">
                       {{ $t('parliament.clusterType-normal') }}
@@ -384,10 +478,10 @@ SPDX-License-Identifier: Apache-2.0
                     </option>
                   </select>
                 </div>
-              </div>
-            </form>
-            <hr>
-          </div>
+              </v-col>
+            </v-row>
+          </form>
+          <v-divider class="my-3" />
         </div> <!-- /create cluster form -->
 
         <!-- clusters -->
@@ -395,76 +489,86 @@ SPDX-License-Identifier: Apache-2.0
           v-if="group.clusters && group.clusters.length"
           :id="group.id"
           ref="draggableClusters"
-          class="cluster-group d-flex flex-wrap row mb-4">
+          class="cluster-group d-flex flex-wrap mb-4">
           <li
             v-for="cluster in group.clusters"
             :key="cluster.id"
             :id="`cluster-${cluster.id}`"
-            class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
-            <div
-              class="card"
-              :class="{'cluster-highlight': highlightedClusterId === cluster.id}">
-              <div class="card-body">
-                <!-- cluster title -->
-                <a
+            class="cluster mb-1">
+            <v-card
+              :class="{'cluster-highlight': highlightedClusterId === cluster.id}"
+              variant="elevated">
+              <v-card-text class="pa-2">
+                <!-- cluster ES status chip -->
+                <v-chip
                   v-if="cluster.type !== 'disabled' && stats[cluster.id]"
-                  class="badge badge-pill bg-secondary cursor-pointer pull-right no-decoration"
                   :href="`${cluster.url}/stats?statsTab=2`"
-                  :class="{'bg-success':stats[cluster.id].status === 'green','bg-warning':stats[cluster.id].status === 'yellow','bg-danger':stats[cluster.id].status === 'red'}"
-                  :id="`clusterStatsTooltip-${cluster.id}`">
+                  :color="clusterStatusColor(cluster.id)"
+                  size="small"
+                  variant="flat"
+                  class="float-right cluster-status-chip">
                   <span v-if="stats[cluster.id].status">
                     {{ stats[cluster.id].status }}
                   </span>
-                  <span
+                  <v-icon
                     v-if="stats[cluster.id].healthError"
-                    class="fa fa-exclamation-triangle" />
+                    icon="mdi-alert"
+                    size="small" />
                   <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
                     ????
                   </span>
-                  <BTooltip
-                    :target="`clusterStatsTooltip-${cluster.id}`"
-                    placement="top">
+                  <v-tooltip
+                    activator="parent"
+                    location="top">
                     <span>{{ $t('parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
                     <span v-if="stats[cluster.id].esVersion">
                       <br>{{ $t('parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
                     </span>
-                  </BTooltip>
-                </a>
-                <h6>
+                  </v-tooltip>
+                </v-chip>
+                <h5>
                   <span
                     v-if="isAdmin && !searchTerm && editMode"
                     class="cluster-handle">
-                    <span class="fa fa-th" />
+                    <v-icon
+                      icon="mdi-view-grid"
+                      size="x-small" />
                   </span>
                   <template v-if="cluster.type === 'multiviewer'">
-                    <span
-                      :id="`multiviewer-${cluster.id}`"
-                      class="fa fa-sitemap text-muted cursor-help me-2" />
-                    <BTooltip
-                      :target="`multiviewer-${cluster.id}`"
-                      placement="top">
-                      {{ $t('parliament.clusterType-multiviewerTip') }}
-                    </BTooltip>
+                    <v-icon
+                      icon="mdi-sitemap"
+                      size="x-small"
+                      class="text-medium-emphasis cursor-help me-2">
+                      <v-tooltip
+                        activator="parent"
+                        location="top">
+                        {{ $t('parliament.clusterType-multiviewerTip') }}
+                      </v-tooltip>
+                    </v-icon>
                   </template>
                   <template v-if="cluster.type === 'disabled'">
-                    <span
-                      :id="`disabled-${cluster.id}`"
-                      class="text-muted fa fa-eye-slash cursor-help me-2" />
-                    <BTooltip
-                      :target="`disabled-${cluster.id}`"
-                      placement="top">
-                      {{ $t('parliament.clusterType-disabledTip') }}
-                    </BTooltip>
+                    <v-icon
+                      icon="mdi-eye-off"
+                      size="x-small"
+                      class="text-medium-emphasis cursor-help me-2">
+                      <v-tooltip
+                        activator="parent"
+                        location="top">
+                        {{ $t('parliament.clusterType-disabledTip') }}
+                      </v-tooltip>
+                    </v-icon>
                   </template>
                   <template v-if="cluster.type === 'noAlerts'">
-                    <span
-                      :id="`silent-${cluster.id}`"
-                      class="text-muted cursor-help fa fa-bell-slash me-2" />
-                    <BTooltip
-                      :target="`silent-${cluster.id}`"
-                      placement="top">
-                      {{ $t('parliament.clusterType-noAlertsTip') }}
-                    </BTooltip>
+                    <v-icon
+                      icon="mdi-bell-off"
+                      size="x-small"
+                      class="text-medium-emphasis cursor-help me-2">
+                      <v-tooltip
+                        activator="parent"
+                        location="top">
+                        {{ $t('parliament.clusterType-noAlertsTip') }}
+                      </v-tooltip>
+                    </v-icon>
                   </template>
                   <a
                     v-if="cluster.type !== 'disabled'"
@@ -477,157 +581,199 @@ SPDX-License-Identifier: Apache-2.0
                   </span>
                   <a
                     :href="`${cluster.url}/stats?statsTab=0`"
-                    class="no-decoration ms-2"
-                    :id="`clusterStatsLink-${cluster.id}`">
-                    <span class="fa fa-bar-chart" />
+                    class="no-decoration ms-2">
+                    <v-icon
+                      icon="mdi-chart-bar"
+                      size="x-small" />
+                    <v-tooltip
+                      activator="parent"
+                      location="top">
+                      {{ $t('parliament.statsLinkTip') }}
+                    </v-tooltip>
                   </a>
-                  <BTooltip
-                    :target="`clusterStatsLink-${cluster.id}`"
-                    placement="top">
-                    {{ $t('parliament.statsLinkTip') }}
-                  </BTooltip>
-                </h6> <!-- /cluster title -->
+                </h5> <!-- /cluster title -->
                 <!-- cluster description -->
                 <p
-                  class="text-muted small mb-2"
+                  class="text-medium-emphasis text-body-2 mb-2"
                   v-if="cluster.description">
                   {{ cluster.description }}
                 </p> <!-- /cluster description -->
 
                 <!-- cluster stats -->
                 <template v-if="stats[cluster.id] && (!stats[cluster.id].statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
+                  <!-- view mode: chips per stat -->
                   <div
-                    class="d-flex flex-wrap mt-3"
-                    :class="{'align-items-stretch': cluster.id !== clusterBeingEdited, 'flex-column': cluster.id === clusterBeingEdited}">
-                    <div
-                      v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
+                    v-if="cluster.id !== clusterBeingEdited"
+                    class="d-flex flex-wrap mt-3 ga-1">
+                    <v-chip
+                      v-if="!cluster.hideDeltaBPS"
                       :id="'deltaBPS-' + cluster.id"
-                      class="flex-fill me-1 ms-1"
-                      :class="{'badge bg-primary mb-1': cluster.id !== clusterBeingEdited}">
-                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input
-                          v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                          class="me-1"
-                          type="checkbox"
-                          :checked="!cluster.hideDeltaBPS"
-                          @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS">
-                        <strong class="d-inline-block pe-1">
-                          {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
-                        </strong>
-                        {{ $t('parliament.bitsPerSec') }}
-                      </label>
-                      <BTooltip
-                        :target="'deltaBPS-' + cluster.id"
-                        :title="$t('parliament.bitsPerSecTip', {count: humanReadableBits(stats[cluster.id].deltaBPS)})" />
-                    </div>
+                      color="primary"
+                      variant="flat"
+                      size="small"
+                      label
+                      class="flex-fill cluster-stat-chip">
+                      <strong class="me-1">
+                        {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
+                      </strong>
+                      {{ $t('parliament.bitsPerSec') }}
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.bitsPerSecTip', {count: humanReadableBits(stats[cluster.id].deltaBPS)}) }}
+                      </v-tooltip>
+                    </v-chip>
 
-                    <div
-                      v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
+                    <v-chip
+                      v-if="!cluster.hideDeltaTDPS"
                       :id="'deltaTDPS-' + cluster.id"
-                      class="flex-fill me-1 ms-1"
-                      :class="getDeltaTDPSClass(cluster.id)">
-                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input
-                          v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                          class="me-1"
-                          type="checkbox"
-                          :checked="!cluster.hideDeltaTDPS"
-                          @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS">
-                        <strong class="d-inline-block pe-1">
-                          {{ humanReadableNumber(stats[cluster.id].deltaTDPS) }}
-                        </strong>
-                        {{ $t('parliament.dropsPerSec') }}
-                      </label>
-                      <BTooltip
-                        :target="'deltaTDPS-' + cluster.id"
-                        :title="$t('parliament.bitsPerSecTip', {count: commaString(stats[cluster.id].deltaTDPS)})" />
-                    </div>
+                      :color="(stats[cluster.id]?.deltaTDPS || 0) > 0 ? 'error' : 'success'"
+                      variant="flat"
+                      size="small"
+                      label
+                      class="flex-fill cluster-stat-chip">
+                      <strong class="me-1">
+                        {{ humanReadableNumber(stats[cluster.id].deltaTDPS) }}
+                      </strong>
+                      {{ $t('parliament.dropsPerSec') }}
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.bitsPerSecTip', {count: commaString(stats[cluster.id].deltaTDPS)}) }}
+                      </v-tooltip>
+                    </v-chip>
 
-                    <div
-                      v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
+                    <v-chip
+                      v-if="!cluster.hideMonitoring"
                       :id="'monitoring-' + cluster.id"
-                      class="flex-fill me-1 ms-1"
-                      :class="getMonitoringClass(cluster.id)">
-                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input
-                          v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                          class="me-1"
-                          type="checkbox"
-                          :checked="!cluster.hideMonitoring"
-                          @change="cluster.hideMonitoring = !cluster.hideMonitoring">
-                        <strong class="d-inline-block pe-1">
-                          {{ humanReadableNumber(stats[cluster.id].monitoring) }}
-                        </strong>
-                        {{ $t('common.sessions') }}
-                      </label>
-                      <BTooltip
-                        :target="'monitoring-' + cluster.id"
-                        :title="$t('parliament.sessionsTip', {count: commaString(stats[cluster.id].monitoring)})" />
-                    </div>
+                      :color="(stats[cluster.id]?.monitoring || 0) > 0 ? 'info' : 'warning'"
+                      variant="flat"
+                      size="small"
+                      label
+                      class="flex-fill cluster-stat-chip">
+                      <strong class="me-1">
+                        {{ humanReadableNumber(stats[cluster.id].monitoring) }}
+                      </strong>
+                      {{ $t('common.sessions') }}
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.sessionsTip', {count: commaString(stats[cluster.id].monitoring)}) }}
+                      </v-tooltip>
+                    </v-chip>
 
-                    <div
-                      v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
+                    <v-chip
+                      v-if="!cluster.hideArkimeNodes"
                       :id="'arkimeNodes-' + cluster.id"
-                      class="flex-fill me-1 ms-1"
-                      :class="{'badge bg-secondary mb-1': cluster.id !== clusterBeingEdited}">
-                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input
-                          v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                          class="me-1"
-                          type="checkbox"
-                          :checked="!cluster.hideArkimeNodes"
-                          @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes">
-                        <strong class="d-inline-block pe-1">
-                          {{ commaString(stats[cluster.id].arkimeNodes) }}
-                        </strong>
-                        {{ $t('parliament.captureNodes') }}
-                      </label>
-                      <BTooltip
-                        :target="'arkimeNodes-' + cluster.id"
-                        :title="$t('parliament.captureNodesTip', {count: commaString(stats[cluster.id].arkimeNodes)})" />
-                    </div>
+                      color="neutral-light"
+                      variant="flat"
+                      size="small"
+                      label
+                      class="flex-fill cluster-stat-chip">
+                      <strong class="me-1">
+                        {{ commaString(stats[cluster.id].arkimeNodes) }}
+                      </strong>
+                      {{ $t('parliament.captureNodes') }}
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.captureNodesTip', {count: commaString(stats[cluster.id].arkimeNodes)}) }}
+                      </v-tooltip>
+                    </v-chip>
 
-                    <div
-                      v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes || !cluster.hideTotalNodes"
+                    <v-chip
+                      v-if="!cluster.hideDataNodes || !cluster.hideTotalNodes"
                       :id="'dataNodes-' + cluster.id"
-                      class="flex-fill me-1 ms-1"
-                      :class="{'badge bg-dark mb-1': cluster.id !== clusterBeingEdited}">
-                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                        <input
-                          v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                          class="me-1"
-                          type="checkbox"
-                          :checked="!cluster.hideDataNodes"
-                          @change="cluster.hideDataNodes = !cluster.hideDataNodes">
-                        <strong
-                          class="d-inline-block pe-1"
-                          v-if="!cluster.hideDataNodes || cluster.id === clusterBeingEdited">
-                          {{ commaString(stats[cluster.id].dataNodes) }}
-                        </strong>
-                        <span v-if="cluster.id === clusterBeingEdited || (!cluster.hideDataNodes && !cluster.hideTotalNodes)">/</span>
-                        <input
-                          v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                          class="ms-1 me-1"
-                          type="checkbox"
-                          :checked="!cluster.hideTotalNodes"
-                          @change="cluster.hideTotalNodes = !cluster.hideTotalNodes">
-                        <strong
-                          class="d-inline-block ps-1"
-                          v-if="!cluster.hideTotalNodes || cluster.id === clusterBeingEdited">
-                          {{ commaString(stats[cluster.id].totalNodes) }}
-                        </strong>
-                      </label>
-                      <BTooltip
-                        :target="'dataNodes-' + cluster.id"
-                        :title="getDataNodesTooltip(cluster.id)" />
+                      color="neutral"
+                      variant="flat"
+                      size="small"
+                      label
+                      class="flex-fill cluster-stat-chip">
+                      <strong
+                        v-if="!cluster.hideDataNodes"
+                        class="me-1">
+                        {{ commaString(stats[cluster.id].dataNodes) }}
+                      </strong>
+                      <span
+                        v-if="!cluster.hideDataNodes && !cluster.hideTotalNodes"
+                        class="me-1">/</span>
+                      <strong
+                        v-if="!cluster.hideTotalNodes"
+                        class="me-1">
+                        {{ commaString(stats[cluster.id].totalNodes) }}
+                      </strong>
                       {{ $t('parliament.dbNodes') }}
-                    </div>
+                      <v-tooltip activator="parent">
+                        {{ getDataNodesTooltip(cluster.id) }}
+                      </v-tooltip>
+                    </v-chip>
+                  </div>
+                  <!-- edit mode: checkbox + label rows (no pill background) -->
+                  <div
+                    v-else
+                    class="d-flex flex-column mt-3 ga-1 cluster-stats-edit">
+                    <label>
+                      <input
+                        class="arkime-check-input me-2"
+                        type="checkbox"
+                        :checked="!cluster.hideDeltaBPS"
+                        @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS">
+                      <strong class="me-1">
+                        {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
+                      </strong>
+                      {{ $t('parliament.bitsPerSec') }}
+                    </label>
+                    <label>
+                      <input
+                        class="arkime-check-input me-2"
+                        type="checkbox"
+                        :checked="!cluster.hideDeltaTDPS"
+                        @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS">
+                      <strong class="me-1">
+                        {{ humanReadableNumber(stats[cluster.id].deltaTDPS) }}
+                      </strong>
+                      {{ $t('parliament.dropsPerSec') }}
+                    </label>
+                    <label>
+                      <input
+                        class="arkime-check-input me-2"
+                        type="checkbox"
+                        :checked="!cluster.hideMonitoring"
+                        @change="cluster.hideMonitoring = !cluster.hideMonitoring">
+                      <strong class="me-1">
+                        {{ humanReadableNumber(stats[cluster.id].monitoring) }}
+                      </strong>
+                      {{ $t('common.sessions') }}
+                    </label>
+                    <label>
+                      <input
+                        class="arkime-check-input me-2"
+                        type="checkbox"
+                        :checked="!cluster.hideArkimeNodes"
+                        @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes">
+                      <strong class="me-1">
+                        {{ commaString(stats[cluster.id].arkimeNodes) }}
+                      </strong>
+                      {{ $t('parliament.captureNodes') }}
+                    </label>
+                    <label class="d-flex align-center flex-wrap">
+                      <input
+                        class="arkime-check-input me-2"
+                        type="checkbox"
+                        :checked="!cluster.hideDataNodes"
+                        @change="cluster.hideDataNodes = !cluster.hideDataNodes">
+                      <strong class="me-1">
+                        {{ commaString(stats[cluster.id].dataNodes) }}
+                      </strong>
+                      <span class="me-1">/</span>
+                      <input
+                        class="arkime-check-input me-2"
+                        type="checkbox"
+                        :checked="!cluster.hideTotalNodes"
+                        @change="cluster.hideTotalNodes = !cluster.hideTotalNodes">
+                      <strong class="me-1">
+                        {{ commaString(stats[cluster.id].totalNodes) }}
+                      </strong>
+                      {{ $t('parliament.dbNodes') }}
+                    </label>
                   </div>
                 </template>
                 <!-- /cluster stats -->
 
                 <!-- cluster issues -->
-                <small v-if="!hideAllIssues && issues[cluster.id]">
+                <div v-if="!hideAllIssues && issues[cluster.id]">
                   <template v-if="showMoreIssuesFor.indexOf(cluster.id) > -1">
                     <div
                       v-for="(issue, index) in issues[cluster.id]"
@@ -667,65 +813,75 @@ SPDX-License-Identifier: Apache-2.0
                       {{ $t('parliament.showMoreIssues') }}
                     </a>
                   </template>
-                </small> <!-- /cluster issues -->
+                </div> <!-- /cluster issues -->
                 <!-- edit cluster form -->
                 <div
                   v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                  class="small">
-                  <hr class="mt-2">
-                  <form class="edit-cluster">
-                    <div class="form-group">
-                      <label for="newClusterTitle">
-                        {{ $t('parliament.clusterTitle') }}<sup class="text-danger">*</sup>
-                      </label>
+                  class="edit-cluster text-body-2">
+                  <v-divider class="mt-2 mb-2" />
+                  <form>
+                    <label
+                      for="newClusterTitle"
+                      class="d-block">
+                      {{ $t('parliament.clusterTitle') }}<sup class="text-error">*</sup>
+                    </label>
+                    <div class="arkime-input-group arkime-input-group--fluid mb-1">
                       <input
                         type="text"
                         v-model="cluster.newTitle"
-                        class="form-control form-control-sm"
+                        class="arkime-input-control"
                         id="newClusterTitle"
                         :placeholder="$t('parliament.clusterTitlePlaceholder')"
                         v-focus="focusClusterInput">
                     </div>
-                    <div class="form-group">
-                      <label for="newClusterDescription">
-                        {{ $t('parliament.clusterDescription') }}
-                      </label>
+                    <label
+                      for="newClusterDescription"
+                      class="d-block">
+                      {{ $t('parliament.clusterDescription') }}
+                    </label>
+                    <div class="arkime-input-group arkime-input-group--fluid mb-1">
                       <textarea
                         rows="3"
                         v-model="cluster.newDescription"
-                        class="form-control form-control-sm"
+                        class="arkime-input-control"
                         id="newClusterDescription"
                         :placeholder="$t('parliament.clusterDescriptionPlaceholder')" />
                     </div>
-                    <div class="form-group">
-                      <label for="newClusterUrl">
-                        {{ $t('parliament.clusterUrl') }}<sup class="text-danger">*</sup>
-                      </label>
+                    <label
+                      for="newClusterUrl"
+                      class="d-block">
+                      {{ $t('parliament.clusterUrl') }}<sup class="text-error">*</sup>
+                    </label>
+                    <div class="arkime-input-group arkime-input-group--fluid mb-1">
                       <input
                         type="text"
                         v-model="cluster.newUrl"
-                        class="form-control form-control-sm"
+                        class="arkime-input-control"
                         id="newClusterUrl"
                         :placeholder="$t('parliament.clusterUrlPlaceholder')">
                     </div>
-                    <div class="form-group">
-                      <label for="newClusterLocalUrl">
-                        {{ $t('parliament.clusterLocalUrl') }}
-                      </label>
+                    <label
+                      for="newClusterLocalUrl"
+                      class="d-block">
+                      {{ $t('parliament.clusterLocalUrl') }}
+                    </label>
+                    <div class="arkime-input-group arkime-input-group--fluid mb-1">
                       <input
                         type="text"
                         v-model="cluster.newLocalUrl"
-                        class="form-control form-control-sm"
+                        class="arkime-input-control"
                         id="newClusterLocalUrl"
                         :placeholder="$t('parliament.clusterLocalUrlPlaceholder')">
                     </div>
-                    <div class="form-group">
-                      <label for="newClusterType">
-                        {{ $t('parliament.clusterType') }}<sup class="text-danger">*</sup>
-                      </label>
+                    <label
+                      for="newClusterType"
+                      class="d-block">
+                      {{ $t('parliament.clusterType') }}<sup class="text-error">*</sup>
+                    </label>
+                    <div class="arkime-input-group arkime-input-group--fluid mb-1">
                       <select
                         v-model="cluster.newType"
-                        class="form-control form-control-sm"
+                        class="arkime-input-control"
                         id="newClusterType">
                         <option value="undefined">
                           {{ $t('parliament.clusterType-normal') }}
@@ -743,51 +899,63 @@ SPDX-License-Identifier: Apache-2.0
                     </div>
                   </form>
                 </div> <!-- /edit cluster form -->
-              </div>
+              </v-card-text>
               <!-- edit cluster buttons -->
-              <div
+              <v-card-actions
                 v-if="isUser && ((isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited) || (isAdmin && editMode))"
-                class="card-footer small">
-                <a
+                class="pa-2 ga-1">
+                <v-btn
+                  v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
+                  size="small"
+                  variant="outlined"
+                  color="warning"
+                  @click="displayEditClusterForm(cluster)">
+                  <v-icon icon="mdi-pencil" />
+                </v-btn>
+                <template v-if="cluster.id === clusterBeingEdited && editMode && isAdmin">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    @click="deleteCluster(group, cluster)">
+                    <v-icon icon="mdi-trash-can-outline" />
+                  </v-btn>
+                </template>
+                <v-spacer />
+                <template v-if="cluster.id === clusterBeingEdited && editMode && isAdmin">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    @click="cancelEditCluster(cluster)">
+                    <v-icon icon="mdi-cancel" />
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    color="success"
+                    @click="editCluster(group, cluster)">
+                    <v-icon
+                      icon="mdi-content-save"
+                      class="me-1" />
+                    {{ $t('common.save') }}
+                  </v-btn>
+                </template>
+                <v-btn
                   v-if="!hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
-                  @click="acknowledgeAllIssues(cluster)"
-                  :id="`ackAllIssuesTooltip-${cluster.id}`"
-                  class="btn btn-sm btn-outline-success pull-right cursor-pointer">
-                  <span class="fa fa-check" />
-                </a>
-                <BTooltip
-                  :target="`ackAllIssuesTooltip-${cluster.id}`"
-                  placement="top">
-                  {{ $t('parliament.ackAllIssuesTip') }}
-                </BTooltip>
-                <span v-if="(isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
-                  <a
-                    v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
-                    class="btn btn-sm btn-outline-warning cursor-pointer"
-                    @click="displayEditClusterForm(cluster)">
-                    <span class="fa fa-pencil" />
-                  </a>
-                  <span v-show="cluster.id === clusterBeingEdited && editMode && isAdmin">
-                    <a
-                      class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                      @click="editCluster(group, cluster)">
-                      <span class="fa fa-save" />&nbsp;
-                      {{ $t('common.save') }}
-                    </a>
-                    <a
-                      class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1"
-                      @click="cancelEditCluster(cluster)">
-                      <span class="fa fa-ban" />
-                    </a>
-                    <a
-                      class="btn btn-sm btn-outline-danger cursor-pointer me-1"
-                      @click="deleteCluster(group, cluster)">
-                      <span class="fa fa-trash-o" />
-                    </a>
-                  </span>
-                </span>
-              </div> <!-- /edit cluster buttons -->
-            </div>
+                  size="small"
+                  variant="outlined"
+                  color="success"
+                  @click="acknowledgeAllIssues(cluster)">
+                  <v-icon icon="mdi-check" />
+                  <v-tooltip
+                    activator="parent"
+                    location="top">
+                    {{ $t('parliament.ackAllIssuesTip') }}
+                  </v-tooltip>
+                </v-btn>
+              </v-card-actions> <!-- /edit cluster buttons -->
+            </v-card>
           </li>
         </ul> <!-- /clusters -->
 
@@ -805,7 +973,7 @@ SPDX-License-Identifier: Apache-2.0
         </div> <!-- no clusters -->
       </div>
     </div> <!-- /groups -->
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -942,31 +1110,12 @@ export default {
     humanReadableBits,
     humanReadableNumber,
     /* page functions -------------------------------------------------------- */
-    getDeltaTDPSClass (clusterId) {
-      if (clusterId === this.clusterBeingEdited) {
-        return;
-      }
-      const deltaTDPS = this.stats[clusterId]?.deltaTDPS || 0;
-      return [
-        {
-          'badge mb-1': clusterId !== this.clusterBeingEdited,
-          'bg-danger': deltaTDPS > 0,
-          'bg-success': deltaTDPS === 0
-        }
-      ];
-    },
-    getMonitoringClass (clusterId) {
-      if (clusterId === this.clusterBeingEdited) {
-        return;
-      }
-      const monitoring = this.stats[clusterId]?.monitoring || 0;
-      return [
-        {
-          'badge mb-1': clusterId !== this.clusterBeingEdited,
-          'bg-warning': monitoring === 0,
-          'bg-info': monitoring > 0
-        }
-      ];
+    clusterStatusColor (clusterId) {
+      const esStatus = this.stats[clusterId]?.status;
+      if (esStatus === 'green') return 'success';
+      if (esStatus === 'yellow') return 'warning';
+      if (esStatus === 'red') return 'error';
+      return 'neutral-light';
     },
     getDataNodesTooltip (clusterId) {
       const dNodes = this.stats[clusterId]?.dataNodes;
@@ -1181,13 +1330,31 @@ export default {
         this.error = 'A cluster must have a url';
         return;
       }
+      if (!group.newClusterUrl.startsWith('http') && !group.newClusterUrl.startsWith('/')) {
+        this.error = 'A cluster URL must start with http:// or /';
+        return;
+      }
+      if (group.newClusterLocalUrl &&
+          !group.newClusterLocalUrl.startsWith('http') &&
+          !group.newClusterLocalUrl.startsWith('/')) {
+        this.error = 'A cluster local URL must start with http:// or /';
+        return;
+      }
+
+      // The Normal type uses option value="undefined" so the v-model
+      // pulls the literal string "undefined". Drop that so the cluster
+      // is stored without a type field (matches the storage shape the
+      // server expects for a normal cluster).
+      const type = group.newClusterType && group.newClusterType !== 'undefined'
+        ? group.newClusterType
+        : undefined;
 
       const newCluster = {
         title: group.newClusterTitle,
         description: group.newClusterDescription,
         url: group.newClusterUrl,
         localUrl: group.newClusterLocalUrl,
-        type: group.newClusterType
+        type
       };
 
       ParliamentService.createCluster(group.id, newCluster).then((data) => {
@@ -1218,6 +1385,16 @@ export default {
 
       if (!cluster.newUrl) {
         this.error = 'A cluster must have a url';
+        return;
+      }
+      if (!cluster.newUrl.startsWith('http') && !cluster.newUrl.startsWith('/')) {
+        this.error = 'A cluster URL must start with http:// or /';
+        return;
+      }
+      if (cluster.newLocalUrl &&
+          !cluster.newLocalUrl.startsWith('http') &&
+          !cluster.newLocalUrl.startsWith('/')) {
+        this.error = 'A cluster local URL must start with http:// or /';
         return;
       }
 
@@ -1442,10 +1619,34 @@ export default {
 </script>
 
 <style scoped>
-.btn-clear-input {
-  color: #555;
-  background-color: #EEE;
-  border-color: #CCC;
+/* side-by-side form label column -- vertically centered, zero
+   vertical padding so the form rows sit flush. */
+.form-side-label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+/* tight gutter for the create/edit forms. Vuetify's v-row uses
+   `margin: -12px` (shorthand) and v-col uses `padding: 12px`, which
+   shows through even after zeroing top/bottom via row-gap wrap.
+   !important wins over Vuetify's own stylesheet specificity. */
+.compact-form :deep(.v-row) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  row-gap: 0 !important;
+}
+.compact-form :deep(.v-row + .v-row) {
+  margin-top: 2px !important;
+}
+.compact-form :deep(.v-col),
+.compact-form :deep([class*="v-col-"]) {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+.compact-form :deep(.v-row.mb-1) {
+  margin-bottom: 0 !important;
 }
 
 /* drag/drop handle styles */
@@ -1463,7 +1664,7 @@ export default {
   left: -1px;
   width: 28px;
   height: 24px;
-  background: #F8F9FA;
+  background: rgb(var(--v-theme-surface));
   border-radius: 4px 4px 0 0;
   border: 1px solid rgba(0, 0, 0, 0.125);
   border-bottom: none;
@@ -1475,35 +1676,48 @@ export default {
   visibility: visible;
 }
 
-/* cluster styles */
+/* cluster grid -- responsive responsive flex layout that replaces the
+   former bootstrap col-12/sm-6/md-6/lg-4/xl-3/xxl-2 row markup. */
 .cluster-group {
   list-style: none;
   padding: 0;
-  margin-left: 0;
-  margin-right: 0;
+  margin: 0;
+  gap: 16px;
 }
 .cluster-group .cluster {
-  padding-left: 2px;
-  padding-right: 2px;
+  flex: 1 1 100%;
+  min-width: 0;
+  position: relative;
 }
-.cluster-group .card {
-  height:100%;
-  box-shadow: 0 20px 40px -14px rgba(0,0,0,0.25);
+@media (min-width: 600px) {
+  .cluster-group .cluster { flex-basis: calc(50% - 16px); max-width: calc(50% - 16px); }
 }
-.cluster-group .card .card-body {
-  padding: 0.5rem;
+@media (min-width: 960px) {
+  .cluster-group .cluster { flex-basis: calc(33.333% - 16px); max-width: calc(33.333% - 16px); }
 }
-.cluster-group .card .card-footer {
-  padding: 0.2rem 0.5rem;
+@media (min-width: 1280px) {
+  .cluster-group .cluster { flex-basis: calc(25% - 16px); max-width: calc(25% - 16px); }
 }
-.cluster-group .cluster .cluster-stats-row {
-  line-height: 1;
-  margin-right: -2px;
-  margin-left: -2px;
+@media (min-width: 1920px) {
+  .cluster-group .cluster { flex-basis: calc(16.666% - 16px); max-width: calc(16.666% - 16px); }
 }
-.cluster-group .cluster .cluster-stats-row > div {
-  padding-right: 2px;
-  padding-left: 2px;
+.cluster-group .v-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.25);
+}
+/* v-card-text fills available height so the v-card-actions footer
+   anchors to the bottom of every card no matter how short the
+   content is. */
+.cluster-group :deep(.v-card-text) {
+  flex: 1 1 auto;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.cluster-group :deep(.v-card-actions) {
+  flex: 0 0 auto;
+  font-size: 0.875rem;
 }
 .sortable-chosen, .sortable-chosen.sortable-ghost {
   /* https://github.com/RubaXa/Sortable/issues/1276 */
@@ -1511,11 +1725,46 @@ export default {
 }
 
 /* compact form for editing clusters */
-form.edit-cluster label {
-  margin:0;
+.edit-cluster label {
+  margin: 0;
+  font-weight: 500;
 }
-form.edit-cluster .form-group {
-  margin-bottom: .25rem;
+
+/* cluster ES status chip lives at top-right of each card; nudge size to match the old badge */
+.cluster-status-chip { font-size: 0.7rem; }
+
+/* per-cluster stat chips should distribute across the card width.
+   flex: 1 1 auto so each chip is at least as wide as its content, but
+   any extra horizontal space gets shared evenly. flex-wrap on the
+   parent lets them wrap to the next row when the card is narrow. */
+.cluster-stat-chip.v-chip {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+/* edit-mode stats list (checkbox + label rows) */
+.cluster-stats-edit label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* keep the edit-mode toggle compact -- v-switch's default density still
+   ships a fairly tall control. */
+/* edit-mode toggle -- shrink the v-switch chrome but force a contrasting
+   track color so the off state is visible in both themes (Vuetify's
+   default track opacity gets lost in the dark navbar bg). */
+.edit-mode-switch :deep(.v-switch__track) {
+  height: 18px;
+  min-width: 36px;
+  background-color: rgba(var(--v-theme-on-surface), 0.45);
+  opacity: 1;
+}
+.edit-mode-switch :deep(.v-selection-control) { min-height: 24px; }
+.edit-mode-switch :deep(.v-switch__thumb) {
+  background-color: rgb(var(--v-theme-on-primary));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* cluster highlight animation for ES status navigation */

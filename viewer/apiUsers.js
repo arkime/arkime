@@ -8,9 +8,7 @@
 'use strict';
 
 const Config = require('./config.js');
-const fs = require('fs');
 const util = require('util');
-const stylus = require('stylus');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const internals = require('./internals');
@@ -477,79 +475,10 @@ class UserAPIs {
    * @param {Array} fields=["firstPacket","lastPacket","src","source.port","dst","destination.port","network.packets","dbby","node"] - The list of Sessions table columns.
    */
 
-  // --------------------------------------------------------------------------
-  /**
-   * GET - /api/user/css OR /api/user.css
-   *
-   * Retrieves custom user css for the user's custom theme.
-   * @name /user/css
-   * @returns {css} css - The css file that includes user configured styles.
-   */
-  static #validColor = /^#[0-9a-fA-F]{3,8}$/;
-  static #sanitizeColor (color) {
-    return (color && UserAPIs.#validColor.test(color.trim())) ? color.trim() : '#000000';
-  }
-
-  static getUserCSS (req, res) {
-    fs.readFile('./views/user.styl', 'utf8', (err, str) => {
-      function error (msg) {
-        console.log(`ERROR - ${req.method} /api/user/css`, msg);
-        return res.status(404).end();
-      }
-
-      const date = new Date().toUTCString();
-      res.setHeader('Content-Type', 'text/css');
-      res.setHeader('Date', date);
-      res.setHeader('Cache-Control', 'public, max-age=0');
-      res.setHeader('Last-Modified', date);
-
-      if (err) { return error(err); }
-      if (!req.user.settings.theme) { return error('no custom theme defined'); }
-
-      const theme = req.user.settings.theme.split(':');
-
-      if (!theme[1]) { return error('custom theme corrupted'); }
-
-      const style = stylus(str);
-
-      const colors = theme[1].split(',');
-
-      if (!colors) { return error('custom theme corrupted'); }
-
-      const sc = UserAPIs.#sanitizeColor;
-
-      style.define('colorBackground', new stylus.nodes.Literal(sc(colors[0])));
-      style.define('colorForeground', new stylus.nodes.Literal(sc(colors[1])));
-      style.define('colorForegroundAccent', new stylus.nodes.Literal(sc(colors[2])));
-
-      style.define('colorWhite', new stylus.nodes.Literal('#FFFFFF'));
-      style.define('colorBlack', new stylus.nodes.Literal('#333333'));
-      style.define('colorGray', new stylus.nodes.Literal('#CCCCCC'));
-      style.define('colorGrayDark', new stylus.nodes.Literal('#777777'));
-      style.define('colorGrayDarker', new stylus.nodes.Literal('#555555'));
-      style.define('colorGrayLight', new stylus.nodes.Literal('#EEEEEE'));
-      style.define('colorGrayLighter', new stylus.nodes.Literal('#F6F6F6'));
-
-      style.define('colorPrimary', new stylus.nodes.Literal(sc(colors[3])));
-      style.define('colorPrimaryLightest', new stylus.nodes.Literal(sc(colors[4])));
-      style.define('colorSecondary', new stylus.nodes.Literal(sc(colors[5])));
-      style.define('colorSecondaryLightest', new stylus.nodes.Literal(sc(colors[6])));
-      style.define('colorTertiary', new stylus.nodes.Literal(sc(colors[7])));
-      style.define('colorTertiaryLightest', new stylus.nodes.Literal(sc(colors[8])));
-      style.define('colorQuaternary', new stylus.nodes.Literal(sc(colors[9])));
-      style.define('colorQuaternaryLightest', new stylus.nodes.Literal(sc(colors[10])));
-
-      style.define('colorWater', new stylus.nodes.Literal(sc(colors[11])));
-      style.define('colorLand', new stylus.nodes.Literal(sc(colors[12])));
-      style.define('colorSrc', new stylus.nodes.Literal(sc(colors[13])));
-      style.define('colorDst', new stylus.nodes.Literal(sc(colors[14])));
-
-      style.render((err, css) => {
-        if (err) { return error(err); }
-        return res.send(css);
-      });
-    });
-  }
+  // The legacy /api/user/css endpoint + its stylus-rendered custom theme
+  // (formerly viewer/views/user.styl) have been removed. Custom themes are
+  // now first-class Vuetify themes registered at app boot via
+  // common/vueapp/themes/customTheme.js -- no server round-trip needed.
 
   // USER SETTINGS --------------------------------------------------------------------------
   /**
@@ -567,6 +496,16 @@ class UserAPIs {
     return res.send(settings);
   }
 
+  // Allowlist of viewer settings keys persisted via POST /api/user/settings.
+  // customTheme + vuetifyCustomTheme are the structured { dark, colors }
+  // records; customTheme stays in the list for legacy arkime compat (older
+  // versions still write it), while vuetifyTheme / vuetifyCustomTheme is
+  // where v7+ persists its preference -- the two stay independent across
+  // version round-trips.
+  static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', ...User.USER_SETTINGS_KEYS, 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+    'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
+    'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes', 'defaultDashboardId'];
+
   /**
    * POST - /api/user/settings
    *
@@ -575,31 +514,10 @@ class UserAPIs {
    * @returns {boolean} success - Whether the update user settings operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static updateUserSettings (req, res) {
-    req.settingUser.settings = ['ms', 'logo', 'theme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
-      'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
-      'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
-      const val = req.body[key];
-      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val)) {
-        return obj;
-      }
-      obj[key] = val;
-      return obj;
-    }, {});
-
-    User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/settings update error`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'User settings update failed', 'api.users.settingsUpdateFailed');
-      }
-
-      return res.json({
-        success: true,
-        text: 'Updated user settings successfully',
-        i18n: 'api.users.settingsUpdated'
-      });
-    });
-  }
+  static updateUserSettings = User.apiUpdateSettingsHandler(
+    UserAPIs.#settingsAllowlist,
+    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS]
+  );
 
   // LAYOUTS --------------------------------------------------------------------------
   /**
@@ -766,13 +684,21 @@ class UserAPIs {
    * PUT - /api/user/:userId/acknowledge
    *
    * Acknowledges a UI message for a user. Used to display help popups.
+   * Send msgNum to set the welcome message sequence number, or noteId to
+   * dismiss a per-page help note ('all' silences every note).
    * @name /user/:userId/acknowledge
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static acknowledgeMsg (req, res) {
-    if (!req.body.msgNum) {
+    const { noteId } = req.body;
+
+    if (noteId === undefined && !req.body.msgNum) {
       return res.serverError(403, 'Message number required', 'api.users.messageNumberRequired');
+    }
+
+    if (noteId !== undefined && (!ArkimeUtil.isString(noteId) || !/^[a-z0-9]{1,32}$/.test(noteId))) {
+      return res.serverError(403, 'Invalid note id', 'api.users.invalidNoteId');
     }
 
     if (req.params.userId !== req.user.userId) {
@@ -785,14 +711,44 @@ class UserAPIs {
         return res.serverError(403, 'User not found', 'api.users.userNotFound');
       }
 
-      user.welcomeMsgNum = parseInt(req.body.msgNum);
-      if (!Number.isInteger(user.welcomeMsgNum)) {
-        return res.serverError(403, 'welcomeMsgNum is not integer', 'api.users.welcomeMsgNumNotInteger');
+      if (noteId !== undefined) {
+        // dismissedHelpNotes needs users db schema >= 87; fail open when the version is unknown
+        const schemaVersion = User.getSchemaVersion();
+        if (schemaVersion !== undefined && schemaVersion < 87) {
+          return res.serverError(503, 'Users database needs an upgrade, run db.pl upgrade', 'api.users.dbNeedsUpgrade');
+        }
+        user.dismissedHelpNotes ??= [];
+        if (!user.dismissedHelpNotes.includes(noteId)) {
+          // 'all' supersedes everything, so it must never be blocked by the cap
+          if (noteId !== 'all' && user.dismissedHelpNotes.length >= 50) {
+            return res.serverError(403, 'Too many dismissed notes', 'api.users.tooManyDismissedNotes');
+          }
+          user.dismissedHelpNotes.push(noteId);
+        }
+      } else {
+        user.welcomeMsgNum = parseInt(req.body.msgNum);
+        if (!Number.isInteger(user.welcomeMsgNum)) {
+          return res.serverError(403, 'welcomeMsgNum is not integer', 'api.users.welcomeMsgNumNotInteger');
+        }
       }
 
       User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
           console.log(`${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
+        }
+
+        if (noteId !== undefined) {
+          if (err) {
+            console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
+            return res.serverError(500, 'Note dismissal failed', 'api.users.dismissNoteFailed');
+          }
+
+          return res.json({
+            success: true,
+            text: `User, ${req.user.userId}, dismissed help note ${noteId}`,
+            i18n: 'api.users.dismissedNote',
+            i18nParams: { userId: req.user.userId, noteId }
+          });
         }
 
         if (err) {

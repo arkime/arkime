@@ -20,6 +20,25 @@ export const escapeHtml = function (str) {
 };
 
 /**
+ * Returns url if it uses a safe scheme (http(s)/mailto/ftp/tel or relative),
+ * otherwise undefined. Rejects javascript:/data: and similar.
+ *
+ * @param {string} url The url to validate
+ * @returns {string|undefined}
+ */
+export const safeUrl = function (url) {
+  if (typeof url !== 'string') { return undefined; }
+
+  const stripped = url.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '');
+
+  if (/^[a-z][a-z0-9+.-]*:/i.test(stripped) && !/^(https?|mailto|ftp|tel):/i.test(stripped)) {
+    return undefined;
+  }
+
+  return url;
+};
+
+/**
  * Rounds a number using Math.round
  *
  * @example
@@ -156,15 +175,16 @@ function str2format (str) {
  * '{{ parseSeconds(-5h) }}'
  *
  * @param {string} str The relative time string
+ * @param {number|string} [date] Optional base date (ms or moment-parsable); defaults to now
  */
-export const parseSeconds = function (str) {
+export const parseSeconds = function (str, date) {
   if (str === '' || str === 'now') {
-    return moment().unix();
+    return moment(date).unix();
   }
 
   let m, n;
   if ((m = str.match(/^([+-])(\d*)([a-zA-Z]*)([@]*)([a-zA-Z0-9]*)/))) {
-    const d = moment();
+    const d = moment(date);
     const format = str2format(m[3]);
     const snap = str2format(m[5]);
 
@@ -184,7 +204,7 @@ export const parseSeconds = function (str) {
   }
 
   if ((m = str.match(/^@([a-z0-9]+)/))) {
-    const d = moment();
+    const d = moment(date);
     const snap = str2format(m[1]);
 
     d.startOf(snap);
@@ -371,7 +391,7 @@ export const readableTimeCompact = function (ms) {
 
 /**
  * Searches fields for a term
- * Looks for the term in field friendlyName, exp, and aliases
+ * Looks for the term in field friendlyName, exp, dbField(2), and aliases
  *
  * @example
  * '{{ searchFields('test', fields, true) }}'
@@ -405,6 +425,8 @@ export const searchFields = function (searchTerm, fields, excludeTokens, exclude
     searchTerm = searchTerm.toLowerCase();
     return field.friendlyName.toLowerCase().includes(searchTerm) ||
       field.exp.toLowerCase().includes(searchTerm) ||
+      (field.dbField && field.dbField.toLowerCase().includes(searchTerm)) ||
+      (field.dbField2 && field.dbField2.toLowerCase().includes(searchTerm)) ||
       (field.aliases && field.aliases.some(item => {
         return item.toLowerCase().includes(searchTerm);
       }));

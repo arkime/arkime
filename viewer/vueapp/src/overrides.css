@@ -1,363 +1,78 @@
-/* Bootstrap Overrides (mainly for Arkime themes) */
+/* Viewer-bespoke styles. Shared resets (h1-h6, p, hr, input, img, svg),
+   utility shims (.pull-right/.pull-left/.fixed-bottom/.text-danger), and
+   the Vuetify component theme bridges live in common/common.css now. */
 
-/* BOOTSTRAP 5 fixes ------------------------------------------------------- */
-.card-body {
-  color: var(--color-foreground);
-}
-
-/* dark form controls ------------------------------------------------------ */
-input,
-input:focus,
-select,
-select:focus,
-textarea,
-textarea:focus {
-  color: var(--color-foreground, #000) !important;
-  background-color: var(--color-inputs, #FFF) !important;
-}
-
-input:disabled,
-select:disabled,
-textarea:disabled {
-  color: var(--color-gray-darker, #333) !important;
-  background-color: var(--color-gray-lighter, #DDD) !important;
-}
-
-input.form-check-input { /* need this for dark theme check/radio */
-  background-image: var(--bs-form-check-bg-image) !important;
-}
-input.form-check-input:checked {
-  background-color: #0d6efd !important;
-}
-
-/* dark default buttons ---------------------------------------------------- */
-.btn.btn-default {
-  border-color: var(--color-gray);
-  color: var(--color-foreground, #333);
-  background-color: var(--color-background, #FFF);
-}
-.btn.btn-default.active {
-  border-color: var(--color-gray);
-  color: var(--color-foreground, #333);
-  background-color: var(--color-gray-light);
-}
-.btn.btn-default:hover {
-  color: #333;
-  border-color: var(--color-gray);
-  background-color: var(--color-gray);
-}
-
-
-/* themed input groups ----------------------------------------------------- */
-.input-group > .input-group-text,
-.input-group:not(.color) > .input-group-text {
-  border-color: var(--color-gray) !important;
-  color: var(--color-foreground, #555) !important;
-  background-color: var(--color-background, #EEE) !important;
-}
-
-
-/* give error text theme color --------------------------------------------- */
-.text-danger {
-  color: var(--color-foreground-accent);
-}
-
-
-/* display labels inline with proper wrapping ------------------------------ */
-.label {
-  /* https://github.com/twbs/bootstrap/issues/13219 */
-  display: inline-block;
-}
-
-
-/* super awesome tables ---------------------------------------------------- */
-/* condense the table more! */
-.table-sm > thead > tr > th,
-.table-sm > tbody > tr > th,
-.table-sm > tfoot > tr > th,
-.table-sm > thead > tr > td,
-.table-sm > tbody > tr > td,
-.table-sm > tfoot > tr > td {
-  padding: 0.1rem 0.5rem;
-}
-/* condense the table EVEN more! */
-.table-xs>thead>tr>th,
-.table-xs>tbody>tr>th,
-.table-xs>tfoot>tr>th,
-.table-xs>thead>tr>td,
-.table-xs>tbody>tr>td,
-.table-xs>tfoot>tr>td {
-  padding: 0.1rem 0.3rem;
-}
-
-/* make stripes darker */
-.table-striped > tbody > tr td {
-  background-color: var(--color-background) !important;
-}
-.table-striped > tbody > tr:nth-of-type(odd) td {
-  background-color: var(--color-gray-lighter) !important;
-}
-
-/* don't stripe average and total rows */
-.table-striped > tbody > tr.average-row,
-.table-striped > tbody > tr.total-row {
-  background-color: var(--color-background);
-}
-
-/* make active table items darker */
-.table > thead > tr > td.active,
-.table > tbody > tr > td.active,
-.table > tfoot > tr > td.active,
-.table > thead > tr > th.active,
-.table > tbody > tr > th.active,
-.table > tfoot > tr > th.active,
-.table > thead > tr.active > td,
-.table > tbody > tr.active > td,
-.table > tfoot > tr.active > td,
-.table > thead > tr.active > th,
-.table > tbody > tr.active > th,
-.table > tfoot > tr.active > th {
-  background-color: var(--color-gray-lighter);
-}
-
-/* give table theme color */
-table.table > thead > tr > th {
-  color: var(--color-foreground);
-  background-color: var(--color-background);
-
-}
-table.table > tbody > tr > td {
-  color: var(--color-foreground, #333);
-  background-color: var(--color-gray-lighter);
-}
-table.table.table-striped > tbody > tr:nth-child(odd) > td {
-  background-color: var(--color-gray-light);
-}
-
-/* give hoverable rows theme color */
-table.table.table-hover > tbody > tr:hover > td {
-  filter: brightness(90%);
-}
-
-.table thead th {
-  vertical-align: middle;
-  border-bottom: 2px solid var(--bs-border-color);
-  border-top: 1px solid var(--bs-border-color);
-}
-
-/* give navs theme color --------------------------------------------------- */
-nav.navbar {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-darker);
-}
-
-nav.navbar li > button {
-  height: 100%;
-  font-weight: bold;
-  transition: height 0.2s ease-in;
-}
-
-nav.navbar li,
-nav.navbar-nav .nav-link.active,
-.navbar-nav .nav-link.active, .navbar-nav .nav-link.show {
-  color: #FFF !important;
-  max-height: 36px;
-  min-height: 36px;
-}
-nav.navbar li:focus,
-nav.navbar li.router-link-active {
-  background-color: var(--color-primary);
-  border-bottom: 4px solid var(--color-primary-lighter);
-}
-nav.navbar li:hover {
-  background-color: var(--color-primary);
-}
-
-nav.navbar a.nav-link {
-  color: #FFF;
-}
-
-.nav-pills > a.nav-link {
-  color: var(--color-foreground, #333);
-}
-.nav-pills > .nav-link.active,
-.nav-pills > .nav-link.active:hover,
-.nav-pills > .nav-link.active:focus {
-  color: var(--color-button, #FFF);
-  background-color: var(--color-primary);
-}
-
-.nav-tabs > li.nav-item > .nav-link.active,
-.nav-tabs > li.nav-item > .nav-link.active:hover,
-.nav-tabs > li.nav-item > .nav-link.active:focus {
-  font-weight: bold;
-  color: var(--color-foreground);
-  background-color: var(--color-background);
-  border-bottom-color: var(--color-background, #fff);
-}
-
-/* give pagination theme color --------------------------------------------- */
-.pagination .page-item > .page-link {
-  cursor: pointer !important;
-  color: var(--color-foreground);
-  background-color: var(--color-background);
-  border: 1px solid var(--color-gray-light);
-}
-.pagination .page-item.disabled {
-  cursor: not-allowed !important;
-}
-.pagination .page-item.disabled > span,
-.pagination .page-item.disabled > span:hover,
-.pagination .page-item.disabled > span:focus,
-.pagination .page-item.disabled > a,
-.pagination .page-item.disabled > a:hover,
-.pagination .page-item.disabled > a:focus,
-.pagination .page-item.disabled > button,
-.pagination .page-item.disabled > button:hover,
-.pagination .page-item.disabled > button:focus {
-  color: var(--color-gray-light);
-  border-color: var(--color-gray-light);
-  background-color: var(--color-background);
-}
-
-.pagination .page-item.active > a,
-.pagination .page-item.active > span,
-.pagination .page-item.active > button,
-.pagination .page-item.active > a:hover,
-.pagination .page-item.active > span:hover,
-.pagination .page-item.active > button:hover,
-.pagination .page-item.active > a:focus,
-.pagination .page-item.active > span:focus,
-.pagination .page-item.active > button:focus {
-  z-index: 3;
-  cursor: default;
-  color: var(--color-background);
-  border-color: var(--color-gray-light);
-  background-color: var(--color-primary-lighter);
-}
-
-
-/* display dropdown results in scrolling div ------------------------------- */
-input.field-typeahead + ul[uib-typeahead-popup] {
-  max-height: 300px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* give dropdowns theme color and make them more condensed ----------------- */
-.dropdown-menu {
-  padding: 2px 0;
+/* condensed themed dropdowns ------------------------------------------- */
+.arkime-dropdown-menu {
   min-width: 12rem;
+  padding: 2px 0;
+  margin: 0;
   font-size: .85rem;
-  border-color: var(--color-gray-light);
-  background-color: var(--color-background, #FFF);
+  list-style: none;
+  color: rgb(var(--v-theme-foreground));
+  background-color: rgb(var(--v-theme-background));
+  background-clip: padding-box;
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  border-radius: 0.25rem;
 }
-.dropdown-menu .dropdown-item,
-.dropdown-menu div.custom-control {
+.arkime-dropdown-menu .arkime-dropdown-item,
+.arkime-dropdown-menu div.custom-control {
   display: block;
   padding: 2px 8px;
-  color: var(--color-foreground, #212529);
+  color: rgb(var(--v-theme-foreground));
+  text-decoration: none;
+  background-color: transparent;
+  white-space: nowrap;
 }
 
-.dropdown .dropdown-item:hover,
-.dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item:focus {
-  color: var(--color-foreground, #212529);
-  background-color: var(--color-gray-light);
+.arkime-dropdown-menu .arkime-dropdown-item:hover,
+.arkime-dropdown-menu .arkime-dropdown-item:focus {
+  color: rgb(var(--v-theme-foreground));
+  background-color: rgb(var(--v-theme-neutral-light));
 }
-.dropdown-menu .dropdown-item.active,
-.dropdown-menu .active .dropdown-item {
-  color: var(--color-white, #FFF);
-  background-color: var(--color-primary);
+.arkime-dropdown-menu .arkime-dropdown-item.active,
+.arkime-dropdown-menu .active .arkime-dropdown-item {
+  color: rgb(var(--v-theme-white));
+  background-color: rgb(var(--v-theme-primary));
 }
-.dropdown-menu .dropdown-item.active:hover,
-.dropdown-menu .active:hover .dropdown-item,
-.dropdown-menu .dropdown-item.active:focus,
-.dropdown-menu .active:focus .dropdown-item {
-  background-color: var(--color-primary-light);
+.arkime-dropdown-menu .arkime-dropdown-item.active:hover,
+.arkime-dropdown-menu .active:hover .arkime-dropdown-item,
+.arkime-dropdown-menu .arkime-dropdown-item.active:focus,
+.arkime-dropdown-menu .active:focus .arkime-dropdown-item {
+  background-color: rgb(var(--v-theme-primary-light));
 }
-
-.dropdown-sticky-search-bar-container {
-  padding-inline: 8px !important;
-}
-
-/* give cards theme color -------------------------------------------------- */
-.card {
-  border-color: var(--color-gray-light);
-  background-color: var(--color-background, #FFF);
-}
-.card .card-header {
-  color: var(--color-foreground, #333);
-  background-color: var(--color-gray-light);
+.arkime-dropdown-divider {
+  height: 0;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
 
-
-/* give wells theme color -------------------------------------------------- */
-.well {
-  padding: 12px;
-  border-radius: 3px;
-  border: 1px solid var(--color-gray-light);
-  background-color: var(--color-gray-lighter);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+/* arkime-badge: Bootstrap-free recreation of `.badge .bg-*` for inline
+   pill tags that need to stay <label>/<span> elements (typeable form
+   labels, click-handler-bearing tags). For non-semantic uses, prefer
+   <v-chip size="x-small" variant="flat" color="grey|info|..."/>. */
+.arkime-badge {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(var(--v-theme-button-fg));
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.375rem;
 }
-.well-sm {
-  padding: 3px 9px;
-}
+.arkime-badge--grey { background-color: rgb(var(--v-theme-neutral)); }
+.arkime-badge--info { background-color: rgb(var(--v-theme-info)); }
+.arkime-badge--sm { font-size: 60%; margin-right: 5px; }
+.arkime-badge--sm:hover { background-color: rgb(var(--v-theme-error)); cursor: pointer; }
 
-
-/* give pres theme color --------------------------------------------------- */
-pre {
-  border-color: var(--color-gray-light);
-  background-color: var(--color-gray-lighter);
-}
-
-
-/* increase the width of tooltips (mostly for es stats in navbar) ---------- */
-.tooltip-inner {
-  max-width: 350px;
-}
-
-
-/* apply theme colors to the datetimepicker -------------------------------- */
-.bootstrap-datetimepicker-widget,
-.bootstrap-datetimepicker-widget .btn {
-  color: var(--color-foreground);
-}
-
-/* gray out day buttons that are not part of the current month */
-.bootstrap-datetimepicker-widget td.day.old,
-.bootstrap-datetimepicker-widget td.day.new {
-  color: var(--color-gray-light);
-}
-
-/* theme color for month, year, and decade buttons */
-.bootstrap-datetimepicker-widget table td:hover > span.year:not(.active),
-.bootstrap-datetimepicker-widget table td:hover > span.month:not(.active),
-.bootstrap-datetimepicker-widget table td:hover > span.decade:not(.active) {
-  color: var(--color-foreground);
-}
-
-/* darken buttons on hover */
-.bootstrap-datetimepicker-widget .btn:hover,
-.bootstrap-datetimepicker-widget table td.day:hover,
-.bootstrap-datetimepicker-widget table td.hour:hover,
-.bootstrap-datetimepicker-widget table td.minute:hover,
-.bootstrap-datetimepicker-widget table td.second:hover,
-.bootstrap-datetimepicker-widget table th.prev:hover,
-.bootstrap-datetimepicker-widget table th.next:hover,
-.bootstrap-datetimepicker-widget table td > span.year:hover,
-.bootstrap-datetimepicker-widget table td > span.month:hover,
-.bootstrap-datetimepicker-widget table td > span.decade:hover,
-.bootstrap-datetimepicker-widget table td > span.timepicker-hour:hover,
-.bootstrap-datetimepicker-widget table td > span.timepicker-minute:hover,
-.bootstrap-datetimepicker-widget table td > span.timepicker-second:hover,
-.bootstrap-datetimepicker-widget table th.picker-switch:hover ,
-.bootstrap-datetimepicker-widget table td > a:hover {
-  color: black !important;
-}
-
-
-/* apply theme colors to modals -------------------------------------------- */
-.modal-content {
-  background-color: var(--color-background);
+/* v-date-picker day buttons -- Vuetify ships a 24px button inside a 40px
+   cell, which leaves the selected/today circle looking marooned in empty
+   space. Bumping --v-btn-height fills the cell more proportionally. */
+.v-date-picker-month__day .v-btn.v-date-picker-month__day-btn {
+  --v-btn-height: 32px;
+  --v-btn-size: 0.875rem;
 }

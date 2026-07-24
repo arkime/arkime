@@ -3,18 +3,22 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span>
-    <a
-      id="version"
-      :href="versionLink"
-      class="navbar-text me-2 text-right align-middle text-white">
-      v{{ version }}
-    </a>
-    <BTooltip
-      target="version">
+  <v-menu
+    open-on-hover
+    :close-on-content-click="false"
+    location="bottom">
+    <template #activator="{ props: activatorProps }">
+      <a
+        v-bind="activatorProps"
+        :href="versionLink"
+        class="arkime-version-link me-2 align-middle">
+        v{{ version }}
+      </a>
+    </template>
+    <div class="version-popup">
       {{ buildInfo }}
-    </BTooltip>
-  </span>
+    </div>
+  </v-menu>
 </template>
 
 <script>
@@ -53,3 +57,45 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.version-popup {
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+</style>
+
+<!-- Rainbow gradient on the version link itself. NOT scoped: the
+     v-menu activator slot renders the <a> via portal in some setups,
+     and we want every app that mounts this component to get the
+     effect without re-declaring it. -->
+<style>
+.arkime-version-link {
+  text-decoration: none;
+  /* inherit the app's body font + weight; keep rainbow */
+  font-size: 0.95rem;
+  white-space: nowrap;
+  background: linear-gradient(
+    90deg,
+    #FF8A95 0%,
+    #FFB36B 17%,
+    #FFE066 33%,
+    #8AE890 50%,
+    #7BCEFF 67%,
+    #B69DFF 83%,
+    #FF9DD8 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: rgb(var(--v-theme-button-fg));
+  transition: -webkit-text-fill-color 0.4s ease;
+}
+.arkime-version-link:hover {
+  -webkit-text-fill-color: transparent;
+}
+</style>

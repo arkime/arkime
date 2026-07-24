@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
             size="small"
             @click="selectOverview(overview._id)"
             variant="text"
-            class="nav-link cursor-pointer btn-space-between">
+            class="cursor-pointer btn-space-between">
             <overview-selector-line
               :overview="overview"
               :show-i-type-icon="false" />

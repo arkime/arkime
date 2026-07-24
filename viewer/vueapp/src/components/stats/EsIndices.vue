@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -33,37 +33,48 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
-          <b-dropdown
-            size="xs"
-            class="row-actions-btn"
-            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
-            <b-dropdown-item
-              v-has-permission="'removeEnabled'"
-              @click.stop.prevent="confirmDeleteIndex(item.item.index)">
-              {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click="optimizeIndex(item.item.index)">
-              {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-if="item.item.status === 'open'"
-              @click="closeIndex(item.item)">
-              {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-if="item.item.status === 'close'"
-              @click="openIndex(item.item)">
-              {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-if="item.item.pri > 1"
-              @click="openShrinkIndexForm(item.item)">
-              {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
-            </b-dropdown-item>
-          </b-dropdown>
+          <span
+            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
+            v-has-permission="'removeEnabled'">
+            <v-menu>
+              <template #activator="{ props: activatorProps }">
+                <v-btn
+                  v-bind="activatorProps"
+                  variant="outlined"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  class="row-actions-btn">
+                  <v-icon icon="mdi-menu-down" />
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item @click.stop.prevent="confirmDeleteIndex(item.item.index)">
+                  {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item @click="optimizeIndex(item.item.index)">
+                  {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item
+                  v-if="item.item.status === 'open'"
+                  @click="closeIndex(item.item)">
+                  {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item
+                  v-if="item.item.status === 'close'"
+                  @click="openIndex(item.item)">
+                  {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item
+                  v-if="item.item.pri > 1"
+                  @click="openShrinkIndexForm(item.item)">
+                  {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </span>
         </template>
       </arkime-table>
     </div>
@@ -75,7 +86,7 @@ import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
 import { roundCommaString, humanReadableBytes, timezoneDateString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -150,10 +161,10 @@ export default {
       return [ // es indices table columns
         // default columns
         intl({ id: 'index', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 }),
-        intl({ id: 'docs.count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
-        intl({ id: 'store.size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
+        intl({ id: 'docs.count', sort: 'docs.count', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
+        intl({ id: 'store.size', sort: 'store.size', doStats: true, default: true, width: 110, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
         intl({ id: 'pri', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.pri); } }),
-        intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
+        intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 110, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
         intl({ id: 'rep', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.rep); } }),
         intl({ id: 'memoryTotal', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.memoryTotal); } }),
         intl({ id: 'health', sort: 'health', doStats: false, default: true, width: 100 }),
@@ -324,19 +335,6 @@ export default {
 };
 </script>
 
-<style>
-/* remove any space between dropdown button and menu to make
-   sure the menu doesn't get hidden */
-.hover-menu .dropdown-menu {
-  margin-top: 0;
-}
-/* widen the button to make sure the user has enough space to
-   move their mouse to the menu so that it doesn't get hidden */
-.hover-menu .btn-sm {
-  padding: 1px 8px !important;
-}
-</style>
-
 <style scoped>
 td {
   white-space: nowrap;
@@ -344,17 +342,10 @@ td {
 tr.bold {
   font-weight: bold;
 }
-table.table tr.border-bottom-bold > td {
-  border-bottom: 2px solid #dee2e6;
+table tr.border-bottom-bold > td {
+  border-bottom: 2px solid rgb(var(--v-theme-neutral-light));
 }
-table.table tr.border-top-bold > td {
-  border-top: 2px solid #dee2e6;
-}
-
-.table .hover-menu:hover .btn-group {
-  visibility: visible;
-}
-.table .hover-menu .btn-group {
-  visibility: hidden;
+table tr.border-top-bold > td {
+  border-top: 2px solid rgb(var(--v-theme-neutral-light));
 }
 </style>

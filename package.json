@@ -10,6 +10,7 @@
     "@clickhouse/client": "^1.12.1",
     "@databricks/sql": "^1.13.0",
     "@elastic/elasticsearch": "7.10.0",
+    "@mdi/font": "^7.4.47",
     "acorn": "^8.16.0",
     "arkime-iptrie": "^0.0.9",
     "arkime-notifme-sdk": "^1.11.11",
@@ -27,7 +28,6 @@
     "ejs": "^3.1.10",
     "express": "^4.22.2",
     "express-session": "^1.18.2",
-    "font-awesome": "^4.7.0",
     "helmet": "^3.23.3",
     "ioredis": "^5.8.2",
     "ipaddr.js": "^2.4.0",
@@ -55,6 +55,7 @@
     "qrcode": "^1.5.4",
     "re2": "^1.24.1",
     "sanitize-html": "^2.17.4",
+    "sax": "^1.6.0",
     "serve-favicon": "^2.5.1",
     "splunk-sdk": "^2.0.2",
     "stylus": "^0.64.0",
@@ -117,8 +118,6 @@
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/compiler-sfc": "^3.5.29",
     "autoprefixer": "^10.2.5",
-    "bootstrap": "^5.3.8",
-    "bootstrap-vue-next": "^0.40.6",
     "concurrently": "^8.1.0",
     "country-code-emoji": "^2.3.0",
     "d3-sankey": "^0.12.3",
@@ -146,7 +145,7 @@
     "vuex": "^4.1.0"
   },
   "engines": {
-    "node": ">= 22.15.0 < 23",
+    "node": ">= 22.15.0 < 25",
     "npm": ">= 3.0.0"
   },
   "overrides": {

@@ -10,6 +10,7 @@ const ArkimeConfig = require('../../../common/arkimeConfig');
 
 class MaxmindIntegration extends Integration {
   name = 'Maxmind';
+  icon = 'integrations/maxmind/icon.png';
   cacheable = false;
   itypes = {
     ip: 'fetchIp'

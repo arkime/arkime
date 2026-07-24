@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!noEdit"
       :value="rawEditText"
       @input="e => debounceRawEdit(e)"
-      class="form-control form-control-sm" />
+      class="cont3xt-textarea" />
     <pre v-else>{{ rawEditText }}</pre>
   </template>
   <v-form v-else>
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
     <RoleDropdown
       :roles="getRoles"
       display-text="Who Can View"
-      class="mr-1"
+      class="me-1"
       :selected-roles="localOverview.viewRoles"
       @selected-roles-updated="updateViewRoles"
       :disabled="isDefaultOverview" />
@@ -79,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-icon
       size="large"
       icon="mdi-information"
-      class="cursor-help ml-2 mr-1"
+      class="cursor-help ms-2 me-1"
       v-tooltip="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'" />
     <span v-if="!localOverview.creator || (getUser && localOverview.creator === getUser.userId)">
       As the creator, you can always view and edit your overviews.
@@ -119,7 +119,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="tonal">
           <v-form class="w-100 d-flex flex-row align-center">
             <ToggleBtn
-              class="overview-toggle-btn mr-2"
+              class="overview-toggle-btn me-2"
               @toggle="toggleExpanded(fieldRef)"
               :opened="fieldRef.expanded"
               :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}" />
@@ -139,7 +139,7 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </v-select>
             <v-select
-              class="ml-2 flex-grow-1"
+              class="ms-2 flex-grow-1"
               label="Field"
               trim
               no-data-text="For field options, select a valid source"
@@ -158,7 +158,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-select>
             <v-text-field
               v-if="!isCustom(fieldRef)"
-              class="ml-2"
+              class="ms-2"
               label="Label"
               trim
               v-model="fieldRef.alias"
@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
               :actions="createFieldActions(i)"
               color="primary"
               size="small"
-              class="ml-2 square-btn-sm"
+              class="ms-2"
               v-tooltip="'Actions'" />
           </v-form>
           <template v-if="fieldRef.expanded">
@@ -183,14 +183,14 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               :value="getOrInitCustomText(fieldRef)"
               @input="e => debounceCustomRawEdit(fieldRef, e)"
-              class="form-control form-control-sm mt-2" />
+              class="cont3xt-textarea mt-2" />
             <v-alert
               color="warning"
               v-if="!!fieldRef._error"
-              class="alert-sm mt-2 mb-0">
+              class="mt-2 mb-0">
               <v-icon
                 icon="mdi-alert"
-                class="mr-2" />
+                class="me-2" />
               {{ fieldRef._error }}
             </v-alert>
           </template>

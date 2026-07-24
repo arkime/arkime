@@ -2,6 +2,518 @@
  *  Common CSS for all web apps (viewer, wise, parliament)
  */
 
+/* Bootstrap utility-class shims -- none of viewer / cont3xt / parliament /
+   wise load bootstrap.css anymore. These provide gap-N / m-N / p-N at
+   Bootstrap's 0.25rem scale so legacy markup keeps working without the
+   library. */
+.gap-0 { gap: 0 !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 1rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.gap-5 { gap: 3rem !important; }
+.m-0 { margin: 0 !important; }
+.m-1 { margin: 0.25rem !important; }
+.m-2 { margin: 0.5rem !important; }
+.m-3 { margin: 1rem !important; }
+.m-4 { margin: 1.5rem !important; }
+.m-5 { margin: 3rem !important; }
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.p-4 { padding: 1.5rem !important; }
+.p-5 { padding: 3rem !important; }
+
+/* fa-spin -- Font Awesome's spinning-loader animation class. We've
+   migrated to MDI but mdi-loading is a static icon; templates still
+   use class="fa-spin" on the v-icon so legacy callers keep working
+   without rewriting every loading-spinner site. */
+@keyframes fa-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.fa-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
+/* Visually-hidden accessibility utility (screen readers see it, sighted
+   users don't). Vuetify doesn't ship this; common A11y class name. */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Fixed positioning utilities. Vuetify ships .position-fixed but not
+   the bottom/top variants, so without these shims any
+   `class="position-fixed fixed-bottom"` alert ends up pinned to the
+   top. */
+.fixed-bottom {
+  position: fixed !important;
+  bottom: 0; right: 0; left: 0;
+  z-index: 1030;
+}
+
+/* error text utility used by .text-danger callers across viewer +
+   common + cont3xt. Maps to the foreground-accent theme color. */
+.text-danger {
+  color: rgb(var(--v-theme-foreground-accent));
+}
+
+/* Inline-element baseline reset. Vuetify's ress.css leaves img/svg at
+   baseline which carries the descender gap; restore middle so flex
+   containers measuring chart heights via ResizeObserver don't see an
+   extra few pixels per render. */
+img, svg {
+  vertical-align: middle;
+}
+
+/* Strip the browser-default fieldset chrome (border + padding + margin
+   + min-width) -- viewer's SessionDetail pug template renders <fieldset>
+   around the packet options row, and without the reset its native frame
+   draws an unwanted border. */
+fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* Heading scale + paragraph + hr baselines. Vuetify's ress.css does
+   `* { margin: 0 }` and ships no typographic rhythm for h1-h6, so all
+   headings collapse to browser default + zero margin (looks unstyled). */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: rgb(var(--v-theme-foreground));
+}
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+hr {
+  margin: 1rem 0;
+  color: inherit;
+  border: 0;
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
+  opacity: 0.4;
+}
+
+/* Native form controls -- ensure inputs/selects/textareas pick up the
+   themed colors instead of the browser-default white-on-white. */
+input,
+input:focus,
+select,
+select:focus,
+textarea,
+textarea:focus {
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-input-bg)) !important;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: rgb(var(--v-theme-neutral-darker)) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
+}
+
+/* Themed <pre> block (Help / config dumps). */
+pre {
+  border-color: rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-neutral-lighter));
+}
+
+/* "well" panel used by 404 / UpgradeBrowser across all apps + a couple
+   of cont3xt pages. */
+.well {
+  padding: 12px;
+  border-radius: 3px;
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-neutral-lighter));
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+}
+
+/* ========================================================================== */
+/* Vuetify component theme bridges                                            */
+/*                                                                            */
+/* Minimal overrides that wire Vuetify primitives into Arkime's --v-theme-*   */
+/* tokens. A proper Vuetify-native theme system is deferred to post-migration */
+/* redesign work. */
+/* ========================================================================== */
+
+/* v-data-table: keep backgrounds transparent so the surrounding body theme
+   shows through. Override padding to be even tighter than Vuetify's
+   compact density. */
+.v-table {
+  background: transparent !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+}
+.v-table .v-table__wrapper {
+  background: transparent !important;
+}
+.v-table thead th {
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
+  border-bottom-color: rgb(var(--v-theme-neutral-light)) !important;
+}
+.v-table tbody td {
+  color: rgb(var(--v-theme-foreground)) !important;
+  border-bottom-color: rgb(var(--v-theme-neutral-light)) !important;
+}
+.v-table tbody tr:hover td {
+  filter: brightness(90%);
+}
+
+/* v-data-table-footer: shrink pagination/per-page-selector chrome which is
+   far too tall by default for analyst-grade dense UI. */
+.v-data-table-footer {
+  font-size: 0.8rem;
+  padding: 2px 8px !important;
+  min-height: 32px;
+}
+.v-data-table-footer .v-data-table-footer__items-per-page {
+  align-items: center;
+  gap: 4px;
+}
+.v-data-table-footer .v-data-table-footer__pagination .v-btn {
+  width: 24px;
+  height: 24px;
+}
+
+/* v-menu / v-list: dense list rows + themed bg/text. */
+.v-overlay__content > .v-list,
+.v-list {
+  padding: 2px 0 !important;
+  font-size: 0.78rem;
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-background)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+}
+/* Doubled-up selector to outrank Vuetify's combined density+line-count
+   rules like `.v-list-item--density-compact.v-list-item--one-line`
+   (specificity 0,2,0); without that mine ties on importance only and
+   loses on specificity, leaving v-list-items at Vuetify's default
+   40-48px row height. */
+.v-list-item.v-list-item {
+  min-height: 22px !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-inline: 8px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+}
+.v-list-item .v-list-item__content,
+.v-list-item .v-list-item-title {
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+}
+.v-list-item:hover {
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-neutral-light)) !important;
+}
+.v-list-item--active,
+.v-list-item.v-list-item--active {
+  color: rgb(var(--v-theme-white)) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
+}
+.v-list-item--active:hover {
+  background-color: rgb(var(--v-theme-primary-light)) !important;
+}
+.v-list .v-divider {
+  margin: 2px 0 !important;
+  border-color: rgb(var(--v-theme-neutral-light)) !important;
+}
+
+/* v-btn outlined (toggle buttons, btn-toggle radio groups): bridge to
+   theme tokens. Vuetify's default secondary color is faint in both
+   modes; theme-driven colors give better contrast. */
+.v-btn--variant-outlined {
+  border-color: rgb(var(--v-theme-neutral)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
+}
+.v-btn--variant-outlined:hover {
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
+}
+.v-btn--variant-outlined.v-btn--active {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-button-fg)) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+.v-btn--variant-outlined.v-btn--disabled {
+  opacity: 0.5;
+}
+
+/* v-card / v-dialog: bridge to the theme. v-dialog is an overlay; the
+   styling comes from the v-card composed inside. Without this, modals
+   always render with Vuetify's default light surface even in dark
+   themes. */
+.v-card {
+  background-color: rgb(var(--v-theme-background)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+}
+.v-card .v-card-title,
+.v-card .v-card-text,
+.v-card .v-card-actions {
+  color: rgb(var(--v-theme-foreground)) !important;
+}
+.v-overlay__scrim {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* v-checkbox / v-radio compact: Vuetify's compact density on selection
+   controls is still oversized for Arkime's dense forms. Shrink the
+   icon, label, and surrounding padding. */
+.v-input--density-compact.v-checkbox,
+.v-input--density-compact.v-radio-group {
+  --v-input-padding-top: 0;
+}
+.v-checkbox.v-input--density-compact .v-selection-control,
+.v-radio-group.v-input--density-compact .v-selection-control {
+  min-height: 24px !important;
+  --v-selection-control-size: 24px;
+}
+.v-checkbox.v-input--density-compact .v-selection-control__wrapper,
+.v-radio-group.v-input--density-compact .v-selection-control__wrapper {
+  width: 24px !important;
+  height: 24px !important;
+}
+.v-checkbox.v-input--density-compact .v-selection-control__input,
+.v-radio-group.v-input--density-compact .v-selection-control__input {
+  width: 24px !important;
+  height: 24px !important;
+}
+.v-checkbox.v-input--density-compact .v-selection-control__input > .v-icon,
+.v-radio-group.v-input--density-compact .v-selection-control__input > .v-icon {
+  font-size: 18px !important;
+}
+.v-checkbox.v-input--density-compact .v-label,
+.v-radio-group.v-input--density-compact .v-label {
+  font-size: 0.85rem !important;
+  opacity: 1 !important;
+  padding-inline-start: 4px !important;
+}
+.v-checkbox.v-input--density-compact .v-input__control,
+.v-radio-group.v-input--density-compact .v-input__control {
+  min-height: 24px !important;
+}
+.v-radio-group.v-input--density-compact .v-selection-control-group--inline {
+  gap: 4px;
+}
+
+/* ========================================================================== */
+/* Sub-navbar: a fixed band sitting under the primary 36px navbar.            */
+/* Used by Settings / Stats / Users page headers across viewer + parliament + */
+/* wise + cont3xt so page-level title chrome is consistent.                   */
+/* ========================================================================== */
+.sub-navbar {
+  position: fixed;
+  /* 36px navbar + viewer's top banner height (0 when no banner / other apps) */
+  top: calc(36px + var(--app-banner-height, 0px));
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
+  background-color: rgb(var(--v-theme-secondary-lightest));
+  /* drop-shadow only below -- a full all-sides shadow leaks up under
+     the primary navbar. */
+  box-shadow: 0 8px 16px -8px black;
+}
+.sub-navbar .sub-navbar-title {
+  font-size: 19px;
+  font-weight: bold;
+}
+.sub-navbar .sub-navbar-title .fa-stack {
+  margin-top: -14px;
+}
+
+/* Settings page outer wrapper -- push the first content child down by
+   ~50px to clear the fixed sub-navbar band. Targeting the immediate
+   v-row / v-container child so we don't double up on margins inside
+   nested content. */
+.settings-page > .v-row,
+.settings-page > .v-container,
+.settings-page > .settings-content {
+  margin-top: 50px;
+}
+
+/* Standardized padding for the settings content pane (the column holding
+   the active tab's content) so every app's settings page has the same
+   start/end/bottom spacing. !important overrides Vuetify's default v-col
+   gutter so it lands the same whether or not the row uses gutters; top
+   clearance comes from the margin-top rule above. */
+.settings-content-pane {
+  padding: 12px 20px 20px 20px;
+}
+
+/* ========================================================================== */
+/* arkime-table: compact themed table for plain <table> elements used by      */
+/* viewer (Hunt/Files/Settings/Shortcuts/Views), parliament (Issues), and any */
+/* future page that needs a dense full-width table. Themed via v-theme tokens. */
+/* ========================================================================== */
+.arkime-table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: rgb(var(--v-theme-foreground));
+  vertical-align: top;
+  border-color: rgb(var(--v-theme-neutral-light));
+  border-collapse: collapse;
+}
+.arkime-table > thead {
+  vertical-align: bottom;
+}
+.arkime-table > thead > tr > th {
+  padding: 0.25rem;
+  font-weight: 600;
+  border-bottom: 2px solid rgb(var(--v-theme-neutral-light));
+  background-color: transparent;
+}
+.arkime-table > tbody > tr > td,
+.arkime-table > tbody > tr > th {
+  padding: 0.25rem;
+  border-bottom: 1px solid rgb(var(--v-theme-neutral-lighter));
+  background-color: transparent;
+}
+.arkime-table > tbody > tr:nth-of-type(odd) > td,
+.arkime-table > tbody > tr:nth-of-type(odd) > th {
+  background-color: rgb(var(--v-theme-neutral-lightest));
+}
+.arkime-table > tbody > tr:hover > td,
+.arkime-table > tbody > tr:hover > th {
+  background-color: rgb(var(--v-theme-neutral-lighter));
+}
+/* xs modifier: tighter cell padding for high-density tables. */
+.arkime-table--xs > thead > tr > th,
+.arkime-table--xs > tbody > tr > td,
+.arkime-table--xs > tbody > tr > th {
+  padding: 0.15rem 0.25rem;
+}
+/* row-tint modifiers used by parliament Issues to color rows by issue
+   severity. Use the v-theme tokens so light/dark each get a sensible
+   tint without per-theme overrides. */
+.arkime-table > tbody > tr.arkime-table-row--danger > td {
+  background-color: rgba(var(--v-theme-error), 0.18);
+}
+.arkime-table > tbody > tr.arkime-table-row--danger:hover > td {
+  background-color: rgba(var(--v-theme-error), 0.28);
+}
+.arkime-table > tbody > tr.arkime-table-row--warning > td {
+  background-color: rgba(var(--v-theme-warning), 0.18);
+}
+.arkime-table > tbody > tr.arkime-table-row--warning:hover > td {
+  background-color: rgba(var(--v-theme-warning), 0.28);
+}
+.arkime-table > tbody > tr.arkime-table-row--muted > td {
+  background-color: rgba(var(--v-theme-on-surface), 0.08);
+}
+.arkime-table > tbody > tr.arkime-table-row--muted:hover > td {
+  background-color: rgba(var(--v-theme-on-surface), 0.12);
+}
+
+/* Vuetify tooltip -- Vuetify's built-in CSS uses
+   rgb(var(--v-theme-surface-variant)) which falls back to nothing when
+   that token isn't defined in a theme. Use the page surface so the
+   tooltip blends with the current theme (light tooltip on light theme,
+   dark tooltip on dark theme), with a subtle outline so it's still
+   distinguishable from the page background. */
+.v-tooltip > .v-overlay__content {
+  background: rgb(var(--v-theme-surface)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  border: 1px solid rgb(var(--v-theme-outline)) !important;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Cap v-btn height at 32px globally -- viewer applies the same via
+   Vuetify's $button-height SCSS variable (viewer/vueapp/src/vuetify-settings.scss);
+   apply it via CSS for the other apps so all v-btn instances render at
+   the same compact height as viewer. Exclude .v-btn--icon so Vuetify's
+   natural square sizing keeps icon buttons circular. .roles-dropdown
+   opts out so its own RoleDropdown.vue height rule wins. */
+.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon):not(.roles-dropdown) {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
+/* Force icon-only v-btns to render circular. Vuetify's .v-btn--icon
+   selector tends to win when `icon` prop is a string (icon="mdi-X"),
+   but the boolean-prop `<v-btn icon><v-icon>...</v-icon></v-btn>` form
+   sometimes loses its border-radius to other rules. */
+.v-btn.v-btn--icon {
+  border-radius: 50% !important;
+}
+
+/* Same treatment for compact-density v-input wrappers (v-select,
+   v-text-field, v-textarea, v-autocomplete) so they line up with the
+   buttons. Vuetify's default compact density is ~40px; we want 32px to
+   match viewer's existing overrides. Lifted from viewer/vueapp/src/overrides.css. */
+.v-input--density-compact .v-field {
+  --v-field-padding-top: 0;
+  --v-field-padding-bottom: 0;
+  min-height: 30px !important;
+}
+.v-input--density-compact .v-field__input {
+  min-height: 30px !important;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.v-input--density-compact .v-field__field {
+  min-height: 30px !important;
+}
+.v-input--density-compact .v-label,
+.v-input--density-compact .v-field-label {
+  font-size: 0.78rem;
+}
+.v-input--density-compact input {
+  font-size: 0.85rem;
+  min-height: 26px;
+}
+.v-input--density-compact .v-field__append-inner,
+.v-input--density-compact .v-field__prepend-inner {
+  padding-top: 4px;
+}
+
+/* Mixed-control toolbars (search field + buttons + Pagination etc.)
+   need a uniform child height. Vuetify's defaults disagree:
+     v-btn size="small"        ≈ 28px
+     v-btn (default)            ≈ 36px
+     v-input density="compact"  ≈ 40px
+     shared Pagination          = 32px
+   Apply class="arkime-toolbar" to a flex container to pin every v-btn
+   and v-input child to 32px so they align cleanly. */
+.arkime-toolbar .v-input__control,
+.arkime-toolbar .v-field {
+  height: 32px !important;
+  min-height: 32px !important;
+  --v-input-control-height: 32px;
+}
+.arkime-toolbar .v-field__input {
+  min-height: 32px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+.arkime-toolbar .v-btn {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
 /* ENTIRE PAGE ------------------------------- */
 body {
  -webkit-font-smoothing: antialiased;
@@ -24,13 +536,6 @@ body {
 }
 
 /* MISC -------------------------------------- */
-.margin-for-nav {
-  margin-top: 70px !important;
-}
-.margin-for-nav-sm {
-  margin-top: 50px !important;
-}
-
 /* widths */
 .w-40 { width: 40% !important; }
 
@@ -43,10 +548,8 @@ body {
 .cursor-crosshair, .crosshair-cursor { cursor: crosshair; }
 
 /* font sizes */
-.xsmall { font-size: 50%; }
 .medium { font-size: 95%; }
 .large  { font-size: 1.8rem; }
-.xlarge { font-size: 2rem; }
 
 .bold   { font-weight: bold; }
 
@@ -71,29 +574,12 @@ body {
 /* remove underline for anchor tag hover */
 .no-decoration { text-decoration: none !important; }
 
-/* small/condensed horizontal rule */
-.hr-small {
-  margin-top: var(--px-sm);
-  margin-bottom: var(--px-xs);
-}
-
 /* extra small buttons */
 .btn-xs, .btn-group-xs > .btn {
   padding: 1px 5px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
-}
-.dropdown-btn-xs > button.dropdown-toggle {
-  padding: 1px 5px;
-  font-size: 12px;
-  border-radius: 3px;
-}
-
-/* table bordered vertical */
-.table-bordered-vertical th:not(:first-child),
-.table-bordered-vertical td:not(:first-child) {
-  border-left: 1px dotted var(--color-gray, #ccc);
 }
 
 /* user roles dropdown scrolls for long lists */
@@ -115,23 +601,6 @@ body {
 
 .users-dropdown form {
   padding-inline: 0 !important;
-}
-
-/* xs input groups */
-.input-group-xs > .form-control,
-.input-group-xs > .custom-select,
-.input-group-xs > .input-group-text,
-.input-group-xs > .input-group-text,
-.input-group-xs > .btn,
-.input-group-xs > .btn {
-  line-height: 1;
-  padding: 0.25rem;
-  font-size: 0.825rem;
-  border-radius: 2px;
-}
-.input-group-xs > .custom-select,
-.input-group-xs > .form-control:not(textarea) {
-  height: calc(0.825em + 0.5rem + 4px);
 }
 
 /* INFO AREA --------------------------------- */
@@ -235,21 +704,6 @@ body.dark .text-muted {
   color: #AAA !important;
 }
 
-/* darken navbar */
-body.dark .navbar.bg-dark {
-  background-color: #131313 !important;
-}
-
-/* darken cards */
-body.dark .card {
-  color: #EEE;
-  background-color: #303030;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-}
-body.dark .card .card-header,
-body.dark .card .card-footer {
-  background-color: #383838;
-}
 body.dark .cluster-handle {
   background: #303030;
 }
@@ -273,100 +727,8 @@ body.dark pre:not([class*="text-"]) {
   color: white !important;
 }
 
-/* darken alerts */
-body.dark .alert.alert-danger {
-  color: #FCABCA;
-  background-color: #8E2049;
-  border-color: #871D45;
-}
-body.dark .alert .issue-date {
-  color: #9F9F9F;
-}
-
-/* darken warnings */
-body.dark .alert.alert-warning {
-  color: #FFF3CD;
-  background-color: #916012;
-  border-color: #895A10;
-}
-
-/* darken dropdown menus */
-body.dark .dropdown-menu {
-  background-color: #222;
-  border: 1px solid #333;
-}
-body.dark .dropdown-menu .dropdown-item,
-body.dark .dropdown-menu .b-dropdown-form {
-  color: #EEE;
-}
-body.dark .dropdown-menu .dropdown-item:hover,
-body.dark .dropdown-menu .dropdown-item:focus {
-  color: #EEE;
-  text-decoration: none;
-  background-color: #444;
-}
-
-/* lighten dark buttons */
-body.dark .btn-outline-dark {
-  color: #ADB5BD;
-}
-body.dark .btn-outline-dark:hover {
-  color: #222;
-  background-color: #ADB5BD;
-  border-color: #ADB5BD;
-}
-
 body.dark hr {
   background-color: #ADB5BD;
-}
-
-/* darken tables */
-body.dark table.table {
-  color: #EEE;
-  background-color: #222;
-  border-color: #333;
-}
-
-body.dark .table-danger,
-body.dark .table-danger > th,
-body.dark .table-danger > td {
-  background-color: #871D45;
-}
-body.dark .table-hover .table-danger:hover,
-body.dark .table-hover .table-danger:hover > th,
-body.dark .table-hover .table-danger:hover > td {
-  background-color: #A32252;
-}
-body.dark .table-warning,
-body.dark .table-warning > th,
-body.dark .table-warning > td {
-  background-color: #895A10;
-}
-body.dark .table-hover .table-warning:hover,
-body.dark .table-hover .table-warning:hover > th,
-body.dark .table-hover .table-warning:hover > td {
-  background-color: #9B6611;
-}
-body.dark .table-secondary,
-body.dark .table-secondary > th,
-body.dark .table-secondary > td {
-  background-color: #494949;
-}
-body.dark .table-hover .table-secondary:hover,
-body.dark .table-hover .table-secondary:hover > th,
-body.dark .table-hover .table-secondary:hover > td {
-  background-color: #4F4F4F;
-}
-body.dark .table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* lighten table text in dark mode */
-body.dark table.table {
-  color: #EEE !important;
-}
-body.dark table.table-hover tbody tr:hover {
-  color: #EEE !important;
 }
 
 /* dark form controls */
@@ -379,31 +741,10 @@ body.dark textarea:focus {
   color: #FFF;
   background-color: #000;
 }
-body.dark .input-group-text,
-body.dark .input-group-text {
-  border-color: gray !important;
-  color: #EEE !important;
-  background-color: #555 !important;
-}
-
 body.dark input::placeholder,
 body.dark select::placeholder,
 body.dark textarea::placeholder {
   color: #AAA;
-}
-
-/* darken navs */
-body.dark .nav > li > a:hover,
-body.dark .nav > li > a:focus {
-  color: #2B91FF;
-  background-color: #222;
-}
-body.dark .nav-tabs > li.nav-item > button.nav-link.active,
-body.dark .nav-tabs > li.nav-item > button.nav-link.active:hover,
-body.dark .nav-tabs > li.nav-item > button.nav-link.active:focus {
-  color: #FFF;
-  background-color: #222;
-  border-bottom: 1px solid transparent;
 }
 
 /* dark wells */
@@ -412,106 +753,11 @@ body.dark .well {
   border-color: #444;
 }
 
-/* dark paging controls */
-body.dark .pagination-info {
-  display: inline-block;
-  font-size: .8rem;
-  color: #999;
-  border: 1px solid #F6F6F6;
-  padding: 5px 10px;
-  margin-left: -6px;
-  border-radius: 0 var(--px-sm) var(--px-sm) 0;
-  background-color: #333;
-}
-body.dark .pagination .page-item > .page-link {
-  cursor: pointer !important;
-  color: #FFF;
-  background-color: #333;
-  border: 1px solid #F6F6F6;
-}
-body.dark .pagination .page-item.disabled {
-  cursor: not-allowed !important;
-}
-body.dark .pagination .page-item.disabled > span,
-body.dark .pagination .page-item.disabled > span:hover,
-body.dark .pagination .page-item.disabled > span:focus,
-body.dark .pagination .page-item.disabled > a,
-body.dark .pagination .page-item.disabled > a:hover,
-body.dark .pagination .page-item.disabled > button:focus,
-body.dark .pagination .page-item.disabled > button,
-body.dark .pagination .page-item.disabled > button:hover,
-body.dark .pagination .page-item.disabled > button:focus {
-  color: #777;
-  border-color: #F6F6F6;
-  background-color: #333;
-}
-
-body.dark .pagination .page-item.active > a,
-body.dark .pagination .page-item.active > span,
-body.dark .pagination .page-item.active > button,
-body.dark .pagination .page-item.active > a:hover,
-body.dark .pagination .page-item.active > span:hover,
-body.dark .pagination .page-item.active > button:hover,
-body.dark .pagination .page-item.active > a:focus,
-body.dark .pagination .page-item.active > span:focus,
-body.dark .pagination .page-item.active > button:focus {
-  z-index: 3;
-  cursor: default;
-  color: #FFF;
-  border-color: #F6F6F6;
-  background-color: #111;
-}
-
-/* dark modal */
-body.dark .modal-content {
-  color: #EEE;
-  background-color: #222;
-}
-body.dark .modal-content .modal-header,
-body.dark .modal-content .modal-footer {
-  background-color: #333;
-}
-
-/* dark panel */
-body.dark .b-sidebar-body {
-  color: #EEE;
-  background-color: #333;
-}
-
-/* dark alert */
+/* dark alert (cont3xt uses class="alert-dark" on intro cards) */
 body.dark .alert-dark {
   color: #EEE;
   border-color: #444;
   background-color: #333;
-}
-
-/* NAVBAR ------------------------------------ */
-nav.navbar {
-  max-height: 36px;
-  min-height: 36px;
-}
-
-nav.navbar .arkime-logo {
-  position: absolute;
-  height: 40px;
-  top: 2px;
-}
-
-nav.navbar li,
-nav.navbar-nav .nav-link.active,
-.navbar-nav .nav-link.active, .navbar-nav .nav-link.show {
-  max-height: 36px;
-  min-height: 36px;
-}
-nav.navbar li:focus,
-nav.navbar li.router-link-active {
-  background-color: black;
-  border-bottom: 4px solid var(--bs-pink);
-}
-
-.navbar-text,
-nav.navbar > .navbar-nav > .nav-item > a {
-  color: white;
 }
 
 /* ANIMATIONS -------------------------------- */
@@ -613,11 +859,11 @@ nav.navbar > .navbar-nav > .nav-item > a {
   }
 }
 
-/* MEDIA QUERIES ----------------------------- */
-@media (min-width: 1600px) {
-  .col-xxl-2 {
-    -ms-flex: 0 0 16.666667%;
-    flex: 0 0 16.666667%;
-    max-width: 16.666667%;
-  }
+/* full-width root container (used by stats + users + other top-level pages) */
+.arkime-container-fluid {
+  width: 100%;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  margin-right: auto;
+  margin-left: auto;
 }

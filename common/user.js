@@ -168,6 +168,14 @@ class User {
     return null;
   }
 
+  // Users db schema version, undefined when unknown (non-ES implementations)
+  static getSchemaVersion () {
+    if (User.#implementation.getSchemaVersion) {
+      return User.#implementation.getSchemaVersion();
+    }
+    return undefined;
+  }
+
   static getDbUrl () {
     return User.#dbUrl;
   }
@@ -499,7 +507,7 @@ class User {
   static async getCurrentUser (req) {
     const userProps = [
       'enabled', 'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
-      'welcomeMsgNum', 'lastUsed'
+      'welcomeMsgNum', 'dismissedHelpNotes', 'lastUsed'
     ];
 
     const clone = {};
@@ -551,6 +559,7 @@ class User {
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
    * @param {number} welcomeMsgNum=0 - The message number that a user is on. Gets incremented when a user dismisses a message.
+   * @param {array} dismissedHelpNotes - The ids of per-page help notes the user has dismissed ('all' silences every note).
    * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOCH.
    * @param {number} timeLimit - Limits the time range a user can query for.
    * @param {array} roles - The list of Arkime roles assigned to this user.
@@ -626,8 +635,12 @@ class User {
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      const message = err?.meta?.body?.error?.root_cause?.[0]?.reason
+        || err?.message
+        || (typeof err === 'string' ? err : 'Failed to load users');
       return res.send({
         success: false,
+        text: String(message),
         recordsTotal: 0,
         recordsFiltered: 0,
         data: []
@@ -1182,6 +1195,80 @@ class User {
       });
     });
   }
+
+  // User-settings keys shared across every Arkime app. viewer / cont3xt /
+  // parliament / wise all read+write these same keys on user.settings via
+  // the generic apiGetSettings / apiUpdateSettings handlers, so a value set
+  // in one app follows the user into all of them. Today this is just the
+  // Vuetify theme, but add a key here to sync any other setting cross-app.
+  // Frontend mirror: common/vueapp/themes/customTheme.js.
+  static USER_SETTINGS_KEYS = ['vuetifyTheme', 'vuetifyCustomTheme'];
+  static USER_SETTINGS_OBJECT_KEYS = ['vuetifyCustomTheme'];
+
+  /**
+   * Build an Express settings-update handler shared by viewer / cont3xt /
+   * parliament / wise. Each app passes in its own writable key list
+   * (`allowlist`) and the subset of those keys whose values may be objects
+   * (`objectKeys`).
+   *
+   * Body semantics, per allowlisted key: a value sets it, an explicit `null`
+   * unsets (deletes) it, and an omitted key is left unchanged. The route must
+   * set up `req.settingUser` via `Auth.getSettingUserDb`.
+   *
+   * @param {string[]} allowlist - Settings keys this endpoint may write.
+   * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
+   * @returns {function} Express handler `(req, res) => void`.
+   */
+  static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
+    const allowed = new Set(allowlist);
+    const objAllowed = new Set(objectKeys);
+    return (req, res) => {
+      // Shared handler -- viewer / cont3xt / parliament / wise all mount it.
+      // MERGE into the user's existing settings; do NOT rebuild from {}. The
+      // non-viewer apps POST a single key at a time and share one user store,
+      // so a from-{} rebuild would drop every key not in this body and wipe
+      // the user's other settings (logo, columns, ...) on every theme change.
+      const merged = { ...(req.settingUser.settings ?? {}) };
+      for (const key of allowed) {
+        const val = req.body[key];
+        // Omitted from the body (JSON can't carry `undefined`): leave it as-is.
+        if (val === undefined) { continue; }
+        // Explicit null is the unset signal: delete the key, don't store null.
+        if (val === null) { delete merged[key]; continue; }
+        // Reject stray object values unless this key may hold one (e.g. the
+        // vuetifyCustomTheme `{ dark, colors }` record).
+        if (typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) { continue; }
+        merged[key] = val;
+      }
+      req.settingUser.settings = merged;
+
+      User.setUser(req.settingUser.userId, req.settingUser, (err) => {
+        if (err) {
+          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
+          // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
+          return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
+        }
+        return res.send({ success: true, text: 'Updated user settings successfully', i18n: 'api.users.settingsUpdated' });
+      });
+    };
+  }
+
+  /**
+   * GET route handler returning just the shared cross-app Vuetify theme
+   * keys (`vuetifyTheme` / `vuetifyCustomTheme`) from the logged-in
+   * user's settings. Registered directly by wise; cont3xt / parliament
+   * read these via /api/user instead. The route sets up `req.settingUser`
+   * via `Auth.getSettingUserDb`.
+   */
+  static apiGetSettings (req, res) {
+    const settings = req.settingUser?.settings ?? {};
+    return res.send(Object.fromEntries(User.USER_SETTINGS_KEYS.map(k => [k, settings[k]])));
+  }
+
+  // POST route handler persisting the shared cross-app user-settings keys.
+  // Registered directly by cont3xt / parliament / wise; viewer builds its
+  // own handler from apiUpdateSettingsHandler with a wider allowlist.
+  static apiUpdateSettings = User.apiUpdateSettingsHandler(User.USER_SETTINGS_KEYS, User.USER_SETTINGS_OBJECT_KEYS);
 
   /******************************************************************************/
   // TOTP (Two-Factor Authentication) APIs
@@ -1945,6 +2032,7 @@ function filterUsers (users, filter, searchFields, noRoles) {
 class UserESImplementation {
   prefix;
   client;
+  schemaVersion;
 
   constructor (options) {
     this.prefix = ArkimeUtil.formatPrefix(options.prefix);
@@ -1983,6 +2071,11 @@ class UserESImplementation {
     }
 
     this.client = new Client(esOptions);
+
+    // soft fetch (no minVersion): the users es may not have the sessions3 template
+    ArkimeUtil.checkArkimeSchemaVersion(this.client, options.prefix)
+      .then((version) => { this.schemaVersion = version; });
+
     if (!Auth.isAnonymousMode()) {
       process.nextTick(async () => {
         try {
@@ -1997,6 +2090,10 @@ class UserESImplementation {
 
   getClient () {
     return this.client;
+  }
+
+  getSchemaVersion () {
+    return this.schemaVersion;
   }
 
   async flush (cluster) {
@@ -2038,11 +2135,27 @@ class UserESImplementation {
       esQuery.sort[query.sortField].missing = usersMissing[query.sortField];
     }
 
-    const { body: users } = await this.client.search({
-      index: this.prefix + 'users',
-      body: esQuery,
-      rest_total_hits_as_int: true
-    });
+    // If the index's mapping has the sort field as `text` (instead of
+    // the canonical `keyword`), ES refuses with "Fielddata is disabled
+    // on [field]". Retry without sort + do an in-memory sort below.
+    let users;
+    try {
+      ({ body: users } = await this.client.search({
+        index: this.prefix + 'users',
+        body: esQuery,
+        rest_total_hits_as_int: true
+      }));
+    } catch (err) {
+      const isFielddata = err?.meta?.body?.error?.root_cause?.[0]?.type === 'illegal_argument_exception' &&
+        /Fielddata is disabled/.test(err?.meta?.body?.error?.root_cause?.[0]?.reason || '');
+      if (!isFielddata || !esQuery.sort) { throw err; }
+      delete esQuery.sort;
+      ({ body: users } = await this.client.search({
+        index: this.prefix + 'users',
+        body: esQuery,
+        rest_total_hits_as_int: true
+      }));
+    }
 
     if (users.error) {
       return { error: users.error };
@@ -2055,6 +2168,13 @@ class UserESImplementation {
       cleanUser(fields);
       hits.push(Object.assign(new User(), fields));
     }
+
+    // If we had to drop the ES sort (text-field mapping), sort
+    // the hits in JS so the client still gets ordered data.
+    if (!esQuery.sort && query.sortField && hits.length > 1) {
+      sortUsers(hits, query.sortField, query.sortDescending === true);
+    }
+
     return { users: hits, total: users.hits.total };
   }
 

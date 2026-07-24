@@ -1,13 +1,11 @@
 // NOTE: vueapp/build/** & vueapp/config/** currently unused - we may want to add back in check-versions.js?
 
 import { fileURLToPath } from 'node:url';
-import inject from '@rollup/plugin-inject';
 
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import Components from 'unplugin-vue-components/vite';
-import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
+import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
 
@@ -24,9 +22,7 @@ export default defineConfig({
   },
   plugins: [
     vue({}),
-    Components({
-      resolvers: [BootstrapVueNextResolver()],
-    })
+    Vuetify({ treeShake: true })
   ],
   resolve: {
     alias: {

@@ -3,74 +3,80 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start">
-    <BCol cols="auto">
-      <BFormCheckbox
-        inline
-        :model-value="pcap"
-        id="pcapCheckbox"
-        name="pcap"
-        @update:model-value="pcap = $event">
-        {{ $t('sessions.remove.scrubPCAP') }}
-        <BTooltip target="pcapCheckbox">
+  <div class="d-flex flex-nowrap gap-2 align-center text-start">
+    <div class="d-flex align-center">
+      <span
+        id="pcapCheckboxWrap"
+        class="d-inline-flex align-center">
+        <v-checkbox
+          v-model="pcap"
+          density="compact"
+          hide-details
+          inline
+          :label="$t('sessions.remove.scrubPCAP')" />
+        <v-tooltip activator="#pcapCheckboxWrap">
           {{ $t('sessions.remove.scrubPCAPTip') }}
-        </BTooltip>
-      </BFormCheckbox>
-      <BFormCheckbox
-        inline
-        :model-value="spi"
-        id="spiCheckbox"
-        name="spi"
-        @update:model-value="spi = $event">
-        {{ $t('sessions.remove.deleteSPIData') }}
-        <BTooltip target="spiCheckbox">
+        </v-tooltip>
+      </span>
+      <span
+        id="spiCheckboxWrap"
+        class="d-inline-flex align-center ms-2">
+        <v-checkbox
+          v-model="spi"
+          density="compact"
+          hide-details
+          inline
+          :label="$t('sessions.remove.deleteSPIData')" />
+        <v-tooltip activator="#spiCheckboxWrap">
           {{ $t('sessions.remove.deleteSPIDataTip') }}
-        </BTooltip>
-      </BFormCheckbox>
-    </BCol>
+        </v-tooltip>
+      </span>
+    </div>
 
-    <BCol cols="auto">
+    <div>
       <SegmentSelect v-model:segments="segments" />
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
-      <button
-        type="button"
-        :title="$t('common.remove')"
-        @click="deleteSessionsAction"
-        :class="{'disabled':loading}"
-        class="btn btn-danger btn-sm me-1">
+    <div class="ms-auto d-flex gap-1">
+      <v-btn
+        size="large"
+        color="error"
+        variant="flat"
+        :disabled="loading"
+        @click="deleteSessionsAction">
         <span v-if="!loading">
-          <span class="fa fa-trash-o" />&nbsp;
+          <v-icon
+            icon="mdi-trash-can-outline"
+            class="me-1" />
           {{ $t('common.remove') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin me-1" />
           {{ $t('common.removing') }}
         </span>
-      </button>
-      <button
-        class="btn btn-sm btn-warning"
+      </v-btn>
+      <v-btn
+        size="large"
         id="cancelRemoveDataBtn"
+        color="warning"
+        variant="flat"
         :aria-label="$t('common.cancel')"
-        @click="emit('done', null, false, false)"
-        type="button">
-        <span class="fa fa-ban" />
-        <BTooltip target="cancelRemoveDataBtn">
+        @click="emit('done', null, false, false)">
+        <v-icon icon="mdi-cancel" />
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
-      </button>
-    </BCol>
-  </BRow>
+        </v-tooltip>
+      </v-btn>
+    </div>
+  </div>
 </template>
 
 <script setup>

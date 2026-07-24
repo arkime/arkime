@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="no-wrap d-flex flex-row w-100 mw-100 justify-space-between align-center">
     <v-icon
-      class="mr-2"
+      class="me-2"
       v-if="showITypeIcon"
       v-tooltip="overview.iType"
       :icon="iTypeIconMap[overview.iType]" />

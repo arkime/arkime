@@ -5,12 +5,18 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="info-area vertical-horizontal-center">
     <div v-if="parseInt(recordsTotal) === 0">
-      <span class="fa fa-3x text-muted-more fa-exclamation-triangle" />&nbsp;
+      <v-icon
+        icon="mdi-alert"
+        size="x-large"
+        class="text-muted-more" />&nbsp;
       {{ $t('utils.arkimeEmpty') }}
     </div>
 
     <div v-else-if="!recordsTotal || recordsTotal > 0">
-      <span class="fa fa-3x text-muted-more fa-folder-open" />&nbsp;
+      <v-icon
+        icon="mdi-folder-open"
+        size="x-large"
+        class="text-muted-more" />&nbsp;
       {{ $t('utils.arkimeNoResults') }}
       <small
         v-if="view"

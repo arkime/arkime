@@ -3,22 +3,28 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-3">
+  <div class="arkime-container-fluid mt-3">
     <arkime-loading v-if="initialLoading && !error" />
 
-    <div
+    <v-alert
       v-if="error"
-      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;">
+      type="warning"
+      variant="tonal"
+      density="compact"
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0">
       {{ error }}
-    </div>
+    </v-alert>
 
     <div>
       <div
         v-if="stats.indices && !stats.indices.length"
         class="text-center">
         <h3>
-          <span class="fa fa-folder-open fa-2x text-muted" />
+          <v-icon
+            icon="mdi-folder-open"
+            size="large"
+            class="text-medium-emphasis" />
         </h3>
         <h5 class="lead">
           {{ $t( cluster ? 'stats.esShards.noResultsCluster' : 'stats.esShards.noResults' ) }}
@@ -27,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <table
         v-if="stats.indices && stats.indices.length"
-        class="table table-sm table-hover small table-bordered-vertical block-table mt-1">
+        class="arkime-table small block-table mt-1">
         <thead>
           <tr>
             <th />
@@ -38,48 +44,57 @@ SPDX-License-Identifier: Apache-2.0
               :width="column.width">
               <div>
                 <!-- column dropdown menu -->
-                <b-dropdown
-                  right
-                  size="sm"
+                <span
                   v-if="column.hasDropdown"
-                  class="column-actions-btn pull-right mb-1"
                   v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
-                  <b-dropdown-item
-                    v-if="!column.nodeExcluded"
-                    @click="exclude('name', column)">
-                    {{ $t('stats.excludeNode') }}: {{ column.name }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    v-if="column.nodeExcluded"
-                    @click="include('name', column)">
-                    {{ $t('stats.includeNode') }}: {{ column.name }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    v-if="!column.ipExcluded"
-                    @click="exclude('ip', column)">
-                    {{ $t('stats.excludeIp') }}: {{ column.ip }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    v-if="column.ipExcluded"
-                    @click="include('ip', column)">
-                    {{ $t('stats.includeIp') }}: {{ column.ip }}
-                  </b-dropdown-item>
-                </b-dropdown> <!-- /column dropdown menu -->
+                  <v-menu location="bottom end">
+                    <template #activator="{ props: activatorProps }">
+                      <v-btn
+                        v-bind="activatorProps"
+                        variant="outlined"
+                        size="x-small"
+                        density="comfortable"
+                        icon
+                        class="column-actions-btn float-right mb-1">
+                        <v-icon icon="mdi-menu-down" />
+                      </v-btn>
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item
+                        v-if="!column.nodeExcluded"
+                        @click="exclude('name', column)">
+                        {{ $t('stats.excludeNode') }}: {{ column.name }}
+                      </v-list-item>
+                      <v-list-item
+                        v-if="column.nodeExcluded"
+                        @click="include('name', column)">
+                        {{ $t('stats.includeNode') }}: {{ column.name }}
+                      </v-list-item>
+                      <v-list-item
+                        v-if="!column.ipExcluded"
+                        @click="exclude('ip', column)">
+                        {{ $t('stats.excludeIp') }}: {{ column.ip }}
+                      </v-list-item>
+                      <v-list-item
+                        v-if="column.ipExcluded"
+                        @click="include('ip', column)">
+                        {{ $t('stats.includeIp') }}: {{ column.ip }}
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </span> <!-- /column dropdown menu -->
                 <div
                   class="header-text"
                   :class="{'cursor-pointer':column.sort !== undefined}"
                   @click="columnClick(column.sort)">
                   {{ column.name }}
                   <span v-if="column.sort !== undefined">
-                    <span
-                      v-show="query.sortField === column.sort && !query.desc"
-                      class="fa fa-sort-asc" />
-                    <span
-                      v-show="query.sortField === column.sort && query.desc"
-                      class="fa fa-sort-desc" />
-                    <span
-                      v-show="query.sortField !== column.sort"
-                      class="fa fa-sort" />
+                    <v-icon
+                      icon="mdi-chevron-up"
+                      v-show="query.sortField === column.sort && !query.desc" />
+                    <v-icon
+                      icon="mdi-chevron-down"
+                      v-show="query.sortField === column.sort && query.desc" />
                   </span>
                 </div>
               </div>
@@ -95,32 +110,38 @@ SPDX-License-Identifier: Apache-2.0
                 v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
                 v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
-                  <BButton
+                  <v-btn
                     v-if="!stat.confirmDelete"
-                    size="xs"
-                    variant="danger"
+                    color="error"
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    icon
                     :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
-                    <span class="fa fa-trash fa-fw" />
-                    <BTooltip
-                      :target="`deleteUnassignedShards${index}`"
-                      placement="right">
+                    <v-icon icon="mdi-delete" />
+                    <v-tooltip
+                      :activator="`[id='deleteUnassignedShards${index}']`"
+                      location="right">
                       {{ $t('stats.esShards.deleteUnassignedTip') }}
-                    </BTooltip>
-                  </BButton>
-                  <BButton
+                    </v-tooltip>
+                  </v-btn>
+                  <v-btn
                     v-else
-                    size="xs"
-                    variant="warning"
+                    color="warning"
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    icon
                     :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
-                    <span class="fa fa-check fa-fw" />
-                    <BTooltip
-                      :target="`confirmDeleteUnassignedShards${index}`"
-                      placement="right">
+                    <v-icon icon="mdi-check" />
+                    <v-tooltip
+                      :activator="`[id='confirmDeleteUnassignedShards${index}']`"
+                      location="right">
                       {{ $t('stats.esShards.confirmDeleteUnassignedTip') }}
-                    </BTooltip>
-                  </BButton>
+                    </v-tooltip>
+                  </v-btn>
                 </transition>
               </span>
             </td>
@@ -135,8 +156,8 @@ SPDX-License-Identifier: Apache-2.0
                   v-for="item in stat.nodes[node]"
                   :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
                   <span
-                    class="badge badge-pill bg-secondary cursor-help"
-                    :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                    class="shard-badge cursor-help"
+                    :class="{'shard-badge--primary':item.prirep === 'p', 'shard-badge--notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item, stat.name)"
                     @mouseleave="hideDetails(item)">
@@ -201,12 +222,16 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="node === 'Unassigned' && user.esAdminUser"
                         class="mt-2 pt-2"
                         style="border-top: 1px solid #555;">
-                        <button
-                          @click="openAllocationModal(item, stat.name)"
-                          class="btn btn-xs btn-theme-primary w-100"
-                          :disabled="loadingAllocationExplain">
+                        <v-btn
+                          variant="flat"
+                          size="x-small"
+                          density="comfortable"
+                          block
+                          :style="primaryBtnStyle"
+                          :disabled="loadingAllocationExplain"
+                          @click="openAllocationModal(item, stat.name)">
                           {{ $t('stats.esShards.explainAllocation') }}
-                        </button>
+                        </v-btn>
                       </div>
                     </span>
                   </span>
@@ -219,40 +244,51 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <!-- Allocation Explain Modal -->
-    <BModal
+    <v-dialog
       v-model="showAllocationModal"
-      size="xl"
-      :title="allocationModalTitle"
-      header-bg-variant="dark"
-      header-text-variant="white"
-      body-class="p-0">
-      <div
-        v-if="loadingAllocationExplain"
-        class="text-center p-4">
-        <span class="fa fa-spinner fa-spin fa-2x" />
-        <p class="mt-2">
-          {{ $t('common.loading') }}
-        </p>
-      </div>
-      <div
-        v-else-if="allocationExplainData"
-        class="allocation-explain-modal">
-        <pre class="mb-0">{{ JSON.stringify(allocationExplainData, null, 2) }}</pre>
-      </div>
-      <div
-        v-else-if="allocationExplainError"
-        class="alert alert-danger m-3">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ allocationExplainError }}
-      </div>
-      <template #footer>
-        <BButton
-          variant="theme-primary"
-          @click="showAllocationModal = false">
-          {{ $t('common.close') }}
-        </BButton>
-      </template>
-    </BModal>
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title class="bg-dark text-white">
+          {{ allocationModalTitle }}
+        </v-card-title>
+        <v-card-text class="p-0">
+          <div
+            v-if="loadingAllocationExplain"
+            class="text-center p-4">
+            <v-icon
+              icon="mdi-loading"
+              size="large"
+              class="mdi-spin" />
+            <p class="mt-2">
+              {{ $t('common.loading') }}
+            </p>
+          </div>
+          <div
+            v-else-if="allocationExplainData"
+            class="allocation-explain-modal">
+            <pre class="mb-0">{{ JSON.stringify(allocationExplainData, null, 2) }}</pre>
+          </div>
+          <v-alert
+            v-else-if="allocationExplainError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="m-3">
+            {{ allocationExplainError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            variant="flat"
+            size="small"
+            density="comfortable"
+            :style="primaryBtnStyle"
+            @click="showAllocationModal = false">
+            {{ $t('common.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -313,7 +349,12 @@ export default {
       loadingAllocationExplain: false,
       allocationExplainData: null,
       allocationExplainError: '',
-      allocationModalTitle: ''
+      allocationModalTitle: '',
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {
@@ -605,27 +646,36 @@ table.table tbody > tr > td:first-child {
   padding-right: .5rem;
 }
 
-.badge {
+.shard-badge {
+  display: inline-block;
   padding: .1em .4em;
   font-weight: 500;
   font-size: 14px;
   white-space: normal;
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-neutral));
+  border-radius: 0.375rem;
+  border: 2px dotted rgb(var(--v-theme-neutral-dark));
 }
-.badge.bg-primary {
+.shard-badge.shard-badge--primary {
   font-weight: bold;
-  background-color: var(--color-primary);
+  background-color: rgb(var(--v-theme-primary));
+  border: 2px dotted rgb(var(--v-theme-primary));
 }
-.badge:hover {
+.shard-badge.shard-badge--notstarted {
+  border: 2px dotted rgb(var(--v-theme-quaternary));
+}
+.shard-badge:hover {
   position: relative;
 }
-.badge > span {
+.shard-badge > span {
   display: none;
 }
-.badge:hover > span.shard-detail {
+.shard-badge:hover > span.shard-detail {
   z-index: 2;
   display: block;
 }
-.badge > span:before {
+.shard-badge > span:before {
   content: '';
   display: block;
   width: 0;
@@ -637,7 +687,7 @@ table.table tbody > tr > td:first-child {
   right: -8px;
   bottom: 7px;
 }
-.badge > span.shard-detail {
+.shard-badge > span.shard-detail {
   font-weight: normal;
   position: absolute;
   margin: 10px;
@@ -652,7 +702,7 @@ table.table tbody > tr > td:first-child {
   max-width: 210px;
 }
 /* Interactive tooltip for unassigned shards */
-.badge > span.shard-detail-interactive {
+.shard-badge > span.shard-detail-interactive {
   pointer-events: auto;
   cursor: default;
 }
@@ -661,41 +711,32 @@ table.table tbody > tr > td:first-child {
   max-height: 70vh;
   overflow-y: auto;
   overflow-x: auto;
-  background-color: var(--color-background);
+  background-color: rgb(var(--v-theme-background));
   padding: 1rem;
 }
 .allocation-explain-modal pre {
   font-size: 12px;
   line-height: 1.4;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
   white-space: pre;
   font-family: 'Courier New', monospace;
 }
-.badge > span.shard-detail dl {
+.shard-badge > span.shard-detail dl {
   margin-bottom: 0;
 }
-.badge > span.shard-detail dt {
+.shard-badge > span.shard-detail dt {
   width: 85px;
 }
-.badge > span.shard-detail dd {
+.shard-badge > span.shard-detail dd {
   margin-left: 90px;
   text-align: left;
   overflow-wrap: break-word;
 }
 
-.badge.render-tooltip-bottom:hover > span {
+.shard-badge.render-tooltip-bottom:hover > span {
   bottom: -120px;
 }
-.badge.render-tooltip-bottom:hover > span:before {
+.shard-badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
-}
-.badge.bg-secondary:not(.badge-notstarted):not(.bg-primary) {
-  border: 2px dotted #6c757d;
-}
-.badge.bg-primary {
-  border: 2px dotted var(--color-primary);
-}
-.badge-notstarted {
-  border: 2px dotted var(--color-quaternary);
 }
 </style>

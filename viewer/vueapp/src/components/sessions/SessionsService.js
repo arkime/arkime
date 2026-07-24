@@ -113,14 +113,14 @@ export default {
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
    * @param {string} cluster  The Elasticsearch cluster that the session belongs to
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
+   * @returns {Promise<{html: string, info: object}>} The detail html and the
+   *                            session fields (rootId, packets, etc.) the row omits.
    */
   getDetail: async function (id, node, cluster) {
     return await fetchWrapper({
       url: `api/session/${node}/${id}/detail`,
       params: { cluster },
-      headers: { 'Content-Type': 'text/html' }
+      headers: { 'Content-Type': 'application/json' }
     });
   },
 
@@ -139,6 +139,25 @@ export default {
       params: { ...params, cluster },
       url: `api/session/${node}/${id}/packets`,
       headers: { 'Content-Type': 'text/html' }
+    };
+
+    return cancelFetchWrapper(options);
+  },
+
+  /**
+   * Gets a tshark dissection of the session pcap as NDJSON
+   * (one JSON-encoded packet per line). Streamed by the viewer.
+   * @param {string} id       The unique id of the session
+   * @param {string} node     The node that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster the session belongs to
+   * @param {Object} params   Extra query params (length, payload, hidden)
+   * @returns {Object} { controller, fetcher } as for cancelFetchWrapper
+   */
+  getTshark (id, node, cluster, params) {
+    const options = {
+      params: { ...params, cluster },
+      url: `api/session/${node}/${id}/tshark`,
+      headers: { 'Content-Type': 'text/plain', Accept: 'application/x-ndjson' }
     };
 
     return cancelFetchWrapper(options);

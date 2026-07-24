@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev7" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "dev7" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -189,6 +189,28 @@ jobs:
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
           head /tmp/arkimedb.log
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: viewer test clickhouse
+        if: ${{ matrix.viewertest == 'clickhouse' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+          curl -fsSL -o /usr/local/bin/arkimedb "https://github.com/arkime/arkime-testdb/releases/latest/download/arkimedb-linux-${arch}"
+          chmod +x /usr/local/bin/arkimedb
+          mkdir -p /tmp/arkimedb-data
+          arkimedb serve --data-dir /tmp/arkimedb-data --port 9200 > /tmp/arkimedb.log 2>&1 &
+          curl -fsSL https://clickhouse.com/ | sh
+          mv clickhouse /usr/local/bin/clickhouse
+          mkdir -p /tmp/clickhouse-data
+          (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && curl -fsS http://localhost:9200/ >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
+          curl -fsS http://localhost:9100/ping || (tail -50 /tmp/clickhouse.log; exit 1)
+          clickhouse client --query "SELECT version()"
+          (cd tests ; G_SLICE=always-malloc ./tests_ch.sh --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}

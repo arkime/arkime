@@ -4,76 +4,53 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <!-- search -->
-    <div class="d-flex justify-content-between mt-3">
-      <div class="me-2 flex-grow-1 ">
-        <b-input-group size="sm">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search fa-fw" />
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            autofocus
-            type="text"
-            debounce="400"
-            v-model="searchTerm"
-            :placeholder="$t('users.searchPlaceholder')" />
-          <template #append>
-            <b-button
-              :disabled="!searchTerm"
-              @click="searchTerm = ''"
-              variant="outline-secondary">
-              <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group>
-      </div>
-      <div class="me-2">
-        <b-form-select
-          size="sm"
-          v-model="perPage"
-          @update:model-value="perPageChange"
-          :options="[
-            { value: 50, text: $t('common.perPage', {count: 50})},
-            { value: 100, text: $t('common.perPage', {count: 100})},
-            { value: 200, text: $t('common.perPage', {count: 200})},
-            { value: 500, text: $t('common.perPage', {count: 500})}
-          ]" />
-      </div>
-      <div class="pagination-no-right-radius">
-        <b-pagination
-          size="sm"
-          :per-page="perPage"
-          v-model="currentPage"
-          :total-rows="recordsTotal" />
-      </div>
-      <div class="d-flex align-items-center pagination-info">
-        <span v-if="recordsTotal">
-          {{ $t('common.showingRange', { start: commaString(((currentPage - 1) * perPage) + 1), end: commaString(Math.min(currentPage * perPage, recordsTotal)), total: commaString(recordsTotal) }) }}
+    <!-- search/paging/download chrome -->
+    <div class="d-flex align-center mt-2 mb-2 ga-2">
+      <div class="arkime-input-group arkime-input-group--fluid align-self-center ms-1">
+        <span class="arkime-input-label arkime-input-label-fw">
+          <v-icon icon="mdi-magnify" />
         </span>
-        <span v-else>
-          {{ $t('common.showingAll', { count: 0, total: 0 }) }}
-        </span>
+        <input
+          type="text"
+          class="arkime-input-control"
+          v-focus="true"
+          v-model="searchTerm"
+          :placeholder="$t('users.searchPlaceholder')">
+        <v-btn
+          v-if="searchTerm"
+          variant="text"
+          size="x-small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn"
+          :aria-label="$t('common.clear')"
+          @click="searchTerm = ''">
+          <v-icon icon="mdi-close" />
+        </v-btn>
       </div>
-      <div>
-        <b-button
-          size="sm"
-          class="ms-2"
-          @click="download"
-          variant="primary"
-          :title="$t('users.downloadCSVTip')">
-          <span class="fa fa-download" />
-        </b-button>
-      </div>
-    </div> <!-- /search -->
+      <ArkimePaging
+        class="align-self-center"
+        :records-filtered="recordsFiltered"
+        :records-total="recordsTotal"
+        :length-default="100"
+        @change-paging="onPagingChange" />
+      <v-btn
+        size="small"
+        color="secondary"
+        variant="outlined"
+        class="align-self-center me-1"
+        @click="download"
+        :title="$t('users.downloadCSVTip')">
+        <v-icon icon="mdi:mdi-download" />
+      </v-btn>
+    </div> <!-- /chrome -->
 
     <!-- error -->
     <div
       v-if="error"
       class="info-area vertical-center text-monospace">
       <div class="text-danger">
-        <span class="fa fa-2x fa-warning" />
+        <span class="mdi mdi-alert mdi-24px" />
         {{ error }}
       </div>
     </div> <!-- /error -->
@@ -82,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="loading">
       <slot name="loading">
         <div class="text-center mt-5">
-          <span class="fa fa-2x fa-spin fa-spinner" />
+          <span class="mdi mdi-loading mdi-spin mdi-24px" />
           <br>
           {{ $t('common.loading') }}
         </div>
@@ -90,385 +67,380 @@ SPDX-License-Identifier: Apache-2.0
     </template> <!-- /loading -->
 
     <!-- users table -->
-    <div v-if="!error">
-      <BTable
-        :dark="dark"
-        small
-        striped
-        show-empty
+    <div v-if="!error && !loading">
+      <v-data-table
+        density="compact"
         must-sort
-        no-local-sorting
+        show-expand
+        item-value="userId"
         :items="users"
-        :fields="fields"
+        :headers="tableHeaders"
+        :items-per-page="-1"
+        hide-default-footer
         v-model:sort-by="sortBy"
-        @sorted="sortChanged"
-        class="small-table-font"
-        :empty-text="searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles')">
-        <!-- column headers -->
-        <template #head()="data">
-          <span :title="data.field.help">
-            {{ data.label }}
-            <span
-              id="roles-help"
-              v-if="data.field.key === 'roles'"
-              class="fa fa-info-circle fa-lg cursor-help ms-2">
-              <BTooltip target="roles-help">
-                {{ $t('users.rolesTip') }}
-              </BTooltip>
-            </span>
-            <div
-              class="pull-right"
-              v-if="data.field.key === 'action'">
-              <b-button
-                size="sm"
-                v-if="roles"
-                variant="success"
-                :title="$t('users.createRoleTip')"
-                @click="createMode = 'role'; showUserCreateModal = true">
-                <span class="fa fa-plus-circle me-1" />
-                {{ $t('common.role') }}
-              </b-button>
-              <b-button
-                size="sm"
-                class="ms-2"
-                variant="primary"
-                :title="$t('users.createUserTip')"
-                @click="createMode = 'user'; showUserCreateModal = true">
-                <span class="fa fa-plus-circle me-1" />
-                {{ $t('common.user') }}
-              </b-button>
-            </div>
-          </span>
-        </template> <!-- /column headers -->
+        @update:sort-by="sortChanged"
+        class="users-table-striped">
+        <template #no-data>
+          {{ searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles') }}
+        </template>
 
-        <!-- toggle column -->
-        <template #cell(toggle)="data">
-          <span :class="{'btn-indicator':!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
+        <!-- Default Vuetify headers render title + sort icon when sortable.
+             Tooltips bind by id selector via each column's headerProps so
+             we don't have to override the header slot. -->
+
+        <!-- +Role / +User in the right-most header column. -->
+        <template #[`header.action`]>
+          <div class="float-right">
+            <v-btn
+              v-if="roles"
+              size="x-small"
+              color="success"
+              variant="flat"
+              :title="$t('users.createRoleTip')"
+              @click="createMode = 'role'; showUserCreateModal = true">
+              <v-icon
+                start
+                icon="mdi:mdi-plus-circle" />
+              {{ $t('common.role') }}
+            </v-btn>
+            <v-btn
+              size="x-small"
+              color="primary"
+              variant="flat"
+              class="ms-2"
+              :title="$t('users.createUserTip')"
+              @click="createMode = 'user'; showUserCreateModal = true">
+              <v-icon
+                start
+                icon="mdi:mdi-plus-circle" />
+              {{ $t('common.user') }}
+            </v-btn>
+          </div>
+        </template>
+
+        <!-- expand-icon cell: keep auto-toggle but add restriction indicator class -->
+        <template #[`item.data-table-expand`]="{ item, internalItem, toggleExpand, isExpanded }">
+          <span :class="{'btn-indicator': hasRestrictions(item)}">
             <ToggleBtn
-              class="btn-toggle-user"
-              @toggle="data.toggleDetails"
-              :opened="data.detailsShowing"
-              :class="{expanded: data.detailsShowing}"
-              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? $t('users.restrictedTip') : ''" />
+              :opened="isExpanded(internalItem)"
+              :title="hasRestrictions(item) ? $t('users.restrictedTip') : ''"
+              @toggle="toggleExpand(internalItem)" />
           </span>
-        </template> <!-- /toggle column -->
-        <!-- action column -->
-        <template #cell(action)="data">
-          <div class="pull-right">
-            <b-button
-              size="sm"
-              class="ms-1"
-              variant="primary"
-              @click="openSettings(data.item.userId)"
-              :title="$t('users.settingsFor', {user: data.item.userId})"
-              v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              v-if="parentApp === 'Arkime' && isUser(data.item)">
-              <span class="fa fa-gear" />
-            </b-button>
-            <b-button
-              size="sm"
-              class="ms-1"
-              variant="secondary"
-              v-if="parentApp === 'Arkime'"
-              @click="openHistory(data.item.userId)"
-              :title="$t('users.historyFor', {user: data.item.userId})">
-              <span class="fa fa-history" />
-            </b-button>
-            <!-- cancel confirm delete button -->
-            <transition name="buttons">
-              <b-button
-                size="sm"
-                class="ms-1"
-                :title="$t('common.cancel')"
-                variant="warning"
-                v-if="confirmDelete[data.item.userId]"
-                @click="toggleConfirmDeleteUser(data.item.userId)">
-                <span class="fa fa-ban" />
-              </b-button>
-            </transition> <!-- /cancel confirm delete button -->
-            <!-- confirm delete button -->
-            <transition name="buttons">
-              <b-button
-                size="sm"
-                class="ms-1"
-                variant="danger"
-                :title="$t('common.areYouSure')"
-                v-if="confirmDelete[data.item.userId]"
-                @click="deleteUser(data.item, data.index)">
-                <span class="fa fa-check" />
-              </b-button>
-            </transition> <!-- /confirm delete button -->
-            <!-- delete button -->
-            <transition name="buttons">
-              <b-button
-                size="sm"
-                class="ms-1"
-                variant="danger"
-                :title="$t('users.deleteUser', {user: data.item.userId})"
-                v-if="!confirmDelete[data.item.userId]"
-                @click="toggleConfirmDeleteUser(data.item.userId)">
-                <span class="fa fa-trash-o" />
-              </b-button>
-            </transition> <!-- /delete button -->
-          </div>
-        </template> <!-- /action column -->
-        <!-- user id column -->
-        <template #cell(userId)="data">
-          <div class="mt-1">
-            {{ data.value }}
-          </div>
-        </template> <!-- /user id column -->
-        <!-- last used column -->
-        <template #cell(lastUsed)="data">
-          <div class="mt-1">
-            {{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}
-          </div>
-        </template> <!-- /last used column -->
-        <!-- roles column -->
-        <template #cell(roles)="data">
+        </template>
+
+        <!-- per-cell slots -->
+        <template #[`item.userId`]="{ item }">
+          {{ item.userId }}
+        </template>
+        <template #[`item.userName`]="{ item }">
+          <v-text-field
+            density="compact"
+            variant="outlined"
+            hide-details
+            v-model="item.userName"
+            @update:model-value="userHasChanged(item)" />
+        </template>
+        <template #[`item.enabled`]="{ item }">
+          <input
+            type="checkbox"
+            class="arkime-check-input"
+            data-testid="checkbox"
+            v-model="item.enabled"
+            @change="userHasChanged(item)">
+        </template>
+        <template #[`item.webEnabled`]="{ item }">
+          <input
+            v-if="!item.userId.startsWith('role:')"
+            type="checkbox"
+            class="arkime-check-input"
+            data-testid="checkbox"
+            v-model="item.webEnabled"
+            @change="userHasChanged(item)">
+        </template>
+        <template #[`item.headerAuthEnabled`]="{ item }">
+          <input
+            v-if="!item.userId.startsWith('role:')"
+            type="checkbox"
+            class="arkime-check-input"
+            data-testid="checkbox"
+            v-model="item.headerAuthEnabled"
+            @change="userHasChanged(item)">
+        </template>
+        <template #[`item.roles`]="{ item }">
           <RoleDropdown
-            v-if="data.field.type === 'select' && roles && roles.length"
-            :roles="isUser(data.item) ? roles : roleAssignableRoles"
-            :id="data.item.userId"
-            :selected-roles="data.item.roles"
+            v-if="roles && roles.length"
+            :roles="isUser(item) ? roles : roleAssignableRoles"
+            :id="item.userId"
+            :selected-roles="item.roles"
             @selected-roles-updated="updateRoles"
             :truncate="4" />
-        </template> <!-- /roles column -->
-        <!-- all other columns -->
-        <template #cell()="data">
-          <b-form-input
-            size="sm"
-            v-model="data.item[data.field.key]"
-            v-if="data.field.type === 'text'"
-            @input="userHasChanged(data.item)" />
-          <b-form-checkbox
-            class="mt-1"
-            data-testid="checkbox"
-            v-model="data.item[data.field.key]"
-            v-else-if="data.field.type === 'checkbox'"
-            @input="userHasChanged(data.item)" />
-          <b-form-checkbox
-            class="mt-1"
-            data-testid="checkbox"
-            v-model="data.item[data.field.key]"
-            v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
-            @input="userHasChanged(data.item)" />
-        </template> <!-- all other columns -->
+        </template>
+        <template #[`item.lastUsed`]="{ item }">
+          <div class="mt-1">
+            {{ item.lastUsed ? (tzDateStr(item.lastUsed, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}
+          </div>
+        </template>
+        <template #[`item.action`]="{ item, index }">
+          <div class="float-right">
+            <v-btn
+              v-if="parentApp === 'Arkime' && isUser(item)"
+              v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
+              color="primary"
+              variant="flat"
+              class="ms-1"
+              icon="mdi:mdi-cog"
+              @click="openSettings(item.userId)"
+              :title="$t('users.settingsFor', {user: item.userId})" />
+            <v-btn
+              v-if="parentApp === 'Arkime'"
+              color="secondary"
+              variant="flat"
+              class="ms-1"
+              icon="mdi:mdi-history"
+              @click="openHistory(item.userId)"
+              :title="$t('users.historyFor', {user: item.userId})" />
+            <transition name="buttons">
+              <v-btn
+                v-if="confirmDelete[item.userId]"
+                color="warning"
+                variant="flat"
+                class="ms-1"
+                icon="mdi:mdi-cancel"
+                :title="$t('common.cancel')"
+                @click="toggleConfirmDeleteUser(item.userId)" />
+            </transition>
+            <transition name="buttons">
+              <v-btn
+                v-if="confirmDelete[item.userId]"
+                color="error"
+                variant="flat"
+                class="ms-1"
+                icon="mdi:mdi-check"
+                :title="$t('common.areYouSure')"
+                @click="deleteUser(item, index)" />
+            </transition>
+            <transition name="buttons">
+              <v-btn
+                v-if="!confirmDelete[item.userId]"
+                color="error"
+                variant="flat"
+                class="ms-1"
+                icon="mdi:mdi-delete"
+                :title="$t('users.deleteUser', {user: item.userId})"
+                @click="toggleConfirmDeleteUser(item.userId)" />
+            </transition>
+          </div>
+        </template>
 
-        <!-- detail row -->
-        <template #row-details="data">
-          <div class="m-2">
-            <!-- User permission tri-state toggles -->
-            <div
-              v-if="isUser(data.item)"
-              class="user-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.emailSearch"
-                :label="$t('users.disableEmailSearch')"
-                :negated="true"
-                @update:model-value="setRoleField(data.item, 'emailSearch', $event)" />
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.removeEnabled"
-                :label="$t('users.disableDataRemoval')"
-                :negated="true"
-                @update:model-value="setRoleField(data.item, 'removeEnabled', $event)" />
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.packetSearch"
-                :label="$t('users.disableHunting')"
-                :negated="true"
-                @update:model-value="setRoleField(data.item, 'packetSearch', $event)" />
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.hideStats"
-                :label="$t('users.hideStatsPage')"
-                @update:model-value="setRoleField(data.item, 'hideStats', $event)" />
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.hideFiles"
-                :label="$t('users.hideFilesPage')"
-                @update:model-value="setRoleField(data.item, 'hideFiles', $event)" />
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.hidePcap"
-                :label="$t('users.hidePcap')"
-                @update:model-value="setRoleField(data.item, 'hidePcap', $event)" />
-              <TriStateToggle
-                class="toggle-group rounded p-1"
-                :model-value="data.item.disablePcapDownload"
-                :label="$t('users.disablePcapDownload')"
-                @update:model-value="setRoleField(data.item, 'disablePcapDownload', $event)" />
-            </div>
-            <b-input-group
-              size="sm"
-              class="mt-2">
-              <template #prepend>
-                <b-input-group-text :id="data.id + '-expression'">
-                  {{ $t('users.forcedExpression') }}
-                  <BTooltip :target="data.id + '-expression'">
-                    {{ $t('users.forcedExpressionTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                v-model="data.item.expression"
-                @input="userHasChanged(data.item)" />
-            </b-input-group>
-            <b-input-group
-              size="sm"
-              class="mt-2 w-25">
-              <template #prepend>
-                <b-input-group-text :id="data.id + '-timeLimit'">
-                  {{ $t('users.queryTimeLimit') }}
-                  <BTooltip :target="data.id + '-timeLimit'">
-                    {{ $t('users.queryTimeLimitTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
-              <select
-                class="form-control"
-                v-model="data.item.timeLimit"
-                @change="changeTimeLimit(data.item)">
-                <option value="1">
-                  {{ $t('common.hourCount', { count: 1 }) }}
-                </option>
-                <option value="6">
-                  {{ $t('common.hourCount', { count: 6 }) }}
-                </option>
-                <option value="24">
-                  {{ $t('common.hourCount', { count: 24 }) }}
-                </option>
-                <option value="48">
-                  {{ $t('common.hourCount', { count: 48 }) }}
-                </option>
-                <option value="72">
-                  {{ $t('common.hourCount', { count: 72 }) }}
-                </option>
-
-                <option value="168">
-                  {{ $t('common.weekCount', { count: 1 }) }}
-                </option>
-                <option value="336">
-                  {{ $t('common.weekCount', { count: 2 }) }}
-                </option>
-
-                <option value="720">
-                  {{ $t('common.monthCount', { count: 1 }) }}
-                </option>
-                <option value="1440">
-                  {{ $t('common.monthCount', { count: 2 }) }}
-                </option>
-                <option value="4380">
-                  {{ $t('common.monthCount', { count: 6 }) }}
-                </option>
-
-                <option value="8760">
-                  {{ $t('common.yearCount', { count: 1 }) }}
-                </option>
-                <option value="undefined">
-                  {{ $t('common.allCareful') }}
-                </option>
-              </select>
-            </b-input-group>
-
-            <!-- display change password if not a role and
-                 we're in cont3xt or arkime
-                 (assumes user is a usersAdmin since only usersAdmin can see this page) -->
-            <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-              <form
-                class="row"
-                v-if="isUser(data.item)">
-                <div class="col-9 mt-4">
-                  <!-- new password -->
-                  <b-input-group
-                    size="sm"
-                    class="mt-2"
-                    :prepend="$t('users.newPassword')">
-                    <b-form-input
-                      type="password"
-                      v-model="newPassword"
-                      autocomplete="new-password"
-                      @keydown.enter="changePassword"
-                      :placeholder="$t('users.newPasswordPlaceholder')" />
-                  </b-input-group>
-                  <!-- confirm new password -->
-                  <b-input-group
-                    size="sm"
-                    class="mt-2"
-                    :prepend="$t('users.confirmPassword')">
-                    <b-form-input
-                      type="password"
-                      autocomplete="new-password"
-                      v-model="confirmNewPassword"
-                      @keydown.enter="changePassword"
-                      :placeholder="$t('users.confirmPasswordPlaceholder')" />
-                  </b-input-group>
-                  <!-- change password button -->
-                  <b-button
-                    size="sm"
-                    class="mt-2"
-                    variant="success"
-                    @click="changePassword(data.item.userId)">
-                    {{ $t('users.changePassword') }}
-                  </b-button>
-                </div>
-              </form>
-              <div v-else>
-                <!-- Role permission tri-state toggles -->
-                <div class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+        <!-- expanded row -->
+        <template #expanded-row="{ item, columns }">
+          <tr class="user-detail-row">
+            <td :colspan="columns.length">
+              <div class="m-2">
+                <!-- user permission tri-state toggles -->
+                <div
+                  v-if="isUser(item)"
+                  class="user-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.emailSearch"
+                    :model-value="item.emailSearch"
                     :label="$t('users.disableEmailSearch')"
                     :negated="true"
-                    @update:model-value="setRoleField(data.item, 'emailSearch', $event)" />
+                    @update:model-value="setRoleField(item, 'emailSearch', $event)" />
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.removeEnabled"
+                    :model-value="item.removeEnabled"
                     :label="$t('users.disableDataRemoval')"
                     :negated="true"
-                    @update:model-value="setRoleField(data.item, 'removeEnabled', $event)" />
+                    @update:model-value="setRoleField(item, 'removeEnabled', $event)" />
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.packetSearch"
+                    :model-value="item.packetSearch"
                     :label="$t('users.disableHunting')"
                     :negated="true"
-                    @update:model-value="setRoleField(data.item, 'packetSearch', $event)" />
+                    @update:model-value="setRoleField(item, 'packetSearch', $event)" />
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.hideStats"
+                    :model-value="item.hideStats"
                     :label="$t('users.hideStatsPage')"
-                    @update:model-value="setRoleField(data.item, 'hideStats', $event)" />
+                    @update:model-value="setRoleField(item, 'hideStats', $event)" />
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.hideFiles"
+                    :model-value="item.hideFiles"
                     :label="$t('users.hideFilesPage')"
-                    @update:model-value="setRoleField(data.item, 'hideFiles', $event)" />
+                    @update:model-value="setRoleField(item, 'hideFiles', $event)" />
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.hidePcap"
+                    :model-value="item.hidePcap"
                     :label="$t('users.hidePcap')"
-                    @update:model-value="setRoleField(data.item, 'hidePcap', $event)" />
+                    @update:model-value="setRoleField(item, 'hidePcap', $event)" />
                   <TriStateToggle
                     class="toggle-group rounded p-1"
-                    :model-value="data.item.disablePcapDownload"
+                    :model-value="item.disablePcapDownload"
                     :label="$t('users.disablePcapDownload')"
-                    @update:model-value="setRoleField(data.item, 'disablePcapDownload', $event)" />
+                    @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
                 </div>
-                <UserDropdown
+
+                <v-text-field
                   class="mt-2"
-                  label="Role Assigners&nbsp;"
-                  :selected-users="data.item.roleAssigners || []"
-                  :role-id="data.item.userId"
-                  @selected-users-updated="updateRoleAssigners" />
+                  :label="$t('users.forcedExpression')"
+                  v-model="item.expression"
+                  @update:model-value="userHasChanged(item)">
+                  <template #append-inner>
+                    <span
+                      :id="`${item.userId}-expression`"
+                      class="mdi mdi-information cursor-help" />
+                    <v-tooltip :activator="`[id='${item.userId}-expression']`">
+                      {{ $t('users.forcedExpressionTip') }}
+                    </v-tooltip>
+                  </template>
+                </v-text-field>
+
+                <v-select
+                  class="mt-1 w-25"
+                  item-title="text"
+                  item-value="value"
+                  :items="timeLimitOptions"
+                  :label="$t('users.queryTimeLimit')"
+                  v-model="item.timeLimit"
+                  @update:model-value="changeTimeLimit(item)">
+                  <template #append-inner>
+                    <span
+                      :id="`${item.userId}-timeLimit`"
+                      class="mdi mdi-information cursor-help" />
+                    <v-tooltip :activator="`[id='${item.userId}-timeLimit']`">
+                      {{ $t('users.queryTimeLimitTip') }}
+                    </v-tooltip>
+                  </template>
+                </v-select>
+
+                <!-- password change for users / role-permissions for roles -->
+                <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+                  <form
+                    class="row"
+                    v-if="isUser(item)">
+                    <div class="col-9 mt-2">
+                      <v-text-field
+                        class="mt-1"
+                        type="password"
+                        :label="$t('users.newPassword')"
+                        v-model="newPassword"
+                        autocomplete="new-password"
+                        @keydown.enter="changePassword(item.userId)"
+                        :placeholder="$t('users.newPasswordPlaceholder')" />
+                      <v-text-field
+                        class="mt-1"
+                        type="password"
+                        :label="$t('users.confirmPassword')"
+                        autocomplete="new-password"
+                        v-model="confirmNewPassword"
+                        @keydown.enter="changePassword(item.userId)"
+                        :placeholder="$t('users.confirmPasswordPlaceholder')" />
+                      <v-btn
+                        size="large"
+                        color="success"
+                        variant="flat"
+                        class="mt-2"
+                        @click="changePassword(item.userId)">
+                        {{ $t('users.changePassword') }}
+                      </v-btn>
+                    </div>
+                  </form>
+                  <div v-else>
+                    <!-- role permission tri-state toggles -->
+                    <div class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.emailSearch"
+                        :label="$t('users.disableEmailSearch')"
+                        :negated="true"
+                        @update:model-value="setRoleField(item, 'emailSearch', $event)" />
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.removeEnabled"
+                        :label="$t('users.disableDataRemoval')"
+                        :negated="true"
+                        @update:model-value="setRoleField(item, 'removeEnabled', $event)" />
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.packetSearch"
+                        :label="$t('users.disableHunting')"
+                        :negated="true"
+                        @update:model-value="setRoleField(item, 'packetSearch', $event)" />
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.hideStats"
+                        :label="$t('users.hideStatsPage')"
+                        @update:model-value="setRoleField(item, 'hideStats', $event)" />
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.hideFiles"
+                        :label="$t('users.hideFilesPage')"
+                        @update:model-value="setRoleField(item, 'hideFiles', $event)" />
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.hidePcap"
+                        :label="$t('users.hidePcap')"
+                        @update:model-value="setRoleField(item, 'hidePcap', $event)" />
+                      <TriStateToggle
+                        class="toggle-group rounded p-1"
+                        :model-value="item.disablePcapDownload"
+                        :label="$t('users.disablePcapDownload')"
+                        @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
+                    </div>
+                    <UserDropdown
+                      class="mt-2"
+                      label="Role Assigners&nbsp;"
+                      :selected-users="item.roleAssigners || []"
+                      :role-id="item.userId"
+                      @selected-users-updated="updateRoleAssigners" />
+                  </div>
+                </template>
               </div>
-            </template>
-          </div>
-        </template> <!-- /detail row -->
-      </BTable>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
+
+      <!-- Hover tooltips for header help text. Default Vuetify headers
+           render title + sort icon; we bind tooltips by id selector via
+           each column's headerProps so we don't have to override the
+           header slot (which would replace the default sort UI). -->
+      <v-tooltip
+        activator="#users-header-userId"
+        location="top">
+        {{ $t('users.userIdTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-userName"
+        location="top">
+        {{ $t('users.userNameTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-enabled"
+        location="top">
+        {{ $t('users.enabledTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-webEnabled"
+        location="top">
+        {{ $t('users.webEnabledTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-headerAuthEnabled"
+        location="top">
+        {{ $t('users.headerAuthEnabledTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-roles"
+        location="top">
+        {{ $t('users.rolesTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-lastUsed"
+        location="top">
+        {{ $t('users.lastUsedTip') }}
+      </v-tooltip>
     </div> <!-- /users table -->
 
     <!-- create user -->
@@ -480,28 +452,34 @@ SPDX-License-Identifier: Apache-2.0
       @close="showUserCreateModal = false" />
 
     <!-- messages (success/error) displayed at bottom of page -->
-    <div
-      v-if="msg"
-      style="z-index: 2000;"
-      :class="`alert-${msgType}`"
-      class="alert position-fixed fixed-bottom m-0 rounded-0">
+    <v-snackbar
+      :model-value="!!msg"
+      @update:model-value="(val) => { if (!val) msg = ''; }"
+      :color="snackbarColor"
+      location="bottom"
+      timeout="-1"
+      variant="flat">
       {{ msg }}
-      <button
-        type="button"
-        class="btn-close pull-right"
-        @click="msg = ''" />
-    </div> <!-- /messages -->
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="$close"
+          @click="msg = ''" />
+      </template>
+    </v-snackbar> <!-- /messages -->
   </div>
 </template>
 
 <script>
+import Focus from './Focus.vue';
 import HasRole from './HasRole.vue';
-import ToggleBtn from './ToggleBtn.vue';
 import UserCreate from './UserCreate.vue';
 import UserService from './UserService.js';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import TriStateToggle from './TriStateToggle.vue';
+import ToggleBtn from './ToggleBtn.vue';
+import ArkimePaging from './Pagination.vue';
 import { timezoneDateString, commaString } from './vueFilters.js';
 import { resolveMessage } from './resolveI18nMessage';
 
@@ -509,13 +487,14 @@ let userChangeTimeout;
 
 export default {
   name: 'UsersCommon',
-  directives: { HasRole },
+  directives: { HasRole, Focus },
   components: {
-    ToggleBtn,
     UserCreate,
     RoleDropdown,
     UserDropdown,
-    TriStateToggle
+    TriStateToggle,
+    ToggleBtn,
+    ArkimePaging
   },
   emits: ['update-roles', 'update-current-user'],
   props: {
@@ -544,8 +523,10 @@ export default {
       dbUserList: undefined,
       changed: {},
       recordsTotal: 0,
-      perPage: 100,
-      currentPage: 1,
+      recordsFiltered: 0,
+      // managed by the ArkimePaging component (length defaults to 100 via
+      // its length-default prop; start updates on page changes).
+      paging: { start: 0, length: 100 },
       sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
       // password
@@ -560,25 +541,51 @@ export default {
     roleAssignableRoles () {
       return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
     },
-    fields () {
+    tableHeaders () {
       const $t = this.$t;
-      function mkRow (row) {
-        const key = 'users.' + row.key;
-        row.label = $t(key);
-        row.help = $t(key + 'Tip');
-        return row;
-      }
+      const mk = (key, opts = {}) => ({
+        title: $t('users.' + key),
+        key,
+        sortable: opts.sortable ?? true,
+        headerProps: { id: `users-header-${key}` },
+        ...opts
+      });
       return [
-        { label: '', key: 'toggle', sortable: false },
-        mkRow({ key: 'userId', sortable: true, required: true }),
-        mkRow({ key: 'userName', sortable: true, type: 'text', required: true, thStyle: 'width:250px;' }),
-        mkRow({ key: 'enabled', sortable: true, type: 'checkbox' }),
-        mkRow({ key: 'webEnabled', sortable: true, type: 'checkbox-notrole' }),
-        mkRow({ key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole' }),
-        mkRow({ key: 'roles', sortable: false, type: 'select' }),
-        mkRow({ key: 'lastUsed', sortable: true, type: 'checkbox' }),
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;' }
+        // Explicit expand-toggle column at position 0; v-data-table's
+        // show-expand auto-injects it at the END otherwise.
+        { title: '', key: 'data-table-expand', sortable: false, width: '36px' },
+        mk('userId'),
+        mk('userName', { width: '250px' }),
+        mk('enabled'),
+        mk('webEnabled'),
+        mk('headerAuthEnabled'),
+        mk('roles', { sortable: false }),
+        mk('lastUsed'),
+        { title: '', key: 'action', sortable: false, width: '230px', align: 'end' }
       ];
+    },
+    timeLimitOptions () {
+      return [
+        { value: '1', text: this.$t('common.hourCount', { count: 1 }) },
+        { value: '6', text: this.$t('common.hourCount', { count: 6 }) },
+        { value: '24', text: this.$t('common.hourCount', { count: 24 }) },
+        { value: '48', text: this.$t('common.hourCount', { count: 48 }) },
+        { value: '72', text: this.$t('common.hourCount', { count: 72 }) },
+        { value: '168', text: this.$t('common.weekCount', { count: 1 }) },
+        { value: '336', text: this.$t('common.weekCount', { count: 2 }) },
+        { value: '720', text: this.$t('common.monthCount', { count: 1 }) },
+        { value: '1440', text: this.$t('common.monthCount', { count: 2 }) },
+        { value: '4380', text: this.$t('common.monthCount', { count: 6 }) },
+        { value: '8760', text: this.$t('common.yearCount', { count: 1 }) },
+        { value: 'undefined', text: this.$t('common.allCareful') }
+      ];
+    },
+    /* Map Bootstrap alert variants to Vuetify color tokens. msgType is set
+       via showMessage() callers using strings like 'danger'/'success' that
+       date back to the BVN/bootstrap era. */
+    snackbarColor () {
+      const map = { danger: 'error', success: 'success', warning: 'warning', info: 'info' };
+      return map[this.msgType] || 'info';
     }
   },
   created () {
@@ -587,9 +594,6 @@ export default {
   watch: {
     searchTerm () {
       this.loadUsers();
-    },
-    currentPage () {
-      this.loadUsers();
     }
   },
   methods: {
@@ -597,10 +601,6 @@ export default {
     commaString,
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
-    },
-    perPageChange (newVal) {
-      this.perPage = newVal;
-      this.loadUsers(false);
     },
     sortChanged () {
       this.loadUsers();
@@ -662,6 +662,11 @@ export default {
     },
     isUser (userOrRoleObj) {
       return !userOrRoleObj.userId.startsWith('role:');
+    },
+    hasRestrictions (item) {
+      return !item.emailSearch || !item.removeEnabled || !item.packetSearch ||
+        item.hideStats || item.hideFiles || item.hidePcap ||
+        item.disablePcapDownload || item.timeLimit || item.expression;
     },
     userHasChanged (user) {
       this.changed[user.userId] = true;
@@ -798,11 +803,15 @@ export default {
     getUsersQuery () {
       return {
         desc: this.sortBy[0]?.order === 'desc',
-        length: this.perPage,
+        length: this.paging.length,
         filter: this.searchTerm,
         sortField: this.sortBy[0]?.key,
-        start: (this.currentPage - 1) * this.perPage
+        start: this.paging.start
       };
+    },
+    onPagingChange (params) {
+      this.paging = { start: params.start, length: params.length };
+      this.loadUsers();
     },
     loadUsers () {
       const query = this.getUsersQuery();
@@ -811,6 +820,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
@@ -832,6 +842,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
@@ -852,12 +863,22 @@ export default {
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--bs-primary) 1%, var(--bs-primary) 75%, var(--bs-primary) 75%, var(--bs-primary-border-subtle) 77%, var(--bs-primary-border-subtle) 100%);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 1%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-primary-lighter)) 77%, rgb(var(--v-theme-primary-lighter)) 100%);
 }
 
-/* make the roles dropdown text smaller */
-.roles-dropdown > button, .users-dropdown > button {
-  font-size: 0.8rem;
+/* shrink the RoleDropdown / UserDropdown trigger text -- when a user
+   has many selected roles the comma-joined list overflows the cell at
+   the default size="large" v-btn font (~14px). */
+.roles-dropdown.v-btn,
+.users-dropdown.v-btn,
+.notifier-trigger.v-btn {
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+}
+.roles-dropdown.v-btn .v-btn__content,
+.users-dropdown.v-btn .v-btn__content {
+  white-space: normal;
+  text-align: start;
 }
 
 .small-table-font {
@@ -865,8 +886,8 @@ export default {
 }
 
 .toggle-group {
-  background-color: var(--color-white);
-  color: var(--color-gray-dark);
+  background-color: rgb(var(--v-theme-white));
+  color: rgb(var(--v-theme-neutral-dark));
 }
 
 .pagination-no-right-radius :deep(.page-item:last-child .page-link) {
@@ -874,14 +895,41 @@ export default {
   border-bottom-right-radius: 0;
 }
 
-.pagination-info {
-  font-size: .8rem;
-  color: var(--color-gray-dark);
-  border: 1px solid var(--color-gray-light);
-  padding: 2px 10px;
-  border-radius: 0 var(--px-sm) var(--px-sm) 0;
-  margin-left: -1px;
-  background-color: var(--color-white);
-  height: 31px;
+/* ---- Users table: tight rows so the list fits more on screen.
+   Padding is below Vuetify's compact default (8px); font shrunk to
+   match the rest of the analyst-grade dense chrome. ---- */
+.users-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
+}
+.users-table-striped :deep(tbody tr > td),
+.users-table-striped :deep(thead tr > th) {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  height: auto !important;
+  font-size: 0.8rem !important;
+  vertical-align: middle;
+}
+.users-table-striped :deep(thead tr > th) {
+  font-size: 0.75rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: left;
+}
+.users-table-striped :deep(tbody tr > td .v-input),
+.users-table-striped :deep(tbody tr > td .arkime-input-group) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+/* per-row icon-only v-btns: keep the button square chrome but shrink
+   so the rows aren't blown out by the action column. */
+.users-table-striped :deep(tbody tr > td .v-btn--icon) {
+  width: 28px !important;
+  height: 28px !important;
+}
+.users-table-striped :deep(.user-detail-row > td) {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
 }
 </style>

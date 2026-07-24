@@ -692,9 +692,13 @@ class Auth {
       return done('Cannot authenticate with role');
     }
 
-    User.getUserCache(userId, (err, user) => {
+    User.getUserCache(userId, async (err, user) => {
+      // Await lastUsed so it can't race a setUser later in the same
+      // request. On stores that bump lastUsed via a full-document
+      // read-modify-write (redis), a fire-and-forget write here can land
+      // after a settings save and clobber it.
       if (user) {
-        user.setLastUsed();
+        await user.setLastUsed();
       }
       return done(null, user);
     });
