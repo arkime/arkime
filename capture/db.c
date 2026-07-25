@@ -2626,7 +2626,8 @@ LOCAL void arkime_db_load_fields()
 
     uint32_t out[2 * 8000];
     memset(out, 0, sizeof(out));
-    js0n(ahits, ahits_len, out, sizeof(out));
+    if (js0n(ahits, ahits_len, out, sizeof(out)) != 0)
+        LOG("WARNING - Couldn't parse all of the %sfields response, some fields may be missing", config.prefix);
     for (int i = 0; out[i]; i += 2) {
         uint32_t           id_len;
         const uint8_t     *id = 0;
