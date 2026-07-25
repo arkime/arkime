@@ -1227,6 +1227,9 @@ void arkime_parsers_init()
 
     for (int i = 0; i < (int)keys_len; i++) {
         char *value = arkime_config_section_str(NULL, "custom-fields", keys[i], NULL);
+        if (!value)
+            CONFIGEXIT("Invalid value for '%s' in section [custom-fields]", keys[i]);
+
         arkime_field_define_text_full(keys[i], value, NULL);
         g_free(value);
     }

@@ -362,7 +362,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
         BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
         BSB_IMPORT_u16(cbsb, skiplen);   // Cipher Suites Length
-        while (BSB_NOT_ERROR(cbsb) && skiplen > 0) {
+        while (BSB_NOT_ERROR(cbsb) && skiplen >= 2) {
             uint16_t c = 0;
             BSB_IMPORT_u16(cbsb, c);
             if (!tls_is_grease_value(c)) {
@@ -374,6 +374,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
             }
             skiplen -= 2;
         }
+        BSB_IMPORT_skip(cbsb, skiplen);  // Odd declared length leaves a trailing byte
         BSB_EXPORT_rewind(ja3bsb, 1); // Remove last -
         BSB_EXPORT_u08(ja3bsb, ',');
 
@@ -618,7 +619,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
     // Add the field
     arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
     if (ja4Raw && BSB_NOT_ERROR(ja4_rbsb)) {
-        arkime_field_string_add(ja4RawField, session, ja4_r, BSB_LENGTH(ja4_rbsb), TRUE);
+        arkime_field_string_add(ja4RawField, session, ja4_r, BSB_LENGTH(ja4_rbsb) - 1, TRUE);
     }
 
     return 0;
