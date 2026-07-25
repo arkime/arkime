@@ -406,7 +406,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
             /* Validate hex string */
             int valid = 1;
             for (int i = 0; i < 4; i++) {
-                if (!isxdigit(hex_str[i])) {
+                if (!isxdigit((uint8_t)hex_str[i])) {
                     valid = 0;
                     break;
                 }

@@ -97,7 +97,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
     char *start = cookie;
     char *end = cookie + len;
     while (start < end) {
-        while (start < end && isspace(*start)) start++;
+        while (start < end && isspace((unsigned char) *start)) start++;
         char *equal = memchr(start, '=', end - start);
         if (!equal)
             break;
@@ -105,7 +105,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
         start = memchr(equal + 1, ';', end - (equal + 1));
         if (config.parseCookieValue) {
             equal++;
-            while (equal < end && isspace(*equal)) equal++;
+            while (equal < end && isspace((unsigned char) *equal)) equal++;
             if (equal < end && equal != start)
                 arkime_field_string_add(cookieValueField, session, equal, start ? start - equal : end - equal, TRUE);
         }
@@ -118,7 +118,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
 /******************************************************************************/
 LOCAL void http_common_add_header_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
-    while (l > 0 && isspace(*s)) {
+    while (l > 0 && isspace((unsigned char) *s)) {
         s++;
         l--;
     }
@@ -364,7 +364,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
 {
     gsize olen;
 
-    while (isspace(*str)) str++;
+    while (isspace((unsigned char) *str)) str++;
 
     const char *space = strchr(str, ' ');
 
@@ -376,7 +376,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
     if (strncasecmp("ntlm", str, 4) == 0 || strncasecmp("negotiate", str, 9) == 0) {
         const char *scheme_end = space;
         const char *b64 = scheme_end;
-        while (*b64 && isspace((unsigned char) * b64)) b64++;
+        while (*b64 && isspace((unsigned char) *b64)) b64++;
         if (*b64)
             arkime_parsers_ntlm_decode_base64(session, b64, strlen(b64));
         return;
@@ -384,7 +384,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
 
     if (strncasecmp("basic", str, 5) == 0) {
         str += 5;
-        while (isspace(*str)) str++;
+        while (isspace((unsigned char) *str)) str++;
 
         int len = strlen(str);
         if (len < 2)
@@ -402,15 +402,15 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
         }
     } else if (strncasecmp("digest", str, 6) == 0) {
         str += 5;
-        while (isspace(*str)) str++;
+        while (isspace((unsigned char) *str)) str++;
 
         char *username = strstr(str, "username");
         if (!username) return;
         str = username + 8;
-        while (isspace(*str)) str++;
+        while (isspace((unsigned char) *str)) str++;
         if (*str != '=') return;
         str++; // equal
-        while (isspace(*str)) str++;
+        while (isspace((unsigned char) *str)) str++;
 
         int quote = 0;
         if (*str == '"') {
