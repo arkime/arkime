@@ -267,6 +267,37 @@ SPDX-License-Identifier: Apache-2.0
               </div>
             </v-col><!-- /page size select -->
 
+            <!-- table/dashboard view toggle -->
+            <v-col
+              cols="auto"
+              v-if="tabIndex === 1 || tabIndex === 2">
+              <v-btn-toggle
+                :model-value="statsView"
+                @update:model-value="statsViewChange($event)"
+                density="compact"
+                variant="outlined"
+                color="primary"
+                mandatory
+                class="stats-view-toggle">
+                <v-btn
+                  value="dashboard"
+                  size="small">
+                  <v-icon
+                    start
+                    icon="mdi-view-dashboard-outline" />
+                  {{ $t('stats.dashboardView') }}
+                </v-btn>
+                <v-btn
+                  value="table"
+                  size="small">
+                  <v-icon
+                    start
+                    icon="mdi-table" />
+                  {{ $t('stats.tableView') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col> <!-- /table/dashboard view toggle -->
+
             <!-- table data interval select -->
             <v-col
               cols="auto"
@@ -605,6 +636,7 @@ SPDX-License-Identifier: Apache-2.0
           :refresh-data="refreshData"
           :search-term="searchTerm"
           :data-interval="dataInterval"
+          :stats-view="statsView"
           :cluster="cluster"
           :user="user" />
         <es-nodes
@@ -612,6 +644,7 @@ SPDX-License-Identifier: Apache-2.0
           :refresh-data="refreshData"
           :search-term="searchTerm"
           :data-interval="dataInterval"
+          :stats-view="statsView"
           :cluster="cluster" />
         <es-indices
           v-else-if="tabIndex === 3"
@@ -705,6 +738,7 @@ export default {
       shardsShow: this.$route.query.shardsShow || 'notstarted',
       dataInterval: parseInt(this.$route.query.refreshInterval, 10) || 15000,
       pageSize: parseInt(this.$route.query.size, 10) || 500,
+      statsView: this.$route.query.statsView || 'table',
       cluster: this.$route.query.cluster || undefined,
       refreshData: false,
       childError: '',
@@ -783,6 +817,10 @@ export default {
     pageSizeChange: function () {
       this.$router.push({ query: { ...this.$route.query, size: this.pageSize } });
     },
+    statsViewChange: function (newView) {
+      this.statsView = newView;
+      this.$router.push({ query: { ...this.$route.query, statsView: newView } });
+    },
     tabIndexChange: function (newTabIndex) {
       // override the query params for the cluster selected
       // if the user is on any of the ES tabs, they can select only one cluster
@@ -825,6 +863,9 @@ export default {
       }
       if (queryParams.refreshInterval) {
         this.dataInterval = parseInt(queryParams.refreshInterval, 10);
+      }
+      if (queryParams.statsView) {
+        this.statsView = queryParams.statsView;
       }
       if (queryParams.cluster) {
         this.cluster = queryParams.cluster;

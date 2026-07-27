@@ -29,7 +29,17 @@ SPDX-License-Identifier: Apache-2.0
         @change-paging="changePaging"
         :length-default="200" />
 
+      <node-dashboard
+        v-if="statsView === 'dashboard'"
+        :data="stats"
+        :gauges="dashboardGauges"
+        :status="nodeStatus"
+        :status-text="nodeStatusText"
+        :badge="nodeVersion"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )" />
+
       <arkime-table
+        v-else
         id="captureStatsTable"
         :data="stats"
         :load-data="loadData"
@@ -46,7 +56,24 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="text-end small" />
+        table-classes="text-end small">
+        <template #cell-freeSpaceM="{ item }">
+          <resource-bar
+            :percent="item.freeSpaceP"
+            :color="freeSpaceColor(item)"
+            :label="freeSpaceLabel(item)" />
+        </template>
+        <template #cell-cpu="{ item }">
+          <resource-bar
+            :percent="item.cpu / 100.0"
+            :label="cpuLabel(item)" />
+        </template>
+        <template #cell-memory="{ item }">
+          <resource-bar
+            :percent="item.memoryP"
+            :label="memoryLabel(item)" />
+        </template>
+      </arkime-table>
     </div>
   </div>
 </template>
@@ -57,9 +84,12 @@ import { themedColor } from '@common/themes/themedColor.js';
 import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
+import ResourceBar from './ResourceBar.vue';
+import NodeDashboard from './NodeDashboard.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
+import { targetBandColor } from './resourceColor.js';
 import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
@@ -102,13 +132,19 @@ export default {
     cluster: {
       type: String,
       default: ''
+    },
+    statsView: {
+      type: String,
+      default: 'table'
     }
   },
   components: {
     ArkimePaging,
     ArkimeError,
     ArkimeLoading,
-    ArkimeTable
+    ArkimeTable,
+    ResourceBar,
+    NodeDashboard
   },
   data: function () {
     return {
@@ -144,9 +180,9 @@ export default {
         intl({ id: 'nodeName', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false }),
         intl({ id: 'currentTime', sort: 'currentTime', width: 210, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
         intl({ id: 'monitoring', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } }),
-        intl({ id: 'freeSpaceM', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } }),
-        intl({ id: 'cpu', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return round(item.cpu / 100.0, 1) + '%'; } }),
-        intl({ id: 'memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } }),
+        intl({ id: 'freeSpaceM', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.freeSpaceLabel(item); }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } }),
+        intl({ id: 'cpu', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return this.cpuLabel(item); } }),
+        intl({ id: 'memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.memoryLabel(item); }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } }),
         intl({ id: 'packetQueue', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.packetQueue); } }),
         intl({ id: 'diskQueue', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.diskQueue); } }),
         intl({ id: 'esQueue', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.esQueue); } }),
@@ -180,6 +216,19 @@ export default {
         intl({ id: 'startTime', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } }),
         intl({ id: 'runningTime', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return readableTime(item.runningTime * 1000); } }),
         intl({ id: 'ver', sort: 'ver', width: 140, doStats: false })
+      ];
+    },
+    dashboardGauges: function () {
+      // capture nodes are rarely cpu/mem bound — lead with what operators watch:
+      // drops, backpressure, throughput, retention/uptime, and disk vs target.
+      // 'Queues'/'Uptime' TODO i18n once the card design settles.
+      return [
+        { title: this.$t('stats.cstats.deltaDropped'), kind: 'value', text: (n) => roundCommaString(n.deltaTotalDroppedPerSec) + '/s', color: (n) => n.deltaTotalDroppedPerSec > 0 ? 'error' : 'success' },
+        { title: 'Queues', kind: 'value', text: (n) => this.queuesText(n), color: (n) => this.queuesColor(n) },
+        { title: this.$t('stats.cstats.deltaBitsPerSec'), kind: 'value', text: (n) => humanReadableBits(n.deltaBitsPerSec) },
+        { title: this.$t('stats.cstats.retention'), kind: 'value', text: (n) => readableTimeCompact(n.retention * 1000) },
+        { title: 'Uptime', kind: 'value', text: (n) => readableTimeCompact(n.runningTime * 1000) },
+        { title: this.$t('stats.cstats.freeSpaceM'), kind: 'bar', percent: (n) => n.freeSpaceP, label: (n) => this.freeSpaceLabel(n), color: (n) => this.freeSpaceColor(n) }
       ];
     },
     colors: function () {
@@ -235,10 +284,22 @@ export default {
     cluster: function () {
       this.query.cluster = this.cluster;
       this.loadData();
+    },
+    statsView: function () {
+      // the table kicks off its own initial load on mount; the dashboard doesn't,
+      // so make sure data is loaded when switching into (or starting in) dashboard view
+      if (this.statsView === 'dashboard' && !this.stats) {
+        this.loadData();
+      }
     }
   },
   created: function () {
-    // don't need to load data (table component does it)
+    // the table component triggers the initial load on mount; in dashboard view
+    // there's no table, so load here
+    if (this.statsView === 'dashboard') {
+      this.loadData();
+    }
+
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -269,6 +330,51 @@ export default {
       this.query.sortField = colName;
       this.query.desc = !this.query.desc;
       this.loadData();
+    },
+    /* resource meter labels (shared by table cells and dashboard gauges) --- */
+    cpuLabel (item) {
+      return round(item.cpu / 100.0, 1) + '%';
+    },
+    memoryLabel (item) {
+      return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)';
+    },
+    freeSpaceLabel (item) {
+      return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)';
+    },
+    nodeStatus (item) {
+      // reuse Arkime's own liveness rules: a node is "out of date" if it hasn't
+      // reported in 5 min, and has "no sessions" when monitoring < 1 — either
+      // way it isn't capturing, so the card dot is red; green when capturing.
+      const outOfDate = (Date.now() / 1000) - item.currentTime > 300;
+      const capturing = !outOfDate && item.monitoring >= 1;
+      return capturing ? 'success' : 'error';
+    },
+    nodeStatusText (item) {
+      // TODO i18n once the dashboard card design settles
+      const outOfDate = (Date.now() / 1000) - item.currentTime > 300;
+      if (outOfDate) { return 'out of date'; }
+      if (item.monitoring < 1) { return 'no sessions'; }
+      return 'capturing';
+    },
+    nodeVersion (item) {
+      return (item.ver || '').replace(/-GIT$/, '');
+    },
+    freeSpaceColor (item) {
+      // color disk relative to this node's own recycle target (freeSpaceTargetP)
+      return targetBandColor(item.freeSpaceP, item.freeSpaceTargetP);
+    },
+    queuesText (item) {
+      // show only the queues that are backing up (labeled), else a clean "0"
+      const qs = [['pkt', item.packetQueue], ['disk', item.diskQueue], ['es', item.esQueue]].filter(([, v]) => v > 0);
+      return qs.length ? qs.map(([k, v]) => k + ' ' + roundCommaString(v)).join(' · ') : '0';
+    },
+    queuesColor (item) {
+      const p = item.packetQueue || 0;
+      const d = item.diskQueue || 0;
+      const e = item.esQueue || 0;
+      if (p >= 100 || d >= 100 || e >= 100) { return 'error'; } // clearly backing up
+      if (p > 0 || d > 0 || e > 0) { return 'warning'; }
+      return 'success';
     },
     /* helper functions ---------------------------------------------------- */
     setRequestInterval: function () {
