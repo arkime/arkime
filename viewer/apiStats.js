@@ -195,9 +195,13 @@ class StatsAPIs {
         if (typeof fsg === 'string' && fsg.endsWith('%')) {
           fields.freeSpaceTargetP = parseFloat(fsg);
         } else {
-          // total = used + free (NOT reverse-derived from freeSpaceP, which is
-          // 0 on a full disk and would make the target — and the color — bogus)
-          const totalSpaceM = (fields.usedSpaceM || 0) + (fields.freeSpaceM || 0);
+          // GB target → percent. Use the node's exact statvfs-based total
+          // (freeSpaceM / freeSpaceP), since usedSpaceM is 0 when pcapDirTemplate
+          // is set and otherwise omits non-Arkime data. Fall back to used+free
+          // only when freeSpaceP is 0 (a full disk).
+          const totalSpaceM = fields.freeSpaceP > 0
+            ? fields.freeSpaceM * 100 / fields.freeSpaceP
+            : (fields.usedSpaceM || 0) + (fields.freeSpaceM || 0);
           fields.freeSpaceTargetP = totalSpaceM > 0 ? (parseFloat(fsg) * 1000) / totalSpaceM * 100 : 0;
         }
 

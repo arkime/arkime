@@ -23,6 +23,7 @@ SPDX-License-Identifier: Apache-2.0
         :data="filteredStats"
         :gauges="dashboardGauges"
         :status="esNodeStatus"
+        :status-text="esNodeStatusText"
         :badge="esNodeRole"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )" />
 
@@ -259,7 +260,9 @@ export default {
       }
     },
     filteredStats: function () {
-      if (this.showOnlyDataNodes) {
+      // the "data nodes only" toggle lives in the table; don't silently apply it
+      // in dashboard view, where there's no control to clear it
+      if (this.showOnlyDataNodes && this.statsView === 'table') {
         return this.stats.filter(s => s.roles.some(role => role.startsWith('data')));
       }
       return this.stats;
@@ -397,13 +400,21 @@ export default {
         .reduce((worst, c) => order[c] > order[worst] ? c : worst, 'neutral');
     },
     esNodeRole (item) {
-      // ES reports the role as "master"; Arkime surfaces it as manager / main manager
+      // ES reports the role as "master"; Arkime surfaces it as manager / main
+      // manager. Match any data tier (data_hot/warm/content, not just plain
+      // "data"); data-holding nodes badge as data so their disk/heap gauges read
+      // coherently, even if they're also master-eligible.
       const roles = item.roles || [];
+      if (roles.some(role => role.startsWith('data'))) { return this.$t('stats.esNodes.roleData'); }
       if (roles.includes('master')) {
         return item.isMaster ? this.$t('stats.esNodes.roleMainManager') : this.$t('stats.esNodes.roleManager');
       }
-      if (roles.includes('data')) { return this.$t('stats.esNodes.roleData'); }
       return this.$t('stats.esNodes.roleCoord');
+    },
+    esNodeStatusText (item) {
+      // a text companion for the color-only dot (accessibility)
+      const words = { error: 'stats.statusCritical', warning: 'stats.statusWarning', success: 'stats.statusOk', neutral: 'stats.statusUnknown' };
+      return this.$t(words[this.esNodeStatus(item)]);
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {

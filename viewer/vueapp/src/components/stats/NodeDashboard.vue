@@ -23,6 +23,7 @@
         <div class="node-card-header">
           <span
             class="node-status-dot"
+            :title="statusText ? statusText(node) : null"
             :style="{ backgroundColor: dotColor(node) }" />
           <span
             class="node-name"
