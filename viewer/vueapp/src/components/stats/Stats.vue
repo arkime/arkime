@@ -1049,6 +1049,18 @@ export default {
 .stats-form {
   z-index : 6;
   background-color: rgb(var(--v-theme-secondary-lightest));
+  /* reserve a constant height so the tab strip below doesn't shift as sub-tabs
+     show different controls (Capture Graphs / ES Admin have fewer/shorter ones) */
+  min-height: 52px;
+}
+
+/* Vuetify pins compact button groups to a fixed height
+   (.v-btn-group--density-compact { height: 36px }) — taller than the row's other
+   controls, so the Table/Dashboard toggle made only the Capture Stats + ES Nodes
+   rows sit lower. Drop the fixed height so the toggle sizes to its buttons and
+   the Refresh button stays the tallest control on every tab. */
+.stats-view-toggle.v-btn-group {
+  height: auto !important;
 }
 
 /* remove browser styles on select box (mostly for border-radius) */
