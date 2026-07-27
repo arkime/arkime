@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
       </v-icon>
 
       <arkime-paging
-        v-if="stats"
+        v-if="stats && statsView === 'table'"
         class="mt-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
@@ -287,9 +287,9 @@ export default {
       this.loadData();
     },
     statsView: function () {
-      // the table kicks off its own initial load on mount; the dashboard doesn't,
-      // so make sure data is loaded when switching into (or starting in) dashboard view
-      if (this.statsView === 'dashboard' && !this.stats) {
+      // the dashboard fetches every node unpaged, so reload when switching into
+      // it (the table view reloads via the table component's own mount)
+      if (this.statsView === 'dashboard') {
         this.loadData();
       }
     }
@@ -401,8 +401,14 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
+      // the dashboard shows a card per node, so fetch the whole fleet (node
+      // counts are bounded — not in the thousands) instead of the paged slice
+      const params = this.statsView === 'dashboard'
+        ? { ...this.query, start: 0, length: 10000 }
+        : this.query;
+
       try {
-        const response = await StatsService.getStats(this.query);
+        const response = await StatsService.getStats(params);
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
