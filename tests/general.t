@@ -1,4 +1,4 @@
-use Test::More tests => 737;
+use Test::More tests => 746;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -14,6 +14,13 @@ my $pwd = "*/pcap";
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&node!=EXISTS!"));
     countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&asn==EXISTS!"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&node==test&&asn!=EXISTS!"));
+
+# dbTimestamp tests - @timestamp is when the session was written to the db, so always after 2020 here
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&dbTimestamp==EXISTS!"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&dbTimestamp>\"2020/01/01 00:00:00\""));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&dbTimestamp<\"2020/01/01 00:00:00\""));
+    my $tsjson = countTest(3, "date=-1&fields=" . uri_escape('@timestamp') . "&expression=" . uri_escape("file=$pwd/bt-udp.pcap"));
+    cmp_ok($tsjson->{data}->[0]->{'@timestamp'}, '>', 1000000000000, " \@timestamp is a ms epoch number");
 
 # file tests
     countTest(0, "date=-1&expression=file=nofile.pcap");

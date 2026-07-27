@@ -1110,5 +1110,10 @@ function parseSeconds (str) {
     return d.unix();
   }
 
-  return new moment(str, ['YYYY/MM/DD HH:mm:ss', 'YYYY/MM/DD HH:mm:ss Z', moment.ISO_8601]).unix();
+  const d = new moment(str, ['YYYY/MM/DD HH:mm:ss', 'YYYY/MM/DD HH:mm:ss Z', moment.ISO_8601]);
+  if (d.isValid()) { return d.unix(); }
+
+  // The UI display format can end in a timezone abbreviation (2026/07/27 09:33:05 UTC),
+  // which moment can't parse but Date.parse can
+  return Math.floor(Date.parse(str) / 1000);
 }
