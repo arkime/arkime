@@ -22,6 +22,8 @@ SPDX-License-Identifier: Apache-2.0
         v-if="statsView === 'dashboard'"
         :data="filteredStats"
         :gauges="dashboardGauges"
+        :status="esNodeStatus"
+        :badge="esNodeRole"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )" />
 
       <arkime-table
@@ -114,13 +116,14 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <template #cell-freeSize="{ item }">
           <resource-bar
-            invert
             :percent="diskPercent(item)"
+            :color="diskColor(item)"
             :label="freeSizeLabel(item)" />
         </template>
         <template #cell-heapSize="{ item }">
           <resource-bar
             :percent="heapPercent(item)"
+            :color="heapColor(item)"
             :label="heapLabel(item)" />
         </template>
         <template #cell-cpu="{ item }">
@@ -142,6 +145,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
+import { UNKNOWN_COLOR } from './resourceColor.js';
 import { round, roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
@@ -236,10 +240,14 @@ export default {
       ];
     },
     dashboardGauges: function () {
+      // ES data nodes: disk filling toward the flood-stage watermark and heap
+      // pressure are the health signals; write rejections are the "drops".
       return [
-        { title: this.$t('stats.esNodes.cpu'), invert: false, percent: (n) => n.cpu, label: (n) => this.cpuLabel(n) },
-        { title: this.$t('stats.esNodes.heapSize'), invert: false, percent: (n) => this.heapPercent(n), label: (n) => this.heapLabel(n) },
-        { title: this.$t('stats.esNodes.freeSize'), invert: true, percent: (n) => this.diskPercent(n), label: (n) => this.freeSizeLabel(n) }
+        { title: this.$t('stats.esNodes.storeSize'), kind: 'bar', percent: (n) => this.diskUsedPercent(n), label: (n) => this.diskLabel(n), color: (n) => this.diskColor(n) },
+        { title: this.$t('stats.esNodes.heapSize'), kind: 'bar', percent: (n) => this.heapPercent(n), label: (n) => this.heapLabel(n), color: (n) => this.heapColor(n) },
+        { title: this.$t('stats.esNodes.writesRejectedDelta'), kind: 'value', text: (n) => roundCommaString(n.writesRejectedDelta), color: (n) => this.rejectionsColor(n) },
+        { title: this.$t('stats.esNodes.shards'), kind: 'value', text: (n) => roundCommaString(n.shards) },
+        { title: this.$t('stats.esNodes.uptime'), kind: 'value', text: (n) => readableTimeCompact(n.uptime * 60 * 1000) }
       ];
     },
     loading: {
@@ -353,6 +361,49 @@ export default {
     freeSizeLabel (item) {
       const p = this.diskPercent(item);
       return humanReadableBytes(item.freeSize) + (isFinite(p) ? ' (' + round(p, 1) + '%)' : '');
+    },
+    diskUsedPercent (item) { // percent of the filesystem in use
+      return item.diskTotal ? ((item.diskTotal - item.freeSize) / item.diskTotal) * 100 : NaN;
+    },
+    diskLabel (item) {
+      const p = this.diskUsedPercent(item);
+      if (!isFinite(p)) { return '—'; } // non-data node (no disk stats)
+      return humanReadableBytes(item.diskTotal - item.freeSize) + ' / ' + humanReadableBytes(item.diskTotal) + ' (' + round(p, 1) + '%)';
+    },
+    // ES-specific thresholds: disk nears the flood-stage watermark (~85/90%),
+    // heap pressure gets serious past ~75/85%. Grey when there's no data.
+    diskColor (item) {
+      const p = this.diskUsedPercent(item);
+      if (!isFinite(p)) { return UNKNOWN_COLOR; }
+      if (p > 90) { return 'error'; }
+      if (p >= 85) { return 'warning'; }
+      return 'success';
+    },
+    heapColor (item) {
+      const p = this.heapPercent(item);
+      if (!isFinite(p)) { return UNKNOWN_COLOR; }
+      if (p > 85) { return 'error'; }
+      if (p >= 75) { return 'warning'; }
+      return 'success';
+    },
+    rejectionsColor (item) {
+      return item.writesRejectedDelta > 0 ? 'error' : 'success';
+    },
+    esNodeStatus (item) {
+      // rejecting writes = data loss (red); otherwise the worst of disk/heap
+      if (item.writesRejectedDelta > 0) { return 'error'; }
+      const order = { neutral: 0, success: 1, warning: 2, error: 3 };
+      return [this.diskColor(item), this.heapColor(item)]
+        .reduce((worst, c) => order[c] > order[worst] ? c : worst, 'neutral');
+    },
+    esNodeRole (item) {
+      // ES reports the role as "master"; Arkime surfaces it as manager / main manager
+      const roles = item.roles || [];
+      if (roles.includes('master')) {
+        return item.isMaster ? this.$t('stats.esNodes.roleMainManager') : this.$t('stats.esNodes.roleManager');
+      }
+      if (roles.includes('data')) { return this.$t('stats.esNodes.roleData'); }
+      return this.$t('stats.esNodes.roleCoord');
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
