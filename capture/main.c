@@ -629,11 +629,11 @@ const char *arkime_memcasestr(const char *haystack, int haysize, const char *nee
     const char firstNeedle = needle[0];
 
     for (p = haystack; p <= end; p++) {
-        if (tolower(p[0]) != firstNeedle)
+        if (tolower((uint8_t)p[0]) != firstNeedle)
             continue;
         int i;
         for (i = 1; i < needlesize; i++) {
-            if (tolower(p[i]) != needle[i]) {
+            if (tolower((uint8_t)p[i]) != needle[i]) {
                 break;
             }
         }
@@ -730,7 +730,7 @@ int arkime_atoin(const char *str, int len)
     int sign = 1;
     int i = 0;
 
-    while (i < len && isspace(str[i]))
+    while (i < len && isspace((uint8_t)str[i]))
         i++;
 
     if (i >= len)
@@ -743,7 +743,7 @@ int arkime_atoin(const char *str, int len)
         i++;
     }
 
-    while (i < len && isdigit(str[i])) {
+    while (i < len && isdigit((uint8_t)str[i])) {
         result = result * 10 + (str[i] - '0');
         i++;
     }

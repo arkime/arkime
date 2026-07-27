@@ -192,7 +192,7 @@ LOCAL int config_ipprotocol_cmp(const void *keyv, const void *entryv)
 LOCAL int config_ipprotocol_lookup(const char *str)
 {
     // If it starts with a digit, just parse as number
-    if (isdigit(str[0]))
+    if (isdigit((uint8_t)str[0]))
         return atoi(str);
 
     const IpProtocolEntry_t *entry = bsearch(str, ipProtocols,
@@ -268,7 +268,7 @@ LOCAL int config_ethertype_cmp(const void *keyv, const void *entryv)
 LOCAL int config_ethertype_lookup(const char *str)
 {
     // If it starts with a digit, just parse as number
-    if (isdigit(str[0]))
+    if (isdigit((uint8_t)str[0]))
         return strtol(str, NULL, 0);
 
     const EthertypeEntry_t *entry = bsearch(str, ethertypes,
@@ -315,7 +315,7 @@ gchar **arkime_config_section_str_list(GKeyFile *keyfile, const char *section, c
         char *str = strs[i];
 
         /* Remove leading and trailing spaces */
-        while (isspace(*str))
+        while (isspace((uint8_t) *str))
             str++;
         g_strchomp(str);
 
@@ -467,7 +467,7 @@ gchar **arkime_config_str_list(GKeyFile *keyfile, const char *key, const char *d
         char *str = strs[i];
 
         /* Remove leading and trailing spaces */
-        while (isspace(*str))
+        while (isspace((uint8_t) *str))
             str++;
         g_strchomp(str);
 
@@ -657,16 +657,18 @@ LOCAL char arkime_config_key_sep(const char *key)
 /******************************************************************************/
 LOCAL gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
 {
-    uint32_t sections[4 * 100]; // Can have up to 100 sections
+    uint32_t sections[4 * 100 + 2]; // Can have up to 100 sections
     memset(sections, 0, sizeof(sections));
-    js0n((uint8_t *)data, strlen(data), sections, sizeof(sections));
+    if (js0n((uint8_t *)data, strlen(data), sections, sizeof(sections)) != 0)
+        LOG("WARNING - Couldn't parse all of the JSON config, some sections may be missing");
 
     for (int s = 0; sections[s]; s += 4) {
         char *section = g_strndup(data + sections[s], sections[s + 1]);
 
-        uint32_t keys[4 * 500]; // Can have up to 500 keys
+        uint32_t keys[4 * 500 + 2]; // Can have up to 500 keys
         memset(keys, 0, sizeof(keys));
-        js0n((uint8_t *)data + sections[s + 2], sections[s + 3], keys, sizeof(keys));
+        if (js0n((uint8_t *)data + sections[s + 2], sections[s + 3], keys, sizeof(keys)) != 0)
+            LOG("WARNING - Couldn't parse all of JSON config section %s, some keys may be missing", section);
 
         for (int k = 0; keys[k]; k += 4) {
             char *key = g_strndup(data + sections[s + 2] + keys[k], keys[k + 1]);
@@ -674,12 +676,14 @@ LOCAL gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **U
 
             // HACK - Convert arrays back into strings
             if (value[0] == '[') {
-                uint32_t parts[2 * 100]; // Can have up to 100 keys
+                uint32_t parts[2 * 100 + 2]; // Can have up to 100 elements
                 memset(parts, 0, sizeof(parts));
-                js0n((uint8_t *)value, keys[k + 3], parts, sizeof(parts));
+                if (js0n((uint8_t *)value, keys[k + 3], parts, sizeof(parts)) != 0)
+                    LOG("WARNING - Couldn't parse all of JSON config array %s.%s, some elements may be missing", section, key);
 
                 char sep = arkime_config_key_sep(key);
-                char *buf = malloc(keys[k + 3]);
+                // Alloc 1 extra so the null terminator below always has room
+                char *buf = malloc(keys[k + 3] + 1);
                 BSB bsb;
                 BSB_INIT(bsb, buf, keys[k + 3]);
                 for (int p = 0; parts[p]; p += 2) {
@@ -687,7 +691,9 @@ LOCAL gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **U
                         BSB_EXPORT_u08(bsb, sep);
                     BSB_EXPORT_ptr(bsb, value + parts[p], parts[p + 1]);
                 }
-                BSB_EXPORT_u08(bsb, 0);
+                if (BSB_IS_ERROR(bsb))
+                    LOG("WARNING - JSON array value too long for %s:%s, truncating", section, key);
+                buf[BSB_LENGTH(bsb)] = 0;
                 g_key_file_set_string(keyfile, section, key, buf);
                 free(buf);
             } else {
@@ -1399,7 +1405,8 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
         CONFIGEXIT("Error with override-ips: %s", error->message ? error->message : "unknown error");
     }
 
-    GRegex *asnRegex = g_regex_new("AS\\d+ .+", 0, 0, &error);
+    // Anchored so the AS number is always at values[v] + 6 for the parsing below
+    GRegex *asnRegex = g_regex_new("^AS\\d+ .+", 0, 0, &error);
     gsize k, v;
     for (k = 0 ; k < keys_len; k++) {
         gsize values_len;
@@ -1412,7 +1419,7 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
         for (v = 0; v < values_len; v++) {
             if (strncmp(values[v], "asn:", 4) == 0) {
                 if (!g_regex_match(asnRegex, values[v] + 4, 0, NULL)) {
-                    CONFIGEXIT("Value for override-ips doesn't match ASN format of /AS\\d+ .*/ '%s'", values[v] + 4);
+                    CONFIGEXIT("Value for override-ips doesn't match ASN format of /^AS\\d+ .+/ '%s'", values[v] + 4);
                 }
                 char *sp = strchr(values[v] + 6, ' ');
                 *sp = 0;

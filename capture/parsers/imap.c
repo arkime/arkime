@@ -27,7 +27,7 @@ LOCAL void imap_parse_email_address(int field, ArkimeSession_t *session, const c
     const char *end = data + len;
 
     while (data < end) {
-        while (data < end && isspace(*data)) data++;
+        while (data < end && isspace((uint8_t) *data)) data++;
         const char *start = data;
 
         /* Handle quoted strings */
@@ -35,7 +35,7 @@ LOCAL void imap_parse_email_address(int field, ArkimeSession_t *session, const c
             data++;
             while (data < end && *data != '"') data++;
             data++;
-            while (data < end && isspace(*data)) data++;
+            while (data < end && isspace((uint8_t) *data)) data++;
             start = data;
         }
 
@@ -77,7 +77,7 @@ LOCAL void imap_parse_header_line(IMAPInfo_t UNUSED(*imap), ArkimeSession_t *ses
     else if (len > 8 && strncasecmp(line, "Subject:", 8) == 0) {
         const char *s = line + 8;
         const char *end = line + len;
-        while (s < end && isspace(*s)) s++;
+        while (s < end && isspace((uint8_t) *s)) s++;
         arkime_field_string_add(subjectField, session, s, len - (s - line), TRUE);
     }
 }
@@ -88,8 +88,8 @@ LOCAL void imap_process_line(IMAPInfo_t *imap, ArkimeSession_t *session, const c
     if (which != imap->serverWhich && len > 16) {
         /* Client: "<tag> AUTHENTICATE NTLM [<base64>]" */
         const char *cmd = line;
-        while (cmd < line + len && !isspace(*cmd)) cmd++;
-        while (cmd < line + len && isspace(*cmd)) cmd++;
+        while (cmd < line + len && !isspace((uint8_t) *cmd)) cmd++;
+        while (cmd < line + len && isspace((uint8_t) *cmd)) cmd++;
         if (line + len - cmd >= 17 && strncasecmp(cmd, "AUTHENTICATE NTLM", 17) == 0) {
             imap->inNtlmAuth = 1;
             const char *rest = cmd + 17;
@@ -132,12 +132,12 @@ LOCAL void imap_process_line(IMAPInfo_t *imap, ArkimeSession_t *session, const c
     else {
         if (len > 7) {
             const char *cmd = line;
-            while (cmd < line + len && !isspace(*cmd)) cmd++;
-            while (cmd < line + len && isspace(*cmd)) cmd++;
+            while (cmd < line + len && !isspace((uint8_t) *cmd)) cmd++;
+            while (cmd < line + len && isspace((uint8_t) *cmd)) cmd++;
 
             if (strncasecmp(cmd, "SELECT ", 7) == 0 || strncasecmp(cmd, "EXAMINE ", 8) == 0) {
                 const char *folder = cmd + (strncasecmp(cmd, "SELECT", 6) == 0 ? 7 : 8);
-                while (folder < line + len && isspace(*folder)) folder++;
+                while (folder < line + len && isspace((uint8_t) *folder)) folder++;
 
                 const char *folderEnd = line + len;
                 if (folder < line + len && *folder == '"') {
@@ -145,7 +145,7 @@ LOCAL void imap_process_line(IMAPInfo_t *imap, ArkimeSession_t *session, const c
                     folderEnd = memchr(folder, '"', folderEnd - folder);
                     if (!folderEnd) folderEnd = line + len;
                 } else {
-                    while (folderEnd > folder && isspace(folderEnd[-1])) folderEnd--;
+                    while (folderEnd > folder && isspace((uint8_t)folderEnd[-1])) folderEnd--;
                 }
 
                 if (folderEnd > folder) {
