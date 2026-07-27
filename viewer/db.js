@@ -352,6 +352,7 @@ const singletonFields = {
 
   firstPacket: true,
   lastPacket: true,
+  '@timestamp': true,
   ipProtocol: true,
   node: true,
   srcNode: true,
@@ -383,6 +384,7 @@ const dedupFields = {
 const dateFields = {
   firstPacket: true,
   lastPacket: true,
+  '@timestamp': true,
   'cert.notBefore': true,
   'cert.notAfter': true
 };

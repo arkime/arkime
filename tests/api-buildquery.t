@@ -1,4 +1,4 @@
-use Test::More tests => 186;
+use Test::More tests => 191;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -284,6 +284,16 @@ doTest('stoptime!=["2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"]', '{"bool
 
 doTest('stoptime==]"2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"[', '{"bool":{"filter":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}');
 doTest('stoptime!=]"2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"[', '{"bool":{"must_not":{"bool":{"filter":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}}}');
+
+### dbTimestamp
+doTest('dbTimestamp=="2014/02/26 10:27:57"', '{"range":{"@timestamp":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}}');
+doTest('dbTimestamp!="2014/02/26 10:27:57"', '{"bool":{"must_not":{"range":{"@timestamp":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}}}}');
+
+doTest('dbTimestamp>"2014/02/26 10:27:57"', '{"range":{"@timestamp":{"gt":"2014-02-26T10:27:57-05:00"}}}');
+doTest('dbTimestamp<"2014/02/26 10:27:57"', '{"range":{"@timestamp":{"lt":"2014-02-26T10:27:57-05:00"}}}');
+
+# UI display format with timezone abbreviation
+doTest('dbTimestamp=="2026/07/27 09:33:05 UTC"', '{"range":{"@timestamp":{"gte":"2026-07-27T05:33:05-04:00","lte":"2026-07-27T05:33:05-04:00"}}}');
 
 # Test in array quoted regex is a string but a quoted wildcard is a wildcard
 doTest('http.reqbody == [/barney/,fred,fred*]', '{"bool":{"should":[{"regexp":{"http.requestBody":"barney"}},{"terms":{"http.requestBody":["fred"]}},{"wildcard":{"http.requestBody":"fred*"}}]}}');

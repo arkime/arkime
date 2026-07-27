@@ -5,6 +5,9 @@ dl
     +clickableValue('starttime', session.firstPacket)
     strong -&nbsp;
     +clickableValue('stoptime', session.lastPacket)
+    strong &nbsp;(Db:&nbsp;
+    +clickableValue('dbTimestamp', session['@timestamp'])
+    strong )
 
   dt Id
   dd
