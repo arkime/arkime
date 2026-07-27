@@ -53,7 +53,7 @@ LOCAL void pop3_process_line(POP3Info_t *pop3, ArkimeSession_t *session, const c
         strncasecmp(line, "USER ", 5) == 0) {
         const char *u = line + 5;
         int ulen = len - 5;
-        while (ulen > 0 && isspace((unsigned char) * u)) {
+        while (ulen > 0 && isspace((unsigned char) *u)) {
             u++;
             ulen--;
         }

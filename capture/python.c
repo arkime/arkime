@@ -553,7 +553,7 @@ PyMODINIT_FUNC PyInit_arkime(void)
         return NULL;
     }
     // Get the per-interpreter state pointer and initialize it
-    ArkimeState* state = (ArkimeState*)PyModule_GetState(m);
+    ArkimeState* state = (ArkimeState *)PyModule_GetState(m);
     if (state == NULL) {
         // This should not happen if m_size is set correctly
         Py_DECREF(m);
@@ -1231,7 +1231,7 @@ PyMODINIT_FUNC PyInit_arkime_session(void)
         return NULL;
     }
     // Get the per-interpreter state pointer and initialize it
-    ArkimeSessionState* state = (ArkimeSessionState*)PyModule_GetState(m);
+    ArkimeSessionState* state = (ArkimeSessionState *)PyModule_GetState(m);
     if (state == NULL) {
         Py_DECREF(m);
         return NULL;
@@ -1694,7 +1694,7 @@ PyMODINIT_FUNC PyInit_arkime_packet(void)
         return NULL;
     }
     // Get the per-interpreter state pointer and initialize it
-    ArkimePacketState* state = (ArkimePacketState*)PyModule_GetState(m);
+    ArkimePacketState* state = (ArkimePacketState *)PyModule_GetState(m);
     if (state == NULL) {
         Py_DECREF(m);
         return NULL;

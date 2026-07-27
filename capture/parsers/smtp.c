@@ -92,7 +92,7 @@ enum {
 /******************************************************************************/
 LOCAL char *smtp_remove_matching(char *str, char start, char stop)
 {
-    while (isspace(*str))
+    while (isspace((uint8_t) *str))
         str++;
 
     if (*str == start)
@@ -112,7 +112,7 @@ LOCAL char *smtp_remove_matching(char *str, char start, char stop)
 // value in place and returns a pointer to its start.
 LOCAL char *smtp_parse_param_value(char *str)
 {
-    while (isspace(*str))
+    while (isspace((uint8_t) *str))
         str++;
 
     if (*str == '"') {
@@ -125,7 +125,7 @@ LOCAL char *smtp_parse_param_value(char *str)
     }
 
     char *startstr = str;
-    while (*str && *str != ';' && !isspace(*str))
+    while (*str && *str != ';' && !isspace((uint8_t) *str))
         str++;
     *str = 0;
 
@@ -134,7 +134,7 @@ LOCAL char *smtp_parse_param_value(char *str)
 /******************************************************************************/
 LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
-    while (l > 0 && isspace(*s)) {
+    while (l > 0 && isspace((uint8_t) *s)) {
         s++;
         l--;
     }
@@ -386,7 +386,7 @@ LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char 
     const char *end = data + len;
 
     while (data < end) {
-        while (data < end && isspace(*data)) data++;
+        while (data < end && isspace((uint8_t) *data)) data++;
         const char *start = data;
 
         /* Starts with quote is easy */
@@ -394,7 +394,7 @@ LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char 
             data++;
             while (data < end && *data != '"') data++;
             data++;
-            while (data < end && isspace(*data)) data++;
+            while (data < end && isspace((uint8_t) *data)) data++;
             start = data;
         }
 
@@ -422,7 +422,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
         if (end - data > 10) {
             if (memcmp("from ", data, 5) == 0 && (data == start || data[-1] != '-')) {
                 data += 5;
-                while (data < end && isspace(*data)) data++;
+                while (data < end && isspace((uint8_t) *data)) data++;
 
                 if (*data == '[') {
                     data++;
@@ -444,7 +444,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
                 arkime_field_string_add_lower(hostField, session, (char *)fromstart, data - fromstart);
             } else if (memcmp("by ", data, 3) == 0) {
                 data += 3;
-                while (data < end && isspace(*data)) data++;
+                while (data < end && isspace((uint8_t) *data)) data++;
                 char *fromstart = data;
                 while (data < end && *data != ' ' && *data != ')') {
                     if (*data == '@')
@@ -705,7 +705,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     smtp_parse_email_received(session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == ctField) {
                     const char *s = line->str + 13;
-                    while (isspace(*s)) s++;
+                    while (isspace((uint8_t) *s)) s++;
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
                     char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
@@ -907,7 +907,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
             if (strncasecmp(line->str, "content-type:", 13) == 0) {
                 const char *s = line->str + 13;
-                while (isspace(*s)) s++;
+                while (isspace((uint8_t) *s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                     ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
@@ -917,7 +917,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 }
             } else if (strncasecmp(line->str, "content-disposition:", 20) == 0) {
                 const char *s = line->str + 20;
-                while (isspace(*s)) s++;
+                while (isspace((uint8_t) *s)) s++;
                 char *filename = (char *)arkime_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
                     char *matching = smtp_remove_matching(filename + 9, '"', '"');

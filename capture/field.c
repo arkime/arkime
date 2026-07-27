@@ -525,6 +525,8 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     }
 
     if (flags & ARKIME_FIELD_FLAG_IPPRE) {
+        if (strncmp(expression, "ip.", 3) != 0 || strlen(dbField) < 2)
+            LOGEXIT("ERROR - IPPRE field '%s' needs an expression starting with 'ip.' and a dbField ending with 'ip'", expression);
         int l = strlen(dbField) - 2;
         int fnlen = strlen(friendlyName);
         snprintf(dbField2, sizeof(dbField2), "%.*sGEO", l, dbField);
@@ -1958,6 +1960,8 @@ LOCAL gboolean arkime_field_load_field_remap(gpointer UNUSED(user_data))
             continue;
         }
         gchar *info = arkime_config_section_str(NULL, "custom-fields-remap", keys[i], NULL);
+        if (!info)
+            CONFIGEXIT("Invalid value for '%s' in section [custom-fields-remap]", keys[i]);
 
         char **kvs = g_strsplit(info, ";", 0);
         for (int k = 0; kvs[k]; k++) {
@@ -1967,9 +1971,9 @@ LOCAL gboolean arkime_field_load_field_remap(gpointer UNUSED(user_data))
                 continue;
             *value = 0;
             value++;
-            while (isspace(*key)) key++;
+            while (isspace((uint8_t) *key)) key++;
             g_strchomp(key);
-            while (isspace(*value)) value++;
+            while (isspace((uint8_t) *value)) value++;
             g_strchomp(value);
             int matchPos = arkime_field_by_exp_ignore_error(key);
             if (matchPos == -1) {

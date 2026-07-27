@@ -865,7 +865,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             ARKIME_RULES_RUN_FIELD_SET(session, dnsQueryHostField, dns->query.hostname);
         }
-        arkime_field_object_add(dnsField, session, fobject, jsonLen);
+        if (!arkime_field_object_add(dnsField, session, fobject, jsonLen)) {
+            dns_free_object(fobject);
+            return;
+        }
     } else {
         if (key.query.hostname != root)
             g_free(key.query.hostname);

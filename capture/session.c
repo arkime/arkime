@@ -1271,6 +1271,9 @@ LOCAL void arkime_session_load_collapse()
     }
     for (int i = 0; i < (int)keys_len; i++) {
         char *value = arkime_config_section_str(NULL, "vlan-vni-collapse", keys[i], NULL);
+        if (!value)
+            CONFIGEXIT("Invalid value for '%s' in section [vlan-vni-collapse]", keys[i]);
+
         char **values = g_strsplit(value, ",", 0);
 
         uint64_t key = atoi(keys[i]) + 1;
