@@ -74,6 +74,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4127 Add reindex-sessions2 command to reindex sessions2 indices into sessions3, renaming flat fields to the ECS nested layout
   - #4134 Add db.pl users-update command to bulk add/remove roles and set/unset fields on users matching a userId glob,
           eg db.pl <host:port> users-update '*' --addRole mcpUser --dryrun
+  - #4162 Add initorupgrade/initorupgradenoprompt command to init a fresh cluster or upgrade an existing one,
+          whichever applies, pair with --ifneeded to no-op when already current
 ## Viewer
   - #4080 Add dbAdmin role that grants Elasticsearch/OpenSearch admin access; the esAdminUsers setting is now deprecated and will be removed in Arkime 7
   - #4081 Let the dbAdmin role use the ES stats action menus (index, shard, and task operations); the ES indices menu now only requires removeEnabled for deleting an index, matching the backend
@@ -83,6 +85,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4134 Add mcpMaxQueryDays limiting how much time an MCP query may span, in days, default 7, -1 for no limit
   - #4160 Add dbTimestamp field to search on when a session was written to the database (@timestamp); session detail shows it after the stop time
   - #4160 Fix date expression values ending in a timezone abbreviation (2026/07/27 09:33:05 UTC) generating an Invalid date ES query
+  - #4163 Add Packet Portal (experimental), a second viewer-to-viewer transport where a NAT'd sensor viewer dials out to a central viewer, which then sends its normal node-to-node requests (pcap, hunts, crons, proxying) back over that link; see packetPortal* settings
 
 6.6.0 2026/07/09
 ## Breaking

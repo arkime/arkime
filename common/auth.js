@@ -1096,7 +1096,13 @@ class Auth {
       passportAuthOptionsExtra.session = false;
     }
 
-    passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
+    // Requests delivered over a packet portal arrive from a remote peer through a
+    // loopback bridge socket. Their loopback source IP and any userNameHeader are
+    // therefore untrustworthy (they would otherwise satisfy the header-auth
+    // userAuthIps loopback default). Authenticate them with the s2s token only.
+    const strategies = req.socket?.arkimePacketPortal ? ['s2s'] : Auth.#strategies;
+
+    passport.authenticate(strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
       if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
         req.session.id_token ??= req.authInfo.id_token;
       }
