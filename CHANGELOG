@@ -74,6 +74,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4134 Add mcpMaxQueryDays limiting how much time an MCP query may span, in days, default 7, -1 for no limit
   - #4160 Add dbTimestamp field to search on when a session was written to the database (@timestamp); session detail shows it after the stop time
   - #4160 Fix date expression values ending in a timezone abbreviation (2026/07/27 09:33:05 UTC) generating an Invalid date ES query
+  - #4163 Add Packet Portal (experimental), a second viewer-to-viewer transport where a NAT'd sensor viewer dials out to a central viewer, which then sends its normal node-to-node requests (pcap, hunts, crons, proxying) back over that link; see packetPortal* settings
 
 6.6.0 2026/07/09
 ## Breaking

@@ -50,6 +50,7 @@ const internals = require('./internals');
 internals.initialize(app);
 const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
+const PacketPortal = require('./packetPortal');
 const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
 const ShareableAPIs = require('./apiShareables');
@@ -199,6 +200,19 @@ if (ArkimeConfig.regressionTests) {
     };
     setCookie(req, res);
     return res.end();
+  });
+
+  // node names with a currently live inbound packet portal
+  app.get('/regressionTests/packetPortal', (req, res) => {
+    return res.send(PacketPortal.connectedNodes());
+  });
+
+  // make a node-to-node request to :node (over its packet portal when it is one)
+  // and report whether it succeeded
+  app.get('/regressionTests/packetPortalRequest/:node', (req, res) => {
+    ViewerUtils.makeRequest(req.params.node, '/health', { userId: 'regressionTests' }, (err) => {
+      return res.send({ success: !err, error: err ? '' + err : undefined });
+    });
   });
 
   app.post('/regressionTests/shutdown', function (req, res) {
@@ -2297,6 +2311,11 @@ async function main () {
 
   const server = ArkimeUtil.createHttpServer(app, viewHost, Config.get('viewPort', '8005'));
   server.setTimeout(20 * 60 * 1000);
+
+  // Second viewer-to-viewer transport: packet portals. Starts outbound dialers
+  // and, for an acceptor, listens for inbound portals -- on a dedicated
+  // packetPortalPort, or on the main viewer listener in shared mode.
+  PacketPortal.init(app, server);
 }
 
 // ============================================================================
