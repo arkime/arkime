@@ -3013,6 +3013,13 @@ void arkime_db_init()
 
     arkime_session_save_func = arkime_parsers_get_named_func("arkime_session_save");
 
+    arkime_field_define("general", "seconds",
+                        "dbTimestamp", "DB Timestamp", "@timestamp",
+                        "Timestamp when the session was written to the database",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        "type2", "date",
+                        (char *)NULL);
+
     numRegex = g_regex_new("#NUM#", 0, 0, 0);
     numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
 }
