@@ -184,6 +184,27 @@ class StatsAPIs {
         fields.deltaDupDroppedPerSec = Math.floor(fields.deltaDupDropped * 1000.0 / fields.deltaMS) || 0;
         fields.deltaTotalDroppedPerSec = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0 / fields.deltaMS);
         fields.runningTime = fields.currentTime - fields.startTime;
+        // authoritative (server-clock) liveness so the dashboard dot doesn't
+        // depend on each browser's clock; matches the hide=old now-5m rule
+        fields.outOfDate = (now - fields.currentTime) > 300;
+
+        // each node's free-space recycle target as a percent, so the UI can
+        // color disk relative to the node's own target (freeSpaceG may be a
+        // percent like '5%' or an absolute GB value)
+        const fsg = Config.getFull(fields.nodeName, 'freeSpaceG', '5%');
+        if (typeof fsg === 'string' && fsg.endsWith('%')) {
+          fields.freeSpaceTargetP = parseFloat(fsg);
+        } else {
+          // GB target → percent. Use the node's exact statvfs-based total
+          // (freeSpaceM / freeSpaceP), since usedSpaceM is 0 when pcapDirTemplate
+          // is set and otherwise omits non-Arkime data. Fall back to used+free
+          // only when freeSpaceP is 0 (a full disk).
+          const totalSpaceM = fields.freeSpaceP > 0
+            ? fields.freeSpaceM * 100 / fields.freeSpaceP
+            : (fields.usedSpaceM || 0) + (fields.freeSpaceM || 0);
+          fields.freeSpaceTargetP = totalSpaceM > 0 ? (parseFloat(fsg) * 1000) / totalSpaceM * 100 : 0;
+        }
+
         results.results.push(fields);
       }
 
@@ -450,11 +471,13 @@ class StatsAPIs {
           nodeExcluded: nodeExcludes.includes(node.name),
           storeSize: node.indices.store.size_in_bytes,
           freeSize: node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0,
+          diskTotal: node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0,
           docs: node.indices.docs.count,
           scrolls: node.indices.search.scroll_current,
           searches: node.indices.search.query_current,
           searchesTime: node.indices.search.query_time_in_millis,
           heapSize: node.jvm.mem.heap_used_in_bytes,
+          heapMax: node.jvm.mem.heap_max_in_bytes,
           nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
           uptime: Math.floor(node.jvm.uptime_in_millis / (1000 * 60)),
           cpu: node.process.cpu.percent,

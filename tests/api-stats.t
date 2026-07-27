@@ -1,4 +1,4 @@
-use Test::More tests => 134;
+use Test::More tests => 137;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -25,7 +25,7 @@ my $test1Token = getTokenCookie("test1");
         is ($stats->{data}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
-    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM") {
+    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM", "freeSpaceTargetP") {
         cmp_ok ($stats->{data}->[0]->{$i}, '>=', 0, "stats.json $i >= 0");
     }
 
@@ -58,6 +58,8 @@ my $test1Token = getTokenCookie("test1");
 # esstats.json
     my $esstats = viewerGet("/api/esstats");
     is ($esstats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
+    ok (defined $esstats->{data}->[0]->{heapMax}, "esstats has heapMax");
+    ok (defined $esstats->{data}->[0]->{diskTotal}, "esstats has diskTotal");
 
     my $messtats = multiGet("/esstats.json");
     is ($messtats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");

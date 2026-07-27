@@ -202,7 +202,16 @@ SPDX-License-Identifier: Apache-2.0
             :class="column.classes"
             v-for="(column, colindex) in computedColumns"
             :key="column.id + colindex">
-            {{ calculateFormatValue(column, item, index) }}
+            <!-- optional per-column custom cell; falls back to text -->
+            <slot
+              v-if="$slots['cell-' + column.id]"
+              :name="'cell-' + column.id"
+              :item="item"
+              :column="column"
+              :value="calculateFormatValue(column, item, index)" />
+            <template v-else>
+              {{ calculateFormatValue(column, item, index) }}
+            </template>
           </td> <!-- /cell value -->
         </tr>
         <!-- more info row -->

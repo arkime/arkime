@@ -18,7 +18,17 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="recordsTotal"
         :records-filtered="filteredStats.length" />
 
+      <node-dashboard
+        v-if="statsView === 'dashboard'"
+        :data="filteredStats"
+        :gauges="dashboardGauges"
+        :status="esNodeStatus"
+        :status-text="esNodeStatusText"
+        :badge="esNodeRole"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )" />
+
       <arkime-table
+        v-else
         id="esNodesTable"
         @toggle-data-node-only="showOnlyDataNodes = !showOnlyDataNodes"
         :data="filteredStats"
@@ -105,6 +115,23 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </span>
         </template>
+        <template #cell-freeSize="{ item }">
+          <resource-bar
+            :percent="diskPercent(item)"
+            :color="diskColor(item)"
+            :label="freeSizeLabel(item)" />
+        </template>
+        <template #cell-heapSize="{ item }">
+          <resource-bar
+            :percent="heapPercent(item)"
+            :color="heapColor(item)"
+            :label="heapLabel(item)" />
+        </template>
+        <template #cell-cpu="{ item }">
+          <resource-bar
+            :percent="item.cpu"
+            :label="cpuLabel(item)" />
+        </template>
       </arkime-table>
     </div>
   </div>
@@ -113,11 +140,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
+import ResourceBar from './ResourceBar.vue';
+import NodeDashboard from './NodeDashboard.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
-import { roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
+import { UNKNOWN_COLOR } from './resourceColor.js';
+import { round, roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -141,10 +171,16 @@ export default {
     cluster: {
       type: String,
       default: ''
+    },
+    statsView: {
+      type: String,
+      default: 'table'
     }
   },
   components: {
     ArkimeTable,
+    ResourceBar,
+    NodeDashboard,
     ArkimeError,
     ArkimePaging,
     ArkimeLoading
@@ -177,10 +213,10 @@ export default {
         intl({ id: 'name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 }),
         intl({ id: 'docs', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } }),
         intl({ id: 'storeSize', sort: 'storeSize', doStats: true, default: true, width: 120, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } }),
-        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } }),
-        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return humanReadableBytes(item.heapSize); } }),
+        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return this.freeSizeLabel(item); } }),
+        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return this.heapLabel(item); } }),
         intl({ id: 'load', sort: 'load', doStats: true, default: true, width: 110, dataFunction: (item) => { return roundCommaString(item.load, 2); } }),
-        intl({ id: 'cpu', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return roundCommaString(item.cpu, 1) + '%'; } }),
+        intl({ id: 'cpu', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return this.cpuLabel(item); } }),
         intl({ id: 'read', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.read); } }),
         intl({ id: 'write', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.write); } }),
         intl({ id: 'searches', sort: 'searches', doStats: true, width: 105, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
@@ -204,6 +240,17 @@ export default {
         intl({ id: 'writesRejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } })
       ];
     },
+    dashboardGauges: function () {
+      // ES data nodes: disk filling toward the flood-stage watermark and heap
+      // pressure are the health signals; write rejections are the "drops".
+      return [
+        { title: this.$t('stats.esNodes.storeSize'), kind: 'bar', percent: (n) => this.diskUsedPercent(n), label: (n) => this.diskLabel(n), color: (n) => this.diskColor(n) },
+        { title: this.$t('stats.esNodes.heapSize'), kind: 'bar', percent: (n) => this.heapPercent(n), label: (n) => this.heapLabel(n), color: (n) => this.heapColor(n) },
+        { title: this.$t('stats.esNodes.writesRejectedDelta'), kind: 'value', text: (n) => roundCommaString(n.writesRejectedDelta), color: (n) => this.rejectionsColor(n) },
+        { title: this.$t('stats.esNodes.shards'), kind: 'value', text: (n) => roundCommaString(n.shards) },
+        { title: this.$t('stats.esNodes.uptime'), kind: 'value', text: (n) => readableTimeCompact(n.uptime * 60 * 1000) }
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;
@@ -213,7 +260,9 @@ export default {
       }
     },
     filteredStats: function () {
-      if (this.showOnlyDataNodes) {
+      // the "data nodes only" toggle lives in the table; don't silently apply it
+      // in dashboard view, where there's no control to clear it
+      if (this.showOnlyDataNodes && this.statsView === 'table') {
         return this.stats.filter(s => s.roles.some(role => role.startsWith('data')));
       }
       return this.stats;
@@ -244,9 +293,21 @@ export default {
     cluster: function (newValue) {
       this.query.cluster = this.cluster;
       this.loadData();
+    },
+    statsView: function () {
+      // the table triggers its own initial load on mount; the dashboard doesn't
+      if (this.statsView === 'dashboard' && !this.stats) {
+        this.loadData();
+      }
     }
   },
   created: function () {
+    // the table component triggers the initial load on mount; in dashboard view
+    // there's no table, so load here
+    if (this.statsView === 'dashboard') {
+      this.loadData();
+    }
+
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -285,6 +346,75 @@ export default {
       } catch (error) {
         this.error = resolveMessage(error, this.$t);
       }
+    },
+    /* resource meter labels/percents (shared by table cells and dashboard) - */
+    cpuLabel (item) {
+      return roundCommaString(item.cpu, 1) + '%';
+    },
+    heapPercent (item) {
+      return item.heapMax ? (item.heapSize / item.heapMax) * 100 : NaN;
+    },
+    heapLabel (item) {
+      const p = this.heapPercent(item);
+      return humanReadableBytes(item.heapSize) + (isFinite(p) ? ' (' + round(p, 1) + '%)' : '');
+    },
+    diskPercent (item) { // percent of disk still free
+      return item.diskTotal ? (item.freeSize / item.diskTotal) * 100 : NaN;
+    },
+    freeSizeLabel (item) {
+      const p = this.diskPercent(item);
+      return humanReadableBytes(item.freeSize) + (isFinite(p) ? ' (' + round(p, 1) + '%)' : '');
+    },
+    diskUsedPercent (item) { // percent of the filesystem in use
+      return item.diskTotal ? ((item.diskTotal - item.freeSize) / item.diskTotal) * 100 : NaN;
+    },
+    diskLabel (item) {
+      const p = this.diskUsedPercent(item);
+      if (!isFinite(p)) { return '—'; } // non-data node (no disk stats)
+      return humanReadableBytes(item.diskTotal - item.freeSize) + ' / ' + humanReadableBytes(item.diskTotal) + ' (' + round(p, 1) + '%)';
+    },
+    // ES-specific thresholds: disk nears the flood-stage watermark (~85/90%),
+    // heap pressure gets serious past ~75/85%. Grey when there's no data.
+    diskColor (item) {
+      const p = this.diskUsedPercent(item);
+      if (!isFinite(p)) { return UNKNOWN_COLOR; }
+      if (p > 90) { return 'error'; }
+      if (p >= 85) { return 'warning'; }
+      return 'success';
+    },
+    heapColor (item) {
+      const p = this.heapPercent(item);
+      if (!isFinite(p)) { return UNKNOWN_COLOR; }
+      if (p > 85) { return 'error'; }
+      if (p >= 75) { return 'warning'; }
+      return 'success';
+    },
+    rejectionsColor (item) {
+      return item.writesRejectedDelta > 0 ? 'error' : 'success';
+    },
+    esNodeStatus (item) {
+      // rejecting writes = data loss (red); otherwise the worst of disk/heap
+      if (item.writesRejectedDelta > 0) { return 'error'; }
+      const order = { neutral: 0, success: 1, warning: 2, error: 3 };
+      return [this.diskColor(item), this.heapColor(item)]
+        .reduce((worst, c) => order[c] > order[worst] ? c : worst, 'neutral');
+    },
+    esNodeRole (item) {
+      // ES reports the role as "master"; Arkime surfaces it as manager / main
+      // manager. Match any data tier (data_hot/warm/content, not just plain
+      // "data"); data-holding nodes badge as data so their disk/heap gauges read
+      // coherently, even if they're also master-eligible.
+      const roles = item.roles || [];
+      if (roles.some(role => role.startsWith('data'))) { return this.$t('stats.esNodes.roleData'); }
+      if (roles.includes('master')) {
+        return item.isMaster ? this.$t('stats.esNodes.roleMainManager') : this.$t('stats.esNodes.roleManager');
+      }
+      return this.$t('stats.esNodes.roleCoord');
+    },
+    esNodeStatusText (item) {
+      // a text companion for the color-only dot (accessibility)
+      const words = { error: 'stats.statusCritical', warning: 'stats.statusWarning', success: 'stats.statusOk', neutral: 'stats.statusUnknown' };
+      return this.$t(words[this.esNodeStatus(item)]);
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
