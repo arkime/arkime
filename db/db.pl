@@ -197,6 +197,7 @@ sub showHelp($)
     print "  wipe [<init opts>]           - Same as init, but leaves configs,users,queries,parliament indices untouched\n";
     print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
+    print "  initorupgrade [<init opts>]  - Init a fresh cluster or upgrade an existing one, whichever applies (pair with --ifneeded)\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
     print "       type                    - Same as rotateIndex in ini file = hourly,hourlyN,daily,weekly,monthly\n";
     print "       num                     - Number of indices to keep\n";
@@ -4395,6 +4396,106 @@ sub sessions3Update
     }
   ],
   "properties" : {
+    "adb" : {
+      "properties" : {
+        "authtype" : {
+          "type" : "keyword"
+        },
+        "authtypeCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "forward" : {
+          "properties" : {
+            "direction" : {
+              "type" : "keyword"
+            },
+            "directionCnt" : {
+              "type" : "long"
+            },
+            "local" : {
+              "type" : "keyword"
+            },
+            "localCnt" : {
+              "type" : "long"
+            },
+            "remote" : {
+              "type" : "keyword"
+            },
+            "remoteCnt" : {
+              "type" : "long"
+            }
+          }
+        },
+        "maxpayload" : {
+          "type" : "keyword"
+        },
+        "maxpayloadCnt" : {
+          "type" : "long"
+        },
+        "serial" : {
+          "type" : "keyword"
+        },
+        "serialCnt" : {
+          "type" : "long"
+        },
+        "service" : {
+          "type" : "keyword"
+        },
+        "serviceCnt" : {
+          "type" : "long"
+        },
+        "shell" : {
+          "properties" : {
+            "exitcode" : {
+              "type" : "keyword"
+            },
+            "exitcodeCnt" : {
+              "type" : "long"
+            }
+          }
+        },
+        "streamid" : {
+          "type" : "keyword"
+        },
+        "streamidCnt" : {
+          "type" : "long"
+        },
+        "sync" : {
+          "properties" : {
+            "operation" : {
+              "type" : "keyword"
+            },
+            "operationCnt" : {
+              "type" : "long"
+            },
+            "path" : {
+              "type" : "keyword"
+            },
+            "pathCnt" : {
+              "type" : "long"
+            }
+          }
+        },
+        "systemtype" : {
+          "type" : "keyword"
+        },
+        "systemtypeCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "asset" : {
       "type" : "keyword"
     },
@@ -4456,6 +4557,15 @@ sub sessions3Update
         "issuerON" : {
           "type" : "keyword"
         },
+        "issuerOU" : {
+          "type" : "keyword"
+        },
+        "ja4x" : {
+          "type" : "keyword"
+        },
+        "ja4x_r" : {
+          "type" : "keyword"
+        },
         "notAfter" : {
           "type" : "date"
         },
@@ -4468,6 +4578,9 @@ sub sessions3Update
         "remainingDays" : {
           "type" : "long"
         },
+        "remainingSeconds" : {
+          "type" : "long"
+        },
         "serial" : {
           "type" : "keyword"
         },
@@ -4477,7 +4590,13 @@ sub sessions3Update
         "subjectON" : {
           "type" : "keyword"
         },
+        "subjectOU" : {
+          "type" : "keyword"
+        },
         "validDays" : {
+          "type" : "long"
+        },
+        "validSeconds" : {
           "type" : "long"
         }
       }
@@ -4647,6 +4766,15 @@ sub sessions3Update
     },
     "arp" : {
       "properties" : {
+        "ASN" : {
+          "type" : "keyword"
+        },
+        "GEO" : {
+          "type" : "keyword"
+        },
+        "RIR" : {
+          "type" : "keyword"
+        },
         "ip" : {
           "type" : "ip"
         },
@@ -4701,6 +4829,18 @@ sub sessions3Update
         "idCnt" : {
           "type" : "long"
         },
+        "ja4d" : {
+          "type" : "keyword"
+        },
+        "ja4dCnt" : {
+          "type" : "long"
+        },
+        "ja4d6" : {
+          "type" : "keyword"
+        },
+        "ja4d6Cnt" : {
+          "type" : "long"
+        },
         "mac" : {
           "type" : "keyword"
         },
@@ -4713,11 +4853,20 @@ sub sessions3Update
         "ouiCnt" : {
           "type" : "long"
         },
+        "requestASN" : {
+          "type" : "keyword"
+        },
+        "requestGEO" : {
+          "type" : "keyword"
+        },
         "requestIp" : {
           "type" : "ip"
         },
         "requestIpCnt" : {
           "type" : "long"
+        },
+        "requestRIR" : {
+          "type" : "keyword"
         },
         "type" : {
           "type" : "keyword"
@@ -4736,6 +4885,61 @@ sub sessions3Update
           "type" : "keyword"
         },
         "RIR" : {
+          "type" : "keyword"
+        },
+        "answers" : {
+          "properties" : {
+            "caa" : {
+              "type" : "keyword"
+            },
+            "class" : {
+              "type" : "keyword"
+            },
+            "cname" : {
+              "type" : "keyword"
+            },
+            "ds" : {
+              "type" : "keyword"
+            },
+            "https" : {
+              "type" : "keyword"
+            },
+            "ip" : {
+              "type" : "ip"
+            },
+            "mx" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "keyword"
+            },
+            "nameserver" : {
+              "type" : "keyword"
+            },
+            "nsec" : {
+              "type" : "keyword"
+            },
+            "priority" : {
+              "type" : "long"
+            },
+            "rrsig" : {
+              "type" : "keyword"
+            },
+            "ttl" : {
+              "type" : "long"
+            },
+            "txt" : {
+              "type" : "keyword"
+            },
+            "type" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "answersCnt" : {
+          "type" : "long"
+        },
+        "headerFlags" : {
           "type" : "keyword"
         },
         "host" : {
@@ -4757,6 +4961,48 @@ sub sessions3Update
         },
         "ipCnt" : {
           "type" : "long"
+        },
+        "mailserverASN" : {
+          "type" : "keyword"
+        },
+        "mailserverGEO" : {
+          "type" : "keyword"
+        },
+        "mailserverHost" : {
+          "type" : "keyword"
+        },
+        "mailserverHostCnt" : {
+          "type" : "long"
+        },
+        "mailserverIp" : {
+          "type" : "ip"
+        },
+        "mailserverIpCnt" : {
+          "type" : "long"
+        },
+        "mailserverRIR" : {
+          "type" : "keyword"
+        },
+        "nameserverASN" : {
+          "type" : "keyword"
+        },
+        "nameserverGEO" : {
+          "type" : "keyword"
+        },
+        "nameserverHost" : {
+          "type" : "keyword"
+        },
+        "nameserverHostCnt" : {
+          "type" : "long"
+        },
+        "nameserverIp" : {
+          "type" : "ip"
+        },
+        "nameserverIpCnt" : {
+          "type" : "long"
+        },
+        "nameserverRIR" : {
+          "type" : "keyword"
         },
         "opcode" : {
           "type" : "keyword"
@@ -4781,6 +5027,9 @@ sub sessions3Update
         },
         "qtCnt" : {
           "type" : "long"
+        },
+        "queryHost" : {
+          "type" : "keyword"
         },
         "status" : {
           "type" : "keyword"
@@ -4881,6 +5130,12 @@ sub sessions3Update
         "headerCnt" : {
           "type" : "long"
         },
+        "headerValue" : {
+          "type" : "keyword"
+        },
+        "headerValueCnt" : {
+          "type" : "long"
+        },
         "host" : {
           "type" : "keyword",
           "copy_to" : [
@@ -4919,6 +5174,12 @@ sub sessions3Update
         "mimeVersionCnt" : {
           "type" : "long"
         },
+        "sha256" : {
+          "type" : "keyword"
+        },
+        "sha256Cnt" : {
+          "type" : "long"
+        },
         "smtpHello" : {
           "type" : "keyword"
         },
@@ -4941,6 +5202,16 @@ sub sessions3Update
           "type" : "keyword"
         },
         "useragentCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "entropy" : {
+      "properties" : {
+        "dst" : {
+          "type" : "long"
+        },
+        "src" : {
           "type" : "long"
         }
       }
@@ -5086,6 +5357,18 @@ sub sessions3Update
           "norms" : false,
           "analyzer" : "wordSplit"
         },
+        "ja4h" : {
+          "type" : "keyword"
+        },
+        "ja4hCnt" : {
+          "type" : "long"
+        },
+        "ja4h_r" : {
+          "type" : "keyword"
+        },
+        "ja4h_rCnt" : {
+          "type" : "long"
+        },
         "key" : {
           "type" : "keyword"
         },
@@ -5102,6 +5385,27 @@ sub sessions3Update
           "type" : "keyword"
         },
         "methodCnt" : {
+          "type" : "long"
+        },
+        "method-CONNECT" : {
+          "type" : "long"
+        },
+        "method-DELETE" : {
+          "type" : "long"
+        },
+        "method-GET" : {
+          "type" : "long"
+        },
+        "method-HEAD" : {
+          "type" : "long"
+        },
+        "method-OPTIONS" : {
+          "type" : "long"
+        },
+        "method-POST" : {
+          "type" : "long"
+        },
+        "method-PUT" : {
           "type" : "long"
         },
         "path" : {
@@ -5180,6 +5484,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "serverVersionCnt" : {
+          "type" : "long"
+        },
+        "sha256" : {
+          "type" : "keyword"
+        },
+        "sha256Cnt" : {
           "type" : "long"
         },
         "statuscode" : {
@@ -5577,6 +5887,15 @@ sub sessions3Update
     },
     "nbns" : {
       "properties" : {
+        "ASN" : {
+          "type" : "keyword"
+        },
+        "GEO" : {
+          "type" : "keyword"
+        },
+        "RIR" : {
+          "type" : "keyword"
+        },
         "host" : {
           "type" : "keyword"
         },
@@ -5611,6 +5930,12 @@ sub sessions3Update
     },
     "ntp" : {
       "properties" : {
+        "ja4n" : {
+          "type" : "keyword"
+        },
+        "ja4nCnt" : {
+          "type" : "long"
+        },
         "mode" : {
           "type" : "keyword"
         },
@@ -5798,11 +6123,20 @@ sub sessions3Update
     },
     "radius" : {
       "properties" : {
+        "endpointASN" : {
+          "type" : "keyword"
+        },
+        "endpointGEO" : {
+          "type" : "keyword"
+        },
         "endpointIp" : {
           "type" : "ip"
         },
         "endpointIpCnt" : {
           "type" : "long"
+        },
+        "endpointRIR" : {
+          "type" : "keyword"
         },
         "framedASN" : {
           "type" : "keyword"
@@ -5831,11 +6165,20 @@ sub sessions3Update
         "msgTypeCnt" : {
           "type" : "long"
         },
+        "nasASN" : {
+          "type" : "keyword"
+        },
+        "nasGEO" : {
+          "type" : "keyword"
+        },
         "nasIp" : {
           "type" : "ip"
         },
         "nasIpCnt" : {
           "type" : "long"
+        },
+        "nasRIR" : {
+          "type" : "keyword"
         },
         "nasPort" : {
           "type" : "integer"
@@ -6186,11 +6529,20 @@ sub sessions3Update
         "errorCnt" : {
           "type" : "long"
         },
+        "mappedASN" : {
+          "type" : "keyword"
+        },
+        "mappedGEO" : {
+          "type" : "keyword"
+        },
         "mappedIp" : {
           "type" : "ip"
         },
         "mappedIpCnt" : {
           "type" : "long"
+        },
+        "mappedRIR" : {
+          "type" : "keyword"
         },
         "mappedPort" : {
           "type" : "long"
@@ -6222,11 +6574,20 @@ sub sessions3Update
         "usernameCnt" : {
           "type" : "long"
         },
+        "xorMappedASN" : {
+          "type" : "keyword"
+        },
+        "xorMappedGEO" : {
+          "type" : "keyword"
+        },
         "xorMappedIp" : {
           "type" : "ip"
         },
         "xorMappedIpCnt" : {
           "type" : "long"
+        },
+        "xorMappedRIR" : {
+          "type" : "keyword"
         },
         "xorMappedPort" : {
           "type" : "long"
@@ -6234,11 +6595,20 @@ sub sessions3Update
         "xorMappedPortCnt" : {
           "type" : "long"
         },
+        "xorPeerASN" : {
+          "type" : "keyword"
+        },
+        "xorPeerGEO" : {
+          "type" : "keyword"
+        },
         "xorPeerIp" : {
           "type" : "ip"
         },
         "xorPeerIpCnt" : {
           "type" : "long"
+        },
+        "xorPeerRIR" : {
+          "type" : "keyword"
         },
         "xorPeerPort" : {
           "type" : "long"
@@ -6246,11 +6616,20 @@ sub sessions3Update
         "xorPeerPortCnt" : {
           "type" : "long"
         },
+        "xorRelayedASN" : {
+          "type" : "keyword"
+        },
+        "xorRelayedGEO" : {
+          "type" : "keyword"
+        },
         "xorRelayedIp" : {
           "type" : "ip"
         },
         "xorRelayedIpCnt" : {
           "type" : "long"
+        },
+        "xorRelayedRIR" : {
+          "type" : "keyword"
         },
         "xorRelayedPort" : {
           "type" : "long"
@@ -6272,6 +6651,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "hasshServerCnt" : {
+          "type" : "long"
+        },
+        "ja4ssh" : {
+          "type" : "keyword"
+        },
+        "ja4sshCnt" : {
           "type" : "long"
         },
         "key" : {
@@ -6406,6 +6791,28 @@ sub sessions3Update
         }
       }
     },
+    "tcp" : {
+      "properties" : {
+        "ja4l" : {
+          "type" : "keyword"
+        },
+        "ja4ls" : {
+          "type" : "keyword"
+        },
+        "ja4t" : {
+          "type" : "keyword"
+        },
+        "ja4tCnt" : {
+          "type" : "long"
+        },
+        "ja4ts" : {
+          "type" : "keyword"
+        },
+        "ja4tsCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "tcpflags" : {
       "properties" : {
         "ack" : {
@@ -6467,6 +6874,42 @@ sub sessions3Update
           "type" : "keyword"
         },
         "ja3sCnt" : {
+          "type" : "long"
+        },
+        "ja3sstring" : {
+          "type" : "keyword"
+        },
+        "ja3sstringCnt" : {
+          "type" : "long"
+        },
+        "ja3string" : {
+          "type" : "keyword"
+        },
+        "ja3stringCnt" : {
+          "type" : "long"
+        },
+        "ja4" : {
+          "type" : "keyword"
+        },
+        "ja4Cnt" : {
+          "type" : "long"
+        },
+        "ja4_r" : {
+          "type" : "keyword"
+        },
+        "ja4_rCnt" : {
+          "type" : "long"
+        },
+        "ja4s" : {
+          "type" : "keyword"
+        },
+        "ja4sCnt" : {
+          "type" : "long"
+        },
+        "ja4s_r" : {
+          "type" : "keyword"
+        },
+        "ja4s_rCnt" : {
           "type" : "long"
         },
         "srcSessionId" : {
@@ -7918,17 +8361,17 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?update|users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
-parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
+parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore|restorenoprompt|backup)$/);
 
-$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|upgrade|upgradenoprompt|clean|shrink|ilm|ism)$/);
+$ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|shrink|ilm|ism)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 
@@ -9841,6 +10284,15 @@ if (int($SHARDS) > $main::numberOfNodes) {
 dbCheck();
 
 dbVersion(1);
+
+# initorupgrade[noprompt]: pick init for a fresh cluster, upgrade for an existing
+# one. The noprompt variant never prompts. Combine with --ifneeded to no-op when
+# already current.
+if ($ARGV[1] eq "initorupgrade") {
+    $ARGV[1] = ($main::versionNumber < 0) ? "init" : "upgrade";
+} elsif ($ARGV[1] eq "initorupgradenoprompt") {
+    $ARGV[1] = ($main::versionNumber < 0) ? "initnoprompt" : "upgradenoprompt";
+}
 
 if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
     die "Can only use wipe if mappings are up to date.  Use upgrade first.";
