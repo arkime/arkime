@@ -16,6 +16,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const internals = require('./internals');
+const PacketPortal = require('./packetPortal');
 
 class ViewerUtils {
   static #oldDBFields = new Map();
@@ -293,9 +294,51 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // When a packet portal to node is live, route the request over it instead of
+  // dialing the node directly. Returns { viewUrl, client, options } ready to use,
+  // or null when the caller should getViewUrl() as usual.
+  //
+  // A node that has connected via packet portal is behind NAT and cannot be
+  // dialed directly, so if its portal is momentarily down we wait up to
+  // packetPortalWaitSeconds for it to come back rather than falling back to a
+  // (doomed) direct connection; if it never comes back we throw a clear error.
+  static async portalRequest (node) {
+    let session = PacketPortal.get(node);
+    if (!session && PacketPortal.isReverse(node)) {
+      const waitMs = (+Config.get('packetPortalWaitSeconds', 5)) * 1000;
+      session = await PacketPortal.getOrWait(node, waitMs);
+      if (!session) {
+        const err = new Error(`Packet portal to node '${node}' is not connected`);
+        err.portalUnreachable = true;
+        throw err;
+      }
+    }
+    if (!session) { return null; }
+    return {
+      viewUrl: 'http://arkime-portal.invalid/',
+      client: http, // inner protocol carried over the portal is plaintext HTTP/1.1
+      options: {
+        timeout: 20 * 60 * 1000,
+        agent: PacketPortal.agent,
+        packetPortalSession: session
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
   static async makeRequest (node, path, user, cb, cluster) {
     try {
-      const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+      let viewUrl, client, options;
+      const portal = await ViewerUtils.portalRequest(node);
+      if (portal) {
+        ({ viewUrl, client, options } = portal);
+      } else {
+        ({ viewUrl, client } = await ViewerUtils.getViewUrl(node));
+        options = {
+          timeout: 20 * 60 * 1000,
+          agent: client === http ? internals.httpAgent : internals.httpsAgent
+        };
+      }
 
       const nodePath = encodeURI(path);
       let url;
@@ -304,13 +347,9 @@ class ViewerUtils {
       } else {
         url = new URL(nodePath, viewUrl);
       }
-      const options = {
-        timeout: 20 * 60 * 1000,
-        agent: client === http ? internals.httpAgent : internals.httpsAgent
-      };
 
       Auth.addS2SAuth(options, user, node, url.pathname, ViewerUtils.getClusterSecret(cluster));
-      ViewerUtils.addCaTrust(options, node);
+      if (!portal) { ViewerUtils.addCaTrust(options, node); }
 
       function responseFunc (pres) {
         let response = '';
@@ -344,7 +383,17 @@ class ViewerUtils {
     ArkimeUtil.noCache(req, res);
 
     try {
-      const { viewUrl, client } = await ViewerUtils.getViewUrl(req.params.nodeName);
+      let viewUrl, client, options;
+      const portal = await ViewerUtils.portalRequest(req.params.nodeName);
+      if (portal) {
+        ({ viewUrl, client, options } = portal);
+      } else {
+        ({ viewUrl, client } = await ViewerUtils.getViewUrl(req.params.nodeName));
+        options = {
+          timeout: 20 * 60 * 1000,
+          agent: client === http ? internals.httpAgent : internals.httpsAgent
+        };
+      }
 
       let url;
       if (req.url.startsWith('/')) {
@@ -353,14 +402,9 @@ class ViewerUtils {
         url = new URL(req.url, viewUrl);
       }
 
-      const options = {
-        timeout: 20 * 60 * 1000,
-        agent: client === http ? internals.httpAgent : internals.httpsAgent
-      };
-
       const urlPath = url.pathname + (url.search ?? '');
       Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath, ViewerUtils.getClusterSecret(req.query.cluster));
-      ViewerUtils.addCaTrust(options, req.params.nodeName);
+      if (!portal) { ViewerUtils.addCaTrust(options, req.params.nodeName); }
 
       const preq = client.request(url, options, (pres) => {
         if (pres.headers['content-type']) {
@@ -383,6 +427,10 @@ class ViewerUtils {
       });
       preq.end();
     } catch (err) {
+      if (err?.portalUnreachable) {
+        console.log('ERROR - packet portal not connected for node:', req.params.nodeName);
+        return res.send(`Packet portal to node '${ArkimeUtil.safeStr(req.params.nodeName)}' is not connected, try again later`);
+      }
       console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
       res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
     }
