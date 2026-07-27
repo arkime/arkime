@@ -94,7 +94,7 @@ const numeric = (v) => {
 const dotColor = (node) => {
   const token = props.status
     ? props.status(node)
-    : worstResourceColor(props.gauges.map(g => ({ percent: numeric(g.percent(node)), invert: g.invert })));
+    : worstResourceColor(props.gauges.map(g => ({ percent: g.percent ? numeric(g.percent(node)) : NaN, invert: g.invert })));
   return `rgb(var(--v-theme-${token}))`;
 };
 </script>

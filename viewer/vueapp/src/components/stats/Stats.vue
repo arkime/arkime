@@ -738,7 +738,7 @@ export default {
       shardsShow: this.$route.query.shardsShow || 'notstarted',
       dataInterval: parseInt(this.$route.query.refreshInterval, 10) || 15000,
       pageSize: parseInt(this.$route.query.size, 10) || 500,
-      statsView: this.$route.query.statsView || 'table',
+      statsView: this.$route.query.statsView === 'dashboard' ? 'dashboard' : 'table',
       cluster: this.$route.query.cluster || undefined,
       refreshData: false,
       childError: '',
@@ -865,7 +865,7 @@ export default {
         this.dataInterval = parseInt(queryParams.refreshInterval, 10);
       }
       if (queryParams.statsView) {
-        this.statsView = queryParams.statsView;
+        this.statsView = queryParams.statsView === 'dashboard' ? 'dashboard' : 'table';
       }
       if (queryParams.cluster) {
         this.cluster = queryParams.cluster;

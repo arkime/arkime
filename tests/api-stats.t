@@ -25,7 +25,7 @@ my $test1Token = getTokenCookie("test1");
         is ($stats->{data}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
-    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM") {
+    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM", "freeSpaceTargetP") {
         cmp_ok ($stats->{data}->[0]->{$i}, '>=', 0, "stats.json $i >= 0");
     }
 

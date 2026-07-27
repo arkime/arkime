@@ -98,6 +98,8 @@ let oldD3, cubism; // lazy load old d3 and cubism
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
 
+const OUT_OF_DATE_SECS = 300; // Arkime's "out of date" window — matches the server's now-5m rule
+
 export default {
   name: 'NodeStats',
   props: {
@@ -221,13 +223,12 @@ export default {
     dashboardGauges: function () {
       // capture nodes are rarely cpu/mem bound — lead with what operators watch:
       // drops, backpressure, throughput, retention/uptime, and disk vs target.
-      // 'Queues'/'Uptime' TODO i18n once the card design settles.
       return [
         { title: this.$t('stats.cstats.deltaDropped'), kind: 'value', text: (n) => roundCommaString(n.deltaTotalDroppedPerSec) + '/s', color: (n) => n.deltaTotalDroppedPerSec > 0 ? 'error' : 'success' },
-        { title: 'Queues', kind: 'value', text: (n) => this.queuesText(n), color: (n) => this.queuesColor(n) },
+        { title: this.$t('stats.queues'), kind: 'value', text: (n) => this.queuesText(n), color: (n) => this.queuesColor(n) },
         { title: this.$t('stats.cstats.deltaBitsPerSec'), kind: 'value', text: (n) => humanReadableBits(n.deltaBitsPerSec) },
         { title: this.$t('stats.cstats.retention'), kind: 'value', text: (n) => readableTimeCompact(n.retention * 1000) },
-        { title: 'Uptime', kind: 'value', text: (n) => readableTimeCompact(n.runningTime * 1000) },
+        { title: this.$t('stats.uptime'), kind: 'value', text: (n) => readableTimeCompact(n.runningTime * 1000) },
         { title: this.$t('stats.cstats.freeSpaceM'), kind: 'bar', percent: (n) => n.freeSpaceP, label: (n) => this.freeSpaceLabel(n), color: (n) => this.freeSpaceColor(n) }
       ];
     },
@@ -341,21 +342,24 @@ export default {
     freeSpaceLabel (item) {
       return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)';
     },
-    nodeStatus (item) {
-      // reuse Arkime's own liveness rules: a node is "out of date" if it hasn't
-      // reported in 5 min, and has "no sessions" when monitoring < 1 — either
-      // way it isn't capturing, so the card dot is red; green when capturing.
-      const outOfDate = (Date.now() / 1000) - item.currentTime > 300;
-      const capturing = !outOfDate && item.monitoring >= 1;
-      return capturing ? 'success' : 'error';
+    captureLiveness (item) {
+      // reuse Arkime's own liveness rules: "out of date" if it hasn't reported
+      // in OUT_OF_DATE_SECS, "no sessions" if monitoring < 1 — either way it
+      // isn't capturing (red dot); green when capturing. Prefer the server's
+      // authoritative flag; fall back to the client clock (older/multi-cluster).
+      const outOfDate = item.outOfDate !== undefined
+        ? item.outOfDate
+        : (Date.now() / 1000) - item.currentTime > OUT_OF_DATE_SECS;
+      if (outOfDate) {
+        return { token: 'error', text: this.$t('stats.nodeOutOfDate') };
+      }
+      if (item.monitoring < 1) {
+        return { token: 'error', text: this.$t('stats.nodeNoSessions') };
+      }
+      return { token: 'success', text: this.$t('stats.nodeCapturing') };
     },
-    nodeStatusText (item) {
-      // TODO i18n once the dashboard card design settles
-      const outOfDate = (Date.now() / 1000) - item.currentTime > 300;
-      if (outOfDate) { return 'out of date'; }
-      if (item.monitoring < 1) { return 'no sessions'; }
-      return 'capturing';
-    },
+    nodeStatus (item) { return this.captureLiveness(item).token; },
+    nodeStatusText (item) { return this.captureLiveness(item).text; },
     nodeVersion (item) {
       return (item.ver || '').replace(/-GIT$/, '');
     },

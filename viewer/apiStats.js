@@ -184,6 +184,9 @@ class StatsAPIs {
         fields.deltaDupDroppedPerSec = Math.floor(fields.deltaDupDropped * 1000.0 / fields.deltaMS) || 0;
         fields.deltaTotalDroppedPerSec = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0 / fields.deltaMS);
         fields.runningTime = fields.currentTime - fields.startTime;
+        // authoritative (server-clock) liveness so the dashboard dot doesn't
+        // depend on each browser's clock; matches the hide=old now-5m rule
+        fields.outOfDate = (now - fields.currentTime) > 300;
 
         // each node's free-space recycle target as a percent, so the UI can
         // color disk relative to the node's own target (freeSpaceG may be a
@@ -192,7 +195,9 @@ class StatsAPIs {
         if (typeof fsg === 'string' && fsg.endsWith('%')) {
           fields.freeSpaceTargetP = parseFloat(fsg);
         } else {
-          const totalSpaceM = fields.freeSpaceP > 0 ? fields.freeSpaceM / (fields.freeSpaceP / 100) : 0;
+          // total = used + free (NOT reverse-derived from freeSpaceP, which is
+          // 0 on a full disk and would make the target — and the color — bogus)
+          const totalSpaceM = (fields.usedSpaceM || 0) + (fields.freeSpaceM || 0);
           fields.freeSpaceTargetP = totalSpaceM > 0 ? (parseFloat(fsg) * 1000) / totalSpaceM * 100 : 0;
         }
 
