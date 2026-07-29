@@ -131,7 +131,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)
         MD5_Update(&ctx, ptr + 9, 1);
-        // Skip Header checksum (2 byte)
+        // Skip Header checksum (2 bytes)
         MD5_Update(&ctx, ptr + 12, headerLen - 12);
     } else {
         MD5_Update(&ctx, ptr, 7);

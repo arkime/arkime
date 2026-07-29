@@ -63,7 +63,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 {
     POIClient_t *poic = (POIClient_t *)data;
 
-    //LOG("fd: %d cond: %x data: %p", fd, cond, data);
+    // LOG("fd: %d cond: %x data: %p", fd, cond, data);
     GError              *error = 0;
     static int           first = 1;
 
@@ -71,7 +71,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 
     if (error || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (error) {
-            LOG("ERROR: Receive Error: %s", error->message);
+            LOG("ERROR - Receive Error: %s", error->message);
             g_error_free(error);
         }
         pcapoverip_client_free(poic);

@@ -613,7 +613,7 @@ do { \
     } \
     BSB_EXPORT_rewind(jbsb, 1); /* Remove last comma */ \
     BSB_EXPORT_cstr(jbsb, "],"); \
-} while(0)
+} while (0)
 
 LOCAL int arkime_db_field_sort(const void *a, const void *b)
 {
@@ -720,7 +720,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             break;
         case ARKIME_ROTATE_HOURLY6:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, (tmp.tm_hour / 6) * 6);
-            break ;
+            break;
         case ARKIME_ROTATE_HOURLY8:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, (tmp.tm_hour / 8) * 8);
             break;

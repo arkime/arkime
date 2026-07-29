@@ -685,7 +685,7 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, u
     struct tm  tm;
     time_t     val;
 
-    //UTCTime
+    // UTCTime
     if (tag == 23 && len > 12) {
         memset(&tm, 0, sizeof(tm));
         if (len >= 17 && value[12] != 'Z')
@@ -711,7 +711,7 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, u
         }
         return val;
     }
-    //GeneralizedTime
+    // GeneralizedTime
     else if (tag == 24 && len >= 10) {
         uint32_t pos;
         memset(&tm, 0, sizeof(tm));
@@ -1077,7 +1077,7 @@ int arkime_parsers_load()
         g_free(hstring->str);
         ARKIME_TYPE_FREE(ArkimeString_t, hstring);
     }
-    g_free(disableParsers); // NOT, g_strfreev because using the pointers
+    g_free(disableParsers); // NOT g_strfreev, because using the pointers
 
     return count;
 }

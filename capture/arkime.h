@@ -200,7 +200,7 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_CNT                0x1000
 /* Added -cnt */
 #define ARKIME_FIELD_FLAG_ECS_CNT            0x2000
-/* prepend ip stuff - don't use*/
+/* prepend ip stuff - don't use */
 #define ARKIME_FIELD_FLAG_IPPRE              0x4000
 /* new value has to be different from last value */
 #define ARKIME_FIELD_FLAG_DIFF_FROM_LAST     0x8000
@@ -949,7 +949,7 @@ typedef void (*ArkimeSeqNum_cb)(uint32_t seq, gpointer uw);
 /******************************************************************************/
 extern ARKIME_LOCK_EXTERN(LOG);
 #define LOG(...) do { \
-    if(config.quiet == FALSE) { \
+    if (config.quiet == FALSE) { \
         ARKIME_LOCK(LOG); \
         time_t _t = time(NULL); \
         char   _b[26]; \
@@ -961,10 +961,10 @@ extern ARKIME_LOCK_EXTERN(LOG);
         fflush(stdout); \
         ARKIME_UNLOCK(LOG); \
     } \
-} while(0) /* no trailing ; */
+} while (0) /* no trailing ; */
 
 #define LOGEXIT(...) do { config.quiet = FALSE; LOG(__VA_ARGS__); exit(1); } while (0) /* no trailing ; */
-#define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while (0) /* no trailing ; */
+#define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n"); exit(1); } while (0) /* no trailing ; */
 #define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
 #define LOG_RATE(rate, ...) do { \
@@ -1066,7 +1066,7 @@ void arkime_config_init();
 void arkime_config_load_override_ips();
 void arkime_config_load_packet_ips();
 void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos);
-void arkime_config_load_header(char *section, char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags);
+void arkime_config_load_header(const char *section, const char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags);
 void arkime_config_exit();
 
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d);
@@ -1103,10 +1103,10 @@ void arkime_command_start();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
-void     arkime_command_client_incref(void *cc);
-void     arkime_command_client_decref(void *cc);
-void     arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets);
-void     arkime_command_notify_file_error(void *clientRef, const char *filename);
+void arkime_command_client_incref(void *cc);
+void arkime_command_client_decref(void *cc);
+void arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets);
+void arkime_command_notify_file_error(void *clientRef, const char *filename);
 
 /******************************************************************************/
 /*
@@ -1309,9 +1309,9 @@ uint8_t *arkime_http_get(void *server, const char *key, int key_len, size_t *mle
 #define arkime_http_free_buffer(b) ARKIME_SIZE_FREE(buffer, b)
 #define arkime_http_free_response(b) free(b)
 void arkime_http_exit();
-int arkime_http_queue_length(void *server);
-int arkime_http_queue_length_best(void *server);
-uint64_t arkime_http_dropped_count(void *server);
+int arkime_http_queue_length(const void *server);
+int arkime_http_queue_length_best(const void *server);
+uint64_t arkime_http_dropped_count(const void *server);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
 void *arkime_http_get_or_create_server(const char *name, const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew);

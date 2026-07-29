@@ -297,7 +297,7 @@ LOCAL void parse_args(int argc, char **argv)
                 g_strlcat(config.hostName, ".", 255);
                 g_strlcat(config.hostName, domainname, 255);
             } else {
-                LOG("WARNING: gethostname doesn't return a fully qualified name and getdomainname failed, this may cause issues when viewing pcaps, use the --host option - %s", config.hostName);
+                LOG("WARNING - gethostname doesn't return a fully qualified name and getdomainname failed, this may cause issues when viewing pcaps, use the --host option - %s", config.hostName);
             }
         }
     }
@@ -494,7 +494,7 @@ void arkime_check_file_permissions(const char *filename)
         return;
     }
     if (strncmp (filename, "/", 1) != 0) {
-        LOG("WARNING using a relative path may make pcap inaccessible to viewer");
+        LOG("WARNING - using a relative path may make pcap inaccessible to viewer");
         return;
     }
 
@@ -522,9 +522,9 @@ void arkime_check_file_permissions(const char *filename)
                 // user readable and dropUser matches file user
                 // TODO compare user id values as opposed to user name
             } else
-                LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+                LOG("WARNING - permission issues with %s might make pcap inaccessible to viewer", path);
         } else
-            LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+            LOG("WARNING - Can't stat %s.  Pcap might not be accessible to viewer", path);
 
         token = strtok_r (NULL, "/", &save_ptr);
     }
@@ -548,7 +548,7 @@ uint32_t arkime_get_next_prime(uint32_t v)
     return primes[p - 1];
 }
 /******************************************************************************/
-//https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 uint32_t arkime_get_next_powerof2(uint32_t v)
 {
     v--;
@@ -1103,7 +1103,7 @@ LOCAL void arkime_mlockall_init()
     struct rlimit l;
     getrlimit(RLIMIT_MEMLOCK, &l);
     if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
-        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max / 1024);
+        LOG("WARNING - memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max / 1024);
         return;
     }
 
@@ -1116,7 +1116,7 @@ LOCAL void arkime_mlockall_init()
 
     int result = mlockall(MCL_FUTURE | MCL_CURRENT);
     if (result != 0) {
-        LOG("WARNING: Failed to mlockall - %s", strerror(errno));
+        LOG("WARNING - Failed to mlockall - %s", strerror(errno));
     } else if (config.debug) {
         LOG("mlockall with max of %lu", (unsigned long)l.rlim_max);
     }
@@ -1132,8 +1132,8 @@ gboolean arkime_is_main_thread()
 /******************************************************************************/
 #ifdef SFUZZLOCH
 
-/* This replaces main for libFuzzer.  Basically initialized everything like main
- * would for starting up and set some important settings.  Must be run from tests
+/* This replaces main for libFuzzer.  Basically initializes everything like main
+ * would for starting up and sets some important settings.  Must be run from tests
  * directory, and config.test.ini will be loaded for fuzz node.
  */
 
@@ -1190,8 +1190,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 /******************************************************************************/
 #elif FUZZLOCH
 
-/* This replaces main for libFuzzer.  Basically initialized everything like main
- * would for starting up and set some important settings.  Must be run from tests
+/* This replaces main for libFuzzer.  Basically initializes everything like main
+ * would for starting up and sets some important settings.  Must be run from tests
  * directory, and config.test.ini will be loaded for fuzz node.
  */
 

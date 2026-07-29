@@ -1384,7 +1384,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
-    packet->outerEtherOffset = packet->etherOffset; //we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
+    packet->outerEtherOffset = packet->etherOffset; // we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
     packet->etherOffset = (uint8_t *)data - packet->pkt;
 #ifdef DEBUG_PACKET
     char str[20];
@@ -1690,10 +1690,10 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     case DLT_IEEE802_11_RADIO: // radiotap
         rc = arkime_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case DLT_IPV4: //RAW IPv4
+    case DLT_IPV4: // RAW IPv4
         rc = arkime_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case DLT_IPV6: //RAW IPv6
+    case DLT_IPV6: // RAW IPv6
         rc = arkime_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
         break;
     case DLT_NFLOG: // NFLOG
@@ -2388,7 +2388,7 @@ void arkime_packet_set_dltsnap(int dlt, int snaplen)
 {
     pcapFileHeader.dlt = dlt;
     // Turns out libpcap actually truncates packets to near snaplen if used to
-    // read back in the packets,  so we need to make sure large enough.
+    // read back in the packets, so we need to make sure it's large enough.
     pcapFileHeader.snaplen = MAX(snaplen, (int)config.snapLen);
     arkime_rules_recompile();
 }

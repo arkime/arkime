@@ -81,7 +81,7 @@ LOCAL gboolean arkime_command_data_read_cb(gint UNUSED(fd), GIOCondition cond, g
 
     if (error || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (error) {
-            LOG("ERROR: Receive Error: %s", error->message);
+            LOG("ERROR - Receive Error: %s", error->message);
             g_error_free(error);
         }
         arkime_command_client_free(cc);

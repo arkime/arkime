@@ -652,12 +652,12 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         /* If offline pcap honor umask, otherwise disable other RW */
         unlink(name);
         if (config.pcapReadOffline) {
-            simpleThreadData[thread].currentInfo->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+            simpleThreadData[thread].currentInfo->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         } else {
-            simpleThreadData[thread].currentInfo->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+            simpleThreadData[thread].currentInfo->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         }
         if (simpleThreadData[thread].currentInfo->file->fd < 0) {
-            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
+            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
 
         if (simpleShortHeader) {
@@ -720,7 +720,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         uint32_t t;
         if (simpleThreadData[thread].firstPacket > packet->ts.tv_sec) {
             LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
-            // Time stamp is too early, just pretend its at firstPacket time
+            // Time stamp is too early, just pretend it's at firstPacket time
             t = packet->ts.tv_usec;
         } else {
             t = ((packet->ts.tv_sec - simpleThreadData[thread].firstPacket) << 20) | packet->ts.tv_usec;
@@ -862,7 +862,7 @@ LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, g
 /******************************************************************************/
 /* Called in the main thread.  Check all the timestamps, and if out of date
  * schedule something in each writer thread to do the partial write since there
- * is no locks around buffering.
+ * are no locks around buffering.
  */
 LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
 {

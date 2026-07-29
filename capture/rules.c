@@ -916,7 +916,7 @@ LOCAL void arkime_rules_load(char **names)
         yaml_parser_delete(&parser);
         fclose(input);
         if (!parent) {
-            LOG("WARNING %s - has no rules", names[i]);
+            LOG("WARNING - %s has no rules", names[i]);
             continue;
         }
         if (config.debug > 1) {

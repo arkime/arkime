@@ -1404,7 +1404,7 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
     // Anchored so the AS number is always at values[v] + 6 for the parsing below
     GRegex *asnRegex = g_regex_new("^AS\\d+ .+", 0, 0, &error);
     gsize k, v;
-    for (k = 0 ; k < keys_len; k++) {
+    for (k = 0; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(keyFile,
                                                     "override-ips",
@@ -1504,7 +1504,7 @@ LOCAL void arkime_config_parse_packet_ips(GKeyFile *keyFile)
     }
 
     gsize k, v;
-    for (k = 0 ; k < keys_len; k++) {
+    for (k = 0; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(keyFile,
                                                     "packet-drop-ips",
@@ -1568,7 +1568,7 @@ void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos)
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
-void arkime_config_load_header(char *section, char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags)
+void arkime_config_load_header(const char *section, const char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags)
 {
     GError   *error = 0;
     char      name[100];
@@ -1583,7 +1583,7 @@ void arkime_config_load_header(char *section, char *group, const char *helpBase,
     }
 
     gsize k, v;
-    for (k = 0 ; k < keys_len; k++) {
+    for (k = 0; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(arkimeKeyFile,
                                                     section,
