@@ -215,6 +215,26 @@ if (ArkimeConfig.regressionTests) {
     });
   });
 
+  // send a request over :node's packet portal with NO s2s auth and report the
+  // status, to check the far end rejects it even for a no-auth route
+  app.get('/regressionTests/packetPortalNoAuth/:node', (req, res) => {
+    const session = PacketPortal.get(req.params.node);
+    if (!session) { return res.send({ status: 0, error: 'no portal' }); }
+
+    const preq = http.request('http://arkime-portal.invalid/health', {
+      method: 'GET',
+      agent: PacketPortal.agent,
+      packetPortalSession: session,
+      timeout: 10000
+    }, (pres) => {
+      pres.resume();
+      return res.send({ status: pres.statusCode });
+    });
+    preq.on('timeout', () => preq.destroy(new Error('timeout')));
+    preq.on('error', (err) => res.send({ status: 0, error: '' + err }));
+    preq.end();
+  });
+
   app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
