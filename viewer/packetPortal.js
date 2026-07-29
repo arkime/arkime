@@ -66,8 +66,9 @@ const REQUEST_TIMEOUT = 20 * 60 * 1000;
  */
 class H2Socket extends streamLib.Duplex {
   #h2;
+  #timeoutMs = 0;
 
-  constructor (h2stream, options = {}) {
+  constructor (h2stream) {
     super({
       // net.Socket semantics: when the peer stops sending, end our write side
       // too. A bare Duplex is half open by default, which would leave both ends
@@ -88,10 +89,9 @@ class H2Socket extends streamLib.Duplex {
     this.remoteFamily = 'IPv4';
     this.localAddress = '127.0.0.1';
     this.localPort = 0;
-    // the portal peer's real address, for logging -- never for authorization
-    this.portalPeer = options.peer;
 
     h2stream.on('data', (chunk) => {
+      this.#touch();
       // h2 has its own flow control, so pausing it here applies real
       // backpressure to the peer rather than buffering without bound
       if (this.push(chunk) === false) { h2stream.pause(); }
@@ -104,13 +104,14 @@ class H2Socket extends streamLib.Duplex {
   }
 
   _write (chunk, enc, cb) {
+    this.#touch();
     if (chunk.length === 0) { return cb(); } // http core does this, h2 dislikes it
     // copy: the buffer we were handed may be reused before h2 serializes it
     this.#h2.write(Buffer.from(chunk), cb);
   }
 
   _final (cb) {
-    if (!this.#h2.writableEnded) { this.#h2.end(); }
+    if (!this.#h2.destroyed && !this.#h2.writableEnded) { this.#h2.end(); }
     cb();
   }
 
@@ -123,7 +124,7 @@ class H2Socket extends streamLib.Duplex {
 
     if (err) {
       this.#h2.destroy(err);
-    } else if (!this.#h2.writableEnded) {
+    } else if (!this.#h2.destroyed && !this.#h2.writableEnded) {
       // End rather than destroy: a clean teardown must not discard bytes the h2
       // stream is still flushing, which is exactly what truncates a large pcap
       // download to a slow client.
@@ -134,13 +135,22 @@ class H2Socket extends streamLib.Duplex {
   }
 
   // --------------------------------------------------------------------------
+  // A socket timeout is an IDLE timeout: net.Socket restarts it on every read
+  // and write. A plain deadline instead would kill a pcap download that is
+  // transferring perfectly happily, just for taking longer than the timeout.
+  #touch () {
+    if (this.#timeoutMs <= 0) { return; }
+    clearTimeout(this._portalTimer);
+    this._portalTimer = setTimeout(() => this.emit('timeout'), this.#timeoutMs);
+    if (this._portalTimer.unref) { this._portalTimer.unref(); }
+  }
+
+  // --------------------------------------------------------------------------
   // The rest of what http core expects a socket to have
   setTimeout (ms, cb) {
+    this.#timeoutMs = ms > 0 ? ms : 0;
     clearTimeout(this._portalTimer);
-    if (ms > 0) {
-      this._portalTimer = setTimeout(() => this.emit('timeout'), ms);
-      if (this._portalTimer.unref) { this._portalTimer.unref(); }
-    }
+    this.#touch();
     if (cb) { this.once('timeout', cb); }
     return this;
   }
