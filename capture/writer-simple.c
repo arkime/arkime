@@ -155,7 +155,7 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
     if (!info) {
         // Freelist empty, allocate new
         info = ARKIME_TYPE_ALLOC0(ArkimeSimple_t);
-        info->buf = mmap (0, ARKIME_SIMPLE_BUFSIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+        info->buf = mmap(0, ARKIME_SIMPLE_BUFSIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
@@ -359,7 +359,7 @@ LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int 
     arkime_sprint_hex_string(outkeyhex, ciphertext, ciphertext_len);
 }
 /******************************************************************************/
-LOCAL char *writer_simple_get_kekId ()
+LOCAL char *writer_simple_get_kekId()
 {
     char *kek = arkime_config_str(NULL, "simpleKEKId", NULL);
 
@@ -864,7 +864,7 @@ LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, g
  * schedule something in each writer thread to do the partial write since there
  * are no locks around buffering.
  */
-LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_simple_check_gfunc(gpointer UNUSED(user_data))
 {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -907,7 +907,7 @@ LOCAL FILE *writer_simple_get_index(int thread, int64_t fileNum)
     return simpleThreadData[thread].indexFiles[p].fp;
 }
 /******************************************************************************/
-LOCAL void writer_simple_index (ArkimeSession_t *session)
+LOCAL void writer_simple_index(ArkimeSession_t *session)
 {
     uint8_t  buf[0xffff * 5];
     BSB      bsb;

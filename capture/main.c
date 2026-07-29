@@ -1,3 +1,4 @@
+/******************************************************************************/
 /* main.c  -- Initialization of components
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
@@ -225,11 +226,11 @@ LOCAL void parse_args(int argc, char **argv)
     extern const char *yaml_get_version_string(void);
     //extern int magic_version(void);
 
-    context = g_option_context_new ("- capture");
-    g_option_context_add_main_entries (context, entries, NULL);
-    if (!g_option_context_parse (context, &argc, &argv, &error)) {
-        g_print ("option parsing failed: %s\n", error->message);
-        exit (1);
+    context = g_option_context_new("- capture");
+    g_option_context_add_main_entries(context, entries, NULL);
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+        g_print("option parsing failed: %s\n", error->message);
+        exit(1);
     }
 
     g_option_context_free(context);
@@ -383,7 +384,7 @@ void arkime_free_later(void *ptr, GDestroyNotify cb)
     ARKIME_UNLOCK(freeLaterList);
 }
 /******************************************************************************/
-LOCAL gboolean arkime_free_later_check (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_free_later_check(gpointer UNUSED(user_data))
 {
     if (freeLaterFront == freeLaterBack)
         return TRUE;
@@ -484,7 +485,7 @@ void arkime_check_file_permissions(const char *filename)
     char                *save_ptr;
     char                 tmpFilename[PATH_MAX];
 
-    if (strlen (filename) >= PATH_MAX) {
+    if (strlen(filename) >= PATH_MAX) {
         // filename bigger than path buffer, skip check
         return;
     }
@@ -493,7 +494,7 @@ void arkime_check_file_permissions(const char *filename)
         // drop.User,Group not defined -- skip check
         return;
     }
-    if (strncmp (filename, "/", 1) != 0) {
+    if (strncmp(filename, "/", 1) != 0) {
         LOG("WARNING - using a relative path may make pcap inaccessible to viewer");
         return;
     }
@@ -501,24 +502,24 @@ void arkime_check_file_permissions(const char *filename)
     path[0] = 0;
 
     // process copy of filename given strtok_r changes arg
-    g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
+    g_strlcpy(tmpFilename, filename, sizeof(tmpFilename));
 
-    token = strtok_r (tmpFilename, "/", &save_ptr);
+    token = strtok_r(tmpFilename, "/", &save_ptr);
 
     while (token != NULL) {
-        g_strlcat (path, "/", sizeof(path));
-        g_strlcat (path, token, sizeof(path));
+        g_strlcat(path, "/", sizeof(path));
+        g_strlcat(path, token, sizeof(path));
 
         if (stat(path, &stats) != -1) {
-            const struct group  *gr = getgrgid (stats.st_gid);
-            const struct passwd *pw = getpwuid (stats.st_uid);
+            const struct group  *gr = getgrgid(stats.st_gid);
+            const struct passwd *pw = getpwuid(stats.st_uid);
 
             if (stats.st_mode & S_IROTH) {
                 // world readable
-            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && gr && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && gr && (strcmp(config.dropGroup, gr->gr_name) == 0)) {
                 // group readable and dropGroup matches file group
                 // TODO compare group id values as opposed to group name
-            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && pw && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && pw && (strcmp(config.dropUser, pw->pw_name) == 0)) {
                 // user readable and dropUser matches file user
                 // TODO compare user id values as opposed to user name
             } else
@@ -526,7 +527,7 @@ void arkime_check_file_permissions(const char *filename)
         } else
             LOG("WARNING - Can't stat %s.  Pcap might not be accessible to viewer", path);
 
-        token = strtok_r (NULL, "/", &save_ptr);
+        token = strtok_r(NULL, "/", &save_ptr);
     }
 }
 /******************************************************************************/
@@ -823,7 +824,7 @@ LOCAL  ArkimeCanQuitFunc  canQuitFuncs[20];
 LOCAL  const char        *canQuitNames[20];
 LOCAL  int                canQuitFuncsNum;
 
-void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
+void arkime_add_can_quit(ArkimeCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
         LOGEXIT("ERROR - Can't add canQuitFunc");
@@ -836,7 +837,7 @@ void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
 /*
  * Don't actually end main loop until all the various pieces are done
  */
-LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_quit_gfunc(gpointer UNUSED(user_data))
 {
     LOCAL gboolean readerExit   = TRUE;
     LOCAL gboolean writerExit   = TRUE;
@@ -899,7 +900,7 @@ void arkime_quit()
  * Don't actually init nids/pcap until all the pre tags are loaded.
  * CONTINUE - call again in 1ms
  */
-LOCAL gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_ready_gfunc(gpointer UNUSED(user_data))
 {
     if (arkime_http_queue_length(esServer))
         return G_SOURCE_CONTINUE;

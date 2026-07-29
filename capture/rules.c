@@ -779,7 +779,7 @@ LOCAL void arkime_rules_load_complete()
             GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
-                g_match_info_fetch_pos (match_info, 0, &start_pos, NULL);
+                g_match_info_fetch_pos(match_info, 0, &start_pos, NULL);
                 rule->bpf = g_strndup(bpfs[i], start_pos);
                 char *fetched = g_match_info_fetch(match_info, 1);
                 arkime_field_ops_add(&rule->ops, pos, fetched, -1);
@@ -805,7 +805,7 @@ LOCAL void arkime_rules_load_complete()
             GMatchInfo *match_info = 0;
             g_regex_match(regex, bpfs[i], 0, &match_info);
             if (g_match_info_matches(match_info)) {
-                g_match_info_fetch_pos (match_info, 0, &start_pos, NULL);
+                g_match_info_fetch_pos(match_info, 0, &start_pos, NULL);
                 rule->bpf = g_strndup(bpfs[i], start_pos);
                 char *fetched = g_match_info_fetch(match_info, 1);
                 arkime_field_ops_add(&rule->ops, pos, fetched, -1);
@@ -970,7 +970,7 @@ void arkime_rules_recompile()
 LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p, const struct in6_addr *ip, BSB *logStr)
 {
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        const patricia_node_t *node = patricia_search_best3 (rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32);
+        const patricia_node_t *node = patricia_search_best3(rule->tree4[p], ((u_char *)ip->s6_addr) + 12, 32);
         if (!node)
             return FALSE;
         if (!logStr)
@@ -983,7 +983,7 @@ LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p
                            (node->prefix->add.sin.s_addr >> 24) & 0xff,
                            node->prefix->bitlen);
     } else {
-        patricia_node_t *node = patricia_search_best3 (rule->tree6[p], (u_char *)ip->s6_addr, 128);
+        patricia_node_t *node = patricia_search_best3(rule->tree6[p], (u_char *)ip->s6_addr, 128);
         if (!node)
             return FALSE;
         if (!logStr)
@@ -1162,8 +1162,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
 
             case ARKIME_FIELD_TYPE_STR_GHASH: {
                 ghash = (GHashTable *)value;
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                g_hash_table_iter_init(&iter, ghash);
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
                         good = 0;
                         break;
@@ -1203,8 +1203,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
         switch (config.fields[p]->type) {
         case ARKIME_FIELD_TYPE_STR_GHASH:
             ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
                     good = 0;
                     break;
@@ -1258,8 +1258,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
 
         case ARKIME_FIELD_TYPE_INT_GHASH: {
             ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
                     good = 0;
                     break;
@@ -1367,9 +1367,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             }
             case ARKIME_FIELD_TYPE_STR_GHASH: {
                 ghash = (GHashTable *)value;
-                g_hash_table_iter_init (&iter, ghash);
+                g_hash_table_iter_init(&iter, ghash);
                 good = 0;
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     if (arkime_rules_check_str_match(rule, p, ikey, logStr)) {
                         good = 1;
                         break;
@@ -1434,9 +1434,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_INT_GHASH:
             ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
+            g_hash_table_iter_init(&iter, ghash);
             good = 0;
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 if (arkime_rules_check_int_match(rule, p, (long)ikey, logStr)) {
                     good = 1;
                     break;
@@ -1461,9 +1461,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:
             ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
+            g_hash_table_iter_init(&iter, ghash);
             good = 0;
-            while (g_hash_table_iter_next (&iter, &fkey, NULL)) {
+            while (g_hash_table_iter_next(&iter, &fkey, NULL)) {
                 if (g_hash_table_contains(rule->hash[p], fkey)) {
                     good = 1;
                     RULE_LOG_FLOAT(POINTER_TO_FLOAT(fkey));
@@ -1474,9 +1474,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
 
         case ARKIME_FIELD_TYPE_IP_GHASH:
             ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
+            g_hash_table_iter_init(&iter, ghash);
             good = 0;
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 if (arkime_rules_check_ip(rule, p, ikey, logStr)) {
                     good = 1;
                     break;
@@ -1485,9 +1485,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_STR_GHASH:
             ghash = session->fields[p]->ghash;
-            g_hash_table_iter_init (&iter, ghash);
+            g_hash_table_iter_init(&iter, ghash);
             good = 0;
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 if (arkime_rules_check_str_match(rule, p, ikey, logStr)) {
                     good = 1;
                     break;
@@ -1580,11 +1580,11 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
         if (current.fieldsMatch[pos]) {
             GHashTableIter         iter;
 
-            g_hash_table_iter_init (&iter, current.fieldsMatch[pos]);
+            g_hash_table_iter_init(&iter, current.fieldsMatch[pos]);
             if (ARKIME_FIELD_TYPE_IS_INT(config.fields[pos]->type)) {
                 uint64_t               num;
 
-                while (g_hash_table_iter_next (&iter, (gpointer *)&num, (gpointer *)&rules)) {
+                while (g_hash_table_iter_next(&iter, (gpointer *)&num, (gpointer *)&rules)) {
                     ArkimeRuleIntMatch_t match;
                     match.num = num;
                     uint32_t test = (uint32_t)(long)value;
@@ -1596,7 +1596,7 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
                 uint8_t               *akey;
                 int                    len = strlen(value);
 
-                while (g_hash_table_iter_next (&iter, (gpointer *)&akey, (gpointer *)&rules)) {
+                while (g_hash_table_iter_next(&iter, (gpointer *)&akey, (gpointer *)&rules)) {
                     if (len < akey[1])
                         continue;
 

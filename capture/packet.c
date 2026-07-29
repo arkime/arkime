@@ -1,3 +1,4 @@
+/******************************************************************************/
 /* packet.c  -- Functions for acquiring data
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
@@ -459,11 +460,11 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         }
         if (packet->outerIpOffset != 0 && packet->outerIpOffset != packet->ipOffset) {
             if (packet->outerv6 == 0) {
-                ip4 = (struct ip *) (packet->pkt + packet->outerIpOffset);
+                ip4 = (struct ip *)(packet->pkt + packet->outerIpOffset);
                 arkime_field_ip4_add(outerip1Field, session, ip4->ip_src.s_addr);
                 arkime_field_ip4_add(outerip2Field, session, ip4->ip_dst.s_addr);
             } else {
-                ip6 = (struct ip6_hdr *) (packet->pkt + packet->outerIpOffset);
+                ip6 = (struct ip6_hdr *)(packet->pkt + packet->outerIpOffset);
                 arkime_field_ip6_add(outerip1Field, session, ip6->ip6_src.s6_addr);
                 arkime_field_ip6_add(outerip2Field, session, ip6->ip6_dst.s6_addr);
             }
@@ -960,10 +961,10 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     if (ipTree4) {
         const patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree4, (u_char *)&ip4->ip_src, 32)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree4, (u_char *)&ip4->ip_src, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree4, (u_char *)&ip4->ip_dst, 32)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree4, (u_char *)&ip4->ip_dst, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
     }
 
@@ -1137,10 +1138,10 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     if (ipTree6) {
         const patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree6, (u_char *)&ip6->ip6_src, 128)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree6, (u_char *)&ip6->ip6_src, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree6, (u_char *)&ip6->ip6_dst, 128)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree6, (u_char *)&ip6->ip6_dst, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
     }
 

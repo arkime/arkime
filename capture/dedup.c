@@ -73,7 +73,7 @@ LOCAL DedupSeconds_t *seconds;
 
 
 /******************************************************************************/
-int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
+int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
 {
     // Cap headerLen so the headerLen-derived copies below can't overflow the
     // fixed-size md[]/buf[] stack buffers
@@ -170,7 +170,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
                 uint32_t pcount = 0;
                 for (uint32_t i = 0; i < dedupSlots; i++)
                     pcount += seconds[secondSlot].counts[i];
-                LOG ("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", (dedupSlots + 1) * DEDUP_SLOT_FACTOR, pcount);
+                LOG("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", (dedupSlots + 1) * DEDUP_SLOT_FACTOR, pcount);
                 seconds[secondSlot].error = 0;
             }
             // Invalidate before wiping so the lock free searchers below skip
