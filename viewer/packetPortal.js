@@ -23,7 +23,9 @@
  *      a genuine socket, and we pipe that socket <-> the Http2Stream. The
  *      dialer feeds its bridged socket into the existing Express app via
  *      http.createServer(app).emit('connection', socket) -- Express, its
- *      middleware, and the existing x-arkime-auth S2S check all run unchanged.
+ *      middleware, and the existing x-arkime-auth S2S check all run unchanged,
+ *      behind a gate (see #gate) that requires a valid s2s token on everything
+ *      arriving over a portal, including routes that need no auth normally.
  *
  * Copyright Andy Wick
  *
@@ -92,8 +94,8 @@ class PacketPortal {
 
     // Inner HTTP/1.1 server sharing the same Express app. Never .listen()s; it
     // only ever receives sockets via emit('connection'). Used on the DIALER to
-    // serve requests that arrive over a portal.
-    PacketPortal.#innerServer = http.createServer(app);
+    // serve requests that arrive over a portal, behind the s2s gate.
+    PacketPortal.#innerServer = http.createServer(PacketPortal.#gate(app));
     PacketPortal.#innerServer.setTimeout(REQUEST_TIMEOUT);
 
     // DIALER h2 server: each inbound stream is one HTTP/1.1 request.
@@ -111,14 +113,32 @@ class PacketPortal {
     // Per node credentials for inbound portals. [packetportal-nodes] wins,
     // [esproxy-sensors] is the fallback -- same 'pass:X;ip:A,B' shape, and a
     // deployment locking sensors down at esProxy wants the same list here.
-    PacketPortal.#nodes = Config.configMap('packetportal-nodes', 'esproxy-sensors');
-    for (const nodeName in PacketPortal.#nodes) {
-      const entry = PacketPortal.#nodes[nodeName];
+    // Whether the section had any entries at all is what makes it an allow list,
+    // so dropping the unusable ones below can never turn the allow list off.
+    const nodes = Config.configMap('packetportal-nodes', 'esproxy-sensors');
+    PacketPortal.#nodesConfigured = Object.keys(nodes).length > 0;
+    PacketPortal.#nodes = {};
+
+    for (const nodeName of Object.keys(nodes)) {
+      const entry = nodes[nodeName];
       if (typeof entry.ip === 'string') {
         entry.ip = entry.ip.split(',').map(s => s.trim()).filter(s => s.length > 0);
       }
+      // An entry with neither is no better than no entry at all -- it would fall
+      // through to trust on first use, silently, for a node the admin believes
+      // they configured. Drop it so it is rejected instead.
+      if (entry.pass === undefined && (entry.ip === undefined || entry.ip.length === 0)) {
+        console.log(`WARNING - packetPortal: ignoring node '${ArkimeUtil.sanitizeStr(nodeName)}', it has no pass or ip; it will not be allowed to open a portal`);
+        continue;
+      }
+      // A name that resolves to something on Object.prototype can never be a real
+      // node, and looking it up would find an inherited value instead of an entry
+      if (ArkimeUtil.isPP(nodeName)) {
+        console.log(`WARNING - packetPortal: ignoring node '${ArkimeUtil.sanitizeStr(nodeName)}', it is not a usable node name`);
+        continue;
+      }
+      PacketPortal.#nodes[nodeName] = entry;
     }
-    PacketPortal.#nodesConfigured = Object.keys(PacketPortal.#nodes).length > 0;
 
     // ACCEPTOR listener. A dedicated port is recommended when the main viewer
     // port is fronted by a proxy, uses header auth, or is IP locked down --
@@ -148,7 +168,8 @@ class PacketPortal {
   // --------------------------------------------------------------------------
   // ACCEPTOR: stand up a dedicated listener that only accepts portal upgrades.
   // Reuses the viewer's key/cert for TLS when configured. Independent of the
-  // main viewer server (its cert hot-reload is unaffected).
+  // main viewer server, including its own cert watch so a rotated cert is
+  // picked up here too instead of being served until the viewer restarts.
   static #startAcceptorPort (port, host) {
     const reject = (req, res) => { res.statusCode = 404; res.end('packet portal endpoint\n'); };
 
@@ -166,6 +187,7 @@ class PacketPortal {
         cert: fs.readFileSync(certFile),
         secureOptions: cryptoLib.constants.SSL_OP_NO_TLSv1
       }, reject);
+      ArkimeUtil.watchCertFiles(server, keyFile, certFile);
     } else {
       server = http.createServer(reject);
       console.log('packetPortal: dedicated port is PLAIN (no TLS) - set packetPortalKeyFile/packetPortalCertFile for encryption');
@@ -310,7 +332,7 @@ class PacketPortal {
     // of blocking event loop per unseen salt. It is only a claim at this point;
     // #checkNode is what decides whether this peer may make it.
     const node = req.headers['x-arkime-node'];
-    if (!ArkimeUtil.isString(node) || !PacketPortal.#hostnameRE.test(node)) {
+    if (!ArkimeUtil.isString(node) || !PacketPortal.#hostnameRE.test(node) || ArkimeUtil.isPP(node)) {
       console.log('packetPortal: rejecting upgrade, missing or bad x-arkime-node');
       socket.destroy();
       return;
@@ -323,18 +345,9 @@ class PacketPortal {
       return;
     }
 
-    let obj;
-    try {
-      obj = Auth.auth2obj(req.headers['x-arkime-auth']);
-    } catch (e) {
-      console.log('packetPortal: rejecting upgrade, bad auth -', e.message);
-      socket.destroy();
-      return;
-    }
-
-    const s2sError = Auth.validateS2SObj(obj, req);
-    if (s2sError) {
-      console.log('packetPortal: rejecting upgrade -', s2sError);
+    const { obj, error } = Auth.parseS2SRequest(req);
+    if (error) {
+      console.log('packetPortal: rejecting upgrade -', error);
       socket.destroy();
       return;
     }
@@ -415,7 +428,10 @@ class PacketPortal {
   // claim (and so hijack or deny) any other node's traffic. This is what binds
   // the claim to the peer.
   static #checkNode (node, req) {
-    const entry = PacketPortal.#nodes[node];
+    // Own properties only. A plain [] lookup with a name like __proto__ or
+    // constructor finds something on Object.prototype, which is not undefined and
+    // so would sail past the allow list check below with no pass and no ip.
+    const entry = Object.hasOwn(PacketPortal.#nodes, node) ? PacketPortal.#nodes[node] : undefined;
 
     // A configured section is an allow list, so an unlisted node is never ok
     if (PacketPortal.#nodesConfigured && entry === undefined) {
@@ -487,7 +503,18 @@ class PacketPortal {
       method: 'GET',
       agent: PacketPortal.agent,
       packetPortalSession: session,
-      timeout: 30000
+      timeout: 30000,
+      // /health needs no auth over a normal connection, but the dialer requires
+      // an s2s token on everything arriving over a portal (see #gate)
+      headers: {
+        'x-arkime-auth': Auth.obj2auth({
+          date: Date.now(),
+          user: 'packetPortal',
+          node,
+          path: '/health',
+          method: 'GET'
+        })
+      }
     };
 
     const req = http.request('http://arkime-portal.invalid/health', options, (res) => {
@@ -499,6 +526,33 @@ class PacketPortal {
       try { session.close(); } catch (ignore) { /* ignore */ }
     });
     req.end();
+  }
+
+  // --------------------------------------------------------------------------
+  // DIALER: gate every request arriving over a portal on a valid s2s token,
+  // before the app sees it.
+  //
+  // The peer is remote but reaches us through a loopback bridge socket, so any
+  // check based on the source ip (userAuthIps' loopback default, mcpAllowedIps)
+  // or on a header a proxy would normally set (userNameHeader) would wrongly
+  // trust it. Auth.doAuth knows about this (see arkimePacketPortal), but routes
+  // mounted before Auth.app() -- /mcp with its own header auth, pre-auth
+  // /plugin/*, /health, the parliament and eshealth endpoints -- never reach it.
+  // Nothing legitimately arrives over a portal without a token, so require one
+  // for everything, which also keeps the unauthenticated surface identical no
+  // matter what a deployment mounts early.
+  static #gate (app) {
+    return (req, res) => {
+      const { error } = Auth.parseS2SRequest(req);
+      if (error) {
+        console.log(`packetPortal: rejecting portal request for ${ArkimeUtil.sanitizeStr(req.url)} -`, error);
+        res.statusCode = 401;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, text: 'Packet portal requests require s2s auth' }));
+        return;
+      }
+      app(req, res);
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -518,9 +572,10 @@ class PacketPortal {
         return;
       }
       // Mark the request as arriving over a packet portal. It is delivered through
-      // a loopback bridge socket, so its 127.0.0.1 source address and any
-      // userNameHeader it carries are NOT trustworthy -- Auth forces these
-      // requests to authenticate with the s2s token only (see Auth.doAuth).
+      // a loopback bridge socket, so its 127.0.0.1 source address, any session
+      // cookie and any userNameHeader it carries are NOT trustworthy -- Auth
+      // authenticates these requests with the s2s token only (see Auth.doAuth),
+      // on top of the #gate check every portal request has already passed.
       socket.arkimePacketPortal = true;
       PacketPortal.#innerServer.emit('connection', socket);
     });

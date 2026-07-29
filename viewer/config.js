@@ -173,13 +173,19 @@ class Config {
   }
 
   // ----------------------------------------------------------------------------
+  // Both levels are null prototype on purpose. Callers look these maps up by a
+  // name that often comes from a request (a sensor, node or cluster name), and a
+  // plain {} would answer __proto__ / constructor / toString with an inherited
+  // value instead of undefined -- which reads as "this name is configured".
+  // It also keeps a literal __proto__ key in the config file an ordinary entry
+  // rather than something that silently replaces the map's prototype.
   static configMap (section, dSection, d) {
     const data = ArkimeConfig.getSection(section) ?? ArkimeConfig.getSection(dSection) ?? d;
-    if (data === undefined) { return {}; }
+    if (data === undefined) { return Object.create(null); }
     const keys = Object.keys(data);
-    const map = {};
+    const map = Object.create(null);
     for (const key of keys) {
-      const obj = {};
+      const obj = Object.create(null);
       for (const element of data[key].split(';')) {
         const i = element.indexOf(':');
         if (i === -1) {

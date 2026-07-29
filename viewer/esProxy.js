@@ -203,21 +203,31 @@ app.use((req, res, next) => {
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
 
-  if (!sensors[credentials.name]) {
-    console.log(`Unknown sensor ${credentials.name}`);
+  // Own properties only. The name is whatever the client put in Basic auth, and
+  // a plain [] lookup with __proto__ or constructor returns something truthy off
+  // Object.prototype that has no pass and no ip -- authenticating a sensor that
+  // was never configured. configMap now hands back a null prototype map too.
+  // isPP is the codebase's usual guard but is not sufficient on its own here:
+  // toString, valueOf and hasOwnProperty are not on its list yet resolve just
+  // the same, which is what the own property check covers.
+  const sensor = !ArkimeUtil.isPP(credentials.name) && Object.hasOwn(sensors, credentials.name)
+    ? sensors[credentials.name]
+    : undefined;
+  if (!sensor) {
+    console.log(`Unknown sensor ${ArkimeUtil.sanitizeStr(credentials.name)}`);
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
 
-  if (sensors[credentials.name].pass !== undefined &&
+  if (sensor.pass !== undefined &&
       !cryptoLib.timingSafeEqual(
-        cryptoLib.createHmac('sha256', 'compare').update(sensors[credentials.name].pass).digest(),
+        cryptoLib.createHmac('sha256', 'compare').update(sensor.pass).digest(),
         cryptoLib.createHmac('sha256', 'compare').update(credentials.pass).digest())) {
-    console.log(`Incorrect password for ${credentials.name}`);
+    console.log(`Incorrect password for ${ArkimeUtil.sanitizeStr(credentials.name)}`);
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
 
-  req.sensor = sensors[credentials.name];
-  if (!sensors[credentials.name].ip) {
+  req.sensor = sensor;
+  if (!sensor.ip) {
     return next();
   }
 

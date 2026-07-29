@@ -526,39 +526,56 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
-  /**
-   * Callback when one of the cert files changes
-   */
-  static #fsWait;
   static #httpsServer;
-  static #watchHttpsFile (e, filename) {
-    if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); }
 
-    // We wait 10s from last event in case there are more events
-    ArkimeUtil.#fsWait = setTimeout(() => {
-      ArkimeUtil.#fsWait = null;
-      try { // try to get the new cert files
-        const keyFileData = fs.readFileSync(ArkimeConfig.get('keyFile'));
-        const certFileData = fs.readFileSync(ArkimeConfig.get('certFile'));
+  /**
+   * Watch a https server's key/cert files and setSecureContext when either
+   * changes, so a rotated cert is picked up without a restart. Per server and
+   * per file pair, so a service with more than one listener (see the viewer's
+   * packet portal port) can watch its own files.
+   *
+   * @param {object} server The https server to update
+   * @param {string} keyFile Path to the key file to watch
+   * @param {string} certFile Path to the cert file to watch
+   */
+  static watchCertFiles (server, keyFile, certFile) {
+    let fsWait;
+
+    const changed = () => {
+      if (fsWait) { clearTimeout(fsWait); }
+
+      // We wait 10s from last event in case there are more events
+      fsWait = setTimeout(() => {
+        fsWait = null;
+        let keyFileData, certFileData;
+        try { // try to get the new cert files
+          keyFileData = fs.readFileSync(keyFile);
+          certFileData = fs.readFileSync(certFile);
+        } catch (err) { // don't continue if we can't read them
+          console.log('Missing cert or key files. Cannot reload cert.');
+          return;
+        }
 
         console.log('Reloading cert...');
 
-        const options = { // set new server cert options
-          key: keyFileData,
-          cert: certFileData,
-          secureOptions: crypto.constants.SSL_OP_NO_TLSv1
-        };
-
         try {
-          ArkimeUtil.#httpsServer.setSecureContext(options);
+          server.setSecureContext({
+            key: keyFileData,
+            cert: certFileData,
+            secureOptions: crypto.constants.SSL_OP_NO_TLSv1
+          });
         } catch (err) {
           console.log('ERROR cert not reloaded: ', err.toString());
         }
-      } catch (err) { // don't continue if we can't read them
-        console.log('Missing cert or key files. Cannot reload cert.');
-        return;
-      }
-    }, 10000);
+      }, 10000);
+    };
+
+    fs.watch(keyFile, { persistent: false }, changed);
+    fs.watch(certFile, { persistent: false }, changed);
+
+    if (ArkimeConfig.debug > 1) {
+      console.log(`Watching ${keyFile} and ${certFile}. If either is changed, the server will be updated with the new files.`);
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -572,19 +589,13 @@ class ArkimeUtil {
       const keyFileData = fs.readFileSync(ArkimeConfig.get('keyFile'));
       const certFileData = fs.readFileSync(ArkimeConfig.get('certFile'));
 
-      // watch the cert and key files
-      fs.watch(ArkimeConfig.get('keyFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
-      fs.watch(ArkimeConfig.get('certFile'), { persistent: false }, ArkimeUtil.#watchHttpsFile);
-
-      if (ArkimeConfig.debug > 1) {
-        console.log('Watching cert and key files. If either is changed, the server will be updated with the new files.');
-      }
-
       server = ArkimeUtil.#httpsServer = https.createServer({
         key: keyFileData,
         cert: certFileData,
         secureOptions: crypto.constants.SSL_OP_NO_TLSv1
       }, app);
+
+      ArkimeUtil.watchCertFiles(server, ArkimeConfig.get('keyFile'), ArkimeConfig.get('certFile'));
     } else {
       server = http.createServer(app);
     }
