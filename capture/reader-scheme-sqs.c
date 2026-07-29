@@ -109,7 +109,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 
     uint32_t out[4 * 30];
 
-    // Sometimes feel like an array, sometimes you don't
+    // Sometimes you feel like an array, sometimes you don't
     if (messages[0] == '[') {
         int rc;
         if ((rc = js0n(messages, messagesLen, out, sizeof(out))) != 0) {

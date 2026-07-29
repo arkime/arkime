@@ -1501,7 +1501,7 @@ int arkime_field_object_register(const char *name, const char *help, ArkimeField
 
     object_info = config.fields[object_pos];
 
-    // This shouldn't happen but lets be sure
+    // This shouldn't happen but let's be sure
     if (!object_info) {
         LOGEXIT("ERROR - Field object info is null");
     }
@@ -2178,13 +2178,13 @@ void arkime_field_exit()
 {
     ArkimeFieldInfo_t *info;
 
-    // Remove those are in both db & exp hash
+    // Remove those that are in both db & exp hash
     HASH_FORALL_POP_HEAD2(d_, fieldsByDb, info) {
         HASH_REMOVE(e_, fieldsByExp, info);
         arkime_field_free_info(info);
     }
 
-    // Remove those are only in exp
+    // Remove those that are only in exp
     HASH_FORALL_POP_HEAD2(e_, fieldsByExp, info) {
         arkime_field_free_info(info);
     }

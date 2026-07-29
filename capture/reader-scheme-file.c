@@ -47,7 +47,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
         return;
     }
 
-    gchar *fullfilename = g_build_filename (sw->dirname, event->name, NULL);
+    gchar *fullfilename = g_build_filename(sw->dirname, event->name, NULL);
 
     if ((sw->flags & ARKIME_SCHEME_FLAG_RECURSIVE) &&
         (event->mask & IN_CREATE) &&
@@ -76,9 +76,9 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 /******************************************************************************/
 LOCAL gboolean scheme_file_monitor_read()
 {
-    char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__ ((aligned(8)));
+    char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__((aligned(8)));
 
-    int rc = read (monitorFd, buf, sizeof(buf));
+    int rc = read(monitorFd, buf, sizeof(buf));
     if (rc == 0)
         return TRUE;
     if (rc == -1)
@@ -101,7 +101,7 @@ LOCAL void scheme_file_init_monitor()
     if (monitorFd < 0)
         LOGEXIT("ERROR - Couldn't init inotify %s", strerror(errno));
 
-    wdHashTable = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, scheme_watch_free);
+    wdHashTable = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, scheme_watch_free);
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, scheme_file_monitor_read, NULL);
 }
 /******************************************************************************/
@@ -150,7 +150,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
         if (filename[0] == '.')
             continue;
 
-        gchar *fullfilename = g_build_filename (dirname, filename, NULL);
+        gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
         if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
             scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
@@ -208,7 +208,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
             continue;
         }
 
-        gchar *fullfilename = g_build_filename (dirname, filename, NULL);
+        gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
         // If recursive option and a directory then process all the files in that dir
         if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
@@ -234,7 +234,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
     g_ptr_array_sort(files, scheme_file_name_cmp);
     for (guint i = 0; i < files->len; i++) {
         const gchar *filename = files->pdata[i];
-        gchar *fullfilename = g_build_filename (dirname, filename, NULL);
+        gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
         // If recursive option and a directory then process all the files in that dir
         if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {

@@ -1,3 +1,4 @@
+/******************************************************************************/
 /* yara.c  -- Functions dealing with yara library
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.

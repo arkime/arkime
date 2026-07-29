@@ -166,7 +166,7 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
     if (!info) {
         // Freelist empty, allocate new
         info = ARKIME_TYPE_ALLOC0(ArkimeSimple_t);
-        info->buf = mmap (0, ARKIME_SIMPLE_BUFSIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+        info->buf = mmap(0, ARKIME_SIMPLE_BUFSIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
@@ -370,7 +370,7 @@ LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int 
     arkime_sprint_hex_string(outkeyhex, ciphertext, ciphertext_len);
 }
 /******************************************************************************/
-LOCAL char *writer_simple_get_kekId ()
+LOCAL char *writer_simple_get_kekId()
 {
     char *kek = arkime_config_str(NULL, "simpleKEKId", NULL);
 
@@ -697,12 +697,12 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         /* If offline pcap honor umask, otherwise disable other RW */
         unlink(name);
         if (config.pcapReadOffline) {
-            simpleThreadData[thread].currentInfo[kind]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+            simpleThreadData[thread].currentInfo[kind]->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         } else {
-            simpleThreadData[thread].currentInfo[kind]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+            simpleThreadData[thread].currentInfo[kind]->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         }
         if (simpleThreadData[thread].currentInfo[kind]->file->fd < 0) {
-            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
+            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
 
         const ArkimeInterfaceInfo_t *iface = &fileInfo[packet->readerPos].interfaces[packet->interfaceIndex];
@@ -825,7 +825,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         uint32_t t;
         if (sfile->firstPacket > packet->ts.tv_sec) {
             LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
-            // Time stamp is too early, just pretend its at firstPacket time
+            // Time stamp is too early, just pretend it's at firstPacket time
             t = packet->ts.tv_usec;
         } else {
             t = ((packet->ts.tv_sec - sfile->firstPacket) << 20) | packet->ts.tv_usec;
@@ -979,9 +979,9 @@ LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, g
 /******************************************************************************/
 /* Called in the main thread.  Check all the timestamps, and if out of date
  * schedule something in each writer thread to do the partial write since there
- * is no locks around buffering.
+ * are no locks around buffering.
  */
-LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_simple_check_gfunc(gpointer UNUSED(user_data))
 {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -1024,7 +1024,7 @@ LOCAL FILE *writer_simple_get_index(int thread, int64_t fileNum)
     return simpleThreadData[thread].indexFiles[p].fp;
 }
 /******************************************************************************/
-LOCAL void writer_simple_index (ArkimeSession_t *session)
+LOCAL void writer_simple_index(ArkimeSession_t *session)
 {
     uint8_t  buf[0xffff * 5];
     BSB      bsb;

@@ -38,6 +38,7 @@ const http = require('http');
 const https = require('https');
 const http2 = require('http2');
 const cryptoLib = require('crypto');
+const basicAuth = require('basic-auth');
 const Config = require('./config.js');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -50,12 +51,26 @@ const REQUEST_TIMEOUT = 20 * 60 * 1000;
 class PacketPortal {
   // acceptor side: node name -> { session, timer } for every live inbound portal
   static #portals = new Map();
-  // acceptor side: nodes ever seen via a packet portal. Such a node is behind
-  // NAT and CANNOT be dialed directly, so once known-reverse we never fall back
-  // to a direct connection -- we use the portal or wait for it to come back.
-  static #reverseNodes = new Set();
+  // acceptor side: node name -> ms timestamp of its last portal activity. Such a
+  // node is behind NAT and CANNOT be dialed directly, so while it is known-reverse
+  // we never fall back to a direct connection -- we use the portal or wait for it
+  // to come back. Entries expire (packetPortalReverseTTLMinutes) so a node that
+  // legitimately stops using portals becomes directly dialable again instead of
+  // being unreachable until this viewer restarts.
+  static #reverseNodes = new Map();
   // acceptor side: node name -> Set of resolve fns waiting for a (re)connect
   static #waiters = new Map();
+  // acceptor side: per node { pass, ip } from [packetportal-nodes], falling back
+  // to [esproxy-sensors] so a deployment that already authenticates its sensors
+  // to esProxy gets the same per node identity here with no new config.
+  static #nodes = {};
+  // Was either section present? If so it is an allow list: an unlisted node can
+  // never open a portal.
+  static #nodesConfigured = false;
+  // acceptor side: node name -> source ip, pinned on first sight. Only used for
+  // nodes with no configured pass/ip (see #checkNode). In memory only, so a
+  // restart re-opens the first-sight window for every node at once.
+  static #pinnedIps = new Map();
   // dialer side: shared http1 server (wraps the Express app) fed inbound streams
   static #innerServer;
   // dialer side: shared h2 server that accepts inbound streams from acceptors
@@ -93,11 +108,31 @@ class PacketPortal {
       if (t.length > 0) { PacketPortal.#startDialer(t); }
     }
 
+    // Per node credentials for inbound portals. [packetportal-nodes] wins,
+    // [esproxy-sensors] is the fallback -- same 'pass:X;ip:A,B' shape, and a
+    // deployment locking sensors down at esProxy wants the same list here.
+    PacketPortal.#nodes = Config.configMap('packetportal-nodes', 'esproxy-sensors');
+    for (const nodeName in PacketPortal.#nodes) {
+      const entry = PacketPortal.#nodes[nodeName];
+      if (typeof entry.ip === 'string') {
+        entry.ip = entry.ip.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      }
+    }
+    PacketPortal.#nodesConfigured = Object.keys(PacketPortal.#nodes).length > 0;
+
     // ACCEPTOR listener. A dedicated port is recommended when the main viewer
     // port is fronted by a proxy, uses header auth, or is IP locked down --
     // none of which suit dialers coming from behind NAT. The portal is still
     // protected by the serverSecret handshake (and TLS when key/cert are set).
     const portalPort = Config.get('packetPortalPort');
+    if (portalPort || Config.get('packetPortalListen', false)) {
+      if (PacketPortal.#nodesConfigured) {
+        console.log(`packetPortal: authenticating inbound portals against ${Object.keys(PacketPortal.#nodes).length} configured node(s)`);
+      } else {
+        console.log('packetPortal: no [packetportal-nodes] or [esproxy-sensors] section - each node will be pinned to the source ip it first connects from; add a per node pass to authenticate properly');
+      }
+    }
+
     if (portalPort) {
       PacketPortal.#listenEnabled = true;
       PacketPortal.#startAcceptorPort(portalPort, Config.get('packetPortalHost', undefined));
@@ -164,11 +199,26 @@ class PacketPortal {
   }
 
   // --------------------------------------------------------------------------
-  // ACCEPTOR: has this node ever connected via a packet portal? If so it is
+  // ACCEPTOR: has this node recently connected via a packet portal? If so it is
   // unreachable directly and callers must not fall back to a direct connection.
+  // Goes stale after packetPortalReverseTTLMinutes of no portal so a node that
+  // moves back to being directly dialable recovers on its own.
   static isReverse (node) {
     if (Array.isArray(node)) { node = node[0]; }
-    return PacketPortal.#reverseNodes.has(node);
+    const last = PacketPortal.#reverseNodes.get(node);
+    if (last === undefined) { return false; }
+    if (Date.now() - last > PacketPortal.#reverseTTL()) {
+      PacketPortal.#reverseNodes.delete(node);
+      console.log(`packetPortal: node ${node} has had no portal for ${Config.get('packetPortalReverseTTLMinutes', 60)} minutes, allowing direct connections again`);
+      return false;
+    }
+    return true;
+  }
+
+  // --------------------------------------------------------------------------
+  static #reverseTTL () {
+    const mins = +Config.get('packetPortalReverseTTLMinutes', 60);
+    return (isNaN(mins) || mins <= 0 ? 60 : mins) * 60000;
   }
 
   // --------------------------------------------------------------------------
@@ -190,7 +240,7 @@ class PacketPortal {
     if (Array.isArray(node)) { node = node[0]; }
     const existing = PacketPortal.get(node);
     if (existing) { return Promise.resolve(existing); }
-    if (!PacketPortal.#reverseNodes.has(node)) { return Promise.resolve(null); }
+    if (!PacketPortal.isReverse(node)) { return Promise.resolve(null); }
 
     return new Promise((resolve) => {
       let set = PacketPortal.#waiters.get(node);
@@ -241,6 +291,9 @@ class PacketPortal {
   // ACCEPTOR: handle a viewer-port 'upgrade' event. Validates the dialer's
   // identity, replies 101, and attaches an h2 client session to the socket.
   static handleUpgrade (req, socket, head) {
+    // Every path below can destroy the socket, so swallow its errors first
+    socket.on('error', () => {});
+
     // Only the arkime-portal upgrade is ours. Anything else (h2c, websocket,
     // ...) has never been supported by the viewer; Node closed such upgrades by
     // default when there was no 'upgrade' listener, so preserve that exactly.
@@ -251,6 +304,24 @@ class PacketPortal {
     }
 
     if (!PacketPortal.#listenEnabled) { socket.destroy(); return; }
+
+    // The claimed node name travels in the clear so an unknown, unauthorized or
+    // wrong-source peer is turned away BEFORE auth2obj, whose pbkdf2 costs ~100ms
+    // of blocking event loop per unseen salt. It is only a claim at this point;
+    // #checkNode is what decides whether this peer may make it.
+    const node = req.headers['x-arkime-node'];
+    if (!ArkimeUtil.isString(node) || !PacketPortal.#hostnameRE.test(node)) {
+      console.log('packetPortal: rejecting upgrade, missing or bad x-arkime-node');
+      socket.destroy();
+      return;
+    }
+
+    const nodeError = PacketPortal.#checkNode(node, req);
+    if (nodeError) {
+      console.log(`packetPortal: rejecting upgrade for node '${node}' -`, nodeError);
+      socket.destroy();
+      return;
+    }
 
     let obj;
     try {
@@ -268,31 +339,29 @@ class PacketPortal {
       return;
     }
 
-    const node = obj.node;
-    if (!ArkimeUtil.isString(node) || !PacketPortal.#hostnameRE.test(node)) {
-      console.log('packetPortal: rejecting upgrade, bad node name');
+    // The signed token must agree with the cleartext claim we authenticated
+    if (obj.node !== node) {
+      console.log(`packetPortal: rejecting upgrade, x-arkime-node '${node}' does not match token node '${ArkimeUtil.sanitizeStr(obj.node)}'`);
       socket.destroy();
       return;
     }
 
-    // Optional allowlist: even a valid serverSecret token may only claim a node
-    // name that is expected to use portals. Without this, any secret-holder could
-    // claim (and thereby hijack or deny) an arbitrary node's traffic. When unset,
-    // any node with a valid token is accepted (recommended: set an allowlist).
-    const allowed = Config.getArray('packetPortalAllowedNodes', '');
-    if (allowed.length > 0 && !allowed.includes(node)) {
-      console.log(`packetPortal: rejecting upgrade, node '${node}' not in packetPortalAllowedNodes`);
-      socket.destroy();
-      return;
-    }
-
-    socket.on('error', () => {});
     socket.setTimeout(0);
-    socket.write('HTTP/1.1 101 Switching Protocols\r\n' +
-                 'Upgrade: ' + UPGRADE_TOKEN + '\r\n' +
-                 'Connection: Upgrade\r\n\r\n');
     if (head && head.length > 0) { socket.unshift(head); }
 
+    // Attach h2 only once the 101 has flushed -- a write still queued when http2
+    // takes the socket aborts the process on teardown over TLS (nodejs/node#24037)
+    socket.write('HTTP/1.1 101 Switching Protocols\r\n' +
+                 'Upgrade: ' + UPGRADE_TOKEN + '\r\n' +
+                 'Connection: Upgrade\r\n\r\n', (err) => {
+      if (err || socket.destroyed) { socket.destroy(); return; }
+      PacketPortal.#registerPortal(node, socket, req);
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // ACCEPTOR: 101 is on the wire, attach the h2 client session and register it.
+  static #registerPortal (node, socket, req) {
     const session = http2.connect('http://arkime-portal.invalid', {
       createConnection: () => socket
     });
@@ -302,6 +371,8 @@ class PacketPortal {
       if (entry?.session === session) {
         if (entry.timer) { clearInterval(entry.timer); }
         PacketPortal.#portals.delete(node);
+        // Restart the reverse TTL from the disconnect, not from the connect
+        PacketPortal.#reverseNodes.set(node, Date.now());
         console.log(`packetPortal: portal for node ${node} closed`);
       }
     });
@@ -324,8 +395,8 @@ class PacketPortal {
     }
 
     PacketPortal.#portals.set(node, { session, timer });
-    PacketPortal.#reverseNodes.add(node);
-    console.log(`packetPortal: registered inbound portal for node ${node}`);
+    PacketPortal.#reverseNodes.set(node, Date.now());
+    console.log(`packetPortal: registered inbound portal for node ${node} from ${PacketPortal.#peerIp(req)}`);
 
     // Wake anything waiting for this node's portal to (re)connect.
     const waiters = PacketPortal.#waiters.get(node);
@@ -333,6 +404,77 @@ class PacketPortal {
       PacketPortal.#waiters.delete(node);
       for (const waiter of waiters) { waiter(session); }
     }
+  }
+
+  // --------------------------------------------------------------------------
+  // ACCEPTOR: decide whether this peer may open a portal AS node. Returns an
+  // error string to reject with, or undefined to allow.
+  //
+  // A valid x-arkime-auth token only proves the peer holds serverSecret, which
+  // every node in the deployment has -- on its own it would let any one of them
+  // claim (and so hijack or deny) any other node's traffic. This is what binds
+  // the claim to the peer.
+  static #checkNode (node, req) {
+    const entry = PacketPortal.#nodes[node];
+
+    // A configured section is an allow list, so an unlisted node is never ok
+    if (PacketPortal.#nodesConfigured && entry === undefined) {
+      return 'not in [packetportal-nodes]/[esproxy-sensors]';
+    }
+
+    const ip = PacketPortal.#peerIp(req);
+    if (ip === undefined) { return 'no source ip'; }
+
+    let authenticated = false;
+
+    if (entry?.pass !== undefined) {
+      const creds = basicAuth(req);
+      if (!creds) { return 'no credentials supplied'; }
+      if (creds.name !== node) { return `credentials are for '${ArkimeUtil.sanitizeStr(creds.name)}' not '${node}'`; }
+      // hmac both sides so timingSafeEqual gets equal length buffers
+      const expected = cryptoLib.createHmac('sha256', 'compare').update(entry.pass).digest();
+      const got = cryptoLib.createHmac('sha256', 'compare').update(creds.pass).digest();
+      if (!cryptoLib.timingSafeEqual(expected, got)) { return 'incorrect password'; }
+      authenticated = true;
+    }
+
+    if (entry?.ip !== undefined) {
+      if (!entry.ip.includes(ip)) { return `source ip ${ip} not allowed`; }
+      authenticated = true;
+    }
+
+    if (authenticated) { return undefined; }
+
+    // Nothing configured for this node, so trust the source ip we first saw it
+    // on and require later portals to match (trust on first use). Weaker than a
+    // pass -- an attacker who gets in before the real node does wins the pin --
+    // but it keeps a no-config deployment from letting anyone claim any node.
+    const pinned = PacketPortal.#pinnedIps.get(node);
+    if (pinned === undefined) {
+      PacketPortal.#pinnedIps.set(node, ip);
+      console.log(`packetPortal: pinning node '${node}' to source ip ${ip}; set a pass for it in [packetportal-nodes] to authenticate properly`);
+      return undefined;
+    }
+    if (pinned !== ip) { return `source ip ${ip} does not match pinned ${pinned}`; }
+    return undefined;
+  }
+
+  // --------------------------------------------------------------------------
+  // Real socket peer, never a header -- an x-forwarded-for is the peer's to set.
+  static #peerIp (req) {
+    const ip = req.socket?.remoteAddress;
+    if (ip === undefined) { return undefined; }
+    return ip.startsWith('::ffff:') ? ip.substring(7) : ip;
+  }
+
+  // --------------------------------------------------------------------------
+  // Strip any user:pass before a packetPortalConnect target reaches the log
+  static #redact (target) {
+    try {
+      const u = new URL(target);
+      if (u.username || u.password) { u.username = ''; u.password = ''; return u.toString(); }
+    } catch (e) { /* not a url, fall through */ }
+    return target;
   }
 
   // --------------------------------------------------------------------------
@@ -438,9 +580,11 @@ class PacketPortal {
   static #startDialer (target) {
     let backoff = 1000;
     let timer;
+    // target may carry the node's portal password as user:pass
+    const safeTarget = PacketPortal.#redact(target);
 
     const reconnect = (why) => {
-      console.log(`packetPortal: ${target} ${why}; reconnecting in ${backoff}ms`);
+      console.log(`packetPortal: ${safeTarget} ${why}; reconnecting in ${backoff}ms`);
       clearTimeout(timer);
       timer = setTimeout(connect, backoff);
       backoff = Math.min(backoff * 2, 60000);
@@ -451,7 +595,7 @@ class PacketPortal {
       try {
         url = new URL(PORTAL_PATH, target);
       } catch (e) {
-        console.log(`packetPortal: invalid packetPortalConnect url '${target}'`);
+        console.log(`packetPortal: invalid packetPortalConnect url '${safeTarget}'`);
         return;
       }
 
@@ -470,6 +614,10 @@ class PacketPortal {
         headers: {
           Connection: 'Upgrade',
           Upgrade: UPGRADE_TOKEN,
+          // In the clear so the acceptor can authenticate us before doing any
+          // token crypto. Any user:pass in the url becomes Basic auth (node's
+          // urlToHttpOptions), which is how the acceptor proves it really is us.
+          'x-arkime-node': Config.nodeName(),
           'x-arkime-auth': token
         }
       };
@@ -485,10 +633,15 @@ class PacketPortal {
       req.on('upgrade', (res, socket, head) => {
         settled = true;
         backoff = 1000;
-        console.log(`packetPortal: connected to ${target}`);
+        console.log(`packetPortal: connected to ${safeTarget}`);
         socket.on('error', () => {});
         socket.setTimeout(0);
         if (head && head.length > 0) { socket.unshift(head); }
+        // Node's h2 server drops a socket with alpnProtocol false/'http/1.1' as
+        // unknownProtocol. Can't fix by alpn, shared mode is the main viewer port.
+        if (socket.alpnProtocol === false || socket.alpnProtocol === 'http/1.1') {
+          socket.alpnProtocol = undefined;
+        }
         socket.once('close', () => reconnect('portal closed'));
         PacketPortal.#dialerH2Server.emit('connection', socket);
       });

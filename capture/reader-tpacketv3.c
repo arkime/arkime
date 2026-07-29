@@ -10,7 +10,6 @@
  * https://www.kernel.org/doc/Documentation/networking/packet_mmap.txt
  * https://github.com/rusticata/suricata/blob/rust/src/runmode-af-packet.c
  * libpcap src/pcap-linux.c
- *
  */
 
 #define _FILE_OFFSET_BITS 64
@@ -125,7 +124,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
 
         struct tpacket3_hdr *th;
 
-        th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
+        th = (struct tpacket3_hdr *)((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
 
         for (uint32_t p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len) && !config.readTruncatedPackets && !config.ignoreErrors) {
@@ -163,7 +162,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
 
             arkime_packet_batch(&batch, packet);
 
-            th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
+            th = (struct tpacket3_hdr *)((uint8_t *) th + th->tp_next_offset);
         }
         arkime_packet_batch_flush(&batch);
 

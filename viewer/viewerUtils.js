@@ -331,7 +331,8 @@ class ViewerUtils {
   static async portalRequest (node) {
     let session = PacketPortal.get(node);
     if (!session && PacketPortal.isReverse(node)) {
-      const waitMs = (+Config.get('packetPortalWaitSeconds', 5)) * 1000;
+      const waitSecs = +Config.get('packetPortalWaitSeconds', 5);
+      const waitMs = (isNaN(waitSecs) || waitSecs < 0 ? 5 : waitSecs) * 1000;
       session = await PacketPortal.getOrWait(node, waitMs);
       if (!session) {
         const err = new Error(`Packet portal to node '${node}' is not connected`);

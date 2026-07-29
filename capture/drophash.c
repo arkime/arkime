@@ -1,5 +1,6 @@
-/* drophash.c - simple hash that locks on writes but not on reads
- *              used for dropping packets by ip:port before the packet copy
+/******************************************************************************/
+/* drophash.c  -- simple hash that locks on writes but not on reads
+ *                used for dropping packets by ip:port before the packet copy
  *
  * Copyright 2018 AOL Inc. All rights reserved.
  *

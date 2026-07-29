@@ -1,5 +1,5 @@
+/******************************************************************************/
 /* session.c  -- Session functions
- *
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
@@ -92,13 +92,13 @@ void arkime_session_save(ArkimeSession_t *session);
 #if defined(FUZZLOCH) && !defined(SFUZZLOCH)
 // If FUZZLOCH mode we just use a unique sessionid for each input
 extern uint64_t fuzzloch_sessionid;
-void arkime_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2), uint16_t UNUSED(vlan), uint32_t UNUSED(vni))
+void arkime_session_id(uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2), uint16_t UNUSED(vlan), uint32_t UNUSED(vni))
 {
     buf[0] = ARKIME_SESSIONID4_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
     memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, ARKIME_SESSIONID4_LEN - 1 - sizeof(fuzzloch_sessionid));
 }
-void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), const uint8_t UNUSED(*addr2), uint16_t UNUSED(port2), uint16_t UNUSED(vlan), uint32_t UNUSED(vni))
+void arkime_session_id6(uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), const uint8_t UNUSED(*addr2), uint16_t UNUSED(port2), uint16_t UNUSED(vlan), uint32_t UNUSED(vni))
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
@@ -106,7 +106,7 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UN
 }
 #else
 /******************************************************************************/
-void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
+void arkime_session_id(uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
     // Layout: [len:1][vlan/vni:3][addr1:4][addr2:4][port1:2][port2:2] = 16 bytes
     // This layout ensures 4-byte values are aligned at offsets 4 and 8
@@ -172,7 +172,7 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
     }
 }
 /******************************************************************************/
-void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
+void arkime_session_id6(uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
     // Layout: [len:1][vlan/vni:3][addr1:16][addr2:16][port1:2][port2:2] = 40 bytes
     // This layout ensures addresses start at offset 4 (aligned) and ports at 36/38 (aligned)
@@ -240,13 +240,13 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
 }
 #endif
 /******************************************************************************/
-char *arkime_session_id_string (const uint8_t *sessionId, char *buf)
+char *arkime_session_id_string(const uint8_t *sessionId, char *buf)
 {
     // ALW: Rewrite to make pretty
     return arkime_sprint_hex_string(buf, sessionId, sessionId[0]);
 }
 /******************************************************************************/
-char *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len)
+char *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int len)
 {
     BSB bsb;
     BSB_INIT(bsb, buf, len);
@@ -400,7 +400,7 @@ void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
     arkime_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 }
 /******************************************************************************/
-void arkime_session_mark_for_close (ArkimeSession_t *session)
+void arkime_session_mark_for_close(ArkimeSession_t *session)
 {
     if (session->closingQ)
         return;
@@ -415,7 +415,7 @@ void arkime_session_mark_for_close (ArkimeSession_t *session)
     }
 }
 /******************************************************************************/
-void arkime_session_flip_src_dst (ArkimeSession_t *session)
+void arkime_session_flip_src_dst(ArkimeSession_t *session)
 {
     struct in6_addr        addr;
     uint16_t               port;
@@ -429,7 +429,7 @@ void arkime_session_flip_src_dst (ArkimeSession_t *session)
     session->port2 = port;
 }
 /******************************************************************************/
-LOCAL void arkime_session_free (ArkimeSession_t *session)
+LOCAL void arkime_session_free(ArkimeSession_t *session)
 {
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
@@ -1065,7 +1065,7 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
         g_hash_table_iter_init(&iter, sessionThreadData[t].stoppedSessions.new);
         uint8_t *ikey;
         gpointer ivalue;
-        while (g_hash_table_iter_next (&iter, (gpointer *)&ikey, &ivalue)) {
+        while (g_hash_table_iter_next(&iter, (gpointer *)&ikey, &ivalue)) {
             cnt++;
             fwrite(ikey, ikey[0], 1, fp);
             uint32_t val = (long)ivalue;
@@ -1267,7 +1267,7 @@ LOCAL void arkime_session_load_collapse()
     gsize keys_len;
     gchar **keys = arkime_config_section_keys(NULL, "vlan-vni-collapse", &keys_len);
     if (keys_len > 0) {
-        collapseTable = g_hash_table_new (g_direct_hash, g_direct_equal);
+        collapseTable = g_hash_table_new(g_direct_hash, g_direct_equal);
     }
     for (int i = 0; i < (int)keys_len; i++) {
         char *value = arkime_config_section_str(NULL, "vlan-vni-collapse", keys[i], NULL);

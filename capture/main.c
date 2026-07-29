@@ -1,3 +1,4 @@
+/******************************************************************************/
 /* main.c  -- Initialization of components
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
@@ -224,11 +225,11 @@ LOCAL void parse_args(int argc, char **argv)
     extern const char *yaml_get_version_string(void);
     //extern int magic_version(void);
 
-    context = g_option_context_new ("- capture");
-    g_option_context_add_main_entries (context, entries, NULL);
-    if (!g_option_context_parse (context, &argc, &argv, &error)) {
-        g_print ("option parsing failed: %s\n", error->message);
-        exit (1);
+    context = g_option_context_new("- capture");
+    g_option_context_add_main_entries(context, entries, NULL);
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+        g_print("option parsing failed: %s\n", error->message);
+        exit(1);
     }
 
     g_option_context_free(context);
@@ -296,7 +297,7 @@ LOCAL void parse_args(int argc, char **argv)
                 g_strlcat(config.hostName, ".", 255);
                 g_strlcat(config.hostName, domainname, 255);
             } else {
-                LOG("WARNING: gethostname doesn't return a fully qualified name and getdomainname failed, this may cause issues when viewing pcaps, use the --host option - %s", config.hostName);
+                LOG("WARNING - gethostname doesn't return a fully qualified name and getdomainname failed, this may cause issues when viewing pcaps, use the --host option - %s", config.hostName);
             }
         }
     }
@@ -382,7 +383,7 @@ void arkime_free_later(void *ptr, GDestroyNotify cb)
     ARKIME_UNLOCK(freeLaterList);
 }
 /******************************************************************************/
-LOCAL gboolean arkime_free_later_check (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_free_later_check(gpointer UNUSED(user_data))
 {
     if (freeLaterFront == freeLaterBack)
         return TRUE;
@@ -483,7 +484,7 @@ void arkime_check_file_permissions(const char *filename)
     char                *save_ptr;
     char                 tmpFilename[PATH_MAX];
 
-    if (strlen (filename) >= PATH_MAX) {
+    if (strlen(filename) >= PATH_MAX) {
         // filename bigger than path buffer, skip check
         return;
     }
@@ -492,40 +493,40 @@ void arkime_check_file_permissions(const char *filename)
         // drop.User,Group not defined -- skip check
         return;
     }
-    if (strncmp (filename, "/", 1) != 0) {
-        LOG("WARNING using a relative path may make pcap inaccessible to viewer");
+    if (strncmp(filename, "/", 1) != 0) {
+        LOG("WARNING - using a relative path may make pcap inaccessible to viewer");
         return;
     }
 
     path[0] = 0;
 
     // process copy of filename given strtok_r changes arg
-    g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
+    g_strlcpy(tmpFilename, filename, sizeof(tmpFilename));
 
-    token = strtok_r (tmpFilename, "/", &save_ptr);
+    token = strtok_r(tmpFilename, "/", &save_ptr);
 
     while (token != NULL) {
-        g_strlcat (path, "/", sizeof(path));
-        g_strlcat (path, token, sizeof(path));
+        g_strlcat(path, "/", sizeof(path));
+        g_strlcat(path, token, sizeof(path));
 
         if (stat(path, &stats) != -1) {
-            const struct group  *gr = getgrgid (stats.st_gid);
-            const struct passwd *pw = getpwuid (stats.st_uid);
+            const struct group  *gr = getgrgid(stats.st_gid);
+            const struct passwd *pw = getpwuid(stats.st_uid);
 
             if (stats.st_mode & S_IROTH) {
                 // world readable
-            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && gr && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && gr && (strcmp(config.dropGroup, gr->gr_name) == 0)) {
                 // group readable and dropGroup matches file group
                 // TODO compare group id values as opposed to group name
-            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && pw && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && pw && (strcmp(config.dropUser, pw->pw_name) == 0)) {
                 // user readable and dropUser matches file user
                 // TODO compare user id values as opposed to user name
             } else
-                LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+                LOG("WARNING - permission issues with %s might make pcap inaccessible to viewer", path);
         } else
-            LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+            LOG("WARNING - Can't stat %s.  Pcap might not be accessible to viewer", path);
 
-        token = strtok_r (NULL, "/", &save_ptr);
+        token = strtok_r(NULL, "/", &save_ptr);
     }
 }
 /******************************************************************************/
@@ -547,7 +548,7 @@ uint32_t arkime_get_next_prime(uint32_t v)
     return primes[p - 1];
 }
 /******************************************************************************/
-//https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 uint32_t arkime_get_next_powerof2(uint32_t v)
 {
     v--;
@@ -822,7 +823,7 @@ LOCAL  ArkimeCanQuitFunc  canQuitFuncs[20];
 LOCAL  const char        *canQuitNames[20];
 LOCAL  int                canQuitFuncsNum;
 
-void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
+void arkime_add_can_quit(ArkimeCanQuitFunc func, const char *name)
 {
     if (canQuitFuncsNum >= 20) {
         LOGEXIT("ERROR - Can't add canQuitFunc");
@@ -835,7 +836,7 @@ void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
 /*
  * Don't actually end main loop until all the various pieces are done
  */
-LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_quit_gfunc(gpointer UNUSED(user_data))
 {
     LOCAL gboolean readerExit   = TRUE;
     LOCAL gboolean writerExit   = TRUE;
@@ -898,7 +899,7 @@ void arkime_quit()
  * Don't actually init nids/pcap until all the pre tags are loaded.
  * CONTINUE - call again in 1ms
  */
-LOCAL gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_ready_gfunc(gpointer UNUSED(user_data))
 {
     if (arkime_http_queue_length(esServer))
         return G_SOURCE_CONTINUE;
@@ -1102,7 +1103,7 @@ LOCAL void arkime_mlockall_init()
     struct rlimit l;
     getrlimit(RLIMIT_MEMLOCK, &l);
     if (l.rlim_max != RLIM_INFINITY && l.rlim_max < 4000000000LL) {
-        LOG("WARNING: memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max / 1024);
+        LOG("WARNING - memlock in limits.conf must be unlimited or at least 4000000, currently %lu", (unsigned long)l.rlim_max / 1024);
         return;
     }
 
@@ -1115,7 +1116,7 @@ LOCAL void arkime_mlockall_init()
 
     int result = mlockall(MCL_FUTURE | MCL_CURRENT);
     if (result != 0) {
-        LOG("WARNING: Failed to mlockall - %s", strerror(errno));
+        LOG("WARNING - Failed to mlockall - %s", strerror(errno));
     } else if (config.debug) {
         LOG("mlockall with max of %lu", (unsigned long)l.rlim_max);
     }
@@ -1131,8 +1132,8 @@ gboolean arkime_is_main_thread()
 /******************************************************************************/
 #ifdef SFUZZLOCH
 
-/* This replaces main for libFuzzer.  Basically initialized everything like main
- * would for starting up and set some important settings.  Must be run from tests
+/* This replaces main for libFuzzer.  Basically initializes everything like main
+ * would for starting up and sets some important settings.  Must be run from tests
  * directory, and config.test.ini will be loaded for fuzz node.
  */
 
@@ -1189,8 +1190,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 /******************************************************************************/
 #elif FUZZLOCH
 
-/* This replaces main for libFuzzer.  Basically initialized everything like main
- * would for starting up and set some important settings.  Must be run from tests
+/* This replaces main for libFuzzer.  Basically initializes everything like main
+ * would for starting up and sets some important settings.  Must be run from tests
  * directory, and config.test.ini will be loaded for fuzz node.
  */
 

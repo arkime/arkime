@@ -630,7 +630,7 @@ do { \
     } \
     BSB_EXPORT_rewind(jbsb, 1); /* Remove last comma */ \
     BSB_EXPORT_cstr(jbsb, "],"); \
-} while(0)
+} while (0)
 
 /* ES fills the *Tokens fields with copy_to + the wordSplit analyzer; sessions
  * stores without that machinery enable tokens emission so capture writes the
@@ -796,7 +796,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             break;
         case ARKIME_ROTATE_HOURLY6:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, (tmp.tm_hour / 6) * 6);
-            break ;
+            break;
         case ARKIME_ROTATE_HOURLY8:
             snprintf(dbInfo[thread].prefix, sizeof(dbInfo[thread].prefix), "%02d%02d%02dh%02d", tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, (tmp.tm_hour / 8) * 8);
             break;
@@ -1361,8 +1361,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", fieldInfo->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 arkime_db_js0n_str(&jbsb, ikey, flags & ARKIME_FIELD_FLAG_FORCE_UTF8);
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1407,8 +1407,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", fieldInfo->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1440,8 +1440,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", fieldInfo->dbField, g_hash_table_size(ghash));
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 BSB_EXPORT_sprintf(jbsb, "%f", POINTER_TO_FLOAT(ikey));
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1501,8 +1501,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             uint32_t              cnt = 0;
 
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            g_hash_table_iter_init (&iter, ghash);
-            while (cnt < MAX_IPS && g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (cnt < MAX_IPS && g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
                 if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
@@ -1627,7 +1627,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
-        LOG("WARNING - %s BIGGER than expected json %u %d\n", id, jsonSize,  (int)(BSB_WORK_PTR(jbsb) - startPtr));
+        LOG("WARNING - %s BIGGER than expected json %u %d\n", id, jsonSize, (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
@@ -1753,7 +1753,7 @@ void arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercent)
         mem = arkime_db_memory_size();
     }
     if (memPercent) {
-        double memMax = (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
+        double memMax = (uint64_t)sysconf(_SC_PHYS_PAGES) * (uint64_t)sysconf(_SC_PAGESIZE);
         *memPercent = mem / memMax * 100.0;
     }
     if (memBytes)
@@ -2035,7 +2035,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
 }
 /******************************************************************************/
 // Runs on main thread
-LOCAL gboolean arkime_db_flush_gfunc (gpointer user_data)
+LOCAL gboolean arkime_db_flush_gfunc(gpointer user_data)
 {
     struct timeval  currentTime;
 
@@ -2094,7 +2094,7 @@ LOCAL void arkime_db_health_check_cb(int code, uint8_t *data, int data_len, gpoi
 /******************************************************************************/
 
 // Runs on main thread
-LOCAL gboolean arkime_db_health_check (gpointer user_data)
+LOCAL gboolean arkime_db_health_check(gpointer user_data)
 {
     arkime_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, arkime_db_health_check_cb, user_data);
     clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
@@ -2731,7 +2731,7 @@ void arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *ma
     if (!ouiTree)
         return;
 
-    if ((node = patricia_search_best3 (ouiTree, mac, 48)) == NULL)
+    if ((node = patricia_search_best3(ouiTree, mac, 48)) == NULL)
         return;
 
     arkime_field_string_add(field, session, node->data, -1, TRUE);

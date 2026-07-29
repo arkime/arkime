@@ -381,7 +381,7 @@ gchar **arkime_config_section_keys(GKeyFile *keyfile, const char *section, gsize
     }
 
     GError *error = 0;
-    gchar **keys = g_key_file_get_keys (keyfile, section, keys_len, &error);
+    gchar **keys = g_key_file_get_keys(keyfile, section, keys_len, &error);
     if (error) {
         g_error_free(error);
         *keys_len = 0;
@@ -612,9 +612,9 @@ LOCAL void arkime_config_load_includes(char **includes)
             }
         }
 
-        gchar **groups = g_key_file_get_groups (keyFile, NULL);
+        gchar **groups = g_key_file_get_groups(keyFile, NULL);
         for (int g = 0; groups[g]; g++) {
-            gchar **keys = g_key_file_get_keys (keyFile, groups[g], NULL, NULL);
+            gchar **keys = g_key_file_get_keys(keyFile, groups[g], NULL, NULL);
             for (int k = 0; keys[k]; k++) {
                 char *value = g_key_file_get_value(keyFile, groups[g], keys[k], NULL);
                 if (value) {
@@ -1400,7 +1400,7 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
         return;
 
     gsize keys_len;
-    gchar **keys = g_key_file_get_keys (keyFile, "override-ips", &keys_len, &error);
+    gchar **keys = g_key_file_get_keys(keyFile, "override-ips", &keys_len, &error);
     if (error) {
         CONFIGEXIT("Error with override-ips: %s", error->message ? error->message : "unknown error");
     }
@@ -1408,7 +1408,7 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
     // Anchored so the AS number is always at values[v] + 6 for the parsing below
     GRegex *asnRegex = g_regex_new("^AS\\d+ .+", 0, 0, &error);
     gsize k, v;
-    for (k = 0 ; k < keys_len; k++) {
+    for (k = 0; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(keyFile,
                                                     "override-ips",
@@ -1502,13 +1502,13 @@ LOCAL void arkime_config_parse_packet_ips(GKeyFile *keyFile)
         return;
 
     gsize keys_len;
-    gchar **keys = g_key_file_get_keys (keyFile, "packet-drop-ips", &keys_len, &error);
+    gchar **keys = g_key_file_get_keys(keyFile, "packet-drop-ips", &keys_len, &error);
     if (error) {
         CONFIGEXIT("Error with packet-drop-ips: %s", error->message ? error->message : "unknown error");
     }
 
     gsize k, v;
-    for (k = 0 ; k < keys_len; k++) {
+    for (k = 0; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(keyFile,
                                                     "packet-drop-ips",
@@ -1572,7 +1572,7 @@ void arkime_config_add_header(ArkimeStringHashStd_t *hash, char *key, int pos)
     HASH_ADD(s_, *hash, hstring->str, hstring);
 }
 /******************************************************************************/
-void arkime_config_load_header(char *section, char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags)
+void arkime_config_load_header(const char *section, const char *group, const char *helpBase, const char *expBase, const char *aliasBase, const char *dbBase, ArkimeStringHashStd_t *hash, int flags)
 {
     GError   *error = 0;
     char      name[100];
@@ -1581,13 +1581,13 @@ void arkime_config_load_header(char *section, char *group, const char *helpBase,
         return;
 
     gsize keys_len;
-    gchar **keys = g_key_file_get_keys (arkimeKeyFile, section, &keys_len, &error);
+    gchar **keys = g_key_file_get_keys(arkimeKeyFile, section, &keys_len, &error);
     if (error) {
         CONFIGEXIT("Error with %s: %s", section, error->message ? error->message : "unknown error");
     }
 
     gsize k, v;
-    for (k = 0 ; k < keys_len; k++) {
+    for (k = 0; k < keys_len; k++) {
         gsize values_len;
         gchar **values = g_key_file_get_string_list(arkimeKeyFile,
                                                     section,
@@ -1737,7 +1737,7 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
     cb(names);
 }
 /******************************************************************************/
-LOCAL gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_config_reload_files(gpointer UNUSED(user_data))
 {
     int             f;
     struct stat     sb[ARKIME_CONFIG_FILES];

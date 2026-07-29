@@ -1,3 +1,4 @@
+/******************************************************************************/
 /* parsers.c  -- Functions for dealing with classification and parsers
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
@@ -685,7 +686,7 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, u
     struct tm  tm;
     time_t     val;
 
-    //UTCTime
+    // UTCTime
     if (tag == 23 && len > 12) {
         memset(&tm, 0, sizeof(tm));
         if (len >= 17 && value[12] != 'Z')
@@ -711,7 +712,7 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, u
         }
         return val;
     }
-    //GeneralizedTime
+    // GeneralizedTime
     else if (tag == 24 && len >= 10) {
         uint32_t pos;
         memset(&tm, 0, sizeof(tm));
@@ -957,7 +958,7 @@ LOCAL int filewext_cmp(const void *a, const void *b)
 /******************************************************************************/
 LOCAL int arkime_parsers_load_so(const char *path)
 {
-    GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+    GModule *parser = g_module_open(path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
 
     if (!parser) {
         LOG("ERROR - Couldn't load parser from '%s'\n%s", path, g_module_error());
@@ -1044,13 +1045,13 @@ int arkime_parsers_load()
         qsort((void *)files, (size_t)flen, sizeof(ArkimeFileWithExtension_t), filewext_cmp);
 
         for (int i = 0; i < flen; i++) {
-            gchar *path = g_build_filename (config.parsersDir[d], files[i].filename, NULL);
+            gchar *path = g_build_filename(config.parsersDir[d], files[i].filename, NULL);
 
             int rc = ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, files[i].extensionPos))->loadFunc(path);
 
             if (rc != 0) {
                 g_free(files[i].filename);
-                g_free (path);
+                g_free(path);
                 continue;
             }
 
@@ -1063,7 +1064,7 @@ int arkime_parsers_load()
             if (config.debug)
                 LOG("Loaded %s", path);
 
-            g_free (path);
+            g_free(path);
         }
         g_dir_close(dir);
     }
@@ -1077,7 +1078,7 @@ int arkime_parsers_load()
         g_free(hstring->str);
         ARKIME_TYPE_FREE(ArkimeString_t, hstring);
     }
-    g_free(disableParsers); // NOT, g_strfreev because using the pointers
+    g_free(disableParsers); // NOT g_strfreev, because using the pointers
 
     return count;
 }
@@ -1411,7 +1412,7 @@ LOCAL void arkime_parsers_classifier_add_port(ArkimeClassifyHead_t *ch, const ch
 void arkime_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(ArkimeSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t), (unsigned int)sessionsize);
     }
 
     if (ARKIME_API_VERSION != apiversion) {
@@ -1445,7 +1446,7 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
 void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(ArkimeSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t), (unsigned int)sessionsize);
     }
 
     if (ARKIME_API_VERSION != apiversion) {
@@ -1518,7 +1519,7 @@ void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw,
 void arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(ArkimeSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t), (unsigned int)sessionsize);
     }
 
     if (ARKIME_API_VERSION != apiversion) {
@@ -1556,7 +1557,7 @@ void arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw
 void arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, void *uw, uint32_t protocol, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
 {
     if (sizeof(ArkimeSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t), (unsigned int)sessionsize);
     }
 
     if (ARKIME_API_VERSION != apiversion) {

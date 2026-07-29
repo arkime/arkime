@@ -200,7 +200,7 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
     if (map) {
         // Copy name/match: the classifier stores the pointers permanently but
         // they point into Python object internals that may be freed
-        arkime_parsers_classifier_register_tcp (
+        arkime_parsers_classifier_register_tcp(
             g_strdup(name_str),
             map,
             offset,
@@ -254,7 +254,7 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
-        arkime_parsers_classifier_register_udp (
+        arkime_parsers_classifier_register_udp(
             g_strdup(name_str),
             map,
             offset,
@@ -307,7 +307,7 @@ LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), P
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
-        arkime_parsers_classifier_register_sctp (
+        arkime_parsers_classifier_register_sctp(
             g_strdup(name_str),
             map,
             offset,
@@ -346,7 +346,7 @@ LOCAL PyObject *arkime_python_register_sctp_protocol_classifier(PyObject UNUSED(
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
-        arkime_parsers_classifier_register_sctp_protocol (
+        arkime_parsers_classifier_register_sctp_protocol(
             name_str,
             map,
             protocol,
@@ -385,7 +385,7 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
-        arkime_parsers_classifier_register_port (
+        arkime_parsers_classifier_register_port(
             name_str,
             map,
             port,
@@ -398,7 +398,7 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
 
 /******************************************************************************/
 // Both presave/save use same callback
-LOCAL uint32_t arkime_python_session_save_cb (ArkimeSession_t *session, const uint8_t UNUSED(*data), int len, void UNUSED(*uw), void *cbuw)
+LOCAL uint32_t arkime_python_session_save_cb(ArkimeSession_t *session, const uint8_t UNUSED(*data), int len, void UNUSED(*uw), void *cbuw)
 {
     PyEval_RestoreThread(packetThreadState[arkimePacketThread]);
 
@@ -988,11 +988,11 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         }
         case ARKIME_FIELD_TYPE_STR_GHASH: {
             ghash = (GHashTable *)value;
-            g_hash_table_iter_init (&iter, ghash);
+            g_hash_table_iter_init(&iter, ghash);
 
             py_list = PyList_New(g_hash_table_size(ghash));
             int i = 0;
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 PyObject *py_str = PyUnicode_FromString(ikey);
                 PyList_SetItem(py_list, i, py_str);
                 i++;
@@ -1037,11 +1037,11 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
 
     case ARKIME_FIELD_TYPE_INT_GHASH: {
         ghash = session->fields[pos]->ghash;
-        g_hash_table_iter_init (&iter, ghash);
+        g_hash_table_iter_init(&iter, ghash);
 
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             PyList_SetItem(py_list, i, PyLong_FromUnsignedLong((unsigned long)ikey));
             i++;
         }
@@ -1060,11 +1060,11 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
 
     case ARKIME_FIELD_TYPE_FLOAT_GHASH: {
         ghash = session->fields[pos]->ghash;
-        g_hash_table_iter_init (&iter, ghash);
+        g_hash_table_iter_init(&iter, ghash);
 
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             PyList_SetItem(py_list, i, PyFloat_FromDouble(POINTER_TO_FLOAT(ikey)));
             i++;
         }
@@ -1082,11 +1082,11 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
 
     case ARKIME_FIELD_TYPE_IP_GHASH: {
         ghash = session->fields[pos]->ghash;
-        g_hash_table_iter_init (&iter, ghash);
+        g_hash_table_iter_init(&iter, ghash);
 
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             ip6 = (struct in6_addr *)ikey;
             if (IN6_IS_ADDR_V4MAPPED(ip6)) {
                 arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr, sizeof(ipstr));
@@ -1123,11 +1123,11 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
 
     case ARKIME_FIELD_TYPE_STR_GHASH: {
         ghash = session->fields[pos]->ghash;
-        g_hash_table_iter_init (&iter, ghash);
+        g_hash_table_iter_init(&iter, ghash);
 
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             PyList_SetItem(py_list, i, PyUnicode_FromString((char *)ikey));
             i++;
         }
