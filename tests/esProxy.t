@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 37;
+use Test::More tests => 41;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -19,6 +19,14 @@ is ($response->code, 401);
 
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200");
 is ($response->code, 200);
+
+# A sensor name that resolves on Object.prototype is not a configured sensor. It
+# has no pass and no ip, so a plain [] lookup would authenticate it with any
+# password and proxy its requests (user docs, session docs) to elasticsearch.
+foreach my $name ("__proto__", "constructor", "toString", "hasOwnProperty") {
+    $response = $ArkimeTest::userAgent->get("http://$name:anything\@$ArkimeTest::host:7200/tests_users/_doc/formtestuser");
+    is ($response->code, 401, "sensor '$name' is not authenticated");
+}
 
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_search");
 is ($response->code, 400);

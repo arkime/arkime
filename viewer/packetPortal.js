@@ -16,14 +16,18 @@
  *      socket, the acceptor (which only accepted the TCP connection) can now
  *      open request streams to the dialer.
  *   3. Each logical request is one HTTP/2 stream carrying an ordinary HTTP/1.1
- *      conversation in its DATA frames. Node's http client/server cannot use an
- *      Http2Stream directly as a socket (it hands http core pooled Buffers that
- *      get reused before the stream serializes them, corrupting the bytes), so
- *      each stream is bridged to a real net.Socket loopback pair: http talks to
- *      a genuine socket, and we pipe that socket <-> the Http2Stream. The
- *      dialer feeds its bridged socket into the existing Express app via
+ *      conversation in its DATA frames, which is what lets the existing Express
+ *      app and node's own http client drive it. HTTP/2 is here for its stream
+ *      multiplexing and per stream flow control: one connection survives NAT,
+ *      and a slow pcap download cannot stall the other requests on it. Each
+ *      stream is wrapped in an H2Socket (see below) to look like a socket, since
+ *      http core cannot write to an Http2Stream directly.
+ *
+ *      The dialer feeds each wrapped stream into the existing Express app via
  *      http.createServer(app).emit('connection', socket) -- Express, its
- *      middleware, and the existing x-arkime-auth S2S check all run unchanged.
+ *      middleware, and the existing x-arkime-auth S2S check all run unchanged,
+ *      behind a gate (see #gate) that requires a valid s2s token on everything
+ *      arriving over a portal, including routes that need no auth normally.
  *
  * Copyright Andy Wick
  *
@@ -31,7 +35,6 @@
  */
 'use strict';
 
-const net = require('net');
 const fs = require('fs');
 const streamLib = require('stream');
 const http = require('http');
@@ -47,6 +50,123 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const PORTAL_PATH = '/packetPortal';
 const UPGRADE_TOKEN = 'arkime-portal';
 const REQUEST_TIMEOUT = 20 * 60 * 1000;
+
+// ----------------------------------------------------------------------------
+/**
+ * An Http2Stream dressed up as a socket, so node's http client and server will
+ * drive it: `server.emit('connection', h2socket)` runs the real Express app on
+ * one, and an http.Agent whose createConnection returns one lets an ordinary
+ * http.request() talk over a portal.
+ *
+ * http core cannot use an Http2Stream directly because it hands the socket
+ * buffers it is free to reuse the moment write() returns, and an Http2Stream
+ * serializes later -- which corrupts the bytes. That is the only real
+ * incompatibility, and copying in _write settles it. Everything else here is
+ * plumbing to look enough like a net.Socket.
+ */
+class H2Socket extends streamLib.Duplex {
+  #h2;
+  #timeoutMs = 0;
+
+  constructor (h2stream) {
+    super({
+      // net.Socket semantics: when the peer stops sending, end our write side
+      // too. A bare Duplex is half open by default, which would leave both ends
+      // of a finished request waiting on each other.
+      allowHalfOpen: false,
+      writableHighWaterMark: 64 * 1024
+    });
+
+    this.#h2 = h2stream;
+
+    // There is no socket under this, so the address is invented. Loopback
+    // specifically, because Auth.#checkIps runs before the s2s narrowing and
+    // would reject portal requests wherever userAuthIps is set explicitly or
+    // defaults to loopback (the header auth modes). It is evidence of nothing --
+    // what marks these requests untrustworthy is arkimePacketPortal.
+    this.remoteAddress = '127.0.0.1';
+    this.remotePort = 0;
+    this.remoteFamily = 'IPv4';
+    this.localAddress = '127.0.0.1';
+    this.localPort = 0;
+
+    h2stream.on('data', (chunk) => {
+      this.#touch();
+      // h2 has its own flow control, so pausing it here applies real
+      // backpressure to the peer rather than buffering without bound
+      if (this.push(chunk) === false) { h2stream.pause(); }
+    });
+    h2stream.on('end', () => this.push(null));
+    h2stream.on('error', (err) => this.destroy(err));
+    h2stream.on('close', () => {
+      if (!this.destroyed) { this.push(null); }
+    });
+  }
+
+  _write (chunk, enc, cb) {
+    this.#touch();
+    if (chunk.length === 0) { return cb(); } // http core does this, h2 dislikes it
+    // copy: the buffer we were handed may be reused before h2 serializes it
+    this.#h2.write(Buffer.from(chunk), cb);
+  }
+
+  _final (cb) {
+    if (!this.#h2.destroyed && !this.#h2.writableEnded) { this.#h2.end(); }
+    cb();
+  }
+
+  _read () {
+    this.#h2.resume();
+  }
+
+  _destroy (err, cb) {
+    clearTimeout(this._portalTimer);
+
+    if (err) {
+      this.#h2.destroy(err);
+    } else if (!this.#h2.destroyed && !this.#h2.writableEnded) {
+      // End rather than destroy: a clean teardown must not discard bytes the h2
+      // stream is still flushing, which is exactly what truncates a large pcap
+      // download to a slow client.
+      this.#h2.end();
+    }
+
+    cb(err);
+  }
+
+  // --------------------------------------------------------------------------
+  // A socket timeout is an IDLE timeout: net.Socket restarts it on every read
+  // and write. A plain deadline instead would kill a pcap download that is
+  // transferring perfectly happily, just for taking longer than the timeout.
+  #touch () {
+    if (this.#timeoutMs <= 0) { return; }
+    clearTimeout(this._portalTimer);
+    this._portalTimer = setTimeout(() => this.emit('timeout'), this.#timeoutMs);
+    if (this._portalTimer.unref) { this._portalTimer.unref(); }
+  }
+
+  // --------------------------------------------------------------------------
+  // The rest of what http core expects a socket to have
+  setTimeout (ms, cb) {
+    this.#timeoutMs = ms > 0 ? ms : 0;
+    clearTimeout(this._portalTimer);
+    this.#touch();
+    if (cb) { this.once('timeout', cb); }
+    return this;
+  }
+
+  setNoDelay () { return this; }
+  setKeepAlive () { return this; }
+  address () { return { address: this.remoteAddress, port: this.remotePort, family: this.remoteFamily }; }
+  ref () { return this; }
+  unref () { return this; }
+
+  // net.Socket ends, then destroys once the write side has flushed. Destroying
+  // outright here would drop whatever the h2 stream has not sent yet.
+  destroySoon () {
+    if (this.writable) { this.end(); } else { this.destroy(); }
+  }
+}
 
 class PacketPortal {
   // acceptor side: node name -> { session, timer } for every live inbound portal
@@ -75,7 +195,7 @@ class PacketPortal {
   static #innerServer;
   // dialer side: shared h2 server that accepts inbound streams from acceptors
   static #dialerH2Server;
-  // acceptor side: shared agent whose createConnection bridges to a portal
+  // acceptor side: shared agent whose createConnection opens a portal stream
   static #agent;
   static #listenEnabled = false;
   static #initialized = false;
@@ -92,8 +212,8 @@ class PacketPortal {
 
     // Inner HTTP/1.1 server sharing the same Express app. Never .listen()s; it
     // only ever receives sockets via emit('connection'). Used on the DIALER to
-    // serve requests that arrive over a portal.
-    PacketPortal.#innerServer = http.createServer(app);
+    // serve requests that arrive over a portal, behind the s2s gate.
+    PacketPortal.#innerServer = http.createServer(PacketPortal.#gate(app));
     PacketPortal.#innerServer.setTimeout(REQUEST_TIMEOUT);
 
     // DIALER h2 server: each inbound stream is one HTTP/1.1 request.
@@ -111,14 +231,32 @@ class PacketPortal {
     // Per node credentials for inbound portals. [packetportal-nodes] wins,
     // [esproxy-sensors] is the fallback -- same 'pass:X;ip:A,B' shape, and a
     // deployment locking sensors down at esProxy wants the same list here.
-    PacketPortal.#nodes = Config.configMap('packetportal-nodes', 'esproxy-sensors');
-    for (const nodeName in PacketPortal.#nodes) {
-      const entry = PacketPortal.#nodes[nodeName];
+    // Whether the section had any entries at all is what makes it an allow list,
+    // so dropping the unusable ones below can never turn the allow list off.
+    const nodes = Config.configMap('packetportal-nodes', 'esproxy-sensors');
+    PacketPortal.#nodesConfigured = Object.keys(nodes).length > 0;
+    PacketPortal.#nodes = {};
+
+    for (const nodeName of Object.keys(nodes)) {
+      const entry = nodes[nodeName];
       if (typeof entry.ip === 'string') {
         entry.ip = entry.ip.split(',').map(s => s.trim()).filter(s => s.length > 0);
       }
+      // An entry with neither is no better than no entry at all -- it would fall
+      // through to trust on first use, silently, for a node the admin believes
+      // they configured. Drop it so it is rejected instead.
+      if (entry.pass === undefined && (entry.ip === undefined || entry.ip.length === 0)) {
+        console.log(`WARNING - packetPortal: ignoring node '${ArkimeUtil.sanitizeStr(nodeName)}', it has no pass or ip; it will not be allowed to open a portal`);
+        continue;
+      }
+      // A name that resolves to something on Object.prototype can never be a real
+      // node, and looking it up would find an inherited value instead of an entry
+      if (ArkimeUtil.isPP(nodeName)) {
+        console.log(`WARNING - packetPortal: ignoring node '${ArkimeUtil.sanitizeStr(nodeName)}', it is not a usable node name`);
+        continue;
+      }
+      PacketPortal.#nodes[nodeName] = entry;
     }
-    PacketPortal.#nodesConfigured = Object.keys(PacketPortal.#nodes).length > 0;
 
     // ACCEPTOR listener. A dedicated port is recommended when the main viewer
     // port is fronted by a proxy, uses header auth, or is IP locked down --
@@ -148,7 +286,8 @@ class PacketPortal {
   // --------------------------------------------------------------------------
   // ACCEPTOR: stand up a dedicated listener that only accepts portal upgrades.
   // Reuses the viewer's key/cert for TLS when configured. Independent of the
-  // main viewer server (its cert hot-reload is unaffected).
+  // main viewer server, including its own cert watch so a rotated cert is
+  // picked up here too instead of being served until the viewer restarts.
   static #startAcceptorPort (port, host) {
     const reject = (req, res) => { res.statusCode = 404; res.end('packet portal endpoint\n'); };
 
@@ -166,6 +305,7 @@ class PacketPortal {
         cert: fs.readFileSync(certFile),
         secureOptions: cryptoLib.constants.SSL_OP_NO_TLSv1
       }, reject);
+      ArkimeUtil.watchCertFiles(server, keyFile, certFile);
     } else {
       server = http.createServer(reject);
       console.log('packetPortal: dedicated port is PLAIN (no TLS) - set packetPortalKeyFile/packetPortalCertFile for encryption');
@@ -264,7 +404,8 @@ class PacketPortal {
   // --------------------------------------------------------------------------
   // ACCEPTOR: shared http.Agent that turns each outbound request into a fresh
   // portal stream. The caller puts the portal session on
-  // options.packetPortalSession; createConnection bridges it to a real socket.
+  // options.packetPortalSession; createConnection wraps a new stream on it in an
+  // H2Socket, which is all http core needs to treat it as a connection.
   static get agent () {
     if (!PacketPortal.#agent) {
       PacketPortal.#agent = new http.Agent({ keepAlive: false, maxSockets: Infinity });
@@ -274,14 +415,25 @@ class PacketPortal {
           cb(new Error('packetPortal session is gone'));
           return;
         }
-        const stream = session.request({
-          ':method': 'POST',
-          ':scheme': 'http',
-          ':authority': 'arkime-portal.invalid',
-          ':path': '/'
-        });
+        // request() throws once the session is gone, and the checks above cannot
+        // rule that out -- the portal can die between them and here. Letting it
+        // throw escapes createConnection, which surfaces as an unhandled
+        // rejection and leaves the request hanging forever instead of failing.
+        let stream;
+        try {
+          stream = session.request({
+            ':method': 'POST',
+            ':scheme': 'http',
+            ':authority': 'arkime-portal.invalid',
+            ':path': '/'
+          });
+        } catch (err) {
+          cb(err);
+          return;
+        }
+
         stream.on('error', () => {});
-        PacketPortal.#bridge(stream, cb);
+        cb(null, new H2Socket(stream));
       };
     }
     return PacketPortal.#agent;
@@ -310,7 +462,7 @@ class PacketPortal {
     // of blocking event loop per unseen salt. It is only a claim at this point;
     // #checkNode is what decides whether this peer may make it.
     const node = req.headers['x-arkime-node'];
-    if (!ArkimeUtil.isString(node) || !PacketPortal.#hostnameRE.test(node)) {
+    if (!ArkimeUtil.isString(node) || !PacketPortal.#hostnameRE.test(node) || ArkimeUtil.isPP(node)) {
       console.log('packetPortal: rejecting upgrade, missing or bad x-arkime-node');
       socket.destroy();
       return;
@@ -323,18 +475,9 @@ class PacketPortal {
       return;
     }
 
-    let obj;
-    try {
-      obj = Auth.auth2obj(req.headers['x-arkime-auth']);
-    } catch (e) {
-      console.log('packetPortal: rejecting upgrade, bad auth -', e.message);
-      socket.destroy();
-      return;
-    }
-
-    const s2sError = Auth.validateS2SObj(obj, req);
-    if (s2sError) {
-      console.log('packetPortal: rejecting upgrade -', s2sError);
+    const { obj, error } = Auth.parseS2SRequest(req);
+    if (error) {
+      console.log('packetPortal: rejecting upgrade -', error);
       socket.destroy();
       return;
     }
@@ -415,7 +558,10 @@ class PacketPortal {
   // claim (and so hijack or deny) any other node's traffic. This is what binds
   // the claim to the peer.
   static #checkNode (node, req) {
-    const entry = PacketPortal.#nodes[node];
+    // Own properties only. A plain [] lookup with a name like __proto__ or
+    // constructor finds something on Object.prototype, which is not undefined and
+    // so would sail past the allow list check below with no pass and no ip.
+    const entry = Object.hasOwn(PacketPortal.#nodes, node) ? PacketPortal.#nodes[node] : undefined;
 
     // A configured section is an allow list, so an unlisted node is never ok
     if (PacketPortal.#nodesConfigured && entry === undefined) {
@@ -487,7 +633,18 @@ class PacketPortal {
       method: 'GET',
       agent: PacketPortal.agent,
       packetPortalSession: session,
-      timeout: 30000
+      timeout: 30000,
+      // /health needs no auth over a normal connection, but the dialer requires
+      // an s2s token on everything arriving over a portal (see #gate)
+      headers: {
+        'x-arkime-auth': Auth.obj2auth({
+          date: Date.now(),
+          user: 'packetPortal',
+          node,
+          path: '/health',
+          method: 'GET'
+        })
+      }
     };
 
     const req = http.request('http://arkime-portal.invalid/health', options, (res) => {
@@ -502,6 +659,33 @@ class PacketPortal {
   }
 
   // --------------------------------------------------------------------------
+  // DIALER: gate every request arriving over a portal on a valid s2s token,
+  // before the app sees it.
+  //
+  // The peer is remote but reaches us on a synthetic socket carrying a stand-in
+  // loopback address, so any check based on the source ip (userAuthIps,
+  // mcpAllowedIps) or on a header a proxy would normally set (userNameHeader)
+  // would wrongly trust it. Auth.doAuth knows about this (see arkimePacketPortal), but routes
+  // mounted before Auth.app() -- /mcp with its own header auth, pre-auth
+  // /plugin/*, /health, the parliament and eshealth endpoints -- never reach it.
+  // Nothing legitimately arrives over a portal without a token, so require one
+  // for everything, which also keeps the unauthenticated surface identical no
+  // matter what a deployment mounts early.
+  static #gate (app) {
+    return (req, res) => {
+      const { error } = Auth.parseS2SRequest(req);
+      if (error) {
+        console.log(`packetPortal: rejecting portal request for ${ArkimeUtil.sanitizeStr(req.url)} -`, error);
+        res.statusCode = 401;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, text: 'Packet portal requests require s2s auth' }));
+        return;
+      }
+      app(req, res);
+    };
+  }
+
+  // --------------------------------------------------------------------------
   // DIALER: an acceptor opened a stream -> serve it as one HTTP/1.1 request
   // against the shared Express app.
   static #onDialerStream (stream) {
@@ -512,67 +696,15 @@ class PacketPortal {
       return;
     }
     stream.on('error', () => {});
-    PacketPortal.#bridge(stream, (err, socket) => {
-      if (err) {
-        try { stream.destroy(); } catch (ignore) { /* ignore */ }
-        return;
-      }
-      // Mark the request as arriving over a packet portal. It is delivered through
-      // a loopback bridge socket, so its 127.0.0.1 source address and any
-      // userNameHeader it carries are NOT trustworthy -- Auth forces these
-      // requests to authenticate with the s2s token only (see Auth.doAuth).
-      socket.arkimePacketPortal = true;
-      PacketPortal.#innerServer.emit('connection', socket);
-    });
-  }
 
-  // --------------------------------------------------------------------------
-  // Bridge an Http2Stream to a real net.Socket via a one-shot loopback pair,
-  // then hand the other end to deliver(err, socket). Real sockets copy writes
-  // synchronously, which the http client/server require and an Http2Stream does
-  // not provide. deliver receives a still-connecting socket (net.connect), which
-  // http core handles natively.
-  static #bridge (h2stream, deliver) {
-    let settled = false;
-    let end;
-    const finish = (err, sock) => {
-      if (settled) { return; }
-      settled = true;
-      clearTimeout(timer);
-      deliver(err, sock);
-    };
-    const bridge = net.createServer((pipeEnd) => {
-      // Accept ONLY our own connector. The listener is on a random loopback port,
-      // but a local process could still race to connect to it first; matching the
-      // connector's local port ensures we bridge our own end, not an impostor's.
-      if (!end || pipeEnd.remotePort !== end.localPort) { pipeEnd.destroy(); return; }
-      clearTimeout(timer);
-      try { bridge.close(); } catch (e) { /* ignore */ }
-      // Tear the counterpart down only on ABNORMAL termination (error / premature
-      // close), never on a clean finish. Destroying on a clean close would drop an
-      // h2 stream's still-buffered outbound data whenever the peer reads slowly,
-      // truncating large transfers (e.g. a pcap download to a slow client).
-      // stream.finished() reports err only on abnormal end, so a normal completion
-      // is left to flush and end gracefully via the pipes.
-      pipeEnd.on('error', () => {});
-      h2stream.on('error', () => {});
-      streamLib.finished(pipeEnd, (err) => { if (err) { try { h2stream.destroy(); } catch (e) { /* ignore */ } } });
-      streamLib.finished(h2stream, (err) => { if (err) { try { pipeEnd.destroy(); } catch (e) { /* ignore */ } } });
-      pipeEnd.pipe(h2stream);
-      h2stream.pipe(pipeEnd);
-    });
-    // Close the listener (and fail) if our own connection never lands, so a
-    // failed request cannot leak a listening socket / fd.
-    const timer = setTimeout(() => {
-      try { bridge.close(); } catch (e) { /* ignore */ }
-      finish(new Error('packetPortal bridge timed out'));
-    }, 10000);
-    bridge.on('error', (e) => finish(e));
-    bridge.listen(0, '127.0.0.1', () => {
-      end = net.connect(bridge.address().port, '127.0.0.1');
-      end.on('error', (e) => { try { bridge.close(); } catch (x) { /* ignore */ } finish(e); });
-      end.on('connect', () => finish(null, end));
-    });
+    const socket = new H2Socket(stream);
+    // Mark the request as arriving over a packet portal. Its source address is a
+    // stand-in, so that address, any session cookie and any userNameHeader it
+    // carries are NOT trustworthy -- Auth authenticates these requests with the
+    // s2s token only (see Auth.doAuth), on top of the #gate check every portal
+    // request has already passed.
+    socket.arkimePacketPortal = true;
+    PacketPortal.#innerServer.emit('connection', socket);
   }
 
   // --------------------------------------------------------------------------

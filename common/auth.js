@@ -881,26 +881,13 @@ class Auth {
 
     // ----------------------------------------------------------------------------
     passport.use('s2s', new CustomStrategy(async (req, done) => {
-      let obj = req.headers['x-arkime-auth'];
-
-      if (obj === undefined) {
+      if (req.headers['x-arkime-auth'] === undefined) {
         return done(null, false);
       }
 
-      try {
-        if (Auth.#s2sRegressionTests) {
-          obj = JSON.parse(obj);
-        } else {
-          obj = Auth.auth2obj(obj);
-        }
-      } catch (e) {
-        console.log('AUTH: x-arkime-auth corrupt', e);
-        return done('S2S auth header corrupt');
-      }
-
-      const s2sError = Auth.validateS2SObj(obj, req);
-      if (s2sError) {
-        return done(s2sError);
+      const { obj, error } = Auth.parseS2SRequest(req);
+      if (error) {
+        return done(error);
       }
 
       // Don't look up user for receiveSession
@@ -1071,7 +1058,18 @@ class Auth {
       return;
     }
 
-    if (typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
+    // A packet portal request comes from a remote peer but is served on a
+    // synthetic socket (see H2Socket) whose 127.0.0.1 source address is a
+    // stand-in, not a connection from anywhere. That address, any userNameHeader
+    // and any session cookie the peer sends are therefore all untrustworthy: the
+    // first two would let header auth take the peer's word for the user, since
+    // what gates it is the userAuthIps loopback default, and the last would skip
+    // authentication entirely at the isAuthenticated() check below. Authenticate
+    // with the s2s token only -- on top of PacketPortal's own gate, which
+    // required a valid s2s token before the request ever reached the app.
+    const portal = req.socket?.arkimePacketPortal === true;
+
+    if (!portal && typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
       return next();
     }
 
@@ -1079,7 +1077,9 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
-    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session && req._parsedUrl.pathname !== '/auth/login/callback') {
+    // A portal request is never a browser being sent to a login page, and must
+    // not write to whatever session a cookie it carries happens to name
+    if (!portal && req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session && req._parsedUrl.pathname !== '/auth/login/callback') {
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
@@ -1096,11 +1096,10 @@ class Auth {
       passportAuthOptionsExtra.session = false;
     }
 
-    // Requests delivered over a packet portal arrive from a remote peer through a
-    // loopback bridge socket. Their loopback source IP and any userNameHeader are
-    // therefore untrustworthy (they would otherwise satisfy the header-auth
-    // userAuthIps loopback default). Authenticate them with the s2s token only.
-    const strategies = req.socket?.arkimePacketPortal ? ['s2s'] : Auth.#strategies;
+    // A portal request must never mint or attach a session either
+    if (portal) { passportAuthOptionsExtra.session = false; }
+
+    const strategies = portal ? ['s2s'] : Auth.#strategies;
 
     passport.authenticate(strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
       if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
@@ -1354,6 +1353,33 @@ class Auth {
       console.log(error);
       throw new Error('Incorrect auth supplied');
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  // Parse and fully validate a request's x-arkime-auth header. Returns
+  // { obj } when it is a genuine s2s token for this request, otherwise
+  // { error }. Anything that needs to make its own s2s decision (the s2s
+  // passport strategy, the packet portal) should use this rather than calling
+  // auth2obj on its own, which only proves the token decrypts.
+  static parseS2SRequest (req) {
+    const auth = req.headers['x-arkime-auth'];
+    if (auth === undefined) { return { error: 'Missing x-arkime-auth' }; }
+
+    // Anything present but unusable (empty, duplicated header, not a string) is
+    // a corrupt token rather than a missing one -- auth2obj throws on all of it
+    let obj;
+    try {
+      obj = Auth.#s2sRegressionTests ? JSON.parse(auth) : Auth.auth2obj(auth);
+    } catch (e) {
+      // debug only, an unauthenticated peer can trigger this at will
+      if (ArkimeConfig.debug > 0) { console.log('AUTH: x-arkime-auth corrupt', e); }
+      return { error: 'S2S auth header corrupt' };
+    }
+
+    const error = Auth.validateS2SObj(obj, req);
+    if (error) { return { error }; }
+
+    return { obj };
   }
 
   // ----------------------------------------------------------------------------
