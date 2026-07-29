@@ -79,11 +79,11 @@ class H2Socket extends streamLib.Duplex {
 
     this.#h2 = h2stream;
 
-    // Requests arriving over a portal come from a remote peer, but nothing about
-    // this socket is real. Keep the address loopback: Auth.#checkIps (userAuthIps,
-    // loopback by default) runs before the s2s narrowing and would otherwise
-    // reject every portal request. What marks these requests untrustworthy is
-    // arkimePacketPortal, not this address.
+    // There is no socket under this, so the address is invented. Loopback
+    // specifically, because Auth.#checkIps runs before the s2s narrowing and
+    // would reject portal requests wherever userAuthIps is set explicitly or
+    // defaults to loopback (the header auth modes). It is evidence of nothing --
+    // what marks these requests untrustworthy is arkimePacketPortal.
     this.remoteAddress = '127.0.0.1';
     this.remotePort = 0;
     this.remoteFamily = 'IPv4';
@@ -195,7 +195,7 @@ class PacketPortal {
   static #innerServer;
   // dialer side: shared h2 server that accepts inbound streams from acceptors
   static #dialerH2Server;
-  // acceptor side: shared agent whose createConnection bridges to a portal
+  // acceptor side: shared agent whose createConnection opens a portal stream
   static #agent;
   static #listenEnabled = false;
   static #initialized = false;
@@ -662,10 +662,10 @@ class PacketPortal {
   // DIALER: gate every request arriving over a portal on a valid s2s token,
   // before the app sees it.
   //
-  // The peer is remote but reaches us through a loopback bridge socket, so any
-  // check based on the source ip (userAuthIps' loopback default, mcpAllowedIps)
-  // or on a header a proxy would normally set (userNameHeader) would wrongly
-  // trust it. Auth.doAuth knows about this (see arkimePacketPortal), but routes
+  // The peer is remote but reaches us on a synthetic socket carrying a stand-in
+  // loopback address, so any check based on the source ip (userAuthIps,
+  // mcpAllowedIps) or on a header a proxy would normally set (userNameHeader)
+  // would wrongly trust it. Auth.doAuth knows about this (see arkimePacketPortal), but routes
   // mounted before Auth.app() -- /mcp with its own header auth, pre-auth
   // /plugin/*, /health, the parliament and eshealth endpoints -- never reach it.
   // Nothing legitimately arrives over a portal without a token, so require one

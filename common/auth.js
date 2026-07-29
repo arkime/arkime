@@ -1054,13 +1054,15 @@ class Auth {
       return;
     }
 
-    // Requests delivered over a packet portal come from a remote peer through a
-    // loopback bridge socket. Their loopback source IP, any userNameHeader and
-    // any session cookie they carry are therefore untrustworthy (the first would
-    // otherwise satisfy the header-auth userAuthIps loopback default, the last
-    // would skip authentication entirely below). They authenticate with the s2s
-    // token only -- see PacketPortal, which additionally requires a valid s2s
-    // token on every portal request before it reaches the app at all.
+    // A packet portal request comes from a remote peer but is served on a
+    // synthetic socket (see H2Socket) whose 127.0.0.1 source address is a
+    // stand-in, not a connection from anywhere. That address, any userNameHeader
+    // and any session cookie the peer sends are therefore all untrustworthy: the
+    // first two would let header auth take the peer's word for the user, since
+    // what gates it is the userAuthIps loopback default, and the last would skip
+    // authentication entirely at the isAuthenticated() check below. Authenticate
+    // with the s2s token only -- on top of PacketPortal's own gate, which
+    // required a valid s2s token before the request ever reached the app.
     const portal = req.socket?.arkimePacketPortal === true;
 
     if (!portal && typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
