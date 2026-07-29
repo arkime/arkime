@@ -104,10 +104,10 @@ void arkime_plugins_load(char **pluginsList, gboolean loadParsers)
         gchar   *path;
         int      loaded = 0;
         for (int d = 0; config.pluginsDir[d]; d++) {
-            path = g_build_filename (config.pluginsDir[d], name, NULL);
+            path = g_build_filename(config.pluginsDir[d], name, NULL);
 
             if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
-                g_free (path);
+                g_free(path);
                 continue;
             }
 
@@ -117,7 +117,7 @@ void arkime_plugins_load(char **pluginsList, gboolean loadParsers)
                 loaded = 1;
                 break;
             }
-            g_free (path);
+            g_free(path);
         }
 
         if (!loaded) {
@@ -128,7 +128,7 @@ void arkime_plugins_load(char **pluginsList, gboolean loadParsers)
         if (config.debug)
             LOG("Loaded %s", path);
 
-        g_free (path);
+        g_free(path);
     }
 
     // A plugin may register a new load extension (e.g. .lua), so reload parsers
@@ -141,7 +141,7 @@ void arkime_plugins_load(char **pluginsList, gboolean loadParsers)
 /******************************************************************************/
 LOCAL int arkime_plugins_load_so(const char *path)
 {
-    GModule *plugin = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+    GModule *plugin = g_module_open(path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
 
     if (!plugin) {
         LOG("ERROR - Couldn't load plugin from '%s'\n%s", path, g_module_error());

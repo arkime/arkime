@@ -1,3 +1,4 @@
+/******************************************************************************/
 /* packet.c  -- Functions for acquiring data
  *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
@@ -459,11 +460,11 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         }
         if (packet->outerIpOffset != 0 && packet->outerIpOffset != packet->ipOffset) {
             if (packet->outerv6 == 0) {
-                ip4 = (struct ip *) (packet->pkt + packet->outerIpOffset);
+                ip4 = (struct ip *)(packet->pkt + packet->outerIpOffset);
                 arkime_field_ip4_add(outerip1Field, session, ip4->ip_src.s_addr);
                 arkime_field_ip4_add(outerip2Field, session, ip4->ip_dst.s_addr);
             } else {
-                ip6 = (struct ip6_hdr *) (packet->pkt + packet->outerIpOffset);
+                ip6 = (struct ip6_hdr *)(packet->pkt + packet->outerIpOffset);
                 arkime_field_ip6_add(outerip1Field, session, ip6->ip6_src.s6_addr);
                 arkime_field_ip6_add(outerip2Field, session, ip6->ip6_dst.s6_addr);
             }
@@ -960,10 +961,10 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     if (ipTree4) {
         const patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree4, (u_char *)&ip4->ip_src, 32)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree4, (u_char *)&ip4->ip_src, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree4, (u_char *)&ip4->ip_dst, 32)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree4, (u_char *)&ip4->ip_dst, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
     }
 
@@ -1137,10 +1138,10 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     if (ipTree6) {
         const patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree6, (u_char *)&ip6->ip6_src, 128)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree6, (u_char *)&ip6->ip6_src, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree6, (u_char *)&ip6->ip6_dst, 128)) && node->data == NULL)
+        if ((node = patricia_search_best3(ipTree6, (u_char *)&ip6->ip6_dst, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
     }
 
@@ -1384,7 +1385,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
-    packet->outerEtherOffset = packet->etherOffset; //we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
+    packet->outerEtherOffset = packet->etherOffset; // we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
     packet->etherOffset = (uint8_t *)data - packet->pkt;
 #ifdef DEBUG_PACKET
     char str[20];
@@ -1690,10 +1691,10 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     case DLT_IEEE802_11_RADIO: // radiotap
         rc = arkime_packet_radiotap(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case DLT_IPV4: //RAW IPv4
+    case DLT_IPV4: // RAW IPv4
         rc = arkime_packet_ip4(batch, packet, packet->pkt, packet->pktlen);
         break;
-    case DLT_IPV6: //RAW IPv6
+    case DLT_IPV6: // RAW IPv6
         rc = arkime_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
         break;
     case DLT_NFLOG: // NFLOG
@@ -2388,7 +2389,7 @@ void arkime_packet_set_dltsnap(int dlt, int snaplen)
 {
     pcapFileHeader.dlt = dlt;
     // Turns out libpcap actually truncates packets to near snaplen if used to
-    // read back in the packets,  so we need to make sure large enough.
+    // read back in the packets, so we need to make sure it's large enough.
     pcapFileHeader.snaplen = MAX(snaplen, (int)config.snapLen);
     arkime_rules_recompile();
 }

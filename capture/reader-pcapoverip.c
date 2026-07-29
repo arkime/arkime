@@ -47,13 +47,13 @@ LOCAL int                   isConnected[MAX_INTERFACES];
 #define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
 
 /******************************************************************************/
-LOCAL void pcapoverip_client_free (POIClient_t *poic)
+LOCAL void pcapoverip_client_free(POIClient_t *poic)
 {
     if (poic->isClient) {
         isConnected[poic->interface] = 0;
     }
     g_source_remove(poic->readWatch);
-    g_object_unref (poic->socket);
+    g_object_unref(poic->socket);
 
     ARKIME_TYPE_FREE(POIClient_t, poic);
 }
@@ -63,7 +63,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 {
     POIClient_t *poic = (POIClient_t *)data;
 
-    //LOG("fd: %d cond: %x data: %p", fd, cond, data);
+    // LOG("fd: %d cond: %x data: %p", fd, cond, data);
     GError              *error = 0;
     static int           first = 1;
 
@@ -71,7 +71,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 
     if (error || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (error) {
-            LOG("ERROR: Receive Error: %s", error->message);
+            LOG("ERROR - Receive Error: %s", error->message);
             g_error_free(error);
         }
         pcapoverip_client_free(poic);
@@ -214,11 +214,11 @@ LOCAL void pcapoverip_client_connect(int interface)
         LOGEXIT("ERROR - Couldn't parse connect string of %s", config.interface[interface]);
     }
 
-    enumerator = g_socket_connectable_enumerate (connectable);
+    enumerator = g_socket_connectable_enumerate(connectable);
     g_object_unref(connectable);
 
     GSocket *conn = NULL;
-    while (!conn && (sockaddr = g_socket_address_enumerator_next (enumerator, NULL, &error))) {
+    while (!conn && (sockaddr = g_socket_address_enumerator_next(enumerator, NULL, &error))) {
         GSocketFamily family = g_socket_address_get_family(sockaddr);
         conn = g_socket_new(family, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &error);
 
@@ -237,7 +237,7 @@ LOCAL void pcapoverip_client_connect(int interface)
         }
         g_object_unref(sockaddr);
     }
-    g_object_unref (enumerator);
+    g_object_unref(enumerator);
 
     if (conn) {
         g_clear_error(&error);
@@ -263,7 +263,7 @@ LOCAL void pcapoverip_client_connect(int interface)
     isConnected[poic->interface] = 1;
 }
 /******************************************************************************/
-LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
+LOCAL gboolean pcapoverip_client_check_connections(gpointer UNUSED(user_data))
 {
     for (int i = 0; config.interface[i]; i++) {
         if (!isConnected[i])
@@ -317,21 +317,21 @@ LOCAL void pcapoverip_server_start()
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, 0, NULL);
 
-    socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
+    socket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
 
     if (!socket || error) {
         CONFIGEXIT("Error creating pcap-over-ip: %s", error ? error->message : "unknown error");
     }
 
-    g_socket_set_blocking (socket, FALSE);
-    addr = g_inet_socket_address_new (g_inet_address_new_any (G_SOCKET_FAMILY_IPV4), port);
+    g_socket_set_blocking(socket, FALSE);
+    addr = g_inet_socket_address_new(g_inet_address_new_any(G_SOCKET_FAMILY_IPV4), port);
 
-    if (!g_socket_bind (socket, addr, TRUE, &error)) {
+    if (!g_socket_bind(socket, addr, TRUE, &error)) {
         CONFIGEXIT("Error binding pcap-over-ip: %s", error ? error->message : "unknown error");
     }
-    g_object_unref (addr);
+    g_object_unref(addr);
 
-    if (!g_socket_listen (socket, &error)) {
+    if (!g_socket_listen(socket, &error)) {
         CONFIGEXIT("Error listening pcap-over-ip: %s", error ? error->message : "unknown error");
     }
 

@@ -81,7 +81,7 @@ LOCAL gboolean arkime_command_data_read_cb(gint UNUSED(fd), GIOCondition cond, g
 
     if (error || cond & (G_IO_HUP | G_IO_ERR) || len <= 0) {
         if (error) {
-            LOG("ERROR: Receive Error: %s", error->message);
+            LOG("ERROR - Receive Error: %s", error->message);
             g_error_free(error);
         }
         arkime_command_client_free(cc);
@@ -361,7 +361,7 @@ LOCAL void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer c
         arkime_command_client_free(cc);
 }
 /******************************************************************************/
-GSocketAddress *g_unix_socket_address_new (const gchar *path);
+GSocketAddress *g_unix_socket_address_new(const gchar *path);
 void arkime_command_init()
 {
     arkime_command_register("help", arkime_command_help, "This help");
@@ -375,23 +375,23 @@ void arkime_command_init()
     GSocket                  *socket;
     GSocketAddress           *addr;
 
-    socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, 0, &error);
+    socket = g_socket_new(G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, 0, &error);
 
     if (!socket || error) {
         CONFIGEXIT("Error creating command: %s", error ? error->message : "unknown error");
     }
 
     unlink(config.commandSocket);
-    addr = g_unix_socket_address_new (config.commandSocket);
+    addr = g_unix_socket_address_new(config.commandSocket);
 
-    if (!g_socket_bind (socket, addr, TRUE, &error)) {
+    if (!g_socket_bind(socket, addr, TRUE, &error)) {
         CONFIGEXIT("Error binding command socket: %s", error ? error->message : "unknown error");
     }
-    g_object_unref (addr);
+    g_object_unref(addr);
 
     chmod(config.commandSocket, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
-    if (!g_socket_listen (socket, &error)) {
+    if (!g_socket_listen(socket, &error)) {
         CONFIGEXIT("Error listening command socket: %s", error ? error->message : "unknown error");
     }
 

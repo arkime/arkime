@@ -120,7 +120,7 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_FORALL_POP_HEAD(name, varname, element, code) \
   for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
-      while((varname).buckets[_##name##b].name##count) { \
+      while ((varname).buckets[_##name##b].name##count) { \
           DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); \
           (varname).count--; \
           code \
@@ -129,7 +129,7 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASH_FORALL_POP_HEAD2(name, varname, element) \
   for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) \
-      for(; DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); (varname).count--)
+      for (; DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); (varname).count--)
 
 #define HASH_FORALL(name, varname, element, code) \
   for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
