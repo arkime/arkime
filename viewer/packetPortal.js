@@ -347,11 +347,21 @@ class PacketPortal {
     }
 
     socket.setTimeout(0);
-    socket.write('HTTP/1.1 101 Switching Protocols\r\n' +
-                 'Upgrade: ' + UPGRADE_TOKEN + '\r\n' +
-                 'Connection: Upgrade\r\n\r\n');
     if (head && head.length > 0) { socket.unshift(head); }
 
+    // Attach h2 only once the 101 has flushed -- a write still queued when http2
+    // takes the socket aborts the process on teardown over TLS (nodejs/node#24037)
+    socket.write('HTTP/1.1 101 Switching Protocols\r\n' +
+                 'Upgrade: ' + UPGRADE_TOKEN + '\r\n' +
+                 'Connection: Upgrade\r\n\r\n', (err) => {
+      if (err || socket.destroyed) { socket.destroy(); return; }
+      PacketPortal.#registerPortal(node, socket, req);
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // ACCEPTOR: 101 is on the wire, attach the h2 client session and register it.
+  static #registerPortal (node, socket, req) {
     const session = http2.connect('http://arkime-portal.invalid', {
       createConnection: () => socket
     });
@@ -627,6 +637,11 @@ class PacketPortal {
         socket.on('error', () => {});
         socket.setTimeout(0);
         if (head && head.length > 0) { socket.unshift(head); }
+        // Node's h2 server drops a socket with alpnProtocol false/'http/1.1' as
+        // unknownProtocol. Can't fix by alpn, shared mode is the main viewer port.
+        if (socket.alpnProtocol === false || socket.alpnProtocol === 'http/1.1') {
+          socket.alpnProtocol = undefined;
+        }
         socket.once('close', () => reconnect('portal closed'));
         PacketPortal.#dialerH2Server.emit('connection', socket);
       });
