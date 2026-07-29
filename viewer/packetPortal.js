@@ -16,12 +16,14 @@
  *      socket, the acceptor (which only accepted the TCP connection) can now
  *      open request streams to the dialer.
  *   3. Each logical request is one HTTP/2 stream carrying an ordinary HTTP/1.1
- *      conversation in its DATA frames. Node's http client/server cannot use an
- *      Http2Stream directly as a socket (it hands http core pooled Buffers that
- *      get reused before the stream serializes them, corrupting the bytes), so
- *      each stream is bridged to a real net.Socket loopback pair: http talks to
- *      a genuine socket, and we pipe that socket <-> the Http2Stream. The
- *      dialer feeds its bridged socket into the existing Express app via
+ *      conversation in its DATA frames, which is what lets the existing Express
+ *      app and node's own http client drive it. HTTP/2 is here for its stream
+ *      multiplexing and per stream flow control: one connection survives NAT,
+ *      and a slow pcap download cannot stall the other requests on it. Each
+ *      stream is wrapped in an H2Socket (see below) to look like a socket, since
+ *      http core cannot write to an Http2Stream directly.
+ *
+ *      The dialer feeds each wrapped stream into the existing Express app via
  *      http.createServer(app).emit('connection', socket) -- Express, its
  *      middleware, and the existing x-arkime-auth S2S check all run unchanged,
  *      behind a gate (see #gate) that requires a valid s2s token on everything
@@ -33,7 +35,6 @@
  */
 'use strict';
 
-const net = require('net');
 const fs = require('fs');
 const streamLib = require('stream');
 const http = require('http');
@@ -49,6 +50,113 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const PORTAL_PATH = '/packetPortal';
 const UPGRADE_TOKEN = 'arkime-portal';
 const REQUEST_TIMEOUT = 20 * 60 * 1000;
+
+// ----------------------------------------------------------------------------
+/**
+ * An Http2Stream dressed up as a socket, so node's http client and server will
+ * drive it: `server.emit('connection', h2socket)` runs the real Express app on
+ * one, and an http.Agent whose createConnection returns one lets an ordinary
+ * http.request() talk over a portal.
+ *
+ * http core cannot use an Http2Stream directly because it hands the socket
+ * buffers it is free to reuse the moment write() returns, and an Http2Stream
+ * serializes later -- which corrupts the bytes. That is the only real
+ * incompatibility, and copying in _write settles it. Everything else here is
+ * plumbing to look enough like a net.Socket.
+ */
+class H2Socket extends streamLib.Duplex {
+  #h2;
+
+  constructor (h2stream, options = {}) {
+    super({
+      // net.Socket semantics: when the peer stops sending, end our write side
+      // too. A bare Duplex is half open by default, which would leave both ends
+      // of a finished request waiting on each other.
+      allowHalfOpen: false,
+      writableHighWaterMark: 64 * 1024
+    });
+
+    this.#h2 = h2stream;
+
+    // Requests arriving over a portal come from a remote peer, but nothing about
+    // this socket is real. Keep the address loopback: Auth.#checkIps (userAuthIps,
+    // loopback by default) runs before the s2s narrowing and would otherwise
+    // reject every portal request. What marks these requests untrustworthy is
+    // arkimePacketPortal, not this address.
+    this.remoteAddress = '127.0.0.1';
+    this.remotePort = 0;
+    this.remoteFamily = 'IPv4';
+    this.localAddress = '127.0.0.1';
+    this.localPort = 0;
+    // the portal peer's real address, for logging -- never for authorization
+    this.portalPeer = options.peer;
+
+    h2stream.on('data', (chunk) => {
+      // h2 has its own flow control, so pausing it here applies real
+      // backpressure to the peer rather than buffering without bound
+      if (this.push(chunk) === false) { h2stream.pause(); }
+    });
+    h2stream.on('end', () => this.push(null));
+    h2stream.on('error', (err) => this.destroy(err));
+    h2stream.on('close', () => {
+      if (!this.destroyed) { this.push(null); }
+    });
+  }
+
+  _write (chunk, enc, cb) {
+    if (chunk.length === 0) { return cb(); } // http core does this, h2 dislikes it
+    // copy: the buffer we were handed may be reused before h2 serializes it
+    this.#h2.write(Buffer.from(chunk), cb);
+  }
+
+  _final (cb) {
+    if (!this.#h2.writableEnded) { this.#h2.end(); }
+    cb();
+  }
+
+  _read () {
+    this.#h2.resume();
+  }
+
+  _destroy (err, cb) {
+    clearTimeout(this._portalTimer);
+
+    if (err) {
+      this.#h2.destroy(err);
+    } else if (!this.#h2.writableEnded) {
+      // End rather than destroy: a clean teardown must not discard bytes the h2
+      // stream is still flushing, which is exactly what truncates a large pcap
+      // download to a slow client.
+      this.#h2.end();
+    }
+
+    cb(err);
+  }
+
+  // --------------------------------------------------------------------------
+  // The rest of what http core expects a socket to have
+  setTimeout (ms, cb) {
+    clearTimeout(this._portalTimer);
+    if (ms > 0) {
+      this._portalTimer = setTimeout(() => this.emit('timeout'), ms);
+      if (this._portalTimer.unref) { this._portalTimer.unref(); }
+    }
+    if (cb) { this.once('timeout', cb); }
+    return this;
+  }
+
+  setNoDelay () { return this; }
+  setKeepAlive () { return this; }
+  address () { return { address: this.remoteAddress, port: this.remotePort, family: this.remoteFamily }; }
+  ref () { return this; }
+  unref () { return this; }
+
+  // net.Socket ends, then destroys once the write side has flushed. Destroying
+  // outright here would drop whatever the h2 stream has not sent yet.
+  destroySoon () {
+    if (this.writable) { this.end(); } else { this.destroy(); }
+  }
+}
 
 class PacketPortal {
   // acceptor side: node name -> { session, timer } for every live inbound portal
@@ -286,7 +394,8 @@ class PacketPortal {
   // --------------------------------------------------------------------------
   // ACCEPTOR: shared http.Agent that turns each outbound request into a fresh
   // portal stream. The caller puts the portal session on
-  // options.packetPortalSession; createConnection bridges it to a real socket.
+  // options.packetPortalSession; createConnection wraps a new stream on it in an
+  // H2Socket, which is all http core needs to treat it as a connection.
   static get agent () {
     if (!PacketPortal.#agent) {
       PacketPortal.#agent = new http.Agent({ keepAlive: false, maxSockets: Infinity });
@@ -296,14 +405,25 @@ class PacketPortal {
           cb(new Error('packetPortal session is gone'));
           return;
         }
-        const stream = session.request({
-          ':method': 'POST',
-          ':scheme': 'http',
-          ':authority': 'arkime-portal.invalid',
-          ':path': '/'
-        });
+        // request() throws once the session is gone, and the checks above cannot
+        // rule that out -- the portal can die between them and here. Letting it
+        // throw escapes createConnection, which surfaces as an unhandled
+        // rejection and leaves the request hanging forever instead of failing.
+        let stream;
+        try {
+          stream = session.request({
+            ':method': 'POST',
+            ':scheme': 'http',
+            ':authority': 'arkime-portal.invalid',
+            ':path': '/'
+          });
+        } catch (err) {
+          cb(err);
+          return;
+        }
+
         stream.on('error', () => {});
-        PacketPortal.#bridge(stream, cb);
+        cb(null, new H2Socket(stream));
       };
     }
     return PacketPortal.#agent;
@@ -566,68 +686,15 @@ class PacketPortal {
       return;
     }
     stream.on('error', () => {});
-    PacketPortal.#bridge(stream, (err, socket) => {
-      if (err) {
-        try { stream.destroy(); } catch (ignore) { /* ignore */ }
-        return;
-      }
-      // Mark the request as arriving over a packet portal. It is delivered through
-      // a loopback bridge socket, so its 127.0.0.1 source address, any session
-      // cookie and any userNameHeader it carries are NOT trustworthy -- Auth
-      // authenticates these requests with the s2s token only (see Auth.doAuth),
-      // on top of the #gate check every portal request has already passed.
-      socket.arkimePacketPortal = true;
-      PacketPortal.#innerServer.emit('connection', socket);
-    });
-  }
 
-  // --------------------------------------------------------------------------
-  // Bridge an Http2Stream to a real net.Socket via a one-shot loopback pair,
-  // then hand the other end to deliver(err, socket). Real sockets copy writes
-  // synchronously, which the http client/server require and an Http2Stream does
-  // not provide. deliver receives a still-connecting socket (net.connect), which
-  // http core handles natively.
-  static #bridge (h2stream, deliver) {
-    let settled = false;
-    let end;
-    const finish = (err, sock) => {
-      if (settled) { return; }
-      settled = true;
-      clearTimeout(timer);
-      deliver(err, sock);
-    };
-    const bridge = net.createServer((pipeEnd) => {
-      // Accept ONLY our own connector. The listener is on a random loopback port,
-      // but a local process could still race to connect to it first; matching the
-      // connector's local port ensures we bridge our own end, not an impostor's.
-      if (!end || pipeEnd.remotePort !== end.localPort) { pipeEnd.destroy(); return; }
-      clearTimeout(timer);
-      try { bridge.close(); } catch (e) { /* ignore */ }
-      // Tear the counterpart down only on ABNORMAL termination (error / premature
-      // close), never on a clean finish. Destroying on a clean close would drop an
-      // h2 stream's still-buffered outbound data whenever the peer reads slowly,
-      // truncating large transfers (e.g. a pcap download to a slow client).
-      // stream.finished() reports err only on abnormal end, so a normal completion
-      // is left to flush and end gracefully via the pipes.
-      pipeEnd.on('error', () => {});
-      h2stream.on('error', () => {});
-      streamLib.finished(pipeEnd, (err) => { if (err) { try { h2stream.destroy(); } catch (e) { /* ignore */ } } });
-      streamLib.finished(h2stream, (err) => { if (err) { try { pipeEnd.destroy(); } catch (e) { /* ignore */ } } });
-      pipeEnd.pipe(h2stream);
-      h2stream.pipe(pipeEnd);
-    });
-    // Close the listener (and fail) if our own connection never lands, so a
-    // failed request cannot leak a listening socket / fd.
-    const timer = setTimeout(() => {
-      try { bridge.close(); } catch (e) { /* ignore */ }
-      finish(new Error('packetPortal bridge timed out'));
-    }, 10000);
-    bridge.on('error', (e) => finish(e));
-    bridge.listen(0, '127.0.0.1', () => {
-      end = net.connect(bridge.address().port, '127.0.0.1');
-      end.on('error', (e) => { try { bridge.close(); } catch (x) { /* ignore */ } finish(e); });
-      end.on('connect', () => finish(null, end));
-    });
+    const socket = new H2Socket(stream);
+    // Mark the request as arriving over a packet portal. Its source address is a
+    // stand-in, so that address, any session cookie and any userNameHeader it
+    // carries are NOT trustworthy -- Auth authenticates these requests with the
+    // s2s token only (see Auth.doAuth), on top of the #gate check every portal
+    // request has already passed.
+    socket.arkimePacketPortal = true;
+    PacketPortal.#innerServer.emit('connection', socket);
   }
 
   // --------------------------------------------------------------------------
