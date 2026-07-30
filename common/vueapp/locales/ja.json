@@ -122,6 +122,9 @@
     "history": "履歴",
     "upload": "アップロード",
     "roles": "ロール",
+    "admin": "管理",
+    "esadmin": "ES 管理",
+    "banner": "バナー",
     "notifiers": "通知設定",
     "tooltipHelpTip": "ホー！お手伝いしましょうか？クリックしてヘルプページを表示します",
     "helpTip": "ヘルプ！",
@@ -759,8 +762,7 @@
       "esShards": "ES シャード",
       "esNodes": "ES ノード",
       "esTasks": "ES タスク",
-      "esRecovery": "ES リカバリ",
-      "esAdmin": "ES 管理"
+      "esRecovery": "ES リカバリ"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>ヒント:</strong> これらのグラフは幅1440ピクセルです。最適に表示するにはブラウザのウィンドウ幅を1500ピクセル以上に広げてください。",
@@ -1144,8 +1146,7 @@
       "views": "ビュー",
       "shortcuts": "ショートカット",
       "cron": "定期クエリ",
-      "notifiers": "通知設定",
-      "banner": "バナー"
+      "notifiers": "通知設定"
     },
     "banner": {
       "title": "バナー",

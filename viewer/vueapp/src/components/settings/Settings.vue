@@ -142,14 +142,6 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             {{ $t('settings.nav.notifiers') }}
           </v-tab>
-          <v-tab
-            v-has-role="{user:user,roles:'arkimeAdmin'}"
-            value="banner">
-            <v-icon
-              icon="mdi-bullhorn"
-              class="me-1" />
-            {{ $t('settings.nav.banner') }}
-          </v-tab>
         </v-tabs>
       </v-col> <!-- /navigation -->
 
@@ -1279,12 +1271,6 @@ SPDX-License-Identifier: Apache-2.0
           v-has-role="{user:user,roles:'arkimeAdmin'}"
           help-intl-id="settings.notifiers.helpViewer" />
 
-        <!-- banner settings -->
-        <BannerSettings
-          id="banner"
-          v-if="visibleTab === 'banner'"
-          v-has-role="{user:user,roles:'arkimeAdmin'}" />
-
         <!-- shortcut settings -->
         <Shortcuts
           id="shortcuts"
@@ -1329,7 +1315,6 @@ import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shortcuts from './Shortcuts.vue';
-import BannerSettings from '@common/BannerSettings.vue';
 import Views from './Views.vue';
 
 let clockInterval;
@@ -1350,7 +1335,6 @@ export default {
     PeriodicQueries,
     Shortcuts,
     Notifiers,
-    BannerSettings,
     Views
   },
   data: function () {
@@ -1484,7 +1468,7 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
-        tab === 'spiview' || tab === 'notifiers' || tab === 'banner' || tab === 'shortcuts' ||
+        tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts' ||
         tab === 'totp') {
         this.visibleTab = tab;
       }

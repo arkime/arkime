@@ -122,6 +122,9 @@
     "history": "Historique",
     "upload": "Télécharger",
     "roles": "Rôles",
+    "admin": "Administration",
+    "esadmin": "Admin ES",
+    "banner": "Bannière",
     "notifiers": "Notificateurs",
     "tooltipHelpTip": "HOOT! Puis-je vous aider? Cliquez sur moi pour voir la page d'aide",
     "helpTip": "AIDE!",
@@ -759,8 +762,7 @@
       "esShards": "Shards ES",
       "esNodes": "Nœuds ES",
       "esTasks": "Tâches ES",
-      "esRecovery": "Récupération ES",
-      "esAdmin": "Admin ES"
+      "esRecovery": "Récupération ES"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>CONSEIL:</strong> Ces graphiques font 1440 pixels de large. Développez votre fenêtre de navigateur à au moins 1500 pixels de large pour un meilleur affichage.",
@@ -1144,8 +1146,7 @@
       "views": "Vues",
       "shortcuts": "Raccourcis",
       "cron": "Requêtes périodiques",
-      "notifiers": "Notificateurs",
-      "banner": "Bannière"
+      "notifiers": "Notificateurs"
     },
     "banner": {
       "title": "Bannière",

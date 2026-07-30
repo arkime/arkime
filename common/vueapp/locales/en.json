@@ -122,6 +122,9 @@
     "history": "History",
     "upload": "Upload",
     "roles": "Roles",
+    "admin": "Admin",
+    "esadmin": "ES Admin",
+    "banner": "Banner",
     "notifiers": "Notifiers",
     "tooltipHelpTip": "HOOT! Can I help you? Click me to see the help page",
     "helpTip": "HELP!",
@@ -759,8 +762,7 @@
       "esShards": "ES Shards",
       "esNodes": "ES Nodes",
       "esTasks": "ES Tasks",
-      "esRecovery": "ES Recovery",
-      "esAdmin": "ES Admin"
+      "esRecovery": "ES Recovery"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>HINT:</strong> These graphs are 1440 pixels wide.  Expand your browser window to at least 1500 pixels wide for best viewing.",
@@ -1144,8 +1146,7 @@
       "views": "Views",
       "shortcuts": "Shortcuts",
       "cron": "Periodic Queries",
-      "notifiers": "Notifiers",
-      "banner": "Banner"
+      "notifiers": "Notifiers"
     },
     "banner": {
       "title": "Banner",

@@ -120,8 +120,9 @@ SPDX-License-Identifier: Apache-2.0
   transform: translateY(-2px);
 }
 
-/* Compact language picker that fits the navbar height. */
-.arkime-navbar-actions .btn-language {
+/* Compact language picker and admin menu that fit the navbar height. */
+.arkime-navbar-actions .btn-language,
+.arkime-navbar-actions .btn-admin {
   padding: 2px 6px;
   font-size: 0.8rem;
   min-height: 0;

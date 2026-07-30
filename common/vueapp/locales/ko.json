@@ -122,6 +122,9 @@
     "history": "기록",
     "upload": "업로드",
     "roles": "역할",
+    "admin": "관리",
+    "esadmin": "ES 관리",
+    "banner": "배너",
     "notifiers": "알림기",
     "tooltipHelpTip": "도움이 필요하신가요? 클릭하여 도움말 페이지를 확인하세요",
     "helpTip": "도움말!",
@@ -759,8 +762,7 @@
       "esShards": "ES 샤드",
       "esNodes": "ES 노드",
       "esTasks": "ES 작업",
-      "esRecovery": "ES 복구",
-      "esAdmin": "ES 관리"
+      "esRecovery": "ES 복구"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>힌트:</strong> 이 그래프들은 너비가 1440픽셀입니다. 최적의 보기를 위해 브라우저 창 너비를 최소 1500픽셀로 넓혀주세요.",
@@ -1144,8 +1146,7 @@
       "views": "뷰",
       "shortcuts": "바로가기",
       "cron": "주기적 쿼리",
-      "notifiers": "알림기",
-      "banner": "배너"
+      "notifiers": "알림기"
     },
     "banner": {
       "title": "배너",

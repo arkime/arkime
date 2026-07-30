@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import store from '@/store';
 import UserService from '@/components/users/UserService';
 import Stats from '@/components/stats/Stats.vue';
+import EsAdmin from '@/components/stats/EsAdmin.vue';
+import Banner from '@/components/banner/Banner.vue';
 import Help from '@/components/help/Help.vue';
 import Files from '@/components/files/Files.vue';
 import Users from '@/components/users/Users.vue';
@@ -16,6 +18,17 @@ import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
 import Arkime from '@/components/arkime/Arkime.vue';
+
+// These admin pages are hidden from the navbar when the user lacks the role;
+// guard the routes too so they can't be reached by typing the url directly.
+// On a hard load the user isn't fetched yet, so pull it first.
+async function requireRole (role) {
+  let user = store.state.user;
+  if (!user) {
+    try { user = await UserService.getCurrent(); } catch { /* treated as no access */ }
+  }
+  if (!user?.roles?.includes(role)) { return { name: 'Sessions' }; }
+}
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
@@ -39,7 +52,26 @@ const router = createRouter({
     {
       path: '/stats',
       name: 'Stats',
-      component: Stats
+      component: Stats,
+      // ES Admin used to be stats tab 7, send old bookmarks to its own page
+      beforeEnter: (to) => {
+        if (to.query.statsTab !== '7') { return; }
+        const query = { ...to.query };
+        delete query.statsTab;
+        return { path: '/esadmin', query };
+      }
+    },
+    {
+      path: '/esadmin',
+      name: 'EsAdmin',
+      component: EsAdmin,
+      beforeEnter: async () => await requireRole('dbAdmin')
+    },
+    {
+      path: '/banner',
+      name: 'Banner',
+      component: Banner,
+      beforeEnter: async () => await requireRole('arkimeAdmin')
     },
     {
       path: '/arkime',
@@ -99,7 +131,11 @@ const router = createRouter({
     {
       path: '/settings',
       name: 'Settings',
-      component: Settings
+      component: Settings,
+      // the banner tab moved to its own page, send old bookmarks there
+      beforeEnter: (to) => {
+        if (to.hash === '#banner') { return { path: '/banner', query: to.query }; }
+      }
     },
     {
       path: '/upload',

@@ -122,6 +122,9 @@
     "history": "历史记录",
     "upload": "上传",
     "roles": "角色",
+    "admin": "管理",
+    "esadmin": "ES 管理",
+    "banner": "横幅",
     "notifiers": "通知器",
     "tooltipHelpTip": "嗨！我可以帮您吗？点击我查看帮助页面",
     "helpTip": "帮助！",
@@ -759,8 +762,7 @@
       "esShards": "ES 分片",
       "esNodes": "ES 节点",
       "esTasks": "ES 任务",
-      "esRecovery": "ES 恢复",
-      "esAdmin": "ES 管理"
+      "esRecovery": "ES 恢复"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>提示：</strong>这些图表宽度为 1440 像素。将浏览器窗口扩展到至少 1500 像素宽以获得最佳查看效果。",
@@ -1144,8 +1146,7 @@
       "views": "视图",
       "shortcuts": "快捷方式",
       "cron": "周期性查询",
-      "notifiers": "通知器",
-      "banner": "横幅"
+      "notifiers": "通知器"
     },
     "banner": {
       "title": "横幅",

@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-row class="g-1 stats-form px-1 pt-2 pb-1 align-center justify-start page-subnav">
             <v-col
               cols="auto"
-              class="flex-grow-1"
-              v-if="tabIndex !== 7">
+              class="flex-grow-1">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <span class="arkime-input-label arkime-input-label-fw">
                   <v-icon
@@ -301,7 +300,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- table data interval select -->
             <v-col
               cols="auto"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
+              v-if="tabIndex !== 0">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
                 <select
@@ -382,7 +381,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- refresh button -->
             <v-col
               cols="auto"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
+              v-if="tabIndex !== 0">
               <v-btn
                 variant="flat"
                 size="large"
@@ -533,16 +532,6 @@ SPDX-License-Identifier: Apache-2.0
                 @update-cluster="updateCluster"
                 :select-one="clusterParamOverride && tabIndex > 1" />
             </v-col> <!-- /select cluster(s) -->
-
-            <!-- spacer on esAdmin so the sub-navbar keeps the same height
-               as on other tabs (all real controls are v-if-hidden when
-               tabIndex === 7); without this the row collapses and leaves
-               a gap above the tab strip. -->
-            <v-col
-              v-if="tabIndex === 7"
-              cols="auto">
-            &nbsp;
-            </v-col>
           </v-row> <!-- /stats sub navbar -->
         </div>
       </ArkimeCollapsible>
@@ -601,14 +590,6 @@ SPDX-License-Identifier: Apache-2.0
                 start
                 icon="mdi-lifebuoy" />
               {{ $t('stats.nav.esRecovery') }}
-            </v-btn>
-            <v-btn
-              v-if="isDbAdmin"
-              :value="7">
-              <v-icon
-                start
-                icon="mdi-cog-outline" />
-              {{ $t('stats.nav.esAdmin') }}
             </v-btn>
           </v-btn-toggle>
         </div>
@@ -681,12 +662,6 @@ SPDX-License-Identifier: Apache-2.0
           :search-term="searchTerm"
           :user="user"
           :cluster="cluster" />
-        <es-admin
-          v-else-if="tabIndex === 7 && isDbAdmin"
-          :data-interval="dataInterval"
-          :refresh-data="refreshData"
-          :user="user"
-          :cluster="cluster" />
       </div>
     </div> <!-- /stats content -->
   </page-layout>
@@ -698,7 +673,6 @@ import EsNodes from './EsNodes.vue';
 import EsTasks from './EsTasks.vue';
 import EsRecovery from './EsRecovery.vue';
 import EsIndices from './EsIndices.vue';
-import EsAdmin from './EsAdmin.vue';
 import CaptureGraphs from './CaptureGraphs.vue';
 import CaptureStats from './CaptureStats.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
@@ -721,7 +695,6 @@ export default {
     EsIndices,
     EsTasks,
     EsRecovery,
-    EsAdmin,
     ArkimeCollapsible,
     PageLayout,
     Clusters
@@ -767,9 +740,6 @@ export default {
     };
   },
   computed: {
-    isDbAdmin () { // v-has-role only adds d-none, es-admin would still mount and fetch
-      return this.user?.roles?.includes('dbAdmin');
-    },
     user: function () {
       return this.$store.state.user;
     },
@@ -1053,7 +1023,7 @@ export default {
   z-index : 6;
   background-color: rgb(var(--v-theme-secondary-lightest));
   /* reserve a constant height so the tab strip below doesn't shift as sub-tabs
-     show different controls (Capture Graphs / ES Admin have fewer/shorter ones) */
+     show different controls (Capture Graphs has fewer/shorter ones) */
   min-height: 52px;
 }
 

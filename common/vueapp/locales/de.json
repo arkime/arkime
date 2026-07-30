@@ -122,6 +122,9 @@
     "history": "Verlauf",
     "upload": "Hochladen",
     "roles": "Rollen",
+    "admin": "Verwaltung",
+    "esadmin": "ES-Admin",
+    "banner": "Banner",
     "notifiers": "Benachrichtiger",
     "tooltipHelpTip": "HOOT! Kann ich Ihnen helfen? Klicken Sie mich an, um die Hilfeseite zu sehen",
     "helpTip": "HILFE!",
@@ -759,8 +762,7 @@
       "esShards": "ES-Shards",
       "esNodes": "ES-Knoten",
       "esTasks": "ES-Aufgaben",
-      "esRecovery": "ES-Wiederherstellung",
-      "esAdmin": "ES-Admin"
+      "esRecovery": "ES-Wiederherstellung"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>HINWEIS:</strong> Diese Graphen sind 1440 Pixel breit. Erweitern Sie Ihr Browserfenster auf mindestens 1500 Pixel Breite für die beste Ansicht.",
@@ -1144,8 +1146,7 @@
       "views": "Ansichten",
       "shortcuts": "Verknüpfungen",
       "cron": "Periodische Abfragen",
-      "notifiers": "Benachrichtiger",
-      "banner": "Banner"
+      "notifiers": "Benachrichtiger"
     },
     "banner": {
       "title": "Banner",

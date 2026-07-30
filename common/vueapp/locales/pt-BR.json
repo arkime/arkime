@@ -122,6 +122,9 @@
     "history": "Histórico",
     "upload": "Enviar",
     "roles": "Funções",
+    "admin": "Administração",
+    "esadmin": "Admin ES",
+    "banner": "Banner",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "PIU! Posso ajudá-lo? Clique em mim para ver a página de ajuda",
     "helpTip": "AJUDA!",
@@ -759,8 +762,7 @@
       "esShards": "Shards ES",
       "esNodes": "Nós ES",
       "esTasks": "Tarefas ES",
-      "esRecovery": "Recuperação ES",
-      "esAdmin": "Admin ES"
+      "esRecovery": "Recuperação ES"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>DICA:</strong> Estes gráficos têm 1440 pixels de largura. Expanda a janela do navegador para pelo menos 1500 pixels de largura para melhor visualização.",
@@ -1144,8 +1146,7 @@
       "views": "Visualizações",
       "shortcuts": "Atalhos",
       "cron": "Consultas Periódicas",
-      "notifiers": "Notificadores",
-      "banner": "Banner"
+      "notifiers": "Notificadores"
     },
     "banner": {
       "title": "Banner",
