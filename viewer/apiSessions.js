@@ -3264,6 +3264,10 @@ class SessionAPIs {
     }
 
     Db.searchSessions(Db.getSessionIndices(true), query, null, (err, data) => {
+      if (err || !data?.hits?.hits) {
+        console.log('ERROR - /api/session/entire query', util.inspect(err, false, 50));
+        return res.status(500).end();
+      }
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
         SessionAPIs.#writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {

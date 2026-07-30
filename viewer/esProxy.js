@@ -500,6 +500,19 @@ function validateSearchIds (req) {
     return false;
   }
 }
+// getEntirePCAP looks up every session sharing a rootId
+const searchRootIdKeys = ['size', '_source', 'sort', 'query', 'profile'];
+function validateSearchRootId (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return Object.keys(json).every(key => searchRootIdKeys.includes(key)) &&
+      Object.keys(json.query).length === 1 &&
+      Object.keys(json.query.term).length === 1 &&
+      ArkimeUtil.isString(json.query.term.rootId);
+  } catch (e) {
+    return false;
+  }
+}
 function validateUpdate (req) {
   try {
     const json = JSON.parse(req.body.toString('utf8'));
@@ -523,7 +536,7 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
-  } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && validateSearchIds(req)) {
+  } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && (validateSearchIds(req) || validateSearchRootId(req))) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
