@@ -44,9 +44,7 @@ SPDX-License-Identifier: Apache-2.0
               :width="column.width">
               <div>
                 <!-- column dropdown menu -->
-                <span
-                  v-if="column.hasDropdown"
-                  v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
+                <span v-if="column.hasDropdown && user?.esAdminUser">
                   <v-menu location="bottom end">
                     <template #activator="{ props: activatorProps }">
                       <v-btn
@@ -106,9 +104,7 @@ SPDX-License-Identifier: Apache-2.0
             v-for="(stat, index) in stats.indices"
             :key="stat.name">
             <td>
-              <span
-                v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
-                v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
+              <span v-if="user?.esAdminUser && stat.nodes?.Unassigned?.length">
                 <transition name="buttons">
                   <v-btn
                     v-if="!stat.confirmDelete"
@@ -165,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
                     <span
                       v-if="item.showDetails"
                       class="shard-detail"
-                      :class="{'shard-detail-interactive': node === 'Unassigned' && user.esAdminUser}"
+                      :class="{'shard-detail-interactive': node === 'Unassigned' && user?.esAdminUser}"
                       @mouseenter="keepTooltipOpen(item)"
                       @mouseleave="scheduleTooltipClose(item)">
                       <dl class="dl-horizontal">
@@ -219,7 +215,7 @@ SPDX-License-Identifier: Apache-2.0
                       </dl>
                       <!-- Explain allocation button for unassigned shards (ES Admin only) -->
                       <div
-                        v-if="node === 'Unassigned' && user.esAdminUser"
+                        v-if="node === 'Unassigned' && user?.esAdminUser"
                         class="mt-2 pt-2"
                         style="border-top: 1px solid #555;">
                         <v-btn

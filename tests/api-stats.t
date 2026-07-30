@@ -174,7 +174,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.unknownExcludeType", "esshard: exclude foobar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes thenode");
@@ -197,7 +197,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.unknownIncludeType", "esshard: include foodbar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: include not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
@@ -223,7 +223,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'), "esshard: delete failed");
 
     $result = viewerPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: delete not admin");
 
     $result = multiPostToken("/api/esshards/theindex/0/delete", "", $token);
     is($result->{success}, 0, "esshard: delete missing cluster");
@@ -233,7 +233,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'));
 
     $result = multiPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1&cluster=unknown", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: delete not admin");
 
 # esshards delete - additional comprehensive tests
     # Test invalid shard number (non-numeric)

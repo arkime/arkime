@@ -825,7 +825,7 @@
       "clearCache": "캐시 삭제",
       "clearCacheTip": "모든 인덱스의 캐시 삭제를 시도합니다.",
       "restoreAllocationTip": "이 값은 대부분의 경우 \"all\"이어야 합니다. 클릭하여 복구하세요.",
-      "controlHtml": "<code>config.ini</code>에서 <code>esAdminUsers=</code>를 설정하거나 arkimeAdmin 역할을 추가하여 이 페이지를 볼 수 있는 사용자를 제어할 수 있습니다."
+      "controlHtml": "<code>dbAdmin</code> 역할로 이 페이지를 볼 수 있는 사용자를 제어할 수 있습니다."
     },
     "esIndices": {
       "deleteIndex": "인덱스 삭제",

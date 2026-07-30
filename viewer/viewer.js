@@ -637,19 +637,12 @@ async function checkHuntAccess (req, res, next) {
   }
 }
 
-function checkEsAdminUser (req, res, next) {
+// dbAdmin (and superAdmin, which includes it) may administer the database
+function checkDbAdmin (req, res, next) {
   if (req.user.hasRole('dbAdmin')) {
     return next();
   }
-  if (internals.esAdminUsersSet) {
-    if (internals.esAdminUsers.includes(req.user.userId)) {
-      return next();
-    }
-  } else {
-    if (req.user.hasRole('arkimeAdmin')) {
-      return next();
-    }
-  }
+  console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role dbAdmin`);
   return res.serverError(403, 'You do not have permission to access this resource', 'api.viewer.noPermission');
 }
 
@@ -1677,31 +1670,31 @@ app.get( // OpenSearch/Elasticsearch indices endpoint
 
 app.delete( // delete OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkAnyRole(['arkimeAdmin', 'dbAdmin']), User.checkPermissions(['removeEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, User.checkPermissions(['removeEnabled']), setCookie],
   StatsAPIs.deleteESIndex
 );
 
 app.post( // optimize OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/optimize'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.optimizeESIndex
 );
 
 app.post( // close OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/close'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.closeESIndex
 );
 
 app.post( // open OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/open'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.openESIndex
 );
 
 app.post( // shrink OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/shrink'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.shrinkESIndex
 );
 
@@ -1713,7 +1706,7 @@ app.get( // OpenSearch/Elasticsearch tasks endpoint
 
 app.post( // cancel OpenSearch/Elasticsearch task endpoint
   ['/api/estasks/:id/cancel'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.cancelESTask
 );
 
@@ -1726,49 +1719,49 @@ app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
 
 app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks/cancelall'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.cancelAllESTasks
 );
 
 app.get( // OpenSearch/Elasticsearch admin settings endpoint
   ['/api/esadmin'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, setCookie],
   StatsAPIs.getESAdminSettings
 );
 
 app.post( // set OpenSearch/Elasticsearch admin setting endpoint
   ['/api/esadmin/set'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.setESAdminSettings
 );
 
 app.post( // reroute OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/reroute'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.rerouteES
 );
 
 app.post( // flush OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/flush'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.flushES
 );
 
 app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/unflood'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.unfloodES
 );
 
 app.post( // clear cache OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/clearcache'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.clearCacheES
 );
 
 app.get( // OpenSearch/Elasticsearch allocation explain endpoint
   ['/api/esadmin/allocation'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, setCookie],
   StatsAPIs.getAllocationExplain
 );
 
@@ -1780,19 +1773,19 @@ app.get( // OpenSearch/Elasticsearch shards endpoint
 
 app.post( // exclude OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.excludeESShard
 );
 
 app.post( // include OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.includeESShard
 );
 
 app.post( // delete OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:index/:shard/delete'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.deleteESShard
 );
 

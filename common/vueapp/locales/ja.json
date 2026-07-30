@@ -825,7 +825,7 @@
       "clearCache": "キャッシュをクリア",
       "clearCacheTip": "すべてのインデックスのキャッシュクリアを試行します",
       "restoreAllocationTip": "この値は通常 \"all\" であるべきです。元に戻すにはここをクリックしてください。",
-      "controlHtml": "<code>config.ini</code> の <code>esAdminUsers=</code> を設定するか、arkimeAdmin ロールを追加することで、このページを表示できるユーザーを制御できます。"
+      "controlHtml": "<code>dbAdmin</code> ロールで、このページを表示できるユーザーを制御できます。"
     },
     "esIndices": {
       "deleteIndex": "インデックスを削除",

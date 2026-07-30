@@ -35,9 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         table-widths-state-name="esIndicesColWidths"
         table-classes="text-end small mt-2">
         <template #actions="item">
-          <span
-            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
-            v-has-permission="'removeEnabled'">
+          <span v-if="user?.esAdminUser">
             <v-menu>
               <template #activator="{ props: activatorProps }">
                 <v-btn
@@ -51,7 +49,9 @@ SPDX-License-Identifier: Apache-2.0
                 </v-btn>
               </template>
               <v-list density="compact">
-                <v-list-item @click.stop.prevent="confirmDeleteIndex(item.item.index)">
+                <v-list-item
+                  v-if="user?.removeEnabled"
+                  @click.stop.prevent="confirmDeleteIndex(item.item.index)">
                   {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
                 </v-list-item>
                 <v-list-item @click="optimizeIndex(item.item.index)">

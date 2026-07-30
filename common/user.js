@@ -310,7 +310,7 @@ class User {
     if (userId === 'superAdmin') {
       user.roles = ['superAdmin'];
     } else if (userId === 'anonymous') {
-      user.roles = ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser'];
+      user.roles = ['arkimeAdmin', 'cont3xtUser', 'dbAdmin', 'parliamentUser', 'usersAdmin', 'wiseUser'];
     } else {
       user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
     }
@@ -465,7 +465,7 @@ class User {
    * usersAdmin - has access to configure users<br>
    * wiseAdmin - has administrative access to WISE (can configure and update WISE)<br>
    * wiseUser - has access to WISE<br>
-   * dbAdmin - has access to perform database administration tasks
+   * dbAdmin - has access to the ES/DB admin page and the ES index, shard, and task actions
    * @typedef ArkimeRole
    * @type {string}
    */

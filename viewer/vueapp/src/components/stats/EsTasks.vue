@@ -12,13 +12,13 @@ SPDX-License-Identifier: Apache-2.0
 
     <div v-show="!error">
       <v-btn
+        v-if="user?.esAdminUser"
         id="cancelAllTasks"
         color="warning"
         variant="flat"
         size="small"
         density="comfortable"
         class="float-right"
-        v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
         @click="cancelTasks">
         <v-icon
           icon="mdi-cancel"
@@ -52,13 +52,12 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="text-end small mt-2">
         <template #actions="item">
           <v-btn
-            v-if="item.item.cancellable"
+            v-if="item.item.cancellable && user?.esAdminUser"
             color="error"
             variant="flat"
             size="small"
             density="comfortable"
             icon
-            v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}"
             @click="cancelTask(item.item.taskId)">
             <v-icon icon="mdi-trash-can-outline" />
           </v-btn>

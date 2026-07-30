@@ -94,10 +94,8 @@ ArkimeConfig.loaded(() => {
   internals.esQueryTimeout = Config.get('elasticsearchTimeout', 5 * 60) + 's';
   internals.esScrollTimeout = Config.get('elasticsearchScrollTimeout', 5 * 60) + 's';
   internals.userNameHeader = Config.get('userNameHeader');
-  internals.esAdminUsersSet = Config.get('esAdminUsers', false) !== false;
-  internals.esAdminUsers = Config.getArray('esAdminUsers', '');
-  if (internals.esAdminUsersSet) {
-    console.log('WARNING - the esAdminUsers setting is deprecated and will be removed in Arkime 7, assign the dbAdmin role to those users instead');
+  if (Config.get('esAdminUsers', false) !== false) {
+    console.log('WARNING - the esAdminUsers setting has been removed, assign the dbAdmin role to those users instead');
   }
   internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25, rejectUnauthorized: !ArkimeConfig.insecure });
   internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;

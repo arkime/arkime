@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
-            <span v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
+            <span v-if="user?.esAdminUser">
               <v-menu>
                 <template #activator="{ props: activatorProps }">
                   <v-btn
