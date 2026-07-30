@@ -810,7 +810,10 @@ class SessionAPIs {
       } else {
         // Get from remote DISK
         try {
-          let result = req.arkimeWriterOptions.nodes.get(fields.node);
+          // A node with a live packet portal cannot be dialed directly, so go
+          // over the portal. Not cached: the portal session must be current.
+          const portal = await ViewerUtils.portalRequest(fields.node);
+          let result = portal ?? req.arkimeWriterOptions.nodes.get(fields.node);
           if (!result) {
             result = await ViewerUtils.getViewUrl(fields.node);
             req.arkimeWriterOptions.nodes.set(fields.node, result);
@@ -830,7 +833,11 @@ class SessionAPIs {
           } else {
             options = {};
           }
-          options.agent = client === http ? internals.httpAgent : internals.httpsAgent;
+          if (portal) {
+            Object.assign(options, portal.options);
+          } else {
+            options.agent = client === http ? internals.httpAgent : internals.httpsAgent;
+          }
 
           let url;
           if (sessionPath.startsWith('/')) {
@@ -840,7 +847,7 @@ class SessionAPIs {
           }
 
           Auth.addS2SAuth(options, req.user, fields.node, url.pathname, ViewerUtils.getClusterSecret(req.query.cluster));
-          options.ca = ca;
+          if (!portal) { options.ca = ca; }
 
           await new Promise((resolve) => {
             const chunks = [];

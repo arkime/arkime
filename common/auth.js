@@ -1310,7 +1310,8 @@ class Auth {
 
       return JSON.parse(decrypted);
     } catch (error) {
-      console.log(error);
+      // debug only, an unauthenticated peer can trigger this at will
+      if (ArkimeConfig.debug > 0) { console.log(error); }
       throw new Error('Incorrect auth supplied');
     }
   }
@@ -1350,7 +1351,8 @@ class Auth {
       d += c.final('utf8');
       return JSON.parse(d);
     } catch (error) {
-      console.log(error);
+      // debug only, an unauthenticated peer can trigger this at will
+      if (ArkimeConfig.debug > 0) { console.log(error); }
       throw new Error('Incorrect auth supplied');
     }
   }
