@@ -354,7 +354,7 @@ export default {
     };
   },
   computed: {
-    isDbAdmin () {
+    isDbAdmin () { // v-has-role can't feed the shard-detail-interactive class binding
       return this.user?.roles?.includes('dbAdmin');
     },
     loading: {

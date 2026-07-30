@@ -12,13 +12,13 @@ SPDX-License-Identifier: Apache-2.0
 
     <div v-show="!error">
       <v-btn
-        v-if="isDbAdmin"
         id="cancelAllTasks"
         color="warning"
         variant="flat"
         size="small"
         density="comfortable"
         class="float-right"
+        v-has-role="{user:user,roles:'dbAdmin'}"
         @click="cancelTasks">
         <v-icon
           icon="mdi-cancel"
@@ -52,12 +52,13 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="text-end small mt-2">
         <template #actions="item">
           <v-btn
-            v-if="item.item.cancellable && isDbAdmin"
+            v-if="item.item.cancellable"
             color="error"
             variant="flat"
             size="small"
             density="comfortable"
             icon
+            v-has-role="{user:user,roles:'dbAdmin'}"
             @click="cancelTask(item.item.taskId)">
             <v-icon icon="mdi-trash-can-outline" />
           </v-btn>
@@ -134,9 +135,6 @@ export default {
     };
   },
   computed: {
-    isDbAdmin () {
-      return this.user?.roles?.includes('dbAdmin');
-    },
     columns: function () {
       const $t = this.$t.bind(this);
       function intl(obj) {

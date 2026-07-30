@@ -767,7 +767,7 @@ export default {
     };
   },
   computed: {
-    isDbAdmin () {
+    isDbAdmin () { // v-has-role only adds d-none, es-admin would still mount and fetch
       return this.user?.roles?.includes('dbAdmin');
     },
     user: function () {
