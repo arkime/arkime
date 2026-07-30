@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         table-widths-state-name="esIndicesColWidths"
         table-classes="text-end small mt-2">
         <template #actions="item">
-          <span v-if="user?.esAdminUser">
+          <span v-if="isDbAdmin">
             <v-menu>
               <template #activator="{ props: activatorProps }">
                 <v-btn
@@ -151,6 +151,9 @@ export default {
     };
   },
   computed: {
+    isDbAdmin () {
+      return this.user?.roles?.includes('dbAdmin');
+    },
     columns: function () {
       const $t = this.$t.bind(this);
       function intl(obj) {

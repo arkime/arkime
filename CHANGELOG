@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Capture arkime_packet_set_dltsnap() was replaced by arkime_packet_set_interface(), so custom readers/plugins must be updated and rebuilt
   - #4080 Removed the esAdminUsers setting; the ES admin page and the ES index/shard/task actions now require the dbAdmin role
           (superAdmin includes it, arkimeAdmin no longer grants it), eg db.pl <host:port> users-update '<userId glob>' --addRole dbAdmin
+  - #4080 Removed the derived esAdminUser field from /api/user/current, check the user's roles for dbAdmin instead
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture

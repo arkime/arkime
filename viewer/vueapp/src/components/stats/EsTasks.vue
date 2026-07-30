@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <div v-show="!error">
       <v-btn
-        v-if="user?.esAdminUser"
+        v-if="isDbAdmin"
         id="cancelAllTasks"
         color="warning"
         variant="flat"
@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="text-end small mt-2">
         <template #actions="item">
           <v-btn
-            v-if="item.item.cancellable && user?.esAdminUser"
+            v-if="item.item.cancellable && isDbAdmin"
             color="error"
             variant="flat"
             size="small"
@@ -134,6 +134,9 @@ export default {
     };
   },
   computed: {
+    isDbAdmin () {
+      return this.user?.roles?.includes('dbAdmin');
+    },
     columns: function () {
       const $t = this.$t.bind(this);
       function intl(obj) {
