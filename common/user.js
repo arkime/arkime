@@ -465,7 +465,7 @@ class User {
    * usersAdmin - has access to configure users<br>
    * wiseAdmin - has administrative access to WISE (can configure and update WISE)<br>
    * wiseUser - has access to WISE<br>
-   * dbAdmin - has access to the ES/DB admin page and the ES index, shard, and task actions
+   * dbAdmin - has access to the ES/DB admin page and the ES index, shard, and task actions, pair with arkimeUser for viewer access
    * @typedef ArkimeRole
    * @type {string}
    */

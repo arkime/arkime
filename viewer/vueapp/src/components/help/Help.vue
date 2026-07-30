@@ -1293,7 +1293,7 @@ SPDX-License-Identifier: Apache-2.0
           <dt>wiseUser</dt>
           <dd>Can use the WISE UI to do queries and view stats</dd>
           <dt>dbAdmin</dt>
-          <dd>Can use the ES/DB admin page and the ES index, shard, and task actions.</dd>
+          <dd>Can use the ES/DB admin page and the ES index, shard, and task actions. Pair it with arkimeUser, which the viewer requires to let anyone in at all.</dd>
         </dl>
 
         <p>

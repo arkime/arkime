@@ -13,8 +13,10 @@ use strict;
     my $json;
 
 # es admin access requires the dbAdmin role, so make a user with it and one without.
+# Both need arkimeUser since viewer gates the whole app on it and dbAdmin implies
+# nothing, arkimeAdmin brings arkimeUser along itself.
 # Only a superAdmin may assign admin roles.
-    $json = viewerPostToken("/api/user?arkimeRegressionUser=superAdmin", '{"userId": "sac-esadmin-db", "userName": "dbAdmin", "enabled":true, "password":"password", "roles":["dbAdmin"]}', $superAdminToken);
+    $json = viewerPostToken("/api/user?arkimeRegressionUser=superAdmin", '{"userId": "sac-esadmin-db", "userName": "dbAdmin", "enabled":true, "password":"password", "roles":["arkimeUser","dbAdmin"]}', $superAdminToken);
     is($json->{success}, 1, "created dbAdmin user");
 
     $json = viewerPostToken("/api/user?arkimeRegressionUser=superAdmin", '{"userId": "sac-esadmin-arkime", "userName": "arkimeAdmin", "enabled":true, "password":"password", "roles":["arkimeAdmin"]}', $superAdminToken);
