@@ -50,6 +50,15 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const PORTAL_PATH = '/packetPortal';
 const UPGRADE_TOKEN = 'arkime-portal';
 const REQUEST_TIMEOUT = 20 * 60 * 1000;
+const HANDSHAKE_TIMEOUT = 30 * 1000;
+const PING_INTERVAL = 30 * 1000;
+// h2 flow control receive windows. The per stream window caps how much any one
+// transfer can have in flight, so a big pcap download cannot hog the portal;
+// the session window is the pool all streams share, sized so ~8 streams can
+// run at full per stream rate before anyone waits on it. Node's 64KB defaults
+// would otherwise cap the whole portal at ~64KB per round trip.
+const STREAM_WINDOW = 128 * 1024;
+const SESSION_WINDOW = 1024 * 1024;
 
 // ----------------------------------------------------------------------------
 /**
@@ -217,10 +226,12 @@ class PacketPortal {
     PacketPortal.#innerServer.setTimeout(REQUEST_TIMEOUT);
 
     // DIALER h2 server: each inbound stream is one HTTP/1.1 request.
-    PacketPortal.#dialerH2Server = http2.createServer();
+    PacketPortal.#dialerH2Server = http2.createServer({ settings: { initialWindowSize: STREAM_WINDOW } });
     PacketPortal.#dialerH2Server.on('stream', PacketPortal.#onDialerStream);
     PacketPortal.#dialerH2Server.on('session', (session) => {
       session.on('error', (e) => console.log('packetPortal: dialer session error', e.message));
+      PacketPortal.#setSessionWindow(session);
+      PacketPortal.#watchAcceptorLiveness(session);
     });
 
     for (const target of Config.getArray('packetPortalConnect', '')) {
@@ -242,10 +253,16 @@ class PacketPortal {
       if (typeof entry.ip === 'string') {
         entry.ip = entry.ip.split(',').map(s => s.trim()).filter(s => s.length > 0);
       }
+      // 'ip:' with nothing after it, or a bare 'ip' flag (which parses to true),
+      // must not survive as an unmatchable list -- #checkNode would then reject
+      // the node on source ip forever, even with a correct pass.
+      if (!Array.isArray(entry.ip) || entry.ip.length === 0) { delete entry.ip; }
+      // A bare 'pass' flag parses to true, which is not a password
+      if (!ArkimeUtil.isString(entry.pass)) { delete entry.pass; }
       // An entry with neither is no better than no entry at all -- it would fall
       // through to trust on first use, silently, for a node the admin believes
       // they configured. Drop it so it is rejected instead.
-      if (entry.pass === undefined && (entry.ip === undefined || entry.ip.length === 0)) {
+      if (entry.pass === undefined && entry.ip === undefined) {
         console.log(`WARNING - packetPortal: ignoring node '${ArkimeUtil.sanitizeStr(nodeName)}', it has no pass or ip; it will not be allowed to open a portal`);
         continue;
       }
@@ -313,11 +330,19 @@ class PacketPortal {
 
     server.setTimeout(REQUEST_TIMEOUT);
     server.on('upgrade', (req, socket, head) => PacketPortal.handleUpgrade(req, socket, head));
+    let listening = false;
     server.on('error', (e) => {
+      // Fatal only at startup. Once listening, a runtime error (EMFILE during
+      // an accept, say) must not take the whole viewer down with it.
+      if (listening) {
+        console.log('packetPortal: portal listener error -', e.message);
+        return;
+      }
       console.log(`packetPortal: cannot listen for portals on ${host ?? '*'}:${port} -`, e.message);
       process.exit(1);
     });
     server.on('listening', () => {
+      listening = true;
       console.log(`packetPortal: listening for inbound portals on ${host ?? '*'} port ${port}`);
     });
     server.listen({ port, host });
@@ -489,6 +514,9 @@ class PacketPortal {
       return;
     }
 
+    // Fully authenticated -- now it is safe to record a trust-on-first-use pin
+    PacketPortal.#pinNode(node, req);
+
     socket.setTimeout(0);
     if (head && head.length > 0) { socket.unshift(head); }
 
@@ -506,8 +534,12 @@ class PacketPortal {
   // ACCEPTOR: 101 is on the wire, attach the h2 client session and register it.
   static #registerPortal (node, socket, req) {
     const session = http2.connect('http://arkime-portal.invalid', {
+      settings: { initialWindowSize: STREAM_WINDOW },
       createConnection: () => socket
     });
+    // pcap responses flow dialer -> acceptor, so this side's windows are the
+    // ones that govern download throughput
+    PacketPortal.#setSessionWindow(session);
     session.on('error', (e) => console.log(`packetPortal: client session error for ${node} -`, e.message));
     session.on('close', () => {
       const entry = PacketPortal.#portals.get(node);
@@ -591,18 +623,69 @@ class PacketPortal {
 
     if (authenticated) { return undefined; }
 
-    // Nothing configured for this node, so trust the source ip we first saw it
-    // on and require later portals to match (trust on first use). Weaker than a
-    // pass -- an attacker who gets in before the real node does wins the pin --
-    // but it keeps a no-config deployment from letting anyone claim any node.
+    // Nothing configured for this node, so trust on first use: require later
+    // portals to come from the source ip the first one did. Only the mismatch
+    // REJECTION lives here -- the pin itself is written in #pinNode, after the
+    // s2s token validates. Writing it here, before any auth, would let anyone
+    // with no serverSecret at all pin a node name to their own ip, locking the
+    // real node out (and grow #pinnedIps without bound).
     const pinned = PacketPortal.#pinnedIps.get(node);
-    if (pinned === undefined) {
-      PacketPortal.#pinnedIps.set(node, ip);
-      console.log(`packetPortal: pinning node '${node}' to source ip ${ip}; set a pass for it in [packetportal-nodes] to authenticate properly`);
-      return undefined;
-    }
-    if (pinned !== ip) { return `source ip ${ip} does not match pinned ${pinned}`; }
+    if (pinned !== undefined && pinned !== ip) { return `source ip ${ip} does not match pinned ${pinned}`; }
     return undefined;
+  }
+
+  // --------------------------------------------------------------------------
+  // ACCEPTOR: pin an unconfigured node to the source ip it first connected
+  // from. Called only once the peer's s2s token has validated. Weaker than a
+  // pass -- an attacker holding the serverSecret who gets in before the real
+  // node does wins the pin -- but it keeps a no-config deployment from letting
+  // any node claim any other.
+  static #pinNode (node, req) {
+    if (Object.hasOwn(PacketPortal.#nodes, node)) { return; } // authenticated by config, no pin
+    if (PacketPortal.#pinnedIps.has(node)) { return; }
+    const ip = PacketPortal.#peerIp(req);
+    if (ip === undefined) { return; }
+    PacketPortal.#pinnedIps.set(node, ip);
+    console.log(`packetPortal: pinning node '${node}' to source ip ${ip}; set a pass for it in [packetportal-nodes] to authenticate properly`);
+  }
+
+  // --------------------------------------------------------------------------
+  // Grow a session's shared connection receive window to SESSION_WINDOW.
+  // setLocalWindowSize throws before the session finishes connecting (and on a
+  // destroyed one), so defer or swallow as needed.
+  static #setSessionWindow (session) {
+    const grow = () => {
+      try { session.setLocalWindowSize(SESSION_WINDOW); } catch (e) { /* session already gone */ }
+    };
+    if (session.connecting) { session.once('connect', grow); } else { grow(); }
+  }
+
+  // --------------------------------------------------------------------------
+  // DIALER: the acceptor's keepalives are the only traffic on an idle portal,
+  // and nothing on this side notices if they stop -- a silently dead peer
+  // (machine crash, network partition, NAT rebind) would leave the dialer
+  // believing it is connected forever, never redialing. h2 PINGs are answered
+  // by any live peer regardless of how its keepalive is configured; one
+  // unanswered interval tears the session down, which closes the socket and
+  // triggers the dialer's reconnect.
+  static #watchAcceptorLiveness (session) {
+    let outstanding = false;
+    const timer = setInterval(() => {
+      if (session.destroyed) { clearInterval(timer); return; }
+      if (outstanding) {
+        console.log('packetPortal: acceptor stopped answering pings; closing portal');
+        session.destroy(new Error('ping timeout'));
+        return;
+      }
+      outstanding = true;
+      try {
+        session.ping(() => { outstanding = false; });
+      } catch (e) {
+        session.destroy();
+      }
+    }, PING_INTERVAL);
+    if (timer.unref) { timer.unref(); }
+    session.on('close', () => clearInterval(timer));
   }
 
   // --------------------------------------------------------------------------
@@ -761,6 +844,14 @@ class PacketPortal {
 
       let settled = false;
       const req = client.request(url, options);
+
+      // A blackholed acceptor (something accepts the TCP connection but never
+      // answers) would otherwise leave this request hanging forever, with no
+      // error and no retry. Idle timeout, so it cannot fire once the portal is
+      // up: the upgrade handler below disables the socket timeout.
+      req.setTimeout(HANDSHAKE_TIMEOUT, () => {
+        if (!settled) { req.destroy(new Error('handshake timeout')); }
+      });
 
       req.on('upgrade', (res, socket, head) => {
         settled = true;
