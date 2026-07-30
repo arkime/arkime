@@ -691,6 +691,13 @@ import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout;
 
+const LAST_TAB = 6;
+// out of range selects no tab and renders an empty body, which an old
+// statsTab=7 ES Admin bookmark would otherwise do
+function clampTab (value) {
+  return Math.min(Math.max(parseInt(value, 10) || 0, 0), LAST_TAB);
+}
+
 export default {
   name: 'Stats',
   components: {
@@ -708,7 +715,7 @@ export default {
   directives: { Focus },
   data: function () {
     return {
-      tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
+      tabIndex: clampTab(this.$route.query.statsTab),
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: parseInt(this.$route.query.gtime, 10) || 5,
       graphHide: this.$route.query.hide || 'none',
@@ -820,7 +827,7 @@ export default {
       const queryParams = this.$route.query;
 
       if (queryParams.statsTab) {
-        this.tabIndex = parseInt(queryParams.statsTab, 10);
+        this.tabIndex = clampTab(queryParams.statsTab);
       }
       if (queryParams.type) {
         this.statsType = queryParams.type;
