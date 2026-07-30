@@ -498,19 +498,33 @@ class CronAPIs {
           await internals.sendSessionQueue.push(options);
         }
       } else {
-        // Send from remote node
-        const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+        // Send from remote node, over its packet portal when it has one -- a
+        // portal node cannot be dialed directly
+        let viewUrl, client, reqOptions;
+        try {
+          const portal = await ViewerUtils.portalRequest(node);
+          if (portal) {
+            ({ viewUrl, client } = portal);
+            reqOptions = { method: 'POST', ...portal.options };
+          } else {
+            ({ viewUrl, client } = await ViewerUtils.getViewUrl(node));
+            reqOptions = {
+              method: 'POST',
+              agent: client === http ? internals.httpAgent : internals.httpsAgent
+            };
+            ViewerUtils.addCaTrust(reqOptions, node);
+          }
+        } catch (err) {
+          console.log("ERROR - Couldn't reach node for sendSession node=", node, '\nerror=', err);
+          return;
+        }
+
         let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
         if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
         const url = new URL(sendPath, viewUrl);
-        const reqOptions = {
-          method: 'POST',
-          agent: client === http ? internals.httpAgent : internals.httpsAgent
-        };
 
         // Sign the path exactly as the remote node will see it in req.url
         Auth.addS2SAuth(reqOptions, pOptions.user, node, url.pathname + (url.search ?? ''));
-        ViewerUtils.addCaTrust(reqOptions, node);
 
         await new Promise((resolve) => {
           const preq = client.request(url, reqOptions, (pres) => {
