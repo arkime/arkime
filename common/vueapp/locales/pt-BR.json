@@ -825,7 +825,7 @@
       "clearCache": "Limpar Cache",
       "clearCacheTip": "Tentar limpar o cache de todos os índices",
       "restoreAllocationTip": "Este valor deve ser \"all\" na maioria dos casos. Clique aqui para alterá-lo de volta.",
-      "controlHtml": "Você pode controlar quais usuários veem esta página configurando <code>esAdminUsers=</code> no seu <code>config.ini</code> OU adicionar a função arkimeAdmin."
+      "controlHtml": "Você pode controlar quais usuários veem esta página com a função <code>dbAdmin</code>."
     },
     "esIndices": {
       "deleteIndex": "Excluir Índice",

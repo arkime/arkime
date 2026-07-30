@@ -825,7 +825,7 @@
       "clearCache": "Puhasta vahemälu",
       "clearCacheTip": "Proovi kõigi indeksite vahemälu puhastada",
       "restoreAllocationTip": "See väärtus peaks enamikul juhtudel olema \"all\". Klõpsa siia, et see tagasi muuta.",
-      "controlHtml": "Sa saad kontrollida, millised kasutajad näevad seda lehte, määrates <code>esAdminUsers=</code> oma <code>config.ini</code> VÕI lisades arkimeAdmin rolli."
+      "controlHtml": "Sa saad <code>dbAdmin</code> rolliga kontrollida, millised kasutajad näevad seda lehte."
     },
     "esIndices": {
       "deleteIndex": "Kustuta indeks",

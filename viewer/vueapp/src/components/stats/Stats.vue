@@ -603,7 +603,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('stats.nav.esRecovery') }}
             </v-btn>
             <v-btn
-              v-if="user.esAdminUser"
+              v-if="isDbAdmin"
               :value="7">
               <v-icon
                 start
@@ -682,7 +682,7 @@ SPDX-License-Identifier: Apache-2.0
           :user="user"
           :cluster="cluster" />
         <es-admin
-          v-else-if="tabIndex === 7 && user.esAdminUser"
+          v-else-if="tabIndex === 7 && isDbAdmin"
           :data-interval="dataInterval"
           :refresh-data="refreshData"
           :user="user"
@@ -767,6 +767,9 @@ export default {
     };
   },
   computed: {
+    isDbAdmin () { // v-has-role only adds d-none, es-admin would still mount and fetch
+      return this.user?.roles?.includes('dbAdmin');
+    },
     user: function () {
       return this.$store.state.user;
     },

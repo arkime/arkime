@@ -981,7 +981,7 @@ class StatsAPIs {
   /**
    * GET - /api/esadmin
    *
-   * Fetches all OpenSearch/Elasticsearch settings that a user can change (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Fetches all OpenSearch/Elasticsearch settings that a user can change (requires the dbAdmin role).
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
@@ -1121,7 +1121,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/set
    *
-   * Sets OpenSearch/Elasticsearch settings (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Sets OpenSearch/Elasticsearch settings (requires the dbAdmin role).
    * @name /esadmin/set
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1259,7 +1259,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/reroute
    *
-   * Try to restart any shard migrations that have failed or paused (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Try to restart any shard migrations that have failed or paused (requires the dbAdmin role).
    * @name /esadmin/reroute
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1277,7 +1277,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/flush
    *
-   * Flush and refresh any data waiting in OpenSearch/Elasticsearch to disk (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Flush and refresh any data waiting in OpenSearch/Elasticsearch to disk (requires the dbAdmin role).
    * @name /esadmin/flush
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
@@ -1296,7 +1296,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/unflood
    *
-   * Try and clear any indices marked as flooded (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Try and clear any indices marked as flooded (requires the dbAdmin role).
    * @name /esadmin/unflood
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
@@ -1315,7 +1315,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/clearcache
    *
-   * Try and clear the cache for all indices (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Try and clear the cache for all indices (requires the dbAdmin role).
    * @name /esadmin/clearcache
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1339,7 +1339,7 @@ class StatsAPIs {
   /**
    * GET - /api/esadmin/allocation
    *
-   * Provides an explanation for shard allocation in the cluster (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Provides an explanation for shard allocation in the cluster (requires the dbAdmin role).
    * Returns details about why shards are assigned or unassigned.
    * @name /esadmin/allocation
    * @param {string} index - Optional specific index name to explain

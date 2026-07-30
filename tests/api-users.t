@@ -31,7 +31,7 @@ my $json;
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
-anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
+anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 ', "CSV Users");
 
 # csv formula injection - userName/expression starting with a trigger char must be neutralized with a leading '
@@ -122,7 +122,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerGetToken("/api/appInfo", $token);
     eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "dbAdmin", "mcpUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
     my @roles = sort @{$json->{user}->{roles}};
-    eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
+    eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "dbAdmin", "parliamentUser", "usersAdmin", "wiseUser"]'));
 
 # Check default user settings
     $json = viewerGetToken("/api/appInfo", $token);
@@ -707,7 +707,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
-anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
+anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
 role:sac-test1,UserName,true,false,false,"",,,,,,,,,
 role:sac-test2,UserName,true,false,false,"role:sac-test1",,,,,,,,,
