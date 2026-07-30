@@ -125,6 +125,7 @@
     "admin": "Administração",
     "esadmin": "Admin ES",
     "banner": "Banner",
+    "movedHint": "{page} agora tem sua própria página",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "PIU! Posso ajudá-lo? Clique em mim para ver a página de ajuda",
     "helpTip": "AJUDA!",

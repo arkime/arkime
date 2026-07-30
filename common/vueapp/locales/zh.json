@@ -125,6 +125,7 @@
     "admin": "管理",
     "esadmin": "ES 管理",
     "banner": "横幅",
+    "movedHint": "{page} 已移至独立页面",
     "notifiers": "通知器",
     "tooltipHelpTip": "嗨！我可以帮您吗？点击我查看帮助页面",
     "helpTip": "帮助！",

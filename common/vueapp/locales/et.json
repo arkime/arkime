@@ -125,6 +125,7 @@
     "admin": "Haldus",
     "esadmin": "ES Admin",
     "banner": "Bänner",
+    "movedHint": "{page} on nüüd omaette lehel",
     "notifiers": "Teavitajad",
     "tooltipHelpTip": "HOOT! Kas saan sind aidata? Klõpsa minus, et näha abilehte",
     "helpTip": "ABI!",

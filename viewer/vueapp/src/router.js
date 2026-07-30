@@ -52,14 +52,7 @@ const router = createRouter({
     {
       path: '/stats',
       name: 'Stats',
-      component: Stats,
-      // ES Admin used to be stats tab 7, send old bookmarks to its own page
-      beforeEnter: (to) => {
-        if (to.query.statsTab !== '7') { return; }
-        const query = { ...to.query };
-        delete query.statsTab;
-        return { path: '/esadmin', query };
-      }
+      component: Stats
     },
     {
       path: '/esadmin',
@@ -131,11 +124,7 @@ const router = createRouter({
     {
       path: '/settings',
       name: 'Settings',
-      component: Settings,
-      // the banner tab moved to its own page, send old bookmarks there
-      beforeEnter: (to) => {
-        if (to.hash === '#banner') { return { path: '/banner', query: to.query }; }
-      }
+      component: Settings
     },
     {
       path: '/upload',

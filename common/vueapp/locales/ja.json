@@ -125,6 +125,7 @@
     "admin": "管理",
     "esadmin": "ES 管理",
     "banner": "バナー",
+    "movedHint": "{page} は独自のページに移動しました",
     "notifiers": "通知設定",
     "tooltipHelpTip": "ホー！お手伝いしましょうか？クリックしてヘルプページを表示します",
     "helpTip": "ヘルプ！",

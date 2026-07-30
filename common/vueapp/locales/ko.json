@@ -125,6 +125,7 @@
     "admin": "관리",
     "esadmin": "ES 관리",
     "banner": "배너",
+    "movedHint": "{page}이(가) 별도 페이지로 이동했습니다",
     "notifiers": "알림기",
     "tooltipHelpTip": "도움이 필요하신가요? 클릭하여 도움말 페이지를 확인하세요",
     "helpTip": "도움말!",
