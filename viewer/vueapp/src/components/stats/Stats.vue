@@ -592,12 +592,6 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('stats.nav.esRecovery') }}
             </v-btn>
           </v-btn-toggle>
-          <router-link
-            v-has-role="{user:user,roles:'dbAdmin'}"
-            to="/esadmin"
-            class="moved-hint ms-3">
-            {{ $t('navigation.movedHint', { page: $t('navigation.esadmin') }) }}
-          </router-link>
         </div>
       </div>
     </template>
@@ -954,12 +948,6 @@ export default {
    pill-style v-btn-toggle. Uses the same quaternary-lightest tint as
    the sub-navbars on sessions/spiview/arkime; the border + shadow keep
    it visually distinct from the stats-form row above. */
-/* points at the ES Admin page now that it isn't a tab here */
-.moved-hint {
-  font-size: 0.75rem;
-  font-style: italic;
-  color: rgb(var(--v-theme-foreground-accent));
-}
 .stats-tabs .stats-tab-bar {
   padding: 6px 12px;
   background-color: rgb(var(--v-theme-quaternary-lightest));

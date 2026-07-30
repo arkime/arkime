@@ -125,7 +125,6 @@
     "admin": "Haldus",
     "esadmin": "ES Admin",
     "banner": "Bänner",
-    "movedHint": "{page} on nüüd omaette lehel",
     "notifiers": "Teavitajad",
     "tooltipHelpTip": "HOOT! Kas saan sind aidata? Klõpsa minus, et näha abilehte",
     "helpTip": "ABI!",
@@ -1495,13 +1494,13 @@
       "text": "Failide leht loetleb Arkime'i kirjutatud PCAP-failid ja näitab, kas nende seansid on veel otsitavad."
     },
     "stats": {
-      "text": "Statistika leht jälgib püügisõlmede ja Elasticsearchi seisundit — graafikud, sõlmede mõõdikud ja indeksite üksikasjad."
+      "text": "Statistika leht jälgib püügisõlmede ja Elasticsearchi seisundit — graafikud, sõlmede mõõdikud ja indeksite üksikasjad. ES-i haldusel on nüüd omaette leht menüüs Haldus."
     },
     "history": {
       "text": "Ajaloo leht salvestab sinu varasemad päringud (adminite puhul kõigi omad), et saaksid neid üle vaadata ja uuesti käivitada."
     },
     "settings": {
-      "text": "Tee Arkime enda omaks — teemad, ajavööndid, kohandatud veergude ja väljade paigutused, vaated, otseteed ja teavitajad on kõik siin."
+      "text": "Tee Arkime enda omaks — teemad, ajavööndid, kohandatud veergude ja väljade paigutused, vaated, otseteed ja teavitajad on kõik siin. Bänneri seadetel on nüüd omaette leht menüüs Haldus."
     }
   },
   "spigraph": {

@@ -125,7 +125,6 @@
     "admin": "Verwaltung",
     "esadmin": "ES-Admin",
     "banner": "Banner",
-    "movedHint": "{page} hat jetzt eine eigene Seite",
     "notifiers": "Benachrichtiger",
     "tooltipHelpTip": "HOOT! Kann ich Ihnen helfen? Klicken Sie mich an, um die Hilfeseite zu sehen",
     "helpTip": "HILFE!",
@@ -1495,13 +1494,13 @@
       "text": "Die Seite Dateien listet die von Arkime geschriebenen PCAP-Dateien auf und zeigt, ob ihre Sitzungen noch durchsuchbar sind."
     },
     "stats": {
-      "text": "Die Seite Statistik überwacht den Zustand der Capture-Knoten und von Elasticsearch — Diagramme, Metriken pro Knoten und Indexdetails."
+      "text": "Die Seite Statistik überwacht den Zustand der Capture-Knoten und von Elasticsearch — Diagramme, Metriken pro Knoten und Indexdetails. Die ES-Administration hat jetzt eine eigene Seite im Menü Verwaltung."
     },
     "history": {
       "text": "Die Seite Verlauf zeichnet Ihre früheren Abfragen auf (oder die aller Benutzer, für Admins), damit Sie sie überprüfen und erneut ausführen können."
     },
     "settings": {
-      "text": "Machen Sie Arkime zu Ihrem Arkime — Themes, Zeitzonen, eigene Spalten- und Feldlayouts, Ansichten, Tastenkürzel und Benachrichtigungen finden Sie alle hier."
+      "text": "Machen Sie Arkime zu Ihrem Arkime — Themes, Zeitzonen, eigene Spalten- und Feldlayouts, Ansichten, Tastenkürzel und Benachrichtigungen finden Sie alle hier. Die Banner-Einstellungen haben jetzt eine eigene Seite im Menü Verwaltung."
     }
   },
   "spigraph": {

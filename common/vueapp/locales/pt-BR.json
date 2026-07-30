@@ -125,7 +125,6 @@
     "admin": "Administração",
     "esadmin": "Admin ES",
     "banner": "Banner",
-    "movedHint": "{page} agora tem sua própria página",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "PIU! Posso ajudá-lo? Clique em mim para ver a página de ajuda",
     "helpTip": "AJUDA!",
@@ -1495,13 +1494,13 @@
       "text": "A página de Arquivos lista os arquivos PCAP gravados pelo Arkime e se suas sessões ainda podem ser pesquisadas."
     },
     "stats": {
-      "text": "A página de Estatísticas acompanha a saúde dos nós de captura e do Elasticsearch — gráficos, métricas por nó e detalhes dos índices."
+      "text": "A página de Estatísticas acompanha a saúde dos nós de captura e do Elasticsearch — gráficos, métricas por nó e detalhes dos índices. A administração do ES agora tem sua própria página no menu Administração."
     },
     "history": {
       "text": "A página de Histórico registra suas consultas anteriores (ou de todos, para administradores) para você revisar e repetir."
     },
     "settings": {
-      "text": "Deixe o Arkime com a sua cara — temas, fusos horários, layouts personalizados de colunas e campos, visualizações, atalhos e notificadores estão todos aqui."
+      "text": "Deixe o Arkime com a sua cara — temas, fusos horários, layouts personalizados de colunas e campos, visualizações, atalhos e notificadores estão todos aqui. As configurações de banner agora têm sua própria página no menu Administração."
     }
   },
   "spigraph": {

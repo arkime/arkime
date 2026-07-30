@@ -143,12 +143,6 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.notifiers') }}
           </v-tab>
         </v-tabs>
-        <router-link
-          v-has-role="{user:user,roles:'arkimeAdmin'}"
-          to="/banner"
-          class="moved-hint d-block mt-2 ms-4">
-          {{ $t('navigation.movedHint', { page: $t('navigation.banner') }) }}
-        </router-link>
       </v-col> <!-- /navigation -->
 
       <v-col
@@ -2146,13 +2140,6 @@ export default {
 
 .settings-page .control-label {
   font-weight: bolder;
-}
-
-/* points at the banner page now that it isn't a tab here */
-.moved-hint {
-  font-size: 0.75rem;
-  font-style: italic;
-  color: rgb(var(--v-theme-foreground-accent));
 }
 
 </style>

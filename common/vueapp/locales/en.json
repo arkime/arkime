@@ -125,7 +125,6 @@
     "admin": "Admin",
     "esadmin": "ES Admin",
     "banner": "Banner",
-    "movedHint": "{page} moved to its own page",
     "notifiers": "Notifiers",
     "tooltipHelpTip": "HOOT! Can I help you? Click me to see the help page",
     "helpTip": "HELP!",
@@ -1495,13 +1494,13 @@
       "text": "The Files page lists the PCAP files Arkime has written and whether their sessions are still searchable."
     },
     "stats": {
-      "text": "The Stats page tracks capture node and Elasticsearch health — graphs, per-node metrics, and index details."
+      "text": "The Stats page tracks capture node and Elasticsearch health — graphs, per-node metrics, and index details. ES admin now has its own page under the Admin menu."
     },
     "history": {
       "text": "The History page records past queries from you (or everyone, for admins) so you can review and replay them."
     },
     "settings": {
-      "text": "Make Arkime yours — themes, time zones, custom column and field layouts, views, shortcuts, and notifiers all live here."
+      "text": "Make Arkime yours — themes, time zones, custom column and field layouts, views, shortcuts, and notifiers all live here. Banner settings now have their own page under the Admin menu."
     }
   },
   "spigraph": {
