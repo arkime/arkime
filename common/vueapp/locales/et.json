@@ -1037,7 +1037,6 @@
   },
   "uploads": {
     "uploadFile": "Laadi üles fail",
-    "demoMode": "Kõik üleslaaditud on nähtav kõigile teistele, kes seda demo kasutavad!",
     "pcapFileUpload": "PCAP faili üleslaadimine",
     "tags": "Silt(id)",
     "tagsPlaceholder": "Komaga eraldatud siltide loend",
@@ -1883,8 +1882,7 @@
       "cannotChangeHunt": "Te ei saa teise kasutaja otsingut muuta, kui teil pole administraatoriõigusi",
       "checkHuntAccessError": "Viga otsingu juurdepääsu kontrollimisel",
       "noPermission": "Teil puudub õigus sellele ressursile juurde pääseda",
-      "needAdminPrivileges": "Vajalikud administraatoriõigused",
-      "disabledDemoMode": "Keelatud demorežiimis."
+      "needAdminPrivileges": "Vajalikud administraatoriõigused"
     },
     "hunts": {
       "cannotStartWhileRunning": "Te ei saa uut otsingut alustada, kuni käimasolev töö on lõppenud või peatatud.",

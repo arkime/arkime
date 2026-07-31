@@ -1038,7 +1038,6 @@
   },
   "uploads": {
     "uploadFile": "Uploadway IleFay",
-    "demoMode": "Everythingway uploadedway illway ebay isiblevay otay everyoneway elseway usingsay isthay emoday!",
     "pcapFileUpload": "ACAPpay IleFay Uploadway",
     "tags": "Agsay(say)",
     "tagsPlaceholder": "OmmaCay eparatedsay istlay ofway agstay",
@@ -1884,8 +1883,7 @@
       "cannotChangeHunt": "Ouyay annotcay angechay anotherway userway's unthay unlessway ouyay avehay adminway ivilegespray",
       "checkHuntAccessError": "Errorway eckingchay unthay accessway",
       "noPermission": "Ouyay oday otnay avehay ermissionpay otay accessway isthay esourceray",
-      "needAdminPrivileges": "Eednay adminway ivilegespray",
-      "disabledDemoMode": "Isabledday inway emoday odemay."
+      "needAdminPrivileges": "Eednay adminway ivilegespray"
     },
     "hunts": {
       "cannotStartWhileRunning": "Ouyay annotcay artstay away ewnay unthay untilway ethay unningray objay ompletescay orway isway ausedpay.",

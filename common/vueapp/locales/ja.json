@@ -1037,7 +1037,6 @@
   },
   "uploads": {
     "uploadFile": "ファイルをアップロード",
-    "demoMode": "アップロードされたものはすべて、このデモを使用している全員に表示されます！",
     "pcapFileUpload": "PCAP ファイルアップロード",
     "tags": "タグ",
     "tagsPlaceholder": "カンマ区切りのタグリスト",
@@ -1883,8 +1882,7 @@
       "cannotChangeHunt": "管理者権限がない限り、他のユーザーのハントを変更できません",
       "checkHuntAccessError": "ハントアクセスの確認エラー",
       "noPermission": "このリソースにアクセスする権限がありません",
-      "needAdminPrivileges": "管理者権限が必要です",
-      "disabledDemoMode": "デモモードでは無効です。"
+      "needAdminPrivileges": "管理者権限が必要です"
     },
     "hunts": {
       "cannotStartWhileRunning": "実行中のジョブが完了または一時停止するまで、新しいハントを開始できません。",

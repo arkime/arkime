@@ -1037,7 +1037,6 @@
   },
   "uploads": {
     "uploadFile": "Enviar Arquivo",
-    "demoMode": "Tudo enviado será visível para todos os outros usando esta demonstração!",
     "pcapFileUpload": "Upload de Arquivo PCAP",
     "tags": "Tags",
     "tagsPlaceholder": "Lista de tags separadas por vírgula",
@@ -1883,8 +1882,7 @@
       "cannotChangeHunt": "Você não pode alterar a caça de outro usuário a menos que tenha privilégios de admin",
       "checkHuntAccessError": "Erro ao verificar acesso à caça",
       "noPermission": "Você não tem permissão para acessar este recurso",
-      "needAdminPrivileges": "Necessário privilégios de admin",
-      "disabledDemoMode": "Desabilitado no modo de demonstração."
+      "needAdminPrivileges": "Necessário privilégios de admin"
     },
     "hunts": {
       "cannotStartWhileRunning": "Você não pode iniciar uma nova caça até que o trabalho em execução seja concluído ou pausado.",

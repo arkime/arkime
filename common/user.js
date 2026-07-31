@@ -69,7 +69,6 @@ class User {
   static #rolesCache = { _timeStamp: 0 };
   static #implementation;
   static #dbUrl;
-  static #demoMode;
   static #dynamicRolesFuncs;
   static #totpPendingSecrets = new LRUCache({ max: 1000, ttl: 5 * 60 * 1000 });
   static #totpAttempts = new LRUCache({ max: 1000, ttl: 60 * 1000 });
@@ -120,9 +119,8 @@ class User {
       });
     }
 
-    User.#demoMode = ArkimeConfig.get('demoMode', false);
-    if (typeof User.#demoMode !== 'boolean') {
-      User.#demoMode = new Set(ArkimeConfig.getArray('demoMode'));
+    if (ArkimeConfig.get('demoMode', false) !== false) {
+      console.log('WARNING - the demoMode setting has been removed, put a shared instance behind an external identity provider instead');
     }
 
     const userRoleMappings = ArkimeConfig.getSection('user-role-mappings');
@@ -1691,19 +1689,6 @@ class User {
       }
     }
     return true;
-  }
-
-  /*
-   *
-   */
-  isDemoMode () {
-    if (this.hasRole(Auth.appAdminRole)) { return false; }
-
-    if (typeof User.#demoMode === 'boolean') {
-      return User.#demoMode;
-    }
-
-    return User.#demoMode.has(this.userId);
   }
 
   /**

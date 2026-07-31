@@ -1037,7 +1037,6 @@
   },
   "uploads": {
     "uploadFile": "Subir Archivo",
-    "demoMode": "¡Todo lo subido será visible para todos los demás que utilicen esta demostración!",
     "pcapFileUpload": "Subir Archivo PCAP",
     "tags": "Etiqueta(s)",
     "tagsPlaceholder": "Lista de etiquetas separadas por comas",
@@ -1883,8 +1882,7 @@
       "cannotChangeHunt": "No puede cambiar la búsqueda de otro usuario a menos que tenga privilegios de administrador",
       "checkHuntAccessError": "Error al verificar el acceso a la búsqueda",
       "noPermission": "No tiene permiso para acceder a este recurso",
-      "needAdminPrivileges": "Se necesitan privilegios de administrador",
-      "disabledDemoMode": "Deshabilitado en modo de demostración."
+      "needAdminPrivileges": "Se necesitan privilegios de administrador"
     },
     "hunts": {
       "cannotStartWhileRunning": "No puede iniciar una nueva búsqueda hasta que el trabajo en ejecución se complete o se pause.",

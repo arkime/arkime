@@ -223,17 +223,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Demo mode - disable some APIs
-app.all([
-  '/api/user/password*',
-  '/api/user/totp/*'
-], (req, res, next) => {
-  if (!req.user.isDemoMode()) {
-    return next();
-  }
-  return res.serverError(403, 'Disabled in demo mode.');
-});
-
 // locales endpoint -- backs vue-i18n in the SPA via common/vueapp/i18nSetup.js
 app.get('/api/locales', ArkimeUtil.noCacheJson, Locales.getLocales);
 
@@ -433,7 +422,6 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     version: version.version,
     path: internals.webBasePath,
     disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
-    demoMode: req.user.isDemoMode(),
     environment: process.env.NODE_ENV,
     manifest
   };
