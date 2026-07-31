@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-row class="g-1 stats-form px-1 pt-2 pb-1 align-center justify-start page-subnav">
             <v-col
               cols="auto"
-              class="flex-grow-1"
-              v-if="tabIndex !== 7">
+              class="flex-grow-1">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <span class="arkime-input-label arkime-input-label-fw">
                   <v-icon
@@ -301,7 +300,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- table data interval select -->
             <v-col
               cols="auto"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
+              v-if="tabIndex !== 0">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
                 <select
@@ -382,7 +381,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- refresh button -->
             <v-col
               cols="auto"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
+              v-if="tabIndex !== 0">
               <v-btn
                 variant="flat"
                 size="large"
@@ -533,16 +532,6 @@ SPDX-License-Identifier: Apache-2.0
                 @update-cluster="updateCluster"
                 :select-one="clusterParamOverride && tabIndex > 1" />
             </v-col> <!-- /select cluster(s) -->
-
-            <!-- spacer on esAdmin so the sub-navbar keeps the same height
-               as on other tabs (all real controls are v-if-hidden when
-               tabIndex === 7); without this the row collapses and leaves
-               a gap above the tab strip. -->
-            <v-col
-              v-if="tabIndex === 7"
-              cols="auto">
-            &nbsp;
-            </v-col>
           </v-row> <!-- /stats sub navbar -->
         </div>
       </ArkimeCollapsible>
@@ -601,14 +590,6 @@ SPDX-License-Identifier: Apache-2.0
                 start
                 icon="mdi-lifebuoy" />
               {{ $t('stats.nav.esRecovery') }}
-            </v-btn>
-            <v-btn
-              v-if="user.esAdminUser"
-              :value="7">
-              <v-icon
-                start
-                icon="mdi-cog-outline" />
-              {{ $t('stats.nav.esAdmin') }}
             </v-btn>
           </v-btn-toggle>
         </div>
@@ -681,12 +662,6 @@ SPDX-License-Identifier: Apache-2.0
           :search-term="searchTerm"
           :user="user"
           :cluster="cluster" />
-        <es-admin
-          v-else-if="tabIndex === 7 && user.esAdminUser"
-          :data-interval="dataInterval"
-          :refresh-data="refreshData"
-          :user="user"
-          :cluster="cluster" />
       </div>
     </div> <!-- /stats content -->
   </page-layout>
@@ -698,7 +673,6 @@ import EsNodes from './EsNodes.vue';
 import EsTasks from './EsTasks.vue';
 import EsRecovery from './EsRecovery.vue';
 import EsIndices from './EsIndices.vue';
-import EsAdmin from './EsAdmin.vue';
 import CaptureGraphs from './CaptureGraphs.vue';
 import CaptureStats from './CaptureStats.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
@@ -711,6 +685,13 @@ import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout;
 
+const LAST_TAB = 6;
+// out of range selects no tab and renders an empty body, which an old
+// statsTab=7 ES Admin bookmark would otherwise do
+function clampTab (value) {
+  return Math.min(Math.max(parseInt(value, 10) || 0, 0), LAST_TAB);
+}
+
 export default {
   name: 'Stats',
   components: {
@@ -721,7 +702,6 @@ export default {
     EsIndices,
     EsTasks,
     EsRecovery,
-    EsAdmin,
     ArkimeCollapsible,
     PageLayout,
     Clusters
@@ -729,7 +709,7 @@ export default {
   directives: { Focus },
   data: function () {
     return {
-      tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
+      tabIndex: clampTab(this.$route.query.statsTab),
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: parseInt(this.$route.query.gtime, 10) || 5,
       graphHide: this.$route.query.hide || 'none',
@@ -841,7 +821,7 @@ export default {
       const queryParams = this.$route.query;
 
       if (queryParams.statsTab) {
-        this.tabIndex = parseInt(queryParams.statsTab, 10);
+        this.tabIndex = clampTab(queryParams.statsTab);
       }
       if (queryParams.type) {
         this.statsType = queryParams.type;
@@ -1050,7 +1030,7 @@ export default {
   z-index : 6;
   background-color: rgb(var(--v-theme-secondary-lightest));
   /* reserve a constant height so the tab strip below doesn't shift as sub-tabs
-     show different controls (Capture Graphs / ES Admin have fewer/shorter ones) */
+     show different controls (Capture Graphs has fewer/shorter ones) */
   min-height: 52px;
 }
 

@@ -122,6 +122,9 @@
     "history": "履歴",
     "upload": "アップロード",
     "roles": "ロール",
+    "admin": "管理",
+    "esadmin": "ES 管理",
+    "banner": "バナー",
     "notifiers": "通知設定",
     "tooltipHelpTip": "ホー！お手伝いしましょうか？クリックしてヘルプページを表示します",
     "helpTip": "ヘルプ！",
@@ -759,8 +762,7 @@
       "esShards": "ES シャード",
       "esNodes": "ES ノード",
       "esTasks": "ES タスク",
-      "esRecovery": "ES リカバリ",
-      "esAdmin": "ES 管理"
+      "esRecovery": "ES リカバリ"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>ヒント:</strong> これらのグラフは幅1440ピクセルです。最適に表示するにはブラウザのウィンドウ幅を1500ピクセル以上に広げてください。",
@@ -825,7 +827,7 @@
       "clearCache": "キャッシュをクリア",
       "clearCacheTip": "すべてのインデックスのキャッシュクリアを試行します",
       "restoreAllocationTip": "この値は通常 \"all\" であるべきです。元に戻すにはここをクリックしてください。",
-      "controlHtml": "<code>config.ini</code> の <code>esAdminUsers=</code> を設定するか、arkimeAdmin ロールを追加することで、このページを表示できるユーザーを制御できます。"
+      "controlHtml": "<code>dbAdmin</code> ロールで、このページを表示できるユーザーを制御できます。"
     },
     "esIndices": {
       "deleteIndex": "インデックスを削除",
@@ -1144,8 +1146,7 @@
       "views": "ビュー",
       "shortcuts": "ショートカット",
       "cron": "定期クエリ",
-      "notifiers": "通知設定",
-      "banner": "バナー"
+      "notifiers": "通知設定"
     },
     "banner": {
       "title": "バナー",
@@ -1493,13 +1494,13 @@
       "text": "ファイルページには Arkime が書き込んだ PCAP ファイルと、そのセッションがまだ検索可能かどうかが一覧表示されます。"
     },
     "stats": {
-      "text": "統計ページはキャプチャノードと Elasticsearch の状態を追跡します。グラフ、ノードごとのメトリクス、インデックスの詳細を確認できます。"
+      "text": "統計ページはキャプチャノードと Elasticsearch の状態を追跡します。グラフ、ノードごとのメトリクス、インデックスの詳細を確認できます。 ES 管理は「管理」メニューの独自のページに移動しました。"
     },
     "history": {
       "text": "履歴ページには自分の過去のクエリ（管理者は全員分）が記録され、確認や再実行ができます。"
     },
     "settings": {
-      "text": "Arkime を自分仕様に。テーマ、タイムゾーン、カスタム列・フィールドレイアウト、ビュー、ショートカット、通知設定はすべてここにあります。"
+      "text": "Arkime を自分仕様に。テーマ、タイムゾーン、カスタム列・フィールドレイアウト、ビュー、ショートカット、通知設定はすべてここにあります。 バナー設定は「管理」メニューの独自のページに移動しました。"
     }
   },
   "spigraph": {

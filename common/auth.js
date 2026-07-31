@@ -907,7 +907,7 @@ class Auth {
           packetSearch: true,
           settings: {},
           welcomeMsgNum: 1,
-          roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+          roles: ['arkimeAdmin', 'cont3xtUser', 'dbAdmin', 'parliamentUser', 'usersAdmin', 'wiseUser']
         });
         await user.expandFromRoles();
         return done(null, user);

@@ -122,6 +122,9 @@
     "history": "Ajalugu",
     "upload": "Laadi üles",
     "roles": "Rollid",
+    "admin": "Haldus",
+    "esadmin": "ES Admin",
+    "banner": "Bänner",
     "notifiers": "Teavitajad",
     "tooltipHelpTip": "HOOT! Kas saan sind aidata? Klõpsa minus, et näha abilehte",
     "helpTip": "ABI!",
@@ -759,8 +762,7 @@
       "esShards": "ES Kilde",
       "esNodes": "ES Sõlmed",
       "esTasks": "ES Ülesanded",
-      "esRecovery": "ES Taaste",
-      "esAdmin": "ES Admin"
+      "esRecovery": "ES Taaste"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>VIHJE:</strong> Need graafikud on 1440 pikslit laiad. Laienda oma brauser aknaan vähemalt 1500 piksli laiuseks parima vaatamise jaoks.",
@@ -825,7 +827,7 @@
       "clearCache": "Puhasta vahemälu",
       "clearCacheTip": "Proovi kõigi indeksite vahemälu puhastada",
       "restoreAllocationTip": "See väärtus peaks enamikul juhtudel olema \"all\". Klõpsa siia, et see tagasi muuta.",
-      "controlHtml": "Sa saad kontrollida, millised kasutajad näevad seda lehte, määrates <code>esAdminUsers=</code> oma <code>config.ini</code> VÕI lisades arkimeAdmin rolli."
+      "controlHtml": "Sa saad <code>dbAdmin</code> rolliga kontrollida, millised kasutajad näevad seda lehte."
     },
     "esIndices": {
       "deleteIndex": "Kustuta indeks",
@@ -1144,8 +1146,7 @@
       "views": "Vaated",
       "shortcuts": "Otseteed",
       "cron": "Perioodilised päringud",
-      "notifiers": "Teavitajad",
-      "banner": "Bänner"
+      "notifiers": "Teavitajad"
     },
     "banner": {
       "title": "Bänner",
@@ -1493,13 +1494,13 @@
       "text": "Failide leht loetleb Arkime'i kirjutatud PCAP-failid ja näitab, kas nende seansid on veel otsitavad."
     },
     "stats": {
-      "text": "Statistika leht jälgib püügisõlmede ja Elasticsearchi seisundit — graafikud, sõlmede mõõdikud ja indeksite üksikasjad."
+      "text": "Statistika leht jälgib püügisõlmede ja Elasticsearchi seisundit — graafikud, sõlmede mõõdikud ja indeksite üksikasjad. ES-i haldusel on nüüd omaette leht menüüs Haldus."
     },
     "history": {
       "text": "Ajaloo leht salvestab sinu varasemad päringud (adminite puhul kõigi omad), et saaksid neid üle vaadata ja uuesti käivitada."
     },
     "settings": {
-      "text": "Tee Arkime enda omaks — teemad, ajavööndid, kohandatud veergude ja väljade paigutused, vaated, otseteed ja teavitajad on kõik siin."
+      "text": "Tee Arkime enda omaks — teemad, ajavööndid, kohandatud veergude ja väljade paigutused, vaated, otseteed ja teavitajad on kõik siin. Bänneri seadetel on nüüd omaette leht menüüs Haldus."
     }
   },
   "spigraph": {

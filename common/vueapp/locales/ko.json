@@ -122,6 +122,9 @@
     "history": "기록",
     "upload": "업로드",
     "roles": "역할",
+    "admin": "관리",
+    "esadmin": "ES 관리",
+    "banner": "배너",
     "notifiers": "알림기",
     "tooltipHelpTip": "도움이 필요하신가요? 클릭하여 도움말 페이지를 확인하세요",
     "helpTip": "도움말!",
@@ -759,8 +762,7 @@
       "esShards": "ES 샤드",
       "esNodes": "ES 노드",
       "esTasks": "ES 작업",
-      "esRecovery": "ES 복구",
-      "esAdmin": "ES 관리"
+      "esRecovery": "ES 복구"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>힌트:</strong> 이 그래프들은 너비가 1440픽셀입니다. 최적의 보기를 위해 브라우저 창 너비를 최소 1500픽셀로 넓혀주세요.",
@@ -825,7 +827,7 @@
       "clearCache": "캐시 삭제",
       "clearCacheTip": "모든 인덱스의 캐시 삭제를 시도합니다.",
       "restoreAllocationTip": "이 값은 대부분의 경우 \"all\"이어야 합니다. 클릭하여 복구하세요.",
-      "controlHtml": "<code>config.ini</code>에서 <code>esAdminUsers=</code>를 설정하거나 arkimeAdmin 역할을 추가하여 이 페이지를 볼 수 있는 사용자를 제어할 수 있습니다."
+      "controlHtml": "<code>dbAdmin</code> 역할로 이 페이지를 볼 수 있는 사용자를 제어할 수 있습니다."
     },
     "esIndices": {
       "deleteIndex": "인덱스 삭제",
@@ -1144,8 +1146,7 @@
       "views": "뷰",
       "shortcuts": "바로가기",
       "cron": "주기적 쿼리",
-      "notifiers": "알림기",
-      "banner": "배너"
+      "notifiers": "알림기"
     },
     "banner": {
       "title": "배너",
@@ -1493,13 +1494,13 @@
       "text": "파일 페이지는 Arkime이 기록한 PCAP 파일과 해당 세션이 아직 검색 가능한지 보여줍니다."
     },
     "stats": {
-      "text": "통계 페이지는 캡처 노드와 Elasticsearch 상태를 추적합니다. 그래프, 노드별 지표, 인덱스 세부 정보를 확인하세요."
+      "text": "통계 페이지는 캡처 노드와 Elasticsearch 상태를 추적합니다. 그래프, 노드별 지표, 인덱스 세부 정보를 확인하세요. ES 관리는 이제 관리 메뉴의 별도 페이지에 있습니다."
     },
     "history": {
       "text": "기록 페이지는 과거 쿼리(관리자는 전체 사용자)를 기록하여 검토하고 다시 실행할 수 있습니다."
     },
     "settings": {
-      "text": "Arkime을 나만의 것으로 만드세요. 테마, 시간대, 사용자 지정 열 및 필드 레이아웃, 보기, 단축키, 알림이 모두 여기에 있습니다."
+      "text": "Arkime을 나만의 것으로 만드세요. 테마, 시간대, 사용자 지정 열 및 필드 레이아웃, 보기, 단축키, 알림이 모두 여기에 있습니다. 배너 설정은 이제 관리 메뉴의 별도 페이지에 있습니다."
     }
   },
   "spigraph": {

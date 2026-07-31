@@ -122,6 +122,9 @@
     "history": "Histórico",
     "upload": "Enviar",
     "roles": "Funções",
+    "admin": "Administração",
+    "esadmin": "Admin ES",
+    "banner": "Banner",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "PIU! Posso ajudá-lo? Clique em mim para ver a página de ajuda",
     "helpTip": "AJUDA!",
@@ -759,8 +762,7 @@
       "esShards": "Shards ES",
       "esNodes": "Nós ES",
       "esTasks": "Tarefas ES",
-      "esRecovery": "Recuperação ES",
-      "esAdmin": "Admin ES"
+      "esRecovery": "Recuperação ES"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>DICA:</strong> Estes gráficos têm 1440 pixels de largura. Expanda a janela do navegador para pelo menos 1500 pixels de largura para melhor visualização.",
@@ -825,7 +827,7 @@
       "clearCache": "Limpar Cache",
       "clearCacheTip": "Tentar limpar o cache de todos os índices",
       "restoreAllocationTip": "Este valor deve ser \"all\" na maioria dos casos. Clique aqui para alterá-lo de volta.",
-      "controlHtml": "Você pode controlar quais usuários veem esta página configurando <code>esAdminUsers=</code> no seu <code>config.ini</code> OU adicionar a função arkimeAdmin."
+      "controlHtml": "Você pode controlar quais usuários veem esta página com a função <code>dbAdmin</code>."
     },
     "esIndices": {
       "deleteIndex": "Excluir Índice",
@@ -1144,8 +1146,7 @@
       "views": "Visualizações",
       "shortcuts": "Atalhos",
       "cron": "Consultas Periódicas",
-      "notifiers": "Notificadores",
-      "banner": "Banner"
+      "notifiers": "Notificadores"
     },
     "banner": {
       "title": "Banner",
@@ -1493,13 +1494,13 @@
       "text": "A página de Arquivos lista os arquivos PCAP gravados pelo Arkime e se suas sessões ainda podem ser pesquisadas."
     },
     "stats": {
-      "text": "A página de Estatísticas acompanha a saúde dos nós de captura e do Elasticsearch — gráficos, métricas por nó e detalhes dos índices."
+      "text": "A página de Estatísticas acompanha a saúde dos nós de captura e do Elasticsearch — gráficos, métricas por nó e detalhes dos índices. A administração do ES agora tem sua própria página no menu Administração."
     },
     "history": {
       "text": "A página de Histórico registra suas consultas anteriores (ou de todos, para administradores) para você revisar e repetir."
     },
     "settings": {
-      "text": "Deixe o Arkime com a sua cara — temas, fusos horários, layouts personalizados de colunas e campos, visualizações, atalhos e notificadores estão todos aqui."
+      "text": "Deixe o Arkime com a sua cara — temas, fusos horários, layouts personalizados de colunas e campos, visualizações, atalhos e notificadores estão todos aqui. As configurações de banner agora têm sua própria página no menu Administração."
     }
   },
   "spigraph": {
