@@ -58,6 +58,12 @@ SPDX-License-Identifier: Apache-2.0
 
         <e-s-health class="ms-2" />
 
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
+
         <v-btn
           v-if="isAToolBarPage"
           variant="text"
@@ -86,6 +92,7 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth.vue';
+import AdminMenu from './AdminMenu.vue';
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
@@ -96,6 +103,7 @@ export default {
     Logout,
     Version,
     ESHealth,
+    AdminMenu,
     LanguageSwitcher
   },
   data: function () {
@@ -103,8 +111,9 @@ export default {
       path: this.$constants.PATH,
       menuOrder: [
         'arkime', 'sessions', 'spiview', 'spigraph', 'hunt',
-        'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
+        'files', 'stats', 'history', 'upload', 'settings'
       ],
+      adminOrder: ['users', 'roles', 'banner', 'esadmin'],
       // active-pill colors -- use Arkime CSS vars so the pill flips
       // between themes (white-on-dark in light theme, dark-on-light in
       // dark theme) without us picking specific colors per theme.
@@ -134,6 +143,8 @@ export default {
         settings: { title: this.$t('navigation.settings'), link: 'settings', name: 'Settings' },
         users: { title: this.$t('navigation.users'), link: 'users', role: 'usersAdmin', name: 'Users' },
         roles: { title: this.$t('navigation.roles'), link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
+        banner: { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' },
+        esadmin: { title: this.$t('navigation.esadmin'), link: 'esadmin', role: 'dbAdmin', name: 'EsAdmin' },
         hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
       };
 
@@ -172,6 +183,11 @@ export default {
 
       return menu;
     },
+    adminItems: function () {
+      return this.adminOrder
+        .map(item => this.menu[item])
+        .filter(item => item && item.hasPermission && item.hasRole);
+    },
     helpLink: function () {
       const helpLink = {
         href: 'help',
@@ -203,7 +219,7 @@ export default {
     },
     isAToolBarPage: function () {
       if (!this.activePage) { return false; }
-      return ['settings', 'upload', 'help', 'users'].every(item => item !== this.activePage);
+      return ['settings', 'upload', 'help', 'users', 'banner'].every(item => item !== this.activePage);
     },
     user: function () {
       return this.$store.state.user;

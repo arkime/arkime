@@ -95,6 +95,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4160 Add dbTimestamp field to search on when a session was written to the database (@timestamp); session detail shows it after the stop time
   - #4160 Fix date expression values ending in a timezone abbreviation (2026/07/27 09:33:05 UTC) generating an Invalid date ES query
   - #4163 Add Packet Portal (experimental), a second viewer-to-viewer transport where a NAT'd sensor viewer dials out to a central viewer, which then sends its normal node-to-node requests (pcap, hunts, crons, proxying) back over that link; see packetPortal* settings
+  - #4172 Fix Download Entire PCAP failing on sensors behind esProxy; the rootId session search is now allowed through esProxy, and a failed search returns a 500 instead of an unhandled rejection
 
 6.6.0 2026/07/09
 ## Breaking

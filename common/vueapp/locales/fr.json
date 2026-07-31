@@ -122,6 +122,9 @@
     "history": "Historique",
     "upload": "Télécharger",
     "roles": "Rôles",
+    "admin": "Administration",
+    "esadmin": "Admin ES",
+    "banner": "Bannière",
     "notifiers": "Notificateurs",
     "tooltipHelpTip": "HOOT! Puis-je vous aider? Cliquez sur moi pour voir la page d'aide",
     "helpTip": "AIDE!",
@@ -759,8 +762,7 @@
       "esShards": "Shards ES",
       "esNodes": "Nœuds ES",
       "esTasks": "Tâches ES",
-      "esRecovery": "Récupération ES",
-      "esAdmin": "Admin ES"
+      "esRecovery": "Récupération ES"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>CONSEIL:</strong> Ces graphiques font 1440 pixels de large. Développez votre fenêtre de navigateur à au moins 1500 pixels de large pour un meilleur affichage.",
@@ -1143,8 +1145,7 @@
       "views": "Vues",
       "shortcuts": "Raccourcis",
       "cron": "Requêtes périodiques",
-      "notifiers": "Notificateurs",
-      "banner": "Bannière"
+      "notifiers": "Notificateurs"
     },
     "banner": {
       "title": "Bannière",
@@ -1492,13 +1493,13 @@
       "text": "La page Fichiers liste les fichiers PCAP écrits par Arkime et indique si leurs sessions restent consultables."
     },
     "stats": {
-      "text": "La page Statistiques suit la santé des nœuds de capture et d'Elasticsearch — graphiques, métriques par nœud et détails des index."
+      "text": "La page Statistiques suit la santé des nœuds de capture et d'Elasticsearch — graphiques, métriques par nœud et détails des index. L'administration ES a maintenant sa propre page dans le menu Administration."
     },
     "history": {
       "text": "La page Historique enregistre vos requêtes passées (ou celles de tous, pour les admins) afin de les revoir et de les rejouer."
     },
     "settings": {
-      "text": "Faites d'Arkime le vôtre — thèmes, fuseaux horaires, dispositions personnalisées de colonnes et de champs, vues, raccourcis et notificateurs sont tous ici."
+      "text": "Faites d'Arkime le vôtre — thèmes, fuseaux horaires, dispositions personnalisées de colonnes et de champs, vues, raccourcis et notificateurs sont tous ici. Les paramètres de bannière ont maintenant leur propre page dans le menu Administration."
     }
   },
   "spigraph": {

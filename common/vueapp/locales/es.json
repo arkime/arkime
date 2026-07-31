@@ -122,6 +122,9 @@
     "history": "Historial",
     "upload": "Subir",
     "roles": "Roles",
+    "admin": "Administración",
+    "esadmin": "Administrador de ES",
+    "banner": "Banner",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "¡HOOT! ¿Puedo ayudarte? Haz clic en mí para ver la página de ayuda",
     "helpTip": "¡AYUDA!",
@@ -759,8 +762,7 @@
       "esShards": "Shards de ES",
       "esNodes": "Nodos de ES",
       "esTasks": "Tareas de ES",
-      "esRecovery": "Recuperación de ES",
-      "esAdmin": "Administrador de ES"
+      "esRecovery": "Recuperación de ES"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>CONSEJO:</strong> Estos gráficos tienen 1440 píxeles de ancho. Expande tu ventana del navegador a al menos 1500 píxeles de ancho para una mejor visualización.",
@@ -1143,8 +1145,7 @@
       "views": "Vistas",
       "shortcuts": "Accesos directos",
       "cron": "Consultas periódicas",
-      "notifiers": "Notificadores",
-      "banner": "Banner"
+      "notifiers": "Notificadores"
     },
     "banner": {
       "title": "Banner",
@@ -1492,13 +1493,13 @@
       "text": "La página de Archivos muestra los archivos PCAP que Arkime ha escrito y si sus sesiones todavía se pueden buscar."
     },
     "stats": {
-      "text": "La página de Estadísticas supervisa la salud de los nodos de captura y de Elasticsearch — gráficos, métricas por nodo y detalles de los índices."
+      "text": "La página de Estadísticas supervisa la salud de los nodos de captura y de Elasticsearch — gráficos, métricas por nodo y detalles de los índices. La administración de ES ahora tiene su propia página en el menú Administración."
     },
     "history": {
       "text": "La página de Historial registra tus consultas anteriores (o las de todos, para los administradores) para que puedas revisarlas y repetirlas."
     },
     "settings": {
-      "text": "Haz que Arkime sea tuyo — temas, zonas horarias, diseños personalizados de columnas y campos, vistas, atajos y notificadores, todo está aquí."
+      "text": "Haz que Arkime sea tuyo — temas, zonas horarias, diseños personalizados de columnas y campos, vistas, atajos y notificadores, todo está aquí. La configuración del banner ahora tiene su propia página en el menú Administración."
     }
   },
   "spigraph": {

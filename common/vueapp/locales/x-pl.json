@@ -123,6 +123,9 @@
     "history": "Istoryhay",
     "upload": "Uploadway",
     "roles": "Olesray",
+    "admin": "Adminway",
+    "esadmin": "ESway Adminway",
+    "banner": "Annerbay",
     "notifiers": "Otifiersnay",
     "tooltipHelpTip": "OOTHAY! Ancay Iway elphay ouyay? Ickclay emay otay eesay ethay elphay agepay",
     "helpTip": "ELPHAY!",
@@ -760,8 +763,7 @@
       "esShards": "ESway Ardsshay",
       "esNodes": "ESway Odesnay",
       "esTasks": "ESway Askstay",
-      "esRecovery": "ESway Ecveryray",
-      "esAdmin": "ESway Adminway"
+      "esRecovery": "ESway Ecveryray"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>INTHAY:</strong> Esethay raphsgray areway 1440 ixelspay ideway. Expandway ouryay owserbray indowway otay atway eastlay 1500 ixelspay ideway orfay estbay iewingvay.",
@@ -1144,8 +1146,7 @@
       "views": "Iewsvay",
       "shortcuts": "Ortcutsshay",
       "cron": "EriodicPay EriesQuay",
-      "notifiers": "Otifiersnay",
-      "banner": "Annerbay"
+      "notifiers": "Otifiersnay"
     },
     "banner": {
       "title": "Annerbay",
@@ -1493,13 +1494,13 @@
       "text": "Ethay Ilesfay agepay istslay ethay ACAPpay ilesfay ArkimeWay ashay ittenwray andway etherwhay eirthay essionssay areway illstay earchablesay."
     },
     "stats": {
-      "text": "Ethay Atsstay agepay ackstray apturecay odenay andway Elasticsearchway ealthhay — aphsgray, erpay-odenay etricsmay, andway indexway etailsday."
+      "text": "Ethay Atsstay agepay ackstray apturecay odenay andway Elasticsearchway ealthhay — aphsgray, erpay-odenay etricsmay, andway indexway etailsday. ESway adminway ownay ashay itsway ownway agepay underway ethay Adminway enumay."
     },
     "history": {
       "text": "Ethay Istoryhay agepay ecordsray astpay ueriesqay omfray ouyay (orway everyoneway, orfay adminsway) osay ouyay ancay eviewray andway eplayray emthay."
     },
     "settings": {
-      "text": "Akemay ArkimeWay oursyay — emesthay, imetay oneszay, ustomcay olumncay andway ieldfay ayoutslay, iewsvay, ortcutsshay, andway otifiersnay allway ivelay erehay."
+      "text": "Akemay ArkimeWay oursyay — emesthay, imetay oneszay, ustomcay olumncay andway ieldfay ayoutslay, iewsvay, ortcutsshay, andway otifiersnay allway ivelay erehay. Annerbay ettingssay ownay avehay eirthay ownway agepay underway ethay Adminway enumay."
     }
   },
   "spigraph": {
