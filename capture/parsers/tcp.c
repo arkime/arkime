@@ -49,6 +49,12 @@ LOCAL void tcp_mid_save(ArkimeSession_t *session)
 {
     session->tcpData.ackTime = 0;
     session->tcpData.synTime = 0;
+    session->tcpData.synAckSeq[0] = 0;
+    session->tcpData.synAckSeq[1] = 0;
+    session->tcpData.synSeen = 0;
+    session->tcpData.synValidated = 0;
+    session->tcpData.ackSynchronized = 0;
+    session->tcpData.srcISNCnt = 0;
     memset(session->tcpData.tcpFlagCnt, 0, sizeof(session->tcpData.tcpFlagCnt));
 }
 /******************************************************************************/
@@ -212,6 +218,20 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
             ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
 
+            // The value a peer must ack to prove it received THIS side's ISN. Recorded per
+            // direction so a forged syn-ack cannot supply both halves of the comparison.
+            // Retransmits repeat the same ISN, so only record it once.
+            if (!session->tcpData.synAckSeq[packet->direction]) {
+                session->tcpData.synAckSeq[packet->direction] = seq + 1;
+
+                // Linkage 1: this syn-ack acknowledges the syn we actually observed, so the
+                // responder demonstrably received it.
+                const int saOther = (packet->direction + 1) & 1;
+                if ((session->tcpData.synSeen & (1 << saOther)) &&
+                    ntohl(tcphdr->th_ack) == session->tcpData.synISN[saOther] + 1)
+                    session->tcpData.synValidated |= (1 << saOther);
+            }
+
             if (!session->haveTcpSession) {
 #ifdef DEBUG_TCP
                 LOG("syn-ack first");
@@ -226,8 +246,13 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         } else {
             session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
             ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
+            if (!(session->tcpData.synSeen & (1 << packet->direction))) {
+                session->tcpData.synISN[packet->direction] = seq;
+                session->tcpData.synSeen |= (1 << packet->direction);
+            }
             if (session->tcpData.synTime == 0) {
                 session->tcpData.synSeq[0] = seq;
+                session->tcpData.srcISNCnt = 1;
                 session->tcpData.synTime = (uint32_t)((packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
                                                       (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1);
                 session->tcpData.ackTime = 0;
@@ -270,6 +295,18 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             session->tcpFlagAckCnt[packet->direction]++;
         }
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
+
+        // Linkage 2: acknowledges the OTHER side's ISN, which an off-path sender cannot know.
+        // Linkage 3: continues from the syn we observed, when we observed one. Fails closed -
+        // with no syn-ack from the other side, nothing is claimed.
+        const int ackOtherDir = (packet->direction + 1) & 1;
+        if (!(session->tcpData.ackSynchronized & (1 << packet->direction)) &&
+            session->tcpData.synAckSeq[ackOtherDir] &&
+            ntohl(tcphdr->th_ack) == session->tcpData.synAckSeq[ackOtherDir] &&
+            (!(session->tcpData.synSeen & (1 << packet->direction)) ||
+             ntohl(tcphdr->th_seq) == session->tcpData.synISN[packet->direction] + 1)) {
+            session->tcpData.ackSynchronized |= (1 << packet->direction);
+        }
         if (session->tcpData.ackTime == 0) {
             session->tcpData.ackTime = (uint32_t)((packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
                                                   (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1);
@@ -429,9 +466,16 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     // SYN arriving reordered (e.g. spread across capture interfaces/reader threads) or a retransmit - keep it
     // in the same session instead of splitting one flow into two.
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
-        (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]) &&
         ntohl(tcphdr->th_seq) != session->tcpData.synSeq[0]) {
-        return 1;
+        // A bare SYN with a different ISN is a distinct connection attempt, not a retransmit
+        // (RFC 9293 3.4, RFC 6528). Count it even when the session is not split, so a merged
+        // flow is identifiable.
+        if (session->tcpData.srcISNCnt < 0xff)
+            session->tcpData.srcISNCnt++;
+
+        if (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]) {
+            return 1;
+        }
     }
 
     if (isNewSession) {
