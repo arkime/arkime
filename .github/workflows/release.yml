@@ -19,6 +19,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Validate inputs
         env:
@@ -37,6 +38,7 @@ jobs:
   generate-matrix:
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
@@ -76,6 +78,7 @@ jobs:
       ITERATION: ${{ github.event.inputs.iteration }}
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+    timeout-minutes: 30
 
     container:
       image: ${{ matrix.container }}
@@ -243,6 +246,7 @@ jobs:
       RELEASE_TAG: ${{ github.event.inputs.release_tag }}
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -314,6 +318,7 @@ jobs:
   create-manifest:
     needs: build-release
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
       packages: write
@@ -359,6 +364,7 @@ jobs:
 ############# Slack Message#############
   slack:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs:
       - build-release
     steps:
