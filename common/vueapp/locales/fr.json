@@ -1046,7 +1046,7 @@
     "uploadWorked": "Fichier téléchargé avec succès"
   },
   "users": {
-    "searchPlaceholder": "Commencer à taper pour rechercher des utilisateurs par nom, ID ou rôle",
+    "searchPlaceholder": "Commencer à taper pour rechercher des utilisateurs par nom, ID ou rôle (!rôle exclut les utilisateurs ayant ce rôle)",
     "searchUserPlaceholder": "Commencer à taper pour rechercher des utilisateurs par nom ou ID",
     "downloadCSVTip": "Télécharger CSV",
     "downloadCSVMsg": "CSV téléchargé!",

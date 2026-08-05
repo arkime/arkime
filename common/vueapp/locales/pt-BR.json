@@ -1046,7 +1046,7 @@
     "uploadWorked": "Arquivo enviado com sucesso"
   },
   "users": {
-    "searchPlaceholder": "Comece a digitar para pesquisar usuários por nome, ID ou função",
+    "searchPlaceholder": "Comece a digitar para pesquisar usuários por nome, ID ou função (!função exclui usuários com essa função)",
     "searchUserPlaceholder": "Comece a digitar para pesquisar usuários por nome ou ID",
     "downloadCSVTip": "Baixar CSV",
     "downloadCSVMsg": "CSV baixado!",

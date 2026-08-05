@@ -1046,7 +1046,7 @@
     "uploadWorked": "Archivo subido exitosamente"
   },
   "users": {
-    "searchPlaceholder": "Comience a escribir para buscar usuarios por nombre, ID o rol",
+    "searchPlaceholder": "Comience a escribir para buscar usuarios por nombre, ID o rol (!rol excluye usuarios con ese rol)",
     "searchUserPlaceholder": "Comience a escribir para buscar usuarios por nombre o ID",
     "downloadCSVTip": "Descargar CSV",
     "downloadCSVMsg": "¡CSV descargado!",

@@ -1046,7 +1046,7 @@
     "uploadWorked": "文件成功上传"
   },
   "users": {
-    "searchPlaceholder": "开始输入以按名称、ID 或角色搜索用户",
+    "searchPlaceholder": "开始输入以按名称、ID 或角色搜索用户（!角色可排除具有该角色的用户）",
     "searchUserPlaceholder": "开始输入以按名称或 ID 搜索用户",
     "downloadCSVTip": "下载 CSV",
     "downloadCSVMsg": "已下载 CVS！",
