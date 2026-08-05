@@ -238,7 +238,7 @@ class User {
    * search against user index, promise only
    * @param query.from first index
    * @param query.size number of items
-   * @param query.filter search userId userName for
+   * @param query.filter search userId userName for; a leading ! excludes users that have a matching role (when "roles" is in searchFields)
    * @param query.sortField the field to sort on, default userId
    * @param query.sortDescending sort descending, default false
    * @param query.noRoles filters out users with ids starting with 'role:', default false
@@ -1924,15 +1924,20 @@ function sortUsers (users, sortField, sortDescending) {
 function filterUsers (users, filter, searchFields, noRoles) {
   const validSearchFields = searchFields
     ?.filter(field => field === 'userId' || field === 'userName' || field === 'roles') || [];
+  // a leading ! excludes users that have a matching role
+  const negateRoles = filter?.startsWith('!') && validSearchFields.includes('roles');
+  if (negateRoles) { filter = filter.slice(1); }
   const usingFilter = filter && validSearchFields.length;
-  if (!noRoles && !usingFilter) {
+  if (!noRoles && !usingFilter && !negateRoles) {
     return users; // nothing to filter on
   }
-  const re = usingFilter ? ArkimeUtil.wildcardToRegexp(`*${filter}*`) : null;
+  const re = (usingFilter || negateRoles) ? ArkimeUtil.wildcardToRegexp(`*${filter}*`) : null;
 
   return users.filter(user => {
     // exclude roles
     if (noRoles && user.userId.startsWith('role:')) { return false; }
+
+    if (negateRoles) { return !user.roles?.some(v => v.match(re)); }
 
     // filter searched fields
     return (!usingFilter || validSearchFields.some(field => Array.isArray(user[field]) ? user[field].some(v => v.match(re)) : user[field]?.match(re)));
@@ -2026,10 +2031,17 @@ class UserESImplementation {
     }
 
     if (query.filter && query.searchFields.length) {
-      const searchFilters = query.searchFields
-        .filter(field => field === 'userId' || field === 'userName' || field === 'roles')
-        .map(validField => { return { wildcard: { [validField]: '*' + query.filter + '*' } }; });
-      if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
+      if (query.filter.startsWith('!') && query.searchFields.includes('roles')) {
+        // a leading ! excludes users that have a matching role
+        esQuery.query.bool.must_not.push({
+          wildcard: { roles: '*' + query.filter.slice(1) + '*' }
+        });
+      } else {
+        const searchFilters = query.searchFields
+          .filter(field => field === 'userId' || field === 'userName' || field === 'roles')
+          .map(validField => { return { wildcard: { [validField]: '*' + query.filter + '*' } }; });
+        if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
+      }
     }
 
     if (query.sortField && !ArkimeUtil.isPP(query.sortField)) {
