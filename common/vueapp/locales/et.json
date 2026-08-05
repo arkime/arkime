@@ -953,7 +953,7 @@
     "uploadWorked": "Fail edukalt üles laaditud"
   },
   "users": {
-    "searchPlaceholder": "Alusta tippimist, et otsida kasutajaid nime, ID või rolli järgi",
+    "searchPlaceholder": "Alusta tippimist, et otsida kasutajaid nime, ID või rolli järgi (!roll välistab selle rolliga kasutajad)",
     "searchUserPlaceholder": "Alusta tippimist, et otsida kasutajaid nime või ID järgi",
     "downloadCSVTip": "Laadi alla CSV",
     "downloadCSVMsg": "CSV alla laaditud!",
