@@ -19,15 +19,6 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <div class="container">
-      <!-- demo mode -->
-      <v-alert
-        v-if="demoMode"
-        type="warning"
-        variant="tonal"
-        density="compact">
-        {{ $t('uploads.demoMode') }}
-      </v-alert> <!-- /demo mode -->
-
       <v-row>
         <v-col
           cols="12"
@@ -115,7 +106,6 @@ export default {
       error: '',
       msg: '',
       msgType: undefined,
-      demoMode: this.$constants.DEMO_MODE,
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
         backgroundColor: 'rgb(var(--v-theme-primary))',

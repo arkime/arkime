@@ -1039,7 +1039,6 @@
   },
   "uploads": {
     "uploadFile": "上传文件",
-    "demoMode": "上传的所有内容将对使用此演示的其他人可见！",
     "pcapFileUpload": "PCAP 文件上传",
     "tags": "标签",
     "tagsPlaceholder": "逗号分隔的标签列表",
@@ -1884,8 +1883,7 @@
       "cannotChangeHunt": "除非拥有管理员权限，否则无法更改其他用户的搜寻",
       "checkHuntAccessError": "检查搜寻访问权限出错",
       "noPermission": "您没有权限访问此资源",
-      "needAdminPrivileges": "需要管理员权限",
-      "disabledDemoMode": "在演示模式下已禁用。"
+      "needAdminPrivileges": "需要管理员权限"
     },
     "hunts": {
       "cannotStartWhileRunning": "在运行中的作业完成或暂停之前，无法启动新的搜寻。",

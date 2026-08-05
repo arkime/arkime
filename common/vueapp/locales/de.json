@@ -1039,7 +1039,6 @@
   },
   "uploads": {
     "uploadFile": "Datei hochladen",
-    "demoMode": "Alles hochgeladene wird für alle anderen sichtbar sein, die diese Demo verwenden!",
     "pcapFileUpload": "PCAP-Datei-Upload",
     "tags": "Tag(s)",
     "tagsPlaceholder": "Kommagetrennte Liste von Tags",
@@ -1884,8 +1883,7 @@
       "cannotChangeHunt": "Sie können die Suche eines anderen Benutzers nicht ändern, es sei denn, Sie haben Administratorrechte",
       "checkHuntAccessError": "Fehler beim Überprüfen des Suchzugriffs",
       "noPermission": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen",
-      "needAdminPrivileges": "Administratorrechte erforderlich",
-      "disabledDemoMode": "Im Demomodus deaktiviert."
+      "needAdminPrivileges": "Administratorrechte erforderlich"
     },
     "hunts": {
       "cannotStartWhileRunning": "Sie können keine neue Suche starten, bis der laufende Auftrag abgeschlossen oder pausiert ist.",

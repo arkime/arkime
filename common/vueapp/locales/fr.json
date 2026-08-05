@@ -1039,7 +1039,6 @@
   },
   "uploads": {
     "uploadFile": "Télécharger un fichier",
-    "demoMode": "Tout ce qui est téléchargé sera visible par tous les autres utilisateurs de cette démo!",
     "pcapFileUpload": "Téléchargement de fichier PCAP",
     "tags": "Tag(s)",
     "tagsPlaceholder": "Liste de tags séparés par des virgules",
@@ -1884,8 +1883,7 @@
       "cannotChangeHunt": "Vous ne pouvez pas modifier la recherche d'un autre utilisateur sauf si vous avez les privilèges administrateur",
       "checkHuntAccessError": "Erreur lors de la vérification de l'accès à la recherche",
       "noPermission": "Vous n'avez pas la permission d'accéder à cette ressource",
-      "needAdminPrivileges": "Privilèges administrateur requis",
-      "disabledDemoMode": "Désactivé en mode démonstration."
+      "needAdminPrivileges": "Privilèges administrateur requis"
     },
     "hunts": {
       "cannotStartWhileRunning": "Vous ne pouvez pas démarrer une nouvelle recherche tant que la tâche en cours n'est pas terminée ou mise en pause.",

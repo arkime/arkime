@@ -92,8 +92,6 @@ async function initializeApp () {
 
     DISABLE_USER_PASSWORD_UI, // from cont3xt.js
 
-    DEMO_MODE, // from cont3xt.js
-
     BUILD_DATE, // from vite.config.js
 
     BUILD_VERSION // from vite.config.js

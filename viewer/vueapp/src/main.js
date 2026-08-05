@@ -85,7 +85,6 @@ async function initializeApp() {
   const constants = {
     TITLE_CONFIG,
     FOOTER_CONFIG,
-    DEMO_MODE,
     VERSION,
     PATH,
     MULTIVIEWER,

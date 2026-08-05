@@ -1039,7 +1039,6 @@
   },
   "uploads": {
     "uploadFile": "파일 업로드",
-    "demoMode": "업로드된 모든 항목은 이 데모를 사용하는 다른 모든 사람에게 공개됩니다!",
     "pcapFileUpload": "PCAP 파일 업로드",
     "tags": "태그",
     "tagsPlaceholder": "쉼표로 구분된 태그 목록",
@@ -1884,8 +1883,7 @@
       "cannotChangeHunt": "관리자 권한이 없으면 다른 사용자의 헌트를 변경할 수 없습니다",
       "checkHuntAccessError": "헌트 접근 확인 오류",
       "noPermission": "이 리소스에 접근할 권한이 없습니다",
-      "needAdminPrivileges": "관리자 권한이 필요합니다",
-      "disabledDemoMode": "데모 모드에서 비활성화되었습니다."
+      "needAdminPrivileges": "관리자 권한이 필요합니다"
     },
     "hunts": {
       "cannotStartWhileRunning": "실행 중인 작업이 완료되거나 일시 중지될 때까지 새 헌트를 시작할 수 없습니다.",

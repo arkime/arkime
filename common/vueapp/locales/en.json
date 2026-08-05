@@ -1039,7 +1039,6 @@
   },
   "uploads": {
     "uploadFile": "Upload File",
-    "demoMode": "Everything uploaded will be visible to everyone else using this demo!",
     "pcapFileUpload": "PCAP File Upload",
     "tags": "Tags",
     "tagsPlaceholder": "Comma separated list of tags",
@@ -1884,8 +1883,7 @@
       "cannotChangeHunt": "You cannot change another user's hunt unless you have admin privileges",
       "checkHuntAccessError": "Error checking hunt access",
       "noPermission": "You do not have permission to access this resource",
-      "needAdminPrivileges": "Need admin privileges",
-      "disabledDemoMode": "Disabled in demo mode."
+      "needAdminPrivileges": "Need admin privileges"
     },
     "hunts": {
       "cannotStartWhileRunning": "You cannot start a new hunt until the running job completes or is paused.",

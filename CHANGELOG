@@ -43,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           (superAdmin includes it, arkimeAdmin no longer grants it), eg db.pl <host:port> users-update '<userId glob>' --addRole dbAdmin.
           dbAdmin implies no other role, so pair it with arkimeUser, which viewer requires for any access
   - #4080 Removed the derived esAdminUser field from /api/user/current, check the user's roles for dbAdmin instead
+  - Removed the demoMode setting and User.isDemoMode(); roles do not replace it, so put a shared instance behind an external identity provider
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture

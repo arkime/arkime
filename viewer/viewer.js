@@ -1223,27 +1223,8 @@ async function expireCheckAll () {
 }
 
 // ============================================================================
-// REDIRECTS & DEMO SETUP
+// REDIRECTS
 // ============================================================================
-// APIs disabled in demoMode, needs to be before real callbacks
-ArkimeConfig.loaded(() => {
-  if (Config.get('demoMode', false)) {
-    console.log('WARNING - Starting in demo mode, some APIs disabled');
-  }
-});
-
-app.all([
-  '/api/histories',
-  '/api/history/*',
-  '/api/cron*',
-  '/api/user/password*'
-], (req, res, next) => {
-  if (!req.user.isDemoMode()) {
-    return next();
-  }
-  return res.serverError(403, 'Disabled in demo mode.', 'api.viewer.disabledDemoMode');
-});
-
 // redirect to sessions page and conserve params
 app.get(['/', '/app'], (req, res) => {
   const question = req.url.indexOf('?');
@@ -2252,10 +2233,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path.toLowerCase() === '/settings' && req.user.isDemoMode()) {
-    return res.status(403).send('Permission denied');
-  }
-
   let theme = req.user?.settings?.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
@@ -2275,7 +2252,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     footerConfig,
     path: Config.basePath(),
     version: version.version,
-    demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     hasTshark: !!internals.tsharkPath,

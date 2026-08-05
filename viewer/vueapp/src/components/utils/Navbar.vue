@@ -138,19 +138,15 @@ export default {
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
         files: { title: this.$t('navigation.files'), link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
         stats: { title: this.$t('navigation.stats'), link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
+        history: { title: this.$t('navigation.history'), link: 'history', name: 'ArkimeHistory' },
         upload: { title: this.$t('navigation.upload'), link: 'upload', permission: 'canUpload', name: 'Upload' },
+        settings: { title: this.$t('navigation.settings'), link: 'settings', name: 'Settings' },
+        users: { title: this.$t('navigation.users'), link: 'users', role: 'usersAdmin', name: 'Users' },
         roles: { title: this.$t('navigation.roles'), link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
+        banner: { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' },
         esadmin: { title: this.$t('navigation.esadmin'), link: 'esadmin', role: 'dbAdmin', name: 'EsAdmin' },
         hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
       };
-
-      if (!this.$constants.DEMO_MODE) {
-        menu.history = { title: this.$t('navigation.history'), link: 'history', name: 'ArkimeHistory' };
-        menu.settings = { title: this.$t('navigation.settings'), link: 'settings', name: 'Settings' };
-        menu.users = { title: this.$t('navigation.users'), link: 'users', role: 'usersAdmin', name: 'Users' };
-        // banner writes are global, keep them out of demo mode like settings
-        menu.banner = { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' };
-      }
 
       // preserve url query parameters
       for (const m in menu) {
