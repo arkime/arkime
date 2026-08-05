@@ -295,18 +295,6 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             session->tcpFlagAckCnt[packet->direction]++;
         }
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
-
-        // Linkage 2: acknowledges the OTHER side's ISN, which an off-path sender cannot know.
-        // Linkage 3: continues from the syn we observed, when we observed one. Fails closed -
-        // with no syn-ack from the other side, nothing is claimed.
-        const int ackOtherDir = (packet->direction + 1) & 1;
-        if (!(session->tcpData.ackSynchronized & (1 << packet->direction)) &&
-            session->tcpData.synAckSeq[ackOtherDir] &&
-            ntohl(tcphdr->th_ack) == session->tcpData.synAckSeq[ackOtherDir] &&
-            (!(session->tcpData.synSeen & (1 << packet->direction)) ||
-             ntohl(tcphdr->th_seq) == session->tcpData.synISN[packet->direction] + 1)) {
-            session->tcpData.ackSynchronized |= (1 << packet->direction);
-        }
         if (session->tcpData.ackTime == 0) {
             session->tcpData.ackTime = (uint32_t)((packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
                                                   (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1);
@@ -316,6 +304,39 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
     if (tcphdr->th_flags & TH_PUSH) {
         session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]++;
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsPshField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
+    }
+
+    // Synchronization check. Runs for any ack-bearing segment, not just a bare ack - a peer
+    // may complete the handshake on a segment that also carries data, and a server that
+    // speaks first makes the client's ack cover the syn-ack plus that data.
+    //
+    // Both tests are windows bounded by what we have actually seen each side send, which is
+    // what makes them unforgeable off-path: the ack must land inside the peer's send space,
+    // starting at its ISN+1 (RFC 6528 makes that unguessable) and reaching no further than
+    // the last byte we saw it send. An unbounded ">=" would be satisfied by roughly half of
+    // all random guesses, so the upper bound carries the security property.
+    //
+    // Fails closed - with no syn-ack observed from the other side, nothing is claimed.
+    if ((tcphdr->th_flags & TH_ACK) && !(tcphdr->th_flags & (TH_SYN | TH_RST))) {
+        const int otherDir = (packet->direction + 1) & 1;
+        if (!(session->tcpData.ackSynchronized & (1 << packet->direction)) &&
+            session->tcpData.synAckSeq[otherDir]) {
+            const uint32_t ack = ntohl(tcphdr->th_ack);
+
+            // synAckSeq[otherDir] <= ack <= tcpSeq[otherDir]
+            const gboolean ackOK = tcp_sequence_diff(ack, session->tcpData.synAckSeq[otherDir]) <= 0 &&
+                                   tcp_sequence_diff(ack, session->tcpData.tcpSeq[otherDir]) >= 0;
+
+            // synISN[direction]+1 <= seq <= tcpSeq[direction], when a syn was observed.
+            gboolean seqOK = TRUE;
+            if (session->tcpData.synSeen & (1 << packet->direction)) {
+                seqOK = tcp_sequence_diff(seq, session->tcpData.synISN[packet->direction] + 1) <= 0 &&
+                        tcp_sequence_diff(seq, session->tcpData.tcpSeq[packet->direction]) >= 0;
+            }
+
+            if (ackOK && seqOK)
+                session->tcpData.ackSynchronized |= (1 << packet->direction);
+        }
     }
 
     if (session->stopTCP)
@@ -467,15 +488,15 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     // in the same session instead of splitting one flow into two.
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
         ntohl(tcphdr->th_seq) != session->tcpData.synSeq[0]) {
-        // A bare SYN with a different ISN is a distinct connection attempt, not a retransmit
-        // (RFC 9293 3.4, RFC 6528). Count it even when the session is not split, so a merged
-        // flow is identifiable.
-        if (session->tcpData.srcISNCnt < 0xff)
-            session->tcpData.srcISNCnt++;
-
         if (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]) {
             return 1;
         }
+
+        // A bare SYN with a different ISN is a distinct connection attempt, not a retransmit
+        // (RFC 9293 3.4, RFC 6528). Counted only once we know the packet stays in this
+        // session, so a split does not credit the flow being left behind.
+        if (session->tcpData.srcISNCnt < 0xff)
+            session->tcpData.srcISNCnt++;
     }
 
     if (isNewSession) {
