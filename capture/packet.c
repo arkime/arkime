@@ -2210,6 +2210,24 @@ void arkime_packet_init()
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
+    arkime_field_define("general", "termfield",
+                        "tcp.synValidated", "TCP SYN Validated", "tcpSynValidated",
+                        "True if a syn-ack acknowledged the initial sequence number of a syn actually observed in this session",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "tcp.ackSynchronized", "TCP ACK Synchronized", "tcpAckSynchronized",
+                        "True if an ack acknowledged the other side's syn-ack initial sequence number, which flag counts alone do not prove",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
+                        "tcp.srcISNCnt", "TCP Src ISN Count", "srcISNCnt",
+                        "Number of distinct initial sequence numbers seen from the source; more than one means multiple connection attempts were merged into this session",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
     arkime_field_define("general", "integer",
                         "packets.src", "Src Packets", "srcPackets",
                         "Total number of packets sent by source in a session",
