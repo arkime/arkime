@@ -14,7 +14,7 @@
     "lint-fix": "cd ../ && npm run cont3xt:lint-fix"
   },
   "engines": {
-    "node": ">= 20.9.0 < 23",
+    "node": ">= 22.15.0 < 25",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
@@ -35,20 +35,12 @@
   ],
   "dependencies": {
     "@ckpack/vue-color": "^1.6.0",
-    "@mdi/font": "^7.4.47",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
     "maxmind": "^4.3.22",
     "punycode": "^2.3.1",
     "vue-debounce": "^5.0.1",
     "vue-draggable-next": "^2.3.0",
-    "vuex-persistedstate": "^4.1.0",
     "whois-json": "^2.0.4"
-  },
-  "devDependencies": {
-    "@testing-library/vue": "^8.1.0",
-    "jsdom": "^24.1.0",
-    "vue-axios": "^3.5.2",
-    "vue-json-pretty": "^2.6.0"
   }
 }

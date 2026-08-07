@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 606
+#define ARKIME_API_VERSION 700
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -102,7 +102,7 @@ typedef struct arkime_int {
 
 typedef struct {
     struct arkime_int *i_next, *i_prev;
-    int i_count;
+    int                i_count;
 } ArkimeIntHead_t;
 
 typedef HASH_VAR(s_, ArkimeIntHash_t, ArkimeIntHead_t, 1);
@@ -120,7 +120,7 @@ typedef struct arkime_string {
 
 typedef struct {
     struct arkime_string *s_next, *s_prev;
-    int s_count;
+    int                   s_count;
 } ArkimeStringHead_t;
 typedef HASH_VAR(s_, ArkimeStringHash_t, ArkimeStringHead_t, 1);
 typedef HASH_VAR(s_, ArkimeStringHashStd_t, ArkimeStringHead_t, 13);
@@ -263,7 +263,7 @@ typedef struct {
         struct in6_addr            *ip;
         ArkimeFieldObjectHashStd_t *ohash;
     };
-    uint32_t                   jsonSize;
+    uint32_t                        jsonSize;
 } ArkimeField_t;
 
 #define ARKIME_FIELD_OP_SET           0
@@ -448,8 +448,8 @@ typedef struct arkime_config {
     char     *bpf;
     char     *yara;
     char     *caTrustFile;
-    char    **geoLite2ASN;
-    char    **geoLite2Country;
+    char    **geoASNFile;
+    char    **geoFile;
     char     *rirFile;
     char     *ouiFile;
     char     *dropUser;
@@ -608,7 +608,8 @@ typedef struct arkimepacket_t {
     uint16_t       vlan;                // non zero if the reader gets the vlan
     uint8_t        ipProtocol;          // ip protocol
     uint8_t        mProtocol;           // arkime protocol
-    uint8_t        readerPos;           // offline - offlineInfo, online - which interface
+    uint8_t        readerPos;           // offline - fileInfo, online - which interface
+    uint8_t        interfaceIndex;      // which interface within fileInfo[readerPos] (pcapng EPB interface_id)
     uint32_t       etherOffset: 11;     // offset to current ethernet frame from start
     uint32_t       outerEtherOffset: 11; // offset to previous ethernet frame from start
     uint32_t       tunnel: 8;           // tunnel type
@@ -658,6 +659,16 @@ typedef struct {
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
 
+/******************************************************************************/
+// Per-interface link layer info. A single reader slot (fileInfo[readerPos]) can
+// describe multiple interfaces: classic pcap and live interfaces have exactly
+// one (index 0), while a pcapng file can have many (one per IDB), selected by
+// ArkimePacket_t.interfaceIndex (the EPB interface_id).
+#define ARKIME_MAX_INTERFACES_PER_FILE 256
+// Max number of distinct DLTs Arkime dispatches/compiles BPF for. Must be >=
+// the number of entries in the supported-DLT table in packet.c.
+#define ARKIME_DLT_MAX 16
+
 // Global counters bumped with ARKIME_THREAD_INCR* by every reader thread.
 typedef struct {
     ARKIME_CACHE_ALIGN uint64_t totalPackets;
@@ -671,21 +682,32 @@ typedef struct {
 extern ArkimeCounters_t       arkimeCounters;
 
 typedef struct {
-    char           *filename;
-    char           *scheme;
-    char           *extra;
-    uint64_t        size;
-    uint64_t        lastBytes;
-    uint64_t        lastPackets;
-    struct timeval  lastPacketTime;
-    uint32_t        outputId;
-    uint32_t        sessionsStarted;
-    uint32_t        sessionsPresent;
-    uint8_t         didBatch;
-    uint8_t         finishWaiting;
-    void           *notifyClientRef; // command-socket --notify: client to receive file-done
-    char           *notifyFilename;  // filename to report in the notification
-} ArkimeOfflineInfo_t;
+    uint32_t        dlt;                // data link type
+    uint32_t        snaplen;            // snap length
+    int             dltIndex;           // index into the supported-DLT table, -1 if unsupported
+    uint64_t        blockOffset;        // pcapng: file offset of this interface's IDB (for read-back); else 0
+} ArkimeInterfaceInfo_t;
+
+typedef struct {
+    char                 *filename;
+    char                 *scheme;
+    char                 *extra;
+    uint64_t              size;
+    uint64_t              lastBytes;
+    uint64_t              lastPackets;
+    struct timeval        lastPacketTime;
+    uint32_t              outputId;
+    uint32_t              sessionsStarted;
+    uint32_t              sessionsPresent;
+    uint8_t               didBatch;
+    uint8_t               finishWaiting;
+    void                 *notifyClientRef; // command-socket --notify: client to receive file-done
+    char                 *notifyFilename;  // filename to report in the notification
+    ArkimeInterfaceInfo_t interfaces[ARKIME_MAX_INTERFACES_PER_FILE];
+    uint16_t              numInterfaces;   // number of populated entries in interfaces[]
+    uint8_t               isPcapNG;        // source file was pcapng (multiple interfaces possible)
+} ArkimeFileInfo_t;
+extern ArkimeFileInfo_t fileInfo[256];
 /******************************************************************************/
 typedef enum {
     ARKIME_TCPFLAG_SYN = 0,
@@ -1129,6 +1151,10 @@ typedef struct {
 } ArkimeGeoInfo_t;
 
 void     arkime_db_init();
+void     arkime_db_set_tokens_enabled(gboolean enabled);
+gboolean arkime_db_tokens_enabled(void);
+void     arkime_db_set_tokens_field(int pos, const char *tokensKey);
+void     arkime_db_export_tokens_str(BSB *jbsb, const char *str);
 char    *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
@@ -1322,6 +1348,8 @@ void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKe
 void arkime_http_set_print_errors(void *server);
 void arkime_http_set_dont_free_response(void *server);
 void arkime_http_set_headers(void *server, char **headers);
+void arkime_http_set_insecure(void *server, gboolean insecure);
+void arkime_http_set_ca_trust_file(void *server, const char *caTrustFile);
 void arkime_http_set_header_cb(void *server, ArkimeHttpHeader_cb cb);
 void arkime_http_set_userpwd(void *server, const char *userpwd);
 void arkime_http_set_aws_sigv4(void *server, const char *aws_sigv4);
@@ -1423,7 +1451,11 @@ void     arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const p
 void     arkime_packet_batch_process(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int thread);
 void     arkime_packet_batch_end_of_file(int readerPos);
 
-void     arkime_packet_set_dltsnap(int dlt, int snaplen);
+int      arkime_packet_set_interface(int readerPos, int interfaceIndex, int dlt, int snaplen);
+int      arkime_packet_interface_offsets_json(char *buf, int buflen, const ArkimeInterfaceInfo_t *interfaces, int count);
+int      arkime_packet_index_to_dlt(int dltIndex);
+int      arkime_packet_dlt_index_count(void);
+int      arkime_packet_dlt_index(const ArkimePacket_t *packet);
 uint32_t arkime_packet_dlt_to_linktype(int dlt);
 uint32_t arkime_packet_linktype_to_dlt(int linktype);
 void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min);

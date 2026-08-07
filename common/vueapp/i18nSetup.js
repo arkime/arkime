@@ -60,7 +60,8 @@ export async function createI18nInstance(apiUrl) {
     globalInjection: true, // enable global $t function
     silentTranslationWarn: true, // suppress translation warnings in production
     silentFallbackWarn: true, // suppress fallback warnings in production
-    escapeParameterHtml: true, // escape HTML in translations to prevent XSS
+    escapeParameterHtml: true, // escape interpolated parameters to prevent XSS from user input
+    warnHtmlMessage: false, // allow hardcoded HTML in *Html-suffixed message keys (e.g. expressionTipHtml)
     messages: {
       en: { loading: 'Loading...' } // temporary placeholder
     }

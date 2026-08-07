@@ -88,10 +88,9 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
 /******************************************************************************/
 LOCAL void reader_libpcap_start()
 {
-    //ALW - Bug: assumes all linktypes are the same
-    arkime_packet_set_dltsnap(pcap_datalink(pcaps[0]), pcap_snapshot(pcaps[0]));
-
     for (int i = 0; config.interface[i]; i++) {
+        arkime_packet_set_interface(i, 0, pcap_datalink(pcaps[i]), pcap_snapshot(pcaps[i]));
+
         if (config.bpf) {
             struct bpf_program   bpf;
 

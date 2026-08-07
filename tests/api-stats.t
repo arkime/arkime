@@ -1,4 +1,4 @@
-use Test::More tests => 134;
+use Test::More tests => 137;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -25,7 +25,7 @@ my $test1Token = getTokenCookie("test1");
         is ($stats->{data}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
-    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM") {
+    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM", "freeSpaceTargetP") {
         cmp_ok ($stats->{data}->[0]->{$i}, '>=', 0, "stats.json $i >= 0");
     }
 
@@ -58,6 +58,8 @@ my $test1Token = getTokenCookie("test1");
 # esstats.json
     my $esstats = viewerGet("/api/esstats");
     is ($esstats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
+    ok (defined $esstats->{data}->[0]->{heapMax}, "esstats has heapMax");
+    ok (defined $esstats->{data}->[0]->{diskTotal}, "esstats has diskTotal");
 
     my $messtats = multiGet("/esstats.json");
     is ($messtats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
@@ -172,7 +174,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.unknownExcludeType", "esshard: exclude foobar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes thenode");
@@ -195,7 +197,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.unknownIncludeType", "esshard: include foodbar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: include not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
@@ -221,7 +223,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'), "esshard: delete failed");
 
     $result = viewerPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: delete not admin");
 
     $result = multiPostToken("/api/esshards/theindex/0/delete", "", $token);
     is($result->{success}, 0, "esshard: delete missing cluster");
@@ -231,7 +233,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'));
 
     $result = multiPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1&cluster=unknown", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: delete not admin");
 
 # esshards delete - additional comprehensive tests
     # Test invalid shard number (non-numeric)
@@ -310,7 +312,10 @@ my $test1Token = getTokenCookie("test1");
 
 # esrecovery
     my $recovery = viewerGet("/api/esrecovery?show=all");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    # With sessions in ClickHouse there are no daily session indices in ES,
+    # so far fewer shards show up in recovery
+    my $minRecovery = ($ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://}) ? 20 : 100;
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = viewerGet("/api/esrecovery");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
@@ -319,10 +324,10 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all&cluster=test");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all&cluster=unknown");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");

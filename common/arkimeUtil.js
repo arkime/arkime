@@ -494,7 +494,8 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Check the Arkime Schema Version
+   * Check the Arkime Schema Version and return it. With minVersion it is a
+   * fatal startup check; without, failures just return undefined.
    */
   static async checkArkimeSchemaVersion (esClient, prefix, minVersion) {
     prefix = ArkimeUtil.formatPrefix(prefix);
@@ -508,18 +509,21 @@ class ArkimeUtil {
       try {
         const molochDbVersion = doc[`${prefix}sessions3_template`].mappings._meta.molochDbVersion;
 
-        if (molochDbVersion < minVersion) {
+        if (minVersion !== undefined && molochDbVersion < minVersion) {
           console.log(`ERROR - Current database version (${molochDbVersion}) is less than required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
           if (doc._node) {
             console.log(`On node ${doc._node}`);
           }
           process.exit(1);
         }
+        return molochDbVersion;
       } catch (e) {
+        if (minVersion === undefined) { return undefined; }
         console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
         process.exit(1);
       }
     } catch (err) {
+      if (minVersion === undefined) { return undefined; }
       console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
       process.exit(1);
     }

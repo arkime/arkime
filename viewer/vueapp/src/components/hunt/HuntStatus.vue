@@ -5,40 +5,44 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span>
     <template v-if="status === 'running'">
-      <span
+      <v-icon
         :id="`hunt-status-running-${id}`"
-        class="fa fa-play-circle fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-running-${id}`">
+        icon="mdi-play-circle"
+        class="cursor-help">
+        <v-tooltip :activator="`[id='hunt-status-running-${id}']`">
           {{ $t('hunts.status.runningTip') }}
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
     </template>
     <template v-else-if="status === 'paused'">
-      <span
+      <v-icon
         :id="`hunt-status-paused-${id}`"
-        class="fa fa-pause fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-paused-${id}`">
+        icon="mdi-pause"
+        class="cursor-help">
+        <v-tooltip :activator="`[id='hunt-status-paused-${id}']`">
           {{ $t('hunts.status.pausedTip') }}
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
     </template>
     <template v-else-if="status === 'queued'">
-      <span
+      <v-icon
         :id="`hunt-status-queued-${id}`"
-        class="fa fa-clock-o fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-queued-${id}`">
+        icon="mdi-clock-outline"
+        class="cursor-help">
+        <v-tooltip :activator="`[id='hunt-status-queued-${id}']`">
           {{ $t('hunts.status.queuedTip', {count: queueCount}) }}
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
     </template>
     <template v-else-if="status === 'finished'">
-      <span
+      <v-icon
         :id="`hunt-status-finished-${id}`"
-        class="fa fa-check fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-finished-${id}`">
+        icon="mdi-check"
+        class="cursor-help">
+        <v-tooltip :activator="`[id='hunt-status-finished-${id}']`">
           {{ $t('hunts.status.finishedTip') }}
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
     </template>
   </span>
   <span

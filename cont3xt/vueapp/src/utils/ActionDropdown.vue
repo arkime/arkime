@@ -23,7 +23,7 @@
               {{ tooltip }}
             </v-tooltip>
             <v-icon
-              class="mr-1"
+              class="me-1"
               :icon="icon" />
             {{ text }}
           </v-btn>

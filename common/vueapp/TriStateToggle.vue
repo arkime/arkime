@@ -7,26 +7,45 @@ SPDX-License-Identifier: Apache-2.0
     <div class="tri-state-label mb-1">
       {{ label }}
     </div>
-    <BButtonGroup size="sm">
-      <BButton
-        :variant="displayValue === undefined ? 'secondary' : 'outline-secondary'"
-        :title="$t('users.inheritTip')"
-        @click="setValue(undefined)">
+    <v-btn-toggle
+      mandatory
+      density="compact"
+      divided
+      variant="outlined"
+      color="secondary"
+      :model-value="internalValue"
+      @update:model-value="setValue">
+      <v-btn
+        size="small"
+        value="inherit">
         {{ $t('users.inherit') }}
-      </BButton>
-      <BButton
-        :variant="displayValue === false ? 'secondary' : 'outline-secondary'"
-        :title="$t('users.forceOffTip')"
-        @click="setValue(false)">
+        <v-tooltip
+          activator="parent"
+          location="bottom">
+          {{ $t('users.inheritTip') }}
+        </v-tooltip>
+      </v-btn>
+      <v-btn
+        size="small"
+        value="no">
         {{ $t('users.no') }}
-      </BButton>
-      <BButton
-        :variant="displayValue === true ? 'secondary' : 'outline-secondary'"
-        :title="$t('users.forceOnTip')"
-        @click="setValue(true)">
+        <v-tooltip
+          activator="parent"
+          location="bottom">
+          {{ $t('users.forceOffTip') }}
+        </v-tooltip>
+      </v-btn>
+      <v-btn
+        size="small"
+        value="yes">
         {{ $t('users.yes') }}
-      </BButton>
-    </BButtonGroup>
+        <v-tooltip
+          activator="parent"
+          location="bottom">
+          {{ $t('users.forceOnTip') }}
+        </v-tooltip>
+      </v-btn>
+    </v-btn-toggle>
   </div>
 </template>
 
@@ -61,20 +80,24 @@ export default {
   },
   emits: ['update:modelValue'],
   computed: {
-    displayValue () {
+    // Convert external value (undefined/true/false) to internal string ('inherit'/'yes'/'no')
+    internalValue () {
       if (this.modelValue === undefined || this.modelValue === null) {
-        return undefined;
+        return 'inherit';
       }
-      return this.negated ? !this.modelValue : this.modelValue;
+      const boolVal = this.negated ? !this.modelValue : this.modelValue;
+      return boolVal ? 'yes' : 'no';
     }
   },
   methods: {
-    setValue (displayVal) {
+    // Convert internal string to external value and emit
+    setValue (internalVal) {
       let emitVal;
-      if (displayVal === undefined) {
+      if (internalVal === 'inherit') {
         emitVal = undefined;
       } else {
-        emitVal = this.negated ? !displayVal : displayVal;
+        const boolVal = internalVal === 'yes';
+        emitVal = this.negated ? !boolVal : boolVal;
       }
       this.$emit('update:modelValue', emitVal);
     }
@@ -90,10 +113,5 @@ export default {
 .tri-state-label {
   font-size: 0.85rem;
   font-weight: 500;
-}
-
-.tri-state-toggle .btn {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
 }
 </style>

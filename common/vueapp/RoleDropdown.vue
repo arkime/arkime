@@ -6,85 +6,116 @@ SPDX-License-Identifier: Apache-2.0
   <div
     ref="roleDropdown"
     class="d-inline-block">
-    <BTooltip
-      v-if="tooltip"
-      :target="$refs.roleDropdown"
-      placement="top">
-      {{ tooltip }}
-    </BTooltip>
-    <b-dropdown
-      size="sm"
-      auto-close="outside"
-      teleport-disabled
-      @shown="setFocus"
-      :disabled="disabled"
-      class="roles-dropdown no-wrap"
-      :text="displayText || getRolesStr(localSelectedRoles)">
-      <!-- roles search -->
-      <b-dropdown-header class="w-100 sticky-top">
-        <b-input-group size="sm">
-          <b-form-input
-            v-focus="focus"
+    <v-menu
+      :close-on-content-click="false"
+      location="bottom"
+      @update:model-value="onMenuToggle">
+      <template #activator="{ props: activatorProps }">
+        <v-btn
+          v-bind="activatorProps"
+          :size="size"
+          variant="outlined"
+          color="secondary"
+          class="roles-dropdown text-none"
+          :id="activatorId"
+          :disabled="disabled">
+          {{ displayText || getRolesStr(localSelectedRoles) }}
+          <v-icon
+            end
+            icon="mdi:mdi-menu-down" />
+          <v-tooltip
+            v-if="tooltip"
+            :activator="`#${activatorId}`"
+            location="top">
+            {{ tooltip }}
+          </v-tooltip>
+        </v-btn>
+      </template>
+
+      <v-list
+        density="compact"
+        class="roles-dropdown-menu">
+        <!-- roles search -->
+        <div class="px-2 py-1">
+          <v-text-field
+            ref="searchInput"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            prepend-inner-icon="fa:fa-search"
             :model-value="searchTerm"
             @update:model-value="searchRolesLocal"
             :placeholder="$t('users.rolesSearchPlaceholder')" />
-          <template #append>
-            <b-button
-              :disabled="!searchTerm"
-              @click="clearSearchTerm"
-              variant="outline-secondary">
-              <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group>
-        <b-dropdown-divider />
-      </b-dropdown-header> <!-- /roles search -->
-      <b-dropdown-form v-if="filteredRoles && filteredRoles.length">
+        </div> <!-- /roles search -->
+        <v-divider />
+
         <!-- role checkboxes -->
-        <b-form-checkbox-group
-          stacked
-          :model-value="localSelectedRoles"
-          @update:model-value="updateRoles">
-          <b-form-checkbox
+        <div
+          v-if="filteredRoles && filteredRoles.length"
+          class="px-2 py-1 roles-dropdown-options">
+          <div
+            v-for="role in filteredRoles"
             :key="role.value"
-            :value="role.value"
-            v-for="role in filteredRoles">
-            {{ role.text }}
-            <span
-              v-if="role.userDefined"
-              :title="$t('users.userDefinedRoleMsg')"
-              class="fa fa-user cursor-help ms-2" />
-          </b-form-checkbox>
-          <template v-for="role in localSelectedRoles">
-            <!-- previously deleted roles -->
-            <b-form-checkbox
-              :key="role"
-              :value="role"
-              v-if="!roles.find(r => r.value === role)">
-              {{ role }}
-              <span
-                class="fa fa-times-circle cursor-help ms-2"
-                :title="$t('users.missingRoleMsg')" />
-            </b-form-checkbox>
+            class="dropdown-check">
+            <input
+              :id="`roledd-${activatorId}-${role.value}`"
+              type="checkbox"
+              class="dropdown-check-input"
+              :checked="localSelectedRoles.includes(role.value)"
+              @change="toggleRole(role.value, $event.target.checked)">
+            <label
+              :for="`roledd-${activatorId}-${role.value}`"
+              class="dropdown-check-label">
+              {{ role.text }}
+              <v-icon
+                icon="mdi-account"
+                class="cursor-help ms-2"
+                v-if="role.userDefined"
+                :title="$t('users.userDefinedRoleMsg')" />
+            </label>
+          </div>
+          <!-- previously deleted roles still selected on the user -->
+          <template
+            v-for="role in localSelectedRoles"
+            :key="role">
+            <div
+              v-if="!roles.find(r => r.value === role)"
+              class="dropdown-check">
+              <input
+                :id="`roledd-${activatorId}-${role}`"
+                type="checkbox"
+                class="dropdown-check-input"
+                :checked="true"
+                @change="toggleRole(role, $event.target.checked)">
+              <label
+                :for="`roledd-${activatorId}-${role}`"
+                class="dropdown-check-label">
+                {{ role }}
+                <v-icon
+                  icon="mdi-close-circle"
+                  class="cursor-help ms-2"
+                  :title="$t('users.missingRoleMsg')" />
+              </label>
+            </div>
           </template>
-        </b-form-checkbox-group> <!-- /role checkboxes -->
-      </b-dropdown-form>
-      <b-dropdown-item
-        disabled
-        v-if="filteredRoles && !filteredRoles.length && searchTerm">
-        {{ $t('users.noRolesMatchSearch') }}
-      </b-dropdown-item>
-    </b-dropdown>
+        </div> <!-- /role checkboxes -->
+
+        <v-list-item
+          v-else-if="filteredRoles && !filteredRoles.length && searchTerm"
+          disabled>
+          {{ $t('users.noRolesMatchSearch') }}
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
 <script>
-import Focus from './Focus.vue';
 import { searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RoleDropdown',
-  directives: { Focus },
   emits: ['selected-roles-updated'],
   props: {
     id: {
@@ -105,14 +136,21 @@ export default {
     },
     truncate: { type: Number, default: 0 },
     roles: { type: Array, required: true },
-    disabled: { type: Boolean, default: false }
+    disabled: { type: Boolean, default: false },
+    // pass-through v-btn size on the trigger; defaults to the
+    // app-wide v-btn density set in viewer/main.js.
+    size: { type: String, default: 'default' }
   },
   data () {
     return {
-      focus: false,
       searchTerm: '',
       filteredRoles: this.roles,
-      localSelectedRoles: this.selectedRoles || []
+      localSelectedRoles: this.selectedRoles || [],
+      // `id` may contain characters illegal in a CSS "#id" selector (Vuetify
+      // resolves the activator via document.querySelector). An unescaped
+      // colon etc. throws "not a valid selector" and wedges navigation -- see
+      // the matching note in UserDropdown.vue. Sanitize to a CSS-safe id.
+      activatorId: `roledd-${(this.id || Math.random().toString(36).slice(2, 10)).replace(/[^a-zA-Z0-9_-]/g, '-')}`
     };
   },
   watch: {
@@ -124,9 +162,23 @@ export default {
     }
   },
   methods: {
-    updateRoles (newVal) {
-      this.localSelectedRoles = newVal || [];
-      this.$emit('selected-roles-updated', newVal, this.id);
+    onMenuToggle (opened) {
+      if (opened) {
+        // focus the search input once the menu mounts
+        this.$nextTick(() => {
+          this.$refs.searchInput?.focus();
+        });
+      }
+    },
+    toggleRole (value, checked) {
+      let newSelection;
+      if (checked) {
+        newSelection = [...this.localSelectedRoles, value];
+      } else {
+        newSelection = this.localSelectedRoles.filter(r => r !== value);
+      }
+      this.localSelectedRoles = newSelection;
+      this.$emit('selected-roles-updated', newSelection, this.id);
     },
     getRolesStr (userRoles) {
       let userDefinedRoles = [];
@@ -154,46 +206,63 @@ export default {
       return allRoles.join(', ');
     },
     searchRolesLocal (newVal) {
-      this.searchTerm = newVal;
+      this.searchTerm = newVal || '';
       this.filteredRoles = searchRoles(this.roles, this.searchTerm);
-    },
-    clearSearchTerm () {
-      this.searchTerm = '';
-      this.searchRolesLocal();
-      this.setFocus();
-    },
-    setFocus () {
-      this.focus = true;
-      setTimeout(() => {
-        this.focus = false;
-      }, 100);
     }
   }
 };
 </script>
 
 <style>
-.roles-dropdown > ul.dropdown-menu li > form > div {
-  color: var(--color-foreground, black) !important;
-}
-/* hides elements scrolling behind sticky search bar */
-.roles-dropdown .sticky-top {
-  top: -8px;
-}
-.roles-dropdown .dropdown-header {
-  padding: 0rem 0.5rem;
-  background-color: var(--color-background);
-}
-.roles-dropdown .dropdown-header > li {
-  padding-top: 10px;
-  background-color: var(--color-background);
-}
-.roles-dropdown .dropdown-divider {
-  margin-top: 0px;
+/* Force the activator button to match Vuetify's v-input--density-compact
+   height (40px). Several forms place a Share-with-Roles button next to a
+   compact v-text-field; with size="large" the button was 4px taller and
+   read as misaligned. Bypassing Vuetify's size-based height keeps the
+   pair flush regardless of the size prop. */
+.roles-dropdown.v-btn {
+  height: 30px;
+  min-height: 30px;
 }
 
-.roles-dropdown .dropdown-item,
-.roles-dropdown .custom-control {
-  padding-left: 0.5rem;
+/* The menu is teleported to body via v-menu, so styles must be unscoped to
+   reach the rendered list. */
+.roles-dropdown-menu {
+  min-width: 240px;
+  max-height: 360px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+.roles-dropdown-menu .dropdown-check {
+  position: relative;
+  padding-left: 1.6rem;
+  margin-bottom: 2px;
+}
+.roles-dropdown-menu .dropdown-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgb(var(--v-theme-neutral));
+  border-radius: 3px;
+  background-color: rgb(var(--v-theme-background)) !important;
+  cursor: pointer;
+}
+/* !important required to beat overrides.css's global `input { background:
+   rgb(var(--v-theme-input-bg)) !important }` rule -- otherwise the primary fill
+   doesn't paint and the white check glyph is invisible on the white bg. */
+.roles-dropdown-menu .dropdown-check-input:checked {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e") !important;
+  background-size: 14px 14px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+.roles-dropdown-menu .dropdown-check-label {
+  font-size: 0.85rem;
+  cursor: pointer;
 }
 </style>

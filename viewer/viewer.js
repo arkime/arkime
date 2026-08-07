@@ -63,6 +63,7 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
+const Banner = require('../common/banner');
 const MCPServer = require('../common/mcpServer');
 const MCPViewerAPIs = require('./apiMcp');
 
@@ -171,8 +172,9 @@ app.use((req, res, next) => {
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+// Material Design Icons -- icon library across all four apps.
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -490,11 +492,17 @@ function createSessionDetail () {
       return nextCb();
     });
   }, function () {
+    // Replaces the previous BVN structure (b-card-group(columns) > b-card).
+    // .session-detail-cards uses CSS columns (column-count) for the masonry
+    // layout, with each .session-detail-card child rendering as a bordered
+    // card via styles in viewer/vueapp/src/components/sessions/SessionDetail.vue.
+    // The action bar (link/download/tags/etc.) is now the client-side
+    // SessionActions.vue component, fed by the `actions` object the
+    // /detail endpoint returns alongside this html.
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
                                  'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
-                                 '  include views/sessionOptions\n' +
-                                 '  b-card-group(columns)\n' +
-                                 '    b-card\n' +
+                                 '  div.session-detail-cards\n' +
+                                 '    div.session-detail-card\n' +
                                  '      include views/sessionDetail\n';
     for (const k of Object.keys(found).sort()) {
       internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
@@ -513,7 +521,7 @@ function createSessionDetail () {
           // Save current indent level, so we can look for line without it
           spaces = ' '.repeat(line.search(/\S/));
           state = 1;
-          return spaces + 'b-card\n  ' + line;
+          return spaces + 'div.session-detail-card\n  ' + line;
         } else {
           return line;
         }
@@ -527,7 +535,7 @@ function createSessionDetail () {
       }
     }).join('\n');
 
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.session-card-title')
       .replace(/dl.sessionDetailMeta/g, 'dl');
   });
 }
@@ -649,19 +657,12 @@ async function checkHuntAccess (req, res, next) {
   }
 }
 
-function checkEsAdminUser (req, res, next) {
+// dbAdmin (and superAdmin, which includes it) may administer the database
+function checkDbAdmin (req, res, next) {
   if (req.user.hasRole('dbAdmin')) {
     return next();
   }
-  if (internals.esAdminUsersSet) {
-    if (internals.esAdminUsers.includes(req.user.userId)) {
-      return next();
-    }
-  } else {
-    if (req.user.hasRole('arkimeAdmin')) {
-      return next();
-    }
-  }
+  console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role dbAdmin`);
   return res.serverError(403, 'You do not have permission to access this resource', 'api.viewer.noPermission');
 }
 
@@ -1222,27 +1223,8 @@ async function expireCheckAll () {
 }
 
 // ============================================================================
-// REDIRECTS & DEMO SETUP
+// REDIRECTS
 // ============================================================================
-// APIs disabled in demoMode, needs to be before real callbacks
-ArkimeConfig.loaded(() => {
-  if (Config.get('demoMode', false)) {
-    console.log('WARNING - Starting in demo mode, some APIs disabled');
-  }
-});
-
-app.all([
-  '/api/histories',
-  '/api/history/*',
-  '/api/cron*',
-  '/api/user/password*'
-], (req, res, next) => {
-  if (!req.user.isDemoMode()) {
-    return next();
-  }
-  return res.serverError(403, 'Disabled in demo mode.', 'api.viewer.disabledDemoMode');
-});
-
 // redirect to sessions page and conserve params
 app.get(['/', '/app'], (req, res) => {
   const question = req.url.indexOf('?');
@@ -1373,11 +1355,10 @@ app.delete( // user delete endpoint
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiDeleteUser
 );
-app.get( // user css endpoint
-  ['/api/user[/.]css'],
-  User.checkPermissions(['webEnabled']),
-  UserAPIs.getUserCSS
-);
+// Custom-theme CSS endpoint removed -- custom themes are now first-class
+// Vuetify themes registered client-side at boot time (see
+// common/vueapp/themes/customTheme.js + viewer/vueapp/src/App.vue's
+// applySavedTheme()), so no server-side stylus rendering is needed.
 
 // Locale endpoints ----------------------------------------------------------
 app.get( // get all locales endpoint - returns all locale files at once
@@ -1630,6 +1611,25 @@ app.post( // test notifier endpoint
   Notifier.apiTestNotifier
 );
 
+// banner apis ----------------------------------------------------------------
+app.get( // get banner endpoint
+  ['/api/banner'],
+  [ArkimeUtil.noCacheJson],
+  Banner.apiGetBanner
+);
+
+app.put( // update banner endpoint (admin only)
+  ['/api/banner'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  Banner.apiUpdateBanner
+);
+
+app.post( // sync banner to all apps endpoint (admin only)
+  ['/api/banner/sync'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  Banner.apiSyncBanner
+);
+
 // history apis ---------------------------------------------------------------
 app.get( // get histories endpoint
   ['/api/histories'],
@@ -1671,31 +1671,31 @@ app.get( // OpenSearch/Elasticsearch indices endpoint
 
 app.delete( // delete OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkAnyRole(['arkimeAdmin', 'dbAdmin']), User.checkPermissions(['removeEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, User.checkPermissions(['removeEnabled']), setCookie],
   StatsAPIs.deleteESIndex
 );
 
 app.post( // optimize OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/optimize'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.optimizeESIndex
 );
 
 app.post( // close OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/close'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.closeESIndex
 );
 
 app.post( // open OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/open'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.openESIndex
 );
 
 app.post( // shrink OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index/shrink'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.shrinkESIndex
 );
 
@@ -1707,7 +1707,7 @@ app.get( // OpenSearch/Elasticsearch tasks endpoint
 
 app.post( // cancel OpenSearch/Elasticsearch task endpoint
   ['/api/estasks/:id/cancel'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.cancelESTask
 );
 
@@ -1720,49 +1720,49 @@ app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
 
 app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks/cancelall'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.cancelAllESTasks
 );
 
 app.get( // OpenSearch/Elasticsearch admin settings endpoint
   ['/api/esadmin'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, setCookie],
   StatsAPIs.getESAdminSettings
 );
 
 app.post( // set OpenSearch/Elasticsearch admin setting endpoint
   ['/api/esadmin/set'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.setESAdminSettings
 );
 
 app.post( // reroute OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/reroute'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.rerouteES
 );
 
 app.post( // flush OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/flush'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.flushES
 );
 
 app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/unflood'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.unfloodES
 );
 
 app.post( // clear cache OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/clearcache'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, checkCookieToken],
   StatsAPIs.clearCacheES
 );
 
 app.get( // OpenSearch/Elasticsearch allocation explain endpoint
   ['/api/esadmin/allocation'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, setCookie],
   StatsAPIs.getAllocationExplain
 );
 
@@ -1774,19 +1774,19 @@ app.get( // OpenSearch/Elasticsearch shards endpoint
 
 app.post( // exclude OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/exclude'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.excludeESShard
 );
 
 app.post( // include OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:type/:value/include'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.includeESShard
 );
 
 app.post( // delete OpenSearch/Elasticsearch shard endpoint
   ['/api/esshards/:index/:shard/delete'],
-  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkAnyRole(['arkimeAdmin', 'dbAdmin'])],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
   StatsAPIs.deleteESShard
 );
 
@@ -1871,6 +1871,12 @@ app.get( // session packets endpoint
   SessionAPIs.getPackets
 );
 
+app.get( // session tshark endpoint
+  ['/api/session/:nodeName/:id/tshark'],
+  [logAction(), User.checkPermissions(['hidePcap'])],
+  SessionAPIs.getTshark
+);
+
 app.post( // add tags endpoint
   ['/api/sessions/addtags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
@@ -1901,16 +1907,26 @@ app.get( // session body file image endpoint
   SessionAPIs.getFilePNG
 );
 
+app.get( // session pcapng endpoint
+  // NOTE: pcapng must be registered before pcap because the pcap route pattern
+  // /\/sessions.pcap.*/ also matches .pcapng and would otherwise shadow it.
+  ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
+  [logAction(), User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.getPCAPNG
+);
+
 app.get( // session pcap endpoint
   ['/api/sessions[/.]pcap', /\/sessions.pcap.*/],
   [logAction(), User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getPCAP
 );
 
-app.get( // session pcapng endpoint
-  ['/api/sessions[/.]pcapng', /\/sessions.pcapng.*/],
-  [logAction(), User.checkPermissions(['disablePcapDownload'])],
-  SessionAPIs.getPCAPNG
+app.get( // session node pcapng endpoint
+  // NOTE: pcapng must be registered before pcap because the pcap route pattern
+  // :id[/.]pcap* also matches .pcapng and would otherwise shadow it.
+  ['/api/session/:nodeName/:id[/.]pcapng'],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session node pcap endpoint
@@ -1923,12 +1939,6 @@ app.post( // session node pcap endpoint
   ['/api/session/:nodeName/:id[/.]pcap*'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.postPCAPFromNode
-);
-
-app.get( // session node pcapng endpoint
-  ['/api/session/:nodeName/:id[/.]pcapng'],
-  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
-  SessionAPIs.getPCAPNGFromNode
 );
 
 app.get( // session entire pcap endpoint
@@ -2223,10 +2233,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path.toLowerCase() === '/settings' && req.user.isDemoMode()) {
-    return res.status(403).send('Permission denied');
-  }
-
   let theme = req.user?.settings?.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
@@ -2246,10 +2252,9 @@ app.use(cspHeader, setCookie, (req, res) => {
     footerConfig,
     path: Config.basePath(),
     version: version.version,
-    demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
-    themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
+    hasTshark: !!internals.tsharkPath,
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
@@ -2400,6 +2405,11 @@ async function premain () {
   });
 
   Notifier.initialize({
+    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+  });
+
+  Banner.initialize({
+    app: 'viewer',
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
   });
 

@@ -4,16 +4,17 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span>
-    <b-dropdown-divider
+    <v-divider
       data-testid="separator"
       v-if="Object.keys(menuItems).length && separator" />
-    <b-dropdown-item
+    <v-list-item
       v-for="(item, key) in menuItems"
       :key="'sync-item-' + key"
       :href="item.url"
-      target="_blank">
+      target="_blank"
+      rel="noopener noreferrer">
       {{ item.name }}
-    </b-dropdown-item>
+    </v-list-item>
   </span>
 </template>
 

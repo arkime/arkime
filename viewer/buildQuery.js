@@ -10,6 +10,7 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
 const arkimeparser = require('./arkimeparser.js');
 const util = require('util');
 const internals = require('./internals');
@@ -393,7 +394,8 @@ class BuildQuery {
       if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
         query.aggregations.dbHisto = { aggregations: {} };
 
-        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        const baseFilters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        const filters = ViewerUtils.withMetricField([...baseFilters], reqQuery);
         for (let i = 0; i < filters.length; i++) {
           const filter = filters[i];
 

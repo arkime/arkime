@@ -116,6 +116,7 @@ class Pcap {
     }
     this.filename = info.name;
     this.encoding = info.encoding ?? 'normal';
+    this.interfaceOffsets = info.interfaceOffsets;
 
     if (info.dek) {
       if (info.dekEncoding === 'aes-256-gcm') {
@@ -261,10 +262,18 @@ class Pcap {
       }
     }
 
+    const magic = this.headBuffer.readUInt32LE(0);
+
+    // pcapng - Section Header Block magic
+    if (magic === 0x0a0d0d0a) {
+      this.isPcapNG = true;
+      this.parseNgHeader();
+      return this.headBuffer;
+    }
+
     // Actual pcap header is 24, that is all we need
     this.headBuffer = this.headBuffer.slice(0, 24);
 
-    const magic = this.headBuffer.readUInt32LE(0);
     this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
     this.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
 
@@ -287,6 +296,117 @@ class Pcap {
     }
 
     return this.headBuffer;
+  }
+
+  // --------------------------------------------------------------------------
+  // Decode an aes/xor/gzip/zstd encoded region read from the start of the file.
+  #decodeRegion (buf) {
+    if (this.encoding === 'aes-256-ctr') {
+      const decipher = this.createDecipher(0);
+      buf = Buffer.concat([decipher.update(buf), decipher.final()]);
+    } else if (this.encoding === 'xor-2048') {
+      buf = Buffer.from(buf);
+      for (let i = 0; i < buf.length; i++) {
+        buf[i] ^= this.encKey[i % 256];
+      }
+    }
+    if (this.uncompressedBits) {
+      try {
+        if (this.compression === 'gzip') {
+          buf = zlib.gunzipSync(buf, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        } else if (this.compression === 'zstd') {
+          buf = zlib.zstdDecompressSync(buf, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        }
+      } catch (e) {
+      }
+    }
+    return buf;
+  }
+
+  // --------------------------------------------------------------------------
+  // Parse the leading Section Header + Interface Description Blocks of a pcapng
+  // file to learn each interface's link type (indexed by interface_id) so that
+  // packets read back from arbitrary offsets can be decoded with the right DLT.
+  parseNgHeader () {
+    this.ngInterfaces = [];
+
+    const region = Buffer.alloc(65536);
+    const len = fs.readSync(this.fd, region, 0, region.length, 0);
+    const buf = this.#decodeRegion(region.slice(0, len));
+
+    // Fast path: the files index has the IDB offset of each interface, so parse
+    // each one directly instead of scanning. interfaceOffsets is indexed by
+    // pcapng interface_id (offsets are into the uncompressed stream).
+    if (Array.isArray(this.interfaceOffsets) && this.interfaceOffsets.length > 0) {
+      for (const off of this.interfaceOffsets) {
+        const iface = this.#parseNgIdb(buf, off);
+        this.ngInterfaces.push(iface ?? { linkType: 0, snaplen: 0, tsresol: 1000000 });
+      }
+      if (this.ngInterfaces.length > 0) {
+        this.linkType = this.ngInterfaces[0].linkType;
+      }
+      return;
+    }
+
+    let pos = 0;
+    while (pos + 12 <= buf.length) {
+      const blockType = buf.readUInt32LE(pos);
+      const blockLen = buf.readUInt32LE(pos + 4);
+      if (blockLen < 12 || pos + blockLen > buf.length) {
+        break;
+      }
+
+      if (blockType === 0x00000001) { // Interface Description Block
+        // #parseNgIdb returns undefined for a malformed/too-short IDB (capture
+        // accepts block_total_length down to 16, stricter than our 20); default
+        // it like the fast path above so ngInterfaces never holds undefined.
+        this.ngInterfaces.push(this.#parseNgIdb(buf, pos) ?? { linkType: 0, snaplen: 0, tsresol: 1000000 });
+      } else if (blockType === 0x00000006 || blockType === 0x00000003) {
+        // First Enhanced/Simple Packet Block - interfaces seen so far are enough
+        break;
+      }
+
+      pos += blockLen;
+    }
+
+    if (this.ngInterfaces.length > 0) {
+      this.linkType = this.ngInterfaces[0]?.linkType;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Parse a single Interface Description Block at pos in buf, returning
+  // { linkType, snaplen, tsresol } or undefined if pos isn't a valid IDB.
+  #parseNgIdb (buf, pos) {
+    if (pos < 0 || pos + 12 > buf.length) { return undefined; }
+    const blockType = buf.readUInt32LE(pos);
+    const blockLen = buf.readUInt32LE(pos + 4);
+    if (blockType !== 0x00000001 || blockLen < 20 || pos + blockLen > buf.length) {
+      return undefined;
+    }
+
+    const linkType = buf.readUInt16LE(pos + 8);
+    const snaplen = buf.readUInt32LE(pos + 12);
+    let tsresol = 1000000;
+    // Walk options for if_tsresol (code 9)
+    let o = pos + 16;
+    const optsEnd = pos + blockLen - 4;
+    while (o + 4 <= optsEnd) {
+      const otype = buf.readUInt16LE(o);
+      const olen = buf.readUInt16LE(o + 2);
+      o += 4;
+      if (otype === 0) { break; }
+      if (otype === 9 && olen >= 1) {
+        const v = buf.readUInt8(o);
+        if (v & 0x80) {
+          tsresol = Math.pow(2, v & 0x7f);
+        } else {
+          tsresol = Math.pow(10, v);
+        }
+      }
+      o += olen + ((4 - (olen & 3)) & 3);
+    }
+    return { linkType, snaplen, tsresol };
   }
 
   // --------------------------------------------------------------------------
@@ -394,6 +514,10 @@ class Pcap {
       await ArkimeUtil.yield(10);
     }
 
+    if (this.isPcapNG) {
+      return this.readPacketNg(pos);
+    }
+
     try {
       let readBuffer = await this.readAndSliceBlock(pos);
       if (!readBuffer) {
@@ -464,6 +588,73 @@ class Pcap {
       }
 
       return null;
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Read one pcapng Enhanced/Simple Packet Block at pos and return a buffer in
+  // the classic "[16-byte pcap record header][frame]" shape so the rest of the
+  // decode/reassembly code is unchanged. The per-packet link type (from the
+  // referenced interface) is attached as buffer.ngLinkType.
+  async readPacketNg (pos) {
+    try {
+      let readBuffer = await this.readAndSliceBlock(pos);
+      if (!readBuffer || readBuffer.length < 32) {
+        const more = await this.readAndSliceBlock(pos + (readBuffer ? readBuffer.length : 0));
+        if (!more) { return undefined; }
+        readBuffer = readBuffer ? Buffer.concat([readBuffer, more]) : more;
+        if (readBuffer.length < 32) { return undefined; }
+      }
+
+      const blockType = readBuffer.readUInt32LE(0);
+      const blockLen = readBuffer.readUInt32LE(4);
+
+      let interfaceId, tsHigh, tsLow, caplen, dataOffset;
+      if (blockType === 0x00000006) { // Enhanced Packet Block
+        interfaceId = readBuffer.readUInt32LE(8);
+        tsHigh = readBuffer.readUInt32LE(12);
+        tsLow = readBuffer.readUInt32LE(16);
+        caplen = readBuffer.readUInt32LE(20);
+        dataOffset = 28;
+      } else if (blockType === 0x00000003) { // Simple Packet Block
+        interfaceId = 0;
+        tsHigh = 0;
+        tsLow = 0;
+        caplen = blockLen - 16;
+        dataOffset = 12;
+      } else {
+        return null;
+      }
+
+      if (caplen < 0 || caplen > 0xffff) {
+        return undefined;
+      }
+
+      // Make sure we have the whole packet
+      if (readBuffer.length < dataOffset + caplen) {
+        const more = await this.readAndSliceBlock(pos + readBuffer.length);
+        if (!more || readBuffer.length + more.length < dataOffset + caplen) {
+          return undefined;
+        }
+        readBuffer = Buffer.concat([readBuffer, more]);
+      }
+
+      const iface = this.ngInterfaces?.[interfaceId];
+      const tsresol = iface?.tsresol ?? 1000000;
+      const ts = tsHigh * 0x100000000 + tsLow;
+      const sec = Math.floor(ts / tsresol);
+      const usec = Math.floor((ts % tsresol) * 1000000 / tsresol);
+
+      const newBuffer = Buffer.allocUnsafe(16 + caplen);
+      newBuffer.writeUInt32LE(sec >>> 0, 0);
+      newBuffer.writeUInt32LE(usec >>> 0, 4);
+      newBuffer.writeUInt32LE(caplen, 8);
+      newBuffer.writeUInt32LE(caplen, 12);
+      readBuffer.copy(newBuffer, 16, dataOffset, dataOffset + caplen);
+      newBuffer.ngLinkType = iface ? iface.linkType : this.linkType;
+      return newBuffer;
     } catch (err) {
       return undefined;
     }
@@ -1073,7 +1264,9 @@ class Pcap {
       obj.pcap.ts_usec = Math.floor(obj.pcap.ts_usec / 1000);
     }
 
-    switch (this.linkType) {
+    const linkType = (buffer.ngLinkType !== undefined) ? buffer.ngLinkType : this.linkType;
+
+    switch (linkType) {
     case 0: // NULL
       if (buffer[16] === 30) {
         this.ip6(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
@@ -1118,7 +1311,7 @@ class Pcap {
       break;
     }
     default:
-      console.log('Unsupported pcap file', this.filename, 'link type', this.linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
+      console.log('Unsupported pcap file', this.filename, 'link type', linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
       break;
     }
   }
@@ -1146,12 +1339,44 @@ class Pcap {
 
     b.writeUInt32LE(0x00000001, 32); // Block Type
     b.writeUInt32LE(24, 36); // Block Len 1
-    b.writeUInt16LE(buffer.readUInt32LE(20), 40); // Link Type
+    b.writeUInt16LE(this.linkType, 40); // Link Type
     b.writeUInt16LE(0, 42); // Reserved
-    b.writeUInt32LE(buffer.readUInt32LE(16), 44); // SnapLen
+    b.writeUInt32LE(this.isPcapNG ? (this.ngInterfaces?.[0]?.snaplen ?? 0) : buffer.readUInt32LE(16), 44); // SnapLen
     b.writeUInt32LE(0, 48); // Options
     b.writeUInt32LE(24, 52); // Block Len 2
 
+    return b;
+  }
+
+  // --------------------------------------------------------------------------
+  // Just the pcapng Section Header Block (no interface blocks). Used by the
+  // pcapng exporter which emits one Interface Description Block per distinct
+  // link type seen across the exported packets (see makeIdbNg).
+  static makeShbNg () {
+    const b = Buffer.alloc(32);
+    b.writeUInt32LE(0x0A0D0D0A, 0); // Block Type
+    b.writeUInt32LE(32, 4); // Block Len 1
+    b.writeUInt32LE(0x1A2B3C4D, 8); // Byte Order Magic
+    b.writeUInt16LE(1, 12); // Major
+    b.writeUInt16LE(0, 14); // Minor
+    b.writeUInt32LE(0xffffffff, 16); // Unknown Section Length 1
+    b.writeUInt32LE(0xffffffff, 20); // Unknown Section Length 2
+    b.writeUInt32LE(0, 24); // Options
+    b.writeUInt32LE(32, 28); // Block Len 2
+    return b;
+  }
+
+  // --------------------------------------------------------------------------
+  // A single pcapng Interface Description Block for the given link type.
+  static makeIdbNg (linkType, snaplen) {
+    const b = Buffer.alloc(24);
+    b.writeUInt32LE(0x00000001, 0); // Block Type
+    b.writeUInt32LE(24, 4); // Block Len 1
+    b.writeUInt16LE(linkType, 8); // Link Type
+    b.writeUInt16LE(0, 10); // Reserved
+    b.writeUInt32LE(snaplen ?? 0, 12); // SnapLen
+    b.writeUInt32LE(0, 16); // Options
+    b.writeUInt32LE(24, 20); // Block Len 2
     return b;
   }
 

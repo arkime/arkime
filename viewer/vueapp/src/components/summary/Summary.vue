@@ -10,57 +10,18 @@
     <div
       v-if="loading && !summary && !error"
       class="summary-content m-2">
-      <div class="stats-container mb-3 placeholder-glow">
-        <!-- Main Statistics Skeleton -->
-        <div class="summary-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.captureStatistics') }}
-          </h4>
-          <div class="stats-grid">
-            <div
-              v-for="n in 5"
-              :key="n"
-              class="stat-card">
-              <div class="stat-label">
-                <span class="placeholder col-8" />
-              </div>
-              <div class="stat-value">
-                <span class="placeholder col-6" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Time Statistics Skeleton -->
-        <div class="time-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.timeInformation') }}
-          </h4>
-          <div class="time-grid">
-            <div
-              v-for="n in 4"
-              :key="n"
-              class="time-item">
-              <span class="placeholder col-4" />
-              <span class="placeholder col-6" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Skeleton Field Widgets -->
-      <div
-        class="charts-container"
-        :class="gridLayoutClass">
+      <div class="charts-container charts-grid">
         <div
-          v-for="field in summaryFields"
-          :key="field"
-          class="widget-wrapper">
+          v-for="w in widgets"
+          :key="w.id"
+          class="widget-wrapper"
+          :style="spanStyle(w)">
           <SummaryWidget
-            :title="FieldService.getField(field, true)?.friendlyName || field"
+            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
             :data="[]"
             :loading="true"
-            :field="field" />
+            :field="w.field" />
         </div>
       </div>
     </div>
@@ -69,83 +30,6 @@
     <div
       v-if="!error && summary"
       class="summary-content m-2">
-      <!-- Statistics Container -->
-      <div class="stats-container mb-3">
-        <!-- Main Statistics -->
-        <div class="summary-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.captureStatistics') }}
-          </h4>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.sessions') }}
-              </div>
-              <div class="stat-value">
-                {{ formatNumber(summary.sessions) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.totalPackets') }}
-              </div>
-              <div class="stat-value">
-                {{ formatNumber(summary.packets) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.dataBytes') }}
-              </div>
-              <div class="stat-value">
-                {{ formatBytes(summary.dataBytes) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.totalBytes') }}
-              </div>
-              <div class="stat-value">
-                {{ formatBytes(summary.bytes) }}
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">
-                {{ $t('sessions.summary.downloadBytes') }}
-              </div>
-              <div class="stat-value">
-                {{ formatBytes(summary.downloadBytes) }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Time Statistics -->
-        <div class="time-stats">
-          <h4 class="mb-2">
-            {{ $t('sessions.summary.timeInformation') }}
-          </h4>
-          <div class="time-grid">
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.duration') }}:</span>
-              <span class="time-value">{{ formatDuration(summary.firstPacket, summary.lastPacket) }}</span>
-            </div>
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.firstPacket') }}:</span>
-              <span class="time-value">{{ formatTimestamp(summary.firstPacket) }}</span>
-            </div>
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.lastPacket') }}:</span>
-              <span class="time-value">{{ formatTimestamp(summary.lastPacket) }}</span>
-            </div>
-            <div class="time-item">
-              <span class="time-label">{{ $t('sessions.summary.currentTime') }}:</span>
-              <span class="time-value">{{ getCurrentTime() }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Shared tooltip for all charts -->
       <SummaryChartTooltip
         :visible="tooltipVisible"
@@ -156,45 +40,154 @@
         :metric-type="tooltipMetricType"
         @close="hideTooltip" />
 
+      <!-- empty state when no widgets configured -->
+      <div
+        v-if="!summary.fields?.length"
+        class="empty-dashboard text-medium-emphasis">
+        <v-icon
+          icon="mdi-view-dashboard-outline"
+          size="x-large"
+          class="mb-2" />
+        <p class="mb-0">
+          {{ $t('sessions.summary.noWidgets') }}
+        </p>
+      </div>
+
       <!-- Charts Grid -->
       <div
+        v-else
         ref="widgetContainer"
-        class="charts-container"
-        :class="gridLayoutClass">
+        class="charts-container charts-grid">
         <!-- Widgets rendered via v-for -->
         <div
-          v-for="widget in widgetConfigs"
-          :key="widget.field"
-          class="widget-wrapper">
+          v-for="w in summary.fields"
+          :key="w.id"
+          :data-widget-id="w.id"
+          class="widget-wrapper"
+          :class="{ 'widget-flash': w.id === flashWidgetId }"
+          :style="spanStyle(w)">
+          <!-- reorder handle lives in the card header (.widget-drag) -->
+          <!-- drag-to-resize handles: right edge (width), bottom edge (height),
+               corner (both); snap to the 4-col / 160px-row grid -->
           <span
-            class="widget-handle"
-            :title="$t('sessions.summary.dragToReorder')">
-            <span class="fa fa-th" />
-          </span>
-          <SummaryWidget
-            :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
-            :data="widget.data"
-            :loading="widget.loading"
-            :error="widget.error"
-            :view-mode="widget.viewMode.value"
-            :metric-type="widget.metricType.value"
-            :field="widget.field"
-            @change-mode="updateWidgetViewMode(widget, $event)"
-            @change-metric="updateWidgetMetricType(widget, $event)"
+            class="widget-resize widget-resize--e"
+            :title="$t('sessions.summary.dragToResize')"
+            @mousedown.stop.prevent="startResize(w, $event, 'x')" />
+          <span
+            class="widget-resize widget-resize--s"
+            :title="$t('sessions.summary.dragToResize')"
+            @mousedown.stop.prevent="startResize(w, $event, 'y')" />
+          <span
+            class="widget-resize widget-resize--se"
+            :title="$t('sessions.summary.dragToResize')"
+            @mousedown.stop.prevent="startResize(w, $event, 'both')" />
+          <!-- multi-field (2-3) nested pie/treemap -->
+          <HierarchyWidget
+            v-if="isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap')"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
             @show-tooltip="showTooltip"
-            @export="handleWidgetExport(widget, $event)"
-            @remove-field="emit('remove-field', $event)"
-            @retry-field="retryField" />
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- table: 1-3 fields side by side, each with its metric column(s) -->
+          <MultiFieldTableWidget
+            v-else-if="w.viewMode === 'table'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <SummaryWidget
+            v-else-if="isStreamMode(w.viewMode)"
+            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
+            :data="w.data"
+            :loading="w.loading"
+            :error="w.error"
+            :view-mode="w.viewMode"
+            :metric-type="w.metricType"
+            :field="w.field"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            @show-tooltip="showTooltip"
+            @export="handleWidgetExport(w, $event)"
+            @edit="openEdit(w.id)"
+            @remove-field="removeWidgetLocal(w)"
+            @retry-field="retryWidget(w.id)" />
+          <HeatmapWidget
+            v-else-if="w.viewMode === 'heatmap'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <TreemapWidget
+            v-else-if="w.viewMode === 'treemap'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <IntersectionWidget
+            v-else-if="w.viewMode === 'intersection'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- session-wide widgets: fed by the host's global stats chunk -->
+          <TimelineWidget
+            v-else-if="w.viewMode === 'timeline'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :timeline-data-filters="timelineDataFilters"
+            :info-items="widgetInfo(w)"
+            @time-range="onTimeRange"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <MapWidget
+            v-else-if="w.viewMode === 'map'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <StatsWidget
+            v-else-if="w.viewMode === 'stats'"
+            :stats="summary"
+            :title="w.title"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <TimeWidget
+            v-else-if="w.viewMode === 'time'"
+            :stats="summary"
+            :title="w.title"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
         </div>
       </div> <!-- /charts-container -->
     </div>
+
+    <!-- Per-widget edit modal -->
+    <SummaryWidgetEditModal
+      :show="editModalShow"
+      :widget="editingWidget"
+      @close="onEditClose"
+      @save="onEditSave" />
   </div>
 </template>
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import { themedColor } from '@common/themes/themedColor.js';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import Sortable from 'sortablejs';
@@ -202,11 +195,23 @@ import Sortable from 'sortablejs';
 import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
+import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
+import HeatmapWidget from './widgets/HeatmapWidget.vue';
+import TreemapWidget from './widgets/TreemapWidget.vue';
+import IntersectionWidget from './widgets/IntersectionWidget.vue';
+import HierarchyWidget from './widgets/HierarchyWidget.vue';
+import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
+import TimelineWidget from './widgets/TimelineWidget.vue';
+import MapWidget from './widgets/MapWidget.vue';
+import StatsWidget from './widgets/StatsWidget.vue';
+import TimeWidget from './widgets/TimeWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
+import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasAgg, allowsMultiField } from './widgets/viewModes';
+import { widgetLocalExpression, widgetFields } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
-import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
+import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 
 // Streaming response helpers
 
@@ -227,19 +232,26 @@ const parseChunk = (chunk) => {
 
 // Access route and store
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
 const { t } = useI18n();
 
 // Define props
 const props = defineProps({
-  summaryFields: {
+  // widget definitions (source of truth lives in the parent)
+  widgets: {
     type: Array,
     default: () => []
+  },
+  // dashboard-wide chart color palette
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
   }
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed', 'remove-field', 'streaming-state', 'canceled-state']);
+const emit = defineEmits(['widget-config-changed', 'streaming-state', 'canceled-state']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
@@ -249,24 +261,94 @@ let sortableInstance = null;
 
 // Computed properties
 const user = computed(() => store.state.user);
-const timezone = computed(() => user.value?.settings?.timezone || 'local');
-const showMs = computed(() => user.value?.settings?.ms === true);
 
-// Grid layout class based on results limit
-const gridLayoutClass = computed(() => {
-  const resultsLimit = parseInt(route.query.summaryLength) || 20;
-  // When results > 20, use fewer columns (more data per chart)
-  // When results <= 20, use more columns (less data per chart)
-  return resultsLimit > 20 ? 'charts-grid-large-data' : 'charts-grid-small-data';
+// Timeline-data-filter field objects for the timeline widget's series selector
+// (the user's configured timeline metrics, resolved to field objects)
+const timelineDataFilters = computed(() => (user.value?.settings?.timelineDataFilters || [])
+  .map(f => FieldService.getField(f)).filter(Boolean));
+
+// A timeline widget's drag-select updates the dashboard time range (mirrors the
+// old pinned timeline): commit the new range and push it onto the URL to reload.
+const onTimeRange = (times) => {
+  if (!times?.startTime || !times?.stopTime) { return; }
+  store.commit('setTimeRange', 0); // custom range
+  store.commit('setTime', times);
+  if (route.query.date !== undefined ||
+      route.query.startTime !== times.startTime || route.query.stopTime !== times.stopTime) {
+    router.push({
+      query: { ...route.query, date: undefined, startTime: times.startTime, stopTime: times.stopTime }
+    });
+  }
+};
+
+// Per-widget grid span: 1-4 columns (grid is 4 cols wide) / 1-8 rows. Rows are a
+// fine 160px unit, so a chart (default 3 rows) is 480px while short widgets
+// (stats/time) can be a single ~160px row.
+const spanStyle = (w) => ({
+  gridColumn: `span ${Math.min(4, Math.max(1, w?.width || 2))}`,
+  gridRow: `span ${Math.min(8, Math.max(1, w?.height || 3))}`
 });
+
+// True when a widget has 2-3 fields and a view mode that nests/compares them
+// (pie/treemap → HierarchyWidget; table → MultiFieldTableWidget).
+const isMultiField = (w) => allowsMultiField(w?.viewMode) && widgetFields(w).length > 1;
+
+// Drag-to-resize: a handle on the right edge changes width (1-4 cols), the bottom
+// edge changes height (1-8 rows), the corner does both. Deltas snap to the grid
+// (4 equal columns + 8px gap; 160px row unit). Persists on release.
+const GRID_GAP = 8; // 0.5rem gap between cells (matches .charts-container gap)
+const ROW_UNIT = 160; // grid-auto-rows
+const startResize = (w, evt, axis) => {
+  const wrapperEl = evt.currentTarget.closest('.widget-wrapper');
+  if (!wrapperEl) { return; }
+  const startRect = wrapperEl.getBoundingClientRect();
+  const startCols = Math.min(4, Math.max(1, w.width || 2));
+  const cellW = (startRect.width - (startCols - 1) * GRID_GAP) / startCols;
+
+  const onMove = (e) => {
+    // re-read position each frame so reflow (wrapping) doesn't skew the math
+    const r = wrapperEl.getBoundingClientRect();
+    if (axis !== 'y') {
+      const cols = Math.round((e.clientX - r.left + GRID_GAP) / (cellW + GRID_GAP));
+      w.width = Math.min(4, Math.max(1, cols));
+    }
+    if (axis !== 'x') {
+      const rows = Math.round((e.clientY - r.top + GRID_GAP) / (ROW_UNIT + GRID_GAP));
+      w.height = Math.min(8, Math.max(1, rows));
+    }
+  };
+  const onUp = () => {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    emitWidgetConfigChange(); // persist new spans
+    window.dispatchEvent(new Event('resize')); // nudge chart/map reflow
+  };
+
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = axis === 'x' ? 'ew-resize' : (axis === 'y' ? 'ns-resize' : 'nwse-resize');
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+};
 
 // Reactive state
 const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
 const widgetContainer = ref(null);
+// scroll container provided by the page shell (PageLayout)
+const pageScrollEl = inject('pageScrollEl', null);
 const canceled = ref(false);
 const streaming = ref(false);
+// bumped on every (re)load so self-fetching view modes (e.g. heatmap) refetch
+const reloadNonce = ref(0);
+// briefly highlights a freshly-added widget so it's noticed after scrolling
+const flashWidgetId = ref('');
+
+// Per-widget edit modal state
+const editModalShow = ref(false);
+const editingWidget = ref(null);
 
 // Shared tooltip state - one tooltip to rule them all
 const tooltipVisible = ref(false);
@@ -279,26 +361,72 @@ const tooltipMetricType = ref('sessions');
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
 
-// Widget configurations for v-for rendering
-// Dynamically built from the API response fields array
-const widgetConfigs = computed(() => {
-  if (!summary.value?.fields) {
-    return [];
+// Build a render entry (widget definition + data state) from a definition.
+// Only configured stream-mode widgets (bar/pie/table) start loading; an
+// unconfigured widget (no field) shows its configure state, and self-fetch
+// view modes (heatmap/treemap) manage their own loading.
+const makeEntry = (def) => ({
+  ...def,
+  data: [],
+  // only single-field stream widgets are fed by the host stream; multi-field
+  // pie/table and self-fetch modes manage their own loading
+  loading: !!def.field && isStreamMode(def.viewMode) && !isMultiField(def),
+  error: null
+});
+
+// Map a widget definition to the request payload (only what the server needs).
+// The View (if any) is folded into the local expression here; the server ANDs
+// it with the global search.
+const toRequestWidget = (w) => ({
+  id: w.id,
+  field: w.field,
+  length: w.length,
+  order: w.order,
+  metricType: w.metricType,
+  expression: widgetLocalExpression(w, store.state.views)
+});
+
+// Rows describing a widget's configuration that isn't visible on the card
+// itself (metric, limit/order, local filter, saved view), shown in the header
+// info tooltip.
+const widgetInfo = (w) => {
+  if (!w) { return []; }
+  const rows = [];
+
+  const exps = widgetFields(w);
+  if (exps.length) {
+    const names = exps.map(e => FieldService.getField(e, true)?.friendlyName || e).join(', ');
+    rows.push({ label: t(exps.length > 1 ? 'sessions.summary.widget.fields' : 'sessions.summary.widget.field'), value: names });
   }
 
-  // Map each field from the API response to a widget configuration
-  // Fields start as loading placeholders until their data arrives
-  return summary.value.fields.map(fieldObj => ({
-    data: fieldObj.data || [],
-    loading: fieldObj.loading ?? false,   // true until field data arrives
-    error: fieldObj.error || null,        // error message if field aggregation failed
-    viewMode: ref(fieldObj.viewMode ?? 'bar'),     // viewMode from API (default bar)
-    metricType: ref(fieldObj.metricType ?? 'sessions'), // metricType from API (default sessions)
-    field: fieldObj.field,                // field expression from API
-    title: fieldObj.title,                // title from API (may be undefined)
-    description: fieldObj.description     // description from API (may be undefined)
-  }));
-});
+  // metric only applies to the metric-driven charts / tables
+  if (hasMetric(w.viewMode)) {
+    const metricName = (m) => (m === 'sessions'
+      ? t('sessions.summary.sessions')
+      : (FieldService.getField(m, true)?.friendlyName || m));
+    const metricExps = (Array.isArray(w.metrics) && w.metrics.length) ? w.metrics : [w.metricType || 'sessions'];
+    rows.push({ label: t('sessions.summary.widget.metric'), value: metricExps.map(metricName).join(', ') });
+    if (metricExps.length > 1 && w.sortMetric) {
+      rows.push({ label: t('sessions.summary.widget.sortBy'), value: metricName(w.sortMetric) });
+    }
+  }
+
+  // Top/Bottom N only applies to the aggregating widgets
+  if (hasAgg(w.viewMode)) {
+    const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
+    rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${w.length || 20}` });
+  }
+
+  if (w.view) {
+    const v = (store.state.views || []).find(x => x.id === w.view || x.name === w.view);
+    rows.push({ label: t('sessions.summary.widget.localView'), value: v?.name || w.view });
+  }
+  if (w.expression) {
+    rows.push({ label: t('sessions.summary.widget.localFilter'), value: w.expression });
+  }
+
+  return rows;
+};
 
 // Cancel an in-progress summary stream
 const cancelLoading = () => {
@@ -316,7 +444,7 @@ const cancelLoading = () => {
   streaming.value = false;
   loading.value = false;
 
-  // Mark still-loading fields as cancelled
+  // Mark still-loading widgets as cancelled
   if (summary.value?.fields) {
     for (let i = 0; i < summary.value.fields.length; i++) {
       if (summary.value.fields[i].loading) {
@@ -330,13 +458,16 @@ const cancelLoading = () => {
   }
 };
 
-// Build the common request body from current route/store state
-const buildRequestBody = (fields, cancelId) => {
+// Build the common request body from current route/store state. `statsless`
+// skips the server's Phase-1 stats/map/graph for incremental single-widget
+// fetches (add/edit/retry) — the dashboard stats don't change for those.
+const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
   const body = {
     cancelId,
-    facets: 1,
-    fields
+    widgets: widgetDefs.map(toRequestWidget)
   };
+
+  if (statsless) { body.noStats = true; }
 
   const routeParams = ['view', 'bounding', 'interval', 'expression', 'cluster'];
   for (const param of routeParams) {
@@ -350,15 +481,6 @@ const buildRequestBody = (fields, cancelId) => {
   }
 
   if (route.query.start) { body.start = route.query.start; }
-  if (route.query.summaryLength) {
-    body.length = route.query.summaryLength;
-  } else if (route.query.length) {
-    body.length = route.query.length;
-  }
-
-  if (route.query.summaryOrder) {
-    body.order = route.query.summaryOrder;
-  }
 
   if (parseInt(store.state.timeRange, 10) === -1) {
     body.date = store.state.timeRange;
@@ -367,16 +489,35 @@ const buildRequestBody = (fields, cancelId) => {
     body.stopTime = store.state.time.stopTime;
   }
 
-  Utils.setFacetsQuery(body, 'sessions');
-  Utils.setMapQuery(body);
+  // The dashboard's visualizations fetch their own data — timeline & map
+  // self-fetch spigraph, stats/time use the top-level counts — so the global
+  // stats fetch no longer needs the graph (facets) or map aggregations. Still
+  // bypass the sessions-page large-dataset toggle so the stat counts aggregate.
+  store.commit('setDisabledAggregations', false);
 
   return body;
 };
 
-// Fetch a subset of fields and update them in the existing summary
-const fetchFields = async (fieldExps) => {
+// Merge a streamed field chunk (keyed by widget id) into the matching entry
+const mergeFieldChunk = (chunk) => {
+  if (!summary.value?.fields) return;
+  const index = summary.value.fields.findIndex(f => f.id === chunk.id);
+  if (index === -1) return;
+  summary.value.fields[index] = {
+    ...summary.value.fields[index],
+    data: chunk.data || [],
+    loading: false,
+    error: chunk.error || null
+  };
+};
+
+// Fetch a subset of widgets and merge them into the existing summary. These are
+// incremental (add/edit/retry) so the dashboard stats are already loaded — skip
+// recomputing them server-side.
+const fetchWidgets = async (widgetDefs) => {
+  if (!widgetDefs.length) return;
   const cancelId = Utils.createRandomString();
-  const body = buildRequestBody(fieldExps.join(','), cancelId);
+  const body = buildRequestBody(widgetDefs, cancelId, true);
 
   const controller = new AbortController();
 
@@ -394,7 +535,6 @@ const fetchFields = async (fieldExps) => {
 
     const reader = fetchResponse.body.getReader();
     let buffer = '';
-    let isFirstLine = true;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -407,30 +547,22 @@ const fetchFields = async (fieldExps) => {
         let line = buffer.slice(0, pos);
         buffer = buffer.slice(pos + 1);
 
-        // First line starts with '[', subsequent lines start with ','
-        if (isFirstLine) {
-          line = line.slice(1);
-          isFirstLine = false;
-        } else {
-          line = line.slice(1);
-        }
+        // Drop the leading '[' (first line) or ',' (subsequent lines)
+        line = line.slice(1);
 
         const chunk = parseChunk(line);
-        if (chunk && chunk.field && summary.value?.fields) {
-          // Only process field chunks — ignore the stats chunk
-          const index = summary.value.fields.findIndex(f => f.field === chunk.field);
-          if (index !== -1) {
-            summary.value.fields[index] = chunk;
-          }
+        if (chunk && chunk.id) {
+          // Only process widget chunks — ignore the stats chunk
+          mergeFieldChunk(chunk);
         }
       }
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
-    // Mark retried fields as errored
+    // Mark retried widgets as errored
     if (summary.value?.fields) {
-      for (const fieldExp of fieldExps) {
-        const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+      for (const def of widgetDefs) {
+        const index = summary.value.fields.findIndex(f => f.id === def.id);
         if (index !== -1 && summary.value.fields[index].loading) {
           summary.value.fields[index] = {
             ...summary.value.fields[index],
@@ -443,54 +575,47 @@ const fetchFields = async (fieldExps) => {
   }
 };
 
-// Retry a single failed field
-const retryField = (fieldExp) => {
+// Retry a single failed widget
+const retryWidget = (id) => {
   if (!summary.value?.fields) return;
 
-  const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  const index = summary.value.fields.findIndex(f => f.id === id);
   if (index === -1) return;
 
-  // Reset to loading state
-  summary.value.fields[index] = { field: fieldExp, loading: true };
+  // Reset to loading state (keep the definition)
+  summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
 
-  fetchFields([fieldExp]);
+  fetchWidgets([summary.value.fields[index]]);
 };
 
-// Retry all failed fields at once
+// Retry all failed widgets at once
 const retryAllFailed = () => {
   if (!summary.value?.fields) return;
 
-  const errorFields = summary.value.fields
-    .filter(f => f.error)
-    .map(f => f.field);
+  const errored = summary.value.fields.filter(f => f.error);
+  if (!errored.length) return;
 
-  if (!errorFields.length) return;
-
-  // Reset all error fields to loading
-  for (const fieldExp of errorFields) {
-    const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  // Reset all errored widgets to loading
+  for (const w of errored) {
+    const index = summary.value.fields.findIndex(f => f.id === w.id);
     if (index !== -1) {
-      summary.value.fields[index] = { field: fieldExp, loading: true };
+      summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
     }
   }
 
   // Clear canceled state since user is retrying
   canceled.value = false;
 
-  fetchFields(errorFields);
+  fetchWidgets(errored.map(w => summary.value.fields.find(f => f.id === w.id)));
 };
 
 // Methods
 const generateSummary = async () => {
-  // Wait for fields to be loaded from parent before generating summary
-  if (!props.summaryFields?.length) {
-    // No summary fields provided: ensure we are not stuck in a loading state
-    loading.value = false;
-    summary.value = null;
-    error.value = 'No summary fields were provided to generate a summary.';
-    return;
-  }
+  // signal self-fetching view modes (e.g. heatmap) to refetch on every reload
+  reloadNonce.value++;
 
+  // Note: an empty dashboard still requests (widgets: []) so the capture-stats
+  // band shows real numbers, consistent with a dashboard of only self-fetch widgets.
   canceled.value = false;
   streaming.value = true;
 
@@ -508,8 +633,10 @@ const generateSummary = async () => {
     // Create unique cancel id to make cancel req for corresponding es task
     const cancelId = Utils.createRandomString();
 
-    // Build request body using shared helper
-    const body = buildRequestBody(props.summaryFields.join(','), cancelId);
+    // Stream only single-field stream-mode widgets; heatmap/treemap/intersection
+    // and multi-field pie/table self-fetch. An empty list still returns the stats chunk.
+    const fieldDefs = props.widgets.filter(w => w.field && isStreamMode(w.viewMode) && !isMultiField(w));
+    const body = buildRequestBody(fieldDefs, cancelId);
 
     // Create abort controller for request cancellation
     const controller = new AbortController();
@@ -544,40 +671,24 @@ const generateSummary = async () => {
         throw new Error(chunk.bsqErr);
       }
 
-      // First chunk has summary stats (sessions, packets, bytes, etc.)
+      // First chunk has summary stats (sessions, packets, bytes, etc.) + map/graph
+      // which now feed the stats/time/timeline/map widgets directly.
       if (chunk.sessions !== undefined) {
-        // Initialize placeholder fields for all requested fields (they show loading state)
-        chunk.fields = props.summaryFields.map(field => ({
-          field,
-          loading: true
-        }));
+        // Initialize render entries for all configured widgets (loading state)
+        chunk.fields = props.widgets.map(makeEntry);
         summary.value = chunk;
 
-        // Emit map/graph data immediately
-        emit('update-visualizations', {
-          mapData: chunk.map,
-          graphData: chunk.graph
-        });
-
-        // Hide loading overlay once we have summary stats (field cards show their own loading)
+        // Hide loading overlay once we have summary stats (widgets show their own loading)
         loading.value = false;
-      } else if (chunk.field) {
-        // Field chunks have field property - find and update the placeholder
-        if (summary.value?.fields) {
-          const index = summary.value.fields.findIndex(f => f.field === chunk.field);
-          if (index !== -1) {
-            // Replace placeholder with actual data
-            summary.value.fields[index] = chunk;
-          }
-        }
+      } else if (chunk.id) {
+        // Widget chunks have an id - find and update the placeholder
+        mergeFieldChunk(chunk);
       }
       // Empty object {} signals stream end (ignore)
     };
 
     // Process the stream
     // Format: [{first}\n,{second}\n,{third}\n...{}]
-    let isFirstLine = true;
-
     while (true) {
       const { done, value } = await reader.read();
 
@@ -594,13 +705,8 @@ const generateSummary = async () => {
         let line = buffer.slice(0, pos);
         buffer = buffer.slice(pos + 1);
 
-        // First line starts with '[', subsequent lines start with ','
-        if (isFirstLine) {
-          line = line.slice(1); // Remove leading '['
-          isFirstLine = false;
-        } else {
-          line = line.slice(1); // Remove leading ','
-        }
+        // Drop the leading '[' (first line) or ',' (subsequent lines)
+        line = line.slice(1);
 
         const chunk = parseChunk(line);
         if (chunk) handleChunk(chunk);
@@ -621,30 +727,6 @@ const generateSummary = async () => {
     error.value = err.text || err.message || String(err);
     loading.value = false;
   }
-};
-
-const formatNumber = (num) => {
-  return commaString(num || 0);
-};
-
-const formatBytes = (bytes) => {
-  return humanReadableBytes(bytes || 0);
-};
-
-const formatDuration = (start, end) => {
-  if (!start || !end) return 'N/A';
-  return readableTime(end - start);
-};
-
-const formatTimestamp = (timestamp) => {
-  if (!timestamp) return 'N/A';
-  // Convert seconds to milliseconds if needed (Arkime stores timestamps in seconds)
-  const ms = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
-  return timezoneDateString(ms, timezone.value, showMs.value);
-};
-
-const getCurrentTime = () => {
-  return timezoneDateString(Date.now(), timezone.value, showMs.value);
 };
 
 // Shared tooltip methods
@@ -681,9 +763,8 @@ const exportChart = async (svgId, filename) => {
     }
 
     // Get computed colors from CSS variables
-    const computedStyle = getComputedStyle(document.documentElement);
-    const foregroundColor = computedStyle.getPropertyValue('--color-foreground').trim() || '#000000';
-    const backgroundColor = computedStyle.getPropertyValue('--color-background').trim() || '#ffffff';
+    const foregroundColor = themedColor('foreground', '#000000');
+    const backgroundColor = themedColor('background', '#ffffff');
 
     // Find the SVG element
     const svgElement = document.getElementById(svgId);
@@ -710,63 +791,9 @@ const exportChart = async (svgId, filename) => {
   }
 };
 
-// Helper function to escape CSV values
-const escapeCSV = (value) => {
-  let stringValue = String(value);
-  // Neutralize CSV/spreadsheet formula injection. A cell that begins with one of
-  // = + - @ TAB CR can execute as a formula when opened in Excel/Google Sheets.
-  // Since values can come from captured traffic, prefix risky cells with a single quote.
-  if (stringValue.length > 0 && '=+-@\t\r'.includes(stringValue[0])) {
-    stringValue = `'${stringValue}`;
-  }
-  // Escape quotes by doubling them and wrap in quotes if contains comma, quote, or newline
-  if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n')) {
-    return `"${stringValue.replace(/"/g, '""')}"`;
-  }
-  return stringValue;
-};
-
-// Export table as CSV
-const exportTableCSV = (dataKeyOrData, headers, filename) => {
-  try {
-    // Support both direct data and lookup by key
-    const data = typeof dataKeyOrData === 'string'
-      ? summary.value?.[dataKeyOrData]
-      : dataKeyOrData;
-
-    if (!data?.length) {
-      return;
-    }
-
-    let csv = headers.join(',') + '\n';
-
-    data.forEach(item => {
-      csv += `${escapeCSV(item.item)},${item.sessions},${item.packets},${item.bytes}\n`;
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    error.value = 'Failed to export CSV file';
-  }
-};
-
-// Simplified widget export handler
+// Chart (bar/pie) export → PNG. Table widgets self-fetch and own their CSV export.
 const handleWidgetExport = (widget, svgId) => {
-  const filename = widget.field;
-  const itemLabel = widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field;
-
-  if (widget.viewMode.value === 'table') {
-    const headers = [itemLabel, 'Sessions', 'Packets', 'Bytes'];
-    exportTableCSV(widget.data, headers, `arkime-summary-${filename}.csv`);
-  } else {
-    exportChart(svgId, filename);
-  }
+  exportChart(svgId, widget.field);
 };
 
 // Temporarily add count labels to an SVG for export, returns a cleanup function
@@ -774,8 +801,9 @@ const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
   const NS = 'http://www.w3.org/2000/svg';
   const added = [];
 
+  const metricIsBytes = /bytes/i.test(metricType || '');
   const formatValue = (val) => {
-    if (metricType === 'bytes') return humanReadableBytes(val || 0);
+    if (metricIsBytes) return humanReadableBytes(val || 0);
     return commaString(val || 0);
   };
 
@@ -788,7 +816,7 @@ const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
       const x = parseFloat(bar.getAttribute('x'));
       const y = parseFloat(bar.getAttribute('y'));
       const width = parseFloat(bar.getAttribute('width'));
-      const value = data[i]?.[metricType] || 0;
+      const value = data[i]?.value || 0;
 
       const text = document.createElementNS(NS, 'text');
       text.setAttribute('x', String(x + width / 2));
@@ -810,7 +838,7 @@ const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
       if (i >= data.length) return;
       const existingText = arc.querySelector('text');
       if (!existingText || !existingText.textContent) return; // Skip tiny slices with no label
-      const value = data[i]?.[metricType] || 0;
+      const value = data[i]?.value || 0;
       const transform = existingText.getAttribute('transform');
 
       const countText = document.createElementNS(NS, 'text');
@@ -839,9 +867,8 @@ const exportAllPNG = async () => {
     if (!widgetContainer.value) return;
 
     // Get computed colors from CSS variables
-    const computedStyle = getComputedStyle(document.documentElement);
-    const foregroundColor = computedStyle.getPropertyValue('--color-foreground').trim() || '#000000';
-    const backgroundColor = computedStyle.getPropertyValue('--color-background').trim() || '#ffffff';
+    const foregroundColor = themedColor('foreground', '#000000');
+    const backgroundColor = themedColor('background', '#ffffff');
 
     // Collect SVGs paired with their widget labels
     const wrappers = widgetContainer.value.querySelectorAll('.widget-wrapper');
@@ -849,13 +876,13 @@ const exportAllPNG = async () => {
     const cleanups = [];
 
     for (let i = 0; i < wrappers.length; i++) {
-      const config = widgetConfigs.value[i];
-      if (!config || config.viewMode?.value === 'table') continue; // Skip table widgets
+      const config = summary.value?.fields?.[i];
+      if (!config || config.viewMode === 'table') continue; // Skip table widgets
 
       const svg = wrappers[i].querySelector('svg');
       if (!svg) continue; // Skip loading, error, or empty widgets
       const label = config?.title || FieldService.getField(config?.field, true)?.friendlyName || config?.field || '';
-      const metricType = config?.metricType?.value || 'sessions';
+      const metricType = config?.metricType || 'sessions';
       const data = config?.data || [];
 
       // Temporarily add count labels to the live SVG
@@ -952,13 +979,16 @@ const initializeDragDrop = () => {
   const minScrollSpeed = 50;
   const maxScrollSpeed = 300;
 
+  // the page shell's scroll container is the scroller (not the document)
+  const scrollTarget = () => pageScrollEl?.value || document.documentElement;
+
   sortableInstance = Sortable.create(widgetContainer.value, {
     animation: 100,
-    handle: '.widget-handle',
+    handle: '.widget-drag',
     draggable: '.widget-wrapper',
     ghostClass: 'widget-ghost',
     chosenClass: 'widget-chosen',
-    scroll: document.documentElement,
+    scroll: scrollTarget(),
     scrollSensitivity,
     bubbleScroll: true,
     forceFallback: true,
@@ -967,18 +997,19 @@ const initializeDragDrop = () => {
       // Custom scroll function for dynamic speed based on cursor proximity to edge
       // offsetY is negative when near top, positive when near bottom
       if (offsetY !== 0 && originalEvent) {
-        const viewportHeight = window.innerHeight;
+        const el = scrollTarget();
+        const rect = el.getBoundingClientRect();
         const cursorY = originalEvent.clientY;
 
-        // Calculate distance from the edge being scrolled toward
-        const distanceFromEdge = offsetY < 0 ? cursorY : viewportHeight - cursorY;
+        // Calculate distance from the scroller edge being scrolled toward
+        const distanceFromEdge = offsetY < 0 ? cursorY - rect.top : rect.bottom - cursorY;
 
         // Calculate speed: closer to edge = faster scroll
         const ratio = 1 - (distanceFromEdge / scrollSensitivity);
         const speed = minScrollSpeed + (ratio * (maxScrollSpeed - minScrollSpeed));
 
         // Apply scroll in the appropriate direction
-        document.documentElement.scrollTop += offsetY > 0 ? speed : -speed;
+        el.scrollTop += offsetY > 0 ? speed : -speed;
       }
     },
     onSort: (evt) => {
@@ -986,10 +1017,10 @@ const initializeDragDrop = () => {
       const newIndex = evt.newIndex;
       // Reorder the local data to match the new DOM order
       if (summary.value?.fields && oldIndex !== newIndex) {
-        const field = summary.value.fields.splice(oldIndex, 1)[0];
-        summary.value.fields.splice(newIndex, 0, field);
-        // Emit to parent to persist the new order
-        emit('reorder-fields', { oldIndex, newIndex });
+        const w = summary.value.fields.splice(oldIndex, 1)[0];
+        summary.value.fields.splice(newIndex, 0, w);
+        // Emit the new full widget order to parent to persist
+        emitWidgetConfigChange();
       }
     }
   });
@@ -1036,58 +1067,137 @@ onBeforeUnmount(() => {
 });
 
 /**
- * Updates a widget's view mode and emits change event
+ * Open the edit modal for a widget
  */
-const updateWidgetViewMode = (widget, newMode) => {
-  widget.viewMode.value = newMode;
+const openEdit = (id) => {
+  const w = summary.value?.fields?.find(f => f.id === id);
+  if (w) {
+    editingWidget.value = { ...w };
+    editModalShow.value = true;
+  }
+};
+
+/**
+ * Close the edit modal. If a just-added field-bound widget was never configured
+ * (no field), drop it so cancel doesn't leave a dangling "configure me" card.
+ * Session-wide widgets (timeline/map/stats/time) are valid without a field.
+ */
+const onEditClose = () => {
+  editModalShow.value = false;
+  const id = editingWidget.value?.id;
+  const entry = id && summary.value?.fields?.find(f => f.id === id);
+  if (entry && (isFieldMode(entry.viewMode) || isGeoFieldMode(entry.viewMode)) && !entry.field) {
+    removeWidgetLocal(entry);
+  }
+};
+
+/**
+ * Apply an edited widget; refetch only when data-affecting fields changed
+ */
+const onEditSave = (updated) => {
+  editModalShow.value = false;
+  if (!summary.value?.fields) return;
+  const index = summary.value.fields.findIndex(f => f.id === updated.id);
+  if (index === -1) return;
+
+  const prev = summary.value.fields[index];
+  // self-fetch view modes (heatmap/treemap) react to the replaced entry on their
+  // own; stream-mode widgets refetch here when the aggregation changed — including
+  // when switching back from a self-fetch mode (they have no streamed data yet)
+  // self-fetch modes (heatmap/treemap/intersection + multi-field pie/table) react
+  // to the replaced entry via their own watchers; only single-field stream widgets
+  // refetch through the host here.
+  const becameStream = isStreamMode(updated.viewMode) && !isStreamMode(prev.viewMode);
+  const needsRefetch = isStreamMode(updated.viewMode) && !isMultiField(updated) && (
+    becameStream ||
+    prev.field !== updated.field ||
+    prev.length !== updated.length ||
+    prev.order !== updated.order ||
+    (prev.metricType || 'sessions') !== (updated.metricType || 'sessions') ||
+    (prev.expression || '') !== (updated.expression || '') ||
+    (prev.view || '') !== (updated.view || ''));
+
+  summary.value.fields[index] = { ...prev, ...updated };
+  emitWidgetConfigChange();
+
+  if (needsRefetch) {
+    summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
+    fetchWidgets([summary.value.fields[index]]);
+  }
+};
+
+/**
+ * Remove a widget locally (from its own menu) and persist
+ */
+const removeWidgetLocal = (widget) => {
+  if (!summary.value?.fields) return;
+  const index = summary.value.fields.findIndex(f => f.id === widget.id);
+  if (index !== -1) {
+    summary.value.fields.splice(index, 1);
+  }
   emitWidgetConfigChange();
 };
 
 /**
- * Updates a widget's metric type and emits change event
- */
-const updateWidgetMetricType = (widget, newMetric) => {
-  widget.metricType.value = newMetric;
-  emitWidgetConfigChange();
-};
-
-/**
- * Emits the current widget configuration to parent
+ * Emits the current widget configuration to parent (for persistence)
  */
 const emitWidgetConfigChange = () => {
-  emit('widget-config-changed', getWidgetConfigs());
+  emit('widget-config-changed', getWidgets());
 };
 
 /**
- * Gets the current widget configurations for saving
- * @returns {Array} Array of field configurations with viewMode and metricType
+ * Gets the current widget definitions for saving
  */
-const getWidgetConfigs = () => {
-  return widgetConfigs.value.map(w => ({
+const getWidgets = () => {
+  return (summary.value?.fields || []).map(w => ({
+    id: w.id,
     field: w.field,
-    viewMode: w.viewMode.value,
-    metricType: w.metricType.value
+    fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, 3) : (w.field ? [w.field] : []),
+    viewMode: w.viewMode,
+    metricType: w.metricType,
+    length: w.length,
+    order: w.order,
+    expression: w.expression || '',
+    view: w.view || '',
+    height: w.height || 3,
+    width: w.width || 2,
+    title: w.title || ''
   }));
 };
 
-// Add a single field without re-fetching everything
-const addField = (fieldExp) => {
+// Scroll a (possibly off-screen) widget into view and briefly highlight it
+const scrollToWidget = (id) => {
+  nextTick(() => {
+    const el = widgetContainer.value?.querySelector(`[data-widget-id="${id}"]`);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    flashWidgetId.value = id;
+    setTimeout(() => { if (flashWidgetId.value === id) { flashWidgetId.value = ''; } }, 1800);
+  });
+};
+
+// Add a single widget without re-fetching everything (parent-initiated)
+const addWidget = (def) => {
   if (!summary.value?.fields) {
     // Summary hasn't loaded yet, need a full reload
     generateSummary();
     return;
   }
 
-  // Add loading placeholder and fetch just this field
-  summary.value.fields.push({ field: fieldExp, loading: true });
-  fetchFields([fieldExp]);
+  summary.value.fields.push(makeEntry(def));
+  // configured single-field stream widgets fetch immediately; self-fetch modes
+  // (heatmap/treemap/intersection + multi-field pie/table) fetch themselves and an
+  // unconfigured widget waits for its editor
+  if (def.field && isStreamMode(def.viewMode) && !isMultiField(def)) {
+    fetchWidgets([def]);
+  }
+  // bring the new widget into view + flash it (it may be below the fold)
+  scrollToWidget(def.id);
 };
 
-// Remove a single field without re-fetching anything
-const removeField = (fieldExp) => {
+// Remove a single widget by id without re-fetching (parent-initiated)
+const removeWidget = (id) => {
   if (!summary.value?.fields) return;
-
-  const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  const index = summary.value.fields.findIndex(f => f.id === id);
   if (index !== -1) {
     summary.value.fields.splice(index, 1);
   }
@@ -1096,9 +1206,10 @@ const removeField = (fieldExp) => {
 // Expose methods to parent component
 defineExpose({
   reloadSummary: generateSummary,
-  addField,
-  removeField,
-  getWidgetConfigs,
+  addWidget,
+  removeWidget,
+  openEdit,
+  getWidgets,
   exportAllPNG,
   cancelLoading,
   retryAllFailed
@@ -1123,7 +1234,7 @@ defineExpose({
   flex: 1;
   padding: 0.75rem;
   border-radius: 6px;
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
 }
 
 .summary-stats h4 {
@@ -1141,8 +1252,8 @@ defineExpose({
   padding: 0.4rem;
   border-radius: 4px;
   text-align: center;
-  border: 1px solid var(--color-gray);
-  background: var(--color-background);
+  border: 1px solid rgb(var(--v-theme-neutral));
+  background: rgb(var(--v-theme-background));
 }
 
 .stat-label {
@@ -1159,7 +1270,7 @@ defineExpose({
   flex-shrink: 0;
   padding: 0.5rem;
   border-radius: 6px;
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
 }
 
 @media (min-width: 1200px) {
@@ -1185,8 +1296,8 @@ defineExpose({
   align-items: baseline;
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
-  background: var(--color-background);
-  border: 1px solid var(--color-gray);
+  background: rgb(var(--v-theme-background));
+  border: 1px solid rgb(var(--v-theme-neutral));
   font-size: 0.75rem;
   line-height: 1.3;
 }
@@ -1202,41 +1313,51 @@ defineExpose({
   font-family: monospace;
 }
 
+.empty-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
 .charts-container {
-  gap: 1rem;
-  margin-top: 1.5rem; /* Extra margin to accommodate drag handles */
+  gap: 0.5rem;
+  margin-top: 0.75rem;
   display: grid;
 }
 
-/* Ensure grid items stretch to fill and have minimum height */
+/* Ensure grid items stretch to fill; height comes from the row span, not a floor */
 .charts-container > * {
   min-width: 0;      /* Prevent grid blowout */
-  min-height: 450px; /* Minimum height for readability */
+  min-height: 0;
 }
 
-/* When results > 20 (large data): 1-2 columns max */
-.charts-grid-large-data {
-  /* Default: 1 column */
-  grid-template-columns: 1fr;
+/* Fixed 4-column grid; widgets span 1-4 cols and 1-8 rows via inline
+   grid-column/-row. Rows are a fine 160px unit so short widgets (stats/time)
+   can be a single row while charts span 3 (480px). */
+.charts-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 160px;
 }
 
-@media (min-width: 2500px) {
-  .charts-grid-large-data {
-    /* Very large viewport: 2 columns */
-    grid-template-columns: repeat(2, 1fr);
+/* Below 1200px the 4-col grid is too cramped for charts, so collapse to a single
+   stacked column; at/above it, the full 4-col designed layout. The per-widget
+   inline `grid-column: span N` must be overridden (!important) — otherwise a
+   span > 1 makes the grid create implicit columns and widgets stop filling the
+   width. Row spans (heights) are kept. */
+@media (max-width: 1199.98px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
   }
-}
-
-/* When results <= 20 (small data): 2-3 columns max */
-.charts-grid-small-data {
-  /* Default: 2 columns */
-  grid-template-columns: repeat(2, 1fr);
-}
-
-@media (min-width: 2500px) {
-  .charts-grid-small-data {
-    /* Very large viewport: 3 columns */
-    grid-template-columns: repeat(3, 1fr);
+  .charts-grid > .widget-wrapper {
+    grid-column: 1 / -1 !important;
+  }
+  /* single-column layout: no reorder/resize, so drop the drag + resize handles */
+  .widget-resize,
+  :deep(.widget-drag) {
+    display: none;
   }
 }
 
@@ -1245,21 +1366,73 @@ defineExpose({
   position: relative;
 }
 
-/* Drag handle for reordering widgets */
-.widget-handle {
-  visibility: hidden;
-  color: var(--color-gray);
-  cursor: move;
-  position: absolute;
-  top: -20px;
-  left: 0;
-  z-index: 10;
-  background: var(--color-quaternary-lightest);
-  padding: 2px 6px;
-  border-radius: 4px 4px 0 0;
+/* Briefly ring a freshly-added widget so it's noticed after scrolling */
+.widget-wrapper.widget-flash {
+  border-radius: 8px;
+  animation: widgetFlash 1.8s ease-out;
 }
-.widget-wrapper:hover .widget-handle {
+@keyframes widgetFlash {
+  0% { box-shadow: 0 0 0 3px rgb(var(--v-theme-foreground-accent)); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+/* reorder handle now lives inside the card header (.widget-drag in WidgetCard) */
+
+/* Drag-to-resize handles (shown on hover) */
+.widget-resize {
+  position: absolute;
+  z-index: 11;
+  visibility: hidden;
+}
+.widget-wrapper:hover .widget-resize {
   visibility: visible;
+}
+
+/* Info icon + action buttons (edit/export/remove) reveal on hover like the drag
+   handle. :focus-within keeps them reachable by keyboard. */
+.widget-wrapper :deep(.widget-actions),
+.widget-wrapper :deep(.widget-info-icon) {
+  visibility: hidden;
+}
+.widget-wrapper:hover :deep(.widget-actions),
+.widget-wrapper:hover :deep(.widget-info-icon),
+.widget-wrapper:focus-within :deep(.widget-actions),
+.widget-wrapper:focus-within :deep(.widget-info-icon) {
+  visibility: visible;
+}
+.widget-resize--e {
+  top: 0;
+  right: -3px;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.widget-resize--s {
+  left: 0;
+  bottom: -3px;
+  height: 8px;
+  width: 100%;
+  cursor: ns-resize;
+}
+.widget-resize--se {
+  right: -3px;
+  bottom: -3px;
+  width: 18px;
+  height: 18px;
+  z-index: 12;
+  cursor: nwse-resize;
+}
+/* visible L-grip for the corner handle */
+.widget-resize--se::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid rgb(var(--v-theme-neutral));
+  border-bottom: 2px solid rgb(var(--v-theme-neutral));
+  border-bottom-right-radius: 3px;
 }
 
 /* Visual feedback during drag */
