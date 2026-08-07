@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+<!--
+Before submitting: please make sure you are running a recent version of Arkime. Check the latest releases at https://github.com/arkime/arkime/releases and upgrade if you are on an older version — the bug may already be fixed.
+-->
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
