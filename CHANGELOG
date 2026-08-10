@@ -60,6 +60,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4153 Fix DTLS ja4 being computed over a truncated string when a ClientHello had many extensions or signature algorithms
   - #4153 Fix TLS/DTLS ClientHello parsing desyncing when the cipher suites length was odd, which could hide the SNI and give a wrong ja3/ja4
   - #4187 Fix crash when redefining the type of a builtin field via wise or custom-fields
+  - #4188 Add wiseRequestTimeout setting, default 30 seconds, so a stuck wiseService doesn't delay capture shutdown for minutes
 ## Cont3xt/Viewer
   - #4134 Add an MCP server at POST /mcp for viewer and cont3xt, off by default, enable with mcpEnabled.
   - #4134 Add mcpUser role, required per user on top of the service role to use /mcp; superAdmin includes it, arkimeAdmin does not

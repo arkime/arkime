@@ -23,6 +23,7 @@ LOCAL uint32_t              cacheSecs;
 LOCAL char                  tcpTuple;
 LOCAL char                  udpTuple;
 LOCAL uint32_t              logEvery;
+LOCAL uint32_t              requestTimeout;
 
 
 LOCAL int                   protocolField;
@@ -1022,6 +1023,7 @@ void arkime_plugin_init()
     tcpTuple = arkime_config_boolean(NULL, "wiseTcpTupleLookups", FALSE);
     udpTuple = arkime_config_boolean(NULL, "wiseUdpTupleLookups", FALSE);
     logEvery = arkime_config_int(NULL, "wiseLogEvery", 10000, 0, 10000000);
+    requestTimeout = arkime_config_int(NULL, "wiseRequestTimeout", 30, 1, 600);
 
     wiseURL  = arkime_config_str(NULL, "wiseURL", NULL);
     wisePort = arkime_config_int(NULL, "wisePort", 8081, 1, 0xffff);
@@ -1059,6 +1061,7 @@ void arkime_plugin_init()
     static char *headers[] = {"Expect:", NULL};
     arkime_http_set_headers(wiseService, headers);
     arkime_http_set_retries(wiseService, 1);
+    arkime_http_set_timeout(wiseService, requestTimeout);
 
     arkime_plugins_register("wise", FALSE);
 
