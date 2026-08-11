@@ -136,6 +136,7 @@
      "packets" : 3,
      "port" : 40001
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -145,6 +146,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -429,6 +432,7 @@
      "packets" : 3,
      "port" : 40003
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -438,6 +442,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -713,11 +719,14 @@
      "packets" : 3,
      "port" : 40005
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f204854",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -980,11 +989,14 @@
      "packets" : 3,
      "port" : 40007
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f204854",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
