@@ -190,6 +190,7 @@
      "packets" : 14,
      "port" : 50754
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Apple, Inc."
     ],
@@ -203,6 +204,8 @@
      "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 8,
      "ae" : 0,

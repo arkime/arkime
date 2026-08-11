@@ -235,6 +235,7 @@
      "packets" : 5,
      "port" : 50384
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "LITE-ON Technology Corp."
     ],
@@ -250,6 +251,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

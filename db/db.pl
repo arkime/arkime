@@ -6856,7 +6856,7 @@ sub sessions3Update
     "tcpSynValidated" : {
       "type" : "boolean"
     },
-    "tcpAckSynchronized" : {
+    "tcpSynAckValidated" : {
       "type" : "boolean"
     },
     "srcISNCnt" : {

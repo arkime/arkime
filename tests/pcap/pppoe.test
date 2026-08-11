@@ -168,6 +168,7 @@
      "packets" : 5,
      "port" : 1063
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Askey Computer Corp"
     ],
@@ -182,6 +183,8 @@
      "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

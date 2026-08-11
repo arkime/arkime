@@ -101,6 +101,7 @@
      "packets" : 8,
      "port" : 40848
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
@@ -110,6 +111,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

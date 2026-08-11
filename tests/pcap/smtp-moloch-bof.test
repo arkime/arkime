@@ -156,6 +156,7 @@
      "packets" : 13,
      "port" : 50328
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
@@ -169,6 +170,8 @@
      "smtp:statuscode:250"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 11,
      "ae" : 0,

@@ -116,6 +116,7 @@
      "packets" : 17,
      "port" : 61109
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "000300082112a442",
     "srcRIR" : "ARIN",
     "srcTTL" : [
@@ -225,6 +226,8 @@
      "stun:nat-discovered"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 10,
      "ae" : 0,

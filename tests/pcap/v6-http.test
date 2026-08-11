@@ -866,6 +866,7 @@
      "packets" : 6,
      "port" : 59201
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Hsing Tech. Enterprise Co. Ltd"
     ],
@@ -879,6 +880,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

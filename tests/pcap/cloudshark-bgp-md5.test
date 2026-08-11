@@ -106,12 +106,15 @@
      48
     ],
     "srcDscpCnt" : 1,
+    "srcISNCnt" : 1,
     "srcPayload8" : "ffffffffffffffff",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      1
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,

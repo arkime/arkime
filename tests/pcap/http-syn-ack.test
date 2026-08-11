@@ -210,6 +210,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : false,
     "tcpflags" : {
      "ack" : 9,
      "ae" : 0,

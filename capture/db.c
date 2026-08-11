@@ -914,7 +914,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
         if (session->tcpData.synTime || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
             BSB_EXPORT_sprintf(jbsb, "\"tcpSynValidated\":%s,", session->tcpData.synValidated ? "true" : "false");
-            BSB_EXPORT_sprintf(jbsb, "\"tcpAckSynchronized\":%s,", session->tcpData.ackSynchronized ? "true" : "false");
+            BSB_EXPORT_sprintf(jbsb, "\"tcpSynAckValidated\":%s,", session->tcpData.synAckValidated ? "true" : "false");
             if (session->tcpData.srcISNCnt) {
                 BSB_EXPORT_sprintf(jbsb, "\"srcISNCnt\":%u,", session->tcpData.srcISNCnt);
             }

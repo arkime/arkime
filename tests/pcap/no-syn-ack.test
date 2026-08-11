@@ -95,6 +95,7 @@
      "packets" : 4,
      "port" : 40041
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -108,6 +109,8 @@
      "no-syn-ack"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : false,
+    "tcpSynValidated" : false,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -320,6 +323,7 @@
      "packets" : 3,
      "port" : 61181
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -333,6 +337,8 @@
      "no-syn-ack"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : false,
+    "tcpSynValidated" : false,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,

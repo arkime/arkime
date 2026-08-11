@@ -52,8 +52,9 @@ LOCAL void tcp_mid_save(ArkimeSession_t *session)
     session->tcpData.synAckSeq[0] = 0;
     session->tcpData.synAckSeq[1] = 0;
     session->tcpData.synSeen = 0;
+    session->tcpData.synAckSeen = 0;
     session->tcpData.synValidated = 0;
-    session->tcpData.ackSynchronized = 0;
+    session->tcpData.synAckValidated = 0;
     session->tcpData.srcISNCnt = 0;
     memset(session->tcpData.tcpFlagCnt, 0, sizeof(session->tcpData.tcpFlagCnt));
 }
@@ -220,9 +221,12 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 
             // The value a peer must ack to prove it received THIS side's ISN. Recorded per
             // direction so a forged syn-ack cannot supply both halves of the comparison.
-            // Retransmits repeat the same ISN, so only record it once.
-            if (!session->tcpData.synAckSeq[packet->direction]) {
+            // Retransmits repeat the same ISN, so only record it once. A separate seen bit
+            // tracks that, because seq+1 can legitimately be 0 (ISN 0xFFFFFFFF) and can't
+            // itself signal "unset".
+            if (!(session->tcpData.synAckSeen & (1 << packet->direction))) {
                 session->tcpData.synAckSeq[packet->direction] = seq + 1;
+                session->tcpData.synAckSeen |= (1 << packet->direction);
 
                 // Linkage 1: this syn-ack acknowledges the syn we actually observed, so the
                 // responder demonstrably received it.
@@ -250,6 +254,15 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
                 session->tcpData.synISN[packet->direction] = seq;
                 session->tcpData.synSeen |= (1 << packet->direction);
             }
+
+            // Reordering catch: a syn-ack observed before this syn already reconstructed
+            // synSeq[0] = its ack - 1. If this syn's ISN matches, that syn-ack acknowledged
+            // it - validate now, since the syn-ack-time check ran before the syn was seen.
+            const int synOther = (packet->direction + 1) & 1;
+            if ((session->tcpData.synAckSeen & (1 << synOther)) &&
+                seq == session->tcpData.synSeq[0])
+                session->tcpData.synValidated |= (1 << packet->direction);
+
             if (session->tcpData.synTime == 0) {
                 session->tcpData.synSeq[0] = seq;
                 session->tcpData.srcISNCnt = 1;
@@ -319,8 +332,8 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
     // Fails closed - with no syn-ack observed from the other side, nothing is claimed.
     if ((tcphdr->th_flags & TH_ACK) && !(tcphdr->th_flags & (TH_SYN | TH_RST))) {
         const int otherDir = (packet->direction + 1) & 1;
-        if (!(session->tcpData.ackSynchronized & (1 << packet->direction)) &&
-            session->tcpData.synAckSeq[otherDir]) {
+        if (!(session->tcpData.synAckValidated & (1 << packet->direction)) &&
+            (session->tcpData.synAckSeen & (1 << otherDir))) {
             const uint32_t ack = ntohl(tcphdr->th_ack);
 
             // synAckSeq[otherDir] <= ack <= tcpSeq[otherDir]
@@ -335,7 +348,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             }
 
             if (ackOK && seqOK)
-                session->tcpData.ackSynchronized |= (1 << packet->direction);
+                session->tcpData.synAckValidated |= (1 << packet->direction);
         }
     }
 

@@ -164,6 +164,7 @@
      "packets" : 4,
      "port" : 64034
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "16030100e8010000",
     "srcTTL" : [
      64
@@ -173,6 +174,8 @@
      "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
