@@ -299,6 +299,7 @@
      "packets" : 20,
      "port" : 11371
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Hillstone Networks Inc"
     ],
@@ -310,6 +311,8 @@
      "64"
     ],
     "srcTTLCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 12,
      "ae" : 0,

@@ -118,6 +118,7 @@
      "packets" : 10,
      "port" : 60101
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "1603000059010000",
     "srcTTL" : [
      64
@@ -127,6 +128,8 @@
      "cert:self-signed"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 9,
      "ae" : 0,

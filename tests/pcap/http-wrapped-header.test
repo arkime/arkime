@@ -306,6 +306,7 @@
      "packets" : 7,
      "port" : 61462
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Cisco Systems, Inc"
     ],
@@ -321,6 +322,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,

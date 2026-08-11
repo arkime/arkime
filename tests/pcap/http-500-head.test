@@ -157,6 +157,7 @@
      "packets" : 5,
      "port" : 49323
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "ICANN, IANA Department",
      "Juniper Networks"
@@ -171,6 +172,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

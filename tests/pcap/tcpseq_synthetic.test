@@ -96,6 +96,7 @@
      "packets" : 4,
      "port" : 40001
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "4141414142424242",
     "srcTTL" : [
      64
@@ -107,6 +108,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -257,6 +260,7 @@
      "packets" : 4,
      "port" : 40002
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5858585859595959",
     "srcTTL" : [
      64
@@ -267,6 +271,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -390,6 +396,7 @@
      "packets" : 4,
      "port" : 40003
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5a5a5a5a",
     "srcTTL" : [
      64
@@ -399,6 +406,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -525,6 +534,7 @@
      "packets" : 6,
      "port" : 40004
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "4141414141414141",
     "srcTTL" : [
      64
@@ -534,6 +544,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -652,6 +664,7 @@
      "packets" : 5,
      "port" : 40005
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "3131313131313131",
     "srcTTL" : [
      64
@@ -662,6 +675,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -775,11 +790,14 @@
      11
     ],
     "srcDscpCnt" : 1,
+    "srcISNCnt" : 1,
     "srcRIR" : "ARIN",
     "srcTTL" : [
      0
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : false,
+    "tcpSynValidated" : false,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,

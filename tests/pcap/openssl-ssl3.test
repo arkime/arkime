@@ -251,6 +251,7 @@
      "packets" : 12,
      "port" : 45680
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Dell Inc."
     ],
@@ -266,6 +267,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 10,
      "ae" : 0,

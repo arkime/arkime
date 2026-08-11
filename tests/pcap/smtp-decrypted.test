@@ -247,6 +247,7 @@
      "packets" : 21,
      "port" : 49475
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "45484c4f20545241",
     "srcRIR" : "RIPE",
     "srcTTL" : [
@@ -259,6 +260,8 @@
      "smtp:statuscode:250"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 20,
      "ae" : 0,
@@ -499,6 +502,7 @@
      "packets" : 13,
      "port" : 28120
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "45484c4f20424731",
     "srcRIR" : "ARIN",
     "srcTTL" : [
@@ -509,6 +513,8 @@
      "smtp:starttls"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 8,
      "ae" : 0,
@@ -757,6 +763,7 @@
      "packets" : 12,
      "port" : 28134
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "45484c4f20424731",
     "srcRIR" : "ARIN",
     "srcTTL" : [
@@ -768,6 +775,8 @@
      "smtp:starttls"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 7,
      "ae" : 0,
@@ -993,6 +1002,7 @@
      "packets" : 10,
      "port" : 41347
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "45484c4f20545241",
     "srcRIR" : "RIPE",
     "srcTTL" : [
@@ -1004,6 +1014,8 @@
      "smtp:statuscode:250"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,

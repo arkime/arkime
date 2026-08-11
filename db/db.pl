@@ -6853,6 +6853,15 @@ sub sessions3Update
         }
       }
     },
+    "tcpSynValidated" : {
+      "type" : "boolean"
+    },
+    "tcpSynAckValidated" : {
+      "type" : "boolean"
+    },
+    "srcISNCnt" : {
+      "type" : "long"
+    },
     "tls" : {
       "properties" : {
         "cipher" : {

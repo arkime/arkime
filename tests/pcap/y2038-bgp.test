@@ -192,6 +192,8 @@
      "acked-unseen-segment-dst"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : false,
+    "tcpSynValidated" : false,
     "tcpflags" : {
      "ack" : 0,
      "ae" : 0,

@@ -117,6 +117,7 @@
      "packets" : 7,
      "port" : 53226
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -133,6 +134,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 4,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -311,6 +314,7 @@
      "packets" : 6,
      "port" : 43178
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -324,6 +328,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,

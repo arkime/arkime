@@ -180,6 +180,7 @@
      "packets" : 3,
      "port" : 3627
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Cisco Systems, Inc"
     ],
@@ -196,6 +197,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 4,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,

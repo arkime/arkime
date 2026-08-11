@@ -172,6 +172,7 @@
      "packets" : 14,
      "port" : 2204
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "VMware, Inc."
     ],
@@ -181,6 +182,8 @@
      128
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,

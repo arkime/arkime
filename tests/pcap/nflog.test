@@ -197,11 +197,14 @@
      "packets" : 6,
      "port" : 54064
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f204854",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

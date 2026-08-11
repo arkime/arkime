@@ -149,6 +149,7 @@
      "packets" : 14,
      "port" : 45921
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Dell Inc."
     ],
@@ -158,6 +159,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 16,
      "ae" : 0,

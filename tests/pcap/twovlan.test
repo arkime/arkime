@@ -234,6 +234,7 @@
      "packets" : 3,
      "port" : 54422
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "VMware, Inc."
     ],
@@ -249,6 +250,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,

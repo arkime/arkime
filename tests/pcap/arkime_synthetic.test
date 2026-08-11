@@ -1091,11 +1091,14 @@
      "packets" : 5,
      "port" : 33002
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0011222201000001",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -1281,6 +1284,7 @@
      "packets" : 6,
      "port" : 50001
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -1290,6 +1294,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -1475,6 +1481,7 @@
      "packets" : 6,
      "port" : 50002
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -1484,6 +1491,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -1685,6 +1694,7 @@
      "packets" : 6,
      "port" : 50003
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -1694,6 +1704,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -1879,6 +1891,7 @@
      "packets" : 6,
      "port" : 50004
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -1888,6 +1901,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -2073,6 +2088,7 @@
      "packets" : 6,
      "port" : 50005
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -2082,6 +2098,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -2267,6 +2285,7 @@
      "packets" : 6,
      "port" : 50006
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -2276,6 +2295,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -2461,6 +2482,7 @@
      "packets" : 6,
      "port" : 50007
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -2470,6 +2492,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -2665,6 +2689,7 @@
      "packets" : 6,
      "port" : 50008
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -2674,6 +2699,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -2859,6 +2886,7 @@
      "packets" : 6,
      "port" : 50009
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -2868,6 +2896,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -3069,6 +3099,7 @@
      "packets" : 6,
      "port" : 50010
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -3078,6 +3109,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -3279,6 +3312,7 @@
      "packets" : 6,
      "port" : 50011
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -3288,6 +3322,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -3472,6 +3508,7 @@
      "packets" : 6,
      "port" : 50012
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -3481,6 +3518,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -3618,6 +3657,7 @@
      "packets" : 6,
      "port" : 51001
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -3627,6 +3667,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -3764,6 +3806,7 @@
      "packets" : 6,
      "port" : 51002
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -3773,6 +3816,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -3910,6 +3955,7 @@
      "packets" : 6,
      "port" : 51003
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -3919,6 +3965,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -4100,6 +4148,7 @@
      "packets" : 6,
      "port" : 51004
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -4109,6 +4158,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -4306,6 +4357,7 @@
      "packets" : 6,
      "port" : 52001
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -4315,6 +4367,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -4512,6 +4566,7 @@
      "packets" : 6,
      "port" : 52002
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -4521,6 +4576,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -4718,6 +4775,7 @@
      "packets" : 6,
      "port" : 52003
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -4727,6 +4785,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -4923,6 +4983,7 @@
      "packets" : 6,
      "port" : 52004
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -4932,6 +4993,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -5059,6 +5122,7 @@
      "packets" : 6,
      "port" : 49301
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160303002d010000",
     "srcTTL" : [
      64
@@ -5068,6 +5132,8 @@
      "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -5229,6 +5295,7 @@
      "packets" : 6,
      "port" : 49302
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160303002d010000",
     "srcTTL" : [
      64
@@ -5238,6 +5305,8 @@
      "cert:self-signed"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -5403,6 +5472,7 @@
      "packets" : 6,
      "port" : 49303
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160303002d010000",
     "srcTTL" : [
      64
@@ -5412,6 +5482,8 @@
      "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -5579,11 +5651,14 @@
      "packets" : 9,
      "port" : 49401
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "61312053454c4543",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,
@@ -5710,6 +5785,7 @@
      "packets" : 6,
      "port" : 49501
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0000010d6a820109",
     "srcTTL" : [
      64
@@ -5719,6 +5795,8 @@
      "krb5:record-too-long"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -5921,11 +5999,14 @@
      "packets" : 5,
      "port" : 49601
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0300000802f08032",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -6118,11 +6199,14 @@
      "packets" : 5,
      "port" : 49701
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0000002fff534d42",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -6230,6 +6314,7 @@
      "packets" : 6,
      "port" : 49407
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5353482d322e302d",
     "srcTTL" : [
      64
@@ -6242,6 +6327,8 @@
      ],
      "versionCnt" : 2
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -6350,11 +6437,14 @@
      "packets" : 5,
      "port" : 49702
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "00000022ff534d42",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -6778,11 +6868,14 @@
      "packets" : 11,
      "port" : 49500
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f636861",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 8,
      "ae" : 0,
@@ -7461,11 +7554,14 @@
      "packets" : 5,
      "port" : 49601
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "1603010046010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -7603,11 +7699,14 @@
      "packets" : 5,
      "port" : 49602
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "1603010039010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -7745,11 +7844,14 @@
      "packets" : 5,
      "port" : 49603
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160301003e010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -7899,11 +8001,14 @@
      "packets" : 5,
      "port" : 49700
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0101000000060103",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -8023,11 +8128,14 @@
      "packets" : 5,
      "port" : 502
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0201000000030183",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -8135,11 +8243,14 @@
      "packets" : 5,
      "port" : 49800
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0198000001000000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -8282,11 +8393,14 @@
      "packets" : 6,
      "port" : 5060
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "4f5054494f4e5320",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,
@@ -8591,11 +8705,14 @@
      "packets" : 5,
      "port" : 49621
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160303002f010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -9373,6 +9490,7 @@
      "packets" : 3,
      "port" : 54321
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -9386,6 +9504,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -9496,6 +9616,7 @@
      "packets" : 2,
      "port" : 54322
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -9510,6 +9631,8 @@
      ],
      "versionCnt" : 1
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -9622,6 +9745,7 @@
      "packets" : 3,
      "port" : 54323
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -9631,6 +9755,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -9828,6 +9954,7 @@
      "packets" : 3,
      "port" : 54324
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -9837,6 +9964,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -10200,6 +10329,7 @@
      "packets" : 2,
      "port" : 54326
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -10208,6 +10338,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -10469,6 +10601,7 @@
      "packets" : 3,
      "port" : 54328
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -10478,6 +10611,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -10582,6 +10717,7 @@
      "packets" : 3,
      "port" : 54329
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -10591,6 +10727,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -10700,6 +10838,7 @@
      "packets" : 4,
      "port" : 54330
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -10714,6 +10853,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -10834,6 +10975,7 @@
      "packets" : 3,
      "port" : 54331
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -10843,6 +10985,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -10940,6 +11084,7 @@
      "packets" : 3,
      "port" : 54332
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -10949,6 +11094,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -11046,6 +11193,7 @@
      "packets" : 3,
      "port" : 54333
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -11055,6 +11203,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -11154,6 +11304,7 @@
      "packets" : 3,
      "port" : 54334
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -11163,6 +11314,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -11456,6 +11609,7 @@
      "packets" : 3,
      "port" : 54335
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -11465,6 +11619,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -12030,6 +12186,7 @@
      "packets" : 3,
      "port" : 54339
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -12039,6 +12196,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -12956,6 +13115,7 @@
      "packets" : 3,
      "port" : 54344
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -12965,6 +13125,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -13656,6 +13818,7 @@
      "packets" : 3,
      "port" : 54348
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -13665,6 +13828,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -15499,6 +15664,7 @@
      "packets" : 3,
      "port" : 54321
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0025200d01000001",
     "srcTTL" : [
      64
@@ -15508,6 +15674,8 @@
      "acked-unseen-segment-dst"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -16090,11 +16258,14 @@
      "packets" : 3,
      "port" : 55001
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f617069",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -16355,11 +16526,14 @@
      "packets" : 3,
      "port" : 55002
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "504f5354202f6c6f",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -16516,6 +16690,7 @@
      "packets" : 3,
      "port" : 55003
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f6e6f6e",
     "srcTTL" : [
      64
@@ -16525,6 +16700,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -16692,6 +16869,7 @@
      "packets" : 3,
      "port" : 55004
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "474554202f657272",
     "srcTTL" : [
      64
@@ -16701,6 +16879,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -16882,11 +17062,14 @@
      "packets" : 7,
      "port" : 55005
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "45484c4f20636c69",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -16993,11 +17176,14 @@
      "packets" : 3,
      "port" : 55006
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "1603010055010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -17134,6 +17320,7 @@
      "packets" : 3,
      "port" : 55007
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5353482d322e302d",
     "srcTTL" : [
      64
@@ -17146,6 +17333,8 @@
      ],
      "versionCnt" : 2
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -17453,11 +17642,14 @@
      "packets" : 5,
      "port" : 55009
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "4e49434b20746573",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -17554,10 +17746,13 @@
      "packets" : 2,
      "port" : 55010
     },
+    "srcISNCnt" : 1,
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -17653,11 +17848,14 @@
      "packets" : 3,
      "port" : 55011
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "6a818030817da103",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -17843,11 +18041,14 @@
      "packets" : 3,
      "port" : 55013
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "302e020101602902",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -17949,11 +18150,14 @@
      "packets" : 3,
      "port" : 55014
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0000003d00030000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -18053,11 +18257,14 @@
      "packets" : 3,
      "port" : 56001
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "00000068fe534d42",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -18170,6 +18377,7 @@
      "packets" : 5,
      "port" : 56002
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0502000201097072",
     "srcTTL" : [
      64
@@ -18179,6 +18387,8 @@
      "socks:password"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -18296,11 +18506,14 @@
      "packets" : 3,
      "port" : 56003
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0001000000060103",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -18396,11 +18609,14 @@
      "packets" : 3,
      "port" : 56004
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0093000000010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -18609,11 +18825,14 @@
      "packets" : 3,
      "port" : 56006
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160301004b010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -18773,6 +18992,7 @@
      "packets" : 4,
      "port" : 56007
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5553455220667470",
     "srcTTL" : [
      64
@@ -18782,6 +19002,8 @@
      "ftp:password"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -19039,6 +19261,7 @@
      "packets" : 4,
      "port" : 57001
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5353482d322e302d",
     "srcTTL" : [
      64
@@ -19055,6 +19278,8 @@
      ],
      "versionCnt" : 2
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -19350,11 +19575,14 @@
      "packets" : 3,
      "port" : 57004
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0000004500030000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -19451,11 +19679,14 @@
      "packets" : 3,
      "port" : 57005
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "6a819130818ea103",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -19740,11 +19971,14 @@
      "packets" : 3,
      "port" : 57007
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "3200000185a60f00",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -19939,11 +20173,14 @@
      "packets" : 3,
      "port" : 57008
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "3031020101602c02",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -20140,11 +20377,14 @@
      "packets" : 5,
      "port" : 57009
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "4e49434b206a6f68",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -20398,11 +20638,14 @@
      "packets" : 3,
      "port" : 57011
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "ffffffffffffffff",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -23789,11 +24032,14 @@
      "packets" : 3,
      "port" : 49600
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "413030312053454c",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -24079,11 +24325,14 @@
      "packets" : 3,
      "port" : 49800
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "007b000001000000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -24382,11 +24631,14 @@
      "packets" : 4,
      "port" : 50000
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0300001f02f08032",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -24586,11 +24838,14 @@
      "packets" : 4,
      "port" : 50100
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "05000b0310000000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -24793,11 +25048,14 @@
      "packets" : 3,
      "port" : 50200
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "6026a20706056000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -25008,11 +25266,14 @@
      "packets" : 3,
      "port" : 50300
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "010000a880000101",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -25203,11 +25464,14 @@
      "packets" : 3,
      "port" : 50400
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0300002d28e00000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -25788,6 +26052,7 @@
      "packets" : 4,
      "port" : 56000
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "5353482d322e302d",
     "srcTTL" : [
      64
@@ -25812,6 +26077,8 @@
      ],
      "versionCnt" : 2
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -26035,11 +26302,14 @@
      "packets" : 4,
      "port" : 57000
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "104800044d515454",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -26382,11 +26652,14 @@
      "packets" : 3,
      "port" : 59000
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "160301002d010000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -27291,11 +27564,14 @@
      "packets" : 22,
      "port" : 50001
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "0000000000000000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 20,
      "ae" : 0,
@@ -27619,11 +27895,14 @@
      "packets" : 8,
      "port" : 50004
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "6500040000000000",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,

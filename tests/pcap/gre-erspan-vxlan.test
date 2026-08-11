@@ -118,6 +118,7 @@
      "packets" : 4,
      "port" : 65174
     },
+    "srcISNCnt" : 1,
     "srcOuterASN" : [
      "---"
     ],
@@ -144,6 +145,8 @@
      "gretest-erspan-vxlan"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,

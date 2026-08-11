@@ -139,6 +139,7 @@
      "packets" : 14,
      "port" : 59604
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -148,6 +149,8 @@
      61
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 12,
      "ae" : 0,

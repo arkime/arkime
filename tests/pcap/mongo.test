@@ -92,6 +92,7 @@
      "packets" : 5,
      "port" : 51822
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks",
      "Palo Alto Networks"
@@ -103,6 +104,8 @@
      "63"
     ],
     "srcTTLCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -223,6 +226,7 @@
      "packets" : 5,
      "port" : 55582
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks",
      "Palo Alto Networks"
@@ -234,6 +238,8 @@
      "63"
     ],
     "srcTTLCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,
@@ -344,6 +350,7 @@
      "packets" : 3,
      "port" : 61503
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -353,6 +360,8 @@
      61
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -464,6 +473,7 @@
      "packets" : 3,
      "port" : 51358
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks"
     ],
@@ -473,6 +483,8 @@
      58
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -593,6 +605,7 @@
      "packets" : 5,
      "port" : 64566
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks",
      "Palo Alto Networks"
@@ -604,6 +617,8 @@
      "63"
     ],
     "srcTTLCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,

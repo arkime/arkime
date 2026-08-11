@@ -478,6 +478,7 @@
      "packets" : 12,
      "port" : 40264
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Agere Systems"
     ],
@@ -528,6 +529,8 @@
      "gretest-sample"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 10,
      "ae" : 0,

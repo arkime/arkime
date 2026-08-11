@@ -118,6 +118,7 @@
      "packets" : 8,
      "port" : 53499
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Cisco Systems, Inc",
      "Jetcell, Inc."
@@ -134,6 +135,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 5,
      "ae" : 0,

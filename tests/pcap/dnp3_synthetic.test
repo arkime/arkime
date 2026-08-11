@@ -108,6 +108,7 @@
      "packets" : 6,
      "port" : 12345
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -124,6 +125,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 4,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,
@@ -426,6 +429,7 @@
      "packets" : 3,
      "port" : 33100
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "CIMSYS Inc"
     ],
@@ -439,6 +443,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,

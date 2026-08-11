@@ -105,6 +105,7 @@
      "packets" : 3,
      "port" : 1577
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Intel Corporate"
     ],
@@ -115,6 +116,8 @@
      128
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -417,6 +420,7 @@
      "packets" : 5,
      "port" : 42787
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Compal Information (Kunshan) Co., Ltd."
     ],
@@ -426,6 +430,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 4,
      "ae" : 0,

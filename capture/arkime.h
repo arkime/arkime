@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 606
+#define ARKIME_API_VERSION 607
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -720,8 +720,15 @@ typedef struct {
     uint32_t                ackTime;
     uint32_t                synSeq[2];
     uint32_t                tcpSeq[2];
+    uint32_t                synAckSeq[2];
+    uint32_t                synISN[2];
     char                    tcpState[2];
     uint16_t                tcpFlagCnt[ARKIME_TCPFLAG_MAX];
+    uint8_t                 synSeen          : 2;
+    uint8_t                 synAckSeen       : 2;
+    uint8_t                 synValidated     : 2;
+    uint8_t                 synAckValidated  : 2;
+    uint8_t                 srcISNCnt;
 } ArkimeTcpDataHead_t;
 
 #define ARKIME_TCP_STATE_FIN     1
