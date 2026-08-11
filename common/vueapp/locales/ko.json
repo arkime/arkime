@@ -953,7 +953,7 @@
     "uploadWorked": "파일이 성공적으로 업로드되었습니다"
   },
   "users": {
-    "searchPlaceholder": "이름, ID 또는 역할로 사용자 검색을 위해 입력을 시작하세요",
+    "searchPlaceholder": "이름, ID 또는 역할로 사용자 검색을 위해 입력을 시작하세요 (!역할은 해당 역할을 가진 사용자를 제외합니다)",
     "searchUserPlaceholder": "이름 또는 ID로 사용자 검색을 위해 입력을 시작하세요",
     "downloadCSVTip": "CSV 다운로드",
     "downloadCSVMsg": "CSV 다운로드됨!",

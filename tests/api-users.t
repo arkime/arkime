@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 266;
+use Test::More tests => 278;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -242,6 +242,23 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $users = viewerPost("/api/users", "filter=nonExistentRole");
     is (@{$users->{data}}, 0, "filter by non-existent role");
     is ($users->{recordsFiltered}, 0);
+
+# Filter by !role (users without that role)
+    $users = viewerPost("/api/users", "filter=!arkimeUser");
+    is (@{$users->{data}}, 3, "filter by !arkimeUser");
+    is ($users->{recordsFiltered}, 3);
+
+    $users = viewerPost("/api/users", "filter=!usersAdmin");
+    is (@{$users->{data}}, 3, "filter by !usersAdmin");
+    is ($users->{recordsFiltered}, 3);
+
+    $users = viewerPost("/api/users", "filter=!nonExistentRole");
+    is (@{$users->{data}}, 5, "filter by !non-existent role");
+    is ($users->{recordsFiltered}, 5);
+
+    $users = viewerPost("/api/users", "filter=!");
+    is (@{$users->{data}}, 1, "filter by bare ! (users with no roles)");
+    is ($users->{data}->[0]->{userId}, "sac-test2", "bare ! matches only sac-test2");
 
 # users/min with noRoles and no filter (should not crash)
     $json = viewerPostToken("/api/users/min", "", $token);
@@ -628,6 +645,15 @@ superAdmin,,true,true,false,"superAdmin",true,true,true,,,,,,
 test100,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
 test101,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
 ', "CSV Users 2");
+
+# Filter by !role works for user-defined roles (stored with role: prefix), with or without the prefix
+    $users = viewerPost("/api/users", "filter=!role:sac-test1");
+    is (@{$users->{data}}, 8, "filter by !role:sac-test1 excludes role:sac-test2");
+    is ($users->{recordsFiltered}, 8);
+
+    $users = viewerPost("/api/users", "filter=!sac-test1");
+    is (@{$users->{data}}, 8, "filter by !sac-test1 without role: prefix");
+    is ($users->{recordsFiltered}, 8);
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/notadmin", $token);

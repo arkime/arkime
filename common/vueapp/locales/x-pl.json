@@ -954,7 +954,7 @@
     "uploadWorked": "IleFay ucessfullysay uploadedway"
   },
   "users": {
-    "searchPlaceholder": "EginBay ypingtay otay earchsay orfay usersway ybay amenay, idway, orway oleray",
+    "searchPlaceholder": "EginBay ypingtay otay earchsay orfay usersway ybay amenay, idway, orway oleray (!oleray excludesway usersway ithway atthay oleray)",
     "searchUserPlaceholder": "EginBay ypingtay otay earchsay orfay usersway ybay amenay orway idway",
     "downloadCSVTip": "Ownloadday SVCAY",
     "downloadCSVMsg": "OwnloadedDay VSCAY!",
