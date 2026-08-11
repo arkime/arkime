@@ -167,6 +167,7 @@
      "packets" : 10,
      "port" : 50999
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "VMware, Inc."
     ],
@@ -181,6 +182,8 @@
      "truncated-pcap"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 10,
      "ae" : 0,

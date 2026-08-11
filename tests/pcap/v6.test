@@ -1180,6 +1180,7 @@
      "packets" : 32,
      "port" : 1022
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Megahertz Corporation"
     ],
@@ -1195,6 +1196,8 @@
      ],
      "versionCnt" : 1
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 14,
      "ae" : 0,

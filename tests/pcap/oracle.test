@@ -98,6 +98,7 @@
      "packets" : 5,
      "port" : 64084
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Juniper Networks",
      "Palo Alto Networks"
@@ -113,6 +114,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 2,
      "ae" : 0,

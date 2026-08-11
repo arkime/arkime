@@ -616,6 +616,8 @@ LOCAL ARKIME_LOCK_DEFINE(outputted);
 
 #define SAVE_FIELD_STR_HASH(POS, FLAGS) \
 do { \
+    if (config.fields[POS]->type != ARKIME_FIELD_TYPE_STR_HASH) \
+        break; \
     shash = session->fields[POS]->shash; \
     if (FLAGS & ARKIME_FIELD_FLAG_CNT) { \
         BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[POS]->dbField, HASH_COUNT(s_, *shash)); \
@@ -989,6 +991,14 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "},"); // Close tcpseq
         }
 
+        if (session->tcpData.synTime || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
+            BSB_EXPORT_sprintf(jbsb, "\"tcpSynValidated\":%s,", session->tcpData.synValidated ? "true" : "false");
+            BSB_EXPORT_sprintf(jbsb, "\"tcpSynAckValidated\":%s,", session->tcpData.synAckValidated ? "true" : "false");
+            if (session->tcpData.srcISNCnt) {
+                BSB_EXPORT_sprintf(jbsb, "\"srcISNCnt\":%u,", session->tcpData.srcISNCnt);
+            }
+        }
+
     }
 
     if (session->firstBytesLen[0] > 0) {
@@ -1161,7 +1171,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         g_free(communityId);
     }
 
-    if (session->fields[vlanField]) {
+    if (session->fields[vlanField] && config.fields[vlanField]->type == ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE) {
         BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
         BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", session->fields[vlanField]->iarray->len);
         BSB_EXPORT_sprintf(jbsb, "\"id\":[");

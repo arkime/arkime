@@ -215,6 +215,7 @@
      "packets" : 8,
      "port" : 54723
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Super Micro Computer, Inc."
     ],
@@ -228,6 +229,8 @@
      "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 9,
      "ae" : 0,

@@ -450,6 +450,16 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         }
     }
 
+    if (minfo->pos != -1) {
+        // Once storage is assigned the type/flags can't change - the session
+        // field union and db.c save code depend on them staying fixed
+        if (minfo->type != type) {
+            LOG("WARNING - Field '%s' (db:%s) is already defined with a different type, ignoring type change", expression, minfo->dbFieldFull);
+        }
+        type  = minfo->type;
+        flags = minfo->flags;
+    }
+
     minfo->type     = type;
     minfo->flags    = flags;
 

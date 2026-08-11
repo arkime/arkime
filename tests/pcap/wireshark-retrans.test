@@ -436,6 +436,7 @@
      "packets" : 64,
      "port" : 59221
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Advantech Technology (CHINA) Co., Ltd."
     ],
@@ -446,6 +447,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 44,
      "ae" : 0,

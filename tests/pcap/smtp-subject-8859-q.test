@@ -205,6 +205,7 @@
      "packets" : 15,
      "port" : 35796
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Dell Inc."
     ],
@@ -218,6 +219,8 @@
      "smtp:statuscode:250"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 12,
      "ae" : 0,

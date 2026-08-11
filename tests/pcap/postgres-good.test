@@ -103,6 +103,7 @@
      "packets" : 6,
      "port" : 36060
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "ICANN, IANA Department",
      "Intel Corporate"
@@ -118,6 +119,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 3,
      "ae" : 0,

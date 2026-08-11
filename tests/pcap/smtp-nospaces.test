@@ -117,6 +117,7 @@
      4
     ],
     "srcDscpCnt" : 1,
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Officially Xerox, but 0:0:0:0:0:0 is more common"
     ],
@@ -126,6 +127,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 9,
      "ae" : 0,

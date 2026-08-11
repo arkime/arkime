@@ -318,6 +318,7 @@
      "packets" : 17,
      "port" : 51225
     },
+    "srcISNCnt" : 1,
     "srcOuterASN" : [
      "AS8075 Microsoft Corporation",
      "AS8075 Microsoft Corporation"
@@ -369,6 +370,8 @@
      ],
      "versionCnt" : 2
     },
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 10,
      "ae" : 0,

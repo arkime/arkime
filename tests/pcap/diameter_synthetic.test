@@ -98,12 +98,15 @@
      "packets" : 3,
      "port" : 45000
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "01000074c0000101",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -264,6 +267,7 @@
      "packets" : 3,
      "port" : 46000
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "010000c4c0000110",
     "srcTTL" : [
      64
@@ -275,6 +279,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 3,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,

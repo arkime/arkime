@@ -356,6 +356,7 @@
      "packets" : 17,
      "port" : 53554
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Apple, Inc."
     ],
@@ -370,6 +371,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 15,
      "ae" : 0,
@@ -797,6 +800,7 @@
      "packets" : 17,
      "port" : 53555
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Apple, Inc."
     ],
@@ -811,6 +815,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 15,
      "ae" : 0,
@@ -1255,6 +1261,7 @@
      "packets" : 19,
      "port" : 53556
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "Apple, Inc."
     ],
@@ -1269,6 +1276,8 @@
      "zeek:intel"
     ],
     "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 16,
      "ae" : 0,

@@ -436,6 +436,7 @@
      "packets" : 4,
      "port" : 51002
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "003638434c49454e",
     "srcRIR" : "APNIC",
     "srcTTL" : [
@@ -446,6 +447,8 @@
      "cert:self-signed"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -621,6 +624,7 @@
      "packets" : 4,
      "port" : 51003
     },
+    "srcISNCnt" : 1,
     "srcPayload8" : "005638434c49454e",
     "srcTTL" : [
      64
@@ -630,6 +634,8 @@
      "cert:self-signed"
     ],
     "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,

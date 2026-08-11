@@ -347,6 +347,7 @@
      "packets" : 56,
      "port" : 4167
     },
+    "srcISNCnt" : 1,
     "srcOui" : [
      "3Com"
     ],
@@ -357,6 +358,8 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 32,
      "ae" : 0,

@@ -987,6 +987,7 @@
      "packets" : 7,
      "port" : 5060
     },
+    "srcISNCnt" : 1,
     "srcOuterASN" : [
      "---",
      "---"
@@ -1009,6 +1010,8 @@
      255
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,
@@ -1170,6 +1173,7 @@
      "packets" : 7,
      "port" : 5060
     },
+    "srcISNCnt" : 1,
     "srcOuterASN" : [
      "---",
      "---"
@@ -1192,6 +1196,8 @@
      255
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,
@@ -1522,6 +1528,7 @@
      "packets" : 12,
      "port" : 5060
     },
+    "srcISNCnt" : 1,
     "srcOuterASN" : [
      "---",
      "---"
@@ -1544,6 +1551,8 @@
      255
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 11,
      "ae" : 0,
@@ -2279,6 +2288,7 @@
      "packets" : 7,
      "port" : 5060
     },
+    "srcISNCnt" : 1,
     "srcOuterASN" : [
      "---",
      "---"
@@ -2301,6 +2311,8 @@
      255
     ],
     "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,
