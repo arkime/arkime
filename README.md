@@ -16,8 +16,21 @@ Arkime is built to be deployed across many systems and can scale to handle tens 
 
 [Learn more on arkime.com](https://arkime.com)
 
+## Arkimeet 2026
+
+Join us for **[Arkimeet 2026](https://arkime.com/arkimeet)**, our Arkime community gathering!
+
+* **When:** Tuesday, October 6, 2026, 9:00 AM - 5:00 PM EDT (happy hour to follow)
+* **Where:** Amazon IAD28, 13200 Woodland Park Rd, Herndon, VA 20171
+* **Cost:** Free, but **registration is required by September 22, 2026** - space is limited
+
+The day includes an Arkime keynote covering new features and demos, community talks, and an open discussion about the features you want to see next. Everyone is welcome, whether you are brand new to Arkime or have been running it for years.
+
+Interested in speaking? A call for presentations is open - see the [Arkimeet page](https://arkime.com/arkimeet) to register or submit a talk. Chat with us in the `#arkimeet` channel on [Slack](https://slackinvite.arkime.com).
+
 ## Table of Contents
 
+- [Arkimeet 2026](#arkimeet-2026)
 - [Background](#background)
 - [Installation](#installation)
 - [Configuration](#configuration)
