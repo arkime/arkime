@@ -601,7 +601,8 @@ LOCAL ARKIME_LOCK_DEFINE(outputted);
 do { \
     if (config.fields[POS]->type != ARKIME_FIELD_TYPE_STR_HASH) \
         break; \
-    shash = session->fields[POS]->shash; \
+    ArkimeStringHashStd_t *shash = session->fields[POS]->shash; \
+    ArkimeString_t        *hstring; \
     if (FLAGS & ARKIME_FIELD_FLAG_CNT) { \
         BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[POS]->dbField, HASH_COUNT(s_, *shash)); \
     } \
@@ -638,9 +639,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 {
     char                   id[120];
     uint32_t               id_len;
-    ArkimeString_t        *hstring;
     ArkimeInt_t           *hint;
-    ArkimeStringHashStd_t *shash;
     ArkimeIntHashStd_t    *ihash;
     GHashTable            *ghash;
     GHashTableIter         iter;
@@ -1269,6 +1268,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         case ARKIME_FIELD_TYPE_STR_HASH:
             SAVE_FIELD_STR_HASH(pos, flags);
             if (freeField) {
+                ArkimeStringHashStd_t *shash = session->fields[pos]->shash;
+                ArkimeString_t        *hstring;
                 HASH_FORALL_POP_HEAD2(s_, *shash, hstring) {
                     g_free(hstring->str);
                     ARKIME_TYPE_FREE(ArkimeString_t, hstring);
