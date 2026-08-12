@@ -118,3 +118,7 @@ The best way to reach us is on Slack.  Please request an invitation to join the 
 ## License
 
 This project is licensed under the terms of the Apache 2.0 open source license. Please refer to [LICENSE](LICENSE) for the full terms.
+
+## Thanks
+
+<a href="https://www.blacksmith.sh/"><img src="https://arkime.com/assets/blacksmith.png" height="50" align="middle" alt="Blacksmith"></a>&nbsp;&nbsp;<a href="https://greynoise.io"><img src="https://arkime.com/assets/greynoise.svg" height="20" align="middle" alt="GreyNoise"></a>
