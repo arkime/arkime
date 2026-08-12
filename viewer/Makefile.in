@@ -3,7 +3,8 @@ MKDIR_P = mkdir -p
 VIEWERDIR = $(DESTDIR)@prefix@/viewer
 CP = /bin/cp
 INSTALL_BUNDLE ?= "bundle:min"
-CYBERCHEF_VERSION=10.23.0
+CYBERCHEF_VERSION=11.3.0
+CYBERCHEF_SHA=d24ba1afce2e3a080308b5df7db033332fe94a1a
 
 
 all: arkimeparser.js
@@ -16,7 +17,7 @@ check:
 	npm run bundle
 
 cyberchef:
-	(cd public ; if [ ! -f CyberChef_v$(CYBERCHEF_VERSION).zip ]; then curl -sSfLO https://github.com/gchq/CyberChef/releases/download/v$(CYBERCHEF_VERSION)/CyberChef_v$(CYBERCHEF_VERSION).zip; fi)
+	(cd public ; if [ ! -f CyberChef_v$(CYBERCHEF_VERSION).zip ]; then curl -sSfL -o CyberChef_v$(CYBERCHEF_VERSION).zip https://github.com/gchq/CyberChef/releases/download/v$(CYBERCHEF_VERSION)/CyberChef_$(CYBERCHEF_SHA).zip; fi)
 
 install: cyberchef
 	$(MKDIR_P) "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"
