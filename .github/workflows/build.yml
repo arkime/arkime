@@ -153,6 +153,7 @@ jobs:
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
+          ${{ matrix.npmgcc }}
           INSTALL_BUNDLE=bundle make install
 
       - name: lint

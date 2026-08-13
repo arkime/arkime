@@ -16,12 +16,14 @@
 #   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite/lmdb/redis
+#   npmgcc - shell snippet run before 'make install' to use a newer gcc for node-gyp, el8 needs gcc>=10 for re2/abseil
 
 
 include:
   - version: el8.x86_64
-    container: andywick/arkime-build-8:6.0.0-2
+    container: andywick/arkime-build-8:6.0.0-8
     buildopt: "--thirdparty --kafka --pfring"
+    npmgcc: "source /opt/rh/gcc-toolset-14/enable"
     package: rpm
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs -d curl"
     uitest: true
