@@ -56,10 +56,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.7.0 2026/08/xx
 ## Release
   - #4166 Node 22.23.2
+  - #4196 Cyberchef 11.3.0
 ## All
   - #4128 Add changePasswordSecret.js to re-encrypt all users' passwords and cont3xt keys after changing the passwordSecret
   - #4134 Fix a cleared (null) user permission being treated as a denial instead of falling back to the roles' value
   - #4183 Add !role search filter on the Users tab to list users that don't have a matching role
+  - #4194 Add Microsoft Teams notifier (uses Power Automate Workflows webhooks)
 ## Capture
   - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam

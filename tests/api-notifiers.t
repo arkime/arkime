@@ -1,4 +1,4 @@
-use Test::More tests => 94;
+use Test::More tests => 98;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -22,6 +22,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   ok(exists $notifierTypes->{slack}, "slack notifier exists");
   ok(exists $notifierTypes->{snmp}, "snmp notifier exists");
   ok(exists $notifierTypes->{syslog}, "syslog notifier exists");
+  ok(exists $notifierTypes->{teams}, "teams notifier exists");
   ok(exists $notifierTypes->{twilio}, "twilio notifier exists");
 
 # empty notifiers
@@ -91,6 +92,15 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   my ($evilNotifier) = grep { $_->{id} eq $evilId } @{$notifiers};
   ok(!exists $evilNotifier->{evil}, "extra field not stored in notifier");
   viewerDeleteToken("/api/notifier/$evilId", $token);
+
+# teams notifier
+  $json = viewerPostToken("/api/notifier", '{"name":"teams1","type":"teams","fields":[]}', $token);
+  is($json->{text}, "Missing a value for teamsWebhookUrl", "teams required field caught");
+  $json = viewerPostToken("/api/notifier", '{"name":"teams1","type":"teams","fields":[{"name":"teamsWebhookUrl","value":"https://example.com/webhook"}]}', $token);
+  ok($json->{success}, "teams notifier create success");
+  my $teamsId = $json->{notifier}->{id};
+  $json = viewerDeleteToken("/api/notifier/$teamsId", $token);
+  ok($json->{success}, "teams notifier delete success");
 
 # roles validation - create with non-array roles should fail
   $json = viewerPostToken("/api/notifier", '{"name":"badroles","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"roles":"notanarray"}', $token);
