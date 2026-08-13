@@ -1351,6 +1351,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             SAVE_FIELD_STR_HASH(pos, flags);
             if (tokensFieldKey[pos]) {
                 SAVE_FIELD_TOKENS_BEGIN(pos);
+                ArkimeStringHashStd_t *shash = session->fields[pos]->shash;
+                ArkimeString_t        *hstring;
                 HASH_FORALL2(s_, *shash, hstring) {
                     arkime_db_export_tokens_str(&jbsb, hstring->str);
                 }
