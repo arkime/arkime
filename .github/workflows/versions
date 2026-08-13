@@ -17,7 +17,7 @@
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite/lmdb/redis
 #   tshark - if True then this build is used by the manual tshark workflow
-
+#   npmgcc - shell snippet run before 'make install' to use a newer gcc for node-gyp, el8 needs gcc>=10 for re2/abseil
 
 include:
   - version: el9.x86_64
