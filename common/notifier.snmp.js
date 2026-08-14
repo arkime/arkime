@@ -9,29 +9,30 @@
 
 const snmp = require('net-snmp');
 
-const VERSIONS = {
-  1: snmp.Version1,
-  '2c': snmp.Version2c,
-  3: snmp.Version3
-};
+// Use maps for security
+const VERSIONS = new Map([
+  ['1', snmp.Version1],
+  ['2c', snmp.Version2c],
+  ['3', snmp.Version3]
+]);
 
-const AUTH_PROTOCOLS = {
-  none: snmp.AuthProtocols.none,
-  md5: snmp.AuthProtocols.md5,
-  sha: snmp.AuthProtocols.sha,
-  sha224: snmp.AuthProtocols.sha224,
-  sha256: snmp.AuthProtocols.sha256,
-  sha384: snmp.AuthProtocols.sha384,
-  sha512: snmp.AuthProtocols.sha512
-};
+const AUTH_PROTOCOLS = new Map([
+  ['none', snmp.AuthProtocols.none],
+  ['md5', snmp.AuthProtocols.md5],
+  ['sha', snmp.AuthProtocols.sha],
+  ['sha224', snmp.AuthProtocols.sha224],
+  ['sha256', snmp.AuthProtocols.sha256],
+  ['sha384', snmp.AuthProtocols.sha384],
+  ['sha512', snmp.AuthProtocols.sha512]
+]);
 
-const PRIV_PROTOCOLS = {
-  none: snmp.PrivProtocols.none,
-  des: snmp.PrivProtocols.des,
-  aes: snmp.PrivProtocols.aes,
-  aes256b: snmp.PrivProtocols.aes256b,
-  aes256r: snmp.PrivProtocols.aes256r
-};
+const PRIV_PROTOCOLS = new Map([
+  ['none', snmp.PrivProtocols.none],
+  ['des', snmp.PrivProtocols.des],
+  ['aes', snmp.PrivProtocols.aes],
+  ['aes256b', snmp.PrivProtocols.aes256b],
+  ['aes256r', snmp.PrivProtocols.aes256r]
+]);
 
 // Default enterprise OID for Arkime Parliament alerts
 const DEFAULT_TRAP_OID = '1.3.6.1.4.1.79054.1.1';
@@ -89,8 +90,9 @@ exports.sendSnmpAlert = function (config, message, links, cb) {
     return;
   }
 
-  const versionStr = config.version || '2c';
-  const version = VERSIONS[versionStr];
+  // String() since map keys are strings and config can be a number
+  const versionStr = String(config.version || '2c');
+  const version = VERSIONS.get(versionStr);
   if (version === undefined) {
     if (cb) { cb({ errors: { snmp: 'Version must be 1, 2c, or 3' } }); }
     return;
@@ -124,8 +126,8 @@ exports.sendSnmpAlert = function (config, message, links, cb) {
 
   let session;
   if (version === snmp.Version3) {
-    const authProto = AUTH_PROTOCOLS[config.v3AuthProtocol] ?? snmp.AuthProtocols.none;
-    const privProto = PRIV_PROTOCOLS[config.v3PrivProtocol] ?? snmp.PrivProtocols.none;
+    const authProto = AUTH_PROTOCOLS.get(config.v3AuthProtocol) ?? snmp.AuthProtocols.none;
+    const privProto = PRIV_PROTOCOLS.get(config.v3PrivProtocol) ?? snmp.PrivProtocols.none;
 
     let level = snmp.SecurityLevel.noAuthNoPriv;
     if (authProto !== snmp.AuthProtocols.none && privProto !== snmp.PrivProtocols.none) {

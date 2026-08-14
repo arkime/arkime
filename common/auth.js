@@ -302,6 +302,12 @@ class Auth {
       process.exit(1);
     }
 
+    // Every header mode reads the userId (or the JWT) out of this header
+    if (Auth.#strategies.includes('header') && !ArkimeUtil.isString(Auth.#userNameHeader)) {
+      console.log(`ERROR - userNameHeader missing from config file, required for authMode=${ArkimeUtil.sanitizeStr(options.mode)}`);
+      process.exit(1);
+    }
+
     // Add basic to beginning
     if (addBasic) {
       Auth.#strategies.unshift('basic');
@@ -927,9 +933,17 @@ class Auth {
     // address, not req.ip: when trust proxy is enabled req.ip is derived from the
     // client-supplied X-Forwarded-For header and is therefore spoofable, which
     // would let an attacker bypass userAuthIps (e.g. the header-auth loopback default).
+    // No peer address (destroyed socket, or a synthetic one that doesn't set it)
+    // means we can't check, so deny
     const ip = req.socket?.remoteAddress;
     if (ip === undefined) {
-      return 0;
+      res.status(403);
+      res.json({ success: false, text: 'Not allowed by ip' });
+      // debug only, an unauthenticated peer can trigger this at will
+      if (ArkimeConfig.debug > 0) {
+        console.log('Blocked (userAuthIps setting), no peer address', ArkimeUtil.sanitizeStr(req.url));
+      }
+      return 1;
     }
 
     if (ip.includes(':')) {
@@ -974,6 +988,8 @@ class Auth {
       nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
     } else {
       nuser = {};
+      // No user record exists yet, so `this` is undefined in these expressions,
+      // unlike [user-role-mappings] which binds the existing user
       for (const [field, func] of Auth.#userAutoCreateFuncs) {
         try {
           nuser[field] = func(vars);
