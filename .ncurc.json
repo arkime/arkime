@@ -3,7 +3,5 @@
   "cooldown": 3,
 
   // @elastic/elasticsearch - can't be upgraded because OSS/Opensearch
-  // lmdb - can't be upgraded because of RHEL 8
-  // better-sqlite3 - can't be upgraded because of RHEL 8
-  "reject": ["lmdb", "better-sqlite3", "@elastic/elasticsearch"]
+  "reject": ["@elastic/elasticsearch"]
 }
