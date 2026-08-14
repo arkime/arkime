@@ -6802,7 +6802,13 @@ sub sessions3Update
         "ja4l" : {
           "type" : "keyword"
         },
+        "ja4l-delta" : {
+          "type" : "keyword"
+        },
         "ja4ls" : {
+          "type" : "keyword"
+        },
+        "ja4ls-delta" : {
           "type" : "keyword"
         },
         "ja4t" : {
