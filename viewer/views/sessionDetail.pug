@@ -485,16 +485,24 @@ dl
 
   if (session.tcpSynValidated !== undefined || session.tcpSynAckValidated !== undefined || session.srcISNCnt !== undefined)
     dt
-      b-dropdown.clickable-label(text="TCP Handshake", size="sm", variant="default")
-        if (session.tcpSynValidated !== undefined)
-          +clickableLabelBody('tcp.synValidated', 'TCP SYN Validated')
-          +clickableFieldActions('tcp.synValidated', false)
-        if (session.tcpSynAckValidated !== undefined)
-          +clickableLabelBody('tcp.synAckValidated', 'TCP SYN-ACK Validated')
-          +clickableFieldActions('tcp.synAckValidated', false)
-        if (session.srcISNCnt !== undefined)
-          +clickableLabelBody('tcp.srcISNCnt', 'TCP Src ISN Count')
-          +clickableFieldActions('tcp.srcISNCnt', false)
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.clickable-label(v-bind="activatorProps" type="button")
+            | TCP Handshake
+        v-list.clickable-label-menu(density="compact")
+          if (session.tcpSynValidated !== undefined)
+            +clickableLabelBody('tcp.synValidated', 'TCP SYN Validated')
+            +clickableFieldActions('tcp.synValidated', false)
+          if (session.tcpSynValidated !== undefined && (session.tcpSynAckValidated !== undefined || session.srcISNCnt !== undefined))
+            v-divider
+          if (session.tcpSynAckValidated !== undefined)
+            +clickableLabelBody('tcp.synAckValidated', 'TCP SYN-ACK Validated')
+            +clickableFieldActions('tcp.synAckValidated', false)
+          if (session.tcpSynAckValidated !== undefined && session.srcISNCnt !== undefined)
+            v-divider
+          if (session.srcISNCnt !== undefined)
+            +clickableLabelBody('tcp.srcISNCnt', 'TCP Src ISN Count')
+            +clickableFieldActions('tcp.srcISNCnt', false)
     dd
       if (session.tcpSynValidated !== undefined)
         span.no-wrap
