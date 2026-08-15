@@ -159,6 +159,21 @@ class Db {
 }
 
 /******************************************************************************/
+// Shared helpers
+/******************************************************************************/
+// Sort audits for the implementations that do it in memory. Records predating
+// a field (or with it unset) must not throw here.
+function sortAudits (audits, sortBy, sortOrder) {
+  const dir = sortOrder === 'asc' ? 1 : -1;
+  return audits.sort((a, b) => {
+    if (sortBy === 'indicator' || sortBy === 'iType') {
+      return dir * (a[sortBy] ?? '').localeCompare(b[sortBy] ?? '');
+    }
+    return dir * ((a[sortBy] ?? 0) - (b[sortBy] ?? 0));
+  });
+}
+
+/******************************************************************************/
 // ES Implementation of Cont3xt DB
 /******************************************************************************/
 class DbESImplementation {
@@ -419,21 +434,26 @@ class DbESImplementation {
       }
     }
 
-    const results = await this.client.search({
-      index: 'cont3xt_links',
-      body: query,
-      rest_total_hits_as_int: true
-    });
+    try {
+      const results = await this.client.search({
+        index: 'cont3xt_links',
+        body: query,
+        rest_total_hits_as_int: true
+      });
 
-    const hits = results.body.hits.hits;
-    const linkGroups = [];
-    for (let i = 0; i < hits.length; i++) {
-      const linkGroup = new LinkGroup(hits[i]._source);
-      linkGroup._id = hits[i]._id;
-      linkGroups.push(linkGroup);
+      const hits = results.body.hits.hits;
+      const linkGroups = [];
+      for (let i = 0; i < hits.length; i++) {
+        const linkGroup = new LinkGroup(hits[i]._source);
+        linkGroup._id = hits[i]._id;
+        linkGroups.push(linkGroup);
+      }
+
+      return linkGroups;
+    } catch (err) {
+      console.log('ERROR FETCHING LINKGROUPS', util.inspect(err, false, 10));
+      return [];
     }
-
-    return linkGroups;
   }
 
   async putLinkGroup (id, linkGroup) {
@@ -655,7 +675,7 @@ class DbESImplementation {
       });
     }
 
-    if (searchTerm != null && typeof searchTerm === 'string') {
+    if (ArkimeUtil.isString(searchTerm)) {
       filter.push({ // apply search term across whitelisted fields only
         bool: {
           should: ['indicator', 'iType', 'tags'].map(field => ({
@@ -727,21 +747,26 @@ class DbESImplementation {
       }
     }
 
-    const results = await this.client.search({
-      index: 'cont3xt_overviews',
-      body: query,
-      rest_total_hits_as_int: true
-    });
+    try {
+      const results = await this.client.search({
+        index: 'cont3xt_overviews',
+        body: query,
+        rest_total_hits_as_int: true
+      });
 
-    const hits = results.body.hits.hits;
-    const overviews = [];
-    for (let i = 0; i < hits.length; i++) {
-      const overview = new Overview(hits[i]._source);
-      overview._id = hits[i]._id;
-      overviews.push(overview);
+      const hits = results.body.hits.hits;
+      const overviews = [];
+      for (let i = 0; i < hits.length; i++) {
+        const overview = new Overview(hits[i]._source);
+        overview._id = hits[i]._id;
+        overviews.push(overview);
+      }
+
+      return overviews;
+    } catch (err) {
+      console.log('ERROR FETCHING OVERVIEWS', util.inspect(err, false, 10));
+      return [];
     }
-
-    return overviews;
   }
 
   async putOverview (id, overview) {
@@ -920,11 +945,11 @@ class DbLMDBImplementation {
         }
 
         // apply search term
-        if (searchTerm != null) {
+        if (ArkimeUtil.isString(searchTerm)) {
           const containsTerm = (
-            value.indicator.includes(searchTerm) ||
-            value.iType.includes(searchTerm) ||
-            value.tags.some(tag => tag.includes(searchTerm))
+            value.indicator?.includes(searchTerm) ||
+            value.iType?.includes(searchTerm) ||
+            value.tags?.some(tag => tag.includes(searchTerm))
           );
           if (!containsTerm) { return false; }
         }
@@ -939,12 +964,7 @@ class DbLMDBImplementation {
     const total = audits.length; // save this for paging
 
     // sort and page the audits
-    audits = audits.sort((a, b) => {
-      if (sortBy === 'indicator' || sortBy === 'iType') {
-        return sortOrder === 'asc' ? a[sortBy].localeCompare(b[sortBy]) : b[sortBy].localeCompare(a[sortBy]);
-      }
-      return sortOrder === 'asc' ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy];
-    }).slice((page - 1) * itemsPerPage, page * itemsPerPage);
+    audits = sortAudits(audits, sortBy, sortOrder).slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
     return { audits, total };
   }
@@ -1158,7 +1178,7 @@ class DbSQLiteImplementation {
       params.push(userId);
     }
 
-    if (searchTerm != null && typeof searchTerm === 'string') {
+    if (ArkimeUtil.isString(searchTerm)) {
       conditions.push("(json_extract(json, '$.indicator') LIKE ? OR json_extract(json, '$.iType') LIKE ? OR json_extract(json, '$.tags') LIKE ?)");
       const likeTerm = `%${searchTerm}%`;
       params.push(likeTerm, likeTerm, likeTerm);
@@ -1363,7 +1383,7 @@ class DbRedisImplementation {
         continue;
       }
 
-      if (searchTerm != null && typeof searchTerm === 'string') {
+      if (ArkimeUtil.isString(searchTerm)) {
         const containsTerm = (
           (item.indicator && item.indicator.includes(searchTerm)) ||
           (item.iType && item.iType.includes(searchTerm)) ||
@@ -1381,12 +1401,7 @@ class DbRedisImplementation {
 
     const total = audits.length;
 
-    audits = audits.sort((a, b) => {
-      if (sortBy === 'indicator' || sortBy === 'iType') {
-        return sortOrder === 'asc' ? a[sortBy].localeCompare(b[sortBy]) : b[sortBy].localeCompare(a[sortBy]);
-      }
-      return sortOrder === 'asc' ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy];
-    }).slice((page - 1) * itemsPerPage, page * itemsPerPage);
+    audits = sortAudits(audits, sortBy, sortOrder).slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
     return { audits, total };
   }
