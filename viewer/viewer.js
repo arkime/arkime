@@ -235,6 +235,17 @@ if (ArkimeConfig.regressionTests) {
     preq.end();
   });
 
+  // make a node-to-node request carrying a query string to an s2s only route
+  // and report what the far end said. The s2s token is bound to the path the
+  // remote sees in req.url, query string included, so a signature covering only
+  // the pathname is rejected there.
+  app.get('/regressionTests/makeRequestQuery/:node', (req, res) => {
+    const s2sPath = `/api/hunt/${req.params.node}/nosuchhunt/remote/nosuchsession?foo=bar`;
+    ViewerUtils.makeRequest(req.params.node, s2sPath, { userId: 'anonymous' }, (err, response) => {
+      return res.send({ error: err ? '' + err : undefined, response: response ?? '' });
+    });
+  });
+
   app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
@@ -615,6 +626,19 @@ function checkCookieToken (req, res, next) {
     return res.serverError(500, 'Timeout - Please try reloading page and repeating the action', 'api.viewer.sessionTimeout');
   }
 
+  return next();
+}
+
+// use for node-to-node only APIs, which no browser should ever reach.
+// A session authenticated request skips the s2s passport strategy entirely
+// (Auth.doAuth returns early on isAuthenticated), so merely having an
+// x-arkime-auth header proves nothing - it must be validated here.
+function checkS2SToken (req, res, next) {
+  const { error } = Auth.parseS2SRequest(req);
+  if (error) {
+    console.log('ERROR - s2s only api', ArkimeUtil.sanitizeStr(req.url), error);
+    return res.status(401).send('Only allowed s2s');
+  }
   return next();
 }
 
@@ -1967,6 +1991,12 @@ app.get( // sessions get decodings endpoint
   SessionAPIs.getDecodings
 );
 
+app.get( // session scrub on node endpoint - s2s only, used by SessionAPIs.#scrubList
+  ['/api/session/:nodeName/:id/scrub/:what'],
+  [checkS2SToken, checkProxyRequest, User.checkPermissions(['removeEnabled'])],
+  SessionAPIs.scrubSessionOnNode
+);
+
 app.get( // session send to node endpoint - used by SessionAPIs.#sendSessionsList
   ['/api/session/:nodeName/:id/send'],
   [checkProxyRequest],
@@ -2075,7 +2105,7 @@ app.delete( // remove users from hunt endpoint
 
 app.get( // remote hunt endpoint - s2s only
   ['/api/hunt/:nodeName/:huntId/remote/:sessionId'],
-  [ArkimeUtil.noCacheJson, User.checkPermissions(['packetSearch'])],
+  [ArkimeUtil.noCacheJson, checkS2SToken, User.checkPermissions(['packetSearch'])],
   HuntAPIs.remoteHunt
 );
 

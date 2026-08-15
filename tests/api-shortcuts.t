@@ -1,4 +1,4 @@
-use Test::More tests => 125;
+use Test::More tests => 135;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -64,9 +64,24 @@ is($json->{text}, "Missing shortcut value", "shortcut value required");
 $json = viewerPostToken("/api/shortcut", '{"name":"bad_type_shortcut","type":"userId","value":"test"}', $token);
 ok(!$json->{success}, "invalid shortcut type rejected on create");
 
+# Object.prototype names must be rejected as types too. The valid type check
+# used a plain [] lookup, so toString/valueOf/etc resolved truthy off the
+# prototype and were used as the field name to store the values under - which
+# only the lookups index's strict mapping stopped, as a 500 rather than a
+# clean rejection. isPP does not cover these names, so nothing else catches it.
+foreach my $badType ("toString", "valueOf", "hasOwnProperty", "isPrototypeOf") {
+    $json = viewerPostToken("/api/shortcut", "{\"name\":\"pp_$badType\",\"type\":\"$badType\",\"value\":\"test\"}", $token);
+    ok(!$json->{success}, "prototype name $badType rejected on create");
+    is($json->{text}, "Invalid shortcut type", "prototype name $badType rejected as a bad type, not a 500");
+}
+
 # update shortcut with invalid type should fail
 $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_updated","type":"userId","value":"test"}', $token);
 ok(!$json->{success}, "invalid shortcut type rejected on update");
+
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_updated","type":"toString","value":"test"}', $token);
+ok(!$json->{success}, "prototype name rejected on update");
+is($json->{text}, "Invalid shortcut type", "prototype name rejected as a bad type on update");
 
 # update shortcut should sanitize name (strip special chars)
 $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut~!@#$%^&*()","type":"ip","value":"10.0.0.1"}', $token);

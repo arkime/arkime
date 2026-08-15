@@ -1257,8 +1257,12 @@ class SessionAPIs {
         await SessionAPIs.#pcapScrub(req, res, Db.session2Sid(item), whatToRemove);
       } else {
         // Get from remote DISK
-        const scrubPath = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
-        await ViewerUtils.makeRequest(fields.node, scrubPath, req.user);
+        const scrubPath = `/api/session/${fields.node}/${Db.session2Sid(item)}/scrub/${whatToRemove}`;
+        // makeRequest is callback based, awaiting it without one throws in the
+        // response handler, which is an uncaught exception, not a rejection
+        await new Promise((resolve) => {
+          ViewerUtils.makeRequest(fields.node, scrubPath, req.user, () => resolve());
+        });
       }
     });
   }
@@ -3530,6 +3534,29 @@ class SessionAPIs {
         }, (err, count) => {
           sendResult(count);
         });
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * @ignore
+   * GET - /api/session/:nodeName/:id/scrub/:what
+   *
+   * Scrubs/deletes a session's PCAP on the node that holds it.
+   * s2s only, used by SessionAPIs.#scrubList when the session isn't local.
+   * @name /session/:nodeName/:id/scrub/:what
+   */
+  static async scrubSessionOnNode (req, res) {
+    if (!['all', 'spi', 'pcap'].includes(req.params.what)) {
+      return res.serverError(403, 'Bad scrub type', 'api.sessions.badScrubType');
+    }
+
+    try {
+      await SessionAPIs.#pcapScrub(req, res, req.params.id, req.params.what);
+      return res.send({ success: true });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/session/%s/%s/scrub/%s`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.what), util.inspect(err, false, 50));
+      return res.serverError(500, 'Error scrubbing session', 'api.sessions.scrubFailed');
     }
   }
 

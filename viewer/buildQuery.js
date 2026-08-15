@@ -45,6 +45,11 @@ class BuildQuery {
 
     // New Method
     if (info.order) {
+      // a repeated query param arrives as an array, which has no split
+      if (!ArkimeUtil.isString(info.order)) {
+        throw new Error('order must be a string');
+      }
+
       if (info.order.length === 0) {
         addSortDefault();
         return;
@@ -285,6 +290,27 @@ class BuildQuery {
    * @param {object|null} queryOverride=null - override the client query with overriding query
    */
   static async build (req, buildCb, queryOverride = null) {
+    // build is async, so anything it throws rejects a promise no caller is
+    // listening to: buildPromise only ever settles from this callback, and the
+    // plain callback callers never see the rejection either. The request then
+    // never gets a response and holds its socket until the server timeout, so
+    // turn a throw into the error the callers already know how to report.
+    let called = false;
+    const buildCbOnce = (err, query, indices) => {
+      if (called) { return undefined; } // a throwing buildCb must not re-enter
+      called = true;
+      return buildCb(err, query, indices);
+    };
+
+    try {
+      return await BuildQuery.#build(req, buildCbOnce, queryOverride);
+    } catch (err) {
+      return buildCbOnce(err, {});
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  static async #build (req, buildCb, queryOverride = null) {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
 
@@ -552,6 +578,15 @@ class BuildQuery {
         interval = 60 * 60; // Hour to be safe
       }
     } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
+      // numbers are fine, they always pass the digits test below and never
+      // reach replace. A repeated query param arrives as an array, which does
+      // not, and has no replace
+      for (const field of ['startTime', 'stopTime']) {
+        if (!ArkimeUtil.isString(reqQuery[field]) && typeof reqQuery[field] !== 'number') {
+          throw new Error(`${field} must be a string or number`);
+        }
+      }
+
       if (!/^-?[0-9]+$/.test(reqQuery.startTime)) {
         startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;
       } else {
