@@ -1,5 +1,5 @@
 # Session-authenticated s2s bypass regression tests (#4108)
-use Test::More tests => 18;
+use Test::More tests => 25;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -49,6 +49,40 @@ $response = $ArkimeTest::userAgent->post("http://$host:$port/receiveSession", ':
 $rjson = from_json($response->content);
 is ($rjson->{success}, 0, "no-session s2s call reaches receiveSession handler");
 is ($response->code, 200, "no-session s2s call reaches receiveSession handler code");
+
+# remoteHunt is s2s only too, and had the same hole: it only checked that an
+# x-arkime-auth header was present, never that it was valid. A session
+# authenticated request skips the s2s passport strategy, so any logged in user
+# with packetSearch could drive it with a junk header.
+# The session user must hold packetSearch, otherwise the route's permission
+# check rejects first and the s2s gate is never what is under test.
+addUser("-n test5 hunttestuser hunttestuser hunttestuser --roles arkimeUser --packetSearch");
+esGet("/_refresh");
+
+my $huntLogin = $ArkimeTest::userAgent->post("http://$host:$port/api/login", { username => 'hunttestuser', password => 'hunttestuser' });
+my ($huntCookie) = ($huntLogin->header('Set-Cookie') // '') =~ /^([^;]+)/;
+ok (defined $huntCookie, "packetSearch user has a session cookie");
+
+my $huntPath = "/api/hunt/test5/nosuchhunt/remote/nosuchsession";
+my $huntUrl = "http://$host:$port$huntPath";
+
+$response = $ArkimeTest::userAgent->get($huntUrl, 'Cookie' => $huntCookie, ':x-arkime-auth' => 'garbage');
+is ($response->code, 401, "session + junk token rejected on remote hunt");
+
+$response = $ArkimeTest::userAgent->get($huntUrl, 'Cookie' => $huntCookie, ':x-arkime-auth' => '{"path": "/", "user": "hunttestuser", "date": ' . time() * 1000 . '}');
+is ($response->code, 401, "session + wrong path token rejected on remote hunt");
+
+$response = $ArkimeTest::userAgent->get($huntUrl, 'Cookie' => $huntCookie, ':x-arkime-auth' => '{"path": "' . $huntPath . '", "user": "hunttestuser", "date": 1}');
+is ($response->code, 401, "session + stale token rejected on remote hunt");
+
+$response = $ArkimeTest::userAgent->get($huntUrl, 'Cookie' => $huntCookie);
+is ($response->code, 401, "session + missing token rejected on remote hunt");
+
+# ...and a genuine, correctly scoped s2s token must still reach the handler
+$response = $ArkimeTest::userAgent->get($huntUrl, ':x-arkime-auth' => '{"path": "' . $huntPath . '", "user": "hunttestuser", "date": ' . time() * 1000 . '}');
+is ($response->code, 200, "valid s2s token reaches remote hunt handler");
+$rjson = from_json($response->content);
+is ($rjson->{matched}, 0, "remote hunt handler ran for a hunt that does not exist");
 
 # Open redirect: a protocol-relative ogurl must not be honored on login (only same-origin paths).
 # Seed session.ogurl by hitting an unauthenticated protocol-relative path, then log in with that session.

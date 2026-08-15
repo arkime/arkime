@@ -1352,10 +1352,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {string} error - If an error occurred, describes the error.
    */
   static async remoteHunt (req, res) {
-    if (req.headers['x-arkime-auth'] === undefined) {
-      return res.status(401).send('remote hunt only allowed s2s');
-    }
-
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 

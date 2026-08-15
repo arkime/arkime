@@ -1,4 +1,4 @@
-use Test::More tests => 44;
+use Test::More tests => 48;
 
 use Cwd;
 use URI::Escape;
@@ -115,6 +115,21 @@ my $pwd = "*/pcap";
 
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/sessions/bodyhash/a4a7b8b5eaf4c2cf356b105c6cdb?date=-1&expression=http.md5=a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
     is($sd, "No match", "No Match");
+
+# Global bodyHash on a remote node. The multiviewer treats every node as remote
+# (multiES forces Db.isLocalView false), so this takes getBodyHash's proxy
+# branch rather than reading the pellet off local disk.
+    my $rsp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/sessions/bodyhash/87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec?date=-1&expression=http.sha256=87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec");
+    is($rsp->content, "Username=Qggh&Passwd=Bhhhh&Section=Auuu", "Remote Right sha256");
+    is($rsp->header('content-disposition'), 'attachment; filename="post.php.pellet"', "Remote keeps content-disposition");
+
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/sessions/bodyhash/a4a7b8b5eaf4c2cf356b1052133c6cdb?date=-1&expression=http.md5=a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
+    is($sd, "Username=Q&Passwd=B&Section=A", "Remote Right md5");
+
+# NOTE: ViewerUtils.proxyRequest forwards content-type and content-disposition
+# but not the upstream status, so this is 200 remotely where 8123 answers 400.
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/sessions/bodyhash/a4a7b8b5eaf4c2cf356b105c6cdb?date=-1&expression=http.md5=a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
+    is($sd, "No match", "Remote No Match");
 
 # ipv6/4 port separators
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));

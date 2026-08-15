@@ -1,4 +1,4 @@
-use Test::More tests => 171;
+use Test::More tests => 179;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -132,6 +132,28 @@ my ($url) = @_;
 # expression string
     $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression": 1}');
     is($json->{error}, "Expression needs to be a string", "expression not a string");
+
+# A repeated query param arrives as an array, which the query builder assumed
+# was a string. BuildQuery.build is async, so the throw rejected a promise
+# nobody listened to - buildPromise only ever settles from its callback - and
+# the request never answered, holding its socket until the 20 minute server
+# timeout. Short client timeout so a regression fails here instead of stalling.
+    my $qua = LWP::UserAgent->new;
+    $qua->timeout(20);
+
+    my $qr = $qua->get("http://$ArkimeTest::host:8123/sessions.json?date=-1&length=1&order=a&order=b");
+    is($qr->code, 200, "array order answers instead of hanging");
+    like($qr->content, qr/order must be a string/, "array order reports a useful error");
+
+    $qr = $qua->get("http://$ArkimeTest::host:8123/sessions.json?length=1&startTime=1&stopTime=a&stopTime=b");
+    is($qr->code, 200, "array stopTime answers instead of hanging");
+    like($qr->content, qr/stopTime must be a string or number/, "array stopTime reports a useful error");
+
+    $qr = $qua->get("http://$ArkimeTest::host:8123/sessions.json?length=1&startTime=a&startTime=b&stopTime=99");
+    like($qr->content, qr/startTime must be a string or number/, "array startTime reports a useful error");
+
+    $qr = $qua->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=node&order=a&order=b");
+    is($qr->code, 403, "array order on unique answers instead of hanging");
 
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
@@ -293,6 +315,15 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=test2", '{}');
     is($json->{success}, 0, "send sessions missing ids");
     is($json->{i18n}, "api.sessions.missingIds", "send sessions missing ids i18n");
+
+# A node-to-node request with a query string must pass s2s auth on the far end.
+# ViewerUtils.makeRequest used to sign only url.pathname, but the token is bound
+# to the path the remote sees in req.url, query string included, so every call
+# with parameters was rejected there - which silently broke sending sessions to
+# a remote cluster from a node the viewer does not own.
+    $json = viewerGet("/regressionTests/makeRequestQuery/test");
+    unlike($json->{response}, qr/Unauthorized based on bad url/, "makeRequest signs the query string");
+    like($json->{response}, qr/"matched":false/, "makeRequest with a query string reaches the s2s handler");
 
 # Test errors for /api/sessions/send
     $json = viewerPostToken("/api/sessions/send", '', $token);

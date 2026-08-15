@@ -1,4 +1,4 @@
-use Test::More tests => 41;
+use Test::More tests => 51;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -78,6 +78,43 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     esGet("/_refresh");
 
     countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
+
+# scrub a session on a REMOTE node
+# Everything above scrubs through the viewer that owns the node, so it only ever
+# takes #scrubList's local branch. On a one host test rig every node looks local
+# to every normal viewer (Db.isLocalView compares hostnames), so the multiviewer
+# on 8125 is the only way in here: multiES sets Db.isLocalView to always false,
+# which sends the scrub out over ViewerUtils.makeRequest to the owning node.
+    system("../db/db.pl --prefix tests $ArkimeTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
+    viewerPost("/regressionTests/flushCache");
+    system("/bin/cp pcap/socks-http-example.pcap copytest.pcap");
+    system("../capture/capture $ArkimeTest::es -c config.test.ini -n test -r copytest.pcap $ENV{INSECURE} $ENV{SCHEME}");
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
+    countTest(0, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==anonymous"));
+
+# the multiviewer can't resolve file= (lookupQueryItems is a no-op for multiES),
+# so pick the session up by id, which is the same id on both viewers
+    $idQuery = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$copytest"));
+
+    $result = multiPostToken("/api/delete?removePcap=true&removeSpi=false&date=-1", "ids=" . $idQuery->{data}->[0]->{id}, $token);
+    eq_or_diff($result, from_json('{"success":true,"text":"Scrubbing PCAP of 1 sessions complete"}'));
+
+# A remote scrub must not take the multiviewer down. The reply above is sent
+# before the owning node's response comes back, so give that response time to
+# land before asking whether the multiviewer survived handling it.
+    sleep 1;
+    my $health = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/health");
+    ok ($health->is_success, "multiviewer still up after remote scrub");
+
+    esGet("/_flush");
+    esGet("/_refresh");
+
+# ...and it must actually have scrubbed, not just reported success
+    countTest(1, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==anonymous"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by!=anonymous"));
 
 # cleanup
     unlink("copytest.pcap");
