@@ -76,6 +76,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           eg db.pl <host:port> users-update '*' --addRole mcpUser --dryrun
   - #4162 Add initorupgrade/initorupgradenoprompt command to init a fresh cluster or upgrade an existing one,
           whichever applies, pair with --ifneeded to no-op when already current
+## Cont3xt
+  - #4204 Fix cont3xt exiting when asked for an integration named after a built-in javascript property
+  - #4204 Fix cont3xt exiting on every link group fetch after invalid settings were saved; general and integration settings are now validated and report a real save failure
+  - #4204 Searching a single integration is now recorded in history, the same as a full search
+  - #4204 Add maxBulkIndicators, default 500, limiting how many indicators one search can query at once
+  - #4204 Fix history paging, sorting and search parameters not being validated for all database backends
+  - #4204 Fix an error while running a search exiting cont3xt instead of being logged
 ## Viewer
   - #4080 Add dbAdmin role that grants Elasticsearch/OpenSearch admin access; the esAdminUsers setting is now deprecated and will be removed in Arkime 7
   - #4081 Let the dbAdmin role use the ES stats action menus (index, shard, and task operations); the ES indices menu now only requires removeEnabled for deleting an index, matching the backend

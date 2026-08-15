@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 227;
+use Test::More tests => 269;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -944,6 +944,13 @@ $json = cont3xtPost('/api/integration/search', to_json({
 }));
 eq_or_diff($json, from_json('{"purpose": "error", "text": "query must contain at least one non-whitespace indicator"}'));
 
+# a single search must not be able to fan out unbounded
+$json = cont3xtPost('/api/integration/search', to_json({
+    query => join(" ", map { sprintf("10.0.%d.%d", int($_ / 250), $_ % 250) } (0..500))
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "query must contain at most 500 indicators"}'), "too many indicators rejected");
+
+
 esGet("/_flush");
 esGet("/_refresh");
 ################################################################################
@@ -960,6 +967,29 @@ $json = cont3xtPost('/api/integration/ip/bar/search', to_json({
   query => "8.8.8.8"
 }));
 eq_or_diff($json, from_json('{"purpose": "error", "text": "integration ip bar not found"}'));
+
+# integration names must not resolve through Object.prototype, these used to
+# throw inside the handler and take the whole process down.
+# __proto__/constructor never get this far, auth's path checker stops them
+foreach my $proto ("constructor", "__proto__") {
+  $json = cont3xtPost("/api/integration/ip/$proto/search", to_json({
+    query => "8.8.8.8"
+  }));
+  is($json->{success}, 0, "integration name $proto blocked by path checker");
+  ok($json->{text} =~ /^Bad path/, "integration name $proto bad path");
+}
+
+# these do reach the handler
+foreach my $proto ("toString", "hasOwnProperty", "valueOf", "isPrototypeOf") {
+  $json = cont3xtPost("/api/integration/ip/$proto/search", to_json({
+    query => "8.8.8.8"
+  }));
+  eq_or_diff($json, from_json("{\"purpose\": \"error\", \"text\": \"integration ip $proto not found\"}"), "integration name $proto not found");
+}
+
+# and the service is still alive afterwards
+$json = cont3xtGet('/api/health');
+is($json->{success}, 1, "still up after prototype named integration lookups");
 
 # wrong itype for query value
 $json = cont3xtPost('/api/integration/domain/Maxmind/search', to_json({
@@ -1019,6 +1049,12 @@ is($json->{data}->{results}->[0]->{key}, "tags");
 
 ################################################################################
 ### HISTORY
+# the single integration searches above are audited after their response is
+# sent, give those writes a moment to land
+sleep(1);
+esGet("/_flush");
+esGet("/_refresh");
+
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 1);
@@ -1027,9 +1063,17 @@ $json = cont3xtGet('/api/audits?searchTerm=foo');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 0);
 
+# a single integration search must leave history behind, exactly like a full
+# search - whois.apnic.net was only ever queried via /:itype/:integration/search
+$json = cont3xtGet('/api/audits?searchTerm=whois.apnic.net');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 1, "single integration search is audited");
+is ($json->{audits}->[0]->{indicator}, "whois.apnic.net", "single search audit records the indicator");
+is ($json->{audits}->[0]->{iType}, "domain", "single search audit records the itype");
+
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 4);
+is (scalar @{$json->{audits}}, 11, "4 bulk searches + 7 single integration searches audited");
 $id = $json->{audits}->[0]->{_id};
 
 $json = cont3xtDelete("/api/audit/$id", '{}');
@@ -1043,7 +1087,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "History log not found"}
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 3);
+is (scalar @{$json->{audits}}, 10);
 
 # use actual issuedAt from results to build reliable date ranges
 my @timestamps = sort map { $_->{issuedAt} } @{$json->{audits}};
@@ -1053,7 +1097,7 @@ my $maxTime = $timestamps[-1];
 # date range covering all audits
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1));
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 3, "all audits in range");
+is (scalar @{$json->{audits}}, 10, "all audits in range");
 
 # date range before all audits
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 2000) . "&stopMs=" . ($minTime - 1000));
@@ -1084,21 +1128,52 @@ ok($json->{audits}->[0]->{issuedAt} >= $json->{audits}->[-1]->{issuedAt}, "defau
 $json = cont3xtGet('/api/audits?page=1&itemsPerPage=2');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 2, "page 1 has 2 items");
-is ($json->{total}, 3, "total is still 3");
+is ($json->{total}, 10, "total is still 10");
 
 $json = cont3xtGet('/api/audits?page=2&itemsPerPage=2');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 1, "page 2 has 1 item");
+is (scalar @{$json->{audits}}, 2, "page 2 has 2 items");
 
 # itemsPerPage=-1 returns all audits
 $json = cont3xtGet('/api/audits?itemsPerPage=-1');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 3, "itemsPerPage=-1 returns all items");
+is (scalar @{$json->{audits}}, 10, "itemsPerPage=-1 returns all items");
 
 # combined date range + search
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1) . "&searchTerm=goodtag");
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 1, "date range + searchTerm combined");
+
+# query param validation - an unknown sortBy falls back to issuedAt rather
+# than reaching the backend, and paging values are clamped
+$json = cont3xtGet('/api/audits?sortBy=userId');
+is($json->{success}, 1, "unknown sortBy ignored");
+is (scalar @{$json->{audits}}, 10, "unknown sortBy still returns audits");
+
+$json = cont3xtGet('/api/audits?sortBy[]=issuedAt&sortOrder[]=asc');
+is($json->{success}, 1, "array sortBy/sortOrder ignored");
+
+$json = cont3xtGet('/api/audits?itemsPerPage=99999999999');
+is($json->{success}, 1, "huge itemsPerPage clamped");
+is (scalar @{$json->{audits}}, 10, "huge itemsPerPage still returns audits");
+
+$json = cont3xtGet('/api/audits?page=-5&itemsPerPage=-20');
+is($json->{success}, 1, "negative paging clamped");
+
+$json = cont3xtGet('/api/audits?page=notanumber&itemsPerPage=notanumber');
+is($json->{success}, 1, "non numeric paging defaulted");
+is (scalar @{$json->{audits}}, 10, "non numeric paging returns defaults");
+
+$json = cont3xtGet('/api/audits?searchTerm[]=goodtag');
+is($json->{success}, 1, "non string searchTerm ignored");
+
+# 500 indicators is still allowed (no integrations selected, so no lookups)
+$json = cont3xtPost('/api/integration/search', to_json({
+    query => join(" ", map { sprintf("10.0.%d.%d", int($_ / 250), $_ % 250) } (0..499)),
+    doIntegrations => ["nosuchintegration"]
+}));
+is($json->[0]->{purpose}, "init", "500 indicators allowed");
+is(scalar @{$json->[0]->{indicators}}, 500, "500 indicators classified");
 # Bad
 $json = cont3xtPostToken('/api/view', to_json({
 }), $token);
@@ -1213,6 +1288,25 @@ ok($json =~ /SyntaxError: Unexpected token/);
 $json = cont3xtPutToken('/api/integration/settings', '{"__proto__": {"foo": 1}}', $token);
 is ($json, "SyntaxError: Object contains forbidden prototype property");
 
+# typeof null and typeof [] are both 'object', neither is a settings map
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": null}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Missing settings"}'), "null integration settings rejected");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": []}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Missing settings"}'), "array integration settings rejected");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": "hi"}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Missing settings"}'), "string integration settings rejected");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {"Twilio": "notanobject"}}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "settings.Twilio must be an object"}'), "non object integration setting rejected");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {"Twilio": {"disabled": true}}}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "valid integration settings saved");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "integration settings cleared");
+
 ################################################################################
 ### General Settings (not integration settings)
 $json = cont3xtGet('/api/settings');
@@ -1232,6 +1326,45 @@ eq_or_diff($json, from_json('{"success": false, "text": "Nothing sent to change"
 # PUT settings with actual settings
 $json = cont3xtPutToken('/api/settings', '{"settings": {"foo": "bar"}}', $token);
 is($json->{success}, 1, "put settings success");
+
+# settings must be an object, not a scalar or array
+$json = cont3xtPutToken('/api/settings', '{"settings": "bar"}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "settings must be an object"}'), "string settings rejected");
+
+$json = cont3xtPutToken('/api/settings', '{"settings": [1,2]}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "settings must be an object"}'), "array settings rejected");
+
+# linkGroup.order is read back by GET /api/linkGroup - a bad shape used to be
+# stored happily and then crash every later fetch for this user
+$json = cont3xtPutToken('/api/settings', '{"linkGroup": {"order": 1}}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "linkGroup.order must be an array of strings"}'), "numeric linkGroup order rejected");
+
+$json = cont3xtPutToken('/api/settings', '{"linkGroup": {"order": "abc"}}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "linkGroup.order must be an array of strings"}'), "string linkGroup order rejected");
+
+$json = cont3xtPutToken('/api/settings', '{"linkGroup": {"order": [1, 2]}}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "linkGroup.order must be an array of strings"}'), "non string linkGroup order entries rejected");
+
+$json = cont3xtPutToken('/api/settings', '{"linkGroup": [1]}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "linkGroup must be an object"}'), "array linkGroup rejected");
+
+# fetching link groups still works after all of those
+$json = cont3xtGet('/api/linkGroup');
+is($json->{success}, 1, "link groups still fetchable");
+
+# a valid order is accepted, and only order is kept
+$json = cont3xtPutToken('/api/settings', '{"linkGroup": {"order": ["abc", "def"], "evil": 1}}', $token);
+is($json->{success}, 1, "valid linkGroup order saved");
+
+$json = cont3xtGet('/api/settings');
+eq_or_diff($json->{linkGroup}, from_json('{"order": ["abc", "def"]}'), "only linkGroup order stored");
+
+$json = cont3xtGet('/api/linkGroup');
+is($json->{success}, 1, "link groups fetchable with an order set");
+
+# put it back
+$json = cont3xtPutToken('/api/settings', '{"linkGroup": {"order": []}}', $token);
+is($json->{success}, 1, "linkGroup order reset");
 
 ################################################################################
 ### Integration Stats

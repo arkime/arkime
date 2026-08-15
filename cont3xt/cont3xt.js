@@ -307,9 +307,26 @@ function apiGetSettings (req, res, next) {
   });
 }
 
+// verify linkGroup settings, on error returns { msg: <errorMsg> }, on success returns { linkGroup }
+// these are read back by LinkGroup.apiGet, so a wrong shape here breaks every
+// later link group fetch for this user
+function verifyLinkGroupSettings (linkGroup) {
+  if (!ArkimeUtil.isPlainObject(linkGroup)) {
+    return { msg: 'linkGroup must be an object' };
+  }
+
+  linkGroup = (({ order }) => ({ order }))(linkGroup); // only allow order
+
+  if (linkGroup.order !== undefined && !ArkimeUtil.isStringArray(linkGroup.order)) {
+    return { msg: 'linkGroup.order must be an array of strings' };
+  }
+
+  return { linkGroup };
+}
+
 // verify selectedOverviews, on error returns { msg: <errorMsg> }, on success returns { selectedOverviews }
 function verifySelectedOverviews (selectedOverviews) {
-  if (typeof selectedOverviews !== 'object' || selectedOverviews === null || Array.isArray(selectedOverviews)) {
+  if (!ArkimeUtil.isPlainObject(selectedOverviews)) {
     return { msg: 'selectedOverviews must be an object' };
   }
 
@@ -347,12 +364,18 @@ function apiPutSettings (req, res, next) {
     if (user.cont3xt === undefined) { user.cont3xt = {}; }
 
     if (req.body?.settings) {
+      if (!ArkimeUtil.isPlainObject(req.body.settings)) {
+        return res.send({ success: false, text: 'settings must be an object' });
+      }
       user.cont3xt.settings = req.body.settings;
       save = true;
     }
 
     if (req.body?.linkGroup) {
-      user.cont3xt.linkGroup = req.body.linkGroup;
+      const { msg, linkGroup } = verifyLinkGroupSettings(req.body.linkGroup);
+      if (msg) { return res.send({ success: false, text: msg }); }
+
+      user.cont3xt.linkGroup = linkGroup;
       save = true;
     }
 
@@ -481,7 +504,12 @@ User.prototype.setCont3xtKeys = function (v) {
     this.cont3xt = {};
   }
   this.cont3xt.keys = Auth.obj2auth(v, Auth.passwordSecret256);
-  this.save((err) => { console.log('SAVED', err); });
+  return new Promise((resolve, reject) => {
+    this.save((err) => {
+      if (err) { return reject(err); }
+      resolve();
+    });
+  });
 };
 
 // ----------------------------------------------------------------------------
