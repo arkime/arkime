@@ -45,6 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4183 Add !role search filter on the Users tab to list users that don't have a matching role
   - #4194 Add Microsoft Teams notifier (uses Power Automate Workflows webhooks)
   - #4202 Exit at startup when a header authMode has no userNameHeader instead of failing every request
+  - #4206 Fix changePasswordSecret.js sometimes accepting a wrong old passwordSecret for a user, re-encrypting their password from garbage instead of leaving them alone
 ## Capture
   - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
