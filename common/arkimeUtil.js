@@ -162,6 +162,15 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Is obj a plain object - typeof says 'object' for both null and arrays,
+   * which is almost never what a request body validator wants
+   */
+  static isPlainObject (obj) {
+    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Is arr an array of strings, with each string being at least minLen
    */
   static isStringArray (arr, minLen = 1) {

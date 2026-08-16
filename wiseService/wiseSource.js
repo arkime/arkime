@@ -582,6 +582,58 @@ class WISESource {
   }
 
   // ----------------------------------------------------------------------------
+  // Sources download into shared directories like /tmp, where anyone can create
+  // the path before we do. Only ever use a plain file that we own with no extra
+  // links to it, so we can't be tricked into following a symlink or writing to
+  // (or loading) someone else's file.
+  static #statIsSafe (stat) {
+    const uid = process.getuid?.();
+    return stat.isFile() && stat.nlink === 1 && (uid === undefined || stat.uid === uid);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Is the file a plain file that we own, so safe to use in a shared directory.
+   *
+   * @param {string} file - The file to check
+   * @returns {boolean}
+   */
+  static isSafeFile (file) {
+    try {
+      return WISESource.#statIsSafe(fs.lstatSync(file));
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // Open file for writing without following symlinks, replacing anything in the
+  // way that isn't a plain file we own. Returns the fd or throws.
+  static #openSafe (file) {
+    /* eslint-disable no-bitwise */
+    const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
+    /* eslint-enable no-bitwise */
+
+    let fd;
+    try {
+      fd = fs.openSync(file, flags, 0o600);
+    } catch (err) {
+      // O_NOFOLLOW found a symlink, remove it and try once more
+      if (err.code !== 'ELOOP' && err.code !== 'EMLINK') { throw err; }
+      fs.unlinkSync(file);
+      fd = fs.openSync(file, flags, 0o600);
+    }
+
+    // The open created or truncated something, make sure it's really ours
+    if (!WISESource.#statIsSafe(fs.fstatSync(fd))) {
+      fs.closeSync(fd);
+      throw new Error(`${file} isn't a plain file owned by this user`);
+    }
+
+    return fd;
+  }
+
+  // ----------------------------------------------------------------------------
   /**
    * Download a url and save to a file, if we already have the file and less than a minute old use that file.
    *
@@ -592,9 +644,11 @@ class WISESource {
   static request (url, file, cb) {
     const headers = {};
     if (file) {
-      if (fs.existsSync(file)) {
-        const stat = fs.statSync(file);
+      // lstat so a symlink left at file is never mistaken for our copy
+      let stat;
+      try { stat = fs.lstatSync(file); } catch (err) { }
 
+      if (stat && WISESource.#statIsSafe(stat)) {
         // Don't download again if file is less than 1 minute old
         if (Date.now() - stat.mtime.getTime() < 60000) {
           return setImmediate(cb, 304);
@@ -608,7 +662,16 @@ class WISESource {
       responseType: 'stream',
       headers
     }).then((response) => {
-      response.data.pipe(fs.createWriteStream(file)).on('close', () => {
+      let fd;
+      try {
+        fd = WISESource.#openSafe(file);
+      } catch (err) {
+        console.log(`ERROR - not saving ${file} -`, err.message);
+        response.data.destroy();
+        return setTimeout(cb, 100, 403);
+      }
+
+      response.data.pipe(fs.createWriteStream(null, { fd })).on('close', () => {
         setTimeout(cb, 100, 200);
       });
     }).catch((err) => {

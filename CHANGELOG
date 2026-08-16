@@ -62,6 +62,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4134 Fix a cleared (null) user permission being treated as a denial instead of falling back to the roles' value
   - #4183 Add !role search filter on the Users tab to list users that don't have a matching role
   - #4194 Add Microsoft Teams notifier (uses Power Automate Workflows webhooks)
+  - #4202 Exit at startup when a header authMode has no userNameHeader instead of failing every request
+  - #4206 Fix changePasswordSecret.js sometimes accepting a wrong old passwordSecret for a user, re-encrypting their password from garbage instead of leaving them alone
 ## Capture
   - #4120 Fix offline pcap runs (-r/-R) loading the stopped-sessions state file
   - #4121 Fix DNS HTTPS/SVCB records dropping a valid trailing zero-length SvcParam
@@ -93,6 +95,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           eg db.pl <host:port> users-update '*' --addRole mcpUser --dryrun
   - #4162 Add initorupgrade/initorupgradenoprompt command to init a fresh cluster or upgrade an existing one,
           whichever applies, pair with --ifneeded to no-op when already current
+## Cont3xt
+  - #4204 Fix cont3xt exiting when asked for an integration named after a built-in javascript property
+  - #4204 Fix cont3xt exiting on every link group fetch after invalid settings were saved; general and integration settings are now validated and report a real save failure
+  - #4204 Searching a single integration is now recorded in history, the same as a full search
+  - #4204 Add maxBulkIndicators, default 500, limiting how many indicators one search can query at once
+  - #4204 Fix history paging, sorting and search parameters not being validated for all database backends
+  - #4204 Fix an error while running a search exiting cont3xt instead of being logged
 ## Viewer
   - #4080 Add dbAdmin role that grants Elasticsearch/OpenSearch admin access; the esAdminUsers setting is now deprecated and will be removed in Arkime 7
   - #4081 Let the dbAdmin role use the ES stats action menus (index, shard, and task operations); the ES indices menu now only requires removeEnabled for deleting an index, matching the backend
@@ -104,6 +113,19 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4160 Fix date expression values ending in a timezone abbreviation (2026/07/27 09:33:05 UTC) generating an Invalid date ES query
   - #4163 Add Packet Portal (experimental), a second viewer-to-viewer transport where a NAT'd sensor viewer dials out to a central viewer, which then sends its normal node-to-node requests (pcap, hunts, crons, proxying) back over that link; see packetPortal* settings
   - #4172 Fix Download Entire PCAP failing on sensors behind esProxy; the rootId session search is now allowed through esProxy, and a failed search returns a 500 instead of an unhandled rejection
+  - #4203 Fix scrubbing pcap on a session held by a remote node exiting the viewer
+  - #4203 Fix a repeated query parameter (order, startTime, stopTime) never answering
+## WISE
+  - #4205 Fix intel files downloaded to /tmp being written through, or loaded from, a symlink or a file owned by another user
+  - #4205 Fix looked up values being able to inject into threatstream api requests, splunk searches, and redis key templates
+  - #4205 Fix threatstream sqlite3 mode failing on an itype name containing a quote
+  - #4205 Fix wiseService exiting on a valueactions or fieldactions file that has a section header in it
+  - #4205 Fix wiseService exiting on a csv url source whose rows are shorter than the key column
+  - #4205 Fix wiseService exiting on unexpected threatstream, threatq or alienvault data; a load that finds nothing now keeps the previous data
+  - #4205 Fix virustotal, opendns and passivetotal never looking a value up again when the service returned no result for it
+  - #4205 Fix isepxgrid returning nothing for the length of its session cache refresh
+  - #4205 Fix a phpipam url containing a quote breaking every right click action in viewer
+  - #4205 Fix the config UI erroring instead of rejecting a section named after a javascript property
 
 6.6.0 2026/07/09
 ## Breaking

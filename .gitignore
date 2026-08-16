@@ -28,6 +28,8 @@ capture/arkimeconfig.h.in
 capture/moloch-capture
 capture/capture
 
+# release
+release/afterinstall.sh
 
 # tests
 tests/GeoLite2*

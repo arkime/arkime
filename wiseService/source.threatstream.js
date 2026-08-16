@@ -118,6 +118,11 @@ class ThreatStreamSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseFile () {
+    if (!WISESource.isSafeFile('/tmp/threatstream.zip')) {
+      console.log(this.section, "- ERROR - /tmp/threatstream.zip isn't a plain file we own, not loading");
+      return;
+    }
+
     // Build into fresh maps and swap at the end so a failed load keeps prior data
     const ips = new Map();
     const domains = new Map();
@@ -126,6 +131,7 @@ class ThreatStreamSource extends WISESource {
     const urls = new Map();
 
     let bad = false;
+    let count = 0;
     fs.createReadStream('/tmp/threatstream.zip')
       .on('error', (err) => {
         console.log(this.section, "- Couldn't read /tmp/threatstream.zip", err);
@@ -148,13 +154,19 @@ class ThreatStreamSource extends WISESource {
             console.log(this.section, 'ERROR - parsing', entry.path, e);
             return;
           }
+          // An entry with no indicators in it, like a manifest, isn't a failure
+          if (!Array.isArray(json.objects)) {
+            console.log(this.section, '- Skipping', entry.path, 'no objects array');
+            return;
+          }
+
           json.objects.forEach((item) => {
-            if (item.state !== 'active') {
+            if (item?.state !== 'active' || !ArkimeUtil.isString(item.itype)) {
               return;
             }
 
             // Figure out where the item goes and its indicator value first
-            let hash, indicator;
+            let hash, indicator, isUrl;
             if (item.itype.match(/(_ip|anon_proxy|anon_vpn)/)) {
               hash = ips; indicator = item.srcip;
             } else if (item.itype.match(/_domain|_dns/)) {
@@ -164,14 +176,21 @@ class ThreatStreamSource extends WISESource {
             } else if (item.itype.match(/_md5/)) {
               hash = md5s; indicator = item.md5;
             } else if (item.itype.match(/_url/)) {
-              hash = urls; indicator = item.url;
+              hash = urls; indicator = item.url; isUrl = true;
+            } else {
+              return;
+            }
+
+            if (!ArkimeUtil.isString(indicator)) {
+              return;
+            }
+
+            if (isUrl) {
               if (indicator.startsWith('http://')) {
                 indicator = indicator.substring(7);
               } else if (indicator.startsWith('https://')) {
                 indicator = indicator.substring(8);
               }
-            } else {
-              return;
             }
 
             let encoded;
@@ -202,12 +221,14 @@ class ThreatStreamSource extends WISESource {
             }
 
             hash.set(indicator, encoded);
+            count++;
           });
           // console.log(this.section, "- Done", entry.path);
         });
       })
       .on('close', () => {
-        if (bad) {
+        // Nothing loaded means every entry was skipped, don't wipe what we have
+        if (bad || count === 0) {
           console.log(this.section, '- Load failed, keeping previous data');
           return;
         }
@@ -216,14 +237,14 @@ class ThreatStreamSource extends WISESource {
         this.emails = emails;
         this.md5s = md5s;
         this.urls = urls;
-        console.log(this.section, '- Done Loading');
+        console.log(this.section, '- Done Loading', count, 'elements');
       });
   }
 
   // ----------------------------------------------------------------------------
   loadFile () {
     console.log(this.section, '- Downloading files');
-    WISESource.request('https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=' + this.user + '&api_key=' + this.key, '/tmp/threatstream.zip', (statusCode) => {
+    WISESource.request(`https://api.threatstream.com/api/v1/intelligence/snapshot/download/?username=${encodeURIComponent(this.user)}&api_key=${encodeURIComponent(this.key)}`, '/tmp/threatstream.zip', (statusCode) => {
       if (statusCode === 200 || !this.loaded) {
         this.loaded = true;
         this.parseFile();
@@ -279,9 +300,23 @@ class ThreatStreamSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   getApi (type, value, cb) {
+    // No itypes for this type means nothing can ever match
+    const itypes = this.types[type];
+    if (itypes === undefined) {
+      return cb(null, WISESource.emptyResult);
+    }
+
+    // Use params so values from the network can't inject extra query parameters
     const options = {
-      url: `https://api.threatstream.com/api/v2/intelligence/?username=${this.user}&api_key=${this.key}&status=active&${type}=${value}&itype=${this.types[type]}`,
-      method: 'GET'
+      url: 'https://api.threatstream.com/api/v2/intelligence/',
+      method: 'GET',
+      params: {
+        username: this.user,
+        api_key: this.key,
+        status: 'active',
+        [type]: value,
+        itype: itypes
+      }
     };
 
     if (this.inProgress > 50) {
@@ -317,7 +352,7 @@ class ThreatStreamSource extends WISESource {
         const result = WISESource.encodeResult.apply(null, args);
         return cb(null, result);
       }).catch((err) => {
-        console.log(this.section, 'problem fetching ', options, err);
+        console.log(this.section, 'problem fetching', options.url, type, err);
         return cb(null, WISESource.emptyResult);
       }).finally(() => {
         this.inProgress--;
@@ -350,8 +385,15 @@ class ThreatStreamSource extends WISESource {
       return cb('dropped');
     }
 
+    // itype names come from the threatstream api, bind them instead of inlining
+    const itypes = this.itypes[type];
+    if (itypes === undefined || itypes.length === 0) {
+      return cb('dropped');
+    }
+
     try {
-      const data = this.db.prepare(`SELECT * FROM ts WHERE ${field} = ? AND state != 'falsepos' AND itype IN (${this.typesWithQuotes[type]})`).all(value);
+      const placeholders = itypes.map(() => '?').join(',');
+      const data = this.db.prepare(`SELECT * FROM ts WHERE ${field} = ? AND state != 'falsepos' AND itype IN (${placeholders})`).all(value, ...itypes);
 
       if (!data || data.length === 0) {
         return cb(null, WISESource.emptyResult);
@@ -419,21 +461,24 @@ class ThreatStreamSource extends WISESource {
   // ----------------------------------------------------------------------------
   loadTypes (includeUrl) {
     // Threatstream doesn't have a way to just ask for type matches, so we need to figure out which itypes are various types.
-    this.types = {};
-    this.typesWithQuotes = {};
-    axios({ url: 'https://api.threatstream.com/api/v1/impact/?username=' + this.user + '&api_key=' + this.key + '&limit=1000' })
+    // Null prototype since value_type is whatever the api returns
+    this.itypes = Object.create(null); // wise type => array of itype names
+    this.types = Object.create(null); // wise type => itype names joined for the api
+    axios({
+      url: 'https://api.threatstream.com/api/v1/impact/',
+      params: { username: this.user, api_key: this.key, limit: 1000 }
+    })
       .then((response) => {
         const body = response.data;
         body.objects.forEach((item) => {
-          if (this.types[item.value_type] === undefined) {
-            this.types[item.value_type] = [item.name];
+          if (this.itypes[item.value_type] === undefined) {
+            this.itypes[item.value_type] = [item.name];
           } else {
-            this.types[item.value_type].push(item.name);
+            this.itypes[item.value_type].push(item.name);
           }
         });
-        for (const key in this.types) {
-          this.typesWithQuotes[key] = this.types[key].map((v) => { return "'" + v + "'"; }).join(',');
-          this.types[key] = this.types[key].join(',');
+        for (const key in this.itypes) {
+          this.types[key] = this.itypes[key].join(',');
         }
 
         // Wait to register until request is done

@@ -32,7 +32,9 @@ class Integration {
 
   static #cache;
   static #cont3xtStartTime = Date.now();
-  static #integrationsByName = {};
+  // a Map so a request can't reach Object.prototype members (constructor,
+  // __proto__, toString, ...) by asking for an integration with that name
+  static #integrationsByName = new Map();
   static #integrations = {
     all: [],
     ip: [],
@@ -154,7 +156,7 @@ class Integration {
     integration.normalizeTidbits();
     // console.log(integration.name, JSON.stringify(integration.card, false, 2));
 
-    Integration.#integrationsByName[integration.name] = integration;
+    Integration.#integrationsByName.set(integration.name, integration);
     Integration.#integrations.all.push(integration);
     for (const itype in integration.itypes) {
       Integration.#integrations[itype].push(integration);
@@ -403,8 +405,23 @@ class Integration {
     return res.send({ success: true, integrations: results });
   }
 
+  // runIntegrationsList is deliberately never awaited, so it has to swallow its
+  // own failures. An unhandled rejection here exits cont3xt for every user.
+  static #startIntegrationsList (shared, indicator, parentIndicator, integrations) {
+    Integration.runIntegrationsList(shared, indicator, parentIndicator, integrations)
+      .catch((err) => {
+        console.log('ERROR - running %s integrations:', ArkimeUtil.sanitizeStr(indicator?.itype), err);
+      });
+  }
+
   static async runIntegrationsList (shared, indicator, parentIndicator, integrations) {
     const { query, itype } = indicator;
+
+    // an integration's addMoreIntegrations can hand back an unknown itype
+    if (integrations === undefined) {
+      console.log('WARNING - unknown itype "%s" from a sub-indicator', ArkimeUtil.sanitizeStr(itype));
+      return;
+    }
 
     // initial write for sub-indicators (ensures dependable tracking of indicator tree)
     if (parentIndicator != null) {
@@ -430,7 +447,7 @@ class Integration {
             shared.res.write(JSON.stringify({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo }));
             shared.res.write(',\n');
           }
-          Integration.runIntegrationsList(shared, moreIndicator, indicator, Integration.#integrations[moreIndicator.itype]);
+          Integration.#startIntegrationsList(shared, moreIndicator, indicator, Integration.#integrations[moreIndicator.itype]);
         });
       }
 
@@ -665,6 +682,13 @@ class Integration {
       return res.send({ purpose: 'error', text: 'query must contain at least one non-whitespace indicator' });
     }
 
+    // each indicator fans out to every integration (plus a child lookup for
+    // emails/urls), so cap how much work one request can ask for
+    const maxBulkIndicators = +ArkimeConfig.get('maxBulkIndicators', 500);
+    if (queries.length > maxBulkIndicators) {
+      return res.send({ purpose: 'error', text: `query must contain at most ${maxBulkIndicators} indicators` });
+    }
+
     const indicators = queries.map((query) => {
       const { itype, decoded } = Integration.classify(query);
       return { query, itype, decoded };
@@ -714,18 +738,18 @@ class Integration {
       const { query, itype } = indicator;
       const integrations = Integration.#integrations[itype];
 
-      Integration.runIntegrationsList(shared, indicator, undefined, integrations);
+      Integration.#startIntegrationsList(shared, indicator, undefined, integrations);
       if (!shared.skipChildren) {
         if (itype === 'email') {
           const dquery = query.slice(query.indexOf('@') + 1);
-          Integration.runIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+          Integration.#startIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
         } else if (itype === 'url') {
           const url = new URL(query);
           if (Integration.classify(url.hostname).itype === 'ip') {
-            Integration.runIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
+            Integration.#startIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
           } else {
             const equery = await extractDomain(query, { tld: true });
-            Integration.runIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+            Integration.#startIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
           }
         }
       }
@@ -768,7 +792,7 @@ class Integration {
       }
     }
 
-    const integration = Integration.#integrationsByName[req.params.integration];
+    const integration = Integration.#integrationsByName.get(req.params.integration);
 
     if (integration === undefined || integration.itypes[itype] === undefined) {
       return res.send({ purpose: 'error', text: `integration ${itype} ${req.params.integration} not found` });
@@ -795,24 +819,46 @@ class Integration {
     stats.directLookup++;
     istats.directLookup++;
     const dStartTime = Date.now();
+
+    // this endpoint queries the same external sources as /integration/search,
+    // so it must leave the same history behind - otherwise it is a way to look
+    // an indicator up without being audited
+    const issuedAt = dStartTime;
+    const audit = (resultCount) => {
+      Audit.create({
+        userId: req.user.userId,
+        indicator: query,
+        iType: itype,
+        tags: [],
+        issuedAt,
+        took: Date.now() - issuedAt,
+        resultCount
+      }).catch((err) => {
+        console.log('ERROR - creating audit log.', err);
+      });
+    };
+
     integration[integration.itypes[itype]](req.user, normalizedQuery)
       .then(response => {
         updateTime(stats, istats, Date.now() - dStartTime, 'direct');
         stats.directFound++;
         istats.directFound++;
         if (response === Integration.NoResult) {
+          audit(0);
           res.send({ purpose: 'data', indicator, name: integration.name, data: { _cont3xt: { createTime: Date.now() } } });
         } else if (response) {
           stats.directGood++;
           istats.directGood++;
           if (!response._cont3xt) { response._cont3xt = {}; }
           response._cont3xt.createTime = Date.now();
+          audit(response._cont3xt.count ?? 0);
           res.send({ purpose: 'data', indicator, name: integration.name, data: response });
           if (Integration.#cache && integration.cacheable) {
             const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
             Integration.#cache.set(cacheKey, response);
           }
         } else {
+          audit(0);
           res.send({ purpose: 'data', indicator, name: integration.name, data: { _cont3xt: { createTime: Date.now() } } });
         }
       })
@@ -820,6 +866,7 @@ class Integration {
         console.log(integration.name, itype, query, err);
         stats.directError++;
         istats.directError++;
+        audit(0);
         res.status(500).send({ purpose: 'fail', indicator, name: integration.name });
       });
   }
@@ -900,10 +947,23 @@ class Integration {
    * @returns {IntegrationSetting[]} settings - The integration settings to update for the logged in user
    */
   static async apiPutSettings (req, res, next) {
-    if (typeof req.body.settings !== 'object') {
+    // typeof null and typeof [] are both 'object'
+    if (!ArkimeUtil.isPlainObject(req.body.settings)) {
       return res.send({ success: false, text: 'Missing settings' });
     }
-    req.user.setCont3xtKeys(req.body.settings);
+
+    for (const iname in req.body.settings) {
+      if (!ArkimeUtil.isPlainObject(req.body.settings[iname])) {
+        return res.send({ success: false, text: `settings.${ArkimeUtil.sanitizeStr(iname)} must be an object` });
+      }
+    }
+
+    try {
+      await req.user.setCont3xtKeys(req.body.settings);
+    } catch (err) {
+      console.log('ERROR - saving cont3xt keys', err);
+      return res.send({ success: false, text: 'Save failed' });
+    }
     res.send({ success: true, text: 'Saved' });
   }
 

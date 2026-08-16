@@ -60,9 +60,15 @@ class ShortcutAPIs {
    * @returns {Object} {type, values, invalidUsers} - The shortcut type (ip, string, number),
    *                                                  array of values, and list of invalid users
    */
+  // A Set, not an object: a plain [] lookup finds Object.prototype names like
+  // toString or valueOf, which are truthy and so passed as valid types. The
+  // type is then used as the field name to store the values under, which only
+  // the lookups index's strict mapping stopped, and as a 500 rather than a
+  // clean rejection.
+  static #validTypes = new Set(['ip', 'string', 'number']);
+
   static async #normalizeShortcut (shortcut) {
-    const validTypes = { ip: 1, string: 1, number: 1 };
-    if (!validTypes[shortcut.type]) {
+    if (!ArkimeUtil.isString(shortcut.type) || !ShortcutAPIs.#validTypes.has(shortcut.type)) {
       return { type: shortcut.type, values: [], invalidUsers: [], error: 'Invalid shortcut type' };
     }
 
@@ -166,7 +172,9 @@ class ShortcutAPIs {
           shortcut.type = 'string';
         }
 
-        const values = shortcut[shortcut.type];
+        // A shortcut with none of number/ip/string would otherwise throw on
+        // join below, which 500s the whole list for everyone who can see it
+        const values = shortcut[shortcut.type] ?? [];
 
         if (req.query.fieldFormat && req.query.fieldFormat === 'true') {
           const shortcutName = `$${shortcut.name}`;

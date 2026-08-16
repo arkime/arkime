@@ -8,8 +8,13 @@
 'use strict';
 
 const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class Audit {
+  // the only fields an audit can be sorted on
+  static SORT_FIELDS = ['issuedAt', 'indicator', 'iType'];
+  static MAX_ITEMS_PER_PAGE = 10000;
+
   constructor (data) {
     Object.assign(this, data);
   }
@@ -118,13 +123,21 @@ class Audit {
    */
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
-    // default query parameters
+
+    // normalize the values that reach an ES size, a sql LIMIT, a sort field
+    // name or an array index - the Db implementations don't all validate.
+    // startMs/stopMs only ever become a range bound or a bound sql param, so
+    // they are passed through as-is.
     const query = { ...req.query };
-    query.page ??= 1;
-    query.itemsPerPage ??= 100;
-    if (query.itemsPerPage === '-1') { query.itemsPerPage = 10000; }
-    query.sortBy ??= 'issuedAt';
-    query.sortOrder ??= 'desc';
+    query.sortBy = Audit.SORT_FIELDS.includes(query.sortBy) ? query.sortBy : 'issuedAt';
+    query.sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
+    if (!ArkimeUtil.isString(query.searchTerm)) { query.searchTerm = undefined; }
+    query.page = Math.abs(parseInt(query.page, 10)) || 1;
+    // must land in [1, MAX] - a negative LIMIT means no limit in sqlite, and
+    // ES rejects a from+size past max_result_window
+    query.itemsPerPage = query.itemsPerPage === '-1'
+      ? Audit.MAX_ITEMS_PER_PAGE
+      : Math.min(Math.abs(parseInt(query.itemsPerPage, 10)) || 100, Audit.MAX_ITEMS_PER_PAGE);
 
     const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], query);
     res.send({ success: true, audits, total });

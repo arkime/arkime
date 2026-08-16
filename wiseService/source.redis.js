@@ -39,7 +39,9 @@ class RedisSource extends WISESource {
   // ----------------------------------------------------------------------------
   fetch (key, cb) {
     if (this.template !== undefined) {
-      key = this.template.replace('%key%', key).replace('%type%', this.type);
+      // Replace with a function, otherwise a $' or $& in the key is treated as a
+      // replacement pattern and copies parts of the template into the key
+      key = this.template.replace('%key%', () => key).replace('%type%', this.type);
     }
 
     this.client[this.redisMethod](key, (err, reply) => {

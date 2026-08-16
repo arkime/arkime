@@ -269,7 +269,7 @@ sub sessionsPost {
 my ($index, $id, $doc, $debug) = @_;
 
     if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
-        return esPost("/$index/_doc/$id?refresh=wait_for", $doc, $debug);
+        return esPost("/$index/_doc/$id?refresh=true", $doc, $debug);
     }
 
     my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";

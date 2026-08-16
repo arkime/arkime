@@ -11,19 +11,19 @@ const dgram = require('dgram');
 const net = require('net');
 const tls = require('tls');
 
-// RFC 5424 facility codes
-const FACILITIES = {
-  kern: 0, user: 1, mail: 2, daemon: 3, auth: 4, syslog: 5,
-  lpr: 6, news: 7, uucp: 8, cron: 9, authpriv: 10, ftp: 11,
-  local0: 16, local1: 17, local2: 18, local3: 19,
-  local4: 20, local5: 21, local6: 22, local7: 23
-};
+// RFC 5424 facility codes, use maps for security
+const FACILITIES = new Map([
+  ['kern', 0], ['user', 1], ['mail', 2], ['daemon', 3], ['auth', 4], ['syslog', 5],
+  ['lpr', 6], ['news', 7], ['uucp', 8], ['cron', 9], ['authpriv', 10], ['ftp', 11],
+  ['local0', 16], ['local1', 17], ['local2', 18], ['local3', 19],
+  ['local4', 20], ['local5', 21], ['local6', 22], ['local7', 23]
+]);
 
 // RFC 5424 severity codes
-const SEVERITIES = {
-  emerg: 0, alert: 1, crit: 2, err: 3,
-  warning: 4, notice: 5, info: 6, debug: 7
-};
+const SEVERITIES = new Map([
+  ['emerg', 0], ['alert', 1], ['crit', 2], ['err', 3],
+  ['warning', 4], ['notice', 5], ['info', 6], ['debug', 7]
+]);
 
 exports.init = function (api) {
   api.register('syslog', {
@@ -63,8 +63,8 @@ exports.init = function (api) {
  * Build an RFC 5424 syslog message
  */
 exports.buildSyslogMessage = function (config, message) {
-  const facility = FACILITIES[config.facility] ?? FACILITIES.local0;
-  const severity = SEVERITIES[config.severity] ?? SEVERITIES.warning;
+  const facility = FACILITIES.get(config.facility) ?? FACILITIES.get('local0');
+  const severity = SEVERITIES.get(config.severity) ?? SEVERITIES.get('warning');
   const pri = (facility * 8) + severity;
   const tag = config.tag || 'arkime';
   const timestamp = new Date().toISOString();

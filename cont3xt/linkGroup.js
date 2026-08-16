@@ -68,7 +68,8 @@ class LinkGroup {
     const reordered = [];
     const unordered = [];
     const settings = req.user.cont3xt ?? {};
-    if (settings.linkGroup && settings.linkGroup.order) {
+    // don't trust the stored shape, older/hand edited users may have anything
+    if (Array.isArray(settings.linkGroup?.order)) {
       for (const group of linkGroups) {
         if (settings.linkGroup.order.indexOf(group._id) === -1) {
           unordered.push(group);

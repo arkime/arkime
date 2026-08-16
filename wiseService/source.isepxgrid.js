@@ -59,9 +59,10 @@ const WSClient = require('ws');
 class StompClient {
   constructor (ws) {
     this.ws = ws;
-    this._handlers = {};
+    // Maps since both are keyed by strings ISE sends us
+    this._handlers = new Map();
     this._idsub = 0;
-    this._subscriptions = {}; // id → callback
+    this._subscriptions = new Map(); // id → callback
     ws.on('message', (raw) => this._onRaw(raw));
   }
 
@@ -69,7 +70,7 @@ class StompClient {
   // Returns the subscription id.
   subscribe (topic, cb) {
     const id = `sub-${++this._idsub}`;
-    this._subscriptions[id] = cb;
+    this._subscriptions.set(id, cb);
     this._send('SUBSCRIBE', { id, destination: topic, ack: 'auto' }, '');
     return id;
   }
@@ -105,8 +106,8 @@ class StompClient {
   }
 
   _onceFrame (command, cb) {
-    if (!this._handlers[command]) this._handlers[command] = [];
-    this._handlers[command].push({ once: true, cb });
+    if (!this._handlers.has(command)) this._handlers.set(command, []);
+    this._handlers.get(command).push({ once: true, cb });
   }
 
   _onRaw (raw) {
@@ -132,13 +133,13 @@ class StompClient {
     }
 
     // Dispatch once-handlers (CONNECTED, ERROR)
-    const once = (this._handlers[command] || []).filter(h => h.once);
-    for (const h of once) h.cb(headers, body);
-    this._handlers[command] = (this._handlers[command] || []).filter(h => !h.once);
+    const handlers = this._handlers.get(command) ?? [];
+    this._handlers.set(command, handlers.filter(handler => !handler.once));
+    for (const h of handlers.filter(handler => handler.once)) h.cb(headers, body);
 
     // Dispatch subscription callbacks for MESSAGE frames
     if (command === 'MESSAGE') {
-      const cb = this._subscriptions[headers.subscription];
+      const cb = this._subscriptions.get(headers.subscription);
       if (cb) cb(headers, body);
     }
   }
@@ -389,7 +390,11 @@ class ISEPxGridSource extends WISESource {
   // Bulk-load all currently active sessions from ISE REST on startup
   // -------------------------------------------------------------------------
 
-  async _loadAllSessions () {
+  // Loads into the live maps unless caller passes maps to fill instead
+  async _loadAllSessions (sessionMap, sidMap) {
+    sessionMap ??= this.sessionMap;
+    sidMap ??= this.sidMap;
+
     const doRequest = (secret) => {
       const creds = Buffer.from(`${this.nodeName}:${secret}`).toString('base64');
       return axios.post(
@@ -435,13 +440,13 @@ class ISEPxGridSource extends WISESource {
       const sid = s.auditSessionId || '';
       for (const ip of ips) {
         // Only set if not already written by a concurrent STOMP event
-        if (!this.sessionMap.has(ip)) {
-          this.sessionMap.set(ip, s);
+        if (!sessionMap.has(ip)) {
+          sessionMap.set(ip, s);
           count++;
         }
         if (sid) {
-          if (!this.sidMap.has(sid)) this.sidMap.set(sid, new Set());
-          this.sidMap.get(sid).add(ip);
+          if (!sidMap.has(sid)) sidMap.set(sid, new Set());
+          sidMap.get(sid).add(ip);
         }
       }
     }
@@ -459,18 +464,17 @@ class ISEPxGridSource extends WISESource {
   async _refreshCache () {
     this._refreshTimer = null;
     console.log(this.section, `- Cache age reached ${this.cacheAgeMin}min, refreshing from ISE…`);
-    // Swap in fresh maps only after a successful load so a failed refresh
-    // keeps serving the existing data instead of destroying it
-    const oldSessionMap = this.sessionMap;
-    const oldSidMap = this.sidMap;
-    this.sessionMap = new Map();
-    this.sidMap = new Map();
+    // Fill fresh maps and only swap them in once the load worked, so getIp keeps
+    // answering from the current data for the whole refresh instead of finding
+    // empty maps, and a failed refresh changes nothing
+    const sessionMap = new Map();
+    const sidMap = new Map();
     try {
-      await this._loadAllSessions();
+      await this._loadAllSessions(sessionMap, sidMap);
+      this.sessionMap = sessionMap;
+      this.sidMap = sidMap;
     } catch (err) {
       console.log(this.section, '- WARN: cache refresh failed, keeping previous data:', err.message);
-      this.sessionMap = oldSessionMap;
-      this.sidMap = oldSidMap;
       this._scheduleRefresh(); // retry on next interval
     }
   }

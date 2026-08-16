@@ -14,20 +14,21 @@ const { LRUCache } = require('lru-cache');
 const otplib = require('otplib');
 const QRCode = require('qrcode');
 
-const systemRolesMapping = {
-  superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser', 'dbAdmin', 'mcpUser'],
-  usersAdmin: [],
-  arkimeAdmin: ['arkimeUser'],
-  arkimeUser: [],
-  mcpUser: [],
-  parliamentAdmin: ['parliamentUser'],
-  parliamentUser: [],
-  wiseAdmin: ['wiseUser'],
-  wiseUser: [],
-  cont3xtAdmin: ['cont3xtUser'],
-  cont3xtUser: [],
-  dbAdmin: []
-};
+// Use map for security
+const systemRolesMapping = new Map([
+  ['superAdmin', ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser', 'dbAdmin', 'mcpUser']],
+  ['usersAdmin', []],
+  ['arkimeAdmin', ['arkimeUser']],
+  ['arkimeUser', []],
+  ['mcpUser', []],
+  ['parliamentAdmin', ['parliamentUser']],
+  ['parliamentUser', []],
+  ['wiseAdmin', ['wiseUser']],
+  ['wiseUser', []],
+  ['cont3xtAdmin', ['cont3xtUser']],
+  ['cont3xtUser', []],
+  ['dbAdmin', []]
+]);
 
 const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
 const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
@@ -127,7 +128,7 @@ class User {
     if (userRoleMappings) {
       User.#dynamicRolesFuncs = new Map();
       for (const [role, func] of Object.entries(userRoleMappings)) {
-        if (!systemRolesMapping[role] && !role.startsWith('role:')) {
+        if (!systemRolesMapping.has(role) && !role.startsWith('role:')) {
           console.log(`ERROR - user-role-mappings ${role} must start with role: or be a system role`);
           process.exit(1);
         }
@@ -444,7 +445,7 @@ class User {
 
     User.#rolesCache._timeStamp = Date.now();
     const userAllRoles = await User.#implementation.allRoles();
-    User.#rolesCache.roles = new Set([...Object.keys(systemRolesMapping), ...userAllRoles]);
+    User.#rolesCache.roles = new Set([...systemRolesMapping.keys(), ...userAllRoles]);
     return User.#rolesCache.roles;
   }
 
@@ -779,7 +780,7 @@ class User {
       return res.serverError(403, 'Username can not be empty');
     }
 
-    if (systemRolesMapping[req.body.userId]) {
+    if (systemRolesMapping.has(req.body.userId)) {
       return res.serverError(403, `User ID can't be a system role id`);
     }
 
@@ -964,7 +965,7 @@ class User {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
-    if (systemRolesMapping[userId]) {
+    if (systemRolesMapping.has(userId)) {
       return res.serverError(403, `User ID can't be a system role id`);
     }
 
@@ -1500,9 +1501,9 @@ class User {
       const r = rolesQ.pop();
 
       // Deal with system roles first, they are easy
-      if (systemRolesMapping[r]) {
+      if (systemRolesMapping.has(r)) {
         allRoles.add(r);
-        systemRolesMapping[r].forEach(allRoles.add, allRoles);
+        systemRolesMapping.get(r).forEach(allRoles.add, allRoles);
         continue;
       }
 
@@ -1532,7 +1533,7 @@ class User {
    */
   static validateRoles (roles) {
     for (const r of roles) {
-      if (!systemRolesMapping[r] && !r.startsWith('role:')) {
+      if (!systemRolesMapping.has(r) && !r.startsWith('role:')) {
         return false;
       }
     }
@@ -1579,7 +1580,7 @@ class User {
 
     // We only look at our direct roles for settings, since those should already be expanded
     for (const r of rolesQ) {
-      if (systemRolesMapping[r]) {
+      if (systemRolesMapping.has(r)) {
         continue;
       }
 
@@ -1618,9 +1619,9 @@ class User {
       const r = rolesQ.pop();
 
       // Deal with system roles first, they are easy
-      if (systemRolesMapping[r]) {
+      if (systemRolesMapping.has(r)) {
         allRoles.add(r);
-        systemRolesMapping[r].forEach(allRoles.add, allRoles);
+        systemRolesMapping.get(r).forEach(allRoles.add, allRoles);
         continue;
       }
 
@@ -1862,10 +1863,14 @@ class User {
   async updateDynamicRoles (vals) {
     if (!User.#dynamicRolesFuncs) { return; }
 
+    // Expressions get a curated copy as `this`, not the raw record, so they
+    // can't read passStore/totpSecret/cont3xt keys
+    const thisView = Object.freeze(Object.fromEntries(searchColumns.map(c => [c, this[c]])));
+
     const newRoles = [];
     for (const [role, func] of User.#dynamicRolesFuncs) {
       try {
-        const result = await func.call(this, vals);
+        const result = await func.call(thisView, vals);
         if (result) {
           newRoles.push(role);
         }
