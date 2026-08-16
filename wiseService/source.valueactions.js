@@ -84,6 +84,12 @@ class ValueActionsSource extends WISESource {
     if (keys.length === 0) { return; }
 
     keys.forEach((key) => {
+      // A nested object means an ini section header, which isn't a value action
+      if (!ArkimeUtil.isString(data[key])) {
+        console.log(this.section, `- WARNING ignoring '${key}', value actions must be key=value lines`);
+        return;
+      }
+
       const obj = {};
       data[key].split(';').forEach((element) => {
         const i = element.indexOf(':');

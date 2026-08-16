@@ -136,6 +136,7 @@ class SimpleSource extends WISESource {
       newCache = new Map();
       if (this.type === 'url') {
         setFunc = (key, value) => {
+          if (!key) { return; }
           if (key.lastIndexOf('http://', 0) === 0) {
             key = key.substring(7);
           }
@@ -144,6 +145,7 @@ class SimpleSource extends WISESource {
         };
       } else {
         setFunc = function (key, value) {
+          if (!key) { return; }
           newCache.set(key, value);
           count++;
         };

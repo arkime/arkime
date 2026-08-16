@@ -45,6 +45,11 @@ class EmergingThreatsSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseCategories (fn) {
+    if (!WISESource.isSafeFile(fn)) {
+      console.log(this.section, `- ERROR - ${fn} isn't a plain file we own, not loading`);
+      return;
+    }
+
     const parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
       if (err) {
         console.log(this.section, "- Couldn't parse", fn, 'csv', err);
@@ -63,6 +68,11 @@ class EmergingThreatsSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseRepData (fn, hashName) {
+    if (!WISESource.isSafeFile(fn)) {
+      console.log(this.section, `- ERROR - ${fn} isn't a plain file we own, not loading`);
+      return;
+    }
+
     const parser = csv.parse({ skip_empty_lines: true }, (err, data) => {
       if (err) {
         console.log(this.section, "- Couldn't parse", fn, 'csv', err);

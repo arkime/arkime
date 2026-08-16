@@ -96,6 +96,17 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4172 Fix Download Entire PCAP failing on sensors behind esProxy; the rootId session search is now allowed through esProxy, and a failed search returns a 500 instead of an unhandled rejection
   - #4203 Fix scrubbing pcap on a session held by a remote node exiting the viewer
   - #4203 Fix a repeated query parameter (order, startTime, stopTime) never answering
+## WISE
+  - #4205 Fix intel files downloaded to /tmp being written through, or loaded from, a symlink or a file owned by another user
+  - #4205 Fix looked up values being able to inject into threatstream api requests, splunk searches, and redis key templates
+  - #4205 Fix threatstream sqlite3 mode failing on an itype name containing a quote
+  - #4205 Fix wiseService exiting on a valueactions or fieldactions file that has a section header in it
+  - #4205 Fix wiseService exiting on a csv url source whose rows are shorter than the key column
+  - #4205 Fix wiseService exiting on unexpected threatstream, threatq or alienvault data; a load that finds nothing now keeps the previous data
+  - #4205 Fix virustotal, opendns and passivetotal never looking a value up again when the service returned no result for it
+  - #4205 Fix isepxgrid returning nothing for the length of its session cache refresh
+  - #4205 Fix a phpipam url containing a quote breaking every right click action in viewer
+  - #4205 Fix the config UI erroring instead of rejecting a section named after a javascript property
 
 6.6.0 2026/07/09
 ## Breaking

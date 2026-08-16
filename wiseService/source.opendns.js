@@ -96,9 +96,9 @@ class OpenDNSSource extends WISESource {
     const sent = this.waiting.slice(); // for error cleanup
     this.waiting.length = 0;
 
-    // On failure invoke and remove all callbacks for this batch so queries
-    // don't hang in processing forever
-    const failBatch = (err) => {
+    // Invoke and remove any callbacks for this batch still outstanding, otherwise
+    // the domain is stuck in processing forever and never looked up again
+    const finishBatch = (err) => {
       for (const domain of sent) {
         const cbs = this.processing.get(domain);
         if (!cbs) { continue; }
@@ -133,7 +133,7 @@ class OpenDNSSource extends WISESource {
           results = JSON.parse(response);
         } catch (e) {
           console.log(this.section, 'Error parsing for request:\n', postData, '\nresponse:\n', response);
-          failBatch('opendns parse error');
+          finishBatch('opendns parse error');
           return;
         }
 
@@ -173,11 +173,14 @@ class OpenDNSSource extends WISESource {
             cb(null, result);
           }
         }
+
+        // Anything opendns didn't return a result for
+        finishBatch(null);
       });
     });
     request.on('error', (err) => {
       console.log(this.section, err);
-      failBatch(err);
+      finishBatch(err);
     });
 
     // post the data
