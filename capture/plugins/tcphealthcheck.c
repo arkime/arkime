@@ -23,6 +23,7 @@ LOCAL void tcp_server(void)
     int server_fd, err;
     struct sockaddr_in server, client;
 
+    memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(tcp_port);
     server.sin_addr.s_addr = htonl(INADDR_ANY);

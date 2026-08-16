@@ -434,6 +434,7 @@ LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value,
     if (pn < 0 || pn >= ARRAY_LEN(file->partNumbers))
         return;
 
+    g_free(file->partNumbers[pn]); // a response can repeat the etag header
     if (*value == '"' && valueLen >= 2)
         file->partNumbers[pn] = g_strndup(value + 1, valueLen - 2);
     else

@@ -55,7 +55,8 @@ LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
     }
 
     arkime_session_add_protocol(session, "mysql");
-    arkime_field_string_add(versionField, session, info->version, info->versionLen, FALSE);
+    if (!arkime_field_string_add(versionField, session, info->version, info->versionLen, FALSE))
+        g_free(info->version);
     info->version = 0;
 
     if (ptr > data + 36) {

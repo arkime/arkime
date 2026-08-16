@@ -108,6 +108,11 @@ LOCAL void scrubspi_add_entry(const char *key, const char *value)
 {
     char spliton[2] = {0, 0};
     spliton[0] = value[0];
+
+    // g_strsplit returns NULL on an empty delimiter
+    if (spliton[0] == 0)
+        CONFIGEXIT("'%s=' has no value, should be '/search pcre/replace literal/', where the '/' can be any char in all three places", key);
+
     char **values = g_strsplit(value + 1, spliton, 0);
 
     if (!values[0] || !values[1])
