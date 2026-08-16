@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 167;
+use Test::More tests => 171;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -283,6 +283,15 @@ eq_or_diff($wise, from_json('[{"field":"tags","len":13,"value":"splunk-botnet"},
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/splunktest/1.2.3.4")->content;
 eq_or_diff($wise, '[]', "splunk miss");
 
+# A key with whitespace could add search terms when the query doesn't quote
+# %%SEARCHTERM%%, so it must never be searched for. Without this the mini splunk
+# sees both ips in the search and returns both rows.
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/splunktest/66.66.66.66%2066.66.66.67")->content;
+eq_or_diff($wise, '[]', "splunk key with space not searched");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/splunktest/66.66.66.66%22%20OR%20ip%3D%2266.66.66.67")->content;
+eq_or_diff($wise, '[]', "splunk key with quote and spaces not searched");
+
 # Databricks source (periodic full-table query, cached at startup, against mini-wise-source.js)
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/databrickstest/77.77.77.77")->content;
 $wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
@@ -469,6 +478,13 @@ eq_or_diff($wise, '{"success":false,"text":"Missing config"}');
 
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":true,"text":"Would save, but regressionTests"}');
+
+# save config - section type that is an Object property must be unknown, not a 500
+$wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({config => {"__proto__:test" => {"type" => "ip"}}, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Unknown section type __proto__"}');
+
+$wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({config => {"constructor:test" => {"type" => "ip"}}, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":false,"text":"Unknown section type constructor"}');
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/source/file:ip/get")->content;
 is($wise, '{"success":true,"raw":"10.0.0.3;tags=wisebyip1;irc.channel=wisebyip1channel;email.x-priority=999;asset=wtest1\\n192.168.177.160;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21;asset=wtest2\\n128.128.128.0/24;tags=wisebyip2;mysql.ver=wisebyip2mysqlversion;test.ip=21.21.21.21;asset=wtest3\\nfe80::211:25ff:fe82:95b5;tags=wisebyip3;mysql.ver=wisebyip3mysqlversion;test.ip=22.22.22.22;asset=wtest4\\n"}');

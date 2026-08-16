@@ -164,8 +164,18 @@ class SplunkSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   async sendResult (key, cb) {
-    const sanitizedKey = key.replace(/[\\"|[\]()]/g, '\\$&');
-    const query = this.query.replace('%%SEARCHTERM%%', sanitizedKey);
+    // Keys are ips/domains/hashes/emails/urls, whitespace or control characters
+    // can only be an attempt to add search terms when the query doesn't quote
+    // %%SEARCHTERM%%, so never search for them
+    if (key === '' || /[\s\u0000-\u001f\u007f]/.test(key)) {
+      return cb(null, undefined);
+    }
+
+    // Backticks expand macros in SPL
+    const sanitizedKey = key.replace(/[\\"|[\]()`]/g, '\\$&');
+    // Replace with a function, otherwise a $' or $& in the key is treated as a
+    // replacement pattern and copies unescaped parts of the query into itself
+    const query = this.query.replace('%%SEARCHTERM%%', () => sanitizedKey);
 
     try {
       const results = await this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });

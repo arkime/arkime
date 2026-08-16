@@ -81,19 +81,25 @@ class VirusTotalSource extends WISESource {
 
     this.waiting = [];
 
+    // Answer and remove anything from this batch still outstanding, otherwise
+    // the md5 is stuck in processing forever and never looked up again
+    const finishBatch = () => {
+      sent.forEach((md5) => {
+        const cb = this.processing.get(md5);
+        if (!cb) {
+          return;
+        }
+        this.processing.delete(md5);
+        cb(undefined, undefined);
+      });
+    };
+
     axios(options)
       .then((response) => {
         let results = response.data;
         if (response.status !== 200) {
           console.log(this.section, 'Error for request:\n', options, '\n', '\nresults:\n', results);
-          sent.forEach((md5) => {
-            const cb = this.processing.get(md5);
-            if (!cb) {
-              return;
-            }
-            this.processing.delete(md5);
-            cb(undefined, undefined);
-          });
+          finishBatch();
           return;
         }
 
@@ -129,17 +135,12 @@ class VirusTotalSource extends WISESource {
 
           cb(null, wiseResult);
         });
+
+        // Anything virustotal didn't return a result for
+        finishBatch();
       }).catch((err) => {
         console.log(this.section, err);
-        // Invoke and remove this batch's callbacks so queries don't hang
-        sent.forEach((md5) => {
-          const cb = this.processing.get(md5);
-          if (!cb) {
-            return;
-          }
-          this.processing.delete(md5);
-          cb(undefined, undefined);
-        });
+        finishBatch();
       });
   };
 

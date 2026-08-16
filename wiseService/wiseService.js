@@ -1548,7 +1548,7 @@ if (internals.webconfig) {
   app.get('/config/get', [isWiseUser, ArkimeUtil.noCacheJson], (req, res) => {
     const config = ArkimeConfig.getSections()
       .sort()
-      .filter(key => internals.configDefs[key.split(':')[0]])
+      .filter(key => Object.hasOwn(internals.configDefs, key.split(':')[0]))
       .reduce((obj, key) => {
         // Deep Copy
         obj[key] = JSON.parse(JSON.stringify(ArkimeConfig.getSection(key)));
@@ -1590,7 +1590,8 @@ if (internals.webconfig) {
 
     for (const section in config) {
       const sectionType = section.split(':')[0];
-      const configDef = internals.configDefs[sectionType];
+      // hasOwn so a section named __proto__ doesn't find Object.prototype
+      const configDef = Object.hasOwn(internals.configDefs, sectionType) ? internals.configDefs[sectionType] : undefined;
       if (configDef === undefined) {
         return res.send({ success: false, text: `Unknown section type ${sectionType}` });
       }

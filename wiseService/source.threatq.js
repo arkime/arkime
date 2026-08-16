@@ -10,6 +10,7 @@
 const fs = require('fs');
 const unzipper = require('unzipper');
 const WISESource = require('./wiseSource.js');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class ThreatQSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -61,6 +62,11 @@ class ThreatQSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseFile () {
+    if (!WISESource.isSafeFile('/tmp/threatquotient.zip')) {
+      console.log(this.section, "- ERROR - /tmp/threatquotient.zip isn't a plain file we own, not loading");
+      return;
+    }
+
     // Build into fresh maps and swap at the end so a failed load keeps prior data
     const ips = new Map();
     const domains = new Map();
@@ -91,16 +97,26 @@ class ThreatQSource extends WISESource {
             console.log(this.section, '- Error parsing', err);
             return;
           }
+          // An entry with no indicators in it, like a manifest, isn't a failure
+          if (!Array.isArray(json)) {
+            console.log(this.section, '- Skipping', entry.path, 'no array');
+            return;
+          }
+
           json.forEach((item) => {
+            if (!ArkimeUtil.isString(item?.type) || !ArkimeUtil.isString(item.indicator)) {
+              return;
+            }
+
             const args = [this.idField, '' + item.id, this.typeField, item.type];
 
-            if (item.source) {
+            if (Array.isArray(item.source)) {
               item.source.forEach((str) => {
                 args.push(this.sourceField, str);
               });
             }
 
-            if (item.campaign) {
+            if (Array.isArray(item.campaign)) {
               item.campaign.forEach((str) => {
                 args.push(this.campaignField, str);
               });
@@ -122,7 +138,8 @@ class ThreatQSource extends WISESource {
         });
       })
       .on('close', () => {
-        if (bad) {
+        // Nothing loaded means every entry was skipped, don't wipe what we have
+        if (bad || count === 0) {
           console.log(this.section, '- Load failed, keeping previous data');
           return;
         }

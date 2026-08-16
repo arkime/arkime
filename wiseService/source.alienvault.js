@@ -45,13 +45,19 @@ class AlienVaultSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   parseFile () {
+    if (!WISESource.isSafeFile('/tmp/alienvault.data')) {
+      console.log(this.section, "- ERROR - /tmp/alienvault.data isn't a plain file we own, not loading");
+      return;
+    }
+
     const parser = csv.parse({ delimiter: '#', skip_empty_lines: true }, (err, data) => {
       if (err) {
         console.log(this.section, "- Couldn't parse csv", err);
         return;
       }
+      // Build into a fresh map and swap at the end so a failed load keeps prior data
+      const ips = new Map();
       let count = 0;
-      this.ips.clear();
       for (let i = 0; i < data.length; i++) {
         if (data[i].length < 8) {
           continue;
@@ -63,12 +69,15 @@ class AlienVaultSource extends WISESource {
           this.threatlevelField, data[i][2],
           this.activityField, data[i][3]
         );
-        this.ips.set(data[i][0], encoded);
+        ips.set(data[i][0], encoded);
         count++;
       }
+      this.ips = ips;
       console.log(this.section, '- Done Loading', count, 'elements');
     });
-    fs.createReadStream('/tmp/alienvault.data').pipe(parser);
+    fs.createReadStream('/tmp/alienvault.data').on('error', (err) => {
+      console.log(this.section, "- Couldn't read /tmp/alienvault.data", err);
+    }).pipe(parser);
   }
 
   // ----------------------------------------------------------------------------
@@ -78,7 +87,7 @@ class AlienVaultSource extends WISESource {
     let revision = -1;
 
     // If we already have the rev and data files, find out what revision the data file is
-    if (fs.existsSync('/tmp/alienvault.rev') && fs.existsSync('/tmp/alienvault.data')) {
+    if (WISESource.isSafeFile('/tmp/alienvault.rev') && WISESource.isSafeFile('/tmp/alienvault.data')) {
       revision = +fs.readFileSync('/tmp/alienvault.rev').toString();
     }
 

@@ -58,6 +58,20 @@ class PassiveTotalSource extends WISESource {
     const sent = this.waiting.slice();
     this.waiting.length = 0;
 
+    // Invoke and remove any callbacks for this batch still outstanding, otherwise
+    // the key is stuck in processing forever and never looked up again
+    const finishBatch = (err) => {
+      for (const key of sent) {
+        const cbs = this.processing.get(key);
+        if (!cbs) { continue; }
+        this.processing.delete(key);
+        let cb;
+        while ((cb = cbs.shift())) {
+          cb(err);
+        }
+      }
+    };
+
     const options = {
       url: 'https://api.passivetotal.org/v2/enrichment/bulk',
       data: {
@@ -101,19 +115,12 @@ class PassiveTotalSource extends WISESource {
             cb(null, wiseResult);
           }
         }
+
+        // Anything passivetotal didn't return a result for
+        finishBatch(null);
       }).catch((err) => {
         console.log(this.section, err);
-        // Invoke and remove all callbacks for this batch so queries don't
-        // hang in processing forever
-        for (const key of sent) {
-          const cbs = this.processing.get(key);
-          if (!cbs) { continue; }
-          this.processing.delete(key);
-          let cb;
-          while ((cb = cbs.shift())) {
-            cb(err);
-          }
-        }
+        finishBatch(err);
       });
   };
 

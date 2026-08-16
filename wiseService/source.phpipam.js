@@ -122,30 +122,32 @@ class PHPIPAMSource extends WISESource {
     // ---- Value actions (right-click links into phpIPAM UI) -----------------
     // Use func (not url) so the viewer puts them in menuItems and opens
     // them as target="_blank" links instead of fetching inline.
-    const searchUrl = this.searchUrlOverride || `${this.url}/tools/search/`;
+    // JSON.stringify so a quote in the url can't break the js the viewer builds
+    // from this with new Function(), which would take out ALL value actions
+    const searchUrl = JSON.stringify(this.searchUrlOverride || `${this.url}/tools/search/`);
     api.addValueAction(`${section}_search_ip`, {
       name: 'phpIPAM: Search IP',
-      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search IP', value: value };`,
+      func: `return { url: ${searchUrl} + encodeURIComponent(value), name: 'phpIPAM: Search IP', value: value };`,
       category: 'ip'
     });
     api.addValueAction(`${section}_search_hostname`, {
       name: 'phpIPAM: Search Hostname',
-      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search Hostname', value: value };`,
+      func: `return { url: ${searchUrl} + encodeURIComponent(value), name: 'phpIPAM: Search Hostname', value: value };`,
       fields: 'ipam.src.hostname,ipam.dst.hostname'
     });
     api.addValueAction(`${section}_search_subnet`, {
       name: 'phpIPAM: Search Subnet',
-      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search Subnet', value: value };`,
+      func: `return { url: ${searchUrl} + encodeURIComponent(value), name: 'phpIPAM: Search Subnet', value: value };`,
       fields: 'ipam.src.subnet,ipam.dst.subnet'
     });
     api.addValueAction(`${section}_search_vlan`, {
       name: 'phpIPAM: Search VLAN',
-      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search VLAN', value: value };`,
+      func: `return { url: ${searchUrl} + encodeURIComponent(value), name: 'phpIPAM: Search VLAN', value: value };`,
       fields: 'ipam.src.vlan,ipam.dst.vlan'
     });
     api.addValueAction(`${section}_search_vrf`, {
       name: 'phpIPAM: Search VRF',
-      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search VRF', value: value };`,
+      func: `return { url: ${searchUrl} + encodeURIComponent(value), name: 'phpIPAM: Search VRF', value: value };`,
       fields: 'ipam.src.vrf,ipam.dst.vrf'
     });
 
