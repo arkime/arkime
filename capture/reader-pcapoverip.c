@@ -142,7 +142,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
         if (unlikely(caplen != origlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
             // Don't exit, a remote peer shouldn't be able to kill the capture process
             if (unlikely(caplen > ARKIME_PACKET_MAX_LEN)) {
-                // Packet too large to ever fit in the buffer, can't skip it, close connection
+                // Packet too large to ever fit in pktlen, can't skip it, close connection
                 LOG("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u, closing connection\n"
                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                     caplen, origlen);

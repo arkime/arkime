@@ -772,6 +772,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             data += need;
             len -= need;
             readerState.blockSize -= need;
+            readerState.tmpBufferLen = 0; // header fully buffered, reset before any skip below
 
             // The block holds (blockSize - 4) bytes of 32-bit-padded packet data
             // (blockSize already had 8 subtracted, subtract the trailing block length).
@@ -791,7 +792,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             // 0-3 alignment padding bytes are not treated as captured packet data.
             const uint32_t paddedLen = readerState.blockSize - 4;
             readerState.pktlen = MIN(origLen, paddedLen);
-            if (unlikely(readerState.pktlen > 0xffff)) {
+            if (unlikely(readerState.pktlen > ARKIME_PACKET_MAX_LEN)) {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
                 continue;
             }
@@ -805,7 +806,6 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             readerState.packet->ts.tv_sec = 0;
             readerState.packet->ts.tv_usec = 0;
 
-            readerState.tmpBufferLen = 0;
             readerState.state = ARKIME_SCHEME_NG_PACKET;
             continue;
         }
@@ -822,6 +822,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             data += need;
             len -= need;
             readerState.blockSize -= need;
+            readerState.tmpBufferLen = 0; // header fully buffered, reset before any skip below
 
             memcpy(&readerState.pktlen, readerState.tmpBuffer + 12, sizeof(readerState.pktlen));
             if (readerState.needSwap) {
@@ -830,7 +831,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             // caplen must fit in the remaining block (data + options + 4 byte trailing length);
             // it is an independent field in EPB so a bad value would underflow blockSize
-            if (unlikely(readerState.pktlen > 0xffff || readerState.pktlen > (uint32_t)(readerState.blockSize - 4))) {
+            if (unlikely(readerState.pktlen > ARKIME_PACKET_MAX_LEN || readerState.pktlen > (uint32_t)(readerState.blockSize - 4))) {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
                 continue;
             }
@@ -854,7 +855,6 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             readerState.packet->ts.tv_sec = ts / readerState.tsresol;
             readerState.packet->ts.tv_usec = (ts % readerState.tsresol) * 1000000 / readerState.tsresol;
 
-            readerState.tmpBufferLen = 0;
             readerState.state = ARKIME_SCHEME_NG_PACKET;
             continue;
         }
@@ -1040,7 +1040,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             readerState.packet->readerPos = readerState.readerPos;
             readerState.startPos += readerState.pktlen + 16;
 
-            if (unlikely(readerState.pktlen > 0xffff)) {
+            if (unlikely(readerState.pktlen > ARKIME_PACKET_MAX_LEN)) {
                 readerState.state = ARKIME_SCHEME_PACKET_SKIP;
             } else {
                 readerState.packet->pktlen = readerState.pktlen;
@@ -1200,11 +1200,14 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
 
     if (opsNum > 0) {
         ops[opsNum] = 0;
-        const char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
+        char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
         if (error) {
+            // ops_parse allocates the ops array and copies any ops parsed before the error
+            arkime_field_ops_free(&actions->ops);
             ARKIME_TYPE_FREE(ArkimeSchemeAction_t, actions);
             arkime_command_respond(cc, error, -1);
             arkime_command_respond(cc, "\n", -1);
+            g_free(error);
             return 1;
         }
     }

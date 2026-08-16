@@ -227,7 +227,8 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         switch (t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
-            arkime_field_string_add_lower(hostField, session, (char *)valueStr, l);
+            if (valueStr)
+                arkime_field_string_add_lower(hostField, session, (char *)valueStr, l);
             break;
         case 53: // Message Type
             if (l == 1) {
@@ -276,7 +277,8 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
                 BSB_IMPORT_skip(bsb, l - 3);
             else {
                 BSB_IMPORT_ptr(bsb, valueStr, l - 3);
-                arkime_field_string_add_lower(hostField, session, (char *)valueStr, l - 3);
+                if (valueStr)
+                    arkime_field_string_add_lower(hostField, session, (char *)valueStr, l - 3);
             }
             break;
 

@@ -690,7 +690,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     }
 
     // Packet is too large, hacker
-    if (payloadLen + packet->payloadOffset >= ARKIME_PACKET_MAX_LEN) {
+    if (payloadLen + packet->payloadOffset > ARKIME_PACKET_MAX_LEN) {
         droppedFrags++;
         arkime_packet_frags_free(frags);
         return FALSE;
@@ -1385,6 +1385,11 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
+
+    // Make sure the offset of the ethernet header fits in the 11 bit etherOffset field
+    if ((uint8_t *)data - packet->pkt >= 2048)
+        return ARKIME_PACKET_CORRUPT;
+
     packet->outerEtherOffset = packet->etherOffset; // we need to keep track of the current and the previous mac offset, we don't know if this is the last etherframe here
     packet->etherOffset = (uint8_t *)data - packet->pkt;
 #ifdef DEBUG_PACKET

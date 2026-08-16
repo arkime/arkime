@@ -66,6 +66,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4178 Add tcp.synValidated and tcp.synAckValidated fields recording whether each side of the TCP handshake was sequence-validated, and tcp.srcISNCnt counting distinct client ISNs seen (thanks @jeffreygolden)
   - #4187 Fix crash when redefining the type of a builtin field via wise or custom-fields
   - #4188 Add wiseRequestTimeout setting, default 30 seconds, so a stuck wiseService doesn't delay capture shutdown for minutes
+  - #4207 Fix pcap-over-IP counting a 65536 byte packet as corrupt instead of reporting it as too large
+  - #4207 Fix snapLen allowing 65536, one more than capture can represent, which recorded a max size packet as zero length
+  - #4207 Fix tunneled ethernet frames more than 2048 bytes into a packet recording the wrong src/dst MACs
+  - #4207 Fix the add-file and add-dir commands leaking memory, and possibly crashing, when given a bad --op
+  - #4207 Fix a memory leak writing pcap to S3 when the endpoint repeats an ETag header
 ## Cont3xt/Viewer
   - #4190 Cont3xt URLHaus and MalwareBazaar integrations now require an API key (free at https://auth.abuse.ch/)
   - #4190 Fix Cont3xt URLHaus and MalwareBazaar rendering an empty card by adding their missing card fields (thanks @m-jingu)

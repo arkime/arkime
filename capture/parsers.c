@@ -35,6 +35,7 @@ typedef struct {
         ArkimeParsersNamedFunc2 cb2;
     };
     void *cbuw;
+    int   isCb2;
 } ArkimeNamedFunc_t;
 
 typedef struct {
@@ -936,10 +937,11 @@ gboolean arkime_parsers_ntlm_decode_base64(ArkimeSession_t *session,
     if (b64len < 11 || memcmp(b64, "TlRMTVNTUA", 10) != 0)
         return FALSE;
 
-    if (b64len > 16384)
-        b64len = 16384;
+#define NTLM_MAX_B64 16384
+    if (b64len > NTLM_MAX_B64)
+        b64len = NTLM_MAX_B64;
 
-    guchar decoded[12288];
+    guchar decoded[(NTLM_MAX_B64 / 4) * 3 + 3];
     gint state = 0;
     guint save = 0;
     gsize out_len = g_base64_decode_step(b64, b64len, decoded, &state, &save);
@@ -1769,6 +1771,7 @@ uint32_t arkime_parsers_add_named_func2(const char *name, ArkimeParsersNamedFunc
     ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
     funcInfo->cb2 = func;
     funcInfo->cbuw = cbuw;
+    funcInfo->isCb2 = 1;
     g_ptr_array_add(info->funcs, funcInfo);
     return info->id;
 }
@@ -1780,7 +1783,7 @@ void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const
     ArkimeNamedInfo_t *info = namedFuncsArr[id];
     for (int i = 0; i < (int)info->funcs->len; i++) {
         ArkimeNamedFunc_t *funcInfo = g_ptr_array_index(info->funcs, i);
-        if (funcInfo->cbuw) {
+        if (funcInfo->isCb2) {
             funcInfo->cb2(session, data, len, uw, funcInfo->cbuw);
         } else {
             funcInfo->cb(session, data, len, uw);
