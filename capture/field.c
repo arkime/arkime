@@ -1883,6 +1883,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
         case ARKIME_FIELD_SPECIAL_CLOSE_NOW:
         case ARKIME_FIELD_SPECIAL_FLIP_SRC_DST:
             op->strLenOrInt = 1;
+            op->str = 0; // ops array isn't zeroed, arkime_field_ops_free frees str
             break;
         default:
             LOG("WARNING - Unknown special field pos %d", fieldPos);

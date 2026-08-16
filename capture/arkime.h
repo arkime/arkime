@@ -63,7 +63,8 @@
 
 #define ARKIME_V6_TO_V4(_addr) (((uint32_t *)(_addr).s6_addr)[3])
 
-#define ARKIME_PACKET_MAX_LEN 0x10000
+// Limited by ArkimePacket_t.pktlen being a uint16_t
+#define ARKIME_PACKET_MAX_LEN 0xffff
 
 #define ARKIME_ETHERTYPE_ETHER   0
 // If an ethertype is unknown this ethertype will be called

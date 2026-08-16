@@ -426,7 +426,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
                 h->caplen, h->len);
     }
 
-    if (unlikely(h->caplen > 0xffff)) {
+    if (unlikely(h->caplen > ARKIME_PACKET_MAX_LEN)) {
         return;
     }
 
