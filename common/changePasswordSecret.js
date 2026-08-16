@@ -64,12 +64,21 @@ function promptHidden (label) {
 // ----------------------------------------------------------------------------
 // passStore crypto, matching Auth.store2ha1 / Auth.ha12store:
 //   aes-256-cbc, key = sha256(secret), stored as "<iv hex>.<encrypted hex>"
+// The stored value is always an ha1, an md5 hex digest from Auth.pass2ha1
+const ha1Regex = /^[0-9a-f]{32}$/;
+
 function decryptPassStore (passStore, key256) {
   const parts = passStore.split('.');
   if (parts.length !== 2) { throw new Error('unsupported passStore format'); }
   const c = cryptoLib.createDecipheriv('aes-256-cbc', key256, Buffer.from(parts[0], 'hex'));
   let d = c.update(parts[1], 'hex', 'binary');
   d += c.final('binary');
+
+  // aes-256-cbc isn't authenticated, so a wrong key is only caught by the
+  // padding check, which random plaintext passes about 1 time in 256. Without
+  // this the user would be re-encrypted from garbage and their password lost.
+  if (!ha1Regex.test(d)) { throw new Error('decrypted passStore is not an ha1'); }
+
   return d;
 }
 
