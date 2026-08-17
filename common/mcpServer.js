@@ -312,9 +312,16 @@ class MCPServer {
   static #ips;
 
   /**
-   * Optional source ip allow list, mcpAllowedIps. Empty means allow everything,
-   * the gateway presents no client cert so ip is the only network level check
-   * available to us.
+   * Source ip allow list, mcpAllowedIps. The gateway presents no client cert so
+   * ip is the only network level check available to us.
+   *
+   * When it isn't set and any header mode is in use, default to loopback only.
+   * A username header is only worth what the proxy that set it is worth, and
+   * /mcp is mounted before Auth.app() so the userAuthIps loopback default that
+   * protects the rest of the site (see Auth.initialize) never applies here.
+   * Without this a header mode /mcp would accept a spoofed username from
+   * anywhere the port is reachable, while the web ui on the same port would not.
+   * Any other mode, or an explicit list, is used as given.
    */
   static #checkIps (req) {
     if (MCPServer.#ips === undefined) {
@@ -331,6 +338,11 @@ class MCPServer {
             MCPServer.#ips.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
           }
         }
+      } else if (ArkimeConfig.getArray('mcpAuthMode', 'header').some(mode => mode.startsWith('header'))) {
+        MCPServer.#ips = new iptrie.IPTrie();
+        MCPServer.#ips.add('::ffff:127.0.0.0', 96 + 8, 1);
+        MCPServer.#ips.add('::1', 128, 1);
+        console.log('MCP: mcpAllowedIps is not set and mcpAuthMode includes header, only allowing loopback. Set mcpAllowedIps to the address of the proxy to allow it.');
       }
     }
 
@@ -341,7 +353,12 @@ class MCPServer {
     const peer = req.socket?.remoteAddress;
     if (peer === undefined) { return false; }
     const ip = peer.includes(':') ? peer : `::ffff:${peer}`;
-    return !!MCPServer.#ips.find(ip);
+    const allowed = !!MCPServer.#ips.find(ip);
+    // debug only, an unauthenticated peer can trigger this at will
+    if (!allowed && ArkimeConfig.debug > 0) {
+      console.log('MCP: blocked by mcpAllowedIps', ArkimeUtil.sanitizeStr(ip));
+    }
+    return allowed;
   }
 
   // ----------------------------------------------------------------------------
