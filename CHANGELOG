@@ -76,6 +76,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4190 Fix Cont3xt URLHaus and MalwareBazaar rendering an empty card by adding their missing card fields (thanks @m-jingu)
   - #4134 Add an MCP server at POST /mcp for viewer and cont3xt, off by default, enable with mcpEnabled.
   - #4134 Add mcpUser role, required per user on top of the service role to use /mcp; superAdmin includes it, arkimeAdmin does not
+  - #4208 /mcp using a header auth mode now only allows localhost until mcpAllowedIps is set, the same as userAuthIps does for the rest of the site
 ## db.pl
   - #4127 Add reindex-sessions2 command to reindex sessions2 indices into sessions3, renaming flat fields to the ECS nested layout
   - #4134 Add db.pl users-update command to bulk add/remove roles and set/unset fields on users matching a userId glob,
