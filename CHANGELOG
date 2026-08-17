@@ -82,6 +82,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           eg db.pl <host:port> users-update '*' --addRole mcpUser --dryrun
   - #4162 Add initorupgrade/initorupgradenoprompt command to init a fresh cluster or upgrade an existing one,
           whichever applies, pair with --ifneeded to no-op when already current
+  - #4208 Fix rm and mv acting on more than the named pcap file, a name with a wildcard or a space could remove the wrong files, and only the first 10 matches were ever handled
+  - #4208 Fix mv failing on pcap filenames that contain a quote or a backslash
+  - #4208 Fix expire deleting shrunk daily session indices a day early
+  - #4208 Fix expire --segments not also raising the --segmentsmin default, which force merged indices that didn't need it
+  - #4208 Fix import and restore reporting success when OpenSearch/Elasticsearch had rejected every document
+  - #4208 Fix restore ignoring the cont3xt indices that backup saves
+  - #4208 Fix add-missing and sync-files adding another node's files when a node name contains a '.', or exiting when it contains a '['
+  - #4208 Fix the es-adduser and es-passwd commands showing the password as it is typed
+  - #4208 Fix upgrade only checking the first 1000 capture nodes are stopped, and disable-users only looking at the first 1000 users
 ## Cont3xt
   - #4204 Fix cont3xt exiting when asked for an integration named after a built-in javascript property
   - #4204 Fix cont3xt exiting on every link group fetch after invalid settings were saved; general and integration settings are now validated and report a real save failure
