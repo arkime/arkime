@@ -328,6 +328,21 @@ sub waitForRE
         print "$help\n";
     }
 }
+################################################################################
+# Read a password without echoing it, making sure echo is turned back on even
+# when we die while reading.
+sub waitForPassword
+{
+    my ($help) = @_;
+
+    system ("stty -echo 2> /dev/null");
+    my $password = eval { waitForRE(qr/^.{6,}$/, $help) };
+    my $error = $@;
+    system ("stty echo 2> /dev/null");
+    print "\n";
+    die $error if ($error);
+    return $password;
+}
 
 ################################################################################
 sub esIndexExists
@@ -539,6 +554,37 @@ sub esBulkSessions2
         }
     }
     return $errors;
+}
+################################################################################
+# Send a _bulk NDJSON body and return the number of failed items.  _bulk returns
+# a 200 even when every item was rejected, so the http status isn't enough.
+sub esBulk
+{
+    my ($body, $what) = @_;
+
+    my $json = esPost("/_bulk", $body);
+    return 0 if (!defined $json || !$json->{errors});
+
+    my $errors = 0;
+    foreach my $item (@{$json->{items}}) {
+        my $action = (values %{$item})[0];
+        next if (($action->{status} // 200) < 300);
+        $errors++;
+        logmsg "ERROR - $what: " . to_json($action->{error} // {}) . "\n" if ($errors <= 10);
+    }
+
+    logmsg "ERROR - $what: $errors of " . scalar(@{$json->{items}}) . " items failed\n" if ($errors > 0);
+    return $errors;
+}
+################################################################################
+# Look up files by exact name.  files.name is a keyword so a term query is an
+# exact match, unlike q=name: which treats the name as a lucene query.
+sub esFilesByName
+{
+    my ($name) = @_;
+
+    my $results = esPost("/${PREFIX}files/_search", to_json({"size" => 10000, "query" => {"term" => {"name" => $name}}}), 0);
+    return $results->{hits}->{hits};
 }
 ################################################################################
 sub esAlias
@@ -7955,14 +8001,17 @@ my($index) = @_;
   $t[5] = int (substr($index, 0, 2));
   $t[5] += 100 if ($t[5] < 50);
 
-  if ($index =~ /m/) {
+  # Only look at the leading date, otherwise a suffix like -shrink makes a
+  # daily index (250101-shrink) look hourly because of the 'h' in shrink
+  if ($index =~ /^\d\dm\d\d/) {
       $t[2] = 23;
       $t[3] = 28;
       $t[4] = int(substr($index, 3, 2)) - 1;
-  } elsif ($index =~ /w/) {
+  } elsif ($index =~ /^\d\dw\d\d/) {
       $t[2] = 23;
-      $t[3] = int(substr($index, 3, 2)) * 7 + 3;
-  } elsif ($index =~ /h/) {
+      $t[3] = int(substr($index, 3, 2)) * 7 + 3; # day of january, mktime normalizes
+      $t[4] = 0;
+  } elsif ($index =~ /^\d\d\d\d\d\dh\d\d/) {
       $t[4] = int(substr($index, 2, 2)) - 1;
       $t[3] = int(substr($index, 4, 2));
       $t[2] = int(substr($index, 7, 2));
@@ -8050,16 +8099,18 @@ sub dbCheckForActivity {
 my ($prefix) = @_;
 
     logmsg "This upgrade requires all capture nodes to be stopped.  Checking\n";
-    my $json1 = esGet("/${prefix}stats/_search?size=1000&rest_total_hits_as_int=true");
+    my $json1 = esGet("/${prefix}stats/_search?size=10000&rest_total_hits_as_int=true");
     sleep(6);
-    my $json2 = esGet("/${prefix}stats/_search?size=1000&rest_total_hits_as_int=true");
+    my $json2 = esGet("/${prefix}stats/_search?size=10000&rest_total_hits_as_int=true");
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
+    logmsg "WARNING - more than 10000 nodes, only the first 10000 were checked\n" if ($json1->{hits}->{total} > 10000);
 
     my @hits1 = sort {$a->{_source}->{nodeName} cmp $b->{_source}->{nodeName}} @{$json1->{hits}->{hits}};
     my @hits2 = sort {$a->{_source}->{nodeName} cmp $b->{_source}->{nodeName}} @{$json2->{hits}->{hits}};
 
-    for (my $i = 0; $i < $json1->{hits}->{total}; $i++) {
+    # Bound by what was actually returned, hits.total can be larger than size
+    for (my $i = 0; $i < @hits1 && $i < @hits2; $i++) {
         if ($hits1[$i]->{_source}->{nodeName} ne $hits2[$i]->{_source}->{nodeName}) {
             die "Capture node '" . $hits1[$i]->{_source}->{nodeName} . "' or '" . $hits2[$i]->{_source}->{nodeName} . "' still active";
         }
@@ -8183,7 +8234,8 @@ sub parseArgs {
     for (;$pos <= $#ARGV; $pos++) {
         if ($ARGV[$pos] eq "--shards") {
             $pos++;
-            $SHARDS = $ARGV[$pos];
+            die "--shards must be a positive number" if (!defined $ARGV[$pos] || $ARGV[$pos] !~ /^\d+$/ || int($ARGV[$pos]) < 1);
+            $SHARDS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--replicas") {
             $pos++;
             $REPLICAS = int($ARGV[$pos]);
@@ -8253,6 +8305,7 @@ sub parseArgs {
             $DESCRIPTION = $ARGV[$pos];
         } elsif ($ARGV[$pos] eq "--compression") {
             $pos++;
+            die "--compression must be a codec name" if (!defined $ARGV[$pos] || $ARGV[$pos] !~ /^[a-zA-Z0-9_]+$/);
             $COMPRESSION = $ARGV[$pos];
         } elsif ($ARGV[$pos] eq "--addRole") {
             $pos++;
@@ -8371,9 +8424,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
         $USERPASS = $ARGV[1];
         shift @ARGV;
         if ($USERPASS !~ ':') {
-            system ("stty -echo 2> /dev/null");
-            $USERPASS .= ':' . waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $USERPASS:");
-            system ("stty echo 2> /dev/null");
+            $USERPASS .= ':' . waitForPassword("Enter 6+ character OpenSearch/Elasticsearch password for $USERPASS:");
         }
     } else {
         showHelp("Unknown global option $ARGV[0]")
@@ -8465,9 +8516,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $data =~ s/, "version": \d+, "version_type": "\w+"//g;
     # Remove type from older backups
     $data =~ s/, "_type": .*, "_id":/, "_id":/g;
-    esPost("/_bulk", $data);
+    my $errors = esBulk($data, "import of $ARGV[2]");
     close($fh);
-    exit 0;
+    exit ($errors ? 1 : 0);
 } elsif ($ARGV[1] =~ /^export$/) {
     my $index = $ARGV[2];
     my $data = esScroll("$PREFIX$index", '{"version": true}');
@@ -8571,8 +8622,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|hourly[23468]|hourly12|daily|weekly|monthly)$/);
 
-    $SEGMENTSMIN = $SEGMENTS if ($SEGMENTSMIN == -1);
-
     # First handle sessions expire
     my $indicesa = esGet("/_cat/indices/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*?format=json", 1);
     my %indices = map { $_->{index} => $_ } @{$indicesa};
@@ -8587,6 +8636,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my @startTime = kind2time($ARGV[2], int($ARGV[3]));
 
     parseArgs(4);
+
+    # Must be after parseArgs so --segments has been seen
+    $SEGMENTSMIN = $SEGMENTS if ($SEGMENTSMIN == -1);
 
     my $startTime = mktimegm(@startTime);
     my @warmTime = kind2time($WARMKIND, $WARMAFTER);
@@ -8625,17 +8677,23 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     # Find all the shards that have too many segments and increment the OPTIMIZEIT count or not warm
     my $shards = esGet("/_cat/shards/${OLDPREFIX}sessions2*,${PREFIX}sessions3*?h=i,sc&format=json");
     for my $i (@{$shards}) {
+        # Don't autovivify indices we already removed above, like the current one
+        next if (!exists $indices{$i->{i}});
+
+        # Missing means the index was never marked, don't warn about it
+        my $molochtype = $settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} // "";
+
         # Not expiring and too many segments
         if (exists $indices{$i->{i}}->{OPTIMIZEIT} && defined $i->{sc} && int($i->{sc}) > $SEGMENTSMIN) {
             # Either not only optimizing warm or make sure we are green warm
             if (!$OPTIMIZEWARM ||
-                ($settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} eq "warm" && $indices{$i->{i}}->{health} eq "green")) {
+                ($molochtype eq "warm" && ($indices{$i->{i}}->{health} // "") eq "green")) {
 
                 $indices{$i->{i}}->{OPTIMIZEIT}++;
             }
         }
 
-        if (exists $indices{$i->{i}}->{WARMIT} && $settings->{$i->{i}}->{settings}->{"index.routing.allocation.require.molochtype"} ne "warm") {
+        if (exists $indices{$i->{i}}->{WARMIT} && $molochtype ne "warm") {
             $indices{$i->{i}}->{WARMIT}++;
         }
     }
@@ -8740,7 +8798,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^(disable-?users)$/) {
     showHelp("Invalid number of <days>") if (!defined $ARGV[2] || $ARGV[2] !~ /^[+-]?\d+$/);
 
-    my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed+AND+-userId:role\\:*");
+    my $users = esGet("/${PREFIX}users/_search?size=10000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed+AND+-userId:role\\:*");
+    my $total = $users->{hits}->{total}->{value} // $users->{hits}->{total};
+    logmsg "WARNING - more than 10000 users matched, only the first 10000 were considered\n" if (defined $total && $total > 10000);
     my $rmcount = 0;
     my $epoch = time();
 
@@ -8973,6 +9033,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^(shrink)$/) {
     parseArgs(5);
     die "Only shrink history, sessions2, and sessions3 indices" if ($ARGV[2] !~ /(sessions2|sessions3|history)/);
+    die "<num> must be a positive number" if ($ARGV[4] !~ /^\d+$/ || int($ARGV[4]) < 1);
 
     logmsg("Moving all shards for ${PREFIX}$ARGV[2] to $ARGV[3]\n");
     my $json = esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"settings\": {\"index.routing.allocation.total_shards_per_node\": null, \"index.routing.allocation.require._name\" : \"$ARGV[3]\", \"index.blocks.write\": true}}");
@@ -9042,7 +9103,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     historyUpdate();
     exit 0;
 } elsif ($ARGV[1] =~ /^es-adduser$/) {
-    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $ARGV[2]:");
+    my $password = waitForPassword("Enter 6+ character OpenSearch/Elasticsearch password for $ARGV[2]:");
     my $json = to_json({
       roles => ["superuser"],
       password => $password});
@@ -9050,7 +9111,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^es-passwd$/) {
     my $user = (@ARGV >= 3) ? $ARGV[2] : "yourself";
-    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $user:");
+    my $password = waitForPassword("Enter 6+ character OpenSearch/Elasticsearch password for $user:");
     my $json = to_json({password => $password});
     if (@ARGV < 3) {
         esPost("/_security/user/_password", $json);
@@ -9213,15 +9274,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
     if ($#ARGV == 3) {
-        (my $fn = $ARGV[2]) =~ s/\//\\\//g;
-        my $results = esGet("/${PREFIX}files/_search?q=name:$fn");
-        die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
+        my $hits = esFilesByName($ARGV[2]);
+        die "Couldn't find '$ARGV[2]' in db\n" if (@{$hits} == 0);
 
-        foreach my $hit (@{$results->{hits}->{hits}}) {
+        foreach my $hit (@{$hits}) {
             my $script = to_json({script => {source => 'ctx._source.name = params.n; ctx._source.locked = 1', params => {n => $ARGV[3]}}});
             esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
         }
-        logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+        logmsg "Moved " . scalar (@{$hits}) . " file(s) in database\n";
     } else {
         if (($ARGV[3] =~ m{/$} ? 1 : 0) != ($ARGV[4] =~ m{/$} ? 1 : 0)) {
             waitFor("YES", "Use trailing / on one argument and not the other?");
@@ -9230,22 +9290,20 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         my $results = esScroll("${PREFIX}files", $query);
         my $len = length($ARGV[3]);
         foreach my $hit (@{$results}) {
-            my $old = $hit->{_source}->{name};
             substr($hit->{_source}->{name}, 0, $len, $ARGV[4]);
-            esPost("/${PREFIX}files/_update/" . $hit->{_id}, qq({"doc": {"name": "$hit->{_source}->{name}", "locked": 1}}), 0);
+            esPost("/${PREFIX}files/_update/" . $hit->{_id}, to_json({doc => {name => $hit->{_source}->{name}, locked => 1}}), 0);
         }
         logmsg "Moved " . scalar (@{$results}) . " file(s) in database\n";
     }
     exit 0;
 } elsif ($ARGV[1] eq "rm") {
-    (my $fn = $ARGV[2]) =~ s/\//\\\//g;
-    my $results = esGet("/${PREFIX}files/_search?q=name:$fn");
-    die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
+    my $hits = esFilesByName($ARGV[2]);
+    die "Couldn't find '$ARGV[2]' in db\n" if (@{$hits} == 0);
 
-    foreach my $hit (@{$results->{hits}->{hits}}) {
+    foreach my $hit (@{$hits}) {
         esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 0);
     }
-    logmsg "Removed " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+    logmsg "Removed " . scalar (@{$hits}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?missing$/) {
     my $results = esGet("/${PREFIX}files/_search?size=10000&q=node:$ARGV[2]");
@@ -9329,7 +9387,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     chop $dir if (substr($dir, -1) eq "/");
     die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
     opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
-    my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
+    my @files = grep { m/^\Q$ARGV[2]\E-/ && -f "$dir/$_" } readdir($dh);
     closedir $dh;
     logmsg "Checking ", scalar @files, " files, this may take a while.\n";
     foreach my $file (@files) {
@@ -9361,7 +9419,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
         opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
         foreach my $node (@nodes) {
-            my @files = grep { m/^$node-(\d+)-(\d+)\.(pcap|arkime)/ && -f "$dir/$_" } readdir($dh);
+            my @files = grep { m/^\Q$node\E-(\d+)-(\d+)\.(pcap|arkime)/ && -f "$dir/$_" } readdir($dh);
             @files = map "$dir/$_", @files;
             push (@localfiles, @files);
             rewinddir($dh);
@@ -9447,10 +9505,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 } elsif ($ARGV[1] =~ /^force-?put-?version$/) {
     die "This command doesn't work anymore, use force-sessions3-update";
 } elsif ($ARGV[1] =~ /^set-?replicas$/) {
+    die "<num> must be a number" if ($ARGV[3] !~ /^\d+$/);
     esPost("/_flush/synced", "", 1);
     esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.number_of_replicas\" : $ARGV[3]}");
     exit 0;
 } elsif ($ARGV[1] =~ /^set-?shards-?per-?node$/) {
+    die "<num> must be a number or null" if ($ARGV[3] !~ /^(\d+|null)$/);
     esPost("/_flush/synced", "", 1);
     esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.routing.allocation.total_shards_per_node\" : $ARGV[3]}");
     exit 0;
@@ -9463,7 +9523,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^allocate-?empty$/) {
-    my $result = esPost("/_cluster/reroute?master_timeout=${ESTIMEOUT}s", "{ \"commands\": [{\"allocate_empty_primary\": {\"index\": \"$ARGV[3]\", \"shard\": \"$ARGV[4]\", \"node\": \"$ARGV[2]\", \"accept_data_loss\": true}}]}");
+    die "<shard> must be a number" if ($ARGV[4] !~ /^\d+$/);
+    my $result = esPost("/_cluster/reroute?master_timeout=${ESTIMEOUT}s", to_json({commands => [{allocate_empty_primary => {index => $ARGV[3], shard => int($ARGV[4]), node => $ARGV[2], accept_data_loss => JSON::true}}]}));
     exit 0;
 } elsif ($ARGV[1] =~ /^unflood-?stage$/) {
     esPut("/${PREFIX}$ARGV[2]/_settings?master_timeout=${ESTIMEOUT}s", "{\"index.blocks.read_only_allow_delete\" : null}");
@@ -9794,7 +9855,14 @@ $policy = qq/{
     $srcCount = esGet("/$src/_count")->{count};
     $dstCount = esGet("/$dst/_count")->{count};
     die "Mismatched counts $srcCount != $dstCount" if ($srcCount != $dstCount);
-    die "Not deleting src since would delete dst too" if ("${dst}*" eq "$src");
+
+    # A wildcard src can also match dst, deleting what we just created
+    foreach my $pattern (split(/,/, $src)) {
+        my $re = quotemeta($pattern);
+        $re =~ s/\\\*/.*/g;
+        $re =~ s/\\\?/./g;
+        die "Not deleting src '$src' since '$pattern' also matches dst '$dst'" if ($dst =~ /^$re$/);
+    }
     esDelete("/$src", 1);
     print "Deleted $src\n";
     exit 0;
@@ -9890,8 +9958,8 @@ $policy = qq/{
             }
         }
 
-        # Clear the scroll context
-        esPost("/_search/scroll", to_json({"scroll_id" => [$scrollId]}), 1) if ($scrollId ne "");
+        # Clear the scroll context, POST would just fetch the next page
+        esDelete("/_search/scroll/$scrollId", 1) if ($scrollId ne "");
 
         esGet("/${dst}/_flush", 1);
         esGet("/${dst}/_refresh", 1);
@@ -10402,12 +10470,16 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables");
+    # backup writes the prefix into the file names, and the cont3xt indices
+    # aren't prefixed, so work with full index names here
+    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables");
+    push(@indices, "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+
     my @filelist = ();
     foreach my $index (@indices) { # list of data, settings, and mappings files
-        push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
-        push(@filelist, "$ARGV[2].${PREFIX}${index}.settings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
-        push(@filelist, "$ARGV[2].${PREFIX}${index}.mappings.json\n") if (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
+        push(@filelist, "$ARGV[2].${index}.json\n") if (-e "$ARGV[2].${index}.json");
+        push(@filelist, "$ARGV[2].${index}.settings.json\n") if (-e "$ARGV[2].${index}.settings.json");
+        push(@filelist, "$ARGV[2].${index}.mappings.json\n") if (-e "$ARGV[2].${index}.mappings.json");
     }
     foreach my $index ("sessions3_ecs", "sessions3", "history_v1") { # list of templates
         @filelist = (@filelist, "$ARGV[2].${PREFIX}${index}.template.json\n") if (-e "$ARGV[2].${PREFIX}${index}.template.json");
@@ -10446,14 +10518,19 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
 
+    # Only remove the cont3xt indices we actually have a backup of
+    foreach my $index ("cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history") {
+        esDelete("/${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${index}.json");
+    }
+
     esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
     esDelete("/_template/${PREFIX}sessions3_template", 1);
     esDelete("/_template/${PREFIX}history_v1_template", 1);
 
     logmsg "Importing settings...\n\n";
     foreach my $index (@indices) { # import settings
-        next unless (-e "$ARGV[2].${PREFIX}${index}.settings.json");
-        open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
+        next unless (-e "$ARGV[2].${index}.settings.json");
+        open(my $fh, "<", "$ARGV[2].${index}.settings.json");
         my $data = do { local $/; <$fh> };
         $data = from_json($data);
         my @index = keys %{$data};
@@ -10478,8 +10555,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing mappings...\n\n";
     foreach my $index (@indices) { # import mappings
-        next unless (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
-        open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
+        next unless (-e "$ARGV[2].${index}.mappings.json");
+        open(my $fh, "<", "$ARGV[2].${index}.mappings.json");
         my $data = do { local $/; <$fh> };
         $data = from_json($data);
         my @index = keys %{$data};
@@ -10490,11 +10567,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
 
     logmsg "Importing documents...\n\n";
+    my $restoreErrors = 0;
     foreach my $index (@indices) { # import documents
-        next unless (-e "$ARGV[2].${PREFIX}${index}.json");
-        open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
+        next unless (-e "$ARGV[2].${index}.json");
+        open(my $fh, "<", "$ARGV[2].${index}.json");
         my $data = do { local $/; <$fh> };
-        esPost("/_bulk", $data);
+        $restoreErrors += esBulk($data, "restore of $index");
         close($fh);
     }
 
@@ -10543,6 +10621,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             logmsg "\n";
         }
         close($fh);
+    }
+
+    if ($restoreErrors) {
+        logmsg "Restore FAILED, $restoreErrors document(s) were not restored, see the errors above.\n";
+        exit 1;
     }
     logmsg "Finished Restore.\n";
 } else {
