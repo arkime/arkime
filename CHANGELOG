@@ -49,8 +49,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
-  - #4210 Add the [protocol-timeouts] section to set idle/save/closing/packets per mProtocol, eg tcp=idle:600;closing:5
-  - #4210 tcpSaveTimeout and tcpClosingTimeout now only apply to tcp; use [protocol-timeouts] for the other mProtocols.
+  - #4210 Add the [protocols] section to set idle/save/closing/packets per mProtocol, eg tcp=idle:600;closing:5
+  - #4210 Add streams: to [protocols] to set maxStreams per mProtocol, the stream limit is now compared against
+          the same per mProtocol count it bounds instead of a broader per session type count
+  - #4210 Removed the internal session type (ses) concept, everything is now per mProtocol. Session hash tables,
+          stream limits and community id selection are all keyed by mProtocol, and arkime_mprotocol_register() takes
+          flags instead of a session type, so custom parsers/plugins must be updated and rebuilt
+  - #4210 tcpSaveTimeout and tcpClosingTimeout now only apply to tcp; use [protocols] for the other mProtocols.
           tcpClosingTimeout previously also applied to sctp and to sessions closed by the closeNow rule action, so set
           eg sctp=closing:<seconds> if you had changed it from the default of 5
 ## Viewer

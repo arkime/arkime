@@ -6,13 +6,13 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int xidMProtocol;
+LOCAL int mProtocolXid;
 
 /******************************************************************************/
 LOCAL void xid_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
 {
     sessionId[0] = 4;
-    sessionId[1] = xidMProtocol;
+    sessionId[1] = mProtocolXid;
     sessionId[2] = sessionId[3] = 0;
 }
 /******************************************************************************/
@@ -43,7 +43,7 @@ LOCAL ArkimePacketRC xid_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
     xid_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = xidMProtocol;
+    packet->mProtocol = mProtocolXid;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -51,8 +51,8 @@ LOCAL ArkimePacketRC xid_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
 void arkime_parser_init()
 {
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_XID, xid_packet_enqueue);
-    xidMProtocol = arkime_mprotocol_register("xid",
-                                             SESSION_OTHER,
+    mProtocolXid = arkime_mprotocol_register("xid",
+                                             0,
                                              xid_create_sessionid,
                                              xid_pre_process,
                                              xid_process,

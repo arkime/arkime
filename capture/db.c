@@ -85,6 +85,7 @@ LOCAL GRegex           *numHexRegex;
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
+extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
 /******************************************************************************/
 void arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii)
@@ -1160,11 +1161,12 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        session->bytes[0] + session->bytes[1]);
 
     // Currently don't do communityId for ICMP because it requires magic
-    if (session->ses == SESSION_ICMP) {
+    const uint32_t mflags = mProtocols[session->mProtocol].flags;
+    if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP) {
         char *communityId = arkime_db_community_id_icmp(session);
         BSB_EXPORT_sprintf(jbsb, ",\"community_id\":\"1:%s\"", communityId);
         g_free(communityId);
-    } else if (session->ses != SESSION_OTHER) {
+    } else if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID) {
         char *communityId = arkime_db_community_id(session);
         BSB_EXPORT_sprintf(jbsb, ",\"community_id\":\"1:%s\"", communityId);
         g_free(communityId);
@@ -1904,6 +1906,16 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
 
     arkime_db_memory_info(n == 0, &memBytes, &memPercent);
 
+    // The stats doc still reports the old 6 buckets, everything that isn't one of
+    // the named mProtocols is other
+    const int tcpCount  = arkime_session_watch_count(mProtocolTcp);
+    const int udpCount  = arkime_session_watch_count(mProtocolUdp);
+    const int icmpCount = arkime_session_watch_count(arkime_mprotocol_get("icmp")) +
+                          arkime_session_watch_count(arkime_mprotocol_get("icmpv6"));
+    const int sctpCount = arkime_session_watch_count(arkime_mprotocol_get("sctp"));
+    const int espCount  = arkime_session_watch_count(arkime_mprotocol_get("esp"));
+    const int otherCount = arkime_session_watch_count_total() - (tcpCount + udpCount + icmpCount + sctpCount + espCount);
+
 #ifndef __SANITIZE_ADDRESS__
     if (config.maxMemPercentage != 100 && memPercent > config.maxMemPercentage) {
         LOG("Aborting, max memory percentage reached: %.2f > %u", memPercent, config.maxMemPercentage);
@@ -1982,12 +1994,12 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                                        dbTotalK[n],
                                        dbTotalSessions[n],
                                        dbTotalDropped[n],
-                                       arkime_session_watch_count(SESSION_TCP),
-                                       arkime_session_watch_count(SESSION_UDP),
-                                       arkime_session_watch_count(SESSION_ICMP),
-                                       arkime_session_watch_count(SESSION_SCTP),
-                                       arkime_session_watch_count(SESSION_ESP),
-                                       arkime_session_watch_count(SESSION_OTHER),
+                                       tcpCount,
+                                       udpCount,
+                                       icmpCount,
+                                       sctpCount,
+                                       espCount,
+                                       otherCount,
                                        (arkimeCounters.totalPackets - lastPackets[n]),
                                        (totalBytes - lastBytes[n]),
                                        (writtenBytes - lastWrittenBytes[n]),

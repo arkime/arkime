@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 700
+#define ARKIME_API_VERSION 701
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -349,16 +349,6 @@ typedef struct {
 
 /******************************************************************************/
 
-typedef enum {
-    SESSION_TCP,
-    SESSION_UDP,
-    SESSION_ICMP,
-    SESSION_SCTP,
-    SESSION_ESP,
-    SESSION_OTHER,
-    SESSION_MAX
-} SessionTypes;
-
 /******************************************************************************/
 /*
  * Configuration Information
@@ -465,7 +455,7 @@ typedef struct arkime_config {
     double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
-    uint32_t  maxStreams[SESSION_MAX];
+    uint32_t  maxStreams;
     uint32_t  maxPacketsInQueue;
     uint32_t  dbBulkSize;
     uint32_t  dbFlushTimeout;
@@ -861,7 +851,6 @@ typedef struct arkime_session {
     uint16_t               stopSPI: 1;
     uint16_t               closingQ: 1;
     uint16_t               stopTCP: 1;
-    SessionTypes           ses: 3;
     uint16_t               midSave: 1;
     uint16_t               outOfOrder: 2;
     uint16_t               ackedUnseenSegment: 2;
@@ -1398,7 +1387,8 @@ void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
-int      arkime_session_watch_count(SessionTypes ses);
+int      arkime_session_watch_count(int mProtocol);
+int      arkime_session_watch_count_total();
 int      arkime_session_idle_seconds(int mProtocol);
 int      arkime_session_close_outstanding();
 
@@ -1488,7 +1478,7 @@ typedef void (*ArkimeProtocolSessionMidSave_cb)(ArkimeSession_t *session);
 
 typedef struct {
     const char                       *name;
-    SessionTypes                      ses;
+    uint32_t                          flags;
     ArkimeProtocolCreateSessionId_cb  createSessionId;
     ArkimeProtocolPreProcess_cb       preProcess;
     ArkimeProtocolProcess_cb          process;
@@ -1498,10 +1488,16 @@ typedef struct {
     int                               saveTimeout;
     int                               closingTimeout;
     uint32_t                          maxPackets;
+    uint32_t                          maxStreams;
 } ArkimeProtocol_t;
 
 #define ARKIME_MPROTOCOL_MIN 1
 #define ARKIME_MPROTOCOL_MAX 256
+
+// Sessions have a normal ip community id
+#define ARKIME_MPROTOCOL_FLAG_COMMUNITYID      0x01
+// Sessions have an icmp style community id
+#define ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP 0x02
 
 // A save timeout of 0 means never mid save because of time, which is the
 // default for everything except tcp
@@ -1509,7 +1505,7 @@ typedef struct {
 #define ARKIME_DEFAULT_CLOSING_TIMEOUT 5
 
 int arkime_mprotocol_register_internal(const char                      *name,
-                                       int                              ses,
+                                       uint32_t                         flags,
                                        ArkimeProtocolCreateSessionId_cb createSessionId,
                                        ArkimeProtocolPreProcess_cb      preProcess,
                                        ArkimeProtocolProcess_cb         process,
@@ -1519,11 +1515,17 @@ int arkime_mprotocol_register_internal(const char                      *name,
                                        size_t                           sessionsize,
                                        int                              apiversion);
 
-#define arkime_mprotocol_register(name, ses, createSessionId, preProcess, process, sFree, midSave, sessionTimeout) arkime_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sFree, midSave, sessionTimeout, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+#define arkime_mprotocol_register(name, flags, createSessionId, preProcess, process, sFree, midSave, sessionTimeout) arkime_mprotocol_register_internal(name, flags, createSessionId, preProcess, process, sFree, midSave, sessionTimeout, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
 int arkime_mprotocol_get(const char *name);
 
+// The two mProtocols common enough to be worth not looking up by name
+extern int mProtocolTcp;
+extern int mProtocolUdp;
+
 void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout, int maxPackets);
+
+void arkime_mprotocol_set_streams(int mProtocol, uint32_t maxStreams);
 
 void arkime_mprotocol_init();
 

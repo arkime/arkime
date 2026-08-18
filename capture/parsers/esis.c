@@ -6,14 +6,14 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int esisMProtocol;
+LOCAL int mProtocolEsis;
 LOCAL int typeField;
 
 /******************************************************************************/
 LOCAL void esis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(packet))
 {
     sessionId[0] = 4;
-    sessionId[1] = esisMProtocol;
+    sessionId[1] = mProtocolEsis;
     sessionId[2] = sessionId[3] = 0;
 
     // lump all esis into the same session
@@ -68,7 +68,7 @@ LOCAL ArkimePacketRC esis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     esis_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = esisMProtocol;
+    packet->mProtocol = mProtocolEsis;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -76,8 +76,8 @@ LOCAL ArkimePacketRC esis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 void arkime_parser_init()
 {
     arkime_packet_set_ethernet_cb(0x890D, esis_packet_enqueue);
-    esisMProtocol = arkime_mprotocol_register("esis",
-                                              SESSION_OTHER,
+    mProtocolEsis = arkime_mprotocol_register("esis",
+                                              0,
                                               esis_create_sessionid,
                                               esis_pre_process,
                                               esis_process,

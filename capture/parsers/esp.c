@@ -15,7 +15,7 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL  int                   espMProtocol;
+LOCAL  int                   mProtocolEsp;
 LOCAL  int                   espSavePackets;
 
 /******************************************************************************/
@@ -34,7 +34,7 @@ LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
                           0, packet->vlan, packet->vni);
     }
 
-    packet->mProtocol = espMProtocol;
+    packet->mProtocol = mProtocolEsp;
     packet->hash = arkime_session_hash(sessionId);
 
     return ARKIME_PACKET_DO_PROCESS;
@@ -90,12 +90,14 @@ void arkime_parser_init()
 
     espSavePackets = arkime_config_boolean(NULL, "espSavePackets", FALSE);
     arkime_packet_set_ip_cb(IPPROTO_ESP, esp_packet_enqueue);
-    espMProtocol = arkime_mprotocol_register("esp",
-                                             SESSION_ESP,
+    mProtocolEsp = arkime_mprotocol_register("esp",
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID,
                                              esp_create_sessionid,
                                              esp_pre_process,
                                              NULL,
                                              NULL,
                                              NULL,
                                              arkime_config_int(NULL, "espTimeout", 600, 10, 0xffff));
+
+    arkime_mprotocol_set_streams(mProtocolEsp, config.maxStreams / 200);
 }

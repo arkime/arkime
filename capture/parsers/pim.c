@@ -8,13 +8,13 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int pimMProtocol;
+LOCAL int mProtocolPim;
 
 /******************************************************************************/
 LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
 {
     sessionId[0] = 4;
-    sessionId[1] = pimMProtocol;
+    sessionId[1] = mProtocolPim;
     sessionId[2] = sessionId[3] = 0;
 
     // for now, lump all pim into the same session
@@ -45,7 +45,7 @@ LOCAL ArkimePacketRC pim_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
     pim_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = pimMProtocol;
+    packet->mProtocol = mProtocolPim;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -53,8 +53,8 @@ LOCAL ArkimePacketRC pim_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
 void arkime_parser_init()
 {
     arkime_packet_set_ip_cb(IPPROTO_PIM, pim_packet_enqueue);
-    pimMProtocol = arkime_mprotocol_register("pim",
-                                             SESSION_OTHER,
+    mProtocolPim = arkime_mprotocol_register("pim",
+                                             0,
                                              pim_create_sessionid,
                                              pim_pre_process,
                                              pim_process,

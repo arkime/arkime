@@ -70,7 +70,7 @@ typedef struct {
     ArkimeSessionHead_t   closingQ;
     ArkimeSessionHead_t   sessionsQ[ARKIME_MPROTOCOL_MAX];
     ArkimeSessionHead_t   saveQ[ARKIME_MPROTOCOL_MAX];
-    ArkimeSessionHash_t   sessions[SESSION_MAX];
+    ArkimeSessionHash_t   sessions[ARKIME_MPROTOCOL_MAX];
     int needSave;
     struct {
         GHashTable  *old;
@@ -563,7 +563,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer
 {
     int thread = GPOINTER_TO_INT(uw1);
 
-    for (int i = 0; i < SESSION_MAX; i++) {
+    for (int i = ARKIME_MPROTOCOL_MIN; i < mProtocolCnt; i++) {
         ArkimeSessionHash_t *hash = &sessionThreadData[thread].sessions[i];
         for (uint32_t s = 0; s < hash->size; s++) {
             if (hash->ctrl[s] & PROBE_EMPTY)
@@ -684,7 +684,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gp
 {
     int thread = GPOINTER_TO_INT(uw1);
 
-    for (int i = 0; i < SESSION_MAX; i++) {
+    for (int i = ARKIME_MPROTOCOL_MIN; i < mProtocolCnt; i++) {
         ArkimeSessionHash_t *hash = &sessionThreadData[thread].sessions[i];
         for (uint32_t b = 0; b < hash->size; b++) {
             while (hash->sessions[b]) {
@@ -788,7 +788,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gp
 {
     int thread = GPOINTER_TO_INT(uw1);
 
-    for (int i = 0; i < SESSION_MAX; i++) {
+    for (int i = ARKIME_MPROTOCOL_MIN; i < mProtocolCnt; i++) {
         ArkimeSessionHash_t *hash = &sessionThreadData[thread].sessions[i];
         for (uint32_t b = 0; b < hash->size; b++) {
             if (hash->buckets[b].ses_next == NULL)
@@ -806,7 +806,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gp
 void arkime_session_save(ArkimeSession_t *session)
 {
     if (IN_SESSION_TABLE(session)) {
-        arkime_session_hash_remove(&sessionThreadData[session->thread].sessions[session->ses], session);
+        arkime_session_hash_remove(&sessionThreadData[session->thread].sessions[session->mProtocol], session);
     }
 
     if (session->closingQ) {
@@ -1104,10 +1104,9 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
         hash = arkime_session_hash(sessionId);
     }
 
-    int          thread = hash % config.packetThreads;
-    SessionTypes ses = mProtocols[mProtocol].ses;
+    int thread = hash % config.packetThreads;
 
-    session = arkime_session_hash_find(&sessionThreadData[thread].sessions[ses], hash, sessionId);
+    session = arkime_session_hash_find(&sessionThreadData[thread].sessions[mProtocol], hash, sessionId);
 
     if (session) {
         if (!session->closingQ) {
@@ -1119,13 +1118,12 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
     *isNew = 1;
 
     session = ARKIME_TYPE_ALLOC0(ArkimeSession_t);
-    session->ses = ses;
     session->mProtocol = mProtocol;
     session->stopSaving = 0xffff;
 
     memcpy(session->sessionId, sessionId, sessionId[0]);
 
-    arkime_session_hash_add(&sessionThreadData[thread].sessions[ses], hash, session);
+    arkime_session_hash_add(&sessionThreadData[thread].sessions[mProtocol], hash, session);
     DLL_PUSH_TAIL(q_, &sessionThreadData[thread].sessionsQ[session->mProtocol], session);
     if (mProtocols[mProtocol].saveTimeout)
         DLL_PUSH_TAIL(save_, &sessionThreadData[thread].saveQ[session->mProtocol], session);
@@ -1159,8 +1157,8 @@ uint32_t arkime_session_monitoring()
     uint32_t count = 0;
 
     for (int t = 0; t < config.packetThreads; t++) {
-        for (int s = 0; s < SESSION_MAX; s++) {
-            count += HASH_COUNT(h_, sessionThreadData[t].sessions[s]);
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            count += HASH_COUNT(h_, sessionThreadData[t].sessions[mProtocol]);
         }
     }
     return count;
@@ -1206,7 +1204,7 @@ void arkime_session_process_commands(int thread)
             if (!session)
                 break;
 
-            if (DLL_COUNT(q_, &sessionThreadData[thread].sessionsQ[mProtocol]) > (int)config.maxStreams[session->ses]) {
+            if (DLL_COUNT(q_, &sessionThreadData[thread].sessionsQ[mProtocol]) > (int)mProtocols[mProtocol].maxStreams) {
                 LOG_RATE(60, "ERROR - closing session early, increase maxStreams; see https://arkime.com/settings#maxStreams");
                 arkime_session_save(session);
             } else if (((uint64_t)session->lastPacket.tv_sec + mProtocols[mProtocol].sessionTimeout < (uint64_t)arkimeThreadData[thread].lastPacketSecs)) {
@@ -1232,15 +1230,23 @@ void arkime_session_process_commands(int thread)
 }
 
 /******************************************************************************/
-int arkime_session_watch_count(SessionTypes ses)
+int arkime_session_watch_count(int mProtocol)
+{
+    int count = 0;
+
+    for (int t = 0; t < config.packetThreads; t++) {
+        count += DLL_COUNT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
+    }
+    return count;
+}
+/******************************************************************************/
+int arkime_session_watch_count_total()
 {
     int count = 0;
 
     for (int t = 0; t < config.packetThreads; t++) {
         for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
-            if (mProtocols[mProtocol].ses == ses) {
-                count += DLL_COUNT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
-            }
+            count += DLL_COUNT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
         }
     }
     return count;
@@ -1311,13 +1317,13 @@ void arkime_session_init()
     g_free(str);
 
     for (int t = 0; t < config.packetThreads; t++) {
-        for (int s = 0; s < SESSION_MAX; s++) {
-            arkime_session_hash_init(&sessionThreadData[t].sessions[s], config.maxStreams[s]);
-        }
-
         for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < ARKIME_MPROTOCOL_MAX; mProtocol++) {
             DLL_INIT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
             DLL_INIT(save_, &sessionThreadData[t].saveQ[mProtocol]);
+        }
+
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            arkime_session_hash_init(&sessionThreadData[t].sessions[mProtocol], mProtocols[mProtocol].maxStreams);
         }
 
         DLL_INIT(q_, &sessionThreadData[t].closingQ);
@@ -1360,24 +1366,19 @@ void arkime_session_flush()
 /******************************************************************************/
 void arkime_session_exit()
 {
-    uint32_t counts[SESSION_MAX] = {0, 0, 0, 0, 0, 0};
+    if (!config.pcapReadOffline || config.debug) {
+        GString *str = g_string_new(NULL);
+        g_string_append_printf(str, "sessions: %u", arkime_session_monitoring());
 
-    for (int t = 0; t < config.packetThreads; t++) {
         for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
-            counts[mProtocols[mProtocol].ses] += sessionThreadData[t].sessionsQ[mProtocol].q_count;
+            int count = arkime_session_watch_count(mProtocol);
+            if (count)
+                g_string_append_printf(str, " %s: %d", mProtocols[mProtocol].name, count);
         }
-    }
 
-    if (!config.pcapReadOffline || config.debug)
-        LOG("sessions: %u tcp: %u udp: %u icmp: %u sctp: %u esp: %u other: %u",
-            arkime_session_monitoring(),
-            counts[SESSION_TCP],
-            counts[SESSION_UDP],
-            counts[SESSION_ICMP],
-            counts[SESSION_SCTP],
-            counts[SESSION_ESP],
-            counts[SESSION_OTHER]
-           );
+        LOG("%s", str->str);
+        g_string_free(str, TRUE);
+    }
 
     arkime_session_flush();
 }

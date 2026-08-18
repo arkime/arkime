@@ -16,15 +16,16 @@ ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
 LOCAL GHashTable            *mProtocolHash;
 
 LOCAL uint32_t defaultMaxPackets;
+LOCAL uint32_t defaultMaxStreams;
 
-LOCAL int corruptEtherMProtocol;
-LOCAL int corruptIpMProtocol;
-LOCAL int unknownEtherMProtocol;
-LOCAL int unknownIpMProtocol;
+LOCAL int mProtocolCorruptEther;
+LOCAL int mProtocolCorruptIp;
+LOCAL int mProtocolUnknownEther;
+LOCAL int mProtocolUnknownIp;
 
 /******************************************************************************/
 int arkime_mprotocol_register_internal(const char                      *name,
-                                       int                              ses,
+                                       uint32_t                         flags,
                                        ArkimeProtocolCreateSessionId_cb createSessionId,
                                        ArkimeProtocolPreProcess_cb      preProcess,
                                        ArkimeProtocolProcess_cb         process,
@@ -57,7 +58,7 @@ int arkime_mprotocol_register_internal(const char                      *name,
     }
     int num = mProtocolCnt++;
     mProtocols[num].name = name;
-    mProtocols[num].ses = ses;
+    mProtocols[num].flags = flags;
     mProtocols[num].createSessionId = createSessionId;
     mProtocols[num].preProcess = preProcess;
     mProtocols[num].process = process;
@@ -67,6 +68,7 @@ int arkime_mprotocol_register_internal(const char                      *name,
     mProtocols[num].saveTimeout = ARKIME_DEFAULT_SAVE_TIMEOUT;
     mProtocols[num].closingTimeout = ARKIME_DEFAULT_CLOSING_TIMEOUT;
     mProtocols[num].maxPackets = defaultMaxPackets;
+    mProtocols[num].maxStreams = defaultMaxStreams;
 
     g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
 
@@ -80,7 +82,7 @@ int arkime_mprotocol_get(const char *name)
 }
 /******************************************************************************/
 /* Used by mProtocols that have their own legacy settings, like tcpSaveTimeout.
- * Anything negative is left alone. The [protocol-timeouts] section is applied
+ * Anything negative is left alone. The [protocols] section is applied
  * after this and wins.
  */
 void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout, int maxPackets)
@@ -98,6 +100,15 @@ void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTi
         mProtocols[mProtocol].maxPackets = maxPackets;
 }
 /******************************************************************************/
+/* maxStreams is the total across all packet threads, like the maxStreams setting */
+void arkime_mprotocol_set_streams(int mProtocol, uint32_t maxStreams)
+{
+    if (mProtocol < ARKIME_MPROTOCOL_MIN || mProtocol >= mProtocolCnt)
+        LOGEXIT("ERROR - Unknown mProtocol %d", mProtocol);
+
+    mProtocols[mProtocol].maxStreams = MAX(64, maxStreams / config.packetThreads);
+}
+/******************************************************************************/
 LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const char *str, int min, int max)
 {
     char *end;
@@ -108,10 +119,10 @@ LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const c
         end++;
 
     if (errno != 0 || end == str || *end != 0)
-        CONFIGEXIT("'%s' isn't a number for '%s:' of '%s' in section [protocol-timeouts]", str, name, key);
+        CONFIGEXIT("'%s' isn't a number for '%s:' of '%s' in section [protocols]", str, name, key);
 
     if (num < min || num > max)
-        CONFIGEXIT("%ld must be between %d and %d for '%s:' of '%s' in section [protocol-timeouts]", num, min, max, name, key);
+        CONFIGEXIT("%ld must be between %d and %d for '%s:' of '%s' in section [protocols]", num, min, max, name, key);
 
     return num;
 }
@@ -129,7 +140,7 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
 
         char *colon = strchr(setting, ':');
         if (!colon)
-            CONFIGEXIT("'%s' must be name:value for '%s' in section [protocol-timeouts]", setting, key);
+            CONFIGEXIT("'%s' must be name:value for '%s' in section [protocols]", setting, key);
         *colon = 0;
         g_strchomp(setting);
 
@@ -140,25 +151,27 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
         } else if (strcmp(setting, "save") == 0) {
             int save = arkime_mprotocol_config_num(key, setting, num, 0, 60 * 120);
             if (save != 0 && save < 10)
-                CONFIGEXIT("%d must be 0 or between 10 and %d for 'save:' of '%s' in section [protocol-timeouts]", save, 60 * 120, key);
+                CONFIGEXIT("%d must be 0 or between 10 and %d for 'save:' of '%s' in section [protocols]", save, 60 * 120, key);
             mProtocols[mProtocol].saveTimeout = save;
         } else if (strcmp(setting, "closing") == 0) {
             mProtocols[mProtocol].closingTimeout = arkime_mprotocol_config_num(key, setting, num, 1, 255);
         } else if (strcmp(setting, "packets") == 0) {
             mProtocols[mProtocol].maxPackets = arkime_mprotocol_config_num(key, setting, num, 1, 0xffff);
+        } else if (strcmp(setting, "streams") == 0) {
+            arkime_mprotocol_set_streams(mProtocol, arkime_mprotocol_config_num(key, setting, num, 64, 16777215));
         } else {
-            CONFIGEXIT("Unknown setting '%s' for '%s' in section [protocol-timeouts], must be idle, save, closing or packets", setting, key);
+            CONFIGEXIT("Unknown setting '%s' for '%s' in section [protocols], must be idle, save, closing, packets or streams", setting, key);
         }
     }
     g_strfreev(settings);
 }
 /******************************************************************************/
-/* Load the [protocol-timeouts] section, which overrides the values that each
+/* Load the [protocols] section, which overrides the values that each
  * mProtocol registered with (and therefore the old tcpTimeout/tcpSaveTimeout/
  * tcpClosingTimeout/maxPackets style settings).  Must be called after all
  * mProtocols have registered.
  *
- * [protocol-timeouts]
+ * [protocols]
  * default=save:480;packets:10000
  * tcp=idle:600;closing:5
  * udp=idle:30
@@ -166,13 +179,13 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
 void arkime_mprotocol_config()
 {
     gsize keys_len;
-    gchar **keys = arkime_config_section_keys(NULL, "protocol-timeouts", &keys_len);
+    gchar **keys = arkime_config_section_keys(NULL, "protocols", &keys_len);
 
     if (!keys)
         return;
 
     // default is applied to everything first so per mProtocol settings win
-    char *value = arkime_config_section_str(NULL, "protocol-timeouts", "default", NULL);
+    char *value = arkime_config_section_str(NULL, "protocols", "default", NULL);
     if (value) {
         for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++)
             arkime_mprotocol_config_apply(m, "default", value);
@@ -185,9 +198,9 @@ void arkime_mprotocol_config()
 
         int m = arkime_mprotocol_get(keys[i]);
         if (m == 0)
-            CONFIGEXIT("Unknown protocol '%s' in section [protocol-timeouts]", keys[i]);
+            CONFIGEXIT("Unknown protocol '%s' in section [protocols]", keys[i]);
 
-        value = arkime_config_section_str(NULL, "protocol-timeouts", keys[i], NULL);
+        value = arkime_config_section_str(NULL, "protocols", keys[i], NULL);
         arkime_mprotocol_config_apply(m, keys[i], value);
         g_free(value);
     }
@@ -195,9 +208,9 @@ void arkime_mprotocol_config()
 
     if (config.debug) {
         for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++) {
-            LOG("%s idle:%d save:%d closing:%d packets:%u",
+            LOG("%s idle:%d save:%d closing:%d packets:%u streams:%u",
                 mProtocols[m].name, mProtocols[m].sessionTimeout, mProtocols[m].saveTimeout,
-                mProtocols[m].closingTimeout, mProtocols[m].maxPackets);
+                mProtocols[m].closingTimeout, mProtocols[m].maxPackets, mProtocols[m].maxStreams);
         }
     }
 }
@@ -206,7 +219,7 @@ void arkime_mprotocol_config()
 LOCAL void corrupt_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     sessionId[0] = 16;
-    sessionId[1] = corruptEtherMProtocol;
+    sessionId[1] = mProtocolCorruptEther;
     int avail = (int)packet->pktlen - (int)packet->etherOffset;
     if (avail >= 12) {
         memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 12);
@@ -237,7 +250,7 @@ LOCAL void corrupt_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const
 {
     if (packet->v6) {
         sessionId[0] = 36;
-        sessionId[1] = corruptIpMProtocol;
+        sessionId[1] = mProtocolCorruptIp;
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         memcpy(sessionId + 2, &ip6->ip6_src, 16);
         memcpy(sessionId + 18, &ip6->ip6_dst, 16);
@@ -245,7 +258,7 @@ LOCAL void corrupt_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const
         sessionId[35] = 0;
     } else {
         sessionId[0] = 12;
-        sessionId[1] = corruptIpMProtocol;
+        sessionId[1] = mProtocolCorruptIp;
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         memcpy(sessionId + 2, &ip4->ip_src, 4);
         memcpy(sessionId + 6, &ip4->ip_dst, 4);
@@ -277,10 +290,10 @@ LOCAL ArkimePacketRC corrupt_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), 
     int ipMinLen = packet->v6 ? 40 : 20;
     if (packet->ipOffset && packet->ipOffset + ipMinLen <= packet->pktlen) {
         corrupt_ip_create_sessionid(sessionId, packet);
-        packet->mProtocol = corruptIpMProtocol;
+        packet->mProtocol = mProtocolCorruptIp;
     } else {
         corrupt_ether_create_sessionid(sessionId, packet);
-        packet->mProtocol = corruptEtherMProtocol;
+        packet->mProtocol = mProtocolCorruptEther;
     }
 
     packet->hash = arkime_session_hash(sessionId);
@@ -292,7 +305,7 @@ LOCAL ArkimePacketRC corrupt_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), 
 LOCAL void unknown_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     sessionId[0] = 16;
-    sessionId[1] = unknownEtherMProtocol;
+    sessionId[1] = mProtocolUnknownEther;
     // Copy src/dst MACs (12 bytes) + ethertype (2 bytes)
     memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 14);
 }
@@ -323,7 +336,7 @@ LOCAL ArkimePacketRC unknown_ether_packet_enqueue(ArkimePacketBatch_t *UNUSED(ba
     unknown_ether_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = unknownEtherMProtocol;
+    packet->mProtocol = mProtocolUnknownEther;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -334,7 +347,7 @@ LOCAL void unknown_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const
 {
     if (packet->v6) {
         sessionId[0] = 36;
-        sessionId[1] = unknownIpMProtocol;
+        sessionId[1] = mProtocolUnknownIp;
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         memcpy(sessionId + 2, &ip6->ip6_src, 16);
         memcpy(sessionId + 18, &ip6->ip6_dst, 16);
@@ -342,7 +355,7 @@ LOCAL void unknown_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const
         sessionId[35] = 0;
     } else {
         sessionId[0] = 12;
-        sessionId[1] = unknownIpMProtocol;
+        sessionId[1] = mProtocolUnknownIp;
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         memcpy(sessionId + 2, &ip4->ip_src, 4);
         memcpy(sessionId + 6, &ip4->ip_dst, 4);
@@ -373,7 +386,7 @@ LOCAL ArkimePacketRC unknown_ip_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch
     unknown_ip_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = unknownIpMProtocol;
+    packet->mProtocol = mProtocolUnknownIp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -384,9 +397,10 @@ void arkime_mprotocol_init()
 
     // Must be set before anything registers since it is the default for all mProtocols
     defaultMaxPackets = arkime_config_int(NULL, "maxPackets", 10000, 1, 0xffff);
+    defaultMaxStreams = MAX(64, config.maxStreams / config.packetThreads / 20);
 
-    corruptEtherMProtocol = arkime_mprotocol_register("corrupt-ether",
-                                                      SESSION_OTHER,
+    mProtocolCorruptEther = arkime_mprotocol_register("corrupt-ether",
+                                                      0,
                                                       corrupt_ether_create_sessionid,
                                                       corrupt_ether_pre_process,
                                                       corrupt_ether_process,
@@ -394,8 +408,8 @@ void arkime_mprotocol_init()
                                                       NULL,
                                                       60);
 
-    corruptIpMProtocol = arkime_mprotocol_register("corrupt-ip",
-                                                   SESSION_OTHER,
+    mProtocolCorruptIp = arkime_mprotocol_register("corrupt-ip",
+                                                   0,
                                                    corrupt_ip_create_sessionid,
                                                    corrupt_ip_pre_process,
                                                    corrupt_ip_process,
@@ -403,8 +417,8 @@ void arkime_mprotocol_init()
                                                    NULL,
                                                    60);
 
-    unknownEtherMProtocol = arkime_mprotocol_register("unknown-ether",
-                                                      SESSION_OTHER,
+    mProtocolUnknownEther = arkime_mprotocol_register("unknown-ether",
+                                                      0,
                                                       unknown_ether_create_sessionid,
                                                       unknown_ether_pre_process,
                                                       unknown_ether_process,
@@ -412,8 +426,8 @@ void arkime_mprotocol_init()
                                                       NULL,
                                                       60);
 
-    unknownIpMProtocol = arkime_mprotocol_register("unknown-ip",
-                                                   SESSION_OTHER,
+    mProtocolUnknownIp = arkime_mprotocol_register("unknown-ip",
+                                                   0,
                                                    unknown_ip_create_sessionid,
                                                    unknown_ip_pre_process,
                                                    unknown_ip_process,

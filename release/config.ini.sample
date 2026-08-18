@@ -100,7 +100,7 @@ maxFileSizeG=12
 tcpTimeout=600
 
 # Arkime writes a TCP session record after this many seconds, no matter if
-# active or inactive. Use the [protocol-timeouts] section below for other protocols.
+# active or inactive. Use the [protocols] section below for other protocols.
 tcpSaveTimeout=720
 
 # UDP timeout value. Arkime assumes the UDP session is ended after this
@@ -111,7 +111,9 @@ udpTimeout=30
 # many seconds of inactivity.
 icmpTimeout=10
 
-# An approximate maximum number of active sessions Arkime will try and monitor
+# An approximate maximum number of active sessions Arkime will try and monitor,
+# across all packet threads. Use streams: in the [protocols] section below to
+# change the share a single mProtocol gets.
 maxStreams=1000000
 
 # Arkime writes a session record after this many packets
@@ -375,8 +377,9 @@ authorization=type:string
 
 
 ##############################################################################
-# protocol-timeouts sets the timeouts and maxPackets per mProtocol. The "default"
-# key is applied to every mProtocol first, then any mProtocol specific keys.
+# The [protocols] section sets the timeouts, maxPackets and maxStreams per
+# mProtocol. The "default" key is applied to every mProtocol first, then any
+# mProtocol specific keys.
 #
 # This is the only way to set save/closing/packets for a non TCP mProtocol. The
 # older settings only apply to the mProtocol they are named for - tcpTimeout,
@@ -389,13 +392,16 @@ authorization=type:string
 #                      0 disables, which is the default for everything but tcp
 #  closing:<seconds> = save the session this many seconds after it starts closing
 #  packets:<number>  = save the session after this many packets
+#  streams:<number>  = max active sessions for this mProtocol, across all packet
+#                      threads. tcp defaults to 1.25x maxStreams, icmp and esp to
+#                      maxStreams/200, everything else to maxStreams/20
 
-#[protocol-timeouts]
+#[protocols]
 #default=save:720;packets:10000
 #tcp=idle:600;closing:5
 #udp=idle:30
 #icmp=idle:10
-#arp=idle:60;packets:100
+#arp=idle:60;packets:100;streams:10000
 
 
 ##############################################################################

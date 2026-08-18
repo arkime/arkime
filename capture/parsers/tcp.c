@@ -25,7 +25,6 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-extern int                   tcpMProtocol;
 
 LOCAL int                    maxTcpOutOfOrderPackets;
 extern uint32_t              pluginsCbs;
@@ -564,8 +563,8 @@ void arkime_parser_init()
     maxTcpOutOfOrderPackets = arkime_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
     tcp_raw_packet_func = arkime_parsers_get_named_func("tcp_raw_packet");
 
-    tcpMProtocol = arkime_mprotocol_register("tcp",
-                                             SESSION_TCP,
+    mProtocolTcp = arkime_mprotocol_register("tcp",
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID,
                                              tcp_create_sessionid,
                                              tcp_pre_process,
                                              tcp_process,
@@ -573,7 +572,9 @@ void arkime_parser_init()
                                              tcp_mid_save,
                                              arkime_config_int(NULL, "tcpTimeout", 60 * 8, 10, 0xffff));
 
-    arkime_mprotocol_set_timeouts(tcpMProtocol,
+    arkime_mprotocol_set_streams(mProtocolTcp, config.maxStreams * 1.25);
+
+    arkime_mprotocol_set_timeouts(mProtocolTcp,
                                   arkime_config_int(NULL, "tcpSaveTimeout", 60 * 8, 10, 60 * 120),
                                   arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255),
                                   -1);

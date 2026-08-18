@@ -72,8 +72,8 @@ LOCAL ArkimePacketEnqueue_t *udpPortCbs[0x10000];
 LOCAL ArkimePacketEnqueue_t *ethernetCbs[0x10000];
 LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 
-int                          tcpMProtocol;
-int                          udpMProtocol;
+int                          mProtocolTcp;
+int                          mProtocolUdp;
 
 extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
@@ -782,7 +782,7 @@ LOCAL void arkime_packet_log(int mProtocol)
 
     LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s mem: %.2f%%",
         arkimeCounters.totalPackets,
-        arkime_session_watch_count(mProtocols[mProtocol].ses),
+        arkime_session_watch_count(mProtocol),
         arkime_session_monitoring(),
         arkime_session_idle_seconds(mProtocol),
         stats.total,
@@ -863,12 +863,12 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        (stats.total ? (stats.dropped - initialDropped) * (double)100.0 / stats.total : 0),
 
                        arkime_session_monitoring(),
-                       arkime_session_watch_count(SESSION_TCP),
-                       arkime_session_watch_count(SESSION_UDP),
-                       arkime_session_watch_count(SESSION_ICMP),
+                       arkime_session_watch_count(mProtocolTcp),
+                       arkime_session_watch_count(mProtocolUdp),
+                       arkime_session_watch_count(arkime_mprotocol_get("icmp")),
 
-                       arkime_session_idle_seconds(arkime_mprotocol_get("tcp")),
-                       arkime_session_idle_seconds(arkime_mprotocol_get("udp")),
+                       arkime_session_idle_seconds(mProtocolTcp),
+                       arkime_session_idle_seconds(mProtocolUdp),
                        arkime_session_idle_seconds(arkime_mprotocol_get("icmp")),
 
                        arkime_http_queue_length(esServer),
@@ -1030,7 +1030,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport, packet->vlan, packet->vni);
-        packet->mProtocol = tcpMProtocol;
+        packet->mProtocol = mProtocolTcp;
 
         const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
@@ -1078,7 +1078,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan, packet->vni);
-        packet->mProtocol = udpMProtocol;
+        packet->mProtocol = mProtocolUdp;
         break;
     case IPPROTO_IPV6:
         return arkime_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
@@ -1271,7 +1271,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
                 return ARKIME_PACKET_IPPORT_DROPPED;
             }
-            packet->mProtocol = tcpMProtocol;
+            packet->mProtocol = mProtocolTcp;
             done = 1;
             break;
         case IPPROTO_UDP:
@@ -1310,7 +1310,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                     return ARKIME_PACKET_DUPLICATE_DROPPED;
             }
 
-            packet->mProtocol = udpMProtocol;
+            packet->mProtocol = mProtocolUdp;
             done = 1;
             break;
         case IPPROTO_IPV4:
@@ -1641,7 +1641,7 @@ void arkime_packet_batch_flush(ArkimePacketBatch_t *batch)
         batch->totalPackets = 0;
         if (unlikely(totalPackets >= ARKIME_THREAD_ATOMIC_LOAD(arkimeCounters.nextLogPackets))) {
             ARKIME_THREAD_ATOMIC_STORE(arkimeCounters.nextLogPackets, totalPackets + config.logEveryXPackets);
-            arkime_packet_log(tcpMProtocol);
+            arkime_packet_log(mProtocolTcp);
         }
     }
     batch->count = 0;
@@ -2572,7 +2572,7 @@ uint32_t arkime_packet_linktype_to_dlt(int linktype)
 /******************************************************************************/
 void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 {
-    if (session->ses != SESSION_TCP)
+    if (session->mProtocol != mProtocolTcp)
         return;
 
     if (which == -1) {

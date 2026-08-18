@@ -8,13 +8,13 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int igmpMProtocol;
+LOCAL int mProtocolIgmp;
 
 /******************************************************************************/
 LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
 {
     sessionId[0] = 4;
-    sessionId[1] = igmpMProtocol;
+    sessionId[1] = mProtocolIgmp;
     sessionId[2] = sessionId[3] = 0;
 
     // for now, lump all igmp into the same session
@@ -45,7 +45,7 @@ LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     igmp_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = igmpMProtocol;
+    packet->mProtocol = mProtocolIgmp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -53,8 +53,8 @@ LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 void arkime_parser_init()
 {
     arkime_packet_set_ip_cb(IPPROTO_IGMP, igmp_packet_enqueue);
-    igmpMProtocol = arkime_mprotocol_register("igmp",
-                                              SESSION_OTHER,
+    mProtocolIgmp = arkime_mprotocol_register("igmp",
+                                              0,
                                               igmp_create_sessionid,
                                               igmp_pre_process,
                                               igmp_process,

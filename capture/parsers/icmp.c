@@ -15,8 +15,8 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL int                    icmpMProtocol;
-LOCAL int                    icmpv6MProtocol;
+LOCAL int                    mProtocolIcmp;
+LOCAL int                    mProtocolIcmpv6;
 
 LOCAL int                    icmpTypeField;
 LOCAL int                    icmpCodeField;
@@ -37,7 +37,7 @@ LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr,
                           0, packet->vlan, packet->vni);
     }
-    packet->mProtocol = icmpMProtocol;
+    packet->mProtocol = mProtocolIcmp;
     packet->hash = arkime_session_hash(sessionId);
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -53,7 +53,7 @@ LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr,
                        0, packet->vlan, packet->vni);
-    packet->mProtocol = icmpv6MProtocol;
+    packet->mProtocol = mProtocolIcmpv6;
     packet->hash = arkime_session_hash(sessionId);
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -142,8 +142,8 @@ void arkime_parser_init()
     arkime_packet_set_ip_cb(IPPROTO_ICMP, icmp_packet_enqueue);
     arkime_packet_set_ip_cb(IPPROTO_ICMPV6, icmpv6_packet_enqueue);
 
-    icmpMProtocol = arkime_mprotocol_register("icmp",
-                                              SESSION_ICMP,
+    mProtocolIcmp = arkime_mprotocol_register("icmp",
+                                              ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP,
                                               icmp_create_sessionid,
                                               icmp_pre_process,
                                               icmp_process,
@@ -151,14 +151,17 @@ void arkime_parser_init()
                                               NULL,
                                               arkime_config_int(NULL, "icmpTimeout", 10, 1, 0xffff));
 
-    icmpv6MProtocol = arkime_mprotocol_register("icmpv6",
-                                                SESSION_ICMP,
+    mProtocolIcmpv6 = arkime_mprotocol_register("icmpv6",
+                                                ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP,
                                                 icmpv6_create_sessionid,
                                                 icmpv6_pre_process,
                                                 icmp_process,
                                                 NULL,
                                                 NULL,
                                                 arkime_config_int(NULL, "icmpTimeout", 10, 1, 0xffff));
+
+    arkime_mprotocol_set_streams(mProtocolIcmp, config.maxStreams / 200);
+    arkime_mprotocol_set_streams(mProtocolIcmpv6, config.maxStreams / 200);
 
     icmpTypeField = arkime_field_define("general", "integer",
                                         "icmp.type", "ICMP Type", "icmp.type",

@@ -870,8 +870,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     // Tuples
-    if ((tcpTuple && session->ses == SESSION_TCP) ||
-        (udpTuple && session->ses == SESSION_UDP)) {
+    if ((tcpTuple && session->mProtocol == mProtocolTcp) ||
+        (udpTuple && session->mProtocol == mProtocolUdp)) {
         wise_lookup_tuple(session, iRequest);
     }
 
