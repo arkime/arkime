@@ -455,7 +455,6 @@ typedef struct arkime_config {
     double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
-    uint32_t  maxStreams;
     uint32_t  maxPacketsInQueue;
     uint32_t  dbBulkSize;
     uint32_t  dbFlushTimeout;
@@ -1373,6 +1372,7 @@ ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId);
 ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew);
 
 void     arkime_session_init();
+void     arkime_session_config();
 void     arkime_session_exit();
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
@@ -1387,8 +1387,7 @@ void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
-int      arkime_session_watch_count(int mProtocol);
-int      arkime_session_watch_count_total();
+int      arkime_session_watch_count(int mProtocol); // -1 for all mProtocols
 int      arkime_session_idle_seconds(int mProtocol);
 int      arkime_session_close_outstanding();
 
@@ -1498,6 +1497,10 @@ typedef struct {
 #define ARKIME_MPROTOCOL_FLAG_COMMUNITYID      0x01
 // Sessions have an icmp style community id
 #define ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP 0x02
+// Expect a lot of sessions, 1.25x the maxStreams setting
+#define ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH     0x04
+// Expect very few sessions, maxStreams/200. Everything else defaults to maxStreams/20
+#define ARKIME_MPROTOCOL_FLAG_STREAMS_LOW      0x08
 
 // A save timeout of 0 means never mid save because of time, which is the
 // default for everything except tcp
@@ -1523,9 +1526,7 @@ int arkime_mprotocol_get(const char *name);
 extern int mProtocolTcp;
 extern int mProtocolUdp;
 
-void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout, int maxPackets);
-
-void arkime_mprotocol_set_streams(int mProtocol, uint32_t maxStreams);
+void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout);
 
 void arkime_mprotocol_init();
 

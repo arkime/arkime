@@ -1160,7 +1160,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        session->packets[0] + session->packets[1],
                        session->bytes[0] + session->bytes[1]);
 
-    // Currently don't do communityId for ICMP because it requires magic
     const uint32_t mflags = mProtocols[session->mProtocol].flags;
     if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP) {
         char *communityId = arkime_db_community_id_icmp(session);
@@ -1914,7 +1913,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                           arkime_session_watch_count(arkime_mprotocol_get("icmpv6"));
     const int sctpCount = arkime_session_watch_count(arkime_mprotocol_get("sctp"));
     const int espCount  = arkime_session_watch_count(arkime_mprotocol_get("esp"));
-    const int otherCount = arkime_session_watch_count_total() - (tcpCount + udpCount + icmpCount + sctpCount + espCount);
+    const int otherCount = arkime_session_watch_count(-1) - (tcpCount + udpCount + icmpCount + sctpCount + espCount);
 
 #ifndef __SANITIZE_ADDRESS__
     if (config.maxMemPercentage != 100 && memPercent > config.maxMemPercentage) {

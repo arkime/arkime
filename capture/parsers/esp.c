@@ -91,7 +91,7 @@ void arkime_parser_init()
     espSavePackets = arkime_config_boolean(NULL, "espSavePackets", FALSE);
     arkime_packet_set_ip_cb(IPPROTO_ESP, esp_packet_enqueue);
     mProtocolEsp = arkime_mprotocol_register("esp",
-                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID,
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_LOW,
                                              esp_create_sessionid,
                                              esp_pre_process,
                                              NULL,
@@ -99,5 +99,4 @@ void arkime_parser_init()
                                              NULL,
                                              arkime_config_int(NULL, "espTimeout", 600, 10, 0xffff));
 
-    arkime_mprotocol_set_streams(mProtocolEsp, config.maxStreams / 200);
 }

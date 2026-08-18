@@ -64,6 +64,7 @@ typedef struct {
 } ArkimeSesCmdHead_t;
 
 LOCAL char                 stoppedFilename[PATH_MAX];
+LOCAL gboolean             stoppedOldLoaded;
 
 typedef struct {
     ArkimeSesCmdHead_t    sessionCmds;
@@ -73,8 +74,8 @@ typedef struct {
     ArkimeSessionHash_t   sessions[ARKIME_MPROTOCOL_MAX];
     int needSave;
     struct {
-        GHashTable  *old;
-        GHashTable  *new;
+        GHashTable  *old[ARKIME_MPROTOCOL_MAX];
+        GHashTable  *new[ARKIME_MPROTOCOL_MAX];
         ARKIME_LOCK_EXTERN(lock);
     } stoppedSessions;
 } ARKIME_CACHE_ALIGN SessionThreadData_t;
@@ -460,7 +461,7 @@ LOCAL void arkime_session_free(ArkimeSession_t *session)
 
     if (session->inStoppedSave) {
         ARKIME_LOCK(sessionThreadData[session->thread].stoppedSessions.lock);
-        g_hash_table_remove(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId);
+        g_hash_table_remove(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId);
         ARKIME_UNLOCK(sessionThreadData[session->thread].stoppedSessions.lock);
     }
 
@@ -943,10 +944,10 @@ void arkime_session_set_stop_saving(ArkimeSession_t *session)
     arkime_session_add_tag(session, "truncated-pcap");
 
     ARKIME_LOCK(sessionThreadData[session->thread].stoppedSessions.lock);
-    uint64_t result = (uint64_t)g_hash_table_lookup(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId);
+    uint64_t result = (uint64_t)g_hash_table_lookup(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId);
     if ((result & 0x02) == 0) {
         result |= 0x02;
-        g_hash_table_insert(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId, (gpointer)result);
+        g_hash_table_insert(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId, (gpointer)result);
         session->inStoppedSave = 1;
     }
     ARKIME_UNLOCK(sessionThreadData[session->thread].stoppedSessions.lock);
@@ -957,21 +958,21 @@ void arkime_session_set_stop_spi(ArkimeSession_t *session, int value)
     session->stopSPI = value;
 
     ARKIME_LOCK(sessionThreadData[session->thread].stoppedSessions.lock);
-    uint64_t result = (uint64_t)g_hash_table_lookup(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId);
+    uint64_t result = (uint64_t)g_hash_table_lookup(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId);
     if (value) {
         if ((result & 0x01) == 0) {
             result |= 0x01;
-            g_hash_table_insert(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId, (gpointer)result);
+            g_hash_table_insert(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId, (gpointer)result);
             session->inStoppedSave = 1;
         }
     } else {
         if ((result & 0x01) == 0x01) {
             result &= ~0x01;
             if (result) {
-                g_hash_table_insert(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId, (gpointer)result);
+                g_hash_table_insert(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId, (gpointer)result);
                 session->inStoppedSave = 1;
             } else {
-                g_hash_table_remove(sessionThreadData[session->thread].stoppedSessions.new, session->sessionId);
+                g_hash_table_remove(sessionThreadData[session->thread].stoppedSessions.new[session->mProtocol], session->sessionId);
                 session->inStoppedSave = 0;
             }
         }
@@ -992,7 +993,7 @@ LOCAL void arkime_session_load_stopped()
         return;
     }
 
-    if (ver != 1) {
+    if (ver != 2) {
         fclose(fp);
         LOG("ERROR - Unknown save file version %d for `%s`", ver, stoppedFilename);
         return;
@@ -1008,9 +1009,18 @@ LOCAL void arkime_session_load_stopped()
     if (config.debug)
         LOG("Load %u", cnt);
     for (uint32_t i = 0; i < cnt; i++) {
-        int read = 0;
+        int      read = 0;
+        uint8_t  nameLen;
+        char     name[256];
         uint8_t  key[ARKIME_SESSIONID_LEN];
         uint32_t value;
+
+        if (!fread(&nameLen, 1, 1, fp) || nameLen == 0 || !fread(name, nameLen, 1, fp)) {
+            LOG("WARNING - `%s` corrupt", stoppedFilename);
+            break;
+        }
+        name[nameLen] = 0;
+
         read += fread(key, 1, 1, fp);
         if (read != 1 || key[0] < 1 || key[0] > ARKIME_SESSIONID_LEN) {
             LOG("WARNING - `%s` corrupt", stoppedFilename);
@@ -1024,10 +1034,19 @@ LOCAL void arkime_session_load_stopped()
             break;
         }
 
+        // The parser may not be loaded any more, just drop the entry
+        const int mProtocol = arkime_mprotocol_get(name);
+        if (mProtocol == 0)
+            continue;
+
         const uint32_t hash = arkime_session_hash(key);
         const int      thread = hash % config.packetThreads;
 
-        g_hash_table_insert(sessionThreadData[thread].stoppedSessions.old, g_memdup(key, key[0]), (gpointer)(long)value);
+        if (!sessionThreadData[thread].stoppedSessions.old[mProtocol])
+            sessionThreadData[thread].stoppedSessions.old[mProtocol] = g_hash_table_new_full(arkime_session_hash, (GEqualFunc)arkime_session_equal, g_free, NULL);
+
+        stoppedOldLoaded = TRUE;
+        g_hash_table_insert(sessionThreadData[thread].stoppedSessions.old[mProtocol], g_memdup(key, key[0]), (gpointer)(long)value);
     }
     fclose(fp);
 }
@@ -1038,19 +1057,24 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
     if (config.quitting)
         return G_SOURCE_REMOVE;
 
-    // Free old table first time this is called
-    if (sessionThreadData[0].stoppedSessions.old) {
+    // Free old tables first time this is called
+    if (stoppedOldLoaded) {
         for (int t = 0; t < config.packetThreads; t++) {
-            arkime_free_later(sessionThreadData[t].stoppedSessions.old, (GDestroyNotify)g_hash_table_destroy);
-            sessionThreadData[t].stoppedSessions.old = NULL;
+            for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+                if (sessionThreadData[t].stoppedSessions.old[mProtocol]) {
+                    arkime_free_later(sessionThreadData[t].stoppedSessions.old[mProtocol], (GDestroyNotify)g_hash_table_destroy);
+                    sessionThreadData[t].stoppedSessions.old[mProtocol] = NULL;
+                }
+            }
         }
+        stoppedOldLoaded = FALSE;
     }
 
     FILE *fp = arkime_state_file_open(stoppedFilename, "w");
     if (!fp) {
         return G_SOURCE_CONTINUE;
     }
-    uint32_t ver = 1;
+    uint32_t ver = 2;
     uint32_t cnt = 0;
     fwrite(&ver, 4, 1, fp);
 
@@ -1060,15 +1084,23 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
     for (int t = 0; t < config.packetThreads; t++) {
         ARKIME_LOCK(sessionThreadData[t].stoppedSessions.lock);
 
-        GHashTableIter iter;
-        g_hash_table_iter_init(&iter, sessionThreadData[t].stoppedSessions.new);
-        uint8_t *ikey;
-        gpointer ivalue;
-        while (g_hash_table_iter_next(&iter, (gpointer *)&ikey, &ivalue)) {
-            cnt++;
-            fwrite(ikey, ikey[0], 1, fp);
-            uint32_t val = (long)ivalue;
-            fwrite(&val, 4, 1, fp);
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            // The name is written, not the number, since the number depends on which
+            // parsers loaded and in what order
+            const uint8_t nameLen = strlen(mProtocols[mProtocol].name);
+
+            GHashTableIter iter;
+            g_hash_table_iter_init(&iter, sessionThreadData[t].stoppedSessions.new[mProtocol]);
+            uint8_t *ikey;
+            gpointer ivalue;
+            while (g_hash_table_iter_next(&iter, (gpointer *)&ikey, &ivalue)) {
+                cnt++;
+                fwrite(&nameLen, 1, 1, fp);
+                fwrite(mProtocols[mProtocol].name, nameLen, 1, fp);
+                fwrite(ikey, ikey[0], 1, fp);
+                uint32_t val = (long)ivalue;
+                fwrite(&val, 4, 1, fp);
+            }
         }
         ARKIME_UNLOCK(sessionThreadData[t].stoppedSessions.lock);
     }
@@ -1139,8 +1171,8 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
     if (config.numPlugins > 0)
         session->pluginData = ARKIME_SIZE_ALLOC0("pluginData", sizeof(void *) * config.numPlugins);
 
-    if (sessionThreadData[thread].stoppedSessions.old) {
-        uint64_t result = (uint64_t)g_hash_table_lookup(sessionThreadData[session->thread].stoppedSessions.old, session->sessionId);
+    if (stoppedOldLoaded && sessionThreadData[thread].stoppedSessions.old[mProtocol]) {
+        uint64_t result = (uint64_t)g_hash_table_lookup(sessionThreadData[thread].stoppedSessions.old[mProtocol], session->sessionId);
         if (result & 0x01) {
             session->stopSPI = 1;
         }
@@ -1230,22 +1262,17 @@ void arkime_session_process_commands(int thread)
 }
 
 /******************************************************************************/
+/* A mProtocol of -1 counts them all */
 int arkime_session_watch_count(int mProtocol)
 {
     int count = 0;
 
     for (int t = 0; t < config.packetThreads; t++) {
-        count += DLL_COUNT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
-    }
-    return count;
-}
-/******************************************************************************/
-int arkime_session_watch_count_total()
-{
-    int count = 0;
-
-    for (int t = 0; t < config.packetThreads; t++) {
-        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+        if (mProtocol == -1) {
+            for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++) {
+                count += DLL_COUNT(q_, &sessionThreadData[t].sessionsQ[m]);
+            }
+        } else {
             count += DLL_COUNT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
         }
     }
@@ -1322,18 +1349,12 @@ void arkime_session_init()
             DLL_INIT(save_, &sessionThreadData[t].saveQ[mProtocol]);
         }
 
-        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
-            arkime_session_hash_init(&sessionThreadData[t].sessions[mProtocol], mProtocols[mProtocol].maxStreams);
-        }
-
         DLL_INIT(q_, &sessionThreadData[t].closingQ);
         DLL_INIT(cmd_, &sessionThreadData[t].sessionCmds);
         ARKIME_LOCK_INIT(sessionThreadData[t].sessionCmds.lock);
 
 
         ARKIME_LOCK_INIT(sessionThreadData[t].stoppedSessions.lock);
-        sessionThreadData[t].stoppedSessions.old = g_hash_table_new_full(arkime_session_hash, (GEqualFunc)arkime_session_equal, g_free, NULL);
-        sessionThreadData[t].stoppedSessions.new = g_hash_table_new(arkime_session_hash, (GEqualFunc)arkime_session_equal);
     }
 
     arkime_add_can_quit(arkime_session_cmd_outstanding, "session commands outstanding");
@@ -1343,13 +1364,27 @@ void arkime_session_init()
     // The stopped-sessions state file persists "stop saving" decisions across
     // restarts. Only write for live captures.
     snprintf(stoppedFilename, sizeof(stoppedFilename), "%s.stoppedsessions", config.nodeName);
+    arkime_session_load_collapse();
+
+    arkime_session_pre_save_func = arkime_parsers_get_named_func("arkime_session_pre_save");
+}
+/******************************************************************************/
+/* Anything that needs every mProtocol registered and the [protocol-settings] section
+ * applied, so after plugins are loaded and arkime_mprotocol_config() has run
+ */
+void arkime_session_config()
+{
+    for (int t = 0; t < config.packetThreads; t++) {
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            arkime_session_hash_init(&sessionThreadData[t].sessions[mProtocol], mProtocols[mProtocol].maxStreams);
+            sessionThreadData[t].stoppedSessions.new[mProtocol] = g_hash_table_new(arkime_session_hash, (GEqualFunc)arkime_session_equal);
+        }
+    }
+
     if (!config.dryRun && !config.pcapReadOffline) {
         g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
         arkime_session_load_stopped();
     }
-    arkime_session_load_collapse();
-
-    arkime_session_pre_save_func = arkime_parsers_get_named_func("arkime_session_pre_save");
 }
 /******************************************************************************/
 /* Only called on main thread. Wait for all packet threads to be empty and then

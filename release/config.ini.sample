@@ -100,7 +100,7 @@ maxFileSizeG=12
 tcpTimeout=600
 
 # Arkime writes a TCP session record after this many seconds, no matter if
-# active or inactive. Use the [protocols] section below for other protocols.
+# active or inactive. Use the [protocol-settings] section below for other protocols.
 tcpSaveTimeout=720
 
 # UDP timeout value. Arkime assumes the UDP session is ended after this
@@ -112,8 +112,8 @@ udpTimeout=30
 icmpTimeout=10
 
 # An approximate maximum number of active sessions Arkime will try and monitor,
-# across all packet threads. Use streams: in the [protocols] section below to
-# change the share a single mProtocol gets.
+# across all packet threads. Use streams: in the [protocol-settings] section below
+# to change the share a single protocol gets.
 maxStreams=1000000
 
 # Arkime writes a session record after this many packets
@@ -377,9 +377,9 @@ authorization=type:string
 
 
 ##############################################################################
-# The [protocols] section sets the timeouts, maxPackets and maxStreams per
-# mProtocol. The "default" key is applied to every mProtocol first, then any
-# mProtocol specific keys.
+# The [protocol-settings] section overrides the timeouts, maxPackets and maxStreams
+# per protocol. The "default" key is applied to every protocol first, then any
+# protocol specific keys.
 #
 # This is the only way to set save/closing/packets for a non TCP mProtocol. The
 # older settings only apply to the mProtocol they are named for - tcpTimeout,
@@ -396,7 +396,7 @@ authorization=type:string
 #                      threads. tcp defaults to 1.25x maxStreams, icmp and esp to
 #                      maxStreams/200, everything else to maxStreams/20
 
-#[protocols]
+#[protocol-settings]
 #default=save:720;packets:10000
 #tcp=idle:600;closing:5
 #udp=idle:30

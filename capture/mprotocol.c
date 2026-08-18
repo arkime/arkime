@@ -16,7 +16,7 @@ ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
 LOCAL GHashTable            *mProtocolHash;
 
 LOCAL uint32_t defaultMaxPackets;
-LOCAL uint32_t defaultMaxStreams;
+LOCAL uint32_t maxStreams;
 
 LOCAL int mProtocolCorruptEther;
 LOCAL int mProtocolCorruptIp;
@@ -68,7 +68,13 @@ int arkime_mprotocol_register_internal(const char                      *name,
     mProtocols[num].saveTimeout = ARKIME_DEFAULT_SAVE_TIMEOUT;
     mProtocols[num].closingTimeout = ARKIME_DEFAULT_CLOSING_TIMEOUT;
     mProtocols[num].maxPackets = defaultMaxPackets;
-    mProtocols[num].maxStreams = defaultMaxStreams;
+
+    if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH)
+        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads * 1.25);
+    else if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_LOW)
+        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 200);
+    else
+        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 20);
 
     g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
 
@@ -82,10 +88,10 @@ int arkime_mprotocol_get(const char *name)
 }
 /******************************************************************************/
 /* Used by mProtocols that have their own legacy settings, like tcpSaveTimeout.
- * Anything negative is left alone. The [protocols] section is applied
+ * Anything negative is left alone. The [protocol-settings] section is applied
  * after this and wins.
  */
-void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout, int maxPackets)
+void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout)
 {
     if (mProtocol < ARKIME_MPROTOCOL_MIN || mProtocol >= mProtocolCnt)
         LOGEXIT("ERROR - Unknown mProtocol %d", mProtocol);
@@ -95,18 +101,6 @@ void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTi
 
     if (closingTimeout >= 0)
         mProtocols[mProtocol].closingTimeout = closingTimeout;
-
-    if (maxPackets >= 0)
-        mProtocols[mProtocol].maxPackets = maxPackets;
-}
-/******************************************************************************/
-/* maxStreams is the total across all packet threads, like the maxStreams setting */
-void arkime_mprotocol_set_streams(int mProtocol, uint32_t maxStreams)
-{
-    if (mProtocol < ARKIME_MPROTOCOL_MIN || mProtocol >= mProtocolCnt)
-        LOGEXIT("ERROR - Unknown mProtocol %d", mProtocol);
-
-    mProtocols[mProtocol].maxStreams = MAX(64, maxStreams / config.packetThreads);
 }
 /******************************************************************************/
 LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const char *str, int min, int max)
@@ -119,10 +113,10 @@ LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const c
         end++;
 
     if (errno != 0 || end == str || *end != 0)
-        CONFIGEXIT("'%s' isn't a number for '%s:' of '%s' in section [protocols]", str, name, key);
+        CONFIGEXIT("'%s' isn't a number for '%s:' of '%s' in section [protocol-settings]", str, name, key);
 
     if (num < min || num > max)
-        CONFIGEXIT("%ld must be between %d and %d for '%s:' of '%s' in section [protocols]", num, min, max, name, key);
+        CONFIGEXIT("%ld must be between %d and %d for '%s:' of '%s' in section [protocol-settings]", num, min, max, name, key);
 
     return num;
 }
@@ -140,7 +134,7 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
 
         char *colon = strchr(setting, ':');
         if (!colon)
-            CONFIGEXIT("'%s' must be name:value for '%s' in section [protocols]", setting, key);
+            CONFIGEXIT("'%s' must be name:value for '%s' in section [protocol-settings]", setting, key);
         *colon = 0;
         g_strchomp(setting);
 
@@ -151,27 +145,28 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
         } else if (strcmp(setting, "save") == 0) {
             int save = arkime_mprotocol_config_num(key, setting, num, 0, 60 * 120);
             if (save != 0 && save < 10)
-                CONFIGEXIT("%d must be 0 or between 10 and %d for 'save:' of '%s' in section [protocols]", save, 60 * 120, key);
+                CONFIGEXIT("%d must be 0 or between 10 and %d for 'save:' of '%s' in section [protocol-settings]", save, 60 * 120, key);
             mProtocols[mProtocol].saveTimeout = save;
         } else if (strcmp(setting, "closing") == 0) {
             mProtocols[mProtocol].closingTimeout = arkime_mprotocol_config_num(key, setting, num, 1, 255);
         } else if (strcmp(setting, "packets") == 0) {
             mProtocols[mProtocol].maxPackets = arkime_mprotocol_config_num(key, setting, num, 1, 0xffff);
         } else if (strcmp(setting, "streams") == 0) {
-            arkime_mprotocol_set_streams(mProtocol, arkime_mprotocol_config_num(key, setting, num, 64, 16777215));
+            // The setting is the total across all packet threads
+            mProtocols[mProtocol].maxStreams = MAX(64, arkime_mprotocol_config_num(key, setting, num, 64, 16777215) / config.packetThreads);
         } else {
-            CONFIGEXIT("Unknown setting '%s' for '%s' in section [protocols], must be idle, save, closing, packets or streams", setting, key);
+            CONFIGEXIT("Unknown setting '%s' for '%s' in section [protocol-settings], must be idle, save, closing, packets or streams", setting, key);
         }
     }
     g_strfreev(settings);
 }
 /******************************************************************************/
-/* Load the [protocols] section, which overrides the values that each
+/* Load the [protocol-settings] section, which overrides the values that each
  * mProtocol registered with (and therefore the old tcpTimeout/tcpSaveTimeout/
  * tcpClosingTimeout/maxPackets style settings).  Must be called after all
  * mProtocols have registered.
  *
- * [protocols]
+ * [protocol-settings]
  * default=save:480;packets:10000
  * tcp=idle:600;closing:5
  * udp=idle:30
@@ -179,13 +174,13 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
 void arkime_mprotocol_config()
 {
     gsize keys_len;
-    gchar **keys = arkime_config_section_keys(NULL, "protocols", &keys_len);
+    gchar **keys = arkime_config_section_keys(NULL, "protocol-settings", &keys_len);
 
     if (!keys)
         return;
 
     // default is applied to everything first so per mProtocol settings win
-    char *value = arkime_config_section_str(NULL, "protocols", "default", NULL);
+    char *value = arkime_config_section_str(NULL, "protocol-settings", "default", NULL);
     if (value) {
         for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++)
             arkime_mprotocol_config_apply(m, "default", value);
@@ -198,9 +193,9 @@ void arkime_mprotocol_config()
 
         int m = arkime_mprotocol_get(keys[i]);
         if (m == 0)
-            CONFIGEXIT("Unknown protocol '%s' in section [protocols]", keys[i]);
+            CONFIGEXIT("Unknown protocol '%s' in section [protocol-settings]", keys[i]);
 
-        value = arkime_config_section_str(NULL, "protocols", keys[i], NULL);
+        value = arkime_config_section_str(NULL, "protocol-settings", keys[i], NULL);
         arkime_mprotocol_config_apply(m, keys[i], value);
         g_free(value);
     }
@@ -397,7 +392,7 @@ void arkime_mprotocol_init()
 
     // Must be set before anything registers since it is the default for all mProtocols
     defaultMaxPackets = arkime_config_int(NULL, "maxPackets", 10000, 1, 0xffff);
-    defaultMaxStreams = MAX(64, config.maxStreams / config.packetThreads / 20);
+    maxStreams = arkime_config_int(NULL, "maxStreams", 1500000, 1, 16777215);
 
     mProtocolCorruptEther = arkime_mprotocol_register("corrupt-ether",
                                                       0,

@@ -1291,7 +1291,6 @@ LOCAL void arkime_config_load()
     config.maxFileSizeG          = arkime_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG * 1024LL * 1024LL * 1024LL;
     config.maxFileTimeM          = arkime_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
-    config.maxStreams            = arkime_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPacketsInQueue     = arkime_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
     config.dbBulkSize            = arkime_config_int(keyfile, "dbBulkSize", 1000000, 500000, 15000000);
     config.dbFlushTimeout        = arkime_config_int(keyfile, "dbFlushTimeout", 5, 1, 60 * 30);

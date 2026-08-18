@@ -564,7 +564,7 @@ void arkime_parser_init()
     tcp_raw_packet_func = arkime_parsers_get_named_func("tcp_raw_packet");
 
     mProtocolTcp = arkime_mprotocol_register("tcp",
-                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID,
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH,
                                              tcp_create_sessionid,
                                              tcp_pre_process,
                                              tcp_process,
@@ -572,12 +572,9 @@ void arkime_parser_init()
                                              tcp_mid_save,
                                              arkime_config_int(NULL, "tcpTimeout", 60 * 8, 10, 0xffff));
 
-    arkime_mprotocol_set_streams(mProtocolTcp, config.maxStreams * 1.25);
-
     arkime_mprotocol_set_timeouts(mProtocolTcp,
                                   arkime_config_int(NULL, "tcpSaveTimeout", 60 * 8, 10, 60 * 120),
-                                  arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255),
-                                  -1);
+                                  arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255));
 
     tcpflagsSynField = arkime_field_by_exp("tcpflags.syn");
     tcpflagsSynAckField = arkime_field_by_exp("tcpflags.syn-ack");

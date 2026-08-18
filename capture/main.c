@@ -1173,6 +1173,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_reader_scheme_register("fuzz", NULL, NULL);
     return 0;
@@ -1235,6 +1236,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
     return 0;
@@ -1346,6 +1348,7 @@ int main(int argc, char **argv)
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);
 
