@@ -147,7 +147,7 @@ LOCAL uint32_t writer_s3_queue_length()
     return q;
 }
 /******************************************************************************/
-LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_complete_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -197,7 +197,7 @@ LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
 /******************************************************************************/
 // AbortMultipartUpload response - free the file without recording it in the
 // files index since the object doesn't exist in S3
-LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_abort_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -224,7 +224,7 @@ LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
-LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_part_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
@@ -323,7 +323,7 @@ LOCAL void writer_s3_free_creds(S3Credentials *creds)
 /* Timer callback to refresh our creds. We fetch them into new structure
  * and free the old structure later in case a thread is using them.
  */
-LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_s3_refresh_creds_gfunc(gpointer UNUSED(user_data))
 {
     size_t clen;
 
@@ -355,7 +355,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_init_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -418,7 +418,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(uploadState);
 }
 /******************************************************************************/
-LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
+LOCAL void writer_s3_header_cb(char *url, const char *field, const char *value, int valueLen, gpointer uw)
 {
 
     if (strcasecmp("etag", field) != 0)
@@ -973,7 +973,7 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *UNUSED(session), gpointer 
 /* This function is called every 30 second on the main thread. It
  * schedules writer_s3_check to be called on the packet thread
  */
-LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_s3_file_time_gfunc(gpointer UNUSED(user_data))
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
         arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_s3_file_time_check);

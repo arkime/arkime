@@ -47,8 +47,6 @@ typedef struct {
 } ArkimeSessionHash_t;
 #endif
 
-LOCAL int tcpClosingTimeout;
-
 typedef struct arkimesescmd {
     struct arkimesescmd *cmd_next, *cmd_prev;
 
@@ -71,6 +69,7 @@ typedef struct {
     ArkimeSesCmdHead_t    sessionCmds;
     ArkimeSessionHead_t   closingQ;
     ArkimeSessionHead_t   sessionsQ[ARKIME_MPROTOCOL_MAX];
+    ArkimeSessionHead_t   saveQ[ARKIME_MPROTOCOL_MAX];
     ArkimeSessionHash_t   sessions[SESSION_MAX];
     int needSave;
     struct {
@@ -406,12 +405,12 @@ void arkime_session_mark_for_close(ArkimeSession_t *session)
         return;
 
     session->closingQ = 1;
-    session->saveTime = session->lastPacket.tv_sec + tcpClosingTimeout;
+    session->saveTime = session->lastPacket.tv_sec + mProtocols[session->mProtocol].closingTimeout;
     DLL_REMOVE(q_, &sessionThreadData[session->thread].sessionsQ[session->mProtocol], session);
     DLL_PUSH_TAIL(q_, &sessionThreadData[session->thread].closingQ, session);
 
-    if (session->tcp_next) {
-        DLL_REMOVE(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
+    if (session->save_next) {
+        DLL_REMOVE(save_, &sessionThreadData[session->thread].saveQ[session->mProtocol], session);
     }
 }
 /******************************************************************************/
@@ -431,8 +430,8 @@ void arkime_session_flip_src_dst(ArkimeSession_t *session)
 /******************************************************************************/
 LOCAL void arkime_session_free(ArkimeSession_t *session)
 {
-    if (session->tcp_next) {
-        DLL_REMOVE(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
+    if (session->save_next) {
+        DLL_REMOVE(save_, &sessionThreadData[session->thread].saveQ[session->mProtocol], session);
     }
 
     g_array_free(session->filePosArray, TRUE);
@@ -830,8 +829,8 @@ void arkime_session_save(ArkimeSession_t *session)
 
     arkime_parsers_call_named_func(arkime_session_pre_save_func, session, NULL, 1, NULL);
 
-    if (session->tcp_next) {
-        DLL_REMOVE(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
+    if (session->save_next) {
+        DLL_REMOVE(save_, &sessionThreadData[session->thread].saveQ[session->mProtocol], session);
     }
 
     if (session->outstandingQueries > 0) {
@@ -872,13 +871,13 @@ void arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec)
     g_array_set_size(session->fileNumArray, 0);
     session->lastFileNum = 0;
 
-    if (session->tcp_next) {
-        DLL_MOVE_TAIL(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
+    if (session->save_next) {
+        DLL_MOVE_TAIL(save_, &sessionThreadData[session->thread].saveQ[session->mProtocol], session);
     }
 
     // Don't change saveTime if already closing
     if (!session->closingQ) {
-        session->saveTime = tv_sec + config.tcpSaveTimeout;
+        session->saveTime = tv_sec + mProtocols[session->mProtocol].saveTimeout;
     }
 
     session->bytes[0] = 0;
@@ -1128,6 +1127,8 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
 
     arkime_session_hash_add(&sessionThreadData[thread].sessions[ses], hash, session);
     DLL_PUSH_TAIL(q_, &sessionThreadData[thread].sessionsQ[session->mProtocol], session);
+    if (mProtocols[mProtocol].saveTimeout)
+        DLL_PUSH_TAIL(save_, &sessionThreadData[thread].saveQ[session->mProtocol], session);
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);
     if (config.enablePacketLen) {
@@ -1216,14 +1217,16 @@ void arkime_session_process_commands(int thread)
         }
     }
 
-    // TCP Sessions Open Long Time
-    for (int count = 0; count < 50; count++) {
-        ArkimeSession_t *session = DLL_PEEK_HEAD(tcp_, &arkimeThreadData[thread].tcpWriteQ);
+    // Sessions Open Long Time
+    for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+        for (int count = 0; count < 50; count++) {
+            ArkimeSession_t *session = DLL_PEEK_HEAD(save_, &sessionThreadData[thread].saveQ[mProtocol]);
 
-        if (session && (uint64_t)session->saveTime < (uint64_t)arkimeThreadData[thread].lastPacketSecs) {
-            arkime_session_mid_save(session, arkimeThreadData[thread].lastPacketSecs);
-        } else {
-            break;
+            if (session && (uint64_t)session->saveTime < (uint64_t)arkimeThreadData[thread].lastPacketSecs) {
+                arkime_session_mid_save(session, arkimeThreadData[thread].lastPacketSecs);
+            } else {
+                break;
+            }
         }
     }
 }
@@ -1295,8 +1298,6 @@ void arkime_session_init()
                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                         (char *)NULL);
 
-    tcpClosingTimeout = arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255);
-
     char *str = arkime_config_str(NULL, "sessionIdTracking", "none");
     if (strcmp(str, "none") == 0) {
         sessionIdTracking = ARKIME_TRACKING_NONE;
@@ -1316,9 +1317,9 @@ void arkime_session_init()
 
         for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < ARKIME_MPROTOCOL_MAX; mProtocol++) {
             DLL_INIT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
+            DLL_INIT(save_, &sessionThreadData[t].saveQ[mProtocol]);
         }
 
-        DLL_INIT(tcp_, &arkimeThreadData[t].tcpWriteQ);
         DLL_INIT(q_, &sessionThreadData[t].closingQ);
         DLL_INIT(cmd_, &sessionThreadData[t].sessionCmds);
         ARKIME_LOCK_INIT(sessionThreadData[t].sessionCmds.lock);

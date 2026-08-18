@@ -99,8 +99,8 @@ maxFileSizeG=12
 # of inactivity.
 tcpTimeout=600
 
-# Arkime writes a session record after this many seconds, no matter if
-# active or inactive
+# Arkime writes a TCP session record after this many seconds, no matter if
+# active or inactive. Use the [protocol-timeouts] section below for other protocols.
 tcpSaveTimeout=720
 
 # UDP timeout value. Arkime assumes the UDP session is ended after this
@@ -372,6 +372,30 @@ content-type=type:string;count:true
 [headers-email]
 x-priority=type:integer
 authorization=type:string
+
+
+##############################################################################
+# protocol-timeouts sets the timeouts and maxPackets per mProtocol. The "default"
+# key is applied to every mProtocol first, then any mProtocol specific keys.
+#
+# This is the only way to set save/closing/packets for a non TCP mProtocol. The
+# older settings only apply to the mProtocol they are named for - tcpTimeout,
+# tcpSaveTimeout, and tcpClosingTimeout are tcp only, udpTimeout is udp only,
+# etc - and this section overrides them.
+#
+# Possible config attributes
+#     idle:<seconds> = save the session after this many seconds of inactivity
+#     save:<seconds> = save the session after this many seconds, active or not.
+#                      0 disables, which is the default for everything but tcp
+#  closing:<seconds> = save the session this many seconds after it starts closing
+#  packets:<number>  = save the session after this many packets
+
+#[protocol-timeouts]
+#default=save:720;packets:10000
+#tcp=idle:600;closing:5
+#udp=idle:30
+#icmp=idle:10
+#arp=idle:60;packets:100
 
 
 ##############################################################################

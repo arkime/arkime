@@ -209,11 +209,6 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAeField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]);
     }
 
-    // add to the long open
-    if (!session->tcp_next) {
-        DLL_PUSH_TAIL(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
-    }
-
     if (tcphdr->th_flags & TH_SYN) {
         if (tcphdr->th_flags & TH_ACK) {
             session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
@@ -577,6 +572,11 @@ void arkime_parser_init()
                                              tcp_session_free,
                                              tcp_mid_save,
                                              arkime_config_int(NULL, "tcpTimeout", 60 * 8, 10, 0xffff));
+
+    arkime_mprotocol_set_timeouts(tcpMProtocol,
+                                  arkime_config_int(NULL, "tcpSaveTimeout", 60 * 8, 10, 60 * 120),
+                                  arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255),
+                                  -1);
 
     tcpflagsSynField = arkime_field_by_exp("tcpflags.syn");
     tcpflagsSynAckField = arkime_field_by_exp("tcpflags.syn-ack");

@@ -15,6 +15,8 @@ int                          mProtocolCnt = ARKIME_MPROTOCOL_MIN;
 ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
 LOCAL GHashTable            *mProtocolHash;
 
+LOCAL uint32_t defaultMaxPackets;
+
 LOCAL int corruptEtherMProtocol;
 LOCAL int corruptIpMProtocol;
 LOCAL int unknownEtherMProtocol;
@@ -62,6 +64,9 @@ int arkime_mprotocol_register_internal(const char                      *name,
     mProtocols[num].sFree = sFree;
     mProtocols[num].midSave = midSave;
     mProtocols[num].sessionTimeout = sessionTimeout;
+    mProtocols[num].saveTimeout = ARKIME_DEFAULT_SAVE_TIMEOUT;
+    mProtocols[num].closingTimeout = ARKIME_DEFAULT_CLOSING_TIMEOUT;
+    mProtocols[num].maxPackets = defaultMaxPackets;
 
     g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
 
@@ -72,6 +77,129 @@ int arkime_mprotocol_register_internal(const char                      *name,
 int arkime_mprotocol_get(const char *name)
 {
     return GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
+}
+/******************************************************************************/
+/* Used by mProtocols that have their own legacy settings, like tcpSaveTimeout.
+ * Anything negative is left alone. The [protocol-timeouts] section is applied
+ * after this and wins.
+ */
+void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout, int maxPackets)
+{
+    if (mProtocol < ARKIME_MPROTOCOL_MIN || mProtocol >= mProtocolCnt)
+        LOGEXIT("ERROR - Unknown mProtocol %d", mProtocol);
+
+    if (saveTimeout >= 0)
+        mProtocols[mProtocol].saveTimeout = saveTimeout;
+
+    if (closingTimeout >= 0)
+        mProtocols[mProtocol].closingTimeout = closingTimeout;
+
+    if (maxPackets >= 0)
+        mProtocols[mProtocol].maxPackets = maxPackets;
+}
+/******************************************************************************/
+LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const char *str, int min, int max)
+{
+    char *end;
+    errno = 0;
+    long num = strtol(str, &end, 10);
+
+    while (isspace(*end))
+        end++;
+
+    if (errno != 0 || end == str || *end != 0)
+        CONFIGEXIT("'%s' isn't a number for '%s:' of '%s' in section [protocol-timeouts]", str, name, key);
+
+    if (num < min || num > max)
+        CONFIGEXIT("%ld must be between %d and %d for '%s:' of '%s' in section [protocol-timeouts]", num, min, max, name, key);
+
+    return num;
+}
+/******************************************************************************/
+/* Apply one "name:value;name:value" string to a single mProtocol */
+LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const char *value)
+{
+    char **settings = g_strsplit(value, ";", 0);
+
+    for (int i = 0; settings[i]; i++) {
+        char *setting = g_strstrip(settings[i]);
+
+        if (!*setting)
+            continue;
+
+        char *colon = strchr(setting, ':');
+        if (!colon)
+            CONFIGEXIT("'%s' must be name:value for '%s' in section [protocol-timeouts]", setting, key);
+        *colon = 0;
+        g_strchomp(setting);
+
+        const char *num = g_strchug(colon + 1);
+
+        if (strcmp(setting, "idle") == 0) {
+            mProtocols[mProtocol].sessionTimeout = arkime_mprotocol_config_num(key, setting, num, 1, 0xffff);
+        } else if (strcmp(setting, "save") == 0) {
+            int save = arkime_mprotocol_config_num(key, setting, num, 0, 60 * 120);
+            if (save != 0 && save < 10)
+                CONFIGEXIT("%d must be 0 or between 10 and %d for 'save:' of '%s' in section [protocol-timeouts]", save, 60 * 120, key);
+            mProtocols[mProtocol].saveTimeout = save;
+        } else if (strcmp(setting, "closing") == 0) {
+            mProtocols[mProtocol].closingTimeout = arkime_mprotocol_config_num(key, setting, num, 1, 255);
+        } else if (strcmp(setting, "packets") == 0) {
+            mProtocols[mProtocol].maxPackets = arkime_mprotocol_config_num(key, setting, num, 1, 0xffff);
+        } else {
+            CONFIGEXIT("Unknown setting '%s' for '%s' in section [protocol-timeouts], must be idle, save, closing or packets", setting, key);
+        }
+    }
+    g_strfreev(settings);
+}
+/******************************************************************************/
+/* Load the [protocol-timeouts] section, which overrides the values that each
+ * mProtocol registered with (and therefore the old tcpTimeout/tcpSaveTimeout/
+ * tcpClosingTimeout/maxPackets style settings).  Must be called after all
+ * mProtocols have registered.
+ *
+ * [protocol-timeouts]
+ * default=save:480;packets:10000
+ * tcp=idle:600;closing:5
+ * udp=idle:30
+ */
+void arkime_mprotocol_config()
+{
+    gsize keys_len;
+    gchar **keys = arkime_config_section_keys(NULL, "protocol-timeouts", &keys_len);
+
+    if (!keys)
+        return;
+
+    // default is applied to everything first so per mProtocol settings win
+    char *value = arkime_config_section_str(NULL, "protocol-timeouts", "default", NULL);
+    if (value) {
+        for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++)
+            arkime_mprotocol_config_apply(m, "default", value);
+        g_free(value);
+    }
+
+    for (int i = 0; i < (int)keys_len; i++) {
+        if (strcmp(keys[i], "default") == 0)
+            continue;
+
+        int m = arkime_mprotocol_get(keys[i]);
+        if (m == 0)
+            CONFIGEXIT("Unknown protocol '%s' in section [protocol-timeouts]", keys[i]);
+
+        value = arkime_config_section_str(NULL, "protocol-timeouts", keys[i], NULL);
+        arkime_mprotocol_config_apply(m, keys[i], value);
+        g_free(value);
+    }
+    g_strfreev(keys);
+
+    if (config.debug) {
+        for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++) {
+            LOG("%s idle:%d save:%d closing:%d packets:%u",
+                mProtocols[m].name, mProtocols[m].sessionTimeout, mProtocols[m].saveTimeout,
+                mProtocols[m].closingTimeout, mProtocols[m].maxPackets);
+        }
+    }
 }
 /******************************************************************************/
 // Corrupt Ether packet mProtocol - session ID based on src/dst MAC
@@ -253,6 +381,9 @@ LOCAL ArkimePacketRC unknown_ip_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch
 void arkime_mprotocol_init()
 {
     mProtocolHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+    // Must be set before anything registers since it is the default for all mProtocols
+    defaultMaxPackets = arkime_config_int(NULL, "maxPackets", 10000, 1, 0xffff);
 
     corruptEtherMProtocol = arkime_mprotocol_register("corrupt-ether",
                                                       SESSION_OTHER,

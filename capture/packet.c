@@ -258,7 +258,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         session = arkime_session_find_or_create(packet->mProtocol, packet->hash, sessionId, &isNew);
 
         if (isNew) {
-            session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
+            session->saveTime = packet->ts.tv_sec + mProtocols[packet->mProtocol].saveTimeout;
             session->firstPacket = packet->ts;
             session->thread = thread;
 
@@ -359,7 +359,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
         }
 
-        if (packets >= config.maxPackets || session->midSave) {
+        if (packets >= mProtocols[session->mProtocol].maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
         }
     } else {
@@ -368,7 +368,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (session->stopSaving != 0 && packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
         }
-        if (packets >= config.maxPackets || session->midSave) {
+        if (packets >= mProtocols[session->mProtocol].maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
             session->stopSaving = 0;
         }
@@ -522,7 +522,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
 {
     int thread = (long)threadp;
     arkimePacketThread = thread;
-    const uint32_t maxPackets75 = config.maxPackets * 0.75;
+    const uint32_t maxPacketsInQueue75 = config.maxPacketsInQueue * 0.75;
     uint32_t skipCount = 0;
 
     arkime_call_named_func(arkime_packet_thread_init_func, thread, NULL);
@@ -553,7 +553,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 
         // Only process commands if the packetQ is less than 75% full or every 8 packets
-        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPackets75) || (++skipCount & 0x7) == 0) {
+        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPacketsInQueue75) || (++skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
         }
 

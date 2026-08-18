@@ -1384,8 +1384,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
             if (tokensFieldKey[pos]) {
                 SAVE_FIELD_TOKENS_BEGIN(pos);
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                g_hash_table_iter_init(&iter, ghash);
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     arkime_db_export_tokens_str(&jbsb, ikey);
                 }
                 SAVE_FIELD_TOKENS_END();

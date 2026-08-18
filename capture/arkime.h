@@ -465,9 +465,7 @@ typedef struct arkime_config {
     double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
-    uint32_t  tcpSaveTimeout;
     uint32_t  maxStreams[SESSION_MAX];
-    uint32_t  maxPackets;
     uint32_t  maxPacketsInQueue;
     uint32_t  dbBulkSize;
     uint32_t  dbFlushTimeout;
@@ -791,7 +789,7 @@ typedef struct arkime_sctp {
 #define ARKIME_SESSION_HASH ARKIME_SESSION_HASH_SLL
 
 typedef struct arkime_session {
-    struct arkime_session *tcp_next, *tcp_prev;
+    struct arkime_session *save_next, *save_prev;
     struct arkime_session *q_next, *q_prev;
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
     uint32_t               ses_slot;
@@ -880,7 +878,7 @@ typedef struct arkime_session {
 } ArkimeSession_t;
 
 typedef struct arkime_session_head {
-    struct arkime_session *tcp_next, *tcp_prev;
+    struct arkime_session *save_next, *save_prev;
     struct arkime_session *q_next, *q_prev;
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
     uint32_t               ses_slot;
@@ -891,7 +889,7 @@ typedef struct arkime_session_head {
 #else
 #error "Unknown ARKIME_SESSION_HASH"
 #endif
-    int                    tcp_count;
+    int                    save_count;
     int                    q_count;
     int                    ses_count;
 } ArkimeSessionHead_t;
@@ -1023,7 +1021,6 @@ extern ARKIME_LOCK_EXTERN(LOG);
 typedef struct {
     time_t                       currentTime;
     time_t                       lastPacketSecs;
-    ArkimeSessionHead_t          tcpWriteQ;
 } ARKIME_CACHE_ALIGN ArkimeThreadData_t;
 extern ArkimeThreadData_t arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
@@ -1498,10 +1495,18 @@ typedef struct {
     ArkimeProtocolSessionFree_cb      sFree;
     ArkimeProtocolSessionMidSave_cb   midSave;
     int                               sessionTimeout;
+    int                               saveTimeout;
+    int                               closingTimeout;
+    uint32_t                          maxPackets;
 } ArkimeProtocol_t;
 
 #define ARKIME_MPROTOCOL_MIN 1
 #define ARKIME_MPROTOCOL_MAX 256
+
+// A save timeout of 0 means never mid save because of time, which is the
+// default for everything except tcp
+#define ARKIME_DEFAULT_SAVE_TIMEOUT    0
+#define ARKIME_DEFAULT_CLOSING_TIMEOUT 5
 
 int arkime_mprotocol_register_internal(const char                      *name,
                                        int                              ses,
@@ -1518,7 +1523,11 @@ int arkime_mprotocol_register_internal(const char                      *name,
 
 int arkime_mprotocol_get(const char *name);
 
+void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout, int maxPackets);
+
 void arkime_mprotocol_init();
+
+void arkime_mprotocol_config();
 
 
 /******************************************************************************/

@@ -122,7 +122,7 @@ LOCAL int64_t sctp_tsn_diff(int64_t a, int64_t b)
 LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const cbsb, int chunkFlags, uint32_t protoId)
 {
     int addBefore = 0;
-    ArkimeSctpData_t *fsd = 0 ;
+    ArkimeSctpData_t *fsd = 0;
     DLL_FOREACH(sd_, sctp, fsd) {
         if (tsn == fsd->tsn && which == fsd->which) { // Already have this tsn
             return;

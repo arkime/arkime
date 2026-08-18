@@ -85,7 +85,7 @@ LOCAL void chad_on_header_field(ArkimeSession_t *session, http_parser *UNUSED(hp
 }
 
 /******************************************************************************/
-LOCAL void chad_on_header_complete (ArkimeSession_t *session, http_parser *hp)
+LOCAL void chad_on_header_complete(ArkimeSession_t *session, http_parser *hp)
 {
     if (session->pluginData[chad_plugin_num]) {
         if (hp->status_code == 0) {
@@ -118,7 +118,7 @@ LOCAL void chad_smtp_on_header(ArkimeSession_t *session, const char *field, size
 
 }
 /******************************************************************************/
-LOCAL void chad_smtp_on_header_complete (ArkimeSession_t *session)
+LOCAL void chad_smtp_on_header_complete(ArkimeSession_t *session)
 {
     if (session->pluginData[chad_plugin_num]) {
         arkime_field_string_add(chad_email_num, session, ((GString *)session->pluginData[chad_plugin_num])->str, ((GString *)session->pluginData[chad_plugin_num])->len, TRUE);
