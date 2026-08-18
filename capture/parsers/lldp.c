@@ -11,17 +11,12 @@ extern ArkimeConfig_t        config;
 LOCAL int mProtocolLldp;
 
 /******************************************************************************/
-LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
+LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    // not used, but leaving for now
-    // uint8_t *data = packet->pkt + packet->payloadOffset;
-
-    sessionId[0] = 4;
-    sessionId[1] = mProtocolLldp;
-    sessionId[2] = sessionId[3] = 0;
-
-    // I'm not sure what fields are required and if one can expect a specific ordering.
-    // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.
+    // One session per talker pair instead of one session for everything
+    sessionId[0] = 16;
+    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 12);
+    sessionId[13] = sessionId[14] = sessionId[15] = 0;
 }
 /******************************************************************************/
 LOCAL int lldp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
@@ -42,6 +37,10 @@ LOCAL ArkimePacketRC lldp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
     // no sanity checks as we don't parse
+
+    // Need src/dst MACs for the session id
+    if ((int)packet->pktlen - (int)packet->etherOffset < 12)
+        return ARKIME_PACKET_CORRUPT;
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;

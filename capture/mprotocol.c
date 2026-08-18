@@ -214,17 +214,15 @@ void arkime_mprotocol_config()
 LOCAL void corrupt_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     sessionId[0] = 16;
-    sessionId[1] = mProtocolCorruptEther;
     int avail = (int)packet->pktlen - (int)packet->etherOffset;
     if (avail >= 12) {
-        memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 12);
+        memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 12);
     } else {
-        memset(sessionId + 2, 0, 12);
+        memset(sessionId + 1, 0, 12);
         if (avail > 0)
-            memcpy(sessionId + 2, packet->pkt + packet->etherOffset, avail);
+            memcpy(sessionId + 1, packet->pkt + packet->etherOffset, avail);
     }
-    sessionId[14] = 0;
-    sessionId[15] = 0;
+    sessionId[13] = sessionId[14] = sessionId[15] = 0;
 }
 /******************************************************************************/
 LOCAL int corrupt_ether_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
@@ -245,20 +243,16 @@ LOCAL void corrupt_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const
 {
     if (packet->v6) {
         sessionId[0] = 36;
-        sessionId[1] = mProtocolCorruptIp;
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-        memcpy(sessionId + 2, &ip6->ip6_src, 16);
-        memcpy(sessionId + 18, &ip6->ip6_dst, 16);
-        sessionId[34] = 0;
-        sessionId[35] = 0;
+        memcpy(sessionId + 1, &ip6->ip6_src, 16);
+        memcpy(sessionId + 17, &ip6->ip6_dst, 16);
+        sessionId[33] = sessionId[34] = sessionId[35] = 0;
     } else {
         sessionId[0] = 12;
-        sessionId[1] = mProtocolCorruptIp;
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-        memcpy(sessionId + 2, &ip4->ip_src, 4);
-        memcpy(sessionId + 6, &ip4->ip_dst, 4);
-        sessionId[10] = 0;
-        sessionId[11] = 0;
+        memcpy(sessionId + 1, &ip4->ip_src, 4);
+        memcpy(sessionId + 5, &ip4->ip_dst, 4);
+        sessionId[9] = sessionId[10] = sessionId[11] = 0;
     }
 }
 /******************************************************************************/
@@ -300,9 +294,9 @@ LOCAL ArkimePacketRC corrupt_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), 
 LOCAL void unknown_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     sessionId[0] = 16;
-    sessionId[1] = mProtocolUnknownEther;
     // Copy src/dst MACs (12 bytes) + ethertype (2 bytes)
-    memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 14);
+    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 14);
+    sessionId[15] = 0;
 }
 /******************************************************************************/
 LOCAL int unknown_ether_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
@@ -342,20 +336,18 @@ LOCAL void unknown_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const
 {
     if (packet->v6) {
         sessionId[0] = 36;
-        sessionId[1] = mProtocolUnknownIp;
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-        memcpy(sessionId + 2, &ip6->ip6_src, 16);
-        memcpy(sessionId + 18, &ip6->ip6_dst, 16);
-        sessionId[34] = packet->ipProtocol;
-        sessionId[35] = 0;
+        memcpy(sessionId + 1, &ip6->ip6_src, 16);
+        memcpy(sessionId + 17, &ip6->ip6_dst, 16);
+        sessionId[33] = packet->ipProtocol;
+        sessionId[34] = sessionId[35] = 0;
     } else {
         sessionId[0] = 12;
-        sessionId[1] = mProtocolUnknownIp;
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-        memcpy(sessionId + 2, &ip4->ip_src, 4);
-        memcpy(sessionId + 6, &ip4->ip_dst, 4);
-        sessionId[10] = packet->ipProtocol;
-        sessionId[11] = 0;
+        memcpy(sessionId + 1, &ip4->ip_src, 4);
+        memcpy(sessionId + 5, &ip4->ip_dst, 4);
+        sessionId[9] = packet->ipProtocol;
+        sessionId[10] = sessionId[11] = 0;
     }
 }
 /******************************************************************************/

@@ -11,13 +11,23 @@ extern ArkimeConfig_t        config;
 LOCAL int mProtocolIgmp;
 
 /******************************************************************************/
-LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
+SUPPRESS_ALIGNMENT
+LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 4;
-    sessionId[1] = mProtocolIgmp;
-    sessionId[2] = sessionId[3] = 0;
-
-    // for now, lump all igmp into the same session
+    // One session per talker pair instead of one session for everything
+    if (packet->v6) {
+        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+        sessionId[0] = 36;
+        memcpy(sessionId + 1, &ip6->ip6_src, 16);
+        memcpy(sessionId + 17, &ip6->ip6_dst, 16);
+        sessionId[33] = sessionId[34] = sessionId[35] = 0;
+    } else {
+        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+        sessionId[0] = 12;
+        memcpy(sessionId + 1, &ip4->ip_src, 4);
+        memcpy(sessionId + 5, &ip4->ip_dst, 4);
+        sessionId[9] = sessionId[10] = sessionId[11] = 0;
+    }
 }
 /******************************************************************************/
 LOCAL int igmp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)

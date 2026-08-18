@@ -20,12 +20,11 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = mProtocolArp;
     if (data[7] == 1)
-        memcpy(sessionId + 2, data + 24, 4);
+        memcpy(sessionId + 1, data + 24, 4);
     else
-        memcpy(sessionId + 2, data + 14, 4);
-    sessionId[6] = sessionId[7] = 0;
+        memcpy(sessionId + 1, data + 14, 4);
+    sessionId[5] = sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT

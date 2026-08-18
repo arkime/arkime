@@ -10,13 +10,12 @@ LOCAL int mProtocolEsis;
 LOCAL int typeField;
 
 /******************************************************************************/
-LOCAL void esis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(packet))
+LOCAL void esis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 4;
-    sessionId[1] = mProtocolEsis;
-    sessionId[2] = sessionId[3] = 0;
-
-    // lump all esis into the same session
+    // One session per talker pair instead of one session for everything
+    sessionId[0] = 16;
+    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 12);
+    sessionId[13] = sessionId[14] = sessionId[15] = 0;
 }
 /******************************************************************************/
 LOCAL int esis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -61,6 +60,10 @@ LOCAL int esis_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const U
 LOCAL ArkimePacketRC esis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
+
+    // Need src/dst MACs for the session id
+    if ((int)packet->pktlen - (int)packet->etherOffset < 12)
+        return ARKIME_PACKET_CORRUPT;
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;

@@ -74,9 +74,8 @@ LOCAL void dhcpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = mProtocolDhcpv6;
-    memcpy(sessionId + 2, data + 1, 3);
-    sessionId[5] = sessionId[6] = sessionId[7] = 0;
+    memcpy(sessionId + 1, data + 1, 3);
+    sessionId[4] = sessionId[5] = sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -159,8 +158,8 @@ LOCAL void dhcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = mProtocolDhcp;
-    memcpy(sessionId + 2, data + 28, 6);   // Copy 6-byte client MAC address
+    memcpy(sessionId + 1, data + 28, 6);   // Copy 6-byte client MAC address
+    sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)

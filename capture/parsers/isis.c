@@ -12,13 +12,12 @@ LOCAL int mProtocolIsis;
 LOCAL int typeField;
 
 /******************************************************************************/
-LOCAL void isis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(packet))
+LOCAL void isis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 4;
-    sessionId[1] = mProtocolIsis;
-    sessionId[2] = sessionId[3] = 0;
-
-    // for now, lump all isis into the same session
+    // One session per talker pair instead of one session for everything
+    sessionId[0] = 16;
+    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 12);
+    sessionId[13] = sessionId[14] = sessionId[15] = 0;
 }
 /******************************************************************************/
 LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -88,6 +87,10 @@ LOCAL ArkimePacketRC isis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     // no sanity checks until we parse.  the thinking is that it will make sense to
     // high level parse to determine isis packet type (eg hello, csnp/psnp, lsp) and
     // protocol tag with these additional discriminators
+
+    // Need src/dst MACs for the session id
+    if ((int)packet->pktlen - (int)packet->etherOffset < 12)
+        return ARKIME_PACKET_CORRUPT;
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
