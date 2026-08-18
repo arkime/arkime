@@ -18,6 +18,8 @@ LOCAL GHashTable            *mProtocolHash;
 LOCAL uint32_t defaultMaxPackets;
 LOCAL uint32_t maxStreams;
 
+LOCAL void arkime_mprotocol_config_one(int mProtocol);
+
 LOCAL int mProtocolCorruptEther;
 LOCAL int mProtocolCorruptIp;
 LOCAL int mProtocolUnknownEther;
@@ -79,6 +81,10 @@ int arkime_mprotocol_register_internal(const char                      *name,
     g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
 
     ARKIME_UNLOCK(lock);
+
+    arkime_mprotocol_config_one(num);
+    arkime_session_mprotocol_init(num);
+
     return num;
 }
 /******************************************************************************/
@@ -101,6 +107,9 @@ void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTi
 
     if (closingTimeout >= 0)
         mProtocols[mProtocol].closingTimeout = closingTimeout;
+
+    // These are only defaults, [protocol-settings] still wins
+    arkime_mprotocol_config_one(mProtocol);
 }
 /******************************************************************************/
 LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const char *str, int min, int max)
@@ -124,6 +133,9 @@ LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const c
 /* Apply one "name:value;name:value" string to a single mProtocol */
 LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const char *value)
 {
+    if (!value)
+        CONFIGEXIT("Invalid value for '%s' in section [protocol-settings]", key);
+
     char **settings = g_strsplit(value, ";", 0);
 
     for (int i = 0; settings[i]; i++) {
@@ -161,6 +173,24 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
     g_strfreev(settings);
 }
 /******************************************************************************/
+/* Apply the [protocol-settings] section to a single mProtocol. default first so
+ * the mProtocol specific key wins
+ */
+LOCAL void arkime_mprotocol_config_one(int mProtocol)
+{
+    char *value = arkime_config_section_str(NULL, "protocol-settings", "default", NULL);
+    if (value) {
+        arkime_mprotocol_config_apply(mProtocol, "default", value);
+        g_free(value);
+    }
+
+    value = arkime_config_section_str(NULL, "protocol-settings", mProtocols[mProtocol].name, NULL);
+    if (value) {
+        arkime_mprotocol_config_apply(mProtocol, mProtocols[mProtocol].name, value);
+        g_free(value);
+    }
+}
+/******************************************************************************/
 /* Load the [protocol-settings] section, which overrides the values that each
  * mProtocol registered with (and therefore the old tcpTimeout/tcpSaveTimeout/
  * tcpClosingTimeout/maxPackets style settings).  Must be called after all
@@ -176,28 +206,14 @@ void arkime_mprotocol_config()
     gsize keys_len;
     gchar **keys = arkime_config_section_keys(NULL, "protocol-settings", &keys_len);
 
-    if (!keys)
-        return;
-
-    // default is applied to everything first so per mProtocol settings win
-    char *value = arkime_config_section_str(NULL, "protocol-settings", "default", NULL);
-    if (value) {
-        for (int m = ARKIME_MPROTOCOL_MIN; m < mProtocolCnt; m++)
-            arkime_mprotocol_config_apply(m, "default", value);
-        g_free(value);
-    }
-
-    for (int i = 0; i < (int)keys_len; i++) {
+    // Each mProtocol applied its own settings when it registered, all that is left
+    // is telling the user about keys that no mProtocol ever claimed
+    for (int i = 0; keys && i < (int)keys_len; i++) {
         if (strcmp(keys[i], "default") == 0)
             continue;
 
-        int m = arkime_mprotocol_get(keys[i]);
-        if (m == 0)
-            CONFIGEXIT("Unknown protocol '%s' in section [protocol-settings]", keys[i]);
-
-        value = arkime_config_section_str(NULL, "protocol-settings", keys[i], NULL);
-        arkime_mprotocol_config_apply(m, keys[i], value);
-        g_free(value);
+        if (arkime_mprotocol_get(keys[i]) == 0)
+            LOG("WARNING - Ignoring '%s' in section [protocol-settings], no protocol with that name is loaded", keys[i]);
     }
     g_strfreev(keys);
 

@@ -1368,11 +1368,11 @@ char    *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int l
 
 uint32_t arkime_session_hash(const void *key);
 
-ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId);
 ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew);
 
 void     arkime_session_init();
 void     arkime_session_config();
+void     arkime_session_mprotocol_init(int mProtocol);
 void     arkime_session_exit();
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);

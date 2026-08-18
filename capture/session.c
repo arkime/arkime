@@ -1116,17 +1116,6 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId)
-{
-    ArkimeSession_t *session;
-
-    uint32_t hash = arkime_session_hash(sessionId);
-    int      thread = hash % config.packetThreads;
-
-    session = arkime_session_hash_find(&sessionThreadData[thread].sessions[ses], hash, sessionId);
-    return session;
-}
-/******************************************************************************/
 // Should only be used by packet, lots of side effects
 ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew)
 {
@@ -1369,18 +1358,20 @@ void arkime_session_init()
     arkime_session_pre_save_func = arkime_parsers_get_named_func("arkime_session_pre_save");
 }
 /******************************************************************************/
-/* Anything that needs every mProtocol registered and the [protocol-settings] section
- * applied, so after plugins are loaded and arkime_mprotocol_config() has run
+/* Called by arkime_mprotocol_register() once the settings for a mProtocol are
+ * known, so a mProtocol registered at any time always has its tables
  */
-void arkime_session_config()
+void arkime_session_mprotocol_init(int mProtocol)
 {
     for (int t = 0; t < config.packetThreads; t++) {
-        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
-            arkime_session_hash_init(&sessionThreadData[t].sessions[mProtocol], mProtocols[mProtocol].maxStreams);
-            sessionThreadData[t].stoppedSessions.new[mProtocol] = g_hash_table_new(arkime_session_hash, (GEqualFunc)arkime_session_equal);
-        }
+        arkime_session_hash_init(&sessionThreadData[t].sessions[mProtocol], mProtocols[mProtocol].maxStreams);
+        sessionThreadData[t].stoppedSessions.new[mProtocol] = g_hash_table_new(arkime_session_hash, (GEqualFunc)arkime_session_equal);
     }
-
+}
+/******************************************************************************/
+/* Anything that needs every mProtocol registered, so after plugins are loaded */
+void arkime_session_config()
+{
     if (!config.dryRun && !config.pcapReadOffline) {
         g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
         arkime_session_load_stopped();

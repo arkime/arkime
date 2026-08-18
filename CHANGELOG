@@ -43,6 +43,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           (superAdmin includes it, arkimeAdmin no longer grants it), eg db.pl <host:port> users-update '<userId glob>' --addRole dbAdmin.
           dbAdmin implies no other role, so pair it with arkimeUser, which viewer requires for any access
   - #4080 Removed the derived esAdminUser field from /api/user/current, check the user's roles for dbAdmin instead
+  - #4210 The packet threads used maxPackets instead of maxPacketsInQueue when deciding the packet queue was
+          75% full, so session command processing was throttled once a thread had 7500 packets queued rather
+          than 150000. Busy sensors that sat above the old threshold will now do more work per packet
   - #4210 lldp, xid, isis, esis, igmp and pim used to record all their traffic as a single session per capture
           node, they now create a session per talker pair like every other protocol - by src/dst mac for the
           ethernet protocols and by src/dst ip for igmp and pim. Expect more, smaller sessions for these
