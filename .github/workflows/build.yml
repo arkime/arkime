@@ -258,7 +258,7 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
+          (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)
@@ -445,7 +445,7 @@ jobs:
             ls -l *.pkg
 
             if [ "${{ matrix.ja4plus }}" = "true" ]; then
-              (cd .. ; git clone https://github.com/arkime/ja4)
+              (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
