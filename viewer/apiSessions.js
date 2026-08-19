@@ -14,6 +14,7 @@ const { spawn, spawnSync } = require('child_process');
 const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
+const net = require('net');
 const os = require('os');
 const path = require('path');
 const PNG = require('pngjs').PNG;
@@ -2845,13 +2846,17 @@ class SessionAPIs {
    *        "fields":[...]}
    *     ]},
    *     ...
-   *   ]}
+   *   ],
+   *    "bytes":"<hex of the raw frame>"}
    *
    * @name /session/:nodeName/:id/tshark
    * @param {string} hidden=false - "true" to include fields tshark marks hide="yes"
    * @param {string} payload=false - "true" to include the raw "data" proto layer
    *   for unparsed payload bytes (otherwise passes `--disable-protocol data`
    *   to tshark)
+   * @param {string} bytes=true - "false" to omit the "bytes" hex of each frame
+   *   ("bytes" carries at most the first 16KB of a frame; frame.cap_len has the
+   *   real captured length)
    * @param {number} length - number of packets to dissect, capped at the
    *   `tsharkMaxPackets` config value (which is also the default)
    * @returns {ndjson} One JSON-encoded packet per line
@@ -2866,6 +2871,7 @@ class SessionAPIs {
 
     const includeHidden = req.query.hidden === 'true';
     const includePayload = req.query.payload === 'true';
+    const includeBytes = req.query.bytes !== 'false';
 
     // tshark refuses non-regular stdin (S_ISSOCK / S_ISFIFO can both trip it
     // depending on version/build); Node's stdio 'pipe' is a socketpair on
@@ -2936,6 +2942,71 @@ class SessionAPIs {
       if (stderrBuf.length < 8192) { stderrBuf += b.toString().slice(0, 8192 - stderrBuf.length); }
     });
 
+    // --- raw frame tap -------------------------------------------------------
+    // PDML carries per-field hex but never the whole frame, so the hex pane in
+    // the UI would have nothing to show. Sniff the same classic-pcap byte
+    // stream we hand tshark, split it into records, and stash each frame's hex
+    // keyed by its 1-based number. tshark reads the fifo we just wrote, so a
+    // frame is always tapped before its </packet> comes back out.
+    // Matches the hex pane's own render cap -- sending more would be bytes the
+    // UI can never show. SharkBytes.vue reports how much was left off, using
+    // frame.cap_len rather than this truncated length.
+    const TAP_MAX_PACKET = 16384;   // per frame
+    const TAP_MAX_PENDING = 1 << 24; // total hex chars held waiting for tshark
+    const rawFrames = new Map();
+    let rawPending = 0;
+    let rawCount = 0;
+    let tapBuf = Buffer.alloc(0);
+    let tapHeader = true;
+    let tapLE = true;
+    let tapOff = !includeBytes;
+
+    const tapFeed = (chunk) => {
+      if (tapOff) { return; }
+      tapBuf = tapBuf.length ? Buffer.concat([tapBuf, chunk]) : Buffer.from(chunk);
+      for (;;) {
+        if (tapHeader) {
+          if (tapBuf.length < 24) { return; }
+          const magic = tapBuf.readUInt32LE(0);
+          if (magic === 0xa1b2c3d4 || magic === 0xa1b23c4d) {
+            tapLE = true;
+          } else if (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1) {
+            tapLE = false;
+          } else { // not classic pcap -- give up, the UI just shows no hex
+            tapOff = true;
+            tapBuf = Buffer.alloc(0);
+            return;
+          }
+          tapBuf = Buffer.from(tapBuf.subarray(24));
+          tapHeader = false;
+        }
+        if (tapBuf.length < 16) { return; }
+        const inclLen = tapLE ? tapBuf.readUInt32LE(8) : tapBuf.readUInt32BE(8);
+        if (inclLen > 0x400000) { // not a pcap record after all
+          tapOff = true;
+          tapBuf = Buffer.alloc(0);
+          return;
+        }
+        if (tapBuf.length < 16 + inclLen) { return; }
+        rawCount++;
+        if (rawCount >= pktLen) { tapOff = true; } // tshark stops at -c pktLen; the pump does not
+        if (rawPending < TAP_MAX_PENDING) {
+          const hex = tapBuf.subarray(16, 16 + Math.min(inclLen, TAP_MAX_PACKET)).toString('hex');
+          rawPending += hex.length;
+          rawFrames.set(rawCount, hex);
+        }
+        tapBuf = Buffer.from(tapBuf.subarray(16 + inclLen));
+      }
+    };
+
+    const takeRawFrame = (num) => {
+      const hex = rawFrames.get(num);
+      if (hex === undefined) { return undefined; }
+      rawFrames.delete(num);
+      rawPending -= hex.length;
+      return hex;
+    };
+
     // --- PDML -> NDJSON streaming converter ---------------------------------
     // SAX-stream tshark's PDML output. Build one packet at a time as a stack
     // of proto/field nodes; on </packet> serialize a compact JSON line. We
@@ -2943,6 +3014,7 @@ class SessionAPIs {
     const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: true });
     let packet = null;          // { layers: [...] } currently being built
     let stack = null;           // array of containers we're inside (proto or field), top is current
+    let pdmlCount = 0;          // 1-based packet number, matches the raw frame tap
     parser.on('opentag', (node) => {
       if (!packet) {
         if (node.name === 'packet') { packet = { layers: [] }; stack = []; }
@@ -2982,6 +3054,9 @@ class SessionAPIs {
           }
         };
         for (const l of packet.layers) { stripEmpty(l); }
+        pdmlCount++;
+        const raw = takeRawFrame(pdmlCount);
+        if (raw !== undefined) { packet.bytes = raw; }
         if (!res.writableEnded) {
           res.write(JSON.stringify(packet));
           res.write('\n');
@@ -3018,6 +3093,7 @@ class SessionAPIs {
       if (await ViewerUtils.isLocalView(req.params.nodeName)) {
         const sink = {
           write: (chunk, cb) => {
+            tapFeed(chunk);
             if (!writeStream || !writeStream.writable) { if (cb) { setImmediate(cb); } return false; }
             return writeStream.write(chunk, cb);
           },
@@ -3040,6 +3116,7 @@ class SessionAPIs {
           }
           pres.on('error', (err) => finish(502, 'error streaming remote pcap: ' + ArkimeUtil.safeStr(err.message)));
           pres.pipe(writeStream);
+          pres.on('data', tapFeed);
         }, (err) => {
           finish(502, 'error contacting remote node: ' + ArkimeUtil.safeStr(err.message || err));
         }, req.query.cluster);
@@ -3050,15 +3127,30 @@ class SessionAPIs {
       wireWriteStream();
       startPcapPump();
     } else {
-      fs.open(fifoPath, fs.constants.O_WRONLY, (openErr, fd) => {
-        if (openErr) {
-          return finish(500, 'failed to open fifo: ' + ArkimeUtil.safeStr(openErr.message));
-        }
-        if (finished) { try { fs.closeSync(fd); } catch (e) { /* ignore */ } return; }
-        writeStream = fs.createWriteStream(null, { fd, autoClose: true });
-        wireWriteStream();
-        startPcapPump();
-      });
+      // Opening the write end of a fifo BLOCKS until a reader shows up, and
+      // fs.open runs on the libuv threadpool (4 threads by default). If tshark
+      // never gets as far as opening the fifo -- it died, or the client hung up
+      // and we SIGKILLed it -- that thread stays pinned forever, and unlinking
+      // the fifo does not release it; a handful of aborted requests would wedge
+      // every file read in the process. Open non-blocking instead and retry:
+      // ENXIO just means tshark has not opened its end yet. net.Socket rather
+      // than fs.createWriteStream because the fd stays non-blocking and only
+      // libuv's pipe handling deals with EAGAIN correctly.
+      const openDeadline = Date.now() + internals.tsharkTimeoutMs;
+      const openFifo = () => {
+        if (finished) { return; }
+        fs.open(fifoPath, fs.constants.O_WRONLY | fs.constants.O_NONBLOCK, (openErr, fd) => { // eslint-disable-line no-bitwise
+          if (finished) { if (!openErr) { try { fs.closeSync(fd); } catch (e) { /* ignore */ } } return; }
+          if (openErr) {
+            if (openErr.code === 'ENXIO' && Date.now() < openDeadline) { return setTimeout(openFifo, 10); }
+            return finish(500, 'failed to open fifo: ' + ArkimeUtil.safeStr(openErr.message));
+          }
+          writeStream = new net.Socket({ fd, readable: false, writable: true });
+          wireWriteStream();
+          startPcapPump();
+        });
+      };
+      openFifo();
     }
   }
 

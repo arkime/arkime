@@ -8,7 +8,9 @@ SPDX-License-Identifier: Apache-2.0
       v-if="hasChildren"
       ref="detailsRef">
       <summary
-        @click.alt.stop.prevent="copyValue">
+        ref="rowRef"
+        :class="{ 'tshark-selected': isSelected }"
+        @click="onClick">
         <span class="tshark-label">{{ displayLabel }}</span>
       </summary>
       <ul>
@@ -21,15 +23,17 @@ SPDX-License-Identifier: Apache-2.0
     </details>
     <span
       v-else
+      ref="rowRef"
       class="tshark-leaf"
-      @click.alt.stop.prevent="copyValue">
+      :class="{ 'tshark-selected': isSelected }"
+      @click="onClick">
       <span class="tshark-label">{{ displayLabel }}</span>
     </span>
   </li>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, inject, nextTick, ref, watch } from 'vue';
 
 const props = defineProps({
   node: { type: Object, required: true },
@@ -38,8 +42,25 @@ const props = defineProps({
 });
 
 const detailsRef = ref(null);
+const rowRef = ref(null);
+
+// provided by SessionDetail so the hex pane can follow the tree selection
+const selection = inject('sharkSelection', null);
 
 const hasChildren = computed(() => Array.isArray(props.node.fields) && props.node.fields.length > 0);
+
+const isSelected = computed(() => selection?.node === props.node);
+
+// alt-click copies the value (and must not toggle the <details>), plain click selects
+const onClick = (e) => {
+  if (e.altKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    copyValue();
+    return;
+  }
+  if (selection) { selection.node = props.node; }
+};
 
 // PDML's `showname` is often "Label: value" already (e.g. "Frame Length: 66 bytes"),
 // but for some protocols (geninfo) it's just a bare label. If `show` is present and
@@ -60,6 +81,18 @@ const copyValue = () => {
     navigator.clipboard.writeText(String(text));
   }
 };
+
+// Selecting a byte in the hex pane picks a field that may be buried in
+// collapsed nodes. `selection.path` holds every node above it, so each ancestor
+// opens itself and the field itself scrolls into view. Parents run before
+// children, so the row is visible by the time it asks to be scrolled to.
+watch(() => selection?.node, (node) => {
+  if (!node) { return; }
+  if (detailsRef.value && selection.path?.has(props.node)) { detailsRef.value.open = true; }
+  if (node === props.node) {
+    nextTick(() => rowRef.value?.scrollIntoView?.({ block: 'nearest' }));
+  }
+}, { flush: 'post' });
 
 watch(() => props.expandSignal, (v) => {
   if (!detailsRef.value || v === 0) { return; }
@@ -82,5 +115,14 @@ watch(() => props.expandSignal, (v) => {
   display: inline-flex;
   align-items: center;
   gap: 0;
+  cursor: pointer;
+}
+.tshark-selected {
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+  border-radius: 2px;
+}
+.tshark-selected .tshark-label {
+  color: inherit;
 }
 </style>

@@ -1,4 +1,4 @@
-use Test::More tests => 59;
+use Test::More tests => 62;
 
 use Cwd;
 use URI::Escape;
@@ -28,14 +28,19 @@ my $pwd = "*/pcap";
 # tshark
     my $tsharkProbe = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/tshark");
     SKIP: {
-        skip "tshark not available on viewer", 1 if $tsharkProbe->code != 200;
+        skip "tshark not available on viewer", 3 if $tsharkProbe->code != 200;
         ok($tsharkProbe->content =~ m{"layers":\[.*"name":"frame"}s, "/tshark");
+        ok($tsharkProbe->content =~ m{"bytes":"[0-9a-f]+"}s, "/tshark bytes");
+
+        my $tsharkNoBytes = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/tshark?bytes=false");
+        ok($tsharkNoBytes->content !~ m{"bytes":}s, "/tshark bytes=false");
     }
 
     my $tsharkMulti = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/tshark");
     SKIP: {
-        skip "tshark not available on multi viewer", 1 if $tsharkMulti->code != 200;
+        skip "tshark not available on multi viewer", 2 if $tsharkMulti->code != 200;
         ok($tsharkMulti->content =~ m{"layers":\[.*"name":"frame"}s, "multi /tshark");
+        ok($tsharkMulti->content =~ m{"bytes":"[0-9a-f]+"}s, "multi /tshark bytes");
     }
 
 # multi /packets

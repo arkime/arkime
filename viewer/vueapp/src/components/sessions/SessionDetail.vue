@@ -341,10 +341,11 @@
         class="tshark-section me-1 ms-1 mt-3">
         <!-- tshark toolbar lives in the shared bar above -->
 
-        <!-- protocol histogram -->
+        <!-- protocol histogram, with the pane layout picker riding along on
+             the right; the layout choice is remembered per browser -->
         <div
           v-if="tsharkPackets.length"
-          class="d-flex flex-wrap gap-1 mb-2 tshark-histogram">
+          class="d-flex flex-wrap align-center gap-1 mb-2 tshark-histogram">
           <v-chip
             v-for="[proto, count] in tsharkProtoCounts"
             :key="proto"
@@ -355,6 +356,40 @@
             @click="tsharkFindRef?.setQuery((tsharkFilter === proto) ? '' : proto)">
             {{ proto.toUpperCase() }}&nbsp;×{{ count }}
           </v-chip>
+
+          <v-menu location="bottom end">
+            <template #activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                class="ms-auto shark-layout-btn"
+                variant="text"
+                size="x-small"
+                density="comfortable"
+                title="Pane layout">
+                <v-icon
+                  :icon="sharkLayouts[sharkLayout].icon"
+                  class="me-1" />
+                layout
+                <v-icon
+                  icon="mdi-menu-down"
+                  class="ms-1" />
+              </v-btn>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="(def, key) in sharkLayouts"
+                :key="key"
+                :active="sharkLayout === key"
+                @click="setSharkLayout(key)">
+                <template #prepend>
+                  <v-icon :icon="def.icon" />
+                </template>
+                <v-list-item-title class="ms-2">
+                  {{ def.label }}
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
 
         <v-alert
@@ -379,59 +414,88 @@
           No tshark output for this session.
         </div>
 
-        <!-- split view: packet list (left) + tree pane (right) -->
+        <!-- three panes -- packet list, dissection fields, raw bytes -- laid
+             out by the user's saved layout choice -->
         <div
           v-if="tsharkPackets.length"
-          ref="tsharkOutputRef"
-          class="tshark-split"
-          :style="{ gridTemplateColumns: `${tsharkSplitWidth}px 6px 1fr` }">
-          <div class="tshark-list">
-            <div
-              v-for="entry in filteredTsharkPackets"
-              :key="entry.origIdx"
-              class="tshark-list-item"
-              :class="{ 'tshark-list-item--selected': tsharkSelectedIdx === entry.origIdx }"
-              :style="packetProtoStyle(packetTopProto(entry.pkt))"
-              @click="setTsharkSelected(entry.origIdx)">
-              <span class="tshark-list-idx">#{{ entry.origIdx + 1 }}</span>
-              <span
-                v-if="packetTopProto(entry.pkt)"
-                class="tshark-proto-badge ms-1">{{ packetTopProto(entry.pkt).toUpperCase() }}</span>
-              <span class="ms-2 small text-truncate">{{ packetSummary(entry.pkt) }}</span>
-            </div>
-            <div
-              v-if="!filteredTsharkPackets.length"
-              class="text-medium-emphasis small p-2">
-              No packets match "{{ tsharkFilter }}"
-            </div>
-          </div>
+          ref="tsharkOutputRef">
+          <shark-panes
+            :layout="sharkLayout"
+            :sizes="sharkSizes"
+            :height="sharkHeight"
+            @update:sizes="onSharkSizes"
+            @update:height="onSharkHeight">
+            <!-- packet list -->
+            <template #list>
+              <div class="shark-list">
+                <div class="shark-list-row shark-list-head">
+                  <span
+                    v-for="col in sharkColumns"
+                    :key="col.key"
+                    :class="[`c-${col.key}`, 'shark-list-th']"
+                    :title="`Sort by ${col.label}`"
+                    @click="setTsharkSort(col.key)">
+                    {{ col.label }}
+                    <v-icon
+                      v-if="tsharkSort.key === col.key"
+                      :icon="tsharkSort.dir === 1 ? 'mdi-menu-up' : 'mdi-menu-down'"
+                      size="x-small" />
+                  </span>
+                </div>
+                <div
+                  v-for="entry in sortedTsharkPackets"
+                  :key="entry.origIdx"
+                  class="shark-list-row"
+                  :class="{ 'shark-list-row--selected': tsharkSelectedIdx === entry.origIdx }"
+                  :style="packetProtoStyle(entry.cols.proto)"
+                  @click="setTsharkSelected(entry.origIdx)">
+                  <span
+                    v-for="col in sharkColumns"
+                    :key="col.key"
+                    :class="`c-${col.key}`">{{ cellText(entry, col.key) }}</span>
+                </div>
+                <div
+                  v-if="!sortedTsharkPackets.length"
+                  class="text-medium-emphasis small p-2">
+                  No packets match "{{ tsharkFilter }}"
+                </div>
+              </div>
+            </template>
 
-          <div
-            class="tshark-split-handle"
-            title="Drag to resize"
-            @mousedown="startTsharkResize" />
+            <!-- dissection tree -->
+            <template #fields>
+              <div class="tshark-tree-pane">
+                <div
+                  v-if="tsharkSelectedPacket"
+                  class="tshark-tree-header"
+                  :style="packetProtoStyle(packetTopProto(tsharkSelectedPacket))">
+                  <strong>Packet {{ tsharkSelectedIdx + 1 }}</strong>
+                  <span
+                    v-if="packetTopProto(tsharkSelectedPacket)"
+                    class="tshark-proto-badge ms-2">{{ packetTopProto(tsharkSelectedPacket).toUpperCase() }}</span>
+                  <span class="ms-2 small">{{ packetSummary(tsharkSelectedPacket) }}</span>
+                </div>
+                <ul
+                  v-if="tsharkSelectedPacket"
+                  class="tshark-tree">
+                  <tshark-node
+                    v-for="(layer, li) in tsharkSelectedPacket.layers"
+                    :key="li"
+                    :node="layer"
+                    :expand-signal="tsharkExpandSignal" />
+                </ul>
+              </div>
+            </template>
 
-          <div class="tshark-tree-pane">
-            <div
-              v-if="tsharkSelectedPacket"
-              class="tshark-tree-header"
-              :style="packetProtoStyle(packetTopProto(tsharkSelectedPacket))">
-              <strong>Packet {{ tsharkSelectedIdx + 1 }}</strong>
-              <span
-                v-if="packetTopProto(tsharkSelectedPacket)"
-                class="tshark-proto-badge ms-2">{{ packetTopProto(tsharkSelectedPacket).toUpperCase() }}</span>
-              <span class="ms-2 small">{{ packetSummary(tsharkSelectedPacket) }}</span>
-            </div>
-            <ul
-              v-if="tsharkSelectedPacket"
-              class="tshark-tree">
-              <tshark-node
-                v-for="(layer, li) in tsharkSelectedPacket.layers"
-                :key="li"
-                :node="layer"
-                :expand-signal="tsharkExpandSignal" />
-            </ul>
-          </div>
+            <!-- raw bytes -->
+            <template #bytes>
+              <shark-bytes
+                :hex="tsharkSelectedPacket?.bytes || ''"
+                :highlight="sharkByteHighlight"
+                :frame-length="tsharkSelectedFrameLength"
+                @select-offset="onSharkByteClick" />
+            </template>
+          </shark-panes>
         </div>
       </div> <!-- /tshark tab -->
     </div>
@@ -440,7 +504,7 @@
 
 <script setup>
 // external imports
-import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, inject, watch } from 'vue';
+import { ref, reactive, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, inject, provide, watch } from 'vue';
 // internal imports
 import store from '@/store';
 import { timezoneDateString } from '@common/vueFilters.js';
@@ -449,6 +513,12 @@ import SessionActions from './SessionActions.vue';
 import SessionsService from './SessionsService';
 import sessionDetailData from './sessionDetailData.js';
 import TsharkNode from './TsharkNode.vue';
+import SharkPanes from './SharkPanes.vue';
+import SharkBytes from './SharkBytes.vue';
+import {
+  SHARK_LAYOUTS, loadSharkLayout, saveSharkLayout,
+  loadSharkSizes, saveSharkSizes, loadSharkHeight, saveSharkHeight
+} from './sharkLayouts.js';
 import ArkimeTagSessions from './Tags.vue';
 import ArkimeRemoveData from './Remove.vue';
 import ArkimeSendSessions from './Send.vue';
@@ -509,7 +579,38 @@ const activeTab = ref('details');
 const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
 const tsharkExpandSignal = ref(0);
-const tsharkSplitWidth = ref(280);
+
+// pane layout: which arrangement, the two split fractions and the overall
+// height, all remembered in localStorage like the other packet options
+const sharkLayouts = SHARK_LAYOUTS;
+const sharkLayout = ref(loadSharkLayout());
+const sharkSizes = ref(loadSharkSizes(sharkLayout.value));
+const sharkHeight = ref(loadSharkHeight());
+
+const setSharkLayout = (key) => {
+  if (!SHARK_LAYOUTS[key]) { return; }
+  sharkLayout.value = key;
+  sharkSizes.value = loadSharkSizes(key);
+  saveSharkLayout(key);
+};
+const onSharkSizes = (sizes) => {
+  sharkSizes.value = sizes;
+  saveSharkSizes(sharkLayout.value, sizes);
+};
+const onSharkHeight = (height) => {
+  sharkHeight.value = height;
+  saveSharkHeight(height);
+};
+
+// the tree tells the hex pane which bytes to light up; going the other way,
+// clicking a byte fills in `path` so the tree can open down to that field
+const sharkSelection = reactive({ node: null, path: new Set() });
+provide('sharkSelection', sharkSelection);
+const sharkByteHighlight = computed(() => {
+  const n = sharkSelection.node;
+  if (!n || !Number.isFinite(n.pos) || !n.size) { return null; }
+  return { pos: n.pos, size: n.size };
+});
 
 // find-in-content: one engine per tab. details/tshark mark client-side over the
 // rendered DOM; packets navigate spans the server renders (byte-level search).
@@ -931,6 +1032,8 @@ const getTshark = async () => {
   tsharkError.value = '';
   tsharkPackets.value = [];
   tsharkSelectedIdx.value = 0;
+  sharkSelection.node = null;
+  sharkSelection.path = new Set();
 
   try {
     const { controller, fetcher } = SessionsService.getTshark(
@@ -968,9 +1071,76 @@ const cancelTshark = () => {
   }
 };
 
+// One row per packet with the Wireshark-style columns pre-computed, so the
+// list template stays cheap and the filter has something flat to match on.
+const tsharkRows = computed(() => {
+  return tsharkPackets.value.map((pkt, i) => ({ pkt, origIdx: i, cols: packetColumns(pkt) }));
+});
+
+const sharkColumns = [
+  { key: 'no', label: 'No.' },
+  { key: 'time', label: 'Time' },
+  { key: 'src', label: 'Source' },
+  { key: 'dst', label: 'Destination' },
+  { key: 'proto', label: 'Protocol' },
+  { key: 'len', label: 'Length' },
+  { key: 'info', label: 'Info' }
+];
+const sharkNumericColumns = new Set(['no', 'time', 'len']);
+
+const cellText = (entry, key) => {
+  if (key === 'no') { return entry.origIdx + 1; }
+  if (key === 'proto') { return (entry.cols.proto || '').toUpperCase(); }
+  return entry.cols[key];
+};
+
+// dir 0 is capture order, which is a real choice here rather than "unsorted" --
+// clicking a header cycles asc -> desc -> back to capture order.
+const tsharkSort = ref({ key: '', dir: 0 });
+
+const setTsharkSort = (key) => {
+  const cur = tsharkSort.value;
+  if (cur.key !== key) { tsharkSort.value = { key, dir: 1 }; } else if (cur.dir === 1) { tsharkSort.value = { key, dir: -1 }; } else { tsharkSort.value = { key: '', dir: 0 }; }
+};
+
+// Digit-aware compare so 10.2.1.100 sorts after 10.2.1.9 rather than before it.
+const naturalCompare = (a, b) => {
+  const ax = String(a ?? '').match(/\d+|\D+/g) || [];
+  const bx = String(b ?? '').match(/\d+|\D+/g) || [];
+  for (let i = 0; i < Math.max(ax.length, bx.length); i++) {
+    const x = ax[i]; const y = bx[i];
+    if (x === undefined) { return -1; }
+    if (y === undefined) { return 1; }
+    if (x === y) { continue; }
+    if (/^\d/.test(x) && /^\d/.test(y)) {
+      const d = Number(x) - Number(y);
+      if (d) { return d; }
+    } else {
+      return x < y ? -1 : 1;
+    }
+  }
+  return 0;
+};
+
+const sortedTsharkPackets = computed(() => {
+  const { key, dir } = tsharkSort.value;
+  const list = filteredTsharkPackets.value;
+  if (!key || !dir) { return list; }
+
+  const numeric = sharkNumericColumns.has(key);
+  const val = (r) => (key === 'no' ? r.origIdx : r.cols[key]);
+
+  // slice() so the filter's array isn't mutated; capture order breaks ties so
+  // the sort stays stable in both directions
+  return list.slice().sort((a, b) => {
+    const d = numeric ? (Number(val(a)) || 0) - (Number(val(b)) || 0) : naturalCompare(val(a), val(b));
+    return d ? d * dir : a.origIdx - b.origIdx;
+  });
+});
+
 // Filter packets by text against summary/protocol and any field name/label/value.
 const filteredTsharkPackets = computed(() => {
-  const list = tsharkPackets.value.map((p, i) => ({ pkt: p, origIdx: i }));
+  const list = tsharkRows.value;
   // v-text-field clearable sets the model to null, so coerce before trim().
   const raw = (tsharkFilter.value || '').trim();
   if (!raw) { return list; }
@@ -993,14 +1163,22 @@ const filteredTsharkPackets = computed(() => {
     return (node.fields || []).some(nodeMatches);
   };
 
-  return list.filter(({ pkt }) => {
-    if (test(packetTopProto(pkt)) || test(packetSummary(pkt))) { return true; }
+  return list.filter(({ pkt, cols }) => {
+    if (test(cols.proto) || test(cols.src) || test(cols.dst) || test(cols.info)) { return true; }
     return (pkt.layers || []).some(nodeMatches);
   });
 });
 
 const tsharkSelectedPacket = computed(() => {
   return tsharkPackets.value[tsharkSelectedIdx.value] || null;
+});
+
+// The API truncates the raw frame it sends; frame.cap_len is how big it really
+// was, so the hex pane can say what it is leaving off.
+const tsharkSelectedFrameLength = computed(() => {
+  const frame = tsharkSelectedPacket.value?.layers?.find(l => l.name === 'frame');
+  const capLen = frame?.fields?.find(f => f.name === 'frame.cap_len' || f.name === 'frame.len');
+  return capLen ? (parseInt(capLen.show) || 0) : 0;
 });
 
 // Histogram of top-level protocols for the chip strip above the list.
@@ -1015,26 +1193,92 @@ const tsharkProtoCounts = computed(() => {
 
 const setTsharkSelected = (idx) => {
   tsharkSelectedIdx.value = idx;
+  sharkSelection.node = null;
+  sharkSelection.path = new Set();
 };
 
-// Drag the divider between the packet list and the tree pane.
-const startTsharkResize = (e) => {
-  e.preventDefault();
-  const startX = e.clientX;
-  const startW = tsharkSplitWidth.value;
-  const onMove = (ev) => {
-    tsharkSplitWidth.value = Math.max(160, Math.min(640, startW + (ev.clientX - startX)));
+// Fields the packet list columns are built from. Pulled in one depth-first
+// pass because PDML buries them at varying depths per protocol.
+const tsharkColFields = new Set([
+  'frame.time_relative', 'frame.len',
+  'ip.src', 'ip.dst', 'ipv6.src', 'ipv6.dst',
+  'arp.src.proto_ipv4', 'arp.dst.proto_ipv4',
+  'eth.src', 'eth.dst'
+]);
+// Layers that never make a useful Info column.
+const tsharkInfoSkip = new Set(['geninfo', 'frame', 'fake-field-wrapper']);
+
+const packetColumns = (pkt) => {
+  const found = {};
+  const walk = (nodes) => {
+    for (const n of nodes) {
+      if (!n) { continue; }
+      if (found[n.name] === undefined && tsharkColFields.has(n.name) && n.show !== undefined) {
+        found[n.name] = n.show;
+      }
+      if (n.fields) { walk(n.fields); }
+    }
   };
-  const onUp = () => {
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', onUp);
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
+  walk(pkt?.layers || []);
+
+  const pick = (...names) => {
+    for (const f of names) { if (found[f] !== undefined) { return found[f]; } }
+    return '';
   };
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
-  document.body.style.userSelect = 'none';
-  document.body.style.cursor = 'col-resize';
+
+  const time = found['frame.time_relative'];
+  let info = '';
+  for (let i = (pkt?.layers?.length || 0) - 1; i >= 0; i--) {
+    const l = pkt.layers[i];
+    if (!tsharkInfoSkip.has(l.name)) { info = l.label || l.name || ''; break; }
+  }
+
+  return {
+    time: time === undefined ? '' : Number(time).toFixed(6),
+    src: pick('ip.src', 'ipv6.src', 'arp.src.proto_ipv4', 'eth.src'),
+    dst: pick('ip.dst', 'ipv6.dst', 'arp.dst.proto_ipv4', 'eth.dst'),
+    proto: packetTopProto(pkt) || '',
+    len: found['frame.len'] ?? '',
+    info
+  };
+};
+
+// Reverse of the field -> bytes highlight: given a byte offset, find the most
+// specific dissection field covering it, plus the chain of nodes above it so
+// the tree can open all the way down. Smallest covering range wins, ties going
+// to the deepest, which is what Wireshark lands on too. `geninfo` and `frame`
+// are skipped -- they blanket the whole packet without describing any of it.
+const tsharkOffsetSkipLayers = new Set(['geninfo', 'frame']);
+
+const findFieldAtOffset = (pkt, off) => {
+  let best = null;
+  const chain = [];
+
+  const walk = (nodes, depth) => {
+    for (const n of nodes) {
+      chain.push(n);
+      if (Number.isFinite(n.pos) && n.size > 0 && off >= n.pos && off < n.pos + n.size) {
+        if (!best || n.size < best.size || (n.size === best.size && depth > best.depth)) {
+          best = { node: n, size: n.size, depth, path: chain.slice(0, -1) };
+        }
+      }
+      if (n.fields) { walk(n.fields, depth + 1); }
+      chain.pop();
+    }
+  };
+
+  for (const layer of pkt?.layers || []) {
+    if (tsharkOffsetSkipLayers.has(layer.name)) { continue; }
+    walk([layer], 0);
+  }
+  return best;
+};
+
+const onSharkByteClick = (off) => {
+  const hit = findFieldAtOffset(tsharkSelectedPacket.value, off);
+  if (!hit) { return; }
+  sharkSelection.path = new Set(hit.path);
+  sharkSelection.node = hit.node;
 };
 
 // Build a short header line for a tshark packet (frame summary if present).
@@ -1262,6 +1506,10 @@ onUnmounted(() => {
   text-transform: none;
 }
 
+/* keeps the layout button from stretching the chip row's height */
+.tshark-histogram .shark-layout-btn {
+  align-self: center;
+}
 .tshark-histogram .v-chip {
   cursor: pointer;
   font-weight: 600;
@@ -1281,66 +1529,55 @@ onUnmounted(() => {
   box-shadow: 0 0 0 1px rgb(var(--v-theme-warning));
 }
 
-/* split view: packet list (resizable) + grab handle + flexible tree pane */
-.tshark-split {
-  display: grid;
-  /* grid-template-columns is set inline so the divider can be dragged */
-  border: 1px solid rgb(var(--v-theme-neutral));
-  border-radius: 4px;
-  overflow: hidden;
-  min-height: 280px;
-}
-.tshark-list {
+/* Wireshark-style packet list. Head and rows share one grid template so the
+   columns line up; a min-width keeps them readable in the narrow layouts. */
+.shark-list {
   background: rgb(var(--v-theme-background));
+  min-width: 54rem;
 }
-.tshark-split-handle {
-  cursor: col-resize;
-  background: rgb(var(--v-theme-neutral));
-  position: relative;
-  transition: background 0.15s;
-}
-.tshark-split-handle::before {
-  /* two faint dots to hint at drag */
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 2px;
-  height: 24px;
-  background: rgba(0, 0, 0, 0.35);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-  border-radius: 1px;
-}
-.tshark-split-handle:hover,
-.tshark-split-handle:active {
-  background: rgb(var(--v-theme-primary));
-}
-.tshark-list-item {
+.shark-list-row {
+  display: grid;
+  grid-template-columns: 4.5em 7em 13em 13em 6em 5em minmax(14em, 1fr);
+  gap: 0.5rem;
   padding: 2px 8px;
   cursor: pointer;
   font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
 }
-.tshark-list-item .tshark-list-idx {
-  font-weight: 700;
-  min-width: 3em;
-}
-.tshark-list-item .text-truncate {
+.shark-list-row > span {
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1 1 auto;
-  min-width: 0;
+  white-space: nowrap;
 }
-.tshark-list-item:hover {
+.shark-list-row .c-no,
+.shark-list-row .c-len {
+  text-align: right;
+}
+.shark-list-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  cursor: default;
+  font-weight: 700;
+  background: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+}
+.shark-list-th {
+  cursor: pointer;
+  user-select: none;
+}
+.shark-list-th:hover {
+  color: rgb(var(--v-theme-primary));
+}
+/* the arrow must not push the label out of its column */
+.shark-list-th .v-icon {
+  vertical-align: baseline;
+}
+.shark-list-row:not(.shark-list-head):hover {
   filter: brightness(0.92);
 }
-.tshark-list-item--selected {
+.shark-list-row--selected {
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: -2px;
 }
