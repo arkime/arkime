@@ -241,14 +241,23 @@ void arkime_session_id6(uint8_t *buf, const uint8_t *addr1, uint16_t port1, cons
 #endif
 /******************************************************************************/
 /* Session id for the ethernet only protocols, one session per talker pair.
- * nbytes is 12 for the src/dst MACs, 14 to also include the ethertype.
- * The caller must have already verified nbytes are available.
+ * nbytes is 12 for the src/dst MACs, 14 to also include the ethertype. Copies
+ * what is actually captured and zero fills the rest, so a short packet gives a
+ * degenerate id instead of reading past the packet. Protocols that treat a
+ * short packet as corrupt still need their own check before calling this.
  */
 void arkime_session_id_ether(uint8_t *sessionId, const ArkimePacket_t *packet, int nbytes)
 {
+    int avail = (int)packet->pktlen - (int)packet->etherOffset;
+
+    if (avail < 0)
+        avail = 0;
+    else if (avail > nbytes)
+        avail = nbytes;
+
     sessionId[0] = 16;
-    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, nbytes);
-    memset(sessionId + 1 + nbytes, 0, 15 - nbytes);
+    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, avail);
+    memset(sessionId + 1 + avail, 0, 15 - avail);
 }
 /******************************************************************************/
 char *arkime_session_id_string(const uint8_t *sessionId, char *buf)

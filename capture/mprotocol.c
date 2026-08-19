@@ -226,16 +226,7 @@ void arkime_mprotocol_config()
 // Corrupt Ether packet mProtocol - session ID based on src/dst MAC
 LOCAL void corrupt_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 16;
-    int avail = (int)packet->pktlen - (int)packet->etherOffset;
-    if (avail >= 12) {
-        memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 12);
-    } else {
-        memset(sessionId + 1, 0, 12);
-        if (avail > 0)
-            memcpy(sessionId + 1, packet->pkt + packet->etherOffset, avail);
-    }
-    sessionId[13] = sessionId[14] = sessionId[15] = 0;
+    arkime_session_id_ether(sessionId, packet, 12);
 }
 /******************************************************************************/
 LOCAL int corrupt_ether_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
