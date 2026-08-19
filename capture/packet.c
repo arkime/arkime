@@ -74,6 +74,10 @@ LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 
 int                          mProtocolTcp;
 int                          mProtocolUdp;
+int                          mProtocolIcmp;
+int                          mProtocolIcmpv6;
+int                          mProtocolSctp;
+int                          mProtocolEsp;
 
 extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
@@ -865,11 +869,13 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        arkime_session_monitoring(),
                        arkime_session_watch_count(mProtocolTcp),
                        arkime_session_watch_count(mProtocolUdp),
-                       arkime_session_watch_count(arkime_mprotocol_get("icmp")),
+                       arkime_session_watch_count(mProtocolIcmp) +
+                       arkime_session_watch_count(mProtocolIcmpv6),
 
                        arkime_session_idle_seconds(mProtocolTcp),
                        arkime_session_idle_seconds(mProtocolUdp),
-                       arkime_session_idle_seconds(arkime_mprotocol_get("icmp")),
+                       MAX(arkime_session_idle_seconds(mProtocolIcmp),
+                           arkime_session_idle_seconds(mProtocolIcmpv6)),
 
                        arkime_http_queue_length(esServer),
                        wql,
@@ -2614,5 +2620,5 @@ void arkime_packet_exit()
         Destroy_Patricia(ipTree6, NULL);
         ipTree6 = 0;
     }
-    arkime_packet_log(arkime_mprotocol_get("tcp"));
+    arkime_packet_log(mProtocolTcp);
 }

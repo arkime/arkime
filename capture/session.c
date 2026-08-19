@@ -68,7 +68,7 @@ LOCAL gboolean             stoppedOldLoaded;
 
 typedef struct {
     ArkimeSesCmdHead_t    sessionCmds;
-    ArkimeSessionHead_t   closingQ;
+    ArkimeSessionHead_t   closingQ[ARKIME_MPROTOCOL_MAX];
     ArkimeSessionHead_t   sessionsQ[ARKIME_MPROTOCOL_MAX];
     ArkimeSessionHead_t   saveQ[ARKIME_MPROTOCOL_MAX];
     ArkimeSessionHash_t   sessions[ARKIME_MPROTOCOL_MAX];
@@ -240,6 +240,17 @@ void arkime_session_id6(uint8_t *buf, const uint8_t *addr1, uint16_t port1, cons
 }
 #endif
 /******************************************************************************/
+/* Session id for the ethernet only protocols, one session per talker pair.
+ * nbytes is 12 for the src/dst MACs, 14 to also include the ethertype.
+ * The caller must have already verified nbytes are available.
+ */
+void arkime_session_id_ether(uint8_t *sessionId, const ArkimePacket_t *packet, int nbytes)
+{
+    sessionId[0] = 16;
+    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, nbytes);
+    memset(sessionId + 1 + nbytes, 0, 15 - nbytes);
+}
+/******************************************************************************/
 char *arkime_session_id_string(const uint8_t *sessionId, char *buf)
 {
     // ALW: Rewrite to make pretty
@@ -408,7 +419,7 @@ void arkime_session_mark_for_close(ArkimeSession_t *session)
     session->closingQ = 1;
     session->saveTime = session->lastPacket.tv_sec + mProtocols[session->mProtocol].closingTimeout;
     DLL_REMOVE(q_, &sessionThreadData[session->thread].sessionsQ[session->mProtocol], session);
-    DLL_PUSH_TAIL(q_, &sessionThreadData[session->thread].closingQ, session);
+    DLL_PUSH_TAIL(q_, &sessionThreadData[session->thread].closingQ[session->mProtocol], session);
 
     if (session->save_next) {
         DLL_REMOVE(save_, &sessionThreadData[session->thread].saveQ[session->mProtocol], session);
@@ -811,7 +822,7 @@ void arkime_session_save(ArkimeSession_t *session)
     }
 
     if (session->closingQ) {
-        DLL_REMOVE(q_, &sessionThreadData[session->thread].closingQ, session);
+        DLL_REMOVE(q_, &sessionThreadData[session->thread].closingQ[session->mProtocol], session);
     } else
         DLL_REMOVE(q_, &sessionThreadData[session->thread].sessionsQ[session->mProtocol], session);
 
@@ -914,7 +925,9 @@ int arkime_session_close_outstanding()
 {
     int count = 0;
     for (int t = 0; t < config.packetThreads; t++) {
-        count += DLL_COUNT(q_, &sessionThreadData[t].closingQ);
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            count += DLL_COUNT(q_, &sessionThreadData[t].closingQ[mProtocol]);
+        }
     }
     return count;
 }
@@ -1207,13 +1220,15 @@ void arkime_session_process_commands(int thread)
     }
 
     // Closing Q
-    for (int count = 0; count < 10; count++) {
-        ArkimeSession_t *session = DLL_PEEK_HEAD(q_, &sessionThreadData[thread].closingQ);
+    for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+        for (int count = 0; count < 10; count++) {
+            ArkimeSession_t *session = DLL_PEEK_HEAD(q_, &sessionThreadData[thread].closingQ[mProtocol]);
 
-        if (session && session->saveTime < (uint64_t)arkimeThreadData[thread].lastPacketSecs) {
-            arkime_session_save(session);
-        } else {
-            break;
+            if (session && session->saveTime < (uint64_t)arkimeThreadData[thread].lastPacketSecs) {
+                arkime_session_save(session);
+            } else {
+                break;
+            }
         }
     }
 
@@ -1336,9 +1351,9 @@ void arkime_session_init()
         for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < ARKIME_MPROTOCOL_MAX; mProtocol++) {
             DLL_INIT(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
             DLL_INIT(save_, &sessionThreadData[t].saveQ[mProtocol]);
+            DLL_INIT(q_, &sessionThreadData[t].closingQ[mProtocol]);
         }
 
-        DLL_INIT(q_, &sessionThreadData[t].closingQ);
         DLL_INIT(cmd_, &sessionThreadData[t].sessionCmds);
         ARKIME_LOCK_INIT(sessionThreadData[t].sessionCmds.lock);
 

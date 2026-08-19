@@ -14,8 +14,8 @@
 
 /******************************************************************************/
 
-LOCAL int                    mProtocolIcmp;
-LOCAL int                    mProtocolIcmpv6;
+extern int                   mProtocolIcmp;
+extern int                   mProtocolIcmpv6;
 
 LOCAL int                    icmpTypeField;
 LOCAL int                    icmpCodeField;

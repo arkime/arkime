@@ -393,8 +393,8 @@ authorization=type:string
 #  closing:<seconds> = save the session this many seconds after it starts closing
 #  packets:<number>  = save the session after this many packets
 #  streams:<number>  = max active sessions for this mProtocol, across all packet
-#                      threads. tcp defaults to 1.25x maxStreams, icmp and esp to
-#                      maxStreams/200, everything else to maxStreams/20
+#                      threads. tcp defaults to 1.25x maxStreams, udp and sctp
+#                      to maxStreams/32, everything else to maxStreams/256
 
 #[protocol-settings]
 #default=save:720;packets:10000

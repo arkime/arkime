@@ -14,19 +14,15 @@ LOCAL int mProtocolPim;
 SUPPRESS_ALIGNMENT
 LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    // One session per talker pair instead of one session for everything
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+
     if (packet->v6) {
-        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-        sessionId[0] = 36;
-        memcpy(sessionId + 1, &ip6->ip6_src, 16);
-        memcpy(sessionId + 17, &ip6->ip6_dst, 16);
-        sessionId[33] = sessionId[34] = sessionId[35] = 0;
+        arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
+                           ip6->ip6_dst.s6_addr, 0, packet->vlan, packet->vni);
     } else {
-        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-        sessionId[0] = 12;
-        memcpy(sessionId + 1, &ip4->ip_src, 4);
-        memcpy(sessionId + 5, &ip4->ip_dst, 4);
-        sessionId[9] = sessionId[10] = sessionId[11] = 0;
+        arkime_session_id(sessionId, ip4->ip_src.s_addr, 0,
+                          ip4->ip_dst.s_addr, 0, packet->vlan, packet->vni);
     }
 }
 /******************************************************************************/

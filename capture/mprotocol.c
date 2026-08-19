@@ -47,6 +47,12 @@ int arkime_mprotocol_register_internal(const char                      *name,
         CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
     }
 
+    // Registering before arkime_mprotocol_init would silently use 0 for the
+    // defaults below, making every packet a mid save
+    if (!mProtocolHash) {
+        CONFIGEXIT("Parser '%s' registered before arkime_mprotocol_init", name);
+    }
+
     ARKIME_LOCK(lock);
 
     int n = GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
@@ -73,10 +79,10 @@ int arkime_mprotocol_register_internal(const char                      *name,
 
     if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH)
         mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads * 1.25);
-    else if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_LOW)
-        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 200);
+    else if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_MED)
+        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 32);
     else
-        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 20);
+        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 256);
 
     g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
 
@@ -118,7 +124,7 @@ LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const c
     errno = 0;
     long num = strtol(str, &end, 10);
 
-    while (isspace(*end))
+    while (isspace((uint8_t) *end))
         end++;
 
     if (errno != 0 || end == str || *end != 0)
@@ -130,19 +136,11 @@ LOCAL int arkime_mprotocol_config_num(const char *key, const char *name, const c
     return num;
 }
 /******************************************************************************/
-/* Apply one "name:value;name:value" string to a single mProtocol */
-LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const char *value)
+/* Apply one already split "name:value" list to a single mProtocol */
+LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, gchar **settings)
 {
-    if (!value)
-        CONFIGEXIT("Invalid value for '%s' in section [protocol-settings]", key);
-
-    char **settings = g_strsplit(value, ";", 0);
-
     for (int i = 0; settings[i]; i++) {
-        char *setting = g_strstrip(settings[i]);
-
-        if (!*setting)
-            continue;
+        char *setting = settings[i];
 
         char *colon = strchr(setting, ':');
         if (!colon)
@@ -170,7 +168,6 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
             CONFIGEXIT("Unknown setting '%s' for '%s' in section [protocol-settings], must be idle, save, closing, packets or streams", setting, key);
         }
     }
-    g_strfreev(settings);
 }
 /******************************************************************************/
 /* Apply the [protocol-settings] section to a single mProtocol. default first so
@@ -178,16 +175,16 @@ LOCAL void arkime_mprotocol_config_apply(int mProtocol, const char *key, const c
  */
 LOCAL void arkime_mprotocol_config_one(int mProtocol)
 {
-    char *value = arkime_config_section_str(NULL, "protocol-settings", "default", NULL);
-    if (value) {
-        arkime_mprotocol_config_apply(mProtocol, "default", value);
-        g_free(value);
+    gchar **settings = arkime_config_section_str_list(NULL, "protocol-settings", "default", NULL);
+    if (settings) {
+        arkime_mprotocol_config_apply(mProtocol, "default", settings);
+        g_strfreev(settings);
     }
 
-    value = arkime_config_section_str(NULL, "protocol-settings", mProtocols[mProtocol].name, NULL);
-    if (value) {
-        arkime_mprotocol_config_apply(mProtocol, mProtocols[mProtocol].name, value);
-        g_free(value);
+    settings = arkime_config_section_str_list(NULL, "protocol-settings", mProtocols[mProtocol].name, NULL);
+    if (settings) {
+        arkime_mprotocol_config_apply(mProtocol, mProtocols[mProtocol].name, settings);
+        g_strfreev(settings);
     }
 }
 /******************************************************************************/
@@ -309,10 +306,8 @@ LOCAL ArkimePacketRC corrupt_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), 
 // Unknown Ethernet mProtocol - session ID based on src/dst MAC + ethertype
 LOCAL void unknown_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 16;
     // Copy src/dst MACs (12 bytes) + ethertype (2 bytes)
-    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 14);
-    sessionId[15] = 0;
+    arkime_session_id_ether(sessionId, packet, 14);
 }
 /******************************************************************************/
 LOCAL int unknown_ether_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)

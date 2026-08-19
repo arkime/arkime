@@ -29,7 +29,7 @@ struct sctphdr {
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL int                    mProtocolSctp;
+extern int                   mProtocolSctp;
 LOCAL int                    sctp_raw_packet_func;
 LOCAL int                    protoIdField;
 LOCAL int                    maxSctpOutOfOrderPackets;
@@ -426,7 +426,7 @@ void arkime_parser_init()
 
     arkime_packet_set_ip_cb(IPPROTO_SCTP, sctp_packet_enqueue);
     mProtocolSctp = arkime_mprotocol_register("sctp",
-                                              ARKIME_MPROTOCOL_FLAG_COMMUNITYID,
+                                              ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_MED,
                                               sctp_create_sessionid,
                                               sctp_pre_process,
                                               sctp_process,

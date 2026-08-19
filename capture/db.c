@@ -1906,14 +1906,15 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     arkime_db_memory_info(n == 0, &memBytes, &memPercent);
 
     // The stats doc still reports the old 6 buckets, everything that isn't one of
-    // the named mProtocols is other
+    // the named mProtocols is other. The counts aren't sampled atomically, so the
+    // named ones can add up to more than the total.
     const int tcpCount  = arkime_session_watch_count(mProtocolTcp);
     const int udpCount  = arkime_session_watch_count(mProtocolUdp);
-    const int icmpCount = arkime_session_watch_count(arkime_mprotocol_get("icmp")) +
-                          arkime_session_watch_count(arkime_mprotocol_get("icmpv6"));
-    const int sctpCount = arkime_session_watch_count(arkime_mprotocol_get("sctp"));
-    const int espCount  = arkime_session_watch_count(arkime_mprotocol_get("esp"));
-    const int otherCount = arkime_session_watch_count(-1) - (tcpCount + udpCount + icmpCount + sctpCount + espCount);
+    const int icmpCount = arkime_session_watch_count(mProtocolIcmp) +
+                          arkime_session_watch_count(mProtocolIcmpv6);
+    const int sctpCount = arkime_session_watch_count(mProtocolSctp);
+    const int espCount  = arkime_session_watch_count(mProtocolEsp);
+    const int otherCount = MAX(0, arkime_session_watch_count(-1) - (tcpCount + udpCount + icmpCount + sctpCount + espCount));
 
 #ifndef __SANITIZE_ADDRESS__
     if (config.maxMemPercentage != 100 && memPercent > config.maxMemPercentage) {

@@ -13,9 +13,7 @@ LOCAL int typeField;
 LOCAL void esis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     // One session per talker pair instead of one session for everything
-    sessionId[0] = 16;
-    memcpy(sessionId + 1, packet->pkt + packet->etherOffset, 12);
-    sessionId[13] = sessionId[14] = sessionId[15] = 0;
+    arkime_session_id_ether(sessionId, packet, 12);
 }
 /******************************************************************************/
 LOCAL int esis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)

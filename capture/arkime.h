@@ -1363,6 +1363,7 @@ typedef enum {
 
 void     arkime_session_id(uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
 void     arkime_session_id6(uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
+void     arkime_session_id_ether(uint8_t *sessionId, const ArkimePacket_t *packet, int nbytes);
 char    *arkime_session_id_string(const uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int len);
 
@@ -1499,8 +1500,10 @@ typedef struct {
 #define ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP 0x02
 // Expect a lot of sessions, 1.25x the maxStreams setting
 #define ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH     0x04
-// Expect very few sessions, maxStreams/200. Everything else defaults to maxStreams/20
+// Expect very few sessions, maxStreams/256, which is also the default
 #define ARKIME_MPROTOCOL_FLAG_STREAMS_LOW      0x08
+// Expect a moderate number of sessions, maxStreams/32
+#define ARKIME_MPROTOCOL_FLAG_STREAMS_MED      0x10
 
 // A save timeout of 0 means never mid save because of time, which is the
 // default for everything except tcp
@@ -1522,9 +1525,15 @@ int arkime_mprotocol_register_internal(const char                      *name,
 
 int arkime_mprotocol_get(const char *name);
 
-// The two mProtocols common enough to be worth not looking up by name
+// The mProtocols common enough to be worth not looking up by name. These stay 0
+// until the parser registers, and forever if it never loads. mProtocol 0 is
+// never assigned to a session, so counts and timeouts for it are always empty.
 extern int mProtocolTcp;
 extern int mProtocolUdp;
+extern int mProtocolIcmp;
+extern int mProtocolIcmpv6;
+extern int mProtocolSctp;
+extern int mProtocolEsp;
 
 void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout);
 

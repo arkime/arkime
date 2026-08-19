@@ -70,8 +70,8 @@ LOCAL int                    severityField;
 
 LOCAL int                    suricataExpireSeconds;
 
-LOCAL int                    mProtocolIcmp;
-LOCAL int                    mProtocolIcmpv6;
+extern int                   mProtocolIcmp;
+extern int                   mProtocolIcmpv6;
 
 SuricataHead_t alerts;
 
@@ -511,9 +511,6 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
  */
 void arkime_plugin_init()
 {
-    mProtocolIcmp = arkime_mprotocol_get("icmp");
-    mProtocolIcmpv6 = arkime_mprotocol_get("icmpv6");
-
     line = ARKIME_SIZE_ALLOC("line", lineSize);
 
     suricataAlertFile     = arkime_config_str(NULL, "suricataAlertFile", NULL);

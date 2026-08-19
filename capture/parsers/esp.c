@@ -15,7 +15,7 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL  int                   mProtocolEsp;
+extern int                   mProtocolEsp;
 LOCAL  int                   espSavePackets;
 
 /******************************************************************************/
