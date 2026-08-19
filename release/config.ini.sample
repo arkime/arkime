@@ -99,8 +99,8 @@ maxFileSizeG=12
 # of inactivity.
 tcpTimeout=600
 
-# Arkime writes a session record after this many seconds, no matter if
-# active or inactive
+# Arkime writes a TCP session record after this many seconds, no matter if
+# active or inactive. Use the [protocol-settings] section below for other protocols.
 tcpSaveTimeout=720
 
 # UDP timeout value. Arkime assumes the UDP session is ended after this
@@ -111,7 +111,9 @@ udpTimeout=30
 # many seconds of inactivity.
 icmpTimeout=10
 
-# An approximate maximum number of active sessions Arkime will try and monitor
+# An approximate maximum number of active sessions Arkime will try and monitor,
+# across all packet threads. Use streams: in the [protocol-settings] section below
+# to change the share a single protocol gets.
 maxStreams=1000000
 
 # Arkime writes a session record after this many packets
@@ -372,6 +374,34 @@ content-type=type:string;count:true
 [headers-email]
 x-priority=type:integer
 authorization=type:string
+
+
+##############################################################################
+# The [protocol-settings] section overrides the timeouts, maxPackets and maxStreams
+# per protocol. The "default" key is applied to every protocol first, then any
+# protocol specific keys.
+#
+# This is the only way to set save/closing/packets for a non TCP mProtocol. The
+# older settings only apply to the mProtocol they are named for - tcpTimeout,
+# tcpSaveTimeout, and tcpClosingTimeout are tcp only, udpTimeout is udp only,
+# etc - and this section overrides them.
+#
+# Possible config attributes
+#     idle:<seconds> = save the session after this many seconds of inactivity
+#     save:<seconds> = save the session after this many seconds, active or not.
+#                      0 disables, which is the default for everything but tcp
+#  closing:<seconds> = save the session this many seconds after it starts closing
+#  packets:<number>  = save the session after this many packets
+#  streams:<number>  = max active sessions for this mProtocol, across all packet
+#                      threads. tcp defaults to 1.25x maxStreams, udp and sctp
+#                      to maxStreams/16, everything else to maxStreams/256
+
+#[protocol-settings]
+#default=save:720;packets:10000
+#tcp=idle:600;closing:5
+#udp=idle:30
+#icmp=idle:10
+#arp=idle:60;packets:100;streams:10000
 
 
 ##############################################################################

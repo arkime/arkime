@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 700
+#define ARKIME_API_VERSION 701
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -349,16 +349,6 @@ typedef struct {
 
 /******************************************************************************/
 
-typedef enum {
-    SESSION_TCP,
-    SESSION_UDP,
-    SESSION_ICMP,
-    SESSION_SCTP,
-    SESSION_ESP,
-    SESSION_OTHER,
-    SESSION_MAX
-} SessionTypes;
-
 /******************************************************************************/
 /*
  * Configuration Information
@@ -465,9 +455,6 @@ typedef struct arkime_config {
     double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
-    uint32_t  tcpSaveTimeout;
-    uint32_t  maxStreams[SESSION_MAX];
-    uint32_t  maxPackets;
     uint32_t  maxPacketsInQueue;
     uint32_t  dbBulkSize;
     uint32_t  dbFlushTimeout;
@@ -791,7 +778,7 @@ typedef struct arkime_sctp {
 #define ARKIME_SESSION_HASH ARKIME_SESSION_HASH_SLL
 
 typedef struct arkime_session {
-    struct arkime_session *tcp_next, *tcp_prev;
+    struct arkime_session *save_next, *save_prev;
     struct arkime_session *q_next, *q_prev;
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
     uint32_t               ses_slot;
@@ -863,7 +850,6 @@ typedef struct arkime_session {
     uint16_t               stopSPI: 1;
     uint16_t               closingQ: 1;
     uint16_t               stopTCP: 1;
-    SessionTypes           ses: 3;
     uint16_t               midSave: 1;
     uint16_t               outOfOrder: 2;
     uint16_t               ackedUnseenSegment: 2;
@@ -880,7 +866,7 @@ typedef struct arkime_session {
 } ArkimeSession_t;
 
 typedef struct arkime_session_head {
-    struct arkime_session *tcp_next, *tcp_prev;
+    struct arkime_session *save_next, *save_prev;
     struct arkime_session *q_next, *q_prev;
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
     uint32_t               ses_slot;
@@ -891,7 +877,7 @@ typedef struct arkime_session_head {
 #else
 #error "Unknown ARKIME_SESSION_HASH"
 #endif
-    int                    tcp_count;
+    int                    save_count;
     int                    q_count;
     int                    ses_count;
 } ArkimeSessionHead_t;
@@ -1023,7 +1009,6 @@ extern ARKIME_LOCK_EXTERN(LOG);
 typedef struct {
     time_t                       currentTime;
     time_t                       lastPacketSecs;
-    ArkimeSessionHead_t          tcpWriteQ;
 } ARKIME_CACHE_ALIGN ArkimeThreadData_t;
 extern ArkimeThreadData_t arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
@@ -1378,15 +1363,17 @@ typedef enum {
 
 void     arkime_session_id(uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
 void     arkime_session_id6(uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
+void     arkime_session_id_ether(uint8_t *sessionId, const ArkimePacket_t *packet, int nbytes);
 char    *arkime_session_id_string(const uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int len);
 
 uint32_t arkime_session_hash(const void *key);
 
-ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId);
 ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew);
 
 void     arkime_session_init();
+void     arkime_session_config();
+void     arkime_session_mprotocol_init(int mProtocol);
 void     arkime_session_exit();
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
@@ -1401,7 +1388,7 @@ void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
-int      arkime_session_watch_count(SessionTypes ses);
+int      arkime_session_watch_count(int mProtocol); // -1 for all mProtocols
 int      arkime_session_idle_seconds(int mProtocol);
 int      arkime_session_close_outstanding();
 
@@ -1491,20 +1478,40 @@ typedef void (*ArkimeProtocolSessionMidSave_cb)(ArkimeSession_t *session);
 
 typedef struct {
     const char                       *name;
-    SessionTypes                      ses;
+    uint32_t                          flags;
     ArkimeProtocolCreateSessionId_cb  createSessionId;
     ArkimeProtocolPreProcess_cb       preProcess;
     ArkimeProtocolProcess_cb          process;
     ArkimeProtocolSessionFree_cb      sFree;
     ArkimeProtocolSessionMidSave_cb   midSave;
     int                               sessionTimeout;
+    int                               saveTimeout;
+    int                               closingTimeout;
+    uint32_t                          maxPackets;
+    uint32_t                          maxStreams;
 } ArkimeProtocol_t;
 
 #define ARKIME_MPROTOCOL_MIN 1
 #define ARKIME_MPROTOCOL_MAX 256
 
+// Sessions have a normal ip community id
+#define ARKIME_MPROTOCOL_FLAG_COMMUNITYID      0x01
+// Sessions have an icmp style community id
+#define ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP 0x02
+// Expect a lot of sessions, 1.25x the maxStreams setting
+#define ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH     0x04
+// Expect very few sessions, maxStreams/256, which is also the default
+#define ARKIME_MPROTOCOL_FLAG_STREAMS_LOW      0x08
+// Expect a moderate number of sessions, maxStreams/16
+#define ARKIME_MPROTOCOL_FLAG_STREAMS_MED      0x10
+
+// A save timeout of 0 means never mid save because of time, which is the
+// default for everything except tcp
+#define ARKIME_DEFAULT_SAVE_TIMEOUT    0
+#define ARKIME_DEFAULT_CLOSING_TIMEOUT 5
+
 int arkime_mprotocol_register_internal(const char                      *name,
-                                       int                              ses,
+                                       uint32_t                         flags,
                                        ArkimeProtocolCreateSessionId_cb createSessionId,
                                        ArkimeProtocolPreProcess_cb      preProcess,
                                        ArkimeProtocolProcess_cb         process,
@@ -1514,11 +1521,25 @@ int arkime_mprotocol_register_internal(const char                      *name,
                                        size_t                           sessionsize,
                                        int                              apiversion);
 
-#define arkime_mprotocol_register(name, ses, createSessionId, preProcess, process, sFree, midSave, sessionTimeout) arkime_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sFree, midSave, sessionTimeout, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+#define arkime_mprotocol_register(name, flags, createSessionId, preProcess, process, sFree, midSave, sessionTimeout) arkime_mprotocol_register_internal(name, flags, createSessionId, preProcess, process, sFree, midSave, sessionTimeout, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
 int arkime_mprotocol_get(const char *name);
 
+// The mProtocols common enough to be worth not looking up by name. These stay 0
+// until the parser registers, and forever if it never loads. mProtocol 0 is
+// never assigned to a session, so counts and timeouts for it are always empty.
+extern int mProtocolTcp;
+extern int mProtocolUdp;
+extern int mProtocolIcmp;
+extern int mProtocolIcmpv6;
+extern int mProtocolSctp;
+extern int mProtocolEsp;
+
+void arkime_mprotocol_set_timeouts(int mProtocol, int saveTimeout, int closingTimeout);
+
 void arkime_mprotocol_init();
+
+void arkime_mprotocol_config();
 
 
 /******************************************************************************/

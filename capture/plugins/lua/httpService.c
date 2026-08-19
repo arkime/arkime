@@ -20,7 +20,7 @@ typedef struct {
 } LuaHttp_t;
 
 /******************************************************************************/
-LOCAL void *checkMHS (lua_State *L, int index)
+LOCAL void *checkMHS(lua_State *L, int index)
 {
     void **pmhs, *mhs;
     luaL_checktype(L, index, LUA_TUSERDATA);
@@ -35,7 +35,7 @@ LOCAL void *checkMHS (lua_State *L, int index)
     return mhs;
 }
 /******************************************************************************/
-LOCAL void *pushMHS (lua_State *L, void *mhs)
+LOCAL void *pushMHS(lua_State *L, void *mhs)
 {
     void **pmhs = (void **)lua_newuserdata(L, sizeof(void *));
     *pmhs = mhs;
@@ -152,7 +152,7 @@ LOCAL int MHS_gc(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-LOCAL int MHS_tostring (lua_State *L)
+LOCAL int MHS_tostring(lua_State *L)
 {
     lua_pushfstring(L, "ArkimeHttpService: %p", lua_touserdata(L, 1));
     return 1;

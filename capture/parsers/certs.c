@@ -116,8 +116,8 @@ LOCAL void certinfo_save(BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t
         GHashTableIter         iter;
         gpointer               ikey;
         gpointer               ival;
-        g_hash_table_iter_init (&iter, ci->extra);
-        while (g_hash_table_iter_next (&iter, &ikey, &ival)) {
+        g_hash_table_iter_init(&iter, ci->extra);
+        while (g_hash_table_iter_next(&iter, &ikey, &ival)) {
             BSB_EXPORT_sprintf(*jbsb, "\"%s\":\"%s\",", (char *)ikey, (char *)ival);
         }
     }
@@ -285,7 +285,7 @@ LOCAL int certinfo_cmp(const void *keyv, const void *elementv)
     return 1;
 }
 /******************************************************************************/
-LOCAL void certinfo_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
+LOCAL void certinfo_key_usage(ArkimeCertsInfo_t *certs, BSB *bsb)
 {
     uint32_t apc, atag, alen;
 
@@ -629,7 +629,7 @@ LOCAL void certs_get_free(void *ptr)
     g_ptr_array_free((GPtrArray *)ptr, TRUE);
 }
 /******************************************************************************/
-void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value)
+void arkime_field_certsinfo_update_extra(void *cert, char *key, char *value)
 {
     ArkimeCertsInfo_t *certs = cert;
 

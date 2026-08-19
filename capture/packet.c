@@ -72,8 +72,12 @@ LOCAL ArkimePacketEnqueue_t *udpPortCbs[0x10000];
 LOCAL ArkimePacketEnqueue_t *ethernetCbs[0x10000];
 LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 
-int                          tcpMProtocol;
-int                          udpMProtocol;
+int                          mProtocolTcp;
+int                          mProtocolUdp;
+int                          mProtocolIcmp;
+int                          mProtocolIcmpv6;
+int                          mProtocolSctp;
+int                          mProtocolEsp;
 
 extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
@@ -258,7 +262,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         session = arkime_session_find_or_create(packet->mProtocol, packet->hash, sessionId, &isNew);
 
         if (isNew) {
-            session->saveTime = packet->ts.tv_sec + config.tcpSaveTimeout;
+            session->saveTime = packet->ts.tv_sec + mProtocols[packet->mProtocol].saveTimeout;
             session->firstPacket = packet->ts;
             session->thread = thread;
 
@@ -359,7 +363,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
         }
 
-        if (packets >= config.maxPackets || session->midSave) {
+        if (packets >= mProtocols[session->mProtocol].maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
         }
     } else {
@@ -368,7 +372,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (session->stopSaving != 0 && packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
         }
-        if (packets >= config.maxPackets || session->midSave) {
+        if (packets >= mProtocols[session->mProtocol].maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
             session->stopSaving = 0;
         }
@@ -522,7 +526,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
 {
     int thread = (long)threadp;
     arkimePacketThread = thread;
-    const uint32_t maxPackets75 = config.maxPackets * 0.75;
+    const uint32_t maxPacketsInQueue75 = config.maxPacketsInQueue * 0.75;
     uint32_t skipCount = 0;
 
     arkime_call_named_func(arkime_packet_thread_init_func, thread, NULL);
@@ -553,7 +557,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 
         // Only process commands if the packetQ is less than 75% full or every 8 packets
-        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPackets75) || (++skipCount & 0x7) == 0) {
+        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPacketsInQueue75) || (++skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
         }
 
@@ -782,7 +786,7 @@ LOCAL void arkime_packet_log(int mProtocol)
 
     LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s mem: %.2f%%",
         arkimeCounters.totalPackets,
-        arkime_session_watch_count(mProtocols[mProtocol].ses),
+        arkime_session_watch_count(mProtocol),
         arkime_session_monitoring(),
         arkime_session_idle_seconds(mProtocol),
         stats.total,
@@ -863,13 +867,15 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        (stats.total ? (stats.dropped - initialDropped) * (double)100.0 / stats.total : 0),
 
                        arkime_session_monitoring(),
-                       arkime_session_watch_count(SESSION_TCP),
-                       arkime_session_watch_count(SESSION_UDP),
-                       arkime_session_watch_count(SESSION_ICMP),
+                       arkime_session_watch_count(mProtocolTcp),
+                       arkime_session_watch_count(mProtocolUdp),
+                       arkime_session_watch_count(mProtocolIcmp) +
+                       arkime_session_watch_count(mProtocolIcmpv6),
 
-                       arkime_session_idle_seconds(arkime_mprotocol_get("tcp")),
-                       arkime_session_idle_seconds(arkime_mprotocol_get("udp")),
-                       arkime_session_idle_seconds(arkime_mprotocol_get("icmp")),
+                       arkime_session_idle_seconds(mProtocolTcp),
+                       arkime_session_idle_seconds(mProtocolUdp),
+                       MAX(arkime_session_idle_seconds(mProtocolIcmp),
+                           arkime_session_idle_seconds(mProtocolIcmpv6)),
 
                        arkime_http_queue_length(esServer),
                        wql,
@@ -1030,7 +1036,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
                           ip4->ip_dst.s_addr, tcphdr->th_dport, packet->vlan, packet->vni);
-        packet->mProtocol = tcpMProtocol;
+        packet->mProtocol = mProtocolTcp;
 
         const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
@@ -1078,7 +1084,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan, packet->vni);
-        packet->mProtocol = udpMProtocol;
+        packet->mProtocol = mProtocolUdp;
         break;
     case IPPROTO_IPV6:
         return arkime_packet_ip6(batch, packet, data + ip_hdr_len, len - ip_hdr_len);
@@ -1271,7 +1277,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
                 return ARKIME_PACKET_IPPORT_DROPPED;
             }
-            packet->mProtocol = tcpMProtocol;
+            packet->mProtocol = mProtocolTcp;
             done = 1;
             break;
         case IPPROTO_UDP:
@@ -1310,7 +1316,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                     return ARKIME_PACKET_DUPLICATE_DROPPED;
             }
 
-            packet->mProtocol = udpMProtocol;
+            packet->mProtocol = mProtocolUdp;
             done = 1;
             break;
         case IPPROTO_IPV4:
@@ -1641,7 +1647,7 @@ void arkime_packet_batch_flush(ArkimePacketBatch_t *batch)
         batch->totalPackets = 0;
         if (unlikely(totalPackets >= ARKIME_THREAD_ATOMIC_LOAD(arkimeCounters.nextLogPackets))) {
             ARKIME_THREAD_ATOMIC_STORE(arkimeCounters.nextLogPackets, totalPackets + config.logEveryXPackets);
-            arkime_packet_log(tcpMProtocol);
+            arkime_packet_log(mProtocolTcp);
         }
     }
     batch->count = 0;
@@ -2572,7 +2578,7 @@ uint32_t arkime_packet_linktype_to_dlt(int linktype)
 /******************************************************************************/
 void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 {
-    if (session->ses != SESSION_TCP)
+    if (session->mProtocol != mProtocolTcp)
         return;
 
     if (which == -1) {
@@ -2614,5 +2620,5 @@ void arkime_packet_exit()
         Destroy_Patricia(ipTree6, NULL);
         ipTree6 = 0;
     }
-    arkime_packet_log(arkime_mprotocol_get("tcp"));
+    arkime_packet_log(mProtocolTcp);
 }

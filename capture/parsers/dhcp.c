@@ -7,8 +7,8 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int dhcpMProtocol;
-LOCAL int dhcpv6MProtocol;
+LOCAL int mProtocolDhcp;
+LOCAL int mProtocolDhcpv6;
 
 LOCAL int typeField;
 LOCAL int hostField;
@@ -74,9 +74,8 @@ LOCAL void dhcpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = dhcpv6MProtocol;
-    memcpy(sessionId + 2, data + 1, 3);
-    sessionId[5] = sessionId[6] = sessionId[7] = 0;
+    memcpy(sessionId + 1, data + 1, 3);
+    sessionId[4] = sessionId[5] = sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -159,8 +158,8 @@ LOCAL void dhcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = dhcpMProtocol;
-    memcpy(sessionId + 2, data + 28, 6);   // Copy 6-byte client MAC address
+    memcpy(sessionId + 1, data + 28, 6);   // Copy 6-byte client MAC address
+    sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -310,7 +309,7 @@ LOCAL ArkimePacketRC dhcp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     dhcp_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = dhcpMProtocol;
+    packet->mProtocol = mProtocolDhcp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -329,7 +328,7 @@ LOCAL ArkimePacketRC dhcpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     dhcpv6_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = dhcpv6MProtocol;
+    packet->mProtocol = mProtocolDhcpv6;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -392,8 +391,8 @@ void arkime_parser_init()
     arkime_packet_set_udpport_enqueue_cb(546, dhcpv6_packet_enqueue);
     arkime_packet_set_udpport_enqueue_cb(547, dhcpv6_packet_enqueue);
 
-    dhcpMProtocol = arkime_mprotocol_register("dhcp",
-                                              SESSION_OTHER,
+    mProtocolDhcp = arkime_mprotocol_register("dhcp",
+                                              0,
                                               dhcp_create_sessionid,
                                               dhcp_pre_process,
                                               dhcp_process,
@@ -401,8 +400,8 @@ void arkime_parser_init()
                                               NULL,
                                               arkime_config_int(NULL, "dhcpTimeout", 60, 10, 0xffff));
 
-    dhcpv6MProtocol = arkime_mprotocol_register("dhcpv6",
-                                                SESSION_OTHER,
+    mProtocolDhcpv6 = arkime_mprotocol_register("dhcpv6",
+                                                0,
                                                 dhcpv6_create_sessionid,
                                                 dhcpv6_pre_process,
                                                 dhcpv6_process,

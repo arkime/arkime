@@ -727,7 +727,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             *(uint32_t *)(shb +  8) = 0x1A2B3C4D;
             *(uint16_t *)(shb + 12) = 1;          // major
             *(uint16_t *)(shb + 14) = 0;          // minor
-            *(int64_t  *)(shb + 16) = -1;         // section length unknown
+            *(int64_t *)(shb + 16) = -1;          // section length unknown
             *(uint32_t *)(shb + 24) = 28;
             writer_simple_write_output(thread, kind, shb, 28);
 

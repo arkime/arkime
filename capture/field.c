@@ -12,6 +12,7 @@
 #include "patricia.h"
 
 extern ArkimeConfig_t        config;
+extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
 LOCAL HASH_VAR(d_, fieldsByDb, ArkimeFieldInfo_t, 307);
 LOCAL HASH_VAR(e_, fieldsByExp, ArkimeFieldInfo_t, 307);
@@ -2103,14 +2104,14 @@ LOCAL void *arkime_field_getcb_databytes_dst(const ArkimeSession_t *session, int
 LOCAL void *arkime_field_getcb_community_id(const ArkimeSession_t *session, int UNUSED(pos))
 {
 
-    if (session->ses == SESSION_OTHER) {
-        return NULL;
-    }
+    const uint32_t mflags = mProtocols[session->mProtocol].flags;
     char *communityId;
-    if (session->ses == SESSION_ICMP) {
+    if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP) {
         communityId = arkime_db_community_id_icmp(session);
-    } else {
+    } else if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID) {
         communityId = arkime_db_community_id(session);
+    } else {
+        return NULL;
     }
     arkime_free_later(communityId, g_free);
 
