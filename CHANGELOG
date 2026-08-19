@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-7.0.0 2026/09/xx
+7.0.0 2026/10/xx
 ## Breaking
   - offlineFilenameRegex default now also matches .pcapng files (previously .pcap/.cap only)
   - Capture arkime_packet_set_dltsnap() was replaced by arkime_packet_set_interface(), so custom readers/plugins must be updated and rebuilt
@@ -71,7 +71,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
 
 
-6.7.0 2026/08/xx
+6.7.1 2026/08/xx
+
+6.7.0 2026/08/19
 ## Release
   - #4166 Node 22.23.2
   - #4196 Cyberchef 11.3.0
