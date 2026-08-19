@@ -394,7 +394,7 @@ authorization=type:string
 #  packets:<number>  = save the session after this many packets
 #  streams:<number>  = max active sessions for this mProtocol, across all packet
 #                      threads. tcp defaults to 1.25x maxStreams, udp and sctp
-#                      to maxStreams/32, everything else to maxStreams/256
+#                      to maxStreams/16, everything else to maxStreams/256
 
 #[protocol-settings]
 #default=save:720;packets:10000

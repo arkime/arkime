@@ -80,7 +80,7 @@ int arkime_mprotocol_register_internal(const char                      *name,
     if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH)
         mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads * 1.25);
     else if (flags & ARKIME_MPROTOCOL_FLAG_STREAMS_MED)
-        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 32);
+        mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 16);
     else
         mProtocols[num].maxStreams = MAX(64, maxStreams / config.packetThreads / 256);
 

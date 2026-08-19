@@ -1502,7 +1502,7 @@ typedef struct {
 #define ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH     0x04
 // Expect very few sessions, maxStreams/256, which is also the default
 #define ARKIME_MPROTOCOL_FLAG_STREAMS_LOW      0x08
-// Expect a moderate number of sessions, maxStreams/32
+// Expect a moderate number of sessions, maxStreams/16
 #define ARKIME_MPROTOCOL_FLAG_STREAMS_MED      0x10
 
 // A save timeout of 0 means never mid save because of time, which is the
