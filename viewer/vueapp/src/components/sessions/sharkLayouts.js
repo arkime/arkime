@@ -5,27 +5,39 @@ SPDX-License-Identifier: Apache-2.0
 
 // Every shark layout is two nested splits, so it reduces to the pair of
 // directions the outer and inner split run in. 'col' stacks, 'row' sits
-// side by side. Pane order is always list, fields, bytes.
+// side by side. `reverse` puts the Details/Bytes split before the List
+// instead of after it.
+//
+// `panes` draws the arrangement itself as [x, y, w, h] rects in a 24x24 box --
+// mdi has nothing that depicts a three-pane split, and the closest candidates
+// (view-split-*, view-quilt) show the wrong shape. First rect is the packet
+// list and is drawn solid; the other two are dimmed.
 export const SHARK_LAYOUTS = {
   wireshark: {
     dirs: ['col', 'row'],
-    label: 'List on top, fields and bytes below',
-    icon: 'mdi-view-split-horizontal'
+    label: 'List on top, Details and Bytes below',
+    panes: [[2, 2, 20, 8], [2, 12, 9, 10], [13, 12, 9, 10]]
   },
   stacked: {
     dirs: ['col', 'col'],
-    label: 'All three stacked',
-    icon: 'mdi-view-sequential-outline'
+    label: 'List, Details, Bytes stacked',
+    panes: [[2, 2, 20, 5.5], [2, 9.25, 20, 5.5], [2, 16.5, 20, 5.5]]
   },
   columns: {
     dirs: ['row', 'row'],
-    label: 'All three side by side',
-    icon: 'mdi-view-column-outline'
+    label: 'List, Details, Bytes side by side',
+    panes: [[2, 2, 5.5, 20], [9.25, 2, 5.5, 20], [16.5, 2, 5.5, 20]]
   },
   sidebar: {
     dirs: ['row', 'col'],
-    label: 'List on the left, fields and bytes right',
-    icon: 'mdi-view-split-vertical'
+    label: 'List on the left, Details and Bytes right',
+    panes: [[2, 2, 9, 20], [13, 2, 9, 9], [13, 13, 9, 9]]
+  },
+  listbottom: {
+    dirs: ['col', 'row'],
+    reverse: true,
+    label: 'Details and Bytes on top, List below',
+    panes: [[2, 14, 20, 8], [2, 2, 9, 10], [13, 2, 9, 10]]
   }
 };
 

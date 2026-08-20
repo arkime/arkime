@@ -367,9 +367,21 @@
                 size="x-small"
                 density="comfortable"
                 title="Pane layout">
-                <v-icon
-                  :icon="sharkLayouts[sharkLayout].icon"
-                  class="me-1" />
+                <svg
+                  class="shark-layout-icon me-1"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true">
+                  <rect
+                    v-for="(r, i) in sharkLayouts[sharkLayout].panes"
+                    :key="i"
+                    :x="r[0]"
+                    :y="r[1]"
+                    :width="r[2]"
+                    :height="r[3]"
+                    :opacity="i === 0 ? 1 : 0.45"
+                    rx="1.5"
+                    fill="currentColor" />
+                </svg>
                 layout
                 <v-icon
                   icon="mdi-menu-down"
@@ -383,7 +395,21 @@
                 :active="sharkLayout === key"
                 @click="setSharkLayout(key)">
                 <template #prepend>
-                  <v-icon :icon="def.icon" />
+                  <svg
+                    class="shark-layout-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+                    <rect
+                      v-for="(r, i) in def.panes"
+                      :key="i"
+                      :x="r[0]"
+                      :y="r[1]"
+                      :width="r[2]"
+                      :height="r[3]"
+                      :opacity="i === 0 ? 1 : 0.45"
+                      rx="1.5"
+                      fill="currentColor" />
+                  </svg>
                 </template>
                 <v-list-item-title class="ms-2">
                   {{ def.label }}
@@ -1525,6 +1551,15 @@ onUnmounted(() => {
 /* keeps the layout button from stretching the chip row's height */
 .tshark-histogram .shark-layout-btn {
   align-self: center;
+}
+/* the layout glyphs are drawn inline rather than taken from mdi -- see
+   sharkLayouts.js for why */
+.shark-layout-icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+  vertical-align: -0.2em;
+  color: currentColor;
 }
 .tshark-histogram .v-chip {
   cursor: pointer;

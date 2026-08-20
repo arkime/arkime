@@ -18,19 +18,21 @@ SPDX-License-Identifier: Apache-2.0
       :class="`shark-split--${outerDir}`">
       <div
         class="shark-pane"
-        :style="basis(sizes[0])">
+        :style="listStyle">
         <slot name="list" />
       </div>
       <div
         class="shark-handle"
         :class="`shark-handle--${outerDir}`"
+        style="order: 1"
         title="Drag to resize"
         @mousedown="startDrag(0, $event)"
         @dblclick="reset(0)" />
       <div
         ref="innerRef"
         class="shark-pane shark-split"
-        :class="`shark-split--${innerDir}`">
+        :class="`shark-split--${innerDir}`"
+        :style="innerStyle">
         <div
           class="shark-pane"
           :style="basis(sizes[1])">
@@ -70,11 +72,18 @@ const emit = defineEmits(['update:sizes', 'update:height']);
 const outerRef = ref(null);
 const innerRef = ref(null);
 
-const dirs = computed(() => (SHARK_LAYOUTS[props.layout] || SHARK_LAYOUTS.wireshark).dirs);
+const def = computed(() => SHARK_LAYOUTS[props.layout] || SHARK_LAYOUTS.wireshark);
+const dirs = computed(() => def.value.dirs);
 const outerDir = computed(() => dirs.value[0]);
 const innerDir = computed(() => dirs.value[1]);
 
 const basis = (f) => ({ flex: `0 0 ${(f * 100).toFixed(2)}%` });
+
+// `reverse` swaps which side of the outer handle each pane sits on. Doing it
+// with flex `order` keeps one DOM structure, and sizes[0] always describes
+// whichever pane comes first visually, so the drag math is unchanged.
+const listStyle = computed(() => (def.value.reverse ? { order: 2 } : { order: 0, ...basis(props.sizes[0]) }));
+const innerStyle = computed(() => (def.value.reverse ? { order: 0, ...basis(props.sizes[0]) } : { order: 2 }));
 
 const MIN_FRACTION = 0.1;
 const MAX_FRACTION = 0.9;
