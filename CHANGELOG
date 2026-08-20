@@ -37,9 +37,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0 2026/10/xx
 ## Breaking
-  - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead; viewer now exits
-          with an error if userAutoCreateTmpl is still set. It built the new user by evaluating the config
-          value as a JavaScript template literal, so anyone who could edit the config could run arbitrary code
+  - Removed the simpleDEKEncoding setting, the DEK is now always encrypted with aes-256-gcm.
+  - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead.
   - offlineFilenameRegex default now also matches .pcapng files (previously .pcap/.cap only)
   - Capture arkime_packet_set_dltsnap() was replaced by arkime_packet_set_interface(), so custom readers/plugins must be updated and rebuilt
   - #4080 Removed the esAdminUsers setting; the ES admin page and the ES index/shard/task actions now require the dbAdmin role
