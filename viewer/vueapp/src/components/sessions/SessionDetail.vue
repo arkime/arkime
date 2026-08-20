@@ -142,6 +142,7 @@
               <v-list-item
                 v-for="n in [50, 200, 500, 1000, 2000]"
                 :key="n"
+                :active="tsharkLength === n"
                 @click="tsharkLength = n">
                 {{ $t('common.packetCount', n) }}
               </v-list-item>
@@ -573,6 +574,7 @@ const tsharkLoaded = ref(false);
 const tsharkError = ref('');
 const tsharkPackets = ref([]);
 const tsharkLength = ref(50);
+let tsharkRunId = 0;
 const tsharkPromise = ref();
 const tsharkOutputRef = ref(null);
 const activeTab = ref('details');
@@ -1026,7 +1028,10 @@ const getPackets = async () => {
 // Fetch /tshark NDJSON and decode line by line.
 const getTshark = async () => {
   if (user.value.hidePcap || !hasTshark.value) { return; }
-  if (tsharkLoading.value) { return; }
+  // A newer run supersedes whatever is in flight -- changing the packet count
+  // must not be swallowed just because the previous fetch is still going.
+  if (tsharkLoading.value) { cancelTshark(); }
+  const runId = ++tsharkRunId;
 
   tsharkLoading.value = true;
   tsharkError.value = '';
@@ -1047,6 +1052,7 @@ const getTshark = async () => {
     tsharkPromise.value = { controller };
 
     const text = await fetcher;
+    if (runId !== tsharkRunId) { return; } // superseded while we waited
     const out = [];
     for (const line of String(text || '').split('\n')) {
       const trimmed = line.trim();
@@ -1056,12 +1062,16 @@ const getTshark = async () => {
     tsharkPackets.value = out;
     tsharkLoaded.value = true;
   } catch (err) {
+    if (runId !== tsharkRunId) { return; }
     // Aborted requests aren't errors from the user's POV — leave error blank.
     const aborted = err?.name === 'AbortError' || /aborted/i.test(err?.message || '');
     if (!aborted) { tsharkError.value = err.text || err.message || err; }
   } finally {
-    tsharkLoading.value = false;
-    tsharkPromise.value = undefined;
+    // only the newest run owns the loading flag
+    if (runId === tsharkRunId) {
+      tsharkLoading.value = false;
+      tsharkPromise.value = undefined;
+    }
   }
 };
 
@@ -1356,6 +1366,12 @@ watch(activeTab, (newTab) => {
   if (newTab === 'tshark' && hasTshark.value && !tsharkLoaded.value && !tsharkLoading.value) {
     getTshark();
   }
+});
+
+// picking a different packet count has to re-run the dissection, otherwise the
+// menu label changes and nothing else does
+watch(tsharkLength, () => {
+  if (hasTshark.value && activeTab.value === 'tshark') { getTshark(); }
 });
 
 // reload swaps the detail subtree → re-mark
