@@ -36,7 +36,6 @@ class Auth {
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
   static #requiredAuthHeaderHmacs;
-  static #userAutoCreateTmpl;
   static #userAutoCreateFuncs;
   static #userAuthIps;
   static #strategies;
@@ -79,7 +78,6 @@ class Auth {
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
-   * @param {string} options.userAutoCreateTmpl A JavaScript string function that is used to create users that don't exist
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
@@ -96,7 +94,6 @@ class Auth {
     options.serverSecret ??= ArkimeConfig.get('serverSecret');
     options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
     options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
-    options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
     options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
     options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
 
@@ -160,17 +157,13 @@ class Auth {
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#requiredAuthHeaderHmacs = Auth.#requiredAuthHeaderVal?.map(v => crypto.createHmac('sha256', 'compare').update(v).digest());
-    Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
-    if (Auth.#userAutoCreateTmpl) {
-      console.log('WARNING - userAutoCreateTmpl is deprecated and INSECURE, use [user-auto-create] section instead. This functionality will be removed in Arkime 7.');
+    if (options.userAutoCreateTmpl ?? ArkimeConfig.get('userAutoCreateTmpl')) {
+      console.log('ERROR - userAutoCreateTmpl has been removed, use the [user-auto-create] section instead');
+      process.exit(1);
     }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
     if (userAutoCreate) {
-      if (Auth.#userAutoCreateTmpl) {
-        console.log('ERROR - Cannot use both userAutoCreateTmpl and [user-auto-create] section');
-        process.exit(1);
-      }
       const allowedUserFields = new Set([
         'userId', 'userName', 'passStore', 'enabled', 'webEnabled', 'headerAuthEnabled',
         'emailSearch', 'createEnabled', 'removeEnabled', 'packetSearch',
@@ -495,7 +488,7 @@ class Auth {
     }
 
     User.getUserCache(userId, (err, user) => {
-      if (Auth.#userAutoCreateTmpl === undefined && Auth.#userAutoCreateFuncs === undefined) {
+      if (Auth.#userAutoCreateFuncs === undefined) {
         return authCheck(err, user);
       } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         Auth.#dynamicCreate(userId, claims, authCheck);
@@ -987,30 +980,25 @@ class Auth {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
 
-    let nuser;
-    if (Auth.#userAutoCreateTmpl) {
-      nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
-    } else {
-      nuser = {};
-      // No user record exists yet, so `this` is undefined in these expressions,
-      // unlike [user-role-mappings] which binds the existing user
-      for (const [field, func] of Auth.#userAutoCreateFuncs) {
-        try {
-          nuser[field] = func(vars);
-        } catch (e) {
-          console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
-          return cb('User auto-create failed');
-        }
+    const nuser = {};
+    // No user record exists yet, so `this` is undefined in these expressions,
+    // unlike [user-role-mappings] which binds the existing user
+    for (const [field, func] of Auth.#userAutoCreateFuncs) {
+      try {
+        nuser[field] = func(vars);
+      } catch (e) {
+        console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
+        return cb('User auto-create failed');
       }
     }
 
     if (nuser.userId !== userId) {
       if (nuser.userId === undefined) {
         if (ArkimeConfig.debug > 0) {
-          console.log(`WARNING - the userAutoCreateTmpl didn't set a userId field, instead using header/oidc set '${userId}'`);
+          console.log(`WARNING - user-auto-create didn't set a userId field, instead using header/oidc set '${userId}'`);
         }
       } else {
-        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', resetting to use '${userId}'`);
+        console.log(`WARNING - user-auto-create set userId to '${nuser.userId}' but header/oidc set '${userId}', resetting to use '${userId}'`);
       }
       nuser.userId = userId;
     }
@@ -1020,7 +1008,7 @@ class Auth {
     }
 
     if (nuser.userName === undefined || nuser.userName === 'undefined') {
-      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId ${nuser.userId} for userName`);
+      console.log(`WARNING - user-auto-create didn't set a userName, using userId ${nuser.userId} for userName`);
       nuser.userName = nuser.userId;
     }
 

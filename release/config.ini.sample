@@ -181,7 +181,7 @@ dropGroup=daemon
 # in the Arkime user database. This implementation expects that
 # the users LDAP/AD groups (or similar) are populated into an
 # HTTP header by the Apache (or similar) referenced above.
-# The JSON in userAutoCreateTmpl is used to insert the new
+# The [user-auto-create] section is used to insert the new
 # user into the arkime database (if not already present)
 # and additional HTTP headers can be sourced from the request
 # to populate various fields.
@@ -201,7 +201,19 @@ dropGroup=daemon
 #
 #requiredAuthHeader="UserGroup"
 #requiredAuthHeaderVal="ARKIME_ACCESS"
-#userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
+
+# Each key is a user field, each value an expression evaluated once at create
+# time. Request headers and oidc/jwt claims are available on `vals`.
+#[user-auto-create]
+#userId=vals.arkime_user
+#userName=vals.http_auth_mail
+#enabled=true
+#webEnabled=true
+#headerAuthEnabled=true
+#emailSearch=true
+#createEnabled=false
+#removeEnabled=false
+#packetSearch=true
 
 # MCP (Model Context Protocol) ################################################
 # Exposes POST /mcp so an AI assistant can query Arkime. Off by default.
