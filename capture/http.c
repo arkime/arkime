@@ -107,7 +107,7 @@ struct arkimehttpserver_t {
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
-    uint16_t                 outstandingPri[ARKIME_HTTP_PRIORITY_DROPABLE + 1];
+    uint16_t                 outstandingPri[ARKIME_HTTP_PRIORITY_DROPPABLE + 1];
     uint16_t                 connections;
     uint16_t                 maxRetries;
 
@@ -813,7 +813,7 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
 /******************************************************************************/
 gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean droppable, ArkimeHttpResponse_cb func, gpointer uw)
 {
-    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, droppable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
+    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, droppable ? ARKIME_HTTP_PRIORITY_DROPPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
 }
 /******************************************************************************/
 gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb rfunc, gpointer uw)
@@ -835,7 +835,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     // Are we overloaded
     if (!config.quitting && server->outstanding > server->maxOutstandingRequests) {
         int drop = FALSE;
-        if (priority == ARKIME_HTTP_PRIORITY_DROPABLE) {
+        if (priority == ARKIME_HTTP_PRIORITY_DROPPABLE) {
             LOG("WARNING - Dropping request to overwhelmed server, please see https://arkime.com/faq#error-dropping-request for help! size: %u queue: %u path: %.*s", data_len, server->outstanding, key_len, key);
             drop = TRUE;
         } else if (priority == ARKIME_HTTP_PRIORITY_NORMAL && server->outstanding > server->maxOutstandingRequests * 2) {
@@ -861,9 +861,9 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         }
     }
 
-    request->priority = MIN(priority, ARKIME_HTTP_PRIORITY_DROPABLE);
+    request->priority = MIN(priority, ARKIME_HTTP_PRIORITY_DROPPABLE);
 
-    if (priority == ARKIME_HTTP_PRIORITY_DROPABLE)
+    if (priority == ARKIME_HTTP_PRIORITY_DROPPABLE)
         request->retries = 0;
     else
         request->retries = server->maxRetries;

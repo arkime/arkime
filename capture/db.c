@@ -2047,7 +2047,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
         } else {
             // Droppable if the current time isn't first 2 seconds of each minute
             if ((cursec % 60) >= 2) {
-                arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
+                arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, NULL, NULL);
             } else {
                 arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
             }
@@ -2055,7 +2055,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     } else {
         char key[200];
         int key_len = arkime_snprintf_len(key, sizeof(key), "/%sdstats/_doc/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec / intervals[n]) % 1440, intervals[n]);
-        arkime_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
+        arkime_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, NULL, NULL);
     }
 }
 /******************************************************************************/
@@ -2121,7 +2121,7 @@ LOCAL void arkime_db_health_check_cb(int code, uint8_t *data, int data_len, gpoi
 // Runs on main thread
 LOCAL gboolean arkime_db_health_check(gpointer user_data)
 {
-    arkime_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, arkime_db_health_check_cb, user_data);
+    arkime_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, arkime_db_health_check_cb, user_data);
     clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
     return G_SOURCE_CONTINUE;
 }
@@ -2950,7 +2950,7 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
     if (config.debug)
         LOG("Updated %s-%u with %.*s", config.nodeName, fileid, (int)BSB_LENGTH(jbsb), json);
 
-    arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
+    arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, NULL, NULL);
 }
 /******************************************************************************/
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)

@@ -1313,11 +1313,11 @@ typedef void (*ArkimeHttpHeader_cb)(char *url, const char *field, const char *va
 void arkime_http_init();
 
 uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, size_t *return_len, int *code);
-gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, ArkimeHttpResponse_cb func, gpointer uw);
+gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean droppable, ArkimeHttpResponse_cb func, gpointer uw);
 
 #define ARKIME_HTTP_PRIORITY_BEST      0
 #define ARKIME_HTTP_PRIORITY_NORMAL    1
-#define ARKIME_HTTP_PRIORITY_DROPABLE  2
+#define ARKIME_HTTP_PRIORITY_DROPPABLE 2
 gboolean arkime_http_schedule(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, gpointer uw);
 
 gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb, gpointer uw);
