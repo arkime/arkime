@@ -85,7 +85,7 @@ const internals = {
   valueActions: new Map(),
   workers: 1,
   webconfig: false,
-  configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
+  configCode: undefined, // only set by --webcode, otherwise TOTP is the only way in
   startTime: Date.now()
 };
 
@@ -127,7 +127,7 @@ function processArgs (argv) {
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
-      console.log('  --webcode <code>            Set the web config code instead of random');
+      console.log('  --webcode <code>            Shared pin code for config changes, otherwise each user needs TOTP');
       console.log('  --workers <num>             Number of worker processes to create');
       console.log('  --insecure                  Disable certificate verification for https calls');
 
@@ -135,9 +135,15 @@ function processArgs (argv) {
     }
   }
   if (internals.webconfig) {
-    console.log(chalk.cyan(
-      `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
-    ));
+    if (internals.configCode) {
+      console.log(chalk.cyan(
+        `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
+      ));
+    } else {
+      console.log(chalk.cyan(
+        `${chalk.bgCyan.black('IMPORTANT')} - No --webcode given, config changes require your TOTP code`
+      ));
+    }
   }
 }
 
@@ -238,8 +244,8 @@ async function setupAuth () {
 function checkConfigCode (req, res, next) {
   const code = req.body?.configCode;
 
-  // Check PIN code
-  if (code && code === internals.configCode) {
+  // Check PIN code, only available when --webcode was given
+  if (internals.configCode && code === internals.configCode) {
     return next();
   }
 
@@ -254,8 +260,7 @@ function checkConfigCode (req, res, next) {
     }
   }
 
-  // TODO(Arkime 7): do not log the correct config PIN code - it leaks the secret to anyone with log access.
-  console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
+  console.log('Incorrect pin/TOTP code used for config change');
   return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
 

@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0 2026/10/xx
 ## Breaking
+  - wiseService no longer generates a random config pin code, use --webcode <code> or each user's own TOTP code.
   - Removed the simpleDEKEncoding setting, the DEK is now always encrypted with aes-256-gcm.
   - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead.
   - offlineFilenameRegex default now also matches .pcapng files (previously .pcap/.cap only)
