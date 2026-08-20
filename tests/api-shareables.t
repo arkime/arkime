@@ -1,4 +1,4 @@
-use Test::More tests => 121;
+use Test::More tests => 141;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -161,10 +161,7 @@ is($info->{recordsTotal}, 1, "viewOnly=false includes editRoles access");
 $info = viewerDeleteToken("/api/shareable/${id2}?arkimeRegressionUser=anonymous", $adminToken);
 ok($info->{success}, "arkimeAdmin can delete shareable");
 
-# type parameter validation
-$info = viewerGet("/api/shareables?arkimeRegressionUser=sac-test1");
-ok(!$info->{success}, "missing type parameter fails");
-
+# type parameter validation, empty is still rejected but missing now lists all
 $info = viewerGet("/api/shareables?type=&arkimeRegressionUser=sac-test1");
 ok(!$info->{success}, "empty type parameter fails");
 
@@ -388,3 +385,69 @@ $info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test1")
 is($info->{recordsTotal}, 0, "all pagtest shareables cleaned up");
 $info = viewerGet("/api/shareables?type=test&arkimeRegressionUser=sac-test1");
 is($info->{recordsTotal}, 0, "all test shareables cleaned up");
+
+# list every type when no type is given
+$info = viewerGet("/api/shareables?arkimeRegressionUser=sac-test1");
+my $baseAll = $info->{recordsTotal};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "all1", "type": "alltype1", "data": {}, "viewRoles": ["arkimeUser"], "editUsers": ["sac-test2"]}', $token);
+my $idAll1 = $info->{id};
+ok($info->{success}, "create alltype1 shareable");
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "all2", "type": "alltype2", "data": {}}', $token);
+my $idAll2 = $info->{id};
+ok($info->{success}, "create alltype2 shareable");
+
+$info = viewerGet("/api/shareables?arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, $baseAll + 2, "no type lists both types");
+
+$info = viewerGet("/api/shareables?type=alltype1&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 1, "type still filters to one type");
+eq_or_diff($info->{data}->[0]->{viewRoles}, from_json('["arkimeUser"]'), "viewRoles returned in list");
+eq_or_diff($info->{data}->[0]->{editUsers}, from_json('["sac-test2"]'), "editUsers returned in list");
+eq_or_diff($info->{data}->[0]->{viewUsers}, from_json('[]'), "viewUsers defaults to empty array");
+eq_or_diff($info->{data}->[0]->{editRoles}, from_json('[]'), "editRoles defaults to empty array");
+
+viewerDeleteToken("/api/shareable/${idAll1}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idAll2}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerGet("/api/shareables?arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, $baseAll, "alltype shareables cleaned up");
+
+# sorting and searching
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "zebra sort", "type": "sorttype", "description": "aaa first", "data": {}}', $token);
+my $idS1 = $info->{id};
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "apple sort", "type": "sorttype", "description": "zzz last", "data": {}}', $token);
+my $idS2 = $info->{id};
+
+$info = viewerGet("/api/shareables?type=sorttype&arkimeRegressionUser=sac-test1");
+is($info->{data}->[0]->{name}, "apple sort", "default sort is name asc");
+
+$info = viewerGet("/api/shareables?type=sorttype&desc=true&arkimeRegressionUser=sac-test1");
+is($info->{data}->[0]->{name}, "zebra sort", "desc=true reverses");
+
+$info = viewerGet("/api/shareables?type=sorttype&sort=description&arkimeRegressionUser=sac-test1");
+is($info->{data}->[0]->{name}, "zebra sort", "sort by description");
+
+$info = viewerGet("/api/shareables?type=sorttype&sort=data&arkimeRegressionUser=sac-test1");
+is($info->{data}->[0]->{name}, "apple sort", "disallowed sort field falls back to name");
+
+$info = viewerGet("/api/shareables?searchTerm=zebra&arkimeRegressionUser=sac-test1");
+is($info->{recordsFiltered}, 1, "searchTerm matches name");
+is($info->{data}->[0]->{name}, "zebra sort", "searchTerm returns the right item");
+
+$info = viewerGet("/api/shareables?searchTerm=ZEBRA&arkimeRegressionUser=sac-test1");
+is($info->{recordsFiltered}, 1, "searchTerm is case insensitive");
+
+$info = viewerGet("/api/shareables?searchTerm=sorttype&arkimeRegressionUser=sac-test1");
+is($info->{recordsFiltered}, 2, "searchTerm matches type");
+
+$info = viewerGet("/api/shareables?searchTerm=zzz+last&arkimeRegressionUser=sac-test1");
+is($info->{recordsFiltered}, 1, "searchTerm matches description");
+
+$info = viewerGet("/api/shareables?searchTerm=nomatchhere&arkimeRegressionUser=sac-test1");
+is($info->{recordsFiltered}, 0, "searchTerm with no match");
+ok($info->{recordsTotal} > 0, "recordsTotal ignores searchTerm");
+
+viewerDeleteToken("/api/shareable/${idS1}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idS2}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerGet("/api/shareables?type=sorttype&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 0, "sorttype shareables cleaned up");

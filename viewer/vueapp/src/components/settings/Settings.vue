@@ -127,6 +127,14 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.shortcuts') }}
           </v-tab>
           <v-tab
+            v-if="!multiviewer || hasUsersES"
+            value="shareables">
+            <v-icon
+              icon="mdi-share-variant"
+              class="me-1" />
+            {{ $t('settings.nav.shareables') }}
+          </v-tab>
+          <v-tab
             v-if="!multiviewer"
             value="cron">
             <v-icon
@@ -1287,6 +1295,12 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'views'"
           @display-message="displayMessage" />
 
+        <!-- shareable settings -->
+        <Shareables
+          id="shareables"
+          v-if="visibleTab === 'shareables'"
+          @display-message="displayMessage" />
+
         <!-- cron query settings -->
         <PeriodicQueries
           id="cron"
@@ -1314,6 +1328,7 @@ import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
+import Shareables from './Shareables.vue';
 import Shortcuts from './Shortcuts.vue';
 import Views from './Views.vue';
 
@@ -1333,6 +1348,7 @@ export default {
     ArkimeFieldTypeahead,
     ThemePicker,
     PeriodicQueries,
+    Shareables,
     Shortcuts,
     Notifiers,
     Views
@@ -1469,7 +1485,7 @@ export default {
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
         tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts' ||
-        tab === 'totp') {
+        tab === 'shareables' || tab === 'totp') {
         this.visibleTab = tab;
       }
 
