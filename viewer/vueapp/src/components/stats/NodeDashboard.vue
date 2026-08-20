@@ -1,4 +1,7 @@
 <!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+
   Per-node gauge-card dashboard (issue #4085) — a responsive grid of node cards,
   each with a worst-gauge status dot and one ResourceBar per metric.
   Data-driven: the parent passes the node rows and a `gauges` descriptor, so the

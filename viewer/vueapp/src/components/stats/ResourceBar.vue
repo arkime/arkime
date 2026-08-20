@@ -1,4 +1,7 @@
 <!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+
   Shared color-coded resource meter (issue #4085).
   Give it a `percent` (0-100) OR `value` + `max`, plus a display `label`.
   Fill length tracks the percent; color comes from the fixed thresholds in

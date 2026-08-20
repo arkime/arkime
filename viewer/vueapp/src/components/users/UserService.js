@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import store from '../../store';
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { parseRoles } from '@common/vueFilters.js';

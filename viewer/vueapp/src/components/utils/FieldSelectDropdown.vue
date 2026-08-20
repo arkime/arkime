@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <!-- bodyOnly: render just the v-list so a parent v-menu can host us
        as a submenu. Otherwise: the standalone v-menu + v-btn + v-list

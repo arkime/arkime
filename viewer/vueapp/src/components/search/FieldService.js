@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import store from '../../store';
 import countries from './countries.json';
 import { fetchWrapper, cancelFetchWrapper } from '@common/fetchWrapper.js';

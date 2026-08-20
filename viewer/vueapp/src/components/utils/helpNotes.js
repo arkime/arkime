@@ -1,3 +1,6 @@
+// Copyright Yahoo Inc.
+// SPDX-License-Identifier: Apache-2.0
+//
 // Cyclable in-app help messages, in display order. Page tips carry the
 // route they describe (used to pick the starting message) and a Help page
 // anchor; their text lives at i18n key helpNotes.<id>.text. The 'welcome'

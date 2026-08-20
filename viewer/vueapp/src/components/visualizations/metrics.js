@@ -1,3 +1,6 @@
+// Copyright Yahoo Inc.
+// SPDX-License-Identifier: Apache-2.0
+//
 // Composite timeline metrics: the *Histo keys that sum into each selectable
 // metric, with the src/dst role used for series color. Single source of truth
 // shared by TimelineGraph (series defs) and Heatmap (intensity binning).

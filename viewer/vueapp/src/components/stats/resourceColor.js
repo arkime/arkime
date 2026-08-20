@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 'use strict';
 
 // Fixed thresholds for stats resource meters (issue #4085):

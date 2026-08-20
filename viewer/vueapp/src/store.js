@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';

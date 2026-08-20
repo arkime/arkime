@@ -1,3 +1,6 @@
+// Copyright Yahoo Inc.
+// SPDX-License-Identifier: Apache-2.0
+//
 // NOTE: these are no longer 'filters', as the filter syntax was removed in Vue 3.
 // So now these are just assorted string formatting functions :)
 // TODO this is duplicated between cont3xt and viewer, should be moved to top level common

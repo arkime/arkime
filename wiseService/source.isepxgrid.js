@@ -1,6 +1,10 @@
 /******************************************************************************/
 /* source.isepxgrid.js  -- WISE source for Cisco ISE pxGrid 2.0
  *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Enriches IPs with identity and endpoint data from ISE active sessions.
  *
  * Fields returned per IP:

@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { createApp } from 'vue';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';

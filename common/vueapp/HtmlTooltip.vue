@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <v-tooltip :activator="(targetId) ? `#${targetId}` : 'parent'">
     <span v-html="tooltipHtml" />

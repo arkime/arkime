@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import setReqHeaders from '@common/setReqHeaders';
 import { paramStr } from '../../utils/paramStr';
 

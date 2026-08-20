@@ -1,3 +1,6 @@
+// Copyright Yahoo Inc.
+// SPDX-License-Identifier: Apache-2.0
+//
 // external imports
 import { useRoute } from 'vue-router';
 // Vuetify components used by the pug session-detail templates. The
