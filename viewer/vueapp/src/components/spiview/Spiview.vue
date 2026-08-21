@@ -92,6 +92,7 @@ SPDX-License-Identifier: Apache-2.0
                         {{ config.name }}
                       </span>
                       <v-btn
+                        v-if="config.canEdit"
                         :id="`updateFieldConfig${key}`"
                         color="warning"
                         variant="flat"
@@ -100,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         class="ms-1"
                         :aria-label="$t('common.save')"
-                        @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                        @click.stop.prevent="updateFieldConfiguration(config, key)">
                         <v-icon icon="mdi-content-save" />
                         <v-tooltip
                           :activator="`[id='updateFieldConfig${key}']`"
@@ -109,6 +110,7 @@ SPDX-License-Identifier: Apache-2.0
                         </v-tooltip>
                       </v-btn>
                       <v-btn
+                        v-if="config.canDelete"
                         color="error"
                         variant="flat"
                         size="small"
@@ -116,7 +118,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         class="ms-1"
                         :aria-label="$t('common.delete')"
-                        @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                        @click.stop.prevent="deleteFieldConfiguration(config, key)">
                         <v-icon icon="mdi-trash-can-outline" />
                       </v-btn>
                     </div>
@@ -481,6 +483,9 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
+import { createLayoutService } from '../users/ShareableService';
+
+const SpiviewLayoutService = createLayoutService('spiviewLayout');
 import SpiviewService from './SpiviewService';
 // internal components
 import ArkimeError from '../utils/Error.vue';
@@ -599,7 +604,7 @@ export default {
     if (!this.spiQuery) { // there's no list of fields in the url params
       // so get what's saved in the db
       UserService.getPageConfig('spiview').then((response) => {
-        this.fieldConfigs = response.fieldConfigs;
+        // fieldConfigs are shareables now, issueQueries loads them
         this.spiQuery = response.spiviewFields.visibleFields || defaultSpi;
         this.issueQueries(true);
       }).catch((error) => {
@@ -907,16 +912,12 @@ export default {
         return;
       }
 
-      const data = {
+      SpiviewLayoutService.create({
         name: this.newFieldConfigName,
         fields: this.spiQuery
-      };
-
-      UserService.createLayout('spiview', data).then((response) => {
-        data.name = response.name;
-
+      }).then((layout) => {
         if (!this.fieldConfigs) { this.fieldConfigs = []; }
-        this.fieldConfigs.push(data);
+        this.fieldConfigs.push(layout);
 
         this.newFieldConfigName = null;
         this.fieldConfigsOpen = false;
@@ -943,11 +944,11 @@ export default {
     },
     /**
      * Deletes a previously saved custom spiview fields configuration
-     * @param {string} spiName  The name of the spiview fields config to remove
-     * @param {int} index       The index in the array of the spiview fields config to remove
+     * @param {object} config The spiview fields config to remove
+     * @param {int} index     The index in the array of the spiview fields config to remove
      */
-    deleteFieldConfiguration: function (spiName, index) {
-      UserService.deleteLayout('spiview', spiName).then(() => {
+    deleteFieldConfiguration: function (config, index) {
+      SpiviewLayoutService.delete(config.id).then(() => {
         this.fieldConfigs.splice(index, 1);
         this.fieldConfigError = false;
       }).catch((error) => {
@@ -956,17 +957,13 @@ export default {
     },
     /**
      * Updates a previously saved custom spiview fields configuration
-     * @param {string} spiName  The name of the spiview fields config to update
-     * @param {int} index       The index in the array of the spiview fields config to update
+     * @param {object} config The spiview fields config to update
+     * @param {int} index     The index in the array of the spiview fields config to update
      */
-    updateFieldConfiguration: function (spiName, index) {
-      const data = {
-        name: spiName,
-        fields: this.spiQuery
-      };
-
-      UserService.updateLayout('spiview', data).then((response) => {
-        this.fieldConfigs[index] = data;
+    updateFieldConfiguration: function (config, index) {
+      // only data is sent, so the name and any sharing on it are left alone
+      SpiviewLayoutService.update(config.id, { fields: this.spiQuery }).then((response) => {
+        this.fieldConfigs[index] = { ...config, fields: this.spiQuery };
         this.fieldConfigError = false;
         this.fieldConfigSuccess = resolveMessage(response, this.$t);
         setTimeout(() => { this.fieldConfigSuccess = ''; }, 5000);
@@ -1291,10 +1288,11 @@ export default {
 
       return currentPromise;
     },
-    /* Gets the current user's custom spiview fields configurations */
+    /* Gets the spiview field configurations this user can see, theirs plus any
+       shared with them. viewOnly is off so edit-shared ones show up too. */
     getSpiviewFieldConfigs: function () {
-      UserService.getLayout('spiview').then((response) => {
-        this.fieldConfigs = response;
+      SpiviewLayoutService.list().then((configs) => {
+        this.fieldConfigs = configs;
       }).catch((error) => {
         this.fieldConfigError = resolveMessage(error, this.$t);
       });

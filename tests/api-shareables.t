@@ -1,4 +1,4 @@
-use Test::More tests => 141;
+use Test::More tests => 159;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -451,3 +451,62 @@ viewerDeleteToken("/api/shareable/${idS1}?arkimeRegressionUser=sac-test1", $toke
 viewerDeleteToken("/api/shareable/${idS2}?arkimeRegressionUser=sac-test1", $token);
 $info = viewerGet("/api/shareables?type=sorttype&arkimeRegressionUser=sac-test1");
 is($info->{recordsTotal}, 0, "sorttype shareables cleaned up");
+
+# db.pl shareables-import copies per-user spiview layouts, and is re-runnable
+viewerPostToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "imported layout", "fields": "ip.src,ip.dst"}', $token);
+
+my $dbcmd = "../db/db.pl $ENV{INSECURE} --prefix tests $ArkimeTest::elasticsearch shareables-import spiview";
+my $out = `$dbcmd --dryrun 2>&1`;
+ok($out =~ /Would copy spiview 'imported layout' for sac-test1/, "dryrun reports the layout");
+$info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 0, "dryrun copied nothing");
+
+$out = `$dbcmd 2>&1`;
+ok($out =~ /Copying spiview 'imported layout' for sac-test1/, "import reports the copy");
+$info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 1, "layout imported as a shareable");
+is($info->{data}->[0]->{name}, "imported layout", "imported name");
+is($info->{data}->[0]->{creator}, "sac-test1", "creator is the layout owner");
+eq_or_diff($info->{data}->[0]->{data}, from_json('{"fields": "ip.src,ip.dst"}'), "imported data");
+eq_or_diff($info->{data}->[0]->{viewRoles}, from_json('[]'), "imported private, no viewRoles");
+
+# the original is left alone so Arkime 6 keeps working
+my $udoc = esGet("/tests_users/_doc/sac-test1");
+is(scalar(@{$udoc->{_source}->{spiviewFieldConfigs}}), 1, "original layout still on the user");
+is($udoc->{_source}->{spiviewFieldConfigs}->[0]->{name}, "imported layout", "original layout unchanged");
+
+# re-running does not duplicate
+$out = `$dbcmd 2>&1`;
+ok($out =~ /0 copied/, "re-run copies nothing");
+$info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 1, "re-run did not duplicate");
+
+foreach my $item (@{$info->{data}}) {
+    viewerDeleteToken("/api/shareable/$item->{id}?arkimeRegressionUser=sac-test1", $token);
+}
+
+# the other two layout types import the same way
+viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "cols layout", "columns": ["firstPacket","source.ip"], "order": [["firstPacket","desc"]]}', $token);
+viewerPostToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "info layout", "fields": ["source.ip"]}', $token);
+
+`../db/db.pl $ENV{INSECURE} --prefix tests $ArkimeTest::elasticsearch shareables-import all 2>&1`;
+
+$info = viewerGet("/api/shareables?type=sessionsTableLayout&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 1, "column layout imported");
+is($info->{data}->[0]->{name}, "cols layout", "column layout name");
+eq_or_diff($info->{data}->[0]->{data}, from_json('{"columns": ["firstPacket","source.ip"], "order": [["firstPacket","desc"]]}'), "column layout keeps columns and order");
+
+$info = viewerGet("/api/shareables?type=sessionsInfoLayout&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 1, "info field layout imported");
+eq_or_diff($info->{data}->[0]->{data}, from_json('{"fields": ["source.ip"]}'), "info field layout keeps fields");
+
+# and all three are re-runnable together
+my $allout = `../db/db.pl $ENV{INSECURE} --prefix tests $ArkimeTest::elasticsearch shareables-import all 2>&1`;
+ok($allout =~ /0 copied/, "import all is re-runnable");
+
+foreach my $t ("sessionsTableLayout", "sessionsInfoLayout") {
+    $info = viewerGet("/api/shareables?type=$t&arkimeRegressionUser=sac-test1");
+    foreach my $item (@{$info->{data}}) {
+        viewerDeleteToken("/api/shareable/$item->{id}?arkimeRegressionUser=sac-test1", $token);
+    }
+}

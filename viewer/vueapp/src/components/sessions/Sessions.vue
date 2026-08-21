@@ -793,6 +793,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
+import { createLayoutService } from '../users/ShareableService';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -829,6 +830,9 @@ const MIN_COL_WIDTH = 70;
 
 // save a pending promise to be able to cancel it
 let pendingPromise;
+
+const ColumnLayoutService = createLayoutService('sessionsTableLayout');
+const InfoFieldLayoutService = createLayoutService('sessionsInfoLayout');
 
 export default {
   name: 'Sessions',
@@ -1413,14 +1417,12 @@ export default {
         return;
       }
 
-      const data = {
+      ColumnLayoutService.create({
         name: this.newColConfigName,
         columns: this.tableState.visibleHeaders.slice(),
         order: this.tableState.order.slice()
-      };
-
-      UserService.createLayout('sessionstable', data).then((response) => {
-        data.name = response.name; // update column config name
+      }).then((layout) => {
+        const data = layout;
 
         this.colConfigs.push(data);
 
@@ -1474,7 +1476,7 @@ export default {
      * @param {object} config The column config to remove
      */
     deleteColumnConfiguration: function (config) {
-      UserService.deleteLayout('sessionstable', config.name).then((response) => {
+      ColumnLayoutService.delete(config.id).then((response) => {
         const index = this.colConfigs.indexOf(config);
         if (index > -1) { this.colConfigs.splice(index, 1); }
         if (this.tableState.colConfigName === config.name) {
@@ -1494,15 +1496,12 @@ export default {
       const index = this.colConfigs.findIndex(c => c.name === colName);
       if (index === -1) { return; }
 
-      const data = {
-        name: colName,
+      ColumnLayoutService.update(this.colConfigs[index].id, {
         columns: this.tableState.visibleHeaders.slice(),
         order: JSON.parse(JSON.stringify(this.tableState.order))
-      };
-
-      UserService.updateLayout('sessionstable', data).then((response) => {
-        this.colConfigs[index] = data;
-        this.showConfigSnackbar(resolveMessage(response, this.$t));
+      }).then((layout) => {
+        this.colConfigs[index] = layout;
+        this.showConfigSnackbar(this.$t('sessions.sessions.colConfigUpdated'));
       }).catch((error) => {
         this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
@@ -1588,14 +1587,11 @@ export default {
         return;
       }
 
-      const data = {
+      InfoFieldLayoutService.create({
         name: this.newInfoConfigName,
         fields: this.infoFields.map((field) => field.dbField)
-      };
-
-      UserService.createLayout('sessionsinfofields', data).then((response) => {
-        data.name = response.name; // update info config name because server sanitizes it
-        this.infoConfigs.push(data);
+      }).then((layout) => {
+        this.infoConfigs.push(layout);
         this.newInfoConfigName = null;
         this.infoConfigError = false;
 
@@ -1625,7 +1621,7 @@ export default {
      * @param {object} config The info field config to remove
      */
     deleteInfoFieldLayout (config) {
-      UserService.deleteLayout('sessionsinfofields', config.name).then((response) => {
+      InfoFieldLayoutService.delete(config.id).then((response) => {
         const index = this.infoConfigs.indexOf(config);
         if (index > -1) { this.infoConfigs.splice(index, 1); }
         if (this.user.settings.infoFieldsConfigName === config.name) {
@@ -1645,14 +1641,11 @@ export default {
       const index = this.infoConfigs.findIndex(c => c.name === layoutName);
       if (index === -1) { return; }
 
-      const data = {
-        name: layoutName,
+      InfoFieldLayoutService.update(this.infoConfigs[index].id, {
         fields: this.infoFields.map((field) => field.dbField)
-      };
-
-      UserService.updateLayout('sessionsinfofields', data).then((response) => {
-        this.infoConfigs[index] = data;
-        this.showConfigSnackbar(resolveMessage(response, this.$t));
+      }).then((layout) => {
+        this.infoConfigs[index] = layout;
+        this.showConfigSnackbar(this.$t('sessions.sessions.infoConfigUpdated'));
       }).catch((error) => {
         this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
       });
@@ -1807,9 +1800,10 @@ export default {
     getSessionsConfig: function () {
       UserService.getPageConfig('sessions').then((response) => {
         this.colWidths = response.colWidths;
-        this.colConfigs = response.colConfigs;
         this.tableState = response.tableState;
-        this.infoConfigs = response.infoConfigs;
+        // layouts are shareables now, fetched separately
+        ColumnLayoutService.list().then((configs) => { this.colConfigs = configs; });
+        InfoFieldLayoutService.list().then((configs) => { this.infoConfigs = configs; });
 
         this.$store.commit('setSessionsTableState', this.tableState);
         if (Object.keys(this.tableState).length === 0 ||

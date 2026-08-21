@@ -594,6 +594,8 @@
       "customColumnName": "输入新的列配置名称",
       "arkimeDefault": "Arkime 默认",
       "customColumnReset": "将表格重置为默认值",
+      "colConfigUpdated": "列布局已更新",
+      "infoConfigUpdated": "信息字段布局已更新",
       "customColumnUpdate": "使用当前可见列更新此列配置",
       "customInfoName": "输入新的信息字段配置名称",
       "customInfoReset": "将信息列重置为默认字段",
@@ -1358,6 +1360,24 @@
       "invalidCode": "请输入有效的6位数代码",
       "confirmDisable": "输入代码以停用",
       "confirmUnenroll": "停用 2FA"
+    },
+    "layoutEditor": {
+      "title": "编辑布局",
+      "name": "名称",
+      "namePlaceholder": "此布局的名称",
+      "nameRequired": "需要名称",
+      "fields": "字段",
+      "fieldsRequired": "请至少选择一个字段",
+      "addFields": "添加或移除字段",
+      "searchFields": "搜索字段...",
+      "noFields": "尚未选择字段。",
+      "sort": "排序顺序",
+      "addSort": "添加排序",
+      "noSort": "未设置排序顺序。",
+      "asc": "升序",
+      "desc": "降序",
+      "editTip": "编辑此布局",
+      "saved": "布局已保存"
     },
     "shareables": {
       "title": "共享项",

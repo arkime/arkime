@@ -23,12 +23,13 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 export const createShareableService = (type) => ({
   /**
    * Lists all shareable items of this type that the user has access to
+   * @param {object} params - Optional extra params (viewOnly, searchTerm, sort, desc, start, length)
    * @returns {Promise} Promise resolving to { data: [], recordsTotal, recordsFiltered }
    */
-  async list () {
+  async list (params) {
     return await fetchWrapper({
       url: 'api/shareables',
-      params: { type }
+      params: { type, ...params }
     });
   },
 
@@ -73,24 +74,18 @@ export const createShareableService = (type) => ({
   },
 
   /**
-   * Updates an existing shareable item
+   * Updates an existing shareable item. Only the keys given are sent, and the
+   * API leaves anything omitted as it was, so a partial update cannot wipe the
+   * sharing off an item.
    * @param {string} id - The shareable ID to update
-   * @param {object} config - The updated configuration
+   * @param {object} config - The fields to change
    * @returns {Promise} Promise resolving to { success, shareable }
    */
   async update (id, config) {
     return await fetchWrapper({
       url: `api/shareable/${id}`,
       method: 'PUT',
-      data: {
-        name: config.name,
-        description: config.description,
-        data: config.data,
-        viewUsers: config.viewUsers || [],
-        viewRoles: config.viewRoles || [],
-        editUsers: config.editUsers || [],
-        editRoles: config.editRoles || []
-      }
+      data: config
     });
   },
 
@@ -143,4 +138,61 @@ export const ShareableService = {
   async delete (id) {
     return await fetchWrapper({ url: `api/shareable/${id}`, method: 'DELETE' });
   }
+};
+
+/**
+ * Flattens a shareable into the shape the layout UIs use. A layout is just its
+ * name plus whatever is in data, so `data` round-trips without a per-type map.
+ * @param {object} shareable - A shareable from the API
+ * @returns {object} { id, name, ...data, canEdit, canDelete, view/edit users and roles }
+ */
+export const shareableToLayout = (shareable) => ({
+  id: shareable.id,
+  name: shareable.name,
+  ...(shareable.data || {}),
+  canEdit: shareable.canEdit !== false,
+  canDelete: shareable.canDelete !== false,
+  viewUsers: shareable.viewUsers || [],
+  viewRoles: shareable.viewRoles || [],
+  editUsers: shareable.editUsers || [],
+  editRoles: shareable.editRoles || []
+});
+
+/**
+ * Creates a service for a layout type stored as shareables (column layouts,
+ * info field layouts, spiview layouts). Wraps createShareableService so callers
+ * work with flat layout objects instead of shareable envelopes.
+ *
+ * @param {string} type - The shareable type, eg 'sessionsTableLayout'
+ * @returns {Object} Service with list/create/update/delete over flat layouts
+ */
+export const createLayoutService = (type) => {
+  const shareables = createShareableService(type);
+
+  return {
+    /* Layouts the user owns or that are shared with them, view or edit */
+    async list () {
+      const response = await shareables.list({ viewOnly: false });
+      return response.data.map(shareableToLayout);
+    },
+
+    async create (layout) {
+      const { name: layoutName, ...data } = layout;
+      const response = await shareables.save({ name: layoutName, data });
+      return shareableToLayout(response.shareable);
+    },
+
+    /* Only the keys given are sent, so this cannot clear an item's sharing */
+    async update (id, layout) {
+      const { name: layoutName, ...data } = layout;
+      const body = Object.keys(data).length ? { data } : {};
+      if (layoutName !== undefined) { body.name = layoutName; }
+      const response = await shareables.update(id, body);
+      return shareableToLayout(response.shareable);
+    },
+
+    async delete (id) {
+      return await shareables.delete(id);
+    }
+  };
 };

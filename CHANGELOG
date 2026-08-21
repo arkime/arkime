@@ -37,6 +37,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0 2026/10/xx
 ## Breaking
+  - Column, info field and spiview layouts moved from the user record to the shareables index so they can be
+          shared. Run db.pl <host:port> shareables-import all to copy existing ones over; the originals are left
+          in place so Arkime 6 keeps working, and the command can be re-run
   - wiseService no longer generates a random config pin code, use --webcode <code> or each user's own TOTP code.
   - Removed the simpleDEKEncoding setting, the DEK is now always encrypted with aes-256-gcm.
   - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead.

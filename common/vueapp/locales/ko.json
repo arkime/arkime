@@ -594,6 +594,8 @@
       "customColumnName": "새 열 설정 이름 입력",
       "arkimeDefault": "Arkime 기본값",
       "customColumnReset": "테이블을 기본값으로 재설정",
+      "colConfigUpdated": "열 레이아웃이 업데이트되었습니다",
+      "infoConfigUpdated": "정보 필드 레이아웃이 업데이트되었습니다",
       "customColumnUpdate": "현재 표시된 열로 이 열 설정을 업데이트",
       "customInfoName": "새 정보 필드 설정 이름 입력",
       "customInfoReset": "정보 열을 기본 필드로 재설정",
@@ -1358,6 +1360,24 @@
       "invalidCode": "유효한 6자리 코드를 입력하세요",
       "confirmDisable": "비활성화 코드 입력",
       "confirmUnenroll": "2FA 비활성화"
+    },
+    "layoutEditor": {
+      "title": "레이아웃 편집",
+      "name": "이름",
+      "namePlaceholder": "이 레이아웃의 이름",
+      "nameRequired": "이름이 필요합니다",
+      "fields": "필드",
+      "fieldsRequired": "필드를 하나 이상 선택하세요",
+      "addFields": "필드 추가 또는 제거",
+      "searchFields": "필드 검색...",
+      "noFields": "선택된 필드가 없습니다.",
+      "sort": "정렬 순서",
+      "addSort": "정렬 추가",
+      "noSort": "정렬 순서가 설정되지 않았습니다.",
+      "asc": "오름차순",
+      "desc": "내림차순",
+      "editTip": "이 레이아웃 편집",
+      "saved": "레이아웃이 저장되었습니다"
     },
     "shareables": {
       "title": "공유 항목",

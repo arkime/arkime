@@ -594,6 +594,8 @@
       "customColumnName": "Enter new column configuration name",
       "arkimeDefault": "Arkime Default",
       "customColumnReset": "Reset table to defaults",
+      "colConfigUpdated": "Column layout updated",
+      "infoConfigUpdated": "Info field layout updated",
       "customColumnUpdate": "Update this column configuration with the currently visible columns",
       "customInfoName": "Enter new info field configuration name",
       "customInfoReset": "Reset info column to default fields",
@@ -1358,6 +1360,24 @@
       "invalidCode": "Please enter a valid 6-digit code",
       "confirmDisable": "Enter Code to Disable",
       "confirmUnenroll": "Disable 2FA"
+    },
+    "layoutEditor": {
+      "title": "Edit Layout",
+      "name": "Name",
+      "namePlaceholder": "Name of this layout",
+      "nameRequired": "A name is required",
+      "fields": "Fields",
+      "fieldsRequired": "Pick at least one field",
+      "addFields": "Add or remove fields",
+      "searchFields": "Search for fields...",
+      "noFields": "No fields selected yet.",
+      "sort": "Sort Order",
+      "addSort": "Add sort",
+      "noSort": "No sort order set.",
+      "asc": "Ascending",
+      "desc": "Descending",
+      "editTip": "Edit this layout",
+      "saved": "Layout saved"
     },
     "shareables": {
       "title": "Shareables",

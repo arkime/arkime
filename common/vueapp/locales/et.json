@@ -594,6 +594,8 @@
       "customColumnName": "Sisesta uue veeru konfiguratsiooni nimi",
       "arkimeDefault": "Arkime Vaikeseade",
       "customColumnReset": "Lähtesta tabel vaikeseadetele",
+      "colConfigUpdated": "Veerupaigutus uuendatud",
+      "infoConfigUpdated": "Infovälja paigutus uuendatud",
       "customColumnUpdate": "Uuenda see veeru konfiguratsioon praegu nähtavate veergudega",
       "customInfoName": "Sisesta uue info välja konfiguratsiooni nimi",
       "customInfoReset": "Lähtesta info veerg vaikeseadetele",
@@ -1358,6 +1360,24 @@
       "invalidCode": "Palun sisestage kehtiv 6-kohaline kood",
       "confirmDisable": "Sisestage kood keelamiseks",
       "confirmUnenroll": "Keela 2FA"
+    },
+    "layoutEditor": {
+      "title": "Muuda paigutust",
+      "name": "Nimi",
+      "namePlaceholder": "Selle paigutuse nimi",
+      "nameRequired": "Nimi on kohustuslik",
+      "fields": "Väljad",
+      "fieldsRequired": "Vali vähemalt üks väli",
+      "addFields": "Lisa või eemalda välju",
+      "searchFields": "Otsi välju...",
+      "noFields": "Ühtegi välja pole veel valitud.",
+      "sort": "Sortimisjärjekord",
+      "addSort": "Lisa sortimine",
+      "noSort": "Sortimisjärjekorda pole määratud.",
+      "asc": "Kasvav",
+      "desc": "Kahanev",
+      "editTip": "Muuda seda paigutust",
+      "saved": "Paigutus salvestatud"
     },
     "shareables": {
       "title": "Jagatud elemendid",

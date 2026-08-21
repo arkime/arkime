@@ -594,6 +594,8 @@
       "customColumnName": "Entrer le nouveau nom de la configuration de colonne",
       "arkimeDefault": "Arkime par Défaut",
       "customColumnReset": "Réinitialiser le tableau aux valeurs par défaut",
+      "colConfigUpdated": "Disposition des colonnes mise à jour",
+      "infoConfigUpdated": "Disposition des champs d'info mise à jour",
       "customColumnUpdate": "Mettre à jour cette configuration de colonne avec les colonnes actuellement visibles",
       "customInfoName": "Entrer le nouveau nom de la configuration de champ d'information",
       "customInfoReset": "Réinitialiser la colonne d'information aux champs par défaut",
@@ -1358,6 +1360,24 @@
       "invalidCode": "Veuillez entrer un code valide à 6 chiffres",
       "confirmDisable": "Entrez le code pour désactiver",
       "confirmUnenroll": "Désactiver 2FA"
+    },
+    "layoutEditor": {
+      "title": "Modifier la disposition",
+      "name": "Nom",
+      "namePlaceholder": "Nom de cette disposition",
+      "nameRequired": "Un nom est requis",
+      "fields": "Champs",
+      "fieldsRequired": "Choisissez au moins un champ",
+      "addFields": "Ajouter ou retirer des champs",
+      "searchFields": "Rechercher des champs...",
+      "noFields": "Aucun champ sélectionné.",
+      "sort": "Ordre de tri",
+      "addSort": "Ajouter un tri",
+      "noSort": "Aucun ordre de tri défini.",
+      "asc": "Croissant",
+      "desc": "Décroissant",
+      "editTip": "Modifier cette disposition",
+      "saved": "Disposition enregistrée"
     },
     "shareables": {
       "title": "Éléments partageables",
