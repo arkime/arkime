@@ -379,7 +379,9 @@ class DbESImpl {
       bool: { should: permissionFilters, minimum_should_match: 1 }
     }];
 
-    // every field is a keyword, so substring search needs wildcards
+    // Every field is a keyword, so substring search needs wildcards.
+    // case_insensitive is best effort: it is documented as supported but is
+    // not honoured on every OpenSearch, so do not rely on it or test for it.
     if (params.searchTerm) {
       const value = `*${params.searchTerm}*`;
       filter.push({

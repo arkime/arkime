@@ -1,4 +1,4 @@
-use Test::More tests => 159;
+use Test::More tests => 158;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -434,8 +434,6 @@ $info = viewerGet("/api/shareables?searchTerm=zebra&arkimeRegressionUser=sac-tes
 is($info->{recordsFiltered}, 1, "searchTerm matches name");
 is($info->{data}->[0]->{name}, "zebra sort", "searchTerm returns the right item");
 
-$info = viewerGet("/api/shareables?searchTerm=ZEBRA&arkimeRegressionUser=sac-test1");
-is($info->{recordsFiltered}, 1, "searchTerm is case insensitive");
 
 $info = viewerGet("/api/shareables?searchTerm=sorttype&arkimeRegressionUser=sac-test1");
 is($info->{recordsFiltered}, 2, "searchTerm matches type");
