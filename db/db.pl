@@ -146,6 +146,26 @@ my @UNSETPERM = ();
 my $USEREGEX = 0;
 my $DRYRUN = 0;
 
+# Per-user layouts that shareables-import copies into the shareables index.
+# Adding a new one is an entry here; nothing else needs to change.
+my %SHAREABLE_IMPORTS = (
+    "spiview" => {
+        field => "spiviewFieldConfigs",
+        type  => "spiviewLayout",
+        data  => sub { return { fields => $_[0]->{fields} }; }
+    },
+    "sessionstable" => {
+        field => "columnConfigs",
+        type  => "sessionsTableLayout",
+        data  => sub { return { columns => $_[0]->{columns}, order => $_[0]->{order} }; }
+    },
+    "sessionsinfofields" => {
+        field => "infoFieldConfigs",
+        type  => "sessionsInfoLayout",
+        data  => sub { return { fields => $_[0]->{fields} }; }
+    }
+);
+
 #use LWP::ConsoleLogger::Everywhere ();
 
 ################################################################################
@@ -246,6 +266,11 @@ sub showHelp($)
     print "User Commands:\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
+    print "  shareables-import <type>     - Copy per-user layouts into shareables, safe to run repeatedly.\n";
+    print "                                 <type> is 'all' or one of: " . join(", ", sort keys %SHAREABLE_IMPORTS) . "\n";
+    print "                                 Originals are left alone so Arkime 6 keeps working\n";
+    print "    --dryrun                   - Print what would be copied without copying\n";
+    print "      eg: db.pl <host:port> shareables-import spiview --dryrun\n";
     print "  users-update <pattern> <opts>- Bulk add/remove roles and set/unset fields on all users whose userId matches <pattern>\n";
     print "      pattern                  - Glob matched against userId, '*' and '?' supported, use '*' for all users\n";
     print "                                 Roles themselves are skipped unless <pattern> starts with 'role:'\n";
@@ -8436,7 +8461,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|shareables-?import|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?update|users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -8946,6 +8971,84 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/${PREFIX}users/_refresh", "") if ($changed && !$DRYRUN);
 
     print "$matched user(s) matched '$pattern', $changed " . ($DRYRUN ? "would be changed" : "changed") . "\n";
+    exit 0;
+} elsif ($ARGV[1] =~ /^(shareables-?import)$/) {
+    parseArgs(3);
+
+    my $what = $ARGV[2] // "all";
+    showHelp("Unknown shareables-import type '$what', must be one of: all, " . join(", ", sort keys %SHAREABLE_IMPORTS))
+        if ($what ne "all" && !$SHAREABLE_IMPORTS{$what});
+
+    my @todo = ($what eq "all") ? (sort keys %SHAREABLE_IMPORTS) : ($what);
+
+    my $copied = 0;
+    my $skipped = 0;
+
+    # Everything already in shareables, so re-runs are safe. Keyed on
+    # type + creator + name, which is what made a layout unique on the user.
+    my %have;
+    my $existing = esGet("/${PREFIX}shareables/_search?size=10000&_source=type,creator,name", 1);
+    foreach my $hit (@{$existing->{hits}->{hits} // []}) {
+        my $src = $hit->{_source};
+        next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
+        $have{$src->{type} . "\0" . $src->{creator} . "\0" . $src->{name}} = 1;
+    }
+
+    foreach my $kind (@todo) {
+        my $info = $SHAREABLE_IMPORTS{$kind};
+        my $field = $info->{field};
+        my $type = $info->{type};
+
+        my $users = esGet("/${PREFIX}users/_search?size=10000&_source=userId,${field}");
+        my $total = $users->{hits}->{total}->{value} // $users->{hits}->{total};
+        logmsg "WARNING - more than 10000 users, only the first 10000 were considered\n" if (defined $total && $total > 10000);
+
+        foreach my $hit (@{$users->{hits}->{hits}}) {
+            my $userId = $hit->{_source}->{userId};
+            next if (!defined $userId);
+            my $configs = $hit->{_source}->{$field};
+            next if (!$configs || ref($configs) ne "ARRAY");
+
+            foreach my $config (@{$configs}) {
+                my $name = $config->{name};
+                next if (!defined $name);
+
+                if ($have{$type . "\0" . $userId . "\0" . $name}) {
+                    $skipped++;
+                    next;
+                }
+
+                my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
+                my $doc = {
+                    name => $name,
+                    type => $type,
+                    creator => $userId,
+                    created => $now,
+                    updated => $now,
+                    viewRoles => [],
+                    viewUsers => [],
+                    editRoles => [],
+                    editUsers => [],
+                    data => $info->{data}->($config)
+                };
+
+                if ($DRYRUN) {
+                    print "Would copy $kind '$name' for $userId\n";
+                } else {
+                    print "Copying $kind '$name' for $userId\n";
+                    esPost("/${PREFIX}shareables/_doc", to_json($doc));
+                }
+                # guard against the same user having it twice in one run
+                $have{$type . "\0" . $userId . "\0" . $name} = 1;
+                $copied++;
+            }
+        }
+    }
+
+    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$DRYRUN);
+
+    print "$copied " . ($DRYRUN ? "would be copied" : "copied") . ", $skipped already existed\n";
+    print "The originals were left on the user, so Arkime 6 keeps working. Re-run any time to pick up new ones.\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
     showHelp("Invalid name $ARGV[2], names cannot have special characters except '-' and '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]/);

@@ -714,12 +714,22 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <v-btn
+                      v-if="config.canEdit"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-right me-1"
+                      @click="editLayout('sessionstable', 'columns', config, 'colConfigs', index)"
+                      :title="$t('settings.layoutEditor.editTip')">
+                      <v-icon icon="mdi-pencil" />
+                    </v-btn>
+                    <v-btn
                       color="error"
                       variant="flat"
                       size="small"
                       density="comfortable"
                       class="float-right"
-                      @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
+                      @click="deleteLayout('sessionstable', config, 'colConfigs', index)"
                       :title="$t('settings.ccl.deleteTip')">
                       <v-icon
                         icon="mdi-trash-can-outline"
@@ -815,12 +825,22 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <v-btn
+                      v-if="config.canEdit"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-right me-1"
+                      @click="editLayout('sessionsinfofields', 'fields', config, 'infoFieldLayouts', index)"
+                      :title="$t('settings.layoutEditor.editTip')">
+                      <v-icon icon="mdi-pencil" />
+                    </v-btn>
+                    <v-btn
                       color="error"
                       variant="flat"
                       size="small"
                       density="comfortable"
                       class="float-right"
-                      @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
+                      @click="deleteLayout('sessionsinfofields', config, 'infoFieldLayouts', index)"
                       :title="$t('settings.infoLayout.deleteTip')">
                       <v-icon
                         icon="mdi-trash-can-outline"
@@ -914,12 +934,22 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <v-btn
+                      v-if="config.canEdit"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-right me-1"
+                      @click="editLayout('spiview', 'spiview', config, 'spiviewConfigs', index)"
+                      :title="$t('settings.layoutEditor.editTip')">
+                      <v-icon icon="mdi-pencil" />
+                    </v-btn>
+                    <v-btn
                       color="error"
                       variant="flat"
                       size="small"
                       density="comfortable"
                       class="float-right"
-                      @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
+                      @click="deleteLayout('spiview', config, 'spiviewConfigs', index)"
                       :title="$t('settings.spiview.deleteTip')">
                       <v-icon
                         icon="mdi-trash-can-outline"
@@ -1295,6 +1325,14 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'views'"
           @display-message="displayMessage" />
 
+        <!-- shared editor for the three layout tabs -->
+        <LayoutEditor
+          v-model="showLayoutEditor"
+          :layout="editingLayout"
+          :kind="editingLayoutKind"
+          :fields-map="fieldsMap"
+          @save="saveLayout" />
+
         <!-- shareable settings -->
         <Shareables
           id="shareables"
@@ -1329,6 +1367,9 @@ import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shareables from './Shareables.vue';
+import { createLayoutService } from '../users/ShareableService';
+import LayoutEditor from './LayoutEditor.vue';
+import { resolveMessage } from '@common/resolveI18nMessage';
 import Shortcuts from './Shortcuts.vue';
 import Views from './Views.vue';
 
@@ -1340,6 +1381,12 @@ const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 const secretMatch = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 let secrets = [];
 
+const LayoutServices = {
+  sessionstable: createLayoutService('sessionsTableLayout'),
+  sessionsinfofields: createLayoutService('sessionsInfoLayout'),
+  spiview: createLayoutService('spiviewLayout')
+};
+
 export default {
   name: 'Settings',
   components: {
@@ -1347,6 +1394,7 @@ export default {
     ArkimeLoading,
     ArkimeFieldTypeahead,
     ThemePicker,
+    LayoutEditor,
     PeriodicQueries,
     Shareables,
     Shortcuts,
@@ -1364,6 +1412,13 @@ export default {
       msgType: undefined,
       displayName: undefined,
       visibleTab: 'general', // default tab
+      // layout editor, shared by the three layout tabs
+      showLayoutEditor: false,
+      editingLayout: undefined,
+      editingLayoutType: undefined,
+      editingLayoutKind: 'fields',
+      editingLayoutArray: undefined,
+      editingLayoutIndex: -1,
       settings: {},
       integerFields: undefined,
       columns: [],
@@ -1721,14 +1776,34 @@ export default {
       * @param {array} layoutArray  The array to save the layout to
       * @param {int} index          The index in the array of the layout to save
       */
-    deleteLayout (layoutType, layoutName, layoutArray, index) {
-      UserService.deleteLayout(layoutType, layoutName, this.userId).then((response) => {
+    /* opens the shared editor for one of the three layout tabs */
+    editLayout (layoutType, kind, layout, layoutArray, index) {
+      this.editingLayoutType = layoutType;
+      this.editingLayoutKind = kind;
+      this.editingLayout = layout;
+      this.editingLayoutArray = layoutArray;
+      this.editingLayoutIndex = index;
+      this.showLayoutEditor = true;
+    },
+    /* saves whatever the editor produced back onto the shareable */
+    saveLayout (data) {
+      LayoutServices[this.editingLayoutType].update(this.editingLayout.id, data).then((layout) => {
+        this[this.editingLayoutArray].splice(this.editingLayoutIndex, 1, layout);
+        this.showLayoutEditor = false;
+        this.displayMessage({ msg: this.$t('settings.layoutEditor.saved') });
+        if (this.editingLayoutType === 'spiview') { this.getSpiviewConfigs(); }
+      }).catch((error) => {
+        this.displayMessage({ msg: resolveMessage(error, this.$t), type: 'danger' });
+      });
+    },
+    deleteLayout (layoutType, layout, layoutArray, index) {
+      LayoutServices[layoutType].delete(layout.id).then((response) => {
         this[layoutArray].splice(index, 1);
         // display success message to user
-        this.displayMessage({ msg: response.text });
+        this.displayMessage({ msg: resolveMessage(response, this.$t) });
       }).catch((error) => {
         // display error message to user
-        this.displayMessage({ msg: error.text, type: 'danger' });
+        this.displayMessage({ msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /* THEMES ------------------------------------------ */
@@ -2005,16 +2080,16 @@ export default {
     },
     /* retrieves the specified user's custom column layouts */
     getColConfigs: function () {
-      UserService.getLayout('sessionstable', this.userId).then((response) => {
-        this.colConfigs = response;
+      LayoutServices.sessionstable.list().then((layouts) => {
+        this.colConfigs = layouts;
       }).catch((error) => {
         this.colConfigError = error.text;
       });
     },
     /* retrieves the specified user's custom info field layouts */
     getInfoFieldLayout: function () {
-      UserService.getLayout('sessionsinfofields', this.userId).then((response) => {
-        this.infoFieldLayouts = response;
+      LayoutServices.sessionsinfofields.list().then((layouts) => {
+        this.infoFieldLayouts = layouts;
       }).catch((error) => {
         this.infoFieldError = error.text;
       });
@@ -2022,8 +2097,8 @@ export default {
     /* retrieves the specified user's custom spiview fields layouts.
      * dissects the visible spiview fields for view consumption */
     getSpiviewConfigs: function () {
-      UserService.getLayout('spiview', this.userId).then((response) => {
-        this.spiviewConfigs = response;
+      LayoutServices.spiview.list().then((layouts) => {
+        this.spiviewConfigs = layouts;
 
         for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
           const config = this.spiviewConfigs[x];

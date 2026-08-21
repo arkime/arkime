@@ -594,6 +594,8 @@
       "customColumnName": "Digite o nome da nova configuração de coluna",
       "arkimeDefault": "Padrão Arkime",
       "customColumnReset": "Redefinir tabela para padrões",
+      "colConfigUpdated": "Layout de colunas atualizado",
+      "infoConfigUpdated": "Layout de campos de informação atualizado",
       "customColumnUpdate": "Atualizar esta configuração de coluna com as colunas atualmente visíveis",
       "customInfoName": "Digite o nome da nova configuração de campo de info",
       "customInfoReset": "Redefinir coluna de info para campos padrão",
@@ -1358,6 +1360,24 @@
       "invalidCode": "Por favor, insira um código válido de 6 dígitos",
       "confirmDisable": "Insira o Código para Desativar",
       "confirmUnenroll": "Desativar 2FA"
+    },
+    "layoutEditor": {
+      "title": "Editar layout",
+      "name": "Nome",
+      "namePlaceholder": "Nome deste layout",
+      "nameRequired": "Um nome é obrigatório",
+      "fields": "Campos",
+      "fieldsRequired": "Escolha pelo menos um campo",
+      "addFields": "Adicionar ou remover campos",
+      "searchFields": "Pesquisar campos...",
+      "noFields": "Nenhum campo selecionado ainda.",
+      "sort": "Ordem de classificação",
+      "addSort": "Adicionar ordenação",
+      "noSort": "Nenhuma ordem definida.",
+      "asc": "Crescente",
+      "desc": "Decrescente",
+      "editTip": "Editar este layout",
+      "saved": "Layout salvo"
     },
     "shareables": {
       "title": "Itens Compartilháveis",

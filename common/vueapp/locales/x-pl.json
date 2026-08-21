@@ -595,6 +595,8 @@
       "customColumnName": "Enterway ewnay olumncay onfigurationcay amenay",
       "arkimeDefault": "ArkimeWay Efaultday",
       "customColumnReset": "Esetray abletay otay efaultsday",
+      "colConfigUpdated": "Olumncay ayoutlay updatedway",
+      "infoConfigUpdated": "Infoway ieldfay ayoutlay updatedway",
       "customColumnUpdate": "Updateway isthay olumncay onfigurationcay ithway ethay urrentlycay isiblevay olumnscay",
       "customInfoName": "Enterway ewnay infoway ieldfay onfigurationcay amenay",
       "customInfoReset": "Esetray infoway olumncay otay efaultday ieldsfay",
@@ -1359,6 +1361,24 @@
       "invalidCode": "Easeplay enterway away alidvay 6-igitday odecay",
       "confirmDisable": "Enterway Odecay otay Isableday",
       "confirmUnenroll": "Isableday 2FA"
+    },
+    "layoutEditor": {
+      "title": "Iteday Ayoutlay",
+      "name": "Amenay",
+      "namePlaceholder": "Amenay ofway isthay ayoutlay",
+      "nameRequired": "Away amenay isway equiredray",
+      "fields": "Ieldsfay",
+      "fieldsRequired": "Ickpay atway eastlay oneway ieldfay",
+      "addFields": "Addway orway emoveray ieldsfay",
+      "searchFields": "Earchsay orfay ieldsfay...",
+      "noFields": "Onay ieldsfay electedsay etyay.",
+      "sort": "Ortsay Orderway",
+      "addSort": "Addway ortsay",
+      "noSort": "Onay ortsay orderway etsay.",
+      "asc": "Ascendingway",
+      "desc": "Escendingday",
+      "editTip": "Iteday isthay ayoutlay",
+      "saved": "Ayoutlay avedsay"
     },
     "shareables": {
       "title": "Areablesshay",

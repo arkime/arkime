@@ -594,6 +594,8 @@
       "customColumnName": "Neuen Namen für die Spaltenkonfiguration eingeben",
       "arkimeDefault": "Arkime Standard",
       "customColumnReset": "Tabelle auf Standard zurücksetzen",
+      "colConfigUpdated": "Spaltenlayout aktualisiert",
+      "infoConfigUpdated": "Info-Feld-Layout aktualisiert",
       "customColumnUpdate": "Diese Spaltenkonfiguration mit den aktuell sichtbaren Spalten aktualisieren",
       "customInfoName": "Neuen Namen für die Infofeldkonfiguration eingeben",
       "customInfoReset": "Infospalte auf Standardfelder zurücksetzen",
@@ -1358,6 +1360,24 @@
       "invalidCode": "Bitte geben Sie einen gültigen 6-stelligen Code ein",
       "confirmDisable": "Code zum Deaktivieren eingeben",
       "confirmUnenroll": "2FA deaktivieren"
+    },
+    "layoutEditor": {
+      "title": "Layout bearbeiten",
+      "name": "Name",
+      "namePlaceholder": "Name dieses Layouts",
+      "nameRequired": "Ein Name ist erforderlich",
+      "fields": "Felder",
+      "fieldsRequired": "Wählen Sie mindestens ein Feld",
+      "addFields": "Felder hinzufügen oder entfernen",
+      "searchFields": "Nach Feldern suchen...",
+      "noFields": "Noch keine Felder ausgewählt.",
+      "sort": "Sortierreihenfolge",
+      "addSort": "Sortierung hinzufügen",
+      "noSort": "Keine Sortierreihenfolge festgelegt.",
+      "asc": "Aufsteigend",
+      "desc": "Absteigend",
+      "editTip": "Dieses Layout bearbeiten",
+      "saved": "Layout gespeichert"
     },
     "shareables": {
       "title": "Gemeinsame Elemente",

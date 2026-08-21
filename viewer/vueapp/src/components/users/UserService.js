@@ -115,57 +115,6 @@ export default {
   },
 
   /**
-   * Gets a user's custom layouts
-   * @param {string} type       The type of the layout to get
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  async getLayout (type, userId) {
-    return await fetchWrapper({ url: `api/user/layouts/${type}`, params: { userId } });
-  },
-
-  /**
-   * Creates a specified custom configuration for a user
-   * @param {string} key        The key of the configuration to be created
-   * @param {Object} data       The data to pass to the server
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  async createLayout (key, data, userId) {
-    return await fetchWrapper({ url: `api/user/layouts/${key}`, method: 'POST', data, params: { userId } });
-  },
-
-  /**
-   * Deletes a user's specified layout
-   * @param {string} key        The key of the layout to be removed
-   * @param {string} layoutName The name of the layout to be removed
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  async deleteLayout (layoutType, layoutName, userId) {
-    return await fetchWrapper({ url: `api/user/layouts/${layoutType}/${layoutName}`, method: 'DELETE', params: { userId } });
-  },
-
-  /**
-   * Updates a user's specified custom column configuration
-   * @param {string} layoutName The name of the configuration to be updated
-   * @param {string} data       The configuration object to be updated
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  async updateLayout (layoutName, data, userId) {
-    return await fetchWrapper({ url: `api/user/layouts/${layoutName}`, method: 'PUT', data, params: { userId } });
-  },
-
-  /**
    * Gets a state
    * @param {string} stateName  The name of the state to get
    * @returns {Promise} Promise A promise object that signals the completion

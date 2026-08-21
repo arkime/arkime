@@ -594,6 +594,8 @@
       "customColumnName": "新しい列設定名を入力",
       "arkimeDefault": "Arkime デフォルト",
       "customColumnReset": "テーブルをデフォルトにリセット",
+      "colConfigUpdated": "列レイアウトを更新しました",
+      "infoConfigUpdated": "情報フィールドレイアウトを更新しました",
       "customColumnUpdate": "この列設定を現在表示されている列で更新",
       "customInfoName": "新しい情報フィールド設定名を入力",
       "customInfoReset": "情報列をデフォルトフィールドにリセット",
@@ -1358,6 +1360,24 @@
       "invalidCode": "有効な6桁のコードを入力してください",
       "confirmDisable": "無効にするコードを入力",
       "confirmUnenroll": "2FAを無効にする"
+    },
+    "layoutEditor": {
+      "title": "レイアウトを編集",
+      "name": "名前",
+      "namePlaceholder": "このレイアウトの名前",
+      "nameRequired": "名前が必要です",
+      "fields": "フィールド",
+      "fieldsRequired": "フィールドを1つ以上選択してください",
+      "addFields": "フィールドの追加または削除",
+      "searchFields": "フィールドを検索...",
+      "noFields": "フィールドが選択されていません。",
+      "sort": "並び順",
+      "addSort": "並び順を追加",
+      "noSort": "並び順が設定されていません。",
+      "asc": "昇順",
+      "desc": "降順",
+      "editTip": "このレイアウトを編集",
+      "saved": "レイアウトを保存しました"
     },
     "shareables": {
       "title": "共有アイテム",

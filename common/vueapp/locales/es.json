@@ -594,6 +594,8 @@
       "customColumnName": "Ingresar nuevo nombre de configuración de columna",
       "arkimeDefault": "Arkime Predeterminado",
       "customColumnReset": "Restablecer tabla a valores predeterminados",
+      "colConfigUpdated": "Diseño de columnas actualizado",
+      "infoConfigUpdated": "Diseño de campos de información actualizado",
       "customColumnUpdate": "Actualizar esta configuración de columna con las columnas actualmente visibles",
       "customInfoName": "Ingresar nuevo nombre de configuración de campo de información",
       "customInfoReset": "Restablecer columna de información a campos predeterminados",
@@ -1358,6 +1360,24 @@
       "invalidCode": "Por favor, introduce un código válido de 6 dígitos",
       "confirmDisable": "Introduce el código para deshabilitar",
       "confirmUnenroll": "Deshabilitar 2FA"
+    },
+    "layoutEditor": {
+      "title": "Editar diseño",
+      "name": "Nombre",
+      "namePlaceholder": "Nombre de este diseño",
+      "nameRequired": "Se requiere un nombre",
+      "fields": "Campos",
+      "fieldsRequired": "Elige al menos un campo",
+      "addFields": "Agregar o quitar campos",
+      "searchFields": "Buscar campos...",
+      "noFields": "Aún no hay campos seleccionados.",
+      "sort": "Orden",
+      "addSort": "Agregar orden",
+      "noSort": "Sin orden establecido.",
+      "asc": "Ascendente",
+      "desc": "Descendente",
+      "editTip": "Editar este diseño",
+      "saved": "Diseño guardado"
     },
     "shareables": {
       "title": "Elementos compartidos",
