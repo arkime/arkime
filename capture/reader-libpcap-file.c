@@ -15,7 +15,6 @@
 #include <grp.h>
 #include <sys/stat.h>
 
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 
 extern ArkimeConfig_t        config;
 
@@ -33,7 +32,7 @@ LOCAL void reader_libpcapfile_opened();
 LOCAL ArkimePacketBatch_t   batch;
 LOCAL uint8_t               readerPos;
 
-extern ArkimeOfflineInfo_t  offlineInfo[256];
+extern ArkimeFileInfo_t  fileInfo[256];
 extern ArkimeFieldOps_t     readerFieldOps[256];
 
 LOCAL  int                  offlineDispatchAfter;
@@ -433,8 +432,8 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
 
     ArkimePacket_t *packet = arkime_packet_alloc();
 
-    offlineInfo[readerPos].lastPackets++;
-    offlineInfo[readerPos].lastPacketTime = h->ts;
+    fileInfo[readerPos].lastPackets++;
+    fileInfo[readerPos].lastPacketTime = h->ts;
 
     packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
@@ -444,7 +443,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->readerFilePos = ftell(offlineFile) - 16 - h->caplen;
     packet->readerPos     = readerPos;
 
-    offlineInfo[readerPos].lastBytes += packet->pktlen + 16;
+    fileInfo[readerPos].lastBytes += packet->pktlen + 16;
 
     arkime_packet_batch(&batch, packet);
 }
@@ -541,11 +540,9 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    arkime_packet_set_dltsnap(pcap_datalink(pcap), pcap_snapshot(pcap));
-
     offlineFile = pcap_file(pcap);
 
-    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
+    if (config.bpf && pcap_datalink(pcap) != DLT_NFLOG) {
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -560,16 +557,17 @@ LOCAL void reader_libpcapfile_opened()
 
     readerPos++;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (offlineInfo[readerPos].filename) {
-        g_free(offlineInfo[readerPos].filename);
-        g_free(offlineInfo[readerPos].extra);
-        memset(&offlineInfo[readerPos], 0, sizeof(ArkimeOfflineInfo_t));
+    if (fileInfo[readerPos].filename) {
+        g_free(fileInfo[readerPos].filename);
+        g_free(fileInfo[readerPos].extra);
+        memset(&fileInfo[readerPos], 0, sizeof(ArkimeFileInfo_t));
     }
-    offlineInfo[readerPos].filename = g_strdup(offlinePcapFilename);
+    fileInfo[readerPos].filename = g_strdup(offlinePcapFilename);
+    arkime_packet_set_interface(readerPos, 0, pcap_datalink(pcap), pcap_snapshot(pcap));
 
     struct stat st;
     if (stat(offlinePcapFilename, &st) == 0)
-        offlineInfo[readerPos].size = st.st_size;
+        fileInfo[readerPos].size = st.st_size;
 
     int fd = pcap_fileno(pcap);
     if (fd == -1) {
@@ -606,7 +604,7 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    offlineInfo[readerPos].lastBytes = 24;
+    fileInfo[readerPos].lastBytes = 24;
 }
 
 /******************************************************************************/

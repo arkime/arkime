@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import store from '../../store';
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { parseRoles } from '@common/vueFilters.js';
@@ -91,7 +95,20 @@ export default {
     const settings = JSON.parse(JSON.stringify(store.state.userSettingDefaults));
 
     if (theme) {
-      settings.theme = theme;
+      // v7+ writes to vuetifyTheme; legacy theme key is left untouched
+      // so the user's preference under older arkime versions survives.
+      settings.vuetifyTheme = theme;
+    }
+
+    // Preserve the user's legacy theme preferences across a reset.
+    // saveSettings sends the whole object and the server's allowlist
+    // filter replaces the user's settings wholesale, so we have to
+    // carry these forward explicitly.
+    const current = store.state.user && store.state.user.settings;
+    if (current) {
+      if (current.theme) settings.theme = current.theme;
+      if (current.customTheme) settings.customTheme = current.customTheme;
+      if (current.vuetifyCustomTheme) settings.vuetifyCustomTheme = current.vuetifyCustomTheme;
     }
 
     return this.saveSettings(settings, userId);
@@ -170,16 +187,14 @@ export default {
   },
 
   /**
-  * Acknowledge the welcome message for a user
-  * @param {number} msgNum     The message number
-  *                            { userId, currentPassword, newPassword }
+  * Permanently dismiss a help message for a user
+  * @param {string} noteId     The help message id ('all' silences every message)
   * @param {string} userId     The unique identifier for a user
-  *                            (only required if not the current user)
   * @returns {Promise} Promise A promise object that signals the completion
   *                            or rejection of the request.
    */
-  async acknowledgeMsg (msgNum, userId) {
-    return await fetchWrapper({ url: `api/user/${userId}/acknowledge`, method: 'PUT', data: { msgNum } });
+  async dismissNote (noteId, userId) {
+    return await fetchWrapper({ url: `api/user/${userId}/acknowledge`, method: 'PUT', data: { noteId } });
   },
 
   /**

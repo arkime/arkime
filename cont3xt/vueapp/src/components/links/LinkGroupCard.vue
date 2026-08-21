@@ -11,11 +11,11 @@ SPDX-License-Identifier: Apache-2.0
     <v-card-title class="px-2 py-1">
       <h6 class="mb-0 link-header">
         <v-icon
-          class="mr-1 cursor-pointer"
+          class="me-1 cursor-pointer"
           :icon="collapsedLinkGroups[linkGroup._id] ? 'mdi-chevron-down' : 'mdi-chevron-up'"
           @click="toggleLinkGroup(linkGroup)" />
         <v-icon
-          class="mr-1 cursor-help"
+          class="me-1 cursor-help"
           icon="mdi-share-circle mdi-fw"
           v-if="getUser && linkGroup.creator !== getUser.userId"
           v-tooltip="`Shared with you by ${linkGroup.creator}`" />
@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ link.name }}
               </a>
               <link-guidance
-                class="ml-1"
+                class="ms-1"
                 :link="link"
                 :element-id="`${linkGroup._id}-${i}`" />
             </div> <!-- /display link to click -->
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ link.url }}
               </a>
               <link-guidance
-                class="ml-1"
+                class="ms-1"
                 :link="link"
                 :element-id="`${linkGroup.name}-${i}`" />
             </div> <!-- /display link to view -->
@@ -178,10 +178,10 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           density="compact"
           style="font-size: 0.8rem"
-          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
+          class="mb-0 mt-0 me-1 ms-1 pt-0 pb-0">
           <v-icon
             icon="mdi-check-bold"
-            class="mr-2" />
+            class="me-2" />
           <template v-if="message">
             {{ message }}
           </template>
@@ -243,7 +243,7 @@ SPDX-License-Identifier: Apache-2.0
         @update-link-group="updateLinkGroup" />
     </v-card-text>
     <template #actions>
-      <div class="w-100 d-flex justify-space-between mr-2 ml-2">
+      <div class="w-100 d-flex justify-space-between me-2 ms-2">
         <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
@@ -273,7 +273,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- confirm delete button -->
           <transition name="buttons">
             <v-btn
-              class="ml-0"
+              class="ms-0"
               size="small"
               color="error"
               variant="elevated"
@@ -289,10 +289,10 @@ SPDX-License-Identifier: Apache-2.0
           v-if="success"
           color="success"
           density="compact"
-          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
+          class="mb-0 mt-0 me-1 ms-1 pt-0 pb-0">
           <v-icon
             icon="mdi-check-bold"
-            class="mr-2" />
+            class="me-2" />
           Saved!
         </v-alert>
         <div class="d-flex flex-row ga-1">
@@ -348,6 +348,7 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment';
 import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
+import { parseSeconds } from '@common/vueFilters.js';
 
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
@@ -565,7 +566,7 @@ export default {
       let date = match.includes('end') ? this.stopDate : this.startDate;
 
       if (options.timeSnap) {
-        date = this.$options.filters.parseSeconds(options.timeSnap, date) * 1000;
+        date = parseSeconds(options.timeSnap, date) * 1000;
       }
 
       const formattedDate = moment(date).format(format);

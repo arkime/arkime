@@ -100,7 +100,8 @@ class ShareableAPIs {
       return res.serverError(403, 'Missing shareable type', 'api.shareables.missingType');
     }
 
-    if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
+    // empty is allowed so a description can be cleared
+    if (req.body.description !== undefined && typeof req.body.description !== 'string') {
       return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
     }
 
@@ -216,7 +217,8 @@ class ShareableAPIs {
         return res.serverError(403, 'Name must be a string', 'api.shareables.nameMustBeString');
       }
 
-      if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
+      // empty is allowed so a description can be cleared
+      if (req.body.description !== undefined && typeof req.body.description !== 'string') {
         return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
       }
 
@@ -306,7 +308,12 @@ class ShareableAPIs {
    *
    * Lists shareable items. Returns items user has permission to view/edit.
    * @name /shareables
-   * @returns {array} data - Array of shareable items with { id, type, name, data, canEdit, canDelete }
+   * @param {string} type - Only list this type, omit to list every type
+   * @param {string} searchTerm - Substring match against name, description, type and creator
+   * @param {string} sort=name - Field to sort by: name, type, description, creator, created or updated
+   * @param {string} desc=false - "true" to sort descending
+   * @returns {array} data - Array of shareable items with { id, type, name, description,
+   *   data, creator, shared, viewUsers, viewRoles, editUsers, editRoles, canEdit, canDelete }
    * @returns {number} recordsTotal - Total records matching query
    * @returns {number} recordsFiltered - Total records after filtering
    */
@@ -317,23 +324,33 @@ class ShareableAPIs {
         return res.send({ data: [], recordsTotal: 0, recordsFiltered: 0 });
       }
 
-      if (!ArkimeUtil.isString(req.query.type)) {
-        return res.serverError(403, 'Missing or invalid type parameter', 'api.shareables.invalidTypeParam');
+      // type is optional, without it every type the user can see is listed
+      if (req.query.type !== undefined && !ArkimeUtil.isString(req.query.type)) {
+        return res.serverError(403, 'Invalid type parameter', 'api.shareables.invalidTypeParam');
+      }
+
+      if (req.query.searchTerm !== undefined && typeof req.query.searchTerm !== 'string') {
+        return res.serverError(403, 'Invalid searchTerm parameter', 'api.shareables.invalidSearchTerm');
       }
 
       const userRoles = [...await user.getRoles()];
 
+      const allowedShareablesSortFields = { name: 1, type: 1, description: 1, creator: 1, created: 1, updated: 1 };
       const params = {
         user: user.userId,
         roles: userRoles,
         type: req.query.type,
         viewOnly: req.query.viewOnly !== 'false',
+        sortField: allowedShareablesSortFields[req.query.sort] ? req.query.sort : 'name',
+        sortOrder: req.query.desc === 'true' ? 'desc' : 'asc',
+        searchTerm: req.query.searchTerm,
         from: req.query.start || 0,
         size: req.query.length || 50
       };
 
       const { data: items, total: recordsFiltered } = await Db.searchShareables(params);
-      const recordsTotal = await Db.numberOfShareables(params);
+      // recordsTotal ignores the search so the UI can show "x of y"
+      const recordsTotal = await Db.numberOfShareables({ ...params, searchTerm: undefined });
 
       const results = items.map(async (item) => {
         const shareable = item.source;
@@ -345,6 +362,10 @@ class ShareableAPIs {
           data: shareable.data,
           creator: shareable.creator,
           shared: shareable.creator !== user.userId,
+          viewUsers: shareable.viewUsers ?? [],
+          viewRoles: shareable.viewRoles ?? [],
+          editUsers: shareable.editUsers ?? [],
+          editRoles: shareable.editRoles ?? [],
           canEdit: await ShareableAPIs.canEdit(user, shareable),
           canDelete: ShareableAPIs.canDelete(user, shareable)
         };

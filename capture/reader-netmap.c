@@ -30,7 +30,6 @@ void reader_netmap_init(const char *UNUSED(name))
 #include <net/netmap_user.h>
 
 extern ArkimeConfig_t        config;
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 
 typedef struct {
     struct nm_desc          *nmd;
@@ -162,7 +161,8 @@ void reader_netmap_init(const char *UNUSED(name))
     arkime_config_check("netmap", "netmapThreads", NULL);
 
     threadsPerInterface = arkime_config_int(NULL, "netmapThreads", 1, 1, MAX_THREADS_PER_INTERFACE);
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, DLT_EN10MB, config.snapLen);
 
     char nmspec[256];
     numReaders = 0;

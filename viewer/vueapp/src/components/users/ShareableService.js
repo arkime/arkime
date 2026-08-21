@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { fetchWrapper } from '@common/fetchWrapper.js';
 
 /**
@@ -102,3 +106,41 @@ export const createShareableService = (type) => ({
     });
   }
 });
+
+/**
+ * Shareable operations that are not tied to one type, used by the Settings
+ * Shareables tab which lists every type the user can see.
+ */
+export const ShareableService = {
+  /**
+   * Lists shareables across every type the user can view or edit
+   * @param {object} params - { type, viewOnly, start, length }
+   * @returns {Promise} Promise resolving to { data: [], recordsTotal, recordsFiltered }
+   */
+  async list (params) {
+    return await fetchWrapper({ url: 'api/shareables', params });
+  },
+
+  /**
+   * Updates a shareable's name, description and sharing. Leaves data alone.
+   * @param {string} id - The shareable ID to update
+   * @param {object} config - { name, description, viewUsers, viewRoles, editUsers, editRoles }
+   * @returns {Promise} Promise resolving to { success, shareable }
+   */
+  async update (id, config) {
+    return await fetchWrapper({
+      url: `api/shareable/${id}`,
+      method: 'PUT',
+      data: config
+    });
+  },
+
+  /**
+   * Deletes a shareable
+   * @param {string} id - The shareable ID to delete
+   * @returns {Promise} Promise resolving to { success, text }
+   */
+  async delete (id) {
+    return await fetchWrapper({ url: `api/shareable/${id}`, method: 'DELETE' });
+  }
+};

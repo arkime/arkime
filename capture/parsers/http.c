@@ -277,7 +277,7 @@ void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
     }
 }
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_message_begin (http_parser *parser)
+LOCAL int arkime_hp_cb_on_message_begin(http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;
@@ -301,7 +301,7 @@ LOCAL int arkime_hp_cb_on_message_begin (http_parser *parser)
     return 0;
 }
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_url (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_url(http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
 
@@ -319,7 +319,7 @@ LOCAL int arkime_hp_cb_on_url (http_parser *parser, const char *at, size_t lengt
 }
 
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_body (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_body(http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;
@@ -425,7 +425,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
     }
 }
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_message_complete (http_parser *parser)
+LOCAL int arkime_hp_cb_on_message_complete(http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;
@@ -465,7 +465,7 @@ LOCAL void http_add_value(ArkimeSession_t *session, HTTPInfo_t *http)
     http->pos[http->which] = 0;
 }
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_header_field (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_header_field(http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;
@@ -503,7 +503,7 @@ LOCAL int arkime_hp_cb_on_header_field (http_parser *parser, const char *at, siz
 }
 
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, size_t length)
+LOCAL int arkime_hp_cb_on_header_value(http_parser *parser, const char *at, size_t length)
 {
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;
@@ -602,7 +602,7 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
     return 0;
 }
 /******************************************************************************/
-LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
+LOCAL int arkime_hp_cb_on_headers_complete(http_parser *parser)
 {
     HTTPInfo_t            *http = parser->data;
     ArkimeSession_t       *session = http->session;

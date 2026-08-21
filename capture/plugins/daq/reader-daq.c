@@ -82,7 +82,8 @@ LOCAL void reader_daq_start()
     int err;
 
     //ALW - Bug: assumes all linktypes are the same
-    arkime_packet_set_dltsnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, daq_get_datalink_type(module, handles[0]), config.snapLen);
 
     int i;
     for (i = 0; config.interface[i]; i++) {

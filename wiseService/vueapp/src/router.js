@@ -8,6 +8,7 @@ import Query from '@/components/Query.vue';
 import Config from '@/components/Config.vue';
 import Help from '@/components/Help.vue';
 import Stats from '@/components/Stats.vue';
+import Settings from '@/components/Settings.vue';
 import Wise404 from '@/components/404.vue';
 
 const router = createRouter({
@@ -42,6 +43,11 @@ const router = createRouter({
       path: '/config',
       name: 'Config',
       component: Config
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: Settings
     },
     {
       path: '/help',

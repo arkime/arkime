@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { createRouter, createWebHistory } from 'vue-router';
 
 import Cont3xt from '@/components/pages/Cont3xt.vue';

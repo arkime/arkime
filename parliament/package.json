@@ -18,7 +18,7 @@
     "lint-fix": "cd ../ && npm run parliament:lint-fix"
   },
   "engines": {
-    "node": ">= 20.9.0 < 23",
+    "node": ">= 22.15.0 < 25",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {

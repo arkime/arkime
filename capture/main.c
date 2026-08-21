@@ -42,7 +42,6 @@ LOCAL pthread_t        mainThread;
 ArkimeThreadData_t     arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
-extern ArkimePcapFileHdr_t     pcapFileHeader;
 
 ARKIME_LOCK_DEFINE(LOG);
 
@@ -924,8 +923,8 @@ LOCAL gboolean arkime_ready_gfunc(gpointer UNUSED(user_data))
     }
     arkime_command_start();
     arkime_readers_start();
-    if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
-        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_dltsnap");
+    if (!config.pcapReadOffline && fileInfo[0].numInterfaces == 0)
+        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_interface");
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
@@ -1149,7 +1148,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
-    pcapFileHeader.dlt = DLT_EN10MB;
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
     arkime_hex_init();
@@ -1173,6 +1172,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_reader_scheme_register("fuzz", NULL, NULL);
     return 0;
@@ -1210,7 +1211,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
-    pcapFileHeader.dlt = DLT_EN10MB;
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
     arkime_hex_init();
@@ -1234,6 +1235,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
     return 0;
@@ -1344,6 +1347,8 @@ int main(int argc, char **argv)
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);
 

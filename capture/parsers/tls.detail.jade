@@ -19,7 +19,7 @@ if (session.tls || session.cert)
         dd
           - if (cert.serial)
             span.no-wrap
-              strong.ml-1 Serial
+              strong.ms-1 Serial
               +clickableValue('cert.serial', cert.serial)
           - if (cert.hash)
             span(style="display:inline-flex")
@@ -29,86 +29,86 @@ if (session.tls || session.cert)
               |] &nbsp;
           - if (cert.notBefore)
             span.no-wrap
-              strong.ml-1 Not Before
+              strong.ms-1 Not Before
               +clickableValue('cert.notbefore', cert.notBefore)
           - if (cert.notAfter)
             span.no-wrap
-              strong.ml-1 Not After
+              strong.ms-1 Not After
               +clickableValue('cert.notafter', cert.notAfter)
           - if (cert.validDays)
             span.no-wrap
-              strong.ml-1 Days Valid For
+              strong.ms-1 Days Valid For
               +clickableValue('cert.validfor', cert.validDays)
           - if (cert.validSeconds)
             span.no-wrap
-              strong.ml-1 Seconds Valid For
+              strong.ms-1 Seconds Valid For
               +clickableValue('cert.validforSeconds', cert.validSeconds)
           - if (cert.remainingDays)
             span.no-wrap
-              strong.ml-1 Days Remaining
+              strong.ms-1 Days Remaining
               +clickableValue('cert.remainingDays', cert.remainingDays)
           - if (cert.remainingSeconds)
             span.no-wrap
-              strong.ml-1 Seconds Remaining
+              strong.ms-1 Seconds Remaining
               +clickableValue('cert.remainingSeconds', cert.remainingSeconds)
           - if (cert.issuerCN && Array.isArray(cert.issuerCN))
-            strong.ml-1 Issuer Common
+            strong.ms-1 Issuer Common
             each cn,i in cert.issuerCN
               if (i > 0)
                 |,
               +clickableValue('cert.issuer.cn', cn)
           - else if (cert.issuerCN)
-            strong.ml-1 Issuer Common
+            strong.ms-1 Issuer Common
             +clickableValue('cert.issuer.cn', cert.issuerCN)
           - if (cert.issuerON && Array.isArray(cert.issuerON))
-            strong.ml-1 Issuer Org
+            strong.ms-1 Issuer Org
             each on,i in cert.issuerON
               if (i > 0)
                 |,
               +clickableValue('cert.issuer.on', on)
           - else if (cert.issuerON)
             span.no-wrap
-              strong.ml-1 Issuer Org
+              strong.ms-1 Issuer Org
               +clickableValue('cert.issuer.on', cert.issuerON)
           - if (cert.issuerOU && Array.isArray(cert.issuerOU))
-            strong.ml-1 Issuer Org Unit
+            strong.ms-1 Issuer Org Unit
             each ou,i in cert.issuerOU
               if (i > 0)
                 |,
               +clickableValue('cert.issuer.ou', ou)
           - else if (cert.issuerOU)
             span.no-wrap
-              strong.ml-1 Issuer Org Unit
+              strong.ms-1 Issuer Org Unit
               +clickableValue('cert.issuer.ou', cert.issuerOU)
           - if (cert.subjectCN && Array.isArray(cert.subjectCN))
-            strong.ml-1 Subject Common
+            strong.ms-1 Subject Common
             each cn,i in cert.subjectCN
               if (i > 0)
                 |,
               +clickableValue('cert.subject.cn', cn)
           - else if (cert.subjectCN)
             span.no-wrap
-              strong.ml-1 Subject Common
+              strong.ms-1 Subject Common
               +clickableValue('cert.subject.cn', cert.subjectCN)
           - if (cert.subjectON && Array.isArray(cert.subjectON))
-            strong.ml-1 Subject Org
+            strong.ms-1 Subject Org
             each on,i in cert.subjectON
               if (i > 0)
                 |,
               +clickableValue('cert.subject.on', on)
           - else if (cert.subjectON)
             span.no-wrap
-              strong.ml-1 Subject Org
+              strong.ms-1 Subject Org
               +clickableValue('cert.subject.on', cert.subjectON)
           - if (cert.subjectOU && Array.isArray(cert.subjectOU))
-            strong.ml-1 Subject Org Unit
+            strong.ms-1 Subject Org Unit
             each ou,i in cert.subjectOU
               if (i > 0)
                 |,
               +clickableValue('cert.subject.ou', ou)
           - else if (cert.subjectOU)
             span.no-wrap
-              strong.ml-1 Subject Org Unit
+              strong.ms-1 Subject Org Unit
               +clickableValue('cert.subject.ou', cert.subjectOU)
           - if (cert.alt)
             span(style="display:inline-flex")
@@ -121,17 +121,17 @@ if (session.tls || session.cert)
               |] &nbsp;
           - if (cert.publicAlgorithm)
             span.no-wrap
-              strong.ml-1 Public Algorithm
+              strong.ms-1 Public Algorithm
               +clickableValue('cert.publicAlgorithm', cert.publicAlgorithm)
           - if (cert.curve)
             span.no-wrap
-              strong.ml-1 Curve
+              strong.ms-1 Curve
               +clickableValue('cert.curve', cert.curve)
           - if (cert.ja4x)
             span.no-wrap
-              strong.ml-1 JA4x
+              strong.ms-1 JA4x
               +clickableValue('cert.ja4x', cert.ja4x)
           - if (cert.ja4x_r)
             span.no-wrap
-              strong.ml-1 JA4x_r
+              strong.ms-1 JA4x_r
               +clickableValue('cert.ja4x_r', cert.ja4x_r)

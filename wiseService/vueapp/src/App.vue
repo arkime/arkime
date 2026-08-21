@@ -4,14 +4,13 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div id="app">
-    <div v-if="compatibleBrowser">
+    <template v-if="compatibleBrowser">
+      <app-banner />
       <wise-navbar />
-      <router-view class="margin-for-nav-sm" />
+      <router-view />
       <wise-footer />
-    </div>
-    <div v-else>
-      <wise-upgrade-browser />
-    </div>
+    </template>
+    <wise-upgrade-browser v-else />
   </div>
 </template>
 
@@ -19,28 +18,21 @@ SPDX-License-Identifier: Apache-2.0
 import WiseNavbar from './components/Navbar.vue';
 import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
 import WiseFooter from '@common/Footer.vue';
+import AppBanner from '@common/AppBanner.vue';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
   components: {
     WiseNavbar,
     WiseUpgradeBrowser,
-    WiseFooter
+    WiseFooter,
+    AppBanner
   },
   data: function () {
     return {
       compatibleBrowser: true
     };
-  },
-  computed: {
-    wiseTheme: {
-      get () {
-        return this.$store.state.wiseTheme;
-      },
-      set (wiseTheme) {
-        this.$store.commit('SET_THEME', wiseTheme);
-      }
-    }
   },
   mounted: function () {
     this.compatibleBrowser = (typeof Object.__defineSetter__ === 'function') &&
@@ -48,29 +40,28 @@ export default {
 
     if (!this.compatibleBrowser) {
       console.log('Incompatible browser, please upgrade!');
+      return;
     }
 
-    if (window.matchMedia) {
-      const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-      let hasTheme = false; // determine if there is a theme set
-      if (localStorage && localStorage.vuex) {
-        hasTheme = JSON.parse(localStorage.vuex).wiseTheme;
-      }
-
-      if (hasTheme) { return; } // don't do anything if theme is already set
-
-      // if there's no theme, default to the same theme as the OS
-      this.wiseTheme = darkMode ? 'dark' : 'light';
-      document.body.classList = darkMode ? ['dark'] : [];
-    }
+    // Hydrate the Vuetify theme from user.settings; if the server has
+    // no value yet, push localStorage up so the choice follows the user
+    // to other browsers/devices on next load. wise has no other
+    // user-fetching hook on startup, so we hit /api/settings directly.
+    fetch('api/settings').then((r) => r.ok ? r.json() : {}).then((data) => {
+      applyServerTheme(data, (themeId, customTheme) => {
+        this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
+      });
+    }).catch(() => { /* unauthenticated or backend offline -- default theme applies */ });
   }
 };
 </script>
 
 <style>
 /* app styles -------------------------------- */
-body { background-color: #F0F0F0; }
+body {
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+}
 
 .text-muted-more { color: #DDDDDD; }
 
@@ -85,8 +76,8 @@ body { background-color: #F0F0F0; }
 }
 
 /* see top level common.css info area for usage */
-.info-area { color: #777777; }
-.info-area div { background-color: #FFFFFF; }
+.info-area { color: rgb(var(--v-theme-foreground)); opacity: 0.7; }
+.info-area div { background-color: rgb(var(--v-theme-surface-card)); }
 
 /* styles for bottom footer */
 html {

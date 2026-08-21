@@ -1,4 +1,4 @@
-use Test::More tests => 85;
+use Test::More tests => 87;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -102,6 +102,8 @@ if (@{$summary->{fields}} > 0) {
         ok(exists $item->{sessions}, "data item has sessions field");
         ok(exists $item->{bytes}, "data item has bytes field");
         ok(exists $item->{packets}, "data item has packets field");
+        ok(exists $item->{value}, "data item has value field (metric basis)");
+        is($item->{value}, $item->{sessions}, "default metric value equals session count");
         cmp_ok($item->{sessions}, '>', 0, "data item sessions count is positive");
     }
 }

@@ -3,100 +3,110 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
-    <div
-      v-if="alertMessage"
-      style="z-index: 2000;"
-      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+  <v-container fluid>
+    <v-snackbar
+      :model-value="!!alertMessage"
+      color="error"
+      location="bottom"
+      :timeout="-1"
+      @update:model-value="(v) => { if (!v) alertMessage = '' }">
       {{ alertMessage }}
-      <button
-        type="button"
-        class="btn-close pull-right"
-        @click="alertMessage = ''" />
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="alertMessage = ''" />
+      </template>
+    </v-snackbar>
+
+    <v-row class="arkime-toolbar">
+      <v-col cols="12">
+        <v-text-field
+          v-model="searchTerm"
+          :placeholder="$t('wise.stats.searchPlaceholder')"
+          prepend-inner-icon="mdi-magnify"
+          density="compact"
+          hide-details
+          @input="debounceInput" />
+      </v-col>
+    </v-row>
+
+    <div class="mt-3 d-flex align-center">
+      <v-tabs
+        v-model="activeTab"
+        density="compact"
+        color="primary">
+        <v-tab
+          value="sources"
+          @click="clickTab('sources')">
+          {{ $t('wise.stats.sources') }}
+        </v-tab>
+        <v-tab
+          value="types"
+          @click="clickTab('types')">
+          {{ $t('wise.stats.types') }}
+        </v-tab>
+      </v-tabs>
+      <v-spacer />
+      <span class="startup-time text-medium-emphasis">
+        {{ $t('wise.stats.startedAt') }}
+        <strong>{{ startTime }}</strong>
+      </span>
     </div>
 
-    <div class="row">
-      <div class="col-12">
-        <div class="input-group mb-1">
-          <span class="input-group-text">
-            <span class="fa fa-search fa-fw" />
-          </span>
-          <input
-            type="text"
-            class="form-control"
-            v-model="searchTerm"
-            @input="debounceInput"
-            :placeholder="$t('wise.stats.searchPlaceholder')">
+    <div v-if="activeTab === 'sources'">
+      <v-data-table
+        v-if="sourceStats.length > 0"
+        density="compact"
+        :items="sourceStats"
+        :headers="sourceTableHeaders" />
+      <div
+        v-else-if="searchTerm"
+        class="vertical-center info-area mt-5 pt-5">
+        <div class="text-center">
+          <h1>
+            <v-icon
+              icon="mdi-folder-open"
+              size="large" />
+          </h1>
+          {{ $t('wise.stats.noSourceMatches') }}
         </div>
       </div>
     </div>
 
-    <b-tabs
-      class="mt-3"
-      :dark="getTheme === 'dark'">
-      <b-tab
-        :title="$t('wise.stats.sources')"
-        @click="clickTab('sources')"
-        :active="activeTab === 'sources'">
-        <div v-if="sourceStats.length > 0">
-          <BTable
-            small
-            striped
-            must-sort
-            :items="sourceStats"
-            :fields="sourceTableFields"
-            :dark="getTheme === 'dark'" />
+    <div v-if="activeTab === 'types'">
+      <v-data-table
+        v-if="typeStats.length > 0"
+        density="compact"
+        :items="typeStats"
+        :headers="typeTableHeaders" />
+      <div
+        v-else-if="searchTerm"
+        class="vertical-center info-area mt-5 pt-5">
+        <div class="text-center">
+          <h1>
+            <v-icon
+              icon="mdi-folder-open"
+              size="large" />
+          </h1>
+          {{ $t('wise.stats.noTypeMatches') }}
         </div>
-        <div
-          v-else-if="searchTerm"
-          class="vertical-center info-area mt-5 pt-5">
-          <div class="text-center">
-            <h1><span class="fa fa-folder-open fa-2x" /></h1>
-            {{ $t('wise.stats.noSourceMatches') }}
-          </div>
-        </div>
-      </b-tab>
-      <b-tab
-        :title="$t('wise.stats.types')"
-        @click="clickTab('types')"
-        :active="activeTab === 'types'">
-        <div v-if="typeStats.length > 0">
-          <BTable
-            small
-            striped
-            must-sort
-            :items="typeStats"
-            :fields="typeTableFields"
-            :dark="getTheme === 'dark'" />
-        </div>
-        <div
-          v-else-if="searchTerm"
-          class="vertical-center info-area mt-5 pt-5">
-          <div class="text-center">
-            <h1><span class="fa fa-folder-open fa-2x" /></h1>
-            {{ $t('wise.stats.noTypeMatches') }}
-          </div>
-        </div>
-      </b-tab>
-      <template #tabs-end>
-        <li
-          role="presentation"
-          class="nav-item align-self-center startup-time">
-          {{ $t('wise.stats.startedAt') }}
-          <strong>{{ startTime }}</strong>
-        </li>
-      </template>
-    </b-tabs>
+      </div>
+    </div>
 
     <div
       v-if="showEmpty && !searchTerm && !sourceStats.length"
       class="vertical-center info-area mt-5 pt-5">
       <div>
-        <h1><span class="fa fa-folder-open fa-2x" /></h1>
+        <h1>
+          <v-icon
+            icon="mdi-folder-open"
+            size="large" />
+        </h1>
         <p v-html="$t('wise.noSourcesHtml')" />
       </div>
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -116,8 +126,8 @@ export default {
       alertMessage: '',
       sourceStats: [],
       typeStats: [],
-      sourceTableFields: [],
-      typeTableFields: [],
+      sourceTableHeaders: [],
+      typeTableHeaders: [],
       startTime: undefined,
       searchTerm: '',
       sortBySources: 'source',
@@ -153,20 +163,21 @@ export default {
         if (data && data.startTime) {
           this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
         }
+        const commaFormat = (v) => v == null ? '' : v.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+
         if (data && data.sources) {
-          this.sourceTableFields = []; // clear fields before creating them again if there are data sources
+          this.sourceTableHeaders = [];
           if (data.sources.length === 0) {
             this.sourceStats = [];
           } else {
             this.sourceStats = data.sources;
             Object.keys(this.sourceStats[0]).forEach(key => {
-              const obj = { key, label: this.$t(`wise.stats.source-${key}`), sortable: true };
+              const header = { title: this.$t(`wise.stats.source-${key}`), key };
               if (key !== 'source') {
-                obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
-                obj.tdClass = 'text-right';
-                obj.thClass = 'text-right';
+                header.align = 'end';
+                header.value = (item) => commaFormat(item[key]);
               }
-              this.sourceTableFields.push(obj);
+              this.sourceTableHeaders.push(header);
             });
           }
         }
@@ -174,16 +185,15 @@ export default {
           if (data.types.length === 0) {
             this.typeStats = [];
           } else {
-            this.typeTableFields = []; // clear fields before creating them again if there are data types
+            this.typeTableHeaders = [];
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
-              const obj = { key, label: this.$t(`wise.stats.type-${key}`), sortable: true };
+              const header = { title: this.$t(`wise.stats.type-${key}`), key };
               if (key !== 'type') {
-                obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
-                obj.tdClass = 'text-right';
-                obj.thClass = 'text-right';
+                header.align = 'end';
+                header.value = (item) => commaFormat(item[key]);
               }
-              this.typeTableFields.push(obj);
+              this.typeTableHeaders.push(header);
             });
           }
         }
