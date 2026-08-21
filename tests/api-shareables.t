@@ -453,7 +453,8 @@ $info = viewerGet("/api/shareables?type=sorttype&arkimeRegressionUser=sac-test1"
 is($info->{recordsTotal}, 0, "sorttype shareables cleaned up");
 
 # db.pl shareables-import copies per-user spiview layouts, and is re-runnable
-viewerPostToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "imported layout", "fields": "ip.src,ip.dst"}', $token);
+# write the layout the way Arkime 6 leaves it on the user record
+esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"spiviewFieldConfigs": [{"name": "imported layout", "fields": "ip.src,ip.dst"}]}}');
 
 my $dbcmd = "../db/db.pl $ENV{INSECURE} --prefix tests $ArkimeTest::elasticsearch shareables-import spiview";
 my $out = `$dbcmd --dryrun 2>&1`;
@@ -486,8 +487,7 @@ foreach my $item (@{$info->{data}}) {
 }
 
 # the other two layout types import the same way
-viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "cols layout", "columns": ["firstPacket","source.ip"], "order": [["firstPacket","desc"]]}', $token);
-viewerPostToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "info layout", "fields": ["source.ip"]}', $token);
+esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"columnConfigs": [{"name": "cols layout", "columns": ["firstPacket","source.ip"], "order": [["firstPacket","desc"]]}], "infoFieldConfigs": [{"name": "info layout", "fields": ["source.ip"]}]}}');
 
 `../db/db.pl $ENV{INSECURE} --prefix tests $ArkimeTest::elasticsearch shareables-import all 2>&1`;
 

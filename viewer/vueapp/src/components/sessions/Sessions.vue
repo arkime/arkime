@@ -251,6 +251,17 @@ SPDX-License-Identifier: Apache-2.0
                             <div
                               class="d-flex align-center w-100"
                               @click.self="loadColumnConfiguration(config)">
+                              <v-icon
+                                v-if="config.shared"
+                                icon="mdi-account-multiple"
+                                size="small"
+                                class="me-1 flex-grow-0"
+                                :id="`sharedColConfig-${config.id}`" />
+                              <v-tooltip
+                                v-if="config.shared"
+                                :activator="`#sharedColConfig-${config.id}`">
+                                {{ $t('settings.shareables.sharedTip', { creator: config.creator }) }}
+                              </v-tooltip>
                               <span
                                 class="flex-grow-1"
                                 @click="loadColumnConfiguration(config)">
@@ -513,6 +524,17 @@ SPDX-License-Identifier: Apache-2.0
                                 <div
                                   class="d-flex align-center w-100"
                                   @click.self="loadInfoFieldLayout(config)">
+                                  <v-icon
+                                    v-if="config.shared"
+                                    icon="mdi-account-multiple"
+                                    size="small"
+                                    class="me-1 flex-grow-0"
+                                    :id="`sharedInfoConfig-${config.id}`" />
+                                  <v-tooltip
+                                    v-if="config.shared"
+                                    :activator="`#sharedInfoConfig-${config.id}`">
+                                    {{ $t('settings.shareables.sharedTip', { creator: config.creator }) }}
+                                  </v-tooltip>
                                   <span
                                     class="flex-grow-1"
                                     @click="loadInfoFieldLayout(config)">

@@ -1451,30 +1451,6 @@ app.post( // update user settings endpoint
   UserAPIs.updateUserSettings
 );
 
-app.get( // get user layouts endpoint
-  ['/api/user/layouts/:type'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, User.checkPermissions(['webEnabled'])],
-  UserAPIs.getUserLayouts
-);
-
-app.post( // create user layout endpoint
-  ['/api/user/layouts/:type'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.createUserLayout
-);
-
-app.put( // update user layout endpoint
-  ['/api/user/layouts/:type'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.updateUserLayout
-);
-
-app.delete( // delete user custom column endpoint
-  ['/api/user/layouts/:type/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.deleteUserLayout
-);
-
 app.put( // acknowledge message endpoint
   ['/api/user/:userId/acknowledge'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken],

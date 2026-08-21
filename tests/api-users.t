@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 309;
+use Test::More tests => 268;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -343,142 +343,19 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     delete $users->{data}->[$test2pos]->{lastUsed};
     eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
-# isPP body param validation
-    my $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "__proto__", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    is($info->{text}, "Invalid value for name", "column: __proto__ body value blocked");
-    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "constructor", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    is($info->{text}, "Invalid value for name", "column: constructor body value blocked");
-
-# Session Table Column Layout CRUD
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "column: empty");
-
-    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    ok($info->{success}, "column: create success");
-    is($info->{name}, "column1", "column: create name");
-
-    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column2", "columns": ["source.ip","destination.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    ok($info->{success}, "column: create success");
-    is($info->{name}, "column2", "column: create name");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]}]'), "column: 1 item");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]}]'), "column: 1 item admin");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionstable/fred?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(! $info->{success}, "column: delete not found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]}]'), "column: 1 item");
-
-    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip","info"], "order": [["lastPacket","asc"]]}', $test1Token);
-    ok($info->{success}, "column: update");
-
-# column: mass assignment - extra properties should be stripped
-    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip"], "order": [["lastPacket","asc"]], "evil": "injected"}', $test1Token);
-    ok($info->{success}, "column: update with extra props");
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!exists $info->[0]->{evil}, "column: extra property stripped");
-
-# column: update should sanitize name (strip special chars)
-    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1!", "columns": ["source.ip"], "order": [["lastPacket","asc"]]}', $test1Token);
-    ok($info->{success}, "column: update with special chars in name");
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    is($info->[0]->{name}, "column1", "column: updated name is sanitized");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionstable/column1?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "column: delete found");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionstable/column2?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "column: delete found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "column: empty");
-
-
 # Current
-    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    my $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
     ok(!exists $info->{passStore}, "current: no passtore");
 
-# session table info column fields CRUD
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "sessionsinfofields fields: empty");
-
-    $info = viewerPostToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip"]}', $test1Token);
-    ok($info->{success}, "sessionsinfofields fields: create success");
-    is($info->{name}, "sfields1", "sessionsinfofields fields: create name");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "sessionsinfofields fields: 1 item");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "sessionsinfofields fields: 1 item admin");
-
-    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
-    ok($info->{success}, "sessionsinfofields fields: update success");
-
-# sessionsinfofields: mass assignment - extra properties should be stripped
-    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
-    ok($info->{success}, "sessionsinfofields: update with extra props");
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!exists $info->[0]->{evil}, "sessionsinfofields: extra property stripped");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/fred?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!$info->{success}, "sessionsinfofields fields: delete not found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip","node"]}]'), "sessionsinfofields fields: 1 item");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "sessionsinfofields fields: delete found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "sessionsinfofields fields: empty");
-
-# spiview fields
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "spiview fields: empty");
-
-    $info = viewerPostToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip"]}', $test1Token);
-    ok($info->{success}, "spiview fields: create success");
-    is($info->{name}, "sfields1", "spiview fields: create name");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "spiview fields: 1 item");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "spiview fields: 1 item admin");
-
-    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
-    ok($info->{success}, "spiview fields: update success");
-
-# spiview: mass assignment - extra properties should be stripped
-    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
-    ok($info->{success}, "spiview: update with extra props");
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!exists $info->[0]->{evil}, "spiview: extra property stripped");
-
-    $info = viewerDeleteToken("/api/user/layouts/spiview/fred?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!$info->{success}, "spiview fields: delete not found");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip","node"]}]'), "spiview fields: 1 item");
-
-    $info = viewerDeleteToken("/api/user/layouts/spiview/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "spiview fields: delete found");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "spiview fields: empty");
-
-# Page config tests
+# Page config tests, layouts are shareables now so config only carries state
     $info = viewerGetToken("/api/user/config/sessions?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(exists $info->{colConfigs}, "sessions config has colConfigs");
-    ok(exists $info->{infoConfigs}, "sessions config has infoConfigs");
+    ok(exists $info->{tableState}, "sessions config has tableState");
+    ok(!exists $info->{colConfigs}, "sessions config no longer has colConfigs");
+    ok(!exists $info->{infoConfigs}, "sessions config no longer has infoConfigs");
 
     $info = viewerGetToken("/api/user/config/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(exists $info->{fieldConfigs}, "spiview config has fieldConfigs");
+    ok(exists $info->{spiviewFields}, "spiview config has spiviewFields");
+    ok(!exists $info->{fieldConfigs}, "spiview config no longer has fieldConfigs");
 
     $info = viewerGetToken("/api/user/config/badpage?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "unsupported page returns error");

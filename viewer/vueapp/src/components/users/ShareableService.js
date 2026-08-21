@@ -150,6 +150,8 @@ export const shareableToLayout = (shareable) => ({
   id: shareable.id,
   name: shareable.name,
   ...(shareable.data || {}),
+  creator: shareable.creator,
+  shared: !!shareable.shared,
   canEdit: shareable.canEdit !== false,
   canDelete: shareable.canDelete !== false,
   viewUsers: shareable.viewUsers || [],
@@ -170,10 +172,13 @@ export const createLayoutService = (type) => {
   const shareables = createShareableService(type);
 
   return {
-    /* Layouts the user owns or that are shared with them, view or edit */
+    /* Layouts the user owns or that are shared with them, view or edit.
+       Yours come first, then the ones shared with you, each still in the
+       name order the API returned. */
     async list () {
       const response = await shareables.list({ viewOnly: false });
-      return response.data.map(shareableToLayout);
+      const layouts = response.data.map(shareableToLayout);
+      return [...layouts.filter(l => !l.shared), ...layouts.filter(l => l.shared)];
     },
 
     async create (layout) {

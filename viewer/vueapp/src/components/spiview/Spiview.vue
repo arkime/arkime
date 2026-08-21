@@ -86,6 +86,17 @@ SPDX-License-Identifier: Apache-2.0
                     <div
                       class="d-flex align-center w-100"
                       @click.self="loadFieldConfiguration(key)">
+                      <v-icon
+                        v-if="config.shared"
+                        icon="mdi-account-multiple"
+                        size="small"
+                        class="me-1 flex-grow-0"
+                        :id="`sharedSpiConfig-${config.id}`" />
+                      <v-tooltip
+                        v-if="config.shared"
+                        :activator="`#sharedSpiConfig-${config.id}`">
+                        {{ $t('settings.shareables.sharedTip', { creator: config.creator }) }}
+                      </v-tooltip>
                       <span
                         class="flex-grow-1"
                         @click="loadFieldConfiguration(key)">
