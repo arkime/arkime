@@ -77,6 +77,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           tcpClosingTimeout previously also applied to sctp and to sessions closed by the closeNow rule action, so set
           eg sctp=closing:<seconds> if you had changed it from the default of 5
 ## Viewer
+  - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
+  - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
 
 

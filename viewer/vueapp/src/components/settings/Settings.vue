@@ -70,6 +70,14 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             {{ $t('settings.nav.general') }}
           </v-tab>
+          <v-tab
+            v-if="!multiviewer || hasUsersES"
+            value="dashboards">
+            <v-icon
+              icon="mdi-view-dashboard"
+              class="me-1" />
+            {{ $t('settings.nav.dashboards') }}
+          </v-tab>
           <v-tab value="col">
             <v-icon
               icon="mdi-view-column"
@@ -125,14 +133,6 @@ SPDX-License-Identifier: Apache-2.0
               icon="mdi-format-list-bulleted"
               class="me-1" />
             {{ $t('settings.nav.shortcuts') }}
-          </v-tab>
-          <v-tab
-            v-if="!multiviewer || hasUsersES"
-            value="shareables">
-            <v-icon
-              icon="mdi-share-variant"
-              class="me-1" />
-            {{ $t('settings.nav.shareables') }}
           </v-tab>
           <v-tab
             v-if="!multiviewer"
@@ -718,6 +718,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right me-1"
                       @click="editLayout('sessionstable', 'columns', config, 'colConfigs', index)"
                       :title="$t('settings.layoutEditor.editTip')">
@@ -728,13 +729,11 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right"
                       @click="deleteLayout('sessionstable', config, 'colConfigs', index)"
                       :title="$t('settings.ccl.deleteTip')">
-                      <v-icon
-                        icon="mdi-trash-can-outline"
-                        class="me-1" />
-                      {{ $t('common.delete') }}
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </td>
                 </tr>
@@ -829,6 +828,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right me-1"
                       @click="editLayout('sessionsinfofields', 'fields', config, 'infoFieldLayouts', index)"
                       :title="$t('settings.layoutEditor.editTip')">
@@ -839,13 +839,11 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right"
                       @click="deleteLayout('sessionsinfofields', config, 'infoFieldLayouts', index)"
                       :title="$t('settings.infoLayout.deleteTip')">
-                      <v-icon
-                        icon="mdi-trash-can-outline"
-                        class="me-1" />
-                      {{ $t('common.delete') }}
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </td>
                 </tr>
@@ -938,6 +936,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right me-1"
                       @click="editLayout('spiview', 'spiview', config, 'spiviewConfigs', index)"
                       :title="$t('settings.layoutEditor.editTip')">
@@ -948,13 +947,11 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right"
                       @click="deleteLayout('spiview', config, 'spiviewConfigs', index)"
                       :title="$t('settings.spiview.deleteTip')">
-                      <v-icon
-                        icon="mdi-trash-can-outline"
-                        class="me-1" />
-                      {{ $t('common.delete') }}
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </td>
                 </tr>
@@ -1333,10 +1330,10 @@ SPDX-License-Identifier: Apache-2.0
           :fields-map="fieldsMap"
           @save="saveLayout" />
 
-        <!-- shareable settings -->
-        <Shareables
-          id="shareables"
-          v-if="visibleTab === 'shareables'"
+        <!-- arkime dashboard settings -->
+        <Dashboards
+          id="dashboards"
+          v-if="visibleTab === 'dashboards'"
           @display-message="displayMessage" />
 
         <!-- cron query settings -->
@@ -1366,7 +1363,7 @@ import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
-import Shareables from './Shareables.vue';
+import Dashboards from './Dashboards.vue';
 import { createLayoutService } from '../users/ShareableService';
 import LayoutEditor from './LayoutEditor.vue';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -1396,7 +1393,7 @@ export default {
     ThemePicker,
     LayoutEditor,
     PeriodicQueries,
-    Shareables,
+    Dashboards,
     Shortcuts,
     Notifiers,
     Views
@@ -1540,7 +1537,7 @@ export default {
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
         tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts' ||
-        tab === 'shareables' || tab === 'totp') {
+        tab === 'dashboards' || tab === 'totp') {
         this.visibleTab = tab;
       }
 

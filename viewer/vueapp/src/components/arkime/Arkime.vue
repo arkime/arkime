@@ -165,7 +165,8 @@ import Utils from '../utils/utils';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
-import { DEFAULT_VIEW_MODES, isFieldMode } from '../summary/widgets/viewModes';
+import { DEFAULT_VIEW_MODES } from '../summary/widgets/viewModes';
+import { toV6Shape } from '../summary/dashboardConfig';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -175,10 +176,6 @@ const spanOrDefault = (v, def, max = 4) => {
   const n = parseInt(v, 10);
   return n >= 1 && n <= max ? n : def;
 };
-
-// map v7-only field view modes to the closest mode a v6 viewer can render
-// (v6 knows only bar/pie/table) for the dual-written legacy fields[] shape
-const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar' };
 
 export default {
   name: 'Arkime',
@@ -213,19 +210,10 @@ export default {
     // Session-wide widgets (timeline/map/stats/time) have no v6 equivalent and
     // are omitted from fields[]. See SHAREABLES.md.
     currentDashboardConfig: function () {
-      // only true v6-style chart widgets (bar/pie/table/...) project into the
-      // legacy fields[]; the map's geo field and session-wide widgets do not
-      const fieldWidgets = this.widgets.filter(w => w.field && isFieldMode(w.viewMode));
       return {
         colorScheme: this.colorScheme,
         widgets: this.widgets,
-        fields: fieldWidgets.map(w => ({
-          field: w.field,
-          viewMode: V6_VIEW_MODES[w.viewMode] || 'bar',
-          metricType: w.metricType || 'sessions'
-        })),
-        resultsLimit: fieldWidgets[0]?.length || 20,
-        order: fieldWidgets[0]?.order || 'desc'
+        ...toV6Shape(this.widgets)
       };
     }
   },

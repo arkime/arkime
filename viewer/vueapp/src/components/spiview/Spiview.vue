@@ -18,7 +18,8 @@ SPDX-License-Identifier: Apache-2.0
               <!-- field config save button -->
               <v-menu
                 :close-on-content-click="false"
-                location="bottom start">
+                location="bottom start"
+                @after-enter="focusSaveName">
                 <template #activator="{ props: activatorProps }">
                   <v-btn
                     v-bind="activatorProps"
@@ -40,13 +41,12 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="px-2 py-1">
                     <div class="arkime-input-group">
                       <input
-                        autofocus
+                        ref="fieldConfigNameInput"
                         @click.stop
                         maxlength="30"
                         type="text"
                         class="arkime-input-control"
-                        @input="debounceNewFieldConfigName"
-                        v-model.lazy="newFieldConfigName"
+                        v-model="newFieldConfigName"
                         :placeholder="$t('spiview.newConfigPlaceholder')"
                         @keydown.enter.stop.prevent="saveFieldConfiguration">
                       <v-btn
@@ -95,7 +95,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-tooltip
                         v-if="config.shared"
                         :activator="`#sharedSpiConfig-${config.id}`">
-                        {{ $t('settings.shareables.sharedTip', { creator: config.creator }) }}
+                        {{ $t('common.sharedTip', { creator: config.creator }) }}
                       </v-tooltip>
                       <span
                         class="flex-grow-1"
@@ -522,7 +522,6 @@ let categoryLoadingCounts = {};
 let pendingPromises = [];
 
 let timeout;
-let newConfigTimeout;
 
 export default {
   name: 'Spiview',
@@ -909,17 +908,27 @@ export default {
 
       window.open(routeData.href, '_blank');
     },
-    /* debounces input to new field config to speed it up */
-    debounceNewFieldConfigName: function (e) {
-      if (newConfigTimeout) { clearTimeout(newConfigTimeout); }
-      newConfigTimeout = setTimeout(() => {
-        this.newFieldConfigName = e.target.value;
-      }, 400);
+    /* Puts the cursor in the name box when the menu opens, autofocus does not
+       fire for content mounted later and vuetify claims focus for the menu */
+    focusSaveName: function () {
+      // vuetify focuses the menu itself after the transition, and the content
+      // is visibility:hidden until it finishes, so keep trying for a few
+      // frames until the focus actually sticks
+      const attempt = (triesLeft) => {
+        const input = this.$refs.fieldConfigNameInput;
+        if (!input) { return; }
+        input.focus();
+        input.select();
+        if (document.activeElement !== input && triesLeft > 0) {
+          requestAnimationFrame(() => attempt(triesLeft - 1));
+        }
+      };
+      this.$nextTick(() => attempt(30));
     },
     /* Saves a custom spiview fields configuration */
     saveFieldConfiguration: function () {
       if (!this.newFieldConfigName) {
-        this.fieldConfigError = 'You must name your new spiview field configuration';
+        this.fieldConfigError = this.$t('spiview.nameConfigErr');
         return;
       }
 
@@ -973,10 +982,12 @@ export default {
      */
     updateFieldConfiguration: function (config, index) {
       // only data is sent, so the name and any sharing on it are left alone
-      SpiviewLayoutService.update(config.id, { fields: this.spiQuery }).then((response) => {
-        this.fieldConfigs[index] = { ...config, fields: this.spiQuery };
+      SpiviewLayoutService.update(config.id, { fields: this.spiQuery }).then((layout) => {
+        // the service returns the layout, not an api response, so use our own
+        // message rather than trying to resolve one off the object
+        this.fieldConfigs[index] = layout;
         this.fieldConfigError = false;
-        this.fieldConfigSuccess = resolveMessage(response, this.$t);
+        this.fieldConfigSuccess = this.$t('spiview.configUpdated');
         setTimeout(() => { this.fieldConfigSuccess = ''; }, 5000);
       }).catch((error) => {
         this.fieldConfigError = resolveMessage(error, this.$t);

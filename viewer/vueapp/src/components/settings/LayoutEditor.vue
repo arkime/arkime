@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <!--
   Editor for the layout shareables shown in Settings: column layouts, info
   field layouts and spiview layouts. They only differ in what their field list
-  means, so one dialog covers all three. Sharing is not edited here, the
-  Shareables tab owns that.
+  means, so one dialog covers all three, sharing included.
 -->
 <template>
   <v-dialog
@@ -29,7 +28,10 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- fields -->
         <div class="d-flex align-center mb-1">
-          <strong class="flex-grow-1">{{ $t('settings.layoutEditor.fields') }}</strong>
+          <strong class="flex-grow-1">
+            {{ $t('settings.layoutEditor.fields') }}
+            <span class="text-medium-emphasis small ms-1">{{ $t('settings.layoutEditor.dragHint') }}</span>
+          </strong>
           <FieldSelectDropdown
             :selected-fields="selectedFields"
             :tooltip-text="$t('settings.layoutEditor.addFields')"
@@ -40,16 +42,22 @@ SPDX-License-Identifier: Apache-2.0
             @clear="selectedFields = []" />
         </div>
 
-        <div class="layout-editor-fields mb-3">
+        <div
+          class="layout-editor-fields mb-3"
+          ref="draggableFields">
           <label
             v-for="field in selectedFields"
             :key="field"
-            class="arkime-badge arkime-badge--grey me-1 mb-1">
+            class="arkime-badge arkime-badge--grey me-1 mb-1 layout-editor-field">
+            <v-icon
+              icon="mdi-drag-vertical"
+              size="x-small"
+              class="me-1" />
             {{ friendlyName(field) }}
             <v-icon
               icon="mdi-close"
               size="x-small"
-              class="cursor-pointer ms-1"
+              class="cursor-pointer ms-1 ignore-element"
               @click="toggleField({ dbField: field })" />
           </label>
           <span
@@ -118,6 +126,14 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </template>
 
+        <!-- sharing, same controls Views and Shortcuts use -->
+        <div class="d-flex align-center mt-3 mb-1">
+          <strong class="flex-grow-1">{{ $t('settings.layoutEditor.sharing') }}</strong>
+        </div>
+        <ShareInputs
+          v-model="share"
+          :roles="roles" />
+
         <v-alert
           v-if="error"
           type="error"
@@ -146,12 +162,14 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import Sortable from 'sortablejs';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
+import ShareInputs from './ShareInputs.vue';
 
 export default {
   name: 'LayoutEditor',
   emits: ['update:modelValue', 'save'],
-  components: { FieldSelectDropdown },
+  components: { FieldSelectDropdown, ShareInputs },
   props: {
     modelValue: {
       type: Boolean,
@@ -180,18 +198,32 @@ export default {
       order: [],
       // spiview carries a per field value count, preserved across an edit
       counts: {},
+      share: { viewRoles: [], editRoles: [], viewUsers: [], editUsers: [] },
+      sortable: undefined,
       error: ''
     };
   },
   computed: {
     hasOrder () {
       return this.kind === 'columns';
+    },
+    roles () {
+      return this.$store.state.roles;
     }
   },
   watch: {
     modelValue (isOpen) {
-      if (isOpen) { this.reset(); }
+      if (isOpen) {
+        this.reset();
+        // the dialog content only exists once it is open
+        this.$nextTick(this.initDragDrop);
+      } else {
+        this.destroyDragDrop();
+      }
     }
+  },
+  beforeUnmount () {
+    this.destroyDragDrop();
   },
   methods: {
     reset () {
@@ -200,6 +232,12 @@ export default {
       this.name = layout.name ?? '';
       this.counts = {};
       this.order = JSON.parse(JSON.stringify(layout.order ?? []));
+      this.share = {
+        viewRoles: [...(layout.viewRoles ?? [])],
+        editRoles: [...(layout.editRoles ?? [])],
+        viewUsers: [...(layout.viewUsers ?? [])],
+        editUsers: [...(layout.editUsers ?? [])]
+      };
 
       if (this.kind === 'spiview') {
         this.selectedFields = String(layout.fields ?? '').split(',').filter(Boolean).map((param) => {
@@ -211,6 +249,26 @@ export default {
         this.selectedFields = [...(layout.columns ?? [])];
       } else {
         this.selectedFields = [...(layout.fields ?? [])];
+      }
+    },
+    /* field order is what the layout renders in, so let it be dragged */
+    initDragDrop () {
+      if (!this.$refs.draggableFields || this.sortable) { return; }
+      this.sortable = Sortable.create(this.$refs.draggableFields, {
+        animation: 100,
+        filter: '.ignore-element',
+        preventOnFilter: false, // the remove icon still has to be clickable
+        onEnd: (e) => {
+          if (e.oldIndex === e.newIndex) { return; }
+          const moved = this.selectedFields.splice(e.oldIndex, 1)[0];
+          this.selectedFields.splice(e.newIndex, 0, moved);
+        }
+      });
+    },
+    destroyDragDrop () {
+      if (this.sortable) {
+        this.sortable.destroy();
+        this.sortable = undefined;
       }
     },
     friendlyName (dbField) {
@@ -250,7 +308,7 @@ export default {
         data = { fields: [...this.selectedFields] };
       }
 
-      this.$emit('save', { name: this.name, ...data });
+      this.$emit('save', { name: this.name, ...data, ...this.share });
     }
   }
 };
@@ -260,5 +318,12 @@ export default {
 .layout-editor-fields {
   max-height: 220px;
   overflow-y: auto;
+}
+.layout-editor-field {
+  cursor: grab;
+  user-select: none;
+}
+.layout-editor-field:active {
+  cursor: grabbing;
 }
 </style>

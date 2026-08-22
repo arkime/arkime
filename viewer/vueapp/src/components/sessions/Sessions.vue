@@ -159,14 +159,15 @@ SPDX-License-Identifier: Apache-2.0
                         :close-on-content-click="false"
                         location="end"
                         open-on-click
-                        :open-on-hover="false">
+                        :open-on-hover="false"
+                        @after-enter="focusSaveName('colConfigNameInput')">
                         <v-list
                           density="compact"
                           class="col-config-list">
                           <div class="px-2 py-1">
                             <div class="arkime-input-group arkime-input-group--fluid">
                               <input
-                                autofocus
+                                ref="colConfigNameInput"
                                 @click.stop
                                 maxlength="30"
                                 type="text"
@@ -260,7 +261,7 @@ SPDX-License-Identifier: Apache-2.0
                               <v-tooltip
                                 v-if="config.shared"
                                 :activator="`#sharedColConfig-${config.id}`">
-                                {{ $t('settings.shareables.sharedTip', { creator: config.creator }) }}
+                                {{ $t('common.sharedTip', { creator: config.creator }) }}
                               </v-tooltip>
                               <span
                                 class="flex-grow-1"
@@ -431,14 +432,15 @@ SPDX-License-Identifier: Apache-2.0
                             :close-on-content-click="false"
                             location="end"
                             open-on-click
-                            :open-on-hover="false">
+                            :open-on-hover="false"
+                            @after-enter="focusSaveName('infoConfigNameInput')">
                             <v-list
                               density="compact"
                               class="col-dropdown-menu">
                               <div class="px-2 py-1">
                                 <div class="arkime-input-group arkime-input-group--fluid">
                                   <input
-                                    autofocus
+                                    ref="infoConfigNameInput"
                                     @click.stop
                                     maxlength="30"
                                     type="text"
@@ -533,7 +535,7 @@ SPDX-License-Identifier: Apache-2.0
                                   <v-tooltip
                                     v-if="config.shared"
                                     :activator="`#sharedInfoConfig-${config.id}`">
-                                    {{ $t('settings.shareables.sharedTip', { creator: config.creator }) }}
+                                    {{ $t('common.sharedTip', { creator: config.creator }) }}
                                   </v-tooltip>
                                   <span
                                     class="flex-grow-1"
@@ -1444,17 +1446,15 @@ export default {
         columns: this.tableState.visibleHeaders.slice(),
         order: this.tableState.order.slice()
       }).then((layout) => {
-        const data = layout;
-
-        this.colConfigs.push(data);
+        this.colConfigs.push(layout);
 
         this.newColConfigName = null;
         this.colConfigError = false;
 
         // the new config is now the loaded one
-        this.tableState.colConfigName = data.name;
+        this.tableState.colConfigName = layout.name;
         this.saveTableState();
-        this.showConfigSnackbar(resolveMessage(response, this.$t));
+        this.showConfigSnackbar(this.$t('sessions.sessions.colConfigSaved'));
       }).catch((error) => {
         this.colConfigError = resolveMessage(error, this.$t);
       });
@@ -1602,6 +1602,27 @@ export default {
         this.reloadTable();
       }
     },
+    /* Puts the cursor in a save-as name box when its menu opens. autofocus
+       does not fire for content mounted later, and vuetify claims focus for
+       the menu itself, so take it back once the transition has finished. */
+    focusSaveName (refName) {
+      // vuetify focuses the menu itself after the transition, and the content
+      // is visibility:hidden until it finishes, so keep trying for a few
+      // frames until the focus actually sticks
+      const attempt = (triesLeft) => {
+        // a ref inside a v-for collects into an array, and the info column
+        // menu lives inside the header v-for while the column one does not
+        const found = this.$refs[refName];
+        const input = Array.isArray(found) ? found.find(Boolean) : found;
+        if (!input) { return; }
+        input.focus();
+        input.select();
+        if (document.activeElement !== input && triesLeft > 0) {
+          requestAnimationFrame(() => attempt(triesLeft - 1));
+        }
+      };
+      this.$nextTick(() => attempt(30));
+    },
     /* Saves a custom info field column configuration */
     saveInfoFieldLayout () {
       if (!this.newInfoConfigName) {
@@ -1618,9 +1639,9 @@ export default {
         this.infoConfigError = false;
 
         // the new config is now the loaded one
-        this.user.settings.infoFieldsConfigName = data.name;
+        this.user.settings.infoFieldsConfigName = layout.name;
         UserService.saveSettings(this.user.settings);
-        this.showConfigSnackbar(resolveMessage(response, this.$t));
+        this.showConfigSnackbar(this.$t('sessions.sessions.infoConfigSaved'));
       }).catch((error) => {
         this.infoConfigError = resolveMessage(error, this.$t);
       });
