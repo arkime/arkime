@@ -269,6 +269,7 @@ sub showHelp($)
     print "  shareables-import <type>     - Copy per-user layouts into shareables, safe to run repeatedly.\n";
     print "                                 <type> is 'all' or one of: " . join(", ", sort keys %SHAREABLE_IMPORTS) . "\n";
     print "                                 Originals are left alone so Arkime 6 keeps working\n";
+    print "                                 Only works when users are in Elasticsearch, not sqlite/lmdb/redis\n";
     print "    --dryrun                   - Print what would be copied without copying\n";
     print "      eg: db.pl <host:port> shareables-import spiview --dryrun\n";
     print "  users-update <pattern> <opts>- Bulk add/remove roles and set/unset fields on all users whose userId matches <pattern>\n";
@@ -8992,6 +8993,16 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         my $src = $hit->{_source};
         next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
         $have{$src->{type} . "\0" . $src->{creator} . "\0" . $src->{name}} = 1;
+    }
+
+    # db.pl only ever talks to Elasticsearch, so a users store kept in
+    # sqlite/lmdb/redis has nothing to read here and would silently look like
+    # there was simply nothing to import
+    my $userCount = esGet("/${PREFIX}users/_count", 1);
+    if (($userCount->{count} // 0) == 0) {
+        logmsg "WARNING - no users found in ${PREFIX}users, so there is nothing to import.\n";
+        logmsg "WARNING - shareables-import needs users stored in Elasticsearch; it cannot read a\n";
+        logmsg "WARNING - usersElasticsearch pointed at sqlite/lmdb/redis.\n";
     }
 
     foreach my $kind (@todo) {
