@@ -52,6 +52,10 @@ const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let httpAgent;
 let httpsAgent;
 let multiESBasicAuthHmac;
+
+// How long a backend may stay silent before we stop waiting on it (ms).
+let backendTimeout = 2 * 60 * 1000;
+
 ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
@@ -72,6 +76,8 @@ ArkimeConfig.loaded(() => {
   if (expected) {
     multiESBasicAuthHmac = cryptoLib.createHmac('sha256', 'compare').update(expected).digest();
   }
+
+  backendTimeout = Math.max(1, +Config.get('multiESBackendTimeout', 120)) * 1000;
 });
 
 const clients = {};
@@ -255,6 +261,19 @@ function makeRequest (url, options, cb) {
     });
   });
   preq.setHeader('content-type', 'application/json');
+
+  // A backend that accepts the socket but never answers leaves both 'end' and
+  // 'error' unfired, so done() is never called. The async.map in simpleGather
+  // then never completes, the viewer request hangs, and once enough of them
+  // pile up the agent runs out of sockets and the whole multi viewer stops
+  // answering - including /api/eshealth. Cap how long a backend may stay
+  // silent; on timeout the request is torn down and the backend is reported as
+  // an empty result, which the caller already knows how to skip.
+  preq.setTimeout(backendTimeout, () => {
+    console.log('ERROR - backend timeout', url.host, url.pathname);
+    preq.destroy(new Error('backend timeout'));
+    done(new Error('backend timeout'), {});
+  });
   if (options.arkime_opaque !== undefined) {
     preq.setHeader('X-Opaque-Id', options.arkime_opaque);
   }
@@ -369,7 +388,23 @@ function simpleGather (req, res, bodies, doneCb) {
         asyncCb(null, result);
       });
     }
-  }, doneCb);
+  }, (err, results) => {
+    // A backend that failed comes back as a stub carrying only .cluster, with
+    // none of the keys the combiners dereference (hits, nodes, tasks, indices,
+    // ...). Drop those here, in the one place every combiner is fed from, so a
+    // single unreachable cluster cannot take down a query that the remaining
+    // clusters can still answer.
+    //
+    // If every backend answered, good.length === results.length and this is a
+    // no-op, so healthy deployments behave exactly as before. If every backend
+    // failed the results are passed through untouched, leaving the existing
+    // per-endpoint handling in place.
+    if (Array.isArray(results)) {
+      const good = results.filter(r => r && Object.keys(r).some(k => k !== 'cluster'));
+      if (good.length > 0 && good.length < results.length) { results = good; }
+    }
+    return doneCb(err, results);
+  });
 }
 
 function shallowCopy (obj1, obj2) {
@@ -632,7 +667,7 @@ app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
         console.log('ERROR - GET _search', req.query.index, req.query.type, results[i].error);
         continue;
       }
-      obj.hits.total += results[i].hits.total;
+      obj.hits.total = addTotal(obj.hits.total, results[i].hits.total);
       obj.hits.hits = obj.hits.hits.concat(results[i].hits.hits);
     }
     res.send(obj);
@@ -960,13 +995,29 @@ function fixQuery (node, body, doneCb) {
   finished = 1;
 }
 
+// Elasticsearch 7 and OpenSearch report hits.total as {value, relation}, so a
+// plain += concatenates objects into a string instead of adding numbers and
+// the merged total comes out as "0[object Object][object Object]...". Add the
+// numbers while keeping the shape of the accumulator. When both sides are
+// numbers this is the same addition as before.
+function addTotal (a, b) {
+  const av = (a && typeof a === 'object') ? (a.value || 0) : (a || 0);
+  const bv = (b && typeof b === 'object') ? (b.value || 0) : (b || 0);
+  const sum = av + bv;
+  if (a && typeof a === 'object') {
+    const bRelation = (b && typeof b === 'object') ? b.relation : 'eq';
+    return { value: sum, relation: (a.relation === 'gte' || bRelation === 'gte') ? 'gte' : 'eq' };
+  }
+  return sum;
+}
+
 function combineResults (obj, result) {
   if (!result.hits) {
     console.log('NO RESULTS', result);
     return;
   }
 
-  obj.hits.total += result.hits.total;
+  obj.hits.total = addTotal(obj.hits.total, result.hits.total);
   obj.hits.missing += result.hits.missing;
   obj.hits.other += result.hits.other;
   if (result.hits.hits) {
