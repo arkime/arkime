@@ -36,6 +36,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.7.1 2026/08/xx
+## All
+  - #4215 Fix email searches, periodic queries and cont3xt history deletes ignoring permissions that come from a role instead of the user (thanks @Juwon1405)
 
 6.7.0 2026/08/19
 ## Release

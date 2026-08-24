@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 278;
+use Test::More tests => 282;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -786,6 +786,22 @@ my $uaToken = getTokenCookie('testusersadmin');
     ok($json->{success}, "sac-userExplicitTrue created");
     $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userExplicitTrue", $token);
     is($json->{emailSearch}, 1, "sac-userExplicitTrue emailSearch true (explicit)");
+
+    # a role granted setting is enforced by query building
+    my $emailExp = uri_escape('email.src == "foo@example.com"');
+    my $emailDenied = 'email.src - permission denied, ask your Arkime admin to give you access using + on Users tab';
+
+    $json = viewerGet("/api/buildquery?arkimeRegressionUser=sac-userInheritAB&date=-1&expression=$emailExp");
+    ok(!exists $json->{error}, "sac-userInheritAB can query email fields (emailSearch from role)");
+
+    $json = viewerGet("/api/buildquery?arkimeRegressionUser=sac-userInheritA&date=-1&expression=$emailExp");
+    ok(!exists $json->{error}, "sac-userInheritA can query email fields (emailSearch explicit)");
+
+    $json = viewerGet("/api/buildquery?arkimeRegressionUser=sac-userExplicitFalse&date=-1&expression=$emailExp");
+    is($json->{error}, $emailDenied, "sac-userExplicitFalse can not query email fields (explicit false beats role)");
+
+    $json = viewerGet("/api/buildquery?arkimeRegressionUser=sac-userInheritC&date=-1&expression=$emailExp");
+    is($json->{error}, $emailDenied, "sac-userInheritC can not query email fields (no role grants it)");
 
 # Check appversion
     $json = viewerGetToken("/api/appversion", $token);
