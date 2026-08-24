@@ -1846,6 +1846,14 @@ class User {
     return this.#allRoles;
   }
 
+  /**
+   * Return one of the allSettingColumns permissions, expanded from ourselves
+   * and the roles we have. webEnabled isn't one of them, it has no roles.
+   */
+  getPermission (permission) {
+    return this.#allSettings[permission];
+  }
+
   getExpression () {
     return this.#allExpression;
   }
