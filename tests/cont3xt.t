@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 273;
+use Test::More tests => 277;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
