@@ -1774,6 +1774,18 @@ class User {
     return this.#allRoles;
   }
 
+  /**
+   * Return a setting expanded from ourselves and the roles we have.
+   *
+   * #allSettings is private, so code outside this file cannot read it and has
+   * to use this accessor. Reading the public property directly returns the
+   * value stored on the user document, which silently ignores roles when the
+   * user document does not set that field.
+   */
+  getSetting (setting) {
+    return this.#allSettings[setting];
+  }
+
   getExpression () {
     return this.#allExpression;
   }
