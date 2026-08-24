@@ -160,7 +160,7 @@ class Audit {
     }
 
     // permissions ---------------------------
-    if (!req.user.getSetting('removeEnabled')) {
+    if (!req.user.getPermission('removeEnabled')) {
       return res.send({ success: false, text: 'Can not delete a history log when user has data removal disabled.' });
     }
 

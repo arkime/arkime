@@ -698,7 +698,7 @@ class CronAPIs {
 
           // always complete building the query regardless of shortcuts
           arkimeparser.parser.yy = {
-            emailSearch: user.getSetting('emailSearch') === true,
+            emailSearch: user.getPermission('emailSearch') === true,
             fieldsMap: Config.getFieldsMap(),
             dbFieldsMap: Config.getDBFieldsMap(),
             prefix: internals.prefix,

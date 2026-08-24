@@ -479,7 +479,7 @@ class BuildQuery {
       fieldsMap: Config.getFieldsMap(),
       dbFieldsMap: Config.getDBFieldsMap(),
       prefix: internals.prefix,
-      emailSearch: req.user.getSetting('emailSearch') === true,
+      emailSearch: req.user.getPermission('emailSearch') === true,
       shortcuts: shortcuts || {},
       shortcutTypeMap: internals.shortcutTypeMap
     };

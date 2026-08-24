@@ -459,6 +459,8 @@ class ViewerUtils {
         anon.settings = anonUser.settings || {};
       }
 
+      await anon.expandFromRoles();
+
       return anon;
     } else {
       return await User.getUserCache(userId);
