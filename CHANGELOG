@@ -57,6 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
+  - New xdp pcapReadMethod that reads with AF_XDP sockets, one socket and thread per nic receive queue. Linux only, requires libxdp at build time
   - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
   - #4210 Add the [protocol-settings] section to set idle/save/closing/packets per mProtocol, eg tcp=idle:600;closing:5
