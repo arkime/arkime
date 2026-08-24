@@ -17,6 +17,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 7.0.0 requires NodeJS >= 24.0.0 or < 25
   * Arkime >= 6.0.0 requires NodeJS >= 22.15.0 or < 23
   * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
@@ -54,6 +55,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           node, they now create a session per talker pair like every other protocol - by src/dst mac for the
           ethernet protocols and by src/dst ip for igmp and pim. Expect more, smaller sessions for these
   - Removed the demoMode setting and User.isDemoMode(); roles do not replace it, so put a shared instance behind an external identity provider
+## Release
+  - #4218 Node 24.19.0
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
