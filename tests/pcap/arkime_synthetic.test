@@ -9147,6 +9147,190 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
+     "bytes" : 315
+    },
+    "destination" : {
+     "bytes" : 399,
+     "ip" : "10.9.20.2",
+     "mac" : [
+      "02:aa:00:00:14:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 80
+    },
+    "dstPayload8" : "0000000400000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700020000000,
+    "http" : {
+     "clientVersion" : [
+      "2.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "h2order.synthetic.test",
+      "h2port.synthetic.test"
+     ],
+     "hostCnt" : 2,
+     "key" : [
+      "a"
+     ],
+     "keyCnt" : 1,
+     "method" : [
+      "GET",
+      "POST",
+      "PRI"
+     ],
+     "methodCnt" : 3,
+     "path" : [
+      "/authority-first",
+      "/no-authority",
+      "/with-port"
+     ],
+     "pathCnt" : 3,
+     "requestHeader" : [
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 1,
+     "statuscode" : [
+      200,
+      204,
+      404
+     ],
+     "statuscodeCnt" : 3,
+     "uri" : [
+      "*",
+      "/no-authority",
+      "h2order.synthetic.test/authority-first?a=1",
+      "h2port.synthetic.test:8443/with-port"
+     ],
+     "uriCnt" : 4,
+     "useragent" : [
+      "arkime-synthetic-h2"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "1"
+     ],
+     "valueCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700020000849,
+    "length" : 849,
+    "network" : {
+     "bytes" : 1362,
+     "community_id" : "1:0uN+TK4wyDqoV/2OiB8yaRVIcYk=",
+     "packets" : 18
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     103,
+     79,
+     70,
+     201,
+     92,
+     70,
+     164,
+     92,
+     70,
+     127,
+     92,
+     70,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     102411,
+     102481,
+     102551,
+     102621,
+     102724,
+     102803,
+     102873,
+     103074,
+     103166,
+     103236,
+     103400,
+     103492,
+     103562,
+     103689,
+     103781,
+     103851,
+     103921,
+     103991
+    ],
+    "packetRange" : {
+     "gte" : 1700020000000,
+     "lte" : 1700020000849
+    },
+    "protocol" : [
+     "http",
+     "http2",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 75
+    },
+    "source" : {
+     "bytes" : 963,
+     "ip" : "10.9.20.1",
+     "mac" : [
+      "02:aa:00:00:14:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 49601
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "505249202a204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 6,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 8,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 12288
+    },
+    "totDataBytes" : 390
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
      "bytes" : 29
     },
     "destination" : {
