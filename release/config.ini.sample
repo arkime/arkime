@@ -360,6 +360,18 @@ logFileCreation=true
 #10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is an ASN
 
 ##############################################################################
+# The session tshark tab runs tshark on the viewer to dissect a session's pcap.
+# tshark is always started with a scrubbed environment and an empty wireshark
+# profile dir, but its dissectors are still a large attack surface, so it can
+# also be wrapped in a sandbox. {tsharkDir} is the private dir holding the
+# fifo tshark reads and must be bind mounted in.
+#tsharkPath=/opt/arkime/bin/tshark;/usr/bin/tshark
+#tsharkMaxPackets=10000
+#tsharkTimeoutMs=30000
+#tsharkMaxConcurrent=3
+#tsharkWrapper=bwrap;--unshare-all;--die-with-parent;--new-session;--cap-drop;ALL;--ro-bind;/usr;/usr;--ro-bind-try;/lib;/lib;--ro-bind-try;/lib64;/lib64;--proc;/proc;--dev;/dev;--bind;{tsharkDir};{tsharkDir};--
+
+##############################################################################
 # It is possible to define in the config file extra http/email headers
 # to index. They are accessed using the expression http.<fieldname> and
 # email.<fieldname> with optional .cnt expressions
