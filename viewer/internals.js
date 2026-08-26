@@ -9,8 +9,11 @@
 
 const Config = require('./config.js');
 const EventEmitter = require('events').EventEmitter;
+const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const os = require('os');
+const path = require('path');
 const { spawn } = require('child_process');
 const RE2 = require('re2');
 const ArkimeConfig = require('../common/arkimeConfig');
@@ -129,6 +132,59 @@ ArkimeConfig.loaded(() => {
   // tshark integration -------------------------------------------------------
   internals.tsharkMaxPackets = parseInt(Config.get('tsharkMaxPackets', 10000));
   internals.tsharkTimeoutMs = parseInt(Config.get('tsharkTimeoutMs', 30000));
+  internals.tsharkMaxConcurrent = parseInt(Config.get('tsharkMaxConcurrent', 3));
+  internals.tsharkMemoryLimitMB = parseInt(Config.get('tsharkMemoryLimitMB', 1024));
+  internals.tsharkWrapper = Config.getArray('tsharkWrapper', '');
+  internals.tsharkRunning = 0;
+
+  // Scratch dir for tshark. mkdtemp so another user can't pre-create it: the
+  // fifos we hand tshark live here, and the empty/ subdir is where every
+  // WIRESHARK_* var points so no personal profile, plugin or init.lua loads.
+  try {
+    internals.tsharkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'arkime-tshark-'));
+    internals.tsharkEmptyDir = path.join(internals.tsharkDir, 'empty');
+    fs.mkdirSync(internals.tsharkEmptyDir, { mode: 0o500 });
+    process.on('exit', () => {
+      try { fs.rmSync(internals.tsharkDir, { recursive: true, force: true }); } catch (e) { /* ignore */ }
+    });
+  } catch (e) {
+    console.log('tshark: could not create scratch dir, tshark disabled -', e.message);
+    return;
+  }
+
+  // tshark inherits nothing from viewer -- ARKIME__* overrides can hold the ES
+  // credentials and passwordSecret. Only the linker paths are carried over.
+  internals.tsharkEnv = {
+    PATH: '/usr/bin:/bin',
+    HOME: internals.tsharkEmptyDir,
+    TMPDIR: internals.tsharkDir,
+    LC_ALL: 'C',
+    XDG_CONFIG_HOME: internals.tsharkEmptyDir,
+    XDG_DATA_HOME: internals.tsharkEmptyDir,
+    WIRESHARK_CONFIG_DIR: internals.tsharkEmptyDir,
+    WIRESHARK_DATA_DIR: internals.tsharkEmptyDir,
+    WIRESHARK_PLUGIN_DIR: internals.tsharkEmptyDir
+  };
+  for (const v of ['LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'DYLD_FALLBACK_LIBRARY_PATH']) {
+    if (process.env[v]) { internals.tsharkEnv[v] = process.env[v]; }
+  }
+
+  // argv for a tshark run: the configured sandbox wrapper, then tshark. A
+  // dissector driven into a huge allocation can claim GBs long before
+  // tsharkTimeoutMs fires, so cap the address space via a shell that execs --
+  // exec keeps the pid we spawned, so kill() still reaches tshark. Nothing is
+  // interpolated into the shell string, the command goes in as positional
+  // args, and a shell that cannot set the limit (macOS) just carries on.
+  internals.tsharkCommand = (args) => {
+    const wrapper = internals.tsharkWrapper.map(a => a.replaceAll('{tsharkDir}', internals.tsharkDir));
+    const argv = [...wrapper, internals.tsharkPath, ...args];
+    if (!(internals.tsharkMemoryLimitMB > 0)) { return { cmd: argv[0], args: argv.slice(1) }; }
+    return {
+      cmd: '/bin/sh',
+      args: ['-c', `ulimit -v ${internals.tsharkMemoryLimitMB * 1024} 2>/dev/null || true; exec "$@"`, 'arkime-tshark', ...argv]
+    };
+  };
+
   const tsharkCandidates = Config.getArray('tsharkPath', '/opt/arkime/bin/tshark;/usr/bin/tshark;/usr/local/bin/tshark;/opt/homebrew/bin/tshark;/Applications/Wireshark.app/Contents/MacOS/tshark');
   const probeNext = (i) => {
     if (i >= tsharkCandidates.length) {
@@ -146,7 +202,7 @@ ArkimeConfig.loaded(() => {
       probeNext(i + 1);
     };
     try {
-      proc = spawn(cand, ['-v'], { stdio: ['ignore', 'pipe', 'ignore'] });
+      proc = spawn(cand, ['-v'], { stdio: ['ignore', 'pipe', 'ignore'], env: internals.tsharkEnv });
     } catch (e) {
       return advance();
     }
