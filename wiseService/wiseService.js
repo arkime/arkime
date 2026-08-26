@@ -25,7 +25,7 @@ const favicon = require('serve-favicon');
 const uuid = require('uuid').v4;
 const helmet = require('helmet');
 const jsonParser = ArkimeUtil.jsonParser;
-const chalk = require('chalk');
+const styleText = require('util').styleText;
 const version = require('../common/version');
 const path = require('path');
 const ArkimeCache = require('../common/arkimeCache');
@@ -136,12 +136,12 @@ function processArgs (argv) {
   }
   if (internals.webconfig) {
     if (internals.configCode) {
-      console.log(chalk.cyan(
-        `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
+      console.log(styleText('cyan',
+        `${styleText(['bgCyan', 'black'], 'IMPORTANT')} - Config pin code is: ${internals.configCode}`
       ));
     } else {
-      console.log(chalk.cyan(
-        `${chalk.bgCyan.black('IMPORTANT')} - No --webcode given, config changes require your TOTP code`
+      console.log(styleText('cyan',
+        `${styleText(['bgCyan', 'black'], 'IMPORTANT')} - No --webcode given, config changes require your TOTP code`
       ));
     }
   }
