@@ -56,7 +56,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           ethernet protocols and by src/dst ip for igmp and pim. Expect more, smaller sessions for these
   - Removed the demoMode setting and User.isDemoMode(); roles do not replace it, so put a shared instance behind an external identity provider
 ## Release
-  - #4218 Node 24.19.0
+  - #4221 Node 24.20.0
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
