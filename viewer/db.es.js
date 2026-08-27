@@ -924,7 +924,8 @@ class DbESImpl {
   async getMinValue (index, field) {
     const params = {
       index: this.#fixIndex(index),
-      body: { size: 0, aggs: { min: { min: { field } } } }
+      body: { size: 0, aggs: { min: { min: { field } } } },
+      rest_total_hits_as_int: true
     };
     return this.#internals.client7.search(params);
   }
