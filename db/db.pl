@@ -8987,16 +8987,20 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     # Everything already in shareables, so re-runs are safe. Keyed on
     # type + creator + name, which is what made a layout unique on the user;
-    # names aren't unique anymore, so the value is the existing item's data,
-    # to tell an already-imported layout apart from an unrelated same-name
-    # collision created since. Scrolled, not a flat size=10000 search, so
-    # this stays accurate past 10000 shareables.
+    # names aren't unique anymore, so more than one existing shareable can
+    # share a key, and the value is the *set* of their data (not a single
+    # value - overwriting on a repeat key would just pick whichever hit the
+    # scroll happened to return last). That set is what tells an
+    # already-imported layout apart from an unrelated same-name collision
+    # created since. Scrolled, not a flat size=10000 search, so this stays
+    # accurate past 10000 shareables.
     my %have;
     my $existing = esScroll("${PREFIX}shareables", to_json({"_source" => ["type", "creator", "name", "data"]}));
     foreach my $hit (@{$existing}) {
         my $src = $hit->{_source};
         next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
-        $have{$src->{type} . "\0" . $src->{creator} . "\0" . $src->{name}} = JSON->new->canonical->encode($src->{data} // {});
+        my $existingKey = $src->{type} . "\0" . $src->{creator} . "\0" . $src->{name};
+        $have{$existingKey}->{JSON->new->canonical->encode($src->{data} // {})} = 1;
     }
 
     # db.pl only ever talks to Elasticsearch, so a users store kept in
@@ -9035,20 +9039,36 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                 # canonical (sorted keys) so this compares equal to the same
                 # data round-tripped through ES, regardless of hash key order
                 my $dataJson = JSON->new->canonical->encode($data);
+                my $baseName = $name;
                 my $key = $type . "\0" . $userId . "\0" . $name;
 
-                if (exists $have{$key}) {
-                    if ($have{$key} eq $dataJson) {
-                        $skipped++;
-                        next;
+                # walk past any name already taken by something else (names
+                # aren't unique anymore) until we find either this exact
+                # layout (already imported - skip) or a free name to import
+                # the legacy data under instead of silently dropping it
+                my $attempt = 0;
+                while ($have{$key} && !$have{$key}->{$dataJson}) {
+                    $attempt++;
+                    if ($attempt > 20) {
+                        logmsg "WARNING - couldn't find a free name for '$baseName' for $userId after $attempt tries, skipping\n";
+                        last;
                     }
-                    # same type+creator+name but different data - a shareable
-                    # created after import (names aren't unique anymore)
-                    # collided with this legacy name, don't drop the legacy data
-                    my $origName = $name;
-                    $name = "$name (legacy)";
+                    $name = $attempt == 1 ? "$baseName (legacy)" : "$baseName (legacy $attempt)";
                     $key = $type . "\0" . $userId . "\0" . $name;
-                    logmsg "WARNING - '$origName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
+                }
+
+                if ($attempt > 20) {
+                    $skipped++;
+                    next;
+                }
+
+                if ($have{$key} && $have{$key}->{$dataJson}) {
+                    $skipped++;
+                    next;
+                }
+
+                if ($attempt > 0) {
+                    logmsg "WARNING - '$baseName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
                 }
 
                 my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
@@ -9077,7 +9097,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                     }
                 }
                 # guard against the same user having it twice in one run
-                $have{$key} = $dataJson;
+                $have{$key}->{$dataJson} = 1;
                 $copied++;
             }
         }

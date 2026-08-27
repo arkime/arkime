@@ -1,4 +1,4 @@
-use Test::More tests => 177;
+use Test::More tests => 179;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -496,7 +496,7 @@ is($info->{recordsTotal}, 0, "sorttype shareables cleaned up");
 # db.pl only ever talks to Elasticsearch, so shareables-import cannot see users
 # kept in sqlite/lmdb/redis. Skip its tests when the users store is not ES.
 SKIP: {
-    skip "shareables-import needs users in Elasticsearch", 24 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
+    skip "shareables-import needs users in Elasticsearch", 26 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
     # db.pl shareables-import copies per-user spiview layouts, and is re-runnable
     # write the layout the way Arkime 6 leaves it on the user record
     esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"spiviewFieldConfigs": [{"name": "imported layout", "fields": "ip.src,ip.dst"}]}}');
@@ -528,20 +528,30 @@ SKIP: {
     is($info->{recordsTotal}, 1, "re-run did not duplicate");
 
     # names aren't unique anymore, so a shareable can collide by name with a
-    # not-yet-reimported legacy layout - the import must not mistake it for
-    # already-imported and silently drop the legacy data
-    my $collideInfo = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "imported layout", "type": "spiviewLayout", "data": {"fields": "ip.dst:100"}}', $token);
-    ok($collideInfo->{success}, "create a shareable that collides by name with the legacy layout");
+    # not-yet-imported legacy layout - the import must not mistake it for
+    # already-imported and silently drop the legacy data. Add a second,
+    # not-yet-imported legacy layout, then create a shareable that takes its
+    # name first.
+    esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"spiviewFieldConfigs": [{"name": "imported layout", "fields": "ip.src,ip.dst"}, {"name": "collision layout", "fields": "ip.src,ip.dst,ip.dst.port"}]}}');
+
+    my $collideInfo = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "collision layout", "type": "spiviewLayout", "data": {"fields": "ip.dst:100"}}', $token);
+    ok($collideInfo->{success}, "create a shareable that collides by name with the not-yet-imported legacy layout");
 
     $out = `$dbcmd 2>&1`;
     ok($out =~ /collided with an existing shareable of the same name/, "import warns about the name collision");
     ok($out =~ /1 copied/, "the colliding legacy layout is still imported");
 
     $info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
-    is($info->{recordsTotal}, 2, "both the new shareable and the renamed legacy import exist");
-    my ($legacy) = grep { $_->{name} eq "imported layout (legacy)" } @{$info->{data}};
+    is($info->{recordsTotal}, 3, "the original import, the new shareable, and the renamed legacy import all exist");
+    my ($legacy) = grep { $_->{name} eq "collision layout (legacy)" } @{$info->{data}};
     ok($legacy, "the legacy layout was imported under a disambiguated name");
-    eq_or_diff($legacy->{data}, from_json('{"fields": "ip.src,ip.dst"}'), "the legacy layout kept its original data");
+    eq_or_diff($legacy->{data}, from_json('{"fields": "ip.src,ip.dst,ip.dst.port"}'), "the legacy layout kept its original data");
+
+    # re-running again does not duplicate the disambiguated import either
+    $out = `$dbcmd 2>&1`;
+    ok($out =~ /0 copied/, "collision re-run copies nothing further");
+    $info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
+    is($info->{recordsTotal}, 3, "collision re-run did not duplicate");
 
     foreach my $item (@{$info->{data}}) {
         viewerDeleteToken("/api/shareable/$item->{id}?arkimeRegressionUser=sac-test1", $token);
