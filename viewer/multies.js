@@ -52,6 +52,10 @@ const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let httpAgent;
 let httpsAgent;
 let multiESBasicAuthHmac;
+
+// How long a backend may stay silent before we give up on it (ms)
+let backendTimeout = 300 * 1000;
+
 ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
@@ -72,6 +76,9 @@ ArkimeConfig.loaded(() => {
   if (expected) {
     multiESBasicAuthHmac = cryptoLib.createHmac('sha256', 'compare').update(expected).digest();
   }
+
+  backendTimeout = parseInt(Config.get('elasticsearchTimeout', 300), 10) * 1000;
+  if (isNaN(backendTimeout) || backendTimeout <= 0) { backendTimeout = 300 * 1000; }
 });
 
 const clients = {};
@@ -247,14 +254,26 @@ function makeRequest (url, options, cb) {
       } else {
         result = {};
       }
+      // HTTP error statuses count as failures; keep the body, it carries the error details
+      if (pres.statusCode >= 400) {
+        return done(new Error(`backend status ${pres.statusCode}`), result);
+      }
       done(null, result);
     });
     pres.on('error', (e) => {
-      console.log('Response error', e);
+      if (!called) { console.log('Response error', e); }
       done(e, {});
     });
   });
   preq.setHeader('content-type', 'application/json');
+
+  // A backend that never answers would otherwise hang the request forever
+  // and eventually exhaust the agent's sockets
+  preq.setTimeout(backendTimeout, () => {
+    console.log('ERROR - backend timeout', url.host, url.pathname);
+    done(new Error('backend timeout'), {});
+    preq.destroy();
+  });
   if (options.arkime_opaque !== undefined) {
     preq.setHeader('X-Opaque-Id', options.arkime_opaque);
   }
@@ -265,7 +284,7 @@ function makeRequest (url, options, cb) {
     preq.end(options.arkime_body);
   }
   preq.on('error', (e) => {
-    console.log('Request error', e);
+    if (!called) { console.log('Request error', e); }
     done(e, {});
   });
   preq.end();
@@ -332,6 +351,14 @@ function simpleGather (req, res, bodies, doneCb) {
 
       let fullResults;
       makeRequest(url, options, function doResponse (err, result) {
+        // On failure return what was gathered so far, marked failed if nothing was
+        if (err || !result?.hits?.hits) {
+          if (fullResults === undefined) {
+            fullResults = { cluster: clusters[node], arkime_failed: true };
+          }
+          return asyncCb(null, fullResults);
+        }
+
         // First response just save, after append
         if (fullResults === undefined) {
           fullResults = result;
@@ -366,10 +393,20 @@ function simpleGather (req, res, bodies, doneCb) {
       // Not a scroll
       makeRequest(url, options, (err, result) => {
         result.cluster = clusters[node];
+        if (err) { result.arkime_failed = true; }
         asyncCb(null, result);
       });
     }
-  }, doneCb);
+  }, (err, results) => {
+    // Drop failed backends so one bad cluster can't break a query the rest can
+    // answer. If all failed, pass through for the per-endpoint error handling.
+    if (Array.isArray(results)) {
+      const good = results.filter(r => r && !r.arkime_failed);
+      if (good.length > 0) { results = good; }
+      for (const r of results) { if (r) { delete r.arkime_failed; } }
+    }
+    return doneCb(err, results);
+  });
 }
 
 function shallowCopy (obj1, obj2) {
