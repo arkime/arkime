@@ -86,6 +86,7 @@ class ShareableAPIs {
     const missingColumns = { text: 'Missing columns', i18n: 'api.shareables.missingColumns' };
     const missingSortOrder = { text: 'Missing sort order', i18n: 'api.shareables.missingSortOrder' };
     const missingFields = { text: 'Missing fields', i18n: 'api.shareables.missingFields' };
+    const missingWidgets = { text: 'Missing widgets', i18n: 'api.shareables.missingWidgets' };
 
     switch (type) {
     case 'sessionsTableLayout':
@@ -97,6 +98,9 @@ class ShareableAPIs {
       break;
     case 'spiviewLayout':
       if (typeof data.fields !== 'string') { return missingFields; }
+      break;
+    case 'summaryConfig':
+      if (!Array.isArray(data.widgets)) { return missingWidgets; }
       break;
     }
     return undefined;
@@ -119,6 +123,11 @@ class ShareableAPIs {
   static async apiCreateShareable (req, res) {
     if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shareable name', 'api.shareables.missingName');
+    }
+
+    const sanitizedName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    if (sanitizedName.length < 1) {
+      return res.serverError(403, 'Invalid name', 'api.shareables.invalidName');
     }
 
     if (!ArkimeUtil.isString(req.body.type)) {
@@ -158,7 +167,7 @@ class ShareableAPIs {
     }
 
     const doc = {
-      name: req.body.name,
+      name: sanitizedName,
       description: req.body.description,
       type: req.body.type,
       creator: user.userId,
@@ -244,8 +253,15 @@ class ShareableAPIs {
         return res.serverError(403, 'Cannot change shareable type', 'api.shareables.cannotChangeType');
       }
 
-      if (req.body.name !== undefined && !ArkimeUtil.isString(req.body.name)) {
-        return res.serverError(403, 'Name must be a string', 'api.shareables.nameMustBeString');
+      let sanitizedName = shareable.name;
+      if (req.body.name !== undefined) {
+        if (!ArkimeUtil.isString(req.body.name)) {
+          return res.serverError(403, 'Name must be a string', 'api.shareables.nameMustBeString');
+        }
+        sanitizedName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+        if (sanitizedName.length < 1) {
+          return res.serverError(403, 'Invalid name', 'api.shareables.invalidName');
+        }
       }
 
       // empty is allowed so a description can be cleared
@@ -285,7 +301,7 @@ class ShareableAPIs {
       const data = req.body.data !== undefined ? req.body.data : (shareable.data || {});
 
       const doc = {
-        name: req.body.name !== undefined ? req.body.name : shareable.name,
+        name: sanitizedName,
         type: shareable.type,
         description: req.body.description !== undefined ? req.body.description : shareable.description,
         creator: shareable.creator,

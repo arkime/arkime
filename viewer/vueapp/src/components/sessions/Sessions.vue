@@ -1540,14 +1540,14 @@ export default {
      * @param {object} config The column config to update
      */
     updateColumnConfiguration: function (config) {
-      const index = this.colConfigs.findIndex(c => c.id === config.id);
-      if (index === -1) { return; }
-
       ColumnLayoutService.update(config.id, {
         columns: this.tableState.visibleHeaders.slice(),
         order: JSON.parse(JSON.stringify(this.tableState.order))
       }).then((layout) => {
-        this.colConfigs[index] = layout;
+        // re-find the index instead of trusting one captured before this
+        // network round trip, since the array can have changed underneath it
+        const index = this.colConfigs.findIndex(c => c.id === config.id);
+        if (index > -1) { this.colConfigs[index] = layout; }
         this.showConfigSnackbar(this.$t('sessions.sessions.colConfigUpdated'));
       }).catch((error) => {
         this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');
@@ -1711,13 +1711,13 @@ export default {
       * @param {object} config The info field layout to update
       */
     updateInfoFieldLayout (config) {
-      const index = this.infoConfigs.findIndex(c => c.id === config.id);
-      if (index === -1) { return; }
-
       InfoFieldLayoutService.update(config.id, {
         fields: this.infoFields.map((field) => field.dbField)
       }).then((layout) => {
-        this.infoConfigs[index] = layout;
+        // re-find the index instead of trusting one captured before this
+        // network round trip, since the array can have changed underneath it
+        const index = this.infoConfigs.findIndex(c => c.id === config.id);
+        if (index > -1) { this.infoConfigs[index] = layout; }
         this.showConfigSnackbar(this.$t('sessions.sessions.infoConfigUpdated'));
       }).catch((error) => {
         this.showConfigSnackbar(resolveMessage(error, this.$t), 'error');

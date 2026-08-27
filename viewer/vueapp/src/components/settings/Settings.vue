@@ -720,7 +720,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="float-right me-1"
-                      @click="editLayout('sessionstable', 'columns', config, 'colConfigs', index)"
+                      @click="editLayout('sessionstable', 'columns', config, 'colConfigs')"
                       :title="$t('settings.layoutEditor.editTip')">
                       <v-icon icon="mdi-pencil" />
                     </v-btn>
@@ -732,7 +732,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="float-right"
-                      @click="deleteLayout('sessionstable', config, 'colConfigs', index)"
+                      @click="deleteLayout('sessionstable', config, 'colConfigs')"
                       :title="$t('settings.ccl.deleteTip')">
                       <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
@@ -805,7 +805,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- info field configs -->
               <template v-if="fieldsMap">
                 <tr
-                  v-for="(config, index) in infoFieldLayouts"
+                  v-for="config in infoFieldLayouts"
                   :key="config.id">
                   <td>
                     {{ config.name }}
@@ -831,7 +831,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="float-right me-1"
-                      @click="editLayout('sessionsinfofields', 'fields', config, 'infoFieldLayouts', index)"
+                      @click="editLayout('sessionsinfofields', 'fields', config, 'infoFieldLayouts')"
                       :title="$t('settings.layoutEditor.editTip')">
                       <v-icon icon="mdi-pencil" />
                     </v-btn>
@@ -843,7 +843,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="float-right"
-                      @click="deleteLayout('sessionsinfofields', config, 'infoFieldLayouts', index)"
+                      @click="deleteLayout('sessionsinfofields', config, 'infoFieldLayouts')"
                       :title="$t('settings.infoLayout.deleteTip')">
                       <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
@@ -916,7 +916,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- spiview field configs -->
               <template v-if="fieldsMap">
                 <tr
-                  v-for="(config, index) in spiviewConfigs"
+                  v-for="config in spiviewConfigs"
                   :key="config.id">
                   <td>
                     {{ config.name }}
@@ -940,7 +940,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="float-right me-1"
-                      @click="editLayout('spiview', 'spiview', config, 'spiviewConfigs', index)"
+                      @click="editLayout('spiview', 'spiview', config, 'spiviewConfigs')"
                       :title="$t('settings.layoutEditor.editTip')">
                       <v-icon icon="mdi-pencil" />
                     </v-btn>
@@ -952,7 +952,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="float-right"
-                      @click="deleteLayout('spiview', config, 'spiviewConfigs', index)"
+                      @click="deleteLayout('spiview', config, 'spiviewConfigs')"
                       :title="$t('settings.spiview.deleteTip')">
                       <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
@@ -1418,7 +1418,6 @@ export default {
       editingLayoutType: undefined,
       editingLayoutKind: 'fields',
       editingLayoutArray: undefined,
-      editingLayoutIndex: -1,
       settings: {},
       integerFields: undefined,
       columns: [],
@@ -1770,25 +1769,27 @@ export default {
     },
     /* LAYOUTS ------------------------------------------ */
     /**
-      * Saves a custom layout to the user's settings
-      * @param {string} layoutType  The type of layout to save
-      * @param {string} layoutName  The name of the layout to save
-      * @param {array} layoutArray  The array to save the layout to
-      * @param {int} index          The index in the array of the layout to save
+      * Opens the shared editor for one of the three layout tabs
+      * @param {string} layoutType  Which LayoutServices entry owns this layout
+      * @param {string} kind        The layout shape LayoutEditor should render
+      * @param {object} layout      The layout to edit
+      * @param {string} layoutArray The data property holding this tab's list
       */
-    /* opens the shared editor for one of the three layout tabs */
-    editLayout (layoutType, kind, layout, layoutArray, index) {
+    editLayout (layoutType, kind, layout, layoutArray) {
       this.editingLayoutType = layoutType;
       this.editingLayoutKind = kind;
       this.editingLayout = layout;
       this.editingLayoutArray = layoutArray;
-      this.editingLayoutIndex = index;
       this.showLayoutEditor = true;
     },
     /* saves whatever the editor produced back onto the shareable */
     saveLayout (data) {
-      LayoutServices[this.editingLayoutType].update(this.editingLayout.id, data).then((layout) => {
-        this[this.editingLayoutArray].splice(this.editingLayoutIndex, 1, layout);
+      const layoutId = this.editingLayout.id;
+      LayoutServices[this.editingLayoutType].update(layoutId, data, this.userId).then((layout) => {
+        // re-find the index instead of trusting one captured before this
+        // network round trip, since the array can have changed underneath it
+        const index = this[this.editingLayoutArray].findIndex(c => c.id === layoutId);
+        if (index > -1) { this[this.editingLayoutArray].splice(index, 1, layout); }
         this.showLayoutEditor = false;
         this.displayMessage({ msg: this.$t('settings.layoutEditor.saved') });
         if (this.editingLayoutType === 'spiview') { this.getSpiviewConfigs(); }
@@ -1796,9 +1797,10 @@ export default {
         this.displayMessage({ msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
-    deleteLayout (layoutType, layout, layoutArray, index) {
-      LayoutServices[layoutType].delete(layout.id).then((response) => {
-        this[layoutArray].splice(index, 1);
+    deleteLayout (layoutType, layout, layoutArray) {
+      LayoutServices[layoutType].delete(layout.id, this.userId).then((response) => {
+        const index = this[layoutArray].findIndex(c => c.id === layout.id);
+        if (index > -1) { this[layoutArray].splice(index, 1); }
         // display success message to user
         this.displayMessage({ msg: resolveMessage(response, this.$t) });
       }).catch((error) => {
@@ -2080,7 +2082,7 @@ export default {
     },
     /* retrieves the specified user's custom column layouts */
     getColConfigs: function () {
-      LayoutServices.sessionstable.list().then((layouts) => {
+      LayoutServices.sessionstable.list(this.userId).then((layouts) => {
         this.colConfigs = layouts;
       }).catch((error) => {
         this.colConfigError = error.text;
@@ -2088,7 +2090,7 @@ export default {
     },
     /* retrieves the specified user's custom info field layouts */
     getInfoFieldLayout: function () {
-      LayoutServices.sessionsinfofields.list().then((layouts) => {
+      LayoutServices.sessionsinfofields.list(this.userId).then((layouts) => {
         this.infoFieldLayouts = layouts;
       }).catch((error) => {
         this.infoFieldError = error.text;
@@ -2097,11 +2099,13 @@ export default {
     /* retrieves the specified user's custom spiview fields layouts.
      * dissects the visible spiview fields for view consumption */
     getSpiviewConfigs: function () {
-      LayoutServices.spiview.list().then((layouts) => {
+      LayoutServices.spiview.list(this.userId).then((layouts) => {
         this.spiviewConfigs = layouts;
 
         for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
           const config = this.spiviewConfigs[x];
+          // malformed/legacy layout data - skip it rather than crash
+          if (typeof config.fields !== 'string') { continue; }
           const spiParamsArray = config.fields.split(',');
 
           // get each field from the spi query parameter and issue

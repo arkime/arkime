@@ -9045,21 +9045,14 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                 # walk past any name already taken by something else (names
                 # aren't unique anymore) until we find either this exact
                 # layout (already imported - skip) or a free name to import
-                # the legacy data under instead of silently dropping it
+                # the legacy data under. Bounded by how many existing
+                # shareables actually collide on this name, not an arbitrary
+                # cap - this is a migration tool, it must not drop data.
                 my $attempt = 0;
                 while ($have{$key} && !$have{$key}->{$dataJson}) {
                     $attempt++;
-                    if ($attempt > 20) {
-                        logmsg "WARNING - couldn't find a free name for '$baseName' for $userId after $attempt tries, skipping\n";
-                        last;
-                    }
                     $name = $attempt == 1 ? "$baseName (legacy)" : "$baseName (legacy $attempt)";
                     $key = $type . "\0" . $userId . "\0" . $name;
-                }
-
-                if ($attempt > 20) {
-                    $skipped++;
-                    next;
                 }
 
                 if ($have{$key} && $have{$key}->{$dataJson}) {

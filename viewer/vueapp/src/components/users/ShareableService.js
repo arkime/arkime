@@ -23,7 +23,7 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 export const createShareableService = (type) => ({
   /**
    * Lists all shareable items of this type that the user has access to
-   * @param {object} params - Optional extra params (viewOnly, searchTerm, sort, desc, start, length)
+   * @param {object} params - Optional extra params (viewOnly, searchTerm, sort, desc, start, length, userId)
    * @returns {Promise} Promise resolving to { data: [], recordsTotal, recordsFiltered }
    */
   async list (params) {
@@ -54,12 +54,14 @@ export const createShareableService = (type) => ({
    * @param {string[]} config.viewRoles - Roles that can view this item
    * @param {string[]} config.editUsers - Users who can edit this item
    * @param {string[]} config.editRoles - Roles that can edit this item
+   * @param {string} [userId] - Act on behalf of this user instead of the caller
    * @returns {Promise} Promise resolving to { success, shareable, id }
    */
-  async save (config) {
+  async save (config, userId) {
     return await fetchWrapper({
       url: 'api/shareable',
       method: 'POST',
+      params: { userId },
       data: {
         type,
         name: config.name,
@@ -79,12 +81,14 @@ export const createShareableService = (type) => ({
    * sharing off an item.
    * @param {string} id - The shareable ID to update
    * @param {object} config - The fields to change
+   * @param {string} [userId] - Act on behalf of this user instead of the caller
    * @returns {Promise} Promise resolving to { success, shareable }
    */
-  async update (id, config) {
+  async update (id, config, userId) {
     return await fetchWrapper({
       url: `api/shareable/${id}`,
       method: 'PUT',
+      params: { userId },
       data: config
     });
   },
@@ -92,12 +96,14 @@ export const createShareableService = (type) => ({
   /**
    * Deletes a shareable item
    * @param {string} id - The shareable ID to delete
+   * @param {string} [userId] - Act on behalf of this user instead of the caller
    * @returns {Promise} Promise resolving to { success, text }
    */
-  async delete (id) {
+  async delete (id, userId) {
     return await fetchWrapper({
       url: `api/shareable/${id}`,
-      method: 'DELETE'
+      method: 'DELETE',
+      params: { userId }
     });
   }
 });
@@ -152,32 +158,33 @@ export const createLayoutService = (type) => {
   return {
     /* Layouts the user owns or that are shared with them, view or edit.
        Yours come first, then the ones shared with you, each still in the
-       name order the API returned. */
-    async list () {
+       name order the API returned.
+       @param {string} [userId] - Act on behalf of this user instead of the caller */
+    async list (userId) {
       // the server defaults to a page size of 50; layouts were previously
       // unbounded per-user arrays, so ask for effectively all of them
-      const response = await shareables.list({ viewOnly: false, length: 1000 });
+      const response = await shareables.list({ viewOnly: false, length: 1000, userId });
       const layouts = response.data.map(shareableToLayout);
       return [...layouts.filter(l => !l.shared), ...layouts.filter(l => l.shared)];
     },
 
-    async create (layout) {
+    async create (layout, userId) {
       const { body, data } = splitLayout(layout);
-      const response = await shareables.save({ ...body, data });
+      const response = await shareables.save({ ...body, data }, userId);
       return shareableToLayout(response.shareable);
     },
 
     /* Only the keys given are sent, so an update that leaves sharing out
        cannot clear it */
-    async update (id, layout) {
+    async update (id, layout, userId) {
       const { body, data } = splitLayout(layout);
       if (Object.keys(data).length) { body.data = data; }
-      const response = await shareables.update(id, body);
+      const response = await shareables.update(id, body, userId);
       return shareableToLayout(response.shareable);
     },
 
-    async delete (id) {
-      return await shareables.delete(id);
+    async delete (id, userId) {
+      return await shareables.delete(id, userId);
     }
   };
 };

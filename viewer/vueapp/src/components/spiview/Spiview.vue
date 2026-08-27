@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         class="ms-1"
                         :aria-label="$t('common.save')"
-                        @click.stop.prevent="updateFieldConfiguration(config, key)">
+                        @click.stop.prevent="updateFieldConfiguration(config)">
                         <v-icon icon="mdi-content-save" />
                         <v-tooltip
                           :activator="`[id='updateFieldConfig${key}']`"
@@ -129,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         class="ms-1"
                         :aria-label="$t('common.delete')"
-                        @click.stop.prevent="deleteFieldConfiguration(config, key)">
+                        @click.stop.prevent="deleteFieldConfiguration(config)">
                         <v-icon icon="mdi-trash-can-outline" />
                       </v-btn>
                     </div>
@@ -953,10 +953,14 @@ export default {
      * @param {int} index The index in the array of the spiview fields configs to load
      */
     loadFieldConfiguration: function (index) {
-      if (index !== -1) {
-        this.spiQuery = this.fieldConfigs[index].fields;
-      } else {
+      if (index === -1) {
         this.spiQuery = defaultSpi;
+      } else if (typeof this.fieldConfigs[index].fields !== 'string') {
+        // malformed/legacy layout data - fall back rather than crash
+        this.fieldConfigError = this.$t('spiview.invalidFieldConfig');
+        return;
+      } else {
+        this.spiQuery = this.fieldConfigs[index].fields;
       }
 
       this.saveFieldState();
@@ -965,11 +969,13 @@ export default {
     /**
      * Deletes a previously saved custom spiview fields configuration
      * @param {object} config The spiview fields config to remove
-     * @param {int} index     The index in the array of the spiview fields config to remove
      */
-    deleteFieldConfiguration: function (config, index) {
+    deleteFieldConfiguration: function (config) {
       SpiviewLayoutService.delete(config.id).then(() => {
-        this.fieldConfigs.splice(index, 1);
+        // re-find the index instead of trusting one captured before this
+        // network round trip, since the array can have changed underneath it
+        const index = this.fieldConfigs.indexOf(config);
+        if (index > -1) { this.fieldConfigs.splice(index, 1); }
         this.fieldConfigError = false;
       }).catch((error) => {
         this.fieldConfigError = resolveMessage(error, this.$t);
@@ -978,14 +984,14 @@ export default {
     /**
      * Updates a previously saved custom spiview fields configuration
      * @param {object} config The spiview fields config to update
-     * @param {int} index     The index in the array of the spiview fields config to update
      */
-    updateFieldConfiguration: function (config, index) {
+    updateFieldConfiguration: function (config) {
       // only data is sent, so the name and any sharing on it are left alone
       SpiviewLayoutService.update(config.id, { fields: this.spiQuery }).then((layout) => {
+        const index = this.fieldConfigs.indexOf(config);
         // the service returns the layout, not an api response, so use our own
         // message rather than trying to resolve one off the object
-        this.fieldConfigs[index] = layout;
+        if (index > -1) { this.fieldConfigs[index] = layout; }
         this.fieldConfigError = false;
         this.fieldConfigSuccess = this.$t('spiview.configUpdated');
         setTimeout(() => { this.fieldConfigSuccess = ''; }, 5000);
