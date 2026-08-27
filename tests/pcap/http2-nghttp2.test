@@ -181,9 +181,11 @@
      ],
      "statuscodeCnt" : 1,
      "uri" : [
-      "*"
+      "*",
+      "nghttp2.org/",
+      "nghttp2.org/stylesheets/screen.css"
      ],
-     "uriCnt" : 1,
+     "uriCnt" : 3,
      "useragent" : [
       "nghttp2/1.41.0"
      ],

@@ -1,4 +1,4 @@
-use Test::More tests => 44;
+use Test::More tests => 51;
 use Cwd;
 use ArkimeTest;
 use JSON;
@@ -130,6 +130,35 @@ is ($json->[0]->{count}, "4");
 
 countTest(4, "date=-1&expression=" . uri_escape("${files} && protocols==tls"));
 countTest(4, "date=-1&expression=" . uri_escape("${files} && tags=test${suffix}"));
+
+# a periodic query whose owner only gets emailSearch from a role can use email fields
+my $emailFiles = '(file=*/pcap/smtp-originating.pcap||file=*/pcap/smtp-zip.pcap)';
+countTest(1, "date=-1&expression=" . uri_escape("$emailFiles && email.src == \"xxxxx\@xxx.net\""));
+$json = viewerPostToken("/api/user", '{"userId": "role:sac-cronemail", "userName": "Cron Email Role", "enabled":true, "webEnabled":true, "emailSearch": true}', $token);
+ok($json->{success}, "role:sac-cronemail created");
+
+$json = viewerPostToken("/api/user", '{"userId": "sac-cronemailuser", "userName": "Cron Email User", "enabled":true, "webEnabled":true, "password":"password", "roles":["role:sac-cronemail", "arkimeUser"]}', $token);
+ok($json->{success}, "sac-cronemailuser created");
+my $emailUserToken = getTokenCookie("sac-cronemailuser");
+
+$json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-cronemailuser", to_json({
+    name => "emailcron",
+    since => -1,
+    query => "$emailFiles && email.src == \"xxxxx\@xxx.net\"",
+    action => "tag",
+    tags => "emailtest$suffix"
+}), $emailUserToken);
+ok($json->{success}, "email periodic query created");
+my $key3 = $json->{query}->{key};
+
+viewerGet("/regressionTests/processCronQueries");
+viewerGet("/regressionTests/processCronQueries");
+
+countTest(1, "date=-1&expression=" . uri_escape("tags==emailtest$suffix"));
+
+$json = viewerDeleteToken("/api/cron/$key3?arkimeRegressionUser=sac-cronemailuser", $emailUserToken);
+$json = viewerDeleteToken("/api/user/sac-cronemailuser", $token);
+$json = viewerDeleteToken("/api/user/role:sac-cronemail", $token);
 
 # cleanup
 $json = viewerDeleteToken("/api/cron/$key2?arkimeRegressionUser=sac-test1", $test1Token);
