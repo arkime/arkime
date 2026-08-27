@@ -1,4 +1,4 @@
-use Test::More tests => 186;
+use Test::More tests => 211;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -423,6 +423,111 @@ SKIP: {
     ok(!$info->{success}, "explicitly sending data without order is still rejected");
 
     viewerDeleteToken("/api/shareable/legacyshape1?arkimeRegressionUser=sac-test1", $token);
+}
+
+# --- summaryConfig (dashboard) shape validation ---
+# a dashboard is v7 shaped (widgets[]) or v6 shaped (fields[]); the import
+# handler in SummaryConfigDropdown.vue accepts either, so the API must too
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"dash v7","type":"summaryConfig","data":{"widgets":[{"id":"w1","viewMode":"stats"}]}}', $token);
+ok($info->{success}, "create summaryConfig with widgets succeeds");
+my $idDashV7 = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"dash v6","type":"summaryConfig","data":{"fields":[{"field":"source.ip","viewMode":"bar","metricType":"sessions"}],"resultsLimit":20,"order":"desc"}}', $token);
+ok($info->{success}, "create v6 shaped summaryConfig with fields and no widgets succeeds");
+my $idDashV6 = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"dash empty","type":"summaryConfig","data":{"widgets":[]}}', $token);
+ok($info->{success}, "create summaryConfig with an empty widgets array succeeds");
+my $idDashEmpty = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"dash bad","type":"summaryConfig","data":{"colorScheme":"rainbow"}}', $token);
+ok(!$info->{success}, "create summaryConfig with neither widgets nor fields fails");
+is($info->{i18n}, "api.shareables.missingWidgets", "summaryConfig missing widgets or fields i18n");
+
+# entries have to be objects, a null entry throws in the dashboard loader
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"dash null","type":"summaryConfig","data":{"fields":[null]}}', $token);
+ok(!$info->{success}, "create summaryConfig with a null entry fails");
+
+foreach my $id ($idDashV7, $idDashV6, $idDashEmpty) {
+    viewerDeleteToken("/api/shareable/${id}?arkimeRegressionUser=sac-test1", $token) if ($id);
+}
+
+# --- shareable name rules ---
+# names are shown to everyone an item is shared with. Real scripts are kept as
+# typed; only characters that let a name hide or reorder itself are refused.
+my $asciiJson = JSON->new->ascii;
+
+my $jaName = join('', map { chr($_) } (0x30C0, 0x30C3, 0x30B7, 0x30E5, 0x30DC, 0x30FC, 0x30C9));
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => $jaName, type => "nametype", data => {}}), $token);
+ok($info->{success}, "a japanese name is accepted");
+my $idNameJa = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => chr(0xDC) . "bersicht", type => "nametype", data => {}}), $token);
+ok($info->{success}, "a name with an umlaut is accepted");
+isnt($info->{shareable}->{name}, "bersicht", "the umlaut is not silently stripped");
+my $idNameDe = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => "Ops " . chr(0x2014) . " EMEA", type => "nametype", data => {}}), $token);
+ok($info->{success}, "a name with an em dash is accepted");
+isnt($info->{shareable}->{name}, "Ops  EMEA", "the em dash is not silently stripped");
+my $idNameDash = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"  padded  ","type":"nametype","data":{}}', $token);
+ok($info->{success}, "a padded name is accepted");
+is($info->{shareable}->{name}, "padded", "the name is trimmed");
+my $idNamePad = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => "bad" . chr(0x07) . "bell", type => "nametype", data => {}}), $token);
+ok(!$info->{success}, "a name with a control character is refused");
+is($info->{i18n}, "api.shareables.invalidNameChars", "control character i18n");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => "safe" . chr(0x202E) . "gnp.exe", type => "nametype", data => {}}), $token);
+ok(!$info->{success}, "a name with a right to left override is refused");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => "zero" . chr(0x200B) . "width", type => "nametype", data => {}}), $token);
+ok(!$info->{success}, "a name with a zero width space is refused");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"   ","type":"nametype","data":{}}', $token);
+ok(!$info->{success}, "a whitespace only name is refused");
+is($info->{i18n}, "api.shareables.invalidName", "whitespace only name i18n");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", to_json({name => "n" x 257, type => "nametype", data => {}}), $token);
+ok(!$info->{success}, "an over long name is refused");
+is($info->{i18n}, "api.shareables.nameTooLong", "over long name i18n");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", to_json({name => "n" x 256, type => "nametype", data => {}}), $token);
+ok($info->{success}, "a name at the length limit is accepted");
+my $idNameMax = $info->{id};
+
+foreach my $id ($idNameJa, $idNameDe, $idNameDash, $idNamePad, $idNameMax) {
+    viewerDeleteToken("/api/shareable/${id}?arkimeRegressionUser=sac-test1", $token) if ($id);
+}
+
+# An item whose stored name predates these rules must still be editable. Every
+# editor resubmits the stored name on save, so echoing it back unchanged has to
+# be allowed even though creating it fresh would not be. Planting the doc needs
+# direct ES access, so Elasticsearch users only.
+SKIP: {
+    skip "planting a raw shareable needs users in Elasticsearch", 3 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
+
+    my $oddName = "old" . chr(0x202E) . "name";
+    esPost("/tests_shareables/_doc/oddname1?refresh=true", $asciiJson->encode({
+        name => $oddName, type => "nametype", creator => "sac-test1",
+        created => "2020-01-01T00:00:00Z", updated => "2020-01-01T00:00:00Z",
+        viewRoles => [], viewUsers => [], editRoles => [], editUsers => [], data => {}
+    }));
+
+    $info = viewerPutToken("/api/shareable/oddname1?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => $oddName, viewRoles => ["arkimeUser"]}), $token);
+    ok($info->{success}, "resubmitting an unchanged legacy name is allowed");
+
+    $info = viewerPutToken("/api/shareable/oddname1?arkimeRegressionUser=sac-test1", '{"viewRoles":["arkimeUser"]}', $token);
+    ok($info->{success}, "changing only the sharing of a legacy name is allowed");
+
+    $info = viewerPutToken("/api/shareable/oddname1?arkimeRegressionUser=sac-test1", $asciiJson->encode({name => "new" . chr(0x202E) . "name"}), $token);
+    ok(!$info->{success}, "changing to a different bad name is still refused");
+
+    viewerDeleteToken("/api/shareable/oddname1?arkimeRegressionUser=sac-test1", $token);
 }
 
 # clean up so the shareables-import tests below see a clean slate for these types

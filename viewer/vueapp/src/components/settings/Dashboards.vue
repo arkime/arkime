@@ -169,6 +169,7 @@ SPDX-License-Identifier: Apache-2.0
               type="text"
               class="arkime-input-control"
               v-model="editName"
+              maxlength="256"
               :placeholder="$t('settings.dashboards.namePlaceholder')">
           </div>
           <div class="arkime-input-group arkime-input-group--fluid mb-3">
@@ -393,24 +394,31 @@ export default {
     /* the widgets go back with the legacy v6 shape rebuilt from their new
        order, so the two views of the same dashboard cannot drift apart */
     async saveDashboard () {
+      this.editName = this.editName.trim();
       if (!this.editName) {
         this.formError = this.$t('settings.dashboards.nameRequired');
         return;
       }
 
-      const data = {
-        ...(this.editing.data || {}),
-        widgets: this.editWidgets,
-        ...toV6Shape(this.editWidgets)
+      // a v6 shaped dashboard has fields[] and no widgets[], so there is
+      // nothing here to reorder -- leave its data alone rather than writing an
+      // empty widget list over it
+      const hadWidgets = Array.isArray(this.editing.data?.widgets);
+      const body = {
+        name: this.editName,
+        description: this.editDescription,
+        ...this.editShare
       };
+      if (hadWidgets) {
+        body.data = {
+          ...(this.editing.data || {}),
+          widgets: this.editWidgets,
+          ...toV6Shape(this.editWidgets)
+        };
+      }
 
       try {
-        const response = await DashboardService.update(this.editing.id, {
-          name: this.editName,
-          description: this.editDescription,
-          data,
-          ...this.editShare
-        });
+        const response = await DashboardService.update(this.editing.id, body);
         this.showEditModal = false;
         this.$emit('display-message', { msg: resolveMessage(response, this.$t), type: 'success' });
         this.loadData();

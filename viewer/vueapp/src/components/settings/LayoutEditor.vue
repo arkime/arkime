@@ -23,6 +23,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             class="arkime-input-control"
             v-model="name"
+            maxlength="256"
             :placeholder="$t('settings.layoutEditor.namePlaceholder')">
         </div>
 
@@ -289,6 +290,7 @@ export default {
       this.order.push([this.selectedFields[0], 'asc']);
     },
     save () {
+      this.name = this.name.trim();
       if (!this.name) {
         this.error = this.$t('settings.layoutEditor.nameRequired');
         return;

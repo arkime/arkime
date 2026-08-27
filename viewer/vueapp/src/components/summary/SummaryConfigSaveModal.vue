@@ -26,6 +26,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             class="arkime-input-control"
             v-model="configName"
+            maxlength="256"
             :placeholder="$t('sessions.summary.config.namePlaceholder')">
         </div>
 
