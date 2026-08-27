@@ -15,7 +15,6 @@ const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
 const net = require('net');
-const os = require('os');
 const path = require('path');
 const PNG = require('pngjs').PNG;
 const pug = require('pug');
@@ -2869,6 +2868,17 @@ class SessionAPIs {
       return res.end(JSON.stringify({ success: false, text: 'tshark not configured on this viewer' }));
     }
 
+    // Each request forks a dissector; without a ceiling a single user can fork
+    // the viewer host to death. Reject rather than queue so the client finds
+    // out now instead of holding a connection open behind the timeout.
+    if (internals.tsharkRunning >= internals.tsharkMaxConcurrent) {
+      res.status(503);
+      res.set('Retry-After', '2');
+      return res.end(JSON.stringify({ success: false, text: `too many tshark requests in flight, max ${internals.tsharkMaxConcurrent}` }));
+    }
+    internals.tsharkRunning++;
+    let slotHeld = true;
+
     const includeHidden = req.query.hidden === 'true';
     const includePayload = req.query.payload === 'true';
     const includeBytes = req.query.bytes !== 'false';
@@ -2894,6 +2904,7 @@ class SessionAPIs {
       clearTimeout(timer);
       if (child) { try { child.kill('SIGKILL'); } catch (e) { /* already exited */ } }
       cleanup();
+      if (slotHeld) { slotHeld = false; internals.tsharkRunning--; }
       if (errStatus && !res.headersSent) {
         res.status(errStatus);
         res.end(JSON.stringify({ success: false, text: errText }));
@@ -2917,13 +2928,14 @@ class SessionAPIs {
     if (useStdin) {
       tsharkArgs.unshift('-r', '-');
       try {
-        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+        const cmd = internals.tsharkCommand(tsharkArgs);
+        child = spawn(cmd.cmd, cmd.args, { stdio: ['pipe', 'pipe', 'pipe'], env: internals.tsharkEnv });
       } catch (e) {
         return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
       }
       writeStream = child.stdin;
     } else {
-      fifoPath = path.join(os.tmpdir(), `arkime-tshark-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.fifo`);
+      fifoPath = path.join(internals.tsharkDir, `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.fifo`);
       const mk = spawnSync('mkfifo', ['-m', '600', fifoPath]);
       if (mk.status !== 0) {
         fifoPath = undefined;
@@ -2931,7 +2943,8 @@ class SessionAPIs {
       }
       tsharkArgs.unshift('-r', fifoPath);
       try {
-        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+        const cmd = internals.tsharkCommand(tsharkArgs);
+        child = spawn(cmd.cmd, cmd.args, { stdio: ['ignore', 'pipe', 'pipe'], env: internals.tsharkEnv });
       } catch (e) {
         return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
       }

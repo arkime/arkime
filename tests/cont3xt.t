@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 273;
+use Test::More tests => 277;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1173,6 +1173,30 @@ is (scalar @{$json->{audits}}, 10, "non numeric paging returns defaults");
 
 $json = cont3xtGet('/api/audits?searchTerm[]=goodtag');
 is($json->{success}, 1, "non string searchTerm ignored");
+
+# removeEnabled granted by a role lets the user delete their own log
+viewerPostToken("/api/user", '{"userId": "role:sac-remover", "userName": "Remover Role", "enabled":true, "webEnabled":true, "removeEnabled": true}', $token);
+viewerPostToken("/api/user", '{"userId": "sac-noremove", "userName": "No Remove", "enabled":true, "webEnabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+viewerPostToken("/api/user", '{"userId": "sac-roleremove", "userName": "Role Remove", "enabled":true, "webEnabled":true, "password":"password", "roles":["role:sac-remover", "cont3xtUser"]}', $token);
+my $noRemoveToken = getCont3xtTokenCookie('sac-noremove');
+my $roleRemoveToken = getCont3xtTokenCookie('sac-roleremove');
+
+# each user searches so they own a log
+cont3xtPost('/api/integration/ip/csv:rir/search?arkimeRegressionUser=sac-noremove', to_json({ query => "8.8.4.4" }));
+cont3xtPost('/api/integration/ip/csv:rir/search?arkimeRegressionUser=sac-roleremove', to_json({ query => "8.8.4.4" }));
+sleep(1);
+esGet("/_flush");
+esGet("/_refresh");
+
+$json = cont3xtGet('/api/audits?arkimeRegressionUser=sac-noremove');
+is (scalar @{$json->{audits}}, 1, "sac-noremove owns one log");
+$json = cont3xtDeleteToken("/api/audit/" . $json->{audits}->[0]->{_id} . "?arkimeRegressionUser=sac-noremove", '{}', $noRemoveToken);
+eq_or_diff($json, from_json('{"success": false, "text": "Can not delete a history log when user has data removal disabled."}'), "no role grants removeEnabled");
+
+$json = cont3xtGet('/api/audits?arkimeRegressionUser=sac-roleremove');
+is (scalar @{$json->{audits}}, 1, "sac-roleremove owns one log");
+$json = cont3xtDeleteToken("/api/audit/" . $json->{audits}->[0]->{_id} . "?arkimeRegressionUser=sac-roleremove", '{}', $roleRemoveToken);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'), "removeEnabled inherited from a role");
 
 # 500 indicators is still allowed (no integrations selected, so no lookups)
 $json = cont3xtPost('/api/integration/search', to_json({

@@ -26,7 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=22.23.2
+NODE=24.19.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -225,6 +225,11 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     echo "ARKIME: yum failed"
     exit 1
   fi
+  # libxdp is optional and enables the xdp reader. On EL it lives in the CRB
+  # repo, which the build containers already enable. Best effort, capture builds
+  # fine without it.
+  sudo yum -y install libxdp-devel || echo "ARKIME: libxdp-devel not installed, the xdp reader will not be built. On EL it needs the CRB repo, 'dnf config-manager --set-enabled crb'"
+
   if [ $DOJEMALLOC -eq 1 ]; then
     sudo yum -y install jemalloc-devel
   fi
@@ -256,6 +261,11 @@ if [ -f "/etc/debian_version" ]; then
     echo "ARKIME: apt-get failed"
     exit 1
   fi
+
+  # libxdp is optional and enables the xdp reader, Ubuntu 22 doesn't have it at
+  # all. Best effort, capture builds fine without it.
+  sudo apt-get -qq install libxdp-dev || echo "ARKIME: libxdp-dev not available, the xdp reader will not be built"
+
   if [ $DOJEMALLOC -eq 1 ]; then
     sudo apt-get -qq install curl libjemalloc-dev
   fi
@@ -294,7 +304,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1

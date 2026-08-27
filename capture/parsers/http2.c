@@ -25,6 +25,8 @@ typedef struct {
     const char              *magicString[2];
     MD5_CTX                  md5Ctx[2];
     GChecksum               *sha256[2];
+    uint8_t                  authorityLen;  // lowercased :authority, used to build http.uri
+    char                     authority[255];
 } HTTP2Stream_t;
 
 typedef enum {
@@ -60,6 +62,7 @@ LOCAL  int hostField;
 LOCAL  int magicField;
 LOCAL  int md5Field;
 LOCAL  int sha256Field;
+LOCAL  int urlsField;
 
 
 void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len);
@@ -127,6 +130,12 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
     int headerCount = 0;
     size_t headerBytes = 0;
 
+    // :authority and :path can arrive in either order, buffer the path and
+    // combine once the fragment is done
+    char     path[MAX_URL_LENGTH];
+    int      pathLen = 0;
+    gboolean truncated = FALSE;
+
 #ifdef HTTPDEBUG
     LOG("%u,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
     //arkime_print_hex_string(in, inlen);
@@ -166,8 +175,19 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
                     } else {
                         arkime_field_string_add(hostField, session, (char *)nv.value, nv.valuelen, TRUE);
                     }
+
+                    // http.uri keeps any port, like http/1 does
+                    HTTP2Stream_t *stream = &http2->streams[spos];
+                    stream->authorityLen = MIN(nv.valuelen, sizeof(stream->authority));
+                    for (int i = 0; i < stream->authorityLen; i++)
+                        stream->authority[i] = g_ascii_tolower(nv.value[i]);
                 } else if (nv.namelen == 5 && memcmp(nv.name, ":path", 5) == 0) {
                     http_common_parse_url(session, (char *)nv.value, nv.valuelen);
+
+                    pathLen = MIN(nv.valuelen, sizeof(path));
+                    if ((size_t)pathLen != nv.valuelen)
+                        truncated = TRUE;
+                    memcpy(path, nv.value, pathLen);
                 } else if (nv.namelen == 7 && memcmp(nv.name, ":status", 7) == 0) {
                     arkime_field_int_add(statuscodeField, session, arkime_atoin((const char *)nv.value, nv.valuelen));
                 }
@@ -194,6 +214,27 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
             break;
         }
     }
+
+    if (pathLen == 0)
+        return;
+
+    // http.uri is authority + path, matching what http/1 builds from Host + url
+    const HTTP2Stream_t *stream = &http2->streams[spos];
+    char                 uri[MAX_URL_LENGTH];
+    int                  uriLen = stream->authorityLen;
+
+    memcpy(uri, stream->authority, uriLen);
+
+    const int copyLen = MIN(pathLen, (int)sizeof(uri) - uriLen);
+    if (copyLen != pathLen)
+        truncated = TRUE;
+    memcpy(uri + uriLen, path, copyLen);
+    uriLen += copyLen;
+
+    arkime_field_string_add(urlsField, session, uri, uriLen, TRUE);
+
+    if (truncated)
+        arkime_session_add_tag(session, "http:url-truncated");
 }
 /******************************************************************************/
 /*
@@ -537,6 +578,13 @@ void arkime_parser_init()
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    "category", "md5",
                                    (char *)NULL);
+
+    urlsField = arkime_field_define("http", "termfield",
+                                    "http.uri", "HTTP URI", "http.uri",
+                                    "URIs for request",
+                                    ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                    "category", "[\"url\",\"host\"]",
+                                    (char *)NULL);
 
     if (config.supportSha256) {
         sha256Field = arkime_field_define("http", "lotermfield",
