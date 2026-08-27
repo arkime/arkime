@@ -605,6 +605,8 @@
       "infoConfigSaved": "Infoway ieldfay ayoutlay avedsay",
       "colConfigUpdated": "Olumncay ayoutlay updatedway",
       "infoConfigUpdated": "Infoway ieldfay ayoutlay updatedway",
+      "invalidColConfig": "Isthay olumncay ayoutlay ashay invalidway orway issingmay ataday",
+      "invalidInfoConfig": "Isthay infoway ieldfay ayoutlay ashay invalidway orway issingmay ataday",
       "customColumnUpdate": "Updateway isthay olumncay onfigurationcay ithway ethay urrentlycay isiblevay olumnscay",
       "customInfoName": "Enterway ewnay infoway ieldfay onfigurationcay amenay",
       "customInfoReset": "Esetray infoway olumncay otay efaultday ieldsfay",

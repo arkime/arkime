@@ -138,10 +138,10 @@ SPDX-License-Identifier: Apache-2.0
 
                     <!-- save current columns over the loaded config -->
                     <v-list-item
-                      v-if="loadedColConfig"
+                      v-if="loadedColConfig && loadedColConfig.canEdit"
                       prepend-icon="mdi-content-save"
                       @click="updateColumnConfiguration(loadedColConfig)">
-                      {{ $t('sessions.sessions.saveConfig', { name: loadedColConfig }) }}
+                      {{ $t('sessions.sessions.saveConfig', { name: loadedColConfig.name }) }}
                       <v-tooltip
                         activator="parent"
                         location="end">
@@ -247,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
                           <v-list-item
                             v-for="config in filteredColConfigs"
                             :key="config.name"
-                            :active="config.name === loadedColConfig"
+                            :active="!!loadedColConfig && config.id === loadedColConfig.id"
                             @click.self.stop.prevent="loadColumnConfiguration(config)">
                             <div
                               class="d-flex align-center w-100"
@@ -269,6 +269,7 @@ SPDX-License-Identifier: Apache-2.0
                                 {{ config.name }}
                               </span>
                               <v-btn
+                                v-if="config.canDelete"
                                 :aria-label="$t('common.delete')"
                                 color="error"
                                 variant="flat"
@@ -411,10 +412,10 @@ SPDX-License-Identifier: Apache-2.0
 
                         <!-- save current info fields over the loaded config -->
                         <v-list-item
-                          v-if="loadedInfoConfig"
+                          v-if="loadedInfoConfig && loadedInfoConfig.canEdit"
                           prepend-icon="mdi-content-save"
                           @click="updateInfoFieldLayout(loadedInfoConfig)">
-                          {{ $t('sessions.sessions.saveConfig', { name: loadedInfoConfig }) }}
+                          {{ $t('sessions.sessions.saveConfig', { name: loadedInfoConfig.name }) }}
                           <v-tooltip
                             activator="parent"
                             location="end">
@@ -521,7 +522,7 @@ SPDX-License-Identifier: Apache-2.0
                               <v-list-item
                                 v-for="config in filteredInfoConfigs"
                                 :key="config.name"
-                                :active="config.name === loadedInfoConfig"
+                                :active="!!loadedInfoConfig && config.id === loadedInfoConfig.id"
                                 @click.self.stop.prevent="loadInfoFieldLayout(config)">
                                 <div
                                   class="d-flex align-center w-100"
@@ -543,6 +544,7 @@ SPDX-License-Identifier: Apache-2.0
                                     {{ config.name }}
                                   </span>
                                   <v-btn
+                                    v-if="config.canDelete"
                                     :aria-label="$t('common.delete')"
                                     color="error"
                                     variant="flat"
@@ -954,15 +956,17 @@ export default {
     });
   },
   computed: {
-    /* name of the currently loaded column config (if it still exists) */
+    /* the currently loaded column config (if it still exists). Tracked by
+       id, not name, since shareable layout names are no longer unique. */
     loadedColConfig: function () {
-      const configName = this.tableState.colConfigName;
-      return configName && this.colConfigs.some(c => c.name === configName) ? configName : '';
+      const configId = this.tableState.colConfigId;
+      return configId ? this.colConfigs.find(c => c.id === configId) : undefined;
     },
-    /* name of the currently loaded info field config (if it still exists) */
+    /* the currently loaded info field config (if it still exists). Tracked
+       by id, not name, since shareable layout names are no longer unique. */
     loadedInfoConfig: function () {
-      const configName = this.user?.settings?.infoFieldsConfigName;
-      return configName && this.infoConfigs.some(c => c.name === configName) ? configName : '';
+      const configId = this.user?.settings?.infoFieldsConfigId;
+      return configId ? this.infoConfigs.find(c => c.id === configId) : undefined;
     },
     filteredColConfigs: function () {
       if (!this.colConfigQuery) { return this.colConfigs; }
@@ -1452,7 +1456,7 @@ export default {
         this.colConfigError = false;
 
         // the new config is now the loaded one
-        this.tableState.colConfigName = layout.name;
+        this.tableState.colConfigId = layout.id;
         this.saveTableState();
         this.showConfigSnackbar(this.$t('sessions.sessions.colConfigSaved'));
       }).catch((error) => {
@@ -1470,7 +1474,7 @@ export default {
       if (config === -1) { // default columns
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
         this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
-        delete this.tableState.colConfigName;
+        delete this.tableState.colConfigId;
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1478,10 +1482,15 @@ export default {
           const field = FieldService.getField(headerId);
           if (field) { field.width = defaultColWidths[headerId] || 100; }
         }
+      } else if (!Array.isArray(config.columns) || !Array.isArray(config.order)) {
+        // malformed/empty layout data - fall back rather than crash
+        this.loading = false;
+        this.showConfigSnackbar(this.$t('sessions.sessions.invalidColConfig'), 'error');
+        return;
       } else {
         this.tableState.visibleHeaders = config.columns.slice();
         this.tableState.order = JSON.parse(JSON.stringify(config.order));
-        this.tableState.colConfigName = config.name;
+        this.tableState.colConfigId = config.id;
       }
 
       // keep info column pinned as the last visible column
@@ -1501,8 +1510,8 @@ export default {
       ColumnLayoutService.delete(config.id).then((response) => {
         const index = this.colConfigs.indexOf(config);
         if (index > -1) { this.colConfigs.splice(index, 1); }
-        if (this.tableState.colConfigName === config.name) {
-          delete this.tableState.colConfigName;
+        if (this.tableState.colConfigId === config.id) {
+          delete this.tableState.colConfigId;
           this.saveTableState();
         }
       }).catch((error) => {
@@ -1512,13 +1521,13 @@ export default {
     /**
      * Updates a previously saved custom column configuration
      * with the currently visible columns
-     * @param {string} colName The name of the column config to update
+     * @param {object} config The column config to update
      */
-    updateColumnConfiguration: function (colName) {
-      const index = this.colConfigs.findIndex(c => c.name === colName);
+    updateColumnConfiguration: function (config) {
+      const index = this.colConfigs.findIndex(c => c.id === config.id);
       if (index === -1) { return; }
 
-      ColumnLayoutService.update(this.colConfigs[index].id, {
+      ColumnLayoutService.update(config.id, {
         columns: this.tableState.visibleHeaders.slice(),
         order: JSON.parse(JSON.stringify(this.tableState.order))
       }).then((layout) => {
@@ -1639,7 +1648,7 @@ export default {
         this.infoConfigError = false;
 
         // the new config is now the loaded one
-        this.user.settings.infoFieldsConfigName = layout.name;
+        this.user.settings.infoFieldsConfigId = layout.id;
         UserService.saveSettings(this.user.settings);
         this.showConfigSnackbar(this.$t('sessions.sessions.infoConfigSaved'));
       }).catch((error) => {
@@ -1651,12 +1660,17 @@ export default {
      * @param {object} config The info field config to load
      */
     loadInfoFieldLayout (config) {
+      if (!Array.isArray(config.fields)) {
+        // malformed/empty layout data - fall back rather than crash
+        this.showConfigSnackbar(this.$t('sessions.sessions.invalidInfoConfig'), 'error');
+        return;
+      }
       const fieldObjects = [];
       for (const field of config.fields) {
         fieldObjects.push(FieldService.getField(field));
       }
       this.infoFields = fieldObjects;
-      this.user.settings.infoFieldsConfigName = config.name;
+      this.user.settings.infoFieldsConfigId = config.id;
       this.saveInfoFields();
     },
     /**
@@ -1667,8 +1681,8 @@ export default {
       InfoFieldLayoutService.delete(config.id).then((response) => {
         const index = this.infoConfigs.indexOf(config);
         if (index > -1) { this.infoConfigs.splice(index, 1); }
-        if (this.user.settings.infoFieldsConfigName === config.name) {
-          this.user.settings.infoFieldsConfigName = undefined;
+        if (this.user.settings.infoFieldsConfigId === config.id) {
+          this.user.settings.infoFieldsConfigId = undefined;
           UserService.saveSettings(this.user.settings);
         }
       }).catch((error) => {
@@ -1678,13 +1692,13 @@ export default {
     /**
       * Updates a previously saved custom info field layout
       * with the currently visible info fields
-      * @param {string} layoutName The name of the layout to update
+      * @param {object} config The info field layout to update
       */
-    updateInfoFieldLayout (layoutName) {
-      const index = this.infoConfigs.findIndex(c => c.name === layoutName);
+    updateInfoFieldLayout (config) {
+      const index = this.infoConfigs.findIndex(c => c.id === config.id);
       if (index === -1) { return; }
 
-      InfoFieldLayoutService.update(this.infoConfigs[index].id, {
+      InfoFieldLayoutService.update(config.id, {
         fields: this.infoFields.map((field) => field.dbField)
       }).then((layout) => {
         this.infoConfigs[index] = layout;
@@ -1698,7 +1712,7 @@ export default {
       this.infoFields = defaultInfoFields;
       customCols.info.children = defaultInfoFields;
       this.user.settings.infoFields = undefined;
-      this.user.settings.infoFieldsConfigName = undefined;
+      this.user.settings.infoFieldsConfigId = undefined;
 
       // make sure children of fields are field objects
       this.setupFields();
@@ -1845,8 +1859,16 @@ export default {
         this.colWidths = response.colWidths;
         this.tableState = response.tableState;
         // layouts are shareables now, fetched separately
-        ColumnLayoutService.list().then((configs) => { this.colConfigs = configs; });
-        InfoFieldLayoutService.list().then((configs) => { this.infoConfigs = configs; });
+        ColumnLayoutService.list().then((configs) => {
+          this.colConfigs = configs;
+        }).catch((error) => {
+          this.colConfigError = resolveMessage(error, this.$t);
+        });
+        InfoFieldLayoutService.list().then((configs) => {
+          this.infoConfigs = configs;
+        }).catch((error) => {
+          this.infoConfigError = resolveMessage(error, this.$t);
+        });
 
         this.$store.commit('setSessionsTableState', this.tableState);
         if (Object.keys(this.tableState).length === 0 ||

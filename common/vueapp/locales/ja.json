@@ -604,6 +604,8 @@
       "infoConfigSaved": "情報フィールドレイアウトを保存しました",
       "colConfigUpdated": "列レイアウトを更新しました",
       "infoConfigUpdated": "情報フィールドレイアウトを更新しました",
+      "invalidColConfig": "この列レイアウトには無効または不足しているデータがあります",
+      "invalidInfoConfig": "この情報フィールドレイアウトには無効または不足しているデータがあります",
       "customColumnUpdate": "この列設定を現在表示されている列で更新",
       "customInfoName": "新しい情報フィールド設定名を入力",
       "customInfoReset": "情報列をデフォルトフィールドにリセット",

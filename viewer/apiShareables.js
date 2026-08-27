@@ -77,6 +77,27 @@ class ShareableAPIs {
     return false;
   }
 
+  /**
+   * Per-type shape validation for shareable `data`. Types not listed here
+   * (eg views, dashboards) have no shape requirement.
+   * @returns {string|undefined} An error message, or undefined if valid.
+   */
+  static validateData (type, data) {
+    switch (type) {
+    case 'sessionsTableLayout':
+      if (!Array.isArray(data.columns)) { return 'Missing columns'; }
+      if (!Array.isArray(data.order)) { return 'Missing sort order'; }
+      break;
+    case 'sessionsInfoLayout':
+      if (!Array.isArray(data.fields)) { return 'Missing fields'; }
+      break;
+    case 'spiviewLayout':
+      if (typeof data.fields !== 'string') { return 'Missing fields'; }
+      break;
+    }
+    return undefined;
+  }
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -126,6 +147,12 @@ class ShareableAPIs {
       return res.serverError(403, 'Data must be an object');
     }
 
+    const data = req.body.data || {};
+    const dataError = ShareableAPIs.validateData(req.body.type, data);
+    if (dataError) {
+      return res.serverError(403, dataError, 'api.shareables.invalidData');
+    }
+
     const doc = {
       name: req.body.name,
       description: req.body.description,
@@ -137,7 +164,7 @@ class ShareableAPIs {
       viewUsers,
       editRoles,
       editUsers,
-      data: req.body.data || {}
+      data
     };
 
     try {
@@ -241,6 +268,12 @@ class ShareableAPIs {
         return res.serverError(403, 'Data must be an object');
       }
 
+      const data = req.body.data !== undefined ? req.body.data : (shareable.data || {});
+      const dataError = ShareableAPIs.validateData(shareable.type, data);
+      if (dataError) {
+        return res.serverError(403, dataError, 'api.shareables.invalidData');
+      }
+
       const doc = {
         name: req.body.name !== undefined ? req.body.name : shareable.name,
         type: shareable.type,
@@ -252,7 +285,7 @@ class ShareableAPIs {
         viewUsers,
         editRoles,
         editUsers,
-        data: req.body.data !== undefined ? req.body.data : (shareable.data || {})
+        data
       };
 
       await Db.setShareable(req.params.id, doc);

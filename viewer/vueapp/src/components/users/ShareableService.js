@@ -154,7 +154,9 @@ export const createLayoutService = (type) => {
        Yours come first, then the ones shared with you, each still in the
        name order the API returned. */
     async list () {
-      const response = await shareables.list({ viewOnly: false });
+      // the server defaults to a page size of 50; layouts were previously
+      // unbounded per-user arrays, so ask for effectively all of them
+      const response = await shareables.list({ viewOnly: false, length: 1000 });
       const layouts = response.data.map(shareableToLayout);
       return [...layouts.filter(l => !l.shared), ...layouts.filter(l => l.shared)];
     },

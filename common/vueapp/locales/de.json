@@ -604,6 +604,8 @@
       "infoConfigSaved": "Info-Feld-Layout gespeichert",
       "colConfigUpdated": "Spaltenlayout aktualisiert",
       "infoConfigUpdated": "Info-Feld-Layout aktualisiert",
+      "invalidColConfig": "Dieses Spaltenlayout enthält ungültige oder fehlende Daten",
+      "invalidInfoConfig": "Dieses Info-Feld-Layout enthält ungültige oder fehlende Daten",
       "customColumnUpdate": "Diese Spaltenkonfiguration mit den aktuell sichtbaren Spalten aktualisieren",
       "customInfoName": "Neuen Namen für die Infofeldkonfiguration eingeben",
       "customInfoReset": "Infospalte auf Standardfelder zurücksetzen",

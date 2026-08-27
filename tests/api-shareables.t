@@ -1,4 +1,4 @@
-use Test::More tests => 158;
+use Test::More tests => 177;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -356,6 +356,49 @@ $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name
 ok($info->{success}, "create shareable with object data succeeds");
 my $idData = $info->{id};
 
+# --- layout shareable shape validation tests ---
+# the three layout types (sessionsTableLayout, sessionsInfoLayout,
+# spiviewLayout) require their data to look like a real layout, unlike
+# generic shareable types which accept any object
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout1","type":"sessionsTableLayout","data":{}}', $token);
+ok(!$info->{success}, "create sessionsTableLayout with empty data fails");
+is($info->{text}, "Missing columns", "sessionsTableLayout missing columns error message");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout2","type":"sessionsTableLayout","data":{"columns":["ip.src"]}}', $token);
+ok(!$info->{success}, "create sessionsTableLayout missing order fails");
+is($info->{text}, "Missing sort order", "sessionsTableLayout missing order error message");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"good_layout1","type":"sessionsTableLayout","data":{"columns":["ip.src"],"order":[["firstPacket","desc"]]}}', $token);
+ok($info->{success}, "create sessionsTableLayout with valid data succeeds");
+my $idGoodLayout1 = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout3","type":"sessionsInfoLayout","data":{}}', $token);
+ok(!$info->{success}, "create sessionsInfoLayout with empty data fails");
+is($info->{text}, "Missing fields", "sessionsInfoLayout missing fields error message");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"good_layout2","type":"sessionsInfoLayout","data":{"fields":["ip.src"]}}', $token);
+ok($info->{success}, "create sessionsInfoLayout with valid data succeeds");
+my $idGoodLayout2 = $info->{id};
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout4","type":"spiviewLayout","data":{}}', $token);
+ok(!$info->{success}, "create spiviewLayout with empty data fails");
+is($info->{text}, "Missing fields", "spiviewLayout missing fields error message");
+
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"good_layout3","type":"spiviewLayout","data":{"fields":"ip.src:100"}}', $token);
+ok($info->{success}, "create spiviewLayout with valid data succeeds");
+my $idGoodLayout3 = $info->{id};
+
+# updating a layout to strip its required data is rejected the same way
+$info = viewerPutToken("/api/shareable/${idGoodLayout1}?arkimeRegressionUser=sac-test1", '{"data":{"order":[["firstPacket","desc"]]}}', $token);
+ok(!$info->{success}, "update sessionsTableLayout removing columns fails");
+is($info->{text}, "Missing columns", "sessionsTableLayout update missing columns error message");
+
+# clean up so the shareables-import tests below see a clean slate for these types
+viewerDeleteToken("/api/shareable/${idGoodLayout1}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idGoodLayout2}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idGoodLayout3}?arkimeRegressionUser=sac-test1", $token);
+
 # update shareable with number data should fail
 $info = viewerPutToken("/api/shareable/${idData}?arkimeRegressionUser=sac-test1", '{"name":"good_data","data":123}', $token);
 ok(!$info->{success}, "update shareable with number data fails");
@@ -453,7 +496,7 @@ is($info->{recordsTotal}, 0, "sorttype shareables cleaned up");
 # db.pl only ever talks to Elasticsearch, so shareables-import cannot see users
 # kept in sqlite/lmdb/redis. Skip its tests when the users store is not ES.
 SKIP: {
-    skip "shareables-import needs users in Elasticsearch", 18 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
+    skip "shareables-import needs users in Elasticsearch", 24 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
     # db.pl shareables-import copies per-user spiview layouts, and is re-runnable
     # write the layout the way Arkime 6 leaves it on the user record
     esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"spiviewFieldConfigs": [{"name": "imported layout", "fields": "ip.src,ip.dst"}]}}');
@@ -483,6 +526,22 @@ SKIP: {
     ok($out =~ /0 copied/, "re-run copies nothing");
     $info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
     is($info->{recordsTotal}, 1, "re-run did not duplicate");
+
+    # names aren't unique anymore, so a shareable can collide by name with a
+    # not-yet-reimported legacy layout - the import must not mistake it for
+    # already-imported and silently drop the legacy data
+    my $collideInfo = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "imported layout", "type": "spiviewLayout", "data": {"fields": "ip.dst:100"}}', $token);
+    ok($collideInfo->{success}, "create a shareable that collides by name with the legacy layout");
+
+    $out = `$dbcmd 2>&1`;
+    ok($out =~ /collided with an existing shareable of the same name/, "import warns about the name collision");
+    ok($out =~ /1 copied/, "the colliding legacy layout is still imported");
+
+    $info = viewerGet("/api/shareables?type=spiviewLayout&arkimeRegressionUser=sac-test1");
+    is($info->{recordsTotal}, 2, "both the new shareable and the renamed legacy import exist");
+    my ($legacy) = grep { $_->{name} eq "imported layout (legacy)" } @{$info->{data}};
+    ok($legacy, "the legacy layout was imported under a disambiguated name");
+    eq_or_diff($legacy->{data}, from_json('{"fields": "ip.src,ip.dst"}'), "the legacy layout kept its original data");
 
     foreach my $item (@{$info->{data}}) {
         viewerDeleteToken("/api/shareable/$item->{id}?arkimeRegressionUser=sac-test1", $token);

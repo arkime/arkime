@@ -604,6 +604,8 @@
       "infoConfigSaved": "Diseño de campos de información guardado",
       "colConfigUpdated": "Diseño de columnas actualizado",
       "infoConfigUpdated": "Diseño de campos de información actualizado",
+      "invalidColConfig": "Este diseño de columnas tiene datos inválidos o faltantes",
+      "invalidInfoConfig": "Este diseño de campos de información tiene datos inválidos o faltantes",
       "customColumnUpdate": "Actualizar esta configuración de columna con las columnas actualmente visibles",
       "customInfoName": "Ingresar nuevo nombre de configuración de campo de información",
       "customInfoReset": "Restablecer columna de información a campos predeterminados",

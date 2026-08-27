@@ -604,6 +604,8 @@
       "infoConfigSaved": "Disposition des champs d'info enregistrée",
       "colConfigUpdated": "Disposition des colonnes mise à jour",
       "infoConfigUpdated": "Disposition des champs d'info mise à jour",
+      "invalidColConfig": "Cette disposition des colonnes contient des données invalides ou manquantes",
+      "invalidInfoConfig": "Cette disposition des champs d'info contient des données invalides ou manquantes",
       "customColumnUpdate": "Mettre à jour cette configuration de colonne avec les colonnes actuellement visibles",
       "customInfoName": "Entrer le nouveau nom de la configuration de champ d'information",
       "customInfoReset": "Réinitialiser la colonne d'information aux champs par défaut",

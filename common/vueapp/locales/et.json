@@ -604,6 +604,8 @@
       "infoConfigSaved": "Infovälja paigutus salvestatud",
       "colConfigUpdated": "Veerupaigutus uuendatud",
       "infoConfigUpdated": "Infovälja paigutus uuendatud",
+      "invalidColConfig": "Sellel veerupaigutusel on kehtetud või puuduvad andmed",
+      "invalidInfoConfig": "Sellel infovälja paigutusel on kehtetud või puuduvad andmed",
       "customColumnUpdate": "Uuenda see veeru konfiguratsioon praegu nähtavate veergudega",
       "customInfoName": "Sisesta uue info välja konfiguratsiooni nimi",
       "customInfoReset": "Lähtesta info veerg vaikeseadetele",

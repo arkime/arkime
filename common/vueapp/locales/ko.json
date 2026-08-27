@@ -604,6 +604,8 @@
       "infoConfigSaved": "정보 필드 레이아웃이 저장되었습니다",
       "colConfigUpdated": "열 레이아웃이 업데이트되었습니다",
       "infoConfigUpdated": "정보 필드 레이아웃이 업데이트되었습니다",
+      "invalidColConfig": "이 열 레이아웃에 잘못되었거나 누락된 데이터가 있습니다",
+      "invalidInfoConfig": "이 정보 필드 레이아웃에 잘못되었거나 누락된 데이터가 있습니다",
       "customColumnUpdate": "현재 표시된 열로 이 열 설정을 업데이트",
       "customInfoName": "새 정보 필드 설정 이름 입력",
       "customInfoReset": "정보 열을 기본 필드로 재설정",

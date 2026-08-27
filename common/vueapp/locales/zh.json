@@ -604,6 +604,8 @@
       "infoConfigSaved": "信息字段布局已保存",
       "colConfigUpdated": "列布局已更新",
       "infoConfigUpdated": "信息字段布局已更新",
+      "invalidColConfig": "此列布局的数据无效或缺失",
+      "invalidInfoConfig": "此信息字段布局的数据无效或缺失",
       "customColumnUpdate": "使用当前可见列更新此列配置",
       "customInfoName": "输入新的信息字段配置名称",
       "customInfoReset": "将信息列重置为默认字段",

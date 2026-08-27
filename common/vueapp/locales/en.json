@@ -604,6 +604,8 @@
       "infoConfigSaved": "Info field layout saved",
       "colConfigUpdated": "Column layout updated",
       "infoConfigUpdated": "Info field layout updated",
+      "invalidColConfig": "This column layout has invalid or missing data",
+      "invalidInfoConfig": "This info field layout has invalid or missing data",
       "customColumnUpdate": "Update this column configuration with the currently visible columns",
       "customInfoName": "Enter new info field configuration name",
       "customInfoReset": "Reset info column to default fields",

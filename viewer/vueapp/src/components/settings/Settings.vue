@@ -725,6 +725,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-icon icon="mdi-pencil" />
                     </v-btn>
                     <v-btn
+                      v-if="config.canDelete"
                       color="error"
                       variant="flat"
                       size="small"
@@ -835,6 +836,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-icon icon="mdi-pencil" />
                     </v-btn>
                     <v-btn
+                      v-if="config.canDelete"
                       color="error"
                       variant="flat"
                       size="small"
@@ -943,6 +945,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-icon icon="mdi-pencil" />
                     </v-btn>
                     <v-btn
+                      v-if="config.canDelete"
                       color="error"
                       variant="flat"
                       size="small"

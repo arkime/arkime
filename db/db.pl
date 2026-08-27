@@ -8986,13 +8986,17 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $skipped = 0;
 
     # Everything already in shareables, so re-runs are safe. Keyed on
-    # type + creator + name, which is what made a layout unique on the user.
+    # type + creator + name, which is what made a layout unique on the user;
+    # names aren't unique anymore, so the value is the existing item's data,
+    # to tell an already-imported layout apart from an unrelated same-name
+    # collision created since. Scrolled, not a flat size=10000 search, so
+    # this stays accurate past 10000 shareables.
     my %have;
-    my $existing = esGet("/${PREFIX}shareables/_search?size=10000&_source=type,creator,name", 1);
-    foreach my $hit (@{$existing->{hits}->{hits} // []}) {
+    my $existing = esScroll("${PREFIX}shareables", to_json({"_source" => ["type", "creator", "name", "data"]}));
+    foreach my $hit (@{$existing}) {
         my $src = $hit->{_source};
         next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
-        $have{$src->{type} . "\0" . $src->{creator} . "\0" . $src->{name}} = 1;
+        $have{$src->{type} . "\0" . $src->{creator} . "\0" . $src->{name}} = JSON->new->canonical->encode($src->{data} // {});
     }
 
     # db.pl only ever talks to Elasticsearch, so a users store kept in
@@ -9005,16 +9009,19 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         logmsg "WARNING - usersElasticsearch pointed at sqlite/lmdb/redis.\n";
     }
 
+    # One scroll across all requested fields instead of one full user scan
+    # per kind
+    my @sourceFields = ("userId");
+    push(@sourceFields, $SHAREABLE_IMPORTS{$_}->{field}) foreach (@todo);
+    my $users = esScroll("${PREFIX}users", to_json({"_source" => \@sourceFields}));
+
+    my $body = "";
     foreach my $kind (@todo) {
         my $info = $SHAREABLE_IMPORTS{$kind};
         my $field = $info->{field};
         my $type = $info->{type};
 
-        my $users = esGet("/${PREFIX}users/_search?size=10000&_source=userId,${field}");
-        my $total = $users->{hits}->{total}->{value} // $users->{hits}->{total};
-        logmsg "WARNING - more than 10000 users, only the first 10000 were considered\n" if (defined $total && $total > 10000);
-
-        foreach my $hit (@{$users->{hits}->{hits}}) {
+        foreach my $hit (@{$users}) {
             my $userId = $hit->{_source}->{userId};
             next if (!defined $userId);
             my $configs = $hit->{_source}->{$field};
@@ -9024,9 +9031,24 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                 my $name = $config->{name};
                 next if (!defined $name);
 
-                if ($have{$type . "\0" . $userId . "\0" . $name}) {
-                    $skipped++;
-                    next;
+                my $data = $info->{data}->($config);
+                # canonical (sorted keys) so this compares equal to the same
+                # data round-tripped through ES, regardless of hash key order
+                my $dataJson = JSON->new->canonical->encode($data);
+                my $key = $type . "\0" . $userId . "\0" . $name;
+
+                if (exists $have{$key}) {
+                    if ($have{$key} eq $dataJson) {
+                        $skipped++;
+                        next;
+                    }
+                    # same type+creator+name but different data - a shareable
+                    # created after import (names aren't unique anymore)
+                    # collided with this legacy name, don't drop the legacy data
+                    my $origName = $name;
+                    $name = "$name (legacy)";
+                    $key = $type . "\0" . $userId . "\0" . $name;
+                    logmsg "WARNING - '$origName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
                 }
 
                 my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
@@ -9040,21 +9062,27 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                     viewUsers => [],
                     editRoles => [],
                     editUsers => [],
-                    data => $info->{data}->($config)
+                    data => $data
                 };
 
                 if ($DRYRUN) {
                     print "Would copy $kind '$name' for $userId\n";
                 } else {
                     print "Copying $kind '$name' for $userId\n";
-                    esPost("/${PREFIX}shareables/_doc", to_json($doc));
+                    my $meta = to_json({"index" => {"_index" => "${PREFIX}shareables"}});
+                    $body .= $meta . "\n" . to_json($doc) . "\n";
+                    if (length($body) > 10 * 1000 * 1000) {
+                        esBulk($body, "shareables-import");
+                        $body = "";
+                    }
                 }
                 # guard against the same user having it twice in one run
-                $have{$type . "\0" . $userId . "\0" . $name} = 1;
+                $have{$key} = $dataJson;
                 $copied++;
             }
         }
     }
+    esBulk($body, "shareables-import") if (length($body) > 0);
 
     esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$DRYRUN);
 
