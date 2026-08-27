@@ -80,19 +80,23 @@ class ShareableAPIs {
   /**
    * Per-type shape validation for shareable `data`. Types not listed here
    * (eg views, dashboards) have no shape requirement.
-   * @returns {string|undefined} An error message, or undefined if valid.
+   * @returns {object|undefined} { text, i18n }, or undefined if valid.
    */
   static validateData (type, data) {
+    const missingColumns = { text: 'Missing columns', i18n: 'api.shareables.missingColumns' };
+    const missingSortOrder = { text: 'Missing sort order', i18n: 'api.shareables.missingSortOrder' };
+    const missingFields = { text: 'Missing fields', i18n: 'api.shareables.missingFields' };
+
     switch (type) {
     case 'sessionsTableLayout':
-      if (!Array.isArray(data.columns)) { return 'Missing columns'; }
-      if (!Array.isArray(data.order)) { return 'Missing sort order'; }
+      if (!Array.isArray(data.columns)) { return missingColumns; }
+      if (!Array.isArray(data.order)) { return missingSortOrder; }
       break;
     case 'sessionsInfoLayout':
-      if (!Array.isArray(data.fields)) { return 'Missing fields'; }
+      if (!Array.isArray(data.fields)) { return missingFields; }
       break;
     case 'spiviewLayout':
-      if (typeof data.fields !== 'string') { return 'Missing fields'; }
+      if (typeof data.fields !== 'string') { return missingFields; }
       break;
     }
     return undefined;
@@ -150,7 +154,7 @@ class ShareableAPIs {
     const data = req.body.data || {};
     const dataError = ShareableAPIs.validateData(req.body.type, data);
     if (dataError) {
-      return res.serverError(403, dataError, 'api.shareables.invalidData');
+      return res.serverError(403, dataError.text, dataError.i18n);
     }
 
     const doc = {
@@ -268,11 +272,17 @@ class ShareableAPIs {
         return res.serverError(403, 'Data must be an object');
       }
 
-      const data = req.body.data !== undefined ? req.body.data : (shareable.data || {});
-      const dataError = ShareableAPIs.validateData(shareable.type, data);
-      if (dataError) {
-        return res.serverError(403, dataError, 'api.shareables.invalidData');
+      // only what the request actually sends is validated -- revalidating the
+      // stored data would make a shareable whose shape predates these rules
+      // impossible to rename or reshare
+      if (req.body.data !== undefined) {
+        const dataError = ShareableAPIs.validateData(shareable.type, req.body.data);
+        if (dataError) {
+          return res.serverError(403, dataError.text, dataError.i18n);
+        }
       }
+
+      const data = req.body.data !== undefined ? req.body.data : (shareable.data || {});
 
       const doc = {
         name: req.body.name !== undefined ? req.body.name : shareable.name,

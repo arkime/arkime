@@ -1852,6 +1852,10 @@
       "missingName": "공유 항목 이름이 없습니다",
       "missingType": "공유 항목 유형이 없습니다",
       "descriptionMustBeString": "설명은 문자열이어야 합니다",
+      "nameMustBeString": "이름은 문자열이어야 합니다",
+      "missingColumns": "열이 없습니다",
+      "missingSortOrder": "정렬 순서가 없습니다",
+      "missingFields": "필드가 없습니다",
       "created": "공유 항목이 생성되었습니다!",
       "errorCreating": "공유 항목 생성 오류",
       "notPermittedToView": "이 공유 항목을 볼 권한이 없습니다",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "공유 항목이 성공적으로 삭제되었습니다",
       "errorDeleting": "공유 항목 삭제 오류",
       "invalidTypeParam": "유형 매개변수가 없거나 잘못되었습니다",
+      "invalidSearchTerm": "잘못된 검색어입니다",
       "listFailed": "공유 항목 목록 조회 오류"
     },
     "shortcuts": {

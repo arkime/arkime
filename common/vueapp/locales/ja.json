@@ -1852,6 +1852,10 @@
       "missingName": "共有アイテム名が未入力です",
       "missingType": "共有アイテムのタイプが未入力です",
       "descriptionMustBeString": "説明は文字列である必要があります",
+      "nameMustBeString": "名前は文字列である必要があります",
+      "missingColumns": "列がありません",
+      "missingSortOrder": "並び順がありません",
+      "missingFields": "フィールドがありません",
       "created": "共有アイテムを作成しました！",
       "errorCreating": "共有アイテムの作成エラー",
       "notPermittedToView": "この共有アイテムを表示する権限がありません",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "共有アイテムを正常に削除しました",
       "errorDeleting": "共有アイテムの削除エラー",
       "invalidTypeParam": "タイプパラメータが未入力または無効です",
+      "invalidSearchTerm": "検索語が無効です",
       "listFailed": "共有アイテムの一覧取得エラー"
     },
     "shortcuts": {

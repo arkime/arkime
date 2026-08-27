@@ -38,10 +38,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0 2026/10/xx
 ## Breaking
-  - Column, info field and spiview layouts moved from the user record to the shareables index so they can be
+  - Session columns, info field config and spiview layouts moved from the user record to the shareables index so they can be
           shared. Run db.pl <host:port> shareables-import all to copy existing ones over; the originals are left
-          in place so Arkime 6 keeps working, and the command can be re-run. The import reads users from
-          Elasticsearch, so it cannot migrate layouts for a usersElasticsearch pointed at sqlite/lmdb/redis
+          in place so Arkime 6 keeps working, and the command can be re-run.
   - Removed the /api/user/layouts/:type APIs, layouts are shareables now. /api/user/config/sessions no longer
           returns colConfigs or infoConfigs and /api/user/config/spiview no longer returns fieldConfigs
   - wiseService no longer generates a random config pin code, use --webcode <code> or each user's own TOTP code.

@@ -246,7 +246,7 @@ SPDX-License-Identifier: Apache-2.0
                           </v-list-item>
                           <v-list-item
                             v-for="config in filteredColConfigs"
-                            :key="config.name"
+                            :key="config.id"
                             :active="!!loadedColConfig && config.id === loadedColConfig.id"
                             @click.self.stop.prevent="loadColumnConfiguration(config)">
                             <div
@@ -521,7 +521,7 @@ SPDX-License-Identifier: Apache-2.0
                               </v-list-item>
                               <v-list-item
                                 v-for="config in filteredInfoConfigs"
-                                :key="config.name"
+                                :key="config.id"
                                 :active="!!loadedInfoConfig && config.id === loadedInfoConfig.id"
                                 @click.self.stop.prevent="loadInfoFieldLayout(config)">
                                 <div
@@ -960,7 +960,10 @@ export default {
        id, not name, since shareable layout names are no longer unique. */
     loadedColConfig: function () {
       const configId = this.tableState.colConfigId;
-      return configId ? this.colConfigs.find(c => c.id === configId) : undefined;
+      if (configId) { return this.colConfigs.find(c => c.id === configId); }
+      // table states saved before layouts had ids point at a name instead
+      const configName = this.tableState.colConfigName;
+      return configName ? this.colConfigs.find(c => c.name === configName) : undefined;
     },
     /* the currently loaded info field config (if it still exists). Tracked
        by id, not name, since shareable layout names are no longer unique. */
@@ -1463,6 +1466,16 @@ export default {
         this.colConfigError = resolveMessage(error, this.$t);
       });
     },
+    /* Upgrades a table state still pointing at a layout by name so the name
+       only has to be resolved once. See loadedColConfig. */
+    migrateColConfigName: function () {
+      if (this.tableState.colConfigId || !this.tableState.colConfigName) { return; }
+      const config = this.colConfigs.find(c => c.name === this.tableState.colConfigName);
+      if (!config) { return; }
+      this.tableState.colConfigId = config.id;
+      delete this.tableState.colConfigName;
+      this.saveTableState();
+    },
     /**
      * Loads a previously saved custom column configuration and
      * reloads table and table data
@@ -1475,6 +1488,7 @@ export default {
         this.tableState.visibleHeaders = Utils.getDefaultTableState().visibleHeaders.slice();
         this.tableState.order = JSON.parse(JSON.stringify(Utils.getDefaultTableState().order));
         delete this.tableState.colConfigId;
+        delete this.tableState.colConfigName;
         this.colWidths = {}; // clear out column widths to load defaults
         setTimeout(() => { this.saveColumnWidths(); });
         // reset field widths
@@ -1491,6 +1505,7 @@ export default {
         this.tableState.visibleHeaders = config.columns.slice();
         this.tableState.order = JSON.parse(JSON.stringify(config.order));
         this.tableState.colConfigId = config.id;
+        delete this.tableState.colConfigName;
       }
 
       // keep info column pinned as the last visible column
@@ -1512,6 +1527,7 @@ export default {
         if (index > -1) { this.colConfigs.splice(index, 1); }
         if (this.tableState.colConfigId === config.id) {
           delete this.tableState.colConfigId;
+          delete this.tableState.colConfigName;
           this.saveTableState();
         }
       }).catch((error) => {
@@ -1682,7 +1698,7 @@ export default {
         const index = this.infoConfigs.indexOf(config);
         if (index > -1) { this.infoConfigs.splice(index, 1); }
         if (this.user.settings.infoFieldsConfigId === config.id) {
-          this.user.settings.infoFieldsConfigId = undefined;
+          this.user.settings.infoFieldsConfigId = null;
           UserService.saveSettings(this.user.settings);
         }
       }).catch((error) => {
@@ -1712,7 +1728,7 @@ export default {
       this.infoFields = defaultInfoFields;
       customCols.info.children = defaultInfoFields;
       this.user.settings.infoFields = undefined;
-      this.user.settings.infoFieldsConfigId = undefined;
+      this.user.settings.infoFieldsConfigId = null;
 
       // make sure children of fields are field objects
       this.setupFields();
@@ -1861,6 +1877,7 @@ export default {
         // layouts are shareables now, fetched separately
         ColumnLayoutService.list().then((configs) => {
           this.colConfigs = configs;
+          this.migrateColConfigName();
         }).catch((error) => {
           this.colConfigError = resolveMessage(error, this.$t);
         });

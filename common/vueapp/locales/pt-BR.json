@@ -1852,6 +1852,10 @@
       "missingName": "Nome do compartilhável ausente",
       "missingType": "Tipo do compartilhável ausente",
       "descriptionMustBeString": "A descrição deve ser uma string",
+      "nameMustBeString": "O nome deve ser uma string",
+      "missingColumns": "Colunas ausentes",
+      "missingSortOrder": "Ordem de classificação ausente",
+      "missingFields": "Campos ausentes",
       "created": "Item compartilhável criado!",
       "errorCreating": "Erro ao criar item compartilhável",
       "notPermittedToView": "Não tem permissão para ver este item compartilhável",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "Item compartilhável excluído com sucesso",
       "errorDeleting": "Erro ao excluir item compartilhável",
       "invalidTypeParam": "Parâmetro de tipo ausente ou inválido",
+      "invalidSearchTerm": "Termo de busca inválido",
       "listFailed": "Erro ao listar itens compartilháveis"
     },
     "shortcuts": {

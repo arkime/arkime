@@ -681,7 +681,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in colConfigs"
-                  :key="config.name">
+                  :key="config.id">
                   <td>
                     {{ config.name }}
                   </td>
@@ -806,7 +806,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in infoFieldLayouts"
-                  :key="config.name">
+                  :key="config.id">
                   <td>
                     {{ config.name }}
                   </td>
@@ -917,7 +917,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in spiviewConfigs"
-                  :key="config.name">
+                  :key="config.id">
                   <td>
                     {{ config.name }}
                   </td>

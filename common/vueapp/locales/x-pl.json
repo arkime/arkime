@@ -1853,6 +1853,10 @@
       "missingName": "Issingmay areableshay amenay",
       "missingType": "Issingmay areableshay ypetay",
       "descriptionMustBeString": "Escriptionday ustmay ebay away ingstray",
+      "nameMustBeString": "Amenay ustmay ebay away ingstray",
+      "missingColumns": "Issingmay olumnscay",
+      "missingSortOrder": "Issingmay ortsay orderway",
+      "missingFields": "Issingmay ieldsfay",
       "created": "Eatedcray areableshay itemway!",
       "errorCreating": "Errorway eatingcray areableshay itemway",
       "notPermittedToView": "Otnay ermittedpay otay iewvay isthay areableshay itemway",
@@ -1865,6 +1869,7 @@
       "deletedSuccessfully": "Eletedday areableshay itemway uccessfullysay",
       "errorDeleting": "Errorway eletingday areableshay itemway",
       "invalidTypeParam": "Issingmay orway invalidway ypetay arameterpay",
+      "invalidSearchTerm": "Invalidway earchsay ermtay",
       "listFailed": "Errorway istinglay areableshay itemsway"
     },
     "shortcuts": {

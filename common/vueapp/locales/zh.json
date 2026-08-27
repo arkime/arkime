@@ -1852,6 +1852,10 @@
       "missingName": "缺少共享项名称",
       "missingType": "缺少共享项类型",
       "descriptionMustBeString": "描述必须是字符串",
+      "nameMustBeString": "名称必须是字符串",
+      "missingColumns": "缺少列",
+      "missingSortOrder": "缺少排序顺序",
+      "missingFields": "缺少字段",
       "created": "共享项已创建！",
       "errorCreating": "创建共享项出错",
       "notPermittedToView": "无权查看此共享项",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "共享项已成功删除",
       "errorDeleting": "删除共享项出错",
       "invalidTypeParam": "缺少或无效的类型参数",
+      "invalidSearchTerm": "搜索词无效",
       "listFailed": "列出共享项出错"
     },
     "shortcuts": {

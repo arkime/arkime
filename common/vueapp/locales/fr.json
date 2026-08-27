@@ -1852,6 +1852,10 @@
       "missingName": "Nom de l'élément partageable manquant",
       "missingType": "Type de l'élément partageable manquant",
       "descriptionMustBeString": "La description doit être une chaîne de caractères",
+      "nameMustBeString": "Le nom doit être une chaîne",
+      "missingColumns": "Colonnes manquantes",
+      "missingSortOrder": "Ordre de tri manquant",
+      "missingFields": "Champs manquants",
       "created": "Élément partageable créé !",
       "errorCreating": "Erreur lors de la création de l'élément partageable",
       "notPermittedToView": "Non autorisé à voir cet élément partageable",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "Élément partageable supprimé avec succès",
       "errorDeleting": "Erreur lors de la suppression de l'élément partageable",
       "invalidTypeParam": "Paramètre de type manquant ou invalide",
+      "invalidSearchTerm": "Terme de recherche invalide",
       "listFailed": "Erreur lors du listage des éléments partageables"
     },
     "shortcuts": {

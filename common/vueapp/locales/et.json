@@ -1852,6 +1852,10 @@
       "missingName": "Jagatud elemendi nimi puudub",
       "missingType": "Jagatud elemendi tüüp puudub",
       "descriptionMustBeString": "Kirjeldus peab olema sõne",
+      "nameMustBeString": "Nimi peab olema sõne",
+      "missingColumns": "Veerud puuduvad",
+      "missingSortOrder": "Sortimisjärjekord puudub",
+      "missingFields": "Väljad puuduvad",
       "created": "Jagatud element loodud!",
       "errorCreating": "Viga jagatud elemendi loomisel",
       "notPermittedToView": "Puudub õigus seda jagatud elementi vaadata",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "Jagatud element edukalt kustutatud",
       "errorDeleting": "Viga jagatud elemendi kustutamisel",
       "invalidTypeParam": "Puuduv või vigane tüübiparameeter",
+      "invalidSearchTerm": "Vigane otsingusõna",
       "listFailed": "Viga jagatud elementide loetlemisel"
     },
     "shortcuts": {

@@ -1852,6 +1852,10 @@
       "missingName": "Falta el nombre del elemento compartido",
       "missingType": "Falta el tipo del elemento compartido",
       "descriptionMustBeString": "La descripción debe ser una cadena de texto",
+      "nameMustBeString": "El nombre debe ser una cadena",
+      "missingColumns": "Faltan columnas",
+      "missingSortOrder": "Falta el orden de clasificación",
+      "missingFields": "Faltan campos",
       "created": "¡Elemento compartido creado!",
       "errorCreating": "Error al crear el elemento compartido",
       "notPermittedToView": "No tiene permiso para ver este elemento compartido",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "Elemento compartido eliminado exitosamente",
       "errorDeleting": "Error al eliminar el elemento compartido",
       "invalidTypeParam": "Parámetro de tipo faltante o inválido",
+      "invalidSearchTerm": "Término de búsqueda no válido",
       "listFailed": "Error al listar los elementos compartidos"
     },
     "shortcuts": {

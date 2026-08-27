@@ -1,4 +1,4 @@
-use Test::More tests => 179;
+use Test::More tests => 186;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -364,10 +364,12 @@ my $idData = $info->{id};
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout1","type":"sessionsTableLayout","data":{}}', $token);
 ok(!$info->{success}, "create sessionsTableLayout with empty data fails");
 is($info->{text}, "Missing columns", "sessionsTableLayout missing columns error message");
+is($info->{i18n}, "api.shareables.missingColumns", "sessionsTableLayout missing columns i18n");
 
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout2","type":"sessionsTableLayout","data":{"columns":["ip.src"]}}', $token);
 ok(!$info->{success}, "create sessionsTableLayout missing order fails");
 is($info->{text}, "Missing sort order", "sessionsTableLayout missing order error message");
+is($info->{i18n}, "api.shareables.missingSortOrder", "sessionsTableLayout missing order i18n");
 
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"good_layout1","type":"sessionsTableLayout","data":{"columns":["ip.src"],"order":[["firstPacket","desc"]]}}', $token);
 ok($info->{success}, "create sessionsTableLayout with valid data succeeds");
@@ -376,6 +378,7 @@ my $idGoodLayout1 = $info->{id};
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_layout3","type":"sessionsInfoLayout","data":{}}', $token);
 ok(!$info->{success}, "create sessionsInfoLayout with empty data fails");
 is($info->{text}, "Missing fields", "sessionsInfoLayout missing fields error message");
+is($info->{i18n}, "api.shareables.missingFields", "sessionsInfoLayout missing fields i18n");
 
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"good_layout2","type":"sessionsInfoLayout","data":{"fields":["ip.src"]}}', $token);
 ok($info->{success}, "create sessionsInfoLayout with valid data succeeds");
@@ -393,6 +396,34 @@ my $idGoodLayout3 = $info->{id};
 $info = viewerPutToken("/api/shareable/${idGoodLayout1}?arkimeRegressionUser=sac-test1", '{"data":{"order":[["firstPacket","desc"]]}}', $token);
 ok(!$info->{success}, "update sessionsTableLayout removing columns fails");
 is($info->{text}, "Missing columns", "sessionsTableLayout update missing columns error message");
+
+# A shareable whose stored data does not match the layout shape rules (an older
+# doc, or one written by other tooling) must still be renameable and shareable:
+# an update validates what it was given, not what is already stored. Planting a
+# raw doc needs direct ES access, so this is Elasticsearch-users only.
+SKIP: {
+    skip "planting a raw shareable needs users in Elasticsearch", 4 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
+
+    esPost("/tests_shareables/_doc/legacyshape1?refresh=true", to_json({
+        name => "legacy shape", type => "sessionsTableLayout", creator => "sac-test1",
+        created => "2020-01-01T00:00:00Z", updated => "2020-01-01T00:00:00Z",
+        viewRoles => [], viewUsers => [], editRoles => [], editUsers => [],
+        data => { columns => ["source.ip"] } # no order, unlike what the rules want
+    }));
+
+    $info = viewerPutToken("/api/shareable/legacyshape1?arkimeRegressionUser=sac-test1", '{"name":"legacy renamed"}', $token);
+    ok($info->{success}, "renaming a layout with a legacy data shape is allowed");
+    is($info->{shareable}->{name}, "legacy renamed", "the rename took");
+
+    $info = viewerPutToken("/api/shareable/legacyshape1?arkimeRegressionUser=sac-test1", '{"viewRoles":["arkimeUser"]}', $token);
+    ok($info->{success}, "resharing a layout with a legacy data shape is allowed");
+
+    # but sending a bad shape explicitly is still rejected
+    $info = viewerPutToken("/api/shareable/legacyshape1?arkimeRegressionUser=sac-test1", '{"data":{"columns":["source.ip"]}}', $token);
+    ok(!$info->{success}, "explicitly sending data without order is still rejected");
+
+    viewerDeleteToken("/api/shareable/legacyshape1?arkimeRegressionUser=sac-test1", $token);
+}
 
 # clean up so the shareables-import tests below see a clean slate for these types
 viewerDeleteToken("/api/shareable/${idGoodLayout1}?arkimeRegressionUser=sac-test1", $token);

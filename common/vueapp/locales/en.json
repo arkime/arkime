@@ -1852,6 +1852,10 @@
       "missingName": "Missing shareable name",
       "missingType": "Missing shareable type",
       "descriptionMustBeString": "Description must be a string",
+      "nameMustBeString": "Name must be a string",
+      "missingColumns": "Missing columns",
+      "missingSortOrder": "Missing sort order",
+      "missingFields": "Missing fields",
       "created": "Created shareable item!",
       "errorCreating": "Error creating shareable item",
       "notPermittedToView": "Not permitted to view this shareable item",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "Deleted shareable item successfully",
       "errorDeleting": "Error deleting shareable item",
       "invalidTypeParam": "Missing or invalid type parameter",
+      "invalidSearchTerm": "Invalid search term",
       "listFailed": "Error listing shareable items"
     },
     "shortcuts": {

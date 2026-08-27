@@ -1852,6 +1852,10 @@
       "missingName": "Name des gemeinsamen Elements fehlt",
       "missingType": "Typ des gemeinsamen Elements fehlt",
       "descriptionMustBeString": "Beschreibung muss eine Zeichenkette sein",
+      "nameMustBeString": "Name muss eine Zeichenkette sein",
+      "missingColumns": "Spalten fehlen",
+      "missingSortOrder": "Sortierreihenfolge fehlt",
+      "missingFields": "Felder fehlen",
       "created": "Gemeinsames Element erstellt!",
       "errorCreating": "Fehler beim Erstellen des gemeinsamen Elements",
       "notPermittedToView": "Keine Berechtigung, dieses gemeinsame Element anzuzeigen",
@@ -1864,6 +1868,7 @@
       "deletedSuccessfully": "Gemeinsames Element erfolgreich gelöscht",
       "errorDeleting": "Fehler beim Löschen des gemeinsamen Elements",
       "invalidTypeParam": "Fehlender oder ungültiger Typparameter",
+      "invalidSearchTerm": "Ungültiger Suchbegriff",
       "listFailed": "Fehler beim Auflisten der gemeinsamen Elemente"
     },
     "shortcuts": {

@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 272;
+use Test::More tests => 276;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -207,6 +207,19 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     is($json->{success}, 1, "unset vuetifyCustomTheme with null succeeds");
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{vuetifyCustomTheme}, "vuetifyCustomTheme deleted by null, not stored as null");
+
+# infoFieldsConfigId points at the loaded sessions info field layout, so it has
+# to survive a settings save like any other setting
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"infoFieldsConfigId":"abc123"}', $test1Token);
+    is($json->{success}, 1, "set infoFieldsConfigId succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{infoFieldsConfigId}, "abc123", "infoFieldsConfigId is persisted");
+
+# and null clears it, so deleting the loaded layout can unset the pointer
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"infoFieldsConfigId":null}', $test1Token);
+    is($json->{success}, 1, "unset infoFieldsConfigId succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{infoFieldsConfigId}, "infoFieldsConfigId deleted by null");
 
 # update user settings - a key omitted from the body is preserved (partial save must not wipe siblings)
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":false,"colors":{"primary":"#abcdef"}}}', $test1Token);
