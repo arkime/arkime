@@ -7833,7 +7833,7 @@ esPut("/${PREFIX}shareables_v60/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $
 # Returns (copied, skipped).
 sub shareablesImport
 {
-    my ($what) = @_;
+    my ($what, $dryrun, $quiet) = @_;
 
     my @todo = ($what eq "all") ? (sort keys %SHAREABLE_IMPORTS) : ($what);
 
@@ -7933,10 +7933,10 @@ sub shareablesImport
                     data => $data
                 };
 
-                if ($DRYRUN) {
+                if ($dryrun) {
                     print "Would copy $kind '$name' for $userId\n";
                 } else {
-                    print "Copying $kind '$name' for $userId\n";
+                    print "Copying $kind '$name' for $userId\n" if (!$quiet);
                     my $meta = to_json({"index" => {"_index" => "${PREFIX}shareables"}});
                     $body .= $meta . "\n" . to_json($doc) . "\n";
                     if (length($body) > 10 * 1000 * 1000) {
@@ -7952,7 +7952,7 @@ sub shareablesImport
     }
     esBulk($body, "shareables-import") if (length($body) > 0);
 
-    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$DRYRUN);
+    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$dryrun);
 
     return ($copied, $skipped);
 }
@@ -9112,7 +9112,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     showHelp("Unknown shareables-import type '$what', must be one of: all, " . join(", ", sort keys %SHAREABLE_IMPORTS))
         if ($what ne "all" && !$SHAREABLE_IMPORTS{$what});
 
-    my ($copied, $skipped) = shareablesImport($what);
+    my ($copied, $skipped) = shareablesImport($what, $DRYRUN, 0);
 
     print "$copied " . ($DRYRUN ? "would be copied" : "copied") . ", $skipped already existed\n";
     print "The originals were left on the user, so Arkime 6 keeps working. Re-run any time to pick up new ones.\n";
@@ -10824,63 +10824,52 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 79) {
-        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
+    # Common things forever
+    if ($main::versionNumber <= $VERSION) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+    }
+
+    if ($main::versionNumber < 79) {
+        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
         queriesUpdate();
         notifiersUpdate();
         notifiersAddMissingProps();
         parliamentCreate();
         viewsUpdate();
         lookupsUpdate();
-        usersUpdate();
-        filesUpdate();
         configsCreate();
         fields82Fix();
         shareablesCreate();
+        usersUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 81) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        usersUpdate();
-        filesUpdate();
         configsCreate();
         fields82Fix();
         shareablesCreate();
-    } elsif ($main::versionNumber <= 83) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
+        usersUpdate();
         filesUpdate();
+    } elsif ($main::versionNumber <= 83) {
         fields82Fix();
         shareablesCreate();
         usersUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 85) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
         shareablesUpdate();
         usersUpdate();
         filesUpdate();
     } elsif ($main::versionNumber <= 88) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
         usersUpdate();
         filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 
-    # The layouts that used to live on the user record are shareables now and
-    # nothing reads them off the user any more, so copy them across here rather
-    # than leaving everyone's saved layouts invisible until an admin happens to
-    # run shareables-import by hand. Idempotent and non destructive, so it is
-    # safe on every upgrade; a failure is not worth aborting the upgrade over.
-    if ($main::versionNumber <= $VERSION) {
-        my ($copied, $skipped) = eval { shareablesImport("all") };
+    # Sharables import one time version bump
+    if ($main::versionNumber < $VERSION) {
+        # never a dryrun: upgrade takes --dryrun but honors it nowhere else
+        my ($copied, $skipped) = eval { shareablesImport("all", 0, 1) };
         if ($@) {
             logmsg "WARNING - could not import layouts into shareables: $@";
             logmsg "WARNING - run 'db.pl <host:port> shareables-import all' once the cause is fixed.\n";
