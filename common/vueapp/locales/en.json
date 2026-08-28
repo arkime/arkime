@@ -953,6 +953,7 @@
     "uploadWorked": "File sucessfully uploaded"
   },
   "users": {
+    "unknownErr": "An unexpected error occurred while loading users.",
     "searchPlaceholder": "Begin typing to search for users by name, id, or role (!role excludes users with that role)",
     "searchUserPlaceholder": "Begin typing to search for users by name or id",
     "downloadCSVTip": "Download CSV",
