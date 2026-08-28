@@ -38,6 +38,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0 2026/10/xx
 ## Breaking
+  - Session columns, info field config and spiview layouts moved from the user record to the shareables index so they can be
+          shared. db.pl upgrade copies existing ones over for you, or run db.pl <host:port> shareables-import all
+          by hand; the originals are left in place so Arkime 6 keeps working, and either can be re-run.
+  - Removed the /api/user/layouts/:type APIs, layouts are shareables now. /api/user/config/sessions no longer
+          returns colConfigs or infoConfigs and /api/user/config/spiview no longer returns fieldConfigs
   - wiseService no longer generates a random config pin code, use --webcode <code> or each user's own TOTP code.
   - Removed the simpleDEKEncoding setting, the DEK is now always encrypted with aes-256-gcm.
   - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead.
@@ -76,6 +81,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           tcpClosingTimeout previously also applied to sctp and to sessions closed by the closeNow rule action, so set
           eg sctp=closing:<seconds> if you had changed it from the default of 5
 ## Viewer
+  - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
+  - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
 
 

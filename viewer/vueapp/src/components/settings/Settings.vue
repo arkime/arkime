@@ -70,6 +70,14 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             {{ $t('settings.nav.general') }}
           </v-tab>
+          <v-tab
+            v-if="!multiviewer || hasUsersES"
+            value="dashboards">
+            <v-icon
+              icon="mdi-view-dashboard"
+              class="me-1" />
+            {{ $t('settings.nav.dashboards') }}
+          </v-tab>
           <v-tab value="col">
             <v-icon
               icon="mdi-view-column"
@@ -125,14 +133,6 @@ SPDX-License-Identifier: Apache-2.0
               icon="mdi-format-list-bulleted"
               class="me-1" />
             {{ $t('settings.nav.shortcuts') }}
-          </v-tab>
-          <v-tab
-            v-if="!multiviewer || hasUsersES"
-            value="shareables">
-            <v-icon
-              icon="mdi-share-variant"
-              class="me-1" />
-            {{ $t('settings.nav.shareables') }}
           </v-tab>
           <v-tab
             v-if="!multiviewer"
@@ -681,7 +681,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in colConfigs"
-                  :key="config.name">
+                  :key="config.id">
                   <td>
                     {{ config.name }}
                   </td>
@@ -714,17 +714,27 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <v-btn
+                      v-if="config.canEdit"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      icon
+                      class="float-right me-1"
+                      @click="editLayout('sessionstable', 'columns', config, 'colConfigs')"
+                      :title="$t('settings.layoutEditor.editTip')">
+                      <v-icon icon="mdi-pencil" />
+                    </v-btn>
+                    <v-btn
+                      v-if="config.canDelete"
                       color="error"
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right"
-                      @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
+                      @click="deleteLayout('sessionstable', config, 'colConfigs')"
                       :title="$t('settings.ccl.deleteTip')">
-                      <v-icon
-                        icon="mdi-trash-can-outline"
-                        class="me-1" />
-                      {{ $t('common.delete') }}
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </td>
                 </tr>
@@ -795,8 +805,8 @@ SPDX-License-Identifier: Apache-2.0
               <!-- info field configs -->
               <template v-if="fieldsMap">
                 <tr
-                  v-for="(config, index) in infoFieldLayouts"
-                  :key="config.name">
+                  v-for="config in infoFieldLayouts"
+                  :key="config.id">
                   <td>
                     {{ config.name }}
                   </td>
@@ -815,17 +825,27 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <v-btn
+                      v-if="config.canEdit"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      icon
+                      class="float-right me-1"
+                      @click="editLayout('sessionsinfofields', 'fields', config, 'infoFieldLayouts')"
+                      :title="$t('settings.layoutEditor.editTip')">
+                      <v-icon icon="mdi-pencil" />
+                    </v-btn>
+                    <v-btn
+                      v-if="config.canDelete"
                       color="error"
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right"
-                      @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
+                      @click="deleteLayout('sessionsinfofields', config, 'infoFieldLayouts')"
                       :title="$t('settings.infoLayout.deleteTip')">
-                      <v-icon
-                        icon="mdi-trash-can-outline"
-                        class="me-1" />
-                      {{ $t('common.delete') }}
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </td>
                 </tr>
@@ -896,8 +916,8 @@ SPDX-License-Identifier: Apache-2.0
               <!-- spiview field configs -->
               <template v-if="fieldsMap">
                 <tr
-                  v-for="(config, index) in spiviewConfigs"
-                  :key="config.name">
+                  v-for="config in spiviewConfigs"
+                  :key="config.id">
                   <td>
                     {{ config.name }}
                   </td>
@@ -914,17 +934,27 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <v-btn
+                      v-if="config.canEdit"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      icon
+                      class="float-right me-1"
+                      @click="editLayout('spiview', 'spiview', config, 'spiviewConfigs')"
+                      :title="$t('settings.layoutEditor.editTip')">
+                      <v-icon icon="mdi-pencil" />
+                    </v-btn>
+                    <v-btn
+                      v-if="config.canDelete"
                       color="error"
                       variant="flat"
                       size="small"
                       density="comfortable"
+                      icon
                       class="float-right"
-                      @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
+                      @click="deleteLayout('spiview', config, 'spiviewConfigs')"
                       :title="$t('settings.spiview.deleteTip')">
-                      <v-icon
-                        icon="mdi-trash-can-outline"
-                        class="me-1" />
-                      {{ $t('common.delete') }}
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </td>
                 </tr>
@@ -1295,10 +1325,18 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'views'"
           @display-message="displayMessage" />
 
-        <!-- shareable settings -->
-        <Shareables
-          id="shareables"
-          v-if="visibleTab === 'shareables'"
+        <!-- shared editor for the three layout tabs -->
+        <LayoutEditor
+          v-model="showLayoutEditor"
+          :layout="editingLayout"
+          :kind="editingLayoutKind"
+          :fields-map="fieldsMap"
+          @save="saveLayout" />
+
+        <!-- arkime dashboard settings -->
+        <Dashboards
+          id="dashboards"
+          v-if="visibleTab === 'dashboards'"
           @display-message="displayMessage" />
 
         <!-- cron query settings -->
@@ -1328,7 +1366,10 @@ import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
-import Shareables from './Shareables.vue';
+import Dashboards from './Dashboards.vue';
+import { createLayoutService } from '../users/ShareableService';
+import LayoutEditor from './LayoutEditor.vue';
+import { resolveMessage } from '@common/resolveI18nMessage';
 import Shortcuts from './Shortcuts.vue';
 import Views from './Views.vue';
 
@@ -1340,6 +1381,12 @@ const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 const secretMatch = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 let secrets = [];
 
+const LayoutServices = {
+  sessionstable: createLayoutService('sessionsTableLayout'),
+  sessionsinfofields: createLayoutService('sessionsInfoLayout'),
+  spiview: createLayoutService('spiviewLayout')
+};
+
 export default {
   name: 'Settings',
   components: {
@@ -1347,8 +1394,9 @@ export default {
     ArkimeLoading,
     ArkimeFieldTypeahead,
     ThemePicker,
+    LayoutEditor,
     PeriodicQueries,
-    Shareables,
+    Dashboards,
     Shortcuts,
     Notifiers,
     Views
@@ -1364,6 +1412,12 @@ export default {
       msgType: undefined,
       displayName: undefined,
       visibleTab: 'general', // default tab
+      // layout editor, shared by the three layout tabs
+      showLayoutEditor: false,
+      editingLayout: undefined,
+      editingLayoutType: undefined,
+      editingLayoutKind: 'fields',
+      editingLayoutArray: undefined,
       settings: {},
       integerFields: undefined,
       columns: [],
@@ -1485,7 +1539,7 @@ export default {
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
         tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts' ||
-        tab === 'shareables' || tab === 'totp') {
+        tab === 'dashboards' || tab === 'totp') {
         this.visibleTab = tab;
       }
 
@@ -1715,20 +1769,43 @@ export default {
     },
     /* LAYOUTS ------------------------------------------ */
     /**
-      * Saves a custom layout to the user's settings
-      * @param {string} layoutType  The type of layout to save
-      * @param {string} layoutName  The name of the layout to save
-      * @param {array} layoutArray  The array to save the layout to
-      * @param {int} index          The index in the array of the layout to save
+      * Opens the shared editor for one of the three layout tabs
+      * @param {string} layoutType  Which LayoutServices entry owns this layout
+      * @param {string} kind        The layout shape LayoutEditor should render
+      * @param {object} layout      The layout to edit
+      * @param {string} layoutArray The data property holding this tab's list
       */
-    deleteLayout (layoutType, layoutName, layoutArray, index) {
-      UserService.deleteLayout(layoutType, layoutName, this.userId).then((response) => {
-        this[layoutArray].splice(index, 1);
+    editLayout (layoutType, kind, layout, layoutArray) {
+      this.editingLayoutType = layoutType;
+      this.editingLayoutKind = kind;
+      this.editingLayout = layout;
+      this.editingLayoutArray = layoutArray;
+      this.showLayoutEditor = true;
+    },
+    /* saves whatever the editor produced back onto the shareable */
+    saveLayout (data) {
+      const layoutId = this.editingLayout.id;
+      LayoutServices[this.editingLayoutType].update(layoutId, data, this.userId).then((layout) => {
+        // re-find the index instead of trusting one captured before this
+        // network round trip, since the array can have changed underneath it
+        const index = this[this.editingLayoutArray].findIndex(c => c.id === layoutId);
+        if (index > -1) { this[this.editingLayoutArray].splice(index, 1, layout); }
+        this.showLayoutEditor = false;
+        this.displayMessage({ msg: this.$t('settings.layoutEditor.saved') });
+        if (this.editingLayoutType === 'spiview') { this.getSpiviewConfigs(); }
+      }).catch((error) => {
+        this.displayMessage({ msg: resolveMessage(error, this.$t), type: 'danger' });
+      });
+    },
+    deleteLayout (layoutType, layout, layoutArray) {
+      LayoutServices[layoutType].delete(layout.id, this.userId).then((response) => {
+        const index = this[layoutArray].findIndex(c => c.id === layout.id);
+        if (index > -1) { this[layoutArray].splice(index, 1); }
         // display success message to user
-        this.displayMessage({ msg: response.text });
+        this.displayMessage({ msg: resolveMessage(response, this.$t) });
       }).catch((error) => {
         // display error message to user
-        this.displayMessage({ msg: error.text, type: 'danger' });
+        this.displayMessage({ msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /* THEMES ------------------------------------------ */
@@ -2005,16 +2082,16 @@ export default {
     },
     /* retrieves the specified user's custom column layouts */
     getColConfigs: function () {
-      UserService.getLayout('sessionstable', this.userId).then((response) => {
-        this.colConfigs = response;
+      LayoutServices.sessionstable.list(this.userId).then((layouts) => {
+        this.colConfigs = layouts;
       }).catch((error) => {
         this.colConfigError = error.text;
       });
     },
     /* retrieves the specified user's custom info field layouts */
     getInfoFieldLayout: function () {
-      UserService.getLayout('sessionsinfofields', this.userId).then((response) => {
-        this.infoFieldLayouts = response;
+      LayoutServices.sessionsinfofields.list(this.userId).then((layouts) => {
+        this.infoFieldLayouts = layouts;
       }).catch((error) => {
         this.infoFieldError = error.text;
       });
@@ -2022,11 +2099,13 @@ export default {
     /* retrieves the specified user's custom spiview fields layouts.
      * dissects the visible spiview fields for view consumption */
     getSpiviewConfigs: function () {
-      UserService.getLayout('spiview', this.userId).then((response) => {
-        this.spiviewConfigs = response;
+      LayoutServices.spiview.list(this.userId).then((layouts) => {
+        this.spiviewConfigs = layouts;
 
         for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {
           const config = this.spiviewConfigs[x];
+          // malformed/legacy layout data - skip it rather than crash
+          if (typeof config.fields !== 'string') { continue; }
           const spiParamsArray = config.fields.split(',');
 
           // get each field from the spi query parameter and issue

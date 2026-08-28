@@ -18,7 +18,8 @@ SPDX-License-Identifier: Apache-2.0
               <!-- field config save button -->
               <v-menu
                 :close-on-content-click="false"
-                location="bottom start">
+                location="bottom start"
+                @after-enter="focusSaveName">
                 <template #activator="{ props: activatorProps }">
                   <v-btn
                     v-bind="activatorProps"
@@ -40,13 +41,12 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="px-2 py-1">
                     <div class="arkime-input-group">
                       <input
-                        autofocus
+                        ref="fieldConfigNameInput"
                         @click.stop
                         maxlength="30"
                         type="text"
                         class="arkime-input-control"
-                        @input="debounceNewFieldConfigName"
-                        v-model.lazy="newFieldConfigName"
+                        v-model="newFieldConfigName"
                         :placeholder="$t('spiview.newConfigPlaceholder')"
                         @keydown.enter.stop.prevent="saveFieldConfiguration">
                       <v-btn
@@ -86,12 +86,24 @@ SPDX-License-Identifier: Apache-2.0
                     <div
                       class="d-flex align-center w-100"
                       @click.self="loadFieldConfiguration(key)">
+                      <v-icon
+                        v-if="config.shared"
+                        icon="mdi-account-multiple"
+                        size="small"
+                        class="me-1 flex-grow-0"
+                        :id="`sharedSpiConfig-${config.id}`" />
+                      <v-tooltip
+                        v-if="config.shared"
+                        :activator="`#sharedSpiConfig-${config.id}`">
+                        {{ $t('common.sharedTip', { creator: config.creator }) }}
+                      </v-tooltip>
                       <span
                         class="flex-grow-1"
                         @click="loadFieldConfiguration(key)">
                         {{ config.name }}
                       </span>
                       <v-btn
+                        v-if="config.canEdit"
                         :id="`updateFieldConfig${key}`"
                         color="warning"
                         variant="flat"
@@ -100,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         class="ms-1"
                         :aria-label="$t('common.save')"
-                        @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                        @click.stop.prevent="updateFieldConfiguration(config)">
                         <v-icon icon="mdi-content-save" />
                         <v-tooltip
                           :activator="`[id='updateFieldConfig${key}']`"
@@ -109,6 +121,7 @@ SPDX-License-Identifier: Apache-2.0
                         </v-tooltip>
                       </v-btn>
                       <v-btn
+                        v-if="config.canDelete"
                         color="error"
                         variant="flat"
                         size="small"
@@ -116,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         class="ms-1"
                         :aria-label="$t('common.delete')"
-                        @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                        @click.stop.prevent="deleteFieldConfiguration(config)">
                         <v-icon icon="mdi-trash-can-outline" />
                       </v-btn>
                     </div>
@@ -481,6 +494,9 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
+import { createLayoutService } from '../users/ShareableService';
+
+const SpiviewLayoutService = createLayoutService('spiviewLayout');
 import SpiviewService from './SpiviewService';
 // internal components
 import ArkimeError from '../utils/Error.vue';
@@ -506,7 +522,6 @@ let categoryLoadingCounts = {};
 let pendingPromises = [];
 
 let timeout;
-let newConfigTimeout;
 
 export default {
   name: 'Spiview',
@@ -599,7 +614,7 @@ export default {
     if (!this.spiQuery) { // there's no list of fields in the url params
       // so get what's saved in the db
       UserService.getPageConfig('spiview').then((response) => {
-        this.fieldConfigs = response.fieldConfigs;
+        // fieldConfigs are shareables now, issueQueries loads them
         this.spiQuery = response.spiviewFields.visibleFields || defaultSpi;
         this.issueQueries(true);
       }).catch((error) => {
@@ -893,30 +908,36 @@ export default {
 
       window.open(routeData.href, '_blank');
     },
-    /* debounces input to new field config to speed it up */
-    debounceNewFieldConfigName: function (e) {
-      if (newConfigTimeout) { clearTimeout(newConfigTimeout); }
-      newConfigTimeout = setTimeout(() => {
-        this.newFieldConfigName = e.target.value;
-      }, 400);
+    /* Puts the cursor in the name box when the menu opens, autofocus does not
+       fire for content mounted later and vuetify claims focus for the menu */
+    focusSaveName: function () {
+      // vuetify focuses the menu itself after the transition, and the content
+      // is visibility:hidden until it finishes, so keep trying for a few
+      // frames until the focus actually sticks
+      const attempt = (triesLeft) => {
+        const input = this.$refs.fieldConfigNameInput;
+        if (!input) { return; }
+        input.focus();
+        input.select();
+        if (document.activeElement !== input && triesLeft > 0) {
+          requestAnimationFrame(() => attempt(triesLeft - 1));
+        }
+      };
+      this.$nextTick(() => attempt(30));
     },
     /* Saves a custom spiview fields configuration */
     saveFieldConfiguration: function () {
       if (!this.newFieldConfigName) {
-        this.fieldConfigError = 'You must name your new spiview field configuration';
+        this.fieldConfigError = this.$t('spiview.nameConfigErr');
         return;
       }
 
-      const data = {
+      SpiviewLayoutService.create({
         name: this.newFieldConfigName,
         fields: this.spiQuery
-      };
-
-      UserService.createLayout('spiview', data).then((response) => {
-        data.name = response.name;
-
+      }).then((layout) => {
         if (!this.fieldConfigs) { this.fieldConfigs = []; }
-        this.fieldConfigs.push(data);
+        this.fieldConfigs.push(layout);
 
         this.newFieldConfigName = null;
         this.fieldConfigsOpen = false;
@@ -932,10 +953,14 @@ export default {
      * @param {int} index The index in the array of the spiview fields configs to load
      */
     loadFieldConfiguration: function (index) {
-      if (index !== -1) {
-        this.spiQuery = this.fieldConfigs[index].fields;
-      } else {
+      if (index === -1) {
         this.spiQuery = defaultSpi;
+      } else if (typeof this.fieldConfigs[index].fields !== 'string') {
+        // malformed/legacy layout data - fall back rather than crash
+        this.fieldConfigError = this.$t('spiview.invalidFieldConfig');
+        return;
+      } else {
+        this.spiQuery = this.fieldConfigs[index].fields;
       }
 
       this.saveFieldState();
@@ -943,12 +968,14 @@ export default {
     },
     /**
      * Deletes a previously saved custom spiview fields configuration
-     * @param {string} spiName  The name of the spiview fields config to remove
-     * @param {int} index       The index in the array of the spiview fields config to remove
+     * @param {object} config The spiview fields config to remove
      */
-    deleteFieldConfiguration: function (spiName, index) {
-      UserService.deleteLayout('spiview', spiName).then(() => {
-        this.fieldConfigs.splice(index, 1);
+    deleteFieldConfiguration: function (config) {
+      SpiviewLayoutService.delete(config.id).then(() => {
+        // re-find the index instead of trusting one captured before this
+        // network round trip, since the array can have changed underneath it
+        const index = this.fieldConfigs.indexOf(config);
+        if (index > -1) { this.fieldConfigs.splice(index, 1); }
         this.fieldConfigError = false;
       }).catch((error) => {
         this.fieldConfigError = resolveMessage(error, this.$t);
@@ -956,19 +983,17 @@ export default {
     },
     /**
      * Updates a previously saved custom spiview fields configuration
-     * @param {string} spiName  The name of the spiview fields config to update
-     * @param {int} index       The index in the array of the spiview fields config to update
+     * @param {object} config The spiview fields config to update
      */
-    updateFieldConfiguration: function (spiName, index) {
-      const data = {
-        name: spiName,
-        fields: this.spiQuery
-      };
-
-      UserService.updateLayout('spiview', data).then((response) => {
-        this.fieldConfigs[index] = data;
+    updateFieldConfiguration: function (config) {
+      // only data is sent, so the name and any sharing on it are left alone
+      SpiviewLayoutService.update(config.id, { fields: this.spiQuery }).then((layout) => {
+        const index = this.fieldConfigs.indexOf(config);
+        // the service returns the layout, not an api response, so use our own
+        // message rather than trying to resolve one off the object
+        if (index > -1) { this.fieldConfigs[index] = layout; }
         this.fieldConfigError = false;
-        this.fieldConfigSuccess = resolveMessage(response, this.$t);
+        this.fieldConfigSuccess = this.$t('spiview.configUpdated');
         setTimeout(() => { this.fieldConfigSuccess = ''; }, 5000);
       }).catch((error) => {
         this.fieldConfigError = resolveMessage(error, this.$t);
@@ -1291,10 +1316,11 @@ export default {
 
       return currentPromise;
     },
-    /* Gets the current user's custom spiview fields configurations */
+    /* Gets the spiview field configurations this user can see, theirs plus any
+       shared with them. viewOnly is off so edit-shared ones show up too. */
     getSpiviewFieldConfigs: function () {
-      UserService.getLayout('spiview').then((response) => {
-        this.fieldConfigs = response;
+      SpiviewLayoutService.list().then((configs) => {
+        this.fieldConfigs = configs;
       }).catch((error) => {
         this.fieldConfigError = resolveMessage(error, this.$t);
       });

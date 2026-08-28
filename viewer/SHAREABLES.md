@@ -123,6 +123,74 @@ capture stats / time fit a single ~160px row).
 
 ---
 
+### `sessionsTableLayout` (Viewer Vue app)
+
+Sessions tab column layout: which columns the session table shows and how it sorts.
+
+**Used by:** `viewer/vueapp/src/components/sessions/Sessions.vue`, `settings/Settings.vue`, `settings/LayoutEditor.vue`
+
+```json
+{
+  "type": "sessionsTableLayout",
+  "name": "Web traffic",
+  "data": {
+    "columns": ["firstPacket", "src", "source.port", "dst", "destination.port", "info"],
+    "order": [["firstPacket", "desc"]]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.columns` | string[] | Ordered column ids: a field's dbField (eg `source.ip`, `network.packets`) or a custom column id (`src`, `dst`, `dbby`, `info`) |
+| `data.order` | [[string, string]] | Sort: `[[sortField, "asc"\|"desc"]]` |
+
+---
+
+### `sessionsInfoLayout` (Viewer Vue app)
+
+Sessions tab Info column layout: which fields the Info column stacks up per session.
+
+**Used by:** `viewer/vueapp/src/components/sessions/Sessions.vue`, `settings/Settings.vue`, `settings/LayoutEditor.vue`
+
+```json
+{
+  "type": "sessionsInfoLayout",
+  "name": "DNS focus",
+  "data": {
+    "fields": ["protocol", "tags", "http.uri", "dns.host"]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.fields` | string[] | Ordered field ids shown stacked in the Info column |
+
+---
+
+### `spiviewLayout` (Viewer Vue app)
+
+SPI View tab field layout: which fields are open and how many values each shows.
+
+**Used by:** `viewer/vueapp/src/components/spiview/Spiview.vue`, `settings/Settings.vue`, `settings/LayoutEditor.vue`
+
+```json
+{
+  "type": "spiviewLayout",
+  "name": "Protocol triage",
+  "data": {
+    "fields": "destination.ip:100,protocol:100,source.ip:20"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.fields` | string | Comma separated `fieldId:count` pairs in display order; `count` is how many values to fetch for that field (100 when the layout editor adds one) |
+
+---
+
 ### `capture-columns` (Alkeme TUI)
 
 Capture Stats tab column layout.

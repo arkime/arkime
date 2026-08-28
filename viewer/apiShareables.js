@@ -11,6 +11,10 @@ const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const User = require('../common/user');
 
+// Long enough for db.pl's ' (legacy N)' import suffix on top of a full length
+// name, and far short of the 32766 byte ES keyword limit.
+const NAME_MAX_LENGTH = 256;
+
 class ShareableAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
@@ -77,6 +81,67 @@ class ShareableAPIs {
     return false;
   }
 
+  /**
+   * Checks a new shareable name. A name is shown to everyone the item is
+   * shared with, so anything invisible or able to reorder the text around it
+   * is refused -- but every real script is kept as typed, a layout can be
+   * named in Japanese or German.
+   * @returns {object} { name } with the trimmed name, or { error: { text, i18n } }
+   */
+  static validateName (rawName) {
+    // Cc control, Cf format (bidi overrides, zero width), Zl/Zp separators
+    if (/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u.test(rawName)) {
+      return { error: { text: 'Invalid characters in name', i18n: 'api.shareables.invalidNameChars' } };
+    }
+
+    const trimmed = rawName.trim();
+    // a name of only spaces or punctuation renders as a blank, clickable row
+    if (!/[\p{L}\p{N}]/u.test(trimmed)) {
+      return { error: { text: 'Invalid name', i18n: 'api.shareables.invalidName' } };
+    }
+
+    if (trimmed.length > NAME_MAX_LENGTH) {
+      return { error: { text: `Name must be ${NAME_MAX_LENGTH} characters or less`, i18n: 'api.shareables.nameTooLong' } };
+    }
+
+    return { name: trimmed };
+  }
+
+  /**
+   * Per-type shape validation for shareable `data`. Types not listed here
+   * (eg views, dashboards) have no shape requirement.
+   * @returns {object|undefined} { text, i18n }, or undefined if valid.
+   */
+  static validateData (type, data) {
+    const missingColumns = { text: 'Missing columns', i18n: 'api.shareables.missingColumns' };
+    const missingSortOrder = { text: 'Missing sort order', i18n: 'api.shareables.missingSortOrder' };
+    const missingFields = { text: 'Missing fields', i18n: 'api.shareables.missingFields' };
+    const missingWidgets = { text: 'Missing widgets or fields', i18n: 'api.shareables.missingWidgets' };
+
+    switch (type) {
+    case 'sessionsTableLayout':
+      if (!Array.isArray(data.columns)) { return missingColumns; }
+      if (!Array.isArray(data.order)) { return missingSortOrder; }
+      break;
+    case 'sessionsInfoLayout':
+      if (!Array.isArray(data.fields)) { return missingFields; }
+      break;
+    case 'spiviewLayout':
+      if (typeof data.fields !== 'string') { return missingFields; }
+      break;
+    case 'summaryConfig': {
+      // v7 dashboards carry widgets[], v6 ones only fields[]; the import
+      // handler accepts either, so this has to as well
+      const entries = Array.isArray(data.widgets) ? data.widgets : data.fields;
+      if (!Array.isArray(entries)) { return missingWidgets; }
+      // a null or scalar entry throws in the dashboard loader
+      if (entries.some(e => !e || typeof e !== 'object')) { return missingWidgets; }
+      break;
+    }
+    }
+    return undefined;
+  }
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -94,6 +159,11 @@ class ShareableAPIs {
   static async apiCreateShareable (req, res) {
     if (!ArkimeUtil.isString(req.body.name)) {
       return res.serverError(403, 'Missing shareable name', 'api.shareables.missingName');
+    }
+
+    const nameCheck = ShareableAPIs.validateName(req.body.name);
+    if (nameCheck.error) {
+      return res.serverError(403, nameCheck.error.text, nameCheck.error.i18n);
     }
 
     if (!ArkimeUtil.isString(req.body.type)) {
@@ -126,8 +196,14 @@ class ShareableAPIs {
       return res.serverError(403, 'Data must be an object');
     }
 
+    const data = req.body.data || {};
+    const dataError = ShareableAPIs.validateData(req.body.type, data);
+    if (dataError) {
+      return res.serverError(403, dataError.text, dataError.i18n);
+    }
+
     const doc = {
-      name: req.body.name,
+      name: nameCheck.name,
       description: req.body.description,
       type: req.body.type,
       creator: user.userId,
@@ -137,7 +213,7 @@ class ShareableAPIs {
       viewUsers,
       editRoles,
       editUsers,
-      data: req.body.data || {}
+      data
     };
 
     try {
@@ -213,8 +289,20 @@ class ShareableAPIs {
         return res.serverError(403, 'Cannot change shareable type', 'api.shareables.cannotChangeType');
       }
 
-      if (req.body.name !== undefined && !ArkimeUtil.isString(req.body.name)) {
-        return res.serverError(403, 'Name must be a string', 'api.shareables.nameMustBeString');
+      // Every editor resubmits the stored name on save, even when only the
+      // sharing changed, so a name echoed back unchanged is left alone -- only
+      // an actually new name is held to the rules. Otherwise an item whose
+      // name predates them could never be edited again.
+      let newName = shareable.name;
+      if (req.body.name !== undefined && req.body.name !== shareable.name) {
+        if (!ArkimeUtil.isString(req.body.name)) {
+          return res.serverError(403, 'Name must be a string', 'api.shareables.nameMustBeString');
+        }
+        const nameCheck = ShareableAPIs.validateName(req.body.name);
+        if (nameCheck.error) {
+          return res.serverError(403, nameCheck.error.text, nameCheck.error.i18n);
+        }
+        newName = nameCheck.name;
       }
 
       // empty is allowed so a description can be cleared
@@ -241,8 +329,20 @@ class ShareableAPIs {
         return res.serverError(403, 'Data must be an object');
       }
 
+      // only what the request actually sends is validated -- revalidating the
+      // stored data would make a shareable whose shape predates these rules
+      // impossible to rename or reshare
+      if (req.body.data !== undefined) {
+        const dataError = ShareableAPIs.validateData(shareable.type, req.body.data);
+        if (dataError) {
+          return res.serverError(403, dataError.text, dataError.i18n);
+        }
+      }
+
+      const data = req.body.data !== undefined ? req.body.data : (shareable.data || {});
+
       const doc = {
-        name: req.body.name !== undefined ? req.body.name : shareable.name,
+        name: newName,
         type: shareable.type,
         description: req.body.description !== undefined ? req.body.description : shareable.description,
         creator: shareable.creator,
@@ -252,7 +352,7 @@ class ShareableAPIs {
         viewUsers,
         editRoles,
         editUsers,
-        data: req.body.data !== undefined ? req.body.data : (shareable.data || {})
+        data
       };
 
       await Db.setShareable(req.params.id, doc);
