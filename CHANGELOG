@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4215 Fix email searches, periodic queries and cont3xt history deletes ignoring permissions that come from a role instead of the user (thanks @Juwon1405)
 ## Capture
   - #4217 Fix HTTP/2 sessions leaving http.uri empty, only http.uri.path was filled in
+  - #4223 Fix JA4 being wrong when the TLS/DTLS client hello has GREASE values in the signature algorithms extension
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
