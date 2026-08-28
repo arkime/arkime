@@ -953,6 +953,7 @@
     "uploadWorked": "Arquivo enviado com sucesso"
   },
   "users": {
+    "unknownErr": "Ocorreu um erro inesperado ao carregar os usuários.",
     "searchPlaceholder": "Comece a digitar para pesquisar usuários por nome, ID ou função (!função exclui usuários com essa função)",
     "searchUserPlaceholder": "Comece a digitar para pesquisar usuários por nome ou ID",
     "downloadCSVTip": "Baixar CSV",

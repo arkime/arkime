@@ -158,7 +158,7 @@ export default {
         }
       }).catch((error) => {
         this.loading = false;
-        this.error = resolveMessage(error, this.$t);
+        this.error = resolveMessage(error, this.$t) || this.$t('users.unknownErr');
       });
     },
     updateUsers (userId) { // emits both the new array and changed user-value

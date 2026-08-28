@@ -816,7 +816,7 @@ export default {
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
       }).catch((error) => {
         this.loading = false;
-        this.error = resolveMessage(error, this.$t);
+        this.error = resolveMessage(error, this.$t) || this.$t('users.unknownErr');
       });
     },
     reloadUsers () {
@@ -837,7 +837,7 @@ export default {
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
       }).catch((error) => {
         this.loading = false;
-        this.error = resolveMessage(error, this.$t);
+        this.error = resolveMessage(error, this.$t) || this.$t('users.unknownErr');
       });
     }
   }

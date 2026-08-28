@@ -953,6 +953,7 @@
     "uploadWorked": "Fichier téléchargé avec succès"
   },
   "users": {
+    "unknownErr": "Une erreur inattendue s'est produite lors du chargement des utilisateurs.",
     "searchPlaceholder": "Commencer à taper pour rechercher des utilisateurs par nom, ID ou rôle (!rôle exclut les utilisateurs ayant ce rôle)",
     "searchUserPlaceholder": "Commencer à taper pour rechercher des utilisateurs par nom ou ID",
     "downloadCSVTip": "Télécharger CSV",
