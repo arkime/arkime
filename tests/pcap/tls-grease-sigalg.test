@@ -1,0 +1,206 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 10383
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 4329,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "172.253.62.18",
+     "mac" : [
+      "78:45:58:c0:1d:c8"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 443
+    },
+    "dstDscp" : [
+     32
+    ],
+    "dstDscpCnt" : 1,
+    "dstPayload8" : "16030304c0020004",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     122
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1787932877956,
+    "http" : {
+     "host" : [
+      "mail.google.com"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 4,
+    "ipProtocol" : 6,
+    "lastPacket" : 1787932878320,
+    "length" : 364,
+    "network" : {
+     "bytes" : 15390,
+     "community_id" : "1:46Dg1LLXCgBpvmerwwbuLr851Y0=",
+     "packets" : 20
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     76,
+     2480,
+     76,
+     1534,
+     76,
+     144,
+     162,
+     2894,
+     2894,
+     2141,
+     127,
+     76,
+     1030,
+     101,
+     101,
+     76,
+     76,
+     1482
+    ],
+    "packetPos" : [
+     24,
+     106,
+     188,
+     264,
+     2744,
+     2820,
+     4354,
+     4430,
+     4574,
+     4736,
+     7630,
+     10524,
+     12665,
+     12792,
+     12868,
+     13898,
+     13999,
+     14100,
+     14176,
+     14252
+    ],
+    "packetRange" : {
+     "gte" : 1787932877956,
+     "lte" : 1787932878320
+    },
+    "protocol" : [
+     "tcp",
+     "tls"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 3867
+    },
+    "source" : {
+     "bytes" : 11061,
+     "ip" : "192.168.1.42",
+     "mac" : [
+      "c8:7f:54:5b:b8:1e"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 12311
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "1603010965010009",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "tls:has_ech"
+    ],
+    "tagsCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 8,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 10,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1622535849
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_AES_128_GCM_SHA256"
+     ],
+     "cipherCnt" : 1,
+     "dstSessionId" : [
+      "f41d8266437eafcc6e346d4a7bb29ef7e7239b9ed62314ccb3877e7eb0a4c9dd"
+     ],
+     "ja3" : [
+      "2e458aa272e715ee356efdfff6a60e20"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "2b0648ab686ee45e0e7c35fcfb0eea7e"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,4865,41-51-43"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,43-45-0-18-10-51-65281-16-5-27-17613-51764-11-23-65037-35-13-41,4588-29-23-24,0"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t13d1518h2_8daaf6152771_e2d80978ab2e"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t13d1518h2_002f,0035,009c,009d,1301,1302,1303,c013,c014,c02b,c02c,c02f,c030,cca8,cca9_0005,000a,000b,000d,0012,0017,001b,0023,0029,002b,002d,0033,44cd,ca34,fe0d,ff01_0904,0905,0906,0403,0804,0401,0503,0805,0501,0806,0601"
+     ],
+     "ja4_rCnt" : 1,
+     "srcSessionId" : [
+      "f41d8266437eafcc6e346d4a7bb29ef7e7239b9ed62314ccb3877e7eb0a4c9dd"
+     ],
+     "version" : [
+      "TLSv1.3"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 14250
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m08"
+    }
+   }
+  }
+ ]
+}
+

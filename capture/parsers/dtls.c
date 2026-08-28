@@ -210,7 +210,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
                 while (BSB_REMAINING(bsb) >= 2) {
                     uint16_t a = 0;
                     BSB_IMPORT_u16(bsb, a);
-                    if (ja4NumAlgos < ARRAY_LEN(ja4Algos))
+                    if (!dtls_is_grease_value(a) && ja4NumAlgos < ARRAY_LEN(ja4Algos))
                         ja4Algos[ja4NumAlgos++] = a;
                 }
             } else if (etype == 0x10) { // ALPN
