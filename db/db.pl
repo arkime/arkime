@@ -270,6 +270,7 @@ sub showHelp($)
     print "                                 <type> is 'all' or one of: " . join(", ", sort keys %SHAREABLE_IMPORTS) . "\n";
     print "                                 Originals are left alone so Arkime 6 keeps working\n";
     print "                                 Only works when users are in Elasticsearch, not sqlite/lmdb/redis\n";
+    print "                                 'upgrade' runs this for you, this is for re-running it later\n";
     print "    --dryrun                   - Print what would be copied without copying\n";
     print "      eg: db.pl <host:port> shareables-import spiview --dryrun\n";
     print "  users-update <pattern> <opts>- Bulk add/remove roles and set/unset fields on all users whose userId matches <pattern>\n";
@@ -7826,6 +7827,137 @@ logmsg "Setting shareables_v60 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}shareables_v60/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
+# Copy the per-user layouts named in %SHAREABLE_IMPORTS into the shareables
+# index. Safe to run repeatedly: anything already imported is left alone, and
+# the originals stay on the user record so Arkime 6 keeps working.
+# Returns (copied, skipped).
+sub shareablesImport
+{
+    my ($what) = @_;
+
+    my @todo = ($what eq "all") ? (sort keys %SHAREABLE_IMPORTS) : ($what);
+
+    my $copied = 0;
+    my $skipped = 0;
+
+    # Everything already in shareables, so re-runs are safe. Keyed on
+    # type + creator + name, which is what made a layout unique on the user;
+    # names aren't unique anymore, so more than one existing shareable can
+    # share a key, and the value is the *set* of their data (not a single
+    # value - overwriting on a repeat key would just pick whichever hit the
+    # scroll happened to return last). That set is what tells an
+    # already-imported layout apart from an unrelated same-name collision
+    # created since. Scrolled, not a flat size=10000 search, so this stays
+    # accurate past 10000 shareables.
+    my %have;
+    my $existing = esScroll("${PREFIX}shareables", to_json({"_source" => ["type", "creator", "name", "data"]}));
+    foreach my $hit (@{$existing}) {
+        my $src = $hit->{_source};
+        next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
+        my $existingKey = $src->{type} . "\0" . $src->{creator} . "\0" . $src->{name};
+        $have{$existingKey}->{JSON->new->canonical->encode($src->{data} // {})} = 1;
+    }
+
+    # db.pl only ever talks to Elasticsearch, so a users store kept in
+    # sqlite/lmdb/redis has nothing to read here and would silently look like
+    # there was simply nothing to import
+    my $userCount = esGet("/${PREFIX}users/_count", 1);
+    if (($userCount->{count} // 0) == 0) {
+        logmsg "WARNING - no users found in ${PREFIX}users, so there is nothing to import.\n";
+        logmsg "WARNING - shareables-import needs users stored in Elasticsearch; it cannot read a\n";
+        logmsg "WARNING - usersElasticsearch pointed at sqlite/lmdb/redis.\n";
+    }
+
+    # One scroll across all requested fields instead of one full user scan
+    # per kind
+    my @sourceFields = ("userId");
+    push(@sourceFields, $SHAREABLE_IMPORTS{$_}->{field}) foreach (@todo);
+    my $users = esScroll("${PREFIX}users", to_json({"_source" => \@sourceFields}));
+
+    my $body = "";
+    foreach my $kind (@todo) {
+        my $info = $SHAREABLE_IMPORTS{$kind};
+        my $field = $info->{field};
+        my $type = $info->{type};
+
+        foreach my $hit (@{$users}) {
+            my $userId = $hit->{_source}->{userId};
+            next if (!defined $userId);
+            my $configs = $hit->{_source}->{$field};
+            next if (!$configs || ref($configs) ne "ARRAY");
+
+            foreach my $config (@{$configs}) {
+                my $name = $config->{name};
+                next if (!defined $name);
+
+                my $data = $info->{data}->($config);
+                # canonical (sorted keys) so this compares equal to the same
+                # data round-tripped through ES, regardless of hash key order
+                my $dataJson = JSON->new->canonical->encode($data);
+                my $baseName = $name;
+                my $key = $type . "\0" . $userId . "\0" . $name;
+
+                # walk past any name already taken by something else (names
+                # aren't unique anymore) until we find either this exact
+                # layout (already imported - skip) or a free name to import
+                # the legacy data under. Bounded by how many existing
+                # shareables actually collide on this name, not an arbitrary
+                # cap - this is a migration tool, it must not drop data.
+                my $attempt = 0;
+                while ($have{$key} && !$have{$key}->{$dataJson}) {
+                    $attempt++;
+                    $name = $attempt == 1 ? "$baseName (legacy)" : "$baseName (legacy $attempt)";
+                    $key = $type . "\0" . $userId . "\0" . $name;
+                }
+
+                if ($have{$key} && $have{$key}->{$dataJson}) {
+                    $skipped++;
+                    next;
+                }
+
+                if ($attempt > 0) {
+                    logmsg "WARNING - '$baseName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
+                }
+
+                my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
+                my $doc = {
+                    name => $name,
+                    type => $type,
+                    creator => $userId,
+                    created => $now,
+                    updated => $now,
+                    viewRoles => [],
+                    viewUsers => [],
+                    editRoles => [],
+                    editUsers => [],
+                    data => $data
+                };
+
+                if ($DRYRUN) {
+                    print "Would copy $kind '$name' for $userId\n";
+                } else {
+                    print "Copying $kind '$name' for $userId\n";
+                    my $meta = to_json({"index" => {"_index" => "${PREFIX}shareables"}});
+                    $body .= $meta . "\n" . to_json($doc) . "\n";
+                    if (length($body) > 10 * 1000 * 1000) {
+                        esBulk($body, "shareables-import");
+                        $body = "";
+                    }
+                }
+                # guard against the same user having it twice in one run
+                $have{$key}->{$dataJson} = 1;
+                $copied++;
+            }
+        }
+    }
+    esBulk($body, "shareables-import") if (length($body) > 0);
+
+    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$DRYRUN);
+
+    return ($copied, $skipped);
+}
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -8980,124 +9112,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     showHelp("Unknown shareables-import type '$what', must be one of: all, " . join(", ", sort keys %SHAREABLE_IMPORTS))
         if ($what ne "all" && !$SHAREABLE_IMPORTS{$what});
 
-    my @todo = ($what eq "all") ? (sort keys %SHAREABLE_IMPORTS) : ($what);
-
-    my $copied = 0;
-    my $skipped = 0;
-
-    # Everything already in shareables, so re-runs are safe. Keyed on
-    # type + creator + name, which is what made a layout unique on the user;
-    # names aren't unique anymore, so more than one existing shareable can
-    # share a key, and the value is the *set* of their data (not a single
-    # value - overwriting on a repeat key would just pick whichever hit the
-    # scroll happened to return last). That set is what tells an
-    # already-imported layout apart from an unrelated same-name collision
-    # created since. Scrolled, not a flat size=10000 search, so this stays
-    # accurate past 10000 shareables.
-    my %have;
-    my $existing = esScroll("${PREFIX}shareables", to_json({"_source" => ["type", "creator", "name", "data"]}));
-    foreach my $hit (@{$existing}) {
-        my $src = $hit->{_source};
-        next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
-        my $existingKey = $src->{type} . "\0" . $src->{creator} . "\0" . $src->{name};
-        $have{$existingKey}->{JSON->new->canonical->encode($src->{data} // {})} = 1;
-    }
-
-    # db.pl only ever talks to Elasticsearch, so a users store kept in
-    # sqlite/lmdb/redis has nothing to read here and would silently look like
-    # there was simply nothing to import
-    my $userCount = esGet("/${PREFIX}users/_count", 1);
-    if (($userCount->{count} // 0) == 0) {
-        logmsg "WARNING - no users found in ${PREFIX}users, so there is nothing to import.\n";
-        logmsg "WARNING - shareables-import needs users stored in Elasticsearch; it cannot read a\n";
-        logmsg "WARNING - usersElasticsearch pointed at sqlite/lmdb/redis.\n";
-    }
-
-    # One scroll across all requested fields instead of one full user scan
-    # per kind
-    my @sourceFields = ("userId");
-    push(@sourceFields, $SHAREABLE_IMPORTS{$_}->{field}) foreach (@todo);
-    my $users = esScroll("${PREFIX}users", to_json({"_source" => \@sourceFields}));
-
-    my $body = "";
-    foreach my $kind (@todo) {
-        my $info = $SHAREABLE_IMPORTS{$kind};
-        my $field = $info->{field};
-        my $type = $info->{type};
-
-        foreach my $hit (@{$users}) {
-            my $userId = $hit->{_source}->{userId};
-            next if (!defined $userId);
-            my $configs = $hit->{_source}->{$field};
-            next if (!$configs || ref($configs) ne "ARRAY");
-
-            foreach my $config (@{$configs}) {
-                my $name = $config->{name};
-                next if (!defined $name);
-
-                my $data = $info->{data}->($config);
-                # canonical (sorted keys) so this compares equal to the same
-                # data round-tripped through ES, regardless of hash key order
-                my $dataJson = JSON->new->canonical->encode($data);
-                my $baseName = $name;
-                my $key = $type . "\0" . $userId . "\0" . $name;
-
-                # walk past any name already taken by something else (names
-                # aren't unique anymore) until we find either this exact
-                # layout (already imported - skip) or a free name to import
-                # the legacy data under. Bounded by how many existing
-                # shareables actually collide on this name, not an arbitrary
-                # cap - this is a migration tool, it must not drop data.
-                my $attempt = 0;
-                while ($have{$key} && !$have{$key}->{$dataJson}) {
-                    $attempt++;
-                    $name = $attempt == 1 ? "$baseName (legacy)" : "$baseName (legacy $attempt)";
-                    $key = $type . "\0" . $userId . "\0" . $name;
-                }
-
-                if ($have{$key} && $have{$key}->{$dataJson}) {
-                    $skipped++;
-                    next;
-                }
-
-                if ($attempt > 0) {
-                    logmsg "WARNING - '$baseName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
-                }
-
-                my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
-                my $doc = {
-                    name => $name,
-                    type => $type,
-                    creator => $userId,
-                    created => $now,
-                    updated => $now,
-                    viewRoles => [],
-                    viewUsers => [],
-                    editRoles => [],
-                    editUsers => [],
-                    data => $data
-                };
-
-                if ($DRYRUN) {
-                    print "Would copy $kind '$name' for $userId\n";
-                } else {
-                    print "Copying $kind '$name' for $userId\n";
-                    my $meta = to_json({"index" => {"_index" => "${PREFIX}shareables"}});
-                    $body .= $meta . "\n" . to_json($doc) . "\n";
-                    if (length($body) > 10 * 1000 * 1000) {
-                        esBulk($body, "shareables-import");
-                        $body = "";
-                    }
-                }
-                # guard against the same user having it twice in one run
-                $have{$key}->{$dataJson} = 1;
-                $copied++;
-            }
-        }
-    }
-    esBulk($body, "shareables-import") if (length($body) > 0);
-
-    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$DRYRUN);
+    my ($copied, $skipped) = shareablesImport($what);
 
     print "$copied " . ($DRYRUN ? "would be copied" : "copied") . ", $skipped already existed\n";
     print "The originals were left on the user, so Arkime 6 keeps working. Re-run any time to pick up new ones.\n";
@@ -10857,6 +10872,21 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
+    }
+
+    # The layouts that used to live on the user record are shareables now and
+    # nothing reads them off the user any more, so copy them across here rather
+    # than leaving everyone's saved layouts invisible until an admin happens to
+    # run shareables-import by hand. Idempotent and non destructive, so it is
+    # safe on every upgrade; a failure is not worth aborting the upgrade over.
+    if ($main::versionNumber <= $VERSION) {
+        my ($copied, $skipped) = eval { shareablesImport("all") };
+        if ($@) {
+            logmsg "WARNING - could not import layouts into shareables: $@";
+            logmsg "WARNING - run 'db.pl <host:port> shareables-import all' once the cause is fixed.\n";
+        } elsif ($copied) {
+            logmsg "Imported $copied layout(s) into shareables, $skipped already existed\n";
+        }
     }
 }
 
