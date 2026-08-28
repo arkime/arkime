@@ -1059,6 +1059,7 @@
     "uploadWorked": "Archivo subido exitosamente"
   },
   "users": {
+    "unknownErr": "Ocurrió un error inesperado al cargar los usuarios.",
     "searchPlaceholder": "Comience a escribir para buscar usuarios por nombre, ID o rol (!rol excluye usuarios con ese rol)",
     "searchUserPlaceholder": "Comience a escribir para buscar usuarios por nombre o ID",
     "downloadCSVTip": "Descargar CSV",

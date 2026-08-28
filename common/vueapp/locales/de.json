@@ -1059,6 +1059,7 @@
     "uploadWorked": "Datei erfolgreich hochgeladen"
   },
   "users": {
+    "unknownErr": "Beim Laden der Benutzer ist ein unerwarteter Fehler aufgetreten.",
     "searchPlaceholder": "Beginnen Sie mit der Eingabe, um nach Benutzern nach Name, ID oder Rolle zu suchen (!Rolle schließt Benutzer mit dieser Rolle aus)",
     "searchUserPlaceholder": "Beginnen Sie mit der Eingabe, um nach Benutzern nach Name oder ID zu suchen",
     "downloadCSVTip": "CSV herunterladen",

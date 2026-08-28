@@ -194,7 +194,7 @@ export default {
         }
       }).catch((error) => {
         this.loading = false;
-        this.error = resolveMessage(error, this.$t);
+        this.error = resolveMessage(error, this.$t) || this.$t('users.unknownErr');
       });
     },
     toggleUser (userId, checked) {

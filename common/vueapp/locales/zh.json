@@ -1059,6 +1059,7 @@
     "uploadWorked": "文件成功上传"
   },
   "users": {
+    "unknownErr": "加载用户时发生意外错误。",
     "searchPlaceholder": "开始输入以按名称、ID 或角色搜索用户（!角色可排除具有该角色的用户）",
     "searchUserPlaceholder": "开始输入以按名称或 ID 搜索用户",
     "downloadCSVTip": "下载 CSV",

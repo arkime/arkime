@@ -1059,6 +1059,7 @@
     "uploadWorked": "Fail edukalt üles laaditud"
   },
   "users": {
+    "unknownErr": "Kasutajate laadimisel ilmnes ootamatu viga.",
     "searchPlaceholder": "Alusta tippimist, et otsida kasutajaid nime, ID või rolli järgi (!roll välistab selle rolliga kasutajad)",
     "searchUserPlaceholder": "Alusta tippimist, et otsida kasutajaid nime või ID järgi",
     "downloadCSVTip": "Laadi alla CSV",

@@ -1059,6 +1059,7 @@
     "uploadWorked": "ファイルが正常にアップロードされました"
   },
   "users": {
+    "unknownErr": "ユーザーの読み込み中に予期しないエラーが発生しました。",
     "searchPlaceholder": "名前、ID、またはロールでユーザーを検索するには入力を開始してください（!ロールでそのロールを持つユーザーを除外）",
     "searchUserPlaceholder": "名前または ID でユーザーを検索するには入力を開始してください",
     "downloadCSVTip": "CSV をダウンロード",
