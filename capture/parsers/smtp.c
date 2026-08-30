@@ -807,9 +807,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     if (email->base64Decode & (1 << which)) {
                         guchar buf[20000];
                         if (sizeof(buf) > line->len) {
-                            gsize  b = g_base64_decode_step (line->str, line->len, buf,
-                                                             &(email->state64[which]),
-                                                             &(email->save64[which]));
+                            gsize  b = g_base64_decode_step(line->str, line->len, buf,
+                                                            &(email->state64[which]),
+                                                            &(email->save64[which]));
                             MD5_Update(&email->md5Ctx[which], buf, b);
                             if (config.supportSha256) {
                                 g_checksum_update(email->sha256[which], buf, b);
