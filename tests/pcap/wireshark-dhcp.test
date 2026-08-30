@@ -59,19 +59,19 @@
       "REQUEST"
      ],
      "typeCnt" : 4,
-     "yiadASN" : [
+     "yiaddrASN" : [
       "---"
      ],
-     "yiadGEO" : [
+     "yiaddrGEO" : [
       "---"
      ],
-     "yiadRIR" : [
-      "ARIN"
-     ],
-     "yiaddr" : [
+     "yiaddrIp" : [
       "192.168.0.10"
      ],
-     "yiaddrCnt" : 1
+     "yiaddrIpCnt" : 1,
+     "yiaddrRIR" : [
+      "ARIN"
+     ]
     },
     "dstOui" : [
      "Dell Inc."

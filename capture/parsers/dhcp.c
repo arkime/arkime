@@ -412,7 +412,7 @@ void arkime_parser_init()
                                          (char *)NULL);
 
     yiaddrField = arkime_field_define("dhcp", "ip",
-                                      "dhcp.yiaddr", "DHCP Assigned IP", "dhcp.yiaddr",
+                                      "dhcp.yiaddr", "DHCP Assigned IP", "dhcp.yiaddrIp",
                                       "DHCP Server-Assigned IP Address (yiaddr) from OFFER/ACK",
                                       ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);

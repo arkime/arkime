@@ -4926,20 +4926,20 @@ sub sessions3Update
         "typeCnt" : {
           "type" : "long"
         },
-        "yiadASN" : {
+        "yiaddrASN" : {
           "type" : "keyword"
         },
-        "yiadGEO" : {
+        "yiaddrGEO" : {
           "type" : "keyword"
         },
-        "yiadRIR" : {
-          "type" : "keyword"
-        },
-        "yiaddr" : {
+        "yiaddrIp" : {
           "type" : "ip"
         },
-        "yiaddrCnt" : {
+        "yiaddrIpCnt" : {
           "type" : "long"
+        },
+        "yiaddrRIR" : {
+          "type" : "keyword"
         }
       }
     },
