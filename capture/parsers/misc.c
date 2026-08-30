@@ -272,20 +272,6 @@ LOCAL void ident_protocol_classify(ArkimeSession_t *session, const uint8_t *data
     }
 }
 /******************************************************************************/
-// SSDP response classifier - HTTP response over UDP with UPnP headers
-LOCAL void ssdp_response_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (arkime_session_has_protocol(session, "ssdp"))
-        return;
-
-    // Look for UPnP-specific headers: ST:, USN:, or UPnP in SERVER/body
-    if (arkime_memstr((const char *)data, len, "\r\nST:", 5) ||
-        arkime_memstr((const char *)data, len, "\r\nUSN:", 6) ||
-        arkime_memstr((const char *)data, len, "UPnP", 4)) {
-        arkime_session_add_protocol(session, "ssdp");
-    }
-}
-/******************************************************************************/
 // Plex GDM response classifier - HTTP response over UDP with Plex headers
 LOCAL void plex_gdm_response_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -421,10 +407,6 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_TCP("nsclient", "NSClient");
     SIMPLE_CLASSIFY_TCP("nsclient", "None&");
-
-    SIMPLE_CLASSIFY_UDP("ssdp", "M-SEARCH ");
-    SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY * ");
-    arkime_parsers_classifier_register_udp("ssdp", NULL, 0, (uint8_t *)"HTTP/1.", 7, ssdp_response_classify);
 
     SIMPLE_CLASSIFY_UDP("bsdp", "SEARCH BSDP/");
     SIMPLE_CLASSIFY_UDP("bsdp", "NOTIFY BSDP/");

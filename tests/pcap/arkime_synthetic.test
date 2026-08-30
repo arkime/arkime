@@ -6280,16 +6280,16 @@
      70
     ],
     "packetPos" : [
-     86654,
-     86724,
-     86794,
-     86864,
-     86953,
-     87043,
-     87253,
-     87323,
-     87393,
-     87463
+     88335,
+     88405,
+     88475,
+     88545,
+     88634,
+     88724,
+     88934,
+     89004,
+     89074,
+     89144
     ],
     "packetRange" : {
      "gte" : 1700007000000,
@@ -6503,7 +6503,7 @@
      74
     ],
     "packetPos" : [
-     87533
+     89214
     ],
     "packetRange" : {
      "gte" : 1700008000000,
@@ -6571,7 +6571,7 @@
      74
     ],
     "packetPos" : [
-     87607
+     89288
     ],
     "packetRange" : {
      "gte" : 1700008000050,
@@ -6824,25 +6824,25 @@
      70
     ],
     "packetPos" : [
-     87681,
-     87751,
-     87821,
-     87891,
-     88117,
-     88316,
-     88386,
-     88470,
-     88540,
-     88618,
-     88688,
-     88800,
-     88870,
-     88946,
-     89016,
-     89093,
-     89163,
-     89233,
-     89303
+     89362,
+     89432,
+     89502,
+     89572,
+     89798,
+     89997,
+     90067,
+     90151,
+     90221,
+     90299,
+     90369,
+     90481,
+     90551,
+     90627,
+     90697,
+     90774,
+     90844,
+     90914,
+     90984
     ],
     "packetRange" : {
      "gte" : 1700009000000,
@@ -7426,9 +7426,9 @@
      132
     ],
     "packetPos" : [
-     102067,
-     102173,
-     102279
+     103748,
+     103854,
+     103960
     ],
     "packetRange" : {
      "gte" : 1700009300000,
@@ -7464,6 +7464,354 @@
     ],
     "srcTTLCnt" : 1,
     "totDataBytes" : 170
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 179
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.255.255.250",
+     "mac" : [
+      "01:00:5e:7f:ff:fa"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 1900
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700009900000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700009900000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 221,
+     "community_id" : "1:7111bOHooB8J3FkiTbKH9LuuX40=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     237
+    ],
+    "packetPos" : [
+     86654
+    ],
+    "packetRange" : {
+     "gte" : 1700009900000,
+     "lte" : 1700009900000
+    },
+    "protocol" : [
+     "ssdp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 221,
+     "ip" : "10.20.9.10",
+     "mac" : [
+      "02:aa:00:00:13:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 50100
+    },
+    "srcPayload8" : "4d2d534541524348",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "ssdp" : {
+     "st" : [
+      "urn:schemas-upnp-org:device:MediaRenderer:1"
+     ],
+     "stCnt" : 1,
+     "userAgent" : [
+      "SynthOS/1.0 UPnP/1.1 SynthClient/2.3"
+     ],
+     "userAgentCnt" : 1
+    },
+    "totDataBytes" : 179
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 287
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.20.9.10",
+     "mac" : [
+      "02:aa:00:00:13:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 50101
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700009900050,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700009900050,
+    "length" : 0,
+    "network" : {
+     "bytes" : 329,
+     "community_id" : "1:zfLU6AOV2AxqyVTQYz0fSx3kPJE=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     345
+    ],
+    "packetPos" : [
+     86891
+    ],
+    "packetRange" : {
+     "gte" : 1700009900050,
+     "lte" : 1700009900050
+    },
+    "protocol" : [
+     "ssdp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 329,
+     "ip" : "10.20.9.20",
+     "mac" : [
+      "02:aa:00:00:13:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 1900
+    },
+    "srcPayload8" : "485454502f312e31",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "ssdp" : {
+     "location" : [
+      "http://10.20.9.20:8008/desc.xml"
+     ],
+     "locationCnt" : 1,
+     "server" : [
+      "SynthOS/1.0 UPnP/1.0 SynthRenderer/3.1"
+     ],
+     "serverCnt" : 1,
+     "st" : [
+      "urn:schemas-upnp-org:device:MediaRenderer:1"
+     ],
+     "stCnt" : 1,
+     "usn" : [
+      "uuid:0a171e60-aaaa-bbbb-cccc-121314151617::urn:schemas-upnp-org:device:MediaRenderer:1"
+     ],
+     "usnCnt" : 1
+    },
+    "totDataBytes" : 287
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 662
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.255.255.250",
+     "mac" : [
+      "01:00:5e:7f:ff:fa"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 1900
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700009900100,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700009900150,
+    "length" : 50,
+    "network" : {
+     "bytes" : 746,
+     "community_id" : "1:TBUQSEnkZ37fEbgA9PCeyL/64aU=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     394,
+     384
+    ],
+    "packetPos" : [
+     87236,
+     87630
+    ],
+    "packetRange" : {
+     "gte" : 1700009900100,
+     "lte" : 1700009900150
+    },
+    "protocol" : [
+     "ssdp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 746,
+     "ip" : "10.20.9.30",
+     "mac" : [
+      "02:aa:00:00:13:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 50200
+    },
+    "srcPayload8" : "4e4f54494659202a",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "ssdp" : {
+     "location" : [
+      "http://10.20.9.30:80/desc.xml"
+     ],
+     "locationCnt" : 1,
+     "nt" : [
+      "urn:schemas-upnp-org:device:InternetGatewayDevice:1",
+      "urn:schemas-upnp-org:service:WANIPConnection:1"
+     ],
+     "ntCnt" : 2,
+     "server" : [
+      "SynthRouter/1.0 UPnP/1.0 IGD/1.0"
+     ],
+     "serverCnt" : 1,
+     "usn" : [
+      "uuid:11111111-2222-3333-4444-555566667777::urn:schemas-upnp-org:device:InternetGatewayDevice:1",
+      "uuid:11111111-2222-3333-4444-555566667777::urn:schemas-upnp-org:service:WANIPConnection:1"
+     ],
+     "usnCnt" : 2
+    },
+    "totDataBytes" : 662
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 263
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.255.255.250",
+     "mac" : [
+      "01:00:5e:7f:ff:fa"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 5000
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700009900200,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700009900200,
+    "length" : 0,
+    "network" : {
+     "bytes" : 305,
+     "community_id" : "1:sI93YgF3MxufQa8RQiyTXusa4Lg=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     321
+    ],
+    "packetPos" : [
+     88014
+    ],
+    "packetRange" : {
+     "gte" : 1700009900200,
+     "lte" : 1700009900200
+    },
+    "protocol" : [
+     "ssdp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 305,
+     "ip" : "10.20.9.31",
+     "mac" : [
+      "02:aa:00:00:13:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 50300
+    },
+    "srcPayload8" : "4e4f54494659202a",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "ssdp" : {
+     "location" : [
+      "http://10.20.9.31:5000/desc.xml"
+     ],
+     "locationCnt" : 1,
+     "nt" : [
+      "upnp:rootdevice"
+     ],
+     "ntCnt" : 1,
+     "server" : [
+      "SynthCam/2.0 UPnP/1.0 Cam/2.0"
+     ],
+     "serverCnt" : 1,
+     "usn" : [
+      "uuid:99999999-8888-7777-6666-555544443333::upnp:rootdevice"
+     ],
+     "usnCnt" : 1
+    },
+    "totDataBytes" : 263
    },
    "header" : {
     "index" : {
@@ -7522,14 +7870,14 @@
      70
     ],
     "packetPos" : [
-     89373,
-     89443,
-     89513,
-     89583,
-     89728,
-     89848,
-     89918,
-     89988
+     91054,
+     91124,
+     91194,
+     91264,
+     91409,
+     91529,
+     91599,
+     91669
     ],
     "packetRange" : {
      "gte" : 1700010000000,
@@ -7667,14 +8015,14 @@
      70
     ],
     "packetPos" : [
-     90058,
-     90128,
-     90198,
-     90268,
-     90400,
-     90517,
-     90587,
-     90657
+     91739,
+     91809,
+     91879,
+     91949,
+     92081,
+     92198,
+     92268,
+     92338
     ],
     "packetRange" : {
      "gte" : 1700010000400,
@@ -7812,14 +8160,14 @@
      70
     ],
     "packetPos" : [
-     90727,
-     90797,
-     90867,
-     90937,
-     91074,
-     91191,
-     91261,
-     91331
+     92408,
+     92478,
+     92548,
+     92618,
+     92755,
+     92872,
+     92942,
+     93012
     ],
     "packetRange" : {
      "gte" : 1700010000799,
@@ -7969,14 +8317,14 @@
      70
     ],
     "packetPos" : [
-     91401,
-     91471,
-     91541,
-     91611,
-     91693,
-     91782,
-     91852,
-     91922
+     93082,
+     93152,
+     93222,
+     93292,
+     93374,
+     93463,
+     93533,
+     93603
     ],
     "packetRange" : {
      "gte" : 1700011000000,
@@ -8096,14 +8444,14 @@
      70
     ],
     "packetPos" : [
-     91992,
-     92062,
-     92132,
-     92202,
-     92281,
-     92363,
-     92433,
-     92503
+     93673,
+     93743,
+     93813,
+     93883,
+     93962,
+     94044,
+     94114,
+     94184
     ],
     "packetRange" : {
      "gte" : 1700011000400,
@@ -8211,14 +8559,14 @@
      70
     ],
     "packetPos" : [
-     92573,
-     92643,
-     92713,
-     92783,
-     93261,
-     93331,
-     93401,
-     93471
+     94254,
+     94324,
+     94394,
+     94464,
+     94942,
+     95012,
+     95082,
+     95152
     ],
     "packetRange" : {
      "gte" : 1700012000000,
@@ -8324,16 +8672,16 @@
      70
     ],
     "packetPos" : [
-     93541,
-     93611,
-     93681,
-     93751,
-     94012,
-     94252,
-     94534,
-     94604,
-     94674,
-     94744
+     95222,
+     95292,
+     95362,
+     95432,
+     95693,
+     95933,
+     96215,
+     96285,
+     96355,
+     96425
     ],
     "packetRange" : {
      "gte" : 1700013000000,
@@ -8460,8 +8808,8 @@
      101
     ],
     "packetPos" : [
-     94814,
-     94915
+     96495,
+     96596
     ],
     "packetRange" : {
      "gte" : 1700013000500,
@@ -8567,8 +8915,8 @@
      105
     ],
     "packetPos" : [
-     95016,
-     95121
+     96697,
+     96802
     ],
     "packetRange" : {
      "gte" : 1700013000599,
@@ -8673,14 +9021,14 @@
      70
     ],
     "packetPos" : [
-     95226,
-     95296,
-     95366,
-     95436,
-     95558,
-     96701,
-     96771,
-     96841
+     96907,
+     96977,
+     97047,
+     97117,
+     97239,
+     98382,
+     98452,
+     98522
     ],
     "packetRange" : {
      "gte" : 1700014000000,
@@ -8815,8 +9163,8 @@
      130
     ],
     "packetPos" : [
-     96911,
-     97041
+     98592,
+     98722
     ],
     "packetRange" : {
      "gte" : 1700015000000,
@@ -8895,8 +9243,8 @@
      108
     ],
     "packetPos" : [
-     97171,
-     97279
+     98852,
+     98960
     ],
     "packetRange" : {
      "gte" : 1700015000100,
@@ -8971,8 +9319,8 @@
      176
     ],
     "packetPos" : [
-     97387,
-     97563
+     99068,
+     99244
     ],
     "packetRange" : {
      "gte" : 1700015000200,
@@ -9040,7 +9388,7 @@
      2154
     ],
     "packetPos" : [
-     97739
+     99420
     ],
     "packetRange" : {
      "gte" : 1700016000000,
@@ -9107,7 +9455,7 @@
      2174
     ],
     "packetPos" : [
-     99893
+     101574
     ],
     "packetRange" : {
      "gte" : 1700016100000,
@@ -9250,24 +9598,24 @@
      70
     ],
     "packetPos" : [
-     102411,
-     102481,
-     102551,
-     102621,
-     102724,
-     102803,
-     102873,
-     103074,
-     103166,
-     103236,
-     103400,
-     103492,
-     103562,
-     103689,
-     103781,
-     103851,
-     103921,
-     103991
+     104092,
+     104162,
+     104232,
+     104302,
+     104405,
+     104484,
+     104554,
+     104755,
+     104847,
+     104917,
+     105081,
+     105173,
+     105243,
+     105370,
+     105462,
+     105532,
+     105602,
+     105672
     ],
     "packetRange" : {
      "gte" : 1700020000000,
@@ -17583,11 +17931,28 @@
       "CIMSYS Inc"
      ],
      "ouiCnt" : 1,
+     "paramReqList" : [
+      "1,3,6,15,31,33,43,44,46,47,119,121,249,252"
+     ],
+     "paramReqListCnt" : 1,
      "type" : [
       "DISCOVER",
       "OFFER"
      ],
-     "typeCnt" : 2
+     "typeCnt" : 2,
+     "yiadASN" : [
+      "---"
+     ],
+     "yiadGEO" : [
+      "---"
+     ],
+     "yiadRIR" : [
+      "ARIN"
+     ],
+     "yiaddr" : [
+      "192.168.1.100"
+     ],
+     "yiaddrCnt" : 1
     },
     "dstTTL" : [
      64

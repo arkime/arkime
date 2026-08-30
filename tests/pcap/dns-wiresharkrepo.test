@@ -453,6 +453,7 @@
        {
         "class" : "IN",
         "name" : "104.9.192.66.in-addr.arpa",
+        "ptr" : "66-192-9-104.gen.twtelecom.net",
         "ttl" : 86309,
         "type" : "PTR"
        }
@@ -634,6 +635,7 @@
        {
         "class" : "IN",
         "name" : "1.0.0.127.in-addr.arpa",
+        "ptr" : "localhost",
         "ttl" : 3600,
         "type" : "PTR"
        }

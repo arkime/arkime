@@ -31,6 +31,10 @@
       "Grandstream Networks, Inc."
      ],
      "ouiCnt" : 1,
+     "paramReqList" : [
+      "1,3,6,42"
+     ],
+     "paramReqListCnt" : 1,
      "requestASN" : [
       "---",
       "---"
@@ -54,7 +58,20 @@
       "OFFER",
       "REQUEST"
      ],
-     "typeCnt" : 4
+     "typeCnt" : 4,
+     "yiadASN" : [
+      "---"
+     ],
+     "yiadGEO" : [
+      "---"
+     ],
+     "yiadRIR" : [
+      "ARIN"
+     ],
+     "yiaddr" : [
+      "192.168.0.10"
+     ],
+     "yiaddrCnt" : 1
     },
     "dstOui" : [
      "Dell Inc."
