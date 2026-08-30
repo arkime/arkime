@@ -1,0 +1,9 @@
+if (session.ssdp)
+  div.sessionDetailMeta.bold ssdp
+  dl.sessionDetailMeta
+    +arrayList(session.ssdp, "server", "Server", "ssdp.server")
+    +arrayList(session.ssdp, "userAgent", "User Agent", "ssdp.userAgent")
+    +arrayList(session.ssdp, "st", "Search Target", "ssdp.st")
+    +arrayList(session.ssdp, "nt", "Notification Type", "ssdp.nt")
+    +arrayList(session.ssdp, "usn", "USN", "ssdp.usn")
+    +arrayList(session.ssdp, "location", "Location", "ssdp.location")

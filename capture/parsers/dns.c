@@ -102,9 +102,11 @@ typedef enum dns_type {
     DNS_RR_A          =   1,
     DNS_RR_NS         =   2,
     DNS_RR_CNAME      =   5,
+    DNS_RR_PTR        =  12,
     DNS_RR_MX         =  15,
     DNS_RR_TXT        =  16,
     DNS_RR_AAAA       =  28,
+    DNS_RR_SRV        =  33,
     DNS_RR_DS         =  43,
     DNS_RR_RRSIG      =  46,
     DNS_RR_NSEC       =  47,
@@ -140,6 +142,13 @@ typedef struct dns_answer_mxrdata {
     uint16_t preference;
     char    *exchange;
 } DNSMXRData_t;
+
+typedef struct dns_answer_srvrdata {
+    uint16_t priority;
+    uint16_t weight;
+    uint16_t port;
+    char    *target;
+} DNSSRVRData_t;
 
 typedef struct dns_answer_svcbrdata_field_value {
     struct dns_answer_svcbrdata_field_value  *t_next, *t_prev;
@@ -191,7 +200,9 @@ typedef struct dns_answer {
     struct dns_answer  *t_next, *t_prev;
     union {
         char            *cname;
+        char            *ptrdname;
         DNSMXRData_t    *mx;
+        DNSSRVRData_t   *srv;
         char            *nsdname;
         uint32_t         ipA;
         struct in6_addr *ipAAAA;
@@ -582,6 +593,12 @@ LOCAL void dns_free_answer(DNSAnswer_t *answer)
         }
     }
     break;
+    case DNS_RR_PTR: {
+        if (answer->ptrdname) {
+            g_free(answer->ptrdname);
+        }
+    }
+    break;
     case DNS_RR_MX: {
         if (!answer->mx) {
             break;
@@ -590,6 +607,16 @@ LOCAL void dns_free_answer(DNSAnswer_t *answer)
             g_free(answer->mx->exchange);
         }
         ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+    }
+    break;
+    case DNS_RR_SRV: {
+        if (!answer->srv) {
+            break;
+        }
+        if (answer->srv->target) {
+            g_free(answer->srv->target);
+        }
+        ARKIME_TYPE_FREE(DNSSRVRData_t, answer->srv);
     }
     break;
     case DNS_RR_AAAA: {
@@ -1071,6 +1098,25 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 }
                 break;
             }
+            case DNS_RR_PTR: {
+                namelen = sizeof(namebuf);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
+                    goto continueerr;
+                }
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_PTR Name=%s", name);
+#endif
+                // mDNS/DNS-SD PTR rdata is a service instance, not a host --
+                // keep it out of the host tables, just record it on the answer.
+                answer->ptrdname = g_hostname_to_unicode(name);
+                if (!answer->ptrdname)
+                    answer->ptrdname = g_strndup(name, namelen);
+                jsonLen += namelen + 16;
+                break;
+            }
             case DNS_RR_MX: {
                 uint16_t mx_preference = 0;
                 BSB_IMPORT_u16(rdbsb, mx_preference);
@@ -1137,6 +1183,35 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     g_hash_table_add(dns->mxIPs, mxv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
+                break;
+            }
+            case DNS_RR_SRV: {
+                uint16_t srv_priority = 0;
+                uint16_t srv_weight = 0;
+                uint16_t srv_port = 0;
+                BSB_IMPORT_u16(rdbsb, srv_priority);
+                BSB_IMPORT_u16(rdbsb, srv_weight);
+                BSB_IMPORT_u16(rdbsb, srv_port);
+
+                namelen = sizeof(namebuf);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
+                    goto continueerr;
+                }
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_SRV Target=%s, Port=%u", name, srv_port);
+#endif
+
+                answer->srv = ARKIME_TYPE_ALLOC0(DNSSRVRData_t);
+                answer->srv->priority = srv_priority;
+                answer->srv->weight = srv_weight;
+                answer->srv->port = srv_port;
+                answer->srv->target = g_hostname_to_unicode(name);
+                if (!answer->srv->target)
+                    answer->srv->target = g_strndup(name, namelen);
+                jsonLen += namelen + 64;
                 break;
             }
             case DNS_RR_HTTPS: {
@@ -1653,12 +1728,28 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                         g_free(answer->cname);
                     }
                     break;
+                    case DNS_RR_PTR: {
+                        BSB_EXPORT_cstr(*jbsb, "\"ptr\":");
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->ptrdname, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
+                        g_free(answer->ptrdname);
+                    }
+                    break;
                     case DNS_RR_MX: {
                         BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"mx\":", answer->mx->preference);
                         arkime_db_js0n_str(jbsb, (uint8_t *)answer->mx->exchange, TRUE);
                         BSB_EXPORT_u08(*jbsb, ',');
                         g_free(answer->mx->exchange);
                         ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+                    }
+                    break;
+                    case DNS_RR_SRV: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"weight\":%u,\"port\":%u,\"srv\":",
+                                           answer->srv->priority, answer->srv->weight, answer->srv->port);
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->srv->target, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
+                        g_free(answer->srv->target);
+                        ARKIME_TYPE_FREE(DNSSRVRData_t, answer->srv);
                     }
                     break;
                     case DNS_RR_AAAA: {
@@ -2326,6 +2417,30 @@ void arkime_parser_init()
     arkime_field_define("dns", "integer",
                         "dns.answer.priority", "DNS Answer Priority", "dns.answers.priority",
                         "DNS Answer Priority",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answer.ptr", "DNS Answer PTR", "dns.answers.ptr",
+                        "DNS Answer PTR",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answer.srv", "DNS Answer SRV", "dns.answers.srv",
+                        "DNS Answer SRV Target",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "integer",
+                        "dns.answer.port", "DNS Answer Port", "dns.answers.port",
+                        "DNS Answer SRV Port",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "integer",
+                        "dns.answer.weight", "DNS Answer Weight", "dns.answers.weight",
+                        "DNS Answer SRV Weight",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
