@@ -17,6 +17,8 @@ LOCAL int ouiField;
 LOCAL int idField;
 LOCAL int classIdField;
 LOCAL int requestIpField;
+LOCAL int yiaddrField;
+LOCAL int paramReqListField;
 
 LOCAL int dhcp_packet_func;
 
@@ -200,6 +202,13 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         arkime_field_macoui_add(session, macField, ouiField, data + 28);
     }
 
+    // yiaddr (offset 16): server-assigned IP in DHCPOFFER/ACK. 0 in REQUEST/DISCOVER.
+    if (data[16] || data[17] || data[18] || data[19]) {
+        uint32_t yip;
+        memcpy(&yip, data + 16, 4);
+        arkime_field_ip4_add(yiaddrField, session, yip);
+    }
+
     char str[100];
     uint32_t id = 0;
     BSB_IMPORT_skip(bsb, 4);
@@ -266,6 +275,21 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
                 BSB_IMPORT_skip(bsb, l - 1);
             }
             break;
+        case 55: { // Parameter Request List
+            BSB_IMPORT_ptr(bsb, valueStr, l);
+            if (valueStr && l > 0 && l <= 64) {
+                char prl[256];
+                BSB pbsb;
+                BSB_INIT(pbsb, prl, sizeof(prl));
+                for (int i = 0; i < l; i++) {
+                    BSB_EXPORT_sprintf(pbsb, "%s%u", i ? "," : "", valueStr[i]);
+                }
+                if (!BSB_IS_ERROR(pbsb)) {
+                    arkime_field_string_add(paramReqListField, session, prl, BSB_LENGTH(pbsb), TRUE);
+                }
+            }
+            break;
+        }
         case 81: // FQDN
             if (l < 3) {
                 BSB_IMPORT_skip(bsb, l);
@@ -386,6 +410,18 @@ void arkime_parser_init()
                                          "DHCP Requested IP Address",
                                          ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                          (char *)NULL);
+
+    yiaddrField = arkime_field_define("dhcp", "ip",
+                                      "dhcp.yiaddr", "DHCP Assigned IP", "dhcp.yiaddrIp",
+                                      "DHCP Server-Assigned IP Address (yiaddr) from OFFER/ACK",
+                                      ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    paramReqListField = arkime_field_define("dhcp", "termfield",
+                                            "dhcp.paramReqList", "DHCP Param Req List", "dhcp.paramReqList",
+                                            "DHCP Parameter Request List (option 55), comma-separated option codes",
+                                            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                            (char *)NULL);
 
     arkime_packet_set_udpport_enqueue_cb(67, dhcp_packet_enqueue);
     arkime_packet_set_udpport_enqueue_cb(68, dhcp_packet_enqueue);

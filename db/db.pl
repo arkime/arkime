@@ -4899,6 +4899,12 @@ sub sessions3Update
         "ouiCnt" : {
           "type" : "long"
         },
+        "paramReqList" : {
+          "type" : "keyword"
+        },
+        "paramReqListCnt" : {
+          "type" : "long"
+        },
         "requestASN" : {
           "type" : "keyword"
         },
@@ -4919,6 +4925,21 @@ sub sessions3Update
         },
         "typeCnt" : {
           "type" : "long"
+        },
+        "yiaddrASN" : {
+          "type" : "keyword"
+        },
+        "yiaddrGEO" : {
+          "type" : "keyword"
+        },
+        "yiaddrIp" : {
+          "type" : "ip"
+        },
+        "yiaddrIpCnt" : {
+          "type" : "long"
+        },
+        "yiaddrRIR" : {
+          "type" : "keyword"
         }
       }
     },
@@ -4965,10 +4986,19 @@ sub sessions3Update
             "nsec" : {
               "type" : "keyword"
             },
+            "port" : {
+              "type" : "long"
+            },
             "priority" : {
               "type" : "long"
             },
+            "ptr" : {
+              "type" : "keyword"
+            },
             "rrsig" : {
+              "type" : "keyword"
+            },
+            "srv" : {
               "type" : "keyword"
             },
             "ttl" : {
@@ -4979,6 +5009,9 @@ sub sessions3Update
             },
             "type" : {
               "type" : "keyword"
+            },
+            "weight" : {
+              "type" : "long"
             }
           }
         },
@@ -6276,6 +6309,46 @@ sub sessions3Update
     },
     "segmentCnt" : {
       "type" : "long"
+    },
+    "ssdp" : {
+      "properties" : {
+        "location" : {
+          "type" : "keyword"
+        },
+        "locationCnt" : {
+          "type" : "long"
+        },
+        "nt" : {
+          "type" : "keyword"
+        },
+        "ntCnt" : {
+          "type" : "long"
+        },
+        "server" : {
+          "type" : "keyword"
+        },
+        "serverCnt" : {
+          "type" : "long"
+        },
+        "st" : {
+          "type" : "keyword"
+        },
+        "stCnt" : {
+          "type" : "long"
+        },
+        "userAgent" : {
+          "type" : "keyword"
+        },
+        "userAgentCnt" : {
+          "type" : "long"
+        },
+        "usn" : {
+          "type" : "keyword"
+        },
+        "usnCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "sctp" : {
       "properties" : {

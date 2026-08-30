@@ -41,6 +41,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #4217 Fix HTTP/2 sessions leaving http.uri empty, only http.uri.path was filled in
   - #4223 Fix JA4 being wrong when the TLS/DTLS client hello has GREASE values in the signature algorithms extension
+  - #4224 Add ssdp parser
+  - #4224 Add dhcp.yiaddr, the server assigned address from OFFER/ACK, and dhcp.paramReqList, the parameter request list
+  - #4224 Add DNS PTR and SRV answer parsing
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"

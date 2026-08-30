@@ -102,9 +102,11 @@ typedef enum dns_type {
     DNS_RR_A          =   1,
     DNS_RR_NS         =   2,
     DNS_RR_CNAME      =   5,
+    DNS_RR_PTR        =  12,
     DNS_RR_MX         =  15,
     DNS_RR_TXT        =  16,
     DNS_RR_AAAA       =  28,
+    DNS_RR_SRV        =  33,
     DNS_RR_DS         =  43,
     DNS_RR_RRSIG      =  46,
     DNS_RR_NSEC       =  47,
@@ -140,6 +142,13 @@ typedef struct dns_answer_mxrdata {
     uint16_t preference;
     char    *exchange;
 } DNSMXRData_t;
+
+typedef struct dns_answer_srvrdata {
+    uint16_t priority;
+    uint16_t weight;
+    uint16_t port;
+    char    *target;
+} DNSSRVRData_t;
 
 typedef struct dns_answer_svcbrdata_field_value {
     struct dns_answer_svcbrdata_field_value  *t_next, *t_prev;
@@ -191,7 +200,9 @@ typedef struct dns_answer {
     struct dns_answer  *t_next, *t_prev;
     union {
         char            *cname;
+        char            *ptrdname;
         DNSMXRData_t    *mx;
+        DNSSRVRData_t   *srv;
         char            *nsdname;
         uint32_t         ipA;
         struct in6_addr *ipAAAA;
@@ -459,7 +470,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
                 BSB_IMPORT_ptr(absb, aptr, 4);
 
                 if (aptr) {
-                    uint32_t ip = ((uint32_t)(aptr[3]) << 24) | ((uint32_t)(aptr[2]) << 16) |  ((uint32_t)(aptr[1]) << 8) | (uint32_t)(aptr[0]);
+                    uint32_t ip = ((uint32_t)(aptr[3]) << 24) | ((uint32_t)(aptr[2]) << 16) | ((uint32_t)(aptr[1]) << 8) | (uint32_t)(aptr[0]);
                     g_array_append_val((GArray *)fieldValue->value, ip);
 #ifdef DNSDEBUG
                     LOG("DNSDEBUG: HTTPS ipv4hint=%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
@@ -582,6 +593,12 @@ LOCAL void dns_free_answer(DNSAnswer_t *answer)
         }
     }
     break;
+    case DNS_RR_PTR: {
+        if (answer->ptrdname) {
+            g_free(answer->ptrdname);
+        }
+    }
+    break;
     case DNS_RR_MX: {
         if (!answer->mx) {
             break;
@@ -590,6 +607,16 @@ LOCAL void dns_free_answer(DNSAnswer_t *answer)
             g_free(answer->mx->exchange);
         }
         ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+    }
+    break;
+    case DNS_RR_SRV: {
+        if (!answer->srv) {
+            break;
+        }
+        if (answer->srv->target) {
+            g_free(answer->srv->target);
+        }
+        ARKIME_TYPE_FREE(DNSSRVRData_t, answer->srv);
     }
     break;
     case DNS_RR_AAAA: {
@@ -944,11 +971,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #endif
 
             uint16_t antype = 0;
-            BSB_IMPORT_u16 (bsb, antype);
+            BSB_IMPORT_u16(bsb, antype);
             answer->type_id = antype;
 
             uint16_t anclass = 0;
-            BSB_IMPORT_u16 (bsb, anclass);
+            BSB_IMPORT_u16(bsb, anclass);
 
             /* mDNS (RFC 6762 §10.2): top bit of rrclass is the cache-flush
              * indicator and must be masked off before comparing. */
@@ -956,9 +983,9 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 anclass &= 0x7FFF;
             }
             uint32_t anttl = 0;
-            BSB_IMPORT_u32 (bsb, anttl);
+            BSB_IMPORT_u32(bsb, anttl);
             uint16_t rdlength = 0;
-            BSB_IMPORT_u16 (bsb, rdlength);
+            BSB_IMPORT_u16(bsb, rdlength);
 
             if (BSB_REMAINING(bsb) < rdlength) {
                 dns_free_answer(answer);
@@ -1071,6 +1098,25 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 }
                 break;
             }
+            case DNS_RR_PTR: {
+                namelen = sizeof(namebuf);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
+                    goto continueerr;
+                }
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_PTR Name=%s", name);
+#endif
+                // mDNS/DNS-SD PTR rdata is a service instance, not a host --
+                // keep it out of the host tables, just record it on the answer.
+                answer->ptrdname = g_hostname_to_unicode(name);
+                if (!answer->ptrdname)
+                    answer->ptrdname = g_strndup(name, namelen);
+                jsonLen += namelen + 16;
+                break;
+            }
             case DNS_RR_MX: {
                 uint16_t mx_preference = 0;
                 BSB_IMPORT_u16(rdbsb, mx_preference);
@@ -1137,6 +1183,35 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     g_hash_table_add(dns->mxIPs, mxv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
+                break;
+            }
+            case DNS_RR_SRV: {
+                uint16_t srv_priority = 0;
+                uint16_t srv_weight = 0;
+                uint16_t srv_port = 0;
+                BSB_IMPORT_u16(rdbsb, srv_priority);
+                BSB_IMPORT_u16(rdbsb, srv_weight);
+                BSB_IMPORT_u16(rdbsb, srv_port);
+
+                namelen = sizeof(namebuf);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
+                    goto continueerr;
+                }
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_SRV Target=%s, Port=%u", name, srv_port);
+#endif
+
+                answer->srv = ARKIME_TYPE_ALLOC0(DNSSRVRData_t);
+                answer->srv->priority = srv_priority;
+                answer->srv->weight = srv_weight;
+                answer->srv->port = srv_port;
+                answer->srv->target = g_hostname_to_unicode(name);
+                if (!answer->srv->target)
+                    answer->srv->target = g_strndup(name, namelen);
+                jsonLen += namelen + 64;
                 break;
             }
             case DNS_RR_HTTPS: {
@@ -1483,8 +1558,8 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
     uint32_t              cnt = 0;
 
     BSB_EXPORT_sprintf(*jbsb, "\"%s\":[", key);
-    g_hash_table_iter_init (&iter, ghash);
-    while (cnt < MAX_IPS && g_hash_table_iter_next (&iter, &ikey, NULL)) {
+    g_hash_table_iter_init(&iter, ghash);
+    while (cnt < MAX_IPS && g_hash_table_iter_next(&iter, &ikey, NULL)) {
         arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
@@ -1640,12 +1715,28 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                         g_free(answer->cname);
                     }
                     break;
+                    case DNS_RR_PTR: {
+                        BSB_EXPORT_cstr(*jbsb, "\"ptr\":");
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->ptrdname, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
+                        g_free(answer->ptrdname);
+                    }
+                    break;
                     case DNS_RR_MX: {
                         BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"mx\":", answer->mx->preference);
                         arkime_db_js0n_str(jbsb, (uint8_t *)answer->mx->exchange, TRUE);
                         BSB_EXPORT_u08(*jbsb, ',');
                         g_free(answer->mx->exchange);
                         ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+                    }
+                    break;
+                    case DNS_RR_SRV: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"weight\":%u,\"port\":%u,\"srv\":",
+                                           answer->srv->priority, answer->srv->weight, answer->srv->port);
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->srv->target, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
+                        g_free(answer->srv->target);
+                        ARKIME_TYPE_FREE(DNSSRVRData_t, answer->srv);
                     }
                     break;
                     case DNS_RR_AAAA: {
@@ -2317,6 +2408,30 @@ void arkime_parser_init()
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
+                        "dns.answer.ptr", "DNS Answer PTR", "dns.answers.ptr",
+                        "DNS Answer PTR",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answer.srv", "DNS Answer SRV", "dns.answers.srv",
+                        "DNS Answer SRV Target",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "integer",
+                        "dns.answer.port", "DNS Answer Port", "dns.answers.port",
+                        "DNS Answer SRV Port",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "integer",
+                        "dns.answer.weight", "DNS Answer Weight", "dns.answers.weight",
+                        "DNS Answer SRV Weight",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
                         "dns.answer.https", "DNS Answer HTTPS", "dns.answers.https",
                         "DNS Answer HTTPS",
                         0, ARKIME_FIELD_FLAG_FAKE,
@@ -2367,7 +2482,7 @@ void arkime_parser_init()
 
     arkime_parsers_classifier_register_port("dns", NULL, 53, ARKIME_PARSERS_PORT_TCP_DST, dns_tcp_classify);
 
-    arkime_parsers_classifier_register_port("dns",   (void *)(long)0,   53, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("dns", (void *)(long)0,   53, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
     arkime_parsers_classifier_register_port("llmnr", (void *)(long)1, 5355, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
-    arkime_parsers_classifier_register_port("mdns",  (void *)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
+    arkime_parsers_classifier_register_port("mdns", (void *)(long)2, 5353, ARKIME_PARSERS_PORT_UDP, dns_udp_classify);
 }
