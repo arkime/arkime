@@ -233,6 +233,24 @@ function serviceProto (type) {
   return 'tcp';
 }
 
+// Flatten a session's dns answers into an array of answer objects. The dns
+// field is an array of per-query objects, each carrying its own answers[].
+// ES returns each answer as an object; the ClickHouse backend serializes
+// nested object-arrays as JSON strings, so parse those back.
+function dnsAnswers (src) {
+  const out = [];
+  for (const d of toArray(src?.dns)) {
+    for (const a of toArray(d?.answers)) {
+      if (typeof a === 'string') {
+        try { out.push(JSON.parse(a)); } catch (_) { /* skip unparseable */ }
+      } else if (a) {
+        out.push(a);
+      }
+    }
+  }
+  return out;
+}
+
 class FeatherprintClassify {
   // --------------------------------------------------------------------------
   static #pickBetterMac (current, candidate) {
@@ -314,12 +332,7 @@ class FeatherprintClassify {
       }
     }
 
-    // The session dns field is an array of per-query objects, each carrying
-    // its own answers array.
-    const answers = [];
-    for (const d of toArray(src?.dns)) {
-      for (const a of toArray(d?.answers)) answers.push(a);
-    }
+    const answers = dnsAnswers(src);
 
     // DNS A/AAAA answers (mDNS rides the same parser): bind answer.name to
     // answer.ip regardless of who asked.
@@ -745,11 +758,14 @@ class FeatherprintAPIs {
       // Query the oldest @timestamp across all session indices so the very
       // first tick starts at the actual beginning of the data, then the
       // chunk loop (with adaptive growth on empty chunks) walks forward.
+      // Use searchSessions (not Db.search) so this hits whichever backend
+      // holds sessions -- with a ClickHouse sessionsDbUrl the session data
+      // is not in ES, and Db.search would throw index_not_found.
       try {
-        const r = await Db.search(Db.getSessionIndices(true), {
+        const r = await Db.searchSessions(Db.getSessionIndices(true), {
           size: 0,
           aggs: { minTs: { min: { field: '@timestamp' } } }
-        });
+        }, {});
         const minMs = r?.aggregations?.minTs?.value;
         if (minMs && Number.isFinite(minMs)) {
           lp = Math.floor(minMs / 1000) - 60;
@@ -1175,10 +1191,8 @@ class FeatherprintAPIs {
     toArray(src?.arp?.ip).forEach(add);
     toArray(src?.dhcp?.yiaddrIp).forEach(add);
     toArray(src?.dhcp?.requestIp).forEach(add);
-    for (const d of toArray(src?.dns)) {
-      for (const a of toArray(d?.answers)) {
-        if (a?.ip) add(a.ip);
-      }
+    for (const a of dnsAnswers(src)) {
+      if (a?.ip) add(a.ip);
     }
     return out;
   }
