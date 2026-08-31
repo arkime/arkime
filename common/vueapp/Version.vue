@@ -8,21 +8,102 @@ SPDX-License-Identifier: Apache-2.0
     :close-on-content-click="false"
     location="bottom">
     <template #activator="{ props: activatorProps }">
-      <a
+      <span
         v-bind="activatorProps"
-        :href="versionLink"
-        class="arkime-version-link me-2 align-middle">
-        v{{ version }}
-      </a>
+        class="d-inline-flex align-center">
+        <a
+          :href="versionLink"
+          class="arkime-version-link me-2 align-middle">
+          v{{ version }}
+        </a>
+        <span
+          v-if="showDot"
+          :class="['update-dot', { 'update-dot-security': update.security }]"
+          :aria-label="$t('updateCheck.available', { version: update.latest })" />
+      </span>
     </template>
     <div class="version-popup">
-      {{ buildInfo }}
+      <div>{{ buildInfo }}</div>
+
+      <template v-if="updateEnabled">
+        <hr class="version-divider">
+
+        <!-- first use: say exactly what gets sent, then remember the answer -->
+        <div v-if="needsConsent">
+          <div class="version-consent">
+            {{ $t('updateCheck.consentBody', { major: update.major, host: updateHost }) }}
+          </div>
+          <v-btn
+            size="x-small"
+            variant="tonal"
+            class="me-1"
+            @click="allowUpdateCheck">
+            {{ $t('updateCheck.consentAllow') }}
+          </v-btn>
+          <v-btn
+            size="x-small"
+            variant="text"
+            @click="denyUpdateCheck">
+            {{ $t('updateCheck.consentDeny') }}
+          </v-btn>
+        </div>
+
+        <div v-else>
+          <div v-if="update.status === 'checking'">
+            {{ $t('updateCheck.checking') }}
+          </div>
+          <div v-else-if="update.latest">
+            <a
+              :href="update.latestUrl"
+              target="_blank"
+              rel="noreferrer noopener">
+              {{ $t('updateCheck.available', { version: update.latest }) }}
+            </a>
+            <div
+              v-if="update.security"
+              class="version-security">
+              {{ $t('updateCheck.security') }}
+            </div>
+            <div
+              v-if="update.eol"
+              class="version-security">
+              {{ $t('updateCheck.eol') }}
+            </div>
+            <v-btn
+              size="x-small"
+              variant="text"
+              class="mt-1"
+              @click="dismiss">
+              {{ $t('updateCheck.dismiss') }}
+            </v-btn>
+          </div>
+          <div v-else-if="update.status === 'error'">
+            {{ $t('updateCheck.failed') }}
+          </div>
+          <div v-else-if="update.status === 'done'">
+            {{ $t('updateCheck.upToDate') }}
+          </div>
+
+          <v-btn
+            v-if="update.status !== 'checking'"
+            size="x-small"
+            variant="text"
+            class="mt-1"
+            @click="check">
+            {{ $t('updateCheck.check') }}
+          </v-btn>
+        </div>
+      </template>
     </div>
   </v-menu>
 </template>
 
 <script>
 import { timezoneDateString } from './vueFilters.js';
+import {
+  updateCheckState, checkForUpdates, grantConsent,
+  denyConsent, dismissUpdate, hasUndismissedUpdate
+} from './UpdateCheckService.js';
 
 // NOTE: parent application must have the constants present in the application
 export default {
@@ -37,7 +118,8 @@ export default {
     return {
       version: this.$constants.VERSION,
       buildDate: this.$constants.BUILD_DATE,
-      buildVersion: this.$constants.BUILD_VERSION
+      buildVersion: this.$constants.BUILD_VERSION,
+      update: updateCheckState()
     };
   },
   computed: {
@@ -53,6 +135,36 @@ export default {
       } else {
         return `https://github.com/arkime/arkime/releases/tag/v${this.version}`;
       }
+    },
+    updateEnabled () {
+      return this.update.mode !== 'off';
+    },
+    needsConsent () {
+      return this.update.consent === undefined;
+    },
+    updateHost () {
+      try {
+        return new URL(this.update.baseUrl).host;
+      } catch {
+        return this.update.baseUrl;
+      }
+    },
+    showDot () {
+      return this.updateEnabled && hasUndismissedUpdate();
+    }
+  },
+  methods: {
+    check () {
+      checkForUpdates({ force: true });
+    },
+    allowUpdateCheck () {
+      grantConsent();
+    },
+    denyUpdateCheck () {
+      denyConsent();
+    },
+    dismiss () {
+      dismissUpdate();
     }
   }
 };
@@ -67,6 +179,31 @@ export default {
   padding: 6px 10px;
   font-size: 0.85rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  max-width: 320px;
+}
+.version-divider {
+  margin: 6px 0;
+  border: 0;
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
+}
+.version-consent {
+  margin-bottom: 6px;
+}
+.version-security {
+  color: rgb(var(--v-theme-warning));
+}
+.update-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgb(var(--v-theme-info));
+  margin-left: -6px;
+  margin-right: 6px;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.update-dot-security {
+  background-color: rgb(var(--v-theme-warning));
 }
 </style>
 

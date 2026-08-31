@@ -16,6 +16,7 @@ const iptrie = require('arkime-iptrie');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+
 const Locales = require('../common/locales');
 const Banner = require('../common/banner');
 const WISESource = require('./wiseSource.js');
@@ -177,6 +178,15 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
+
+// resolved lazily on first request, once config is loaded; drives both the
+// CSP connect-src and the constants handed to the client
+let updateCheck;
+function getUpdateCheck () {
+  updateCheck ??= ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  return updateCheck;
+}
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
@@ -187,7 +197,9 @@ const cspDirectives = {
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:'],
   // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
-  workerSrc: ["'self'", 'blob:']
+  workerSrc: ["'self'", 'blob:'],
+  // only widened when an update check origin is configured, so 'off' is browser enforced
+  connectSrc: ["'self'", () => getUpdateCheck().origin ?? "'self'"]
 };
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
@@ -1732,6 +1744,8 @@ app.use(cspHeader, (req, res, next) => {
     footerConfig,
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
+    checkForUpdates: getUpdateCheck().mode,
+    updateCheckUrl: getUpdateCheck().url,
     environment: process.env.NODE_ENV
   };
 

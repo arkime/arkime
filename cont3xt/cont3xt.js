@@ -16,6 +16,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
+
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
 const Banner = require('../common/banner');
@@ -61,6 +62,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// resolved lazily on first request, once config is loaded; drives both the
+// CSP connect-src and the constants handed to the client
+let updateCheck;
+function getUpdateCheck () {
+  updateCheck ??= ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  return updateCheck;
+}
+
 // define csp headers - no-op in NODE_ENV=development, since csp will disable vite's HMR (hot module reloading)
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
@@ -71,7 +80,9 @@ const cspHeader = (process.env.NODE_ENV === 'development')
       // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
       scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
       objectSrc: ["'none'"],
-      imgSrc: ["'self'", 'data:']
+      imgSrc: ["'self'", 'data:'],
+      // only widened when an update check origin is configured, so 'off' is browser enforced
+      connectSrc: ["'self'", () => getUpdateCheck().origin ?? "'self'"]
     }
   });
 
@@ -445,6 +456,8 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     version: version.version,
     path: internals.webBasePath,
     disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
+    checkForUpdates: getUpdateCheck().mode,
+    updateCheckUrl: getUpdateCheck().url,
     environment: process.env.NODE_ENV,
     manifest
   };

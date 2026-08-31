@@ -37,6 +37,7 @@ const version = require('../common/version');
 const Notifier = require('../common/notifier');
 const Banner = require('../common/banner');
 const ArkimeUtil = require('../common/arkimeUtil');
+
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
 const jsonParser = ArkimeUtil.jsonParser;
@@ -143,6 +144,15 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
+
+// resolved lazily on first request, once config is loaded; drives both the
+// CSP connect-src and the constants handed to the client
+let updateCheck;
+function getUpdateCheck () {
+  updateCheck ??= ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  return updateCheck;
+}
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
@@ -151,7 +161,9 @@ const cspDirectives = {
   // need unsafe-eval for vue full build: https://vuejs.org/guide/best-practices/security.html#potential-dangers
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
-  imgSrc: ["'self'", 'data:']
+  imgSrc: ["'self'", 'data:'],
+  // only widened when an update check origin is configured, so 'off' is browser enforced
+  connectSrc: ["'self'", () => getUpdateCheck().origin ?? "'self'"]
 };
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
@@ -2203,6 +2215,8 @@ app.use((req, res, next) => {
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/'),
     environment: process.env.NODE_ENV,
+    checkForUpdates: getUpdateCheck().mode,
+    updateCheckUrl: getUpdateCheck().url,
     manifest,
     footerConfig
   };

@@ -2052,5 +2052,18 @@
       "nodeIncluded": "Successfully included node",
       "nodeInclusionFailed": "Node inclusion failed"
     }
+  },
+  "updateCheck": {
+    "check": "Check for updates",
+    "checking": "Checking...",
+    "upToDate": "Arkime is up to date",
+    "available": "Arkime {version} is available",
+    "security": "Includes a security fix",
+    "eol": "This release is no longer supported",
+    "failed": "Update check failed",
+    "dismiss": "Dismiss",
+    "consentBody": "Check {host} for newer releases? This sends your major version ({major}).",
+    "consentAllow": "Check for updates",
+    "consentDeny": "Not now"
   }
 }

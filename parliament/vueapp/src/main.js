@@ -9,6 +9,7 @@ import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
+import { initUpdateCheck } from '@common/UpdateCheckService.js';
 
 import { buildVuetifyThemes } from './theme.js';
 
@@ -91,6 +92,8 @@ async function initializeApp () {
   app.config.globalProperties.$constants = constants;
   // provide constants to vue composition api
   app.provide('constants', constants);
+
+  initUpdateCheck(constants);
 
   app.mount('#app');
 }

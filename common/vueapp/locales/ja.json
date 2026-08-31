@@ -2052,5 +2052,18 @@
       "nodeIncluded": "ノードを正常に包含しました",
       "nodeInclusionFailed": "ノードの包含に失敗しました"
     }
+  },
+  "updateCheck": {
+    "check": "更新を確認",
+    "checking": "確認中...",
+    "upToDate": "Arkime は最新です",
+    "available": "Arkime {version} が利用可能です",
+    "security": "セキュリティ修正を含みます",
+    "eol": "このリリースはサポートが終了しています",
+    "failed": "更新の確認に失敗しました",
+    "dismiss": "閉じる",
+    "consentBody": "{host} で新しいリリースを確認しますか？ メジャーバージョン ({major}) が送信されます。",
+    "consentAllow": "更新を確認",
+    "consentDeny": "今はしない"
   }
 }

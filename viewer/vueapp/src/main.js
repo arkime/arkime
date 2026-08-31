@@ -8,6 +8,7 @@ import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
+import { initUpdateCheck } from '@common/UpdateCheckService.js';
 
 // css frameworks
 import 'vuetify/styles';
@@ -108,12 +109,16 @@ async function initializeApp() {
     LOGOUT_URL_METHOD,
     DEFAULT_TIME_RANGE,
     SPIVIEW_CATEGORY_ORDER,
-    CLUSTER_DEFAULT
+    CLUSTER_DEFAULT,
+    CHECK_FOR_UPDATES,
+    UPDATE_CHECK_URL
   };
   // allow vue options api to access constants with this.$constants
   app.config.globalProperties.$constants = constants;
   // provide constants to vue composition api
   app.provide('constants', constants);
+
+  initUpdateCheck(constants);
 
   app.mount('#app');
 }

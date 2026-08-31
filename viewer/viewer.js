@@ -87,6 +87,14 @@ process.on('SIGINT', function () {
   process.exit(0);
 });
 
+// resolved lazily on first request, once config is loaded; drives both the
+// CSP connect-src and the constants handed to the client
+let updateCheck;
+function getUpdateCheck () {
+  updateCheck ??= ArkimeUtil.updateCheckConfig(Config.get);
+  return updateCheck;
+}
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
@@ -95,7 +103,9 @@ const cspDirectives = {
   // need unsafe-eval for vue full build: https://vuejs.org/api/application#app-config-compileroptions
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
-  imgSrc: ["'self'", 'data:']
+  imgSrc: ["'self'", 'data:'],
+  // only widened when an update check origin is configured, so 'off' is browser enforced
+  connectSrc: ["'self'", () => getUpdateCheck().origin ?? "'self'"]
 };
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
@@ -2274,6 +2284,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
     spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
+    checkForUpdates: getUpdateCheck().mode,
+    updateCheckUrl: getUpdateCheck().url,
     clusterDefault: Config.get('clusterDefault', ''),
     environment: process.env.NODE_ENV,
     manifest

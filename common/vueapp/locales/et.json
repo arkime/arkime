@@ -2052,5 +2052,18 @@
       "nodeIncluded": "Sõlm edukalt kaasatud",
       "nodeInclusionFailed": "Sõlme kaasamine ebaõnnestus"
     }
+  },
+  "updateCheck": {
+    "check": "Otsi uuendusi",
+    "checking": "Kontrollin...",
+    "upToDate": "Arkime on ajakohane",
+    "available": "Arkime {version} on saadaval",
+    "security": "Sisaldab turvaparandust",
+    "eol": "See versioon ei ole enam toetatud",
+    "failed": "Uuenduste kontroll ebaõnnestus",
+    "dismiss": "Peida",
+    "consentBody": "Kas kontrollida {host} uuemate versioonide osas? Saadetakse teie peaversioon ({major}).",
+    "consentAllow": "Otsi uuendusi",
+    "consentDeny": "Mitte praegu"
   }
 }

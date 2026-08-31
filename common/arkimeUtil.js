@@ -663,6 +663,40 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Resolve the client side update check settings.
+   *
+   * Returns mode 'off' unless both settings are valid, so a typo fails closed
+   * rather than silently enabling off-origin requests. The origin is handed to
+   * CSP connect-src, which is what actually permits the browser to make them.
+   *
+   * @param {function} get a config getter, eg Config.get or ArkimeConfig.get
+   * @returns {object} { mode, url, origin }
+   */
+  static updateCheckConfig (get) {
+    const off = { mode: 'off', url: '', origin: undefined };
+
+    const mode = get('checkForUpdates', 'manual');
+    if (mode === 'off' || mode === false || mode === 'false') { return off; }
+
+    if (mode !== 'manual' && mode !== 'auto') {
+      console.log(`WARNING - unknown checkForUpdates value '${mode}', disabling update checks (expected off, manual, or auto)`);
+      return off;
+    }
+
+    const url = get('updateCheckUrl', 'https://versions.arkime.com');
+
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') { throw new Error('bad protocol'); }
+      return { mode, url, origin: parsed.origin };
+    } catch (err) {
+      console.log(`WARNING - invalid updateCheckUrl '${url}', disabling update checks`);
+      return off;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Setup logger
    */
   static logger (app) {
