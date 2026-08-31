@@ -394,6 +394,8 @@
       "intersectionView": "交集",
       "heatmapView": "热力图",
       "treemapView": "树状图",
+      "sankeyView": "桑基图",
+      "connectionsView": "连接",
       "timelineView": "时间线",
       "mapView": "地图",
       "statsView": "捕获统计",
@@ -426,6 +428,7 @@
         "field": "字段",
         "fields": "字段",
         "fieldsHint": "最多选择 3 个字段",
+        "fieldsHintPair": "选择源字段和目标字段",
         "title": "标题",
         "viewMode": "视图",
         "metric": "指标",
@@ -440,7 +443,8 @@
         "localView": "视图",
         "noView": "无视图",
         "noViewsHint": "未配置视图 — 在搜索栏中创建一个以应用于小部件",
-        "fieldRequired": "字段为必填项"
+        "fieldRequired": "字段为必填项",
+        "twoFieldsRequired": "连接需要两个字段：源和目标"
       },
       "config": {
         "configurations": "保存或加载仪表板",

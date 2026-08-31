@@ -905,22 +905,35 @@ function agg2Obj (field, agg) {
   return obj;
 }
 
-function agg2Arr (agg, type) {
+function agg2Arr (agg, type, order) {
   let arr = [];
   for (const attrname in agg) {
     arr.push(agg[attrname]);
   }
 
   if (type === 'histogram') {
-    arr = arr.sort((a, b) => { return a.key - b.key; });
-  } else {
-    arr = arr.sort((a, b) => {
-      if (b.doc_count !== a.doc_count) {
-        return b.doc_count - a.doc_count;
-      }
-      return a.key - b.key;
-    });
+    return arr.sort((a, b) => { return a.key - b.key; });
   }
+
+  // terms: honor the order the query asked for (_count, _key or a metric
+  // sub-agg's sum), matching what a single cluster returns; the ES default
+  // is doc_count descending
+  const orderKey = order ? Object.keys(order)[0] : '_count';
+  const dir = order && order[orderKey] === 'asc' ? 1 : -1;
+  const orderValue = (bucket) => {
+    if (orderKey === '_count') { return bucket.doc_count; }
+    if (orderKey === '_key') { return bucket.key; }
+    return bucket[orderKey]?.value ?? 0;
+  };
+  arr = arr.sort((a, b) => {
+    const av = orderValue(a);
+    const bv = orderValue(b);
+    if (av !== bv) {
+      if (typeof av === 'string') { return dir * String(av).localeCompare(String(bv)); }
+      return dir * (av - bv);
+    }
+    return a.key - b.key;
+  });
   return arr;
 }
 
@@ -949,15 +962,17 @@ function aggConvert2Arr (aggs) {
       // Recursively convert nested aggregations within the filter
       for (const nestedAgg in aggs[aggname]) {
         if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
-          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type);
+          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type, aggs[aggname][nestedAgg]._order);
           delete aggs[aggname][nestedAgg]._type;
+          delete aggs[aggname][nestedAgg]._order;
         }
       }
     }
     // Handle standard bucket aggregations
     else if (aggs[aggname].buckets) {
-      aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
+      aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type, aggs[aggname]._order);
       delete aggs[aggname]._type;
+      delete aggs[aggname]._order;
     }
   }
 }
@@ -1024,9 +1039,14 @@ function aggAdd (obj1, obj2) {
           const o2 = obj2[aggname].buckets[entry];
 
           o1.doc_count += o2.doc_count;
-          if (o1.db) {
-            o1.db.value += o2.db.value;
-            o1.pa.value += o2.pa.value;
+          // sum metric sub-aggs (db/pa, the summary widgets' bytes/packets/mN, ...)
+          for (const sub in o2) {
+            if (o2[sub] === null || typeof o2[sub] !== 'object' || typeof o2[sub].value !== 'number') { continue; }
+            if (o1[sub] === undefined) {
+              o1[sub] = o2[sub];
+            } else if (typeof o1[sub].value === 'number') {
+              o1[sub].value += o2[sub].value;
+            }
           }
         }
       }
@@ -1196,14 +1216,14 @@ function newResult (search) {
             if (nestedAggs[nestedAgg].histogram) {
               result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
             } else {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', _order: nestedAggs[nestedAgg].terms?.order, doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
             }
           }
         }
       } else if (aggConfig.histogram) {
         result.aggregations[agg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       } else {
-        result.aggregations[agg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+        result.aggregations[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       }
     }
   }

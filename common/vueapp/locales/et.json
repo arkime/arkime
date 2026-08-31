@@ -394,6 +394,8 @@
       "intersectionView": "Ühisosa",
       "heatmapView": "Soojuskaart",
       "treemapView": "Puukaart",
+      "sankeyView": "Sankey",
+      "connectionsView": "Ühendused",
       "timelineView": "Ajajoon",
       "mapView": "Kaart",
       "statsView": "Hõive statistika",
@@ -426,6 +428,7 @@
         "field": "Väli",
         "fields": "Väljad",
         "fieldsHint": "Vali kuni 3 välja",
+        "fieldsHintPair": "Valige allika ja sihtkoha väljad",
         "title": "Pealkiri",
         "viewMode": "Vaade",
         "metric": "Mõõdik",
@@ -440,7 +443,8 @@
         "localView": "Vaade",
         "noView": "Vaade puudub",
         "noViewsHint": "Vaateid pole seadistatud — loo üks otsinguribal, et rakendada see vidinale",
-        "fieldRequired": "Väli on kohustuslik"
+        "fieldRequired": "Väli on kohustuslik",
+        "twoFieldsRequired": "Ühendused nõuab kahte välja: allikas ja sihtkoht"
       },
       "config": {
         "configurations": "Salvesta või laadi töölaudu",

@@ -85,12 +85,21 @@ SPDX-License-Identifier: Apache-2.0
             class="widget-resize widget-resize--se"
             :title="$t('sessions.summary.dragToResize')"
             @mousedown.stop.prevent="startResize(w, $event, 'both')" />
-          <!-- multi-field (2-3) nested pie/treemap -->
+          <!-- multi-field (2-3) nested pie/treemap, and sankey (any field count) -->
           <HierarchyWidget
-            v-if="isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap')"
+            v-if="w.viewMode === 'sankey' || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- display-only force graph of a src → dst field pair -->
+          <ConnectionsWidget
+            v-else-if="w.viewMode === 'connections'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
@@ -203,6 +212,7 @@ import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import IntersectionWidget from './widgets/IntersectionWidget.vue';
+import ConnectionsWidget from './widgets/ConnectionsWidget.vue';
 import HierarchyWidget from './widgets/HierarchyWidget.vue';
 import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
 import TimelineWidget from './widgets/TimelineWidget.vue';

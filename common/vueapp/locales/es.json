@@ -394,6 +394,8 @@
       "intersectionView": "Intersección",
       "heatmapView": "Mapa de calor",
       "treemapView": "Mapa de árbol",
+      "sankeyView": "Sankey",
+      "connectionsView": "Conexiones",
       "timelineView": "Línea de tiempo",
       "mapView": "Mapa",
       "statsView": "Estadísticas de captura",
@@ -426,6 +428,7 @@
         "field": "Campo",
         "fields": "Campos",
         "fieldsHint": "Selecciona hasta 3 campos",
+        "fieldsHintPair": "Seleccione los campos de origen y destino",
         "title": "Título",
         "viewMode": "Vista",
         "metric": "Métrica",
@@ -440,7 +443,8 @@
         "localView": "Vista",
         "noView": "Sin vista",
         "noViewsHint": "No hay vistas configuradas — crea una en la barra de búsqueda para aplicarla a un widget",
-        "fieldRequired": "Se requiere un campo"
+        "fieldRequired": "Se requiere un campo",
+        "twoFieldsRequired": "Conexiones requiere dos campos: origen y destino"
       },
       "config": {
         "configurations": "Guardar o cargar paneles",

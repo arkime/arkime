@@ -394,6 +394,8 @@
       "intersectionView": "Intersection",
       "heatmapView": "Carte de chaleur",
       "treemapView": "Treemap",
+      "sankeyView": "Sankey",
+      "connectionsView": "Connexions",
       "timelineView": "Chronologie",
       "mapView": "Carte",
       "statsView": "Statistiques de capture",
@@ -426,6 +428,7 @@
         "field": "Champ",
         "fields": "Champs",
         "fieldsHint": "Sélectionnez jusqu'à 3 champs",
+        "fieldsHintPair": "Sélectionnez les champs source et destination",
         "title": "Titre",
         "viewMode": "Vue",
         "metric": "Métrique",
@@ -440,7 +443,8 @@
         "localView": "Vue",
         "noView": "Aucune vue",
         "noViewsHint": "Aucune vue configurée — créez-en une dans la barre de recherche pour l'appliquer à un widget",
-        "fieldRequired": "Un champ est requis"
+        "fieldRequired": "Un champ est requis",
+        "twoFieldsRequired": "Connexions nécessite deux champs : source et destination"
       },
       "config": {
         "configurations": "Enregistrer ou charger des tableaux de bord",

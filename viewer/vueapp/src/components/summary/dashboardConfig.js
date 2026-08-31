@@ -6,7 +6,7 @@ import { isFieldMode } from './widgets/viewModes';
 
 // map v7-only field view modes to the closest mode a v6 viewer can render
 // (v6 knows only bar/pie/table) for the dual-written legacy fields[] shape
-const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar' };
+const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', sankey: 'table', connections: 'table' };
 
 /**
  * Projects a widget list onto the v6 summaryConfig shape that is dual-written

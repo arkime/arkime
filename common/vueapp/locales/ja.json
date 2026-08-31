@@ -394,6 +394,8 @@
       "intersectionView": "交差",
       "heatmapView": "ヒートマップ",
       "treemapView": "ツリーマップ",
+      "sankeyView": "サンキー",
+      "connectionsView": "コネクション",
       "timelineView": "タイムライン",
       "mapView": "マップ",
       "statsView": "キャプチャ統計",
@@ -426,6 +428,7 @@
         "field": "フィールド",
         "fields": "フィールド",
         "fieldsHint": "最大3つのフィールドを選択",
+        "fieldsHintPair": "ソースとデスティネーションのフィールドを選択",
         "title": "タイトル",
         "viewMode": "ビュー",
         "metric": "メトリック",
@@ -440,7 +443,8 @@
         "localView": "ビュー",
         "noView": "ビューなし",
         "noViewsHint": "ビューが設定されていません — 検索バーで作成してウィジェットに適用してください",
-        "fieldRequired": "フィールドは必須です"
+        "fieldRequired": "フィールドは必須です",
+        "twoFieldsRequired": "コネクションにはソースとデスティネーションの2つのフィールドが必要です"
       },
       "config": {
         "configurations": "ダッシュボードの保存または読み込み",

@@ -23,7 +23,7 @@ export const DEFAULT_VIEW_MODES = {
 };
 
 // Field-bound types: aggregate one field's top-N values (require a field).
-export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
 // global stats chunk). (map is field-bound — it plots a chosen geo field.)
@@ -36,8 +36,9 @@ export const GEO_FIELD_VIEW_MODES = ['map'];
 // timeline plots the metric's <dbField>Histo series over time.
 export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline'];
 
-// Types that honor a Top/Bottom N (length) + order (direction).
-export const AGG_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'intersection'];
+// Types that honor a Top/Bottom N (length) + order (direction). (connections
+// uses length as its session sample size; order doesn't apply, like intersection.)
+export const AGG_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection'];
 
 // Types rendered from the batched /api/sessions/summary stream (vs. self-fetch).
 export const STREAM_VIEW_MODES = ['bar', 'pie'];
@@ -45,12 +46,15 @@ export const STREAM_VIEW_MODES = ['bar', 'pie'];
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'intersection', 'map', 'table'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'intersection', 'map', 'table'];
 
 // Types that accept multiple fields (up to 3) — nested combinations (pie/treemap/
-// intersection via spigraphhierarchy) or side-by-side columns (table via summary).
-// bar is single-dimension; heatmap has no combination-over-time data path.
-export const MULTI_FIELD_VIEW_MODES = ['pie', 'treemap', 'table', 'intersection'];
+// sankey/intersection via spigraphhierarchy) or side-by-side columns (table via
+// summary). bar is single-dimension; heatmap has no combination-over-time data path.
+export const MULTI_FIELD_VIEW_MODES = ['pie', 'treemap', 'sankey', 'connections', 'table', 'intersection'];
+
+// Types that take exactly a source + destination field pair.
+export const FIELD_PAIR_VIEW_MODES = ['connections'];
 
 // Types that accept multiple metric columns (the table's [value | m0 | m1 …]).
 // Charts visualize a single metric, so they stay single-select.
@@ -76,6 +80,9 @@ export const hasAgg = (viewMode) => AGG_VIEW_MODES.includes(viewMode);
 
 /** True when the widget accepts up to 3 fields (chips multi-select). */
 export const allowsMultiField = (viewMode) => MULTI_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True when the widget takes exactly a source + destination field pair. */
+export const requiresFieldPair = (viewMode) => FIELD_PAIR_VIEW_MODES.includes(viewMode);
 
 /** True when the widget accepts multiple metric columns (chips multi-select). */
 export const allowsMultiMetric = (viewMode) => MULTI_METRIC_VIEW_MODES.includes(viewMode);

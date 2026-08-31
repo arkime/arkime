@@ -394,6 +394,8 @@
       "intersectionView": "교차",
       "heatmapView": "히트맵",
       "treemapView": "트리맵",
+      "sankeyView": "생키(Sankey)",
+      "connectionsView": "연결",
       "timelineView": "타임라인",
       "mapView": "지도",
       "statsView": "캡처 통계",
@@ -426,6 +428,7 @@
         "field": "필드",
         "fields": "필드",
         "fieldsHint": "최대 3개의 필드 선택",
+        "fieldsHintPair": "소스 및 목적지 필드 선택",
         "title": "제목",
         "viewMode": "보기",
         "metric": "지표",
@@ -440,7 +443,8 @@
         "localView": "보기",
         "noView": "보기 없음",
         "noViewsHint": "구성된 보기가 없습니다 — 검색창에서 하나를 만들어 위젯에 적용하세요",
-        "fieldRequired": "필드가 필요합니다"
+        "fieldRequired": "필드가 필요합니다",
+        "twoFieldsRequired": "연결에는 소스와 목적지 두 개의 필드가 필요합니다"
       },
       "config": {
         "configurations": "대시보드 저장 또는 불러오기",

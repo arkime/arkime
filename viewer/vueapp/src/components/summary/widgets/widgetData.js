@@ -166,6 +166,27 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
 }
 
 /**
+ * Fetch connections data for a src → dst field pair (the Connections widget).
+ * The endpoint samples `length` sessions and returns { nodes, links } — nodes
+ * carry { id, sessions, type (1 src | 2 dst | 3 both), network.bytes/packets
+ * sums }, links carry { value, source, target } with node array indices.
+ */
+export async function fetchConnections (route, store, widget, { signal } = {}) {
+  const fields = widgetFields(widget);
+  // the endpoint resolves srcField/dstField from db field names (not exps),
+  // except the literal 'ip.dst:port' special it handles itself
+  const toDb = (exp) => (exp === 'ip.dst:port' || exp === 'destination.ip:port')
+    ? exp
+    : (FieldService.getField(exp, true)?.dbField || exp);
+  const data = buildWidgetParams(route, store, widget, {
+    srcField: toDb(fields[0]),
+    dstField: toDb(fields[1] || fields[0]),
+    length: widget.length || 100
+  });
+  return await fetchWrapper({ url: 'api/connections', method: 'POST', data, signal });
+}
+
+/**
  * Fetch each of a widget's fields' top-N (with the chosen metric) in a single
  * /api/sessions/summary batch (one sub-widget per field) for the side-by-side
  * multi-field table. The summary response is a JSON array of chunks; field chunks

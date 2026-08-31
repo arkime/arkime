@@ -394,6 +394,8 @@
       "intersectionView": "Schnittmenge",
       "heatmapView": "Heatmap",
       "treemapView": "Treemap",
+      "sankeyView": "Sankey",
+      "connectionsView": "Verbindungen",
       "timelineView": "Zeitleiste",
       "mapView": "Karte",
       "statsView": "Erfassungsstatistiken",
@@ -426,6 +428,7 @@
         "field": "Feld",
         "fields": "Felder",
         "fieldsHint": "Wählen Sie bis zu 3 Felder aus",
+        "fieldsHintPair": "Quell- und Zielfeld auswählen",
         "title": "Titel",
         "viewMode": "Ansicht",
         "metric": "Metrik",
@@ -440,7 +443,8 @@
         "localView": "Ansicht",
         "noView": "Keine Ansicht",
         "noViewsHint": "Keine Ansichten konfiguriert — erstellen Sie eine in der Suchleiste, um sie auf ein Widget anzuwenden",
-        "fieldRequired": "Ein Feld ist erforderlich"
+        "fieldRequired": "Ein Feld ist erforderlich",
+        "twoFieldsRequired": "Verbindungen erfordert zwei Felder: Quelle und Ziel"
       },
       "config": {
         "configurations": "Dashboards speichern oder laden",

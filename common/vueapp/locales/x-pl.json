@@ -395,6 +395,8 @@
       "intersectionView": "Intersectionway",
       "heatmapView": "Eatmaphay",
       "treemapView": "Eemaptray",
+      "sankeyView": "Ankeysay",
+      "connectionsView": "Onnectionscay",
       "timelineView": "Imelinetay",
       "mapView": "Apmay",
       "statsView": "Apturecay Atisticsstay",
@@ -427,6 +429,7 @@
         "field": "Ieldfay",
         "fields": "Ieldsfay",
         "fieldsHint": "Electsay upway otay 3 ieldsfay",
+        "fieldsHintPair": "Electsay ourcesay andway estinationday ieldsfay",
         "title": "Itletay",
         "viewMode": "Iewvay",
         "metric": "Etricmay",
@@ -441,7 +444,8 @@
         "localView": "Iewvay",
         "noView": "Onay iewvay",
         "noViewsHint": "Onay iewsvay onfiguredcay — eatecray oneway inway ethay earchsay arbay otay applyway itway otay away idgetway",
-        "fieldRequired": "Away ieldfay isway equiredray"
+        "fieldRequired": "Away ieldfay isway equiredray",
+        "twoFieldsRequired": "Onnectionscay equiresray otway ieldsfay: away ourcesay andway away estinationday"
       },
       "config": {
         "configurations": "Avesay orway oadlay ashboardsday",

@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="multiField"
             v-model="form.fields"
             :items="fieldItems"
-            :placeholder="$t('sessions.summary.widget.fieldsHint')"
+            :placeholder="$t(fieldPair ? 'sessions.summary.widget.fieldsHintPair' : 'sessions.summary.widget.fieldsHint')"
             multiple
             chips
             closable-chips
@@ -240,7 +240,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
+import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, requiresFieldPair, hasLocalFilter } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -287,8 +287,11 @@ const fieldFriendlyName = computed(() => {
   return FieldService.getField(form.value.field, true)?.friendlyName || form.value.field;
 });
 
-// pie/treemap/table/intersection accept up to 3 fields (chips multi-select)
+// pie/treemap/table/intersection accept up to 3 fields (chips multi-select);
+// connections takes exactly a source + destination pair
 const multiField = computed(() => allowsMultiField(form.value.viewMode));
+const fieldPair = computed(() => requiresFieldPair(form.value.viewMode));
+const maxFields = computed(() => fieldPair.value ? 2 : 3);
 const fieldItems = computed(() => fields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
 
 // Capability flags drive which inputs are enabled for the chosen visualization type
@@ -322,6 +325,8 @@ const viewModeItems = computed(() => [
   { title: t('sessions.summary.intersectionView'), value: 'intersection' },
   { title: t('sessions.summary.heatmapView'), value: 'heatmap' },
   { title: t('sessions.summary.treemapView'), value: 'treemap' },
+  { title: t('sessions.summary.sankeyView'), value: 'sankey' },
+  { title: t('sessions.summary.connectionsView'), value: 'connections' },
   { title: t('sessions.summary.timelineView'), value: 'timeline' },
   { title: t('sessions.summary.mapView'), value: 'map' },
   { title: t('sessions.summary.statsView'), value: 'stats' },
@@ -405,11 +410,12 @@ watch(() => props.show, (isOpen) => {
   }
 });
 
-// cap multi-field selection at 3, and mirror the first field into the single-field
-// model so switching between single/multi view types never persists a stale field
-watch(() => form.value.fields, (v) => {
+// cap multi-field selection (3, or 2 for the connections pair), and mirror the
+// first field into the single-field model so switching between single/multi
+// view types never persists a stale field
+watch([() => form.value.fields, maxFields], ([v, max]) => {
   if (!Array.isArray(v)) { return; }
-  if (v.length > 3) { form.value.fields = v.slice(0, 3); return; }
+  if (v.length > max) { form.value.fields = v.slice(0, max); return; }
   form.value.field = v.length ? v[0] : '';
 });
 
@@ -434,7 +440,7 @@ const save = () => {
   // resolve the field list for the chosen type
   let fieldList;
   if (multiField.value) {
-    fieldList = (form.value.fields || []).slice(0, 3);
+    fieldList = (form.value.fields || []).slice(0, maxFields.value);
   } else if (needsField.value) { // single field-bound types + the map's geo field
     fieldList = form.value.field ? [form.value.field] : [];
   } else {
@@ -443,6 +449,11 @@ const save = () => {
   // field-bound types (incl. the map's geo field) require at least one field
   if (needsField.value && fieldList.length === 0) {
     error.value = t('sessions.summary.widget.fieldRequired');
+    return;
+  }
+  // connections needs both ends of the pair
+  if (fieldPair.value && fieldList.length !== 2) {
+    error.value = t('sessions.summary.widget.twoFieldsRequired');
     return;
   }
   // resolve the metric(s): tables carry a metrics[] list + a sort-by; charts one.
