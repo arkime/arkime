@@ -85,6 +85,7 @@
 # 86 - added totpSecret field to users
 # 87 - added dismissedHelpNotes field to users
 # 88 - added interfaceOffsets to files
+# 89 - added featherprint, featherprint_history, featherprint_alerts, featherprint_macs indices
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -98,7 +99,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 88;
+my $VERSION = 89;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -7900,6 +7901,190 @@ logmsg "Setting shareables_v60 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}shareables_v60/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
+my $FEATHERPRINT_SETTINGS = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+sub featherprintCreate
+{
+    logmsg "Creating featherprint_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_v70", "featherprint");
+    featherprintUpdate();
+}
+
+sub featherprintUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "kind": { "type": "keyword" },
+    "ip": { "type": "ip" },
+    "firstSeen": { "type": "date" },
+    "lastSeen": { "type": "date" },
+    "classification": { "type": "keyword" },
+    "mac": {
+      "properties": {
+        "value": { "type": "keyword" },
+        "source": { "type": "keyword" },
+        "firstSeen": { "type": "date" },
+        "lastSeen": { "type": "date" },
+        "history": {
+          "properties": {
+            "mac": { "type": "keyword" },
+            "ts": { "type": "date" },
+            "source": { "type": "keyword" }
+          }
+        }
+      }
+    },
+    "names": {
+      "properties": {
+        "name": { "type": "keyword" },
+        "source": { "type": "keyword" },
+        "firstSeen": { "type": "date" },
+        "lastSeen": { "type": "date" },
+        "ttl": { "type": "integer" }
+      }
+    },
+    "services": {
+      "properties": {
+        "type": { "type": "keyword" },
+        "port": { "type": "integer" },
+        "proto": { "type": "keyword" },
+        "firstSeen": { "type": "date" },
+        "lastSeen": { "type": "date" }
+      }
+    },
+    "dhcp": {
+      "properties": {
+        "vendorClass": { "type": "keyword" },
+        "paramReqList": { "type": "keyword" }
+      }
+    },
+    "ssdp": {
+      "properties": {
+        "server": { "type": "keyword" },
+        "usn": { "type": "keyword" },
+        "nt": { "type": "keyword" },
+        "st": { "type": "keyword" },
+        "location": { "type": "keyword" }
+      }
+    }
+  }
+}';
+
+    logmsg "Setting featherprint_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+sub featherprintHistoryCreate
+{
+    logmsg "Creating featherprint_history_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_history_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_history_v70", "featherprint_history");
+    featherprintHistoryUpdate();
+}
+
+sub featherprintHistoryUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "ts": { "type": "date" },
+    "ip": { "type": "ip" },
+    "kind": { "type": "keyword" },
+    "before": { "type": "object", "enabled": false },
+    "after": { "type": "object", "enabled": false }
+  }
+}';
+
+    logmsg "Setting featherprint_history_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_history_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+sub featherprintAlertsCreate
+{
+    logmsg "Creating featherprint_alerts_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_alerts_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_alerts_v70", "featherprint_alerts");
+    featherprintAlertsUpdate();
+}
+
+sub featherprintAlertsUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "ts": { "type": "date" },
+    "ip": { "type": "ip" },
+    "kind": { "type": "keyword" },
+    "message": { "type": "keyword" },
+    "acked": { "type": "boolean" },
+    "ackedBy": { "type": "keyword" },
+    "ackedAt": { "type": "date" },
+    "before": { "type": "object", "enabled": false },
+    "after": { "type": "object", "enabled": false }
+  }
+}';
+
+    logmsg "Setting featherprint_alerts_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_alerts_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+sub featherprintMacsCreate
+{
+    logmsg "Creating featherprint_macs_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_macs_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_macs_v70", "featherprint_macs");
+    featherprintMacsUpdate();
+}
+
+sub featherprintMacsUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "mac": { "type": "keyword" },
+    "currentIp": { "type": "ip" },
+    "firstSeen": { "type": "date" },
+    "lastSeen": { "type": "date" },
+    "ipHistory": {
+      "properties": {
+        "ip": { "type": "ip" },
+        "ts": { "type": "date" },
+        "source": { "type": "keyword" }
+      }
+    }
+  }
+}';
+
+    logmsg "Setting featherprint_macs_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_macs_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+
+sub featherprintCreateAll
+{
+    featherprintCreate();
+    featherprintHistoryCreate();
+    featherprintAlertsCreate();
+    featherprintMacsCreate();
+}
+################################################################################
 # Copy the per-user layouts named in %SHAREABLE_IMPORTS into the shareables
 # index. Safe to run repeatedly: anything already imported is left alone, and
 # the originals stay on the user record so Arkime 6 keeps working.
@@ -8455,7 +8640,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70,${PREFIX}featherprint_macs_v70", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -8784,7 +8969,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
 
     # Indices we want to backup, if there is an alias
-    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     # find which we have aliases for or are in cont3xt
     @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
@@ -9493,6 +9678,11 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "queries_v30");
 
     printIndex($status, "shareables_v60");
+
+    printIndex($status, "featherprint_v70");
+    printIndex($status, "featherprint_history_v70");
+    printIndex($status, "featherprint_alerts_v70");
+    printIndex($status, "featherprint_macs_v70");
 
     printIndex($status, "sequence_v30");
     printIndex($status, "sequence_v3");
@@ -10274,6 +10464,30 @@ $policy = qq/{
             update => \&shareablesUpdate,
         },
         {
+            name => "featherprint_v70",
+            alias => "featherprint",
+            create => \&featherprintCreate,
+            update => \&featherprintUpdate,
+        },
+        {
+            name => "featherprint_history_v70",
+            alias => "featherprint_history",
+            create => \&featherprintHistoryCreate,
+            update => \&featherprintHistoryUpdate,
+        },
+        {
+            name => "featherprint_alerts_v70",
+            alias => "featherprint_alerts",
+            create => \&featherprintAlertsCreate,
+            update => \&featherprintAlertsUpdate,
+        },
+        {
+            name => "featherprint_macs_v70",
+            alias => "featherprint_macs",
+            create => \&featherprintMacsCreate,
+            update => \&featherprintMacsUpdate,
+        },
+        {
             name => "stats_v30",
             alias => "stats",
             create => \&statsCreate,
@@ -10443,7 +10657,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40") {
+    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40", "featherprint_v70", "featherprint_history_v70", "featherprint_alerts_v70", "featherprint_macs_v70") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -10455,7 +10669,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views") {
+    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -10474,7 +10688,7 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views") {
+    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -10493,6 +10707,10 @@ $policy = qq/{
     esAlias("add", "stats_v30", "stats");
     esAlias("add", "users_v30", "users");
     esAlias("add", "views_v40", "views");
+    esAlias("add", "featherprint_v70", "featherprint");
+    esAlias("add", "featherprint_history_v70", "featherprint_history");
+    esAlias("add", "featherprint_alerts_v70", "featherprint_alerts");
+    esAlias("add", "featherprint_macs_v70", "featherprint_macs");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -10556,6 +10774,30 @@ $policy = qq/{
         shareablesCreate();
     } else {
         shareablesUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_v70"}) {
+        featherprintCreate();
+    } else {
+        featherprintUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_history_v70"}) {
+        featherprintHistoryCreate();
+    } else {
+        featherprintHistoryUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_alerts_v70"}) {
+        featherprintAlertsCreate();
+    } else {
+        featherprintAlertsUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_macs_v70"}) {
+        featherprintMacsCreate();
+    } else {
+        featherprintMacsUpdate();
     }
 
     if (defined $indices{"${PREFIX}parliament_v50"}) {
@@ -10660,6 +10902,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}shareables_v60,${PREFIX}shareables?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_v70,${PREFIX}featherprint?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_history_v70,${PREFIX}featherprint_history?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_alerts_v70,${PREFIX}featherprint_alerts?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_macs_v70,${PREFIX}featherprint_macs?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     my $indices;
     esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
@@ -10701,6 +10947,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     notifiersCreate();
     viewsCreate();
     shareablesCreate();
+    featherprintCreateAll();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -10715,7 +10962,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     # backup writes the prefix into the file names, and the cont3xt indices
     # aren't prefixed, so work with full index names here
-    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables");
+    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs");
     push(@indices, "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     my @filelist = ();
@@ -10915,24 +11162,29 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         configsCreate();
         fields82Fix();
         shareablesCreate();
+        featherprintCreateAll();
         usersUpdate();
         filesUpdate();
     } elsif ($main::versionNumber <= 81) {
         configsCreate();
         fields82Fix();
         shareablesCreate();
+        featherprintCreateAll();
         usersUpdate();
         filesUpdate();
     } elsif ($main::versionNumber <= 83) {
         fields82Fix();
         shareablesCreate();
+        featherprintCreateAll();
         usersUpdate();
         filesUpdate();
     } elsif ($main::versionNumber <= 85) {
         shareablesUpdate();
+        featherprintCreateAll();
         usersUpdate();
         filesUpdate();
     } elsif ($main::versionNumber <= 88) {
+        featherprintCreateAll();
         usersUpdate();
         filesUpdate();
     } else {

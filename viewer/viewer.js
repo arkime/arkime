@@ -55,6 +55,7 @@ const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
 const ShareableAPIs = require('./apiShareables');
 const CronAPIs = require('./apiCrons');
+const FeatherprintAPIs = require('./apiFeatherprint');
 const SessionAPIs = require('./apiSessions');
 const ConnectionAPIs = require('./apiConnections');
 const StatsAPIs = require('./apiStats');
@@ -314,6 +315,17 @@ if (ArkimeConfig.regressionTests) {
       const cuser = Object.assign({}, user);
       res.send(cuser);
     });
+  });
+  app.get('/regressionTests/processFeatherprints', async (req, res) => {
+    await Db.flush();
+    await Db.refresh();
+    try {
+      const result = await FeatherprintAPIs.processAll();
+      await Db.refresh();
+      res.send(result);
+    } catch (e) {
+      res.status(500).send({ error: e?.message || String(e) });
+    }
   });
 }
 
@@ -1574,6 +1586,61 @@ app.post( // update cron endpoint
   CronAPIs.updateCron
 );
 
+// featherprint apis ----------------------------------------------------------
+app.get( // featherprint device record endpoint
+  ['/api/featherprint/ip/:ip'],
+  [ArkimeUtil.noCacheJson],
+  FeatherprintAPIs.apiGetIp
+);
+
+app.get( // featherprint device search endpoint
+  ['/api/featherprint/search'],
+  [ArkimeUtil.noCacheJson],
+  FeatherprintAPIs.apiSearch
+);
+
+app.get( // featherprint device history endpoint
+  ['/api/featherprint/history/:ip'],
+  [ArkimeUtil.noCacheJson],
+  FeatherprintAPIs.apiGetHistory
+);
+
+app.get( // featherprint alerts endpoint
+  ['/api/featherprint/alerts'],
+  [ArkimeUtil.noCacheJson],
+  FeatherprintAPIs.apiGetAlerts
+);
+
+app.post( // featherprint ack alert endpoint
+  ['/api/featherprint/ack/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
+  FeatherprintAPIs.apiAckAlert
+);
+
+app.get( // featherprint on-demand lookup endpoint
+  ['/api/featherprint/lookup'],
+  [ArkimeUtil.noCacheJson],
+  FeatherprintAPIs.apiLookup
+);
+
+app.get( // featherprint monitor state endpoint
+  ['/api/featherprint/state'],
+  [ArkimeUtil.noCacheJson],
+  FeatherprintAPIs.apiGetMonitorState
+);
+
+app.get( // featherprint resolved config endpoint
+  ['/api/featherprint/config'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
+  FeatherprintAPIs.apiGetConfig
+);
+
+app.post( // featherprint force tick endpoint
+  ['/api/featherprint/tick'],
+  [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken, logAction()],
+  FeatherprintAPIs.apiRunTickNow
+);
+
 // notifier apis --------------------------------------------------------------
 app.get( // notifier types endpoint
   ['/api/notifiertypes'],
@@ -2420,6 +2487,9 @@ async function premain () {
   });
 
   CronAPIs.initialize({
+  });
+  FeatherprintAPIs.initialize({
+    isPrimaryViewer: () => CronAPIs.isPrimaryViewer()
   });
   main();
 }

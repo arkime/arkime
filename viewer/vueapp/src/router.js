@@ -20,6 +20,7 @@ import Spigraph from '@/components/spigraph/Spigraph.vue';
 import Settings from '@/components/settings/Settings.vue';
 import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
+import Featherprint from '@/components/featherprint/Featherprint.vue';
 import Arkime404 from '@/components/utils/404.vue';
 import Arkime from '@/components/arkime/Arkime.vue';
 
@@ -149,6 +150,32 @@ const router = createRouter({
       path: '/hunt',
       name: 'Hunt',
       component: Hunt
+    },
+    {
+      path: '/featherprint',
+      name: 'Featherprint',
+      component: Featherprint,
+      redirect: { name: 'FeatherprintTracked' }
+    },
+    {
+      path: '/featherprint/tracked',
+      name: 'FeatherprintTracked',
+      component: Featherprint
+    },
+    {
+      path: '/featherprint/lookup',
+      name: 'FeatherprintLookup',
+      component: Featherprint
+    },
+    {
+      path: '/featherprint/alerts',
+      name: 'FeatherprintAlerts',
+      component: Featherprint
+    },
+    {
+      path: '/featherprint/admin',
+      name: 'FeatherprintAdmin',
+      component: Featherprint
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
