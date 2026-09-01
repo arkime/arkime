@@ -97,6 +97,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4224 Add DNS PTR and SRV answer parsing
 ## Cont3xt
   - #4228 Update the Censys integration to the new Censys Platform API; it now needs a personal access token instead of an api id and secret
+  - #4229 Replace the BGPView integration with RIPEstat, BGPView shut down in November 2025
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
