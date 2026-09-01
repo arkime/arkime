@@ -17,21 +17,21 @@ class CensysIntegration extends Integration {
   card = {
     title: 'Censys for %{query}',
     searchUrls: [{
-      url: 'https://search.censys.io/hosts/%{query}',
+      url: 'https://platform.censys.io/hosts/%{query}',
       itypes: ['ip'],
       name: 'Search Censys for Host: %{query}'
     }],
     fields: [
       {
         label: 'Services',
-        field: 'result.services',
-        defaultSortField: 'observed_at',
+        field: 'result.resource.services',
+        defaultSortField: 'scan_time',
         defaultSortDirection: 'asc',
         type: 'table',
         fields: [
           {
             label: 'service',
-            field: 'extended_service_name'
+            field: 'protocol'
           },
           {
             label: 'port',
@@ -49,19 +49,19 @@ class CensysIntegration extends Integration {
             label: 'product',
             field: 'software',
             type: 'array',
-            fieldRoot: 'uniform_resource_identifier'
+            fieldRoot: 'cpe'
           },
           {
-            label: 'observed_at',
-            field: 'observed_at',
+            label: 'scan_time',
+            field: 'scan_time',
             type: 'date'
           }
         ]
       },
       {
         label: 'Certificates',
-        field: 'result.services',
-        fieldRoot: 'tls.certificates.leaf_data',
+        field: 'result.resource.services',
+        fieldRoot: 'cert',
         type: 'table',
         fields: [
           {
@@ -71,19 +71,19 @@ class CensysIntegration extends Integration {
           },
           {
             label: 'subject_dn',
-            field: 'subject_dn'
+            field: 'parsed.subject_dn'
           },
           {
             label: 'issuer_dn',
-            field: 'issuer_dn'
+            field: 'parsed.issuer_dn'
           },
           {
             label: 'fingerprint',
-            field: 'fingerprint'
+            field: 'fingerprint_sha256'
           },
           {
             label: 'issuer',
-            field: 'issuer.common_name',
+            field: 'parsed.issuer.common_name',
             type: 'array'
           }
         ]
@@ -91,20 +91,19 @@ class CensysIntegration extends Integration {
     ]
   };
 
-  homePage = 'https://search.censys.io/';
+  homePage = 'https://platform.censys.io/';
   settings = {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
     },
-    id: {
-      help: 'Your censys api id',
-      required: true
-    },
-    secret: {
-      help: 'Your censys api secret',
+    token: {
+      help: 'Your censys personal access token (PAT), created at https://accounts.censys.io/settings/personal-access-tokens',
       password: true,
       required: true
+    },
+    organizationId: {
+      help: 'Your censys organization id, optional, free accounts do not have one'
     }
   };
 
@@ -115,20 +114,20 @@ class CensysIntegration extends Integration {
   }
 
   async fetchIp (user, ip) {
-    const id = this.getUserConfig(user, 'id');
-    const secret = this.getUserConfig(user, 'secret');
-    if (!id || !secret) {
+    const token = this.getUserConfig(user, 'token');
+    if (!token) {
       return undefined;
     }
 
     try {
-      const c = await axios.get(`https://search.censys.io/api/v2/hosts/${ip}`, {
+      const organizationId = this.getUserConfig(user, 'organizationId');
+
+      const c = await axios.get(`https://api.platform.censys.io/v3/global/asset/host/${encodeURIComponent(ip)}`, {
+        params: organizationId ? { organization_id: organizationId } : undefined,
         headers: {
+          Accept: 'application/vnd.censys.api.v3.host.v1+json',
+          Authorization: `Bearer ${token}`,
           'User-Agent': this.userAgent()
-        },
-        auth: {
-          username: id,
-          password: secret
         }
       });
 
