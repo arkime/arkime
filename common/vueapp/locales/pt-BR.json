@@ -2062,8 +2062,6 @@
     "eol": "Esta versão não é mais suportada",
     "failed": "Falha ao verificar atualizações",
     "dismiss": "Dispensar",
-    "consentBody": "Verificar {host} em busca de novas versões? Isso envia sua versão principal ({major}).",
-    "consentAllow": "Verificar atualizações",
-    "consentDeny": "Agora não"
+    "disclosure": "Verifica {host} em busca de novas versões. Envia sua versão principal ({major})."
   }
 }

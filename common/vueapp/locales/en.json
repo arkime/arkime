@@ -2062,8 +2062,6 @@
     "eol": "This release is no longer supported",
     "failed": "Update check failed",
     "dismiss": "Dismiss",
-    "consentBody": "Check {host} for newer releases? This sends your major version ({major}).",
-    "consentAllow": "Check for updates",
-    "consentDeny": "Not now"
+    "disclosure": "Checks {host} for newer releases. Sends your major version ({major})."
   }
 }

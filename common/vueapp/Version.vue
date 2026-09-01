@@ -29,27 +29,12 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="updateEnabled">
         <hr class="version-divider">
 
-        <!-- first use: say exactly what gets sent, then remember the answer -->
-        <div v-if="needsConsent">
-          <div class="version-consent">
-            {{ $t('updateCheck.consentBody', { major: update.major, host: updateHost }) }}
-          </div>
-          <v-btn
-            size="x-small"
-            variant="tonal"
-            class="me-1"
-            @click="allowUpdateCheck">
-            {{ $t('updateCheck.consentAllow') }}
-          </v-btn>
-          <v-btn
-            size="x-small"
-            variant="text"
-            @click="denyUpdateCheck">
-            {{ $t('updateCheck.consentDeny') }}
-          </v-btn>
+        <!-- always visible: say what a check sends, without gating on it -->
+        <div class="version-disclosure">
+          {{ $t('updateCheck.disclosure', { major: update.major, host: updateHost }) }}
         </div>
 
-        <div v-else>
+        <div>
           <div v-if="update.status === 'checking'">
             {{ $t('updateCheck.checking') }}
           </div>
@@ -102,8 +87,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { timezoneDateString } from './vueFilters.js';
 import {
-  updateCheckState, checkForUpdates, grantConsent,
-  denyConsent, dismissUpdate, hasUndismissedUpdate
+  updateCheckState, checkForUpdates, dismissUpdate, hasUndismissedUpdate
 } from './UpdateCheckService.js';
 
 // NOTE: parent application must have the constants present in the application
@@ -140,9 +124,6 @@ export default {
     updateEnabled () {
       return this.update.mode !== 'off';
     },
-    needsConsent () {
-      return this.update.consent === undefined;
-    },
     updateHost () {
       try {
         return new URL(this.update.baseUrl).host;
@@ -156,19 +137,7 @@ export default {
   },
   methods: {
     check () {
-      // after "Not now" consent is false and a plain check would be a no-op,
-      // but clicking the button is itself consent, the prompt has been seen
-      if (this.update.consent) {
-        checkForUpdates({ force: true });
-      } else {
-        grantConsent();
-      }
-    },
-    allowUpdateCheck () {
-      grantConsent();
-    },
-    denyUpdateCheck () {
-      denyConsent();
+      checkForUpdates({ force: true });
     },
     dismiss () {
       dismissUpdate();
@@ -193,8 +162,9 @@ export default {
   border: 0;
   border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
-.version-consent {
+.version-disclosure {
   margin-bottom: 6px;
+  color: rgb(var(--v-theme-neutral-dark));
 }
 .version-security {
   color: rgb(var(--v-theme-warning));

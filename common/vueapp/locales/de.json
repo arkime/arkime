@@ -2062,8 +2062,6 @@
     "eol": "Diese Version wird nicht mehr unterstützt",
     "failed": "Update-Prüfung fehlgeschlagen",
     "dismiss": "Ausblenden",
-    "consentBody": "{host} nach neueren Versionen prüfen? Dabei wird Ihre Hauptversion ({major}) übertragen.",
-    "consentAllow": "Nach Updates suchen",
-    "consentDeny": "Jetzt nicht"
+    "disclosure": "Prüft {host} auf neuere Versionen. Überträgt Ihre Hauptversion ({major})."
   }
 }

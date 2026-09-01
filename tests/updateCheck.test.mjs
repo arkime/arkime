@@ -16,8 +16,8 @@ const require = createRequire(import.meta.url);
 const ArkimeUtil = require('../common/arkimeUtil.js');
 
 const {
-  initUpdateCheck, checkForUpdates, updateCheckState, grantConsent, denyConsent,
-  dismissUpdate, hasUndismissedUpdate, safeUrl, compareVersions, parseVersion,
+  initUpdateCheck, checkForUpdates, updateCheckState, dismissUpdate,
+  hasUndismissedUpdate, safeUrl, compareVersions, parseVersion,
   isDevBuild, releasesUrl
 } = await import('../common/vueapp/UpdateCheckService.js');
 
@@ -132,30 +132,36 @@ describe('UpdateCheckService', () => {
     }
   });
 
-  describe('consent', () => {
-    test('nothing is fetched before it is given', async () => {
+  describe('what triggers a check', () => {
+    test('manual sends nothing on load, the user has to ask', () => {
       fresh();
-      assert.equal(state.consent, undefined);
+      assert.equal(calls, 0);
+    });
+
+    test('manual fetches on an explicit check', async () => {
+      fresh();
+      await checkForUpdates({ force: true });
+      assert.equal(calls, 1);
+      assert.equal(lastUrl, 'https://versions.arkime.com/releases-v7.json');
+    });
+
+    test('auto checks on load, the admin opted the deployment in', async () => {
+      fresh({ CHECK_FOR_UPDATES: 'auto' });
+      await new Promise((r) => setTimeout(r, 10));
+      assert.equal(calls, 1);
+    });
+
+    test('off never fetches, even when asked directly', async () => {
+      fresh({ CHECK_FOR_UPDATES: 'off' });
       await checkForUpdates({ force: true });
       assert.equal(calls, 0);
     });
 
     test('the request carries no cookies and no referrer', async () => {
       fresh();
-      await grantConsent();
-      assert.equal(lastUrl, 'https://versions.arkime.com/releases-v7.json');
+      await checkForUpdates({ force: true });
       assert.equal(lastOpts.credentials, 'omit');
       assert.equal(lastOpts.referrerPolicy, 'no-referrer');
-    });
-
-    test('"Not now" blocks automatic checks but is not a dead end', async () => {
-      fresh();
-      serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
-      denyConsent();
-      await checkForUpdates({ force: true });
-      assert.equal(calls, 0, 'deny suppresses checks');
-      await grantConsent(); // what clicking the button now does
-      assert.equal(state.latest, '7.1.0', 'an explicit click still works');
     });
   });
 
@@ -167,7 +173,7 @@ describe('UpdateCheckService', () => {
         { version: '7.10.0', url: 'https://x/7100' },
         { version: '7.0.0', url: 'https://x/700' }
       ] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.latest, '7.10.0');
       assert.equal(state.latestUrl, 'https://x/7100');
     });
@@ -175,7 +181,7 @@ describe('UpdateCheckService', () => {
     test('says nothing when we are current', async () => {
       fresh();
       serve({ releases: [{ version: '7.0.0', url: 'https://x/700' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.latest, undefined);
       assert.equal(state.status, 'done');
     });
@@ -183,7 +189,7 @@ describe('UpdateCheckService', () => {
     test('announces the next major and its eol', async () => {
       fresh();
       serve({ eol: true, releases: [{ version: '8.0.0', url: 'https://x/800' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.latest, '8.0.0');
       assert.equal(state.eol, true);
     });
@@ -191,7 +197,7 @@ describe('UpdateCheckService', () => {
     test('only flags a security fix newer than ours', async () => {
       fresh();
       serve({ releases: [{ version: '6.9.0', security: true }, { version: '7.1.0', url: 'https://x/710' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.security, false);
 
       serve({ releases: [{ version: '7.1.0', url: 'https://x/710', security: true }] });
@@ -202,7 +208,7 @@ describe('UpdateCheckService', () => {
     test('the precomputed latest fallback keeps its security flag', async () => {
       fresh();
       serve({ latest: '7.0.2', url: 'https://x/702', security: true });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.latest, '7.0.2');
       assert.equal(state.latestUrl, 'https://x/702');
       assert.equal(state.security, true);
@@ -215,7 +221,7 @@ describe('UpdateCheckService', () => {
 
       fresh();
       serve({ releases: [{ version: '7.1.0', url: 'javascript:alert(document.cookie)' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.latestUrl, undefined, 'link dropped');
       assert.equal(state.latest, '7.1.0', 'version still reported');
     });
@@ -225,7 +231,7 @@ describe('UpdateCheckService', () => {
     test('an unpublished major is quiet, not an error', async () => {
       fresh();
       serve({}, 404);
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.status, 'done');
       assert.equal(state.latest, undefined);
     });
@@ -233,7 +239,7 @@ describe('UpdateCheckService', () => {
     test('a failure clears the previous result rather than leaving it stale', async () => {
       fresh();
       serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.latest, '7.1.0');
 
       serve({}, 500);
@@ -245,7 +251,7 @@ describe('UpdateCheckService', () => {
     test('a thrown fetch is an error, not a crash', async () => {
       fresh();
       globalThis.fetch = async () => { throw new Error('offline'); };
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(state.status, 'error');
     });
   });
@@ -254,7 +260,7 @@ describe('UpdateCheckService', () => {
     test('manual keeps its result across a reload without fetching', async () => {
       fresh();
       serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       calls = 0;
       boot();
       assert.equal(calls, 0, 'no request on reload');
@@ -264,7 +270,7 @@ describe('UpdateCheckService', () => {
     test('a 404 is not retried on every load', async () => {
       fresh();
       serve({}, 404);
-      await grantConsent();
+      await checkForUpdates({ force: true });
       calls = 0;
       boot({ CHECK_FOR_UPDATES: 'auto' });
       await new Promise((r) => setTimeout(r, 10));
@@ -274,7 +280,7 @@ describe('UpdateCheckService', () => {
     test('an unreachable host is not retried on every load', async () => {
       fresh();
       globalThis.fetch = async () => { calls++; throw new Error('down'); };
-      await grantConsent();
+      await checkForUpdates({ force: true });
       calls = 0;
       boot({ CHECK_FOR_UPDATES: 'auto' });
       await new Promise((r) => setTimeout(r, 10));
@@ -284,7 +290,7 @@ describe('UpdateCheckService', () => {
     test('changing updateCheckUrl does not reuse the old host result', async () => {
       fresh();
       serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
 
       boot({ UPDATE_CHECK_URL: 'https://mirror.internal' });
       assert.equal(state.latest, undefined, 'stale result dropped');
@@ -295,7 +301,7 @@ describe('UpdateCheckService', () => {
     test('is remembered per version', async () => {
       fresh();
       serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
-      await grantConsent();
+      await checkForUpdates({ force: true });
       assert.equal(hasUndismissedUpdate(), true);
 
       dismissUpdate();

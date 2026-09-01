@@ -2062,8 +2062,6 @@
     "eol": "See versioon ei ole enam toetatud",
     "failed": "Uuenduste kontroll ebaõnnestus",
     "dismiss": "Peida",
-    "consentBody": "Kas kontrollida {host} uuemate versioonide osas? Saadetakse teie peaversioon ({major}).",
-    "consentAllow": "Otsi uuendusi",
-    "consentDeny": "Mitte praegu"
+    "disclosure": "Kontrollib {host} uuemate versioonide osas. Saadab teie peaversiooni ({major})."
   }
 }

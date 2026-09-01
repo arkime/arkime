@@ -2062,8 +2062,6 @@
     "eol": "Esta versión ya no tiene soporte",
     "failed": "Error al buscar actualizaciones",
     "dismiss": "Descartar",
-    "consentBody": "¿Consultar {host} para buscar versiones más recientes? Esto envía tu versión principal ({major}).",
-    "consentAllow": "Buscar actualizaciones",
-    "consentDeny": "Ahora no"
+    "disclosure": "Consulta {host} para buscar versiones más recientes. Envía tu versión principal ({major})."
   }
 }

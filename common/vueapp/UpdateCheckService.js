@@ -8,12 +8,11 @@ SPDX-License-Identifier: Apache-2.0
  * Fetches a static per-major JSON file (releases-v7.json) from an origin the
  * admin controls via the updateCheckUrl config. Deliberately uses plain fetch
  * instead of fetchWrapper: fetchWrapper attaches Arkime session cookies, which
- * must never be sent off-origin. Nothing leaves the browser until the user has
- * consented once, and `off` mode is additionally enforced by CSP connect-src.
+ * must never be sent off-origin. In manual mode nothing leaves the browser
+ * until the user clicks, and `off` is additionally enforced by CSP connect-src.
  */
 import { reactive } from 'vue';
 
-const CONSENT_KEY = 'arkimeUpdateCheckConsent';
 const CACHE_KEY = 'arkimeUpdateCheckCache';
 const DISMISS_KEY = 'arkimeUpdateCheckDismissed';
 
@@ -33,7 +32,6 @@ const state = reactive({
   latestUrl: undefined,
   security: false, // a security release sits between ours and latest
   eol: false, // our major is no longer supported
-  consent: undefined, // undefined = never asked, true/false = answered
   dismissed: '' // version the user dismissed
 });
 
@@ -153,7 +151,7 @@ function applyCached (cached) {
  * @param {boolean} [options.force] skip the 24h cache (an explicit user click)
  */
 export async function checkForUpdates (options = {}) {
-  if (state.mode === 'off' || !state.consent || state.major === undefined) { return; }
+  if (state.mode === 'off' || state.major === undefined) { return; }
 
   if (!options.force) {
     const cached = readCache();
@@ -186,17 +184,6 @@ export async function checkForUpdates (options = {}) {
   }
 }
 
-export function grantConsent () {
-  state.consent = true;
-  writeStorage(CONSENT_KEY, 'true');
-  return checkForUpdates({ force: true });
-}
-
-export function denyConsent () {
-  state.consent = false;
-  writeStorage(CONSENT_KEY, 'false');
-}
-
 export function dismissUpdate () {
   if (!state.latest) { return; }
   state.dismissed = state.latest;
@@ -222,9 +209,6 @@ export function initUpdateCheck (constants) {
   state.status = 'idle';
   clearResult();
 
-  const consent = readStorage(CONSENT_KEY);
-  state.consent = consent === null ? undefined : consent === 'true';
-
   const parsed = parseVersion(state.version);
   state.major = parsed?.[0];
 
@@ -232,8 +216,6 @@ export function initUpdateCheck (constants) {
     state.mode = 'off';
     return;
   }
-
-  if (!state.consent) { return; }
 
   if (state.mode === 'auto') {
     checkForUpdates().catch(() => { /* surfaced via state.status */ });
