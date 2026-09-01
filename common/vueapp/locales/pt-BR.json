@@ -435,6 +435,7 @@
         "metrics": "Métricas",
         "sortBy": "Ordenar por",
         "limit": "Limite",
+        "sampleSize": "Tamanho da amostra",
         "order": "Ordem",
         "width": "Largura (colunas)",
         "height": "Altura (linhas)",
@@ -444,7 +445,7 @@
         "noView": "Sem visualização",
         "noViewsHint": "Nenhuma visualização configurada — crie uma na barra de busca para aplicá-la a um widget",
         "fieldRequired": "Um campo é obrigatório",
-        "twoFieldsRequired": "Conexões requer dois campos: origem e destino"
+        "exactFieldsRequired": "Selecione {count} campos"
       },
       "config": {
         "configurations": "Salvar ou carregar painéis",

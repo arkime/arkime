@@ -436,6 +436,7 @@
         "metrics": "Etricsmay",
         "sortBy": "Ortsay ybay",
         "limit": "Imitlay",
+        "sampleSize": "Amplesay izesay",
         "order": "Orderway",
         "width": "Idthway (olumnscay)",
         "height": "Eighthay (owsray)",
@@ -445,7 +446,7 @@
         "noView": "Onay iewvay",
         "noViewsHint": "Onay iewsvay onfiguredcay — eatecray oneway inway ethay earchsay arbay otay applyway itway otay away idgetway",
         "fieldRequired": "Away ieldfay isway equiredray",
-        "twoFieldsRequired": "Onnectionscay equiresray otway ieldsfay: away ourcesay andway away estinationday"
+        "exactFieldsRequired": "Electsay {count} ieldsfay"
       },
       "config": {
         "configurations": "Avesay orway oadlay ashboardsday",

@@ -1,4 +1,4 @@
-use Test::More tests => 221;
+use Test::More tests => 224;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -590,3 +590,24 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     my $hostile = get("/api/sessions?date=-1&fields=" . uri_escape('source.ip,evil`--,__proto__.polluted') . "&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     cmp_ok ($hostile->{recordsFiltered}, '>=', 1, "hostile fields param still returns sessions");
     is ($hostile->{data}->[0]->{source}->{ip}, "10.180.156.185", "hostile fields param returns requested fields");
+
+# multi viewer must combine metric sub-aggregations across clusters instead of
+# keeping whichever cluster reached a histogram bucket first — the Sessions
+# timeline's bytes/packets series are built from those sub-aggregations, while
+# its sessions series comes from the bucket count and was always correct
+    my $mmWindow = "startTime=1386004308&stopTime=1386004400";
+    my $mmFound = esPost("/tests_sessions3-13m12/_search?size=1", to_json({
+        query => { range => { firstPacket => { gte => 1386004308000, lte => 1386004400000 } } }
+    }));
+    my $mmSrc = $mmFound->{hits}->{hits}->[0]->{_source};
+    ok (defined $mmSrc, "found a session to duplicate into the second cluster");
+
+    # the same session in the second cluster lands in the same histogram bucket
+    esPost("/tests2_sessions3-13m12/_doc/multimerge1?refresh=true", to_json($mmSrc));
+    my $mmSingle = viewerGet("/api/sessions?facets=1&$mmWindow")->{graph};
+    my $mmMulti = multiGet("/api/sessions?facets=1&$mmWindow")->{graph};
+    esDelete("/tests2_sessions3-13m12/_doc/multimerge1?refresh=true");
+
+    my $mmPackets = ($mmSrc->{source}->{packets} // 0) + ($mmSrc->{destination}->{packets} // 0);
+    is ($mmMulti->{sessionsTotal}, $mmSingle->{sessionsTotal} + 1, "multi viewer counts the second cluster's session");
+    is ($mmMulti->{"network.packetsTotal"}, $mmSingle->{"network.packetsTotal"} + $mmPackets, "multi viewer sums packets across clusters");

@@ -435,6 +435,7 @@
         "metrics": "指标",
         "sortBy": "排序方式",
         "limit": "限制",
+        "sampleSize": "采样数量",
         "order": "排序",
         "width": "宽度（列）",
         "height": "高度（行）",
@@ -444,7 +445,7 @@
         "noView": "无视图",
         "noViewsHint": "未配置视图 — 在搜索栏中创建一个以应用于小部件",
         "fieldRequired": "字段为必填项",
-        "twoFieldsRequired": "连接需要两个字段：源和目标"
+        "exactFieldsRequired": "请选择{count}个字段"
       },
       "config": {
         "configurations": "保存或加载仪表板",

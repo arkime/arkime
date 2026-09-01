@@ -85,9 +85,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
   - #4225 Add a sankey dashboard widget that shows flows between 1-3 fields
   - #4225 Add a connections dashboard widget: a display-only src → dst force graph with hover details
-  - #4225 Multi viewer now honors the requested terms aggregation order when merging clusters (dashboard widgets
-          ranked by a metric came back re-sorted by session count) and sums all metric sub-aggregations
-          across clusters instead of just bytes/packets
+  - #4225 Fix the multi viewer Sessions timeline showing only one cluster's bytes and packets per bar
+  - #4225 Fix multi viewer top 10/20/50 lists showing the wrong rows when sorted by bytes or packets
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
 
 

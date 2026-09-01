@@ -30,7 +30,7 @@ SPI Graph page: src = primary, dst = quaternary, both = tertiary theme colors.
 </template>
 
 <script setup>
-import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onBeforeUnmount, nextTick } from 'vue';
 import WidgetCard from './WidgetCard.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
@@ -49,11 +49,13 @@ const svgEl = ref(null);
 const graph = ref(null); // { nodes, links } from /api/connections
 let d3lib;
 let ro;
+let layout; // settled force layout, reused across resizes
+let layoutAspect; // box aspect it was settled for
 
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
   () => props.reloadNonce,
-  (res) => { graph.value = res?.nodes ? res : null; setupObserver(); },
+  (res) => { graph.value = res?.nodes ? res : null; layout = undefined; layoutAspect = undefined; setupObserver(); },
   fetchConnections
 );
 
@@ -65,13 +67,57 @@ const hasData = computed(() => !!graph.value?.nodes?.length);
 
 // hover → shared popover; src nodes resolve to the first field, dst to the
 // second (a "both" node's value exists in either — use the src field)
-const onHover = (e, node) => {
+const onHover = (e, node, sessions) => {
   emit('show-tooltip', {
-    data: { item: node.id, sessions: node.sessions, value: node.sessions },
+    data: { item: node.id, sessions: sessions ?? node.sessions, value: sessions ?? node.sessions },
     position: { x: e.clientX + 1, y: e.clientY + 1 },
     fieldConfig: (node.type === 2 ? fieldObjs.value[1] : fieldObjs.value[0]) || fieldObjs.value[0],
     metricType: 'sessions'
   });
+};
+
+/**
+ * Settle the force layout once per data set and box shape. The result doesn't
+ * depend on the widget's size, only on its aspect ratio, so an ordinary resize
+ * must not pay for the simulation again.
+ *
+ * `aspect` (width / height) shapes the result: a force layout has no inherent
+ * orientation and settles into a roughly circular blob, which a wide widget
+ * would then have to scale down to its short side, stranding the graph in a
+ * small clump in the middle. Pulling harder along the box's short axis flattens
+ * the layout to match its shape instead.
+ */
+const buildLayout = (d3, aspect) => {
+  // clone: the force simulation mutates nodes (x/y) and links (index → ref)
+  const nodes = graph.value.nodes.map(n => ({ ...n }));
+  const links = graph.value.links.map(l => ({ ...l }));
+
+  const maxSessions = Math.max(1, ...nodes.map(n => n.sessions || 0));
+  const maxValue = Math.max(1, ...links.map(l => l.value || 0));
+  const radius = (n) => 3 + 9 * Math.sqrt((n.sessions || 0) / maxSessions);
+  const linkWidth = (l) => 1 + 3 * Math.sqrt((l.value || 0) / maxValue);
+
+  d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).distance(50).strength(0.4))
+    .force('charge', d3.forceManyBody().strength(-100))
+    .force('center', d3.forceCenter(0, 0))
+    .force('collide', d3.forceCollide(d => radius(d) + 3))
+    .force('x', d3.forceX(0).strength(0.02 * Math.max(1, 1 / aspect)))
+    .force('y', d3.forceY(0).strength(0.02 * Math.max(1, aspect)))
+    .stop()
+    .tick(200);
+
+  // keep the settled coordinates untouched; render() derives screen ones
+  for (const n of nodes) { n.bx = n.x; n.by = n.y; }
+  const extent = {
+    minX: Math.min(...nodes.map(n => n.bx)),
+    maxX: Math.max(...nodes.map(n => n.bx)),
+    minY: Math.min(...nodes.map(n => n.by)),
+    maxY: Math.max(...nodes.map(n => n.by))
+  };
+  // label the biggest talkers (keeps dense graphs legible)
+  const labeled = [...nodes].sort((a, b) => (b.sessions || 0) - (a.sessions || 0)).slice(0, 30);
+  return { nodes, links, radius, linkWidth, extent, labeled };
 };
 
 const render = async () => {
@@ -86,34 +132,30 @@ const render = async () => {
   svg.selectAll('*').remove();
   svg.attr('width', w).attr('height', h);
 
-  // clone: the force simulation mutates nodes (x/y) and links (index → ref)
-  const nodes = graph.value.nodes.map(n => ({ ...n }));
-  const links = graph.value.links.map(l => ({ ...l }));
+  // reuse the settled layout across resizes; only a real change of box shape
+  // (more than ~25%) is worth paying for the simulation again
+  const aspect = w / h;
+  if (!layout || Math.abs(Math.log2(aspect / layoutAspect)) > 0.35) {
+    layout = buildLayout(d3, aspect);
+    layoutAspect = aspect;
+  }
+  const { nodes, links, radius, linkWidth, extent, labeled } = layout;
 
-  const maxSessions = Math.max(1, ...nodes.map(n => n.sessions || 0));
-  const maxValue = Math.max(1, ...links.map(l => l.value || 0));
-  const radius = (n) => 3 + 9 * Math.sqrt((n.sessions || 0) / maxSessions);
-  const linkWidth = (l) => 1 + 3 * Math.sqrt((l.value || 0) / maxValue);
-
-  // settle the layout synchronously — a static picture, no animation
-  const sim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).distance(50).strength(0.4))
-    .force('charge', d3.forceManyBody().strength(-100))
-    .force('center', d3.forceCenter(0, 0))
-    .force('collide', d3.forceCollide(d => radius(d) + 3))
-    .stop();
-  sim.tick(200);
-
-  // map the settled layout into the widget box (px space, so radii, strokes
-  // and label sizes stay constant regardless of graph spread)
+  // Map the settled layout into the widget box in px space, so radii, strokes
+  // and label sizes stay constant regardless of how far the graph spread.
+  // One scale for both axes: scaling x and y independently would squash the
+  // layout to the widget's aspect ratio (a 4x1 widget is about 13:1) while the
+  // radii and the gaps forceCollide opened up stay in pre-scale units, leaving
+  // nodes it had separated a couple of pixels apart. Centre the leftover space.
   const pad = 14;
-  const minX = Math.min(...nodes.map(n => n.x));
-  const maxX = Math.max(...nodes.map(n => n.x));
-  const minY = Math.min(...nodes.map(n => n.y));
-  const maxY = Math.max(...nodes.map(n => n.y));
+  const spanX = Math.max(1, extent.maxX - extent.minX);
+  const spanY = Math.max(1, extent.maxY - extent.minY);
+  const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY);
+  const offsetX = (w - spanX * scale) / 2;
+  const offsetY = (h - spanY * scale) / 2;
   for (const n of nodes) {
-    n.x = pad + ((n.x - minX) / Math.max(1, maxX - minX)) * (w - 2 * pad);
-    n.y = pad + ((n.y - minY) / Math.max(1, maxY - minY)) * (h - 2 * pad);
+    n.x = offsetX + (n.bx - extent.minX) * scale;
+    n.y = offsetY + (n.by - extent.minY) * scale;
   }
   const g = svg.append('g');
 
@@ -127,7 +169,9 @@ const render = async () => {
     .attr('y2', d => d.target.y)
     .attr('class', 'conn-link')
     .attr('stroke-width', d => linkWidth(d))
-    .on('mouseover', (e, d) => onHover(e, d.source));
+    // an edge carries the pair's own session count, which is the only place
+    // that number is exposed — show it rather than the source node's total
+    .on('mouseover', (e, d) => onHover(e, d.source, d.value));
 
   g.append('g')
     .selectAll('circle')
@@ -140,8 +184,6 @@ const render = async () => {
     .style('cursor', 'pointer')
     .on('mouseover', onHover);
 
-  // label the biggest talkers (keeps dense graphs legible)
-  const labeled = [...nodes].sort((a, b) => (b.sessions || 0) - (a.sessions || 0)).slice(0, 30);
   g.append('g')
     .selectAll('text')
     .data(labeled)
@@ -166,8 +208,6 @@ const setupObserver = () => {
     render();
   });
 };
-
-watch(() => props.widget.viewMode, render);
 
 onBeforeUnmount(() => { if (ro) { ro.disconnect(); } });
 </script>

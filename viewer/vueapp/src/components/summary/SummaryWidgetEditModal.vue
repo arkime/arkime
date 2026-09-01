@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="multiField"
             v-model="form.fields"
             :items="fieldItems"
-            :placeholder="$t(fieldPair ? 'sessions.summary.widget.fieldsHintPair' : 'sessions.summary.widget.fieldsHint')"
+            :placeholder="$t(exactFields ? 'sessions.summary.widget.fieldsHintPair' : 'sessions.summary.widget.fieldsHint')"
             multiple
             chips
             closable-chips
@@ -108,23 +108,23 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3">
-          <!-- Data limit (Top/Bottom N) -->
+          <!-- Data limit (Top/Bottom N, or a session sample for connections) -->
           <v-select
             v-model="form.length"
             :items="lengthItems"
-            :label="$t('sessions.summary.widget.limit')"
-            :disabled="!aggEnabled"
+            :label="$t(sampleSize ? 'sessions.summary.widget.sampleSize' : 'sessions.summary.widget.limit')"
+            :disabled="!lengthEnabled"
             density="compact"
             variant="outlined"
             hide-details
-            style="min-width: 120px" />
+            style="min-width: 140px" />
 
-          <!-- Order (direction) -->
+          <!-- Order (direction) — only for the modes whose fetch passes one -->
           <v-select
+            v-if="orderEnabled"
             v-model="form.order"
             :items="orderItems"
             :label="$t('sessions.summary.widget.order')"
-            :disabled="!aggEnabled"
             density="compact"
             variant="outlined"
             hide-details
@@ -240,7 +240,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, requiresFieldPair, hasLocalFilter } from './widgets/viewModes';
+import { hasMetric, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -287,11 +287,13 @@ const fieldFriendlyName = computed(() => {
   return FieldService.getField(form.value.field, true)?.friendlyName || form.value.field;
 });
 
-// pie/treemap/table/intersection accept up to 3 fields (chips multi-select);
-// connections takes exactly a source + destination pair
+// how many fields the chosen type takes: [1,3] for the nested/side-by-side
+// types, [2,2] for the connections source + destination pair
 const multiField = computed(() => allowsMultiField(form.value.viewMode));
-const fieldPair = computed(() => requiresFieldPair(form.value.viewMode));
-const maxFields = computed(() => fieldPair.value ? 2 : 3);
+const minFields = computed(() => fieldCountLimits(form.value.viewMode)[0]);
+const maxFields = computed(() => fieldCountLimits(form.value.viewMode)[1]);
+// a type wanting an exact count (connections) gets a hint + message saying so
+const exactFields = computed(() => minFields.value > 1 && minFields.value === maxFields.value);
 const fieldItems = computed(() => fields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
 
 // Capability flags drive which inputs are enabled for the chosen visualization type
@@ -303,7 +305,12 @@ const needsField = computed(() => fieldMode.value || geoMode.value);
 const metricEnabled = computed(() => hasMetric(form.value.viewMode));
 // tables take multiple metric columns + a sort-by; charts take a single metric
 const multiMetric = computed(() => allowsMultiMetric(form.value.viewMode));
-const aggEnabled = computed(() => hasAgg(form.value.viewMode));
+const lengthEnabled = computed(() => hasLength(form.value.viewMode));
+// only the summary-endpoint modes pass an order through; showing the control
+// for the others would silently do nothing
+const orderEnabled = computed(() => hasOrder(form.value.viewMode));
+// connections' limit is a session sample, so it gets its own label + scale
+const sampleSize = computed(() => isSampleSize(form.value.viewMode));
 // field-bound, geo (map) and timeline widgets all support a local filter; only
 // the global capture-stats widgets (stats/time) don't
 const localFilterEnabled = computed(() => hasLocalFilter(form.value.viewMode));
@@ -358,10 +365,11 @@ const sortByItems = computed(() => {
   return opts;
 });
 
-// Standard limits, plus the widget's current value if it's a legacy/imported
-// number outside the set (so the select doesn't render blank)
+// The chosen type's limit scale (top-N counts, or connections' session sample
+// sizes), plus the widget's current value if it's a legacy/imported number
+// outside the set (so the select doesn't render blank)
 const lengthItems = computed(() => {
-  const opts = [10, 20, 50, 100];
+  const opts = [...lengthOptions(form.value.viewMode)];
   if (form.value.length && !opts.includes(form.value.length)) {
     opts.push(form.value.length);
     opts.sort((a, b) => a - b);
@@ -419,6 +427,16 @@ watch([() => form.value.fields, maxFields], ([v, max]) => {
   form.value.field = v.length ? v[0] : '';
 });
 
+// the top-N and session-sample scales don't overlap, so switching between them
+// snaps the limit to the new scale's default rather than keeping a value that
+// means something entirely different (a 20-session connections sample, say)
+watch(() => form.value.viewMode, (mode, prev) => {
+  if (!prev || mode === prev) { return; }
+  if (isSampleSize(mode) !== isSampleSize(prev)) {
+    form.value.length = defaultLength(mode);
+  }
+});
+
 // cap metric columns at 4 and keep the sort-by pointed at a chosen metric (or Sessions)
 watch(() => form.value.metrics, (v) => {
   if (!Array.isArray(v)) { return; }
@@ -451,9 +469,9 @@ const save = () => {
     error.value = t('sessions.summary.widget.fieldRequired');
     return;
   }
-  // connections needs both ends of the pair
-  if (fieldPair.value && fieldList.length !== 2) {
-    error.value = t('sessions.summary.widget.twoFieldsRequired');
+  // types wanting an exact count (connections' src + dst) need all of them
+  if (needsField.value && fieldList.length < minFields.value) {
+    error.value = t('sessions.summary.widget.exactFieldsRequired', { count: minFields.value });
     return;
   }
   // resolve the metric(s): tables carry a metrics[] list + a sort-by; charts one.

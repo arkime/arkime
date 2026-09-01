@@ -10,6 +10,7 @@ filter and the global time window.
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
+import { defaultLength } from './viewModes';
 
 /**
  * A widget's field list (1-3 field exps). Multi-field widgets store `fields`;
@@ -178,10 +179,17 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
   const toDb = (exp) => (exp === 'ip.dst:port' || exp === 'destination.ip:port')
     ? exp
     : (FieldService.getField(exp, true)?.dbField || exp);
+  const [srcField, dstField] = [toDb(fields[0]), toDb(fields[1])];
+  // the modal enforces the pair, but an imported/hand-edited dashboard (or a
+  // field exp that no longer resolves) can still get here — say so on the card
+  // rather than letting the server silently default to source.ip/destination.ip
+  if (!srcField || !dstField) {
+    throw { i18n: 'sessions.summary.widget.exactFieldsRequired', i18nParams: { count: 2 } };
+  }
   const data = buildWidgetParams(route, store, widget, {
-    srcField: toDb(fields[0]),
-    dstField: toDb(fields[1] || fields[0]),
-    length: widget.length || 100
+    srcField,
+    dstField,
+    length: widget.length || defaultLength(widget.viewMode)
   });
   return await fetchWrapper({ url: 'api/connections', method: 'POST', data, signal });
 }

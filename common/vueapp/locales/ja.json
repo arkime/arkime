@@ -435,6 +435,7 @@
         "metrics": "メトリクス",
         "sortBy": "ソート順",
         "limit": "制限",
+        "sampleSize": "サンプルサイズ",
         "order": "順序",
         "width": "幅（列）",
         "height": "高さ（行）",
@@ -444,7 +445,7 @@
         "noView": "ビューなし",
         "noViewsHint": "ビューが設定されていません — 検索バーで作成してウィジェットに適用してください",
         "fieldRequired": "フィールドは必須です",
-        "twoFieldsRequired": "コネクションにはソースとデスティネーションの2つのフィールドが必要です"
+        "exactFieldsRequired": "{count}個のフィールドを選択してください"
       },
       "config": {
         "configurations": "ダッシュボードの保存または読み込み",

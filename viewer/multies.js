@@ -905,6 +905,37 @@ function agg2Obj (field, agg) {
   return obj;
 }
 
+// Metric aggregation operators we can merge across clusters. Anything else
+// (avg, percentiles, ...) can't be recombined from per-cluster results alone
+// and is summed, which is what this code has always done.
+const METRIC_OPS = ['sum', 'min', 'max', 'value_count', 'cardinality', 'avg'];
+
+/**
+ * The declared operator of each metric sub-aggregation of a bucket aggregation,
+ * eg { bytes: 'sum', packets: 'sum', first: 'min' }, so merging buckets across
+ * clusters can combine each sub-agg the way the query asked rather than
+ * assuming they are all sums. apiSessions writes sub-aggs under `aggs`, while
+ * apiStats and buildQuery use `aggregations`.
+ * @returns {object|undefined} operator by sub-agg name (undefined if none)
+ */
+function subAggOps (aggConfig) {
+  const subs = aggConfig?.aggs ?? aggConfig?.aggregations;
+  if (!subs) { return undefined; }
+  const ops = {};
+  for (const subName in subs) {
+    const op = METRIC_OPS.find(o => subs[subName]?.[o]);
+    if (op) { ops[subName] = op; }
+  }
+  return Object.keys(ops).length ? ops : undefined;
+}
+
+/** Combine two metric values per the aggregation's declared operator. */
+function mergeMetric (op, v1, v2) {
+  if (op === 'min') { return Math.min(v1, v2); }
+  if (op === 'max') { return Math.max(v1, v2); }
+  return v1 + v2;
+}
+
 function agg2Arr (agg, type, order) {
   let arr = [];
   for (const attrname in agg) {
@@ -929,10 +960,20 @@ function agg2Arr (agg, type, order) {
     const av = orderValue(a);
     const bv = orderValue(b);
     if (av !== bv) {
-      if (typeof av === 'string') { return dir * String(av).localeCompare(String(bv)); }
+      if (typeof av === 'string' || typeof bv === 'string') {
+        return dir * String(av).localeCompare(String(bv));
+      }
       return dir * (av - bv);
     }
-    return a.key - b.key;
+    // ES breaks ties on the key, ascending, in the field's own term order.
+    // Numeric keys we can reproduce. For string keys the right order depends
+    // on the field type (an ip field orders numerically, a keyword field
+    // lexicographically) and isn't recoverable from a response, so keep the
+    // order the buckets were merged in — imposing one would disagree with what
+    // a single cluster returns. Returning 0 rather than subtracting strings
+    // (which yielded NaN) keeps the comparator consistent and the sort stable.
+    if (typeof a.key === 'number' && typeof b.key === 'number') { return a.key - b.key; }
+    return 0;
   });
   return arr;
 }
@@ -965,6 +1006,7 @@ function aggConvert2Arr (aggs) {
           aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type, aggs[aggname][nestedAgg]._order);
           delete aggs[aggname][nestedAgg]._type;
           delete aggs[aggname][nestedAgg]._order;
+          delete aggs[aggname][nestedAgg]._subAggs;
         }
       }
     }
@@ -973,6 +1015,7 @@ function aggConvert2Arr (aggs) {
       aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type, aggs[aggname]._order);
       delete aggs[aggname]._type;
       delete aggs[aggname]._order;
+      delete aggs[aggname]._subAggs;
     }
   }
 }
@@ -1039,13 +1082,16 @@ function aggAdd (obj1, obj2) {
           const o2 = obj2[aggname].buckets[entry];
 
           o1.doc_count += o2.doc_count;
-          // sum metric sub-aggs (db/pa, the summary widgets' bytes/packets/mN, ...)
+          // merge metric sub-aggs (the timeline's source.bytes/client.bytes, the
+          // summary widgets' bytes/packets/mN, /api/stats' first, ...) each per
+          // the operator its query declared, defaulting to sum
+          const subOps = obj1[aggname]._subAggs;
           for (const sub in o2) {
             if (o2[sub] === null || typeof o2[sub] !== 'object' || typeof o2[sub].value !== 'number') { continue; }
             if (o1[sub] === undefined) {
               o1[sub] = o2[sub];
             } else if (typeof o1[sub].value === 'number') {
-              o1[sub].value += o2[sub].value;
+              o1[sub].value = mergeMetric(subOps?.[sub], o1[sub].value, o2[sub].value);
             }
           }
         }
@@ -1214,16 +1260,16 @@ function newResult (search) {
           const nestedAggs = aggConfig.aggs || aggConfig.aggregations;
           for (const nestedAgg in nestedAggs) {
             if (nestedAggs[nestedAgg].histogram) {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
             } else {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', _order: nestedAggs[nestedAgg].terms?.order, doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', _order: nestedAggs[nestedAgg].terms?.order, _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
             }
           }
         }
       } else if (aggConfig.histogram) {
-        result.aggregations[agg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+        result.aggregations[agg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       } else {
-        result.aggregations[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+        result.aggregations[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       }
     }
   }

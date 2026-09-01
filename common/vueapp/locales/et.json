@@ -435,6 +435,7 @@
         "metrics": "Mõõdikud",
         "sortBy": "Sorteeri",
         "limit": "Piirang",
+        "sampleSize": "Valimi suurus",
         "order": "Järjestus",
         "width": "Laius (veerud)",
         "height": "Kõrgus (read)",
@@ -444,7 +445,7 @@
         "noView": "Vaade puudub",
         "noViewsHint": "Vaateid pole seadistatud — loo üks otsinguribal, et rakendada see vidinale",
         "fieldRequired": "Väli on kohustuslik",
-        "twoFieldsRequired": "Ühendused nõuab kahte välja: allikas ja sihtkoht"
+        "exactFieldsRequired": "Valige {count} välja"
       },
       "config": {
         "configurations": "Salvesta või laadi töölaudu",

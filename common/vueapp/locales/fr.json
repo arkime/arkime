@@ -435,6 +435,7 @@
         "metrics": "Métriques",
         "sortBy": "Trier par",
         "limit": "Limite",
+        "sampleSize": "Taille de l'échantillon",
         "order": "Ordre",
         "width": "Largeur (colonnes)",
         "height": "Hauteur (lignes)",
@@ -444,7 +445,7 @@
         "noView": "Aucune vue",
         "noViewsHint": "Aucune vue configurée — créez-en une dans la barre de recherche pour l'appliquer à un widget",
         "fieldRequired": "Un champ est requis",
-        "twoFieldsRequired": "Connexions nécessite deux champs : source et destination"
+        "exactFieldsRequired": "Sélectionnez {count} champs"
       },
       "config": {
         "configurations": "Enregistrer ou charger des tableaux de bord",

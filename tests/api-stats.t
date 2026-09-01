@@ -1,4 +1,4 @@
-use Test::More tests => 137;
+use Test::More tests => 142;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -345,3 +345,29 @@ my $test1Token = getTokenCookie("test1");
     }
 
     is (exists $stats->{data}->[0]->{"totalPackets"}, "", "parliament.json doesn't have unnecessary fields");
+
+# multi viewer bucket merge — a min sub-aggregation must not be summed
+# (/api/stats' retention is `now - min(files.first)` per node, so summing two
+#  clusters' epochs put the retention date decades into the future)
+    my $mtestFile = '{"num": 9001, "name": "/tmp/mtest-9001.pcap", "first": 1000000000, "node": "mtest", "filesize": 100, "locked": 0}';
+    my $mtest2File = '{"num": 9002, "name": "/tmp/mtest-9002.pcap", "first": 2000000000, "node": "mtest", "filesize": 100, "locked": 0}';
+    # a stats row is what carries retention in the response, keyed by node name
+    esPost("/tests_stats_v30/_doc/mtest?refresh=true", '{"nodeName": "mtest", "currentTime": 1788190323, "interval": 1, "monitoring": 0, "deltaMS": 1000}');
+    esPost("/tests_files_v30/_doc/mtest-9001?refresh=true", $mtestFile);
+    esPost("/tests2_files_v30/_doc/mtest-9002?refresh=true", $mtest2File);
+
+    my $now = time();
+    my $sstats = viewerGet("/api/stats");
+    my ($srow) = grep {$_->{id} eq "mtest"} @{$sstats->{data}};
+    ok (defined $srow, "single viewer has the mtest stats row");
+    cmp_ok (abs($srow->{retention} - ($now - 1000000000)), "<", 60, "single viewer retention is now - first");
+
+    my $mmstats = multiGet("/stats.json");
+    my ($mrow) = grep {$_->{id} eq "mtest"} @{$mmstats->{data}};
+    ok (defined $mrow, "multi viewer has the mtest stats row");
+    cmp_ok ($mrow->{retention}, ">", 0, "multi viewer retention is not in the future");
+    cmp_ok (abs($mrow->{retention} - $srow->{retention}), "<", 60, "multi viewer retention takes the min first across clusters");
+
+    esDelete("/tests_stats_v30/_doc/mtest?refresh=true");
+    esDelete("/tests_files_v30/_doc/mtest-9001?refresh=true");
+    esDelete("/tests2_files_v30/_doc/mtest-9002?refresh=true");
