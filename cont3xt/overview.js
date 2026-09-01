@@ -493,9 +493,9 @@ const defaultOverviewPropertiesForIType = {
       },
       {
         type: 'linked',
-        from: 'BGPView',
+        from: 'RIPEstat',
         field: 'Prefixes',
-        alias: 'BGPView prefixes'
+        alias: 'RIPEstat prefixes'
       },
       {
         type: 'linked',
