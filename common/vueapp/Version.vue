@@ -155,7 +155,13 @@ export default {
   },
   methods: {
     check () {
-      checkForUpdates({ force: true });
+      // after "Not now" consent is false and a plain check would be a no-op,
+      // but clicking the button is itself consent, the prompt has been seen
+      if (this.update.consent) {
+        checkForUpdates({ force: true });
+      } else {
+        grantConsent();
+      }
     },
     allowUpdateCheck () {
       grantConsent();
