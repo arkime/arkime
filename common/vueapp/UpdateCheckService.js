@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 /* UpdateCheckService.js -- client side "newer release available" check
  *
- * Fetches a static per-major JSON file (releases-v5.json) from an origin the
+ * Fetches a static per-major JSON file (releases-v7.json) from an origin the
  * admin controls via the updateCheckUrl config. Deliberately uses plain fetch
  * instead of fetchWrapper: fetchWrapper attaches Arkime session cookies, which
  * must never be sent off-origin. Nothing leaves the browser until the user has
@@ -47,13 +47,13 @@ function writeStorage (key, value) {
   try { localStorage.setItem(key, value); } catch { /* private mode */ }
 }
 
-/** Turns 5.8.1 / v5.8.1 / 5.8.1-GIT into [5, 8, 1], or undefined */
+/** Turns 7.0.1 / v7.0.1 / 7.0.1-GIT into [7, 0, 1], or undefined */
 export function parseVersion (version) {
   const match = /^v?(\d+)\.(\d+)\.(\d+)/.exec(String(version ?? '').trim());
   return match ? [+match[1], +match[2], +match[3]] : undefined;
 }
 
-/** Numeric compare so 5.10.0 sorts after 5.9.0 */
+/** Numeric compare so 7.10.0 sorts after 7.9.0 */
 export function compareVersions (a, b) {
   const pa = parseVersion(a);
   const pb = parseVersion(b);
