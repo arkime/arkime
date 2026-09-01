@@ -18,6 +18,9 @@ const CACHE_KEY = 'arkimeUpdateCheckCache';
 const DISMISS_KEY = 'arkimeUpdateCheckDismissed';
 
 const CACHE_MS = 24 * 60 * 60 * 1000;
+// a 404 or an unreachable host is cached too, briefly, so auto mode doesn't
+// retry (and wait out the timeout) on every single page load
+const NEGATIVE_CACHE_MS = 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 10000;
 
 const state = reactive({
@@ -61,6 +64,14 @@ export function compareVersions (a, b) {
   return 0;
 }
 
+/** The feed is off origin, so never hand the UI a javascript: or data: link */
+export function safeUrl (url) {
+  try {
+    const parsed = new URL(url);
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? url : undefined;
+  } catch { return undefined; }
+}
+
 /** Dev builds shouldn't nag -- they're always "behind" a release */
 export function isDevBuild (version) {
   return String(version ?? '').includes('-GIT');
@@ -93,14 +104,15 @@ function applyPayload (payload) {
     if (release.security) { security = true; }
     if (!newest || compareVersions(release.version, newest) > 0) {
       newest = release.version;
-      newestUrl = release.url;
+      newestUrl = safeUrl(release.url);
     }
   }
 
   // fall back to the precomputed `latest` when no releases[] is published
   if (!newest && compareVersions(payload?.latest, state.version) > 0) {
     newest = payload.latest;
-    newestUrl = payload.url;
+    newestUrl = safeUrl(payload.url);
+    security = !!payload.security;
   }
 
   state.latest = newest;
@@ -110,13 +122,29 @@ function applyPayload (payload) {
   state.status = 'done';
 }
 
+function writeCache (entry) {
+  writeStorage(CACHE_KEY, JSON.stringify({
+    ts: Date.now(), major: state.major, baseUrl: state.baseUrl, ...entry
+  }));
+}
+
 function readCache () {
   try {
     const cached = JSON.parse(readStorage(CACHE_KEY));
-    if (cached?.major !== state.major) { return undefined; }
-    if (!cached.ts || Date.now() - cached.ts > CACHE_MS) { return undefined; }
-    return cached.payload;
+    if (cached?.major !== state.major || cached?.baseUrl !== state.baseUrl) { return undefined; }
+    const ttl = cached.negative ? NEGATIVE_CACHE_MS : CACHE_MS;
+    if (!cached.ts || Date.now() - cached.ts > ttl) { return undefined; }
+    return cached;
   } catch { return undefined; }
+}
+
+function applyCached (cached) {
+  if (cached.negative) {
+    clearResult();
+    state.status = cached.status;
+  } else {
+    applyPayload(cached.payload);
+  }
 }
 
 /**
@@ -129,7 +157,7 @@ export async function checkForUpdates (options = {}) {
 
   if (!options.force) {
     const cached = readCache();
-    if (cached) { applyPayload(cached); return; }
+    if (cached) { applyCached(cached); return; }
   }
 
   clearResult();
@@ -146,13 +174,14 @@ export async function checkForUpdates (options = {}) {
     });
 
     // a major we haven't published a file for yet is a quiet no-op
-    if (res.status === 404) { state.status = 'done'; return; }
+    if (res.status === 404) { writeCache({ negative: true, status: 'done' }); state.status = 'done'; return; }
     if (!res.ok) { throw new Error(`status ${res.status}`); }
 
     const payload = await res.json();
-    writeStorage(CACHE_KEY, JSON.stringify({ ts: Date.now(), major: state.major, payload }));
+    writeCache({ payload });
     applyPayload(payload);
   } catch {
+    writeCache({ negative: true, status: 'error' });
     state.status = 'error';
   }
 }
@@ -204,7 +233,14 @@ export function initUpdateCheck (constants) {
     return;
   }
 
-  if (state.mode === 'auto' && state.consent) {
+  if (!state.consent) { return; }
+
+  if (state.mode === 'auto') {
     checkForUpdates().catch(() => { /* surfaced via state.status */ });
+  } else {
+    // manual makes no automatic requests, but a cached result should still
+    // survive a reload or the dot only lasts the session it was found in
+    const cached = readCache();
+    if (cached) { applyCached(cached); }
   }
 }

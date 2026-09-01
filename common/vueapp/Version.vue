@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         </a>
         <span
           v-if="showDot"
+          role="img"
           :class="['update-dot', { 'update-dot-security': update.security }]"
           :aria-label="$t('updateCheck.available', { version: update.latest })" />
       </span>
