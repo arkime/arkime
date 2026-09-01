@@ -16,7 +16,6 @@ const iptrie = require('arkime-iptrie');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
-
 const Locales = require('../common/locales');
 const Banner = require('../common/banner');
 const WISESource = require('./wiseSource.js');
@@ -179,13 +178,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// resolved lazily on first request, once config is loaded; drives both the
-// CSP connect-src and the constants handed to the client
-let updateCheck;
-function getUpdateCheck () {
-  updateCheck ??= ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
-  return updateCheck;
-}
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
 
 // define csp headers
 const cspDirectives = {
@@ -197,15 +192,25 @@ const cspDirectives = {
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:'],
   // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
-  workerSrc: ["'self'", 'blob:'],
-  // only widened when an update check origin is configured, so 'off' is browser enforced
-  connectSrc: ["'self'", () => getUpdateCheck().origin ?? "'self'"]
+  workerSrc: ["'self'", 'blob:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
 };
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: cspDirectives
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
+
+// resolve at config load, so a bad value warns at startup. helmet snapshots
+// the directives when it is constructed, so rebuild the header too.
+ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+});
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -1744,8 +1749,8 @@ app.use(cspHeader, (req, res, next) => {
     footerConfig,
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
-    checkForUpdates: getUpdateCheck().mode,
-    updateCheckUrl: getUpdateCheck().url,
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     environment: process.env.NODE_ENV
   };
 
