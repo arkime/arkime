@@ -333,7 +333,7 @@ SPDX-License-Identifier: Apache-2.0
           </template>
           <v-list density="compact">
             <v-list-item
-              @click="exportPCAP"
+              @click="exportPCAP('pcap')"
               v-has-permission="'!disablePcapDownload'">
               <v-icon icon="mdi-file-outline" />&nbsp;
               {{ $t('sessions.exports.exportPCAP') }}
@@ -341,6 +341,17 @@ SPDX-License-Identifier: Apache-2.0
                 activator="parent"
                 location="left">
                 {{ $t('sessions.exports.exportPCAP') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              @click="exportPCAP('pcapng')"
+              v-has-permission="'!disablePcapDownload'">
+              <v-icon icon="mdi-file-outline" />&nbsp;
+              {{ $t('sessions.exports.exportPCAPNG') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('sessions.exports.exportPCAPNG') }}
               </v-tooltip>
             </v-list-item>
             <v-list-item
@@ -520,6 +531,7 @@ SPDX-License-Identifier: Apache-2.0
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
+              :format="actionFormat"
               :apply-to="actionFormItemRadio" />
             <arkime-export-csv
               v-else-if="actionForm === 'export:csv'"
@@ -611,6 +623,7 @@ export default {
     return {
       actionFormItemRadio: 'visible',
       actionForm: undefined,
+      actionFormat: 'pcap',
       showApplyButtons: false,
       cluster: {},
       view: this.$route.query.view,
@@ -738,7 +751,8 @@ export default {
         this.timeUpdate();
       }
     },
-    exportPCAP: function () {
+    exportPCAP: function (format) {
+      this.actionFormat = format === 'pcapng' ? 'pcapng' : 'pcap';
       this.actionForm = 'export:pcap';
       this.showApplyButtons = true;
     },

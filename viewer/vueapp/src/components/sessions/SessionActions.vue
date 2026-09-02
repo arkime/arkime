@@ -56,41 +56,94 @@ SPDX-License-Identifier: Apache-2.0
 
   <template v-if="actions.hasPackets">
     <template v-if="actions.rootId">
-      <v-btn
-        class="session-options-btn"
-        variant="text"
-        size="small"
-        :href="`api/session/${actions.node}/${actions.id}/pcap`"
-        :download="`${actions.id}-segment.pcap`">
-        <v-icon
-          icon="mdi-download"
-          class="me-1" />
-        {{ $t('sessions.downloadSegmentPCAP') }}
-      </v-btn>
-      <v-btn
-        class="session-options-btn"
-        variant="text"
-        size="small"
-        :href="`api/session/entire/${actions.node}/${actions.rootId}/pcap`"
-        :download="`${actions.communityId || actions.rootId}.pcap`">
-        <v-icon
-          icon="mdi-download"
-          class="me-1" />
-        {{ $t('sessions.downloadEntirePCAP') }}
-      </v-btn>
+      <v-menu>
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            class="session-options-btn"
+            variant="text"
+            size="small">
+            <v-icon
+              icon="mdi-download"
+              class="me-1" />
+            {{ $t('sessions.downloadSegmentPCAP') }}
+            <v-icon
+              icon="mdi-menu-down"
+              class="ms-1" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcap')">
+            {{ $t('sessions.downloadSegmentPCAP') }}
+          </v-list-item>
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcapng')">
+            {{ $t('sessions.downloadSegmentPCAPNG') }}
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-menu>
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            class="session-options-btn"
+            variant="text"
+            size="small">
+            <v-icon
+              icon="mdi-download"
+              class="me-1" />
+            {{ $t('sessions.downloadEntirePCAP') }}
+            <v-icon
+              icon="mdi-menu-down"
+              class="ms-1" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcap')">
+            {{ $t('sessions.downloadEntirePCAP') }}
+          </v-list-item>
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcapng')">
+            {{ $t('sessions.downloadEntirePCAPNG') }}
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </template>
-    <v-btn
-      v-else-if="canDownloadPcap"
-      class="session-options-btn"
-      variant="text"
-      size="small"
-      :href="`api/session/${actions.node}/${actions.id}/pcap`"
-      :download="`${actions.id}.pcap`">
-      <v-icon
-        icon="mdi-download"
-        class="me-1" />
-      {{ $t('sessions.downloadPCAP') }}
-    </v-btn>
+    <v-menu v-else-if="canDownloadPcap">
+      <template #activator="{ props: activatorProps }">
+        <v-btn
+          v-bind="activatorProps"
+          class="session-options-btn"
+          variant="text"
+          size="small">
+          <v-icon
+            icon="mdi-download"
+            class="me-1" />
+          {{ $t('sessions.downloadPCAP') }}
+          <v-icon
+            icon="mdi-menu-down"
+            class="ms-1" />
+        </v-btn>
+      </template>
+      <v-list density="compact">
+        <v-list-item
+          prepend-icon="mdi-download"
+          @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcap')">
+          {{ $t('sessions.downloadPCAP') }}
+        </v-list-item>
+        <v-list-item
+          prepend-icon="mdi-download"
+          @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcapng')">
+          {{ $t('sessions.downloadPCAPNG') }}
+        </v-list-item>
+      </v-list>
+    </v-menu>
 
     <v-btn
       class="session-options-btn"
@@ -176,8 +229,14 @@ SPDX-License-Identifier: Apache-2.0
         <v-list-item
           v-if="actions.hasPackets && canDownloadPcap"
           prepend-icon="mdi-download"
-          @click="emit('openForm', { type: 'export:pcap' })">
+          @click="emit('openForm', { type: 'export:pcap', format: 'pcap' })">
           {{ $t('sessions.exports.exportPCAP') }}
+        </v-list-item>
+        <v-list-item
+          v-if="actions.hasPackets && canDownloadPcap"
+          prepend-icon="mdi-download"
+          @click="emit('openForm', { type: 'export:pcap', format: 'pcapng' })">
+          {{ $t('sessions.exports.exportPCAPNG') }}
         </v-list-item>
         <v-list-item
           prepend-icon="mdi-tag-plus"
@@ -215,12 +274,14 @@ import { useI18n } from 'vue-i18n';
 import qs from 'qs';
 import store from '@/store';
 import UserService from '../users/UserService';
+import { fetchWrapper } from '@common/fetchWrapper.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 const props = defineProps({
   actions: { type: Object, required: true },
   showMenus: { type: Boolean, default: false }
 });
-const emit = defineEmits(['openForm']);
+const emit = defineEmits(['openForm', 'notify']);
 
 const route = useRoute();
 const { t } = useI18n();
@@ -228,6 +289,28 @@ const { t } = useI18n();
 const remoteclusters = computed(() => store.state.remoteclusters);
 const canDownloadPcap = computed(() => UserService.hasPermission('!disablePcapDownload'));
 const canRemove = computed(() => UserService.hasPermission('removeEnabled'));
+
+// A classic pcap can only hold one link type. When pcap is chosen, ask the
+// server first and fall back to pcapng, telling the user why, rather than hand
+// them a broken file. pcapng is always downloaded directly.
+async function downloadPcap (base, fileName, format) {
+  if (format === 'pcap') {
+    try {
+      const check = await fetchWrapper({ url: `${base}/pcap`, params: { check: 'true' } });
+      if (check.needsPcapng) {
+        format = 'pcapng';
+        emit('notify', resolveMessage(check, t));
+      }
+    } catch (err) {
+      // the download itself reports the problem
+    }
+  }
+  const link = document.createElement('a');
+  link.href = `${base}/${format}`;
+  link.download = `${fileName}.${format}`;
+  link.click();
+  link.remove();
+}
 
 const permalink = computed(() => {
   const id = props.actions.id.split(':');

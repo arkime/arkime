@@ -82,7 +82,8 @@ SPDX-License-Identifier: Apache-2.0
         v-if="actions"
         :actions="actions"
         :show-menus="activeTab === 'details'"
-        @open-form="openForm">
+        @open-form="openForm"
+        @notify="actionFormDone($event, false, false)">
         <content-find
           v-if="activeTab === 'details'"
           class="find-centered"
@@ -239,6 +240,7 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-export-pcap
         v-else-if="actionForm === 'export:pcap'"
         :sessions="actionSessions"
+        :format="actionFormat"
         @done="actionFormDone" />
       <arkime-remove-data
         v-else-if="actionForm === 'remove:data'"
@@ -589,6 +591,7 @@ const actions = ref(null);
 // from the SessionActions bar or the inline "+ add tag" in the detail data
 const actionForm = ref('');
 const actionCluster = ref(undefined);
+const actionFormat = ref('pcap');
 const actionMessage = ref('');
 const actionMessageType = ref('');
 const actionSessions = computed(() => [{ id: props.session.id }]);
@@ -735,9 +738,10 @@ const reload = async () => {
 };
 
 // open an action form (from the bar or the inline "+ add tag")
-const openForm = ({ type, cluster }) => {
+const openForm = ({ type, cluster, format }) => {
   actionForm.value = type;
   actionCluster.value = cluster;
+  actionFormat.value = format === 'pcapng' ? 'pcapng' : 'pcap';
 };
 const actionFormDone = (doneMsg, success, doReload) => {
   actionForm.value = '';

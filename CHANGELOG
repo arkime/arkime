@@ -83,6 +83,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
+  - #4235 Session and export PCAP downloads can now be saved as PCAPNG, which preserves every interface and link type; a PCAP download that would span multiple link types is refused with a message to use PCAPNG instead
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
 
 

@@ -23,6 +23,14 @@ SPDX-License-Identifier: Apache-2.0
         class="small text-danger mb-0">
         <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
+        <v-btn
+          v-if="needsPcapng"
+          size="x-small"
+          variant="tonal"
+          class="ms-2"
+          @click="exportAsPcapng">
+          {{ $t('sessions.exports.exportPCAPNG') }}
+        </v-btn>
       </p>
     </div>
 
@@ -35,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-icon
           icon="mdi-send-outline"
           class="me-1" />
-        {{ $t('sessions.exports.exportPCAP') }}
+        {{ format === 'pcapng' ? $t('sessions.exports.exportPCAPNG') : $t('sessions.exports.exportPCAP') }}
       </v-btn>
       <v-btn
         size="large"
@@ -83,6 +91,10 @@ const props = defineProps({
   numMatching: {
     type: Number,
     default: 0
+  },
+  format: {
+    type: String,
+    default: 'pcap' // pcap | pcapng, chosen from the export menu
   }
 });
 
@@ -91,8 +103,11 @@ const emit = defineEmits(['done']);
 
 // Reactive state
 const error = ref('');
+const needsPcapng = ref(false);
 const segments = ref('no');
-const filename = ref('sessions.pcap');
+// The chosen format can change locally when a pcap export is bumped to pcapng
+const format = ref(props.format === 'pcapng' ? 'pcapng' : 'pcap');
+const filename = ref(`sessions.${format.value}`);
 
 // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
 const tertiaryBtnStyle = {
@@ -114,6 +129,7 @@ const exportPcapAction = async () => {
     start: props.start,
     applyTo: props.applyTo,
     filename: filename.value,
+    format: format.value,
     segments: segments.value,
     sessions: props.sessions,
     numVisible: props.numVisible,
@@ -125,6 +141,17 @@ const exportPcapAction = async () => {
     emit('done', resolveMessage(response, t), true, true); // Emit the done event with the response text
   } catch (err) {
     error.value = resolveMessage(err, t) || t('sessions.exports.unknownErr');
+    needsPcapng.value = err?.needsPcapng === true;
   }
+};
+
+const exportAsPcapng = () => {
+  format.value = 'pcapng';
+  error.value = '';
+  needsPcapng.value = false;
+  if (/\.pcapng?$/i.test(filename.value)) {
+    filename.value = filename.value.replace(/\.pcapng?$/i, '.pcapng');
+  }
+  exportPcapAction();
 };
 </script>
