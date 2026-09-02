@@ -44,6 +44,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4233 Fix a non string userAuthIps or mcpAllowedIps, such as false, throwing rather than being rejected; /mcp returned no response at all and cont3xt exited
   - #4233 Reject abbreviated CIDRs like 10/8, they were accepted and then matched nothing intended
   - #4233 Fix uploadFileSizeLimit=2g meaning 2 bytes, maxSessionsQueried=2m meaning NaN, and a non numeric mcpMaxQueryDays disabling the query window cap
+  - #4233 Fix a non numeric authJwtClockSkew, eg 60s, making jose skip the JWT expiry check entirely, so an expired bearer token verified indefinitely
+  - #4233 Fix settings in a [nodeClass] section escaping validation, they are read after the section list is assembled
+  - #4233 Fix an empty userAuthIps denying every request, including localhost, instead of being treated as unset
+  - #4233 Warn instead of silently using the default when a numeric setting cannot be parsed
+  - #4233 Fix excludeIPs/onlyIPs and the splunk, databricks, reversedns and file sources treating a /0 CIDR as /32, and aborting the process on an out of range prefix from upstream data
 ## Capture
   - #4217 Fix HTTP/2 sessions leaving http.uri empty, only http.uri.path was filled in
   - #4223 Fix JA4 being wrong when the TLS/DTLS client hello has GREASE values in the signature algorithms extension
@@ -51,6 +56,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4224 Add dhcp.yiaddr, the server assigned address from OFFER/ACK, and dhcp.paramReqList, the parameter request list
   - #4224 Add DNS PTR and SRV answer parsing
 ## Cont3xt
+  - #4233 Fix a malformed CIDR in a csvjson source matching every IP, and an out of range one aborting the process
   - #4228 Update the Censys integration to the new Censys Platform API; it now needs a personal access token instead of an api id and secret
   - #4229 Replace the BGPView integration with RIPEstat, BGPView shut down in November 2025
 ## Viewer

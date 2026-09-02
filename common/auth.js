@@ -121,7 +121,7 @@ class Auth {
     options.authConfig.jwtAudience ??= ArkimeConfig.get('authJwtAudience');
     options.authConfig.jwtUserIdPrefix ??= ArkimeConfig.get('authJwtUserIdPrefix');
     options.authConfig.jwtRequiredScopes ??= ArkimeConfig.get('authJwtRequiredScopes');
-    options.authConfig.jwtClockSkew ??= ArkimeConfig.get('authJwtClockSkew', 60);
+    options.authConfig.jwtClockSkew ??= ArkimeConfig.getInt('authJwtClockSkew', 60);
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -203,7 +203,7 @@ class Auth {
       Auth.#doTrustProxy();
     }
 
-    if (options.userAuthIps) {
+    if (options.userAuthIps?.length) {
       // Already validated at config load, this is the belt to that braces
       const { trie, bad } = ArkimeUtil.buildIpTrie(options.userAuthIps);
       for (const cidr of bad) {
@@ -602,7 +602,9 @@ class Auth {
       // Pinning the algorithms is what stops an attacker downgrading to `none`
       // or swapping an RS256 verify for an HS256 one keyed off the public key
       algorithms: Auth.#authConfig.jwtAlgorithms.split(',').map(s => s.trim()).filter(s => s !== ''),
-      clockTolerance: +Auth.#authConfig.jwtClockSkew
+      // NaN makes jose compare exp against NaN, which is always false, so an
+      // expired token would verify forever. Never hand it one
+      clockTolerance: Number.isFinite(+Auth.#authConfig.jwtClockSkew) ? +Auth.#authConfig.jwtClockSkew : 60
     });
 
     const required = Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');
@@ -1626,3 +1628,10 @@ module.exports = Auth;
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+
+ArkimeConfig.registerValidated({
+  userAuthIps: { type: 'cidrs' },
+  // A non numeric skew becomes NaN, and jose compares exp against NaN, which is
+  // always false - so an expired token would verify forever
+  authJwtClockSkew: { type: 'int', min: 0 }
+});

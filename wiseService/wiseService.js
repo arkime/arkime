@@ -851,9 +851,10 @@ function addType (type, newSrc) {
     if (type === 'ip') {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(';').map(item => item.trim()).filter(item => item !== '').forEach((item) => {
-        const parts = item.split('/');
         try {
-          typeInfo.excludes.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
+          if (!ArkimeUtil.addCidrToTrie(typeInfo.excludes, item, true, { mapV4: false })) {
+            throw new Error('not a usable CIDR');
+          }
         } catch (e) {
           console.log(`Error for '${item}'`, e);
           process.exit();

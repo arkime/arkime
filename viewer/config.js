@@ -313,6 +313,11 @@ class Config {
       }
     }, true);
 
+    ArkimeConfig.registerValidated({
+      uploadFileSizeLimit: { type: 'int', min: 0 },
+      maxSessionsQueried: { type: 'int', min: 0 }
+    });
+
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/config.ini`,
       defaultSections: sections

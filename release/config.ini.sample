@@ -188,14 +188,10 @@ dropGroup=daemon
 #userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
 
 # Settings that restrict access or bound a resource are validated when the
-# config is loaded, and a bad one stops the service instead of being ignored -
-# a control the operator believes is in force must never be silently doing
-# nothing. Every bad setting is reported at once, naming the setting and what
-# it expected. Covers userAuthIps, mcpAllowedIps, uploadFileSizeLimit,
-# maxSessionsQueried and mcpMaxQueryDays.
-#
+# config loads, and a bad one stops the service rather than being ignored. Any
+# such setting is named in the startup error along with what it expected.
 # CIDR lists want a full address and an in range prefix length, eg 10.0.0.0/8
-# or 10.0.0.1/32. Abbreviated forms like 10/8 are rejected.
+# or 10.0.0.1/32; abbreviated forms like 10/8 are rejected.
 
 # MCP (Model Context Protocol) ################################################
 # Exposes POST /mcp so an AI assistant can query Arkime. Off by default.

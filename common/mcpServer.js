@@ -15,6 +15,11 @@ const { EventEmitter } = require('events');
 const ArkimeConfig = require('./arkimeConfig');
 const ArkimeUtil = require('./arkimeUtil');
 
+ArkimeConfig.registerValidated({
+  mcpAllowedIps: { type: 'cidrs' },
+  mcpMaxQueryDays: { type: 'number', min: 0, unlimited: -1 }
+});
+
 // Newest first, we answer with the client's version when we know it
 const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
@@ -328,8 +333,14 @@ class MCPServer {
       const list = ArkimeConfig.getArray('mcpAllowedIps', '');
       MCPServer.#ips = null;
       if (list.length > 0 && list[0] !== '') {
-        // Already validated at config load, a bad entry never gets this far
-        MCPServer.#ips = ArkimeUtil.buildIpTrie(list).trie;
+        // Validated at config load, but a runtime reload can still hand us a
+        // bad entry, and a partial allow list is worse than none
+        const { trie, bad } = ArkimeUtil.buildIpTrie(list);
+        for (const cidr of bad) {
+          console.log('ERROR - MCP: unusable mcpAllowedIps entry', ArkimeUtil.sanitizeStr(cidr));
+        }
+        MCPServer.#ips = bad.length ? ArkimeUtil.buildIpTrie([]).trie : trie;
+        if (bad.length) { console.log('ERROR - MCP: denying all /mcp requests until mcpAllowedIps is fixed'); }
       } else if (ArkimeConfig.getArray('mcpAuthMode', 'header').some(mode => mode.startsWith('header'))) {
         MCPServer.#ips = ArkimeUtil.buildIpTrie(['127.0.0.0/8', '::1']).trie;
         console.log('MCP: mcpAllowedIps is not set and mcpAuthMode includes header, only allowing loopback. Set mcpAllowedIps to the address of the proxy to allow it.');
