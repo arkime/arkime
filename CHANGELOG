@@ -50,6 +50,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
+  - #4230 Add mcpMaxTagSessions capping how many sessions one MCP tag change may touch, default 10000, -1 for no limit
+  - #4230 The addtags and removetags apis now return count, how many sessions were changed, and the MCP tools report when a change was truncated by mcpMaxTagSessions
 
 6.7.0 2026/08/19
 ## Release

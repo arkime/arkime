@@ -1,6 +1,7 @@
-use Test::More tests => 90;
+use Test::More tests => 111;
 use ArkimeTest;
 use JSON;
+use URI::Escape;
 use Test::Differences;
 use Data::Dumper;
 use strict;
@@ -248,6 +249,52 @@ $json = callTool("arkime_create_hunt", '{"name":"mcphunt","search":"zzz","search
 is($json->{result}->{isError}, JSON::true, "arkime_create_hunt requires a time window");
 
 viewerGet("/regressionTests/deleteAllViews");
+
+################################################################################
+# mcpMaxTagSessions - the test viewer sets it to 2, so one tag change can only
+# ever touch 2 sessions however many the expression matches
+################################################################################
+my $pwd = "*/pcap";
+
+# more ids than the cap is refused up front, before anything is tagged
+$json = callTool("arkime_add_tags", '{"date":-1,"tags":"MCPCAPTEST","ids":"a,b,c"}');
+is($json->{result}->{isError}, JSON::true, "arkime_add_tags with more ids than mcpMaxTagSessions is a tool error");
+like($json->{result}->{content}->[0]->{text}, qr/mcpMaxTagSessions is 2/, "and the error names the setting and the limit");
+
+# 3 sessions match the expression, only 2 of them may be tagged
+countTest(0, "date=-1&expression=" . uri_escape("tags==MCPCAPTEST"));
+$json = callTool("arkime_add_tags", "{\"date\":-1,\"expression\":\"file=$pwd/socks-http-example.pcap\",\"tags\":\"MCPCAPTEST\"}");
+is($json->{result}->{isError}, JSON::false, "arkime_add_tags by expression succeeds");
+esGet("/_flush");
+esGet("/_refresh");
+countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+countTest(2, "date=-1&expression=" . uri_escape("tags==MCPCAPTEST"));
+
+# a capped change must say it truncated, not report plain success
+is($json->{result}->{structuredContent}->{truncated}, JSON::true, "a capped tag change is reported as truncated");
+is($json->{result}->{structuredContent}->{count}, 2, "and reports how many sessions it touched");
+like($json->{result}->{structuredContent}->{text}, qr/mcpMaxTagSessions is 2/, "and the text names the setting");
+
+# clean up, the tagged sessions are exactly at the cap so one call clears them
+$json = callTool("arkime_remove_tags", '{"date":-1,"expression":"tags==MCPCAPTEST","tags":"MCPCAPTEST"}');
+is($json->{result}->{isError}, JSON::false, "arkime_remove_tags succeeds");
+esGet("/_flush");
+esGet("/_refresh");
+countTest(0, "date=-1&expression=" . uri_escape("tags==MCPCAPTEST"));
+
+# a falsy but present ids must not skip the cap: the api picks its by-query
+# branch with `if (req.body.ids)`, so "" has to be treated as no ids here too
+$json = callTool("arkime_add_tags", "{\"date\":-1,\"expression\":\"file=$pwd/socks-http-example.pcap\",\"tags\":\"MCPCAPEMPTY\",\"ids\":\"\"}");
+is($json->{result}->{isError}, JSON::false, "arkime_add_tags with an empty ids succeeds");
+esGet("/_flush");
+esGet("/_refresh");
+countTest(2, "date=-1&expression=" . uri_escape("tags==MCPCAPEMPTY"));
+
+$json = callTool("arkime_remove_tags", '{"date":-1,"expression":"tags==MCPCAPEMPTY","tags":"MCPCAPEMPTY"}');
+is($json->{result}->{isError}, JSON::false, "arkime_remove_tags cleans up the empty ids tag");
+esGet("/_flush");
+esGet("/_refresh");
+countTest(0, "date=-1&expression=" . uri_escape("tags==MCPCAPEMPTY"));
 
 ################################################################################
 # mcpMaxQueryDays - the test2 viewer on 8124 sets nothing, so this exercises the

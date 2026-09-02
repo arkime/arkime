@@ -2698,6 +2698,7 @@ class SessionAPIs {
      time - Add tags to segments occurring in the same time period
    * @returns {boolean} success - Whether the add tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
+   * @returns {number} count - How many sessions were changed
    */
   static addTags (req, res) {
     let tags = [];
@@ -2722,7 +2723,8 @@ class SessionAPIs {
           return res.json({
             success: true,
             text: 'Tags added successfully',
-            i18n: 'api.sessions.tagsAdded'
+            i18n: 'api.sessions.tagsAdded',
+            count: list.length
           });
         });
       });
@@ -2743,7 +2745,8 @@ class SessionAPIs {
           return res.json({
             success: true,
             text: 'Tags added successfully',
-            i18n: 'api.sessions.tagsAdded'
+            i18n: 'api.sessions.tagsAdded',
+            count: total
           });
         });
     }
@@ -2764,6 +2767,7 @@ class SessionAPIs {
      time - Remove tags from segments occurring in the same time period
    * @returns {boolean} success - Whether the remove tags operation was successful
    * @returns {string} text - The success/error message to (optionally) display to the user
+   * @returns {number} count - How many sessions were changed
    */
   static removeTags (req, res) {
     let tags = [];
@@ -2787,7 +2791,8 @@ class SessionAPIs {
           return res.json({
             success: true,
             text: 'Tags removed successfully',
-            i18n: 'api.sessions.tagsRemoved'
+            i18n: 'api.sessions.tagsRemoved',
+            count: list.length
           });
         });
       });
@@ -2807,7 +2812,8 @@ class SessionAPIs {
           return res.json({
             success: true,
             text: 'Tags removed successfully',
-            i18n: 'api.sessions.tagsRemoved'
+            i18n: 'api.sessions.tagsRemoved',
+            count: total
           });
         });
     }

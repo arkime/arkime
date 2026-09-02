@@ -103,6 +103,61 @@ class MCPViewerAPIs {
   }
 
   // --------------------------------------------------------------------------
+  /**
+   * How many sessions one tag change may touch, mcpMaxTagSessions, default
+   * 10000, -1 for no limit. parseInt is not enough on its own: it stops at the
+   * first non digit, so '10k' would silently become a cap of 10.
+   */
+  static #maxTagSessions () {
+    const raw = String(ArkimeConfig.get('mcpMaxTagSessions', 10000)).trim();
+    if (!/^-?[0-9]+$/.test(raw)) {
+      console.log('ERROR - mcpMaxTagSessions is not a number, using 10000');
+      return 10000;
+    }
+    return parseInt(raw, 10);
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Build the query for a tag change and cap how many sessions it may touch.
+   * Tagging by expression otherwise inherits the api's own 1000000 default.
+   */
+  static #tagQuery (args) {
+    const query = MCPViewerAPIs.#sessionQuery(args, ['tags', 'ids']);
+    const limit = MCPViewerAPIs.#maxTagSessions();
+
+    if (limit < 0) { return query; } // -1 means no limit
+
+    // Falsy-but-present ids, eg "", still takes the api's by-query branch
+    // (`if (req.body.ids)`), so test it the same way or the cap is skipped
+    if (!query.ids) {
+      // never 0, buildQuery treats that as unset and falls back to its own default
+      query.length = Math.max(1, limit);
+    } else if (String(query.ids).split(',').filter(id => id !== '').length > limit) {
+      throw new MCPToolError(`Too many ids, mcpMaxTagSessions is ${limit}`);
+    }
+
+    return query;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * A capped tag change must not report plain success. The api reports how many
+   * sessions it touched, so say when that is the cap rather than letting the
+   * model believe the whole expression was applied.
+   */
+  static #tagResult (result, query, past, verb) {
+    if (query.length !== undefined && result?.count >= query.length) {
+      return {
+        ...result,
+        truncated: true,
+        text: `Only the first ${result.count} matching sessions were ${past}, because mcpMaxTagSessions is ${query.length}. Narrow the expression, or pass explicit ids, to ${verb} the rest.`
+      };
+    }
+    return result;
+  }
+
+  // --------------------------------------------------------------------------
   static #buildTools (apis) {
     const { SessionAPIs, StatsAPIs, MiscAPIs, ConnectionAPIs, ViewAPIs, HuntAPIs, ShortcutAPIs, HistoryAPIs } = apis;
     const mw = MCPViewerAPIs.#mw;
@@ -388,18 +443,19 @@ class MCPViewerAPIs {
         annotations: { readOnlyHint: false, destructiveHint: false },
         inputSchema: sessionQuerySchema({
           tags: { type: 'string', description: 'Comma separated tags to add.' },
-          ids: { type: 'string', description: 'Optional comma separated session ids. When omitted, every session matching the expression is tagged, so always set a narrow expression.' }
+          ids: { type: 'string', description: 'Optional comma separated session ids. When omitted, every session matching the expression is tagged, up to the mcpMaxTagSessions limit, so always set a narrow expression.' }
         }, ['tags']),
         handler: async (args, req) => {
           // addTags reads tags/ids from the body but the expression from the
           // query, so it needs both
-          const q = MCPViewerAPIs.#sessionQuery(args, ['tags', 'ids']);
-          return MCPServer.callApiOrThrow(req, {
+          const q = MCPViewerAPIs.#tagQuery(args);
+          const result = await MCPServer.callApiOrThrow(req, {
             url: '/api/sessions/addtags',
             query: q,
             body: q,
             handlers: [mw.checkHeaderToken, mw.logAction('addTags'), SessionAPIs.addTags]
           });
+          return MCPViewerAPIs.#tagResult(result, q, 'tagged', 'tag');
         }
       },
       {
@@ -409,16 +465,17 @@ class MCPViewerAPIs {
         annotations: { readOnlyHint: false, destructiveHint: false },
         inputSchema: sessionQuerySchema({
           tags: { type: 'string', description: 'Comma separated tags to remove.' },
-          ids: { type: 'string', description: 'Optional comma separated session ids. When omitted, every session matching the expression is untagged.' }
+          ids: { type: 'string', description: 'Optional comma separated session ids. When omitted, every session matching the expression is untagged, up to the mcpMaxTagSessions limit.' }
         }, ['tags']),
         handler: async (args, req) => {
-          const q = MCPViewerAPIs.#sessionQuery(args, ['tags', 'ids']);
-          return MCPServer.callApiOrThrow(req, {
+          const q = MCPViewerAPIs.#tagQuery(args);
+          const result = await MCPServer.callApiOrThrow(req, {
             url: '/api/sessions/removetags',
             query: q,
             body: q,
             handlers: [mw.checkHeaderToken, mw.logAction('removeTags'), User.checkPermissions(['removeEnabled']), SessionAPIs.removeTags]
           });
+          return MCPViewerAPIs.#tagResult(result, q, 'untagged', 'untag');
         }
       },
       {
