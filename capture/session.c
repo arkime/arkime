@@ -435,18 +435,56 @@ void arkime_session_mark_for_close(ArkimeSession_t *session)
     }
 }
 /******************************************************************************/
+#define FLIP_SWAP(_type, _a, _b) do { _type _tmp = (_a); (_a) = (_b); (_b) = _tmp; } while (0)
+#define FLIP_SWAP2(_type, _arr) FLIP_SWAP(_type, (_arr)[0], (_arr)[1])
+#define FLIP_BITS(_f) (_f) = ((((_f) & 1) << 1) | (((_f) >> 1) & 1))
 void arkime_session_flip_src_dst(ArkimeSession_t *session)
 {
-    struct in6_addr        addr;
-    uint16_t               port;
+    FLIP_SWAP(struct in6_addr, session->addr1, session->addr2);
+    FLIP_SWAP(uint16_t, session->port1, session->port2);
 
-    addr = session->addr1;
-    session->addr1 = session->addr2;
-    session->addr2 = addr;
+    FLIP_SWAP2(uint64_t, session->bytes);
+    FLIP_SWAP2(uint64_t, session->databytes);
+    FLIP_SWAP2(uint64_t, session->totalDatabytes);
+    FLIP_SWAP2(uint32_t, session->packets);
+    FLIP_SWAP2(uint8_t, session->consumed);
+    FLIP_SWAP2(uint8_t, session->firstBytesLen);
 
-    port = session->port1;
-    session->port1 = session->port2;
-    session->port2 = port;
+    char firstBytes[sizeof(session->firstBytes[0])];
+    memcpy(firstBytes, session->firstBytes[0], sizeof(firstBytes));
+    memcpy(session->firstBytes[0], session->firstBytes[1], sizeof(firstBytes));
+    memcpy(session->firstBytes[1], firstBytes, sizeof(firstBytes));
+
+    FLIP_BITS(session->synSet);
+    FLIP_BITS(session->outOfOrder);
+    FLIP_BITS(session->ackedUnseenSegment);
+
+    // tcpData/sctpData are a union, and tcpFlagAckCnt shares one with the
+    // non-directional icmpInfo, so only flip what the ip protocol says is there
+    if (session->ipProtocol == IPPROTO_TCP) {
+        FLIP_SWAP2(uint8_t, session->tcpFlagAckCnt);
+        FLIP_SWAP2(uint32_t, session->tcpData.synSeq);
+        FLIP_SWAP2(uint32_t, session->tcpData.tcpSeq);
+        FLIP_SWAP2(uint32_t, session->tcpData.synAckSeq);
+        FLIP_SWAP2(uint32_t, session->tcpData.synISN);
+        FLIP_SWAP2(char, session->tcpData.tcpState);
+        FLIP_SWAP(uint16_t, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO], session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_DST_ZERO]);
+        FLIP_BITS(session->tcpData.synSeen);
+        FLIP_BITS(session->tcpData.synAckSeen);
+        FLIP_BITS(session->tcpData.synValidated);
+        FLIP_BITS(session->tcpData.synAckValidated);
+
+        // Queued out of order packets cached their direction
+        ArkimeTcpData_t *ftd;
+        DLL_FOREACH(td_, &session->tcpData, ftd) {
+            ftd->packet->direction ^= 1;
+        }
+    } else if (session->ipProtocol == IPPROTO_SCTP) {
+        FLIP_SWAP2(uint32_t, session->sctpData.tsn);
+        FLIP_SWAP2(uint32_t, session->sctpData.initTag);
+    }
+
+    arkime_packet_flip_src_dst(session);
 }
 /******************************************************************************/
 LOCAL void arkime_session_free(ArkimeSession_t *session)
