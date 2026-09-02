@@ -60,6 +60,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           node, they now create a session per talker pair like every other protocol - by src/dst mac for the
           ethernet protocols and by src/dst ip for igmp and pim. Expect more, smaller sessions for these
   - Removed the demoMode setting and User.isDemoMode(); roles do not replace it, so put a shared instance behind an external identity provider
+  - The _flipSrcDst rule op used to only swap the ips and ports, leaving the rest of the session pointing the old way.
+          It now also swaps the per-direction data: packets, bytes, databytes, payload8, mac, oui, dscp, ttl,
+          tcp seq/state tracking and zero window counts, so flipped sessions are saved self consistent
 ## Release
   - #4221 Node 24.20.0
 ## Capture/Viewer
