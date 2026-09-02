@@ -100,6 +100,10 @@ class Config {
   // ----------------------------------------------------------------------------
   static get = ArkimeConfig.get;
 
+  static getInt = ArkimeConfig.getInt;
+
+  static getNumber = ArkimeConfig.getNumber;
+
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getArray = ArkimeConfig.getArray;

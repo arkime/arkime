@@ -114,6 +114,12 @@ class ArkimeConfig {
       console.log('Debug Level', ArkimeConfig.debug);
     }
 
+    // Anything that restricts access or bounds a resource has to be good before
+    // we hand the config to callers, and the failure has to be at startup: the
+    // alternative is one ERROR line whenever the setting is first used, long
+    // after whoever deployed it stopped watching
+    ArkimeConfig.#validateSettings();
+
     // Tell everything waiting on config we are done
     const loadedCbs = ArkimeConfig.#loadedCbs;
     ArkimeConfig.#loadedCbs = undefined; // Mark as loaded
@@ -277,6 +283,104 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
   static getArray (sectionKey, d, sep) {
     return ArkimeConfig.getFullArray(ArkimeConfig.#defaultSections, sectionKey, d, sep);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * An integer setting. Coercing by hand is a trap: parseInt stops at the
+   * first non digit, so '10k' silently becomes 10 and a cap the operator
+   * thought they raised is quietly tiny. Anything not an integer is a config
+   * error, and #validateSettings has already refused to start for the settings
+   * it covers.
+   */
+  static getInt (sectionKey, d) {
+    const value = ArkimeConfig.get(sectionKey, d);
+    if (typeof value === 'number') { return Math.trunc(value); }
+    if (!ArkimeUtil.isString(value) || !/^-?[0-9]+$/.test(value.trim())) { return d; }
+    return parseInt(value.trim(), 10);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * A number setting, fractions allowed. Same trap as getInt.
+   */
+  static getNumber (sectionKey, d) {
+    const value = ArkimeConfig.get(sectionKey, d);
+    if (typeof value === 'number') { return value; }
+    if (!ArkimeUtil.isString(value) || !/^-?[0-9]*\.?[0-9]+$/.test(value.trim())) { return d; }
+    return parseFloat(value.trim());
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Settings whose job is to restrict access or bound a resource. A broken one
+   * is a hard failure, not something to shrug off: silently ignoring it leaves
+   * a control the operator believes is in force doing nothing. Refusing to
+   * start is already how this config treats a missing required key, see the
+   * ArkimeConfig.exit sentinel.
+   *
+   *   int/number - must parse, and satisfy min. `unlimited` names the one
+   *                value allowed to sit below min, eg -1 for no limit.
+   *   cidrs      - every entry must be a usable CIDR
+   */
+  static #VALIDATED = {
+    userAuthIps: { type: 'cidrs' },
+    mcpAllowedIps: { type: 'cidrs' },
+    uploadFileSizeLimit: { type: 'int', min: 1 },
+    maxSessionsQueried: { type: 'int', min: 1 },
+    mcpMaxQueryDays: { type: 'number', min: 0, unlimited: -1 }
+  };
+
+  // ----------------------------------------------------------------------------
+  static #validateSetting (key, spec) {
+    if (spec.type === 'cidrs') {
+      const list = ArkimeConfig.getArray(key);
+      // An all empty list is how 'not set' looks, leave that to the caller
+      if (list === undefined || list.length === 0 || (list.length === 1 && list[0] === '')) { return undefined; }
+
+      const { bad } = ArkimeUtil.buildIpTrie(list);
+      if (bad.length) {
+        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+          bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
+          ". Each entry must be a full address with an optional in range prefix length, eg '10.0.0.1/32' or '10.0.0.0/8'.";
+      }
+      return undefined;
+    }
+
+    const raw = ArkimeConfig.get(key);
+    if (raw === undefined) { return undefined; }
+
+    const value = spec.type === 'int' ? ArkimeConfig.getInt(key) : ArkimeConfig.getNumber(key);
+    if (value === undefined) {
+      return `${key} is '${ArkimeUtil.sanitizeStr(raw)}', which is not ${spec.type === 'int' ? 'an integer' : 'a number'}.`;
+    }
+    if (value < spec.min && value !== spec.unlimited) {
+      return `${key} is ${value}, which is below the minimum of ${spec.min}` +
+        (spec.unlimited !== undefined ? `. Use ${spec.unlimited} for no limit.` : '.');
+    }
+    return undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Check every access control and resource bound in one pass so the operator
+   * sees all of them at once, then refuse to start if any is broken.
+   */
+  static #validateSettings () {
+    const errors = [];
+
+    for (const [key, spec] of Object.entries(ArkimeConfig.#VALIDATED)) {
+      const error = ArkimeConfig.#validateSetting(key, spec);
+      if (error) { errors.push(error); }
+    }
+
+    if (errors.length === 0) { return; }
+
+    console.log(`ERROR - ${ArkimeConfig.#configFile} has ${errors.length} bad setting${errors.length === 1 ? '' : 's'}, refusing to start:`);
+    for (const error of errors) {
+      console.log('  -', error);
+    }
+    process.exit(1);
   }
 
   // ----------------------------------------------------------------------------

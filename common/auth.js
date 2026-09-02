@@ -204,22 +204,15 @@ class Auth {
     }
 
     if (options.userAuthIps) {
-      for (const cidr of options.userAuthIps) {
-        const parts = cidr.split('/');
-        try {
-          if (parts[0].includes(':')) {
-            Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
-          } else {
-            Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
-          }
-        } catch (e) {
-          console.log('ERROR - userAuthIps setting contains bad IP or cidr', cidr);
-          process.exit(1);
-        }
+      // Already validated at config load, this is the belt to that braces
+      const { trie, bad } = ArkimeUtil.buildIpTrie(options.userAuthIps);
+      for (const cidr of bad) {
+        console.log('ERROR - userAuthIps setting contains bad IP or cidr', ArkimeUtil.sanitizeStr(cidr));
       }
+      if (bad.length) { process.exit(1); }
+      Auth.#userAuthIps = trie;
     } else if (Auth.mode.startsWith('header')) {
-      Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
-      Auth.#userAuthIps.add('::1', 128, 1);
+      Auth.#userAuthIps = ArkimeUtil.buildIpTrie(['127.0.0.0/8', '::1']).trie;
 
       // No explicit userAuthIps set, so we're relying on the loopback-only default above.
       // If this service is also listening on a non-loopback host, warn - a reverse proxy or

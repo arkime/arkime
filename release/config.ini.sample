@@ -187,6 +187,16 @@ dropGroup=daemon
 #requiredAuthHeaderVal="ARKIME_ACCESS"
 #userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
 
+# Settings that restrict access or bound a resource are validated when the
+# config is loaded, and a bad one stops the service instead of being ignored -
+# a control the operator believes is in force must never be silently doing
+# nothing. Every bad setting is reported at once, naming the setting and what
+# it expected. Covers userAuthIps, mcpAllowedIps, uploadFileSizeLimit,
+# maxSessionsQueried and mcpMaxQueryDays.
+#
+# CIDR lists want a full address and an in range prefix length, eg 10.0.0.0/8
+# or 10.0.0.1/32. Abbreviated forms like 10/8 are rejected.
+
 # MCP (Model Context Protocol) ################################################
 # Exposes POST /mcp so an AI assistant can query Arkime. Off by default.
 # Access is per user: the caller needs the mcpUser role on top of the service's
@@ -195,10 +205,14 @@ dropGroup=daemon
 # mcpMaxQueryDays caps how much time a query may span, in days, floating point,
 # so 0.5 is 12 hours. Defaults to 7. Use -1 for no limit, which lets an
 # assistant ask for all data and can be expensive on a large cluster.
+# mcpAllowedIps is a list of CIDRs allowed to reach /mcp, checked before auth.
+# A header auth mode defaults to localhost only, set this to the address of the
+# proxy instead.
 # See https://arkime.com/settings#mcp for the auth modes, the authJwt* settings
 # and full Okta/Athenz/apache examples.
 #mcpEnabled=true
 #mcpAuthMode=header
+#mcpAllowedIps=10.0.0.1/32
 #mcpMaxQueryDays=7
 
 # Should we parse HTTP QS Values
