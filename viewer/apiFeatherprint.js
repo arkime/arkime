@@ -97,12 +97,12 @@ class PolicyTree {
 
     if (includeCidrs.length === 0) return null;
 
-    const should = [];
-    for (const cidr of includeCidrs) {
-      for (const field of ipFields) {
-        should.push({ term: { [field]: cidr } });
-      }
-    }
+    // One `terms` per field (all CIDRs at once), not one `term` per
+    // (field, cidr) -- otherwise the should list is 6 x subnets and trips ES's
+    // indices.query.bool.max_clause_count (1024 on ES7, 4096 on ES8/OS2)
+    // around 170 / 680 subnets, stalling the monitor. terms accepts CIDR
+    // values on ES, arkimedb (>= 0.1.26) and the ClickHouse backend.
+    const should = ipFields.map(field => ({ terms: { [field]: includeCidrs } }));
     return { bool: { should, minimum_should_match: 1 } };
   }
 }
@@ -156,6 +156,16 @@ function loadRules () {
 // featherprintRulesFile ini setting any earlier.
 let RULES = { macSourceRank: {}, classify: [] };
 
+// Caps so a noisy/hostile device can't grow a record unbounded (every SSDP
+// USN/SERVER header is a name, every DNS answer naming an IP is a name, one
+// UPnP device advertises a distinct USN per NT). Newest are kept.
+const MAX_NAMES = 100;
+const MAX_SERVICES = 100;
+// Bound on mac.history / mac ipHistory, set from featherprintHistoryLimit in
+// initialize(). Module-level (single engine per process) so the classifier's
+// static methods can read it.
+let historyLimit = 50;
+
 // Clause keys ending in "Matches" hold user-supplied regexes, precompiled
 // once. The values entry names the ctx array the regex is tested against.
 const REGEX_CLAUSES = {
@@ -187,7 +197,10 @@ function initRules () {
 
 function clauseMatches (clause, ctx) {
   if (clause.hasService !== undefined && !ctx.serviceTypes.has(clause.hasService)) return false;
-  if (clause.nameContains !== undefined && !ctx.nameStrs.some(n => n.includes(clause.nameContains))) return false;
+  // ctx.nameStrs are lowercased; lowercase the needle too so nameContains is
+  // case-insensitive as documented in featherprint.rules.yaml.
+  if (clause.nameContains !== undefined &&
+      !ctx.nameStrs.some(n => n.includes(String(clause.nameContains).toLowerCase()))) return false;
   for (const [key, ctxKey] of Object.entries(REGEX_CLAUSES)) {
     if (clause[key] === undefined) continue;
     const re = clause._res[key];
@@ -308,14 +321,19 @@ class FeatherprintClassify {
     }
 
     // DHCP: broadcast DISCOVER/REQUESTs come from 0.0.0.0 and OFFER/ACKs from
-    // the server, so bind by the server-assigned yiaddr or the requested IP;
-    // source.ip covers unicast renewals from the leased address. The `dhcp`
-    // policy flag (default true) can turn this off per subnet.
+    // the server, so bind by the server-assigned yiaddr or the requested IP.
+    // Only when the session carries neither (a unicast renewal from the leased
+    // address) do we fall back to source.ip -- otherwise an ACK *sent by* the
+    // DHCP server would absorb the client's mac/host/classId onto the server's
+    // own IP. The `dhcp` policy flag (default true) can turn this off per subnet.
     if (src?.dhcp && flags?.dhcp !== false) {
+      const yiaddr = toArray(src.dhcp.yiaddrIp);
+      const requestIp = toArray(src.dhcp.requestIp);
+      const hasAssignment = yiaddr.length > 0 || requestIp.length > 0;
       const dhcpBound =
-        toArray(src.dhcp.yiaddrIp).includes(ip) ||
-        toArray(src.dhcp.requestIp).includes(ip) ||
-        src?.source?.ip === ip;
+        yiaddr.includes(ip) ||
+        requestIp.includes(ip) ||
+        (!hasAssignment && src?.source?.ip === ip);
       if (dhcpBound) {
         for (const h of toArray(src.dhcp.host)) {
           signals.names.push({ name: h, source: 'dhcp', ts });
@@ -420,7 +438,9 @@ class FeatherprintClassify {
         if (n.ttl !== undefined) cur.ttl = n.ttl;
       }
     }
-    return Array.from(seen.values()).sort((a, b) => b.lastSeen - a.lastSeen);
+    return Array.from(seen.values())
+      .sort((a, b) => b.lastSeen - a.lastSeen)
+      .slice(0, MAX_NAMES);
   }
 
   static #dedupServices (services) {
@@ -440,8 +460,9 @@ class FeatherprintClassify {
     const out = Array.from(seen.values());
     // A PTR sighting records the type without a port; drop it once an SRV
     // sighting supplies the ported entry for the same type+proto.
-    return out.filter(s => s.port !== undefined ||
+    const deduped = out.filter(s => s.port !== undefined ||
       !out.some(o => o !== s && o.type === s.type && o.proto === s.proto && o.port !== undefined));
+    return deduped.sort((a, b) => b.lastSeen - a.lastSeen).slice(0, MAX_SERVICES);
   }
 
   // Merge previous + newly observed SSDP attributes; Sets in, arrays out.
@@ -492,9 +513,10 @@ class FeatherprintClassify {
         (RULES.macSourceRank[bestMac.source] ?? 0) < (RULES.macSourceRank[previous.mac.source] ?? 0)) {
       bestMac = null;
     }
-    const macHistory = previous?.mac?.history ?? [];
+    let macHistory = previous?.mac?.history ?? [];
     if (bestMac && !macHistory.some(h => h.mac === bestMac.value)) {
       macHistory.push({ mac: bestMac.value, ts: bestMac.ts, source: bestMac.source });
+      if (macHistory.length > historyLimit) macHistory = macHistory.slice(-historyLimit);
     }
 
     const prevFirst = previous?.firstSeen;
@@ -506,7 +528,9 @@ class FeatherprintClassify {
         ? {
           value: bestMac.value,
           source: bestMac.source,
-          firstSeen: macHistory[0]?.ts ?? bestMac.ts,
+          // First sighting of THIS mac, not macHistory[0] (the oldest mac ever,
+          // a different value once the binding has changed).
+          firstSeen: macHistory.find(h => h.mac === bestMac.value)?.ts ?? bestMac.ts,
           lastSeen: bestMac.ts,
           history: macHistory
         }
@@ -619,7 +643,12 @@ class FeatherprintAPIs {
     s = String(s).trim();
     const slash = s.indexOf('/');
     const ip = slash >= 0 ? s.slice(0, slash) : s;
-    const family = ip.includes(':') ? 6 : 4;
+    // Validate the address, not just the prefix -- otherwise a typo like
+    // "10.0.0/8" or "10.0.0.256/24" slips past the caller's invalid-CIDR skip
+    // and throws inside iptrie.add(), hanging viewer startup (loadConfig runs
+    // synchronously in premain with no catch).
+    const family = net.isIP(ip);
+    if (family === 0) return null;
     const maxBits = family === 6 ? 128 : 32;
     let bits;
     if (slash >= 0) {
@@ -653,7 +682,6 @@ class FeatherprintAPIs {
       intervalSec,
       notifier: Config.get('featherprintNotifier', undefined),
       historyLimit: FeatherprintAPIs.#posInt('featherprintHistoryLimit', 50),
-      dedupWindowSec: FeatherprintAPIs.#posInt('featherprintDedupWindow', 60),
       lookupLimit: FeatherprintAPIs.#posInt('featherprintLookupLimit', 10000),
       // Safety lag: how far in the past to treat as "indexed" to avoid racing
       // ES refresh + capture's dbFlushTimeout. Mirrors cron's formula.
@@ -704,6 +732,7 @@ class FeatherprintAPIs {
   static initialize (options = {}) {
     initRules(); // Config is available now; load rules so featherprintRulesFile applies
     const cfg = FeatherprintAPIs.loadConfig();
+    historyLimit = cfg.settings.historyLimit;
     FeatherprintAPIs.#internals = {
       ...cfg,
       isPrimaryViewer: options.isPrimaryViewer ?? (() => false),
@@ -834,9 +863,21 @@ class FeatherprintAPIs {
       let totalAlerts = 0;
       let totalSessions = 0;
       let currentChunkSec = settings.chunkSec;
-      const maxChunkSec = 24 * 60 * 60; // cap empty fast-forward at 24h
+      // Empty chunks fast-forward through sparse / cold-start backfill by
+      // doubling. Grown chunks that later hit a dense region are made safe by
+      // the truncation retry below, so the cap only needs to bound a single
+      // empty probe; 1yr keeps the fast-forward logarithmic (a decade of empty
+      // range is ~a few dozen probes, not thousands).
+      const maxChunkSec = 365 * 24 * 60 * 60;
+      const minChunkSec = Math.max(1, Math.min(settings.chunkSec, 60));
+      // Hard cap on chunks (empty + non-empty) per tick so a huge empty range
+      // or a pathological retry loop can't issue an unbounded number of ES
+      // queries in one tick -- progress is persisted, the next tick resumes.
+      let iterations = 0;
+      const maxIterations = Math.max(settings.maxChunksPerTick, 500);
 
-      while (remaining > 0 && state.lpValue < endSec) {
+      while (remaining > 0 && state.lpValue < endSec && iterations < maxIterations) {
+        iterations++;
         const chunkEnd = Math.min(state.lpValue + currentChunkSec, endSec);
         const startMs = state.lpValue * 1000;
         const endMs = chunkEnd * 1000;
@@ -851,6 +892,20 @@ class FeatherprintAPIs {
           console.log('featherprint: tick chunk error:', e?.message || e);
           break;
         }
+
+        // Truncated scan: the window held more than featherprintLookupLimit
+        // sessions. Don't advance past the unexamined ones -- halve and retry
+        // the same start with a narrower window. Only give up (and advance,
+        // with a warning) once the window is already at the floor.
+        if (result.truncated && currentChunkSec > minChunkSec) {
+          currentChunkSec = Math.max(minChunkSec, Math.floor(currentChunkSec / 2));
+          continue;
+        }
+        if (result.truncated) {
+          console.log(`WARNING - featherprint: >${settings.lookupLimit} sessions in a ${minChunkSec}s window; ` +
+            'some sessions were not examined (raise featherprintLookupLimit)');
+        }
+
         totalDevices += result.devicesTouched;
         totalAlerts += result.alerts;
         totalSessions += result.sessionsScanned;
@@ -867,8 +922,7 @@ class FeatherprintAPIs {
         }
 
         if (result.sessionsScanned === 0) {
-          // Empty chunk: keep going (don't burn a tick budget slot), and grow
-          // the next chunk to fast-forward through sparse / cold-start backfill.
+          // Empty chunk: don't burn a work-budget slot, grow the next window.
           currentChunkSec = Math.min(currentChunkSec * 2, maxChunkSec);
         } else {
           remaining--;
@@ -944,7 +998,7 @@ class FeatherprintAPIs {
           });
         }
         if (notify) {
-          alerts += await FeatherprintAPIs.#fireNotifiers(ip, events, effectivePolicy);
+          alerts += await FeatherprintAPIs.#fireNotifiers(ip, events, effectivePolicy, record.lastSeen);
         }
       }
       out.push(record);
@@ -955,6 +1009,10 @@ class FeatherprintAPIs {
       devicesTouched: out.length,
       alerts,
       sessionsScanned: sessions.length,
+      // The scan hit featherprintLookupLimit -- some sessions in this window
+      // were not examined. The monitor uses this to narrow-and-retry instead
+      // of advancing the cursor past unexamined data.
+      truncated: sessions.length >= i.settings.lookupLimit,
       elapsedMs: Date.now() - t0
     };
   }
@@ -1293,7 +1351,7 @@ class FeatherprintAPIs {
       macDoc.lastSeen = nowTs;
       macDoc.ipHistory = macDoc.ipHistory ?? [];
       macDoc.ipHistory.push({ ip, ts: nowTs, source: curr.mac.source });
-      if (macDoc.ipHistory.length > 50) macDoc.ipHistory = macDoc.ipHistory.slice(-50);
+      if (macDoc.ipHistory.length > historyLimit) macDoc.ipHistory = macDoc.ipHistory.slice(-historyLimit);
     } else {
       macDoc.lastSeen = nowTs;
       if (!macDoc.currentIp) macDoc.currentIp = ip;
@@ -1307,7 +1365,7 @@ class FeatherprintAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static async #fireNotifiers (ip, events, policy) {
+  static async #fireNotifiers (ip, events, policy, eventTs) {
     const i = FeatherprintAPIs.#internals;
     let fired = 0;
     const { flags } = policy.lookup(ip);
@@ -1318,18 +1376,23 @@ class FeatherprintAPIs {
       const alertDoc = {
         ip,
         kind: ev.kind,
-        ts: Date.now(),
+        // The event's own time, not Date.now(), so a replayed window builds
+        // the same deterministic alert id and collapses instead of re-firing.
+        ts: eventTs ?? Date.now(),
         before: ev.before,
         after: ev.after,
         acked: false,
         message: `featherprint: ${ip} ${ev.kind}`
       };
+      let created;
       try {
-        await FeatherprintDb.insertAlert(alertDoc);
-        fired++;
+        ({ created } = await FeatherprintDb.insertAlert(alertDoc));
       } catch (e) {
         console.log('featherprint: alert insert failed:', e?.message);
+        continue;
       }
+      if (!created) continue; // replay of an existing alert -- don't re-notify
+      fired++;
       if (notifierId) {
         try {
           Notifier.issueAlert(notifierId,

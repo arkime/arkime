@@ -492,6 +492,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { fetchWrapper } from '@common/fetchWrapper';
+import { timezoneDateString } from '@common/vueFilters.js';
 
 const REFRESH_MS = 30000;
 
@@ -643,8 +644,10 @@ export default {
     },
     fmtTs (ts) {
       if (!ts) return '—';
-      try { return new Date(ts).toISOString().replace('T', ' ').slice(0, 19); }
-      catch { return String(ts); }
+      // Render in the user's configured timezone like every other viewer page,
+      // not hard-coded UTC.
+      const settings = this.$store?.state?.user?.settings;
+      return timezoneDateString(ts, settings?.timezone ?? 'local', settings?.ms ?? false);
     },
     describeHistory (h) {
       const b = h.before;

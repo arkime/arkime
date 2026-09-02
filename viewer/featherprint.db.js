@@ -25,24 +25,27 @@ class FeatherprintDb {
   // Persisted monitor state (single doc, well-known id). Tracks the
   // last-processed @timestamp so restarts resume instead of jumping forward.
   static async getState () {
-    return FeatherprintDb.#findOne(FeatherprintDb.INDEX, { _id: FeatherprintDb.STATE_ID });
+    return FeatherprintDb.#getById(FeatherprintDb.INDEX, FeatherprintDb.STATE_ID);
   }
 
   static async saveState (state) {
     const doc = { kind: 'state', ...state, lastUpdated: Date.now() };
-    await Db.indexNow(FeatherprintDb.INDEX, FeatherprintDb.STATE_ID, doc);
+    await Db.index(FeatherprintDb.INDEX, FeatherprintDb.STATE_ID, doc);
     return doc;
   }
 
   // --------------------------------------------------------------------------
   // Get a single device record by IP. Returns the doc (with _id) or null.
+  // Realtime GET-by-id -- the doc id IS the ip -- so it reads-your-writes
+  // without forcing an index refresh on every write.
   static async getIp (ip) {
-    return FeatherprintDb.#findOne(FeatherprintDb.INDEX, { ip }, true);
+    return FeatherprintDb.#getById(FeatherprintDb.INDEX, ip, true);
   }
 
-  // Upsert a device record. Used by monitor mode.
+  // Upsert a device record. Used by monitor mode. Plain index (no refresh):
+  // getIp reads via realtime GET, so a forced refresh per write isn't needed.
   static async upsertDevice (doc) {
-    await Db.indexNow(FeatherprintDb.INDEX, doc.ip, doc);
+    await Db.index(FeatherprintDb.INDEX, doc.ip, doc);
     return doc.ip;
   }
 
@@ -94,9 +97,24 @@ class FeatherprintDb {
 
   // --------------------------------------------------------------------------
   // Alerts: insert, list with optional ack filter, ack.
+  // Deterministic id from {ip, kind, ts, content} -- same scheme as history --
+  // so re-processing a window (failed saveState, restart, cron-leader change)
+  // collapses onto one alert instead of re-firing. Create-only: if the id
+  // already exists we leave it untouched, so a replay never resurrects an
+  // already-acked alert.
   static async insertAlert (alertDoc) {
-    const r = await Db.indexNow(FeatherprintDb.ALERTS_INDEX, undefined, alertDoc);
-    return r?.body?._id ?? r?._id;
+    const digest = nodeCrypto.createHash('sha1')
+      .update(JSON.stringify({ kind: alertDoc.kind, before: alertDoc.before ?? null, after: alertDoc.after ?? null }))
+      .digest('hex').slice(0, 16);
+    const id = `${alertDoc.ip}|${alertDoc.kind}|${alertDoc.ts}|${digest}`;
+    try {
+      await Db.get(FeatherprintDb.ALERTS_INDEX, id);
+      return { id, created: false }; // already exists, don't overwrite
+    } catch (e) {
+      if (e?.meta?.statusCode !== 404) throw e;
+    }
+    await Db.indexNow(FeatherprintDb.ALERTS_INDEX, id, alertDoc);
+    return { id, created: true };
   }
 
   static async listAlerts ({ acked, limit = 500 } = {}) {
@@ -118,24 +136,23 @@ class FeatherprintDb {
   // MAC-keyed tracking: one doc per MAC, with current IP and history so we
   // can emit changeIp when a known MAC shows up on a new IP (arpwatch-style).
   static async getMac (mac) {
-    return FeatherprintDb.#findOne(FeatherprintDb.MACS_INDEX, { mac }, true);
+    return FeatherprintDb.#getById(FeatherprintDb.MACS_INDEX, mac, true);
   }
 
   static async upsertMac (doc) {
-    await Db.indexNow(FeatherprintDb.MACS_INDEX, doc.mac, doc);
+    await Db.index(FeatherprintDb.MACS_INDEX, doc.mac, doc);
     return doc.mac;
   }
 
   // --------------------------------------------------------------------------
-  // Shared helper: 1-hit term lookup. `term` is the inner clause body
-  // (e.g. `{ ip }` or `{ _id: '__state__' }`). Returns _source (with _id
-  // when includeId=true), or null on missing index / no hit.
-  static async #findOne (index, term, includeId = false) {
+  // Shared helper: realtime GET by doc id (each of these doc types is keyed
+  // by a known id -- state id, ip, or mac). Returns _source (with _id when
+  // includeId=true), or null on a missing doc / missing index (404).
+  static async #getById (index, id, includeId = false) {
     try {
-      const r = await Db.search(index, { query: { term }, size: 1 });
-      const hit = r?.hits?.hits?.[0];
-      if (!hit) return null;
-      return includeId ? { _id: hit._id, ...hit._source } : hit._source;
+      const { body } = await Db.get(index, id);
+      if (!body || body.found === false || !body._source) return null;
+      return includeId ? { _id: body._id, ...body._source } : body._source;
     } catch (e) {
       if (e?.meta?.statusCode === 404) return null;
       throw e;
