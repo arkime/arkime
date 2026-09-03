@@ -82,7 +82,8 @@ SPDX-License-Identifier: Apache-2.0
         v-if="actions"
         :actions="actions"
         :show-menus="activeTab === 'details'"
-        @open-form="openForm">
+        @open-form="openForm"
+        @notify="actionFormDone($event, false, false)">
         <content-find
           v-if="activeTab === 'details'"
           class="find-centered"
@@ -239,6 +240,7 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-export-pcap
         v-else-if="actionForm === 'export:pcap'"
         :sessions="actionSessions"
+        :format="actionFormat"
         @done="actionFormDone" />
       <arkime-remove-data
         v-else-if="actionForm === 'remove:data'"
@@ -556,6 +558,7 @@ import ArkimeSendSessions from './Send.vue';
 import ArkimeExportPcap from './ExportPcap.vue';
 import ArkimeToast from '../utils/Toast.vue';
 import ContentFind from '@common/ContentFind.vue';
+import { resolveMessage } from '@common/resolveI18nMessage';
 import { useContentFind } from '@common/composables/useContentFind.js';
 // asynchronous component defined above with html injected by createDetailDataComponent
 let SessionDetailDataComponent = null;
@@ -589,6 +592,7 @@ const actions = ref(null);
 // from the SessionActions bar or the inline "+ add tag" in the detail data
 const actionForm = ref('');
 const actionCluster = ref(undefined);
+const actionFormat = ref('pcap');
 const actionMessage = ref('');
 const actionMessageType = ref('');
 const actionSessions = computed(() => [{ id: props.session.id }]);
@@ -606,6 +610,33 @@ const tsharkPackets = ref([]);
 const tsharkLength = ref(50);
 let tsharkRunId = 0;
 const tsharkPromise = ref();
+
+// Turn any thrown value or error-shaped response into a display string, never
+// an object (which renders as "[object Object]"), preferring a server-provided
+// i18n key or text message.
+const toErrorText = (e, fallback) => {
+  const msg = resolveMessage(e, t);
+  if (msg) { return msg; }
+  if (typeof e === 'string' && e) { return e; }
+  return fallback || t('sessions.detail.loadingErr');
+};
+
+// The packets endpoint returns rendered HTML; a proxy/auth failure can instead
+// return a JSON error, either parsed to an object or left as a string
+// (sometimes with a 200 status). Detect that so we show the message rather than
+// v-html'ing "[object Object]" or raw JSON.
+const packetErrorResponse = (response) => {
+  if (response && typeof response === 'object') {
+    return toErrorText(response, t('sessions.detail.loadingErr'));
+  }
+  if (typeof response === 'string') {
+    const s = response.trim();
+    if (s.startsWith('{') && /"success"\s*:\s*false/.test(s)) {
+      try { return toErrorText(JSON.parse(s), t('sessions.detail.loadingErr')); } catch (e) { /* not JSON after all */ }
+    }
+  }
+  return null;
+};
 const tsharkOutputRef = ref(null);
 const activeTab = ref('details');
 const tsharkFilter = ref('');
@@ -735,9 +766,10 @@ const reload = async () => {
 };
 
 // open an action form (from the bar or the inline "+ add tag")
-const openForm = ({ type, cluster }) => {
+const openForm = ({ type, cluster, format }) => {
   actionForm.value = type;
   actionCluster.value = cluster;
+  actionFormat.value = format === 'pcapng' ? 'pcapng' : 'pcap';
 };
 const actionFormDone = (doneMsg, success, doReload) => {
   actionForm.value = '';
@@ -983,6 +1015,16 @@ const getPackets = async () => {
 
     const response = await fetcher; // do the fetch
 
+    // A JSON error (e.g. a proxy/auth failure) can come back where packet HTML
+    // is expected -- show its message instead of rendering the raw object.
+    const respErr = packetErrorResponse(response);
+    if (respErr) {
+      loadingPackets.value = false;
+      errorPackets.value = respErr;
+      packetPromise.value = undefined;
+      return;
+    }
+
     loadingPackets.value = false;
     renderingPackets.value = true;
     packetPromise.value = undefined;
@@ -1050,7 +1092,7 @@ const getPackets = async () => {
     renderingPackets.value = false;
   } catch (err) {
     loadingPackets.value = false;
-    errorPackets.value = err.text || err;
+    errorPackets.value = toErrorText(err, t('sessions.detail.loadingErr'));
     packetPromise.value = undefined;
   }
 };
@@ -1089,13 +1131,19 @@ const getTshark = async () => {
       if (!trimmed) { continue; }
       try { out.push(JSON.parse(trimmed)); } catch (e) { /* skip non-json line */ }
     }
+    // A proxy/auth failure can return a JSON error object instead of NDJSON
+    // packet lines -- surface it as an error rather than a bogus "packet".
+    if (out.length === 1 && out[0] && out[0].success === false) {
+      tsharkError.value = toErrorText(out[0], t('sessions.detail.loadingErr'));
+      return;
+    }
     tsharkPackets.value = out;
     tsharkLoaded.value = true;
   } catch (err) {
     if (runId !== tsharkRunId) { return; }
     // Aborted requests aren't errors from the user's POV — leave error blank.
     const aborted = err?.name === 'AbortError' || /aborted/i.test(err?.message || '');
-    if (!aborted) { tsharkError.value = err.text || err.message || err; }
+    if (!aborted) { tsharkError.value = toErrorText(err, t('sessions.detail.loadingErr')); }
   } finally {
     // only the newest run owns the loading flag
     if (runId === tsharkRunId) {

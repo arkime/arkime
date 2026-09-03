@@ -223,10 +223,14 @@ dropGroup=daemon
 # mcpMaxQueryDays caps how much time a query may span, in days, floating point,
 # so 0.5 is 12 hours. Defaults to 7. Use -1 for no limit, which lets an
 # assistant ask for all data and can be expensive on a large cluster.
+# mcpAllowedIps is a list of CIDRs allowed to reach /mcp, checked before auth.
+# A header auth mode defaults to localhost only, set this to the address of the
+# proxy instead.
 # See https://arkime.com/settings#mcp for the auth modes, the authJwt* settings
 # and full Okta/Athenz/apache examples.
 #mcpEnabled=true
 #mcpAuthMode=header
+#mcpAllowedIps=10.0.0.1/32
 #mcpMaxQueryDays=7
 
 # Should we parse HTTP QS Values

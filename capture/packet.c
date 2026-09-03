@@ -2608,6 +2608,14 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
     }
 }
 /******************************************************************************/
+void arkime_packet_flip_src_dst(ArkimeSession_t *session)
+{
+    arkime_field_swap(mac1Field, mac2Field, session);
+    arkime_field_swap(oui1Field, oui2Field, session);
+    arkime_field_swap(dscpField[0], dscpField[1], session);
+    arkime_field_swap(ttlField[0], ttlField[1], session);
+}
+/******************************************************************************/
 void arkime_packet_exit()
 {
     runThreads = 0;

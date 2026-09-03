@@ -599,14 +599,14 @@ export default {
           description: 'Censys Services table',
           config: {
             label: 'Services',
-            field: 'result.services',
-            defaultSortField: 'observed_at',
+            field: 'result.resource.services',
+            defaultSortField: 'scan_time',
             defaultSortDirection: 'asc',
             type: 'table',
             fields: [
               {
                 label: 'service',
-                field: 'extended_service_name'
+                field: 'protocol'
               },
               {
                 label: 'port',
@@ -624,11 +624,11 @@ export default {
                 label: 'product',
                 field: 'software',
                 type: 'array',
-                fieldRoot: 'uniform_resource_identifier'
+                fieldRoot: 'cpe'
               },
               {
-                label: 'observed_at',
-                field: 'observed_at',
+                label: 'scan_time',
+                field: 'scan_time',
                 type: 'date'
               }
             ]

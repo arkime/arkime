@@ -267,10 +267,12 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      const filename = params.filename || 'sessions.pcap';
+      const format = params.format === 'pcapng' ? 'pcapng' : 'pcap';
+      delete params.format;
+      const filename = params.filename || `sessions.${format}`;
       delete params.filename; // don't need this anymore
 
-      const baseUrl = `api/sessions/pcap/${filename}`;
+      const baseUrl = `api/sessions/${format}/${filename}`;
       // save segments for later because getReqOptions deletes it
       const segments = params.segments;
 
@@ -287,16 +289,26 @@ export default {
       // add sort to params
       options.params.order = store.state.sortsParam;
 
-      const url = `${baseUrl}?${qs.stringify(options.params)}`;
+      const query = qs.stringify(options.params);
 
-      // use a link so any errors do not redirect to a broken page
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.click();
-      link.remove();
+      const download = () => {
+        // use a link so any errors do not redirect to a broken page
+        const link = document.createElement('a');
+        link.href = `${baseUrl}?${query}`;
+        link.download = filename;
+        link.click();
+        link.remove();
+        return resolve({ success: true });
+      };
 
-      return resolve({ success: true });
+      if (format !== 'pcap') { return download(); }
+
+      // a classic pcap can only hold one link type, so ask first and give the
+      // user a message instead of a failed download
+      fetchWrapper({ url: `${baseUrl}?${query}&check=true` }).then((check) => {
+        if (check.needsPcapng) { return reject({ ...check, needsPcapng: true }); }
+        download();
+      }).catch(() => download());
     });
   },
 

@@ -2002,10 +2002,22 @@ app.get( // session node pcap endpoint
   SessionAPIs.getPCAPFromNode
 );
 
+app.post( // session node pcapng endpoint, before pcap for the same reason as the get
+  ['/api/session/:nodeName/:id[/.]pcapng'],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.postPCAPNGFromNode
+);
+
 app.post( // session node pcap endpoint
   ['/api/session/:nodeName/:id[/.]pcap*'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.postPCAPFromNode
+);
+
+app.get( // session entire pcapng endpoint
+  ['/api/session/entire/:nodeName/:id[/.]pcapng'],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.getEntirePCAPNG
 );
 
 app.get( // session entire pcap endpoint

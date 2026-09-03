@@ -3,11 +3,6 @@ VT_IP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Viru
 VT_Host=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host;fields:cert.alt
 VT_URL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url
 
-# Passive Total
-PTHOST=url:https://passivetotal.org/search/%TEXT%;name:Passivetotal Host;category:host
-PTIP=url:https://passivetotal.org/search/%TEXT%;name:Passivetotal IP;category:ip
-PTEMAIL=url:https://passivetotal.org/search/%TEXT%;name:Passivetotal User;category:user
-
 # Example of using custom fields as the value to perform context query
 VT_CERT_Host=url:https://www.virustotal.com/en/domain/%TEXT%/information/;fields:cert.alt,cert.issuer.cn,cert.subject.cn
 

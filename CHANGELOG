@@ -60,6 +60,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           node, they now create a session per talker pair like every other protocol - by src/dst mac for the
           ethernet protocols and by src/dst ip for igmp and pim. Expect more, smaller sessions for these
   - Removed the demoMode setting and User.isDemoMode(); roles do not replace it, so put a shared instance behind an external identity provider
+  - The _flipSrcDst rule op used to only swap the ips and ports, leaving the rest of the session pointing the old way.
+          It now also swaps the per-direction data: packets, bytes, databytes, payload8, mac, oui, dscp, ttl,
+          tcp seq/state tracking and zero window counts, so flipped sessions are saved self consistent
 ## Release
   - #4221 Node 24.20.0
 ## Capture/Viewer
@@ -83,26 +86,42 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
-  - Add Featherprint, passive device fingerprinting built from session metadata (ARP, DHCP, DNS/mDNS, NBNS, SSDP). A
+  - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
+  - #4226 Add Featherprint, passive device fingerprinting built from session metadata (ARP, DHCP, DNS/mDNS, NBNS, SSDP). A
           per-subnet monitor maintains device records (MAC and history, hostnames, services, DHCP/SSDP attributes and a
           rule-based classification), records a change history and raises alerts on new or changed devices; any IP can also
           be fingerprinted on demand from the new Featherprint page. Configure watched ranges in [featherprint-subnet];
           adds the featherprint, featherprint_history, featherprint_alerts and featherprint_macs indices (db.pl v89)
-  - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
+  - #4235 Session and export PCAP downloads can now be saved as PCAPNG, which preserves every interface and link type; a PCAP download that would span multiple link types is refused with a message to use PCAPNG instead
 
 
 6.7.1 2026/08/xx
+## Breaking
+  - #4233 Settings that restrict access or bound a resource are now checked when the config loads, and a bad value
+          stops the service instead of being silently ignored. The startup error names the setting and what it expected.
+          Checked: userAuthIps, mcpAllowedIps, mcpMaxQueryDays, authJwtClockSkew, uploadFileSizeLimit, maxSessionsQueried,
+          elasticsearch, usersElasticsearch, cont3xt itypes, and the wise excludeIPs, onlyIPs and reversedns ips.
+  - #4233 A list setting entry containing a space is no longer silently dropped, and a yaml key with no value now means unset
 ## All
   - #4215 Fix email searches, periodic queries and cont3xt history deletes ignoring permissions that come from a role instead of the user (thanks @Juwon1405)
+  - #4233 Fix a malformed userAuthIps or mcpAllowedIps entry allowing every source ip, and an empty userAuthIps denying every request
+  - #4233 Fix an expired JWT still verifying, and the mcp query window, upload size and session query limits being ignored, when the setting was not a number
+  - #4233 Fix a /0 CIDR matching a single address in excludeIPs/onlyIPs and the wise and cont3xt ip sources
 ## Capture
   - #4217 Fix HTTP/2 sessions leaving http.uri empty, only http.uri.path was filled in
   - #4223 Fix JA4 being wrong when the TLS/DTLS client hello has GREASE values in the signature algorithms extension
   - #4224 Add ssdp parser
   - #4224 Add dhcp.yiaddr, the server assigned address from OFFER/ACK, and dhcp.paramReqList, the parameter request list
   - #4224 Add DNS PTR and SRV answer parsing
+## Cont3xt
+  - #4228 Update the Censys integration to the new Censys Platform API; it now needs a personal access token instead of an api id and secret
+  - #4229 Replace the BGPView integration with RIPEstat, BGPView shut down in November 2025
+  - Remove the PassiveTotal integration, the API was retired by Microsoft
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
+## WISE
+  - Remove the PassiveTotal source, the API was retired by Microsoft
 
 6.7.0 2026/08/19
 ## Release
