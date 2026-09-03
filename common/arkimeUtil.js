@@ -15,6 +15,7 @@ const sjson = require('secure-json-parse');
 const http = require('http');
 const https = require('https');
 const path = require('path');
+const ipaddr = require('ipaddr.js');
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
 const logger = require('morgan');
@@ -78,6 +79,10 @@ class ArkimeUtil {
   static sanitizeStr (str) {
     if (!str) { return str; }
     if (typeof str === 'object') { str = util.inspect(str); }
+    // A truthy non string, eg a config value the ini parser turned into a
+    // boolean, used to throw - out of the helper whose whole job is making
+    // untrusted values safe to log
+    if (typeof str !== 'string') { str = String(str); }
 
     return str.replace(/\u001b/g, '*ESC*');
   }
@@ -158,6 +163,107 @@ class ArkimeUtil {
    */
   static isString (str, minLen = 1) {
     return typeof str === 'string' && str.length >= minLen;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Parse a url, undefined if it isn't one. An elasticsearch entry may leave
+   * off the scheme, eg localhost:9200, which the callers prepend http:// to.
+   * @ignore
+   * @param {string} str - the url
+   * @returns {URL|undefined}
+   */
+  static parseUrl (str) {
+    if (!ArkimeUtil.isString(str)) { return undefined; }
+    try {
+      return new URL(/^https?:\/\//.test(str) ? str : `http://${str}`);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Split a CIDR into the address and prefix length arkime-iptrie wants, or
+   * undefined if malformed. iptrie asserts and aborts on an out of range
+   * prefix, and treats an empty or NaN one as match everything.
+   */
+  static parseCidr (cidr, { mapV4 = true } = {}) {
+    if (!ArkimeUtil.isString(cidr)) { return undefined; }
+
+    const parts = cidr.split('/');
+    if (parts.length > 2) { return undefined; }
+
+    let addr = parts[0];
+    let ipv6 = addr.includes(':');
+    let prefix = parts[1] ?? (ipv6 ? '128' : '32');
+    if (!/^[0-9]+$/.test(prefix)) { return undefined; }
+    prefix = +prefix;
+
+    // Fast path for the plain v4 rows wise loads by the million, ipaddr.js is
+    // 50x slower. The octet ranges are checked here so anything reaching the
+    // slow path is genuinely unusual: it validates v6, rejects 010.0.0.1 and
+    // 999.1.1.1, and folds ::ffff:10.0.0.0/8 to 10.0.0.0/8 rather than
+    // storing it as a v6 /8 that would match every peer.
+    if (ipv6 || !/^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}$/.test(addr)) {
+      let parsed;
+      try {
+        parsed = ipaddr.parse(addr);
+      } catch (e) {
+        return undefined;
+      }
+      // A v4 that failed the strict test above is malformed: ipaddr.js reads
+      // 10/8 as 0.0.0.10 and 010.0.0.1 as octal, neither is ever meant
+      if (parsed.kind() === 'ipv4') { return undefined; }
+      if (parsed.kind() === 'ipv6' && parsed.isIPv4MappedAddress()) {
+        parsed = parsed.toIPv4Address();
+        if (prefix > 32) { prefix -= 96; }
+      }
+      ipv6 = parsed.kind() === 'ipv6';
+      addr = parsed.toString();
+    }
+
+    if (prefix < 0 || prefix > (ipv6 ? 128 : 32)) { return undefined; }
+
+    // A trie must be queried the way it was filled: the allow lists see
+    // ::ffff: form, the wise/cont3xt caches are queried with the raw value
+    return (ipv6 || !mapV4)
+      ? { addr, prefix }
+      : { addr: `::ffff:${addr}`, prefix: 96 + prefix };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Add one CIDR to an arkime-iptrie, false if the entry is malformed.
+   */
+  static addCidrToTrie (trie, cidr, value = 1, opts) {
+    const parsed = ArkimeUtil.parseCidr(cidr, opts);
+    if (parsed === undefined) { return false; }
+
+    try {
+      trie.add(parsed.addr, parsed.prefix, value);
+    } catch (err) { // iptrie is the only thing that can tell us the address parses
+      return false;
+    }
+    return true;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Build an arkime-iptrie from a list of CIDRs. Treat a non empty `bad` as a
+   * hard failure, a partial allow list is worse than none.
+   * @returns {object} { trie, bad }
+   */
+  static buildIpTrie (list, opts) {
+    const iptrie = require('arkime-iptrie');
+    const trie = new iptrie.IPTrie();
+    const bad = [];
+
+    for (const cidr of Array.isArray(list) ? list : []) { // a bare string would iterate by character
+      if (!ArkimeUtil.addCidrToTrie(trie, cidr, 1, opts)) { bad.push(cidr); }
+    }
+
+    return { trie, bad };
   }
 
   // ----------------------------------------------------------------------------

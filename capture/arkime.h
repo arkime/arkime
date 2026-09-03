@@ -1454,6 +1454,7 @@ int      arkime_packet_dlt_index(const ArkimePacket_t *packet);
 uint32_t arkime_packet_dlt_to_linktype(int dlt);
 uint32_t arkime_packet_linktype_to_dlt(int linktype);
 void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min);
+void     arkime_packet_flip_src_dst(ArkimeSession_t *session);
 
 ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
@@ -1687,6 +1688,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f);
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  arkime_field_count(int pos, ArkimeSession_t *session);
+void arkime_field_swap(int pos1, int pos2, ArkimeSession_t *session);
 void arkime_field_certsinfo_update_extra(void *cert, char *key, char *value);
 GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, const char *key);
 void arkime_field_free(ArkimeSession_t *session);

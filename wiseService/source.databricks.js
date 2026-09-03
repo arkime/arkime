@@ -10,6 +10,7 @@
 const WISESource = require('./wiseSource.js');
 const { DBSQLClient } = require('@databricks/sql');
 const iptrie = require('arkime-iptrie');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 class DatabricksSource extends WISESource {
   // ----------------------------------------------------------------------------
@@ -105,8 +106,10 @@ class DatabricksSource extends WISESource {
         const newitem = WISESource.encodeResult.apply(null, args);
 
         if (this.type === 'ip') {
-          const parts = key.split('/');
-          cache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), newitem);
+          if (!ArkimeUtil.addCidrToTrie(cache.trie, key, newitem, { mapV4: false })) {
+            console.log('ERROR adding', this.section, ArkimeUtil.sanitizeStr(key), '- not a usable CIDR');
+            continue;
+          }
           cache.items.set(key, newitem);
         } else {
           cache.set(key, newitem);

@@ -876,12 +876,9 @@ function addType (type, newSrc) {
     if (type === 'ip') {
       typeInfo.excludes = new iptrie.IPTrie();
       items.split(';').map(item => item.trim()).filter(item => item !== '').forEach((item) => {
-        const parts = item.split('/');
-        try {
-          typeInfo.excludes.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
-        } catch (e) {
-          console.log(`Error for '${item}'`, e);
-          process.exit();
+        if (!ArkimeUtil.addCidrToTrie(typeInfo.excludes, item, true, { mapV4: false })) {
+          console.log(`ERROR - ${typeInfo.excludeName} '${ArkimeUtil.sanitizeStr(item)}' is not a usable CIDR`);
+          process.exit(1);
         }
       });
     } else {
@@ -1796,6 +1793,11 @@ function main () {
 }
 
 async function buildConfigAndStart () {
+  ArkimeConfig.registerValidated({
+    elasticsearch: { type: 'urls' },
+    usersElasticsearch: { type: 'urls' }
+  });
+
   // Load config
   await ArkimeConfig.initialize({
     defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini`,
