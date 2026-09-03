@@ -87,6 +87,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
   - #4235 Session and export PCAP downloads can now be saved as PCAPNG, which preserves every interface and link type; a PCAP download that would span multiple link types is refused with a message to use PCAPNG instead
+  - #4225 Add a sankey dashboard widget that shows flows between 1-3 fields
+  - #4225 Add a connections dashboard widget: a display-only src → dst force graph with hover details
+  - #4225 Fix the multi viewer Sessions timeline showing only one cluster's bytes and packets per bar
+  - #4225 Fix multi viewer top 10/20/50 lists showing the wrong rows when sorted by bytes or packets
+  - #4225 Fix the multi viewer Nodes page retention showing one cluster's oldest pcap when clusters share a node name
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
 
 

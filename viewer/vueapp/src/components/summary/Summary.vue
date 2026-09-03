@@ -85,12 +85,21 @@ SPDX-License-Identifier: Apache-2.0
             class="widget-resize widget-resize--se"
             :title="$t('sessions.summary.dragToResize')"
             @mousedown.stop.prevent="startResize(w, $event, 'both')" />
-          <!-- multi-field (2-3) nested pie/treemap -->
+          <!-- multi-field (2-3) nested pie/treemap, and sankey (any field count) -->
           <HierarchyWidget
-            v-if="isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap')"
+            v-if="w.viewMode === 'sankey' || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- display-only force graph of a src → dst field pair -->
+          <ConnectionsWidget
+            v-else-if="w.viewMode === 'connections'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
@@ -203,6 +212,7 @@ import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import IntersectionWidget from './widgets/IntersectionWidget.vue';
+import ConnectionsWidget from './widgets/ConnectionsWidget.vue';
 import HierarchyWidget from './widgets/HierarchyWidget.vue';
 import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
 import TimelineWidget from './widgets/TimelineWidget.vue';
@@ -210,7 +220,7 @@ import MapWidget from './widgets/MapWidget.vue';
 import StatsWidget from './widgets/StatsWidget.vue';
 import TimeWidget from './widgets/TimeWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasAgg, allowsMultiField } from './widgets/viewModes';
+import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField } from './widgets/viewModes';
 import { widgetLocalExpression, widgetFields } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -415,10 +425,18 @@ const widgetInfo = (w) => {
     }
   }
 
-  // Top/Bottom N only applies to the aggregating widgets
-  if (hasAgg(w.viewMode)) {
-    const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
-    rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${w.length || 20}` });
+  // The limit row reads as a session sample for connections, a Top/Bottom N for
+  // the modes whose fetch passes an order, and a plain cap for the rest
+  if (hasLength(w.viewMode)) {
+    const limit = w.length || defaultLength(w.viewMode);
+    if (isSampleSize(w.viewMode)) {
+      rows.push({ label: t('sessions.summary.widget.sampleSize'), value: `${limit}` });
+    } else if (hasOrder(w.viewMode)) {
+      const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
+      rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${limit}` });
+    } else {
+      rows.push({ label: t('sessions.summary.widget.limit'), value: `${limit}` });
+    }
   }
 
   if (w.view) {

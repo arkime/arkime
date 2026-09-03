@@ -398,6 +398,8 @@
       "intersectionView": "Intersectionway",
       "heatmapView": "Eatmaphay",
       "treemapView": "Eemaptray",
+      "sankeyView": "Ankeysay",
+      "connectionsView": "Onnectionscay",
       "timelineView": "Imelinetay",
       "mapView": "Apmay",
       "statsView": "Apturecay Atisticsstay",
@@ -436,6 +438,7 @@
         "metrics": "Etricsmay",
         "sortBy": "Ortsay ybay",
         "limit": "Imitlay",
+        "sampleSize": "Amplesay izesay",
         "order": "Orderway",
         "width": "Idthway (olumnscay)",
         "height": "Eighthay (owsray)",
@@ -444,7 +447,9 @@
         "localView": "Iewvay",
         "noView": "Onay iewvay",
         "noViewsHint": "Onay iewsvay onfiguredcay — eatecray oneway inway ethay earchsay arbay otay applyway itway otay away idgetway",
-        "fieldRequired": "Away ieldfay isway equiredray"
+        "fieldRequired": "Away ieldfay isway equiredray",
+        "exactFieldsRequired": "Electsay {count} ieldsfay",
+        "fieldUnsupported": "{field} an'tcay ebay useday ybay isthay idgetway"
       },
       "config": {
         "configurations": "Avesay orway oadlay ashboardsday",

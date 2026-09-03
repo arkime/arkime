@@ -397,6 +397,8 @@
       "intersectionView": "Interseção",
       "heatmapView": "Mapa de calor",
       "treemapView": "Mapa de árvore",
+      "sankeyView": "Sankey",
+      "connectionsView": "Conexões",
       "timelineView": "Linha do tempo",
       "mapView": "Mapa",
       "statsView": "Estatísticas de captura",
@@ -435,6 +437,7 @@
         "metrics": "Métricas",
         "sortBy": "Ordenar por",
         "limit": "Limite",
+        "sampleSize": "Tamanho da amostra",
         "order": "Ordem",
         "width": "Largura (colunas)",
         "height": "Altura (linhas)",
@@ -443,7 +446,9 @@
         "localView": "Visualização",
         "noView": "Sem visualização",
         "noViewsHint": "Nenhuma visualização configurada — crie uma na barra de busca para aplicá-la a um widget",
-        "fieldRequired": "Um campo é obrigatório"
+        "fieldRequired": "Um campo é obrigatório",
+        "exactFieldsRequired": "Selecione {count} campos",
+        "fieldUnsupported": "{field} não pode ser usado por este widget"
       },
       "config": {
         "configurations": "Salvar ou carregar painéis",

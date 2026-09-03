@@ -10,6 +10,8 @@ change and on unmount. The caller supplies onResult(res) to store the response.
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
+import { resolveMessage } from '@common/resolveI18nMessage';
 import { fetchSpigraph } from './widgetData';
 
 /**
@@ -23,6 +25,7 @@ import { fetchSpigraph } from './widgetData';
 export function useSpigraphWidget (getWidget, getReloadNonce, onResult, fetcher = fetchSpigraph) {
   const route = useRoute();
   const store = useStore();
+  const { t } = useI18n();
   const loading = ref(true);
   const error = ref('');
   let controller;
@@ -38,7 +41,7 @@ export function useSpigraphWidget (getWidget, getReloadNonce, onResult, fetcher 
       onResult(res);
     } catch (err) {
       if (err.name === 'AbortError') { return; }
-      error.value = err.text || err.message || String(err);
+      error.value = resolveMessage(err, t) || String(err);
       loading.value = false;
     }
   };

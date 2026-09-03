@@ -397,6 +397,8 @@
       "intersectionView": "교차",
       "heatmapView": "히트맵",
       "treemapView": "트리맵",
+      "sankeyView": "생키(Sankey)",
+      "connectionsView": "연결",
       "timelineView": "타임라인",
       "mapView": "지도",
       "statsView": "캡처 통계",
@@ -435,6 +437,7 @@
         "metrics": "지표",
         "sortBy": "정렬 기준",
         "limit": "제한",
+        "sampleSize": "샘플 크기",
         "order": "순서",
         "width": "너비(열)",
         "height": "높이(행)",
@@ -443,7 +446,9 @@
         "localView": "보기",
         "noView": "보기 없음",
         "noViewsHint": "구성된 보기가 없습니다 — 검색창에서 하나를 만들어 위젯에 적용하세요",
-        "fieldRequired": "필드가 필요합니다"
+        "fieldRequired": "필드가 필요합니다",
+        "exactFieldsRequired": "{count}개의 필드를 선택하세요",
+        "fieldUnsupported": "{field}은(는) 이 위젯에서 사용할 수 없습니다"
       },
       "config": {
         "configurations": "대시보드 저장 또는 불러오기",

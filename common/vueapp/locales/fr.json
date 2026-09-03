@@ -397,6 +397,8 @@
       "intersectionView": "Intersection",
       "heatmapView": "Carte de chaleur",
       "treemapView": "Treemap",
+      "sankeyView": "Sankey",
+      "connectionsView": "Connexions",
       "timelineView": "Chronologie",
       "mapView": "Carte",
       "statsView": "Statistiques de capture",
@@ -435,6 +437,7 @@
         "metrics": "Métriques",
         "sortBy": "Trier par",
         "limit": "Limite",
+        "sampleSize": "Taille de l'échantillon",
         "order": "Ordre",
         "width": "Largeur (colonnes)",
         "height": "Hauteur (lignes)",
@@ -443,7 +446,9 @@
         "localView": "Vue",
         "noView": "Aucune vue",
         "noViewsHint": "Aucune vue configurée — créez-en une dans la barre de recherche pour l'appliquer à un widget",
-        "fieldRequired": "Un champ est requis"
+        "fieldRequired": "Un champ est requis",
+        "exactFieldsRequired": "Sélectionnez {count} champs",
+        "fieldUnsupported": "{field} ne peut pas être utilisé par ce widget"
       },
       "config": {
         "configurations": "Enregistrer ou charger des tableaux de bord",

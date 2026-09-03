@@ -22,9 +22,43 @@ SPDX-License-Identifier: Apache-2.0
           hide-details
           class="mb-3" />
 
+        <!-- connections is an ordered src -> dst pair, so each end gets its own
+             picker over its own list (ip.dst:port only resolves as a destination) -->
+        <template v-if="fieldPair">
+          <div class="arkime-input-group arkime-input-group--fluid mb-3">
+            <span
+              id="widgetSrcField"
+              class="arkime-input-label cursor-help">
+              {{ $t('common.source') }}<sup>*</sup>
+              <v-tooltip activator="#widgetSrcField">
+                {{ $t('connections.sourceFieldTip') }}
+              </v-tooltip>
+            </span>
+            <ArkimeFieldTypeahead
+              :fields="srcFields"
+              :initial-value="pairFriendlyName(0)"
+              @field-selected="(f) => onPairFieldSelected(0, f)" />
+          </div>
+          <div class="arkime-input-group arkime-input-group--fluid mb-3">
+            <span
+              id="widgetDstField"
+              class="arkime-input-label cursor-help">
+              {{ $t('common.destination') }}<sup>*</sup>
+              <v-tooltip activator="#widgetDstField">
+                {{ $t('connections.dstFieldTip') }}
+              </v-tooltip>
+            </span>
+            <ArkimeFieldTypeahead
+              :fields="dstFields"
+              :initial-value="pairFriendlyName(1)"
+              @field-selected="(f) => onPairFieldSelected(1, f)" />
+          </div>
+        </template>
+
         <!-- Field selector: a chips multi-select (up to 3) for pie/treemap/table/
              intersection, otherwise a single typeahead. Grayed for session types. -->
         <div
+          v-else
           class="arkime-input-group arkime-input-group--fluid mb-3"
           :class="{ 'input-disabled': !needsField }">
           <span class="arkime-input-label">
@@ -50,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
             @field-selected="onFieldSelected" />
           <ArkimeFieldTypeahead
             v-else
-            :fields="fields"
+            :fields="usableFields"
             :initial-value="fieldFriendlyName"
             @field-selected="onFieldSelected" />
         </div>
@@ -108,23 +142,23 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <div class="d-flex flex-wrap gap-3 mb-3">
-          <!-- Data limit (Top/Bottom N) -->
+          <!-- Data limit (Top/Bottom N, or a session sample for connections) -->
           <v-select
             v-model="form.length"
             :items="lengthItems"
-            :label="$t('sessions.summary.widget.limit')"
-            :disabled="!aggEnabled"
+            :label="$t(sampleSize ? 'sessions.summary.widget.sampleSize' : 'sessions.summary.widget.limit')"
+            :disabled="!lengthEnabled"
             density="compact"
             variant="outlined"
             hide-details
-            style="min-width: 120px" />
+            style="min-width: 140px" />
 
-          <!-- Order (direction) -->
+          <!-- Order (direction) — only for the modes whose fetch passes one -->
           <v-select
+            v-if="orderEnabled"
             v-model="form.order"
             :items="orderItems"
             :label="$t('sessions.summary.widget.order')"
-            :disabled="!aggEnabled"
             density="compact"
             variant="outlined"
             hide-details
@@ -240,7 +274,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasAgg, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
+import { hasMetric, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -287,9 +321,30 @@ const fieldFriendlyName = computed(() => {
   return FieldService.getField(form.value.field, true)?.friendlyName || form.value.field;
 });
 
-// pie/treemap/table/intersection accept up to 3 fields (chips multi-select)
+// how many fields the chosen type takes: [1,3] for the nested/side-by-side
+// types, [2,2] for the connections source + destination pair
 const multiField = computed(() => allowsMultiField(form.value.viewMode));
-const fieldItems = computed(() => fields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
+const minFields = computed(() => fieldCountLimits(form.value.viewMode)[0]);
+const maxFields = computed(() => fieldCountLimits(form.value.viewMode)[1]);
+// only offer fields the chosen view mode's endpoint can actually resolve, so a
+// pick can't fail later inside Elasticsearch (see fieldUsableBy)
+const usableFields = computed(() => fields.value.filter(f => fieldUsableBy(form.value.viewMode, f)));
+// connections: an ordered pair, so each end filters the list for its own position
+const fieldPair = computed(() => isFieldPair(form.value.viewMode));
+const srcFields = computed(() => fields.value.filter(f => fieldUsableBy(form.value.viewMode, f, 'src')));
+const dstFields = computed(() => fields.value.filter(f => fieldUsableBy(form.value.viewMode, f, 'dst')));
+const pairFriendlyName = (i) => {
+  const exp = form.value.fields?.[i];
+  return exp ? (FieldService.getField(exp, true)?.friendlyName || exp) : '';
+};
+// keep both slots present so an unset end stays an empty string rather than a
+// hole that would make fields.length look complete
+const onPairFieldSelected = (i, field) => {
+  const next = [form.value.fields?.[0] || '', form.value.fields?.[1] || ''];
+  next[i] = field?.exp || '';
+  form.value.fields = next;
+};
+const fieldItems = computed(() => usableFields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
 
 // Capability flags drive which inputs are enabled for the chosen visualization type
 const fieldMode = computed(() => isFieldMode(form.value.viewMode));
@@ -300,7 +355,12 @@ const needsField = computed(() => fieldMode.value || geoMode.value);
 const metricEnabled = computed(() => hasMetric(form.value.viewMode));
 // tables take multiple metric columns + a sort-by; charts take a single metric
 const multiMetric = computed(() => allowsMultiMetric(form.value.viewMode));
-const aggEnabled = computed(() => hasAgg(form.value.viewMode));
+const lengthEnabled = computed(() => hasLength(form.value.viewMode));
+// only the summary-endpoint modes pass an order through; showing the control
+// for the others would silently do nothing
+const orderEnabled = computed(() => hasOrder(form.value.viewMode));
+// connections' limit is a session sample, so it gets its own label + scale
+const sampleSize = computed(() => isSampleSize(form.value.viewMode));
 // field-bound, geo (map) and timeline widgets all support a local filter; only
 // the global capture-stats widgets (stats/time) don't
 const localFilterEnabled = computed(() => hasLocalFilter(form.value.viewMode));
@@ -322,6 +382,8 @@ const viewModeItems = computed(() => [
   { title: t('sessions.summary.intersectionView'), value: 'intersection' },
   { title: t('sessions.summary.heatmapView'), value: 'heatmap' },
   { title: t('sessions.summary.treemapView'), value: 'treemap' },
+  { title: t('sessions.summary.sankeyView'), value: 'sankey' },
+  { title: t('sessions.summary.connectionsView'), value: 'connections' },
   { title: t('sessions.summary.timelineView'), value: 'timeline' },
   { title: t('sessions.summary.mapView'), value: 'map' },
   { title: t('sessions.summary.statsView'), value: 'stats' },
@@ -353,10 +415,11 @@ const sortByItems = computed(() => {
   return opts;
 });
 
-// Standard limits, plus the widget's current value if it's a legacy/imported
-// number outside the set (so the select doesn't render blank)
+// The chosen type's limit scale (top-N counts, or connections' session sample
+// sizes), plus the widget's current value if it's a legacy/imported number
+// outside the set (so the select doesn't render blank)
 const lengthItems = computed(() => {
-  const opts = [10, 20, 50, 100];
+  const opts = [...lengthOptions(form.value.viewMode)];
   if (form.value.length && !opts.includes(form.value.length)) {
     opts.push(form.value.length);
     opts.sort((a, b) => a - b);
@@ -405,12 +468,40 @@ watch(() => props.show, (isOpen) => {
   }
 });
 
-// cap multi-field selection at 3, and mirror the first field into the single-field
-// model so switching between single/multi view types never persists a stale field
-watch(() => form.value.fields, (v) => {
+// drop fields the chosen view mode can't resolve, cap the selection (3, or 2 for
+// the connections pair), and mirror the first field into the single-field model
+// so switching between single/multi view types never persists a stale field
+watch([() => form.value.fields, maxFields, () => form.value.viewMode], ([v, max, viewMode]) => {
   if (!Array.isArray(v)) { return; }
-  if (v.length > 3) { form.value.fields = v.slice(0, 3); return; }
+  // a pair's slots are positional, so blank an end this mode can't use rather
+  // than compacting — dropping the source would otherwise slide the destination
+  // into it, leaving both pickers looking filled with the wrong pairing
+  if (isFieldPair(viewMode)) {
+    const pair = [0, 1].map((i) => {
+      const exp = v[i] || '';
+      return fieldUsableBy(viewMode, FieldService.getField(exp, true), i === 0 ? 'src' : 'dst') ? exp : '';
+    });
+    if (pair.length !== v.length || pair.some((exp, i) => exp !== v[i])) {
+      form.value.fields = pair;
+      return;
+    }
+    form.value.field = v[0] || '';
+    return;
+  }
+  const usable = v.filter(exp => fieldUsableBy(viewMode, FieldService.getField(exp, true)));
+  if (usable.length !== v.length) { form.value.fields = usable; return; }
+  if (v.length > max) { form.value.fields = v.slice(0, max); return; }
   form.value.field = v.length ? v[0] : '';
+});
+
+// the top-N and session-sample scales don't overlap, so switching between them
+// snaps the limit to the new scale's default rather than keeping a value that
+// means something entirely different (a 20-session connections sample, say)
+watch(() => form.value.viewMode, (mode, prev) => {
+  if (!prev || mode === prev) { return; }
+  if (isSampleSize(mode) !== isSampleSize(prev)) {
+    form.value.length = defaultLength(mode);
+  }
 });
 
 // cap metric columns at 4 and keep the sort-by pointed at a chosen metric (or Sessions)
@@ -434,7 +525,7 @@ const save = () => {
   // resolve the field list for the chosen type
   let fieldList;
   if (multiField.value) {
-    fieldList = (form.value.fields || []).slice(0, 3);
+    fieldList = (form.value.fields || []).filter(Boolean).slice(0, maxFields.value);
   } else if (needsField.value) { // single field-bound types + the map's geo field
     fieldList = form.value.field ? [form.value.field] : [];
   } else {
@@ -443,6 +534,11 @@ const save = () => {
   // field-bound types (incl. the map's geo field) require at least one field
   if (needsField.value && fieldList.length === 0) {
     error.value = t('sessions.summary.widget.fieldRequired');
+    return;
+  }
+  // types wanting an exact count (connections' src + dst) need all of them
+  if (needsField.value && fieldList.length < minFields.value) {
+    error.value = t('sessions.summary.widget.exactFieldsRequired', { count: minFields.value });
     return;
   }
   // resolve the metric(s): tables carry a metrics[] list + a sort-by; charts one.
