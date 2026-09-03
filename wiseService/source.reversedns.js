@@ -9,6 +9,7 @@
 
 const Dns = require('dns');
 const iptrie = require('arkime-iptrie');
+const ArkimeUtil = require('../common/arkimeUtil');
 const WISESource = require('./wiseSource.js');
 let resolver;
 
@@ -50,8 +51,10 @@ class ReverseDNSSource extends WISESource {
       if (item === '') {
         return;
       }
-      const parts = item.split('/');
-      this.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
+      if (!ArkimeUtil.addCidrToTrie(this.trie, item, true, { mapV4: false })) {
+        console.log('ERROR - reversedns ips, not a usable CIDR:', ArkimeUtil.sanitizeStr(item));
+        process.exit(1);
+      }
     });
 
     this.api.addSource('reversedns', this, ['ip']);

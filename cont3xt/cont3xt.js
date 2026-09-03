@@ -588,6 +588,11 @@ async function setupAuth () {
 }
 
 async function main () {
+  ArkimeConfig.registerValidated({
+    elasticsearch: { type: 'urls' },
+    usersElasticsearch: { type: 'urls' }
+  });
+
   try {
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/cont3xt.ini`,
