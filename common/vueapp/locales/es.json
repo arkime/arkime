@@ -2062,5 +2062,17 @@
       "nodeIncluded": "Nodo incluido exitosamente",
       "nodeInclusionFailed": "Error al incluir el nodo"
     }
+  },
+  "updateCheck": {
+    "check": "Buscar actualizaciones",
+    "checking": "Comprobando...",
+    "upToDate": "Arkime está actualizado",
+    "available": "Arkime {version} está disponible",
+    "security": "Incluye una corrección de seguridad",
+    "eol": "Esta versión ya no tiene soporte",
+    "failed": "Error al buscar actualizaciones",
+    "dismiss": "Descartar",
+    "optIn": "Activar comprobación de actualizaciones",
+    "disclosure": "Consulta {host} para buscar versiones más recientes. Envía tu versión principal ({major})."
   }
 }

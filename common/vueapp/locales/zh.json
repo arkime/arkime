@@ -2062,5 +2062,17 @@
       "nodeIncluded": "节点已成功包含",
       "nodeInclusionFailed": "节点包含失败"
     }
+  },
+  "updateCheck": {
+    "check": "检查更新",
+    "checking": "正在检查...",
+    "upToDate": "Arkime 已是最新版本",
+    "available": "Arkime {version} 可用",
+    "security": "包含安全修复",
+    "eol": "此版本已不再受支持",
+    "failed": "检查更新失败",
+    "dismiss": "忽略",
+    "optIn": "启用更新检查",
+    "disclosure": "检查 {host} 上的新版本。会发送您的主版本号（{major}）。"
   }
 }

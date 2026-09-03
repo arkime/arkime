@@ -65,6 +65,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           tcp seq/state tracking and zero window counts, so flipped sessions are saved self consistent
 ## Release
   - #4221 Node 24.20.0
+## All
+  - Add a "newer release available" check to the version menu in viewer, cont3xt, parliament and wise. It only ever sends
+          the major version. Controlled by the new checkForUpdates setting: off, manual (the default, nothing is sent until 
+	  the user clicks) or auto (checks once a day), plus updateCheckUrl, which can point at an internal mirror.
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture

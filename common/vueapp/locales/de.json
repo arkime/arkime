@@ -2062,5 +2062,17 @@
       "nodeIncluded": "Knoten erfolgreich eingeschlossen",
       "nodeInclusionFailed": "Knoteneinschluss fehlgeschlagen"
     }
+  },
+  "updateCheck": {
+    "check": "Nach Updates suchen",
+    "checking": "Suche läuft...",
+    "upToDate": "Arkime ist aktuell",
+    "available": "Arkime {version} ist verfügbar",
+    "security": "Enthält einen Sicherheitsfix",
+    "eol": "Diese Version wird nicht mehr unterstützt",
+    "failed": "Update-Prüfung fehlgeschlagen",
+    "dismiss": "Ausblenden",
+    "optIn": "Update-Prüfung aktivieren",
+    "disclosure": "Prüft {host} auf neuere Versionen. Überträgt Ihre Hauptversion ({major})."
   }
 }

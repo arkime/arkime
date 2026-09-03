@@ -2063,5 +2063,17 @@
       "nodeIncluded": "Uccessfullysay includedway odenay",
       "nodeInclusionFailed": "Odenay inclusionway ailedfay"
     }
+  },
+  "updateCheck": {
+    "check": "Eckchay orfay updatesway",
+    "checking": "Eckingchay...",
+    "upToDate": "ArkimeWay isway upway otay ateday",
+    "available": "ArkimeWay {version} isway availableway",
+    "security": "Includesway away ecuritysay ixfay",
+    "eol": "Isthay eleaseray isway onay ongerlay upportedsay",
+    "failed": "Updateway eckchay ailedfay",
+    "dismiss": "Ismissday",
+    "optIn": "Optway inway otay eckchay orfay updatesway",
+    "disclosure": "Eckschay {host} orfay ewernay eleasesray. Endssay ouryay ajormay ersionvay ({major})."
   }
 }

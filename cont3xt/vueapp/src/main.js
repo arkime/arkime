@@ -12,6 +12,7 @@ import vueDebounce from 'vue-debounce';
 // internationalization -- the shared common/vueapp components use $t(),
 // so cont3xt needs a vue-i18n instance backed by /api/locales.
 import { createI18nInstance } from '@common/i18nSetup.js';
+import { initUpdateCheck } from '@common/UpdateCheckService.js';
 
 // internal deps
 import App from './App.vue';
@@ -84,7 +85,7 @@ async function initializeApp () {
 
   // these globals are injected into index.ejs.html, by cont3xt.js
   /* eslint-disable no-undef */
-  app.config.globalProperties.$constants = {
+  const constants = {
 
     VERSION, // from cont3xt.js
 
@@ -96,10 +97,17 @@ async function initializeApp () {
 
     DISABLE_USER_PASSWORD_UI, // from cont3xt.js
 
+    CHECK_FOR_UPDATES, // from cont3xt.js
+
+    UPDATE_CHECK_URL, // from cont3xt.js
+
     BUILD_DATE, // from vite.config.js
 
     BUILD_VERSION // from vite.config.js
   };
+  app.config.globalProperties.$constants = constants;
+
+  initUpdateCheck(constants);
 
   app.mount('#app');
 }

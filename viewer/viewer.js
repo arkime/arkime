@@ -87,6 +87,10 @@ process.on('SIGINT', function () {
   process.exit(0);
 });
 
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
@@ -96,12 +100,14 @@ const cspDirectives = {
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
 };
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: cspDirectives
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
 const cyberchefCspHeader = helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
@@ -117,6 +123,12 @@ const cyberchefCspHeader = helmet.contentSecurityPolicy({
 const securityApp = express.Router();
 app.use(securityApp);
 ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(Config.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+
   // app security options -------------------------------------------------------
   const iframeOption = Config.get('iframe', 'deny');
   switch (iframeOption) {
@@ -2286,6 +2298,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
     spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     clusterDefault: Config.get('clusterDefault', ''),
     environment: process.env.NODE_ENV,
     manifest
