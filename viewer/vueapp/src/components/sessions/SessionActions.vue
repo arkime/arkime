@@ -55,67 +55,7 @@ SPDX-License-Identifier: Apache-2.0
   </v-menu>
 
   <template v-if="actions.hasPackets">
-    <template v-if="actions.rootId">
-      <v-menu>
-        <template #activator="{ props: activatorProps }">
-          <v-btn
-            v-bind="activatorProps"
-            class="session-options-btn"
-            variant="text"
-            size="small">
-            <v-icon
-              icon="mdi-download"
-              class="me-1" />
-            {{ $t('sessions.downloadSegmentPCAP') }}
-            <v-icon
-              icon="mdi-menu-down"
-              class="ms-1" />
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item
-            prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcap')">
-            {{ $t('sessions.downloadSegmentPCAP') }}
-          </v-list-item>
-          <v-list-item
-            prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcapng')">
-            {{ $t('sessions.downloadSegmentPCAPNG') }}
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <v-menu>
-        <template #activator="{ props: activatorProps }">
-          <v-btn
-            v-bind="activatorProps"
-            class="session-options-btn"
-            variant="text"
-            size="small">
-            <v-icon
-              icon="mdi-download"
-              class="me-1" />
-            {{ $t('sessions.downloadEntirePCAP') }}
-            <v-icon
-              icon="mdi-menu-down"
-              class="ms-1" />
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item
-            prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcap')">
-            {{ $t('sessions.downloadEntirePCAP') }}
-          </v-list-item>
-          <v-list-item
-            prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcapng')">
-            {{ $t('sessions.downloadEntirePCAPNG') }}
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </template>
-    <v-menu v-else-if="canDownloadPcap">
+    <v-menu v-if="canDownloadPcap">
       <template #activator="{ props: activatorProps }">
         <v-btn
           v-bind="activatorProps"
@@ -132,16 +72,43 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
       </template>
       <v-list density="compact">
-        <v-list-item
-          prepend-icon="mdi-download"
-          @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcap')">
-          {{ $t('sessions.downloadPCAP') }}
-        </v-list-item>
-        <v-list-item
-          prepend-icon="mdi-download"
-          @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcapng')">
-          {{ $t('sessions.downloadPCAPNG') }}
-        </v-list-item>
+        <!-- Segmented session: download this segment or the whole rootId flow,
+             each as pcap or pcapng (4 options). Otherwise just this session (2). -->
+        <template v-if="actions.rootId">
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcap')">
+            {{ $t('sessions.downloadSegmentPCAP') }}
+          </v-list-item>
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcapng')">
+            {{ $t('sessions.downloadSegmentPCAPNG') }}
+          </v-list-item>
+          <v-divider />
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcap')">
+            {{ $t('sessions.downloadEntirePCAP') }}
+          </v-list-item>
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcapng')">
+            {{ $t('sessions.downloadEntirePCAPNG') }}
+          </v-list-item>
+        </template>
+        <template v-else>
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcap')">
+            {{ $t('sessions.downloadPCAP') }}
+          </v-list-item>
+          <v-list-item
+            prepend-icon="mdi-download"
+            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcapng')">
+            {{ $t('sessions.downloadPCAPNG') }}
+          </v-list-item>
+        </template>
       </v-list>
     </v-menu>
 
