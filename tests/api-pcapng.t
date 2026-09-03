@@ -1,4 +1,4 @@
-use Test::More tests => 44;
+use Test::More tests => 53;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -130,3 +130,29 @@ ok ($oneBlocks->{6} >= 2, "single-session pcapng (node route) has EPB packet blo
 # pcapng round-trip intact.
 my $aPcapng = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/sessions.pcapng?date=-1&expression=" . uri_escape("$files&&host.http==a.example.com"))->content;
 ok (index($aPcapng, "arkime-multidlt-test\r\n\r\n") >= 0, "flow A pcapng export preserves full frame bytes (no tail truncation)");
+
+# Format conversion on download -----------------------------------------------
+# Case 1: a classic pcap source can be downloaded as pcapng. socks-http-example
+# is a single-interface EN10MB (linktype 1) pcap, so it wraps into one SHB, one
+# IDB, and one EPB per packet.
+my $pcapAsNg = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/sessions.pcapng?date=-1&expression=" . uri_escape("file=*/pcap/socks-http-example.pcap"))->content;
+my $c1 = countNgBlocks($pcapAsNg);
+is ($c1->{0x0A0D0D0A}, 1, "pcap->pcapng: one SHB");
+is ($c1->{1}, 1, "pcap->pcapng: one IDB (EN10MB)");
+ok ($c1->{6} >= 1, "pcap->pcapng: has EPB packet blocks");
+
+# Case 2: a pcapng source downloaded as pcapng. Flow E is a single RAW
+# (linktype 101) interface, so exactly one SHB and one IDB.
+my $ngAsNg = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$eid.pcapng")->content;
+my $c2 = countNgBlocks($ngAsNg);
+is ($c2->{0x0A0D0D0A}, 1, "pcapng->pcapng: one SHB");
+is ($c2->{1}, 1, "pcapng->pcapng: one IDB (RAW)");
+ok ($c2->{6} >= 1, "pcapng->pcapng: has EPB packet blocks");
+
+# Case 3: a pcapng source downloaded as classic pcap. A single-link-type session
+# yields a valid little-endian pcap: magic a1b2c3d4 (bytes d4 c3 b2 a1), the RAW
+# link type (101) in the header, and the HTTP request still present in the frames.
+my $ngAsPcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$eid.pcap")->content;
+is (unpack("H*", substr($ngAsPcap, 0, 4)), "d4c3b2a1", "pcapng->pcap: little-endian pcap magic");
+is (unpack("V", substr($ngAsPcap, 20, 4)), 101, "pcapng->pcap: RAW link type in pcap header");
+ok (index($ngAsPcap, "Host: e.example.com") >= 0, "pcapng->pcap: frame bytes preserved (HTTP host present)");

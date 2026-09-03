@@ -15,6 +15,11 @@ const { EventEmitter } = require('events');
 const ArkimeConfig = require('./arkimeConfig');
 const ArkimeUtil = require('./arkimeUtil');
 
+ArkimeConfig.registerValidated({
+  mcpAllowedIps: { type: 'cidrs' },
+  mcpMaxQueryDays: { type: 'float', min: 0, unlimited: -1 }
+});
+
 // Newest first, we answer with the client's version when we know it
 const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 
@@ -325,23 +330,12 @@ class MCPServer {
    */
   static #checkIps (req) {
     if (MCPServer.#ips === undefined) {
-      const iptrie = require('arkime-iptrie');
       const list = ArkimeConfig.getArray('mcpAllowedIps', '');
       MCPServer.#ips = null;
-      if (list.length > 0 && list[0] !== '') {
-        MCPServer.#ips = new iptrie.IPTrie();
-        for (const cidr of list) {
-          const parts = cidr.split('/');
-          if (parts[0].includes(':')) {
-            MCPServer.#ips.add(parts[0], +(parts[1] ?? 128), 1);
-          } else {
-            MCPServer.#ips.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
-          }
-        }
+      if (list.length > 0) {
+        MCPServer.#ips = ArkimeUtil.buildIpTrie(list).trie; // validated at config load
       } else if (ArkimeConfig.getArray('mcpAuthMode', 'header').some(mode => mode.startsWith('header'))) {
-        MCPServer.#ips = new iptrie.IPTrie();
-        MCPServer.#ips.add('::ffff:127.0.0.0', 96 + 8, 1);
-        MCPServer.#ips.add('::1', 128, 1);
+        MCPServer.#ips = ArkimeUtil.buildIpTrie(['127.0.0.0/8', '::1']).trie;
         console.log('MCP: mcpAllowedIps is not set and mcpAuthMode includes header, only allowing loopback. Set mcpAllowedIps to the address of the proxy to allow it.');
       }
     }

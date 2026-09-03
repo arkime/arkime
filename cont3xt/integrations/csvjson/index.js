@@ -229,10 +229,9 @@ class CsvJsonIntegration extends Integration {
         if (!key) { return; }
         key.split(',').forEach((cidr) => {
           const parts = cidr.split('/');
-          try {
-            ipCache.add(ArkimeUtil.expandIp(parts[0]), (parts[1] !== undefined ? +parts[1] : (parts[0].includes(':') ? 128 : 32)), value);
-          } catch (e) {
-            console.log('ERROR adding', this.section, cidr, e);
+          const expanded = parts[1] === undefined ? ArkimeUtil.expandIp(parts[0]) : `${ArkimeUtil.expandIp(parts[0])}/${parts[1]}`;
+          if (!ArkimeUtil.addCidrToTrie(ipCache, expanded, value, { mapV4: false })) {
+            console.log('ERROR adding', this.section, ArkimeUtil.sanitizeStr(cidr), '- not a usable CIDR');
           }
         });
       };

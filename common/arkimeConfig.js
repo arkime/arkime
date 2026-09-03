@@ -120,6 +120,10 @@ class ArkimeConfig {
     for (const cb of loadedCbs) {
       cb();
     }
+
+    // After the callbacks: viewer splices its [nodeClass] section into
+    // defaultSections from one, so earlier would read a shorter list
+    ArkimeConfig.#validateSettings();
   }
 
   // ----------------------------------------------------------------------------
@@ -144,7 +148,8 @@ class ArkimeConfig {
       if (Array.isArray(url)) {
         url = url[0];
       }
-      const u = new URL(url);
+      const u = ArkimeUtil.parseUrl(url);
+      if (u === undefined) { continue; } // reported by the config validation
       if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1') || u.origin?.startsWith('https://[::1]')) {
         return true;
       }
@@ -223,6 +228,7 @@ class ArkimeConfig {
       if (section === undefined) { continue; }
       key = `${section}.${sectionKey}`;
       value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey];
+      if (value === null) { value = undefined; } // yaml `key:` gave no value, so not set
       if (value !== undefined) { break; }
     }
 
@@ -266,17 +272,147 @@ class ArkimeConfig {
     const value = ArkimeConfig.getFull(sections, sectionKey, d);
 
     // Just return directly
-    if (value === undefined || Array.isArray(value)) { return value; }
+    if (value === undefined) { return value; }
+    if (Array.isArray(value)) { return value.filter(s => s !== '' && s !== null && s !== undefined); } // like the split below
     if (typeof value !== 'string') { return [value]; }
 
     // Need to split ourselves
     sep ??= /[;,]/;
-    return value.split(sep).map(s => s.trim()).filter(s => s.match(/^\S+$/));
+    return value.split(sep).map(s => s.trim()).filter(s => s !== '');
   }
 
   // ----------------------------------------------------------------------------
   static getArray (sectionKey, d, sep) {
     return ArkimeConfig.getFullArray(ArkimeConfig.#defaultSections, sectionKey, d, sep);
+  }
+
+  // ----------------------------------------------------------------------------
+  /* Parse a config value as a number, undefined if it isn't one. parseInt
+   * would take '10k' as 10, and json/yaml hand us real numbers, so 2.9 must
+   * not pass as an integer either. Empty means unset. */
+  static #parseNumeric (value, isInt) {
+    if (value === undefined || value === '') { return undefined; }
+
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value) || (isInt && !Number.isInteger(value))) { return undefined; }
+      return value;
+    }
+
+    if (!ArkimeUtil.isString(value)) { return undefined; }
+    const str = value.trim();
+    if (!(isInt ? /^-?[0-9]+$/ : /^-?[0-9]*\.?[0-9]+$/).test(str)) { return undefined; }
+    return isInt ? parseInt(str, 10) : parseFloat(str);
+  }
+
+  // ----------------------------------------------------------------------------
+  static #getNumeric (sectionKey, d, isInt) {
+    const raw = ArkimeConfig.get(sectionKey);
+    const value = ArkimeConfig.#parseNumeric(raw, isInt);
+    if (value !== undefined) { return value; }
+
+    // Falling back silently is the same class of bug as coercing badly
+    if (raw !== undefined && raw !== '') {
+      console.log(`WARNING - ${sectionKey} is '${ArkimeUtil.sanitizeStr(raw)}', not ${isInt ? 'an integer' : 'a number'}, using ${d}`);
+    }
+    return d;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * An integer setting, the default if it isn't one.
+   */
+  static getInt (sectionKey, d) {
+    return ArkimeConfig.#getNumeric(sectionKey, d, true);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * A float setting, fractions allowed.
+   */
+  static getFloat (sectionKey, d) {
+    return ArkimeConfig.#getNumeric(sectionKey, d, false);
+  }
+
+  // ----------------------------------------------------------------------------
+  static #VALIDATED = {};
+
+  /**
+   * Register settings to validate at config load, so a broken access control
+   * or resource bound stops the process instead of being ignored. Owners
+   * register their own. Call before initialize().
+   *
+   *   int/float  - must parse and satisfy min. `unlimited` names the one value
+   *                allowed below min, eg -1 for no limit.
+   *   cidrs      - every entry must be a usable CIDR
+   *   urls       - every entry must be a url, the scheme may be left off
+   */
+  static registerValidated (specs) {
+    Object.assign(ArkimeConfig.#VALIDATED, specs);
+  }
+
+  // ----------------------------------------------------------------------------
+  static #validateSetting (key, spec) {
+    if (spec.type === 'cidrs') {
+      const list = ArkimeConfig.getArray(key);
+      // An empty list is how 'not set' looks, leave that to the caller
+      if (list === undefined || list.length === 0) { return undefined; }
+
+      const { bad } = ArkimeUtil.buildIpTrie(list);
+      if (bad.length) {
+        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+          bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
+          ". Each entry must be a full address with an optional in range prefix length, eg '10.0.0.1/32' or '10.0.0.0/8'.";
+      }
+      return undefined;
+    }
+
+    if (spec.type === 'urls') {
+      const list = ArkimeConfig.getArray(key);
+      if (list === undefined || list.length === 0) { return undefined; }
+
+      const bad = list.filter(url => ArkimeUtil.parseUrl(url) === undefined);
+      if (bad.length) {
+        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+          bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
+          ". Each entry must be a url, eg 'http://localhost:9200' or 'localhost:9200'.";
+      }
+      return undefined;
+    }
+
+    const raw = ArkimeConfig.get(key);
+    if (raw === undefined || raw === '') { return undefined; } // empty is unset
+
+    const value = ArkimeConfig.#parseNumeric(raw, spec.type === 'int');
+    if (value === undefined) {
+      return `${key} is '${ArkimeUtil.sanitizeStr(raw)}', which is not ${spec.type === 'int' ? 'an integer' : 'a number'}.`;
+    }
+    if (value < spec.min && value !== spec.unlimited) {
+      return `${key} is ${value}, which is below the minimum of ${spec.min}` +
+        (spec.unlimited !== undefined ? `. Use ${spec.unlimited} for no limit.` : '.');
+    }
+    return undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Check every access control and resource bound in one pass so the operator
+   * sees all of them at once, then refuse to start if any is broken.
+   */
+  static #validateSettings () {
+    const errors = [];
+
+    for (const [key, spec] of Object.entries(ArkimeConfig.#VALIDATED)) {
+      const error = ArkimeConfig.#validateSetting(key, spec);
+      if (error) { errors.push(error); }
+    }
+
+    if (errors.length === 0) { return; }
+
+    console.log(`ERROR - ${errors.length} bad setting${errors.length === 1 ? '' : 's'} in the config file, the environment or -o, refusing to start:`);
+    for (const error of errors) {
+      console.log('  -', error);
+    }
+    process.exit(1);
   }
 
   // ----------------------------------------------------------------------------

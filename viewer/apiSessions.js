@@ -25,7 +25,6 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
-const version = require('../common/version');
 const internals = require('./internals');
 const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
@@ -79,6 +78,107 @@ ArkimeConfig.loaded(() => {
     }
   }
 });
+
+// Sink for classic pcap exports. Every record must share the file header's
+// link type, so output is held back until deferLimit bytes have been produced:
+// a conflict found before that can still be reported to the client as a JSON
+// error instead of a silently wrong file, after that the caller can only abort
+// the stream. Records are written exactly as read: a classic source keeps its
+// on-disk header and byte order, and the only synthesized header is for a
+// pcapng source (which has no classic file header), built from the packets'
+// link type as little-endian microseconds to match what readPacketNg emits.
+class PcapOutput {
+  static deferLimit = 1024 * 1024;
+
+  #res;
+  #writeHeader;
+  #pending = [];
+  #pendingBytes = 0;
+  #headerBytes;   // classic source header to copy through, when known
+  #headerSet = false;
+  #pcapng = false; // first source was pcapng, so synthesize the header
+  committed = false;
+  linkType;
+
+  constructor (res, writeHeader) {
+    this.#res = res;
+    this.#writeHeader = writeHeader;
+  }
+
+  // Learn the file header from the first source. A classic file's header is
+  // copied through verbatim (byte order and snaplen preserved); a pcapng file
+  // has no classic header, so mark it for synthesis at commit time.
+  useSourceHeader (pcap, header) {
+    if (this.#headerSet) { return; }
+    this.#headerSet = true;
+    if (pcap.isPcapNG) {
+      this.#pcapng = true;
+    } else if (header && header.length >= 24) {
+      this.#headerBytes = Buffer.from(header.subarray(0, 24));
+    }
+  }
+
+  // A complete classic pcap fetched from another node: keep its 24-byte header
+  // as this export's header if we don't already have one.
+  useHeaderBytes (buf) {
+    if (this.#headerSet) { return; }
+    this.#headerSet = true;
+    if (buf && buf.length >= 24) {
+      this.#headerBytes = Buffer.from(buf.subarray(0, 24));
+    }
+  }
+
+  // Returns an Error when linkType can't be represented in this export
+  check (linkType) {
+    if (this.linkType === undefined) {
+      this.linkType = linkType;
+      return undefined;
+    }
+    if (linkType === this.linkType) {
+      return undefined;
+    }
+    return PcapOutput.formatError([this.linkType, linkType]);
+  }
+
+  static formatError (linkTypes) {
+    const names = linkTypes.map(lt => Pcap.linkTypeName(lt)).join(', ');
+    const err = new Error(`Sessions span multiple link types (${names}), download as pcapng instead`);
+    err.i18n = 'api.sessions.pcapngRequired';
+    err.i18nParams = { linkTypes: names };
+    err.linkTypes = linkTypes;
+    return err;
+  }
+
+  write (chunk, cb) {
+    if (this.committed) {
+      return this.#res.write(chunk, cb);
+    }
+    // Copy so callers can recycle their buffer right away
+    this.#pending.push(Buffer.from(chunk));
+    this.#pendingBytes += chunk.length;
+    if (cb) { cb(); }
+    if (this.#pendingBytes >= PcapOutput.deferLimit) {
+      this.commit();
+    }
+  }
+
+  commit () {
+    if (this.committed) { return; }
+    this.committed = true;
+    if (this.#writeHeader) {
+      if (this.#headerBytes) {
+        this.#res.write(this.#headerBytes);
+      } else if (this.#pcapng && this.linkType !== undefined) {
+        this.#res.write(Pcap.makeHeaderPcap(this.linkType));
+      }
+    }
+    for (const chunk of this.#pending) {
+      this.#res.write(chunk);
+    }
+    this.#pending = [];
+    this.#pendingBytes = 0;
+  }
+}
 
 class SessionAPIs {
   static #scriptAggs = {
@@ -627,97 +727,96 @@ class SessionAPIs {
 
     let fileNum;
     let itemPos = 0;
-    let lastMsg;
     async.eachLimit(fields.packetPos, limit || 1, async (pos) => {
       if (pos < 0) {
         fileNum = pos * -1;
         return;
       }
 
-      // Get the pcap file for this node and filenum, if it isn't opened then do the filename lookup and open it
-      const opcap = Pcap.get(fields.node + ':' + fileNum);
-      if (opcap.isCorrupt()) {
-        throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
-      } else if (!opcap.isOpen()) {
-        const file = await Db.fileIdToFile(fields.node, fileNum);
-        if (!file) {
-          const msg = util.format("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
-          if (lastMsg !== msg) {
-            lastMsg = msg;
-            console.log(msg);
-          }
-          throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
-        }
-        if (file.kekId) {
-          file.kek = Config.sectionGet('keks', file.kekId, undefined);
-          if (file.kek === undefined) {
-            console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
-            throw new Error("Couldn't find kek " + file.kekId + ' in keks section');
-          }
-        }
-
-        const ipcap = Pcap.get(fields.node + ':' + file.num);
-
-        try {
-          ipcap.open(file);
-        } catch (err) {
-          console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
-          if (err.code === 'EACCES') {
-            // Find all the directories to check
-            const checks = [];
-            let dir = path.resolve(file.name);
-            while ((dir = path.dirname(dir)) !== '/') {
-              checks.push(dir);
-            }
-
-            // Check them in reverse order, smallest to largest
-            let i = checks.length - 1;
-            for (i; i >= 0; i--) {
-              try {
-                fs.accessSync(checks[i], fs.constants.X_OK);
-              } catch (e) {
-                console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
-                break;
-              }
-            }
-
-            // No directory issue, check the file itself
-            if (i === -1) {
-              try {
-                fs.accessSync(file.name, fs.constants.R_OK);
-              } catch (e) {
-                console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
-              }
-            }
-          }
-          throw new Error("Couldn't open file " + err);
-        }
-
-        if (headerCb) {
-          headerCb(ipcap, ipcap.readHeader());
-          headerCb = null;
-        }
-        return new Promise((resolve, reject) => {
-          processFile(ipcap, pos, itemPos++, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
-      } else {
-        if (headerCb) {
-          headerCb(opcap, opcap.readHeader());
-          headerCb = null;
-        }
-        return new Promise((resolve, reject) => {
-          processFile(opcap, pos, itemPos++, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
+      const pcap = await SessionAPIs.#openPcap(fields.node, fileNum);
+      if (headerCb) {
+        headerCb(pcap, pcap.readHeader());
+        headerCb = null;
       }
+      return new Promise((resolve, reject) => {
+        processFile(pcap, pos, itemPos++, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
     }, (pcapErr, results) => {
       endCb(pcapErr, fields);
     });
+  }
+
+  // --------------------------------------------------------------------------
+  // Get the pcap file for this node and filenum, if it isn't opened then do the
+  // filename lookup and open it. Throws when the file is gone or unreadable.
+  static #lastOpenMsg;
+  static async #openPcap (node, fileNum) {
+    const opcap = Pcap.get(node + ':' + fileNum);
+    if (opcap.isCorrupt()) {
+      throw new Error('Only have SPI data, PCAP file no longer available for ' + node + '-' + fileNum);
+    }
+    if (opcap.isOpen()) {
+      return opcap;
+    }
+
+    const file = await Db.fileIdToFile(node, fileNum);
+    if (!file) {
+      const msg = util.format("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", node, fileNum);
+      if (SessionAPIs.#lastOpenMsg !== msg) {
+        SessionAPIs.#lastOpenMsg = msg;
+        console.log(msg);
+      }
+      throw new Error('Only have SPI data, PCAP file no longer available for ' + node + '-' + fileNum);
+    }
+    if (file.kekId) {
+      file.kek = Config.sectionGet('keks', file.kekId, undefined);
+      if (file.kek === undefined) {
+        console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
+        throw new Error("Couldn't find kek " + file.kekId + ' in keks section');
+      }
+    }
+
+    const ipcap = Pcap.get(node + ':' + file.num);
+
+    try {
+      ipcap.open(file);
+    } catch (err) {
+      console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
+      if (err.code === 'EACCES') {
+        // Find all the directories to check
+        const checks = [];
+        let dir = path.resolve(file.name);
+        while ((dir = path.dirname(dir)) !== '/') {
+          checks.push(dir);
+        }
+
+        // Check them in reverse order, smallest to largest
+        let i = checks.length - 1;
+        for (i; i >= 0; i--) {
+          try {
+            fs.accessSync(checks[i], fs.constants.X_OK);
+          } catch (e) {
+            console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
+            break;
+          }
+        }
+
+        // No directory issue, check the file itself
+        if (i === -1) {
+          try {
+            fs.accessSync(file.name, fs.constants.R_OK);
+          } catch (e) {
+            console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
+          }
+        }
+      }
+      throw new Error("Couldn't open file " + err);
+    }
+
+    return ipcap;
   }
 
   // --------------------------------------------------------------------------
@@ -730,13 +829,20 @@ class SessionAPIs {
     }
 
     const block = await getBlock(info, 0);
-    obj = { info, header: block.slice(0, 24) };
+    // A pcapng file has no fixed classic header; keep the whole first block so
+    // Pcap.make can parse its Section Header + Interface Description Blocks.
+    const isNg = block.length >= 4 && block.readUInt32LE(0) === 0x0a0d0d0a;
+    obj = { info, header: isNg ? block : block.slice(0, 24) };
     headerlru.set(key, obj);
     return obj;
   }
 
   // --------------------------------------------------------------------------
   static async #getPacket (pcap, info, pos, getBlock) {
+    if (pcap.isPcapNG) {
+      return SessionAPIs.#getPacketNg(pcap, info, pos, getBlock);
+    }
+
     let block = await getBlock(info, pos);
     if (block.length < 16) {
       const block2 = await getBlock(info, pos + block.length);
@@ -750,6 +856,25 @@ class SessionAPIs {
     }
 
     return block.slice(0, len);
+  }
+
+  // --------------------------------------------------------------------------
+  // Read one pcapng packet block from a scheme (http/s3) file and return it in
+  // the classic 16-byte-header form, fetching more blocks if it straddles a
+  // block boundary. Mirrors the disk readPacketNg via the shared decoder.
+  static async #getPacketNg (pcap, info, pos, getBlock) {
+    let block = await getBlock(info, pos);
+    if (!block || block.length === 0) { return null; }
+
+    let dec = Pcap.decodeNgBlock(block, pcap.ngInterfaces, pcap.linkType);
+    while (dec && !Buffer.isBuffer(dec) && dec.need > block.length) {
+      const more = await getBlock(info, pos + block.length);
+      if (!more || more.length === 0) { break; }
+      block = Buffer.concat([block, more]);
+      dec = Pcap.decodeNgBlock(block, pcap.ngInterfaces, pcap.linkType);
+    }
+
+    return Buffer.isBuffer(dec) ? dec : null;
   }
 
   // --------------------------------------------------------------------------
@@ -777,7 +902,7 @@ class SessionAPIs {
         console.log('Failure fetching header', e.response ?? e);
         return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
       }
-      pcap = Pcap.make(h.info.name, h.header);
+      pcap = Pcap.make(h.info.name, h.header, h.info.interfaceOffsets);
       if (headerCb) {
         headerCb(pcap, h.header);
         headerCb = null;
@@ -796,16 +921,30 @@ class SessionAPIs {
     }
 
     const postPcapFetch = Config.get('postPcapFetch');
+    const check = extension === 'pcap' && req.query.check === 'true';
 
-    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map() };
+    const writerOptions = req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map(), check: SessionAPIs.#newLinkTypeAcc() };
+
+    if (extension === 'pcap') {
+      await SessionAPIs.#pcapLinkTypeCheck(req, list, writerOptions.check);
+      if (!check && writerOptions.check.linkTypes.size > 1) {
+        writerOptions.error ??= PcapOutput.formatError([...writerOptions.check.linkTypes]);
+      }
+    }
 
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
+      if (writerOptions.error) { return; }
+
       if (await ViewerUtils.isLocalView(fields.node)) {
+        if (check) { return; }
         // Get from our DISK
         await new Promise((resolve) => {
-          pcapWriter(res, item, req.arkimeWriterOptions, resolve);
+          pcapWriter(res, item, writerOptions, (err) => {
+            if (err?.i18n) { writerOptions.error ??= err; }
+            resolve();
+          });
         });
       } else {
         // Get from remote DISK
@@ -821,7 +960,7 @@ class SessionAPIs {
           }
           const { viewUrl, client, ca } = result;
 
-          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
+          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension + (check ? '?check=true' : '');
           let options;
           if (postPcapFetch) {
             options = {
@@ -856,20 +995,15 @@ class SessionAPIs {
                 chunks.push(chunk);
               });
               pres.on('end', () => {
-                if (chunks.length === 0) {
-                  resolve();
-                  return;
-                }
                 const buffer = Buffer.concat(chunks);
-                if (buffer.length < 24) {
-                  resolve();
-                  return;
-                }
-                if (req.arkimeWriterOptions.writeHeader) {
-                  req.arkimeWriterOptions.writeHeader = false;
-                  res.write(buffer);
+                if (pres.statusCode !== 200) {
+                  SessionAPIs.#remotePcapError(fields.node, sessionPath, pres.statusCode, buffer, writerOptions);
+                } else if (check) {
+                  SessionAPIs.#mergeLinkTypeCheck(buffer, writerOptions.check);
+                } else if (extension === 'pcapng') {
+                  SessionAPIs.#writeRemotePcapNg(res, buffer, writerOptions);
                 } else {
-                  res.write(buffer.subarray(24));
+                  SessionAPIs.#writeRemotePcap(res, buffer, writerOptions);
                 }
                 resolve();
               });
@@ -976,7 +1110,8 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #sessionsPcap (req, res, pcapWriter, extension) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    const check = extension === 'pcap' && req.query.check === 'true';
+    ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
 
     const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId', 'packetPos'];
 
@@ -985,7 +1120,10 @@ class SessionAPIs {
         res.status(404);
         return res.end(JSON.stringify({ success: false, text: 'no sessions found', i18n: 'api.sessions.noSessionsFound' }));
       }
-      res.end();
+      if (check) {
+        return res.send(SessionAPIs.#linkTypeCheckResult(req.arkimeWriterOptions?.check));
+      }
+      SessionAPIs.#endPcap(res, req.arkimeWriterOptions, req.arkimeWriterOptions?.error);
     }
 
     if (req.query.ids) {
@@ -1023,22 +1161,223 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static #pcapMime (extension) {
+    return extension === 'pcapng' ? 'application/x-pcapng' : 'application/vnd.tcpdump.pcap';
+  }
+
+  // --------------------------------------------------------------------------
+  // Finish a classic pcap export. A link type conflict is a JSON 400 while
+  // nothing has been streamed yet; after that the only honest option is to
+  // abort the download so the client doesn't keep a silently wrong file.
+  static #endPcap (res, writerOptions, err) {
+    const out = writerOptions?.out;
+    if (err?.i18n) {
+      if (out?.committed) {
+        console.log('ERROR - aborting pcap download already in progress -', err.message);
+        return res.destroy();
+      }
+      return res.serverError(400, err.message, err.i18n, err.i18nParams);
+    }
+    out?.commit();
+    res.end();
+  }
+
+  // --------------------------------------------------------------------------
+  static #newLinkTypeAcc () {
+    return { linkTypes: new Set(), possible: new Set(), multi: false };
+  }
+
+  // --------------------------------------------------------------------------
+  static #linkTypeCheckResult (acc) {
+    const linkTypes = acc ? [...acc.linkTypes] : [];
+    const result = {
+      success: true,
+      needsPcapng: linkTypes.length > 1,
+      mayNeedPcapng: acc?.multi === true,
+      linkTypes,
+      possibleLinkTypes: acc ? [...acc.possible] : []
+    };
+    if (result.needsPcapng) {
+      const err = PcapOutput.formatError(linkTypes);
+      result.text = err.message;
+      result.i18n = err.i18n;
+      result.i18nParams = err.i18nParams;
+    }
+    return result;
+  }
+
+  // --------------------------------------------------------------------------
+  static #mergeLinkTypeCheck (buffer, acc) {
+    try {
+      const json = JSON.parse(buffer.toString());
+      for (const lt of json.linkTypes ?? []) { acc.linkTypes.add(lt); }
+      for (const lt of json.possibleLinkTypes ?? []) { acc.possible.add(lt); }
+      if (json.mayNeedPcapng) { acc.multi = true; }
+    } catch (err) {
+      console.log('ERROR - bad pcap check response', util.inspect(err, false, 50));
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Cheap file-level look at the link types a classic pcap export of items
+  // would contain, without reading any packets. Exact for classic pcap files
+  // (one link type per file); a pcapng file with several link types only
+  // records them as possible, since which interfaces a session used isn't
+  // known until its packets are read. Remote nodes are skipped, they check
+  // their own files. Items are session ids, list entries, or search hits.
+  static async #pcapLinkTypeCheck (req, items, acc) {
+    const seen = new Set();
+    for (const item of items) {
+      let fields = item?.fields;
+      if (!fields?.packetPos || !fields?.node) {
+        try {
+          const options = ViewerUtils.addCluster(req.query?.cluster, { _source: false, fields: ['node', 'packetPos'] });
+          const session = await Db.getSession(typeof item === 'string' ? item : Db.session2Sid(item), options);
+          if (!session.found) { continue; }
+          fields = session.fields;
+        } catch (err) {
+          continue;
+        }
+      }
+      if (!fields?.packetPos || !await ViewerUtils.isLocalView(fields.node)) { continue; }
+      if (internals.writers.get(Config.getFull(fields.node, 'pcapWriteMethod'))?.processSessionId) { continue; }
+
+      for (const pos of fields.packetPos) {
+        const key = `${fields.node}:${-pos}`;
+        if (pos >= 0 || seen.has(key)) { continue; }
+        seen.add(key);
+        try {
+          const file = await Db.fileIdToFile(fields.node, -pos);
+          if (!file || schemes.get(file.scheme)?.getBlock) { continue; }
+          const pcap = await SessionAPIs.#openPcap(fields.node, -pos);
+          pcap.ref();
+          const linkTypes = new Set(pcap.isPcapNG ? pcap.ngInterfaces.map(i => i.linkType) : [pcap.linkType]);
+          pcap.unref();
+          if (linkTypes.size === 1) {
+            acc.linkTypes.add([...linkTypes][0]);
+          } else {
+            acc.multi = true;
+            for (const lt of linkTypes) { acc.possible.add(lt); }
+          }
+        } catch (err) {
+          // The export itself reports unreadable files
+        }
+      }
+    }
+    return acc;
+  }
+
+  // --------------------------------------------------------------------------
+  static #remotePcapError (node, sessionPath, statusCode, buffer, writerOptions) {
+    let json;
+    try {
+      json = JSON.parse(buffer.toString());
+    } catch (err) {
+    }
+    if (json?.i18n) {
+      const err = new Error(json.text);
+      err.i18n = json.i18n;
+      err.i18nParams = json.i18nParams;
+      writerOptions.error ??= err;
+    } else {
+      console.log(`ERROR - node ${ArkimeUtil.sanitizeStr(node)} returned ${statusCode} for ${ArkimeUtil.sanitizeStr(sessionPath)}`);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Append a complete classic pcap fetched from another node to this export
+  static #writeRemotePcap (res, buffer, writerOptions) {
+    if (buffer.length < 24) { return; }
+    const out = writerOptions.out ??= new PcapOutput(res, writerOptions.writeHeader !== false);
+    const magic = buffer.readUInt32LE(0);
+    let linkType;
+    if (magic === 0xa1b2c3d4 || magic === 0xa1b23c4d) {
+      linkType = buffer.readUInt32LE(20);
+    } else if (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1) {
+      linkType = buffer.readUInt32BE(20);
+    } else {
+      console.log('ERROR - remote pcap response is missing its file header');
+      return;
+    }
+    const err = out.check(linkType);
+    if (err) {
+      writerOptions.error ??= err;
+      return;
+    }
+    out.useHeaderBytes(buffer);
+    out.write(buffer.subarray(24));
+  }
+
+  // --------------------------------------------------------------------------
+  // Merge a complete pcapng fetched from another node into this export: drop
+  // its Section Header Block, fold its Interface Description Blocks into the
+  // export-wide link type -> interface id map (emitting an IDB only for link
+  // types not seen before) and rewrite each Enhanced Packet Block's
+  // interface_id to the merged id. Other blocks pass through untouched.
+  static #writeRemotePcapNg (res, buffer, writerOptions) {
+    const ngInterfaces = writerOptions.ngInterfaces ??= new Map();
+    const remoteIds = [];
+    let pos = 0;
+    let start = 0;
+    const flush = (end) => {
+      if (end > start) { res.write(buffer.subarray(start, end)); }
+    };
+
+    while (pos + 12 <= buffer.length) {
+      const blockType = buffer.readUInt32LE(pos);
+      const blockLen = buffer.readUInt32LE(pos + 4);
+      if (blockLen < 12 || blockLen % 4 !== 0 || pos + blockLen > buffer.length) { break; }
+
+      if (blockType === 0x0A0D0D0A) { // Section Header Block
+        if (buffer.readUInt32LE(pos + 8) !== 0x1A2B3C4D) {
+          console.log('ERROR - remote pcapng response is not little-endian, skipping');
+          return;
+        }
+        flush(pos);
+        start = pos + blockLen;
+        if (writerOptions.writeHeader) {
+          res.write(Pcap.makeShbNg());
+          writerOptions.writeHeader = false;
+        }
+      } else if (blockType === 0x00000001) { // Interface Description Block
+        flush(pos);
+        start = pos + blockLen;
+        const linkType = buffer.readUInt16LE(pos + 8);
+        let id = ngInterfaces.get(linkType);
+        if (id === undefined) {
+          id = ngInterfaces.size;
+          ngInterfaces.set(linkType, id);
+          res.write(Pcap.makeIdbNg(linkType, buffer.readUInt32LE(pos + 12)));
+        }
+        remoteIds.push(id);
+      } else if (blockType === 0x00000006) { // Enhanced Packet Block
+        buffer.writeUInt32LE(remoteIds[buffer.readUInt32LE(pos + 8)] ?? 0, pos + 8);
+      }
+      pos += blockLen;
+    }
+    flush(pos);
+  }
+
+  // --------------------------------------------------------------------------
   static #writePcap (res, id, writerOptions, doneCb) {
+    const out = writerOptions.out ??= new PcapOutput(res, writerOptions.writeHeader !== false);
     let writePos = 0;
     let boffset = 0;
     const packets = new Map();
+    let formatErr;
 
     let b = SessionAPIs.#getWritePcapBuffer();
 
     // Retrieve all the packets in parallel (10) and chunk
     // them when sending them
-    SessionAPIs.processSessionId(id, false, (pcap, packet) => {
-      if (writerOptions.writeHeader) {
-        res.write(packet);
-        writerOptions.writeHeader = false;
-      }
+    SessionAPIs.processSessionId(id, false, (pcap, header) => {
+      out.useSourceHeader(pcap, header);
     }, (pcap, packet, cb, pos) => {
-      // Save this packet in its spot
+      if (formatErr) { return cb(formatErr); }
+      formatErr = out.check(Pcap.packetLinkType(pcap, packet));
+      if (formatErr) { return cb(formatErr); }
+
+      // Save this packet in its spot, byte-for-byte as read from the source
       packets.set(pos, packet);
 
       // Send any packets we have in order
@@ -1049,7 +1388,7 @@ class SessionAPIs {
 
         if (boffset + packet.length > b.length) {
           const bToReturn = b;
-          res.write(b.slice(0, boffset), () => {
+          out.write(b.slice(0, boffset), () => {
             SessionAPIs.#putWritePcapBuffer(bToReturn);
           });
           boffset = 0;
@@ -1060,14 +1399,20 @@ class SessionAPIs {
       }
       cb(null);
     }, (err, session) => {
+      // processSessionId drops per packet errors once it has the session
+      // fields, so the link type conflict has to be carried out by hand
+      err = formatErr ?? err;
       if (err) {
-        res.status(500);
-        if (!ArkimeConfig.regressionTests) {
-          console.trace('writePcap', err);
+        if (!err.i18n) {
+          res.status(500);
+          if (!ArkimeConfig.regressionTests) {
+            console.trace('writePcap', err);
+          }
         }
+        SessionAPIs.#putWritePcapBuffer(b);
         return doneCb(err);
       }
-      res.write(b.slice(0, boffset), () => {
+      out.write(b.slice(0, boffset), () => {
         SessionAPIs.#putWritePcapBuffer(b);
         // Wait til this buffer is written to call doneCb
         doneCb(null);
@@ -1117,6 +1462,7 @@ class SessionAPIs {
         writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb) => {
+      buffer = Pcap.exportRecord(pcap, buffer);
       const interfaceId = interfaceIdFor(pcap, buffer);
 
       if (boffset + buffer.length + 20 > b.length) {
@@ -1131,6 +1477,7 @@ class SessionAPIs {
       b.writeUInt32LE(len, boffset + 4); // Block Len 1
       b.writeUInt32LE(interfaceId, boffset + 8); // Interface Id
 
+      // exportRecord made the header little-endian microseconds
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
       b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
@@ -1145,29 +1492,12 @@ class SessionAPIs {
       boffset += 8;
 
       cb(null);
-    }, (err, session) => {
+    }, (err) => {
       if (err) {
         console.log('ERROR - writePcapNg', util.inspect(err, false, 50));
         return doneCb(err);
       }
       res.write(b.slice(0, boffset));
-
-      session.version = version.version;
-      delete session.packetPos;
-      const json = JSON.stringify(session);
-
-      const len = ((json.length + 20 + 3) >> 2) << 2;
-      b = Buffer.alloc(len);
-
-      b.writeUInt32LE(0x80808080, 0); // Block Type
-      b.writeUInt32LE(len, 4); // Block Len 1
-      b.write('MOWL', 8); // Magic
-      b.writeUInt32LE(json.length, 12); // JSON Length
-      b.write(json, 16); // JSON Data
-      b.fill(0, 16 + json.length, 16 + json.length + (4 - (json.length % 4)) % 4); // padding
-      b.writeUInt32LE(len, len - 4); // Block Len 2
-      res.write(b);
-
       doneCb(err);
     });
   }
@@ -3112,10 +3442,12 @@ class SessionAPIs {
           },
           status: () => sink
         };
-        SessionAPIs.#writePcap(sink, req.params.id, { writeHeader: true }, (err) => {
+        const writerOptions = { writeHeader: true };
+        SessionAPIs.#writePcap(sink, req.params.id, writerOptions, (err) => {
           if (err && !finished) {
             return finish(500, 'failed to read local pcap: ' + ArkimeUtil.safeStr(err.message || err));
           }
+          writerOptions.out?.commit();
           if (writeStream && writeStream.writable) { writeStream.end(); }
         });
       } else {
@@ -3717,7 +4049,8 @@ class SessionAPIs {
    * @param {string} ids - The list of ids to return sessions for
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {boolean} segments=false - When set return linked segments
-   * @returns {pcap} A PCAP file with the sessions requested
+   * @param {boolean} check=false - When set don't download anything, instead return JSON describing whether the sessions span more than one link type (needsPcapng) and so can only be downloaded as pcapng
+   * @returns {pcap} A PCAP file with the sessions requested. A 400 JSON error with i18n api.sessions.pcapngRequired is returned instead when the sessions span more than one link type.
    * @example
    *   Returns pcap for sessions with the source IP of 1.2.3.4
    *   curl -v 'http://localhost:8005/api/sessions/pcap/anyfilename.pcap?date=-1&expression=ip.src%3D%3D1.2.3.4'
@@ -3751,21 +4084,12 @@ class SessionAPIs {
    * @returns {pcap} A PCAP file with the session requested
    */
   static getPCAPFromNode (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
-    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
-      res.end();
-    });
+    return SessionAPIs.#nodePcap(req, res, req.params.id, SessionAPIs.#writePcap, 'pcap');
   }
 
   // --------------------------------------------------------------------------
   static postPCAPFromNode (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
-    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-
-    SessionAPIs.#writePcap(res, req.body, { writeHeader }, () => {
-      res.end();
-    });
+    return SessionAPIs.#nodePcap(req, res, req.body, SessionAPIs.#writePcap, 'pcap');
   }
 
   // --------------------------------------------------------------------------
@@ -3778,10 +4102,29 @@ class SessionAPIs {
    * @returns {pcap} A PCAPNG file with the session requested
    */
   static getPCAPNGFromNode (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
-    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    SessionAPIs.#writePcapNg(res, req.params.id, { writeHeader }, () => {
-      res.end();
+    return SessionAPIs.#nodePcap(req, res, req.params.id, SessionAPIs.#writePcapNg, 'pcapng');
+  }
+
+  // --------------------------------------------------------------------------
+  static postPCAPNGFromNode (req, res) {
+    return SessionAPIs.#nodePcap(req, res, req.body, SessionAPIs.#writePcapNg, 'pcapng');
+  }
+
+  // --------------------------------------------------------------------------
+  // Single session download served by the node that owns its pcap files.
+  // check=true on a pcap request answers the link type question only.
+  static async #nodePcap (req, res, idOrSession, pcapWriter, extension) {
+    const check = extension === 'pcap' && req.query?.check === 'true';
+    ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
+
+    if (check) {
+      const acc = await SessionAPIs.#pcapLinkTypeCheck(req, [idOrSession], SessionAPIs.#newLinkTypeAcc());
+      return res.send(SessionAPIs.#linkTypeCheckResult(acc));
+    }
+
+    const writerOptions = { writeHeader: req.query?.noHeader !== 'true' };
+    pcapWriter(res, idOrSession, writerOptions, (err) => {
+      SessionAPIs.#endPcap(res, writerOptions, err);
     });
   }
 
@@ -3791,10 +4134,29 @@ class SessionAPIs {
    *
    * Retrieve the pcap for a session given the session id and node name.
    * @name /session/entire/:nodeName/:id/pcap
-   * @returns {pcap} A PCAP file with the session requested
+   * @param {boolean} check=false - When set don't download anything, instead return JSON describing whether the session spans more than one link type (needsPcapng) and so can only be downloaded as pcapng
+   * @returns {pcap} A PCAP file with the session requested. A 400 JSON error with i18n api.sessions.pcapngRequired is returned instead when the session spans more than one link type.
    */
   static getEntirePCAP (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    return SessionAPIs.#entirePcap(req, res, SessionAPIs.#writePcap, 'pcap');
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/entire/:nodeName/:id/pcapng OR /api/session/entire/:nodeName/:id.pcapng
+   *
+   * Retrieve the pcapng for a session given the session id and node name.
+   * @name /session/entire/:nodeName/:id/pcapng
+   * @returns {pcap} A PCAPNG file with the session requested
+   */
+  static getEntirePCAPNG (req, res) {
+    return SessionAPIs.#entirePcap(req, res, SessionAPIs.#writePcapNg, 'pcapng');
+  }
+
+  // --------------------------------------------------------------------------
+  static #entirePcap (req, res, pcapWriter, extension) {
+    const check = extension === 'pcap' && req.query.check === 'true';
+    ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
 
     const writerOptions = { writeHeader: true };
 
@@ -3806,18 +4168,29 @@ class SessionAPIs {
     };
 
     if (Config.debug) {
-      console.log('/api/session/entire/%s/%s/pcap query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), JSON.stringify(query, false, 2));
+      console.log('/api/session/entire/%s/%s/%s query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), extension, JSON.stringify(query, false, 2));
     }
 
-    Db.searchSessions(Db.getSessionIndices(true), query, null, (err, data) => {
+    Db.searchSessions(Db.getSessionIndices(true), query, null, async (err, data) => {
       if (err || !data?.hits?.hits) {
         console.log('ERROR - /api/session/entire query', util.inspect(err, false, 50));
         return res.status(500).end();
       }
+
+      if (extension === 'pcap') {
+        const acc = await SessionAPIs.#pcapLinkTypeCheck(req, data.hits.hits, SessionAPIs.#newLinkTypeAcc());
+        if (check) {
+          return res.send(SessionAPIs.#linkTypeCheckResult(acc));
+        }
+        if (acc.linkTypes.size > 1) {
+          return SessionAPIs.#endPcap(res, writerOptions, PcapOutput.formatError([...acc.linkTypes]));
+        }
+      }
+
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
-        SessionAPIs.#writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
+        pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
-        res.end();
+        SessionAPIs.#endPcap(res, writerOptions, err);
       });
     });
   }

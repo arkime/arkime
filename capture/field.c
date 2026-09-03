@@ -1614,6 +1614,23 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     }
 }
 /******************************************************************************/
+void arkime_field_swap(int pos1, int pos2, ArkimeSession_t *session)
+{
+    if (pos1 < 0 || pos2 < 0 || pos1 >= session->maxFields || pos2 >= session->maxFields)
+        return;
+
+    ArkimeField_t *field = session->fields[pos1];
+    session->fields[pos1] = session->fields[pos2];
+    session->fields[pos2] = field;
+
+    // jsonSize includes the db field name, which can differ in length across the pair
+    const int diff = (int)config.fields[pos1]->dbFieldLen - (int)config.fields[pos2]->dbFieldLen;
+    if (session->fields[pos1])
+        session->fields[pos1]->jsonSize += diff;
+    if (session->fields[pos2])
+        session->fields[pos2]->jsonSize -= diff;
+}
+/******************************************************************************/
 LOCAL int arkime_field_ops_should_run_int_op(const ArkimeFieldOp_t *op, int value)
 {
     switch (op->set) {

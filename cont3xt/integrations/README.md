@@ -527,4 +527,4 @@ Look at existing integrations for patterns:
 - **Simple public API**: `whois`, `crtsh`
 - **Authenticated API**: `domaintools`, `shodan`, `virustotal`
 - **Multiple itypes**: `rdap`, `virustotal`
-- **Complex tables**: `shodan`, `passivetotal`
+- **Complex tables**: `shodan`

@@ -85,12 +85,9 @@ class WISESource {
       if (item === '') {
         return;
       }
-      const parts = item.split('/');
-      try {
-        this.excludeIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
-      } catch (e) {
-        console.log(`${section} - ERROR - excludeIPs for '${item}'`, e);
-        process.exit();
+      if (!ArkimeUtil.addCidrToTrie(this.excludeIPs, item, true, { mapV4: false })) {
+        console.log(`${section} - ERROR - excludeIPs '${ArkimeUtil.sanitizeStr(item)}' is not a usable CIDR`);
+        process.exit(1);
       }
     });
 
@@ -101,12 +98,9 @@ class WISESource {
         if (item === '') {
           return;
         }
-        const parts = item.split('/');
-        try {
-          this.onlyIPs.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), true);
-        } catch (e) {
-          console.log(`${section} - ERROR - onlyIPs for '${item}'`, e);
-          process.exit();
+        if (!ArkimeUtil.addCidrToTrie(this.onlyIPs, item, true, { mapV4: false })) {
+          console.log(`${section} - ERROR - onlyIPs '${ArkimeUtil.sanitizeStr(item)}' is not a usable CIDR`);
+          process.exit(1);
         }
       });
     }
