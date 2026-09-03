@@ -109,7 +109,7 @@ ArkimeConfig.loaded(() => {
     internals.prefix = `${internals.prefix}_`;
   }
 
-  internals.uploadLimits.fileSize = parseInt(Config.get('uploadFileSizeLimit', 2147483648));
+  internals.uploadLimits.fileSize = Config.getInt('uploadFileSizeLimit', 2147483648);
 
   if (!internals.elasticBase[0].startsWith('http')) {
     internals.elasticBase[0] = 'http://' + internals.elasticBase[0];

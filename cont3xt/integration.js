@@ -158,7 +158,13 @@ class Integration {
 
     Integration.#integrationsByName.set(integration.name, integration);
     Integration.#integrations.all.push(integration);
+    // A known name list, so an itype of constructor or toString can't reach Object.prototype
+    const itypeNames = Object.keys(Integration.#integrations).filter(t => t !== 'all');
     for (const itype in integration.itypes) {
+      if (!itypeNames.includes(itype)) {
+        console.log(`ERROR - ${integration.name} has an unknown itype '${ArkimeUtil.sanitizeStr(itype)}', must be one of ${itypeNames.join(', ')}`);
+        process.exit(1);
+      }
       Integration.#integrations[itype].push(integration);
     }
 

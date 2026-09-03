@@ -100,6 +100,10 @@ class Config {
   // ----------------------------------------------------------------------------
   static get = ArkimeConfig.get;
 
+  static getInt = ArkimeConfig.getInt;
+
+  static getFloat = ArkimeConfig.getFloat;
+
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getArray = ArkimeConfig.getArray;
@@ -308,6 +312,13 @@ class Config {
         sections.splice(1, 0, nodeClass);
       }
     }, true);
+
+    ArkimeConfig.registerValidated({
+      uploadFileSizeLimit: { type: 'int', min: 0 },
+      maxSessionsQueried: { type: 'int', min: 0 },
+      elasticsearch: { type: 'urls' },
+      usersElasticsearch: { type: 'urls' }
+    });
 
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/config.ini`,

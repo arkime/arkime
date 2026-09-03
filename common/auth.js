@@ -121,7 +121,7 @@ class Auth {
     options.authConfig.jwtAudience ??= ArkimeConfig.get('authJwtAudience');
     options.authConfig.jwtUserIdPrefix ??= ArkimeConfig.get('authJwtUserIdPrefix');
     options.authConfig.jwtRequiredScopes ??= ArkimeConfig.get('authJwtRequiredScopes');
-    options.authConfig.jwtClockSkew ??= ArkimeConfig.get('authJwtClockSkew', 60);
+    options.authConfig.jwtClockSkew ??= ArkimeConfig.getInt('authJwtClockSkew', 60);
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -203,23 +203,10 @@ class Auth {
       Auth.#doTrustProxy();
     }
 
-    if (options.userAuthIps) {
-      for (const cidr of options.userAuthIps) {
-        const parts = cidr.split('/');
-        try {
-          if (parts[0].includes(':')) {
-            Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
-          } else {
-            Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
-          }
-        } catch (e) {
-          console.log('ERROR - userAuthIps setting contains bad IP or cidr', cidr);
-          process.exit(1);
-        }
-      }
+    if (options.userAuthIps?.length) {
+      Auth.#userAuthIps = ArkimeUtil.buildIpTrie(options.userAuthIps).trie; // validated at config load
     } else if (Auth.mode.startsWith('header')) {
-      Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
-      Auth.#userAuthIps.add('::1', 128, 1);
+      Auth.#userAuthIps = ArkimeUtil.buildIpTrie(['127.0.0.0/8', '::1']).trie;
 
       // No explicit userAuthIps set, so we're relying on the loopback-only default above.
       // If this service is also listening on a non-loopback host, warn - a reverse proxy or
@@ -609,7 +596,7 @@ class Auth {
       // Pinning the algorithms is what stops an attacker downgrading to `none`
       // or swapping an RS256 verify for an HS256 one keyed off the public key
       algorithms: Auth.#authConfig.jwtAlgorithms.split(',').map(s => s.trim()).filter(s => s !== ''),
-      clockTolerance: +Auth.#authConfig.jwtClockSkew
+      clockTolerance: Auth.#authConfig.jwtClockSkew
     });
 
     const required = Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');
@@ -1633,3 +1620,10 @@ module.exports = Auth;
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+
+ArkimeConfig.registerValidated({
+  userAuthIps: { type: 'cidrs' },
+  // A non numeric skew becomes NaN, and jose compares exp against NaN, which is
+  // always false - so an expired token would verify forever
+  authJwtClockSkew: { type: 'int', min: 0 }
+});
