@@ -2062,6 +2062,7 @@
     "eol": "Esta versão não é mais suportada",
     "failed": "Falha ao verificar atualizações",
     "dismiss": "Dispensar",
+    "optIn": "Ativar verificação de atualizações",
     "disclosure": "Verifica {host} em busca de novas versões. Envia sua versão principal ({major})."
   }
 }

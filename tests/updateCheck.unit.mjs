@@ -16,7 +16,7 @@ const require = createRequire(import.meta.url);
 const ArkimeUtil = require('../common/arkimeUtil.js');
 
 const {
-  initUpdateCheck, checkForUpdates, updateCheckState, dismissUpdate,
+  initUpdateCheck, checkForUpdates, optIn, updateCheckState, dismissUpdate,
   hasUndismissedUpdate, safeUrl, compareVersions, parseVersion,
   isDevBuild, releasesUrl
 } = await import('../common/vueapp/UpdateCheckService.js');
@@ -165,6 +165,38 @@ describe('UpdateCheckService', () => {
     });
   });
 
+  describe('opt in', () => {
+    test('a new browser has not opted in, so the disclosure shows', () => {
+      fresh();
+      assert.equal(state.optedIn, false);
+    });
+
+    test('opting in records the answer and runs the first check', async () => {
+      fresh();
+      await optIn();
+      assert.equal(state.optedIn, true);
+      assert.equal(calls, 1);
+    });
+
+    test('the opt in survives a reload, so it is only asked once', async () => {
+      fresh();
+      await optIn();
+      boot();
+      assert.equal(state.optedIn, true);
+    });
+
+    test('auto counts as opted in, the admin answered for everyone', async () => {
+      fresh({ CHECK_FOR_UPDATES: 'auto' });
+      await new Promise((r) => setTimeout(r, 10));
+      assert.equal(state.optedIn, true);
+    });
+
+    test('one deployment opting in does not opt in the next', () => {
+      fresh();
+      assert.equal(state.optedIn, false);
+    });
+  });
+
   describe('reading a feed', () => {
     test('offers the numerically newest release', async () => {
       fresh();
@@ -310,6 +342,65 @@ describe('UpdateCheckService', () => {
       serve({ releases: [{ version: '7.2.0', url: 'https://x/720' }] });
       await checkForUpdates({ force: true });
       assert.equal(hasUndismissedUpdate(), true, 'a newer release reappears');
+    });
+
+    test('clears the popup, not just the dot', async () => {
+      fresh();
+      serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
+      await checkForUpdates({ force: true });
+
+      dismissUpdate();
+      assert.equal(state.latest, undefined, 'release link is gone');
+      assert.equal(state.latestUrl, undefined);
+      assert.equal(state.status, 'idle', 'and it does not claim to be up to date');
+    });
+
+    test('an explicit check brings the dismissed release back', async () => {
+      fresh();
+      serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
+      await checkForUpdates({ force: true });
+      dismissUpdate();
+
+      await checkForUpdates({ force: true });
+      assert.equal(state.latest, '7.1.0', 'link and dismiss button repopulate');
+      assert.equal(hasUndismissedUpdate(), true, 'and so does the dot');
+      assert.equal(state.dismissed, '', 'asking again undoes the dismissal');
+    });
+
+    test('the undismissal survives a reload', async () => {
+      fresh();
+      serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
+      await checkForUpdates({ force: true });
+      dismissUpdate();
+      await checkForUpdates({ force: true });
+
+      boot();
+      assert.equal(state.latest, '7.1.0');
+      assert.equal(hasUndismissedUpdate(), true);
+    });
+
+    test('an automatic check leaves a dismissed release hidden', async () => {
+      fresh({ CHECK_FOR_UPDATES: 'auto' });
+      serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
+      await checkForUpdates({ force: true });
+      dismissUpdate();
+
+      boot({ CHECK_FOR_UPDATES: 'auto' }); // a page reload, served from cache
+      await new Promise((r) => setTimeout(r, 10));
+      assert.equal(state.latest, undefined);
+      assert.equal(state.status, 'idle');
+    });
+
+    test('a newer release still shows after dismissing an older one', async () => {
+      fresh({ CHECK_FOR_UPDATES: 'auto' });
+      serve({ releases: [{ version: '7.1.0', url: 'https://x/710' }] });
+      await checkForUpdates({ force: true });
+      dismissUpdate();
+
+      serve({ releases: [{ version: '7.2.0', url: 'https://x/720' }] });
+      await checkForUpdates({ force: true });
+      assert.equal(state.latest, '7.2.0');
+      assert.equal(hasUndismissedUpdate(), true);
     });
   });
 });

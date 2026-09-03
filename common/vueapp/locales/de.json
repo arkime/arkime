@@ -2062,6 +2062,7 @@
     "eol": "Diese Version wird nicht mehr unterstützt",
     "failed": "Update-Prüfung fehlgeschlagen",
     "dismiss": "Ausblenden",
+    "optIn": "Update-Prüfung aktivieren",
     "disclosure": "Prüft {host} auf neuere Versionen. Überträgt Ihre Hauptversion ({major})."
   }
 }

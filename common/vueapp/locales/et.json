@@ -2062,6 +2062,7 @@
     "eol": "See versioon ei ole enam toetatud",
     "failed": "Uuenduste kontroll ebaõnnestus",
     "dismiss": "Peida",
+    "optIn": "Luba uuenduste kontroll",
     "disclosure": "Kontrollib {host} uuemate versioonide osas. Saadab teie peaversiooni ({major})."
   }
 }

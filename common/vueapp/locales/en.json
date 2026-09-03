@@ -2062,6 +2062,7 @@
     "eol": "This release is no longer supported",
     "failed": "Update check failed",
     "dismiss": "Dismiss",
+    "optIn": "Opt in to updates",
     "disclosure": "Checks {host} for newer releases. Sends your major version ({major})."
   }
 }

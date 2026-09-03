@@ -15,6 +15,7 @@ import { reactive } from 'vue';
 
 const CACHE_KEY = 'arkimeUpdateCheckCache';
 const DISMISS_KEY = 'arkimeUpdateCheckDismissed';
+const OPTIN_KEY = 'arkimeUpdateCheckOptIn';
 
 const CACHE_MS = 24 * 60 * 60 * 1000;
 // a 404 or an unreachable host is cached too, briefly, so auto mode doesn't
@@ -32,7 +33,8 @@ const state = reactive({
   latestUrl: undefined,
   security: false, // a security release sits between ours and latest
   eol: false, // our major is no longer supported
-  dismissed: '' // version the user dismissed
+  dismissed: '', // version the user dismissed
+  optedIn: false // user has clicked opt in at least once
 });
 
 export function updateCheckState () { return state; }
@@ -87,6 +89,19 @@ function clearResult () {
   state.latestUrl = undefined;
   state.security = false;
   state.eol = false;
+}
+
+// back to the state before a check ran, so the popup shows neither the release
+// link, the dismiss button, nor a misleading "up to date"
+function hideDismissed () {
+  clearResult();
+  state.status = 'idle';
+}
+
+// a waved off version stays hidden on automatic checks; clicking check for
+// updates clears the dismissal above, so it comes back dot and all
+function hideIfDismissed () {
+  if (state.latest && state.latest === state.dismissed) { hideDismissed(); }
 }
 
 function applyPayload (payload) {
@@ -153,9 +168,15 @@ function applyCached (cached) {
 export async function checkForUpdates (options = {}) {
   if (state.mode === 'off' || state.major === undefined) { return; }
 
+  // asking again undoes a dismissal, so the dot comes back with the result
+  if (options.force) {
+    state.dismissed = '';
+    writeStorage(DISMISS_KEY, '');
+  }
+
   if (!options.force) {
     const cached = readCache();
-    if (cached) { applyCached(cached); return; }
+    if (cached) { applyCached(cached); hideIfDismissed(); return; }
   }
 
   clearResult();
@@ -178,16 +199,25 @@ export async function checkForUpdates (options = {}) {
     const payload = await res.json();
     writeCache({ payload });
     applyPayload(payload);
+    if (!options.force) { hideIfDismissed(); }
   } catch {
     writeCache({ negative: true, status: 'error' });
     state.status = 'error';
   }
 }
 
+/** First click records the opt in, so the disclosure only shows once */
+export function optIn () {
+  state.optedIn = true;
+  writeStorage(OPTIN_KEY, 'true');
+  return checkForUpdates({ force: true });
+}
+
 export function dismissUpdate () {
   if (!state.latest) { return; }
   state.dismissed = state.latest;
   writeStorage(DISMISS_KEY, state.latest);
+  hideDismissed();
 }
 
 /** True when there's something new the user hasn't already waved off */
@@ -206,6 +236,7 @@ export function initUpdateCheck (constants) {
   state.baseUrl = constants?.UPDATE_CHECK_URL || '';
   state.version = constants?.VERSION || '';
   state.dismissed = readStorage(DISMISS_KEY) || '';
+  state.optedIn = readStorage(OPTIN_KEY) === 'true';
   state.status = 'idle';
   clearResult();
 
@@ -218,11 +249,12 @@ export function initUpdateCheck (constants) {
   }
 
   if (state.mode === 'auto') {
+    state.optedIn = true; // the admin opted in for everyone, don't ask again
     checkForUpdates().catch(() => { /* surfaced via state.status */ });
   } else {
     // manual makes no automatic requests, but a cached result should still
     // survive a reload or the dot only lasts the session it was found in
     const cached = readCache();
-    if (cached) { applyCached(cached); }
+    if (cached) { applyCached(cached); hideIfDismissed(); }
   }
 }

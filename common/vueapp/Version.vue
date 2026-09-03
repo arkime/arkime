@@ -29,55 +29,57 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="updateEnabled">
         <hr class="version-divider">
 
-        <!-- always visible: say what a check sends, without gating on it -->
-        <div class="version-disclosure">
-          {{ $t('updateCheck.disclosure', { major: update.major, host: updateHost }) }}
+        <div v-if="update.status === 'checking'">
+          {{ $t('updateCheck.checking') }}
+        </div>
+        <div v-else-if="update.latest">
+          <a
+            :href="update.latestUrl"
+            target="_blank"
+            rel="noreferrer noopener">
+            {{ $t('updateCheck.available', { version: update.latest }) }}
+          </a>
+          <div
+            v-if="update.security"
+            class="version-security">
+            {{ $t('updateCheck.security') }}
+          </div>
+          <div
+            v-if="update.eol"
+            class="version-security">
+            {{ $t('updateCheck.eol') }}
+          </div>
+        </div>
+        <div v-else-if="update.status === 'error'">
+          {{ $t('updateCheck.failed') }}
+        </div>
+        <div v-else-if="update.status === 'done'">
+          {{ $t('updateCheck.upToDate') }}
         </div>
 
-        <div>
-          <div v-if="update.status === 'checking'">
-            {{ $t('updateCheck.checking') }}
-          </div>
-          <div v-else-if="update.latest">
-            <a
-              :href="update.latestUrl"
-              target="_blank"
-              rel="noreferrer noopener">
-              {{ $t('updateCheck.available', { version: update.latest }) }}
-            </a>
-            <div
-              v-if="update.security"
-              class="version-security">
-              {{ $t('updateCheck.security') }}
-            </div>
-            <div
-              v-if="update.eol"
-              class="version-security">
-              {{ $t('updateCheck.eol') }}
-            </div>
-            <v-btn
-              size="x-small"
-              variant="text"
-              class="mt-1"
-              @click="dismiss">
-              {{ $t('updateCheck.dismiss') }}
-            </v-btn>
-          </div>
-          <div v-else-if="update.status === 'error'">
-            {{ $t('updateCheck.failed') }}
-          </div>
-          <div v-else-if="update.status === 'done'">
-            {{ $t('updateCheck.upToDate') }}
-          </div>
-
+        <div
+          v-if="update.status !== 'checking'"
+          class="version-actions">
           <v-btn
-            v-if="update.status !== 'checking'"
+            size="x-small"
+            :variant="needsOptIn ? 'tonal' : 'text'"
+            @click="check">
+            {{ needsOptIn ? $t('updateCheck.optIn') : $t('updateCheck.check') }}
+          </v-btn>
+          <v-btn
+            v-if="update.latest"
             size="x-small"
             variant="text"
-            class="mt-1"
-            @click="check">
-            {{ $t('updateCheck.check') }}
+            @click="dismiss">
+            {{ $t('updateCheck.dismiss') }}
           </v-btn>
+        </div>
+
+        <!-- only before the first opt in: say what clicking will send -->
+        <div
+          v-if="needsOptIn"
+          class="version-disclosure">
+          {{ $t('updateCheck.disclosure', { major: update.major, host: updateHost }) }}
         </div>
       </template>
     </div>
@@ -87,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { timezoneDateString } from './vueFilters.js';
 import {
-  updateCheckState, checkForUpdates, dismissUpdate, hasUndismissedUpdate
+  updateCheckState, checkForUpdates, optIn, dismissUpdate, hasUndismissedUpdate
 } from './UpdateCheckService.js';
 
 // NOTE: parent application must have the constants present in the application
@@ -124,6 +126,9 @@ export default {
     updateEnabled () {
       return this.update.mode !== 'off';
     },
+    needsOptIn () {
+      return !this.update.optedIn;
+    },
     updateHost () {
       try {
         return new URL(this.update.baseUrl).host;
@@ -137,7 +142,7 @@ export default {
   },
   methods: {
     check () {
-      checkForUpdates({ force: true });
+      if (this.needsOptIn) { optIn(); } else { checkForUpdates({ force: true }); }
     },
     dismiss () {
       dismissUpdate();
@@ -162,8 +167,13 @@ export default {
   border: 0;
   border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
+.version-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
 .version-disclosure {
-  margin-bottom: 6px;
+  margin-top: 6px;
   color: rgb(var(--v-theme-neutral-dark));
 }
 .version-security {

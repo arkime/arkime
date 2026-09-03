@@ -2062,6 +2062,7 @@
     "eol": "Cette version n'est plus prise en charge",
     "failed": "Échec de la vérification des mises à jour",
     "dismiss": "Ignorer",
+    "optIn": "Activer la vérification des mises à jour",
     "disclosure": "Consulte {host} pour de nouvelles versions. Envoie votre version majeure ({major})."
   }
 }
