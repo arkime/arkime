@@ -428,7 +428,6 @@
         "field": "Champ",
         "fields": "Champs",
         "fieldsHint": "Sélectionnez jusqu'à 3 champs",
-        "fieldsHintPair": "Sélectionnez les champs source et destination",
         "title": "Titre",
         "viewMode": "Vue",
         "metric": "Métrique",
@@ -445,7 +444,8 @@
         "noView": "Aucune vue",
         "noViewsHint": "Aucune vue configurée — créez-en une dans la barre de recherche pour l'appliquer à un widget",
         "fieldRequired": "Un champ est requis",
-        "exactFieldsRequired": "Sélectionnez {count} champs"
+        "exactFieldsRequired": "Sélectionnez {count} champs",
+        "fieldUnsupported": "{field} ne peut pas être utilisé par ce widget"
       },
       "config": {
         "configurations": "Enregistrer ou charger des tableaux de bord",

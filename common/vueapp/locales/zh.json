@@ -428,7 +428,6 @@
         "field": "字段",
         "fields": "字段",
         "fieldsHint": "最多选择 3 个字段",
-        "fieldsHintPair": "选择源字段和目标字段",
         "title": "标题",
         "viewMode": "视图",
         "metric": "指标",
@@ -445,7 +444,8 @@
         "noView": "无视图",
         "noViewsHint": "未配置视图 — 在搜索栏中创建一个以应用于小部件",
         "fieldRequired": "字段为必填项",
-        "exactFieldsRequired": "请选择{count}个字段"
+        "exactFieldsRequired": "请选择{count}个字段",
+        "fieldUnsupported": "{field} 无法用于此小部件"
       },
       "config": {
         "configurations": "保存或加载仪表板",

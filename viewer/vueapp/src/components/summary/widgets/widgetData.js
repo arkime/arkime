@@ -174,17 +174,35 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
  */
 export async function fetchConnections (route, store, widget, { signal } = {}) {
   const fields = widgetFields(widget);
-  // the endpoint resolves srcField/dstField from db field names (not exps),
-  // except the literal 'ip.dst:port' special it handles itself
-  const toDb = (exp) => (exp === 'ip.dst:port' || exp === 'destination.ip:port')
-    ? exp
-    : (FieldService.getField(exp, true)?.dbField || exp);
+  // the endpoint resolves srcField/dstField through Config.getDBField, which
+  // reads dbFieldsMap — and Config.loadFields deliberately keeps noFacet fields
+  // (All IP Fields, Arkime ID, Payload Src/Dst UTF8, View Name) out of that map,
+  // so no spelling of them resolves. Return undefined for those rather than a
+  // dbField the server will map to undefined and hand Elasticsearch as an empty
+  // field, which comes back as an x_content_parse_exception. 'ip.dst:port' is
+  // the one exp the endpoint matches literally, before any lookup
+  const toDb = (exp) => {
+    if (exp === 'ip.dst:port' || exp === 'destination.ip:port') { return exp; }
+    const field = FieldService.getField(exp, true);
+    if (!field || field.noFacet) { return undefined; }
+    return field.dbField;
+  };
   const [srcField, dstField] = [toDb(fields[0]), toDb(fields[1])];
-  // the modal enforces the pair, but an imported/hand-edited dashboard (or a
-  // field exp that no longer resolves) can still get here — say so on the card
-  // rather than letting the server silently default to source.ip/destination.ip
-  if (!srcField || !dstField) {
+  // the modal enforces the pair, but an imported/hand-edited dashboard can
+  // still get here with only one — say so on the card rather than letting the
+  // server silently default to source.ip/destination.ip
+  if (!fields[0] || !fields[1]) {
     throw { i18n: 'sessions.summary.widget.exactFieldsRequired', i18nParams: { count: 2 } };
+  }
+  // both picked, but one has no database field the endpoint can read (eg a
+  // noFacet field like All IP Fields, which Config.loadFields keeps out of
+  // dbFieldsMap) — name it instead of failing inside Elasticsearch
+  if (!srcField || !dstField) {
+    const bad = !srcField ? fields[0] : fields[1];
+    throw {
+      i18n: 'sessions.summary.widget.fieldUnsupported',
+      i18nParams: { field: FieldService.getField(bad, true)?.friendlyName || bad }
+    };
   }
   const data = buildWidgetParams(route, store, widget, {
     srcField,

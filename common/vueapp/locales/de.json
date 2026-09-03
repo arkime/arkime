@@ -428,7 +428,6 @@
         "field": "Feld",
         "fields": "Felder",
         "fieldsHint": "Wählen Sie bis zu 3 Felder aus",
-        "fieldsHintPair": "Quell- und Zielfeld auswählen",
         "title": "Titel",
         "viewMode": "Ansicht",
         "metric": "Metrik",
@@ -445,7 +444,8 @@
         "noView": "Keine Ansicht",
         "noViewsHint": "Keine Ansichten konfiguriert — erstellen Sie eine in der Suchleiste, um sie auf ein Widget anzuwenden",
         "fieldRequired": "Ein Feld ist erforderlich",
-        "exactFieldsRequired": "Wählen Sie {count} Felder aus"
+        "exactFieldsRequired": "Wählen Sie {count} Felder aus",
+        "fieldUnsupported": "{field} kann von diesem Widget nicht verwendet werden"
       },
       "config": {
         "configurations": "Dashboards speichern oder laden",

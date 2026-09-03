@@ -428,7 +428,6 @@
         "field": "フィールド",
         "fields": "フィールド",
         "fieldsHint": "最大3つのフィールドを選択",
-        "fieldsHintPair": "ソースとデスティネーションのフィールドを選択",
         "title": "タイトル",
         "viewMode": "ビュー",
         "metric": "メトリック",
@@ -445,7 +444,8 @@
         "noView": "ビューなし",
         "noViewsHint": "ビューが設定されていません — 検索バーで作成してウィジェットに適用してください",
         "fieldRequired": "フィールドは必須です",
-        "exactFieldsRequired": "{count}個のフィールドを選択してください"
+        "exactFieldsRequired": "{count}個のフィールドを選択してください",
+        "fieldUnsupported": "{field} はこのウィジェットでは使用できません"
       },
       "config": {
         "configurations": "ダッシュボードの保存または読み込み",

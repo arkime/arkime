@@ -428,7 +428,6 @@
         "field": "Väli",
         "fields": "Väljad",
         "fieldsHint": "Vali kuni 3 välja",
-        "fieldsHintPair": "Valige allika ja sihtkoha väljad",
         "title": "Pealkiri",
         "viewMode": "Vaade",
         "metric": "Mõõdik",
@@ -445,7 +444,8 @@
         "noView": "Vaade puudub",
         "noViewsHint": "Vaateid pole seadistatud — loo üks otsinguribal, et rakendada see vidinale",
         "fieldRequired": "Väli on kohustuslik",
-        "exactFieldsRequired": "Valige {count} välja"
+        "exactFieldsRequired": "Valige {count} välja",
+        "fieldUnsupported": "Välja {field} ei saa selles vidinas kasutada"
       },
       "config": {
         "configurations": "Salvesta või laadi töölaudu",

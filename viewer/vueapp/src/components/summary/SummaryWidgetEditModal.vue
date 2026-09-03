@@ -22,9 +22,43 @@ SPDX-License-Identifier: Apache-2.0
           hide-details
           class="mb-3" />
 
+        <!-- connections is an ordered src -> dst pair, so each end gets its own
+             picker over its own list (ip.dst:port only resolves as a destination) -->
+        <template v-if="fieldPair">
+          <div class="arkime-input-group arkime-input-group--fluid mb-3">
+            <span
+              id="widgetSrcField"
+              class="arkime-input-label cursor-help">
+              {{ $t('common.source') }}<sup>*</sup>
+              <v-tooltip activator="#widgetSrcField">
+                {{ $t('connections.sourceFieldTip') }}
+              </v-tooltip>
+            </span>
+            <ArkimeFieldTypeahead
+              :fields="srcFields"
+              :initial-value="pairFriendlyName(0)"
+              @field-selected="(f) => onPairFieldSelected(0, f)" />
+          </div>
+          <div class="arkime-input-group arkime-input-group--fluid mb-3">
+            <span
+              id="widgetDstField"
+              class="arkime-input-label cursor-help">
+              {{ $t('common.destination') }}<sup>*</sup>
+              <v-tooltip activator="#widgetDstField">
+                {{ $t('connections.dstFieldTip') }}
+              </v-tooltip>
+            </span>
+            <ArkimeFieldTypeahead
+              :fields="dstFields"
+              :initial-value="pairFriendlyName(1)"
+              @field-selected="(f) => onPairFieldSelected(1, f)" />
+          </div>
+        </template>
+
         <!-- Field selector: a chips multi-select (up to 3) for pie/treemap/table/
              intersection, otherwise a single typeahead. Grayed for session types. -->
         <div
+          v-else
           class="arkime-input-group arkime-input-group--fluid mb-3"
           :class="{ 'input-disabled': !needsField }">
           <span class="arkime-input-label">
@@ -34,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="multiField"
             v-model="form.fields"
             :items="fieldItems"
-            :placeholder="$t(exactFields ? 'sessions.summary.widget.fieldsHintPair' : 'sessions.summary.widget.fieldsHint')"
+            :placeholder="$t('sessions.summary.widget.fieldsHint')"
             multiple
             chips
             closable-chips
@@ -50,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
             @field-selected="onFieldSelected" />
           <ArkimeFieldTypeahead
             v-else
-            :fields="fields"
+            :fields="usableFields"
             :initial-value="fieldFriendlyName"
             @field-selected="onFieldSelected" />
         </div>
@@ -240,7 +274,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
+import { hasMetric, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -292,9 +326,25 @@ const fieldFriendlyName = computed(() => {
 const multiField = computed(() => allowsMultiField(form.value.viewMode));
 const minFields = computed(() => fieldCountLimits(form.value.viewMode)[0]);
 const maxFields = computed(() => fieldCountLimits(form.value.viewMode)[1]);
-// a type wanting an exact count (connections) gets a hint + message saying so
-const exactFields = computed(() => minFields.value > 1 && minFields.value === maxFields.value);
-const fieldItems = computed(() => fields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
+// only offer fields the chosen view mode's endpoint can actually resolve, so a
+// pick can't fail later inside Elasticsearch (see fieldUsableBy)
+const usableFields = computed(() => fields.value.filter(f => fieldUsableBy(form.value.viewMode, f)));
+// connections: an ordered pair, so each end filters the list for its own position
+const fieldPair = computed(() => isFieldPair(form.value.viewMode));
+const srcFields = computed(() => fields.value.filter(f => fieldUsableBy(form.value.viewMode, f, 'src')));
+const dstFields = computed(() => fields.value.filter(f => fieldUsableBy(form.value.viewMode, f, 'dst')));
+const pairFriendlyName = (i) => {
+  const exp = form.value.fields?.[i];
+  return exp ? (FieldService.getField(exp, true)?.friendlyName || exp) : '';
+};
+// keep both slots present so an unset end stays an empty string rather than a
+// hole that would make fields.length look complete
+const onPairFieldSelected = (i, field) => {
+  const next = [form.value.fields?.[0] || '', form.value.fields?.[1] || ''];
+  next[i] = field?.exp || '';
+  form.value.fields = next;
+};
+const fieldItems = computed(() => usableFields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
 
 // Capability flags drive which inputs are enabled for the chosen visualization type
 const fieldMode = computed(() => isFieldMode(form.value.viewMode));
@@ -418,11 +468,28 @@ watch(() => props.show, (isOpen) => {
   }
 });
 
-// cap multi-field selection (3, or 2 for the connections pair), and mirror the
-// first field into the single-field model so switching between single/multi
-// view types never persists a stale field
-watch([() => form.value.fields, maxFields], ([v, max]) => {
+// drop fields the chosen view mode can't resolve, cap the selection (3, or 2 for
+// the connections pair), and mirror the first field into the single-field model
+// so switching between single/multi view types never persists a stale field
+watch([() => form.value.fields, maxFields, () => form.value.viewMode], ([v, max, viewMode]) => {
   if (!Array.isArray(v)) { return; }
+  // a pair's slots are positional, so blank an end this mode can't use rather
+  // than compacting — dropping the source would otherwise slide the destination
+  // into it, leaving both pickers looking filled with the wrong pairing
+  if (isFieldPair(viewMode)) {
+    const pair = [0, 1].map((i) => {
+      const exp = v[i] || '';
+      return fieldUsableBy(viewMode, FieldService.getField(exp, true), i === 0 ? 'src' : 'dst') ? exp : '';
+    });
+    if (pair.length !== v.length || pair.some((exp, i) => exp !== v[i])) {
+      form.value.fields = pair;
+      return;
+    }
+    form.value.field = v[0] || '';
+    return;
+  }
+  const usable = v.filter(exp => fieldUsableBy(viewMode, FieldService.getField(exp, true)));
+  if (usable.length !== v.length) { form.value.fields = usable; return; }
   if (v.length > max) { form.value.fields = v.slice(0, max); return; }
   form.value.field = v.length ? v[0] : '';
 });
@@ -458,7 +525,7 @@ const save = () => {
   // resolve the field list for the chosen type
   let fieldList;
   if (multiField.value) {
-    fieldList = (form.value.fields || []).slice(0, maxFields.value);
+    fieldList = (form.value.fields || []).filter(Boolean).slice(0, maxFields.value);
   } else if (needsField.value) { // single field-bound types + the map's geo field
     fieldList = form.value.field ? [form.value.field] : [];
   } else {

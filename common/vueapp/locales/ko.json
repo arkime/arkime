@@ -428,7 +428,6 @@
         "field": "필드",
         "fields": "필드",
         "fieldsHint": "최대 3개의 필드 선택",
-        "fieldsHintPair": "소스 및 목적지 필드 선택",
         "title": "제목",
         "viewMode": "보기",
         "metric": "지표",
@@ -445,7 +444,8 @@
         "noView": "보기 없음",
         "noViewsHint": "구성된 보기가 없습니다 — 검색창에서 하나를 만들어 위젯에 적용하세요",
         "fieldRequired": "필드가 필요합니다",
-        "exactFieldsRequired": "{count}개의 필드를 선택하세요"
+        "exactFieldsRequired": "{count}개의 필드를 선택하세요",
+        "fieldUnsupported": "{field}은(는) 이 위젯에서 사용할 수 없습니다"
       },
       "config": {
         "configurations": "대시보드 저장 또는 불러오기",

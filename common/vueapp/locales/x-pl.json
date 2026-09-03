@@ -429,7 +429,6 @@
         "field": "Ieldfay",
         "fields": "Ieldsfay",
         "fieldsHint": "Electsay upway otay 3 ieldsfay",
-        "fieldsHintPair": "Electsay ourcesay andway estinationday ieldsfay",
         "title": "Itletay",
         "viewMode": "Iewvay",
         "metric": "Etricmay",
@@ -446,7 +445,8 @@
         "noView": "Onay iewvay",
         "noViewsHint": "Onay iewsvay onfiguredcay — eatecray oneway inway ethay earchsay arbay otay applyway itway otay away idgetway",
         "fieldRequired": "Away ieldfay isway equiredray",
-        "exactFieldsRequired": "Electsay {count} ieldsfay"
+        "exactFieldsRequired": "Electsay {count} ieldsfay",
+        "fieldUnsupported": "{field} an'tcay ebay useday ybay isthay idgetway"
       },
       "config": {
         "configurations": "Avesay orway oadlay ashboardsday",

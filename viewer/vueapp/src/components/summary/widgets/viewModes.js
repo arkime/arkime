@@ -51,6 +51,20 @@ export const ORDER_VIEW_MODES = ['bar', 'pie', 'table'];
 // get their own (much larger) scale.
 export const SAMPLE_SIZE_VIEW_MODES = ['connections'];
 
+// Types whose fetch resolves fields through the server's dbFieldsMap, which
+// Config.loadFields builds while skipping noFacet fields (All IP Fields, Arkime
+// ID, Payload Src/Dst UTF8, View Name) — so those can't be resolved however
+// they are spelled. Every other mode resolves through fieldsMap, which keeps
+// them: All IP Fields drives a working bar/pie/table widget, because
+// /api/sessions/summary aggregates it with a script instead of a db field.
+export const DB_FIELD_VIEW_MODES = ['connections'];
+
+// Types whose fields are an ordered source -> destination pair rather than an
+// unordered set, so the editor gives each end its own picker over its own list.
+// This is a different axis from FIELD_COUNT_LIMITS: that says how many fields a
+// mode takes, this says the positions mean different things.
+export const FIELD_PAIR_VIEW_MODES = ['connections'];
+
 // Types rendered from the batched /api/sessions/summary stream (vs. self-fetch).
 export const STREAM_VIEW_MODES = ['bar', 'pie'];
 
@@ -115,6 +129,22 @@ export const fieldCountLimits = (viewMode) => FIELD_COUNT_LIMITS[viewMode] ?? [1
 
 /** True when the widget accepts more than one field (chips multi-select). */
 export const allowsMultiField = (viewMode) => fieldCountLimits(viewMode)[1] > 1;
+
+/** True when the widget's fields are an ordered source -> destination pair. */
+export const isFieldPair = (viewMode) => FIELD_PAIR_VIEW_MODES.includes(viewMode);
+
+/** True when a field can back a widget of this view mode at this position
+ *  ('src' | 'dst'). Only the modes resolving through dbFieldsMap need narrowing.
+ *  /api/connections rewrites ip.dst:port to destination.ip before its lookup,
+ *  but only for dstField — as a source it resolves to nothing, so the pair's
+ *  two ends get different lists. */
+export const fieldUsableBy = (viewMode, field, position) => {
+  if (!DB_FIELD_VIEW_MODES.includes(viewMode)) { return true; }
+  if (field?.exp === 'ip.dst:port' || field?.exp === 'destination.ip:port') {
+    return position === 'dst';
+  }
+  return !field?.noFacet;
+};
 
 /** True when the widget accepts multiple metric columns (chips multi-select). */
 export const allowsMultiMetric = (viewMode) => MULTI_METRIC_VIEW_MODES.includes(viewMode);

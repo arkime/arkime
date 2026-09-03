@@ -428,7 +428,6 @@
         "field": "Field",
         "fields": "Fields",
         "fieldsHint": "Select up to 3 fields",
-        "fieldsHintPair": "Select source and destination fields",
         "title": "Title",
         "viewMode": "View",
         "metric": "Metric",
@@ -445,7 +444,8 @@
         "noView": "No view",
         "noViewsHint": "No views configured — create one in the search bar to apply it to a widget",
         "fieldRequired": "A field is required",
-        "exactFieldsRequired": "Select {count} fields"
+        "exactFieldsRequired": "Select {count} fields",
+        "fieldUnsupported": "{field} can't be used by this widget"
       },
       "config": {
         "configurations": "Save or load dashboards",

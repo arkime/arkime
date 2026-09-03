@@ -428,7 +428,6 @@
         "field": "Campo",
         "fields": "Campos",
         "fieldsHint": "Selecciona hasta 3 campos",
-        "fieldsHintPair": "Seleccione los campos de origen y destino",
         "title": "Título",
         "viewMode": "Vista",
         "metric": "Métrica",
@@ -445,7 +444,8 @@
         "noView": "Sin vista",
         "noViewsHint": "No hay vistas configuradas — crea una en la barra de búsqueda para aplicarla a un widget",
         "fieldRequired": "Se requiere un campo",
-        "exactFieldsRequired": "Seleccione {count} campos"
+        "exactFieldsRequired": "Seleccione {count} campos",
+        "fieldUnsupported": "{field} no se puede usar en este widget"
       },
       "config": {
         "configurations": "Guardar o cargar paneles",
