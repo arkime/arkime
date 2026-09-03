@@ -85,13 +85,9 @@ class WISESource {
       if (item === '') {
         return;
       }
-      try {
-        if (!ArkimeUtil.addCidrToTrie(this.excludeIPs, item, true, { mapV4: false })) {
-          throw new Error('not a usable CIDR');
-        }
-      } catch (e) {
-        console.log(`${section} - ERROR - excludeIPs for '${item}'`, e);
-        process.exit();
+      if (!ArkimeUtil.addCidrToTrie(this.excludeIPs, item, true, { mapV4: false })) {
+        console.log(`${section} - ERROR - excludeIPs '${ArkimeUtil.sanitizeStr(item)}' is not a usable CIDR`);
+        process.exit(1);
       }
     });
 
@@ -102,13 +98,9 @@ class WISESource {
         if (item === '') {
           return;
         }
-        try {
-          if (!ArkimeUtil.addCidrToTrie(this.onlyIPs, item, true, { mapV4: false })) {
-            throw new Error('not a usable CIDR');
-          }
-        } catch (e) {
-          console.log(`${section} - ERROR - onlyIPs for '${item}'`, e);
-          process.exit();
+        if (!ArkimeUtil.addCidrToTrie(this.onlyIPs, item, true, { mapV4: false })) {
+          console.log(`${section} - ERROR - onlyIPs '${ArkimeUtil.sanitizeStr(item)}' is not a usable CIDR`);
+          process.exit(1);
         }
       });
     }

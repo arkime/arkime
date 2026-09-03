@@ -53,7 +53,7 @@ class ReverseDNSSource extends WISESource {
       }
       if (!ArkimeUtil.addCidrToTrie(this.trie, item, true, { mapV4: false })) {
         console.log('ERROR - reversedns ips, not a usable CIDR:', ArkimeUtil.sanitizeStr(item));
-        process.exit();
+        process.exit(1);
       }
     });
 

@@ -125,6 +125,7 @@ class SimpleSource extends WISESource {
         key.split(',').forEach((cidr) => {
           if (!ArkimeUtil.addCidrToTrie(newCache.trie, cidr, value, { mapV4: false })) {
             console.log('ERROR adding', this.section, ArkimeUtil.sanitizeStr(cidr), '- not a usable CIDR');
+            return;
           }
           newCache.items.set(cidr, value);
           count++;

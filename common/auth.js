@@ -204,13 +204,7 @@ class Auth {
     }
 
     if (options.userAuthIps?.length) {
-      // Already validated at config load, this is the belt to that braces
-      const { trie, bad } = ArkimeUtil.buildIpTrie(options.userAuthIps);
-      for (const cidr of bad) {
-        console.log('ERROR - userAuthIps setting contains bad IP or cidr', ArkimeUtil.sanitizeStr(cidr));
-      }
-      if (bad.length) { process.exit(1); }
-      Auth.#userAuthIps = trie;
+      Auth.#userAuthIps = ArkimeUtil.buildIpTrie(options.userAuthIps).trie; // validated at config load
     } else if (Auth.mode.startsWith('header')) {
       Auth.#userAuthIps = ArkimeUtil.buildIpTrie(['127.0.0.0/8', '::1']).trie;
 
@@ -602,9 +596,7 @@ class Auth {
       // Pinning the algorithms is what stops an attacker downgrading to `none`
       // or swapping an RS256 verify for an HS256 one keyed off the public key
       algorithms: Auth.#authConfig.jwtAlgorithms.split(',').map(s => s.trim()).filter(s => s !== ''),
-      // NaN makes jose compare exp against NaN, which is always false, so an
-      // expired token would verify forever. Never hand it one
-      clockTolerance: Number.isFinite(+Auth.#authConfig.jwtClockSkew) ? +Auth.#authConfig.jwtClockSkew : 60
+      clockTolerance: Auth.#authConfig.jwtClockSkew
     });
 
     const required = Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');

@@ -108,7 +108,7 @@ class DatabricksSource extends WISESource {
         if (this.type === 'ip') {
           if (!ArkimeUtil.addCidrToTrie(cache.trie, key, newitem, { mapV4: false })) {
             console.log('ERROR adding', this.section, ArkimeUtil.sanitizeStr(key), '- not a usable CIDR');
-            return;
+            continue;
           }
           cache.items.set(key, newitem);
         } else {

@@ -148,7 +148,8 @@ class ArkimeConfig {
       if (Array.isArray(url)) {
         url = url[0];
       }
-      const u = new URL(url);
+      const u = ArkimeUtil.parseUrl(url);
+      if (u === undefined) { continue; } // reported by the config validation
       if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1') || u.origin?.startsWith('https://[::1]')) {
         return true;
       }
@@ -227,6 +228,7 @@ class ArkimeConfig {
       if (section === undefined) { continue; }
       key = `${section}.${sectionKey}`;
       value = ArkimeConfig.#override.get(key) ?? ArkimeConfig.#config?.[section]?.[sectionKey];
+      if (value === null) { value = undefined; } // yaml `key:` gave no value, so not set
       if (value !== undefined) { break; }
     }
 
@@ -270,12 +272,13 @@ class ArkimeConfig {
     const value = ArkimeConfig.getFull(sections, sectionKey, d);
 
     // Just return directly
-    if (value === undefined || Array.isArray(value)) { return value; }
+    if (value === undefined) { return value; }
+    if (Array.isArray(value)) { return value.filter(s => s !== '' && s !== null && s !== undefined); } // like the split below
     if (typeof value !== 'string') { return [value]; }
 
     // Need to split ourselves
     sep ??= /[;,]/;
-    return value.split(sep).map(s => s.trim()).filter(s => s.match(/^\S+$/));
+    return value.split(sep).map(s => s.trim()).filter(s => s !== '');
   }
 
   // ----------------------------------------------------------------------------
@@ -291,7 +294,7 @@ class ArkimeConfig {
     if (value === undefined || value === '') { return undefined; }
 
     if (typeof value === 'number') {
-      if (isNaN(value) || (isInt && !Number.isInteger(value))) { return undefined; }
+      if (!Number.isFinite(value) || (isInt && !Number.isInteger(value))) { return undefined; }
       return value;
     }
 
@@ -324,9 +327,9 @@ class ArkimeConfig {
 
   // ----------------------------------------------------------------------------
   /**
-   * A number setting, fractions allowed.
+   * A float setting, fractions allowed.
    */
-  static getNumber (sectionKey, d) {
+  static getFloat (sectionKey, d) {
     return ArkimeConfig.#getNumeric(sectionKey, d, false);
   }
 
@@ -338,9 +341,10 @@ class ArkimeConfig {
    * or resource bound stops the process instead of being ignored. Owners
    * register their own. Call before initialize().
    *
-   *   int/number - must parse and satisfy min. `unlimited` names the one value
+   *   int/float  - must parse and satisfy min. `unlimited` names the one value
    *                allowed below min, eg -1 for no limit.
    *   cidrs      - every entry must be a usable CIDR
+   *   urls       - every entry must be a url, the scheme may be left off
    */
   static registerValidated (specs) {
     Object.assign(ArkimeConfig.#VALIDATED, specs);
@@ -350,14 +354,27 @@ class ArkimeConfig {
   static #validateSetting (key, spec) {
     if (spec.type === 'cidrs') {
       const list = ArkimeConfig.getArray(key);
-      // An all empty list is how 'not set' looks, leave that to the caller
-      if (list === undefined || list.length === 0 || (list.length === 1 && list[0] === '')) { return undefined; }
+      // An empty list is how 'not set' looks, leave that to the caller
+      if (list === undefined || list.length === 0) { return undefined; }
 
       const { bad } = ArkimeUtil.buildIpTrie(list);
       if (bad.length) {
         return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
           bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
           ". Each entry must be a full address with an optional in range prefix length, eg '10.0.0.1/32' or '10.0.0.0/8'.";
+      }
+      return undefined;
+    }
+
+    if (spec.type === 'urls') {
+      const list = ArkimeConfig.getArray(key);
+      if (list === undefined || list.length === 0) { return undefined; }
+
+      const bad = list.filter(url => ArkimeUtil.parseUrl(url) === undefined);
+      if (bad.length) {
+        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+          bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
+          ". Each entry must be a url, eg 'http://localhost:9200' or 'localhost:9200'.";
       }
       return undefined;
     }

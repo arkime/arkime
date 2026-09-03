@@ -102,7 +102,7 @@ class Config {
 
   static getInt = ArkimeConfig.getInt;
 
-  static getNumber = ArkimeConfig.getNumber;
+  static getFloat = ArkimeConfig.getFloat;
 
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
@@ -315,7 +315,9 @@ class Config {
 
     ArkimeConfig.registerValidated({
       uploadFileSizeLimit: { type: 'int', min: 0 },
-      maxSessionsQueried: { type: 'int', min: 0 }
+      maxSessionsQueried: { type: 'int', min: 0 },
+      elasticsearch: { type: 'urls' },
+      usersElasticsearch: { type: 'urls' }
     });
 
     await ArkimeConfig.initialize({

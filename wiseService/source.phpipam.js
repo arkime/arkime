@@ -35,6 +35,7 @@
 const WISESource = require('./wiseSource.js');
 const axios = require('axios');
 const iptrie = require('arkime-iptrie');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 // ---------------------------------------------------------------------------
 class PHPIPAMSource extends WISESource {
@@ -355,18 +356,18 @@ class PHPIPAMSource extends WISESource {
 
       for (const s of data.data) {
         if (!s.subnet || s.mask == null) continue;
-        const prefixLen = +s.mask;
-        const cidr = `${s.subnet}/${prefixLen}`;
+        const cidr = `${s.subnet}/${s.mask}`;
         const info = {
           cidr,
           description: s.description || null,
           vlanId: s.vlanId ? String(s.vlanId) : null,
           vrfId: s.vrfId ? String(s.vrfId) : null
         };
-        try {
-          newTrie.add(s.subnet, prefixLen, info);
-          newById.set(String(s.id), info);
-        } catch (_) { /* skip malformed entries */ }
+        if (!ArkimeUtil.addCidrToTrie(newTrie, cidr, info, { mapV4: false })) {
+          console.log('ERROR adding', this.section, ArkimeUtil.sanitizeStr(cidr), '- not a usable CIDR');
+          continue;
+        }
+        newById.set(String(s.id), info);
       }
 
       this.subnetTrie = newTrie;

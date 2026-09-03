@@ -178,9 +178,9 @@ function node2Prefix (node) {
 function node2Name (node) {
   const parts = node.split(',');
   for (let p = 1; p < parts.length; p++) {
-    const kv = parts[p].split(':');
+    const kv = parts[p].trim().split(':');
     if (kv[0] === 'name') {
-      return kv[1];
+      return kv[1]?.trim();
     }
   }
   return null;
@@ -189,9 +189,9 @@ function node2Name (node) {
 function node2ESAPIKey (node) {
   const parts = node.split(',');
   for (let p = 1; p < parts.length; p++) {
-    const kv = parts[p].split(':');
+    const kv = parts[p].trim().split(':');
     if (kv[0] === 'elasticsearchAPIKey') {
-      return kv[1];
+      return kv[1]?.trim();
     }
   }
   return null;
@@ -200,7 +200,7 @@ function node2ESAPIKey (node) {
 function node2ESBasicAuth (node) {
   const parts = node.split(',');
   for (let p = 1; p < parts.length; p++) {
-    const kv = parts[p].split(':');
+    const kv = parts[p].trim().split(':');
     if (kv[0] === 'elasticsearchBasicAuth') {
       return kv.slice(1).join(':'); // value may be user:pass, keep everything after the key
     }
@@ -1398,7 +1398,7 @@ async function premain () {
       console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
     }
 
-    let esNode = node.split(',')[0];
+    let esNode = node.split(',')[0].trim();
     esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
 
     const esClientOptions = {

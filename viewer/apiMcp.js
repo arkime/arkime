@@ -84,7 +84,7 @@ class MCPViewerAPIs {
    */
   static #checkQueryDays (query) {
     // Validated at config load, so this is a plain read
-    const maxDays = ArkimeConfig.getNumber('mcpMaxQueryDays', 7);
+    const maxDays = ArkimeConfig.getFloat('mcpMaxQueryDays', 7);
     if (maxDays < 0) { return; } // -1 means no limit
 
     const limit = `mcpMaxQueryDays is ${maxDays}`;
