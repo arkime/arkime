@@ -702,8 +702,8 @@ class PacketPortal {
     try {
       const u = new URL(target);
       if (u.username || u.password) { u.username = ''; u.password = ''; return u.toString(); }
-    } catch (e) { /* not a url, fall through */ }
-    return target;
+    } catch (e) { /* not a url, so redact by hand below */ }
+    return target.replace(/\/\/[^/@]*@/, '//<redacted>@');
   }
 
   // --------------------------------------------------------------------------

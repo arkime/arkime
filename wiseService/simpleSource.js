@@ -11,6 +11,7 @@
 
 const WISESource = require('./wiseSource.js');
 const iptrie = require('arkime-iptrie');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 /**
  * The SimpleSource base class implements some common functions for
@@ -122,11 +123,9 @@ class SimpleSource extends WISESource {
       setFunc = (key, value) => {
         if (!key) { return; }
         key.split(',').forEach((cidr) => {
-          const parts = cidr.split('/');
-          try {
-            newCache.trie.add(parts[0], +parts[1] || (parts[0].includes(':') ? 128 : 32), value);
-          } catch (e) {
-            console.log('ERROR adding', this.section, cidr, e);
+          if (!ArkimeUtil.addCidrToTrie(newCache.trie, cidr, value, { mapV4: false })) {
+            console.log('ERROR adding', this.section, ArkimeUtil.sanitizeStr(cidr), '- not a usable CIDR');
+            return;
           }
           newCache.items.set(cidr, value);
           count++;

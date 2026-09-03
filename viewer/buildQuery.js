@@ -342,7 +342,7 @@ class BuildQuery {
       return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
     }
 
-    const limit = Math.min(+Config.get('maxSessionsQueried', 2000000), +reqQuery.length || 100);
+    const limit = Math.min(Config.getInt('maxSessionsQueried', 2000000), +reqQuery.length || 100);
 
     const query = {
       from: reqQuery.start || 0,

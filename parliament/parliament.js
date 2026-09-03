@@ -2226,6 +2226,11 @@ app.use((req, res, next) => {
 // MAIN
 // ----------------------------------------------------------------------------
 async function main () {
+  ArkimeConfig.registerValidated({
+    elasticsearch: { type: 'urls' },
+    usersElasticsearch: { type: 'urls' }
+  });
+
   try {
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/parliament.ini`,
