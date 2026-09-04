@@ -97,6 +97,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4225 Fix multi viewer top 10/20/50 lists showing the wrong rows when sorted by bytes or packets
   - #4225 Fix the multi viewer Nodes page retention showing one cluster's oldest pcap when clusters share a node name
   - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
+  - #4226 Add Featherprint, passive device fingerprinting built from session metadata (ARP, DHCP, DNS/mDNS, NBNS, SSDP). A
+          per-subnet monitor maintains device records (MAC and history, hostnames, services, DHCP/SSDP attributes and a
+          rule-based classification), records a change history and raises alerts on new or changed devices; any IP can also
+          be fingerprinted on demand from the new Featherprint page. Configure watched ranges in [featherprint-subnet];
+          adds the featherprint, featherprint_history, featherprint_alerts and featherprint_macs indices (db.pl v89)
 
 
 6.7.1 2026/08/xx

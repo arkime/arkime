@@ -335,6 +335,91 @@ body {
   min-height: 44px;
 }
 
+/* page tab strip: a chrome row of pill tabs below the search toolbar, in its
+   own tinted band. Lives outside the collapsible so the tabs stay visible when
+   the toolbar is collapsed. Same quaternary-lightest tint as the sub-navbars. */
+.page-tab-bar {
+  padding: 6px 12px;
+  background-color: rgb(var(--v-theme-quaternary-lightest));
+  border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+/* v-btn-toggle at density="compact" has a baked-in height (~24px) that clips
+   taller children -- pin it to the pill height and let it grow so the active
+   pill isn't cropped. */
+.page-tab-strip {
+  background-color: transparent !important;
+  border: 0 !important;
+  gap: 2px;
+  height: auto !important;
+  min-height: 34px !important;
+  overflow: visible !important;
+}
+/* Strip the button-group chrome (no shared border) so the tabs read as a nav
+   strip rather than a segmented control. Inactive tabs are plain text; the
+   active tab gets a soft tonal-primary pill. */
+.page-tab-strip .v-btn {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  padding: 0 14px !important;
+  height: 34px !important;
+  min-width: 0 !important;
+  border-radius: 17px !important;
+  border: 0 !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  opacity: 0.78;
+  transform: translateY(3px);
+}
+.page-tab-strip .v-btn:hover {
+  background-color: rgb(var(--v-theme-background)) !important;
+  opacity: 1;
+}
+.page-tab-strip .v-btn--active {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-button-fg)) !important;
+  opacity: 1;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.page-tab-strip .v-btn--active:hover {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  filter: brightness(1.08);
+}
+.page-tab-strip .v-btn .v-btn__content {
+  transform: translateY(-1px);
+}
+.page-tab-strip .v-btn .v-icon {
+  font-size: 15px;
+  margin-inline-end: 6px;
+}
+/* +/- collapse indicator for section headers: mark the header `.collapsed`
+   when shut and give it a `.when-opened` (mdi-minus) / `.when-closed`
+   (mdi-plus) icon pair. Used by spiview categories and the featherprint
+   history card. */
+.collapsed > .when-opened,
+:not(.collapsed) > .when-closed {
+  display: none;
+}
+
+/* Opt-in card surface, matching cont3xt's Cont3xtCard. In dark themes
+   surface-card is the same value as Vuetify's `surface`, so the border does the
+   work of separating the card from the page — elevation alone barely reads. */
+.arkime-card {
+  background-color: rgb(var(--v-theme-surface-card));
+  border: 1px solid rgb(var(--v-theme-surface-card-border));
+}
+
+/* optional separator between tab groups */
+.page-tab-strip .page-tab-divider {
+  align-self: center;
+  width: 1px;
+  height: 20px;
+  margin: 0 8px;
+  background-color: rgb(var(--v-theme-neutral-light));
+}
+
 /* themed buttons */
 .btn-clear-input {
   color: rgb(var(--v-theme-foreground)) !important;

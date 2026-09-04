@@ -539,7 +539,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- tab strip: chrome row outside the collapsible so the tabs stay
            visible when the toolbar is collapsed -->
       <div class="stats-tabs">
-        <div class="stats-tab-bar">
+        <div class="page-tab-bar">
           <v-btn-toggle
             :model-value="tabIndex"
             @update:model-value="tabIndexChange($event)"
@@ -547,7 +547,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             color="primary"
             mandatory
-            class="stats-tab-strip">
+            class="page-tab-strip">
             <v-btn :value="0">
               <v-icon
                 start
@@ -560,7 +560,7 @@ SPDX-License-Identifier: Apache-2.0
                 icon="mdi-speedometer" />
               {{ $t('stats.nav.captureStats') }}
             </v-btn>
-            <span class="stats-tab-divider" />
+            <span class="page-tab-divider" />
             <v-btn :value="2">
               <v-icon
                 start
@@ -943,75 +943,6 @@ export default {
 </script>
 
 <style>
-/* The tab strip lives inside its own sub-navbar bar -- a tinted
-   horizontal band fixed at the top of the page that contains the
-   pill-style v-btn-toggle. Uses the same quaternary-lightest tint as
-   the sub-navbars on sessions/spiview/arkime; the border + shadow keep
-   it visually distinct from the stats-form row above. */
-.stats-tabs .stats-tab-bar {
-  padding: 6px 12px;
-  background-color: rgb(var(--v-theme-quaternary-lightest));
-  border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-/* v-btn-toggle at density="compact" has a baked-in height (~24px) that
-   clips taller children -- pin it to the pill height and let it grow
-   so the active pill isn't cropped. */
-.stats-tabs .stats-tab-strip {
-  background-color: transparent !important;
-  border: 0 !important;
-  gap: 2px;
-  height: auto !important;
-  min-height: 34px !important;
-  overflow: visible !important;
-}
-/* Strip the button-group chrome (no shared border) so the tabs read
-   as a nav strip rather than a segmented control. Inactive tabs are
-   plain text; the active tab gets a soft tonal-primary pill. */
-.stats-tabs .stats-tab-strip .v-btn {
-  text-transform: none !important;
-  letter-spacing: 0 !important;
-  font-size: 0.9rem !important;
-  font-weight: 500 !important;
-  padding: 0 14px !important;
-  height: 34px !important;
-  min-width: 0 !important;
-  border-radius: 17px !important;
-  border: 0 !important;
-  color: rgb(var(--v-theme-foreground)) !important;
-  opacity: 0.78;
-  transform: translateY(3px);
-}
-.stats-tabs .stats-tab-strip .v-btn:hover {
-  background-color: rgb(var(--v-theme-background)) !important;
-  opacity: 1;
-}
-.stats-tabs .stats-tab-strip .v-btn--active {
-  background-color: rgb(var(--v-theme-primary)) !important;
-  color: rgb(var(--v-theme-button-fg)) !important;
-  opacity: 1;
-  font-weight: 700 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
-}
-.stats-tabs .stats-tab-strip .v-btn--active:hover {
-  background-color: rgb(var(--v-theme-primary)) !important;
-  filter: brightness(1.08);
-}
-.stats-tabs .stats-tab-strip .v-btn .v-btn__content {
-  transform: translateY(-1px);
-}
-.stats-tabs .stats-tab-strip .v-btn .v-icon {
-  font-size: 15px;
-  margin-inline-end: 6px;
-}
-/* visual separator between the Capture group and the ES group. */
-.stats-tabs .stats-tab-strip .stats-tab-divider {
-  align-self: center;
-  width: 1px;
-  height: 20px;
-  margin: 0 8px;
-  background-color: rgb(var(--v-theme-neutral-light));
-}
 
 /* shrink the column header font on stats tables one notch so that the
    long headers (Sessions/s, Packet Q, Free Space, etc.) fit without

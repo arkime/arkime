@@ -244,6 +244,11 @@ class UserAPIs {
       const columnWidths = UserAPIs.findUserState('filesColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
+    case 'featherprintAlerts': {
+      const tableState = UserAPIs.findUserState('featherprintAlertsCols', req.user);
+      const columnWidths = UserAPIs.findUserState('featherprintAlertsColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
     case 'captureStats': {
       const tableState = UserAPIs.findUserState('captureStatsCols', req.user);
       const columnWidths = UserAPIs.findUserState('captureStatsColWidths', req.user);
