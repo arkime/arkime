@@ -18,25 +18,147 @@
     "fileId" : [],
     "firstPacket" : 1121119005000,
     "ipProtocol" : 0,
-    "lastPacket" : 1136862144460,
-    "length" : 15743139460,
+    "lastPacket" : 1121119005000,
+    "length" : 0,
     "network" : {
-     "bytes" : 595,
-     "packets" : 3
+     "bytes" : 64,
+     "packets" : 1
     },
     "node" : "test",
     "packetLen" : [
-     80,
-     279,
-     284
+     80
     ],
     "packetPos" : [
-     24,
-     104,
-     383
+     24
     ],
     "packetRange" : {
      "gte" : 1121119005000,
+     "lte" : 1121119005000
+    },
+    "protocol" : [
+     "lldp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 64,
+     "mac" : [
+      "00:04:96:1f:a7:26"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1
+    },
+    "srcOui" : [
+     "Extreme Networks, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-05m07"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "01:80:c2:00:00:0e"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 35020,
+    "fileId" : [],
+    "firstPacket" : 1121861869183,
+    "ipProtocol" : 0,
+    "lastPacket" : 1121861869183,
+    "length" : 0,
+    "network" : {
+     "bytes" : 263,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     279
+    ],
+    "packetPos" : [
+     104
+    ],
+    "packetRange" : {
+     "gte" : 1121861869183,
+     "lte" : 1121861869183
+    },
+    "protocol" : [
+     "lldp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 263,
+     "mac" : [
+      "00:01:30:f9:ad:a0"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1
+    },
+    "srcOui" : [
+     "Extreme Networks, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-05m07"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "01:80:c2:00:00:0e"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 35020,
+    "fileId" : [],
+    "firstPacket" : 1136862144460,
+    "ipProtocol" : 0,
+    "lastPacket" : 1136862144460,
+    "length" : 0,
+    "network" : {
+     "bytes" : 268,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     284
+    ],
+    "packetPos" : [
+     383
+    ],
+    "packetRange" : {
+     "gte" : 1136862144460,
      "lte" : 1136862144460
     },
     "protocol" : [
@@ -48,20 +170,17 @@
      "bytes" : 0
     },
     "source" : {
-     "bytes" : 595,
+     "bytes" : 268,
      "mac" : [
-      "00:01:30:f9:ad:a0",
-      "00:04:96:1f:a7:26",
       "00:13:21:57:ca:7f"
      ],
-     "mac-cnt" : 3,
-     "packets" : 3
+     "mac-cnt" : 1,
+     "packets" : 1
     },
     "srcOui" : [
-     "Extreme Networks, Inc.",
      "Hewlett Packard"
     ],
-    "srcOuiCnt" : 2,
+    "srcOuiCnt" : 1,
     "totDataBytes" : 0
    },
    "header" : {

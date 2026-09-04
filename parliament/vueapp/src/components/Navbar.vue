@@ -3,159 +3,155 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- parliament navbar -->
-  <b-navbar
-    fixed="top"
-    variant="dark"
-    class="px-3"
-    :container="false">
-    <b-navbar-brand>
+  <span>
+    <nav class="arkime-navbar d-flex align-center pe-2">
       <router-link
         to="help"
-        class="me-2"
+        class="arkime-navbar-brand"
         exact>
         <img
           :src="logo"
           alt="hoot"
-          id="hoot-hoot"
           class="arkime-logo">
-        <BTooltip
-          target="hoot-hoot"
-          placement="bottom">
+        <v-tooltip activator="parent">
           {{ $t('navigation.tooltipHelpTip') }}
-        </BTooltip>
+        </v-tooltip>
       </router-link>
-    </b-navbar-brand>
 
-    <!-- page links -->
-    <b-navbar-nav class="ms-4">
-      <b-nav-item
-        to="/"
-        class="nav-link"
-        :class="{'router-link-active': $route.path === '/'}"
-        exact>
-        {{ $t('navigation.parliament') }}
-      </b-nav-item>
-      <b-nav-item
-        to="issues"
-        class="nav-link"
-        :class="{'router-link-active': $route.path === '/issues'}"
-        exact>
-        {{ $t('navigation.issues') }}
-      </b-nav-item>
-      <b-nav-item
-        v-if="isAdmin"
-        to="settings"
-        :class="{'router-link-active': $route.path === '/settings'}"
-        class="nav-link">
-        {{ $t('navigation.settings') }}
-      </b-nav-item>
-      <b-nav-item
-        v-if="isAdmin"
-        to="users"
-        :class="{'router-link-active': $route.path === '/users'}"
-        class="nav-link">
-        {{ $t('navigation.users') }}
-      </b-nav-item>
-    </b-navbar-nav> <!-- /page links -->
+      <div class="arkime-nav-list d-flex align-center">
+        <v-btn
+          to="/"
+          :variant="$route.path === '/' ? 'flat' : 'text'"
+          :style="$route.path === '/' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn"
+          exact>
+          {{ $t('navigation.parliament') }}
+        </v-btn>
+        <v-btn
+          to="/issues"
+          :variant="$route.path === '/issues' ? 'flat' : 'text'"
+          :style="$route.path === '/issues' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn"
+          exact>
+          {{ $t('navigation.issues') }}
+        </v-btn>
+        <v-btn
+          v-if="isAdmin"
+          to="/settings"
+          :variant="$route.path === '/settings' ? 'flat' : 'text'"
+          :style="$route.path === '/settings' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn">
+          {{ $t('navigation.settings') }}
+        </v-btn>
+        <v-btn
+          v-if="isAdmin"
+          to="/users"
+          :variant="$route.path === '/users' ? 'flat' : 'text'"
+          :style="$route.path === '/users' ? activePillStyle : null"
+          size="small"
+          class="arkime-nav-btn">
+          {{ $t('navigation.users') }}
+        </v-btn>
+      </div>
 
-    <!-- version -->
-    <b-navbar-nav
-      class="ms-auto d-flex align-items-center">
-      <span class="pe-4 align-self-center navbar-text no-wrap">
+      <v-spacer />
+
+      <div class="arkime-navbar-actions d-flex align-center">
+        <!-- version (rainbow gradient via shared Version.vue) -->
         <Version timezone="local" />
-      </span>
-      <!-- ES status indicator -->
-      <button
-        v-if="$route.path === '/' && nonGreenClusters.length > 0"
-        @click="scrollToNextNonGreenCluster"
-        class="btn btn-sm btn-danger me-2 position-relative no-wrap"
-        id="esStatusBtn">
-        {{ $t('parliament.navEsIssues') }}
-        <span class="badge rounded-pill bg-dark ms-1">
-          {{ nonGreenClusters.length }}
-        </span>
-      </button>
-      <BTooltip
-        v-if="$route.path === '/' && nonGreenClusters.length > 0"
-        target="esStatusBtn"
-        placement="bottom">
-        {{ $t('parliament.navEsIssuesTip', {cluster: $t('common.clusterCount', nonGreenClusters.length)}) }}
-      </BTooltip> <!-- /ES status indicator -->
-      <!-- cont3xt url -->
-      <a
-        v-if="settings.general.cont3xtUrl"
-        target="_blank"
-        class="btn btn-sm btn-outline-primary cursor-pointer me-2"
-        :href="settings.general.cont3xtUrl">
-        {{ $t('navigation.cont3xt') }}
-      </a> <!-- /cont3xt url -->
-      <!-- wise url -->
-      <a
-        v-if="settings.general.wiseUrl"
-        target="_blank"
-        class="btn btn-sm btn-outline-info cursor-pointer me-2"
-        :href="settings.general.wiseUrl">
-        {{ $t('navigation.wise') }}
-      </a>
-      <!-- /wise url -->
-      <!-- language switcher -->
-      <LanguageSwitcher
-        additional-classes="me-2" /> <!-- /language switcher -->
-      <!-- dark/light mode -->
-      <button
-        type="button"
-        class="btn btn-xs btn-outline-secondary cursor-pointer me-2"
-        @click="toggleTheme">
-        <span
-          v-if="theme === 'light'"
-          class="fa fa-sun-o" />
-        <span
-          v-if="theme === 'dark'"
-          class="fa fa-moon-o" />
-      </button> <!-- /dark/light mode -->
-      <!-- refresh interval select -->
-      <BInputGroup size="xs">
-        <BInputGroupText>
-          <span class="fa fa-refresh" />
-        </BInputGroupText>
-        <select
-          class="form-control refresh-interval-control"
-          tabindex="1"
-          v-model="refreshInterval">
-          <option value="0">
-            {{ $t('common.never') }}
-          </option>
-          <option value="15000">
-            {{ $t('common.secondCount', { count: 15 }) }}
-          </option>
-          <option value="30000">
-            {{ $t('common.secondCount', { count: 30 }) }}
-          </option>
-          <option value="45000">
-            {{ $t('common.secondCount', { count: 45 }) }}
-          </option>
-          <option value="60000">
-            {{ $t('common.minuteCount', { count: 1 }) }}
-          </option>
-          <option value="300000">
-            {{ $t('common.minuteCount', { count: 5 }) }}
-          </option>
-        </select>
-      </BInputGroup>
-      <!-- /refresh interval select -->
-      <Logout
-        :base-path="path"
-        class="ms-2"
-        size="sm" />
-    </b-navbar-nav> <!-- /version -->
-  </b-navbar> <!-- /parliament nav -->
+
+        <!-- language switcher -->
+        <LanguageSwitcher additional-classes="ms-2" />
+
+        <!-- help button -->
+        <v-btn
+          to="/help"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="arkime-help-btn ms-2">
+          <v-icon icon="mdi-help-circle" />
+          <v-tooltip activator="parent">
+            {{ $t('navigation.helpTip') }}
+          </v-tooltip>
+        </v-btn>
+
+        <!-- ES status indicator -->
+        <v-btn
+          v-if="$route.path === '/' && nonGreenClusters.length > 0"
+          color="error"
+          variant="flat"
+          size="small"
+          class="ms-2"
+          @click="scrollToNextNonGreenCluster">
+          {{ $t('parliament.navEsIssues') }}
+          <v-chip
+            size="x-small"
+            class="ms-2">
+            {{ nonGreenClusters.length }}
+          </v-chip>
+          <v-tooltip activator="parent">
+            {{ $t('parliament.navEsIssuesTip', {cluster: $t('common.clusterCount', nonGreenClusters.length)}) }}
+          </v-tooltip>
+        </v-btn>
+
+        <!-- cont3xt url -->
+        <v-btn
+          v-if="settings.general.cont3xtUrl"
+          :href="settings.general.cont3xtUrl"
+          target="_blank"
+          variant="outlined"
+          color="primary"
+          size="small"
+          class="ms-2">
+          {{ $t('navigation.cont3xt') }}
+        </v-btn>
+
+        <!-- wise url -->
+        <v-btn
+          v-if="settings.general.wiseUrl"
+          :href="settings.general.wiseUrl"
+          target="_blank"
+          variant="outlined"
+          color="info"
+          size="small"
+          class="ms-2">
+          {{ $t('navigation.wise') }}
+        </v-btn>
+
+        <!-- refresh interval select -->
+        <v-select
+          v-model="refreshInterval"
+          :items="refreshOptions"
+          item-title="label"
+          item-value="value"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="refresh-interval-select ms-2"
+          prepend-inner-icon="mdi-refresh" />
+
+        <Logout
+          :base-path="path"
+          class="ms-2"
+          size="sm" />
+      </div>
+    </nav>
+
+    <div class="navbarOffset" />
+  </span>
 </template>
 
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
+import { THEMES } from '@common/themes/manifest.js';
 
 export default {
   name: 'ParliamentNavbar',
@@ -164,46 +160,47 @@ export default {
     Version,
     LanguageSwitcher
   },
-  data: function () {
+  data () {
     return {
-      // default theme is light
-      theme: 'light',
       path: this.$constants.PATH,
       logo: 'assets/Arkime_Icon_White.png',
-      currentNonGreenIndex: 0
+      currentNonGreenIndex: 0,
+      // active-pill colors -- use button-fg + foreground so the pill
+      // flips between themes (white-on-dark in light theme, dark-on-light
+      // in dark theme) without us picking specific colors per theme.
+      activePillStyle: {
+        backgroundColor: 'rgb(var(--v-theme-button-fg))',
+        color: 'rgb(var(--v-theme-foreground))'
+      }
     };
   },
   computed: {
-    // auth vars
-    isUser () {
-      return this.$store.state.isUser;
-    },
-    isAdmin () {
-      return this.$store.state.isAdmin;
-    },
+    isAdmin () { return this.$store.state.isAdmin; },
     settings () {
       return this.$store.state.parliament?.settings || { general: {} };
     },
-    // data load interval
+    theme () {
+      return this.$store.state.theme || 'arkime-light';
+    },
     refreshInterval: {
-      get: function () {
-        return this.$store.state.refreshInterval;
-      },
-      set: function (newValue) {
-        this.$store.commit('setRefreshInterval', newValue);
-      }
+      get () { return this.$store.state.refreshInterval; },
+      set (newValue) { this.$store.commit('setRefreshInterval', newValue); }
     },
-    parliament () {
-      return this.$store.state.parliament;
+    refreshOptions () {
+      return [
+        { value: 0, label: this.$t('common.never') },
+        { value: 15000, label: this.$t('common.secondCount', { count: 15 }) },
+        { value: 30000, label: this.$t('common.secondCount', { count: 30 }) },
+        { value: 45000, label: this.$t('common.secondCount', { count: 45 }) },
+        { value: 60000, label: this.$t('common.minuteCount', { count: 1 }) },
+        { value: 300000, label: this.$t('common.minuteCount', { count: 5 }) }
+      ];
     },
-    stats () {
-      return this.$store.state.stats;
-    },
+    parliament () { return this.$store.state.parliament; },
+    stats () { return this.$store.state.stats; },
     nonGreenClusters () {
       const clusters = [];
-      if (!this.parliament?.groups || !this.stats) {
-        return clusters;
-      }
+      if (!this.parliament?.groups || !this.stats) return clusters;
 
       for (const group of this.parliament.groups) {
         if (group.clusters) {
@@ -221,91 +218,63 @@ export default {
   },
   watch: {
     nonGreenClusters () {
-      // Reset index when the list of non-green clusters changes
       this.currentNonGreenIndex = 0;
+    },
+    theme: {
+      immediate: true,
+      handler (val) {
+        if (this.$vuetify) {
+          // Register the saved custom palette before switching to it so
+          // theme.change('custom1') resolves -- the palette arrives async
+          // from the server via hydrateThemeFromServer.
+          if (val === 'custom1' && this.$store.state.customTheme?.colors) {
+            registerVuetifyTheme(this.$vuetify, 'custom1', this.$store.state.customTheme);
+          }
+          this.$vuetify.theme.change(val);
+        }
+        // legacy body.dark hook -- works for ANY dark theme.
+        let dark = false;
+        if (val === 'custom1') {
+          dark = !!(this.$store.state.customTheme && this.$store.state.customTheme.dark);
+        } else {
+          const entry = THEMES.find(t => t.id === val);
+          dark = !!(entry && entry.dark);
+        }
+        document.body.classList = dark ? ['dark'] : [];
+      }
     }
   },
-  mounted: function () {
+  mounted () {
     this.loadRefreshInterval();
-
-    if (localStorage.getItem('parliamentTheme')) {
-      this.theme = localStorage.getItem('parliamentTheme');
-      if (this.theme === 'dark') {
-        document.body.classList = [this.theme];
-      }
-    } else { // there's no theme set use the OS default
-      if (window.matchMedia) {
-        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.theme = darkMode ? 'dark' : 'light';
-        document.body.classList = darkMode ? ['dark'] : [];
-      } else {
-        this.theme = 'light';
-        document.body.classList = [];
-      }
-    }
-
-    this.$store.commit('setTheme', this.theme);
   },
   methods: {
-    /* page functions -------------------------------------------------------- */
-    loadRefreshInterval: function () {
+    loadRefreshInterval () {
       this.refreshInterval = localStorage.getItem('refreshInterval') || 15000;
     },
-    toggleTheme: function () {
-      if (this.theme === 'light') {
-        this.theme = 'dark';
-        document.body.classList = [this.theme];
-      } else {
-        this.theme = 'light';
-        document.body.classList = [];
-      }
+    scrollToNextNonGreenCluster () {
+      if (this.nonGreenClusters.length === 0) return;
 
-      localStorage.setItem('parliamentTheme', this.theme);
-      this.$store.commit('setTheme', this.theme);
-    },
-    scrollToNextNonGreenCluster: function () {
-      if (this.nonGreenClusters.length === 0) {
-        return;
-      }
-
-      // Only navigate if we're on the parliament page
       if (this.$route.path !== '/') {
         this.$router.push('/').then(() => {
-          this.$nextTick(() => {
-            this.doScroll();
-          });
+          this.$nextTick(() => this.doScroll());
         });
       } else {
         this.doScroll();
       }
     },
-    doScroll: function () {
+    doScroll () {
       const cluster = this.nonGreenClusters[this.currentNonGreenIndex];
-
-      if (!cluster) { return; }
-
-      // Trigger scroll via Vuex store
+      if (!cluster) return;
       this.$store.commit('setScrollToClusterId', cluster.clusterId);
-
-      // Cycle to next cluster
       this.currentNonGreenIndex = (this.currentNonGreenIndex + 1) % this.nonGreenClusters.length;
     }
   }
 };
 </script>
 
-<style>
-nav.navbar li:hover {
-  background-color: black;
-}
-nav.navbar li a {
-  transition: all .4s;
-}
-nav.navbar ul.navbar-nav li.nav-link a.nav-link {
-  display: inline-block !important;
-  padding-top: 1px;
-}
-.refresh-interval-control {
-  height: 23px !important;
+<style scoped>
+/* navbar shell + nav-btn typography come from common/vueapp/arkime-navbar.css */
+.refresh-interval-select {
+  max-width: 180px;
 }
 </style>

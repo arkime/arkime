@@ -3,19 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid overflow-auto">
+  <div class="arkime-container-fluid">
     <UsersCommon
-      :dark="getTheme === 'dark'"
       v-if="getUser"
       :roles="getRoles"
       parent-app="Parliament"
       :current-user="getUser"
       @update-roles="updateRoles"
-      @update-current-user="updateCurrentUser">
-      <template #loading>
-        <ArkimeLoading />
-      </template>
-    </UsersCommon>
+      @update-current-user="updateCurrentUser" />
   </div>
 </template>
 

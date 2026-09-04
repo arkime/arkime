@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <span>
     <v-btn
       size="small"
-      class="ml-1 square-btn-sm"
+      class="ms-1"
       v-tooltip="'Copy this link to another group'"
       color="warning">
       <v-icon icon="mdi-content-copy" />
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
         }
       ]"
       flat
-      class="ml-1 square-btn-sm"
+      class="ms-1"
       tabindex="-1"
       color="info" />
   </span>

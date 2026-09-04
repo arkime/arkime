@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
       color="warning"
       class="d-flex flex-column">
       <div>
-        <span class="pr-2">
+        <span class="pe-2">
           <v-icon icon="mdi-alert" />
         </span>
         <div class="display-inline-block">

@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
             height="40px"
             color="error"
             v-if="!!error.length"
-            class="mb-0 alert-sm mr-1 ml-1">
+            class="mb-0 me-1 ms-1">
             {{ error }}
           </v-alert>
           <v-btn
@@ -109,9 +109,3 @@ function create () {
   });
 }
 </script>
-
-<style scoped>
-.alert.alert-sm {
-  padding: 0.4rem 0.8rem;
-}
-</style>

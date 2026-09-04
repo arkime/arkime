@@ -10,8 +10,9 @@
     "@clickhouse/client": "^1.12.1",
     "@databricks/sql": "^2.0.0",
     "@elastic/elasticsearch": "7.10.0",
+    "@mdi/font": "^7.4.47",
     "acorn": "^8.16.0",
-    "arkime-iptrie": "^0.0.9",
+    "arkime-iptrie": "^0.0.10",
     "arkime-notifme-sdk": "^1.11.11",
     "async": "^3.2.6",
     "aws4": "^1.13.2",
@@ -19,7 +20,6 @@
     "better-sqlite3": "^13.0.3",
     "body-parser": "^1.20.5",
     "bson": "^1.1.5",
-    "chalk": "^4.1.2",
     "compression": "^1.8.1",
     "connect-timeout": "^1.9.1",
     "console-stamp": "^3.1.2",
@@ -27,7 +27,6 @@
     "ejs": "^3.1.10",
     "express": "^4.22.2",
     "express-session": "^1.18.2",
-    "font-awesome": "^4.7.0",
     "helmet": "^3.23.3",
     "ioredis": "^5.8.2",
     "ipaddr.js": "^2.5.0",
@@ -55,6 +54,7 @@
     "qrcode": "^1.5.4",
     "re2": "^1.26.1",
     "sanitize-html": "^2.17.7",
+    "sax": "^1.6.0",
     "serve-favicon": "^2.5.1",
     "splunk-sdk": "^2.0.2",
     "stylus": "^0.64.0",
@@ -66,6 +66,8 @@
   "scripts": {
     "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt",
     "lint-fix": "eslint --fix parliament viewer wiseService capture/plugins common cont3xt",
+  "test:unit": "node --no-warnings=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.unit.mjs",
+  "test:endpoint": "node --no-warnings=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.endpoint.mjs",
     "common:lint": "eslint common",
     "common:lint-fix": "eslint --fix common",
     "cont3xt:addtestuser": "cd viewer && node addUser.js -c ../tests/cont3xt.ini -n cont3xt admin admin admin --admin --packetSearch --createOnly",
@@ -117,8 +119,6 @@
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/compiler-sfc": "^3.5.29",
     "autoprefixer": "^10.2.5",
-    "bootstrap": "^5.3.8",
-    "bootstrap-vue-next": "^0.40.6",
     "concurrently": "^8.1.0",
     "country-code-emoji": "^2.3.0",
     "d3-sankey": "^0.12.3",
@@ -146,10 +146,20 @@
     "vuex": "^4.1.0"
   },
   "engines": {
-    "node": ">= 22.15.0 < 23",
+    "node": ">= 24.0.0 < 25",
     "npm": ">= 3.0.0"
   },
   "overrides": {
     "uuid": "$uuid"
+  },
+  "allowScripts": {
+    "lmdb@3.5.6": true,
+    "re2@1.26.1": true,
+    "msgpackr-extract@3.0.3": true,
+    "better-sqlite3@13.0.3": true,
+    "@parcel/watcher@2.5.6": true,
+    "arkime-iptrie": true,
+    "json-editor-vue": false,
+    "vue-demi": false
   }
 }

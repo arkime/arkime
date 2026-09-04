@@ -4,51 +4,59 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <h3>
-      {{ $t('settings.views.title') }}
-      <BButton
-        size="sm"
-        variant="success"
-        class="pull-right"
+    <h3 class="d-flex align-center">
+      <span class="flex-grow-1">{{ $t('settings.views.title') }}</span>
+      <v-btn
+        color="success"
+        variant="flat"
+        size="large"
         @click="showViewModal = !showViewModal">
-        <span class="fa fa-plus-circle me-1" />
+        <v-icon
+          icon="mdi-plus-circle"
+          class="me-1" />
         {{ $t('settings.views.newView') }}
-      </BButton>
+      </v-btn>
     </h3>
 
     <p>
       {{ $t('settings.views.info') }}
     </p>
 
-    <div class="d-flex">
-      <div class="flex-grow-1 me-2 mb-1">
-        <b-input-group size="sm">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search" />
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            debounce="400"
-            :model-value="viewsQuery.search"
-            @update:model-value="updateSearch"
-            :placeholder="$t('settings.views.searchPlaceholder')" />
-        </b-input-group>
+    <div class="d-flex align-center">
+      <div class="flex-grow-1 me-2">
+        <v-text-field
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          prepend-inner-icon="mdi-magnify"
+          :model-value="viewsQuery.search"
+          @update:model-value="updateSearch"
+          :placeholder="$t('settings.views.searchPlaceholder')" />
       </div>
-      <b-form-checkbox
-        button
-        size="sm"
+      <v-btn-toggle
+        v-if="user.roles.includes('arkimeAdmin')"
+        density="compact"
+        variant="outlined"
+        color="secondary"
         class="me-2"
-        :model-value="seeAll"
-        @update:model-value="updateSeeAll"
-        id="seeAllViews"
-        v-if="user.roles.includes('arkimeAdmin')">
-        <span class="fa fa-user-circle me-1" />
-        {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
-        <BTooltip target="seeAllViews">
-          {{ $t(seeAll ? 'settings.views.seeMyTip' : 'settings.views.seeAllTip') }}
-        </BTooltip>
-      </b-form-checkbox>
+        multiple
+        :model-value="seeAll ? ['seeAll'] : []"
+        @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
+        <v-btn
+          value="seeAll"
+          id="seeAllViews">
+          <v-icon
+            icon="mdi-account-circle"
+            class="me-1" />
+          {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
+          <v-tooltip
+            activator="parent"
+            location="top">
+            {{ $t(seeAll ? 'settings.views.seeMyTip' : 'settings.views.seeAllTip') }}
+          </v-tooltip>
+        </v-btn>
+      </v-btn-toggle>
       <arkime-paging
         v-if="views"
         :length-default="size"
@@ -57,22 +65,19 @@ SPDX-License-Identifier: Apache-2.0
         @change-paging="changeViewsPaging" />
     </div>
 
-    <table class="table table-striped table-sm">
+    <table class="arkime-table">
       <thead>
         <tr>
           <th
             class="cursor-pointer"
             @click.self="sortViews('name')">
             {{ $t('settings.views.table-name') }}
-            <span
-              v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="viewsQuery.sortField === 'name' && viewsQuery.desc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="viewsQuery.sortField !== 'name'"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" />
           </th>
           <th>{{ $t('settings.views.table-creator') }}</th>
           <th>{{ $t('settings.views.table-expression') }}</th>
@@ -103,13 +108,13 @@ SPDX-License-Identifier: Apache-2.0
                 v-for="col in item.sessionsColConfig.visibleHeaders"
                 :key="col">
                 <label
-                  class="badge bg-secondary me-1 mb-0 help-cursor"
+                  class="arkime-badge arkime-badge--grey me-1 mb-0 cursor-help"
                   v-if="fieldsMap[col]"
                   :id="`viewField-${col}`">
                   {{ fieldsMap[col].friendlyName }}
-                  <BTooltip :target="`viewField-${col}`">
+                  <v-tooltip :activator="`[id='viewField-${col}']`">
                     {{ fieldsMap[col].help }}
-                  </BTooltip>
+                  </v-tooltip>
                 </label>
               </template>
             </span>
@@ -120,89 +125,102 @@ SPDX-License-Identifier: Apache-2.0
                 v-for="order in item.sessionsColConfig.order"
                 :key="order[0]">
                 <label
-                  class="badge bg-secondary me-1 help-cursor"
+                  class="arkime-badge arkime-badge--grey me-1 cursor-help"
                   v-if="fieldsMap[order[0]]"
                   :id="`viewFieldOrder-${order[0]}`">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
-                  <BTooltip :target="`viewFieldOrder-${order[0]}`">
+                  <v-tooltip :activator="`[id='viewFieldOrder-${order[0]}']`">
                     {{ fieldsMap[order[0]].help }}
-                  </BTooltip>
+                  </v-tooltip>
                 </label>
               </template>
             </span>
           </td>
-          <td>
-            <span class="pull-right no-wrap">
-              <b-button
-                size="sm"
+          <td class="text-end no-wrap">
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              :style="secondaryBtnStyle"
+              class="ms-1"
+              :id="`copyView-${item.id}`"
+              @click="$emit('copy-value', item.expression)">
+              <v-icon icon="mdi-clipboard" />
+              <v-tooltip :activator="`#copyView-${item.id}`">
+                {{ $t('settings.views.copyTip') }}
+              </v-tooltip>
+            </v-btn>
+            <template v-if="canEdit(item)">
+              <v-btn
+                v-if="canTransfer(item)"
+                color="info"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
                 class="ms-1"
-                :id="`copyView-${item.id}`"
-                variant="theme-secondary"
-                @click="$emit('copy-value', item.expression)">
-                <span class="fa fa-clipboard fa-fw" />
-                <BTooltip :target="`copyView-${item.id}`">
-                  {{ $t('settings.views.copyTip') }}
-                </BTooltip>
-              </b-button>
-              <template
-                v-if="canEdit(item)">
-                <b-button
-                  size="sm"
-                  class="ms-1"
-                  variant="info"
-                  :id="`transferView-${item.id}`"
-                  v-if="canTransfer(item)"
-                  @click="openTransferView(item)">
-                  <span class="fa fa-share fa-fw" />
-                  <BTooltip :target="`transferView-${item.id}`">
-                    {{ $t('settings.views.transferTip') }}
-                  </BTooltip>
-                </b-button>
-                <b-button
-                  size="sm"
-                  class="ms-1"
-                  variant="danger"
-                  :id="`deleteView-${item.id}`"
-                  @click="deleteView(item.id, index)">
-                  <span class="fa fa-trash-o fa-fw" />
-                  <BTooltip :target="`deleteView-${item.id}`">
-                    {{ $t('settings.views.deleteTip') }}
-                  </BTooltip>
-                </b-button>
-                <b-button
-                  size="sm"
-                  class="ms-1"
-                  :id="`editView-${item.id}`"
-                  @click="editView(item)"
-                  variant="theme-tertiary">
-                  <span class="fa fa-pencil fa-fw" />
-                  <BTooltip :target="`editView-${item.id}`">
-                    {{ $t('settings.views.editTip') }}
-                  </BTooltip>
-                </b-button>
-              </template>
-            </span>
+                :id="`transferView-${item.id}`"
+                @click="openTransferView(item)">
+                <v-icon icon="mdi-share" />
+                <v-tooltip :activator="`#transferView-${item.id}`">
+                  {{ $t('settings.views.transferTip') }}
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
+                :id="`deleteView-${item.id}`"
+                @click="deleteView(item.id, index)">
+                <v-icon icon="mdi-trash-can-outline" />
+                <v-tooltip :activator="`#deleteView-${item.id}`">
+                  {{ $t('settings.views.deleteTip') }}
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="tertiaryBtnStyle"
+                class="ms-1"
+                :id="`editView-${item.id}`"
+                @click="editView(item)">
+                <v-icon icon="mdi-pencil" />
+                <v-tooltip :activator="`#editView-${item.id}`">
+                  {{ $t('settings.views.editTip') }}
+                </v-tooltip>
+              </v-btn>
+            </template>
           </td>
         </tr> <!-- /views -->
       </tbody>
     </table>
 
     <!-- view list error -->
-    <div
+    <v-alert
       v-if="viewListError"
+      type="error"
+      variant="tonal"
+      density="compact"
       style="z-index: 2000;"
-      class="mt-2 mb-2 alert alert-danger">
-      <span class="fa fa-exclamation-triangle me-1" />
+      class="mt-2 mb-2">
       {{ viewListError }}
-    </div> <!-- /view list error -->
+    </v-alert> <!-- /view list error -->
 
     <!-- no results -->
     <div
       class="text-center mt-4"
       v-if="!views || !views.length">
       <h3>
-        <span class="fa fa-folder-open fa-2x" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="large" />
       </h3>
       <h5>
         {{ $t('settings.views.noMatch') }}
@@ -212,108 +230,129 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new view form -->
-    <BModal
-      size="xl"
+    <v-dialog
       :model-value="showViewModal"
-      @hidden="showViewModal = false"
-      :title="$t(editingView ? 'settings.views.editView' : 'settings.views.newView')">
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <b-input-group-text
-          id="viewFormName"
-          class="cursor-help">
-          {{ $t('settings.views.viewFormName') }}<sup>*</sup>
-          <BTooltip target="viewFormName">
-            {{ $t('settings.views.viewFormNameTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <b-form-input
-          :model-value="newViewName"
-          @update:model-value="newViewName = $event"
-          :placeholder="$t('settings.views.viewFormNamePlaceholder')" />
-      </b-input-group>
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <b-input-group-text
-          id="viewFormExpression"
-          class="cursor-help">
-          {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
-          <BTooltip target="viewFormExpression">
-            {{ $t('settings.views.viewFormExpressionTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <ExpressionAutocompleteInput
-          textarea
-          rows="3"
-          :model-value="newViewExpression"
-          @update:model-value="newViewExpression = $event"
-          :placeholder="$t('settings.views.viewFormExpressionPlaceholder')" />
-      </b-input-group>
-      <div class="d-flex">
-        <div class="me-3 flex-grow-1 no-wrap">
-          <RoleDropdown
-            :roles="roles"
-            class="d-inline"
-            :selected-roles="newViewRoles"
-            :display-text="$t('common.rolesCanView')"
-            @selected-roles-updated="updateNewViewRoles" />
-          <RoleDropdown
-            :roles="roles"
-            class="d-inline ms-1"
-            :display-text="$t('common.rolesCanEdit')"
-            :selected-roles="newViewEditRoles"
-            @selected-roles-updated="updateNewViewEditRoles" />
-        </div>
-        <b-input-group
-          size="sm">
-          <b-input-group-text
-            id="viewFormUsers"
-            class="cursor-help">
-            {{ $t('common.shareWithUsers') }}
-            <BTooltip target="viewFormUsers">
-              {{ $t('settings.views.viewFormUsersTip') }}
-            </BTooltip>
-          </b-input-group-text>
-          <b-form-input
-            :model-value="newViewUsers"
-            @update:model-value="newViewUsers = $event"
-            :placeholder="$t('settings.views.viewFormUsersPlaceholder')" />
-        </b-input-group>
-      </div>
-      <!-- form error -->
-      <div
-        v-if="viewFormError"
-        class="alert alert-danger alert-sm mt-2 mb-0">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ viewFormError }}
-      </div> <!-- /form error -->
-      <template #footer>
-        <div class="w-100 d-flex justify-content-between">
-          <b-button
-            variant="danger"
-            @click="showViewModal = false">
-            <span class="fa fa-times" />
-            {{ $t('common.cancel') }}
-          </b-button>
-          <b-button
-            variant="success"
-            @click="createView"
-            v-if="!editingView">
-            <span class="fa fa-plus-circle me-1" />
-            {{ $t('common.create') }}
-          </b-button>
-          <b-button
-            v-else
-            variant="success"
-            @click="updateView">
-            <span class="fa fa-save me-1" />
-            {{ $t('common.save') }}
-          </b-button>
-        </div>
-      </template> <!-- /modal footer -->
-    </BModal> <!-- /new view form -->
+      @update:model-value="(val) => { if (!val) showViewModal = false; }"
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title>
+          {{ $t(editingView ? 'settings.views.editView' : 'settings.views.newView') }}
+        </v-card-title>
+        <v-card-text>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              id="viewFormName"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.views.viewFormName') }}<sup>*</sup>
+              <v-tooltip activator="#viewFormName">
+                {{ $t('settings.views.viewFormNameTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="arkime-input-control"
+              :value="newViewName"
+              @input="newViewName = $event.target.value"
+              :placeholder="$t('settings.views.viewFormNamePlaceholder')">
+          </div>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              id="viewFormExpression"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
+              <v-tooltip activator="#viewFormExpression">
+                {{ $t('settings.views.viewFormExpressionTip') }}
+              </v-tooltip>
+            </span>
+            <ExpressionAutocompleteInput
+              textarea
+              rows="3"
+              :model-value="newViewExpression"
+              @update:model-value="newViewExpression = $event"
+              :placeholder="$t('settings.views.viewFormExpressionPlaceholder')" />
+          </div>
+          <div class="d-flex">
+            <div class="me-3 flex-grow-1 no-wrap">
+              <RoleDropdown
+                size="large"
+                :roles="roles"
+                class="d-inline"
+                :selected-roles="newViewRoles"
+                :display-text="$t('common.rolesCanView')"
+                @selected-roles-updated="updateNewViewRoles" />
+              <RoleDropdown
+                size="large"
+                :roles="roles"
+                class="d-inline ms-1"
+                :display-text="$t('common.rolesCanEdit')"
+                :selected-roles="newViewEditRoles"
+                @selected-roles-updated="updateNewViewEditRoles" />
+            </div>
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span
+                id="viewFormUsers"
+                class="arkime-input-label cursor-help">
+                {{ $t('common.shareWithUsers') }}
+                <v-tooltip activator="#viewFormUsers">
+                  {{ $t('settings.views.viewFormUsersTip') }}
+                </v-tooltip>
+              </span>
+              <input
+                type="text"
+                class="arkime-input-control"
+                :value="newViewUsers"
+                @input="newViewUsers = $event.target.value"
+                :placeholder="$t('settings.views.viewFormUsersPlaceholder')">
+            </div>
+          </div>
+          <!-- form error -->
+          <v-alert
+            v-if="viewFormError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-2 mb-0">
+            {{ viewFormError }}
+          </v-alert> <!-- /form error -->
+        </v-card-text>
+        <v-card-actions>
+          <div class="w-100 d-flex justify-space-between">
+            <v-btn
+              color="error"
+              variant="flat"
+              size="large"
+              @click="showViewModal = false">
+              <v-icon
+                icon="mdi-close"
+                class="me-1" />
+              {{ $t('common.cancel') }}
+            </v-btn>
+            <v-btn
+              v-if="!editingView"
+              color="success"
+              variant="flat"
+              size="large"
+              @click="createView">
+              <v-icon
+                icon="mdi-plus-circle"
+                class="me-1" />
+              {{ $t('common.create') }}
+            </v-btn>
+            <v-btn
+              v-else
+              color="success"
+              variant="flat"
+              size="large"
+              @click="updateView">
+              <v-icon
+                icon="mdi-content-save"
+                class="me-1" />
+              {{ $t('common.save') }}
+            </v-btn>
+          </div>
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /new view form -->
 
     <transfer-resource
       :show-modal="showTransferModal"
@@ -328,7 +367,7 @@ import UserService from '@common/UserService';
 // utilities
 import { resolveMessage } from '@common/resolveI18nMessage';
 // components
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
@@ -364,7 +403,16 @@ export default {
       recordsTotal: 0,
       recordsFiltered: 0,
       seeAll: false,
-      transferView: undefined
+      transferView: undefined,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   props: {

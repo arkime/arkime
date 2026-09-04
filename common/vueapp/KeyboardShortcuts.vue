@@ -16,13 +16,16 @@ SPDX-License-Identifier: Apache-2.0
           class="ps-2 pt-1 pb-1"
           color="light">
           <!-- close shortcuts help -->
-          <button
-            @click="close"
-            type="button"
+          <v-btn
+            size="x-small"
+            color="primary"
+            variant="flat"
+            density="comfortable"
+            class="float-right me-1 mt-1"
             :title="$t('help.keyboard.close')"
-            class="pull-right me-1 mt-1 btn btn-xs btn-primary cursor-pointer">
+            @click="close">
             X
-          </button>
+          </v-btn>
           <!-- slot for keyboard shortcut help content -->
           <slot name="content" />
         </div>
@@ -188,15 +191,15 @@ export default {
   }
   20% {
     transform: translateX(-5px);
-    color: var(--color-tertiary);
+    color: rgb(var(--v-theme-tertiary));
   }
   50% {
     transform: translateX(0);
-    color: var(--color-tertiary);
+    color: rgb(var(--v-theme-tertiary));
   }
   70% {
     transform: translateX(-5px);
-    color: var(--color-tertiary);
+    color: rgb(var(--v-theme-tertiary));
   }
   100% {
     transform: translateX(0);    /* Final position */

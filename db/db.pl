@@ -83,6 +83,8 @@
 # 84 - added shareables index
 # 85 - added packetRange field to sessions
 # 86 - added totpSecret field to users
+# 87 - added dismissedHelpNotes field to users
+# 88 - added interfaceOffsets to files
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -96,7 +98,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 86;
+my $VERSION = 88;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -143,6 +145,26 @@ my @SETPERM = ();
 my @UNSETPERM = ();
 my $USEREGEX = 0;
 my $DRYRUN = 0;
+
+# Per-user layouts that shareables-import copies into the shareables index.
+# Adding a new one is an entry here; nothing else needs to change.
+my %SHAREABLE_IMPORTS = (
+    "spiview" => {
+        field => "spiviewFieldConfigs",
+        type  => "spiviewLayout",
+        data  => sub { return { fields => $_[0]->{fields} }; }
+    },
+    "sessionstable" => {
+        field => "columnConfigs",
+        type  => "sessionsTableLayout",
+        data  => sub { return { columns => $_[0]->{columns}, order => $_[0]->{order} }; }
+    },
+    "sessionsinfofields" => {
+        field => "infoFieldConfigs",
+        type  => "sessionsInfoLayout",
+        data  => sub { return { fields => $_[0]->{fields} }; }
+    }
+);
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -244,6 +266,13 @@ sub showHelp($)
     print "User Commands:\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
+    print "  shareables-import <type>     - Copy per-user layouts into shareables, safe to run repeatedly.\n";
+    print "                                 <type> is 'all' or one of: " . join(", ", sort keys %SHAREABLE_IMPORTS) . "\n";
+    print "                                 Originals are left alone so Arkime 6 keeps working\n";
+    print "                                 Only works when users are in Elasticsearch, not sqlite/lmdb/redis\n";
+    print "                                 'upgrade' runs this for you, this is for re-running it later\n";
+    print "    --dryrun                   - Print what would be copied without copying\n";
+    print "      eg: db.pl <host:port> shareables-import spiview --dryrun\n";
     print "  users-update <pattern> <opts>- Bulk add/remove roles and set/unset fields on all users whose userId matches <pattern>\n";
     print "      pattern                  - Glob matched against userId, '*' and '?' supported, use '*' for all users\n";
     print "                                 Roles themselves are skipped unless <pattern> starts with 'role:'\n";
@@ -759,6 +788,10 @@ sub filesUpdate
     },
     "sessionsPresent": {
       "type": "long"
+    },
+    "interfaceOffsets": {
+      "type": "long",
+      "index": false
     }
   }
 }';
@@ -7867,6 +7900,137 @@ logmsg "Setting shareables_v60 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}shareables_v60/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
+# Copy the per-user layouts named in %SHAREABLE_IMPORTS into the shareables
+# index. Safe to run repeatedly: anything already imported is left alone, and
+# the originals stay on the user record so Arkime 6 keeps working.
+# Returns (copied, skipped).
+sub shareablesImport
+{
+    my ($what, $dryrun, $quiet) = @_;
+
+    my @todo = ($what eq "all") ? (sort keys %SHAREABLE_IMPORTS) : ($what);
+
+    my $copied = 0;
+    my $skipped = 0;
+
+    # Everything already in shareables, so re-runs are safe. Keyed on
+    # type + creator + name, which is what made a layout unique on the user;
+    # names aren't unique anymore, so more than one existing shareable can
+    # share a key, and the value is the *set* of their data (not a single
+    # value - overwriting on a repeat key would just pick whichever hit the
+    # scroll happened to return last). That set is what tells an
+    # already-imported layout apart from an unrelated same-name collision
+    # created since. Scrolled, not a flat size=10000 search, so this stays
+    # accurate past 10000 shareables.
+    my %have;
+    my $existing = esScroll("${PREFIX}shareables", to_json({"_source" => ["type", "creator", "name", "data"]}));
+    foreach my $hit (@{$existing}) {
+        my $src = $hit->{_source};
+        next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
+        my $existingKey = $src->{type} . "\0" . $src->{creator} . "\0" . $src->{name};
+        $have{$existingKey}->{JSON->new->canonical->encode($src->{data} // {})} = 1;
+    }
+
+    # db.pl only ever talks to Elasticsearch, so a users store kept in
+    # sqlite/lmdb/redis has nothing to read here and would silently look like
+    # there was simply nothing to import
+    my $userCount = esGet("/${PREFIX}users/_count", 1);
+    if (($userCount->{count} // 0) == 0) {
+        logmsg "WARNING - no users found in ${PREFIX}users, so there is nothing to import.\n";
+        logmsg "WARNING - shareables-import needs users stored in Elasticsearch; it cannot read a\n";
+        logmsg "WARNING - usersElasticsearch pointed at sqlite/lmdb/redis.\n";
+    }
+
+    # One scroll across all requested fields instead of one full user scan
+    # per kind
+    my @sourceFields = ("userId");
+    push(@sourceFields, $SHAREABLE_IMPORTS{$_}->{field}) foreach (@todo);
+    my $users = esScroll("${PREFIX}users", to_json({"_source" => \@sourceFields}));
+
+    my $body = "";
+    foreach my $kind (@todo) {
+        my $info = $SHAREABLE_IMPORTS{$kind};
+        my $field = $info->{field};
+        my $type = $info->{type};
+
+        foreach my $hit (@{$users}) {
+            my $userId = $hit->{_source}->{userId};
+            next if (!defined $userId);
+            my $configs = $hit->{_source}->{$field};
+            next if (!$configs || ref($configs) ne "ARRAY");
+
+            foreach my $config (@{$configs}) {
+                my $name = $config->{name};
+                next if (!defined $name);
+
+                my $data = $info->{data}->($config);
+                # canonical (sorted keys) so this compares equal to the same
+                # data round-tripped through ES, regardless of hash key order
+                my $dataJson = JSON->new->canonical->encode($data);
+                my $baseName = $name;
+                my $key = $type . "\0" . $userId . "\0" . $name;
+
+                # walk past any name already taken by something else (names
+                # aren't unique anymore) until we find either this exact
+                # layout (already imported - skip) or a free name to import
+                # the legacy data under. Bounded by how many existing
+                # shareables actually collide on this name, not an arbitrary
+                # cap - this is a migration tool, it must not drop data.
+                my $attempt = 0;
+                while ($have{$key} && !$have{$key}->{$dataJson}) {
+                    $attempt++;
+                    $name = $attempt == 1 ? "$baseName (legacy)" : "$baseName (legacy $attempt)";
+                    $key = $type . "\0" . $userId . "\0" . $name;
+                }
+
+                if ($have{$key} && $have{$key}->{$dataJson}) {
+                    $skipped++;
+                    next;
+                }
+
+                if ($attempt > 0) {
+                    logmsg "WARNING - '$baseName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
+                }
+
+                my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
+                my $doc = {
+                    name => $name,
+                    type => $type,
+                    creator => $userId,
+                    created => $now,
+                    updated => $now,
+                    viewRoles => [],
+                    viewUsers => [],
+                    editRoles => [],
+                    editUsers => [],
+                    data => $data
+                };
+
+                if ($dryrun) {
+                    print "Would copy $kind '$name' for $userId\n";
+                } else {
+                    print "Copying $kind '$name' for $userId\n" if (!$quiet);
+                    my $meta = to_json({"index" => {"_index" => "${PREFIX}shareables"}});
+                    $body .= $meta . "\n" . to_json($doc) . "\n";
+                    if (length($body) > 10 * 1000 * 1000) {
+                        esBulk($body, "shareables-import");
+                        $body = "";
+                    }
+                }
+                # guard against the same user having it twice in one run
+                $have{$key}->{$dataJson} = 1;
+                $copied++;
+            }
+        }
+    }
+    esBulk($body, "shareables-import") if (length($body) > 0);
+
+    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$dryrun);
+
+    return ($copied, $skipped);
+}
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -7966,6 +8130,9 @@ sub usersUpdate
     },
     "welcomeMsgNum": {
       "type": "integer"
+    },
+    "dismissedHelpNotes": {
+      "type": "keyword"
     },
     "lastUsed": {
       "type": "date"
@@ -8500,7 +8667,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|shareables-?import|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?update|users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -9010,6 +9177,18 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/${PREFIX}users/_refresh", "") if ($changed && !$DRYRUN);
 
     print "$matched user(s) matched '$pattern', $changed " . ($DRYRUN ? "would be changed" : "changed") . "\n";
+    exit 0;
+} elsif ($ARGV[1] =~ /^(shareables-?import)$/) {
+    parseArgs(3);
+
+    my $what = $ARGV[2] // "all";
+    showHelp("Unknown shareables-import type '$what', must be one of: all, " . join(", ", sort keys %SHAREABLE_IMPORTS))
+        if ($what ne "all" && !$SHAREABLE_IMPORTS{$what});
+
+    my ($copied, $skipped) = shareablesImport($what, $DRYRUN, 0);
+
+    print "$copied " . ($DRYRUN ? "would be copied" : "copied") . ", $skipped already existed\n";
+    print "The originals were left on the user, so Arkime 6 keeps working. Re-run any time to pick up new ones.\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
     showHelp("Invalid name $ARGV[2], names cannot have special characters except '-' and '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]/);
@@ -10718,51 +10897,58 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 79) {
-        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
+    # Common things forever
+    if ($main::versionNumber <= $VERSION) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+    }
+
+    if ($main::versionNumber < 79) {
+        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
         queriesUpdate();
         notifiersUpdate();
         notifiersAddMissingProps();
         parliamentCreate();
         viewsUpdate();
         lookupsUpdate();
-        usersUpdate();
-        filesUpdate();
         configsCreate();
         fields82Fix();
         shareablesCreate();
+        usersUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 81) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        usersUpdate();
-        filesUpdate();
         configsCreate();
         fields82Fix();
         shareablesCreate();
-    } elsif ($main::versionNumber <= 83) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
+        usersUpdate();
         filesUpdate();
+    } elsif ($main::versionNumber <= 83) {
         fields82Fix();
         shareablesCreate();
         usersUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 85) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
         shareablesUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber <= 86) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
+        filesUpdate();
+    } elsif ($main::versionNumber <= 88) {
+        usersUpdate();
+        filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
+    }
+
+    # Sharables import one time version bump
+    if ($main::versionNumber < $VERSION) {
+        # never a dryrun: upgrade takes --dryrun but honors it nowhere else
+        my ($copied, $skipped) = eval { shareablesImport("all", 0, 1) };
+        if ($@) {
+            logmsg "WARNING - could not import layouts into shareables: $@";
+            logmsg "WARNING - run 'db.pl <host:port> shareables-import all' once the cause is fixed.\n";
+        } elsif ($copied) {
+            logmsg "Imported $copied layout(s) into shareables, $skipped already existed\n";
+        }
     }
 }
 

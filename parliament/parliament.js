@@ -35,6 +35,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const Notifier = require('../common/notifier');
+const Banner = require('../common/banner');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
@@ -142,24 +143,38 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
+
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
-  styleSrc: ["'self'"],
+  // 'unsafe-inline' for vuetify/vue inline styles (also needed for hot module replacement in dev)
+  styleSrc: ["'self'", "'unsafe-inline'"],
   // need unsafe-eval for vue full build: https://vuejs.org/guide/best-practices/security.html#potential-dangers
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
 };
-if (process.env.NODE_ENV === 'development') {
-  // need unsafe inline styles for hot module replacement
-  cspDirectives.styleSrc.push("'unsafe-inline'");
-}
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: cspDirectives
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
+
+// resolve at config load, so a bad value warns at startup. helmet snapshots
+// the directives when it is constructed, so rebuild the header too.
+ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+});
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -201,8 +216,8 @@ function checkCookieToken (req, res, next) {
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/parliament/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/parliament/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -213,8 +228,8 @@ ArkimeUtil.logger(app);
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -1158,6 +1173,8 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
+
   Parliament.initialize({
     name: internals.parliamentName,
     prefix: ArkimeConfig.get('usersPrefix')
@@ -1726,12 +1743,35 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiU
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
 
+// Banner
+app.get('/parliament/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/parliament/api/banner', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiUpdateBanner);
+app.post('/parliament/api/banner/sync', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiSyncBanner);
+
 // user endpoints
 app.get('/parliament/api/user', User.apiGetUser);
 app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
 app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
 app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
+/**
+ * POST - /parliament/api/settings/update
+ *
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are dropped. Lives off `/api/user/` so a userId like `settings`
+ * isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/parliament/api/settings/update',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettings
+);
+
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
@@ -2180,6 +2220,8 @@ app.use((req, res, next) => {
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/'),
     environment: process.env.NODE_ENV,
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     manifest,
     footerConfig
   };

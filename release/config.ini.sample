@@ -19,6 +19,20 @@
 elasticsearch=ARKIME_ELASTICSEARCH
 # elasticsearchBasicAuth=
 
+# Optional: store/retrieve sessions in ClickHouse instead of OpenSearch/Elasticsearch.
+# When set, both capture and viewer route ONLY session SPI through ClickHouse;
+# users, files, fields, hunts, history, stats, shortcuts, views, crons, and
+# everything else still use the elasticsearch= cluster above. Initialize the
+# schema first with `db/ch.pl <url> init`.
+# Schemes: clickhouse:// or chttp:// for http, clickhouses:// or chttps:// for https
+# sessionsDbUrl=clickhouse://localhost:8123
+# clickhouseUser=
+# clickhousePassword=
+# clickhouseDatabase=arkime
+# clickhouseSessionsTable=sessions3
+# clickhouseMaxBatchDocs=200
+# clickhouseMaxBatchBytes=4194304
+
 # Where the user database is, the above is used if not set
 # For user/password use https://user:pass@host:port OR usersElasticsearchBasicAuth
 # usersElasticsearch=ARKIME_ELASTICSEARCH
@@ -85,8 +99,8 @@ maxFileSizeG=12
 # of inactivity.
 tcpTimeout=600
 
-# Arkime writes a session record after this many seconds, no matter if
-# active or inactive
+# Arkime writes a TCP session record after this many seconds, no matter if
+# active or inactive. Use the [protocol-settings] section below for other protocols.
 tcpSaveTimeout=720
 
 # UDP timeout value. Arkime assumes the UDP session is ended after this
@@ -97,7 +111,9 @@ udpTimeout=30
 # many seconds of inactivity.
 icmpTimeout=10
 
-# An approximate maximum number of active sessions Arkime will try and monitor
+# An approximate maximum number of active sessions Arkime will try and monitor,
+# across all packet threads. Use streams: in the [protocol-settings] section below
+# to change the share a single protocol gets.
 maxStreams=1000000
 
 # Arkime writes a session record after this many packets
@@ -165,7 +181,7 @@ dropGroup=daemon
 # in the Arkime user database. This implementation expects that
 # the users LDAP/AD groups (or similar) are populated into an
 # HTTP header by the Apache (or similar) referenced above.
-# The JSON in userAutoCreateTmpl is used to insert the new
+# The [user-auto-create] section is used to insert the new
 # user into the arkime database (if not already present)
 # and additional HTTP headers can be sourced from the request
 # to populate various fields.
@@ -185,7 +201,19 @@ dropGroup=daemon
 #
 #requiredAuthHeader="UserGroup"
 #requiredAuthHeaderVal="ARKIME_ACCESS"
-#userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
+
+# Each key is a user field, each value an expression evaluated once at create
+# time. Request headers and oidc/jwt claims are available on `vals`.
+#[user-auto-create]
+#userId=vals.arkime_user
+#userName=vals.http_auth_mail
+#enabled=true
+#webEnabled=true
+#headerAuthEnabled=true
+#emailSearch=true
+#createEnabled=false
+#removeEnabled=false
+#packetSearch=true
 
 # MCP (Model Context Protocol) ################################################
 # Exposes POST /mcp so an AI assistant can query Arkime. Off by default.
@@ -336,6 +364,18 @@ logFileCreation=true
 #10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is an ASN
 
 ##############################################################################
+# The session tshark tab runs tshark on the viewer to dissect a session's pcap.
+# tshark is always started with a scrubbed environment and an empty wireshark
+# profile dir, but its dissectors are still a large attack surface, so it can
+# also be wrapped in a sandbox. {tsharkDir} is the private dir holding the
+# fifo tshark reads and must be bind mounted in.
+#tsharkPath=/opt/arkime/bin/tshark;/usr/bin/tshark
+#tsharkMaxPackets=10000
+#tsharkTimeoutMs=30000
+#tsharkMaxConcurrent=3
+#tsharkWrapper=bwrap;--unshare-all;--die-with-parent;--new-session;--cap-drop;ALL;--ro-bind;/usr;/usr;--ro-bind-try;/lib;/lib;--ro-bind-try;/lib64;/lib64;--proc;/proc;--dev;/dev;--bind;{tsharkDir};{tsharkDir};--
+
+##############################################################################
 # It is possible to define in the config file extra http/email headers
 # to index. They are accessed using the expression http.<fieldname> and
 # email.<fieldname> with optional .cnt expressions
@@ -362,6 +402,34 @@ content-type=type:string;count:true
 [headers-email]
 x-priority=type:integer
 authorization=type:string
+
+
+##############################################################################
+# The [protocol-settings] section overrides the timeouts, maxPackets and maxStreams
+# per protocol. The "default" key is applied to every protocol first, then any
+# protocol specific keys.
+#
+# This is the only way to set save/closing/packets for a non TCP mProtocol. The
+# older settings only apply to the mProtocol they are named for - tcpTimeout,
+# tcpSaveTimeout, and tcpClosingTimeout are tcp only, udpTimeout is udp only,
+# etc - and this section overrides them.
+#
+# Possible config attributes
+#     idle:<seconds> = save the session after this many seconds of inactivity
+#     save:<seconds> = save the session after this many seconds, active or not.
+#                      0 disables, which is the default for everything but tcp
+#  closing:<seconds> = save the session this many seconds after it starts closing
+#  packets:<number>  = save the session after this many packets
+#  streams:<number>  = max active sessions for this mProtocol, across all packet
+#                      threads. tcp defaults to 1.25x maxStreams, udp and sctp
+#                      to maxStreams/16, everything else to maxStreams/256
+
+#[protocol-settings]
+#default=save:720;packets:10000
+#tcp=idle:600;closing:5
+#udp=idle:30
+#icmp=idle:10
+#arp=idle:60;packets:100;streams:10000
 
 
 ##############################################################################

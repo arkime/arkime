@@ -3,179 +3,233 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-3">
-    <arkime-loading v-if="loading && !error" />
+  <page-layout>
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <v-row
+            dense
+            align="center"
+            justify="start"
+            class="px-1 pt-2 pb-1 page-subnav">
+            <v-col cols="auto">
+              <h4 class="mb-0">
+                {{ $t('navigation.esadmin') }}
+              </h4>
+            </v-col>
+            <v-spacer />
+            <!-- select cluster -->
+            <v-col
+              cols="auto"
+              v-if="multiviewer">
+              <Clusters
+                @update-cluster="updateCluster"
+                :select-one="true" />
+            </v-col> <!-- /select cluster -->
+          </v-row>
+        </div>
+      </ArkimeCollapsible>
+    </template>
 
-    <arkime-error
-      v-if="error"
-      :message="error" />
+    <div class="arkime-container-fluid mt-3">
+      <arkime-loading v-if="loading && !error" />
 
-    <div v-if="!error">
-      <h5 class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle me-1" />
-        <span v-html="$t('stats.esAdmin.warningHtml')" />
-      </h5>
+      <arkime-error
+        v-if="error"
+        :message="error" />
 
-      <div
-        class="alert alert-danger"
-        v-if="interactionError">
-        <span class="fa fa-exclamation-triangle me-1" />
-        <strong>{{ $t('common.error') }}:</strong>
-        {{ interactionError }}
-        <button
-          type="button"
-          :aria-label="$t('common.dismiss')"
-          class="btn-close pull-right"
-          @click="interactionError = ''"
-          data-dismiss="alert" />
-      </div>
+      <div v-if="!error">
+        <v-alert
+          type="warning"
+          variant="tonal"
+          density="compact">
+          <span v-html="$t('stats.esAdmin.warningHtml')" />
+        </v-alert>
 
-      <div
-        class="alert alert-success"
-        v-if="interactionSuccess">
-        <span class="fa fa-check me-1" />
-        <strong>{{ $t('common.success') }}:</strong>
-        {{ interactionSuccess }}
-        <button
-          type="button"
-          :aria-label="$t('common.dismiss')"
-          class="btn-close pull-right"
-          @click="interactionSuccess = ''"
-          data-dismiss="alert" />
-      </div>
+        <v-alert
+          v-if="interactionError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          closable
+          class="mt-2"
+          @click:close="interactionError = ''">
+          <strong>{{ $t('common.error') }}:</strong>
+          {{ interactionError }}
+        </v-alert>
 
-      <h3>
-        {{ $t('stats.esAdmin.esClusterSettings') }}
-        <span class="pull-right">
-          <button
-            type="button"
+        <v-alert
+          v-if="interactionSuccess"
+          type="success"
+          variant="tonal"
+          density="compact"
+          closable
+          class="mt-2"
+          @click:close="interactionSuccess = ''">
+          <strong>{{ $t('common.success') }}:</strong>
+          {{ interactionSuccess }}
+        </v-alert>
+
+        <h3 class="d-flex align-center mt-3">
+          <span class="flex-grow-1">{{ $t('stats.esAdmin.esClusterSettings') }}</span>
+          <v-btn
+            variant="flat"
+            size="large"
+            color="primary"
+            class="ms-1"
             @click="retryFailed"
-            id="retryFailed"
-            class="btn btn-theme-primary ms-1">
+            id="retryFailed">
             {{ $t('stats.esAdmin.retryFailed') }}
-            <BTooltip target="retryFailed">{{ $t('stats.esAdmin.retryFailedTip') }}</BTooltip>
-          </button>
-          <button
-            type="button"
+            <v-tooltip activator="#retryFailed">
+              {{ $t('stats.esAdmin.retryFailedTip') }}
+            </v-tooltip>
+          </v-btn>
+          <v-btn
+            variant="flat"
+            size="large"
+            color="secondary"
+            class="ms-1"
             @click="flush"
-            id="flush"
-            class="btn btn-theme-secondary ms-1">
+            id="flush">
             {{ $t('stats.esAdmin.flush') }}
-            <BTooltip target="flush">{{ $t('stats.esAdmin.flushTip') }}</BTooltip>
-          </button>
-          <button
-            type="button"
+            <v-tooltip activator="#flush">
+              {{ $t('stats.esAdmin.flushTip') }}
+            </v-tooltip>
+          </v-btn>
+          <v-btn
+            variant="flat"
+            size="large"
+            color="tertiary"
+            class="ms-1"
             @click="unflood"
-            id="unflood"
-            class="btn btn-theme-tertiary ms-1">
+            id="unflood">
             {{ $t('stats.esAdmin.unflood') }}
-            <BTooltip target="unflood">{{ $t('stats.esAdmin.unfloodTip') }}</BTooltip>
-          </button>
-          <button
-            type="button"
+            <v-tooltip activator="#unflood">
+              {{ $t('stats.esAdmin.unfloodTip') }}
+            </v-tooltip>
+          </v-btn>
+          <v-btn
+            variant="flat"
+            size="large"
+            color="warning"
+            class="ms-1"
             @click="clearCache"
-            id="clearCache"
-            class="btn btn-theme-quaternary ms-1">
+            id="clearCache">
             {{ $t('stats.esAdmin.clearCache') }}
-            <BTooltip target="clearCache">{{ $t('stats.esAdmin.clearCacheTip') }}</BTooltip>
-          </button>
-        </span>
-      </h3>
+            <v-tooltip activator="#clearCache">
+              {{ $t('stats.esAdmin.clearCacheTip') }}
+            </v-tooltip>
+          </v-btn>
+        </h3>
 
-      <hr>
+        <hr>
 
-      <BRow
-        v-for="setting in settings"
-        :key="setting.key"
-        class="mt-2">
-        <BCol>
-          <BInputGroup>
-            <BInputGroupText :id="`setting-${setting.key}`">
-              {{ setting.name }}
-              <BTooltip :target="`setting-${setting.key}`">
-                {{ setting.key }}
-              </BTooltip>
-            </BInputGroupText>
-            <input
-              type="text"
-              @input="setting.changed = true"
-              class="form-control"
-              v-model="setting.current"
-              :class="{'is-invalid':setting.error || (setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all')}">
-            <BInputGroupText>
-              {{ setting.type }}
-              <small class="ms-2">
-                (<a
-                  :href="setting.url"
-                  class="no-decoration"
-                  target="_blank">
-                  Learn more
-                </a>)
-              </small>
-            </BInputGroupText>
-            <button
-              v-if="setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all'"
-              type="button"
-              @click="restoreToAll(setting)"
-              :id="`restore-${setting.key}`"
-              :aria-label="$t('stats.esAdmin.restoreAllocationTip')"
-              class="btn btn-warning">
-              <span class="fa fa-undo" />
-              <BTooltip
-                :target="`restore-${setting.key}`">
-                {{ $t('stats.esAdmin.restoreAllocationTip') }}
-              </BTooltip>
-            </button>
-            <button
-              type="button"
-              :disabled="!setting.changed"
-              @click="cancel(setting)"
-              class="btn btn-warning">
-              {{ $t('common.cancel') }}
-            </button>
-            <button
-              type="button"
-              :disabled="!setting.changed"
-              @click="save(setting)"
-              class="btn btn-theme-primary">
-              {{ $t('common.save') }}
-            </button>
-          </BInputGroup>
-          <div
-            v-if="setting.error"
-            class="form-text text-danger">
-            <span class="fa fa-exclamation-triangle" />
-            {{ setting.error }}
-          </div>
-        </BCol>
-      </BRow>
+        <v-row
+          v-for="setting in settings"
+          :key="setting.key"
+          class="mt-2">
+          <v-col cols="12">
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span
+                :id="`setting-${setting.key}`"
+                class="arkime-input-label">
+                {{ setting.name }}
+                <v-tooltip :activator="`[id='setting-${setting.key}']`">
+                  {{ setting.key }}
+                </v-tooltip>
+              </span>
+              <input
+                type="text"
+                @input="setting.changed = true"
+                class="arkime-input-control"
+                v-model="setting.current"
+                :class="{'is-invalid':setting.error || (setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all')}">
+              <span class="arkime-input-label">
+                {{ setting.type }}
+                <small class="ms-2">
+                  (<a
+                    :href="setting.url"
+                    class="no-decoration"
+                    target="_blank">
+                    Learn more
+                  </a>)
+                </small>
+              </span>
+              <v-btn
+                v-if="setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all'"
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :id="`restore-${setting.key}`"
+                :aria-label="$t('stats.esAdmin.restoreAllocationTip')"
+                @click="restoreToAll(setting)">
+                <v-icon icon="mdi-undo" />
+                <v-tooltip :activator="`[id='restore-${setting.key}']`">
+                  {{ $t('stats.esAdmin.restoreAllocationTip') }}
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :disabled="!setting.changed"
+                @click="cancel(setting)">
+                {{ $t('common.cancel') }}
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="primaryBtnStyle"
+                class="me-1"
+                :disabled="!setting.changed"
+                @click="save(setting)">
+                {{ $t('common.save') }}
+              </v-btn>
+            </div>
+            <div
+              v-if="setting.error"
+              class="form-text text-danger">
+              <v-icon icon="mdi-alert" />
+              {{ setting.error }}
+            </div>
+          </v-col>
+        </v-row>
 
-      <div class="alert alert-info mt-1">
-        <span class="fa fa-info-circle me-1" />
-        <span v-html="$t('stats.esAdmin.controlHtml')" />
+        <v-alert
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mt-4 mb-4">
+          <span v-html="$t('stats.esAdmin.controlHtml')" />
+        </v-alert>
       </div>
     </div>
-  </div>
+  </page-layout>
 </template>
 
 <script>
 import Utils from '../utils/utils';
+import Clusters from '../utils/Clusters.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
+import PageLayout from '../utils/PageLayout.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import StatsService from './StatsService.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
 export default {
   name: 'EsAdmin',
-  props: {
-    cluster: {
-      type: String,
-      default: ''
-    }
-  },
   components: {
+    Clusters,
     ArkimeError,
-    ArkimeLoading
+    PageLayout,
+    ArkimeLoading,
+    ArkimeCollapsible
   },
   data: function () {
     return {
@@ -184,8 +238,29 @@ export default {
       interactionError: '',
       interactionSuccess: '',
       settings: {},
+      multiviewer: this.$constants.MULTIVIEWER,
       query: {
-        cluster: this.cluster || undefined
+        // prefer the already-narrowed store selection so arriving from a
+        // multi-cluster Stats page doesn't fire a throwaway multi-cluster load
+        cluster: this.$store.state.esCluster.selectedCluster?.join(',') ||
+          this.$route.query.cluster || undefined
+      },
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -193,13 +268,21 @@ export default {
     this.loadData();
   },
   watch: {
-    cluster: function () {
-      this.query.cluster = this.cluster;
+    // Clusters only emits updateCluster on its select-one override, an ordinary
+    // pick just pushes the route, so follow the query too
+    '$route.query.cluster': function (cluster) {
+      if (cluster === this.query.cluster) { return; }
+      this.query.cluster = cluster;
       this.loadData();
     }
   },
   methods: {
     /* exposed page functions ------------------------------------ */
+    updateCluster: function ({ cluster }) {
+      if (cluster === this.query.cluster) { return; }
+      this.query.cluster = cluster;
+      this.loadData();
+    },
     async save (setting) {
       if (!setting.current.match(setting.regex)) {
         setting.error = `Invalid format, this setting must be: ${setting.type}`;

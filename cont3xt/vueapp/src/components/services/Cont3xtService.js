@@ -1,8 +1,12 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import dr from 'defang-refang';
 
 import C3Observable from '@/utils/Observable';
 import store from '@/store';
-import setReqHeaders from '@real_common/setReqHeaders';
+import setReqHeaders from '@common/setReqHeaders';
 
 export default {
   /**

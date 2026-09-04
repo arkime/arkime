@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <v-btn>
     <v-icon
@@ -23,7 +27,7 @@
               {{ tooltip }}
             </v-tooltip>
             <v-icon
-              class="mr-1"
+              class="me-1"
               :icon="icon" />
             {{ text }}
           </v-btn>

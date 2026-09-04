@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex align-center">
     <v-btn
-      class="mr-1 skinny-search-row-btn"
+      class="me-1 skinny-search-row-btn"
       tabindex="-1"
       color="secondary"
       :style="btnStyle">
@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-text-field
       variant="outlined"
       label="Start"
-      class="mr-1"
+      class="me-1"
       :class="[inputClass]"
       type="text"
       tabindex="0"
@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-text-field
       variant="outlined"
       label="End"
-      class="mr-1"
+      class="me-1"
       :class="[inputClass]"
       type="text"
       tabindex="0"
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
       <html-tooltip
         :html="placeHolderTip"
         target-id="timerange-input-help" />
-      <span class="pl-1">
+      <span class="ps-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>
     </span>

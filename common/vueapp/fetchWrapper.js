@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import store from '@/store';
 import setReqHeaders from './setReqHeaders';
 
@@ -86,7 +90,17 @@ export async function fetchWrapper (options) {
 
   // catch bad status codes and throw an error
   if (response.status < 200 || response.status >= 300) {
-    throw new ArkimeError(data?.text || response.statusText || 'bad response status', data);
+    // Error bodies aren't always JSON-typed (e.g. text/plain or
+    // application/x-ndjson), so a { success, text } body can arrive as a
+    // string. Parse it so the specific message survives instead of falling
+    // back to a bare "Internal Server Error".
+    let errData = data;
+    if (typeof errData === 'string' && /^\s*[[{]/.test(errData)) {
+      try { errData = JSON.parse(errData); } catch (e) { /* not JSON, keep the text */ }
+    }
+    const errText = (errData && typeof errData === 'object' ? errData.text : errData) ||
+      response.statusText || 'bad response status';
+    throw new ArkimeError(errText, (errData && typeof errData === 'object') ? errData : undefined);
   }
 
   if (data?.data?.bsqErr) { // check for a bsq error

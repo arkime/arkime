@@ -17,6 +17,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 7.0.0 requires NodeJS >= 24.0.0 or < 25
   * Arkime >= 6.0.0 requires NodeJS >= 22.15.0 or < 23
   * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
@@ -34,6 +35,69 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
+
+7.0.0 2026/10/xx
+## Breaking
+  - Session columns, info field config and spiview layouts moved from the user record to the shareables index so they can be
+          shared. db.pl upgrade copies existing ones over for you, or run db.pl <host:port> shareables-import all
+          by hand; the originals are left in place so Arkime 6 keeps working, and either can be re-run.
+  - Removed the /api/user/layouts/:type APIs, layouts are shareables now. /api/user/config/sessions no longer
+          returns colConfigs or infoConfigs and /api/user/config/spiview no longer returns fieldConfigs
+  - wiseService no longer generates a random config pin code, use --webcode <code> or each user's own TOTP code.
+  - Removed the simpleDEKEncoding setting, the DEK is now always encrypted with aes-256-gcm.
+  - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead.
+  - offlineFilenameRegex default now also matches .pcapng files (previously .pcap/.cap only)
+  - Capture arkime_packet_set_dltsnap() was replaced by arkime_packet_set_interface(), so custom readers/plugins must be updated and rebuilt
+  - Capture ARKIME_HTTP_PRIORITY_DROPABLE was renamed to ARKIME_HTTP_PRIORITY_DROPPABLE, fixing the spelling
+  - #4080 Removed the esAdminUsers setting; the ES admin page and the ES index/shard/task actions now require the dbAdmin role
+          (superAdmin includes it, arkimeAdmin no longer grants it), eg db.pl <host:port> users-update '<userId glob>' --addRole dbAdmin.
+          dbAdmin implies no other role, so pair it with arkimeUser, which viewer requires for any access
+  - #4080 Removed the derived esAdminUser field from /api/user/current, check the user's roles for dbAdmin instead
+  - #4210 The packet threads used maxPackets instead of maxPacketsInQueue when deciding the packet queue was
+          75% full, so session command processing was throttled once a thread had 7500 packets queued rather
+          than 150000. Busy sensors that sat above the old threshold will now do more work per packet
+  - #4210 lldp, xid, isis, esis, igmp and pim used to record all their traffic as a single session per capture
+          node, they now create a session per talker pair like every other protocol - by src/dst mac for the
+          ethernet protocols and by src/dst ip for igmp and pim. Expect more, smaller sessions for these
+  - Removed the demoMode setting and User.isDemoMode(); roles do not replace it, so put a shared instance behind an external identity provider
+  - The _flipSrcDst rule op used to only swap the ips and ports, leaving the rest of the session pointing the old way.
+          It now also swaps the per-direction data: packets, bytes, databytes, payload8, mac, oui, dscp, ttl,
+          tcp seq/state tracking and zero window counts, so flipped sessions are saved self consistent
+## Release
+  - #4221 Node 24.20.0
+## All
+  - Add a "newer release available" check to the version menu in viewer, cont3xt, parliament and wise. It only ever sends
+          the major version. Controlled by the new checkForUpdates setting: off, manual (the default, nothing is sent until 
+	  the user clicks) or auto (checks once a day), plus updateCheckUrl, which can point at an internal mirror.
+## Capture/Viewer
+  - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
+## Capture
+  - New xdp pcapReadMethod that reads with AF_XDP sockets, one socket and thread per nic receive queue. Linux only, requires libxdp at build time
+  - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
+  - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
+  - #4210 Add the [protocol-settings] section to set idle/save/closing/packets per mProtocol, eg tcp=idle:600;closing:5
+  - #4210 Add streams: to [protocol-settings] to set maxStreams per mProtocol, the stream limit is now compared against
+          the same per mProtocol count it bounds instead of a broader per session type count
+  - #4210 Removed the internal session type (ses) concept, everything is now per mProtocol. Session hash tables,
+          stream limits and community id selection are all keyed by mProtocol, and arkime_mprotocol_register() takes
+          flags instead of a session type, so custom parsers/plugins must be updated and rebuilt
+  - #4210 Fix the stopped sessions state keying on only the session id, so a tcp and udp session on the same
+          5 tuple shared their stop saving/stop SPI state. The <node>.stoppedsessions file is now version 2 and
+          records the mProtocol, version 1 files are ignored on upgrade
+  - #4210 tcpSaveTimeout and tcpClosingTimeout now only apply to tcp; use [protocol-settings] for the other mProtocols.
+          tcpClosingTimeout previously also applied to sctp and to sessions closed by the closeNow rule action, so set
+          eg sctp=closing:<seconds> if you had changed it from the default of 5
+## Viewer
+  - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
+  - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
+  - #4235 Session and export PCAP downloads can now be saved as PCAPNG, which preserves every interface and link type; a PCAP download that would span multiple link types is refused with a message to use PCAPNG instead
+  - #4225 Add a sankey dashboard widget that shows flows between 1-3 fields
+  - #4225 Add a connections dashboard widget: a display-only src → dst force graph with hover details
+  - #4225 Fix the multi viewer Sessions timeline showing only one cluster's bytes and packets per bar
+  - #4225 Fix multi viewer top 10/20/50 lists showing the wrong rows when sorted by bytes or packets
+  - #4225 Fix the multi viewer Nodes page retention showing one cluster's oldest pcap when clusters share a node name
+  - #4080 Fix the ES Tasks "Cancel All" button posting to a non-existent route, it has 404ed since 6.0.0
+
 
 6.7.1 2026/08/xx
 ## Breaking

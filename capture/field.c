@@ -12,6 +12,7 @@
 #include "patricia.h"
 
 extern ArkimeConfig_t        config;
+extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
 LOCAL HASH_VAR(d_, fieldsByDb, ArkimeFieldInfo_t, 307);
 LOCAL HASH_VAR(e_, fieldsByExp, ArkimeFieldInfo_t, 307);
@@ -511,6 +512,23 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     }
 
     if (flags & ARKIME_FIELD_FLAG_FAKE) {
+        // A fake *Tokens field is the analyzed copy of its source field (ES
+        // fills it via copy_to); record the pairing so db.c can emit the
+        // tokens itself for sessions stores without that machinery. The
+        // source field must be defined before its Tokens field.
+        if (g_str_has_suffix(dbField, "Tokens")) {
+            const int srcLen = (int)strlen(dbField) - 6;
+            for (int p = 0; p < config.maxDbField; p++) {
+                if (config.fields[p] &&
+                    strncmp(config.fields[p]->dbFieldFull, dbField, srcLen) == 0 &&
+                    config.fields[p]->dbFieldFull[srcLen] == 0) {
+
+                    const char *lastDot = strrchr(dbField, '.');
+                    arkime_db_set_tokens_field(p, lastDot ? lastDot + 1 : dbField);
+                    break;
+                }
+            }
+        }
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
         arkime_field_free_info(minfo);
@@ -1596,6 +1614,23 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     }
 }
 /******************************************************************************/
+void arkime_field_swap(int pos1, int pos2, ArkimeSession_t *session)
+{
+    if (pos1 < 0 || pos2 < 0 || pos1 >= session->maxFields || pos2 >= session->maxFields)
+        return;
+
+    ArkimeField_t *field = session->fields[pos1];
+    session->fields[pos1] = session->fields[pos2];
+    session->fields[pos2] = field;
+
+    // jsonSize includes the db field name, which can differ in length across the pair
+    const int diff = (int)config.fields[pos1]->dbFieldLen - (int)config.fields[pos2]->dbFieldLen;
+    if (session->fields[pos1])
+        session->fields[pos1]->jsonSize += diff;
+    if (session->fields[pos2])
+        session->fields[pos2]->jsonSize -= diff;
+}
+/******************************************************************************/
 LOCAL int arkime_field_ops_should_run_int_op(const ArkimeFieldOp_t *op, int value)
 {
     switch (op->set) {
@@ -2086,14 +2121,14 @@ LOCAL void *arkime_field_getcb_databytes_dst(const ArkimeSession_t *session, int
 LOCAL void *arkime_field_getcb_community_id(const ArkimeSession_t *session, int UNUSED(pos))
 {
 
-    if (session->ses == SESSION_OTHER) {
-        return NULL;
-    }
+    const uint32_t mflags = mProtocols[session->mProtocol].flags;
     char *communityId;
-    if (session->ses == SESSION_ICMP) {
+    if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP) {
         communityId = arkime_db_community_id_icmp(session);
-    } else {
+    } else if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID) {
         communityId = arkime_db_community_id(session);
+    } else {
+        return NULL;
     }
     arkime_free_later(communityId, g_free);
 
