@@ -60,6 +60,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
+  - #4241 Fix the entire session pcap download ignoring the user's forced expression on segments
 ## WISE
   - Remove the PassiveTotal source, the API was retired by Microsoft
 
