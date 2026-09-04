@@ -1675,12 +1675,6 @@ export default {
   color: rgb(var(--v-theme-foreground));
 }
 
-/* +/- button on panel header */
-.collapsed > .when-opened,
-:not(.collapsed) > .when-closed {
-  display: none;
-}
-
 .spiview-page .protocol-value {
   margin-right: .75rem;
   font-size: .9rem;

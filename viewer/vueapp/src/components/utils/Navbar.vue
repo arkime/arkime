@@ -113,7 +113,7 @@ export default {
         'arkime', 'sessions', 'spiview', 'spigraph', 'hunt', 'featherprint',
         'files', 'stats', 'history', 'upload', 'settings'
       ],
-      adminOrder: ['users', 'roles', 'banner', 'esadmin'],
+      adminOrder: ['users', 'roles', 'banner', 'esadmin', 'featherprintadmin'],
       // active-pill colors -- use Arkime CSS vars so the pill flips
       // between themes (white-on-dark in light theme, dark-on-light in
       // dark theme) without us picking specific colors per theme.
@@ -145,6 +145,7 @@ export default {
         roles: { title: this.$t('navigation.roles'), link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
         banner: { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' },
         esadmin: { title: this.$t('navigation.esadmin'), link: 'esadmin', role: 'dbAdmin', name: 'EsAdmin' },
+        featherprintadmin: { title: this.$t('navigation.featherprintadmin'), link: 'featherprintadmin', role: 'arkimeAdmin', name: 'FeatherprintAdmin' },
         hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' },
         featherprint: { title: this.$t('navigation.featherprint'), link: 'featherprint', name: 'Featherprint' }
       };

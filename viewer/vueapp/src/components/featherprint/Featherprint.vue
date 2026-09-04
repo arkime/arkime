@@ -3,514 +3,537 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="pa-3">
-    <h2 class="mb-3">
-      {{ $t('navigation.featherprint') }}
-      <span class="text-caption text-disabled ms-2">— {{ section }}</span>
-    </h2>
+  <page-layout class="featherprint-content">
+    <template #chrome>
+      <ArkimeCollapsible>
+        <div class="page-toolbar">
+          <v-row class="g-1 featherprint-form px-1 pt-2 pb-1 align-center justify-start page-subnav">
+            <!-- tracked: name/ip/mac filter -->
+            <v-col v-if="section === 'tracked'">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <span class="arkime-input-label arkime-input-label-fw">
+                  <v-icon
+                    icon="mdi-magnify"
+                    v-if="!shiftKeyHold" />
+                  <span
+                    v-else
+                    class="query-shortcut">
+                    Q
+                  </span>
+                </span>
+                <input
+                  type="text"
+                  class="arkime-input-control"
+                  v-model="filter"
+                  v-focus="focusInput"
+                  @blur="onOffFocus"
+                  :placeholder="$t('featherprint.trackedFilterPlaceholder')">
+                <v-btn
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
+                  :disabled="!filter"
+                  :aria-label="$t('common.clear')"
+                  @click="filter = ''">
+                  <v-icon icon="mdi-close" />
+                </v-btn>
+              </div>
+            </v-col>
 
-    <v-btn-toggle
-      :model-value="section"
-      @update:model-value="goToSection"
-      density="compact"
-      variant="text"
-      color="primary"
-      mandatory
-      class="mb-3">
-      <v-btn value="tracked">
-        <v-icon
-          start
-          icon="mdi-format-list-bulleted" />
-        {{ $t('featherprint.trackedIps') }}
-      </v-btn>
-      <v-btn value="lookup">
-        <v-icon
-          start
-          icon="mdi-magnify" />
-        {{ $t('featherprint.lookup') }}
-      </v-btn>
-      <v-btn value="alerts">
-        <v-icon
-          start
-          icon="mdi-alert-circle-outline" />
-        {{ $t('featherprint.alerts') }}
-        <v-chip
-          v-if="openAlertCount"
-          size="x-small"
-          class="ms-2">
-          {{ openAlertCount }}
-        </v-chip>
-      </v-btn>
-      <v-btn
-        v-if="isAdmin"
-        value="admin">
-        <v-icon
-          start
-          icon="mdi-cog-outline" />
-        {{ $t('navigation.admin') }}
-      </v-btn>
-    </v-btn-toggle>
+            <!-- lookup: ip + range + go -->
+            <template v-else-if="section === 'lookup'">
+              <v-col>
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label arkime-input-label-fw">
+                    <v-icon icon="mdi-magnify" />
+                  </span>
+                  <input
+                    type="text"
+                    class="arkime-input-control"
+                    v-model="lookupIp"
+                    v-focus="focusInput"
+                    @blur="onOffFocus"
+                    @keydown.stop.prevent.enter="doLookup"
+                    :placeholder="$t('featherprint.ipPlaceholder')">
+                  <v-btn
+                    variant="text"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    class="arkime-input-append-btn"
+                    :disabled="!lookupIp"
+                    :aria-label="$t('common.clear')"
+                    @click="lookupIp = ''">
+                    <v-icon icon="mdi-close" />
+                  </v-btn>
+                </div>
+              </v-col>
+              <v-col cols="auto">
+                <div class="arkime-input-group">
+                  <span class="arkime-input-label">
+                    {{ $t('featherprint.timeRangeLabel') }}
+                  </span>
+                  <select
+                    class="arkime-input-control"
+                    v-model="lookupRange">
+                    <option
+                      v-for="opt in rangeOptions"
+                      :key="opt.seconds"
+                      :value="opt.seconds">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+              </v-col>
+              <v-col cols="auto">
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  :loading="lookupBusy"
+                  :disabled="!lookupIp"
+                  @click="doLookup">
+                  {{ $t('featherprint.lookup') }}
+                </v-btn>
+              </v-col>
+            </template>
 
-    <v-card
-      class="mb-3">
-      <v-card-text class="d-flex align-center">
-        <div class="flex-grow-1">
-          {{ $t('featherprint.modeLabel') }} <strong>viewer-resident</strong> |
-          {{ $t('featherprint.engineLabel') }} <strong>{{ engineMode }}</strong>
-          <span
-            v-if="monitorState"
-            class="text-caption text-disabled ms-2">
-            | {{ $t('featherprint.cursorInfo', {
-              cursor: fmtTs(monitorState.lpValue * 1000),
-              first: fmtTs(monitorState.firstProcessedTs),
-              last: fmtTs(monitorState.lastProcessedTs)
-            }) }}
-          </span>
+            <!-- alerts: text filter + ack state -->
+            <template v-else-if="section === 'alerts'">
+              <v-col>
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label arkime-input-label-fw">
+                    <v-icon icon="mdi-magnify" />
+                  </span>
+                  <input
+                    type="text"
+                    class="arkime-input-control"
+                    v-model="alertSearch"
+                    v-focus="focusInput"
+                    @blur="onOffFocus"
+                    :placeholder="$t('featherprint.alertFilterPlaceholder')">
+                  <v-btn
+                    variant="text"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    class="arkime-input-append-btn"
+                    :disabled="!alertSearch"
+                    :aria-label="$t('common.clear')"
+                    @click="alertSearch = ''">
+                    <v-icon icon="mdi-close" />
+                  </v-btn>
+                </div>
+              </v-col>
+              <v-col cols="auto">
+                <div class="arkime-input-group">
+                  <span class="arkime-input-label">
+                    {{ $t('featherprint.colAcked') }}
+                  </span>
+                  <select
+                    class="arkime-input-control"
+                    v-model="alertFilter">
+                    <option value="open">
+                      {{ $t('featherprint.filterOpenCount', { count: openAlertCount }) }}
+                    </option>
+                    <option value="acked">
+                      {{ $t('featherprint.filterAcked') }}
+                    </option>
+                    <option value="all">
+                      {{ $t('common.all') }}
+                    </option>
+                  </select>
+                </div>
+              </v-col>
+            </template>
+
+            <!-- auto refresh interval -->
+            <v-col cols="auto">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">{{ $t('featherprint.refreshEvery') }}</span>
+                <select
+                  class="arkime-input-control"
+                  v-model="refreshInterval">
+                  <option value="5000">
+                    {{ $t('common.secondCount', 5) }}
+                  </option>
+                  <option value="15000">
+                    {{ $t('common.secondCount', 15) }}
+                  </option>
+                  <option value="30000">
+                    {{ $t('common.secondCount', 30) }}
+                  </option>
+                  <option value="60000">
+                    {{ $t('common.minuteCount', 1) }}
+                  </option>
+                  <option value="600000">
+                    {{ $t('common.minuteCount', 10) }}
+                  </option>
+                  <option value="0">
+                    {{ $t('common.never') }}
+                  </option>
+                </select>
+              </div>
+            </v-col>
+
+            <!-- manual refresh -->
+            <v-col cols="auto">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    :style="tertiaryBtnStyle"
+                    @click="refreshAll">
+                    <v-icon
+                      start
+                      icon="mdi-refresh" />
+                    {{ $t('common.refresh') }}
+                  </v-btn>
+                </template>
+                {{ $t('featherprint.refreshTip') }}
+              </v-tooltip>
+            </v-col>
+
+            <!-- monitor cursor -->
+            <v-col
+              cols="auto"
+              v-if="monitorState">
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <v-icon
+                    v-bind="props"
+                    icon="mdi-progress-clock"
+                    size="small"
+                    class="cursor-help" />
+                </template>
+                {{ $t('featherprint.cursorInfo', {
+                  cursor: fmtTs(monitorState.lpValue * 1000),
+                  first: fmtTs(monitorState.firstProcessedTs),
+                  last: fmtTs(monitorState.lastProcessedTs)
+                }) }}
+              </v-tooltip>
+            </v-col>
+          </v-row>
         </div>
-        <v-switch
-          v-model="autoRefresh"
-          color="primary"
-          density="compact"
-          hide-details
-          :label="$t('featherprint.autoRefreshLabel')"
-          class="me-3" />
-        <v-btn
-          size="small"
-          variant="text"
-          @click="refreshAll">
-          {{ $t('common.refresh') }}
-        </v-btn>
-      </v-card-text>
-    </v-card>
+      </ArkimeCollapsible>
 
-    <v-card
-      v-if="section === 'lookup'"
-      class="mb-3">
-      <v-card-title class="pb-1">
-        {{ $t('featherprint.lookupTitle') }}
-        <span class="text-caption text-disabled ms-2">
-          {{ $t('featherprint.lookupTransientNote') }}
-        </span>
-      </v-card-title>
-      <v-card-text class="d-flex align-center flex-wrap ga-2">
-        <v-text-field
-          v-model="lookupIp"
-          density="compact"
-          variant="outlined"
-          hide-details
-          :placeholder="$t('featherprint.ipPlaceholder')"
-          style="max-width: 260px;"
-          @keyup.enter="doLookup" />
-        <v-select
-          v-model="lookupRange"
-          :items="rangeOptions"
-          item-title="label"
-          item-value="seconds"
-          density="compact"
-          variant="outlined"
-          hide-details
-          :label="$t('featherprint.timeRangeLabel')"
-          style="max-width: 200px;" />
-        <v-btn
-          color="primary"
-          size="small"
-          :loading="lookupBusy"
-          :disabled="!lookupIp"
-          @click="doLookup">
-          {{ $t('featherprint.lookup') }}
-        </v-btn>
-        <span
-          v-if="lookupResultTs"
-          class="text-caption text-disabled ms-2">
-          {{ $t('featherprint.lookedUpAt', { ts: fmtTs(lookupResultTs) }) }}
-        </span>
-      </v-card-text>
-    </v-card>
-
-    <v-card
-      class="mb-3"
-      v-if="error">
-      <v-card-text class="text-error">
-        {{ error }}
-      </v-card-text>
-    </v-card>
-
-    <v-card
-      v-if="section === 'admin' && isAdmin"
-      class="mb-3">
-      <v-card-title class="pb-1">
-        {{ $t('navigation.admin') }}
-        <v-btn
-          size="x-small"
-          variant="tonal"
-          class="ms-2"
-          @click="showConfig = !showConfig">
-          {{ showConfig ? $t('featherprint.hideSubnets') : $t('featherprint.viewSubnets') }}
-        </v-btn>
-        <v-btn
-          size="x-small"
-          color="primary"
-          variant="tonal"
-          class="ms-2"
-          :loading="tickBusy"
-          @click="runTickNow">
-          {{ $t('featherprint.runTickNow') }}
-        </v-btn>
-        <span
-          v-if="tickStatus"
-          class="text-caption text-disabled ms-3">{{ tickStatus }}</span>
-      </v-card-title>
-      <v-card-text v-if="showConfig">
-        <div v-if="!adminConfig">
-          {{ $t('common.loading') }}
-        </div>
-        <div v-else>
-          <strong>{{ $t('featherprint.defaultsLabel') }}</strong>
-          <code>{{ JSON.stringify(adminConfig.defaults) }}</code>
-          <div class="mt-2">
-            <strong>{{ $t('featherprint.subnetsCountLabel', { count: adminConfig.subnets.length }) }}</strong>
-          </div>
-          <v-table
-            density="compact"
-            class="mt-1">
-            <thead>
-              <tr><th>{{ $t('featherprint.colCidr') }}</th><th>{{ $t('featherprint.colFlags') }}</th></tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="s in adminConfig.subnets"
-                :key="s.cidr">
-                <td><code>{{ s.cidr }}</code></td>
-                <td><code>{{ JSON.stringify(s.flags) }}</code></td>
-              </tr>
-              <tr v-if="!adminConfig.subnets.length">
-                <td
-                  colspan="2"
-                  class="text-disabled">
-                  {{ $t('featherprint.noSubnetsConfigured') }}
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-          <div class="mt-2">
-            <strong>{{ $t('featherprint.settingsLabel') }}</strong>
-          </div>
-          <pre class="text-caption">{{ JSON.stringify(adminConfig.settings, null, 2) }}</pre>
-        </div>
-      </v-card-text>
-    </v-card>
-
-    <v-card
-      v-if="section === 'alerts'"
-      class="mb-3">
-      <v-card-title class="d-flex align-center">
-        {{ $t('featherprint.alerts') }}
-        <v-chip
-          size="x-small"
-          class="ms-2">
-          {{ filteredAlerts.length }} / {{ alerts.length }}
-        </v-chip>
-        <v-spacer />
+      <!-- tab strip: outside the collapsible so it survives a collapsed toolbar -->
+      <div class="page-tab-bar">
         <v-btn-toggle
-          v-model="alertFilter"
+          :model-value="section"
+          @update:model-value="goToSection"
           density="compact"
-          mandatory
+          variant="text"
           color="primary"
-          variant="outlined">
-          <v-btn
-            value="open"
-            size="small">
-            {{ $t('featherprint.filterOpenCount', { count: openAlertCount }) }}
+          mandatory
+          class="page-tab-strip">
+          <v-btn value="tracked">
+            <v-icon
+              start
+              icon="mdi-format-list-bulleted" />
+            {{ $t('featherprint.trackedIps') }}
           </v-btn>
-          <v-btn
-            value="acked"
-            size="small">
-            {{ $t('featherprint.filterAcked') }}
+          <v-btn value="lookup">
+            <v-icon
+              start
+              icon="mdi-magnify" />
+            {{ $t('featherprint.lookup') }}
           </v-btn>
-          <v-btn
-            value="all"
-            size="small">
-            {{ $t('common.all') }}
+          <v-btn value="alerts">
+            <v-icon
+              start
+              icon="mdi-alert-circle-outline" />
+            {{ $t('featherprint.alerts') }}
+            <v-chip
+              v-if="openAlertCount"
+              size="x-small"
+              class="ms-2">
+              {{ openAlertCount }}
+            </v-chip>
           </v-btn>
         </v-btn-toggle>
-      </v-card-title>
-      <v-card-text class="py-1">
-        <v-text-field
-          v-model="alertSearch"
-          density="compact"
-          variant="outlined"
-          hide-details
-          clearable
-          :placeholder="$t('featherprint.alertFilterPlaceholder')"
-          prepend-inner-icon="mdi-magnify" />
-      </v-card-text>
-      <v-data-table
-        :headers="alertHeaders"
-        :items="filteredAlerts"
-        :items-per-page="25"
-        :items-per-page-options="[10, 25, 50, 100, -1]"
-        :sort-by="[{ key: 'ts', order: 'desc' }]"
-        density="compact"
-        item-value="_id"
-        class="featherprint-alert-table"
-        must-sort
-        hover>
-        <template #item.ts="{ item }">
-          {{ fmtTs(item.ts) }}
-        </template>
-        <template #item.kind="{ item }">
-          <code>{{ item.kind }}</code>
-        </template>
-        <template #item.ip="{ item }">
-          <a
-            href="#"
-            @click.prevent="goToInfoForIp(item.ip)">{{ item.ip }}</a>
-        </template>
-        <template #item.details="{ item }">
-          <span class="text-caption">{{ describeHistory(item) }}</span>
-        </template>
-        <template #item.acked="{ item }">
-          <span
-            v-if="item.acked"
-            class="text-success">
-            <v-icon
+      </div>
+    </template>
+
+    <!-- featherprint content -->
+    <div class="mt-4 px-3">
+      <!-- alerts -->
+      <div
+        v-if="section === 'alerts'"
+        class="ms-2 me-2">
+        <arkime-table
+          id="featherprintAlertsTable"
+          :data="sortedAlerts"
+          :load-data="loadAlertTable"
+          :columns="alertColumns"
+          :no-results="true"
+          :action-column="true"
+          :desc="alertSort.desc"
+          :sort-field="alertSort.field"
+          :no-results-msg="noAlertsMsg"
+          page="featherprintAlerts"
+          table-animation="list"
+          table-state-name="featherprintAlertsCols"
+          table-widths-state-name="featherprintAlertsColWidths">
+          <template #actions="{ item }">
+            <v-btn
+              v-if="!item.acked"
+              color="primary"
+              variant="flat"
               size="small"
-              icon="mdi-check-circle" />
-            {{ item.ackedBy || $t('featherprint.unknownUser') }}
+              density="comfortable"
+              icon
+              :loading="ackBusy === item._id"
+              :aria-label="$t('featherprint.ack')"
+              @click.stop="ack(item._id)">
+              <v-icon icon="mdi-check" />
+            </v-btn>
+          </template>
+          <template #cell-ts="{ item }">
+            {{ fmtTs(item.ts) }}
+          </template>
+          <template #cell-kind="{ item }">
+            <code>{{ item.kind }}</code>
+          </template>
+          <template #cell-ip="{ item }">
+            <a
+              href="#"
+              @click.prevent="goToInfoForIp(item.ip)">{{ item.ip }}</a>
+          </template>
+          <template #cell-details="{ item }">
+            <small>{{ item.details }}</small>
+          </template>
+          <template #cell-acked="{ item }">
             <span
-              v-if="item.ackedAt"
-              class="text-caption ms-1">{{ fmtTs(item.ackedAt) }}</span>
-          </span>
-          <span
-            v-else
-            class="text-disabled">—</span>
-        </template>
-        <template #item.actions="{ item }">
-          <v-btn
-            v-if="!item.acked"
-            size="x-small"
-            variant="tonal"
-            color="primary"
-            :loading="ackBusy === item._id"
-            @click.stop="ack(item._id)">
-            {{ $t('featherprint.ack') }}
-          </v-btn>
-        </template>
-        <template #no-data>
-          <span class="text-disabled">
-            <span v-if="alertFilter === 'open'">{{ $t('featherprint.noOpenAlerts') }}</span>
-            <span v-else-if="alertFilter === 'acked'">{{ $t('featherprint.noAckedAlerts') }}</span>
-            <span v-else>{{ $t('featherprint.noAlerts') }}</span>
-          </span>
-        </template>
-      </v-data-table>
-    </v-card>
-
-    <div v-if="section === 'tracked' || section === 'lookup'">
-      <v-card
-        v-if="detail"
-        class="mb-3">
-        <v-card-title>
-          <arkime-session-field
-            :field="ipFieldDef"
-            expr="ip"
-            :value="detail.ip"
-            :pull-left="true"
-            :session-btn="true" />
-        </v-card-title>
-        <v-card-text>
-          <div v-if="detail.classification">
-            <strong>{{ $t('featherprint.classificationLabel') }}</strong>
-            {{ detail.classification }}
-          </div>
-          <div><strong>{{ $t('featherprint.firstSeenLabel') }}</strong> {{ fmtTs(detail.firstSeen) }}</div>
-          <div><strong>{{ $t('featherprint.lastSeenLabel') }}</strong> {{ fmtTs(detail.lastSeen) }}</div>
-          <div>
-            <strong>{{ $t('featherprint.macLabel') }}</strong>&nbsp;
-            <span v-if="detail.mac && detail.mac.value">
-              <arkime-session-field
-                :field="macFieldDef"
-                expr="mac"
-                :value="detail.mac.value"
-                :pull-left="true"
-                :session-btn="true" />
-              <span
-                v-if="detail.mac.source"
-                class="text-disabled">{{ $t('featherprint.viaSource', { source: detail.mac.source }) }}</span>
+              v-if="item.acked"
+              class="text-theme-accent">
+              <v-icon
+                size="small"
+                icon="mdi-check-circle" />
+              {{ item.ackedBy || $t('featherprint.unknownUser') }}
+              <small
+                v-if="item.ackedAt"
+                class="ms-1">{{ fmtTs(item.ackedAt) }}</small>
             </span>
-            <span v-else>—</span>
-          </div>
-          <div v-if="previousMacs.length">
-            <strong>{{ $t('featherprint.previousMacsLabel') }}</strong>
-            {{ previousMacs.join(', ') }}
-          </div>
-          <div>
-            <strong>{{ $t('featherprint.namesLabel') }}</strong>&nbsp;
-            <span v-if="uniqueNames.length">
-              <template
-                v-for="(name, i) in uniqueNames"
-                :key="name">
-                <span v-if="i">, </span>
-                <arkime-session-field
-                  :field="hostFieldDef"
-                  expr="host"
-                  :value="name"
-                  :pull-left="true"
-                  :session-btn="true" />
-              </template>
-            </span>
-            <span v-else>—</span>
-          </div>
-          <div v-if="detail.dhcp">
-            <strong>{{ $t('featherprint.dhcpLabel') }}</strong>
-            vendor={{ detail.dhcp.vendorClass || '—' }},
-            paramReqList={{ detail.dhcp.paramReqList || '—' }}
-          </div>
-          <div>
-            <strong>{{ $t('featherprint.servicesLabel') }}</strong>&nbsp;
-            <span v-if="detail.services && detail.services.length">{{ detail.services.length }}</span>
-            <span v-else>0</span>
-          </div>
+            <span
+              v-else
+              class="text-muted-more">&mdash;</span>
+          </template>
+        </arkime-table>
+      </div>
 
-          <v-divider class="my-2" />
-          <h4>{{ $t('featherprint.historyTitle') }}</h4>
-          <div
-            v-if="history.length === 0"
-            class="text-disabled">
-            {{ $t('featherprint.noHistoryRecords') }}
+      <!-- lookup: a single transient result, so it owns its own layout rather
+           than borrowing the tracked list's detail block -->
+      <div
+        v-else-if="section === 'lookup'"
+        class="ms-2 me-2">
+        <div v-if="detail">
+          <h4 class="mb-2">
+            <arkime-session-field
+              :field="ipFieldDef"
+              expr="ip"
+              :value="detail.ip"
+              :pull-left="true"
+              :session-btn="true" />
+            <small
+              v-if="lookupResultTs"
+              class="text-muted-more ms-2">
+              {{ $t('featherprint.lookedUpAt', { ts: fmtTs(lookupResultTs) }) }}
+            </small>
+          </h4>
+          <featherprint-device
+            :device="detail"
+            :history="lookupHistory" />
+        </div>
+        <div
+          v-else
+          class="ms-1 me-1">
+          <div class="mb-5 info-area horizontal-center">
+            <div>
+              <v-icon
+                icon="mdi-magnify"
+                size="x-large"
+                class="text-muted-more" />&nbsp;
+              {{ $t('featherprint.enterIpPrompt') }}
+            </div>
           </div>
-          <v-list
-            density="compact"
-            v-else
-            max-height="500"
-            class="overflow-y-auto">
-            <v-list-item
-              v-for="(h, i) in history"
-              :key="i">
-              <v-list-item-title>
-                <code>{{ h.kind }}</code>
-                <span class="ms-2">{{ describeHistory(h) }}</span>
-              </v-list-item-title>
-              <v-list-item-subtitle>{{ fmtTs(h.ts) }}</v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-      <v-card
+        </div>
+      </div>
+
+      <!-- tracked devices: hand-rolled so each row can expand inline the way
+           session rows do (arkime-table's info row is imperative DOM, which
+           the session-field pivot menus in the detail pane can't use) -->
+      <div
         v-else
-        class="mb-3">
-        <v-card-text class="text-disabled">
-          {{ section === 'lookup' ? $t('featherprint.enterIpPrompt') : $t('featherprint.selectIpPrompt') }}
-        </v-card-text>
-      </v-card>
-
-      <v-card v-if="section === 'tracked'">
-        <v-card-title>
-          {{ $t('featherprint.trackedIps') }}
-          <v-chip
-            size="x-small"
-            class="ms-2">
-            {{ filteredIps.length }} / {{ ips.length }}
-          </v-chip>
-        </v-card-title>
-        <v-card-text class="py-1">
-          <v-text-field
-            v-model="filter"
-            density="compact"
-            variant="outlined"
-            hide-details
-            clearable
-            :placeholder="$t('featherprint.trackedFilterPlaceholder')"
-            prepend-inner-icon="mdi-magnify" />
-        </v-card-text>
-        <v-data-table
-          :headers="ipHeaders"
-          :items="filteredIps"
-          :items-per-page="25"
-          :items-per-page-options="[10, 25, 50, 100, -1]"
-          density="compact"
-          item-value="ip"
-          class="featherprint-ip-table"
-          must-sort
-          hover
-          @click:row="onRowClick">
-          <template #item.ip="{ item }">
-            <span @click.stop>
-              <arkime-session-field
-                :field="ipFieldDef"
-                expr="ip"
-                :value="item.ip"
-                :pull-left="true"
-                :session-btn="true" />
-            </span>
-          </template>
-          <template #item.classification="{ item }">
-            <span v-if="item.classification && item.classification !== 'unknown'">
-              {{ item.classification }}
-            </span>
-            <span v-else>—</span>
-          </template>
-          <template #item.name="{ item }">
-            <span
-              v-if="item.names && item.names.length"
-              @click.stop>
-              <arkime-session-field
-                :field="hostFieldDef"
-                expr="host"
-                :value="item.names[0].name"
-                :pull-left="true"
-                :session-btn="true" />
-            </span>
-            <span v-else>—</span>
-          </template>
-          <template #item.mac.value="{ item }">
-            <span
-              v-if="item.mac && item.mac.value"
-              @click.stop>
-              <arkime-session-field
-                :field="macFieldDef"
-                expr="mac"
-                :value="item.mac.value"
-                :pull-left="true"
-                :session-btn="true" />
-            </span>
-            <span v-else>—</span>
-          </template>
-          <template #item.lastSeen="{ item }">
-            {{ fmtTs(item.lastSeen) }}
-          </template>
-          <template #no-data>
-            <span class="text-disabled">
-              {{ ips.length ? $t('featherprint.noMatches') : $t('featherprint.noTrackedIps') }}
-            </span>
-          </template>
-        </v-data-table>
-      </v-card>
+        class="ms-2 me-2">
+        <arkime-paging
+          class="mb-1"
+          :records-total="ips.length"
+          :records-filtered="sortedIps.length"
+          :length-default="50"
+          @change-paging="changeTrackedPaging" />
+        <table class="arkime-table featherprint-tracked-table">
+          <thead>
+            <tr>
+              <th class="featherprint-toggle-col" />
+              <th
+                v-for="col in trackedColumns"
+                :key="col.id"
+                class="cursor-pointer text-start"
+                @click="sortTrackedBy(col.sort)">
+                {{ col.name }}
+                <v-icon
+                  v-if="trackedSort.field === col.sort"
+                  size="x-small"
+                  :icon="trackedSort.desc ? 'mdi-chevron-down' : 'mdi-chevron-up'" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <template
+              v-for="d in pagedIps"
+              :key="d.ip">
+              <tr>
+                <td class="featherprint-toggle-col">
+                  <toggle-btn
+                    :opened="!!expanded[d.ip]"
+                    @toggle="toggleDevice(d.ip)" />
+                </td>
+                <td>
+                  <arkime-session-field
+                    :field="ipFieldDef"
+                    expr="ip"
+                    :value="d.ip"
+                    :pull-left="true"
+                    :session-btn="true" />
+                </td>
+                <td>
+                  <arkime-session-field
+                    v-if="d.mac && d.mac.value"
+                    :field="macFieldDef"
+                    expr="mac"
+                    :value="d.mac.value"
+                    :pull-left="true"
+                    :session-btn="true" />
+                  <span
+                    v-else
+                    class="text-muted-more">&mdash;</span>
+                </td>
+                <td>
+                  <arkime-session-field
+                    v-if="d.names && d.names.length"
+                    :field="hostFieldDef"
+                    expr="host"
+                    :value="d.names[0].name"
+                    :pull-left="true"
+                    :session-btn="true" />
+                  <span
+                    v-else
+                    class="text-muted-more">&mdash;</span>
+                </td>
+                <td>
+                  <span v-if="d.classification && d.classification !== 'unknown'">
+                    {{ d.classification }}
+                  </span>
+                  <span
+                    v-else
+                    class="text-muted-more">&mdash;</span>
+                </td>
+                <td>{{ fmtTs(d.lastSeen) }}</td>
+              </tr>
+              <tr
+                v-if="expanded[d.ip]"
+                class="featherprint-detail-row">
+                <td :colspan="trackedColumns.length + 1">
+                  <featherprint-device
+                    :device="d"
+                    :history="detailHistory[d.ip]" />
+                </td>
+              </tr>
+            </template>
+            <tr v-if="!pagedIps.length">
+              <td
+                :colspan="trackedColumns.length + 1"
+                class="text-danger text-center">
+                <v-icon icon="mdi-alert" />&nbsp;{{ noTrackedMsg }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
+
+    <!-- transient failures (list/lookup/ack/tick): bottom alert, dismissed by
+         the user rather than timing out, so a failure can't scroll away -->
+    <v-snackbar
+      :model-value="!!error"
+      @update:model-value="(val) => { if (!val) { error = null; } }"
+      color="error"
+      location="bottom"
+      timeout="-1"
+      variant="flat">
+      {{ error }}
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="$close"
+          @click="error = null" />
+      </template>
+    </v-snackbar>
+  </page-layout> <!-- /featherprint content -->
 </template>
 
 <script>
 import { fetchWrapper } from '@common/fetchWrapper';
-import { timezoneDateString } from '@common/vueFilters.js';
+import { fmtTs, describeHistory, IP_FIELD, MAC_FIELD, HOST_FIELD, TERTIARY_BTN_STYLE } from './featherprintUtils.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
+import Focus from '@common/Focus.vue';
+import ArkimeTable from '../utils/Table.vue';
+import PageLayout from '../utils/PageLayout.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
+import ArkimePaging from '@common/Pagination.vue';
+import FeatherprintDevice from './FeatherprintDevice.vue';
 
-const REFRESH_MS = 30000;
+// pull a sortable scalar out of a device/alert record for the given column
+function sortValue (item, field) {
+  switch (field) {
+  case 'mac': return item.mac?.value ?? '';
+  case 'name': return item.names?.[0]?.name ?? '';
+  default: return item[field] ?? '';
+  }
+}
 
 export default {
   name: 'Featherprint',
+  components: {
+    ArkimeTable,
+    PageLayout,
+    ArkimeCollapsible,
+    ToggleBtn,
+    ArkimePaging,
+    FeatherprintDevice
+  },
+  directives: { Focus },
   data () {
     return {
-      engineMode: 'monitor + lookup',
       ips: [],
       filter: '',
-      selected: null,
-      detail: null,
-      history: [],
+      detail: null,          // lookup only: one transient result
+      lookupHistory: [],     // lookup: persisted history for that ip, if any
+      expanded: {},          // tracked: ip -> row expanded
+      detailHistory: {},     // tracked: ip -> history rows, fetched on expand
       alerts: [],
       alertFilter: 'open', // 'open' | 'acked' | 'all'
       alertSearch: '',
       error: null,
-      autoRefresh: false,
+      refreshInterval: '0', // ms between auto refreshes; '0' = never
       ackBusy: null,
       timer: null,
       lookupIp: '',
@@ -519,37 +542,54 @@ export default {
       lookupBusy: false,
       lookupResultTs: null,
       monitorState: null,
-      adminConfig: null,
-      showConfig: false,
-      tickBusy: false,
-      tickStatus: '',
-      // grouped-expression field defs for arkime-session-field pivot menus.
-      // `category` drives which value actions appear (SessionField filters on
-      // it) -- ip => reverseDNS, featherprintLookup, admin ip actions; host
-      // => host actions. (mac fields have no category anywhere.)
-      ipFieldDef: { dbField: 'ip', exp: 'ip', type: 'ip', group: 'general', category: 'ip', friendlyName: 'All IP fields' },
-      macFieldDef: { dbField: 'mac', exp: 'mac', type: 'lotermfield', group: 'general', friendlyName: 'All MAC fields' },
-      hostFieldDef: { dbField: 'host', exp: 'host', type: 'lotermfield', group: 'general', category: 'host', friendlyName: 'All host fields' }
+      trackedSort: { field: 'lastSeen', desc: true },
+      trackedPaging: { start: 0, length: 50 },
+      alertSort: { field: 'ts', desc: true },
     };
   },
   computed: {
-    isAdmin () {
-      return !!this.$store?.state?.user?.roles?.includes('arkimeAdmin');
+    ipFieldDef: () => IP_FIELD,
+    macFieldDef: () => MAC_FIELD,
+    hostFieldDef: () => HOST_FIELD,
+    tertiaryBtnStyle: () => TERTIARY_BTN_STYLE,
+    shiftKeyHold () {
+      return this.$store.state.shiftKeyHold;
+    },
+    // same store binding as files/history/stats -- without it v-focus is inert
+    // and the shift-key "Q" badge advertises a shortcut that does nothing
+    focusInput: {
+      get () { return this.$store.state.focusSearch; },
+      set (v) { this.$store.commit('setFocusSearch', v); }
     },
     section () {
       const n = this.$route?.name || '';
       if (n === 'FeatherprintAlerts') return 'alerts';
-      if (n === 'FeatherprintAdmin') return 'admin';
       if (n === 'FeatherprintLookup') return 'lookup';
       return 'tracked';
     },
-    ipHeaders () {
+    trackedColumns () {
       return [
-        { title: this.$t('featherprint.colIp'), key: 'ip', sortable: true },
-        { title: this.$t('featherprint.colMac'), key: 'mac.value', sortable: true },
-        { title: this.$t('featherprint.colName'), key: 'name', sortable: true, value: item => item.names?.[0]?.name ?? '' },
-        { title: this.$t('featherprint.colClassification'), key: 'classification', sortable: true, value: item => item.classification ?? '' },
-        { title: this.$t('featherprint.colLastSeen'), key: 'lastSeen', sortable: true }
+        { id: 'ip', name: this.$t('featherprint.colIp'), sort: 'ip' },
+        { id: 'mac', name: this.$t('featherprint.colMac'), sort: 'mac' },
+        { id: 'name', name: this.$t('featherprint.colName'), sort: 'name' },
+        { id: 'classification', name: this.$t('featherprint.colClassification'), sort: 'classification' },
+        { id: 'lastSeen', name: this.$t('featherprint.colLastSeen'), sort: 'lastSeen' }
+      ];
+    },
+    alertColumns () {
+      return [
+        {
+          id: 'ts',
+          name: this.$t('featherprint.colTime'),
+          classes: 'text-start',
+          sort: 'ts',
+          default: true,
+          width: 200
+        },
+        { id: 'kind', name: this.$t('featherprint.colKind'), classes: 'text-start', sort: 'kind', default: true, width: 170 },
+        { id: 'ip', name: this.$t('featherprint.colIp'), classes: 'text-start', sort: 'ip', default: true, width: 190 },
+        { id: 'details', name: this.$t('featherprint.colDetails'), classes: 'text-start', default: true, width: 420 },
+        { id: 'acked', name: this.$t('featherprint.colAcked'), classes: 'text-start', sort: 'acked', default: true, width: 250 }
       ];
     },
     rangeOptions () {
@@ -572,31 +612,23 @@ export default {
         if (a.kind && String(a.kind).toLowerCase().includes(q)) return true;
         if (a.ip && String(a.ip).toLowerCase().includes(q)) return true;
         if (a.ackedBy && String(a.ackedBy).toLowerCase().includes(q)) return true;
-        const details = this.describeHistory(a);
-        if (details && details.toLowerCase().includes(q)) return true;
+        if (a.details && a.details.toLowerCase().includes(q)) return true;
         return false;
       });
     },
-    alertHeaders () {
-      return [
-        { title: this.$t('featherprint.colTime'), key: 'ts', sortable: true },
-        { title: this.$t('featherprint.colKind'), key: 'kind', sortable: true },
-        { title: this.$t('featherprint.colIp'), key: 'ip', sortable: true },
-        { title: this.$t('featherprint.colDetails'), key: 'details', sortable: false, value: item => this.describeHistory(item) },
-        { title: this.$t('featherprint.colAcked'), key: 'acked', sortable: true, value: item => item.ackedBy || '' },
-        { title: '', key: 'actions', sortable: false, width: 80 }
-      ];
+    sortedAlerts () {
+      return this.sortList(this.filteredAlerts, this.alertSort);
+    },
+    noAlertsMsg () {
+      if (this.alertFilter === 'open') return this.$t('featherprint.noOpenAlerts');
+      if (this.alertFilter === 'acked') return this.$t('featherprint.noAckedAlerts');
+      return this.$t('featherprint.noAlerts');
+    },
+    noTrackedMsg () {
+      return this.ips.length ? this.$t('featherprint.noMatches') : this.$t('featherprint.noTrackedIps');
     },
     openAlertCount () {
       return this.alerts.filter(a => !a.acked).length;
-    },
-    uniqueNames () {
-      return [...new Set((this.detail?.names ?? []).map(n => n.name))];
-    },
-    previousMacs () {
-      const current = this.detail?.mac?.value;
-      const macHistory = this.detail?.mac?.history ?? [];
-      return [...new Set(macHistory.map(h => h.mac).filter(m => m && m !== current))];
     },
     filteredIps () {
       const q = (this.filter || '').trim().toLowerCase();
@@ -609,15 +641,23 @@ export default {
         if (r.classification && String(r.classification).toLowerCase().includes(q)) return true;
         return false;
       });
+    },
+    sortedIps () {
+      return this.sortList(this.filteredIps, this.trackedSort);
+    },
+    pagedIps () {
+      const { start, length: size } = this.trackedPaging;
+      return this.sortedIps.slice(start, start + size);
     }
   },
   watch: {
-    autoRefresh (on) {
+    refreshInterval (ms) {
       this.stopTimer();
-      if (on) this.timer = setInterval(this.refreshAll, REFRESH_MS);
+      const n = Number(ms);
+      if (n > 0) this.timer = setInterval(this.refreshAll, n);
     },
-    showConfig (v) {
-      if (v && !this.adminConfig) this.loadAdminConfig();
+    filter () {
+      this.trackedPaging = { ...this.trackedPaging, start: 0 };
     },
     lookupRange () {
       // User picked a preset; drop any URL-provided custom window.
@@ -638,63 +678,68 @@ export default {
     stopTimer () {
       if (this.timer) { clearInterval(this.timer); this.timer = null; }
     },
-    onRowClick (_event, row) {
-      const ip = row?.item?.ip ?? row?.item?.raw?.ip;
-      if (ip) this.selectIp(ip);
+    onOffFocus () {
+      this.focusInput = false;
     },
-    fmtTs (ts) {
-      if (!ts) return '—';
-      // Render in the user's configured timezone like every other viewer page,
-      // not hard-coded UTC.
-      const settings = this.$store?.state?.user?.settings;
-      return timezoneDateString(ts, settings?.timezone ?? 'local', settings?.ms ?? false);
+    /* header click toggles direction; the list is already local */
+    changeTrackedPaging (v) {
+      this.trackedPaging = { start: v.start, length: v.length };
     },
-    describeHistory (h) {
-      const b = h.before;
-      const a = h.after;
-      switch (h.kind) {
-      case 'newIp':
-        return a?.ip ? `${a.ip}${a.classification ? ` (${a.classification})` : ''}` : '';
-      case 'newMac':
-        return a?.value ? `${a.value}${a.source ? ` via ${a.source}` : ''}` : '';
-      case 'changeMac':
-        return `${b?.value ?? '?'} → ${a?.value ?? '?'}`;
-      case 'changeIp':
-        return `${b?.mac ?? '?'}: ${b?.ip ?? '?'} → ${a?.ip ?? '?'}`;
-      case 'newName':
-        return a?.name ? `${a.name}${a.source ? ` (${a.source})` : ''}` : '';
-      case 'changeName':
-        if (b && a) return `${b?.name ?? '?'} → ${a?.name ?? '?'}`;
-        return a?.name ? `${a.name}${a.source ? ` (${a.source})` : ''}` : '';
-      case 'newService':
-        if (!a) return '';
-        return `${a.type ?? '?'} (${a.proto ?? '?'}${a.port !== undefined ? '/' + a.port : ''})`;
-      default:
-        if (b && a) return `${JSON.stringify(b)} → ${JSON.stringify(a)}`;
-        if (a) return JSON.stringify(a);
-        return '';
+    sortTrackedBy (field) {
+      if (!field) { return; }
+      this.trackedSort = this.trackedSort.field === field
+        ? { field, desc: !this.trackedSort.desc }
+        : { field, desc: true };
+    },
+    /* The tracked list already carries the full device record, so expanding a
+       row only needs its change history. Fetched once and kept. */
+    async expandDevice (ip) {
+      this.expanded[ip] = true;
+      if (this.detailHistory[ip]) { return; }
+      this.detailHistory[ip] = [];
+      try {
+        const h = await fetchWrapper({ url: `api/featherprint/history/${encodeURIComponent(ip)}?limit=50` });
+        this.detailHistory[ip] = h?.history || [];
+      } catch (err) {
+        this.detailHistory[ip] = [];
+        this.error = this.$t('featherprint.errorLoadHistory', { ip, reason: resolveMessage(err, this.$t) });
       }
+    },
+    toggleDevice (ip) {
+      if (this.expanded[ip]) { delete this.expanded[ip]; return; }
+      this.expandDevice(ip);
+    },
+    loadAlertTable (sortField, desc) {
+      if (sortField) this.alertSort = { field: sortField, desc: !!desc };
+    },
+    sortList (list, { field, desc }) {
+      const dir = desc ? -1 : 1;
+      return [...list].sort((a, b) => {
+        const av = sortValue(a, field);
+        const bv = sortValue(b, field);
+        if (av === bv) return 0;
+        return (av > bv ? 1 : -1) * dir;
+      });
+    },
+    describeHistory,
+    fmtTs (ts) {
+      return fmtTs(ts, this.$store?.state?.user?.settings);
     },
     refreshAll () {
       this.loadIps();
       this.loadAlerts();
       this.loadState();
-      // On the lookup tab `detail` holds a transient (unpersisted) result;
-      // re-selecting would fetch the persisted /ip/:ip record and 404, wiping
-      // it. The lookup section refreshes via doLookup instead.
-      if (this.selected && this.section !== 'lookup') this.selectIp(this.selected);
     },
     async goToInfoForIp (ip) {
       await this.$router.push({ name: 'FeatherprintTracked' });
-      this.selectIp(ip);
+      this.expandDevice(ip);
     },
     goToSection (section) {
       if (!section || section === this.section) return;
       const routeName =
         section === 'lookup' ? 'FeatherprintLookup' :
           section === 'alerts' ? 'FeatherprintAlerts' :
-            section === 'admin' ? 'FeatherprintAdmin' :
-              'FeatherprintTracked';
+            'FeatherprintTracked';
       this.$router.push({ name: routeName });
     },
     async loadState () {
@@ -707,35 +752,21 @@ export default {
       try {
         const r = await fetchWrapper({ url: 'api/featherprint/search?limit=500' });
         this.ips = r.devices || [];
+        this.error = null;
       } catch (err) {
-        this.error = this.$t('featherprint.errorListIps', { reason: err.text ?? err.message ?? err });
+        this.error = this.$t('featherprint.errorListIps', { reason: resolveMessage(err, this.$t) });
       }
     },
     async loadAlerts () {
       try {
         const r = await fetchWrapper({ url: 'api/featherprint/alerts?limit=500' });
-        this.alerts = r.alerts || [];
+        // precompute the details string and an `id` here: the search filter and
+        // the cell both need details, and arkime-table keys on item.id (alerts
+        // carry _id, so without this every row falls back to an index key)
+        this.alerts = (r.alerts || []).map(a => ({ ...a, id: a._id, details: describeHistory(a) }));
+        this.error = null;
       } catch (err) {
-        this.error = this.$t('featherprint.errorLoadAlerts', { reason: err.text ?? err.message ?? err });
-      }
-    },
-    async selectIp (ip) {
-      this.selected = ip;
-      this.error = null;
-      this.lookupResultTs = null;
-      try {
-        const d = await fetchWrapper({ url: `api/featherprint/ip/${encodeURIComponent(ip)}` });
-        this.detail = d?.device ?? null;
-      } catch (err) {
-        this.detail = null;
-        this.error = this.$t('featherprint.errorLoadDetail', { ip, reason: err.text ?? err.message ?? err });
-      }
-      try {
-        const h = await fetchWrapper({ url: `api/featherprint/history/${encodeURIComponent(ip)}?limit=50` });
-        this.history = h?.history || [];
-      } catch (err) {
-        this.history = [];
-        this.error = this.$t('featherprint.errorLoadHistory', { ip, reason: err.text ?? err.message ?? err });
+        this.error = this.$t('featherprint.errorLoadAlerts', { reason: resolveMessage(err, this.$t) });
       }
     },
     async ack (alertId) {
@@ -756,7 +787,7 @@ export default {
           };
         }
       } catch (err) {
-        this.error = this.$t('featherprint.errorAckFailed', { reason: err.text ?? err.message ?? err });
+        this.error = this.$t('featherprint.errorAckFailed', { reason: resolveMessage(err, this.$t) });
       } finally {
         this.ackBusy = null;
       }
@@ -780,15 +811,25 @@ export default {
         const url = `api/featherprint/lookup?${qs}`;
         const r = await fetchWrapper({ url });
         this.detail = r?.device ?? null;
-        this.history = [];
-        this.selected = ip;
+        this.lookupHistory = [];
         this.lookupResultTs = Date.now();
         if (!this.detail) {
           this.error = this.$t('featherprint.errorNoSignals', { ip });
+          return;
+        }
+        // History is keyed by ip and written only by the monitor, so it is
+        // independent of this transient scan: a monitored ip has real rows
+        // here, anything else correctly comes back empty.
+        try {
+          const h = await fetchWrapper({ url: `api/featherprint/history/${encodeURIComponent(ip)}?limit=50` });
+          this.lookupHistory = h?.history || [];
+        } catch (err) {
+          this.lookupHistory = [];
+          this.error = this.$t('featherprint.errorLoadHistory', { ip, reason: resolveMessage(err, this.$t) });
         }
       } catch (err) {
         this.detail = null;
-        this.error = this.$t('featherprint.errorLookupFailed', { ip, reason: err.text ?? err.message ?? err });
+        this.error = this.$t('featherprint.errorLookupFailed', { ip, reason: resolveMessage(err, this.$t) });
       } finally {
         this.lookupBusy = false;
       }
@@ -829,41 +870,41 @@ export default {
       this.lookupIp = String(q.ip);
       this.lookupCustomRange = startSec !== null ? { startSec, stopSec } : null;
       this.doLookup();
-    },
-    async loadAdminConfig () {
-      try {
-        const r = await fetchWrapper({ url: 'api/featherprint/config' });
-        this.adminConfig = r?.config ?? null;
-      } catch (err) {
-        this.error = this.$t('featherprint.errorLoadAdminConfig', { reason: err.text ?? err.message ?? err });
-      }
-    },
-    async runTickNow () {
-      this.tickBusy = true;
-      this.tickStatus = '';
-      try {
-        const r = await fetchWrapper({
-          url: 'api/featherprint/tick',
-          method: 'POST',
-          data: {}
-        });
-        if (r?.alreadyRunning) this.tickStatus = this.$t('featherprint.tickAlreadyRunning');
-        else if (r?.notPrimary) this.tickStatus = this.$t('featherprint.tickNotPrimary');
-        else if (r?.monitorDisabled) this.tickStatus = this.$t('featherprint.tickMonitorDisabled');
-        else this.tickStatus = this.$t('featherprint.tickCompleted');
-        this.refreshAll();
-      } catch (err) {
-        this.tickStatus = this.$t('featherprint.tickFailed', { reason: err.text ?? err.message ?? err });
-      } finally {
-        this.tickBusy = false;
-      }
     }
   }
 };
 </script>
 
 <style scoped>
-.featherprint-ip-table :deep(tbody tr) {
-  cursor: pointer;
+
+/* search sub-navbar: secondary-lightest to match the search band on
+   sessions/spiview/arkime and the filter bands on files/history/stats
+   (the tab strip below is the quaternary-lightest sub-sub navbar) */
+.featherprint-form {
+  z-index: 6;
+  background-color: rgb(var(--v-theme-secondary-lightest));
+  /* reserve a constant height so the tab strip below doesn't shift as the
+     toolbar swaps controls between tabs (alerts adds a select, lookup a
+     full input + select + button) */
+  min-height: 52px;
 }
+
+/* expanded detail row: tinted like the session detail row so it reads as
+   belonging to the row above rather than as another data row */
+.featherprint-tracked-table tbody tr.featherprint-detail-row {
+  background-color: rgb(var(--v-theme-quaternary-lightest)) !important;
+}
+.featherprint-tracked-table tbody tr:not(.featherprint-detail-row):hover td {
+  background-color: rgb(var(--v-theme-tertiary-lightest));
+}
+/* leftmost toggle column is always the same narrow width */
+.featherprint-tracked-table .featherprint-toggle-col {
+  width: 24px;
+}
+
+/* .info-area defaults to --px-xxxlg; knock it down a notch like Hunt does */
+.info-area {
+  font-size: var(--px-xxlg);
+}
+
 </style>
