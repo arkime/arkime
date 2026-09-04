@@ -1,4 +1,4 @@
-use Test::More tests => 179;
+use Test::More tests => 181;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -263,6 +263,23 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     my $rootId = $longSession->{data}->[0]->{rootId};
     $response = getBinary("/api/session/entire/test/" . $rootId . ".pcap");
     ok(length($response->content) >= 24, "entire pcap has content");
+
+# entire session pcap must apply the user's forced expression to the linked sessions
+    my $entireAll = $response->content;
+
+    viewerPostToken("/api/user", '{"userId": "sac-entire", "userName": "UserName", "enabled":true, "password":"password", "expression":"packets == 1", "roles": ["arkimeUser"]}', $token);
+
+    # long-session.pcap is a 1 packet and a 4 packet segment sharing a rootId,
+    # the forced expression above only allows the 1 packet one
+    my $oneSession = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/long-session.pcap && packets == 1"));
+    my $oneId = $oneSession->{data}->[0]->{id};
+    my $onePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$oneId/pcap")->content;
+
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/entire/test/$rootId.pcap?arkimeRegressionUser=sac-entire");
+    is (unpack("H*", $response->content), unpack("H*", $onePcap), "entire pcap only has the segment the forced expression allows");
+    ok (length($response->content) < length($entireAll), "entire pcap drops the linked segments the forced expression excludes");
+
+    viewerDeleteToken("/api/user/sac-entire", $token);
 
 # should get error if get pcap can't find sessions from list of ids
     $json = viewerGet("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=nonexistingid");
