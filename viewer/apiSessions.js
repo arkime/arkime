@@ -4154,17 +4154,30 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #entirePcap (req, res, pcapWriter, extension) {
+  static async #entirePcap (req, res, pcapWriter, extension) {
     const check = extension === 'pcap' && req.query.check === 'true';
     ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
 
     const writerOptions = { writeHeader: true };
 
+    const filter = [{ term: { rootId: req.params.id } }];
+
+    // Unlike the other pcap endpoints this one turns a single id into every
+    // linked session, so the forced expression has to be applied here or the
+    // rootId of an allowed session hands out the ones it excludes.
+    try {
+      const userExpression = await BuildQuery.userExpressionQuery(req);
+      if (userExpression) { filter.push(userExpression); }
+    } catch (err) {
+      console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, util.inspect(err, false, 50));
+      return res.status(403).end();
+    }
+
     const query = {
       size: 1000,
       _source: ['rootId'],
       sort: { lastPacket: { order: 'asc' } },
-      query: { term: { rootId: req.params.id } }
+      query: { bool: { filter } }
     };
 
     if (Config.debug) {
