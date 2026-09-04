@@ -460,7 +460,11 @@ SPDX-License-Identifier: Apache-2.0
             @update:height="onSharkHeight">
             <!-- packet list -->
             <template #list>
-              <div class="shark-list">
+              <div
+                ref="sharkListRef"
+                class="shark-list"
+                tabindex="0"
+                @keydown="onSharkListKeydown">
                 <div class="shark-list-row shark-list-head">
                   <span
                     v-for="col in sharkColumns"
@@ -497,7 +501,11 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- dissection tree -->
             <template #fields>
-              <div class="tshark-tree-pane">
+              <div
+                ref="sharkTreeRef"
+                class="tshark-tree-pane"
+                tabindex="0"
+                @keydown="onSharkTreeKeydown">
                 <div
                   v-if="tsharkSelectedPacket"
                   class="tshark-tree-header"
@@ -642,6 +650,11 @@ const activeTab = ref('details');
 const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
 const tsharkExpandSignal = ref(0);
+const sharkListRef = ref(null);
+const sharkTreeRef = ref(null);
+// path key of the tree row the user last picked, so the same field stays
+// selected as they walk from packet to packet
+const sharkStickyKey = ref('');
 
 // pane layout: which arrangement, the two split fractions and the overall
 // height, all remembered in localStorage like the other packet options
@@ -1109,6 +1122,7 @@ const getTshark = async () => {
   tsharkError.value = '';
   tsharkPackets.value = [];
   tsharkSelectedIdx.value = 0;
+  sharkStickyKey.value = '';
   sharkSelection.node = null;
   sharkSelection.path = new Set();
 
@@ -1279,10 +1293,144 @@ const tsharkProtoCounts = computed(() => {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]);
 });
 
+// Stable identity for a dissection field: the chain of PDML names down to it,
+// with an occurrence suffix so repeated siblings (tcp.option, http.header, ...)
+// stay distinguishable. Comparable across packets, which is what lets the tree
+// keep the same row selected as the packet changes.
+const walkTreeKeys = (pkt, cb) => {
+  const chain = [];
+  const walk = (nodes, prefix) => {
+    const seen = new Map();
+    for (const n of nodes) {
+      const base = n.name || n.label || '?';
+      const dup = seen.get(base) || 0;
+      seen.set(base, dup + 1);
+      const key = `${prefix ? `${prefix}/` : ''}${base}${dup ? `[${dup}]` : ''}`;
+      cb(n, key, chain);
+      if (n.fields?.length) {
+        chain.push(n);
+        walk(n.fields, key);
+        chain.pop();
+      }
+    }
+  };
+  walk(pkt?.layers || [], '');
+};
+
+const tsharkNodeKey = (pkt, target) => {
+  let found = '';
+  walkTreeKeys(pkt, (n, key) => { if (n === target) { found = key; } });
+  return found;
+};
+
+const tsharkNodeByKey = (pkt, key) => {
+  let found = null;
+  walkTreeKeys(pkt, (n, k, chain) => { if (!found && k === key) { found = { node: n, path: chain.slice() }; } });
+  return found;
+};
+
 const setTsharkSelected = (idx) => {
   tsharkSelectedIdx.value = idx;
-  sharkSelection.node = null;
-  sharkSelection.path = new Set();
+  // carry the field selection over to the new packet when it has the same one
+  const hit = sharkStickyKey.value ? tsharkNodeByKey(tsharkPackets.value[idx], sharkStickyKey.value) : null;
+  sharkSelection.path = new Set(hit ? hit.path : []);
+  sharkSelection.node = hit ? hit.node : null;
+};
+
+// remember whatever got selected -- click, keyboard or a hex-pane byte click
+watch(() => sharkSelection.node, (node) => {
+  if (node) { sharkStickyKey.value = tsharkNodeKey(tsharkSelectedPacket.value, node); }
+});
+
+const scrollSharkListToSelected = () => {
+  nextTick(() => sharkListRef.value?.querySelector('.shark-list-row--selected')?.scrollIntoView({ block: 'nearest' }));
+};
+
+// Move through the list as it is currently sorted/filtered, not capture order.
+const moveTsharkSelected = (to) => {
+  const list = sortedTsharkPackets.value;
+  if (!list.length) { return; }
+  const at = Math.max(0, list.findIndex(e => e.origIdx === tsharkSelectedIdx.value));
+  const next = Math.max(0, Math.min(list.length - 1, typeof to === 'function' ? to(at, list.length) : to));
+  if (list[next].origIdx !== tsharkSelectedIdx.value) { setTsharkSelected(list[next].origIdx); }
+  scrollSharkListToSelected();
+};
+
+const SHARK_PAGE = 10;
+
+const onSharkListKeydown = (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) { return; }
+  const moves = {
+    ArrowDown: at => at + 1,
+    ArrowUp: at => at - 1,
+    PageDown: at => at + SHARK_PAGE,
+    PageUp: at => at - SHARK_PAGE,
+    Home: () => 0,
+    End: (at, len) => len - 1
+  };
+  const move = moves[e.key];
+  if (!move) { return; }
+  e.preventDefault();
+  moveTsharkSelected(move);
+};
+
+// The tree's expanded state lives in the DOM <details>, so navigation walks the
+// rendered rows; each carries its node (see TsharkNode). A collapsed <details>
+// still keeps a layout box for its contents, so visibility means every
+// <details> above the row is open -- a summary's own one doesn't count.
+const sharkTreeRowVisible = (el) => {
+  const own = el.tagName === 'SUMMARY' ? el.closest('details') : null;
+  let d = (own || el).parentElement?.closest('details');
+  while (d) {
+    if (!d.open) { return false; }
+    d = d.parentElement?.closest('details');
+  }
+  return true;
+};
+
+const sharkTreeRows = () => {
+  const root = sharkTreeRef.value;
+  if (!root) { return []; }
+  return [...root.querySelectorAll('.shark-tree-row')].filter(sharkTreeRowVisible);
+};
+
+const selectSharkTreeRow = (el) => {
+  if (!el?.__sharkNode) { return; }
+  sharkSelection.node = el.__sharkNode;
+  el.scrollIntoView({ block: 'nearest' });
+  sharkTreeRef.value?.focus({ preventScroll: true });
+};
+
+const onSharkTreeKeydown = (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) { return; }
+  if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) { return; }
+  e.preventDefault();
+
+  const rows = sharkTreeRows();
+  if (!rows.length) { return; }
+  const at = rows.findIndex(el => el.__sharkNode === sharkSelection.node);
+  if (at < 0) { selectSharkTreeRow(rows[0]); return; }
+
+  const row = rows[at];
+  const branch = row.tagName === 'SUMMARY' ? row.closest('details') : null;
+
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    const wantOpen = e.key === 'ArrowRight';
+    // right opens a closed branch, left closes an open one; anything else falls
+    // through to stepping into the first child / out to the parent
+    if (branch && branch.open !== wantOpen) {
+      branch.open = wantOpen;
+      return;
+    }
+    if (!wantOpen) {
+      const up = (branch || row).parentElement?.closest('details')?.querySelector(':scope > summary');
+      if (up) { selectSharkTreeRow(up); }
+      return;
+    }
+  }
+
+  const to = { ArrowDown: at + 1, ArrowUp: at - 1, ArrowRight: at + 1, ArrowLeft: at - 1, Home: 0, End: rows.length - 1 }[e.key];
+  selectSharkTreeRow(rows[Math.max(0, Math.min(rows.length - 1, to))]);
 };
 
 // Fields the packet list columns are built from. Pulled in one depth-first
@@ -1638,6 +1786,12 @@ onUnmounted(() => {
   background: rgb(var(--v-theme-background));
   min-width: 54rem;
 }
+/* both panes take keyboard focus so arrow keys can walk them */
+.shark-list:focus-visible,
+.tshark-tree-pane:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
 .shark-list-row {
   display: grid;
   grid-template-columns: 4.5em 7em 13em 13em 6em 5em minmax(14em, 1fr);
@@ -1647,6 +1801,10 @@ onUnmounted(() => {
   font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+/* keep the sticky header from covering the row we just scrolled to */
+.shark-list-row {
+  scroll-margin-top: 1.6rem;
 }
 .shark-list-row > span {
   overflow: hidden;
@@ -1687,6 +1845,7 @@ onUnmounted(() => {
 
 .tshark-tree-pane {
   padding: 0.25rem 0.5rem;
+  min-height: 100%;
 }
 .tshark-tree-header {
   padding: 4px 8px;

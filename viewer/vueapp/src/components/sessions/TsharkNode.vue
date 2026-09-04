@@ -9,6 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       ref="detailsRef">
       <summary
         ref="rowRef"
+        class="shark-tree-row"
         :class="{ 'tshark-selected': isSelected }"
         @click="onClick">
         <span class="tshark-label">{{ displayLabel }}</span>
@@ -24,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
     <span
       v-else
       ref="rowRef"
-      class="tshark-leaf"
+      class="tshark-leaf shark-tree-row"
       :class="{ 'tshark-selected': isSelected }"
       @click="onClick">
       <span class="tshark-label">{{ displayLabel }}</span>
@@ -33,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script setup>
-import { computed, inject, nextTick, ref, watch } from 'vue';
+import { computed, inject, nextTick, ref, watch, watchEffect } from 'vue';
 
 const props = defineProps({
   node: { type: Object, required: true },
@@ -46,6 +47,9 @@ const rowRef = ref(null);
 
 // provided by SessionDetail so the hex pane can follow the tree selection
 const selection = inject('sharkSelection', null);
+
+// keyboard navigation walks the rendered rows, so each one carries its node
+watchEffect(() => { if (rowRef.value) { rowRef.value.__sharkNode = props.node; } });
 
 const hasChildren = computed(() => Array.isArray(props.node.fields) && props.node.fields.length > 0);
 
