@@ -210,6 +210,7 @@ import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
 // import utils
 import Utils from '../utils/utils';
+import { hierarchyToSankey } from '../utils/sankeyData';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 import { attachTableGrips } from '@common/composables/useColumnResize.js';
@@ -647,76 +648,10 @@ export default {
      * @returns {Object} formattedData The formatted data object
      */
     formatDataFromSpigraphSankey: function (hierarchicalData) {
-      const nodes = [];
-      const links = [];
-      const nodeMap = new Map();
-
-      if (!hierarchicalData || !hierarchicalData.children) {
-        return { nodes, links };
+      const { nodes, links } = hierarchyToSankey(hierarchicalData);
+      for (const node of nodes) { // the popup resolves a node's field by name
+        node.field = this.fieldList[node.depth] ? this.fieldList[node.depth].exp : this.baseField;
       }
-
-      // First pass: calculate cumulative values for each node
-      const calculateCumulativeValue = (node) => {
-        if (!node.children || node.children.length === 0) {
-          return node.size || 0;
-        }
-
-        const childSum = node.children.reduce((sum, child) => {
-          return sum + calculateCumulativeValue(child);
-        }, 0);
-
-        // Use the larger of the node's own size or the sum of children
-        return Math.max(node.size || 0, childSum);
-      };
-
-      // Traverse the hierarchical data and create nodes and links
-      const traverse = (node, depth = 0, parentId = null, parentCumulativeValue = 0) => {
-        const nodeId = `${node.name}_${depth}`;
-        const cumulativeValue = calculateCumulativeValue(node);
-
-        if (!nodeMap.has(nodeId)) {
-          nodeMap.set(nodeId, {
-            id: nodeId,
-            name: node.name,
-            value: cumulativeValue,
-            depth: depth,
-            field: this.fieldList[depth] ? this.fieldList[depth].exp : this.baseField
-          });
-          nodes.push(nodeMap.get(nodeId));
-        }
-
-        if (parentId && parentId !== nodeId) {
-          // For the link value, use the cumulative value of this node
-          // This ensures first-level links show full height
-          links.push({
-            source: parentId,
-            target: nodeId,
-            value: cumulativeValue
-          });
-        }
-
-        if (node.children && node.children.length > 0) {
-          node.children.forEach(child => {
-            traverse(child, depth + 1, nodeId, cumulativeValue);
-          });
-        }
-      };
-
-      // Check if we have multiple levels (any child has children)
-      const hasMultipleLevels = hierarchicalData.children.some(child =>
-        child.children && child.children.length > 0
-      );
-
-      if (hasMultipleLevels) {
-        // Skip the top level and start with children
-        hierarchicalData.children.forEach(child => {
-          traverse(child, 0);
-        });
-      } else {
-        // Keep the top level if there's only one level
-        traverse(hierarchicalData, 0);
-      }
-
       return { nodes, links };
     },
     /**

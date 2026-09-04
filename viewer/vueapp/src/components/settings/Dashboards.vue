@@ -260,6 +260,8 @@ const VIEW_MODE_LABELS = {
   intersection: 'sessions.summary.intersectionView',
   heatmap: 'sessions.summary.heatmapView',
   treemap: 'sessions.summary.treemapView',
+  sankey: 'sessions.summary.sankeyView',
+  connections: 'sessions.summary.connectionsView',
   timeline: 'sessions.summary.timelineView',
   map: 'sessions.summary.mapView',
   stats: 'sessions.summary.statsView',

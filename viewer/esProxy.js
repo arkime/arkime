@@ -505,10 +505,22 @@ const searchRootIdKeys = ['size', '_source', 'sort', 'query', 'profile'];
 function validateSearchRootId (req) {
   try {
     const json = JSON.parse(req.body.toString('utf8'));
-    return Object.keys(json).every(key => searchRootIdKeys.includes(key)) &&
-      Object.keys(json.query).length === 1 &&
-      Object.keys(json.query.term).length === 1 &&
-      ArkimeUtil.isString(json.query.term.rootId);
+    if (!Object.keys(json).every(key => searchRootIdKeys.includes(key))) { return false; }
+    if (Object.keys(json.query).length !== 1) { return false; }
+
+    // pre 6.7.1 viewers sent the bare term
+    if (json.query.term !== undefined) {
+      return Object.keys(json.query.term).length === 1 &&
+        ArkimeUtil.isString(json.query.term.rootId);
+    }
+
+    // filter only, so the user's forced expression is ANDed with the rootId
+    // term and can only narrow what the bare term already allowed
+    const bool = json.query.bool;
+    return Object.keys(bool).length === 1 &&
+      Array.isArray(bool.filter) &&
+      Object.keys(bool.filter[0].term).length === 1 &&
+      ArkimeUtil.isString(bool.filter[0].term.rootId);
   } catch (e) {
     return false;
   }

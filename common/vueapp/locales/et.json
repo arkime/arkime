@@ -464,6 +464,8 @@
       "intersectionView": "Ühisosa",
       "heatmapView": "Soojuskaart",
       "treemapView": "Puukaart",
+      "sankeyView": "Sankey",
+      "connectionsView": "Ühendused",
       "timelineView": "Ajajoon",
       "mapView": "Kaart",
       "statsView": "Hõive statistika",
@@ -502,6 +504,7 @@
         "metrics": "Mõõdikud",
         "sortBy": "Sorteeri",
         "limit": "Piirang",
+        "sampleSize": "Valimi suurus",
         "order": "Järjestus",
         "width": "Laius (veerud)",
         "height": "Kõrgus (read)",
@@ -510,7 +513,9 @@
         "localView": "Vaade",
         "noView": "Vaade puudub",
         "noViewsHint": "Vaateid pole seadistatud — loo üks otsinguribal, et rakendada see vidinale",
-        "fieldRequired": "Väli on kohustuslik"
+        "fieldRequired": "Väli on kohustuslik",
+        "exactFieldsRequired": "Valige {count} välja",
+        "fieldUnsupported": "Välja {field} ei saa selles vidinas kasutada"
       },
       "config": {
         "configurations": "Salvesta või laadi töölaudu",
@@ -2124,5 +2129,17 @@
       "nodeIncluded": "Sõlm edukalt kaasatud",
       "nodeInclusionFailed": "Sõlme kaasamine ebaõnnestus"
     }
+  },
+  "updateCheck": {
+    "check": "Otsi uuendusi",
+    "checking": "Kontrollin...",
+    "upToDate": "Arkime on ajakohane",
+    "available": "Arkime {version} on saadaval",
+    "security": "Sisaldab turvaparandust",
+    "eol": "See versioon ei ole enam toetatud",
+    "failed": "Uuenduste kontroll ebaõnnestus",
+    "dismiss": "Peida",
+    "optIn": "Luba uuenduste kontroll",
+    "disclosure": "Kontrollib {host} uuemate versioonide osas. Saadab teie peaversiooni ({major})."
   }
 }

@@ -464,6 +464,8 @@
       "intersectionView": "交差",
       "heatmapView": "ヒートマップ",
       "treemapView": "ツリーマップ",
+      "sankeyView": "サンキー",
+      "connectionsView": "コネクション",
       "timelineView": "タイムライン",
       "mapView": "マップ",
       "statsView": "キャプチャ統計",
@@ -502,6 +504,7 @@
         "metrics": "メトリクス",
         "sortBy": "ソート順",
         "limit": "制限",
+        "sampleSize": "サンプルサイズ",
         "order": "順序",
         "width": "幅（列）",
         "height": "高さ（行）",
@@ -510,7 +513,9 @@
         "localView": "ビュー",
         "noView": "ビューなし",
         "noViewsHint": "ビューが設定されていません — 検索バーで作成してウィジェットに適用してください",
-        "fieldRequired": "フィールドは必須です"
+        "fieldRequired": "フィールドは必須です",
+        "exactFieldsRequired": "{count}個のフィールドを選択してください",
+        "fieldUnsupported": "{field} はこのウィジェットでは使用できません"
       },
       "config": {
         "configurations": "ダッシュボードの保存または読み込み",
@@ -2124,5 +2129,17 @@
       "nodeIncluded": "ノードを正常に包含しました",
       "nodeInclusionFailed": "ノードの包含に失敗しました"
     }
+  },
+  "updateCheck": {
+    "check": "更新を確認",
+    "checking": "確認中...",
+    "upToDate": "Arkime は最新です",
+    "available": "Arkime {version} が利用可能です",
+    "security": "セキュリティ修正を含みます",
+    "eol": "このリリースはサポートが終了しています",
+    "failed": "更新の確認に失敗しました",
+    "dismiss": "閉じる",
+    "optIn": "更新確認を有効にする",
+    "disclosure": "{host} で新しいリリースを確認します。メジャーバージョン ({major}) を送信します。"
   }
 }

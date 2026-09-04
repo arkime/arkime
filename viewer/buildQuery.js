@@ -262,6 +262,42 @@ class BuildQuery {
 
   // --------------------------------------------------------------------------
   /**
+   * Returns the ES query for the user's forced expression, or undefined when
+   * they don't have one. For endpoints that build their own query instead of
+   * going through build(). Throws if the expression doesn't compile.
+   * @ignore
+   * @param {object} req - the client request
+   * @returns {Promise} - resolves with the ES query or undefined
+   */
+  static async userExpressionQuery (req) {
+    const expression = req.user.getExpression();
+    if (!expression) { return undefined; }
+
+    let shortcuts;
+    try {
+      shortcuts = await Db.getShortcutsCache(req.user);
+    } catch (err) {
+      console.log('ERROR - fetching shortcuts cache when building forced expression query', util.inspect(err, false, 50));
+    }
+
+    arkimeparser.parser.yy = {
+      views: req.user.views,
+      fieldsMap: Config.getFieldsMap(),
+      dbFieldsMap: Config.getDBFieldsMap(),
+      prefix: internals.prefix,
+      emailSearch: true, // Expression was set by admin, so assume email search ok
+      shortcuts: shortcuts || {},
+      shortcutTypeMap: internals.shortcutTypeMap
+    };
+
+    const query = arkimeparser.parse(expression);
+    const err = await BuildQuery.lookupQueryItems([query]);
+    if (err) { throw err; }
+    return query;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * Builds the session query based on req.query (Promise version)
    * @ignore
    * @name buildPromise

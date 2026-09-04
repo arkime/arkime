@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 46;
+use Test::More tests => 51;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -174,6 +174,32 @@ $req->header('Content-Type' => 'application/json');
 $req->content($search_rootid);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "sessions search by rootId allowed");
+
+# Sessions search - rootId filter with the user's forced expression ANDed on is allowed
+my $search_rootid_expr = qq({"size":1000,"_source":["rootId"],"query":{"bool":{"filter":[{"term":{"rootId":"240101-abc"}},{"term":{"tags":"corp"}}]}}});
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_search");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_rootid_expr);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 200, "sessions search by rootId filter allowed");
+
+# Sessions search - a filter not starting with the rootId term is rejected
+my $search_no_rootid = qq({"query":{"bool":{"filter":[{"term":{"node":"foo"}}]}}});
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_search");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_no_rootid);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "sessions search by filter without rootId rejected");
+is ($response->content, "Not authorized for API");
+
+# Sessions search - a should next to the rootId filter could widen it, so is rejected
+my $search_should = qq({"query":{"bool":{"filter":[{"term":{"rootId":"240101-abc"}}],"should":[{"term":{"node":"foo"}}]}}});
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_search");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_should);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "sessions search with should next to rootId filter rejected");
+is ($response->content, "Not authorized for API");
 
 # Sessions search - term on any other field is rejected
 my $search_other = qq({"query":{"term":{"node":"foo"}}});

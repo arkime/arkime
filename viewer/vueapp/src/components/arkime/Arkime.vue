@@ -165,7 +165,7 @@ import Utils from '../utils/utils';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
-import { DEFAULT_VIEW_MODES } from '../summary/widgets/viewModes';
+import { DEFAULT_VIEW_MODES, defaultLength } from '../summary/widgets/viewModes';
 import { toV6Shape } from '../summary/dashboardConfig';
 
 const DashboardService = createShareableService('summaryConfig');
@@ -231,15 +231,17 @@ export default {
      * Builds a default widget definition for a field expression
      */
     makeWidgetDef: function (fieldExp, overrides = {}) {
+      const viewMode = overrides.viewMode || DEFAULT_VIEW_MODES[fieldExp] || 'bar';
       return {
         id: Utils.createRandomString(),
         field: fieldExp,
         fields: fieldExp ? [fieldExp] : [], // 1-3 fields for multi-field widgets
-        viewMode: DEFAULT_VIEW_MODES[fieldExp] || 'bar',
+        viewMode,
         metricType: 'sessions',
         metrics: [], // table multi-metric columns (falls back to metricType)
         sortMetric: 'sessions',
-        length: 20,
+        // top-N cap, or a session sample size for connections
+        length: defaultLength(viewMode),
         order: 'desc',
         expression: '',
         view: '',
@@ -257,14 +259,15 @@ export default {
       const fields = Array.isArray(w.fields) && w.fields.length
         ? w.fields.slice(0, 3)
         : (w.field ? [w.field] : []);
+      const viewMode = w.viewMode || DEFAULT_VIEW_MODES[w.field] || 'bar';
       return this.makeWidgetDef(fields[0] || '', {
         id: w.id || Utils.createRandomString(),
         fields,
-        viewMode: w.viewMode || DEFAULT_VIEW_MODES[w.field] || 'bar',
+        viewMode,
         metricType: w.metricType || 'sessions',
         metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
         sortMetric: w.sortMetric || w.metricType || 'sessions',
-        length: w.length || 20,
+        length: w.length || defaultLength(viewMode),
         order: w.order || 'desc',
         expression: w.expression || '',
         view: w.view || '',

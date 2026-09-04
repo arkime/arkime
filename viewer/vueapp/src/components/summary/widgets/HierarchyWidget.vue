@@ -2,11 +2,11 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Nested field widget for 2-3 fields, self-fetched from /api/spigraphhierarchy
-(hierarchicalResults). Renders a d3 partition **sunburst** when viewMode is 'pie'
-or a nested d3 **treemap** when viewMode is 'treemap'. Count-based (the hierarchy
-endpoint carries no metric). Colored by the dashboard palette; hover uses the
-shared chart popover.
+Nested field widget for 1-3 fields, self-fetched from /api/spigraphhierarchy
+(hierarchicalResults). Renders a d3 partition **sunburst** when viewMode is 'pie',
+a nested d3 **treemap** when viewMode is 'treemap', or a d3-sankey **flow
+diagram** when viewMode is 'sankey'. Count-based (the hierarchy endpoint carries
+no metric). Colored by the dashboard palette; hover uses the shared chart popover.
 -->
 <template>
   <WidgetCard
@@ -30,11 +30,15 @@ shared chart popover.
 
 <script setup>
 import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import FieldService from '../../search/FieldService';
 import { colorRange } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
 import { fetchHierarchy, widgetFields } from './widgetData';
+import { hierarchyToSankey } from '../../utils/sankeyData';
+
+const { t } = useI18n();
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -49,6 +53,7 @@ const container = ref(null);
 const svgEl = ref(null);
 const hierarchy = ref(null);
 let d3lib;
+let d3sankeyLib;
 let ro;
 
 const { loading, error, fetchData } = useSpigraphWidget(
@@ -79,6 +84,20 @@ const onHover = (e, d) => {
   });
 };
 
+// hover for sankey nodes/links (flat nodes carrying a depth, not a d3.hierarchy).
+// The kept root of a single-field sankey stands for the whole result set rather
+// than a value of any field, so it gets no field dropdown.
+const onSankeyHover = (e, node, rootKept) => {
+  const fieldIdx = rootKept ? node.depth - 1 : node.depth;
+  if (fieldIdx < 0) { return; }
+  emit('show-tooltip', {
+    data: { item: node.name, sessions: node.value, value: node.value },
+    position: { x: e.clientX + 1, y: e.clientY + 1 },
+    fieldConfig: fieldObjs.value[fieldIdx] || fieldObjs.value[0],
+    metricType: 'sessions'
+  });
+};
+
 // color by the top-level ancestor so each first-level slice keeps one hue
 const topName = (d) => { let n = d; while (n.depth > 1) { n = n.parent; } return n.data.name; };
 
@@ -93,6 +112,66 @@ const render = async () => {
   const svg = d3.select(svgEl.value);
   svg.selectAll('*').remove();
   svg.attr('width', w).attr('height', h);
+
+  if (props.widget.viewMode === 'sankey') {
+    if (!d3sankeyLib) { d3sankeyLib = await import('d3-sankey'); }
+    const { nodes, links, rootKept } = hierarchyToSankey(hierarchy.value);
+    if (!nodes.length) { return; }
+    // a kept root is the endpoint's hard-coded, untranslated "Top Talkers"; it
+    // stands for the whole result set, so label it in the user's language
+    if (rootKept && nodes[0]) { nodes[0].name = t('sessions.summary.sessions'); }
+    const sankeyColors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, nodes.length));
+    // every label is drawn to the right of its node, so the last column needs a
+    // strip outside the diagram to put them in — size it to the widest value
+    // (~5.5px per character at 10px) so long ones aren't cut off at the edge,
+    // but never let it eat more than a quarter of the widget
+    const widest = Math.max(0, ...nodes.map(n => (n.name || '').length));
+    const margin = { top: 2, right: Math.min(w * 0.25, Math.max(40, widest * 5.5)), bottom: 2, left: 4 };
+    const layout = d3sankeyLib.sankey()
+      .nodeId(d => d.id)
+      .nodeWidth(10)
+      .nodePadding(8)
+      .extent([[margin.left, margin.top], [w - margin.right, h - margin.bottom]]);
+    const graph = layout({ nodes, links }); // mutates the fresh nodes/links in place
+    const g = svg.append('g');
+    g.append('g')
+      .attr('fill', 'none')
+      .selectAll('path')
+      .data(graph.links)
+      .join('path')
+      .attr('d', d3sankeyLib.sankeyLinkHorizontal())
+      .attr('stroke', d => sankeyColors(d.source.name))
+      .attr('stroke-width', d => Math.max(1, d.width))
+      .attr('opacity', 0.5)
+      .style('cursor', 'pointer')
+      .on('mouseover', (e, d) => onSankeyHover(e, d.source, rootKept));
+    g.append('g')
+      .selectAll('rect')
+      .data(graph.nodes)
+      .join('rect')
+      .attr('x', d => d.x0)
+      .attr('y', d => d.y0)
+      .attr('width', d => Math.max(1, d.x1 - d.x0))
+      .attr('height', d => Math.max(1, d.y1 - d.y0))
+      .attr('fill', d => sankeyColors(d.name))
+      .attr('class', 'hierarchy-sep')
+      .style('cursor', 'pointer')
+      .on('mouseover', (e, d) => onSankeyHover(e, d, rootKept));
+    g.append('g')
+      .selectAll('text')
+      .data(graph.nodes.filter(d => (d.y1 - d.y0) > 8))
+      .join('text')
+      // always to the right of the node: putting the right half's labels to the
+      // left drew them back over the incoming ribbons while leaving the margin
+      // reserved for them empty
+      .attr('x', d => d.x1 + 4)
+      .attr('y', d => (d.y1 + d.y0) / 2)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', 'start')
+      .attr('class', 'sankey-label')
+      .text(d => d.name);
+    return;
+  }
 
   const root = d3.hierarchy(hierarchy.value)
     .sum(d => d.size || 0)
@@ -198,5 +277,11 @@ onBeforeUnmount(() => { if (ro) { ro.disconnect(); } });
 .hierarchy-container :deep(.hierarchy-sep) {
   stroke: rgb(var(--v-theme-background));
   stroke-width: 1;
+}
+/* sankey node labels read in the page foreground, outside the colored nodes */
+.hierarchy-container :deep(.sankey-label) {
+  fill: rgb(var(--v-theme-foreground));
+  font-size: 10px;
+  pointer-events: none;
 }
 </style>

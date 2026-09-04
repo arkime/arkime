@@ -3638,12 +3638,12 @@ class SessionAPIs {
    * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp summed per value), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp summed per value), metrics (array of numeric field exps, each summed per value — the multi-metric table's columns; falls back to [metricType]), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
    * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
    * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
    * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
    * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
-   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, length, order, expression, data[] } or { id, field, error } on per-widget failure.
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, length, order, expression, data[] } or { id, field, error } on per-widget failure. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's sum, or session count), metricValues (each requested metric's sum keyed by exp, + 'sessions') }.
    *
    */
   static summary (req, res) {
@@ -4154,17 +4154,30 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #entirePcap (req, res, pcapWriter, extension) {
+  static async #entirePcap (req, res, pcapWriter, extension) {
     const check = extension === 'pcap' && req.query.check === 'true';
     ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
 
     const writerOptions = { writeHeader: true };
 
+    const filter = [{ term: { rootId: req.params.id } }];
+
+    // Unlike the other pcap endpoints this one turns a single id into every
+    // linked session, so the forced expression has to be applied here or the
+    // rootId of an allowed session hands out the ones it excludes.
+    try {
+      const userExpression = await BuildQuery.userExpressionQuery(req);
+      if (userExpression) { filter.push(userExpression); }
+    } catch (err) {
+      console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, util.inspect(err, false, 50));
+      return res.status(403).end();
+    }
+
     const query = {
       size: 1000,
       _source: ['rootId'],
       sort: { lastPacket: { order: 'asc' } },
-      query: { term: { rootId: req.params.id } }
+      query: { bool: { filter } }
     };
 
     if (Config.debug) {

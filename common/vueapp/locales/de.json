@@ -464,6 +464,8 @@
       "intersectionView": "Schnittmenge",
       "heatmapView": "Heatmap",
       "treemapView": "Treemap",
+      "sankeyView": "Sankey",
+      "connectionsView": "Verbindungen",
       "timelineView": "Zeitleiste",
       "mapView": "Karte",
       "statsView": "Erfassungsstatistiken",
@@ -502,6 +504,7 @@
         "metrics": "Metriken",
         "sortBy": "Sortieren nach",
         "limit": "Limit",
+        "sampleSize": "Stichprobengröße",
         "order": "Reihenfolge",
         "width": "Breite (Spalten)",
         "height": "Höhe (Zeilen)",
@@ -510,7 +513,9 @@
         "localView": "Ansicht",
         "noView": "Keine Ansicht",
         "noViewsHint": "Keine Ansichten konfiguriert — erstellen Sie eine in der Suchleiste, um sie auf ein Widget anzuwenden",
-        "fieldRequired": "Ein Feld ist erforderlich"
+        "fieldRequired": "Ein Feld ist erforderlich",
+        "exactFieldsRequired": "Wählen Sie {count} Felder aus",
+        "fieldUnsupported": "{field} kann von diesem Widget nicht verwendet werden"
       },
       "config": {
         "configurations": "Dashboards speichern oder laden",
@@ -2124,5 +2129,17 @@
       "nodeIncluded": "Knoten erfolgreich eingeschlossen",
       "nodeInclusionFailed": "Knoteneinschluss fehlgeschlagen"
     }
+  },
+  "updateCheck": {
+    "check": "Nach Updates suchen",
+    "checking": "Suche läuft...",
+    "upToDate": "Arkime ist aktuell",
+    "available": "Arkime {version} ist verfügbar",
+    "security": "Enthält einen Sicherheitsfix",
+    "eol": "Diese Version wird nicht mehr unterstützt",
+    "failed": "Update-Prüfung fehlgeschlagen",
+    "dismiss": "Ausblenden",
+    "optIn": "Update-Prüfung aktivieren",
+    "disclosure": "Prüft {host} auf neuere Versionen. Überträgt Ihre Hauptversion ({major})."
   }
 }

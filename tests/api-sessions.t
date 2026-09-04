@@ -1,4 +1,4 @@
-use Test::More tests => 221;
+use Test::More tests => 226;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -263,6 +263,23 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     my $rootId = $longSession->{data}->[0]->{rootId};
     $response = getBinary("/api/session/entire/test/" . $rootId . ".pcap");
     ok(length($response->content) >= 24, "entire pcap has content");
+
+# entire session pcap must apply the user's forced expression to the linked sessions
+    my $entireAll = $response->content;
+
+    viewerPostToken("/api/user", '{"userId": "sac-entire", "userName": "UserName", "enabled":true, "password":"password", "expression":"packets == 1", "roles": ["arkimeUser"]}', $token);
+
+    # long-session.pcap is a 1 packet and a 4 packet segment sharing a rootId,
+    # the forced expression above only allows the 1 packet one
+    my $oneSession = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/long-session.pcap && packets == 1"));
+    my $oneId = $oneSession->{data}->[0]->{id};
+    my $onePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$oneId/pcap")->content;
+
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/entire/test/$rootId.pcap?arkimeRegressionUser=sac-entire");
+    is (unpack("H*", $response->content), unpack("H*", $onePcap), "entire pcap only has the segment the forced expression allows");
+    ok (length($response->content) < length($entireAll), "entire pcap drops the linked segments the forced expression excludes");
+
+    viewerDeleteToken("/api/user/sac-entire", $token);
 
 # should get error if get pcap can't find sessions from list of ids
     $json = viewerGet("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=nonexistingid");
@@ -590,3 +607,28 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     my $hostile = get("/api/sessions?date=-1&fields=" . uri_escape('source.ip,evil`--,__proto__.polluted') . "&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     cmp_ok ($hostile->{recordsFiltered}, '>=', 1, "hostile fields param still returns sessions");
     is ($hostile->{data}->[0]->{source}->{ip}, "10.180.156.185", "hostile fields param returns requested fields");
+
+# multi viewer must combine metric sub-aggregations across clusters instead of
+# keeping whichever cluster reached a histogram bucket first — the Sessions
+# timeline's bytes/packets series are built from those sub-aggregations, while
+# its sessions series comes from the bucket count and was always correct
+SKIP: {
+    skip "sessions are not in Elasticsearch to read and duplicate", 3 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
+
+    my $mmWindow = "startTime=1386004308&stopTime=1386004400";
+    my $mmFound = esPost("/tests_sessions3-13m12/_search?size=1", to_json({
+        query => { range => { firstPacket => { gte => 1386004308000, lte => 1386004400000 } } }
+    }));
+    my $mmSrc = $mmFound->{hits}->{hits}->[0]->{_source};
+    ok (defined $mmSrc, "found a session to duplicate into the second cluster");
+
+    # the same session in the second cluster lands in the same histogram bucket
+    esPost("/tests2_sessions3-13m12/_doc/multimerge1?refresh=true", to_json($mmSrc));
+    my $mmSingle = viewerGet("/api/sessions?facets=1&$mmWindow")->{graph};
+    my $mmMulti = multiGet("/api/sessions?facets=1&$mmWindow")->{graph};
+    esDelete("/tests2_sessions3-13m12/_doc/multimerge1?refresh=true");
+
+    my $mmPackets = ($mmSrc->{source}->{packets} // 0) + ($mmSrc->{destination}->{packets} // 0);
+    is ($mmMulti->{sessionsTotal}, $mmSingle->{sessionsTotal} + 1, "multi viewer counts the second cluster's session");
+    is ($mmMulti->{"network.packetsTotal"}, $mmSingle->{"network.packetsTotal"} + $mmPackets, "multi viewer sums packets across clusters");
+}

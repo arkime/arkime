@@ -464,6 +464,8 @@
       "intersectionView": "Intersección",
       "heatmapView": "Mapa de calor",
       "treemapView": "Mapa de árbol",
+      "sankeyView": "Sankey",
+      "connectionsView": "Conexiones",
       "timelineView": "Línea de tiempo",
       "mapView": "Mapa",
       "statsView": "Estadísticas de captura",
@@ -502,6 +504,7 @@
         "metrics": "Métricas",
         "sortBy": "Ordenar por",
         "limit": "Límite",
+        "sampleSize": "Tamaño de muestra",
         "order": "Orden",
         "width": "Ancho (columnas)",
         "height": "Alto (filas)",
@@ -510,7 +513,9 @@
         "localView": "Vista",
         "noView": "Sin vista",
         "noViewsHint": "No hay vistas configuradas — crea una en la barra de búsqueda para aplicarla a un widget",
-        "fieldRequired": "Se requiere un campo"
+        "fieldRequired": "Se requiere un campo",
+        "exactFieldsRequired": "Seleccione {count} campos",
+        "fieldUnsupported": "{field} no se puede usar en este widget"
       },
       "config": {
         "configurations": "Guardar o cargar paneles",
@@ -2124,5 +2129,17 @@
       "nodeIncluded": "Nodo incluido exitosamente",
       "nodeInclusionFailed": "Error al incluir el nodo"
     }
+  },
+  "updateCheck": {
+    "check": "Buscar actualizaciones",
+    "checking": "Comprobando...",
+    "upToDate": "Arkime está actualizado",
+    "available": "Arkime {version} está disponible",
+    "security": "Incluye una corrección de seguridad",
+    "eol": "Esta versión ya no tiene soporte",
+    "failed": "Error al buscar actualizaciones",
+    "dismiss": "Descartar",
+    "optIn": "Activar comprobación de actualizaciones",
+    "disclosure": "Consulta {host} para buscar versiones más recientes. Envía tu versión principal ({major})."
   }
 }

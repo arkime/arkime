@@ -465,6 +465,8 @@
       "intersectionView": "Intersectionway",
       "heatmapView": "Eatmaphay",
       "treemapView": "Eemaptray",
+      "sankeyView": "Ankeysay",
+      "connectionsView": "Onnectionscay",
       "timelineView": "Imelinetay",
       "mapView": "Apmay",
       "statsView": "Apturecay Atisticsstay",
@@ -503,6 +505,7 @@
         "metrics": "Etricsmay",
         "sortBy": "Ortsay ybay",
         "limit": "Imitlay",
+        "sampleSize": "Amplesay izesay",
         "order": "Orderway",
         "width": "Idthway (olumnscay)",
         "height": "Eighthay (owsray)",
@@ -511,7 +514,9 @@
         "localView": "Iewvay",
         "noView": "Onay iewvay",
         "noViewsHint": "Onay iewsvay onfiguredcay — eatecray oneway inway ethay earchsay arbay otay applyway itway otay away idgetway",
-        "fieldRequired": "Away ieldfay isway equiredray"
+        "fieldRequired": "Away ieldfay isway equiredray",
+        "exactFieldsRequired": "Electsay {count} ieldsfay",
+        "fieldUnsupported": "{field} an'tcay ebay useday ybay isthay idgetway"
       },
       "config": {
         "configurations": "Avesay orway oadlay ashboardsday",
@@ -2125,5 +2130,17 @@
       "nodeIncluded": "Uccessfullysay includedway odenay",
       "nodeInclusionFailed": "Odenay inclusionway ailedfay"
     }
+  },
+  "updateCheck": {
+    "check": "Eckchay orfay updatesway",
+    "checking": "Eckingchay...",
+    "upToDate": "ArkimeWay isway upway otay ateday",
+    "available": "ArkimeWay {version} isway availableway",
+    "security": "Includesway away ecuritysay ixfay",
+    "eol": "Isthay eleaseray isway onay ongerlay upportedsay",
+    "failed": "Updateway eckchay ailedfay",
+    "dismiss": "Ismissday",
+    "optIn": "Optway inway otay eckchay orfay updatesway",
+    "disclosure": "Eckschay {host} orfay ewernay eleasesray. Endssay ouryay ajormay ersionvay ({major})."
   }
 }
