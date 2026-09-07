@@ -75,6 +75,9 @@ SPDX-License-Identifier: Apache-2.0
         <!-- version (rainbow gradient via shared Version.vue) -->
         <Version :timezone="timezone" />
 
+        <!-- language switcher -->
+        <LanguageSwitcher additional-classes="ms-2" />
+
         <!-- help button -->
         <v-btn
           to="/help"
@@ -133,6 +136,7 @@ import { mapGetters, useStore } from 'vuex';
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import AdminMenu from '@common/AdminMenu.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { useTheme } from 'vuetify';
 import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
@@ -147,7 +151,8 @@ export default {
   components: {
     Logout,
     Version,
-    AdminMenu
+    AdminMenu,
+    LanguageSwitcher
   },
   setup () {
     const theme = useTheme();
