@@ -14,46 +14,27 @@ SPDX-License-Identifier: Apache-2.0
           alt="hoot"
           class="arkime-logo">
         <v-tooltip activator="parent">
-          Can I help you? Click me to see the help page
+          {{ $t('navigation.tooltipHelpTip') }}
         </v-tooltip>
       </router-link>
 
       <div class="arkime-nav-list d-flex align-center">
-        <v-btn
-          to="/"
-          :variant="$route.path === '/' ? 'flat' : 'text'"
-          :style="$route.path === '/' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn"
-          exact>
-          <span :class="{'nav-shortcut-active': getShiftKeyHold}">C</span>ont3xt
-        </v-btn>
-        <v-btn
-          to="/stats"
-          :variant="$route.path === '/stats' ? 'flat' : 'text'"
-          :style="$route.path === '/stats' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn"
-          exact>
-          St<span :class="{'nav-shortcut-active': getShiftKeyHold}">a</span>ts
-        </v-btn>
-        <v-btn
-          to="/settings"
-          :variant="$route.path === '/settings' ? 'flat' : 'text'"
-          :style="$route.path === '/settings' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          <span :class="{'nav-shortcut-active': getShiftKeyHold}">S</span>ettings
-        </v-btn>
-        <v-btn
-          v-if="getUser"
-          to="/history"
-          :variant="$route.path === '/history' ? 'flat' : 'text'"
-          :style="$route.path === '/history' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          Histor<span :class="{'nav-shortcut-active': getShiftKeyHold}">y</span>
-        </v-btn>
+        <template
+          v-for="item of navItems"
+          :key="item.to">
+          <v-btn
+            v-if="!item.requiresUser || getUser"
+            :to="item.to"
+            :variant="$route.path === item.to ? 'flat' : 'text'"
+            :style="$route.path === item.to ? activePillStyle : null"
+            size="small"
+            class="arkime-nav-btn"
+            exact>
+            <span>{{ item.parts.before }}</span><span
+              v-if="item.parts.key"
+              :class="{'nav-shortcut-active': getShiftKeyHold}">{{ item.parts.key }}</span><span>{{ item.parts.after }}</span>
+          </v-btn>
+        </template>
       </div>
 
       <v-spacer />
@@ -88,7 +69,7 @@ SPDX-License-Identifier: Apache-2.0
           class="arkime-help-btn ms-2">
           <v-icon icon="mdi-help-circle" />
           <v-tooltip activator="parent">
-            HELP!
+            {{ $t('navigation.helpTip') }}
           </v-tooltip>
         </v-btn>
 
@@ -142,6 +123,15 @@ import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
+// Underline the shortcut letter wherever it lands in the translated
+// label. The shortcut is a physical key, so a translation that doesn't
+// contain that letter simply gets no hint -- the key still works.
+function shortcutParts (title, key) {
+  const i = title.toLowerCase().indexOf(key.toLowerCase());
+  if (i < 0) { return { before: title, key: '', after: '' }; }
+  return { before: title.slice(0, i), key: title[i], after: title.slice(i + 1) };
+}
+
 let interval;
 const minTimeToWait = 10000;
 let timeToWait = minTimeToWait;
@@ -190,6 +180,15 @@ export default {
     ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold', 'getTheme']),
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
+    },
+    navItems () {
+      // keys match the shifted shortcuts wired up in App.vue
+      return [
+        { to: '/', title: this.$t('navigation.cont3xt'), key: 'C' },
+        { to: '/stats', title: this.$t('navigation.stats'), key: 'A' },
+        { to: '/settings', title: this.$t('navigation.settings'), key: 'S' },
+        { to: '/history', title: this.$t('navigation.history'), key: 'Y', requiresUser: true }
+      ].map(item => ({ ...item, parts: shortcutParts(item.title, item.key) }));
     },
     adminItems () {
       return [
