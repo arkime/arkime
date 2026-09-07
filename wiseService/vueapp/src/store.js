@@ -14,7 +14,9 @@ const store = createStore({
     // manifest default applies until that resolves.
     wiseTheme: DEFAULT_THEME_ID,
     customTheme: null,
-    statsDataInterval: 30000
+    statsDataInterval: 30000,
+    // fetched once by the navbar; undefined until then
+    user: undefined
   },
   mutations: {
     SET_THEME (state, newTheme) {
@@ -39,12 +41,17 @@ const store = createStore({
     },
     SET_STATS_DATA_INTERVAL (state, newInterval) {
       state.statsDataInterval = newInterval;
+    },
+    SET_USER (state, user) {
+      state.user = user;
     }
   },
   getters: {
     getTheme: state => state.wiseTheme,
     getCustomTheme: state => state.customTheme,
-    getStatsDataInterval: state => state.statsDataInterval
+    getStatsDataInterval: state => state.statsDataInterval,
+    getUser: state => state.user,
+    getIsAdmin: state => !!state.user?.roles?.includes('wiseAdmin')
   }
 });
 

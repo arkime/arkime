@@ -4,23 +4,20 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <page-layout>
-    <div class="arkime-container-fluid mt-3">
-      <BannerSettings />
-    </div>
+    <BannerPage />
   </page-layout>
 </template>
 
 <script>
-// BannerSettings is shared with cont3xt, so it stays a plain form component
-// and this page only supplies the viewer's shell around it.
+// BannerPage is the shared /banner page; viewer only adds its app shell.
 import PageLayout from '../utils/PageLayout.vue';
-import BannerSettings from '@common/BannerSettings.vue';
+import BannerPage from '@common/BannerPage.vue';
 
 export default {
   name: 'Banner',
   components: {
     PageLayout,
-    BannerSettings
+    BannerPage
   }
 };
 </script>

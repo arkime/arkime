@@ -54,24 +54,6 @@ SPDX-License-Identifier: Apache-2.0
           class="arkime-nav-btn">
           Histor<span :class="{'nav-shortcut-active': getShiftKeyHold}">y</span>
         </v-btn>
-        <v-btn
-          v-if="getUser && getUser.roles && getUser.roles.includes('usersAdmin')"
-          to="/users"
-          :variant="$route.path === '/users' ? 'flat' : 'text'"
-          :style="$route.path === '/users' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          Users
-        </v-btn>
-        <v-btn
-          v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
-          to="/roles"
-          :variant="$route.path === '/roles' ? 'flat' : 'text'"
-          :style="$route.path === '/roles' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          Roles
-        </v-btn>
       </div>
 
       <v-spacer />
@@ -106,6 +88,13 @@ SPDX-License-Identifier: Apache-2.0
             HELP!
           </v-tooltip>
         </v-btn>
+
+        <!-- admin menu (users/roles/banner) -->
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
 
         <Logout
           :base-path="path"
@@ -143,6 +132,7 @@ import { mapGetters, useStore } from 'vuex';
 
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import AdminMenu from '@common/AdminMenu.vue';
 import { useTheme } from 'vuetify';
 import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
@@ -156,7 +146,8 @@ export default {
   name: 'Cont3xtNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    AdminMenu
   },
   setup () {
     const theme = useTheme();
@@ -194,6 +185,15 @@ export default {
     ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold', 'getTheme']),
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
+    },
+    adminItems () {
+      return [
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.getUser?.roles?.includes('usersAdmin') },
+        { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: this.getUser?.assignableRoles?.length > 0 },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: !!this.getUser?.roles?.includes('cont3xtAdmin') }
+      ].filter(item => item.show).map(item => ({
+        ...item, isActive: this.$route.path === item.link
+      }));
     }
   },
   mounted: function () {
