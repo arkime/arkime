@@ -90,6 +90,13 @@ SPDX-License-Identifier: Apache-2.0
           class="stats-interval-select ms-2"
           prepend-inner-icon="mdi-refresh" />
 
+        <!-- admin menu (banner) -->
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
+
         <Logout
           class="ms-2"
           size="sm" />
@@ -103,6 +110,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import AdminMenu from '@common/AdminMenu.vue';
+import WiseService from './wise.service';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import { THEMES } from '@common/themes/manifest.js';
@@ -112,6 +121,7 @@ export default {
   components: {
     Logout,
     Version,
+    AdminMenu,
     LanguageSwitcher
   },
   data () {
@@ -127,6 +137,15 @@ export default {
     };
   },
   computed: {
+    adminItems () {
+      if (!this.$store.getters.getIsAdmin) { return []; }
+      return [{
+        title: this.$t('navigation.banner'),
+        link: '/banner',
+        name: 'Banner',
+        isActive: this.$route.path === '/banner'
+      }];
+    },
     wiseTheme () {
       return this.$store.state.wiseTheme || 'arkime-light';
     },
@@ -175,6 +194,11 @@ export default {
   },
   mounted () {
     this.queryParams = this.$route.query;
+    WiseService.getCurrentUser().then((user) => {
+      // api/user sits behind isWiseUser, which answers non-users with a
+      // 200 { success: false } body instead of an error status
+      if (user?.userId) { this.$store.commit('SET_USER', user); }
+    }).catch(() => { /* anonymous / unauthenticated */ });
   }
 };
 </script>

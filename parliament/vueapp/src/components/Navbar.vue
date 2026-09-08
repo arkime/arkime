@@ -46,15 +46,6 @@ SPDX-License-Identifier: Apache-2.0
           class="arkime-nav-btn">
           {{ $t('navigation.settings') }}
         </v-btn>
-        <v-btn
-          v-if="isAdmin"
-          to="/users"
-          :variant="$route.path === '/users' ? 'flat' : 'text'"
-          :style="$route.path === '/users' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          {{ $t('navigation.users') }}
-        </v-btn>
       </div>
 
       <v-spacer />
@@ -135,6 +126,13 @@ SPDX-License-Identifier: Apache-2.0
           class="refresh-interval-select ms-2"
           prepend-inner-icon="mdi-refresh" />
 
+        <!-- admin menu (users/banner) -->
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
+
         <Logout
           :base-path="path"
           class="ms-2"
@@ -149,6 +147,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import AdminMenu from '@common/AdminMenu.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import { THEMES } from '@common/themes/manifest.js';
@@ -158,6 +157,7 @@ export default {
   components: {
     Logout,
     Version,
+    AdminMenu,
     LanguageSwitcher
   },
   data () {
@@ -176,6 +176,13 @@ export default {
   },
   computed: {
     isAdmin () { return this.$store.state.isAdmin; },
+    adminItems () {
+      if (!this.isAdmin) { return []; }
+      return [
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users' },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner' }
+      ].map(item => ({ ...item, isActive: this.$route.path === item.link }));
+    },
     settings () {
       return this.$store.state.parliament?.settings || { general: {} };
     },
