@@ -366,7 +366,8 @@
     "tickNotPrimary": "Dieser Viewer ist nicht der Cron-Leader; er kann den Scan nicht ausführen.",
     "tickMonitorDisabled": "Monitor ist deaktiviert (featherprintMonitorEnabled=false).",
     "tickCompleted": "Scan abgeschlossen.",
-    "tickFailed": "Fehlgeschlagen: {reason}"
+    "tickFailed": "Fehlgeschlagen: {reason}",
+    "dbUpgradeNeeded": "Geräteverfolgung, Verlauf und Warnungen erfordern Datenbankversion {version}. Führen Sie 'db/db.pl <host:port> upgrade' aus, um sie zu aktivieren. Die Suche funktioniert auch ohne das Upgrade."
   },
   "sessions": {
     "title": "Sitzungen",

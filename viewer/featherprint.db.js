@@ -2,8 +2,11 @@
 /* featherprint.db.js -- ES persistence for featherprint device records,
  *                       history, alerts and MAC-keyed tracking. Reads/writes
  *                       via the bare index aliases (`featherprint`,
- *                       `featherprint_history`, `featherprint_alerts`,
- *                       `featherprint_macs`) so re-indexes are transparent.
+ *                       `featherprint_history`, `featherprint_alerts`) so
+ *                       re-indexes are transparent. The `featherprint` index
+ *                       holds several doc kinds keyed by id: the device record
+ *                       (id = ip), monitor state (`__state__`) and MAC tracking
+ *                       (`mac:<addr>`), leaving room for more kinds later.
  *
  * Copyright Yahoo Inc.
  *
@@ -18,7 +21,7 @@ class FeatherprintDb {
   static INDEX = 'featherprint';
   static HISTORY_INDEX = 'featherprint_history';
   static ALERTS_INDEX = 'featherprint_alerts';
-  static MACS_INDEX = 'featherprint_macs';
+  static MAC_ID_PREFIX = 'mac:';
   static STATE_ID = '__state__';
 
   // --------------------------------------------------------------------------
@@ -136,12 +139,13 @@ class FeatherprintDb {
   // MAC-keyed tracking: one doc per MAC, with current IP and history so we
   // can emit changeIp when a known MAC shows up on a new IP (arpwatch-style).
   static async getMac (mac) {
-    return FeatherprintDb.#getById(FeatherprintDb.MACS_INDEX, mac, true);
+    return FeatherprintDb.#getById(FeatherprintDb.INDEX, `${FeatherprintDb.MAC_ID_PREFIX}${mac}`, true);
   }
 
   static async upsertMac (doc) {
-    await Db.index(FeatherprintDb.MACS_INDEX, doc.mac, doc);
-    return doc.mac;
+    const value = doc.mac?.value;
+    await Db.index(FeatherprintDb.INDEX, `${FeatherprintDb.MAC_ID_PREFIX}${value}`, doc);
+    return value;
   }
 
   // --------------------------------------------------------------------------

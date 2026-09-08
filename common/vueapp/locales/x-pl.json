@@ -367,7 +367,8 @@
     "tickNotPrimary": "Isthay iewervay isway otnay ethay oncray-eaderlay; itway annotcay unray ethay anscay.",
     "tickMonitorDisabled": "Onitormay isway isabledday (featherprintMonitorEnabled=false).",
     "tickCompleted": "Anscay ompletedcay.",
-    "tickFailed": "Ailedfay: {reason}"
+    "tickFailed": "Ailedfay: {reason}",
+    "dbUpgradeNeeded": "Evicelday ackingtray, istoryhay andway alertsway equireray atabaseday ersionvay {version}. Unray 'db/db.pl <host:port> upgrade' otay enableway emthay. Ookuplay orksway ithoutway ethay upgradeway."
   },
   "sessions": {
     "title": "Essionssay",

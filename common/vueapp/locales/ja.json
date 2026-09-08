@@ -366,7 +366,8 @@
     "tickNotPrimary": "このビューアーは cron リーダーではないため、スキャンを実行できません。",
     "tickMonitorDisabled": "モニターは無効です（featherprintMonitorEnabled=false）。",
     "tickCompleted": "スキャンが完了しました。",
-    "tickFailed": "失敗しました：{reason}"
+    "tickFailed": "失敗しました：{reason}",
+    "dbUpgradeNeeded": "デバイス追跡、履歴、アラートにはデータベースバージョン {version} が必要です。有効にするには 'db/db.pl <host:port> upgrade' を実行してください。ルックアップはアップグレードなしでも動作します。"
   },
   "sessions": {
     "title": "セッション",

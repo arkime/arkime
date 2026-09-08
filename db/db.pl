@@ -85,7 +85,7 @@
 # 86 - added totpSecret field to users
 # 87 - added dismissedHelpNotes field to users
 # 88 - added interfaceOffsets to files
-# 89 - added featherprint, featherprint_history, featherprint_alerts, featherprint_macs indices
+# 89 - added featherprint, featherprint_history, featherprint_alerts indices
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -7931,6 +7931,14 @@ sub featherprintUpdate
     "firstSeen": { "type": "date" },
     "lastSeen": { "type": "date" },
     "classification": { "type": "keyword" },
+    "currentIp": { "type": "ip" },
+    "ipHistory": {
+      "properties": {
+        "ip": { "type": "ip" },
+        "ts": { "type": "date" },
+        "source": { "type": "keyword" }
+      }
+    },
     "mac": {
       "properties": {
         "value": { "type": "keyword" },
@@ -8044,45 +8052,11 @@ sub featherprintAlertsUpdate
     esPut("/${PREFIX}featherprint_alerts_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
-sub featherprintMacsCreate
-{
-    logmsg "Creating featherprint_macs_v70 index\n" if ($verbose > 0);
-    esPut("/${PREFIX}featherprint_macs_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
-    esAlias("add", "featherprint_macs_v70", "featherprint_macs");
-    featherprintMacsUpdate();
-}
-
-sub featherprintMacsUpdate
-{
-    my $mapping = '
-{
-  "_source": {"enabled": "true"},
-  "dynamic": "false",
-  "properties": {
-    "mac": { "type": "keyword" },
-    "currentIp": { "type": "ip" },
-    "firstSeen": { "type": "date" },
-    "lastSeen": { "type": "date" },
-    "ipHistory": {
-      "properties": {
-        "ip": { "type": "ip" },
-        "ts": { "type": "date" },
-        "source": { "type": "keyword" }
-      }
-    }
-  }
-}';
-
-    logmsg "Setting featherprint_macs_v70 mapping\n" if ($verbose > 0);
-    esPut("/${PREFIX}featherprint_macs_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
-}
-
 sub featherprintCreateAll
 {
     featherprintCreate();
     featherprintHistoryCreate();
     featherprintAlertsCreate();
-    featherprintMacsCreate();
 }
 ################################################################################
 # Copy the per-user layouts named in %SHAREABLE_IMPORTS into the shareables
@@ -8640,7 +8614,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70,${PREFIX}featherprint_macs_v70", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -8969,7 +8943,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
 
     # Indices we want to backup, if there is an alias
-    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     # find which we have aliases for or are in cont3xt
     @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
@@ -9682,7 +9656,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "featherprint_v70");
     printIndex($status, "featherprint_history_v70");
     printIndex($status, "featherprint_alerts_v70");
-    printIndex($status, "featherprint_macs_v70");
 
     printIndex($status, "sequence_v30");
     printIndex($status, "sequence_v3");
@@ -10482,12 +10455,6 @@ $policy = qq/{
             update => \&featherprintAlertsUpdate,
         },
         {
-            name => "featherprint_macs_v70",
-            alias => "featherprint_macs",
-            create => \&featherprintMacsCreate,
-            update => \&featherprintMacsUpdate,
-        },
-        {
             name => "stats_v30",
             alias => "stats",
             create => \&statsCreate,
@@ -10657,7 +10624,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40", "featherprint_v70", "featherprint_history_v70", "featherprint_alerts_v70", "featherprint_macs_v70") {
+    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40", "featherprint_v70", "featherprint_history_v70", "featherprint_alerts_v70") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -10669,7 +10636,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs") {
+    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -10688,7 +10655,7 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs") {
+    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -10710,7 +10677,6 @@ $policy = qq/{
     esAlias("add", "featherprint_v70", "featherprint");
     esAlias("add", "featherprint_history_v70", "featherprint_history");
     esAlias("add", "featherprint_alerts_v70", "featherprint_alerts");
-    esAlias("add", "featherprint_macs_v70", "featherprint_macs");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -10792,12 +10758,6 @@ $policy = qq/{
         featherprintAlertsCreate();
     } else {
         featherprintAlertsUpdate();
-    }
-
-    if (!defined $indices{"${PREFIX}featherprint_macs_v70"}) {
-        featherprintMacsCreate();
-    } else {
-        featherprintMacsUpdate();
     }
 
     if (defined $indices{"${PREFIX}parliament_v50"}) {
@@ -10905,7 +10865,6 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}featherprint_v70,${PREFIX}featherprint?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}featherprint_history_v70,${PREFIX}featherprint_history?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}featherprint_alerts_v70,${PREFIX}featherprint_alerts?ignore_unavailable=true", 1);
-    esDelete("/${PREFIX}featherprint_macs_v70,${PREFIX}featherprint_macs?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     my $indices;
     esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
@@ -10962,7 +10921,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     # backup writes the prefix into the file names, and the cont3xt indices
     # aren't prefixed, so work with full index names here
-    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables", "featherprint", "featherprint_history", "featherprint_alerts", "featherprint_macs");
+    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables", "featherprint", "featherprint_history", "featherprint_alerts");
     push(@indices, "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     my @filelist = ();

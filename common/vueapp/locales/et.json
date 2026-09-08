@@ -366,7 +366,8 @@
     "tickNotPrimary": "See vaatur ei ole cron-juht; see ei saa skannimist käivitada.",
     "tickMonitorDisabled": "Monitor on keelatud (featherprintMonitorEnabled=false).",
     "tickCompleted": "Skannimine lõpetatud.",
-    "tickFailed": "Ebaõnnestus: {reason}"
+    "tickFailed": "Ebaõnnestus: {reason}",
+    "dbUpgradeNeeded": "Seadmete jälgimine, ajalugu ja hoiatused vajavad andmebaasi versiooni {version}. Nende lubamiseks käivitage 'db/db.pl <host:port> upgrade'. Otsing töötab ka ilma uuenduseta."
   },
   "sessions": {
     "title": "Seansid",

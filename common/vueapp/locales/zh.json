@@ -366,7 +366,8 @@
     "tickNotPrimary": "此查看器不是 cron 主节点；无法执行扫描。",
     "tickMonitorDisabled": "监控已禁用（featherprintMonitorEnabled=false）。",
     "tickCompleted": "扫描已完成。",
-    "tickFailed": "失败：{reason}"
+    "tickFailed": "失败：{reason}",
+    "dbUpgradeNeeded": "设备跟踪、历史记录和警报需要数据库版本 {version}。请运行 'db/db.pl <host:port> upgrade' 以启用它们。查找功能无需升级即可使用。"
   },
   "sessions": {
     "title": "会话",

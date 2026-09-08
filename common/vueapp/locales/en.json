@@ -366,7 +366,8 @@
     "tickNotPrimary": "This viewer is not the cron-leader; it cannot run the scan.",
     "tickMonitorDisabled": "Monitor is disabled (featherprintMonitorEnabled=false).",
     "tickCompleted": "Scan completed.",
-    "tickFailed": "Failed: {reason}"
+    "tickFailed": "Failed: {reason}",
+    "dbUpgradeNeeded": "Device tracking, history and alerts require database version {version}. Run 'db/db.pl <host:port> upgrade' to enable them. Lookup works without the upgrade."
   },
   "sessions": {
     "title": "Sessions",

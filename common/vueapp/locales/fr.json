@@ -366,7 +366,8 @@
     "tickNotPrimary": "Ce viewer n'est pas le leader cron ; il ne peut pas lancer l'analyse.",
     "tickMonitorDisabled": "Le moniteur est désactivé (featherprintMonitorEnabled=false).",
     "tickCompleted": "Analyse terminée.",
-    "tickFailed": "Échec : {reason}"
+    "tickFailed": "Échec : {reason}",
+    "dbUpgradeNeeded": "Le suivi des appareils, l'historique et les alertes nécessitent la version {version} de la base de données. Exécutez 'db/db.pl <host:port> upgrade' pour les activer. La recherche fonctionne sans la mise à niveau."
   },
   "sessions": {
     "title": "Sessions",

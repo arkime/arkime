@@ -561,6 +561,21 @@ class FeatherprintClassify {
 class FeatherprintAPIs {
   static #internals = null;
 
+  // db.pl schema version that creates the featherprint indices. Below this the
+  // monitor stays idle rather than letting a write auto-create an unmapped
+  // index; lookup is unaffected (it never touches these indices).
+  static DB_VERSION = 89;
+
+  // Cached for 10s inside Db, so an upgrade takes effect without a restart.
+  // undefined means "couldn't tell", which callers treat as too old.
+  static async dbVersion () {
+    try {
+      return (await Db.healthCache())?.molochDbVersion;
+    } catch {
+      return undefined;
+    }
+  }
+
   // --------------------------------------------------------------------------
   // Constants
   // --------------------------------------------------------------------------
@@ -739,7 +754,8 @@ class FeatherprintAPIs {
       timer: null,
       running: false,
       state: null,
-      wasPrimary: null
+      wasPrimary: null,
+      dbVersionWarned: false
     };
     const i = FeatherprintAPIs.#internals;
 
@@ -849,6 +865,18 @@ class FeatherprintAPIs {
       i.wasPrimary = isP;
     }
     if (!isP || i.running) return;
+
+    const dbVersion = await FeatherprintAPIs.dbVersion();
+    if (!(dbVersion >= FeatherprintAPIs.DB_VERSION)) {
+      if (i.dbVersionWarned !== dbVersion) {
+        i.dbVersionWarned = dbVersion;
+        console.log(`featherprint: monitor idle, database version ${dbVersion ?? 'unknown'} < ` +
+          `${FeatherprintAPIs.DB_VERSION}; run 'db/db.pl <host:port> upgrade'`);
+      }
+      return;
+    }
+    i.dbVersionWarned = false;
+
     i.running = true;
     try {
       const state = await FeatherprintAPIs.#ensureState();
@@ -1069,6 +1097,9 @@ class FeatherprintAPIs {
     if (!i.settings.monitorEnabled) return { triggered: false, monitorDisabled: true };
     if (!i.isPrimaryViewer()) return { triggered: false, notPrimary: true };
     if (i.running) return { triggered: false, alreadyRunning: true };
+    if (!((await FeatherprintAPIs.dbVersion()) >= FeatherprintAPIs.DB_VERSION)) {
+      return { triggered: false, dbUpgradeNeeded: true, requiredDbVersion: FeatherprintAPIs.DB_VERSION };
+    }
     await FeatherprintAPIs.tick();
     return { triggered: true };
   }
@@ -1335,7 +1366,8 @@ class FeatherprintAPIs {
     const nowTs = ts ?? Date.now();
     if (!macDoc) {
       macDoc = {
-        mac: macVal,
+        kind: 'mac',
+        mac: { value: macVal },
         currentIp: ip,
         firstSeen: nowTs,
         lastSeen: nowTs,
@@ -1431,6 +1463,16 @@ class FeatherprintAPIs {
     return Number.isInteger(bits) && bits >= 0 && bits <= (net.isIP(ip) === 6 ? 128 : 32);
   }
 
+  // The persisted endpoints read indices db.pl only creates at DB_VERSION.
+  // Answer with a clear 503 rather than letting ES surface index_not_found.
+  // Lookup is exempt: it is transient and reads the sessions indices.
+  static async #dbGate (res) {
+    if ((await FeatherprintAPIs.dbVersion()) >= FeatherprintAPIs.DB_VERSION) return false;
+    res.serverError(503, `featherprint requires database version ${FeatherprintAPIs.DB_VERSION}, ` +
+      "run 'db/db.pl <host:port> upgrade'");
+    return true;
+  }
+
   static #limitParam (v, dflt, max) {
     const n = parseInt(v ?? dflt, 10);
     if (isNaN(n) || n < 1) return dflt;
@@ -1439,6 +1481,7 @@ class FeatherprintAPIs {
 
   static async apiGetIp (req, res) {
     try {
+      if (await FeatherprintAPIs.#dbGate(res)) return;
       if (net.isIP(req.params.ip) === 0) {
         return res.serverError(400, 'Invalid ip');
       }
@@ -1468,6 +1511,7 @@ class FeatherprintAPIs {
    */
   static async apiSearch (req, res) {
     try {
+      if (await FeatherprintAPIs.#dbGate(res)) return;
       if (req.query.ip !== undefined && !FeatherprintAPIs.#isIpOrCidr(req.query.ip)) {
         return res.serverError(400, 'ip must be an exact IP or CIDR');
       }
@@ -1497,6 +1541,7 @@ class FeatherprintAPIs {
    */
   static async apiGetHistory (req, res) {
     try {
+      if (await FeatherprintAPIs.#dbGate(res)) return;
       if (net.isIP(req.params.ip) === 0) {
         return res.serverError(400, 'Invalid ip');
       }
@@ -1525,6 +1570,7 @@ class FeatherprintAPIs {
    */
   static async apiGetAlerts (req, res) {
     try {
+      if (await FeatherprintAPIs.#dbGate(res)) return;
       let acked;
       if (req.query.acked === 'true') acked = true;
       else if (req.query.acked === 'false') acked = false;
@@ -1550,6 +1596,7 @@ class FeatherprintAPIs {
    */
   static async apiAckAlert (req, res) {
     try {
+      if (await FeatherprintAPIs.#dbGate(res)) return;
       if (!ArkimeUtil.isString(req.params.id)) {
         return res.serverError(400, 'Invalid id');
       }
@@ -1600,16 +1647,29 @@ class FeatherprintAPIs {
   /**
    * GET - /api/featherprint/state
    *
-   * Return the persisted monitor cursor (lpValue, lastProcessedTs, ...).
-   * Used by the UI status row to show how far the monitor has caught up.
+   * Return the persisted monitor cursor (lpValue, lastProcessedTs, ...) plus
+   * the schema-version gate. Used by the UI status row to show how far the
+   * monitor has caught up, and to hide the monitor-backed tabs on an old
+   * database (lookup still works -- it never reads these indices).
    * @name /featherprint/state
    * @returns {boolean} success - Whether the state lookup succeeded.
    * @returns {object} state - The persisted monitor state (or null if uninitialized).
+   * @returns {boolean} dbUpgradeNeeded - True if the database predates the featherprint indices.
+   * @returns {number} dbVersion - The current database version (undefined if unknown).
+   * @returns {number} requiredDbVersion - The version that adds the featherprint indices.
    */
   static async apiGetMonitorState (req, res) {
     try {
-      const state = await FeatherprintDb.getState();
-      return res.send({ success: true, state: state || null });
+      const dbVersion = await FeatherprintAPIs.dbVersion();
+      const dbUpgradeNeeded = !(dbVersion >= FeatherprintAPIs.DB_VERSION);
+      const state = dbUpgradeNeeded ? null : await FeatherprintDb.getState();
+      return res.send({
+        success: true,
+        state: state || null,
+        dbUpgradeNeeded,
+        dbVersion,
+        requiredDbVersion: FeatherprintAPIs.DB_VERSION
+      });
     } catch (e) {
       return res.serverError(500, `featherprint state: ${e.message}`);
     }
@@ -1648,6 +1708,7 @@ class FeatherprintAPIs {
    * @returns {boolean} alreadyRunning - True if a tick was already in flight.
    * @returns {boolean} notPrimary - True if this node is not the cron leader.
    * @returns {boolean} monitorDisabled - True if featherprintMonitorEnabled=false.
+   * @returns {boolean} dbUpgradeNeeded - True if the database predates the featherprint indices.
    */
   static async apiRunTickNow (req, res) {
     try {

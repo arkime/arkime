@@ -366,7 +366,8 @@
     "tickNotPrimary": "이 뷰어는 cron 리더가 아니므로 스캔을 실행할 수 없습니다.",
     "tickMonitorDisabled": "모니터가 비활성화되어 있습니다 (featherprintMonitorEnabled=false).",
     "tickCompleted": "스캔이 완료되었습니다.",
-    "tickFailed": "실패: {reason}"
+    "tickFailed": "실패: {reason}",
+    "dbUpgradeNeeded": "장치 추적, 기록 및 경고에는 데이터베이스 버전 {version}이(가) 필요합니다. 활성화하려면 'db/db.pl <host:port> upgrade'를 실행하세요. 조회는 업그레이드 없이도 작동합니다."
   },
   "sessions": {
     "title": "세션",

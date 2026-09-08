@@ -87,6 +87,16 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-loading v-if="!adminConfig && !error" />
 
       <div v-else-if="adminConfig">
+        <!-- the monitor is idle until db.pl creates the featherprint indices -->
+        <v-alert
+          v-if="dbUpgradeNeeded"
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mb-4">
+          {{ $t('featherprint.dbUpgradeNeeded', { version: requiredDbVersion }) }}
+        </v-alert>
+
         <!-- read-only: these come from the arkime ini ([featherprint-defaults]
              and [featherprint-subnet]) and are parsed once at viewer start -->
         <v-alert
@@ -241,6 +251,8 @@ export default {
     return {
       adminConfig: null,
       monitorState: null,
+      dbUpgradeNeeded: false,
+      requiredDbVersion: null,
       tickBusy: false,
       tickStatus: '',
       tickStatusTimer: null,
@@ -268,6 +280,8 @@ export default {
       try {
         const r = await fetchWrapper({ url: 'api/featherprint/state' });
         this.monitorState = r?.state || null;
+        this.dbUpgradeNeeded = !!r?.dbUpgradeNeeded;
+        this.requiredDbVersion = r?.requiredDbVersion ?? null;
       } catch { /* state is informational only */ }
     },
     async loadAdminConfig () {
@@ -300,6 +314,7 @@ export default {
         if (r?.alreadyRunning) this.flashTickStatus(this.$t('featherprint.tickAlreadyRunning'));
         else if (r?.notPrimary) this.error = this.$t('featherprint.tickNotPrimary');
         else if (r?.monitorDisabled) this.error = this.$t('featherprint.tickMonitorDisabled');
+        else if (r?.dbUpgradeNeeded) this.error = this.$t('featherprint.dbUpgradeNeeded', { version: r.requiredDbVersion });
         else this.flashTickStatus(this.$t('featherprint.tickCompleted'));
         this.refreshAll();
       } catch (err) {

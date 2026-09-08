@@ -233,7 +233,9 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           mandatory
           class="page-tab-strip">
-          <v-btn value="tracked">
+          <v-btn
+            value="tracked"
+            v-if="!dbUpgradeNeeded">
             <v-icon
               start
               icon="mdi-format-list-bulleted" />
@@ -245,7 +247,9 @@ SPDX-License-Identifier: Apache-2.0
               icon="mdi-magnify" />
             {{ $t('featherprint.lookup') }}
           </v-btn>
-          <v-btn value="alerts">
+          <v-btn
+            value="alerts"
+            v-if="!dbUpgradeNeeded">
             <v-icon
               start
               icon="mdi-alert-circle-outline" />
@@ -263,6 +267,16 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- featherprint content -->
     <div class="mt-4 px-3">
+      <!-- old schema: only lookup is available, say why -->
+      <v-alert
+        v-if="dbUpgradeNeeded"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="ms-2 me-2 mb-4">
+        {{ $t('featherprint.dbUpgradeNeeded', { version: requiredDbVersion }) }}
+      </v-alert>
+
       <!-- alerts -->
       <div
         v-if="section === 'alerts'"
@@ -542,6 +556,8 @@ export default {
       lookupBusy: false,
       lookupResultTs: null,
       monitorState: null,
+      dbUpgradeNeeded: false,
+      requiredDbVersion: null,
       trackedSort: { field: 'lastSeen', desc: true },
       trackedPaging: { start: 0, length: 50 },
       alertSort: { field: 'ts', desc: true },
@@ -725,10 +741,13 @@ export default {
     fmtTs (ts) {
       return fmtTs(ts, this.$store?.state?.user?.settings);
     },
-    refreshAll () {
+    // State first: it carries the schema gate, and on an old database the
+    // list/alert endpoints answer 503 rather than data.
+    async refreshAll () {
+      await this.loadState();
+      if (this.dbUpgradeNeeded) { return; }
       this.loadIps();
       this.loadAlerts();
-      this.loadState();
     },
     async goToInfoForIp (ip) {
       await this.$router.push({ name: 'FeatherprintTracked' });
@@ -746,6 +765,12 @@ export default {
       try {
         const r = await fetchWrapper({ url: 'api/featherprint/state' });
         this.monitorState = r?.state || null;
+        this.dbUpgradeNeeded = !!r?.dbUpgradeNeeded;
+        this.requiredDbVersion = r?.requiredDbVersion ?? null;
+        // tracked/alerts read indices this database doesn't have yet
+        if (this.dbUpgradeNeeded && this.section !== 'lookup') {
+          this.$router.replace({ name: 'FeatherprintLookup' });
+        }
       } catch { /* state is informational only */ }
     },
     async loadIps () {
@@ -819,7 +844,9 @@ export default {
         }
         // History is keyed by ip and written only by the monitor, so it is
         // independent of this transient scan: a monitored ip has real rows
-        // here, anything else correctly comes back empty.
+        // here, anything else correctly comes back empty. On an old schema
+        // there is no history index at all, and the banner already says so.
+        if (this.dbUpgradeNeeded) { return; }
         try {
           const h = await fetchWrapper({ url: `api/featherprint/history/${encodeURIComponent(ip)}?limit=50` });
           this.lookupHistory = h?.history || [];

@@ -366,7 +366,8 @@
     "tickNotPrimary": "Este visor no es el líder de cron; no puede ejecutar el análisis.",
     "tickMonitorDisabled": "El monitor está deshabilitado (featherprintMonitorEnabled=false).",
     "tickCompleted": "Análisis completado.",
-    "tickFailed": "Falló: {reason}"
+    "tickFailed": "Falló: {reason}",
+    "dbUpgradeNeeded": "El seguimiento de dispositivos, el historial y las alertas requieren la versión {version} de la base de datos. Ejecute 'db/db.pl <host:port> upgrade' para habilitarlos. La búsqueda funciona sin la actualización."
   },
   "sessions": {
     "title": "Sesiones",

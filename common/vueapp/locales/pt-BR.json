@@ -366,7 +366,8 @@
     "tickNotPrimary": "Este visualizador não é o líder do cron; não pode executar a varredura.",
     "tickMonitorDisabled": "O monitor está desabilitado (featherprintMonitorEnabled=false).",
     "tickCompleted": "Varredura concluída.",
-    "tickFailed": "Falha: {reason}"
+    "tickFailed": "Falha: {reason}",
+    "dbUpgradeNeeded": "O rastreamento de dispositivos, o histórico e os alertas exigem a versão {version} do banco de dados. Execute 'db/db.pl <host:port> upgrade' para habilitá-los. A consulta funciona sem a atualização."
   },
   "sessions": {
     "title": "Sessões",
