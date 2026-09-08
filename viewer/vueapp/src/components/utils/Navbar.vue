@@ -58,12 +58,6 @@ SPDX-License-Identifier: Apache-2.0
 
         <e-s-health class="ms-2" />
 
-        <AdminMenu
-          v-if="adminItems.length"
-          :items="adminItems"
-          :active-pill-style="activePillStyle"
-          additional-classes="ms-2" />
-
         <v-btn
           v-if="isAToolBarPage"
           variant="text"
@@ -75,6 +69,12 @@ SPDX-License-Identifier: Apache-2.0
           <v-icon :icon="showToolBars ? 'mdi-chevron-up-circle' : 'mdi-chevron-down-circle'" />
           <v-tooltip activator="parent">{{ $t('navigation.toggleTopStuffTip') }}</v-tooltip>
         </v-btn>
+
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
 
         <Logout
           size="sm"
@@ -92,7 +92,7 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth.vue';
-import AdminMenu from './AdminMenu.vue';
+import AdminMenu from '@common/AdminMenu.vue';
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';

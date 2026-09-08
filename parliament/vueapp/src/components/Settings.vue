@@ -75,12 +75,6 @@ SPDX-License-Identifier: Apache-2.0
                 class="me-1" />
               Themes
             </v-tab>
-            <v-tab value="banner">
-              <v-icon
-                icon="mdi-bullhorn"
-                class="me-1" />
-              {{ $t('settings.banner.title') }}
-            </v-tab>
           </v-tabs>
 
           <!-- bottom fixed messages -->
@@ -440,9 +434,6 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="onThemeChange"
               @update:custom-theme="onCustomThemeChange" />
           </div> <!-- /themes tab -->
-          <div v-if="visibleTab === 'banner'">
-            <banner-settings />
-          </div> <!-- /banner tab -->
         </v-col> <!-- /content -->
       </v-row> <!-- /page content -->
     </v-container>
@@ -456,7 +447,6 @@ import SettingsService from './settings.service.js';
 import UserService from '@/components/user.service.js';
 import Notifiers from '@common/Notifiers.vue';
 import ThemePicker from '@common/ThemePicker.vue';
-import BannerSettings from '@common/BannerSettings.vue';
 import { THEMES } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
@@ -465,7 +455,7 @@ let msgCloseTimeout;
 
 export default {
   name: 'Settings',
-  components: { Notifiers, ThemePicker, BannerSettings },
+  components: { Notifiers, ThemePicker },
   data: function () {
     return {
       message: '',
@@ -510,8 +500,10 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'general' || tab === 'notifiers' || tab === 'themes' || tab === 'banner') {
+      if (tab === 'general' || tab === 'notifiers' || tab === 'themes') {
         this.visibleTab = tab;
+      } else if (tab === 'banner') { // banner moved to its own route
+        this.$router.replace('/banner');
       }
     }
   },
