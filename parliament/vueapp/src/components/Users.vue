@@ -24,7 +24,7 @@ export default {
   name: 'Users',
   components: { UsersCommon },
   computed: {
-    ...mapGetters(['getUser', 'getRoles', 'getTheme'])
+    ...mapGetters(['getUser', 'getRoles'])
   },
   created () {
     UserService.getUser();

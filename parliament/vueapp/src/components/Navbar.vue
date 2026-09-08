@@ -126,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
           class="refresh-interval-select ms-2"
           prepend-inner-icon="mdi-refresh" />
 
-        <!-- admin menu (users/banner) -->
+        <!-- admin menu (users/roles/banner) -->
         <AdminMenu
           v-if="adminItems.length"
           :items="adminItems"
@@ -176,12 +176,15 @@ export default {
   },
   computed: {
     isAdmin () { return this.$store.state.isAdmin; },
+    user () { return this.$store.state.user; },
     adminItems () {
-      if (!this.isAdmin) { return []; }
+      // users/roles answer to the arkime-wide roles the apis check;
+      // the banner is parliament's own admin
       return [
-        { title: this.$t('navigation.users'), link: '/users', name: 'Users' },
-        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner' }
-      ].map(item => ({ ...item, isActive: this.$route.path === item.link }));
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.user?.roles?.includes('usersAdmin') },
+        { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: this.user?.assignableRoles?.length > 0 },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: this.isAdmin }
+      ].filter(item => item.show).map(item => ({ ...item, isActive: this.$route.path === item.link }));
     },
     settings () {
       return this.$store.state.parliament?.settings || { general: {} };

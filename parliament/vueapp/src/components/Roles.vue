@@ -10,16 +10,18 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
+
 import RolesCommon from '@common/Roles.vue';
-import UserService from '@/components/services/UserService';
+import UserService from '@/components/user.service.js';
 
 export default {
   name: 'Roles',
-  components: {
-    RolesCommon
-  },
+  components: { RolesCommon },
   computed: {
     ...mapGetters(['getUser'])
+  },
+  created () {
+    UserService.getUser();
   },
   methods: {
     updateCurrentUser () {

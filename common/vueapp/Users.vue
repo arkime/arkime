@@ -315,10 +315,10 @@ SPDX-License-Identifier: Apache-2.0
                 </v-select>
 
                 <!-- password change for users / role-permissions for roles -->
-                <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+                <template v-if="canChangePassword || canEditRolePermissions">
                   <form
                     class="row"
-                    v-if="isUser(item)">
+                    v-if="isUser(item) && canChangePassword">
                     <div class="col-9 mt-2">
                       <v-text-field
                         class="mt-1"
@@ -346,7 +346,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-btn>
                     </div>
                   </form>
-                  <div v-else>
+                  <div v-else-if="!isUser(item) && canEditRolePermissions">
                     <!-- role permission tri-state toggles -->
                     <div class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
                       <TriStateToggle
@@ -509,8 +509,7 @@ export default {
     currentUser: {
       type: Object,
       default: () => ({})
-    },
-    dark: { type: Boolean, default: false }
+    }
   },
   data () {
     return {
@@ -538,6 +537,14 @@ export default {
     };
   },
   computed: {
+    // apps whose api registers /api/user/password
+    canChangePassword () {
+      return ['Arkime', 'Cont3xt', 'Parliament'].includes(this.parentApp);
+    },
+    // the role toggles below are arkime capabilities (hunting, pcap, stats)
+    canEditRolePermissions () {
+      return ['Arkime', 'Cont3xt'].includes(this.parentApp);
+    },
     roleAssignableRoles () {
       return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
     },
