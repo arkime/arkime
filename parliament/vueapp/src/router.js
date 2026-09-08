@@ -58,7 +58,8 @@ const router = createRouter({
     {
       path: '/users',
       name: 'Users',
-      component: Users
+      component: Users,
+      beforeEnter: async () => await requireAdmin()
     },
     {
       path: '/banner',

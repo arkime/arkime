@@ -90,6 +90,7 @@ export default {
   mounted: function () {
     const tab = window.location.hash.replace(/^#/, '');
     if (tab === 'themes') this.visibleTab = tab;
+    else if (tab === 'banner') this.$router.replace('/banner'); // banner moved to its own route
   },
   methods: {
     openView (tabName) {

@@ -502,6 +502,8 @@ export default {
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'notifiers' || tab === 'themes') {
         this.visibleTab = tab;
+      } else if (tab === 'banner') { // banner moved to its own route
+        this.$router.replace('/banner');
       }
     }
   },

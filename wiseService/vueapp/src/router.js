@@ -10,7 +10,7 @@ import Help from '@/components/Help.vue';
 import Stats from '@/components/Stats.vue';
 import Settings from '@/components/Settings.vue';
 import Banner from '@common/BannerPage.vue';
-import store from '@/store';
+import store, { hasRole } from '@/store';
 import WiseService from '@/components/wise.service';
 import Wise404 from '@/components/404.vue';
 
@@ -26,7 +26,7 @@ async function requireRole (role) {
       if (user?.userId) { store.commit('SET_USER', user); }
     } catch { /* treated as no access */ }
   }
-  if (!store.state.user?.roles?.includes(role)) { return { name: 'Stats' }; }
+  if (!hasRole(store.state, role)) { return { name: 'Stats' }; }
 }
 
 const router = createRouter({

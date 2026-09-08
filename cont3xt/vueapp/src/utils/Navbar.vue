@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
             :style="$route.path === item.to ? activePillStyle : null"
             size="small"
             class="arkime-nav-btn"
-            exact>
+            :exact="!!item.exact">
             <span>{{ item.parts.before }}</span><span
               v-if="item.parts.key"
               :class="{'nav-shortcut-active': getShiftKeyHold}">{{ item.parts.key }}</span><span>{{ item.parts.after }}</span>
@@ -184,8 +184,8 @@ export default {
     navItems () {
       // keys match the shifted shortcuts wired up in App.vue
       return [
-        { to: '/', title: this.$t('navigation.cont3xt'), key: 'C' },
-        { to: '/stats', title: this.$t('navigation.stats'), key: 'A' },
+        { to: '/', title: this.$t('navigation.cont3xt'), key: 'C', exact: true },
+        { to: '/stats', title: this.$t('navigation.stats'), key: 'A', exact: true },
         { to: '/settings', title: this.$t('navigation.settings'), key: 'S' },
         { to: '/history', title: this.$t('navigation.history'), key: 'Y', requiresUser: true }
       ].map(item => ({ ...item, parts: shortcutParts(item.title, item.key) }));
