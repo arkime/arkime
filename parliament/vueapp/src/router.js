@@ -10,7 +10,17 @@ import Settings from '@/components/Settings.vue';
 import Parliament404 from '@/components/404.vue';
 import Help from '@/components/Help.vue';
 import Users from '@/components/Users.vue';
+import Banner from '@common/BannerPage.vue';
 import AuthService from '@/auth.js';
+import store from '@/store';
+
+// Admin pages are hidden from the navbar when the user isn't an admin;
+// guard the routes too so they can't be reached by typing the url directly.
+// The global beforeEach doesn't await getAuthInfo, so ask for it here.
+async function requireAdmin () {
+  await AuthService.getAuthInfo();
+  if (!store.state.isAdmin) { return { name: 'Parliament' }; }
+}
 
 const router = createRouter({
   history: createWebHistory('/parliament/'),
@@ -48,7 +58,14 @@ const router = createRouter({
     {
       path: '/users',
       name: 'Users',
-      component: Users
+      component: Users,
+      beforeEnter: async () => await requireAdmin()
+    },
+    {
+      path: '/banner',
+      name: 'Banner',
+      component: Banner,
+      beforeEnter: async () => await requireAdmin()
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes

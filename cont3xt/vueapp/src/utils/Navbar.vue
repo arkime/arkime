@@ -14,64 +14,27 @@ SPDX-License-Identifier: Apache-2.0
           alt="hoot"
           class="arkime-logo">
         <v-tooltip activator="parent">
-          Can I help you? Click me to see the help page
+          {{ $t('navigation.tooltipHelpTip') }}
         </v-tooltip>
       </router-link>
 
       <div class="arkime-nav-list d-flex align-center">
-        <v-btn
-          to="/"
-          :variant="$route.path === '/' ? 'flat' : 'text'"
-          :style="$route.path === '/' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn"
-          exact>
-          <span :class="{'nav-shortcut-active': getShiftKeyHold}">C</span>ont3xt
-        </v-btn>
-        <v-btn
-          to="/stats"
-          :variant="$route.path === '/stats' ? 'flat' : 'text'"
-          :style="$route.path === '/stats' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn"
-          exact>
-          St<span :class="{'nav-shortcut-active': getShiftKeyHold}">a</span>ts
-        </v-btn>
-        <v-btn
-          to="/settings"
-          :variant="$route.path === '/settings' ? 'flat' : 'text'"
-          :style="$route.path === '/settings' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          <span :class="{'nav-shortcut-active': getShiftKeyHold}">S</span>ettings
-        </v-btn>
-        <v-btn
-          v-if="getUser"
-          to="/history"
-          :variant="$route.path === '/history' ? 'flat' : 'text'"
-          :style="$route.path === '/history' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          Histor<span :class="{'nav-shortcut-active': getShiftKeyHold}">y</span>
-        </v-btn>
-        <v-btn
-          v-if="getUser && getUser.roles && getUser.roles.includes('usersAdmin')"
-          to="/users"
-          :variant="$route.path === '/users' ? 'flat' : 'text'"
-          :style="$route.path === '/users' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          Users
-        </v-btn>
-        <v-btn
-          v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
-          to="/roles"
-          :variant="$route.path === '/roles' ? 'flat' : 'text'"
-          :style="$route.path === '/roles' ? activePillStyle : null"
-          size="small"
-          class="arkime-nav-btn">
-          Roles
-        </v-btn>
+        <template
+          v-for="item of navItems"
+          :key="item.to">
+          <v-btn
+            v-if="!item.requiresUser || getUser"
+            :to="item.to"
+            :variant="$route.path === item.to ? 'flat' : 'text'"
+            :style="$route.path === item.to ? activePillStyle : null"
+            size="small"
+            class="arkime-nav-btn"
+            :exact="!!item.exact">
+            <span>{{ item.parts.before }}</span><span
+              v-if="item.parts.key"
+              :class="{'nav-shortcut-active': getShiftKeyHold}">{{ item.parts.key }}</span><span>{{ item.parts.after }}</span>
+          </v-btn>
+        </template>
       </div>
 
       <v-spacer />
@@ -93,6 +56,9 @@ SPDX-License-Identifier: Apache-2.0
         <!-- version (rainbow gradient via shared Version.vue) -->
         <Version :timezone="timezone" />
 
+        <!-- language switcher -->
+        <LanguageSwitcher additional-classes="ms-2" />
+
         <!-- help button -->
         <v-btn
           to="/help"
@@ -103,9 +69,16 @@ SPDX-License-Identifier: Apache-2.0
           class="arkime-help-btn ms-2">
           <v-icon icon="mdi-help-circle" />
           <v-tooltip activator="parent">
-            HELP!
+            {{ $t('navigation.helpTip') }}
           </v-tooltip>
         </v-btn>
+
+        <!-- admin menu (users/roles/banner) -->
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
 
         <Logout
           :base-path="path"
@@ -143,10 +116,21 @@ import { mapGetters, useStore } from 'vuex';
 
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import AdminMenu from '@common/AdminMenu.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { useTheme } from 'vuetify';
 import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
+
+// Underline the shortcut letter wherever it lands in the translated
+// label. The shortcut is a physical key, so a translation that doesn't
+// contain that letter simply gets no hint -- the key still works.
+function shortcutParts (title, key) {
+  const i = title.toLowerCase().indexOf(key.toLowerCase());
+  if (i < 0) { return { before: title, key: '', after: '' }; }
+  return { before: title.slice(0, i), key: title[i], after: title.slice(i + 1) };
+}
 
 let interval;
 const minTimeToWait = 10000;
@@ -156,7 +140,9 @@ export default {
   name: 'Cont3xtNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    AdminMenu,
+    LanguageSwitcher
   },
   setup () {
     const theme = useTheme();
@@ -194,6 +180,24 @@ export default {
     ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold', 'getTheme']),
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
+    },
+    navItems () {
+      // keys match the shifted shortcuts wired up in App.vue
+      return [
+        { to: '/', title: this.$t('navigation.cont3xt'), key: 'C', exact: true },
+        { to: '/stats', title: this.$t('navigation.stats'), key: 'A', exact: true },
+        { to: '/settings', title: this.$t('navigation.settings'), key: 'S' },
+        { to: '/history', title: this.$t('navigation.history'), key: 'Y', requiresUser: true }
+      ].map(item => ({ ...item, parts: shortcutParts(item.title, item.key) }));
+    },
+    adminItems () {
+      return [
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.getUser?.roles?.includes('usersAdmin') },
+        { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: this.getUser?.assignableRoles?.length > 0 },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: !!this.getUser?.roles?.includes('cont3xtAdmin') }
+      ].filter(item => item.show).map(item => ({
+        ...item, isActive: this.$route.path === item.link
+      }));
     }
   },
   mounted: function () {

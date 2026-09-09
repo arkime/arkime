@@ -115,6 +115,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Replace Flot with uPlot for the timeline and jvectormap with D3 for the world map
   - Add a Shareables settings tab to rename, re-share or delete any shareable
   - #4086 Move TOTP setup to its own settings tab, so it works when the password page is disabled
+  - #4226 Add Featherprint, passive device fingerprinting built from session metadata (ARP, DHCP, DNS/mDNS, NBNS, SSDP). A
+          per-subnet monitor maintains device records (MAC and history, hostnames, services, DHCP/SSDP attributes and a
+          rule-based classification), records a change history and raises alerts on new or changed devices; any IP can also
+          be fingerprinted on demand from the new Featherprint page. Configure watched ranges in [featherprint-subnet];
+          adds the featherprint, featherprint_history and featherprint_alerts indices (db.pl v89)
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

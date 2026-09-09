@@ -58,12 +58,6 @@ SPDX-License-Identifier: Apache-2.0
 
         <e-s-health class="ms-2" />
 
-        <AdminMenu
-          v-if="adminItems.length"
-          :items="adminItems"
-          :active-pill-style="activePillStyle"
-          additional-classes="ms-2" />
-
         <v-btn
           v-if="isAToolBarPage"
           variant="text"
@@ -75,6 +69,12 @@ SPDX-License-Identifier: Apache-2.0
           <v-icon :icon="showToolBars ? 'mdi-chevron-up-circle' : 'mdi-chevron-down-circle'" />
           <v-tooltip activator="parent">{{ $t('navigation.toggleTopStuffTip') }}</v-tooltip>
         </v-btn>
+
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
 
         <Logout
           size="sm"
@@ -92,7 +92,7 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth.vue';
-import AdminMenu from './AdminMenu.vue';
+import AdminMenu from '@common/AdminMenu.vue';
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
@@ -110,10 +110,10 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'arkime', 'sessions', 'spiview', 'spigraph', 'hunt',
+        'arkime', 'sessions', 'spiview', 'spigraph', 'hunt', 'featherprint',
         'files', 'stats', 'history', 'upload', 'settings'
       ],
-      adminOrder: ['users', 'roles', 'banner', 'esadmin'],
+      adminOrder: ['users', 'roles', 'banner', 'esadmin', 'featherprintadmin'],
       // active-pill colors -- use Arkime CSS vars so the pill flips
       // between themes (white-on-dark in light theme, dark-on-light in
       // dark theme) without us picking specific colors per theme.
@@ -145,7 +145,9 @@ export default {
         roles: { title: this.$t('navigation.roles'), link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
         banner: { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' },
         esadmin: { title: this.$t('navigation.esadmin'), link: 'esadmin', role: 'dbAdmin', name: 'EsAdmin' },
-        hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
+        featherprintadmin: { title: this.$t('navigation.featherprintadmin'), link: 'featherprintadmin', role: 'arkimeAdmin', name: 'FeatherprintAdmin' },
+        hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' },
+        featherprint: { title: this.$t('navigation.featherprint'), link: 'featherprint', name: 'Featherprint' }
       };
 
       // preserve url query parameters
@@ -178,7 +180,8 @@ export default {
           item.hasRole = !item.role || this.user.roles?.includes(item.role);
         }
 
-        item.isActive = this.$route.path === `/${item.link}`;
+        item.isActive = this.$route.path === `/${item.link}` ||
+          this.$route.path.startsWith(`/${item.link}/`);
       }
 
       return menu;
