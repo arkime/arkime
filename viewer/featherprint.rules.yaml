@@ -1,0 +1,179 @@
+# featherprint.rules.yaml -- featherprint classifier rules.
+#
+# Loaded by viewer/apiFeatherprint.js at startup. To override, point the
+# arkime ini `featherprintRulesFile` setting at a different file, or drop a
+# replacement at /opt/arkime/etc/featherprint.rules.yaml (preferred) or
+# ./featherprint.rules.yaml.
+
+# --- MAC source ranking ------------------------------------------------------
+# Confidence ordering for MAC observations. When the same IP yields different
+# MACs from different sources within the scan window, the higher-ranked one
+# wins, and a lower-ranked observation never displaces a stored higher-ranked
+# MAC. Sources not listed get rank 0.
+macSourceRank:
+  arp: 3
+  dhcp: 2
+  srcMac: 1
+
+# --- Device classification ---------------------------------------------------
+# First match wins, so specific devices come before generic classes. Each rule
+# has a `class` label and one or more match clauses. If multiple clauses are
+# specified directly on a rule they must ALL hold (AND). An `anyOf:` list
+# holds a set of sub-clauses where ANY may match (OR).
+#
+# Supported clauses:
+#   hasService: <type>               -- record.services has type == <type>; mDNS
+#                                       types are normalized ("_ipp._tcp", lowercase,
+#                                       ".local" stripped), UPnP NT URNs kept verbatim
+#   nameContains: <substr>           -- any discovered name contains substr (case-insensitive)
+#   nameMatches: <regex>             -- any discovered name matches regex (case-insensitive)
+#   dhcpVendorClassMatches: <regex>  -- record.dhcp.vendorClass matches regex (case-insensitive)
+#   ssdpServerMatches: <regex>       -- any SSDP SERVER header matches regex (case-insensitive)
+#   ssdpUsnMatches: <regex>          -- any SSDP USN matches regex (case-insensitive)
+#   macPrefixIn: [<oui>, ...]        -- record.mac.value starts with one of the OUIs (e.g. "b8:27:eb")
+classify:
+  # --- Streaming / media devices --------------------------------------------
+  - class: apple_tv
+    anyOf:
+      - nameContains: apple-tv
+      - nameContains: appletv
+
+  - class: homepod
+    nameContains: homepod
+
+  - class: chromecast
+    anyOf:
+      - hasService: _googlecast._tcp
+      - nameContains: chromecast
+
+  - class: roku
+    anyOf:
+      - nameContains: roku
+      - ssdpUsnMatches: 'roku:ecp'
+      - ssdpServerMatches: 'Roku'
+
+  - class: sonos
+    anyOf:
+      - hasService: _sonos._tcp
+      - nameContains: sonos
+      - ssdpServerMatches: 'Sonos'
+      - ssdpUsnMatches: 'RINCON'
+
+  - class: smart_tv
+    anyOf:
+      - hasService: _androidtvremote2._tcp
+      - ssdpServerMatches: 'LGTV|webOS|SEC_HHP|Samsung|BRAVIA|VIZIO'
+      - nameMatches: 'samsung.*tv|lgwebostv|bravia'
+
+  - class: amazon_device # FireTV / Echo
+    anyOf:
+      - hasService: _amzn-wplay._tcp
+      - nameMatches: 'amazon-|echo-|firetv'
+
+  - class: spotify_endpoint
+    hasService: _spotify-connect._tcp
+
+  # After apple_tv/homepod so name-based rules win when a name is known.
+  - class: airplay_device
+    anyOf:
+      - hasService: _airplay._tcp
+      - hasService: _raop._tcp
+
+  # --- Smart home / IoT ------------------------------------------------------
+  - class: homekit_device
+    anyOf:
+      - hasService: _hap._tcp
+      - hasService: _homekit._tcp
+
+  - class: matter_device
+    anyOf:
+      - hasService: _matter._tcp
+      - hasService: _matterc._udp
+
+  - class: hue_bridge
+    anyOf:
+      - hasService: _hue._tcp
+      - nameContains: philips-hue
+      - ssdpServerMatches: 'IpBridge'
+
+  - class: tradfri_gateway
+    anyOf:
+      - nameContains: tradfri
+      - ssdpServerMatches: 'IKEA'
+
+  - class: camera
+    anyOf:
+      - nameMatches: 'ring-|nest-cam|wyze|reolink|hikvision|dahua|amcrest'
+      - ssdpServerMatches: 'Hikvision|Dahua|IPCamera'
+
+  - class: iot_device
+    anyOf:
+      - nameMatches: 'shelly|tasmota|esphome|esp[-_]?32|esp[-_]?8266|sonoff'
+      # Espressif OUIs (ESP8266/ESP32 modules)
+      - macPrefixIn: ["18:fe:34", "24:0a:c4", "24:b2:de", "30:ae:a4", "3c:71:bf", "5c:cf:7f", "84:f3:eb", "a4:cf:12"]
+
+  # --- Printers / NAS / single-board -----------------------------------------
+  - class: printer
+    anyOf:
+      - hasService: _printer._tcp
+      - hasService: _ipp._tcp
+      - hasService: _ipps._tcp
+      - hasService: _pdl-datastream._tcp
+      - nameMatches: 'brother|officejet|laserjet|deskjet|pixma|epson'
+
+  - class: nas
+    anyOf:
+      - nameMatches: 'synology|diskstation|qnap|freenas|truenas|unraid'
+      - ssdpServerMatches: 'Synology|QNAP'
+
+  - class: raspberry_pi
+    anyOf:
+      - nameContains: raspberrypi
+      - nameContains: raspberry-pi
+      # Raspberry Pi OUIs (Foundation + Trading, Pi 1 through Pi 5)
+      - macPrefixIn: ["b8:27:eb", "dc:a6:32", "e4:5f:01", "d8:3a:dd", "28:cd:c1", "2c:cf:67"]
+
+  # --- Game consoles ---------------------------------------------------------
+  - class: game_console
+    nameMatches: 'playstation|ps4-|ps5-|xbox|nintendo'
+
+  # --- Phones / tablets / computers ------------------------------------------
+  - class: iphone
+    nameContains: iphone
+
+  - class: ipad
+    nameContains: ipad
+
+  - class: apple_watch
+    nameContains: apple-watch
+
+  - class: mac
+    anyOf:
+      - nameContains: macbook
+      - nameContains: imac
+      - nameContains: mac-mini
+      - nameContains: macmini
+      - nameContains: mac-studio
+
+  - class: android
+    anyOf:
+      - nameContains: android
+      - nameMatches: 'galaxy-|pixel-|oneplus'
+      - dhcpVendorClassMatches: 'android-dhcp'
+
+  - class: windows_pc
+    anyOf:
+      - dhcpVendorClassMatches: 'MSFT|Microsoft'
+      # Default Windows 10/11 hostnames: DESKTOP-XXXXXXX
+      - nameMatches: 'desktop-[0-9a-z]{7}'
+
+  - class: linux_host
+    anyOf:
+      - dhcpVendorClassMatches: 'dhcpcd|udhcp|Linux'
+      - hasService: _workstation._tcp
+
+  # --- Weak service-only fallbacks -------------------------------------------
+  - class: file_server
+    anyOf:
+      - hasService: _smb._tcp
+      - hasService: _sftp-ssh._tcp
