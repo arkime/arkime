@@ -194,7 +194,8 @@ export default {
       return [
         { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.getUser?.roles?.includes('usersAdmin') },
         { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: this.getUser?.assignableRoles?.length > 0 },
-        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: !!this.getUser?.roles?.includes('cont3xtAdmin') }
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: !!this.getUser?.roles?.includes('cont3xtAdmin') },
+        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig', show: !!this.getUser?.roles?.includes('cont3xtAdmin') }
       ].filter(item => item.show).map(item => ({
         ...item, isActive: this.$route.path === item.link
       }));

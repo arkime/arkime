@@ -11,6 +11,7 @@ import Parliament404 from '@/components/404.vue';
 import Help from '@/components/Help.vue';
 import Users from '@/components/Users.vue';
 import Banner from '@common/BannerPage.vue';
+import ViewConfigPage from '@common/ViewConfigPage.vue';
 import AuthService from '@/auth.js';
 import store from '@/store';
 
@@ -65,6 +66,12 @@ const router = createRouter({
       path: '/banner',
       name: 'Banner',
       component: Banner,
+      beforeEnter: async () => await requireAdmin()
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfigPage,
       beforeEnter: async () => await requireAdmin()
     },
     {

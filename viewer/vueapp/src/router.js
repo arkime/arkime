@@ -9,6 +9,7 @@ import UserService from '@/components/users/UserService';
 import Stats from '@/components/stats/Stats.vue';
 import EsAdmin from '@/components/stats/EsAdmin.vue';
 import Banner from '@/components/banner/Banner.vue';
+import ViewConfig from '@/components/viewconfig/ViewConfig.vue';
 import Help from '@/components/help/Help.vue';
 import Files from '@/components/files/Files.vue';
 import Users from '@/components/users/Users.vue';
@@ -68,6 +69,12 @@ const router = createRouter({
       path: '/banner',
       name: 'Banner',
       component: Banner,
+      beforeEnter: async () => await requireRole('arkimeAdmin')
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfig,
       beforeEnter: async () => await requireRole('arkimeAdmin')
     },
     {

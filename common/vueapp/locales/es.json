@@ -129,6 +129,7 @@
     "admin": "Administración",
     "esadmin": "Administrador de ES",
     "banner": "Banner",
+    "viewConfig": "Ver configuración",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "¡HOOT! ¿Puedo ayudarte? Haz clic en mí para ver la página de ayuda",
     "helpTip": "¡AYUDA!",
@@ -2074,5 +2075,25 @@
     "dismiss": "Descartar",
     "optIn": "Activar comprobación de actualizaciones",
     "disclosure": "Consulta {host} para buscar versiones más recientes. Envía tu versión principal ({major})."
+  },
+  "viewConfig": {
+    "title": "Ver configuración",
+    "totpTitle": "Se requiere doble factor",
+    "totpInfo": "Introduzca el código de su aplicación de autenticación para ver la configuración en ejecución.",
+    "unlock": "Desbloquear",
+    "key": "Clave",
+    "value": "Valor",
+    "both": "Ambos",
+    "overrides": "Anulaciones de línea de comandos (-o)",
+    "fromEnv": "del entorno",
+    "compareNode": "Comparar con el nodo",
+    "diffOnly": "Solo diferencias",
+    "differenceCount": "0 diferencias | 1 diferencia | {count} diferencias",
+    "redactedCount": "0 ocultados, no comparados | 1 ocultado, no comparado | {count} ocultados, no comparados",
+    "onlyHere": "no definido allí",
+    "onlyThere": "no definido aquí",
+    "notComparable": "ambos ocultados, no se pueden comparar",
+    "appliesInfo": "Una opción escrita sin sección se busca en {sections}, en ese orden.",
+    "noResults": "Ninguna opción coincide con el filtro"
   }
 }

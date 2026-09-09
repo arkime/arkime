@@ -180,7 +180,8 @@ export default {
       if (!this.isAdmin) { return []; }
       return [
         { title: this.$t('navigation.users'), link: '/users', name: 'Users' },
-        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner' }
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner' },
+        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig' }
       ].map(item => ({ ...item, isActive: this.$route.path === item.link }));
     },
     settings () {

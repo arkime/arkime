@@ -129,6 +129,7 @@
     "admin": "管理",
     "esadmin": "ES 管理",
     "banner": "バナー",
+    "viewConfig": "設定を表示",
     "notifiers": "通知設定",
     "tooltipHelpTip": "ホー！お手伝いしましょうか？クリックしてヘルプページを表示します",
     "helpTip": "ヘルプ！",
@@ -2074,5 +2075,25 @@
     "dismiss": "閉じる",
     "optIn": "更新確認を有効にする",
     "disclosure": "{host} で新しいリリースを確認します。メジャーバージョン ({major}) を送信します。"
+  },
+  "viewConfig": {
+    "title": "設定を表示",
+    "totpTitle": "2要素認証が必要です",
+    "totpInfo": "実行中の設定を表示するには、認証アプリのコードを入力してください。",
+    "unlock": "ロック解除",
+    "key": "キー",
+    "value": "値",
+    "both": "両方",
+    "overrides": "コマンドラインの上書き (-o)",
+    "fromEnv": "環境変数から",
+    "compareNode": "ノードと比較",
+    "diffOnly": "差分のみ",
+    "differenceCount": "{count} 件の差分",
+    "redactedCount": "{count} 件は秘匿のため未比較",
+    "onlyHere": "そこでは未設定",
+    "onlyThere": "ここでは未設定",
+    "notComparable": "両方とも秘匿されており比較できません",
+    "appliesInfo": "セクションを指定しない設定は {sections} の順に参照されます。",
+    "noResults": "フィルターに一致する設定はありません"
   }
 }

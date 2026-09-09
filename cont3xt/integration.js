@@ -8,6 +8,7 @@
 'use strict';
 
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewConfig = require('../common/viewConfig');
 const ArkimeConfig = require('../common/arkimeConfig');
 const path = require('path');
 const fs = require('fs');
@@ -105,6 +106,10 @@ class Integration {
       console.log('Can not have both configName and section set', integration.name, integration.configName, integration.section);
       return;
     }
+
+    // so View Config never shows this integration's api key
+    ViewConfig.addSecretKeys(Object.keys(integration.settings ?? {})
+      .filter(setting => integration.settings[setting]?.password));
 
     integration.cacheable ??= true;
     integration.noStats ??= false;

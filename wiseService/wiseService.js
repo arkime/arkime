@@ -18,6 +18,7 @@ const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Locales = require('../common/locales');
 const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
@@ -577,6 +578,9 @@ class WISESourceAPI {
           { name: 'view', required: false, multiline: '\\n', help: 'The view to show in session detail when opening up a session with unique fields, this also may be done in the input file. The value for view can either be written in simplified format or in more powerful pug format. For the pug format see Tagger Format in the docs for more information. Simple format looks like require:[toplevel db name];title:[title string];fields:[field1],[field2],[fieldN]' }
         ]);
       }
+
+      // so View Config never shows this source's api key
+      ViewConfig.addSecretKeys((configDef.fields ?? []).filter(f => f.password).map(f => f.name));
 
       internals.configDefs[sourceName] = configDef;
     }
@@ -1538,6 +1542,9 @@ if (internals.webconfig) {
     [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
     User.apiUpdateSettings
   );
+
+  app.post('/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], ViewConfig.apiVerifyTotp);
+  app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, isWiseAdmin, ViewConfig.checkTotp], ViewConfig.apiGetConfig);
 
   app.get('/api/banner', [ArkimeUtil.noCacheJson, isWiseUser], Banner.apiGetBanner);
   app.put('/api/banner', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiUpdateBanner);

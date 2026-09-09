@@ -129,6 +129,7 @@
     "admin": "Haldus",
     "esadmin": "ES Admin",
     "banner": "Bänner",
+    "viewConfig": "Vaata seadistust",
     "notifiers": "Teavitajad",
     "tooltipHelpTip": "HOOT! Kas saan sind aidata? Klõpsa minus, et näha abilehte",
     "helpTip": "ABI!",
@@ -2074,5 +2075,25 @@
     "dismiss": "Peida",
     "optIn": "Luba uuenduste kontroll",
     "disclosure": "Kontrollib {host} uuemate versioonide osas. Saadab teie peaversiooni ({major})."
+  },
+  "viewConfig": {
+    "title": "Vaata seadistust",
+    "totpTitle": "Nõutav kaheastmeline kinnitus",
+    "totpInfo": "Töötava seadistuse vaatamiseks sisesta kood oma autentimisrakendusest.",
+    "unlock": "Ava",
+    "key": "Võti",
+    "value": "Väärtus",
+    "both": "Mõlemad",
+    "overrides": "Käsurea ülekirjutused (-o)",
+    "fromEnv": "keskkonnamuutujast",
+    "compareNode": "Võrdle sõlmega",
+    "diffOnly": "Ainult erinevused",
+    "differenceCount": "0 erinevust | 1 erinevus | {count} erinevust",
+    "redactedCount": "0 varjatud, võrdlemata | 1 varjatud, võrdlemata | {count} varjatud, võrdlemata",
+    "onlyHere": "seal pole määratud",
+    "onlyThere": "siin pole määratud",
+    "notComparable": "mõlemad varjatud, ei saa võrrelda",
+    "appliesInfo": "Ilma sektsioonita kirjutatud seadet otsitakse järjekorras {sections}.",
+    "noResults": "Ükski seade ei vasta filtrile"
   }
 }

@@ -113,7 +113,7 @@ export default {
         'arkime', 'sessions', 'spiview', 'spigraph', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings'
       ],
-      adminOrder: ['users', 'roles', 'banner', 'esadmin'],
+      adminOrder: ['users', 'roles', 'banner', 'esadmin', 'viewconfig'],
       // active-pill colors -- use Arkime CSS vars so the pill flips
       // between themes (white-on-dark in light theme, dark-on-light in
       // dark theme) without us picking specific colors per theme.
@@ -145,7 +145,8 @@ export default {
         roles: { title: this.$t('navigation.roles'), link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
         banner: { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' },
         esadmin: { title: this.$t('navigation.esadmin'), link: 'esadmin', role: 'dbAdmin', name: 'EsAdmin' },
-        hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
+        hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' },
+        viewconfig: { title: this.$t('navigation.viewConfig'), link: 'viewconfig', role: 'arkimeAdmin', name: 'ViewConfig' }
       };
 
       // preserve url query parameters

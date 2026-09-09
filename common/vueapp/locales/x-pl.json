@@ -130,6 +130,7 @@
     "admin": "Adminway",
     "esadmin": "ESway Adminway",
     "banner": "Annerbay",
+    "viewConfig": "Iewvay Onfigcay",
     "notifiers": "Otifiersnay",
     "tooltipHelpTip": "OOTHAY! Ancay Iway elphay ouyay? Ickclay emay otay eesay ethay elphay agepay",
     "helpTip": "ELPHAY!",
@@ -2075,5 +2076,25 @@
     "dismiss": "Ismissday",
     "optIn": "Optway inway otay eckchay orfay updatesway",
     "disclosure": "Eckschay {host} orfay ewernay eleasesray. Endssay ouryay ajormay ersionvay ({major})."
+  },
+  "viewConfig": {
+    "title": "Iewvay Onfigcay",
+    "totpTitle": "Otwaytay-Actorfay Equiredray",
+    "totpInfo": "Enterway ethay odecay omfray ouryay authenticatorway appway otay iewvay ethay unningray onfigcay.",
+    "unlock": "Unlockway",
+    "key": "Eykay",
+    "value": "Aluevay",
+    "both": "Othbay",
+    "overrides": "Ommandcay inelay overridesway (-o)",
+    "fromEnv": "omfray environmentway",
+    "compareNode": "Omparecay ithway odenay",
+    "diffOnly": "Ifferencesday onlyway",
+    "differenceCount": "0 ifferencesday | 1 ifferenceday | {count} ifferencesday",
+    "redactedCount": "0 edactedray, onenay omparedcay | 1 edactedray, otnay omparedcay | {count} edactedray, otnay omparedcay",
+    "onlyHere": "otnay etsay erethay",
+    "onlyThere": "otnay etsay erehay",
+    "notComparable": "othbay edactedray, annotcay omparecay",
+    "appliesInfo": "Away ettingsay ittenwray ithoutway away ectionsay isway ookedlay upway inway {sections}, inway atthay orderway.",
+    "noResults": "Onay ettingssay atchmay ethay ilterfay"
   }
 }

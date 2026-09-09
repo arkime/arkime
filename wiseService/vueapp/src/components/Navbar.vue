@@ -144,6 +144,11 @@ export default {
         link: '/banner',
         name: 'Banner',
         isActive: this.$route.path === '/banner'
+      }, {
+        title: this.$t('navigation.viewConfig'),
+        link: '/viewconfig',
+        name: 'ViewConfig',
+        isActive: this.$route.path === '/viewconfig'
       }];
     },
     wiseTheme () {

@@ -13,6 +13,7 @@ import Users from '@/components/pages/Users.vue';
 import AuditHistory from '@/components/pages/AuditHistory.vue';
 import Roles from '@/components/pages/Roles.vue';
 import Banner from '@common/BannerPage.vue';
+import ViewConfigPage from '@common/ViewConfigPage.vue';
 import store from '@/store';
 import UserService from '@/components/services/UserService';
 
@@ -71,6 +72,12 @@ export default createRouter({
       path: '/banner',
       name: 'Banner',
       component: Banner,
+      beforeEnter: async () => await requireRole('cont3xtAdmin')
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfigPage,
       beforeEnter: async () => await requireRole('cont3xtAdmin')
     },
     {

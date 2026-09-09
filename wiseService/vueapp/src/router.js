@@ -10,6 +10,7 @@ import Help from '@/components/Help.vue';
 import Stats from '@/components/Stats.vue';
 import Settings from '@/components/Settings.vue';
 import Banner from '@common/BannerPage.vue';
+import ViewConfigPage from '@common/ViewConfigPage.vue';
 import store, { hasRole } from '@/store';
 import WiseService from '@/components/wise.service';
 import Wise404 from '@/components/404.vue';
@@ -71,6 +72,12 @@ const router = createRouter({
       path: '/banner',
       name: 'Banner',
       component: Banner,
+      beforeEnter: async () => await requireRole('wiseAdmin')
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfigPage,
       beforeEnter: async () => await requireRole('wiseAdmin')
     },
     {

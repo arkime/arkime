@@ -23,6 +23,7 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
 
   static #override = new Map();
+  static #envKeys = new Set();
   static #debugged = new Map();
   static #config;
   static #configImpl;
@@ -170,6 +171,7 @@ class ArkimeConfig {
      * ARKIME_section__var - convert to section var=value
      * Replace DASH, COLON, DOT, SLASH with -, :, ., /
      */
+    ArkimeConfig.#envKeys.clear();
     for (const e of Object.keys(process.env).filter(e2 => e2.startsWith('ARKIME_'))) {
       let section, key;
       if (e.startsWith('ARKIME__')) {
@@ -192,6 +194,7 @@ class ArkimeConfig {
         ArkimeConfig.#config[section] = {};
       }
       ArkimeConfig.#config[section][key] = process.env[e];
+      ArkimeConfig.#envKeys.add(`${section}.${key}`);
     }
 
     if (ArkimeConfig.#dumpConfig) {
@@ -499,6 +502,37 @@ class ArkimeConfig {
    */
   static getSection (section) {
     return ArkimeConfig.#config[section];
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The sections this app reads a bare key from, most specific first
+   *
+   * @returns {string[]} - The default sections
+   */
+  static getDefaultSections () {
+    return (ArkimeConfig.#defaultSections ?? []).filter(s => s !== undefined);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The command line -o overrides, as a section.key => value object
+   *
+   * @returns {object} - The overrides currently in effect
+   */
+  static getOverrides () {
+    return Object.fromEntries(ArkimeConfig.#override);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The section.keys that came from ARKIME_ environment variables instead of
+   * the config file, they are indistinguishable once merged
+   *
+   * @returns {string[]} - The section.key names set from the environment
+   */
+  static getEnvKeys () {
+    return [...ArkimeConfig.#envKeys];
   }
 
   // ----------------------------------------------------------------------------

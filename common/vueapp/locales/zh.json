@@ -129,6 +129,7 @@
     "admin": "管理",
     "esadmin": "ES 管理",
     "banner": "横幅",
+    "viewConfig": "查看配置",
     "notifiers": "通知器",
     "tooltipHelpTip": "嗨！我可以帮您吗？点击我查看帮助页面",
     "helpTip": "帮助！",
@@ -2074,5 +2075,25 @@
     "dismiss": "忽略",
     "optIn": "启用更新检查",
     "disclosure": "检查 {host} 上的新版本。会发送您的主版本号（{major}）。"
+  },
+  "viewConfig": {
+    "title": "查看配置",
+    "totpTitle": "需要双因素认证",
+    "totpInfo": "请输入验证器应用中的代码以查看运行中的配置。",
+    "unlock": "解锁",
+    "key": "键",
+    "value": "值",
+    "both": "两者",
+    "overrides": "命令行覆盖 (-o)",
+    "fromEnv": "来自环境变量",
+    "compareNode": "与节点比较",
+    "diffOnly": "仅显示差异",
+    "differenceCount": "{count} 处差异",
+    "redactedCount": "{count} 项已脱敏，未比较",
+    "onlyHere": "对端未设置",
+    "onlyThere": "本端未设置",
+    "notComparable": "双方均已脱敏，无法比较",
+    "appliesInfo": "未指定节的设置会按 {sections} 的顺序查找。",
+    "noResults": "没有配置项匹配过滤条件"
   }
 }

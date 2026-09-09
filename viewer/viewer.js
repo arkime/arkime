@@ -64,6 +64,7 @@ const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
 const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const MCPServer = require('../common/mcpServer');
 const MCPViewerAPIs = require('./apiMcp');
 
@@ -1640,6 +1641,61 @@ app.post( // sync banner to all apps endpoint (admin only)
   ['/api/banner/sync'],
   [ArkimeUtil.noCacheJson, User.checkRole('arkimeAdmin'), checkCookieToken],
   Banner.apiSyncBanner
+);
+
+// Ask another node for its running config over s2s so an admin can diff it
+// against this one. The far end redacts before it answers, so nothing secret
+// travels between nodes for this.
+function getRemoteConfig (req, res) {
+  const node = req.params.nodeName;
+  if (!ArkimeUtil.isString(node)) {
+    return res.serverError(403, 'Missing node');
+  }
+
+  ViewerUtils.makeRequest(node, '/api/viewconfig/remote', req.user, (err, response) => {
+    if (err) {
+      console.log(`ERROR - ${req.method} ${ArkimeUtil.sanitizeStr(req.url)}`, err);
+      return res.serverError(502, `Error fetching config from node ${ArkimeUtil.safeStr(node)}`);
+    }
+
+    let config;
+    try {
+      config = JSON.parse(response);
+    } catch (e) {
+      return res.serverError(502, `Bad config response from node ${ArkimeUtil.safeStr(node)}`);
+    }
+
+    if (!config?.success) {
+      return res.serverError(502, ArkimeUtil.safeStr(config?.text ?? `Node ${node} did not return its config`));
+    }
+
+    return res.json({ ...config, node });
+  });
+}
+
+// view config apis -----------------------------------------------------------
+app.post( // verify totp before showing any config
+  ['/api/viewconfig/totp'],
+  [ArkimeUtil.noCacheJson, logAction(), User.checkRole('arkimeAdmin'), checkCookieToken],
+  ViewConfig.apiVerifyTotp
+);
+
+app.get( // running config endpoint (admin only)
+  ['/api/viewconfig'],
+  [ArkimeUtil.noCacheJson, logAction(), User.checkRole('arkimeAdmin'), ViewConfig.checkTotp, setCookie],
+  ViewConfig.apiGetConfig
+);
+
+app.get( // another viewer's running config, for the config diff - s2s only
+  ['/api/viewconfig/remote'],
+  [ArkimeUtil.noCacheJson, checkS2SToken, User.checkRole('arkimeAdmin')],
+  ViewConfig.apiGetConfig
+);
+
+app.get( // remote node running config endpoint (admin only)
+  ['/api/viewconfig/node/:nodeName'],
+  [ArkimeUtil.noCacheJson, logAction(), User.checkRole('arkimeAdmin'), ViewConfig.checkTotp, setCookie],
+  getRemoteConfig
 );
 
 // history apis ---------------------------------------------------------------
