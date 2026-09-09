@@ -1174,6 +1174,7 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
+  ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
   Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
 
   Parliament.initialize({
@@ -1750,8 +1751,8 @@ app.put('/parliament/api/banner', [ArkimeUtil.noCacheJson, isAdmin, checkCookieT
 app.post('/parliament/api/banner/sync', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiSyncBanner);
 
 // View Config
-app.post('/parliament/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, isAdmin, checkCookieToken], ViewConfig.apiVerifyTotp);
-app.get('/parliament/api/viewconfig', [ArkimeUtil.noCacheJson, isAdmin, ViewConfig.checkTotp, setCookie], ViewConfig.apiGetConfig);
+app.post('/parliament/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, ViewConfig.checkAccess, checkCookieToken], ViewConfig.apiVerifyTotp);
+app.get('/parliament/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie], ViewConfig.apiGetConfig);
 
 // user endpoints
 app.get('/parliament/api/user', User.apiGetUser);
@@ -2181,7 +2182,8 @@ async function setupAuth () {
     node: ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200'),
     prefix: ArkimeConfig.get('usersPrefix'),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
+    getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
   });
 }
 

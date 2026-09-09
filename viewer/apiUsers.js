@@ -13,10 +13,12 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
+const ViewConfig = require('../common/viewConfig');
 
 class UserAPIs {
   static getCurrentUserCB (user, clone) {
     clone.canUpload = internals.allowUploads && user.hasRole(internals.uploadRoles);
+    clone.canViewConfig = ViewConfig.allowed(user);
 
     // If no settings, use defaults
     if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }

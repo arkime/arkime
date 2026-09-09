@@ -28,6 +28,16 @@ async function requireRole (role) {
   if (!user?.roles?.includes(role)) { return { name: 'Cont3xt' }; }
 }
 
+// View Config access is a server setting (viewConfigMode) as well as a role,
+// so the server hands the answer back on the user
+async function requireCanViewConfig () {
+  let user = store.getters.getUser;
+  if (!user) {
+    try { user = await UserService.getUser(); } catch { /* treated as no access */ }
+  }
+  if (!user?.canViewConfig) { return { name: 'Cont3xt' }; }
+}
+
 export default createRouter({
   // WEB_PATH is a global injected into index.ejs.html, by cont3xt.js
   // eslint-disable-next-line no-undef
@@ -78,7 +88,7 @@ export default createRouter({
       path: '/viewconfig',
       name: 'ViewConfig',
       component: ViewConfigPage,
-      beforeEnter: async () => await requireRole('cont3xtAdmin')
+      beforeEnter: async () => await requireCanViewConfig()
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes

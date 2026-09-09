@@ -146,7 +146,7 @@ export default {
         banner: { title: this.$t('navigation.banner'), link: 'banner', role: 'arkimeAdmin', name: 'Banner' },
         esadmin: { title: this.$t('navigation.esadmin'), link: 'esadmin', role: 'dbAdmin', name: 'EsAdmin' },
         hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' },
-        viewconfig: { title: this.$t('navigation.viewConfig'), link: 'viewconfig', role: 'arkimeAdmin', name: 'ViewConfig' }
+        viewconfig: { title: this.$t('navigation.viewConfig'), link: 'viewconfig', userFlag: 'canViewConfig', name: 'ViewConfig' }
       };
 
       // preserve url query parameters
@@ -176,7 +176,8 @@ export default {
           item.hasPermission = !item.permission ||
             (this.user[item.permission] !== undefined && this.user[item.permission] && !item.reverse) ||
             (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
-          item.hasRole = !item.role || this.user.roles?.includes(item.role);
+          item.hasRole = (!item.role || this.user.roles?.includes(item.role)) &&
+            (!item.userFlag || !!this.user[item.userFlag]);
         }
 
         item.isActive = this.$route.path === `/${item.link}`;

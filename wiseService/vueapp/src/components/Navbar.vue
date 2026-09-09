@@ -144,12 +144,14 @@ export default {
         link: '/banner',
         name: 'Banner',
         isActive: this.$route.path === '/banner'
-      }, {
-        title: this.$t('navigation.viewConfig'),
-        link: '/viewconfig',
-        name: 'ViewConfig',
-        isActive: this.$route.path === '/viewconfig'
-      }];
+      }].concat(this.$store.state.user?.canViewConfig
+        ? [{
+          title: this.$t('navigation.viewConfig'),
+          link: '/viewconfig',
+          name: 'ViewConfig',
+          isActive: this.$route.path === '/viewconfig'
+        }]
+        : []);
     },
     wiseTheme () {
       return this.$store.state.wiseTheme || 'arkime-light';

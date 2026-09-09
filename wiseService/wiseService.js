@@ -240,7 +240,8 @@ async function setupAuth () {
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       prefix: ArkimeConfig.get('usersPrefix'),
       apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
+      getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   } else {
     const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
@@ -250,10 +251,12 @@ async function setupAuth () {
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       prefix: ArkimeConfig.get('prefix'),
       apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
-      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
+      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth'),
+      getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   }
 
+  ViewConfig.initialize({ appAdminRole: 'wiseAdmin' });
   Banner.initialize({ app: 'wise', prefix: ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime')) });
 }
 
@@ -1543,8 +1546,8 @@ if (internals.webconfig) {
     User.apiUpdateSettings
   );
 
-  app.post('/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], ViewConfig.apiVerifyTotp);
-  app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, isWiseAdmin, ViewConfig.checkTotp], ViewConfig.apiGetConfig);
+  app.post('/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, ViewConfig.checkAccess], ViewConfig.apiVerifyTotp);
+  app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp], ViewConfig.apiGetConfig);
 
   app.get('/api/banner', [ArkimeUtil.noCacheJson, isWiseUser], Banner.apiGetBanner);
   app.put('/api/banner', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiUpdateBanner);

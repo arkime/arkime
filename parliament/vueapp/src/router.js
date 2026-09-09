@@ -23,6 +23,13 @@ async function requireAdmin () {
   if (!store.state.isAdmin) { return { name: 'Parliament' }; }
 }
 
+// View Config access is a server setting (viewConfigMode) as well as a role,
+// so the server hands the answer back on the user
+async function requireCanViewConfig () {
+  await AuthService.getAuthInfo();
+  if (!store.state.user?.canViewConfig) { return { name: 'Parliament' }; }
+}
+
 const router = createRouter({
   history: createWebHistory('/parliament/'),
   base: '/parliament/',
@@ -72,7 +79,7 @@ const router = createRouter({
       path: '/viewconfig',
       name: 'ViewConfig',
       component: ViewConfigPage,
-      beforeEnter: async () => await requireAdmin()
+      beforeEnter: async () => await requireCanViewConfig()
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes

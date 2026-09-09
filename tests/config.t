@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 87;
+use Test::More tests => 93;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -362,11 +362,17 @@ unlink("testconfig.json");
 
 my $vcToken = getTokenCookie();
 viewerPostToken("/api/user", '{"userId": "viewconfig-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $vcToken);
+addUser("-n testuser viewconfig-admin viewconfig-admin viewconfig-admin --roles arkimeAdmin");
+addUser("-n testuser viewconfig-super viewconfig-super viewconfig-super --roles superAdmin");
 
+# node test runs the default mode, superAdmin
 my $vc = viewerGet("/api/viewconfig?arkimeRegressionUser=viewconfig-notadmin");
-is($vc->{text}, "You do not have permission to access this resource", "view config requires arkimeAdmin");
+is($vc->{text}, "You do not have permission to access this resource", "view config refuses a non admin");
 
-$vc = viewerGet("/api/viewconfig");
+$vc = viewerGet("/api/viewconfig?arkimeRegressionUser=viewconfig-admin");
+is($vc->{text}, "You do not have permission to access this resource", "view config refuses an app admin by default");
+
+$vc = viewerGet("/api/viewconfig?arkimeRegressionUser=viewconfig-super");
 is($vc->{success}, 1, "view config success");
 is($vc->{sections}->{default}->{passwordSecret}, "[redacted]", "secret key redacted");
 is($vc->{sections}->{test2}->{packetPortalConnect}, "http://test2:[redacted]\@127.0.0.1:8123", "url password redacted");
@@ -386,19 +392,36 @@ is($vc->{sections}->{'viewconfig-test'}->{queryUrl}, "http://example.com?to=a\@b
 unlike(to_json($vc), qr/test2:test2\@/, "no url password anywhere in the response");
 unlike(to_json($vc->{sections}->{default}), qr/"passwordSecret":"password"/, "no secret value anywhere in the response");
 
+#### View Config API - viewConfigMode
+
+# node test2 is appAdmin, so this app's own admin role is enough there
+$vc = viewerGet2("/api/viewconfig?arkimeRegressionUser=viewconfig-admin");
+is($vc->{success}, 1, "view config allows an app admin when viewConfigMode is appAdmin");
+
+$vc = viewerGet2("/api/viewconfig?arkimeRegressionUser=viewconfig-notadmin");
+is($vc->{text}, "You do not have permission to access this resource", "viewConfigMode appAdmin still refuses a non admin");
+
+# node all is off, so there is nothing there at all, even for a superAdmin
+my $offRes = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/viewconfig?arkimeRegressionUser=viewconfig-super");
+is($offRes->code, 404, "viewConfigMode off answers 404");
+is(from_json($offRes->content)->{success}, 0, "viewConfigMode off says no");
+
+$offRes = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8125/api/viewconfig/totp?arkimeRegressionUser=viewconfig-super", 'Content-Type' => 'application/json', Content => '{"code": "123456"}');
+is($offRes->code, 404, "viewConfigMode off hides the totp api too");
+
 #### View Config API - another node over s2s
 
-$vc = viewerGet("/api/viewconfig/node/test2");
+$vc = viewerGet("/api/viewconfig/node/test2?arkimeRegressionUser=viewconfig-super");
 is($vc->{success}, 1, "remote node view config success");
 is($vc->{node}, "test2", "remote node view config is for the node asked for");
 is($vc->{sections}->{default}->{passwordSecret}, "[redacted]", "remote node redacts too");
 
-$vc = viewerGet("/api/viewconfig/node/nosuchnode");
+$vc = viewerGet("/api/viewconfig/node/nosuchnode?arkimeRegressionUser=viewconfig-super");
 is($vc->{success}, 0, "remote node view config fails for an unknown node");
 
 #### View Config API - a user with totp must prove it first
 
-addUser("-n testuser viewconfig-totp viewconfig-totp viewconfig-totp --roles arkimeAdmin");
+addUser("-n testuser viewconfig-totp viewconfig-totp viewconfig-totp --roles superAdmin");
 my $totpToken = getTokenCookie('viewconfig-totp');
 
 $vc = viewerGetToken("/api/viewconfig?arkimeRegressionUser=viewconfig-totp", $totpToken);
@@ -432,14 +455,14 @@ $vc = from_json($ArkimeTest::userAgent->get($grantUrl, "x-arkime-cookie" => $tot
 is($vc->{success}, 1, "view config is unlocked with the grant");
 
 # the grant is bound to the user it was issued to
-$vc = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/viewconfig", "x-arkime-viewconfig" => $grant)->content);
+$vc = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/viewconfig?arkimeRegressionUser=viewconfig-super", "x-arkime-viewconfig" => $grant)->content);
 is($vc->{success}, 1, "a user with no totp is unaffected by someone else's grant");
 
 #### View Config API - the other apps serve their own config
 
-addUser("-n testuser viewconfig-cont3xt viewconfig-cont3xt viewconfig-cont3xt --roles cont3xtAdmin,cont3xtUser");
-addUser("-n testuser viewconfig-parliament viewconfig-parliament viewconfig-parliament --roles parliamentAdmin");
-addUser("-n testuser viewconfig-wise viewconfig-wise viewconfig-wise --roles wiseAdmin,arkimeUser");
+addUser("-n testuser viewconfig-cont3xt viewconfig-cont3xt viewconfig-cont3xt --roles superAdmin");
+addUser("-n testuser viewconfig-parliament viewconfig-parliament viewconfig-parliament --roles superAdmin");
+addUser("-n testuser viewconfig-wise viewconfig-wise viewconfig-wise --roles superAdmin");
 
 $vc = cont3xtGet("/api/viewconfig?arkimeRegressionUser=viewconfig-cont3xt");
 is($vc->{success}, 1, "cont3xt view config success");

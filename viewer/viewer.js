@@ -1676,25 +1676,25 @@ function getRemoteConfig (req, res) {
 // view config apis -----------------------------------------------------------
 app.post( // verify totp before showing any config
   ['/api/viewconfig/totp'],
-  [ArkimeUtil.noCacheJson, logAction(), User.checkRole('arkimeAdmin'), checkCookieToken],
+  [ArkimeUtil.noCacheJson, logAction(), ViewConfig.checkAccess, checkCookieToken],
   ViewConfig.apiVerifyTotp
 );
 
 app.get( // running config endpoint (admin only)
   ['/api/viewconfig'],
-  [ArkimeUtil.noCacheJson, logAction(), User.checkRole('arkimeAdmin'), ViewConfig.checkTotp, setCookie],
+  [ArkimeUtil.noCacheJson, logAction(), ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie],
   ViewConfig.apiGetConfig
 );
 
 app.get( // another viewer's running config, for the config diff - s2s only
   ['/api/viewconfig/remote'],
-  [ArkimeUtil.noCacheJson, checkS2SToken, User.checkRole('arkimeAdmin')],
+  [ArkimeUtil.noCacheJson, checkS2SToken, ViewConfig.checkAccess],
   ViewConfig.apiGetConfig
 );
 
 app.get( // remote node running config endpoint (admin only)
   ['/api/viewconfig/node/:nodeName'],
-  [ArkimeUtil.noCacheJson, logAction(), User.checkRole('arkimeAdmin'), ViewConfig.checkTotp, setCookie],
+  [ArkimeUtil.noCacheJson, logAction(), ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie],
   getRemoteConfig
 );
 
@@ -2495,6 +2495,8 @@ async function premain () {
   Notifier.initialize({
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
   });
+
+  ViewConfig.initialize({ appAdminRole: 'arkimeAdmin' });
 
   Banner.initialize({
     app: 'viewer',

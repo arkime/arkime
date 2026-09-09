@@ -30,6 +30,18 @@ async function requireRole (role) {
   if (!hasRole(store.state, role)) { return { name: 'Stats' }; }
 }
 
+// View Config access is a server setting (viewConfigMode) as well as a role,
+// so the server hands the answer back on the user
+async function requireCanViewConfig () {
+  if (!store.state.user) {
+    try {
+      const user = await WiseService.getCurrentUser();
+      if (user?.userId) { store.commit('SET_USER', user); }
+    } catch { /* treated as no access */ }
+  }
+  if (!store.state.user?.canViewConfig) { return { name: 'Stats' }; }
+}
+
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by wiseService.js
   /* eslint-disable no-undef */
@@ -78,7 +90,7 @@ const router = createRouter({
       path: '/viewconfig',
       name: 'ViewConfig',
       component: ViewConfigPage,
-      beforeEnter: async () => await requireRole('wiseAdmin')
+      beforeEnter: async () => await requireCanViewConfig()
     },
     {
       path: '/help',

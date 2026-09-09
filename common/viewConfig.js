@@ -16,6 +16,7 @@ const cryptoLib = require('crypto');
 const { LRUCache } = require('lru-cache');
 const ArkimeConfig = require('./arkimeConfig');
 const ArkimeUtil = require('./arkimeUtil');
+const User = require('./user');
 
 const REDACTED = '[redacted]';
 
@@ -42,6 +43,13 @@ const INNER_SECRET_RE = /([\w.-]*(?:secret|password|token|apikey|basicauth)[\w.-
 // what the browser must send back after verifying a totp code
 const GRANT_HEADER = 'x-arkime-viewconfig';
 
+// off       - the page and its apis don't exist
+// superAdmin- only superAdmins, the default: redaction is a denylist, and even
+//             redacted the config maps out the deployment
+// appAdmin  - this app's own admin role (arkimeAdmin, cont3xtAdmin, ...)
+const MODES = ['off', 'superAdmin', 'appAdmin'];
+const DEFAULT_MODE = 'superAdmin';
+
 class ViewConfig {
   // grantId => userId. A verified code hands the browser that asked an
   // unguessable grant, so the unlock belongs to that browser and not to
@@ -53,6 +61,62 @@ class ViewConfig {
   // `appCode`, ...), so they register their own instead of hoping the name
   // happens to contain the word secret.
   static #secretKeys = new Set(['key', 'keys', 'appcode', 'credentials', 'pass', 'passwd', 'pwd']);
+
+  static #appAdminRole;
+  static #badMode;
+
+  // ----------------------------------------------------------------------------
+  /**
+   * @ignore
+   * @param {object} options
+   * @param {string} options.appAdminRole - the role that runs this app, eg arkimeAdmin
+   */
+  static initialize (options) {
+    ViewConfig.#appAdminRole = options.appAdminRole;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * @ignore
+   * Who this app shows its config to. An unusable value falls back to the
+   * default rather than stopping the app, since the fallback is the safe side.
+   */
+  static get mode () {
+    const mode = ArkimeConfig.get('viewConfigMode', DEFAULT_MODE);
+    if (MODES.includes(mode)) { return mode; }
+
+    if (ViewConfig.#badMode !== mode) {
+      ViewConfig.#badMode = mode;
+      console.log(`WARNING - viewConfigMode is '${ArkimeUtil.sanitizeStr(mode)}', must be one of ${MODES.join(', ')}, using ${DEFAULT_MODE}`);
+    }
+    return DEFAULT_MODE;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * @ignore
+   * Can this user see the config, so each app can hide the menu item and guard
+   * the route the same way the apis do.
+   */
+  static allowed (user) {
+    const mode = ViewConfig.mode;
+    if (mode === 'off' || !user) { return false; }
+    return user.hasRole(mode === 'superAdmin' ? 'superAdmin' : ViewConfig.#appAdminRole);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * @ignore
+   * When off the apis don't exist at all, so say so rather than admitting there
+   * is something here to be denied.
+   */
+  static checkAccess (req, res, next) {
+    const mode = ViewConfig.mode;
+    if (mode === 'off') {
+      return res.status(404).json({ success: false, text: 'Not found' });
+    }
+    return User.checkRole(mode === 'superAdmin' ? 'superAdmin' : ViewConfig.#appAdminRole)(req, res, next);
+  }
 
   // ----------------------------------------------------------------------------
   /**

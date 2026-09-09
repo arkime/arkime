@@ -70,7 +70,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           the major version. Controlled by the new checkForUpdates setting: off, manual (the default, nothing is sent until 
 	  the user clicks) or auto (checks once a day), plus updateCheckUrl, which can point at an internal mirror.
   - New admin only View Config page in viewer, cont3xt, parliament and wise showing the config the app is actually running
-          with plus the command line -o overrides and which settings came from the environment.
+          with plus the command line -o overrides and which settings came from the environment. Who it is shown to is the
+          new viewConfigMode setting: off, superAdmin (the default) or appAdmin.
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture

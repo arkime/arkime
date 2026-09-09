@@ -179,10 +179,10 @@ export default {
     adminItems () {
       if (!this.isAdmin) { return []; }
       return [
-        { title: this.$t('navigation.users'), link: '/users', name: 'Users' },
-        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner' },
-        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig' }
-      ].map(item => ({ ...item, isActive: this.$route.path === item.link }));
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: true },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: true },
+        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig', show: !!this.$store.state.user?.canViewConfig }
+      ].filter(item => item.show).map(item => ({ ...item, isActive: this.$route.path === item.link }));
     },
     settings () {
       return this.$store.state.parliament?.settings || { general: {} };

@@ -35,6 +35,16 @@ async function requireRole (role) {
   if (!user?.roles?.includes(role)) { return { name: 'Sessions' }; }
 }
 
+// View Config access is a server setting (viewConfigMode) as well as a role,
+// so the server hands the answer back on the user
+async function requireCanViewConfig () {
+  let user = store.state.user;
+  if (!user) {
+    try { user = await UserService.getCurrent(); } catch { /* treated as no access */ }
+  }
+  if (!user?.canViewConfig) { return { name: 'Sessions' }; }
+}
+
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
   // eslint-disable-next-line no-undef
@@ -75,7 +85,7 @@ const router = createRouter({
       path: '/viewconfig',
       name: 'ViewConfig',
       component: ViewConfig,
-      beforeEnter: async () => await requireRole('arkimeAdmin')
+      beforeEnter: async () => await requireCanViewConfig()
     },
     {
       path: '/arkime',
