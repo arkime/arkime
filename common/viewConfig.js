@@ -60,7 +60,7 @@ class ViewConfig {
   // integrations name their api key settings whatever they like (`key`,
   // `appCode`, ...), so they register their own instead of hoping the name
   // happens to contain the word secret.
-  static #secretKeys = new Set(['key', 'keys', 'appcode', 'credentials', 'pass', 'passwd', 'pwd']);
+  static #secretKeys = new Set(['key', 'keys', 'appcode', 'credentials', 'pass', 'passwd', 'pwd', 'esclientkeypass']);
 
   static #appAdminRole;
   static #badMode;
@@ -222,7 +222,9 @@ class ViewConfig {
     const overrides = {};
     for (const [key, value] of Object.entries(ArkimeConfig.getOverrides())) {
       // an override key is already section.key, redact on the key half
-      const result = ViewConfig.redactValue(key.slice(key.indexOf('.') + 1), value);
+      const dot = key.indexOf('.');
+      const secretSection = SECRET_SECTIONS.has(key.slice(0, dot).toLowerCase());
+      const result = ViewConfig.redactValue(key.slice(dot + 1), value, secretSection);
       overrides[key] = result.value;
       if (result.redacted) { redacted.push(`override.${key}`); }
     }

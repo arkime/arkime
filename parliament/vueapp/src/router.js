@@ -13,6 +13,7 @@ import Users from '@/components/Users.vue';
 import Banner from '@common/BannerPage.vue';
 import ViewConfigPage from '@common/ViewConfigPage.vue';
 import AuthService from '@/auth.js';
+import UserService from '@/components/user.service.js';
 import store from '@/store';
 
 // Admin pages are hidden from the navbar when the user isn't an admin;
@@ -27,6 +28,9 @@ async function requireAdmin () {
 // so the server hands the answer back on the user
 async function requireCanViewConfig () {
   await AuthService.getAuthInfo();
+  if (!store.state.user) {
+    try { await UserService.getUser(); } catch { /* treated as no access */ }
+  }
   if (!store.state.user?.canViewConfig) { return { name: 'Parliament' }; }
 }
 
