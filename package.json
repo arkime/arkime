@@ -23,7 +23,7 @@
     "compression": "^1.8.1",
     "connect-timeout": "^1.9.1",
     "console-stamp": "^3.1.2",
-    "csv": "^6.5.1",
+    "csv": "^6.6.3",
     "ejs": "^3.1.10",
     "express": "^4.22.2",
     "express-session": "^1.18.2",
