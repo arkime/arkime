@@ -513,6 +513,14 @@ pre {
   height: 32px !important;
   min-height: 32px !important;
 }
+/* v-btn-toggle/v-btn-group wrappers don't shrink to fit their now-32px
+   buttons on their own -- they keep Vuetify's own ~36px group height,
+   leaving the buttons top-aligned in the extra space instead of
+   centered. Pin the wrapper to match so it doesn't drift off-center. */
+.arkime-toolbar .v-btn-group {
+  height: 32px !important;
+  min-height: 32px !important;
+}
 
 /* ENTIRE PAGE ------------------------------- */
 body {

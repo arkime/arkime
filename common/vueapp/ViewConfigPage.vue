@@ -3,224 +3,255 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="arkime-container-fluid mt-3">
-    <div class="d-flex align-center flex-wrap ga-2 mb-2">
-      <h3 class="mb-0">
+  <div>
+    <!-- title / details subnav: the same .sub-navbar band Settings/Config/
+         Upload use, so it's the same height/class as the rest of the app -->
+    <div
+      ref="titlebarEl"
+      class="sub-navbar d-flex align-center flex-nowrap">
+      <span class="sub-navbar-title text-no-wrap">
+        <v-icon
+          icon="mdi-cog-outline"
+          size="small"
+          class="me-1" />
         {{ $t('viewConfig.title') }}
-      </h3>
+      </span>
       <code
         v-if="config?.configFile"
-        class="text-caption">{{ config.configFile }}</code>
-    </div>
+        class="text-caption text-medium-emphasis ms-3">{{ config.configFile }}</code>
+      <v-spacer />
+      <!-- where a bare key is looked up, in order -->
+      <v-tooltip
+        v-if="config?.defaultSections?.length"
+        location="bottom">
+        <template #activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            icon="mdi-information-outline"
+            size="small"
+            class="text-medium-emphasis" />
+        </template>
+        {{ $t('viewConfig.appliesInfo', { sections: config.defaultSections.map(s => `[${s}]`).join(' → ') }) }}
+      </v-tooltip>
+    </div> <!-- /title / details subnav -->
 
-    <!-- where a bare key is looked up, in order -->
-    <p
-      v-if="config?.defaultSections?.length"
-      class="text-medium-emphasis text-caption mb-3">
-      {{ $t('viewConfig.appliesInfo', { sections: config.defaultSections.map(s => `[${s}]`).join(' \u2192 ') }) }}
-    </p>
-
-    <!-- error -->
-    <div
-      v-if="error"
-      class="info-area vertical-center">
-      <div class="text-danger">
-        <span class="mdi mdi-alert mdi-24px" />
-        {{ error }}
-      </div>
-    </div> <!-- /error -->
-
-    <!-- totp gate -->
-    <v-card
-      v-if="needTotp"
-      max-width="420"
-      class="mx-auto mt-8 pa-4">
-      <h4 class="mb-2">
-        <v-icon
-          start
-          icon="mdi-shield-key-outline" />
-        {{ $t('viewConfig.totpTitle') }}
-      </h4>
-      <p class="text-medium-emphasis mb-3">
-        {{ $t('viewConfig.totpInfo') }}
-      </p>
-      <div class="arkime-input-group arkime-input-group--fluid">
-        <span class="arkime-input-label">{{ $t('settings.totp.verifyCode') }}</span>
-        <input
-          ref="totpInput"
-          type="text"
-          maxlength="6"
-          inputmode="numeric"
-          class="arkime-input-control"
-          v-model="totpCode"
-          :placeholder="$t('settings.totp.codePlaceholder')"
-          @keyup.enter="verify">
-        <v-btn
-          color="primary"
-          variant="flat"
-          size="small"
-          density="comfortable"
-          class="me-1"
-          :loading="verifying"
-          :disabled="totpCode?.length !== 6"
-          @click="verify">
-          {{ $t('viewConfig.unlock') }}
-        </v-btn>
-      </div>
-    </v-card>
-
-    <template v-else>
-      <!-- controls -->
-      <v-row
-        dense
-        class="align-center mb-1">
+    <!-- inputs subnav: a second band flush under the one above, same
+         shape/height, different tint. arkime-toolbar (common.css) pins
+         every mixed v-btn/v-input child to 32px -- without it the
+         v-combobox renders at Vuetify's default ~40px and sits lower
+         than the plain arkime-input-group filter box next to it. -->
+    <v-row
+      v-if="!needTotp"
+      dense
+      align="center"
+      justify="start"
+      class="viewconfig-inputbar arkime-toolbar flex-nowrap"
+      :style="{ top: `calc(36px + var(--app-banner-height, 0px) + ${titlebarHeight}px)` }">
+      <v-col
+        cols="auto"
+        class="flex-grow-1"
+        style="min-width: 160px;">
+        <div class="arkime-input-group arkime-input-group--fluid">
+          <span class="arkime-input-label arkime-input-label-fw">
+            <v-icon icon="mdi-magnify" />
+          </span>
+          <input
+            type="text"
+            class="arkime-input-control"
+            v-model="filter"
+            :placeholder="$t('common.filter')">
+          <v-btn
+            v-if="filter"
+            icon
+            variant="text"
+            size="x-small"
+            density="comfortable"
+            class="arkime-input-append-btn"
+            :aria-label="$t('common.clear')"
+            @click="filter = ''">
+            <v-icon icon="mdi-close" />
+          </v-btn>
+        </div>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn-toggle
+          v-model="filterTarget"
+          mandatory
+          divided
+          density="compact"
+          variant="outlined"
+          color="primary">
+          <v-btn value="both">
+            {{ $t('viewConfig.both') }}
+          </v-btn>
+          <v-btn value="key">
+            {{ $t('viewConfig.key') }}
+          </v-btn>
+          <v-btn value="value">
+            {{ $t('viewConfig.value') }}
+          </v-btn>
+        </v-btn-toggle>
+      </v-col>
+      <template v-if="remote">
         <v-col
-          cols="12"
-          md="4">
-          <div class="arkime-input-group arkime-input-group--fluid">
-            <span class="arkime-input-label arkime-input-label-fw">
-              <v-icon icon="mdi-magnify" />
-            </span>
-            <input
-              type="text"
-              class="arkime-input-control"
-              v-model="filter"
-              :placeholder="$t('common.filter')">
-            <v-btn
-              v-if="filter"
-              icon
-              variant="text"
-              size="x-small"
-              density="comfortable"
-              class="arkime-input-append-btn"
-              :aria-label="$t('common.clear')"
-              @click="filter = ''">
-              <v-icon icon="mdi-close" />
-            </v-btn>
-          </div>
-        </v-col>
-        <v-col cols="auto">
-          <v-btn-toggle
-            v-model="filterTarget"
-            mandatory
-            divided
+          cols="auto"
+          style="width: 200px;">
+          <v-combobox
+            v-model="compareNode"
+            clearable
+            hide-details
             density="compact"
             variant="outlined"
-            color="primary">
-            <v-btn value="both">
-              {{ $t('viewConfig.both') }}
-            </v-btn>
-            <v-btn value="key">
-              {{ $t('viewConfig.key') }}
-            </v-btn>
-            <v-btn value="value">
-              {{ $t('viewConfig.value') }}
-            </v-btn>
-          </v-btn-toggle>
+            :items="nodes"
+            :loading="comparing"
+            :placeholder="$t('viewConfig.compareNode')"
+            @update:model-value="loadRemote" />
         </v-col>
-        <template v-if="remote">
-          <v-col
-            cols="12"
-            md="3">
-            <v-combobox
-              v-model="compareNode"
-              clearable
-              hide-details
-              density="compact"
-              variant="outlined"
-              :items="nodes"
-              :loading="comparing"
-              :label="$t('viewConfig.compareNode')"
-              @update:model-value="loadRemote" />
-          </v-col>
-          <v-col
-            v-if="remoteConfig"
-            cols="auto">
-            <v-switch
-              v-model="diffOnly"
-              hide-details
-              density="compact"
-              color="primary"
-              :label="$t('viewConfig.diffOnly')" />
-          </v-col>
-          <v-col
-            v-if="remoteConfig"
-            cols="auto"
-            class="text-medium-emphasis text-caption">
-            {{ $t('viewConfig.differenceCount', diffCount) }}
-            <template v-if="blindCount">
-              &middot; {{ $t('viewConfig.redactedCount', blindCount) }}
-            </template>
-          </v-col>
-        </template>
-      </v-row>
-
-      <template v-if="loading">
-        <slot name="loading">
-          <div class="text-center mt-5">
-            <span class="mdi mdi-loading mdi-spin mdi-24px" />
-            <br>
-            {{ $t('common.loading') }}
-          </div>
-        </slot>
+        <v-col
+          v-if="remoteConfig"
+          cols="auto">
+          <v-switch
+            v-model="diffOnly"
+            hide-details
+            density="compact"
+            color="primary"
+            :label="$t('viewConfig.diffOnly')" />
+        </v-col>
+        <v-col
+          v-if="remoteConfig"
+          cols="auto"
+          class="text-medium-emphasis text-caption text-no-wrap">
+          {{ $t('viewConfig.differenceCount', diffCount) }}
+          <template v-if="blindCount">
+            &middot; {{ $t('viewConfig.redactedCount', blindCount) }}
+          </template>
+        </v-col>
       </template>
+    </v-row> <!-- /inputs subnav -->
 
-      <!-- config -->
+    <div
+      class="arkime-container-fluid"
+      :style="{ marginTop: `${titlebarHeight + (needTotp ? 0 : 50)}px` }">
+      <!-- error -->
       <div
-        v-if="!loading && blocks.length"
-        class="viewconfig">
-        <div
-          v-for="block in blocks"
-          :key="block.name"
-          class="viewconfig-block">
-          <div class="viewconfig-section">
-            {{ block.title }}
-          </div>
-          <div
-            v-for="entry in block.entries"
-            :key="entry.key"
-            :class="['viewconfig-row', `viewconfig-${entry.status}`]">
-            <span class="viewconfig-key">{{ entry.key }}</span>
-            <span
-              v-if="entry.status !== 'onlyRemote'"
-              class="viewconfig-eq">=</span>
-            <span
-              v-if="entry.status !== 'onlyRemote'"
-              class="viewconfig-value">{{ entry.value }}</span>
-            <span
-              v-else
-              class="viewconfig-flag">; {{ $t('viewConfig.onlyThere') }}</span>
-            <span
-              v-if="entry.env"
-              class="viewconfig-flag">; {{ $t('viewConfig.fromEnv') }}</span>
-            <span
-              v-if="entry.status === 'blind'"
-              class="viewconfig-flag">; {{ $t('viewConfig.notComparable') }}</span>
+        v-if="error"
+        class="info-area vertical-center">
+        <div class="text-danger">
+          <span class="mdi mdi-alert mdi-24px" />
+          {{ error }}
+        </div>
+      </div> <!-- /error -->
+
+      <!-- totp gate -->
+      <v-card
+        v-if="needTotp"
+        max-width="420"
+        class="mx-auto mt-8 pa-4">
+        <h4 class="mb-2">
+          <v-icon
+            start
+            icon="mdi-shield-key-outline" />
+          {{ $t('viewConfig.totpTitle') }}
+        </h4>
+        <p class="text-medium-emphasis mb-3">
+          {{ $t('viewConfig.totpInfo') }}
+        </p>
+        <div class="arkime-input-group arkime-input-group--fluid">
+          <span class="arkime-input-label">{{ $t('settings.totp.verifyCode') }}</span>
+          <input
+            ref="totpInput"
+            type="text"
+            maxlength="6"
+            inputmode="numeric"
+            class="arkime-input-control"
+            v-model="totpCode"
+            :placeholder="$t('settings.totp.codePlaceholder')"
+            @keyup.enter="verify">
+          <v-btn
+            color="primary"
+            variant="flat"
+            size="small"
+            density="comfortable"
+            class="me-1"
+            :loading="verifying"
+            :disabled="totpCode?.length !== 6"
+            @click="verify">
+            {{ $t('viewConfig.unlock') }}
+          </v-btn>
+        </div>
+      </v-card>
+
+      <template v-else>
+        <template v-if="loading">
+          <slot name="loading">
+            <div class="text-center mt-5">
+              <span class="mdi mdi-loading mdi-spin mdi-24px" />
+              <br>
+              {{ $t('common.loading') }}
+            </div>
+          </slot>
+        </template>
+
+        <!-- config -->
+        <v-card
+          v-if="!loading && blocks.length"
+          elevation="3"
+          class="px-4 py-3 mt-2 mb-2">
+          <div class="viewconfig">
             <div
-              v-else-if="entry.status !== 'same'"
-              class="viewconfig-remote">
-              <span class="viewconfig-flag">{{ compareNode }}:</span>
-              <span
-                v-if="entry.status === 'onlyLocal'"
-                class="viewconfig-flag">{{ $t('viewConfig.onlyHere') }}</span>
-              <span
-                v-else
-                class="viewconfig-value">{{ entry.remoteValue }}</span>
+              v-for="block in blocks"
+              :key="block.name"
+              class="viewconfig-block">
+              <div class="viewconfig-section">
+                {{ block.title }}
+              </div>
+              <div
+                v-for="entry in block.entries"
+                :key="entry.key"
+                :class="['viewconfig-row', `viewconfig-${entry.status}`]">
+                <span class="viewconfig-key">{{ entry.key }}</span>
+                <span
+                  v-if="entry.status !== 'onlyRemote'"
+                  class="viewconfig-eq">=</span>
+                <span
+                  v-if="entry.status !== 'onlyRemote'"
+                  class="viewconfig-value">{{ entry.value }}</span>
+                <span
+                  v-else
+                  class="viewconfig-flag">; {{ $t('viewConfig.onlyThere') }}</span>
+                <span
+                  v-if="entry.env"
+                  class="viewconfig-flag">; {{ $t('viewConfig.fromEnv') }}</span>
+                <span
+                  v-if="entry.status === 'blind'"
+                  class="viewconfig-flag">; {{ $t('viewConfig.notComparable') }}</span>
+                <div
+                  v-else-if="entry.status !== 'same'"
+                  class="viewconfig-remote">
+                  <span class="viewconfig-flag">{{ compareNode }}:</span>
+                  <span
+                    v-if="entry.status === 'onlyLocal'"
+                    class="viewconfig-flag">{{ $t('viewConfig.onlyHere') }}</span>
+                  <span
+                    v-else
+                    class="viewconfig-value">{{ entry.remoteValue }}</span>
+                </div>
+              </div>
             </div>
           </div>
+        </v-card> <!-- /config -->
+        <div
+          v-else-if="!loading"
+          class="text-medium-emphasis mt-4">
+          {{ $t('viewConfig.noResults') }}
         </div>
-      </div>
-      <div
-        v-else-if="!loading"
-        class="text-medium-emphasis mt-4">
-        {{ $t('viewConfig.noResults') }}
-      </div>
-    </template>
+      </template>
+    </div> <!-- /arkime-container-fluid -->
   </div>
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { clearGrant, getConfig, getNodeConfig, getNodes, verifyTotp } from './ViewConfigService.js';
 
@@ -255,12 +286,25 @@ watch(needTotp, async (needed) => {
   totpInput.value?.focus();
 });
 
+// band 2 sits fixed directly under band 1 (the real .sub-navbar) -- its
+// height isn't ours to hardcode, so measure it instead of guessing
+const titlebarEl = ref(null);
+const titlebarHeight = ref(50);
+let titlebarObserver;
+
 onMounted(() => {
   load();
   if (props.remote) {
     getNodes().then((list) => { nodes.value = list; }).catch(() => { /* leave the picker empty */ });
   }
+
+  const measure = () => { titlebarHeight.value = titlebarEl.value.offsetHeight; };
+  measure();
+  titlebarObserver = new ResizeObserver(measure);
+  titlebarObserver.observe(titlebarEl.value);
 });
+
+onBeforeUnmount(() => titlebarObserver?.disconnect());
 
 async function load () {
   loading.value = true;
@@ -419,6 +463,26 @@ const blindCount = computed(() => counts.value.blind);
 </script>
 
 <style scoped>
+/* Band 1 is the real .sub-navbar (common/common.css) -- same class, same
+   height, same fixed band Settings/Config/Upload use everywhere else.
+   Band 2 sits flush underneath it, same fixed mechanism, offset by
+   band 1's actual measured height (titlebarHeight, see script) rather
+   than a guessed number -- .sub-navbar's height isn't ours to hardcode
+   (locale/font/banner can all change it), and guessing it produced a
+   gap. Different tint than band 1, matching the app's existing title
+   band vs. controls band colors (Search.vue is secondary-lightest, the
+   page-toolbar band under it is quaternary-lightest). */
+.viewconfig-inputbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 50px;
+  padding: 0 var(--px-md) 0 13px;
+  background-color: rgb(var(--v-theme-quaternary-lightest));
+  box-shadow: 0 8px 16px -8px black;
+}
+
 .viewconfig {
   font-family: monospace;
   font-size: 0.85rem;
@@ -427,6 +491,9 @@ const blindCount = computed(() => counts.value.blind);
 }
 .viewconfig-block {
   margin-bottom: 0.75rem;
+}
+.viewconfig-block:last-child {
+  margin-bottom: 0;
 }
 .viewconfig-section {
   font-weight: bold;
