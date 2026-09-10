@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- header -->
       <template #title>
         <h4 class="mb-0">
-          Create New Overview
+          {{ $t('cont3xt.overviews.createNew') }}
         </h4>
       </template> <!-- /header -->
       <!-- form -->
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="closeModal"
             color="warning">
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-alert
             height="40px"
@@ -39,13 +39,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             color="warning"
             @click="rawEditMode = !rawEditMode"
-            v-tooltip="'Edit the raw config for this link group'">
+            v-tooltip="$t('cont3xt.overviews.editRawTip')">
             <v-icon icon="mdi-pencil mdi-fw" />
           </v-btn>
           <v-btn
             @click="create"
             color="success">
-            Create
+            {{ $t('common.create') }}
           </v-btn>
         </div>
       </template> <!-- /footer -->

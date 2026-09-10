@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="link.externalDocUrl"
         icon="mdi-information" />
       <id-tooltip :target="`${elementId}-guidance`">
-        <a :href="link.externalDocUrl">{{ link.externalDocName || 'External Documentation' }} <v-icon icon="mdi-open-in-new" /></a>
+        <a :href="link.externalDocUrl">{{ link.externalDocName || $t('cont3xt.externalDocumentation') }} <v-icon icon="mdi-open-in-new" /></a>
       </id-tooltip>
     </a>
   </span>

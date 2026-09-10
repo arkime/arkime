@@ -20,15 +20,15 @@ SPDX-License-Identifier: Apache-2.0
           <v-icon icon="mdi-alert" />
         </span>
         <div class="display-inline-block">
-          {{ warningCount }} {{ (warningCount === 1) ? 'field is' : 'fields are' }} incorrectly linked.
+          {{ $t('cont3xt.overviews.warningCount', warningCount) }}
           <a
             class="no-decoration text-secondary pointer-cursor"
             @click="showWarningDetails = !showWarningDetails">
-            {{ showWarningDetails ? 'Hide' : 'Show' }} details.
+            {{ showWarningDetails ? $t('cont3xt.overviews.hideDetails') : $t('cont3xt.overviews.showDetails') }}
           </a>
           <a
             class="no-decoration"
-            href="settings#overviews">Fix configuration in Overview Settings.</a>
+            href="settings#overviews">{{ $t('cont3xt.overviews.fixConfiguration') }}</a>
         </div>
       </div>
       <div v-if="showWarningDetails">
@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-expansion-panel color="cont3xt-card">
         <template #title>
           <strong class="text-warning">
-            raw
+            {{ $t('cont3xt.overviews.raw') }}
           </strong>
         </template>
         <template #text>
@@ -110,17 +110,17 @@ export default {
         case 'custom':
           field = normalizeCardField(fieldRef.custom);
           if (field?.path == null) {
-            return { errMsg: 'Custom field failed to create path. Is "field" specified?' };
+            return { errMsg: this.$t('cont3xt.overviews.customFieldNoPath') };
           }
           break;
         case 'linked':
           field = this.createLinkedField(fieldRef, this.getIntegrations);
           if (field == null) {
-            return { errMsg: `Unable to find linked field: '${fieldRef.field}' in integration '${fieldRef.from}'` };
+            return { errMsg: this.$t('cont3xt.overviews.linkedFieldNotFound', { field: fieldRef.field, from: fieldRef.from }) };
           }
           break;
         default:
-          return { errMsg: `Unknown field type: '${fieldRef.type}'` };
+          return { errMsg: this.$t('cont3xt.overviews.unknownFieldType', { type: fieldRef.type }) };
         }
 
         return {

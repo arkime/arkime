@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="flat"
       class="btn-connect-right border-grey border-e-sm text-none"
       @click="selectOverview(selectedOverview._id)"
-      v-tooltip:top="'Display this overview'">
+      v-tooltip:top="$t('cont3xt.overviews.displayTip')">
       <div class="no-wrap d-flex flex-row align-center">
         <span
           v-if="getShiftKeyHold"
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
       class="btn-connect-left"
       variant="flat"
       size="small"
-      v-tooltip:top="'Select overview'">
+      v-tooltip:top="$t('cont3xt.overviews.selectTip')">
       <v-icon
         icon="mdi-menu-down"
         size="large" />

@@ -17,29 +17,29 @@ SPDX-License-Identifier: Apache-2.0
       <!-- group name -->
       <trimmed-text-field
         class="mb-2"
-        label="Group Name"
+        :label="$t('cont3xt.linkGroups.groupName')"
         v-model="lg.name"
         :rules="[lg.name.length > 0]" /> <!-- /group name -->
       <!-- group roles -->
       <div class="d-flex align-center">
         <RoleDropdown
           :roles="getRoles"
-          display-text="Who Can View"
+          :display-text="$t('cont3xt.whoCanView')"
           :selected-roles="lg.viewRoles"
           @selected-roles-updated="updateViewRoles" />
         <RoleDropdown
           class="ms-1"
           :roles="getRoles"
-          display-text="Who Can Edit"
+          :display-text="$t('cont3xt.whoCanEdit')"
           :selected-roles="lg.editRoles"
           @selected-roles-updated="updateEditRoles" />
         <v-icon
           size="large"
           icon="mdi-information"
           class="cursor-help ms-2 me-1"
-          v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'" />
+          v-tooltip="$t('cont3xt.linkGroups.rolesTip')" />
         <span v-if="!lg.creator || lg.creator === getUser.userId">
-          As the creator, you can always view and edit your link groups.
+          {{ $t('cont3xt.linkGroups.creatorNote') }}
         </span>
       </div>
       <!-- /group roles -->
@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="me-2 flex-grow-1 d-flex flex-row">
                 <trimmed-text-field
                   class="input-connect-right small-input"
-                  label="Name"
+                  :label="$t('cont3xt.linkGroups.linkName')"
                   v-model="link.name"
                   :rules="[link.name.length > 0]"
                   @update:model-value="val => linkChange(i, { name: val })" />
@@ -109,7 +109,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="text-center mt-1" />
               </div>
               <trimmed-text-field
-                label="URL"
+                :label="$t('cont3xt.linkGroups.url')"
                 class="small-input"
                 v-model="link.url"
                 :rules="[link.url.length > 0]"
@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
                 </template>
               </trimmed-text-field>
               <trimmed-text-field
-                label="Description"
+                :label="$t('cont3xt.linkGroups.description')"
                 class="small-input"
                 v-model="link.infoField"
                 @update:model-value="val => linkChange(i, { infoField: val })">
@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
               </trimmed-text-field>
               <div class="d-flex flex-row ga-1">
                 <trimmed-text-field
-                  label="External Doc Name"
+                  :label="$t('cont3xt.linkGroups.externalDocName')"
                   class="flex-grow-1 small-input"
                   v-model="link.externalDocName"
                   @update:model-value="val => linkChange(i, { externalDocName: val })">
@@ -147,7 +147,7 @@ SPDX-License-Identifier: Apache-2.0
                   </template>
                 </trimmed-text-field>
                 <trimmed-text-field
-                  label="External Doc URL"
+                  :label="$t('cont3xt.linkGroups.externalDocUrl')"
                   class="flew-grow-1 small-input"
                   v-model="link.externalDocUrl"
                   @update:model-value="val => linkChange(i, { externalDocUrl: val })">
@@ -202,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
       <div
         class="mt-2"
         v-if="lg.creator">
-        Created by
+        {{ $t('cont3xt.createdBy') }}
         <span class="text-info">
           {{ lg.creator }}
         </span>
@@ -263,34 +263,29 @@ export default {
     return {
       rawEditText: undefined,
       lg: (!this.linkGroup || !this.linkGroup._id) ? undefined : JSON.parse(JSON.stringify(this.linkGroup)),
-      itypeOptions: [
-        { text: 'Domain', value: 'domain' },
-        { text: 'IP', value: 'ip' },
-        { text: 'URL', value: 'url' },
-        { text: 'Email', value: 'email' },
-        { text: 'Hash', value: 'hash' },
-        { text: 'Phone', value: 'phone' },
-        { text: 'Text', value: 'text' }
-      ],
       dragging: -1,
-      draggedOver: undefined,
-      linkTip: {
-
-        title: 'These values within links will be filled in <code>${indicator}</code>, <code>${type}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${startDate}</code>, <code>${endDate}</code>, <code>${startTS}</code>, <code>${endTS}</code>, <code>${startEpoch}</code>, <code>${endEpoch}</code>, <code>${startSplunk}</code>, <code>${endSplunk}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
-      },
-      linkInfoTip: {
-        title: 'Use this field to provide guidance about this link. It will be shown as an <v-icon class="cursor-help" icon="mdi-information" /> tooltip.'
-      },
-      linkExternalDocUrlTip: {
-        title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <v-icon class="cursor-pointer" icon="mdi-help-circle" /> icon.'
-      },
-      linkExternalDocNameTip: {
-        title: 'Give a name to label the external documentation icon. This will be seen on the <v-icon class="cursor-pointer" icon="mdi-help-circle" /> icon\'s tooltip. By default, this will be: "External Documentation."'
-      }
+      draggedOver: undefined
     };
   },
   computed: {
-    ...mapGetters(['getRoles', 'getUser', 'getLinkGroups'])
+    ...mapGetters(['getRoles', 'getUser', 'getLinkGroups']),
+    itypeOptions () {
+      // explicit order -- not iTypes, which lists phone before hash
+      return ['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text']
+        .map(itype => ({ text: this.$t(`cont3xt.itypeNames.${itype}`), value: itype }));
+    },
+    linkTip () {
+      return { title: this.$t('cont3xt.linkGroups.urlTipHtml') };
+    },
+    linkInfoTip () {
+      return { title: this.$t('cont3xt.linkGroups.descriptionTipHtml') };
+    },
+    linkExternalDocUrlTip () {
+      return { title: this.$t('cont3xt.linkGroups.externalDocUrlTipHtml') };
+    },
+    linkExternalDocNameTip () {
+      return { title: this.$t('cont3xt.linkGroups.externalDocNameTipHtml') };
+    }
   },
   created () {
     if (!this.lg) { // creating new link group
@@ -327,7 +322,7 @@ export default {
             }
           } catch (err) {
             console.warn('Invalid JSON for raw link group', err);
-            this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
+            this.$store.commit('SET_LINK_GROUPS_ERROR', this.$t('cont3xt.invalidJson'));
           }
           // clear rawEditText to be parsed again if rawEditMode triggered
           this.rawEditText = undefined;
@@ -382,7 +377,7 @@ export default {
       this.$store.commit('UPDATE_LINK_GROUP', linkGroup);
 
       LinkService.updateLinkGroup(linkGroup).then(() => {
-        this.$emit('display-message', `Link added to the end of ${linkGroup.name}`);
+        this.$emit('display-message', this.$t('cont3xt.linkGroups.linkCopied', { name: linkGroup.name }));
       }); // store deals with failure
     },
     removeLink (index) {
@@ -431,7 +426,7 @@ export default {
         });
       } catch (err) {
         console.warn('Invalid JSON for raw link group', err);
-        this.$store.commit('SET_LINK_GROUPS_ERROR', 'Invalid JSON');
+        this.$store.commit('SET_LINK_GROUPS_ERROR', this.$t('cont3xt.invalidJson'));
       }
     }
   }

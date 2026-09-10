@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-icon
             icon="mdi-share"
             class="me-1 cursor-help"
-            v-tooltip="`Shared with you by ${localOverview.creator}`" />
+            v-tooltip="$t('common.sharedTip', { creator: localOverview.creator })" />
           {{ localOverview.name }}
         </div>
         <v-btn
@@ -24,22 +24,22 @@ SPDX-License-Identifier: Apache-2.0
           :disabled="isSetAsDefault"
           @click="setAsDefaultOverview">
           <span v-if="isSetAsDefault">
-            Default for {{ overview.iType }} iType <v-icon icon="mdi-check-bold" />
+            {{ $t('cont3xt.overviews.defaultForItype', { itype: overview.iType }) }} <v-icon icon="mdi-check-bold" />
           </span>
           <span v-else>
-            Set as default for {{ overview.iType }} iType
+            {{ $t('cont3xt.overviews.setDefaultForItype', { itype: overview.iType }) }}
           </span>
         </v-btn>
         <div>
           <small>
-            You can only view this Overview
+            {{ $t('cont3xt.overviews.viewOnly') }}
           </small>
           <v-btn
             class="ms-1"
             size="small"
             color="secondary"
             @click="rawEditMode = !rawEditMode"
-            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+            v-tooltip="rawEditMode ? $t('cont3xt.overviews.viewFormTip') : $t('cont3xt.overviews.viewRawTip')">
             <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
           </v-btn>
         </div>
@@ -48,19 +48,19 @@ SPDX-License-Identifier: Apache-2.0
     <v-card-text>
       <template v-if="!rawEditMode">
         <div class="d-flex flex-row align-center">
-          <h6>Title:</h6>
+          <h6>{{ $t('cont3xt.overviews.titleLabel') }}</h6>
           <span class="ms-1">{{ localOverview.title }}</span>
         </div>
         <div class="d-flex flex-row align-center">
-          <h6>iType:</h6>
+          <h6>{{ $t('cont3xt.overviews.itypeLabel') }}</h6>
           <span class="ms-1">{{ localOverview.iType }}</span>
         </div>
         <div class="d-flex flex-row align-center">
-          <h6>Fields:</h6>
+          <h6>{{ $t('cont3xt.overviews.fieldsLabel') }}</h6>
           <c3-badge
             v-if="!localOverview.fields.length"
             class="ms-1">
-            None
+            {{ $t('common.none') }}
           </c3-badge>
         </div>
         <div class="d-flex flex-column">
@@ -70,11 +70,11 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-1 ps-2 pe-2 pt-1 pb-1">
             <span class="text-warning bold">{{ field.from }}&nbsp;</span>
             <template v-if="field.type === 'custom'">
-              <span class="text-primary">Custom</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>
+              <span class="text-primary">{{ $t('common.custom') }}</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>
             </template>
             <template v-else>
               <span class="text-primary">{{ field.field }}</span>
-              <span v-if="field.alias">&nbsp;as&nbsp;<span class="text-info">"{{ field.alias }}"</span></span>
+              <span v-if="field.alias">&nbsp;{{ $t('cont3xt.overviews.alias') }}&nbsp;<span class="text-info">"{{ field.alias }}"</span></span>
             </template>
           </v-card>
         </div>
@@ -100,8 +100,8 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             size="small"
             color="info"
-            v-tooltip="'Transfer ownership of this link group'"
-            title="Transfer ownership of this link group"
+            v-tooltip="$t('cont3xt.overviews.transferTip')"
+            :title="$t('cont3xt.overviews.transferTip')"
             v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
             <v-icon icon="mdi-share mdi-fw" />
@@ -113,7 +113,7 @@ SPDX-License-Identifier: Apache-2.0
               color="error"
               v-if="!confirmDelete && !isDefaultOverview"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this overview'">
+              v-tooltip="$t('cont3xt.overviews.deleteTip')">
               <v-icon icon="mdi-trash-can mdi-fw" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -122,8 +122,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="warning"
-              v-tooltip="'Cancel'"
-              title="Cancel"
+              v-tooltip="$t('common.cancel')"
+              :title="$t('common.cancel')"
               :disabled="isDefaultOverview"
               v-if="confirmDelete && !isDefaultOverview"
               @click="confirmDelete = false">
@@ -135,8 +135,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="error"
-              v-tooltip="'Are you sure?'"
-              title="Are you sure?"
+              v-tooltip="$t('common.areYouSure')"
+              :title="$t('common.areYouSure')"
               :disabled="isDefaultOverview"
               v-if="confirmDelete && !isDefaultOverview"
               @click="deleteOverview">
@@ -151,10 +151,10 @@ SPDX-License-Identifier: Apache-2.0
           :disabled="isSetAsDefault"
           @click="setAsDefaultOverview">
           <span v-if="isSetAsDefault">
-            Default for {{ overview.iType }} iType <v-icon icon="mdi-check-bold" />
+            {{ $t('cont3xt.overviews.defaultForItype', { itype: overview.iType }) }} <v-icon icon="mdi-check-bold" />
           </span>
           <span v-else>
-            Set as default for {{ overview.iType }} iType
+            {{ $t('cont3xt.overviews.setDefaultForItype', { itype: overview.iType }) }}
           </span>
         </v-btn>
         <div class="d-flex ga-1">
@@ -163,7 +163,7 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+              v-tooltip="rawEditMode ? $t('cont3xt.overviews.editFormTip') : $t('cont3xt.overviews.editRawTip')">
               <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
               color="warning"
               v-if="changesMade"
               @click="cancelOverviewModification"
-              v-tooltip="'Cancel unsaved updates'">
+              v-tooltip="$t('cont3xt.overviews.cancelChangesTip')">
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
@@ -183,7 +183,7 @@ SPDX-License-Identifier: Apache-2.0
               color="success"
               v-if="changesMade"
               @click="saveOverview"
-              v-tooltip="'Save this overview'">
+              v-tooltip="$t('cont3xt.overviews.saveTip')">
               <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
