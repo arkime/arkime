@@ -83,14 +83,14 @@ export default {
         isostart = new Date(parseInt(urlParams.startTime) * 1000);
         isostop = new Date(parseInt(urlParams.stopTime) * 1000);
       } else {
-        isostart = new Date();
+        // the route query may be out of sync when the default time range was
+        // applied via window.history.replaceState, so fall back to the store
+        const timeRange = parseInt(urlParams.date ?? store.state.timeRange, 10);
         isostop = new Date();
-        if (urlParams.date) {
-          isostart.setHours(isostart.getHours() - parseInt(urlParams.date));
-        } else {
-          isostart.setHours(isostart.getHours() - 1);
-        }
-        dateparams = urlParams.date;
+        isostart = timeRange === -1
+          ? new Date(0)
+          : new Date(Date.now() - timeRange * 3600 * 1000);
+        dateparams = timeRange;
       }
 
       for (const key in this.fieldActions) {

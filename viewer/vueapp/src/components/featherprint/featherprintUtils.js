@@ -18,6 +18,36 @@ export function fmtTs (ts, settings) {
 }
 
 /**
+ * Fixed-width key that sorts an IP by value rather than lexically, so
+ * 192.168.1.2 comes before 192.168.1.11. v4 keys sort ahead of v6; anything
+ * unparseable sorts last, in its own string order.
+ */
+export function ipSortValue (ip) {
+  if (typeof ip !== 'string' || !ip) { return '9'; }
+
+  if (!ip.includes(':')) {
+    const octets = ip.split('.');
+    if (octets.length !== 4) { return `9${ip}`; }
+    return `4${octets.map(o => o.padStart(3, '0')).join('')}`;
+  }
+
+  // fold a trailing dotted quad (::ffff:1.2.3.4) into two hextets first
+  let rest = ip;
+  const v4 = rest.match(/(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (v4) {
+    const [a, b, c, d] = v4.slice(1).map(Number);
+    rest = rest.slice(0, v4.index) +
+      (a * 256 + b).toString(16) + ':' + (c * 256 + d).toString(16);
+  }
+
+  const [head, tail] = rest.split('::');
+  const h = head ? head.split(':') : [];
+  const t = tail ? tail.split(':') : [];
+  const fill = Array(Math.max(0, 8 - h.length - t.length)).fill('0');
+  return `6${[...h, ...fill, ...t].map(p => p.padStart(4, '0')).join('')}`;
+}
+
+/**
  * One-line human summary of a history entry or alert, keyed off its `kind`.
  * Falls back to the raw before/after payload for kinds we don't special-case.
  */

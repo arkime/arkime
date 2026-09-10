@@ -104,6 +104,7 @@ ArkimeConfig.loaded(() => {
   internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;
   internals.allowUploads = !!Config.get('uploadCommand');
   internals.uploadRoles = Config.getArray('uploadRoles', 'arkimeUser');
+  internals.featherprintAckRoles = Config.getArray('featherprintAckRoles', 'arkimeAdmin');
   internals.cronTimeout = +Config.get('dbFlushTimeout', 5) + // How long capture holds items
                            60 + // How long before ES reindexes
                            20; // Transmit and extra time
