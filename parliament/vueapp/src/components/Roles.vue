@@ -8,26 +8,20 @@ SPDX-License-Identifier: Apache-2.0
     @update-current-user="updateCurrentUser" />
 </template>
 
-<script>
-import { mapGetters } from 'vuex';
+<script setup>
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
 import RolesCommon from '@common/Roles.vue';
 import UserService from '@/components/user.service.js';
 
-export default {
-  name: 'Roles',
-  components: { RolesCommon },
-  computed: {
-    ...mapGetters(['getUser'])
-  },
-  created () {
-    UserService.getUser();
-  },
-  methods: {
-    updateCurrentUser () {
-      // NOTE: don't need to do anything with the data (the store does it)
-      UserService.getUser();
-    }
-  }
-};
+const store = useStore();
+// the /roles route guard (router.js requireUser) already fetches the
+// current user before this component mounts
+const getUser = computed(() => store.state.user);
+
+function updateCurrentUser () {
+  // NOTE: don't need to do anything with the data (the store does it)
+  UserService.getUser();
+}
 </script>

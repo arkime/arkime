@@ -24,13 +24,16 @@ async function requireAdmin () {
   if (!store.state.isAdmin) { return { name: 'Parliament' }; }
 }
 
-// The user pages answer to arkime-wide roles rather than parliamentAdmin,
-// so they check the user the same way viewer and cont3xt do. On a hard
-// load the user isn't fetched yet, so pull it first.
+// The user pages answer to arkime-wide roles rather than parliamentAdmin.
+// Always re-fetch rather than trusting a cached store.state.user -- these
+// are admin-sensitive routes, so a role revoked mid-session shouldn't keep
+// granting access off a stale value until a hard reload.
 async function requireUser (check) {
-  let user = store.state.user;
-  if (!user) {
-    try { user = await UserService.getUser(); } catch { /* treated as no access */ }
+  let user;
+  try {
+    user = await UserService.getUser();
+  } catch (err) {
+    console.log('ERROR - failed to fetch user for route guard', err);
   }
   if (!check(user)) { return { name: 'Parliament' }; }
 }

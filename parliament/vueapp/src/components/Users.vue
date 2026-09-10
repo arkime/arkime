@@ -27,7 +27,8 @@ export default {
     ...mapGetters(['getUser', 'getRoles'])
   },
   created () {
-    UserService.getUser();
+    // the /users route guard (router.js requireUser) already fetches the
+    // current user before this component mounts, so only roles need fetching here
     UserService.getRoles();
   },
   methods: {
