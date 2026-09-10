@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import store from '@/store';
 import UserService from '@/components/users/UserService';
+import { createRequireRole } from '@common/routeGuards.js';
 import Stats from '@/components/stats/Stats.vue';
 import EsAdmin from '@/components/stats/EsAdmin.vue';
 import Banner from '@/components/banner/Banner.vue';
@@ -28,13 +29,7 @@ import Arkime from '@/components/arkime/Arkime.vue';
 // These admin pages are hidden from the navbar when the user lacks the role;
 // guard the routes too so they can't be reached by typing the url directly.
 // On a hard load the user isn't fetched yet, so pull it first.
-async function requireRole (role) {
-  let user = store.state.user;
-  if (!user) {
-    try { user = await UserService.getCurrent(); } catch { /* treated as no access */ }
-  }
-  if (!user?.roles?.includes(role)) { return { name: 'Sessions' }; }
-}
+const requireRole = createRequireRole(UserService.getCurrent, () => store.state.user, 'Sessions');
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
