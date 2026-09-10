@@ -313,6 +313,13 @@ class Config {
       }
     }, true);
 
+    ArkimeConfig.registerSecrets([
+      'elasticsearchAPIKey', 'elasticsearchBasicAuth', 'esClientKeyPass',
+      'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth', 'multiESBasicAuth',
+      'esProxySigV4SecretAccessKey', 'esProxySigV4SessionToken',
+      's3SecretAccessKey', 'sqsSecretAccessKey', 'clickhousePassword'
+    ]);
+
     ArkimeConfig.registerValidated({
       uploadFileSizeLimit: { type: 'int', min: 0 },
       maxSessionsQueried: { type: 'int', min: 0 },

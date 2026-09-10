@@ -354,6 +354,34 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  static #SECRETS = new Set();
+
+  /**
+   * Register settings that hold a credential, so anything showing the config
+   * hides them. Owners register their own, the same way they register what to
+   * validate - guessing from the name is only a backstop.
+   *
+   * @param {string[]} keys - the setting names, without a section
+   */
+  static registerSecrets (keys) {
+    for (const key of keys ?? []) {
+      if (typeof key === 'string' && key !== '') {
+        ArkimeConfig.#SECRETS.add(key.toLowerCase());
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The settings registered as holding a credential, lowercased
+   *
+   * @returns {string[]}
+   */
+  static getSecrets () {
+    return [...ArkimeConfig.#SECRETS];
+  }
+
+  // ----------------------------------------------------------------------------
   static #validateSetting (key, spec) {
     if (spec.type === 'cidrs') {
       const list = ArkimeConfig.getArray(key);

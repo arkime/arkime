@@ -8,7 +8,6 @@
 'use strict';
 
 const ArkimeUtil = require('../common/arkimeUtil');
-const ViewConfig = require('../common/viewConfig');
 const ArkimeConfig = require('../common/arkimeConfig');
 const path = require('path');
 const fs = require('fs');
@@ -107,8 +106,9 @@ class Integration {
       return;
     }
 
-    // so View Config never shows this integration's api key
-    ViewConfig.addSecretKeys(Object.keys(integration.settings ?? {})
+    // a setting marked password is this integration saying it holds a
+    // credential, so View Config hides it without having to guess from the name
+    ArkimeConfig.registerSecrets(Object.keys(integration.settings ?? {})
       .filter(setting => integration.settings[setting]?.password));
 
     integration.cacheable ??= true;

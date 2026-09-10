@@ -582,10 +582,8 @@ class WISESourceAPI {
         ]);
       }
 
-      // so View Config never shows this source's api key
-      ViewConfig.addSecretKeys((configDef.fields ?? []).filter(f => f.password).map(f => f.name));
-
       internals.configDefs[sourceName] = configDef;
+      registerConfigDefSecrets(); // a source added after startup declares its own
     }
   }
 
@@ -631,6 +629,20 @@ class WISESourceAPI {
     return funcName(typeName);
   }
 }
+// ----------------------------------------------------------------------------
+/* A field marked password is wise saying it holds a credential, so that is
+ * what anything showing the config goes by - covers the static wiseService
+ * and cache defs as well as every source's. */
+function registerConfigDefSecrets () {
+  const names = [];
+  for (const configDef of Object.values(internals.configDefs)) {
+    for (const field of configDef?.fields ?? []) {
+      if (field.password && field.name) { names.push(field.name); }
+    }
+  }
+  ArkimeConfig.registerSecrets(names);
+}
+
 // ----------------------------------------------------------------------------
 function loadSources () {
   const files = fs.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
@@ -1791,6 +1803,7 @@ function main () {
   internals.sourceApi = new WISESourceAPI();
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
+  registerConfigDefSecrets();
 
   if (ArkimeConfig.debug > 0) {
     setInterval(printStats, 60 * 1000);
@@ -1803,6 +1816,11 @@ function main () {
 }
 
 async function buildConfigAndStart () {
+  ArkimeConfig.registerSecrets([
+    'elasticsearchAPIKey', 'elasticsearchBasicAuth',
+    'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth'
+  ]);
+
   ArkimeConfig.registerValidated({
     elasticsearch: { type: 'urls' },
     usersElasticsearch: { type: 'urls' }

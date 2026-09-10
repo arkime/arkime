@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 93;
+use Test::More tests => 100;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -387,6 +387,10 @@ is($vc->{sections}->{'esproxy-sensors'}->{test2}, "pass:[redacted];ip:1.2.3.4,12
 is($vc->{sections}->{keks}->{test}, "[redacted]", "every value in the keks section redacted");
 is($vc->{sections}->{'viewconfig-test'}->{key}, "[redacted]", "a bare key setting redacted");
 is($vc->{sections}->{'viewconfig-test'}->{keyColumn}, "Prefix", "a key named setting that isn't a credential is left alone");
+is($vc->{sections}->{'viewconfig-test'}->{esClientKeyPass}, "[redacted]", "a name ending in Pass redacted");
+is($vc->{sections}->{'viewconfig-test'}->{bypassCount}, "5", "pass inside a longer word is left alone");
+is($vc->{sections}->{testuser}->{disableUserPasswordUI}, "false", "a switch that reads like a credential is left alone");
+ok((grep { $_ eq "viewconfig-test.esClientKeyPass" } @{$vc->{redacted}}), "redacted list has the key passphrase");
 is($vc->{sections}->{'viewconfig-test'}->{comboUrl}, "http://user:[redacted]\@example.com/x", "url password with a comma in it redacted");
 is($vc->{sections}->{'viewconfig-test'}->{queryUrl}, "http://example.com?to=a\@b.com", "an \@ in a query string is not treated as a url password");
 unlike(to_json($vc), qr/test2:test2\@/, "no url password anywhere in the response");
@@ -477,3 +481,6 @@ $vc = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/v
 $ArkimeTest::userAgent->credentials("$ArkimeTest::host:8081", 'Moloch', '', '');
 is($vc->{success}, 1, "wise view config success");
 ok((grep { $_ eq "wiseService" } @{$vc->{defaultSections}}), "wise reads its own section");
+is($vc->{sections}->{cache}->{redisURL}, "[redacted]", "a wise field marked password is hidden whatever it is named");
+is($vc->{sections}->{'splunk:test'}->{password}, "[redacted]", "a wise source password is hidden");
+is($vc->{sections}->{'databricks:test'}->{token}, "[redacted]", "a wise source token is hidden");

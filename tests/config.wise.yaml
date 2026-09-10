@@ -94,6 +94,9 @@ reversedns:
   field: asset
 cache:
   type: memory
+  # unused with type memory, config.t checks View Config hides it because the
+  # cache configDef marks it a password, not because of its name
+  redisURL: redis://user:redispass@localhost:6379/0
 url:aws-ips:
   type: ip
   format: json

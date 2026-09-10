@@ -23,6 +23,22 @@ const REDACTED = '[redacted]';
 // A key holding a credential, matched anywhere in the name, case insensitive
 const SECRET_KEY_RE = /(secret|password|token|apikey|basicauth)/i;
 
+// What a source or integration tends to call its api key. Only a backstop for
+// the ones that never registered the name themselves.
+const GENERIC_SECRET_KEYS = new Set(['key', 'keys', 'appcode', 'credentials', 'pass', 'passwd', 'pwd']);
+
+// Names that read like a credential but are a switch, so hiding them says
+// nothing and costs the admin an answer
+const NOT_SECRET_KEYS = new Set([
+  'disableuserpasswordui', 'awsusetokenformetadata', 's3usetokenformetadata'
+]);
+
+// `pass` on its own is a credential (esClientKeyPass), but as a substring it
+// is all over words that aren't (bypass, passthrough), so match it as a whole
+// camelCase word instead
+const WORD_SECRETS = new Set(['pass', 'passwd', 'pwd']);
+const WORD_RE = /[A-Z]+(?![a-z])|[A-Za-z][a-z0-9]*/g;
+
 // Whole sections whose every value is key material, no matter what the keys
 // are named - [keks] is `<kekId>=<key encryption key>`
 const SECRET_SECTIONS = new Set(['keks']);
@@ -55,12 +71,6 @@ class ViewConfig {
   // unguessable grant, so the unlock belongs to that browser and not to
   // every session the user has open. Idles out after 10 minutes of no use.
   static #totpGrants = new LRUCache({ max: 1000, ttl: 10 * 60 * 1000, updateAgeOnGet: true });
-
-  // Exact key names an app knows hold a credential, lowercased. Sources and
-  // integrations name their api key settings whatever they like (`key`,
-  // `appCode`, ...), so they register their own instead of hoping the name
-  // happens to contain the word secret.
-  static #secretKeys = new Set(['key', 'keys', 'appcode', 'credentials', 'pass', 'passwd', 'pwd', 'esclientkeypass']);
 
   static #appAdminRole;
   static #badMode;
@@ -118,21 +128,6 @@ class ViewConfig {
     return User.checkRole(mode === 'superAdmin' ? 'superAdmin' : ViewConfig.#appAdminRole)(req, res, next);
   }
 
-  // ----------------------------------------------------------------------------
-  /**
-   * @ignore
-   * Register setting names that must never be shown, eg every field a wise
-   * source or cont3xt integration marked as a password.
-   * @param {string[]} names
-   */
-  static addSecretKeys (names) {
-    for (const keyName of names ?? []) {
-      if (typeof keyName === 'string' && keyName !== '') {
-        ViewConfig.#secretKeys.add(keyName.toLowerCase());
-      }
-    }
-  }
-
   // --------------------------------------------------------------------------
   /**
    * @ignore
@@ -154,6 +149,23 @@ class ViewConfig {
   // --------------------------------------------------------------------------
   /**
    * @ignore
+   * Does this setting name hold a credential: declared by whoever reads it,
+   * registered by a wise source or cont3xt integration, or looking enough like
+   * one to hide as a backstop.
+   */
+  static #isSecretKey (key) {
+    const lower = key.toLowerCase();
+    if (NOT_SECRET_KEYS.has(lower)) { return false; }
+
+    if (ArkimeConfig.getSecrets().includes(lower) || GENERIC_SECRET_KEYS.has(lower)) { return true; }
+    if (SECRET_KEY_RE.test(key)) { return true; }
+
+    return (key.match(WORD_RE) ?? []).some(word => WORD_SECRETS.has(word.toLowerCase()));
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * @ignore
    * The display value for one setting, and whether anything was hidden.
    * json/yaml configs hand us numbers, booleans, arrays and objects, so
    * everything that isn't a string is rendered as json for the ini view.
@@ -165,7 +177,7 @@ class ViewConfig {
       return { value: '', redacted: false };
     }
 
-    if (alwaysSecret || SECRET_KEY_RE.test(key) || ViewConfig.#secretKeys.has(key.toLowerCase())) {
+    if (alwaysSecret || ViewConfig.#isSecretKey(key)) {
       return { value: REDACTED, redacted: true };
     }
 

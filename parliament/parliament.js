@@ -1174,6 +1174,8 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
+  ArkimeConfig.registerSecrets(['usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']);
+
   ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
   Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
 
