@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
+  <div class="arkime-container-fluid">
     <UsersCommon
       :roles="userRoles"
       parent-app="Arkime"

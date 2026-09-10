@@ -19,6 +19,7 @@ class UserAPIs {
   static getCurrentUserCB (user, clone) {
     clone.canUpload = internals.allowUploads && user.hasRole(internals.uploadRoles);
     clone.canViewConfig = ViewConfig.allowed(user);
+    clone.canAckFeatherprint = user.hasRole(internals.featherprintAckRoles);
 
     // If no settings, use defaults
     if (clone.settings === undefined) { clone.settings = internals.settingDefaults; }

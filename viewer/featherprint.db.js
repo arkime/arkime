@@ -129,10 +129,38 @@ class FeatherprintDb {
     return (r?.hits?.hits ?? []).map(h => ({ _id: h._id, ...h._source }));
   }
 
-  static async ackAlert (id, user, ackedAt = Date.now()) {
-    await Db.update(FeatherprintDb.ALERTS_INDEX, id, {
-      doc: { acked: true, ackedBy: user, ackedAt }
-    }, { refresh: true });
+  // Ack state is shared across the team, not per user -- ackedBy/ackedAt are
+  // the audit trail of who triaged it. Un-acking clears both so a mistaken ack
+  // leaves no misleading attribution behind.
+  static #ackDoc (acked, user, ackedAt) {
+    return acked
+      ? { doc: { acked: true, ackedBy: user, ackedAt } }
+      : { doc: { acked: false, ackedBy: null, ackedAt: null } };
+  }
+
+  static async ackAlert (id, user, ackedAt = Date.now(), acked = true) {
+    await Db.update(FeatherprintDb.ALERTS_INDEX, id,
+      FeatherprintDb.#ackDoc(acked, user, ackedAt), { refresh: true });
+  }
+
+  // Bulk ack/un-ack. Refreshes once at the end instead of per doc -- a few
+  // hundred refresh:true updates stall the index. Runs in small batches so a
+  // big ack doesn't open hundreds of concurrent requests.
+  static async ackAlerts (ids, user, ackedAt = Date.now(), acked = true) {
+    const doc = FeatherprintDb.#ackDoc(acked, user, ackedAt);
+    let changed = 0;
+    let lastError;
+    for (let i = 0; i < ids.length; i += 10) {
+      const batch = await Promise.allSettled(ids.slice(i, i + 10).map(
+        id => Db.update(FeatherprintDb.ALERTS_INDEX, id, doc)
+      ));
+      for (const r of batch) {
+        if (r.status === 'fulfilled') { changed++; } else { lastError = r.reason; }
+      }
+    }
+    await Db.refresh(FeatherprintDb.ALERTS_INDEX);
+    if (changed === 0 && lastError) { throw lastError; }
+    return { acked: changed, failed: ids.length - changed };
   }
 
   // --------------------------------------------------------------------------

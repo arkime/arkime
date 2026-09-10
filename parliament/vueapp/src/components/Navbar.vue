@@ -126,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
           class="refresh-interval-select ms-2"
           prepend-inner-icon="mdi-refresh" />
 
-        <!-- admin menu (users/banner) -->
+        <!-- admin menu (users/roles/banner) -->
         <AdminMenu
           v-if="adminItems.length"
           :items="adminItems"
@@ -151,6 +151,7 @@ import AdminMenu from '@common/AdminMenu.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import { THEMES } from '@common/themes/manifest.js';
+import UserService from '@/components/user.service.js';
 
 export default {
   name: 'ParliamentNavbar',
@@ -176,12 +177,16 @@ export default {
   },
   computed: {
     isAdmin () { return this.$store.state.isAdmin; },
+    user () { return this.$store.state.user; },
     adminItems () {
-      if (!this.isAdmin) { return []; }
+      // users/roles answer to the arkime-wide roles the apis check;
+      // the banner is parliament's own admin
       return [
-        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: true },
-        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: true },
-        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig', show: !!this.$store.state.user?.canViewConfig }
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.user?.roles?.includes('usersAdmin') },
+        { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: !!this.user?.canAssignRoles },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: this.isAdmin },
+        // viewConfigMode as well as a role, so the server decides
+        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig', show: !!this.user?.canViewConfig }
       ].filter(item => item.show).map(item => ({ ...item, isActive: this.$route.path === item.link }));
     },
     settings () {
@@ -250,6 +255,17 @@ export default {
         }
         document.body.classList = dark ? ['dark'] : [];
       }
+    }
+  },
+  created () {
+    // App.vue's mount-time fetch (for theme hydration) is the only other
+    // place that populates store.state.user; if it hasn't landed yet, or
+    // failed, retry here so the admin menu can self-heal instead of
+    // staying hidden for the rest of the session.
+    if (!this.$store.state.user) {
+      UserService.getUser().catch((err) => {
+        console.log('ERROR - failed to fetch user for admin menu', err);
+      });
     }
   },
   mounted () {

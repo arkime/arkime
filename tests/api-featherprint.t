@@ -1,4 +1,4 @@
-use Test::More tests => 44;
+use Test::More tests => 58;
 use ArkimeTest;
 use JSON;
 use Data::Dumper;
@@ -82,6 +82,53 @@ ok($ack->{success},                                      "alert ack succeeded");
 my $ackedList = viewerGet("/api/featherprint/alerts?acked=true&limit=10000");
 ok((grep { $_->{_id} eq $openAlert->{_id} } @{$ackedList->{alerts}}),
    "acked alert visible via acked=true filter");
+
+# Ack state is shared, so changing it needs a featherprintAckRoles role
+# (default arkimeAdmin). A plain arkimeUser must be refused.
+addUser("-n testuser featherprintuser featherprintuser featherprintuser --roles arkimeUser");
+my $userToken = getTokenCookie('featherprintuser');
+my $denied = viewerPostToken(
+   "/api/featherprint/ack/$openAlert->{_id}?arkimeRegressionUser=featherprintuser", "", $userToken);
+ok(!$denied->{success} && $denied->{text} =~ /permission to ack/,
+                                                         "plain arkimeUser cannot ack");
+my $deniedAll = viewerPostToken(
+   "/api/featherprint/ackall?arkimeRegressionUser=featherprintuser",
+   to_json({ ids => [$openAlert->{_id}] }), $userToken);
+ok(!$deniedAll->{success} && $deniedAll->{text} =~ /permission to ack/,
+                                                         "plain arkimeUser cannot ack all");
+
+# Un-ack puts it back in the open queue and clears the attribution.
+my $unack = viewerPostToken("/api/featherprint/ack/$openAlert->{_id}",
+   to_json({ acked => JSON::false }), $token);
+ok($unack->{success} && !$unack->{acked},                "alert un-ack succeeded");
+my $reopened = viewerGet("/api/featherprint/alerts?acked=false&limit=10000");
+my ($back) = grep { $_->{_id} eq $openAlert->{_id} } @{$reopened->{alerts}};
+ok($back,                                                "un-acked alert back in the open queue");
+ok(!$back->{ackedBy},                                    "un-ack cleared ackedBy");
+
+# Ack all: hand back the remaining open ids and confirm none are left open.
+my $stillOpen = viewerGet("/api/featherprint/alerts?acked=false&limit=10000");
+my @openIds = map { $_->{_id} } @{$stillOpen->{alerts}};
+ok(scalar(@openIds) > 0,                                 "open alerts remain before ack all");
+my $ackAll = viewerPostToken("/api/featherprint/ackall",
+   to_json({ ids => \@openIds }), $token);
+ok($ackAll->{success},                                   "ack all succeeded");
+is($ackAll->{acked}, scalar(@openIds),                   "ack all acked every id");
+is($ackAll->{failed}, 0,                                 "ack all reported no failures");
+my $afterAll = viewerGet("/api/featherprint/alerts?acked=false&limit=10000");
+is(scalar(@{$afterAll->{alerts}}), 0,                    "no open alerts left after ack all");
+
+# ...and the same endpoint reverses it, so Ack All is not a one-way door.
+my $unackAll = viewerPostToken("/api/featherprint/ackall",
+   to_json({ ids => \@openIds, acked => JSON::false }), $token);
+ok($unackAll->{success},                                 "un-ack all succeeded");
+is(scalar(@{viewerGet("/api/featherprint/alerts?acked=false&limit=10000")->{alerts}}),
+   scalar(@openIds),                                     "un-ack all reopened every alert");
+
+my $ackNone = viewerPostToken("/api/featherprint/ackall", to_json({ ids => [] }), $token);
+ok(!$ackNone->{success},                                 "ack all rejects an empty ids array");
+my $ackBad = viewerPostToken("/api/featherprint/ackall", to_json({ ids => "nope" }), $token);
+ok(!$ackBad->{success},                                  "ack all rejects a non-array ids");
 
 # ---------------------------------------------------------------------------
 # Search + validation.

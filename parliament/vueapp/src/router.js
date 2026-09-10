@@ -10,11 +10,13 @@ import Settings from '@/components/Settings.vue';
 import Parliament404 from '@/components/404.vue';
 import Help from '@/components/Help.vue';
 import Users from '@/components/Users.vue';
+import Roles from '@/components/Roles.vue';
 import Banner from '@common/BannerPage.vue';
 import ViewConfigPage from '@common/ViewConfigPage.vue';
 import AuthService from '@/auth.js';
 import UserService from '@/components/user.service.js';
 import store from '@/store';
+import { createRequireRole } from '@common/routeGuards.js';
 
 // Admin pages are hidden from the navbar when the user isn't an admin;
 // guard the routes too so they can't be reached by typing the url directly.
@@ -24,15 +26,11 @@ async function requireAdmin () {
   if (!store.state.isAdmin) { return { name: 'Parliament' }; }
 }
 
-// View Config access is a server setting (viewConfigMode) as well as a role,
-// so the server hands the answer back on the user
-async function requireCanViewConfig () {
-  await AuthService.getAuthInfo();
-  if (!store.state.user) {
-    try { await UserService.getUser(); } catch { /* treated as no access */ }
-  }
-  if (!store.state.user?.canViewConfig) { return { name: 'Parliament' }; }
-}
+// The user pages answer to arkime-wide roles rather than parliamentAdmin.
+// Always re-fetch rather than trusting a cached store.state.user -- these
+// are admin-sensitive routes, so a role revoked mid-session shouldn't keep
+// granting access off a stale value until a hard reload.
+const requireUser = createRequireRole(UserService.getUser, () => store.state.user, 'Parliament', { alwaysRefetch: true });
 
 const router = createRouter({
   history: createWebHistory('/parliament/'),
@@ -71,7 +69,13 @@ const router = createRouter({
       path: '/users',
       name: 'Users',
       component: Users,
-      beforeEnter: async () => await requireAdmin()
+      beforeEnter: async () => await requireUser(u => u?.roles?.includes('usersAdmin'))
+    },
+    {
+      path: '/roles',
+      name: 'Roles',
+      component: Roles,
+      beforeEnter: async () => await requireUser(u => !!u?.canAssignRoles)
     },
     {
       path: '/banner',
@@ -83,7 +87,8 @@ const router = createRouter({
       path: '/viewconfig',
       name: 'ViewConfig',
       component: ViewConfigPage,
-      beforeEnter: async () => await requireCanViewConfig()
+      // access is viewConfigMode as well as a role, so the server decides
+      beforeEnter: async () => await requireUser(u => !!u?.canViewConfig)
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes

@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid roles-page">
+  <div class="arkime-container-fluid roles-page">
     <div class="d-flex align-center mt-2 mb-2">
       <div class="ms-1 me-1 flex-grow-1">
         <div class="arkime-input-group arkime-input-group--fluid">
@@ -43,11 +43,13 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="loading"
       class="text-center mt-4 mb-4">
-      <v-icon
-        icon="mdi-loading"
-        size="large"
-        class="mdi-spin" />
-      <p>{{ $t('common.loading') }}</p>
+      <slot name="loading">
+        <v-icon
+          icon="mdi-loading"
+          size="large"
+          class="mdi-spin" />
+        <p>{{ $t('common.loading') }}</p>
+      </slot>
     </div> <!-- /loading -->
 
     <v-data-table
@@ -108,8 +110,7 @@ export default {
     currentUser: {
       type: Object,
       default: () => ({})
-    },
-    cont3xtDarkTheme: Boolean
+    }
   },
   data () {
     return {
