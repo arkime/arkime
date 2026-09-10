@@ -151,6 +151,7 @@ import AdminMenu from '@common/AdminMenu.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import { THEMES } from '@common/themes/manifest.js';
+import UserService from '@/components/user.service.js';
 
 export default {
   name: 'ParliamentNavbar',
@@ -252,6 +253,17 @@ export default {
         }
         document.body.classList = dark ? ['dark'] : [];
       }
+    }
+  },
+  created () {
+    // App.vue's mount-time fetch (for theme hydration) is the only other
+    // place that populates store.state.user; if it hasn't landed yet, or
+    // failed, retry here so the admin menu can self-heal instead of
+    // staying hidden for the rest of the session.
+    if (!this.$store.state.user) {
+      UserService.getUser().catch((err) => {
+        console.log('ERROR - failed to fetch user for admin menu', err);
+      });
     }
   },
   mounted () {

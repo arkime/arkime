@@ -314,88 +314,86 @@ SPDX-License-Identifier: Apache-2.0
                   </template>
                 </v-select>
 
-                <!-- password change for users / role-permissions for roles -->
-                <template v-if="canChangePassword || canEditRolePermissions">
-                  <form
-                    class="row"
-                    v-if="isUser(item) && canChangePassword">
-                    <div class="col-9 mt-2">
-                      <v-text-field
-                        class="mt-1"
-                        type="password"
-                        :label="$t('users.newPassword')"
-                        v-model="newPassword"
-                        autocomplete="new-password"
-                        @keydown.enter="changePassword(item.userId)"
-                        :placeholder="$t('users.newPasswordPlaceholder')" />
-                      <v-text-field
-                        class="mt-1"
-                        type="password"
-                        :label="$t('users.confirmPassword')"
-                        autocomplete="new-password"
-                        v-model="confirmNewPassword"
-                        @keydown.enter="changePassword(item.userId)"
-                        :placeholder="$t('users.confirmPasswordPlaceholder')" />
-                      <v-btn
-                        size="large"
-                        color="success"
-                        variant="flat"
-                        class="mt-2"
-                        @click="changePassword(item.userId)">
-                        {{ $t('users.changePassword') }}
-                      </v-btn>
-                    </div>
-                  </form>
-                  <div v-else-if="!isUser(item) && canEditRolePermissions">
-                    <!-- role permission tri-state toggles -->
-                    <div class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.emailSearch"
-                        :label="$t('users.disableEmailSearch')"
-                        :negated="true"
-                        @update:model-value="setRoleField(item, 'emailSearch', $event)" />
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.removeEnabled"
-                        :label="$t('users.disableDataRemoval')"
-                        :negated="true"
-                        @update:model-value="setRoleField(item, 'removeEnabled', $event)" />
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.packetSearch"
-                        :label="$t('users.disableHunting')"
-                        :negated="true"
-                        @update:model-value="setRoleField(item, 'packetSearch', $event)" />
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.hideStats"
-                        :label="$t('users.hideStatsPage')"
-                        @update:model-value="setRoleField(item, 'hideStats', $event)" />
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.hideFiles"
-                        :label="$t('users.hideFilesPage')"
-                        @update:model-value="setRoleField(item, 'hideFiles', $event)" />
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.hidePcap"
-                        :label="$t('users.hidePcap')"
-                        @update:model-value="setRoleField(item, 'hidePcap', $event)" />
-                      <TriStateToggle
-                        class="toggle-group rounded p-1"
-                        :model-value="item.disablePcapDownload"
-                        :label="$t('users.disablePcapDownload')"
-                        @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
-                    </div>
-                    <UserDropdown
+                <!-- password change for users / role-permissions & assigners for roles -->
+                <form
+                  class="row"
+                  v-if="isUser(item) && canChangePassword">
+                  <div class="col-9 mt-2">
+                    <v-text-field
+                      class="mt-1"
+                      type="password"
+                      :label="$t('users.newPassword')"
+                      v-model="newPassword"
+                      autocomplete="new-password"
+                      @keydown.enter="changePassword(item.userId)"
+                      :placeholder="$t('users.newPasswordPlaceholder')" />
+                    <v-text-field
+                      class="mt-1"
+                      type="password"
+                      :label="$t('users.confirmPassword')"
+                      autocomplete="new-password"
+                      v-model="confirmNewPassword"
+                      @keydown.enter="changePassword(item.userId)"
+                      :placeholder="$t('users.confirmPasswordPlaceholder')" />
+                    <v-btn
+                      size="large"
+                      color="success"
+                      variant="flat"
                       class="mt-2"
-                      label="Role Assigners&nbsp;"
-                      :selected-users="item.roleAssigners || []"
-                      :role-id="item.userId"
-                      @selected-users-updated="updateRoleAssigners" />
+                      @click="changePassword(item.userId)">
+                      {{ $t('users.changePassword') }}
+                    </v-btn>
                   </div>
-                </template>
+                </form>
+                <div v-else-if="!isUser(item)">
+                  <!-- role permission tri-state toggles -->
+                  <div class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.emailSearch"
+                      :label="$t('users.disableEmailSearch')"
+                      :negated="true"
+                      @update:model-value="setRoleField(item, 'emailSearch', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.removeEnabled"
+                      :label="$t('users.disableDataRemoval')"
+                      :negated="true"
+                      @update:model-value="setRoleField(item, 'removeEnabled', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.packetSearch"
+                      :label="$t('users.disableHunting')"
+                      :negated="true"
+                      @update:model-value="setRoleField(item, 'packetSearch', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.hideStats"
+                      :label="$t('users.hideStatsPage')"
+                      @update:model-value="setRoleField(item, 'hideStats', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.hideFiles"
+                      :label="$t('users.hideFilesPage')"
+                      @update:model-value="setRoleField(item, 'hideFiles', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.hidePcap"
+                      :label="$t('users.hidePcap')"
+                      @update:model-value="setRoleField(item, 'hidePcap', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.disablePcapDownload"
+                      :label="$t('users.disablePcapDownload')"
+                      @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
+                  </div>
+                  <UserDropdown
+                    class="mt-2"
+                    label="Role Assigners&nbsp;"
+                    :selected-users="item.roleAssigners || []"
+                    :role-id="item.userId"
+                    @selected-users-updated="updateRoleAssigners" />
+                </div>
               </div>
             </td>
           </tr>
@@ -540,10 +538,6 @@ export default {
     // apps whose api registers /api/user/password
     canChangePassword () {
       return ['Arkime', 'Cont3xt', 'Parliament'].includes(this.parentApp);
-    },
-    // the role toggles below are arkime capabilities (hunting, pcap, stats)
-    canEditRolePermissions () {
-      return ['Arkime', 'Cont3xt'].includes(this.parentApp);
     },
     roleAssignableRoles () {
       return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
