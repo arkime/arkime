@@ -119,7 +119,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           per-subnet monitor maintains device records (MAC and history, hostnames, services, DHCP/SSDP attributes and a
           rule-based classification), records a change history and raises alerts on new or changed devices; any IP can also
           be fingerprinted on demand from the new Featherprint page. Configure watched ranges in [featherprint-subnet];
-          adds the featherprint, featherprint_history and featherprint_alerts indices (db.pl v89)
+          adds the featherprint, featherprint_history and featherprint_alerts indices (db.pl v89). Alert ack state is
+          shared by everyone and reversible; featherprintAckRoles (default arkimeAdmin) controls who may change it
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

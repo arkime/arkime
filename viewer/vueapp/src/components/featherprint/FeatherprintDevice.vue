@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         <dd>{{ previousMacs.join(', ') }}</dd>
       </template>
       <dt>{{ $t('featherprint.namesLabel') }}</dt>
-      <dd>
+      <dd class="names-list">
         <span v-if="uniqueNames.length">
           <template
             v-for="(name, i) in uniqueNames"
@@ -164,5 +164,15 @@ export default {
 
 .featherprint-history-table {
   width: 100%;
+}
+
+/* session fields reserve width for a hover caret and a -4px right margin, which
+   here would strand the comma out in space; the comma is the separator instead */
+.names-list :deep(.field) {
+  margin-right: 0;
+}
+
+.names-list :deep(.field a .v-icon) {
+  display: none;
 }
 </style>

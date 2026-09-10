@@ -579,21 +579,26 @@ export default {
       if (pos >= 0) { host = host.substring(0, pos); }
 
       const urlParams = this.$route.query;
+      // the route query may be out of sync when the default time range was
+      // applied via window.history.replaceState, so fall back to the store
+      const storeState = this.$store.state;
+      const timeRange = parseInt(urlParams.date ?? storeState.timeRange, 10);
       let dateparams, isostart, isostop;
 
       if (urlParams.startTime && urlParams.stopTime) {
         dateparams = `startTime=${urlParams.startTime}&stopTime=${urlParams.stopTime}`;
         isostart = new Date(parseInt(urlParams.startTime) * 1000);
         isostop = new Date(parseInt(urlParams.stopTime) * 1000);
+      } else if (timeRange === 0) { // custom range the router doesn't have
+        dateparams = `startTime=${storeState.time.startTime}&stopTime=${storeState.time.stopTime}`;
+        isostart = new Date(parseInt(storeState.time.startTime) * 1000);
+        isostop = new Date(parseInt(storeState.time.stopTime) * 1000);
       } else {
-        isostart = new Date();
         isostop = new Date();
-        if (urlParams.date) {
-          isostart.setHours(isostart.getHours() - parseInt(urlParams.date));
-        } else {
-          isostart.setHours(isostart.getHours() - 1);
-        }
-        dateparams = `date=${urlParams.date}`;
+        isostart = timeRange === -1
+          ? new Date(0)
+          : new Date(Date.now() - timeRange * 3600 * 1000);
+        dateparams = `date=${timeRange}`;
       }
       for (const key in this.arkimeClickables) {
         if (this.arkimeClickables[key]) {

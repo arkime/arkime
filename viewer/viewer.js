@@ -1629,6 +1629,12 @@ app.post( // featherprint ack alert endpoint
   FeatherprintAPIs.apiAckAlert
 );
 
+app.post( // featherprint ack many alerts endpoint
+  ['/api/featherprint/ackall'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
+  FeatherprintAPIs.apiAckAlerts
+);
+
 app.get( // featherprint on-demand lookup endpoint
   ['/api/featherprint/lookup'],
   [ArkimeUtil.noCacheJson],

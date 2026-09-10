@@ -148,6 +148,32 @@ SPDX-License-Identifier: Apache-2.0
                   </select>
                 </div>
               </v-col>
+              <v-col
+                cols="auto"
+                v-if="canAck">
+                <v-tooltip location="bottom">
+                  <template #activator="{ props }">
+                    <span v-bind="props">
+                      <v-btn
+                        variant="flat"
+                        size="small"
+                        density="comfortable"
+                        color="primary"
+                        :disabled="!bulkAckIds.length"
+                        :loading="ackBusy === 'all'"
+                        @click="ackAll">
+                        <v-icon
+                          start
+                          :icon="bulkAckSets ? 'mdi-check-all' : 'mdi-undo-variant'" />
+                        {{ bulkAckSets ? $t('featherprint.ackAll') : $t('featherprint.unackAll') }}
+                      </v-btn>
+                    </span>
+                  </template>
+                  {{ bulkAckSets
+                    ? $t('featherprint.ackAllTip', { count: bulkAckIds.length })
+                    : $t('featherprint.unackAllTip', { count: bulkAckIds.length }) }}
+                </v-tooltip>
+              </v-col>
             </template>
 
             <!-- auto refresh interval -->
@@ -297,16 +323,16 @@ SPDX-License-Identifier: Apache-2.0
           table-widths-state-name="featherprintAlertsColWidths">
           <template #actions="{ item }">
             <v-btn
-              v-if="!item.acked"
-              color="primary"
-              variant="flat"
+              v-if="canAck"
+              :color="item.acked ? undefined : 'primary'"
+              :variant="item.acked ? 'text' : 'flat'"
               size="small"
               density="comfortable"
               icon
               :loading="ackBusy === item._id"
-              :aria-label="$t('featherprint.ack')"
-              @click.stop="ack(item._id)">
-              <v-icon icon="mdi-check" />
+              :aria-label="item.acked ? $t('featherprint.unack') : $t('featherprint.ack')"
+              @click.stop="ack(item._id, !item.acked)">
+              <v-icon :icon="item.acked ? 'mdi-undo-variant' : 'mdi-check'" />
             </v-btn>
           </template>
           <template #cell-ts="{ item }">
@@ -505,7 +531,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { fetchWrapper } from '@common/fetchWrapper';
-import { fmtTs, describeHistory, IP_FIELD, MAC_FIELD, HOST_FIELD, TERTIARY_BTN_STYLE } from './featherprintUtils.js';
+import { fmtTs, describeHistory, ipSortValue, IP_FIELD, MAC_FIELD, HOST_FIELD, TERTIARY_BTN_STYLE } from './featherprintUtils.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 import Focus from '@common/Focus.vue';
 import ArkimeTable from '../utils/Table.vue';
@@ -518,6 +544,7 @@ import FeatherprintDevice from './FeatherprintDevice.vue';
 // pull a sortable scalar out of a device/alert record for the given column
 function sortValue (item, field) {
   switch (field) {
+  case 'ip': return ipSortValue(item.ip);
   case 'mac': return item.mac?.value ?? '';
   case 'name': return item.names?.[0]?.name ?? '';
   default: return item[field] ?? '';
@@ -570,6 +597,11 @@ export default {
     tertiaryBtnStyle: () => TERTIARY_BTN_STYLE,
     shiftKeyHold () {
       return this.$store.state.shiftKeyHold;
+    },
+    // ack state is shared, so it is gated on featherprintAckRoles server-side;
+    // hide the controls rather than let them 403 on click
+    canAck () {
+      return !!this.$store.state.user?.canAckFeatherprint;
     },
     // same store binding as files/history/stats -- without it v-focus is inert
     // and the shift-key "Q" badge advertises a shortcut that does nothing
@@ -645,6 +677,16 @@ export default {
     },
     openAlertCount () {
       return this.alerts.filter(a => !a.acked).length;
+    },
+    // the bulk button acts on what is listed: acking the open ones, except on
+    // the Acked filter where the only useful bulk action is undoing them
+    bulkAckSets () {
+      return this.alertFilter !== 'acked';
+    },
+    bulkAckIds () {
+      return this.filteredAlerts
+        .filter(a => !a.acked === this.bulkAckSets)
+        .map(a => a._id);
     },
     filteredIps () {
       const q = (this.filter || '').trim().toLowerCase();
@@ -794,23 +836,45 @@ export default {
         this.error = this.$t('featherprint.errorLoadAlerts', { reason: resolveMessage(err, this.$t) });
       }
     },
-    async ack (alertId) {
+    async ack (alertId, acked = true) {
       this.ackBusy = alertId;
       try {
         const r = await fetchWrapper({
           url: `api/featherprint/ack/${encodeURIComponent(alertId)}`,
           method: 'POST',
-          data: {}
+          data: { acked }
         });
         const idx = this.alerts.findIndex(a => a._id === alertId);
         if (idx >= 0) {
           this.alerts[idx] = {
             ...this.alerts[idx],
-            acked: true,
-            ackedBy: r?.ackedBy ?? this.$t('featherprint.me'),
-            ackedAt: r?.ackedAt ?? Date.now()
+            acked,
+            ackedBy: acked ? (r?.ackedBy ?? this.$t('featherprint.me')) : undefined,
+            ackedAt: acked ? (r?.ackedAt ?? Date.now()) : undefined
           };
         }
+      } catch (err) {
+        this.error = this.$t('featherprint.errorAckFailed', { reason: resolveMessage(err, this.$t) });
+      } finally {
+        this.ackBusy = null;
+      }
+    },
+    async ackAll () {
+      const ids = this.bulkAckIds;
+      const acked = this.bulkAckSets;
+      if (!ids.length) { return; }
+      const msg = acked ? 'featherprint.ackAllConfirm' : 'featherprint.unackAllConfirm';
+      if (!window.confirm(this.$t(msg, { count: ids.length }))) { return; }
+      this.ackBusy = 'all';
+      try {
+        await fetchWrapper({
+          url: 'api/featherprint/ackall',
+          method: 'POST',
+          data: { ids, acked }
+        });
+        // reload rather than patch locally -- a partial failure would otherwise
+        // leave rows showing as acked when they aren't
+        await this.loadAlerts();
       } catch (err) {
         this.error = this.$t('featherprint.errorAckFailed', { reason: resolveMessage(err, this.$t) });
       } finally {

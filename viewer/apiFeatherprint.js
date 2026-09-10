@@ -1473,6 +1473,15 @@ class FeatherprintAPIs {
     return true;
   }
 
+  // Ack state is shared, so changing it is gated on featherprintAckRoles
+  // (default arkimeAdmin) rather than plain viewer access.
+  static #ackGate (req, res) {
+    if (req.user?.hasRole(internals.featherprintAckRoles)) return false;
+    req.user?.logRoleFailure(internals.featherprintAckRoles);
+    res.serverError(403, 'Need permission to ack featherprint alerts');
+    return true;
+  }
+
   static #limitParam (v, dflt, max) {
     const n = parseInt(v ?? dflt, 10);
     if (isNaN(n) || n < 1) return dflt;
@@ -1588,24 +1597,66 @@ class FeatherprintAPIs {
   /**
    * POST - /api/featherprint/ack/:id
    *
-   * Acknowledge a single featherprint alert. The alert stays in the index
-   * but is marked acked with the user and timestamp.
+   * Acknowledge a single featherprint alert, or un-acknowledge it with
+   * acked=false. Ack state is shared by everyone, so this requires one of
+   * the featherprintAckRoles (default arkimeAdmin). The alert stays in the
+   * index either way; acking just stamps it with the user and timestamp.
    * @name /featherprint/ack/:id
    * @param {string} :id - The alert document id to ack.
+   * @param {boolean} acked=true - false to un-acknowledge instead.
    * @returns {boolean} success - Whether the ack persisted.
+   * @returns {boolean} acked - The ack state now stored on the alert.
    */
   static async apiAckAlert (req, res) {
     try {
       if (await FeatherprintAPIs.#dbGate(res)) return;
+      if (FeatherprintAPIs.#ackGate(req, res)) return;
       if (!ArkimeUtil.isString(req.params.id)) {
         return res.serverError(400, 'Invalid id');
       }
+      const acked = req.body?.acked !== false;
       const user = req.user?.userId || 'unknown';
       const ackedAt = Date.now();
-      await FeatherprintDb.ackAlert(req.params.id, user, ackedAt);
-      return res.send({ success: true, ackedBy: user, ackedAt });
+      await FeatherprintDb.ackAlert(req.params.id, user, ackedAt, acked);
+      return res.send({ success: true, acked, ackedBy: user, ackedAt });
     } catch (e) {
       return res.serverError(500, `featherprint ack: ${e.message}`);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/featherprint/ackall
+   *
+   * Acknowledge many featherprint alerts at once, or un-acknowledge them
+   * with acked=false. Takes the explicit id list the client is showing
+   * rather than acking by query, so what the operator sees on the page is
+   * exactly what changes. Requires one of the featherprintAckRoles.
+   * @name /featherprint/ackall
+   * @param {array} ids - The alert document ids to ack.
+   * @param {boolean} acked=true - false to un-acknowledge instead.
+   * @returns {boolean} success - Whether the acks persisted.
+   * @returns {number} acked - How many alerts were changed.
+   * @returns {number} failed - How many could not be changed.
+   */
+  static async apiAckAlerts (req, res) {
+    try {
+      if (await FeatherprintAPIs.#dbGate(res)) return;
+      if (FeatherprintAPIs.#ackGate(req, res)) return;
+      const ids = req.body?.ids;
+      if (!Array.isArray(ids) || ids.length === 0 || !ids.every(id => ArkimeUtil.isString(id))) {
+        return res.serverError(400, 'Must provide a non-empty ids array');
+      }
+      if (ids.length > 10000) {
+        return res.serverError(400, 'Too many ids, max is 10000');
+      }
+      const setAcked = req.body?.acked !== false;
+      const user = req.user?.userId || 'unknown';
+      const ackedAt = Date.now();
+      const { acked, failed } = await FeatherprintDb.ackAlerts(ids, user, ackedAt, setAcked);
+      return res.send({ success: true, acked, failed, ackedBy: user, ackedAt });
+    } catch (e) {
+      return res.serverError(500, `featherprint ack all: ${e.message}`);
     }
   }
 
