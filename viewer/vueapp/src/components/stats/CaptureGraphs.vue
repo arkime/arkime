@@ -363,11 +363,6 @@ export default {
 </script>
 
 <style scoped>
-.collapsed > .when-opened,
-:not(.collapsed) > .when-closed {
-  display: none;
-}
-
 .node-search {
   max-width: 50%;
 }
