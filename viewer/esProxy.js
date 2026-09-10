@@ -83,7 +83,7 @@ ArkimeConfig.loaded(() => {
     }
   }
 
-  const sigV4Enabled = Config.get('esProxySigV4', false) === 'true' || Config.get('esProxySigV4', false) === true;
+  const sigV4Enabled = Config.get('esProxySigV4', false);
   if (sigV4Enabled) {
     const region = Config.get('esProxySigV4Region');
     const service = Config.get('esProxySigV4Service', 'es');
@@ -124,7 +124,7 @@ ArkimeConfig.loaded(() => {
     }
   }
 
-  const teeSigV4Enabled = Config.sectionGet('tee', 'esProxySigV4', false) === 'true' || Config.sectionGet('tee', 'esProxySigV4', false) === true;
+  const teeSigV4Enabled = Config.sectionGet('tee', 'esProxySigV4', false);
   if (teeSigV4Enabled) {
     const teeRegion = Config.sectionGet('tee', 'esProxySigV4Region');
     const teeService = Config.sectionGet('tee', 'esProxySigV4Service', 'es');

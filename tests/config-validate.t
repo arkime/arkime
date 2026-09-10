@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 75;
 use ArkimeTest;
 use strict;
 
@@ -24,12 +24,15 @@ const ArkimeUtil = require(path.join(common, 'arkimeUtil'));
 // apps do: viewer.js/cont3xt.js require mcpServer, and auth registers its own.
 require(path.join(common, 'mcpServer'));
 require(path.join(common, 'auth'));
-// viewer/config.js registers these before calling initialize
-ArkimeConfig.registerValidated({
+// viewer/config.js registers these before calling initialize, the elasticsearch
+// urls come with arkimeConfig itself
+ArkimeConfig.registerSettings({
   uploadFileSizeLimit: { type: 'int', min: 0 },
   maxSessionsQueried: { type: 'int', min: 0 },
-  elasticsearch: { type: 'urls' },
-  usersElasticsearch: { type: 'urls' }
+  viewPort: { type: 'int', min: 1, max: 65535 },
+  freeSpaceG: { type: 're', re: /^-?(\d+(\.\d*)?|\.\d+)%?$/, help: 'a number of gigabytes or a percentage of the disk, eg 5 or 5%' },
+  rotateIndex: { type: 'enum', values: ['hourly', 'hourly2', 'hourly3', 'hourly4', 'hourly6', 'hourly8', 'hourly12', 'daily', 'weekly', 'monthly'] },
+  multiES: { type: 'bool' }
 });
 
 const mode = process.argv[4];
@@ -109,6 +112,69 @@ is($code, 0, "uploadFileSizeLimit=0 starts");
 # an empty value means unset, which is a common container idiom
 ($code, $out) = tryConfig("uploadFileSizeLimit=");
 is($code, 0, "an empty numeric value is treated as unset");
+
+################################################################################
+# max, so a port that can never be bound is caught at load and not at listen
+################################################################################
+($code, $out) = tryConfig("viewPort=8005");
+is($code, 0, "a viewPort in range starts");
+
+($code, $out) = tryConfig("viewPort=70000");
+is($code, 1, "a viewPort above the maximum refuses to start");
+like($out, qr/viewPort is 70000, which is above the maximum of 65535/, "and names the setting and the bound");
+
+($code, $out) = tryConfig("viewPort=0");
+is($code, 1, "a viewPort below the minimum refuses to start");
+
+################################################################################
+# enum. capture CONFIGEXITs on an unknown rotateIndex, viewer used to guess instead
+################################################################################
+($code, $out) = tryConfig("rotateIndex=hourly6");
+is($code, 0, "a known rotateIndex starts");
+
+($code, $out) = tryConfig("rotateIndex=hourly5");
+is($code, 1, "an hourly step capture does not support refuses to start");
+like($out, qr/rotateIndex is 'hourly5', which must be one of hourly, hourly2, .*monthly/, "and lists every rotation capture accepts");
+
+################################################################################
+# re. freeSpaceG is parseFloat'd, so a unit suffix quietly changes the target and
+# a word makes it NaN, which stops expiry from ever running
+################################################################################
+($code, $out) = tryConfig("freeSpaceG=5");
+is($code, 0, "freeSpaceG as gigabytes starts");
+
+($code, $out) = tryConfig("freeSpaceG=5%");
+is($code, 0, "freeSpaceG as a percent starts");
+
+($code, $out) = tryConfig("freeSpaceG=0.5%");
+is($code, 0, "a fractional percent starts");
+
+($code, $out) = tryConfig("freeSpaceG=5G");
+is($code, 1, "a unit suffix refuses to start");
+like($out, qr/freeSpaceG is '5G', which must be a number of gigabytes or a percentage of the disk, eg 5 or 5%/, "and says what the shape is");
+
+($code, $out) = tryConfig("freeSpaceG=five");
+is($code, 1, "a word refuses to start rather than becoming NaN");
+
+################################################################################
+# bool. Only true and false are coerced, so anything else an operator writes to
+# turn a switch off is a truthy string that turns it on - catch it at load
+################################################################################
+($code, $out) = tryConfig("multiES=false");
+is($code, 0, "multiES=false starts");
+
+($code, $out) = tryConfig("multiES=true");
+is($code, 0, "multiES=true starts");
+
+($code, $out) = tryConfig("multiES=maybe");
+is($code, 1, "a non boolean multiES refuses to start");
+like($out, qr/multiES is 'maybe', which is not a boolean/, "and names the setting");
+
+($code, $out) = tryConfig("multiES=0");
+is($code, 1, "multiES=0 refuses to start rather than reading as on");
+
+($code, $out) = tryConfig("multiES=False");
+is($code, 1, "a capitalised False refuses to start rather than reading as on");
 
 ################################################################################
 # a valid allow list must still match the right peers. Both allow lists had
