@@ -15,6 +15,7 @@ import Banner from '@common/BannerPage.vue';
 import AuthService from '@/auth.js';
 import UserService from '@/components/user.service.js';
 import store from '@/store';
+import { createRequireRole } from '@common/routeGuards.js';
 
 // Admin pages are hidden from the navbar when the user isn't an admin;
 // guard the routes too so they can't be reached by typing the url directly.
@@ -28,15 +29,7 @@ async function requireAdmin () {
 // Always re-fetch rather than trusting a cached store.state.user -- these
 // are admin-sensitive routes, so a role revoked mid-session shouldn't keep
 // granting access off a stale value until a hard reload.
-async function requireUser (check) {
-  let user;
-  try {
-    user = await UserService.getUser();
-  } catch (err) {
-    console.log('ERROR - failed to fetch user for route guard', err);
-  }
-  if (!check(user)) { return { name: 'Parliament' }; }
-}
+const requireUser = createRequireRole(UserService.getUser, () => store.state.user, 'Parliament', { alwaysRefetch: true });
 
 const router = createRouter({
   history: createWebHistory('/parliament/'),
@@ -81,7 +74,7 @@ const router = createRouter({
       path: '/roles',
       name: 'Roles',
       component: Roles,
-      beforeEnter: async () => await requireUser(u => u?.assignableRoles?.length > 0)
+      beforeEnter: async () => await requireUser(u => !!u?.canAssignRoles)
     },
     {
       path: '/banner',
