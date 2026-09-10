@@ -131,6 +131,7 @@
     "admin": "Administration",
     "esadmin": "Base de données",
     "banner": "Bannière",
+    "viewConfig": "Voir la configuration",
     "notifiers": "Notificateurs",
     "tooltipHelpTip": "HOOT! Puis-je vous aider? Cliquez sur moi pour voir la page d'aide",
     "helpTip": "AIDE!",
@@ -2149,5 +2150,25 @@
     "dismiss": "Ignorer",
     "optIn": "Activer la vérification des mises à jour",
     "disclosure": "Consulte {host} pour de nouvelles versions. Envoie votre version majeure ({major})."
+  },
+  "viewConfig": {
+    "title": "Voir la configuration",
+    "totpTitle": "Double authentification requise",
+    "totpInfo": "Saisissez le code de votre application d'authentification pour voir la configuration en cours.",
+    "unlock": "Déverrouiller",
+    "key": "Clé",
+    "value": "Valeur",
+    "both": "Les deux",
+    "overrides": "Surcharges en ligne de commande (-o)",
+    "fromEnv": "depuis l'environnement",
+    "compareNode": "Comparer avec le nœud",
+    "diffOnly": "Différences uniquement",
+    "differenceCount": "0 différence | 1 différence | {count} différences",
+    "redactedCount": "0 masqué, non comparé | 1 masqué, non comparé | {count} masqués, non comparés",
+    "onlyHere": "non défini là-bas",
+    "onlyThere": "non défini ici",
+    "notComparable": "les deux sont masqués, comparaison impossible",
+    "appliesInfo": "Un paramètre écrit sans section est recherché dans {sections}, dans cet ordre.",
+    "noResults": "Aucun paramètre ne correspond au filtre"
   }
 }

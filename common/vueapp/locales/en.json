@@ -131,6 +131,7 @@
     "admin": "Admin",
     "esadmin": "Database",
     "banner": "Banner",
+    "viewConfig": "View Config",
     "notifiers": "Notifiers",
     "tooltipHelpTip": "HOOT! Can I help you? Click me to see the help page",
     "helpTip": "HELP!",
@@ -2149,5 +2150,25 @@
     "dismiss": "Dismiss",
     "optIn": "Opt in to check for updates",
     "disclosure": "Checks {host} for newer releases. Sends your major version ({major})."
+  },
+  "viewConfig": {
+    "title": "View Config",
+    "totpTitle": "Two-Factor Required",
+    "totpInfo": "Enter the code from your authenticator app to view the running config.",
+    "unlock": "Unlock",
+    "key": "Key",
+    "value": "Value",
+    "both": "Both",
+    "overrides": "Command line overrides (-o)",
+    "fromEnv": "from environment",
+    "compareNode": "Compare with node",
+    "diffOnly": "Differences only",
+    "differenceCount": "0 differences | 1 difference | {count} differences",
+    "redactedCount": "0 redacted, none compared | 1 redacted, not compared | {count} redacted, not compared",
+    "onlyHere": "not set there",
+    "onlyThere": "not set here",
+    "notComparable": "both redacted, cannot compare",
+    "appliesInfo": "A setting written without a section is looked up in {sections}, in that order.",
+    "noResults": "No settings match the filter"
   }
 }

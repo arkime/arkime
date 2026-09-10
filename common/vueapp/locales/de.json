@@ -131,6 +131,7 @@
     "admin": "Verwaltung",
     "esadmin": "Datenbank",
     "banner": "Banner",
+    "viewConfig": "Konfiguration anzeigen",
     "notifiers": "Benachrichtiger",
     "tooltipHelpTip": "HOOT! Kann ich Ihnen helfen? Klicken Sie mich an, um die Hilfeseite zu sehen",
     "helpTip": "HILFE!",
@@ -2149,5 +2150,25 @@
     "dismiss": "Ausblenden",
     "optIn": "Update-Prüfung aktivieren",
     "disclosure": "Prüft {host} auf neuere Versionen. Überträgt Ihre Hauptversion ({major})."
+  },
+  "viewConfig": {
+    "title": "Konfiguration anzeigen",
+    "totpTitle": "Zwei-Faktor erforderlich",
+    "totpInfo": "Geben Sie den Code aus Ihrer Authenticator-App ein, um die laufende Konfiguration anzuzeigen.",
+    "unlock": "Entsperren",
+    "key": "Schlüssel",
+    "value": "Wert",
+    "both": "Beides",
+    "overrides": "Kommandozeilen-Überschreibungen (-o)",
+    "fromEnv": "aus der Umgebung",
+    "compareNode": "Mit Knoten vergleichen",
+    "diffOnly": "Nur Unterschiede",
+    "differenceCount": "0 Unterschiede | 1 Unterschied | {count} Unterschiede",
+    "redactedCount": "0 zensiert, nicht verglichen | 1 zensiert, nicht verglichen | {count} zensiert, nicht verglichen",
+    "onlyHere": "dort nicht gesetzt",
+    "onlyThere": "hier nicht gesetzt",
+    "notComparable": "beide zensiert, nicht vergleichbar",
+    "appliesInfo": "Eine Einstellung ohne Abschnitt wird in {sections} gesucht, in dieser Reihenfolge.",
+    "noResults": "Keine Einstellungen entsprechen dem Filter"
   }
 }

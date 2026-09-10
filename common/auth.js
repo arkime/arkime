@@ -1613,6 +1613,8 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
+ArkimeConfig.registerSecrets(['passwordSecret', 'serverSecret']);
+
 ArkimeConfig.registerValidated({
   userAuthIps: { type: 'cidrs' },
   // A non numeric skew becomes NaN, and jose compares exp against NaN, which is

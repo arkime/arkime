@@ -19,6 +19,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
 const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -297,6 +298,8 @@ app.put('/api/settings', [jsonParser, checkCookieToken], apiPutSettings);
 app.get('/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
 app.put('/api/banner', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiUpdateBanner);
 app.post('/api/banner/sync', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiSyncBanner);
+app.post('/api/viewconfig/totp', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, ViewConfig.checkAccess], ViewConfig.apiVerifyTotp);
+app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie], ViewConfig.apiGetConfig);
 app.get('/api/integration/settings', [setCookie], Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser, checkCookieToken], Integration.apiPutSettings);
 app.get('/api/integration/stats', [setCookie], Integration.apiStats);
@@ -582,9 +585,11 @@ async function setupAuth () {
     clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
     prefix: ArkimeConfig.get('usersPrefix'),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth'))
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth')),
+    getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
   });
 
+  ViewConfig.initialize({ appAdminRole: 'cont3xtAdmin' });
   Banner.initialize({ app: 'cont3xt', prefix: ArkimeConfig.get('usersPrefix') });
 
   Audit.initialize({
@@ -607,6 +612,11 @@ async function setupAuth () {
 }
 
 async function main () {
+  ArkimeConfig.registerSecrets([
+    'elasticsearchAPIKey', 'elasticsearchBasicAuth', 'esClientKeyPass',
+    'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth'
+  ]);
+
   ArkimeConfig.registerValidated({
     elasticsearch: { type: 'urls' },
     usersElasticsearch: { type: 'urls' }

@@ -23,6 +23,7 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
 
   static #override = new Map();
+  static #envKeys = new Set();
   static #debugged = new Map();
   static #config;
   static #configImpl;
@@ -170,6 +171,7 @@ class ArkimeConfig {
      * ARKIME_section__var - convert to section var=value
      * Replace DASH, COLON, DOT, SLASH with -, :, ., /
      */
+    ArkimeConfig.#envKeys.clear();
     for (const e of Object.keys(process.env).filter(e2 => e2.startsWith('ARKIME_'))) {
       let section, key;
       if (e.startsWith('ARKIME__')) {
@@ -192,6 +194,7 @@ class ArkimeConfig {
         ArkimeConfig.#config[section] = {};
       }
       ArkimeConfig.#config[section][key] = process.env[e];
+      ArkimeConfig.#envKeys.add(`${section}.${key}`);
     }
 
     if (ArkimeConfig.#dumpConfig) {
@@ -351,6 +354,34 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  static #SECRETS = new Set();
+
+  /**
+   * Register settings that hold a credential, so anything showing the config
+   * hides them. Owners register their own, the same way they register what to
+   * validate - guessing from the name is only a backstop.
+   *
+   * @param {string[]} keys - the setting names, without a section
+   */
+  static registerSecrets (keys) {
+    for (const key of keys ?? []) {
+      if (typeof key === 'string' && key !== '') {
+        ArkimeConfig.#SECRETS.add(key.toLowerCase());
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The settings registered as holding a credential, lowercased
+   *
+   * @returns {string[]}
+   */
+  static getSecrets () {
+    return [...ArkimeConfig.#SECRETS];
+  }
+
+  // ----------------------------------------------------------------------------
   static #validateSetting (key, spec) {
     if (spec.type === 'cidrs') {
       const list = ArkimeConfig.getArray(key);
@@ -499,6 +530,37 @@ class ArkimeConfig {
    */
   static getSection (section) {
     return ArkimeConfig.#config[section];
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The sections this app reads a bare key from, most specific first
+   *
+   * @returns {string[]} - The default sections
+   */
+  static getDefaultSections () {
+    return (ArkimeConfig.#defaultSections ?? []).filter(s => s !== undefined);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The command line -o overrides, as a section.key => value object
+   *
+   * @returns {object} - The overrides currently in effect
+   */
+  static getOverrides () {
+    return Object.fromEntries(ArkimeConfig.#override);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The section.keys that came from ARKIME_ environment variables instead of
+   * the config file, they are indistinguishable once merged
+   *
+   * @returns {string[]} - The section.key names set from the environment
+   */
+  static getEnvKeys () {
+    return [...ArkimeConfig.#envKeys];
   }
 
   // ----------------------------------------------------------------------------

@@ -18,6 +18,7 @@ const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Locales = require('../common/locales');
 const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
@@ -239,7 +240,8 @@ async function setupAuth () {
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       prefix: ArkimeConfig.get('usersPrefix'),
       apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
+      getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   } else {
     const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
@@ -249,10 +251,12 @@ async function setupAuth () {
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       prefix: ArkimeConfig.get('prefix'),
       apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
-      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
+      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth'),
+      getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   }
 
+  ViewConfig.initialize({ appAdminRole: 'wiseAdmin' });
   Banner.initialize({ app: 'wise', prefix: ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime')) });
 }
 
@@ -579,6 +583,7 @@ class WISESourceAPI {
       }
 
       internals.configDefs[sourceName] = configDef;
+      registerConfigDefSecrets(); // a source added after startup declares its own
     }
   }
 
@@ -624,6 +629,20 @@ class WISESourceAPI {
     return funcName(typeName);
   }
 }
+// ----------------------------------------------------------------------------
+/* A field marked password is wise saying it holds a credential, so that is
+ * what anything showing the config goes by - covers the static wiseService
+ * and cache defs as well as every source's. */
+function registerConfigDefSecrets () {
+  const names = [];
+  for (const configDef of Object.values(internals.configDefs)) {
+    for (const field of configDef?.fields ?? []) {
+      if (field.password && field.name) { names.push(field.name); }
+    }
+  }
+  ArkimeConfig.registerSecrets(names);
+}
+
 // ----------------------------------------------------------------------------
 function loadSources () {
   const files = fs.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
@@ -1539,6 +1558,9 @@ if (internals.webconfig) {
     User.apiUpdateSettings
   );
 
+  app.post('/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, ViewConfig.checkAccess], ViewConfig.apiVerifyTotp);
+  app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp], ViewConfig.apiGetConfig);
+
   app.get('/api/banner', [ArkimeUtil.noCacheJson, isWiseUser], Banner.apiGetBanner);
   app.put('/api/banner', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiUpdateBanner);
   app.post('/api/banner/sync', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiSyncBanner);
@@ -1781,6 +1803,7 @@ function main () {
   internals.sourceApi = new WISESourceAPI();
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
+  registerConfigDefSecrets();
 
   if (ArkimeConfig.debug > 0) {
     setInterval(printStats, 60 * 1000);
@@ -1793,6 +1816,11 @@ function main () {
 }
 
 async function buildConfigAndStart () {
+  ArkimeConfig.registerSecrets([
+    'elasticsearchAPIKey', 'elasticsearchBasicAuth',
+    'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth'
+  ]);
+
   ArkimeConfig.registerValidated({
     elasticsearch: { type: 'urls' },
     usersElasticsearch: { type: 'urls' }

@@ -106,6 +106,11 @@ class Integration {
       return;
     }
 
+    // a setting marked password is this integration saying it holds a
+    // credential, so View Config hides it without having to guess from the name
+    ArkimeConfig.registerSecrets(Object.keys(integration.settings ?? {})
+      .filter(setting => integration.settings[setting]?.password));
+
     integration.cacheable ??= true;
     integration.noStats ??= false;
     integration.order ??= 10000;

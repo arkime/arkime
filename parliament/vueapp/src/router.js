@@ -12,6 +12,7 @@ import Help from '@/components/Help.vue';
 import Users from '@/components/Users.vue';
 import Roles from '@/components/Roles.vue';
 import Banner from '@common/BannerPage.vue';
+import ViewConfigPage from '@common/ViewConfigPage.vue';
 import AuthService from '@/auth.js';
 import UserService from '@/components/user.service.js';
 import store from '@/store';
@@ -81,6 +82,13 @@ const router = createRouter({
       name: 'Banner',
       component: Banner,
       beforeEnter: async () => await requireAdmin()
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfigPage,
+      // access is viewConfigMode as well as a role, so the server decides
+      beforeEnter: async () => await requireUser(u => !!u?.canViewConfig)
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes

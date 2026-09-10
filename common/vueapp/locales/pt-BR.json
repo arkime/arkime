@@ -131,6 +131,7 @@
     "admin": "Administração",
     "esadmin": "Banco de dados",
     "banner": "Banner",
+    "viewConfig": "Ver configuração",
     "notifiers": "Notificadores",
     "tooltipHelpTip": "PIU! Posso ajudá-lo? Clique em mim para ver a página de ajuda",
     "helpTip": "AJUDA!",
@@ -2149,5 +2150,25 @@
     "dismiss": "Dispensar",
     "optIn": "Ativar verificação de atualizações",
     "disclosure": "Verifica {host} em busca de novas versões. Envia sua versão principal ({major})."
+  },
+  "viewConfig": {
+    "title": "Ver configuração",
+    "totpTitle": "Autenticação de dois fatores necessária",
+    "totpInfo": "Digite o código do seu aplicativo autenticador para ver a configuração em execução.",
+    "unlock": "Desbloquear",
+    "key": "Chave",
+    "value": "Valor",
+    "both": "Ambos",
+    "overrides": "Substituições de linha de comando (-o)",
+    "fromEnv": "do ambiente",
+    "compareNode": "Comparar com o nó",
+    "diffOnly": "Somente diferenças",
+    "differenceCount": "0 diferenças | 1 diferença | {count} diferenças",
+    "redactedCount": "0 ocultados, não comparados | 1 ocultado, não comparado | {count} ocultados, não comparados",
+    "onlyHere": "não definido lá",
+    "onlyThere": "não definido aqui",
+    "notComparable": "ambos ocultados, não é possível comparar",
+    "appliesInfo": "Uma configuração escrita sem seção é procurada em {sections}, nessa ordem.",
+    "noResults": "Nenhuma configuração corresponde ao filtro"
   }
 }

@@ -9,6 +9,7 @@ export class ArkimeError extends Error {
   constructor (message, data) {
     super(message);
     this.text = message;
+    if (data) { this.data = data; }
     if (data?.i18n) { this.i18n = data.i18n; }
     if (data?.i18nParams) { this.i18nParams = data.i18nParams; }
   }

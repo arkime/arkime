@@ -10,6 +10,7 @@ import Help from '@/components/Help.vue';
 import Stats from '@/components/Stats.vue';
 import Settings from '@/components/Settings.vue';
 import Banner from '@common/BannerPage.vue';
+import ViewConfigPage from '@common/ViewConfigPage.vue';
 import store, { hasRole } from '@/store';
 import WiseService from '@/components/wise.service';
 import Wise404 from '@/components/404.vue';
@@ -27,6 +28,18 @@ async function requireRole (role) {
     } catch { /* treated as no access */ }
   }
   if (!hasRole(store.state, role)) { return { name: 'Stats' }; }
+}
+
+// View Config access is a server setting (viewConfigMode) as well as a role,
+// so the server hands the answer back on the user
+async function requireCanViewConfig () {
+  if (!store.state.user) {
+    try {
+      const user = await WiseService.getCurrentUser();
+      if (user?.userId) { store.commit('SET_USER', user); }
+    } catch { /* treated as no access */ }
+  }
+  if (!store.state.user?.canViewConfig) { return { name: 'Stats' }; }
 }
 
 const router = createRouter({
@@ -72,6 +85,12 @@ const router = createRouter({
       name: 'Banner',
       component: Banner,
       beforeEnter: async () => await requireRole('wiseAdmin')
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfigPage,
+      beforeEnter: async () => await requireCanViewConfig()
     },
     {
       path: '/help',

@@ -131,6 +131,7 @@
     "admin": "관리",
     "esadmin": "데이터베이스",
     "banner": "배너",
+    "viewConfig": "설정 보기",
     "notifiers": "알림기",
     "tooltipHelpTip": "도움이 필요하신가요? 클릭하여 도움말 페이지를 확인하세요",
     "helpTip": "도움말!",
@@ -2149,5 +2150,25 @@
     "dismiss": "닫기",
     "optIn": "업데이트 확인 사용",
     "disclosure": "{host}에서 새 릴리스를 확인합니다. 메이저 버전({major})을 전송합니다."
+  },
+  "viewConfig": {
+    "title": "설정 보기",
+    "totpTitle": "2단계 인증 필요",
+    "totpInfo": "실행 중인 설정을 보려면 인증 앱의 코드를 입력하세요.",
+    "unlock": "잠금 해제",
+    "key": "키",
+    "value": "값",
+    "both": "모두",
+    "overrides": "명령줄 재정의 (-o)",
+    "fromEnv": "환경 변수에서",
+    "compareNode": "노드와 비교",
+    "diffOnly": "차이점만",
+    "differenceCount": "차이 {count}개",
+    "redactedCount": "{count}개는 가려져 비교하지 않음",
+    "onlyHere": "거기에는 설정되지 않음",
+    "onlyThere": "여기에는 설정되지 않음",
+    "notComparable": "둘 다 가려져 비교할 수 없음",
+    "appliesInfo": "섹션 없이 작성된 설정은 {sections} 순서로 조회됩니다.",
+    "noResults": "필터와 일치하는 설정이 없습니다"
   }
 }

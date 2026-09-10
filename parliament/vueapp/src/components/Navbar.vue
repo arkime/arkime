@@ -184,7 +184,9 @@ export default {
       return [
         { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.user?.roles?.includes('usersAdmin') },
         { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: !!this.user?.canAssignRoles },
-        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: this.isAdmin }
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: this.isAdmin },
+        // viewConfigMode as well as a role, so the server decides
+        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig', show: !!this.user?.canViewConfig }
       ].filter(item => item.show).map(item => ({ ...item, isActive: this.$route.path === item.link }));
     },
     settings () {
