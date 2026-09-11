@@ -101,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="d-flex flex-row ga-2">
                 <v-checkbox
                   v-for="itypeOption in itypeOptions"
-                  :key="itypeOption.text"
+                  :key="itypeOption.value"
                   v-model="link.itypes"
                   :value="itypeOption.value"
                   :label="itypeOption.text"
@@ -170,7 +170,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="d-flex flex-row ga-2 justify-center">
                   <v-checkbox
                     v-for="itypeOption in itypeOptions"
-                    :key="itypeOption.text"
+                    :key="itypeOption.value"
                     v-model="link.itypes"
                     :value="itypeOption.value"
                     :label="itypeOption.text"
