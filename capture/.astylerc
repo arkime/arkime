@@ -8,3 +8,4 @@
 --align-pointer=name
 --pad-header
 --unpad-paren
+--unpad-semicolon

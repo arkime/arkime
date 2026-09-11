@@ -1,7 +1,19 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <div class="connections-popup">
-    <div class="mb-2 mt-2">
-      <strong>
+  <v-card
+    class="connections-popup"
+    elevation="8"
+    rounded="lg">
+    <!-- header: node identity + close -->
+    <div class="connections-popup-header d-flex align-center ga-2 px-3 py-2">
+      <v-icon
+        :icon="typeIcon"
+        :color="typeColor"
+        size="small" />
+      <strong class="flex-grow-1 text-truncate text-body-2">
         <arkime-session-field
           :value="dataNode.id"
           :session="dataNode"
@@ -9,38 +21,51 @@
           :field="fields[dataNode.dbField]"
           :pull-left="true" />
       </strong>
-      <a
-        class="pull-right cursor-pointer no-decoration"
-        @click="$emit('close')">
-        <span class="fa fa-close" />
-      </a>
+      <v-btn
+        icon="mdi-close"
+        size="x-small"
+        variant="text"
+        density="comfortable"
+        aria-label="Close"
+        @click="$emit('close')" />
     </div>
 
-    <dl class="dl-horizontal">
-      <dt>{{ $t('connections.type') }}</dt>
-      <dd>{{ ['','Source','Target','Both'][dataNode.type] }}</dd>
-      <dt>{{ $t('connections.links') }}</dt>
-      <dd>{{ dataNode.weight || dataNode.cnt }}&nbsp;</dd>
-      <dt>{{ $t('common.sessions') }}</dt>
-      <dd>{{ dataNode.sessions }}&nbsp;</dd>
+    <v-divider />
 
-      <span
+    <!-- key / value details -->
+    <dl class="connections-popup-grid px-3 py-2">
+      <dt>{{ $t('connections.type') }}</dt>
+      <dd>
+        <v-chip
+          :color="typeColor"
+          size="x-small"
+          variant="tonal"
+          label>
+          {{ ['', 'Source', 'Target', 'Both'][dataNode.type] }}
+        </v-chip>
+      </dd>
+
+      <dt>{{ $t('connections.links') }}</dt>
+      <dd>{{ commaString(dataNode.weight || dataNode.cnt) }}</dd>
+
+      <dt>{{ $t('common.sessions') }}</dt>
+      <dd>{{ commaString(dataNode.sessions) }}</dd>
+
+      <template
         v-for="fieldKey in nodeFields"
         :key="fieldKey">
         <template v-if="fields[fieldKey]">
-          <dt>
-            {{ fields[fieldKey].friendlyName }}
-          </dt>
+          <dt>{{ fields[fieldKey].friendlyName }}</dt>
           <dd>
-            <span v-if="!Array.isArray(dataNode[fieldKey])">
+            <template v-if="!Array.isArray(dataNode[fieldKey])">
               <arkime-session-field
                 :value="dataNode[fieldKey]"
                 :session="dataNode"
                 :expr="fields[fieldKey].exp"
                 :field="fields[fieldKey]"
                 :pull-left="true" />
-            </span>
-            <span v-else>
+            </template>
+            <template v-else>
               <arkime-session-field
                 v-for="(value, index) in dataNode[fieldKey]"
                 :key="`${fieldKey}-${index}`"
@@ -49,32 +74,40 @@
                 :expr="fields[fieldKey].exp"
                 :field="fields[fieldKey]"
                 :pull-left="true" />
-            </span>&nbsp;
+            </template>
           </dd>
         </template>
-      </span>
+      </template>
 
-      <div v-if="baselineDate !== '0'">
+      <template v-if="baselineDate !== '0'">
         <dt>{{ $t('connections.resultSet') }}</dt>
-        <dd>{{ ['','✨Actual','🚫 Baseline','Both'][dataNode.inresult] }}</dd>
-      </div>
+        <dd>{{ ['', '✨ Actual', '🚫 Baseline', 'Both'][dataNode.inresult] }}</dd>
+      </template>
     </dl>
 
-    <a
-      class="cursor-pointer no-decoration"
-      href="javascript:void(0)"
-      @click.stop.prevent="$emit('hideNode')">
-      <span class="fa fa-eye-slash me-2" />
-      {{ $t('connections.hideNode') }}
-    </a>
-  </div>
+    <v-divider />
+
+    <!-- actions -->
+    <div class="px-2 py-1">
+      <v-btn
+        variant="text"
+        size="small"
+        color="primary"
+        prepend-icon="mdi-eye-off"
+        @click.stop.prevent="$emit('hideNode')">
+        {{ $t('connections.hideNode') }}
+      </v-btn>
+    </div>
+  </v-card>
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import ArkimeSessionField from '../sessions/SessionField.vue';
+import { commaString } from '@common/vueFilters.js';
 
 // Define Props
-defineProps({
+const props = defineProps({
   dataNode: {
     type: Object,
     required: true
@@ -95,4 +128,18 @@ defineProps({
 
 // Define Emits
 defineEmits(['hideNode', 'close']);
+
+// type 1 = source, 2 = target, 3 = both -- mirror the graph/legend colors
+const typeColor = computed(() => ['', 'primary', 'secondary', 'tertiary'][props.dataNode.type] || 'primary');
+const typeIcon = computed(() => ({
+  1: 'mdi-ray-start-arrow',
+  2: 'mdi-ray-end-arrow',
+  3: 'mdi-ray-start-end'
+}[props.dataNode.type] || 'mdi-circle-medium'));
 </script>
+
+<style scoped>
+.connections-popup-header strong {
+  min-width: 0;
+}
+</style>

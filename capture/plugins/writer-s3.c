@@ -147,7 +147,7 @@ LOCAL uint32_t writer_s3_queue_length()
     return q;
 }
 /******************************************************************************/
-LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_complete_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -197,7 +197,7 @@ LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
 /******************************************************************************/
 // AbortMultipartUpload response - free the file without recording it in the
 // files index since the object doesn't exist in S3
-LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_abort_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -224,7 +224,7 @@ LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
-LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_part_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
@@ -323,7 +323,7 @@ LOCAL void writer_s3_free_creds(S3Credentials *creds)
 /* Timer callback to refresh our creds. We fetch them into new structure
  * and free the old structure later in case a thread is using them.
  */
-LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_s3_refresh_creds_gfunc(gpointer UNUSED(user_data))
 {
     size_t clen;
 
@@ -355,7 +355,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_init_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -418,7 +418,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(uploadState);
 }
 /******************************************************************************/
-LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
+LOCAL void writer_s3_header_cb(char *url, const char *field, const char *value, int valueLen, gpointer uw)
 {
 
     if (strcasecmp("etag", field) != 0)
@@ -893,7 +893,6 @@ LOCAL void writer_s3_exit()
     }
 }
 /******************************************************************************/
-extern ArkimePcapFileHdr_t pcapFileHeader;
 LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 {
     char               filename[1000];
@@ -931,10 +930,18 @@ LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 
     s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
     s3file->outputPos = 0;
-    uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
+    const ArkimeInterfaceInfo_t *iface = &fileInfo[packet->readerPos].interfaces[packet->interfaceIndex];
+    uint32_t linktype = arkime_packet_dlt_to_linktype(iface->dlt);
     uint32_t snaplen = 0xffff;
 
-    append_to_output(s3file, &pcapFileHeader, 16, FALSE, 0);
+    ArkimePcapFileHdr_t pcapHeader;
+    pcapHeader.magic = 0xa1b2c3d4;
+    pcapHeader.version_major = 2;
+    pcapHeader.version_minor = 4;
+    pcapHeader.thiszone = 0;
+    pcapHeader.sigfigs = 0;
+
+    append_to_output(s3file, &pcapHeader, 16, FALSE, 0);
     append_to_output(s3file, &snaplen, 4, FALSE, 0);
     append_to_output(s3file, &linktype, 4, FALSE, 0);
     make_new_block(s3file);                   // So we can read the header in a small amount of data fetched
@@ -966,7 +973,7 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *UNUSED(session), gpointer 
 /* This function is called every 30 second on the main thread. It
  * schedules writer_s3_check to be called on the packet thread
  */
-LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_s3_file_time_gfunc(gpointer UNUSED(user_data))
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
         arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_s3_file_time_check);

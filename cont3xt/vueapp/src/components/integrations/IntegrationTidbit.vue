@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="tidbit.display === 'badge'">
       <c3-badge
         variant="light"
-        class="mw-100 overflow-hidden mr-1 mb-1"
+        class="mw-100 overflow-hidden me-1 mb-1"
         style="font-size:100%"
         :id="id">
         {{ tidbit.displayValue || tidbit.value }}
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <template v-else-if="tidbit.display === 'cont3xtField'">
       <cont3xt-field
-        class="mr-1 align-self-center"
+        class="me-1 align-self-center"
         :id="id"
         :value="tidbit.value"
         :display="tidbit.displayValue" />
@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <template v-else-if="tidbit.display === 'cont3xtCopyLink'">
       <cont3xt-field
-        class="mr-1 align-self-center"
+        class="me-1 align-self-center"
         :id="id"
         :options="{ copy: 'copy link' }"
         :value="tidbit.value"

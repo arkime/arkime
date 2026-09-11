@@ -6,40 +6,62 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <h3>
       {{ $t('settings.notifiers.title') }}
-      <template v-if="notifierTypes">
-        <b-button
-          size="sm"
-          variant="primary"
-          :key="notifier.name"
-          class="pull-right ms-1"
-          v-for="notifier of sortedNotifierTypes"
-          @click="createNewNotifier(notifier)">
-          <span class="fa fa-plus-circle me-1" />
-          {{ $t('settings.notifiers.new', { name: notifier.name }) }}
-        </b-button>
-      </template>
+      <v-menu
+        v-if="notifierTypes"
+        location="bottom end">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            color="primary"
+            variant="flat"
+            class="float-right">
+            <v-icon
+              icon="mdi-plus-circle"
+              start />
+            {{ $t('settings.notifiers.newGeneric', 'New Notifier') }}
+            <v-icon
+              icon="mdi-menu-down"
+              end />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="notifier of sortedNotifierTypes"
+            :key="notifier.name"
+            @click="createNewNotifier(notifier)">
+            <v-list-item-title>
+              {{ notifier.name.charAt(0).toUpperCase() + notifier.name.slice(1) }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </h3>
 
     <p class="lead">
       {{ $t(helpIntlId) }}
     </p>
 
-    <hr>
+    <v-divider class="my-3" />
 
     <!-- notifiers list error -->
-    <div
+    <v-alert
       v-if="error"
-      class="alert alert-danger mt-2 mb-2">
-      <span class="fa fa-exclamation-triangle me-1" />
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mt-2 mb-2">
       {{ error }}
-    </div> <!-- /notifiers list error -->
+    </v-alert> <!-- /notifiers list error -->
 
     <!-- no results -->
     <div
       class="text-center mt-4"
       v-if="!notifiers || !Object.keys(notifiers).length">
       <h3>
-        <span class="fa fa-folder-open fa-3x text-muted" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="x-large"
+          class="text-medium-emphasis" />
       </h3>
       <h5 class="lead">
         {{ $t('settings.notifiers.createHelp') }}
@@ -47,195 +69,209 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new notifier -->
-    <b-modal
-      size="xl"
-      @hidden="showNotifierModal = false"
+    <v-dialog
       :model-value="showNotifierModal"
-      :title="$t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' })">
-      <!-- new notifier name -->
-      <BInputGroup
-        size="sm"
-        class="mb-2">
-        <BInputGroupText
-          id="newNotifierName"
-          class="cursor-help">
-          {{ $t('settings.notifiers.name') }}
-          <sup>*</sup>
-          <BTooltip target="newNotifierName">
-            {{ $t('settings.notifiers.uniqueName', { type: newNotifier.type }) }}
-          </BTooltip>
-        </BInputGroupText>
-        <input
-          class="form-control"
-          v-model="newNotifier.name"
-          :placeholder="$t('settings.notifiers.namePlaceholder')">
-        <BInputGroupText
-          class="cursor-help"
-          id="newNotifierNameHelp">
-          <span class="fa fa-info-circle" />
-          <BTooltip target="newNotifierNameHelp">
-            {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}
-          </BTooltip>
-        </BInputGroupText>
-      </BInputGroup> <!-- /new notifier name -->
-      <!-- new notifier fields -->
-      <div
-        v-for="field of newNotifier.fields"
-        :key="field.name">
-        <span
-          class="mb-2"
-          :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
-          <span
-            v-if="field.type !== 'checkbox'"
-            class="input-group-text cursor-help"
-            :id="`newNotifierField-${field.name}`">
-            {{ field.name }}
-            <sup v-if="field.required">*</sup>
-            <BTooltip :target="`newNotifierField-${field.name}`">
-              {{ field.description }}
-            </BTooltip>
-          </span>
-          <input
-            :class="{'form-control':field.type !== 'checkbox'}"
-            v-model="field.value"
-            :type="getFieldInputType(field)"
-            :placeholder="field.description">
-          <span
-            v-if="field.type === 'secret'"
-            class="input-group-text cursor-pointer"
-            @click="toggleVisibleSecretField(field)">
+      @update:model-value="(val) => { if (!val) showNotifierModal = false; }"
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title>
+          {{ $t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' }) }}
+        </v-card-title>
+        <v-card-text>
+          <!-- new notifier name -->
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
-              class="fa"
-              :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}" />
-          </span>
-        </span>
-        <label v-if="field.type === 'checkbox'">
-          &nbsp;{{ field.name }}
-        </label>
-      </div> <!-- /new notifier fields -->
-      <!-- new notifier sharing -->
-      <div class="form-group row">
-        <div class="col d-flex">
-          <div>
-            <RoleDropdown
-              :roles="roles"
-              :display-text="$t('common.shareWithRoles')"
-              :selected-roles="newNotifier.roles"
-              @selected-roles-updated="updateNewNotifierRoles" />
+              id="newNotifierName"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.notifiers.name') }}
+              <sup>*</sup>
+              <v-tooltip activator="#newNotifierName">
+                {{ $t('settings.notifiers.uniqueName', { type: newNotifier.type }) }}
+              </v-tooltip>
+            </span>
+            <input
+              class="arkime-input-control"
+              v-model="newNotifier.name"
+              :placeholder="$t('settings.notifiers.namePlaceholder')">
+            <span
+              id="newNotifierNameHelp"
+              class="arkime-input-label arkime-input-label-fw cursor-help">
+              <v-icon icon="mdi-information" />
+              <v-tooltip activator="#newNotifierNameHelp">
+                {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}
+              </v-tooltip>
+            </span>
+          </div> <!-- /new notifier name -->
+          <!-- new notifier fields -->
+          <div
+            v-for="field of newNotifier.fields"
+            :key="field.name">
+            <span
+              class="mb-2"
+              :class="{'arkime-input-group arkime-input-group--fluid':field.type !== 'checkbox'}">
+              <span
+                v-if="field.type !== 'checkbox'"
+                class="arkime-input-label cursor-help"
+                :id="`newNotifierField-${field.name}`">
+                {{ field.name }}
+                <sup v-if="field.required">*</sup>
+                <v-tooltip :activator="`#newNotifierField-${field.name}`">
+                  {{ field.description }}
+                </v-tooltip>
+              </span>
+              <input
+                :class="{'arkime-input-control':field.type !== 'checkbox'}"
+                v-model="field.value"
+                :type="getFieldInputType(field)"
+                :placeholder="field.description">
+              <span
+                v-if="field.type === 'secret'"
+                class="arkime-input-label arkime-input-label-fw cursor-pointer"
+                @click="toggleVisibleSecretField(field)">
+                <v-icon :icon="field.showValue ? 'mdi-eye-off' : 'mdi-eye'" />
+              </span>
+            </span>
+            <label v-if="field.type === 'checkbox'">
+              &nbsp;{{ field.name }}
+            </label>
+          </div> <!-- /new notifier fields -->
+          <!-- new notifier sharing -->
+          <div class="row">
+            <div class="col d-flex">
+              <div>
+                <RoleDropdown
+                  :roles="roles"
+                  :display-text="$t('common.shareWithRoles')"
+                  :selected-roles="newNotifier.roles"
+                  @selected-roles-updated="updateNewNotifierRoles" />
+              </div>
+              <div class="ms-2 flex-grow-1">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">{{ $t('common.shareWithUsers') }}</span>
+                  <input
+                    type="text"
+                    class="arkime-input-control"
+                    :value="newNotifier.users"
+                    @input="newNotifier.users = $event.target.value"
+                    :placeholder="$t('common.listOfUserIds')">
+                </div>
+              </div>
+            </div>
+          </div> <!-- /new notifier sharing -->
+          <!-- create form error -->
+          <v-alert
+            v-if="newNotifierError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-2 mb-0">
+            {{ newNotifierError }}
+          </v-alert> <!-- /create form error -->
+        </v-card-text>
+        <!-- new notifier actions -->
+        <v-card-actions>
+          <div class="w-100 d-flex justify-space-between">
+            <v-btn
+              size="large"
+              color="error"
+              variant="flat"
+              :title="$t('common.cancel')"
+              @click="showNotifierModal = false">
+              <v-icon
+                start
+                icon="mdi-close" />
+              {{ $t('common.cancel') }}
+            </v-btn>
+            <div>
+              <v-btn
+                size="large"
+                color="warning"
+                variant="flat"
+                class="me-1"
+                @click="clearNotifierFields">
+                <v-icon
+                  start
+                  icon="mdi-cancel" />
+                {{ $t('common.clear') }}
+              </v-btn>
+              <v-btn
+                size="large"
+                color="success"
+                variant="flat"
+                @click="createNotifier">
+                <v-icon
+                  start
+                  icon="mdi-plus" />
+                {{ $t('common.create') }}
+              </v-btn>
+            </div>
           </div>
-          <div class="ms-2 flex-grow-1">
-            <b-input-group
-              size="sm"
-              :prepend="$t('common.shareWithUsers')">
-              <b-form-input
-                :model-value="newNotifier.users"
-                @update:model-value="newNotifier.users = $event"
-                :placeholder="$t('common.listOfUserIds')" />
-            </b-input-group>
-          </div>
-        </div>
-      </div> <!-- /new notifier sharing -->
-      <!-- create form error -->
-      <div
-        v-if="newNotifierError"
-        class="alert alert-danger mt-2 mb-0">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ newNotifierError }}
-      </div> <!-- /create form error -->
-      <!-- new notifier actions -->
-      <template #footer>
-        <div class="w-100 d-flex justify-content-between">
-          <b-button
-            :title="$t('common.cancel')"
-            variant="danger"
-            @click="showNotifierModal = false">
-            <span class="fa fa-times me-1" />
-            {{ $t('common.cancel') }}
-          </b-button>
-          <div>
-            <b-button
-              class="me-1"
-              variant="warning"
-              @click="clearNotifierFields">
-              <span class="fa fa-ban me-1" />
-              {{ $t('common.clear') }}
-            </b-button>
-            <b-button
-              variant="success"
-              @click="createNotifier">
-              <span class="fa fa-plus me-1" />
-              {{ $t('common.create') }}
-            </b-button>
-          </div>
-        </div>
-      </template> <!-- /new notifier actions -->
-    </b-modal> <!-- new notifier -->
+        </v-card-actions> <!-- /new notifier actions -->
+      </v-card>
+    </v-dialog> <!-- new notifier -->
 
     <!-- notifiers -->
-    <b-card-group
-      columns
-      class="mb-2"
-      v-if="notifiers">
-      <b-card
+    <div
+      v-if="notifiers"
+      class="notifier-card-columns mb-2">
+      <v-card
         :key="notifier.key"
+        class="notifier-card mb-2"
         v-for="(notifier, index) of notifiers">
-        <template #header>
+        <v-card-title>
           {{ notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1) }} Notifier
-          <span
+          <v-icon
             v-if="parentApp === 'parliament'"
             :id="`toggleNotifier-${index}`"
-            @click="toggleNotifier(notifier, index)"
-            :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
-            class="fa fa-lg pull-right cursor-pointer">
-            <BTooltip :target="`toggleNotifier-${index}`">
+            :icon="notifier.on ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off'"
+            :class="{'text-success': notifier.on}"
+            class="float-right cursor-pointer"
+            @click="toggleNotifier(notifier, index)">
+            <v-tooltip :activator="`#toggleNotifier-${index}`">
               {{ $t('settings.notifiers.turn' + (notifier.on ? 'Off' : 'On')) }}
-            </BTooltip>
-          </span>
-        </template>
-        <b-card-text>
+            </v-tooltip>
+          </v-icon>
+        </v-card-title>
+        <v-card-text>
           <!-- notifier name -->
-          <b-input-group
-            size="sm"
-            class="mb-2">
-            <b-input-group-text
-              class="cursor-help"
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              class="arkime-input-label cursor-help"
               :id="`notifierName-${index}`"
               :title="$t('settings.notifiers.uniqueName', { type: notifier.type })">
               {{ $t('settings.notifiers.name') }}
               <sup>*</sup>
-            </b-input-group-text>
+            </span>
             <input
-              class="form-control"
+              class="arkime-input-control"
               v-model="notifier.name">
-          </b-input-group> <!-- /notifier name -->
+          </div> <!-- /notifier name -->
           <!-- notifier fields -->
           <div
             v-for="field of notifier.fields"
             :key="field.name">
             <span
               class="mb-2"
-              :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
+              :class="{'arkime-input-group arkime-input-group--fluid':field.type !== 'checkbox'}">
               <span
-                class="input-group-text cursor-help"
+                class="arkime-input-label cursor-help"
                 v-if="field.type !== 'checkbox'"
                 :id="`notifierField-${field.name}-${index}`">
                 {{ field.name }}
                 <sup v-if="field.required">*</sup>
-                <BTooltip :target="`notifierField-${field.name}-${index}`">
+                <v-tooltip :activator="`#notifierField-${field.name}-${index}`">
                   {{ field.description }}
-                </BTooltip>
+                </v-tooltip>
               </span>
               <input
-                :class="{'form-control':field.type !== 'checkbox'}"
+                :class="{'arkime-input-control':field.type !== 'checkbox'}"
                 v-model="field.value"
                 :type="getFieldInputType(field)">
               <span
                 v-if="field.type === 'secret'"
-                class="input-group-text cursor-pointer"
+                class="arkime-input-label arkime-input-label-fw cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
-                <span
-                  class="fa"
-                  :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}" />
+                <v-icon :icon="field.showValue ? 'mdi-eye-off' : 'mdi-eye'" />
               </span>
             </span>
             <label v-if="field.type === 'checkbox'">
@@ -243,43 +279,42 @@ SPDX-License-Identifier: Apache-2.0
             </label>
           </div> <!-- /notifier fields -->
           <!-- notifier sharing -->
-          <b-input-group
-            size="sm"
-            class="mb-2"
-            :prepend="$t('common.shareWithUsers')">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span class="arkime-input-label">{{ $t('common.shareWithUsers') }}</span>
             <input
-              class="form-control"
+              class="arkime-input-control"
               v-model="notifier.users"
               :placeholder="$t('common.listOfUserIds')">
-          </b-input-group>
+          </div>
           <RoleDropdown
             :roles="roles"
             :id="notifier.id"
             :selected-roles="notifier.roles"
             @selected-roles-updated="updateNotifierRoles"
             :display-text="notifier.roles && notifier.roles.length ? undefined : $t('common.shareWithRoles')" /> <!-- /notifier sharing -->
-          <template v-if="parentApp === 'parliament' && notifier.alerts">
-            <hr>
+          <template v-if="parentApp === 'parliament' && notifier.alerts && notifierTypes[notifier.type.toLowerCase()]">
+            <v-divider class="my-3" />
             <!-- notifier alerts -->
             <h5>Notify on</h5>
             <div class="row">
-              <div class="col-12">
+              <div class="w-100">
                 <template v-for="(alert, aKey) of notifier.alerts">
                   <span
                     :key="aKey"
-                    v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
-                    :id="aKey + notifier.name">
-                    <BFormCheckbox
-                      inline
+                    v-if="notifierTypes[notifier.type.toLowerCase()]?.alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
+                    :id="aKey + notifier.name"
+                    class="me-2 d-inline-flex align-items-center">
+                    <input
+                      type="checkbox"
+                      class="arkime-check-input me-1"
                       :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
                       :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
-                      :model-value="notifier.alerts[aKey]"
-                      @update:model-value="notifier.alerts[aKey] = $event">
-                      {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
-                    </BFormCheckbox>
-                    <BTooltip :target="aKey + notifier.name">
+                      :checked="notifier.alerts[aKey]"
+                      @change="notifier.alerts[aKey] = $event.target.checked">
+                    {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
+                    <v-tooltip :activator="`#${aKey}${notifier.name}`">
                       {{ $t('settings.notifiers.notifyIf', { when: notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description }) }}
-                    </BTooltip>
+                    </v-tooltip>
                   </span>
                 </template>
               </div>
@@ -287,7 +322,7 @@ SPDX-License-Identifier: Apache-2.0
           </template> <!-- /notifier alerts -->
           <!-- notifier info -->
           <div class="row mt-2">
-            <div class="col-12 small">
+            <div class="w-100 text-caption">
               <p
                 v-if="notifier.created || notifier.user"
                 class="m-0">
@@ -300,42 +335,46 @@ SPDX-License-Identifier: Apache-2.0
               </p>
             </div>
           </div> <!-- /notifier info -->
-        </b-card-text>
+        </v-card-text>
         <!-- notifier actions -->
-        <template #footer>
-          <b-button
-            size="sm"
-            variant="outline-warning"
+        <v-card-actions>
+          <v-btn
+            size="large"
+            color="warning"
+            variant="outlined"
             :disabled="notifier.loading"
             @click="testNotifier(notifier.id, index)">
-            <span
-              v-if="notifier.loading"
-              class="fa fa-spinner fa-spin fa-fw me-1" />
-            <span
-              v-else
-              class="fa fa-bell fa-fw me-1" />
+            <v-icon start>
+              {{ notifier.loading ? 'mdi-loading mdi-spin' : 'mdi-bell' }}
+            </v-icon>
             {{ $t('common.test') }}
-          </b-button>
-          <span class="pull-right">
-            <b-button
-              size="sm"
+          </v-btn>
+          <span class="float-right">
+            <v-btn
+              size="large"
+              color="error"
+              variant="flat"
               class="me-1"
-              variant="danger"
               @click="removeNotifier(notifier.id, index)">
-              <span class="fa fa-trash-o fa-fw me-1" />
+              <v-icon
+                start
+                icon="mdi-trash-can-outline" />
               {{ $t('common.delete') }}
-            </b-button>
-            <b-button
-              size="sm"
-              variant="success"
+            </v-btn>
+            <v-btn
+              size="large"
+              color="success"
+              variant="flat"
               @click="updateNotifier(notifier.id, index, notifier)">
-              <span class="fa fa-save fa-fw me-1" />
+              <v-icon
+                start
+                icon="mdi-content-save" />
               {{ $t('common.save') }}
-            </b-button>
+            </v-btn>
           </span>
-        </template> <!-- /notifier actions -->
-      </b-card>
-    </b-card-group> <!-- notifiers -->
+        </v-card-actions> <!-- /notifier actions -->
+      </v-card>
+    </div> <!-- notifiers -->
   </div>
 </template>
 
@@ -585,3 +624,22 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+/* Pinterest-style masonry layout to replace b-card-group's columns prop. */
+.notifier-card-columns {
+  column-count: 3;
+  column-gap: 0.75rem;
+}
+.notifier-card {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+}
+@media (max-width: 1199.98px) {
+  .notifier-card-columns { column-count: 2; }
+}
+@media (max-width: 767.98px) {
+  .notifier-card-columns { column-count: 1; }
+}
+</style>

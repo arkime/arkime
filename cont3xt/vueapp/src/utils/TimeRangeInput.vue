@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex align-center">
     <v-btn
-      class="mr-1 skinny-search-row-btn"
+      class="me-1 skinny-search-row-btn"
       tabindex="-1"
       color="secondary"
       :style="btnStyle">
@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
             <template v-if="currentItype === 'domain'">
               <v-btn
                 @click="snapTo(0)"
-                text="Registration Date"
+                :text="$t('cont3xt.time.registrationDate')"
                 variant="text"
                 class="justify-start" />
               <v-divider class="my-1" />
@@ -32,10 +32,9 @@ SPDX-License-Identifier: Apache-2.0
               class="justify-start"
               @click="snapTo(nDays)"
               variant="text"
-              :label="(nDays === -1) ? 'All' : `${nDays}`">
-              <span v-if="nDays === -1">All</span>
-              <span v-else-if="nDays === 1">1 Day</span>
-              <span v-else>{{ nDays }} Days</span>
+              :label="(nDays === -1) ? $t('common.all') : `${nDays}`">
+              <span v-if="nDays === -1">{{ $t('common.all') }}</span>
+              <span v-else>{{ $t('common.dayCount', nDays) }}</span>
             </v-btn>
           </v-list>
         </v-card>
@@ -44,8 +43,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <v-text-field
       variant="outlined"
-      label="Start"
-      class="mr-1"
+      :label="$t('cont3xt.time.start')"
+      class="me-1"
       :class="[inputClass]"
       type="text"
       tabindex="0"
@@ -53,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
       id="startDateField"
       v-model="localStartDate"
       :style="`width:${inputWidth}`"
-      placeholder="Start Date"
+      :placeholder="$t('cont3xt.time.startDate')"
       v-focus="getFocusStartDate"
       @keyup.up="startKeyUp(1)"
       @keyup.down="startKeyUp(-1)"
@@ -65,12 +64,12 @@ SPDX-License-Identifier: Apache-2.0
     </short-cut-tooltip>
     <v-text-field
       variant="outlined"
-      label="End"
-      class="mr-1"
+      :label="$t('cont3xt.time.end')"
+      class="me-1"
       :class="[inputClass]"
       type="text"
       tabindex="0"
-      placeholder="Stop Date"
+      :placeholder="$t('cont3xt.time.stopDate')"
       v-model="localStopDate"
       :style="`width:${inputWidth}`"
       @keyup.up="stopKeyUp(1)"
@@ -83,8 +82,8 @@ SPDX-License-Identifier: Apache-2.0
       <html-tooltip
         :html="placeHolderTip"
         target-id="timerange-input-help" />
-      <span class="pl-1">
-        {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
+      <span class="ps-1">
+        {{ $t('common.dayCount', timeRangeInfo.numDays) }} | {{ $t('common.hourCount', timeRangeInfo.numHours) }}
       </span>
     </span>
   </div>

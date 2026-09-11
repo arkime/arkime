@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { formatValue } from '@/utils/formatValue';
 import { mapGetters } from 'vuex';
 import { applyTemplate } from '@/utils/applyTemplate';

@@ -66,11 +66,11 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </div> <!-- /search -->
     <!-- data -->
-    <table class="table table-sm table-striped cont3xt-table small border-sm w-100">
+    <table class="arkime-table arkime-table--xs cont3xt-table text-caption w-100">
       <tbody>
         <tr>
           <th
-            class="text-left"
+            class="text-start"
             @click="sortBy(field, true)"
             v-for="field in fields"
             :key="`${field.label}-header`"
@@ -78,11 +78,11 @@ SPDX-License-Identifier: Apache-2.0
             {{ field.label }}
             <template v-if="isSortable(field)">
               <v-icon
-                icon="mdi-arrow-down"
+                icon="mdi-chevron-down"
                 :data-testid="`sort-desc-${field.label}`"
                 v-if="sortField === field.label && desc" />
               <v-icon
-                icon="mdi-arrow-up"
+                icon="mdi-chevron-up"
                 :data-testid="`sort-asc-${field.label}`"
                 v-else-if="sortField === field.label && !desc" />
             </template>
@@ -404,7 +404,7 @@ export default {
 }
 
 .cont3xt-table th, .cont3xt-table td {
-  border: 1px solid rgb(var(--v-theme-cont3xt-table-border));
+  border: 1px solid rgb(var(--v-theme-surface-card-border));
   padding: 0.1rem 0.25rem;
   vertical-align: top;
 }

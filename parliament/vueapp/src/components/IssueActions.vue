@@ -7,79 +7,83 @@ SPDX-License-Identifier: Apache-2.0
     v-if="isUser"
     class="text-end">
     <!-- remove issue button -->
-    <template v-if="issue.acknowledged">
-      <button
-        :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-        class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-        @click="removeIssue">
-        <span class="fa fa-trash fa-fw" />
-      </button>
-      <BTooltip
-        :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-        placement="left">
+    <v-btn
+      v-if="issue.acknowledged"
+      size="x-small"
+      variant="outlined"
+      color="primary"
+      class="me-1"
+      @click="removeIssue">
+      <v-icon icon="mdi-delete" />
+      <v-tooltip
+        activator="parent"
+        location="left">
         {{ $t('parliament.issue.issueFixed') }}
-      </BTooltip>
-    </template>
+      </v-tooltip>
+    </v-btn>
     <!-- /remove issue button -->
     <!-- acknowledge issue button -->
-    <button
+    <v-btn
       v-if="!issue.acknowledged"
-      :id="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-      class="btn btn-outline-success btn-xs cursor-pointer me-1"
+      size="x-small"
+      variant="outlined"
+      color="success"
+      class="me-1"
       @click="acknowledgeIssue">
-      <span class="fa fa-check fa-fw" />
-    </button>
-    <BTooltip
-      :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-      placement="left">
-      {{ $t('parliament.issue.issueAckTip') }}
-    </BTooltip>
+      <v-icon icon="mdi-check" />
+      <v-tooltip
+        activator="parent"
+        location="left">
+        {{ $t('parliament.issue.issueAckTip') }}
+      </v-tooltip>
+    </v-btn>
     <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
-    <b-dropdown
-      right
-      size="sm"
-      class="dropdown-btn-xs d-inline"
-      variant="outline-dark">
-      <template #button-content>
-        <span
-          v-if="!issue.ignoreUntil"
-          class="fa fa-eye fa-fw" />
-        <span
-          v-else
-          class="fa fa-eye-slash fa-fw" />
-        <span class="sr-only">
-          Ignore
-        </span>
+    <v-menu location="bottom end">
+      <template #activator="{ props: activatorProps }">
+        <v-btn
+          v-bind="activatorProps"
+          size="x-small"
+          variant="outlined"
+          class="d-inline">
+          <v-icon :icon="issue.ignoreUntil ? 'mdi-eye-off' : 'mdi-eye'" />
+          <v-tooltip
+            activator="parent"
+            location="left">
+            {{ $t(issue.ignoreUntil ? 'parliament.issue.unignoreTip' : 'parliament.issue.ignoreTip') }}
+          </v-tooltip>
+        </v-btn>
       </template>
-      <template v-if="issue.ignoreUntil">
-        <b-dropdown-item @click="removeIgnore">
-          {{ $t('parliament.issue.removeIgnore') }}
-        </b-dropdown-item>
-        <b-dropdown-divider />
-      </template>
-      <b-dropdown-item @click="ignoreIssue(3600000)">
-        {{ $t('parliament.issue.ignoreHourCount', 1) }}
-      </b-dropdown-item>
-      <b-dropdown-item @click="ignoreIssue(21600000)">
-        {{ $t('parliament.issue.ignoreHourCount', 6) }}
-      </b-dropdown-item>
-      <b-dropdown-item @click="ignoreIssue(43200000)">
-        {{ $t('parliament.issue.ignoreHourCount', 12) }}
-      </b-dropdown-item>
-      <b-dropdown-item @click="ignoreIssue(86400000)">
-        {{ $t('parliament.issue.ignoreDayCount', 1) }}
-      </b-dropdown-item>
-      <b-dropdown-item @click="ignoreIssue(604800000)">
-        {{ $t('parliament.issue.ignoreWeekCount', 1) }}
-      </b-dropdown-item>
-      <b-dropdown-item @click="ignoreIssue(2592000000)">
-        {{ $t('parliament.issue.ignoreMonthCount', 1) }}
-      </b-dropdown-item>
-      <b-dropdown-item @click="ignoreIssue(-1)">
-        {{ $t('parliament.issue.ignoreForever') }}
-      </b-dropdown-item>
-    </b-dropdown> <!-- /(un)ignore until dropdown -->
+      <v-list density="compact">
+        <template v-if="issue.ignoreUntil">
+          <v-list-item @click="removeIgnore">
+            <v-list-item-title>{{ $t('parliament.issue.removeIgnore') }}</v-list-item-title>
+          </v-list-item>
+          <v-divider />
+        </template>
+        <v-list-item @click="ignoreIssue(3600000)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreHourCount', 1) }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="ignoreIssue(21600000)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreHourCount', 6) }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="ignoreIssue(43200000)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreHourCount', 12) }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="ignoreIssue(86400000)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreDayCount', 1) }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="ignoreIssue(604800000)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreWeekCount', 1) }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="ignoreIssue(2592000000)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreMonthCount', 1) }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="ignoreIssue(-1)">
+          <v-list-item-title>{{ $t('parliament.issue.ignoreForever') }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu> <!-- /(un)ignore until dropdown -->
   </div>
 </template>
 

@@ -25,7 +25,6 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-extern int                   tcpMProtocol;
 
 LOCAL int                    maxTcpOutOfOrderPackets;
 extern uint32_t              pluginsCbs;
@@ -207,11 +206,6 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 #endif
         session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]++;
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAeField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]);
-    }
-
-    // add to the long open
-    if (!session->tcp_next) {
-        DLL_PUSH_TAIL(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
     }
 
     if (tcphdr->th_flags & TH_SYN) {
@@ -569,14 +563,18 @@ void arkime_parser_init()
     maxTcpOutOfOrderPackets = arkime_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
     tcp_raw_packet_func = arkime_parsers_get_named_func("tcp_raw_packet");
 
-    tcpMProtocol = arkime_mprotocol_register("tcp",
-                                             SESSION_TCP,
+    mProtocolTcp = arkime_mprotocol_register("tcp",
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_HIGH,
                                              tcp_create_sessionid,
                                              tcp_pre_process,
                                              tcp_process,
                                              tcp_session_free,
                                              tcp_mid_save,
                                              arkime_config_int(NULL, "tcpTimeout", 60 * 8, 10, 0xffff));
+
+    arkime_mprotocol_set_timeouts(mProtocolTcp,
+                                  arkime_config_int(NULL, "tcpSaveTimeout", 60 * 8, 10, 60 * 120),
+                                  arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255));
 
     tcpflagsSynField = arkime_field_by_exp("tcpflags.syn");
     tcpflagsSynAckField = arkime_field_by_exp("tcpflags.syn-ack");

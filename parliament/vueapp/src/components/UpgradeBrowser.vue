@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="well well-lg">
         <h1>Incompatible Browser</h1>
-        <h4>Please upgrade!</h4>
+        <h3>Please upgrade!</h3>
       </div>
 
       <br>

@@ -71,9 +71,13 @@ my $json;
     is ($json->{cluster}, "test", "Correct _node status");
 
 # aliases
+    SKIP: {
+        skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 2 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
+
     $json = mesGet("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_alias");
     is (exists $json->{"MULTIPREFIX_sessions2-05m03"} || exists $json->{"MULTIPREFIX_sessions3-05m03"}, 1, "Correct session alias");
     is (exists $json->{"MULTIPREFIX_sessions2-14m01"} || exists $json->{"MULTIPREFIX_sessions3-14m01"}, 1, "Correct session alias");
+    }
 
 # _search
 
@@ -89,6 +93,9 @@ my $json;
     cmp_ok($json->{hits}->{total}, '>=', 590, "fields count is at least 590");
     cmp_ok($json->{hits}->{total}, '<',  900, "fields count is less than 900");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v30", "Correct fields index name");
+
+    SKIP: {
+        skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 6 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
 
     $json = mesGet("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
     if ($json->{hits}->{total} == 0) {
@@ -106,6 +113,7 @@ my $json;
     $json = mesPost("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"from": 100, "size":20000}');
     is (scalar @{$json->{hits}->{hits}}, 0);
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
+    }
 
 # invalid JSON body - simpleGather1Cluster
     my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/_tasks/_cancel?cluster=test", Content => "NOT_JSON");

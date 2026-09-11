@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -18,7 +18,17 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="recordsTotal"
         :records-filtered="filteredStats.length" />
 
+      <node-dashboard
+        v-if="statsView === 'dashboard'"
+        :data="filteredStats"
+        :gauges="dashboardGauges"
+        :status="esNodeStatus"
+        :status-text="esNodeStatusText"
+        :badge="esNodeRole"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )" />
+
       <arkime-table
+        v-else
         id="esNodesTable"
         @toggle-data-node-only="showOnlyDataNodes = !showOnlyDataNodes"
         :data="filteredStats"
@@ -35,63 +45,92 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
-            <b-dropdown
-              size="xs"
-              class="row-actions-btn d-inline"
-              v-has-role="{user:user,roles:'arkimeAdmin,dbAdmin'}">
-              <b-dropdown-item
-                v-if="!item.item.nodeExcluded"
-                @click="exclude('name', item.item)">
-                {{ $t('stats.excludeNode') }}: {{ item.item.name }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-else
-                @click="include('name', item.item)">
-                {{ $t('stats.includeNode') }}: {{ item.item.name }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-if="!item.item.ipExcluded"
-                @click="exclude('ip', item.item)">
-                {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-else
-                @click="include('ip', item.item)">
-                {{ $t('stats.includeIp') }}: {{ item.item.ip }}
-              </b-dropdown-item>
-            </b-dropdown>
+            <span v-has-role="{user:user,roles:'dbAdmin'}">
+              <v-menu>
+                <template #activator="{ props: activatorProps }">
+                  <v-btn
+                    v-bind="activatorProps"
+                    variant="outlined"
+                    size="x-small"
+                    density="comfortable"
+                    icon
+                    class="row-actions-btn d-inline">
+                    <v-icon icon="mdi-menu-down" />
+                  </v-btn>
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    v-if="!item.item.nodeExcluded"
+                    @click="exclude('name', item.item)">
+                    {{ $t('stats.excludeNode') }}: {{ item.item.name }}
+                  </v-list-item>
+                  <v-list-item
+                    v-else
+                    @click="include('name', item.item)">
+                    {{ $t('stats.includeNode') }}: {{ item.item.name }}
+                  </v-list-item>
+                  <v-list-item
+                    v-if="!item.item.ipExcluded"
+                    @click="exclude('ip', item.item)">
+                    {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
+                  </v-list-item>
+                  <v-list-item
+                    v-else
+                    @click="include('ip', item.item)">
+                    {{ $t('stats.includeIp') }}: {{ item.item.ip }}
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </span>
             <span
-              class="node-badge badge bg-primary badge-pill ms-1"
+              class="node-badge ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
               <template v-if="item.item.isMaster">
                 <span :id="'mainMasterBadge' + item.item.name">
                   M
                 </span>
-                <BTooltip :target="'mainMasterBadge' + item.item.name">{{ $t('stats.esNodes.mainManaging') }}</BTooltip>
+                <v-tooltip :activator="`[id='mainMasterBadge${item.item.name}']`">{{ $t('stats.esNodes.mainManaging') }}</v-tooltip>
               </template>
               <template v-else>
                 <span :id="'masterBadge' + item.item.name">
                   m
                 </span>
-                <BTooltip :target="'masterBadge' + item.item.name">{{ $t('stats.esNodes.managing') }}</BTooltip>
+                <v-tooltip :activator="`[id='masterBadge${item.item.name}']`">{{ $t('stats.esNodes.managing') }}</v-tooltip>
               </template>
             </span>
             <span
-              class="node-badge badge bg-primary badge-pill ms-1"
+              class="node-badge ms-1"
               style="padding-left:.5rem;"
               :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span
                 v-if="item.item.roles.some(role => role.startsWith('data'))"
                 :id="'dataBadge' + item.item.name">
                 D
-                <BTooltip :target="'dataBadge' + item.item.name">{{ $t('stats.esNodes.data') }}</BTooltip>
+                <v-tooltip :activator="`[id='dataBadge${item.item.name}']`">{{ $t('stats.esNodes.data') }}</v-tooltip>
               </span>
               <span v-else>&nbsp;</span>
             </span>
           </span>
+        </template>
+        <template #cell-freeSize="{ item }">
+          <resource-bar
+            :percent="diskPercent(item)"
+            :color="diskColor(item)"
+            :label="freeSizeLabel(item)" />
+        </template>
+        <template #cell-heapSize="{ item }">
+          <resource-bar
+            :percent="heapPercent(item)"
+            :color="heapColor(item)"
+            :label="heapLabel(item)" />
+        </template>
+        <template #cell-cpu="{ item }">
+          <resource-bar
+            :percent="item.cpu"
+            :label="cpuLabel(item)" />
         </template>
       </arkime-table>
     </div>
@@ -101,11 +140,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
+import ResourceBar from './ResourceBar.vue';
+import NodeDashboard from './NodeDashboard.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
-import { roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
+import { UNKNOWN_COLOR } from './resourceColor.js';
+import { round, roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -129,10 +171,16 @@ export default {
     cluster: {
       type: String,
       default: ''
+    },
+    statsView: {
+      type: String,
+      default: 'table'
     }
   },
   components: {
     ArkimeTable,
+    ResourceBar,
+    NodeDashboard,
     ArkimeError,
     ArkimePaging,
     ArkimeLoading
@@ -164,14 +212,14 @@ export default {
         // default columns
         intl({ id: 'name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 }),
         intl({ id: 'docs', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } }),
-        intl({ id: 'storeSize', sort: 'storeSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } }),
-        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } }),
-        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.heapSize); } }),
-        intl({ id: 'load', sort: 'load', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.load, 2); } }),
-        intl({ id: 'cpu', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return roundCommaString(item.cpu, 1) + '%'; } }),
+        intl({ id: 'storeSize', sort: 'storeSize', doStats: true, default: true, width: 120, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } }),
+        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return this.freeSizeLabel(item); } }),
+        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 115, dataFunction: (item) => { return this.heapLabel(item); } }),
+        intl({ id: 'load', sort: 'load', doStats: true, default: true, width: 110, dataFunction: (item) => { return roundCommaString(item.load, 2); } }),
+        intl({ id: 'cpu', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return this.cpuLabel(item); } }),
         intl({ id: 'read', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.read); } }),
         intl({ id: 'write', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.write); } }),
-        intl({ id: 'searches', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
+        intl({ id: 'searches', sort: 'searches', doStats: true, width: 105, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
         // all the rest of the available stats
         intl({ id: 'scrolls', sort: 'scrolls', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.scrolls); } }),
         intl({ id: 'ip', sort: 'ip', doStats: false, width: 100 }),
@@ -192,6 +240,17 @@ export default {
         intl({ id: 'writesRejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } })
       ];
     },
+    dashboardGauges: function () {
+      // ES data nodes: disk filling toward the flood-stage watermark and heap
+      // pressure are the health signals; write rejections are the "drops".
+      return [
+        { title: this.$t('stats.esNodes.storeSize'), kind: 'bar', percent: (n) => this.diskUsedPercent(n), label: (n) => this.diskLabel(n), color: (n) => this.diskColor(n) },
+        { title: this.$t('stats.esNodes.heapSize'), kind: 'bar', percent: (n) => this.heapPercent(n), label: (n) => this.heapLabel(n), color: (n) => this.heapColor(n) },
+        { title: this.$t('stats.esNodes.writesRejectedDelta'), kind: 'value', text: (n) => roundCommaString(n.writesRejectedDelta), color: (n) => this.rejectionsColor(n) },
+        { title: this.$t('stats.esNodes.shards'), kind: 'value', text: (n) => roundCommaString(n.shards) },
+        { title: this.$t('stats.esNodes.uptime'), kind: 'value', text: (n) => readableTimeCompact(n.uptime * 60 * 1000) }
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;
@@ -201,7 +260,9 @@ export default {
       }
     },
     filteredStats: function () {
-      if (this.showOnlyDataNodes) {
+      // the "data nodes only" toggle lives in the table; don't silently apply it
+      // in dashboard view, where there's no control to clear it
+      if (this.showOnlyDataNodes && this.statsView === 'table') {
         return this.stats.filter(s => s.roles.some(role => role.startsWith('data')));
       }
       return this.stats;
@@ -232,9 +293,21 @@ export default {
     cluster: function (newValue) {
       this.query.cluster = this.cluster;
       this.loadData();
+    },
+    statsView: function () {
+      // the table triggers its own initial load on mount; the dashboard doesn't
+      if (this.statsView === 'dashboard' && !this.stats) {
+        this.loadData();
+      }
     }
   },
   created: function () {
+    // the table component triggers the initial load on mount; in dashboard view
+    // there's no table, so load here
+    if (this.statsView === 'dashboard') {
+      this.loadData();
+    }
+
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -273,6 +346,75 @@ export default {
       } catch (error) {
         this.error = resolveMessage(error, this.$t);
       }
+    },
+    /* resource meter labels/percents (shared by table cells and dashboard) - */
+    cpuLabel (item) {
+      return roundCommaString(item.cpu, 1) + '%';
+    },
+    heapPercent (item) {
+      return item.heapMax ? (item.heapSize / item.heapMax) * 100 : NaN;
+    },
+    heapLabel (item) {
+      const p = this.heapPercent(item);
+      return humanReadableBytes(item.heapSize) + (isFinite(p) ? ' (' + round(p, 1) + '%)' : '');
+    },
+    diskPercent (item) { // percent of disk still free
+      return item.diskTotal ? (item.freeSize / item.diskTotal) * 100 : NaN;
+    },
+    freeSizeLabel (item) {
+      const p = this.diskPercent(item);
+      return humanReadableBytes(item.freeSize) + (isFinite(p) ? ' (' + round(p, 1) + '%)' : '');
+    },
+    diskUsedPercent (item) { // percent of the filesystem in use
+      return item.diskTotal ? ((item.diskTotal - item.freeSize) / item.diskTotal) * 100 : NaN;
+    },
+    diskLabel (item) {
+      const p = this.diskUsedPercent(item);
+      if (!isFinite(p)) { return '—'; } // non-data node (no disk stats)
+      return humanReadableBytes(item.diskTotal - item.freeSize) + ' / ' + humanReadableBytes(item.diskTotal) + ' (' + round(p, 1) + '%)';
+    },
+    // ES-specific thresholds: disk nears the flood-stage watermark (~85/90%),
+    // heap pressure gets serious past ~75/85%. Grey when there's no data.
+    diskColor (item) {
+      const p = this.diskUsedPercent(item);
+      if (!isFinite(p)) { return UNKNOWN_COLOR; }
+      if (p > 90) { return 'error'; }
+      if (p >= 85) { return 'warning'; }
+      return 'success';
+    },
+    heapColor (item) {
+      const p = this.heapPercent(item);
+      if (!isFinite(p)) { return UNKNOWN_COLOR; }
+      if (p > 85) { return 'error'; }
+      if (p >= 75) { return 'warning'; }
+      return 'success';
+    },
+    rejectionsColor (item) {
+      return item.writesRejectedDelta > 0 ? 'error' : 'success';
+    },
+    esNodeStatus (item) {
+      // rejecting writes = data loss (red); otherwise the worst of disk/heap
+      if (item.writesRejectedDelta > 0) { return 'error'; }
+      const order = { neutral: 0, success: 1, warning: 2, error: 3 };
+      return [this.diskColor(item), this.heapColor(item)]
+        .reduce((worst, c) => order[c] > order[worst] ? c : worst, 'neutral');
+    },
+    esNodeRole (item) {
+      // ES reports the role as "master"; Arkime surfaces it as manager / main
+      // manager. Match any data tier (data_hot/warm/content, not just plain
+      // "data"); data-holding nodes badge as data so their disk/heap gauges read
+      // coherently, even if they're also master-eligible.
+      const roles = item.roles || [];
+      if (roles.some(role => role.startsWith('data'))) { return this.$t('stats.esNodes.roleData'); }
+      if (roles.includes('master')) {
+        return item.isMaster ? this.$t('stats.esNodes.roleMainManager') : this.$t('stats.esNodes.roleManager');
+      }
+      return this.$t('stats.esNodes.roleCoord');
+    },
+    esNodeStatusText (item) {
+      // a text companion for the color-only dot (accessibility)
+      const words = { error: 'stats.statusCritical', warning: 'stats.statusWarning', success: 'stats.statusOk', neutral: 'stats.statusUnknown' };
+      return this.$t(words[this.esNodeStatus(item)]);
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -342,17 +484,22 @@ table.table tr.border-top-bold > td {
 }
 
 .node-badge {
+  display: inline-block;
   opacity: 0;
   width: 1.6rem;
+  padding: 0.2em 0.4em;
   line-height: 1.2;
   font-size: 0.75rem;
-  background-color: var(--color-primary);
-
+  font-weight: 700;
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-primary));
+  border-radius: 50rem;
+  text-align: center;
 }
 .node-badge.show-badge {
   opacity: 1;
 }
-.badge-master {
-  background-color: var(--color-quaternary) !important;
+.node-badge.badge-master {
+  background-color: rgb(var(--v-theme-quaternary)) !important;
 }
 </style>

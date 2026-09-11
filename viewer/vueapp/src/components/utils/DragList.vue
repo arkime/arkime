@@ -11,13 +11,16 @@ SPDX-License-Identifier: Apache-2.0
     @drag="drag($event, index)"
     @dragover.prevent="dragOver($event, index)"
     @click.stop.prevent="doNothing"
-    class="badge bg-secondary me-1"
+    class="arkime-drag-badge me-1"
     :class="{dragging:dragging > -1}">
     {{ field.friendlyName }}
     <button
       :aria-label="$t('common.remove')"
-      class="btn-close btn-sm ms-1"
-      @click.stop.prevent="$emit('remove', index)" />
+      type="button"
+      class="arkime-drag-close ms-1"
+      @click.stop.prevent="$emit('remove', index)">
+      <v-icon icon="mdi-close" />
+    </button>
   </label>
   <div
     @dragover.prevent
@@ -65,17 +68,41 @@ export default {
 </script>
 
 <style scoped>
-label.badge {
-  padding: 0.3rem 0.5rem;
-  font-size: 0.875rem;
+/* draggable field chip: themed pill with inline close button. */
+.arkime-drag-badge {
   display: inline-flex;
   align-items: center;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-neutral));
+  border-radius: 0.375rem;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
-label:hover {
+.arkime-drag-badge:hover {
   cursor: grab;
 }
-label:active, label.grabbing {
+.arkime-drag-badge:active, .arkime-drag-badge.grabbing {
   cursor: grabbing !important;
+}
+/* close button inside the chip: bare button with a hover tint */
+.arkime-drag-close {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+.arkime-drag-close:hover {
+  opacity: 1;
 }
 
 div.invisible-drop {

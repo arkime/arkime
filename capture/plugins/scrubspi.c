@@ -76,8 +76,8 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             GHashTable    *ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
             gpointer       ikey;
 
-            g_hash_table_iter_init (&iter, session->fields[pos]->ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, session->fields[pos]->ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 newstr = g_regex_replace(ss[s].search, ikey, -1, 0, ss[s].replace, 0, NULL);
                 if (!newstr)
                     newstr = g_strdup(ikey);

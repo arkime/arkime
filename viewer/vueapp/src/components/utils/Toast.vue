@@ -4,34 +4,15 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- alert -->
-  <div
+  <v-alert
     v-if="message"
-    class="alert alert-sm alert-dismissible"
-    :class="alertClass">
-    <!-- icon -->
-    <span
-      class="fa fa-check"
-      title="success"
-      v-if="type === 'success'" />
-    <span
-      class="fa fa-info-circle"
-      title="info"
-      v-if="type === 'info'" />
-    <span
-      class="fa fa-exclamation-triangle"
-      title="warning"
-      v-if="type === 'warning' || type === 'danger'" /> <!-- /icon -->
-    <!-- message -->
-    &nbsp;{{ message || 'undefined message' }}
-    <!-- /message -->
-    <!-- dismiss alert button -->
-    <button
-      role="button"
-      type="button"
-      :aria-label="$t('common.dismiss')"
-      class="btn-close mt-2"
-      @click="done(null)" /> <!-- /dismiss alert button -->
-  </div> <!-- /alert -->
+    :type="vuetifyType"
+    variant="tonal"
+    density="compact"
+    closable
+    @click:close="done(null)">
+    {{ message || 'undefined message' }}
+  </v-alert> <!-- /alert -->
 </template>
 
 <script>
@@ -65,8 +46,10 @@ export default {
     }
   },
   computed: {
-    alertClass: function () {
-      return `alert-${this.type}`;
+    vuetifyType: function () {
+      // Vuetify v-alert accepts: success | info | warning | error.
+      // Map Bootstrap-flavored "danger" → Vuetify "error".
+      return this.type === 'danger' ? 'error' : this.type;
     }
   },
   created: function () {

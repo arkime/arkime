@@ -8,7 +8,7 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int ospfMProtocol;
+LOCAL int mProtocolOspf;
 LOCAL int msgTypeField;
 LOCAL int routerIdField;
 LOCAL int areaIdField;
@@ -109,7 +109,7 @@ LOCAL ArkimePacketRC ospf_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     ospf_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = ospfMProtocol;
+    packet->mProtocol = mProtocolOspf;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -117,8 +117,8 @@ LOCAL ArkimePacketRC ospf_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 void arkime_parser_init()
 {
     arkime_packet_set_ip_cb(89, ospf_packet_enqueue);
-    ospfMProtocol = arkime_mprotocol_register("ospf",
-                                              SESSION_OTHER,
+    mProtocolOspf = arkime_mprotocol_register("ospf",
+                                              0,
                                               ospf_create_sessionid,
                                               ospf_pre_process,
                                               ospf_process,

@@ -4,120 +4,86 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <BRow
-      gutter-x="1"
-      class="text-start flex-nowrap d-flex justify-content-between"
-      align-h="start"
+    <div
+      class="d-flex flex-nowrap gap-2 align-start text-start"
       @keyup.stop.prevent.enter="openIntersectionAction">
-      <BCol
-        cols="auto"
-        class="flex-fill">
-        <div class="form-check form-check-inline">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            :checked="counts"
-            :model-value="counts"
-            @click="counts = !counts"
-            id="counts">
-          <label
-            class="form-check-label"
-            for="counts">
-            {{ $t('sessions.intersection.includeCounts') }}
-          </label>
-        </div>
+      <div class="flex-fill d-flex align-center gap-2">
+        <v-checkbox
+          v-model="counts"
+          density="compact"
+          hide-details
+          inline
+          :label="$t('sessions.intersection.includeCounts')" />
 
-        <div class="form-check form-check-inline ms-2">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="sort"
-            id="countSort"
+        <v-radio-group
+          v-model="sort"
+          density="compact"
+          hide-details
+          inline
+          class="ms-2">
+          <v-radio
             value="count"
-            :checked="sort === 'count'"
-            @click="sort = 'count'">
-          <label
-            class="form-check-label"
-            for="countSort">
-            {{ $t('sessions.intersection.countSort') }}
-          </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="sort"
-            id="fieldSort"
+            :label="$t('sessions.intersection.countSort')" />
+          <v-radio
             value="field"
-            :checked="sort === 'field'"
-            @click="sort = 'field'">
-          <label
-            class="form-check-label"
-            for="fieldSort">
-            {{ $t('sessions.intersection.fieldSort') }}
-          </label>
-        </div>
-      </BCol>
-
-      <BCol cols="auto">
-        <button
-          class="btn btn-sm btn-theme-tertiary me-1"
-          @click="openIntersectionAction"
-          type="button">
-          <span class="fa fa-venn">
-            <span class="fa fa-circle-o" />
-            <span class="fa fa-circle-o" />
-          </span>&nbsp;
-          {{ $t('sessions.intersection.title') }}
-        </button>
-        <button
-          id="cancelExportIntersection"
-          class="btn btn-sm btn-warning"
-          :aria-label="$t('common.cancel')"
-          @click="$emit('done', null, false, false)"
-          type="button">
-          <span class="fa fa-ban" />
-          <BTooltip target="cancelExportIntersection">
-            {{ $t('common.cancel') }}
-          </BTooltip>
-        </button>
-      </BCol>
-    </BRow>
-
-    <div class="row mt-1">
-      <div class="col">
-        <div class="input-group input-group-sm fields-input">
-          <div
-            id="intersectionFields"
-            class="input-group-text cursor-help">
-            Fields
-            <BTooltip target="intersectionFields">
-              {{ $t('sessions.intersection.exportFieldsTip') }}
-            </BTooltip>
-          </div>
-          <b-form-input
-            autofocus
-            type="text"
-            class="form-control"
-            :model-value="intersectionFields"
-            @update:model-value="intersectionFields = $event"
-            :placeholder="$t('sessions.intersection.exportFieldsTip')" />
-          <div
-            id="intersectionFieldsHelp"
-            class="input-group-text cursor-help">
-            <span class="fa fa-question-circle" />
-            <BTooltip target="intersectionFieldsHelp">
-              {{ $t('sessions.intersection.exportFieldsHelp') }}
-            </BTooltip>
-          </div>
-        </div>
-        <p
-          v-if="error"
-          class="small text-danger mb-0">
-          <span class="fa fa-exclamation-triangle" />&nbsp;
-          {{ error }}
-        </p>
+            :label="$t('sessions.intersection.fieldSort')" />
+        </v-radio-group>
       </div>
+
+      <div class="d-flex gap-1">
+        <v-btn
+          size="large"
+          variant="flat"
+          :style="tertiaryBtnStyle"
+          @click="openIntersectionAction">
+          <span class="arkime-venn me-2">
+            <v-icon icon="mdi-circle-outline" />
+            <v-icon icon="mdi-circle-outline" />
+          </span>
+          {{ $t('sessions.intersection.title') }}
+        </v-btn>
+        <v-btn
+          size="large"
+          id="cancelExportIntersection"
+          color="warning"
+          variant="flat"
+          :aria-label="$t('common.cancel')"
+          @click="$emit('done', null, false, false)">
+          <v-icon icon="mdi-cancel" />
+          <v-tooltip activator="parent">
+            {{ $t('common.cancel') }}
+          </v-tooltip>
+        </v-btn>
+      </div>
+    </div>
+
+    <div class="mt-1">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        label="Fields"
+        :model-value="intersectionFields"
+        :placeholder="$t('sessions.intersection.exportFieldsTip')"
+        @update:model-value="intersectionFields = $event">
+        <template #append-inner>
+          <span
+            id="intersectionFieldsHelp"
+            class="cursor-help">
+            <v-icon icon="mdi-help-circle" />
+            <v-tooltip activator="parent">
+              {{ $t('sessions.intersection.exportFieldsHelp') }}
+            </v-tooltip>
+          </span>
+        </template>
+      </v-text-field>
+      <p
+        v-if="error"
+        class="small text-danger mb-0">
+        <v-icon icon="mdi-alert" />&nbsp;
+        {{ error }}
+      </p>
     </div>
   </div>
 </template>
@@ -145,6 +111,12 @@ const error = ref('');
 const counts = ref(true);
 const sort = ref('count');
 const intersectionFields = ref(''); // Initialize as empty string, will be computed
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
+};
 
 // Access route
 const route = useRoute();
@@ -201,9 +173,3 @@ const openIntersectionAction = () => {
 };
 
 </script>
-
-<style scoped>
-.fields-input > input {
-  width: auto;
-}
-</style>

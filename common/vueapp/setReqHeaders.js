@@ -1,4 +1,7 @@
 /**
+ * Copyright Yahoo Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Gets a cookie given its name and returns undefined if it can't be found
  * @param {String} cookieName - The name of the cookie to retrieve
  * @returns {String} cookie - The value of the cookie or undefined if it can't be found

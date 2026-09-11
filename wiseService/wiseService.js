@@ -17,6 +17,8 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Locales = require('../common/locales');
+const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
@@ -24,7 +26,7 @@ const favicon = require('serve-favicon');
 const uuid = require('uuid').v4;
 const helmet = require('helmet');
 const jsonParser = ArkimeUtil.jsonParser;
-const chalk = require('chalk');
+const styleText = require('util').styleText;
 const version = require('../common/version');
 const path = require('path');
 const ArkimeCache = require('../common/arkimeCache');
@@ -84,7 +86,7 @@ const internals = {
   valueActions: new Map(),
   workers: 1,
   webconfig: false,
-  configCode: cryptoLib.randomBytes(20).toString('base64').replace(/[=+/]/g, '').substr(0, 6),
+  configCode: undefined, // only set by --webcode, otherwise TOTP is the only way in
   startTime: Date.now()
 };
 
@@ -126,7 +128,7 @@ function processArgs (argv) {
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
-      console.log('  --webcode <code>            Set the web config code instead of random');
+      console.log('  --webcode <code>            Shared pin code for config changes, otherwise each user needs TOTP');
       console.log('  --workers <num>             Number of worker processes to create');
       console.log('  --insecure                  Disable certificate verification for https calls');
 
@@ -134,9 +136,15 @@ function processArgs (argv) {
     }
   }
   if (internals.webconfig) {
-    console.log(chalk.cyan(
-      `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
-    ));
+    if (internals.configCode) {
+      console.log(styleText('cyan',
+        `${styleText(['bgCyan', 'black'], 'IMPORTANT')} - Config pin code is: ${internals.configCode}`
+      ));
+    } else {
+      console.log(styleText('cyan',
+        `${styleText(['bgCyan', 'black'], 'IMPORTANT')} - No --webcode given, config changes require your TOTP code`
+      ));
+    }
   }
 }
 
@@ -170,6 +178,11 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
+
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
@@ -181,12 +194,24 @@ const cspDirectives = {
   imgSrc: ["'self'", 'data:'],
   // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
   workerSrc: ["'self'", 'blob:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
 };
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: cspDirectives
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
+
+// resolve at config load, so a bad value warns at startup. helmet snapshots
+// the directives when it is constructed, so rebuild the header too.
+ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+});
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -215,7 +240,8 @@ async function setupAuth () {
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       prefix: ArkimeConfig.get('usersPrefix'),
       apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
+      getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   } else {
     const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
@@ -225,9 +251,13 @@ async function setupAuth () {
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       prefix: ArkimeConfig.get('prefix'),
       apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
-      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
+      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth'),
+      getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   }
+
+  ViewConfig.initialize({ appAdminRole: 'wiseAdmin' });
+  Banner.initialize({ app: 'wise', prefix: ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime')) });
 }
 
 // ----------------------------------------------------------------------------
@@ -235,8 +265,8 @@ async function setupAuth () {
 function checkConfigCode (req, res, next) {
   const code = req.body?.configCode;
 
-  // Check PIN code
-  if (code && code === internals.configCode) {
+  // Check PIN code, only available when --webcode was given
+  if (internals.configCode && code === internals.configCode) {
     return next();
   }
 
@@ -251,8 +281,7 @@ function checkConfigCode (req, res, next) {
     }
   }
 
-  // TODO(Arkime 7): do not log the correct config PIN code - it leaks the secret to anyone with log access.
-  console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
+  console.log('Incorrect pin/TOTP code used for config change');
   return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
 
@@ -554,6 +583,7 @@ class WISESourceAPI {
       }
 
       internals.configDefs[sourceName] = configDef;
+      registerConfigDefSecrets(); // a source added after startup declares its own
     }
   }
 
@@ -599,6 +629,20 @@ class WISESourceAPI {
     return funcName(typeName);
   }
 }
+// ----------------------------------------------------------------------------
+/* A field marked password is wise saying it holds a credential, so that is
+ * what anything showing the config goes by - covers the static wiseService
+ * and cache defs as well as every source's. */
+function registerConfigDefSecrets () {
+  const settings = {};
+  for (const configDef of Object.values(internals.configDefs)) {
+    for (const field of configDef?.fields ?? []) {
+      if (field.password && field.name) { settings[field.name] = { secret: true }; }
+    }
+  }
+  ArkimeConfig.registerSettings(settings);
+}
+
 // ----------------------------------------------------------------------------
 function loadSources () {
   const files = fs.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
@@ -651,8 +695,8 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
@@ -1482,6 +1526,47 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
+   * GET - /api/settings
+   *
+   * Returns the shared Vuetify theme keys for the logged-in user. Used
+   * by the wise UI on startup to hydrate the Vuetify theme picker from
+   * the server. These are the same keys every Arkime app reads/writes,
+   * so a user's choice follows them across apps and browsers.
+   *
+   * @name "/api/settings"
+   * @returns {string} vuetifyTheme - The saved theme id
+   * @returns {object} vuetifyCustomTheme - The saved custom-theme object
+   */
+  app.get('/api/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], User.apiGetSettings);
+
+  // ----------------------------------------------------------------------------
+  /**
+   * POST - /api/settings/update
+   *
+   * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+   * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+   * are the same keys every Arkime app reads/writes, so a theme picked
+   * in any app follows the user into all of them. Other keys posted
+   * here are dropped.
+   *
+   * @name "/api/settings/update"
+   * @returns {boolean} success
+   * @returns {string} text
+   */
+  app.post('/api/settings/update',
+    [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
+    User.apiUpdateSettings
+  );
+
+  app.post('/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, ViewConfig.checkAccess], ViewConfig.apiVerifyTotp);
+  app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp], ViewConfig.apiGetConfig);
+
+  app.get('/api/banner', [ArkimeUtil.noCacheJson, isWiseUser], Banner.apiGetBanner);
+  app.put('/api/banner', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiUpdateBanner);
+  app.post('/api/banner/sync', [ArkimeUtil.noCacheJson, jsonParser, isWiseAdmin], Banner.apiSyncBanner);
+
+  // ----------------------------------------------------------------------------
+  /**
    * GET - Used by wise UI to retrieve the raw file being used by the section.
    *       This is an authenticated API and requires wiseService to be started with --webconfig.
    *
@@ -1683,6 +1768,8 @@ app.use(cspHeader, (req, res, next) => {
     footerConfig,
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     environment: process.env.NODE_ENV
   };
 
@@ -1716,6 +1803,7 @@ function main () {
   internals.sourceApi = new WISESourceAPI();
   internals.sourceApi.addField('field:tags'); // Always add tags field so we have at least 1 field
   loadSources();
+  registerConfigDefSecrets();
 
   if (ArkimeConfig.debug > 0) {
     setInterval(printStats, 60 * 1000);
@@ -1728,11 +1816,6 @@ function main () {
 }
 
 async function buildConfigAndStart () {
-  ArkimeConfig.registerValidated({
-    elasticsearch: { type: 'urls' },
-    usersElasticsearch: { type: 'urls' }
-  });
-
   // Load config
   await ArkimeConfig.initialize({
     defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini`,

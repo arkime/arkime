@@ -54,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-else>
         {{ display || value }}
         <template v-if="decodedValue">
-          <span class="text-muted">({{ decodedValue }})</span>
+          <span class="text-medium-emphasis">({{ decodedValue }})</span>
         </template>
       </template>
       <v-icon icon="mdi-menu-down" />
@@ -153,7 +153,7 @@ export default {
 }
 
 .field:hover {
-  background-color: rgb(var(--v-theme-light)) !important;
+  background-color: rgb(var(--v-theme-neutral-lightest)) !important;
   color: rgb(var(--v-theme-secondary));
 }
 
@@ -164,7 +164,7 @@ export default {
 
 .field:hover {
   z-index: 4;
-  background-color: var(--color-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 .field:hover a {
@@ -195,8 +195,8 @@ export default {
   text-align: left;
   list-style: none;
   border-radius: 4px;
-  background-color: var(--color-light);
-  border: 1px solid var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral-lighter));
+  border: 1px solid rgb(var(--v-theme-outline));
   margin-top: 0;
   margin-left: -2px;
 
@@ -230,12 +230,12 @@ export default {
   font-weight: normal;
   line-height: 1.42857143;
   white-space: nowrap;
-  color: rgb(var(--v-theme-dark)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
 }
 
 .field-dropdown a.dropdown-item:hover {
   text-decoration: none;
   color: rgb(var(--v-theme-primary)) !important;
-  background-color: var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 </style>

@@ -3,83 +3,83 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
+  <div
+    class="d-flex flex-nowrap gap-1 align-start text-start"
     @keyup.stop.prevent.enter="applyAction(props.add)">
-    <BCol cols="auto">
-      <SegmentSelect v-model:segments="segments" />
-    </BCol>
+    <SegmentSelect v-model:segments="segments" />
 
-    <BCol
-      cols="auto"
-      class="flex-fill">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text">
-          {{ $t('sessions.tags') }}
-        </span>
-        <input
-          autofocus
-          type="text"
-          v-model="tags"
-          class="form-control"
-          :placeholder="$t('sessions.tagsPlaceholder')">
-      </div>
+    <div class="flex-fill">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        v-model="tags"
+        :label="$t('sessions.tags')"
+        :placeholder="$t('sessions.tagsPlaceholder')" />
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
-      <button
+    <div class="d-flex gap-1">
+      <v-btn
+        size="large"
         v-if="props.add"
-        type="button"
-        :title="$t('sessions.tag.addTags')"
-        @click="applyAction(true)"
-        :class="{'disabled':loading}"
-        class="btn btn-sm btn-theme-tertiary me-1">
+        variant="flat"
+        :style="tertiaryBtnStyle"
+        :disabled="loading"
+        @click="applyAction(true)">
         <span v-if="!loading">
-          <span class="fa fa-plus-circle" />&nbsp;
+          <v-icon
+            icon="mdi-plus-circle"
+            class="me-1" />
           {{ $t('sessions.tag.addTags') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin me-1" />
           {{ $t('sessions.tag.addingTags') }}
         </span>
-      </button>
-      <button
+      </v-btn>
+      <v-btn
+        size="large"
         v-else
-        type="button"
-        :title="$t('sessions.tag.removeTags')"
-        @click="applyAction(false)"
-        :class="{'disabled':loading}"
-        class="btn btn-sm btn-danger me-1">
+        color="error"
+        variant="flat"
+        :disabled="loading"
+        @click="applyAction(false)">
         <span v-if="!loading">
-          <span class="fa fa-trash-o" />&nbsp;
+          <v-icon
+            icon="mdi-trash-can-outline"
+            class="me-1" />
           {{ $t('sessions.tag.removeTags') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin me-1" />
           {{ $t('sessions.tag.removingTags') }}
         </span>
-      </button>
-      <button
+      </v-btn>
+      <v-btn
+        size="large"
         id="cancelTagSessionsBtn"
-        type="button"
+        color="warning"
+        variant="flat"
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        class="btn btn-sm btn-warning">
-        <span class="fa fa-ban" />
-        <BTooltip target="cancelTagSessionsBtn">
+        @click="$emit('done', null, false, false)">
+        <v-icon icon="mdi-cancel" />
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
-      </button>
-    </BCol>
-  </BRow>
+        </v-tooltip>
+      </v-btn>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -125,6 +125,12 @@ const error = ref('');
 const loading = ref(false);
 const segments = ref('no');
 const tags = ref('');
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
+};
 
 // Access route
 const route = useRoute();

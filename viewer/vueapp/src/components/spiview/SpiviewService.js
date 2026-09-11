@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import Utils from '../utils/utils';
 import { cancelFetchWrapper } from '@common/fetchWrapper.js';
 

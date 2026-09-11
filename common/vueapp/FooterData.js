@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { commaString } from '@common/vueFilters.js';
 
 // This is the vue instance logic for the footer template that is returned from the server

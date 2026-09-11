@@ -4,129 +4,148 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- container -->
-  <div>
-    <div class="mx-2">
-      <div
-        v-if="alertState.text"
-        style="z-index: 2000;"
-        :class="`alert-${alertState.variant || 'info'}`"
-        class="alert position-fixed fixed-bottom m-0 rounded-0">
-        {{ alertState.text }}
-        <button
-          type="button"
-          class="btn-close pull-right"
-          @click="alertState.text = ''" />
-      </div>
-    </div>
+  <div class="settings-page">
+    <!-- sub navbar -->
+    <div class="sub-navbar">
+      <span class="sub-navbar-title">
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
+        <span>{{ $t('wise.config.title') }}</span>
+      </span>
+    </div> <!-- /sub navbar -->
 
-    <div
-      class="d-flex flex-row"
+    <v-snackbar
+      :model-value="!!alertState.text"
+      :color="alertVariantToType(alertState.variant)"
+      location="bottom"
+      :timeout="-1"
+      @update:model-value="(v) => { if (!v) alertState.text = '' }">
+      {{ alertState.text }}
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="alertState.text = ''" />
+      </template>
+    </v-snackbar>
+
+    <v-row
+      no-gutters
       v-if="loaded">
       <!-- Sources sidebar -->
-      <div class="d-flex flex-column ps-2">
-        <ul class="nav nav-pills flex-column">
-          <li
-            class="nav-item cursor-pointer"
+      <v-col
+        cols="12"
+        sm="3"
+        md="2"
+        lg="2"
+        xl="1"
+        role="tablist"
+        aria-orientation="vertical">
+        <v-tabs
+          :model-value="selectedSourceKey"
+          direction="vertical"
+          density="compact"
+          color="primary"
+          selected-class="font-weight-bold"
+          @update:model-value="selectSource">
+          <v-tab
             v-for="sourceKey in sidebarOptions.services"
-            :key="sourceKey + '-tab'">
-            <a
-              class="nav-link p-1"
-              :class="{ active: selectedSourceKey === sourceKey }"
-              @click="selectSource(sourceKey)">
-              {{ sourceKey }}
-            </a>
-          </li>
-          <hr
-            class="my-1"
-            v-if="sidebarOptions.sources.length">
-          <li
-            class="nav-item"
+            :key="sourceKey + '-tab'"
+            :value="sourceKey">
+            {{ sourceKey }}
+          </v-tab>
+          <v-divider
+            v-if="sidebarOptions.sources.length"
+            class="my-1" />
+          <v-tab
             v-for="sourceKey in sidebarOptions.sources"
-            :key="sourceKey + '-tab'">
-            <a
-              class="nav-link p-1 cursor-pointer"
-              :class="{ active: selectedSourceKey === sourceKey }"
-              @click="selectSource(sourceKey)">
-              {{ sourceKey }}
-            </a>
-          </li>
-        </ul>
+            :key="sourceKey + '-tab'"
+            :value="sourceKey">
+            {{ sourceKey }}
+          </v-tab>
+        </v-tabs>
 
-        <span
-          class="px-1 no-wrap"
-          v-if="isWiseAdmin">
-          <hr>
-          <b-button
+        <div
+          v-if="isWiseAdmin"
+          class="px-2 mt-2">
+          <v-btn
             block
-            id="import-config"
-            variant="warning"
-            class="text-nowrap me-1"
+            color="warning"
+            class="mb-2"
             @click="showImportConfigModal = true">
-            <span class="fa fa-download me-1" />
-            <span>{{ $t('common.import') }}</span>
-          </b-button>
-          <BTooltip
-            target="import-config"
-            :title="$t('wise.config.importTip')" />
-          <b-button
+            <v-icon
+              icon="mdi-download"
+              class="me-1" />
+            {{ $t('common.import') }}
+            <v-tooltip activator="parent">
+              {{ $t('wise.config.importTip') }}
+            </v-tooltip>
+          </v-btn>
+          <v-btn
             block
-            id="create-source"
-            variant="success"
-            class="text-nowrap"
+            color="success"
             @click="showSourceModal = true">
-            <span class="fa fa-plus me-1" />
-            <span>{{ $t('common.create') }}</span>
-          </b-button>
-          <BTooltip
-            target="create-source"
-            :title="$t('wise.config.createTip')" />
-        </span>
-      </div> <!-- /Sources sidebar -->
+            <v-icon
+              icon="mdi-plus"
+              class="me-1" />
+            {{ $t('common.create') }}
+            <v-tooltip activator="parent">
+              {{ $t('wise.config.createTip') }}
+            </v-tooltip>
+          </v-btn>
+        </div>
+      </v-col> <!-- /Sources sidebar -->
 
       <!-- Selected Source Input Fields -->
-      <div class="d-flex flex-column px-5 pt-2 flex-grow-1 source-container">
+      <v-col
+        cols="12"
+        sm="9"
+        md="10"
+        lg="10"
+        xl="11"
+        class="d-flex flex-column px-5 pt-2 source-container">
         <h2>
-          <form
+          <div
             v-if="configViewSelected === 'edit'"
-            class="form-inline pull-right ms-5">
-            <b-button
-              class="me-2"
-              variant="warning"
+            class="d-flex align-center float-right ms-5 ga-2">
+            <v-btn
+              color="warning"
+              variant="flat"
               :disabled="fileResetDisabled"
               @click="loadSourceFile">
               {{ $t('wise.config.resetFile') }}
-            </b-button>
-            <b-button
+            </v-btn>
+            <v-btn
               v-if="isWiseAdmin"
-              variant="primary"
+              color="primary"
+              variant="flat"
               :disabled="fileSaveDisabled"
               @click="saveSourceFile">
               {{ $t('wise.config.saveFile') }}
-            </b-button>
-          </form>
-          <form
+            </v-btn>
+          </div>
+          <div
             v-else-if="configViewSelected === 'config' && isWiseAdmin"
-            class="form-inline pull-right ms-5">
-            <div class="input-group">
-              <input
-                type="text"
-                id="config-pin-code"
-                class="form-control"
-                v-model="configCode"
-                :placeholder="$t('wise.config.configCodePlaceholder')">
-              <BTooltip
-                placement="left"
-                target="config-pin-code"
-                :title="$t('wise.config.configCodeTip')" />
-              <b-button
-                class="ms-auto"
-                variant="primary"
-                :disabled="!saveEnabled"
-                @click="saveConfig(false)">
-                {{ $t('wise.config.saveRestart') }}
-              </b-button>
-            </div>
-          </form>
+            class="d-flex align-center float-right ms-5 ga-2">
+            <v-text-field
+              id="config-pin-code-top"
+              v-model="configCode"
+              :placeholder="$t('wise.config.configCodePlaceholder')"
+              density="compact"
+              style="min-width: 420px;" />
+            <v-tooltip
+              activator="#config-pin-code-top"
+              location="left">
+              {{ $t('wise.config.configCodeTip') }}
+            </v-tooltip>
+            <v-btn
+              color="primary"
+              :disabled="!saveEnabled"
+              @click="saveConfig(false)">
+              {{ $t('wise.config.saveRestart') }}
+            </v-btn>
+          </div>
           {{ selectedSourceKey }}
         </h2>
         <div
@@ -146,44 +165,48 @@ SPDX-License-Identifier: Apache-2.0
           </div>
 
           <div v-if="configDefs[selectedSourceSplit].editable || configDefs[selectedSourceSplit].displayable">
-            <b-form-radio-group
+            <v-radio-group
               v-model="configViewSelected"
               @input="configViewChanged"
               :options="configViews"
               buttons
-              button-variant="outline-secondary"
+              button-color="secondary"
+              variant="outlined"
               size="md"
               name="radio-btn-outline" />
-            <b-form-checkbox
+            <v-checkbox
               switch
               v-model="showPrettyJSON"
               v-if="configViewSelected === 'display' && displayJSON">
               Format JSON
-            </b-form-checkbox>
+            </v-checkbox>
             <template v-if="configViewSelected === 'config'">
-              <b-button
+              <v-btn
                 class="ms-2"
                 :pressed="rawConfig"
-                variant="outline-info"
+                color="info"
+                variant="outlined"
                 @click="rawConfig = !rawConfig">
                 {{ $t( rawConfig ? 'wise.config.viewConfigFields' : 'wise.config.viewRawConfig' ) }}
-              </b-button>
+              </v-btn>
             </template>
             <template v-if="configViewSelected === 'edit' && currCSV">
-              <b-button
+              <v-btn
                 class="ms-2"
-                variant="outline-info"
+                color="info"
+                variant="outlined"
                 @click="toggleCSVEditor">
                 {{ $t( rawCSV ? 'wise.config.useCSVEditor' : 'wise.config.useRawCSV' ) }}
-              </b-button>
+              </v-btn>
             </template>
             <template v-if="configViewSelected === 'edit' && currValueActionsFile">
-              <b-button
+              <v-btn
                 class="ms-2"
-                variant="outline-info"
+                color="info"
+                variant="outlined"
                 @click="toggleValueActionsEditor">
                 {{ $t( rawValueActions ? 'wise.config.UseValueActionsEditor' : 'wise.config.useRawValueActions' ) }}
-              </b-button>
+              </v-btn>
             </template>
           </div>
         </div>
@@ -222,62 +245,63 @@ SPDX-License-Identifier: Apache-2.0
                 class="shrink-item"
                 :key="line.id || lineIndex"
                 v-for="(line, lineIndex) in currValueActionsFile">
-                <div class="row">
-                  <div
-                    :class="field.class ? field.class : 'col-md-12'"
+                <v-row dense>
+                  <v-col
+                    :class="field.class"
+                    :cols="field.cols || 12"
                     v-for="field in valueActionsFields"
                     :key="line.id + field.name">
                     <transition name="item-shrink">
-                      <b-input-group
+                      <v-text-field
                         v-if="!field.advanced || displayAdvancedFields[line.key]"
-                        :prepend="field.name"
+                        :id="`value-action-${lineIndex}-${field.name}`"
+                        :label="field.name"
+                        :required="field.required"
+                        :model-value="line[field.name]"
+                        density="compact"
                         class="mb-1"
-                        size="sm">
-                        <b-form-input
-                          type="text"
-                          :required="field.required"
-                          :id="`value-action-${lineIndex}-${field.name}`"
-                          :model-value="line[field.name]"
-                          @update:model-value="debounceValueActionsChange"
-                          :state="valueActionsInputState(line, line[field.name], field.required, field.depends)" />
-                        <BTooltip
-                          :target="`value-action-${lineIndex}-${field.name}`"
-                          :title="field.help" />
-                      </b-input-group>
+                        @update:model-value="debounceValueActionsChange">
+                        <v-tooltip :activator="`[id='value-action-${lineIndex}-${field.name}']`">
+                          {{ field.help }}
+                        </v-tooltip>
+                      </v-text-field>
                     </transition>
-                  </div>
-                  <div class="col-12 mt-2">
-                    <b-button
-                      variant="danger"
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    class="mt-2">
+                    <v-btn
+                      color="error"
                       class="me-2"
                       @click="removeValueAction(lineIndex)">
-                      <span class="fa fa-minus" />&nbsp;
+                      <v-icon icon="mdi-minus" />&nbsp;
                       {{ $t('wise.config.removeValueAction') }}
-                    </b-button>
-                    <b-button
-                      variant="info"
+                    </v-btn>
+                    <v-btn
+                      color="info"
                       @click="toggleAdvancedFields(line.key)">
-                      <span
-                        class="fa fa-eye"
-                        :class="displayAdvancedFields[line.key] ? 'fa-eye-slash' : 'fa-eye'" />&nbsp;
+                      <v-icon
+                        icon="mdi-eye"
+                        :class="displayAdvancedFields[line.key] ? 'mdi-eye-off' : 'mdi-eye'" />&nbsp;
                       {{ $t('wise.config.toggleAdvancedOptions') }}
-                    </b-button>
-                  </div>
-                </div>
+                    </v-btn>
+                  </v-col>
+                </v-row>
                 <hr>
               </li>
             </transition-group>
-            <b-button
-              variant="success"
+            <v-btn
+              color="success"
+              variant="flat"
               @click="addValueAction">
-              <span class="fa fa-plus" />&nbsp;
+              <v-icon icon="mdi-plus" />&nbsp;
               {{ $t('wise.config.addValueAction') }}
-            </b-button>
+            </v-btn>
           </div>
           <!-- text area input for tagger or csv formats (if user is not using the csv editor) -->
           <template
             v-else-if="!currJSONFile && (currFormat === 'tagger' || rawCSV || rawValueActions)">
-            <b-form-textarea
+            <v-textarea
               v-model="currFile"
               rows="18" />
           </template>
@@ -290,117 +314,124 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-else-if="currCSV && !rawCSV"
             class="pt-3 pb-3 csv-editor">
-            <b-form
+            <v-form
               inline
               class="flex-nowrap">
-              <b-input-group>
+              <div class="csv-cell-group">
                 <input
                   type="text"
                   disabled="true"
                   style="width:65px;"
-                  class="form-control form-control-sm br-0 csv-cell disabled">
-              </b-input-group>
+                  class="csv-cell csv-cell--disabled">
+              </div>
               <template
                 v-for="(cell, cellIndex) in currCSV.longestRow"
                 :key="cellIndex + 'colheader'">
-                <b-input-group>
+                <div class="csv-cell-group">
                   <input
                     type="text"
                     disabled="true"
-                    class="form-control form-control-sm br-0 csv-cell disabled"
+                    class="csv-cell csv-cell--disabled"
                     :placeholder="cellIndex">
-                  <b-dropdown
-                    size="sm"
-                    class="col-control">
-                    <b-dropdown-item
-                      class="small"
-                      @click="addCSVColumn(cellIndex)">
-                      {{ $t('wise.config.addColumnLeft') }}
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      class="small"
-                      @click="addCSVColumn(cellIndex + 1)">
-                      {{ $t('wise.config.addColumnRight') }}
-                    </b-dropdown-item>
-                    <b-dropdown-item
-                      class="small"
-                      @click="removeCSVColumn(cellIndex)">
-                      {{ $t('wise.config.removeColumn') }}
-                    </b-dropdown-item>
-                  </b-dropdown>
-                </b-input-group>
+                  <v-menu>
+                    <template #activator="{ props: activatorProps }">
+                      <v-btn
+                        v-bind="activatorProps"
+                        size="small"
+                        variant="outlined"
+                        class="col-control">
+                        <v-icon icon="mdi-menu-down" />
+                      </v-btn>
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item @click="addCSVColumn(cellIndex)">
+                        <v-list-item-title>{{ $t('wise.config.addColumnLeft') }}</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="addCSVColumn(cellIndex + 1)">
+                        <v-list-item-title>{{ $t('wise.config.addColumnRight') }}</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="removeCSVColumn(cellIndex)">
+                        <v-list-item-title>{{ $t('wise.config.removeColumn') }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </div>
               </template>
-            </b-form>
-            <b-form
+            </v-form>
+            <v-form
               inline
               class="flex-nowrap"
               v-for="(row, rowIndex) in currCSV.rows"
               :key="rowIndex + 'csvrow'">
-              <b-input-group>
+              <div class="csv-cell-group">
                 <input
                   type="text"
                   disabled="true"
                   style="width:65px;"
                   :placeholder="rowIndex"
-                  class="form-control form-control-sm br-0 csv-cell disabled">
-                <b-dropdown
-                  size="sm"
-                  class="col-control">
-                  <b-dropdown-item
-                    class="small"
-                    @click="addCSVRow(rowIndex)">
-                    {{ $t('wise.config.addRowAbove') }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    class="small"
-                    @click="addCSVRow(rowIndex + 1)">
-                    {{ $t('wise.config.addRowBelow') }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    class="small"
-                    @click="removeCSVRow(rowIndex)">
-                    {{ $t('wise.config.removeRow') }}
-                  </b-dropdown-item>
-                </b-dropdown>
-              </b-input-group>
+                  class="csv-cell csv-cell--disabled">
+                <v-menu>
+                  <template #activator="{ props: activatorProps }">
+                    <v-btn
+                      v-bind="activatorProps"
+                      size="small"
+                      variant="outlined"
+                      class="col-control">
+                      <v-icon icon="mdi-menu-down" />
+                    </v-btn>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item @click="addCSVRow(rowIndex)">
+                      <v-list-item-title>{{ $t('wise.config.addRowAbove') }}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="addCSVRow(rowIndex + 1)">
+                      <v-list-item-title>{{ $t('wise.config.addRowBelow') }}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="removeCSVRow(rowIndex)">
+                      <v-list-item-title>{{ $t('wise.config.removeRow') }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </div>
               <template
                 v-for="(cell, cellIndex) in currCSV.longestRow"
                 :key="cellIndex + 'csvcell'">
-                <b-input-group>
+                <div class="csv-cell-group">
                   <input
                     type="text"
                     @input="debounceCSVChange"
                     :id="rowIndex + '-' + cellIndex"
                     v-model="currCSV.rows[rowIndex][cellIndex]"
                     @keyup.enter="cellEnterClick(rowIndex, cellIndex)"
-                    class="form-control form-control-sm br-0 csv-cell">
-                </b-input-group>
+                    class="csv-cell">
+                </div>
               </template>
-            </b-form>
+            </v-form>
           </div> <!-- /csv editor -->
           <p
             v-else
-            class="text-danger">
+            class="text-error">
             <span v-html="$t('wise.config.parseErrorHtml')" />
           </p>
-          <form
+          <div
             v-if="configViewSelected === 'edit'"
-            class="form-inline pull-right ms-5 mt-2 mb-3">
-            <b-button
-              class="me-2"
-              variant="warning"
+            class="d-flex align-center float-right ms-5 mt-2 mb-3 ga-2">
+            <v-btn
+              color="warning"
+              variant="flat"
               :disabled="fileResetDisabled"
               @click="loadSourceFile">
               {{ $t('wise.config.resetFile') }}
-            </b-button>
-            <b-button
+            </v-btn>
+            <v-btn
               v-if="isWiseAdmin"
-              variant="primary"
+              color="primary"
+              variant="flat"
               :disabled="fileSaveDisabled"
               @click="saveSourceFile">
               {{ $t('wise.config.saveFile') }}
-            </b-button>
-          </form>
+            </v-btn>
+          </div>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -418,187 +449,166 @@ SPDX-License-Identifier: Apache-2.0
 
         <div v-else>
           <template v-if="!rawConfig">
-            <div
-              class="input-group input-group-sm mb-3"
+            <template
               v-for="field in activeFields"
               :key="field.name + '-field'">
-              <span class="input-group-text">{{ field.name }}</span>
-              <b-form-input
+              <v-text-field
                 v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
-                :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
-                class="input-box"
+                :label="field.name"
                 :model-value="currConfig[selectedSourceKey][field.name]"
-                @update:model-value="(val) => inputChanged(val, field)"
                 :placeholder="field.help"
+                :title="field.help"
                 :required="field.required"
-                v-b-popover.hover.top="field.help" />
-              <b-form-textarea
+                density="compact"
+                class="mb-3"
+                @update:model-value="(val) => inputChanged(val, field)" />
+              <v-textarea
                 v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
-                :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
-                class="input-box"
+                :label="field.name"
                 :model-value="(currConfig[selectedSourceKey][field.name] || '').split(field.multiline).join('\n')"
-                @update:model-value="(val) => inputChanged(val, field)"
                 :placeholder="field.help"
+                :title="field.help"
                 :required="field.required"
-                v-b-popover.hover.top="field.help" />
-            </div>
+                density="compact"
+                rows="3"
+                class="mb-3"
+                @update:model-value="(val) => inputChanged(val, field)" />
+            </template>
           </template>
           <pre
             v-show="rawConfig"
             class="mt-4 mb-4"
             :ref="selectedSourceKey + '-pre'"
             style="white-space:break-spaces;word-break:break-all;">{{ currConfig[selectedSourceKey] }}</pre>
-          <b-button
+          <v-btn
             v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
-            variant="success"
+            color="success"
+            variant="flat"
             class="mx-auto mt-4"
             @click="copySource(selectedSourceKey)">
-            <span class="fa fa-copy me-1" />
+            <v-icon
+              icon="mdi-content-copy"
+              class="me-1" />
             {{ $t('wise.config.copyRawSource') }}
-          </b-button>
-          <b-button
+          </v-btn>
+          <v-btn
             v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
-            variant="danger"
-            class="mx-auto mt-4 pull-right"
+            color="error"
+            variant="flat"
+            class="mt-4 float-right"
             @click="deleteSource()">
-            <span class="fa fa-trash me-1" />
+            <v-icon
+              icon="mdi-delete"
+              class="me-1" />
             {{ $t('wise.config.deleteSource') }}
-          </b-button>
+          </v-btn>
         </div> <!-- else -->
-      </div><!-- /Selected Source Inputs Fields-->
-    </div>
+      </v-col><!-- /Selected Source Inputs Fields-->
+    </v-row>
 
     <!-- add source modal -->
-    <b-modal
-      title="New Source"
+    <v-dialog
       v-model="showSourceModal"
-      @hidden="showSourceModal = false"
-      :header-bg-variant="getTheme"
-      :header-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
-      :body-bg-variant="getTheme"
-      :body-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
-      :footer-bg-variant="getTheme"
-      :footer-text-variant="getTheme === 'dark' ? 'light' : 'dark'">
-      <b-container fluid>
-        <div class="input-group">
-          <span
-            id="source-selection"
-            class="input-group-text">
-            {{ $t('wise.config.source') }}
+      max-width="600">
+      <v-card>
+        <v-card-title>New Source</v-card-title>
+        <v-card-text>
+          <v-select
+            v-model="newSource"
+            :label="$t('wise.config.source')"
+            :items="newSourceItems"
+            item-title="title"
+            item-value="value"
+            :item-props="item => ({ disabled: item.disabled })"
+            :placeholder="$t('wise.config.selectSource')"
+            density="compact" />
+          <p v-if="newSource && configDefs[newSource] && configDefs[newSource].description">
+            {{ configDefs[newSource].description }}
+            <a
+              v-if="configDefs[newSource].link"
+              :href="configDefs[newSource].link"
+              class="no-decoration"
+              target="_blank">
+              {{ $t('wise.config.learnMore') }}
+            </a>
+          </p>
+          <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
+            <v-text-field
+              class="input-box mt-2"
+              v-model="newSourceName"
+              :placeholder="$t('wise.config.sourceNamePlaceholder')" />
           </span>
-          <select
-            class="form-control"
-            v-model="newSource">
-            <option
-              value=""
-              disabled>
-              {{ $t('wise.config.selectSource') }}
-            </option>
-            <option
-              v-for="(source) in Object.keys(configDefs).filter(k => !configDefs[k].service)"
-              :value="source"
-              :key="source + 'Option'"
-              :disabled="configDefs[source].singleton && Object.keys(currConfig).map(k => k.split(':')[0]).includes(source)">
-              {{ source }}
-            </option>
-          </select>
-        </div>
-        <p v-if="newSource && configDefs[newSource] && configDefs[newSource].description">
-          {{ configDefs[newSource].description }}
-          <a
-            v-if="configDefs[newSource].link"
-            :href="configDefs[newSource].link"
-            class="no-decoration"
-            target="_blank">
-            {{ $t('wise.config.learnMore') }}
-          </a>
-        </p>
-        <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
-          <b-form-input
-            :state="inputState(newSourceName, true, null)"
-            class="input-box mt-2"
-            v-model="newSourceName"
-            :placeholder="$t('wise.config.sourceNamePlaceholder')" />
-        </span>
-      </b-container>
-
-      <template #footer>
-        <div class="w-100">
-          <b-button
-            variant="warning"
-            size="sm"
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="warning"
+            size="small"
             @click="showSourceModal = false">
             {{ $t('common.cancel') }}
-          </b-button>
-          <b-button
-            :disabled="!!!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !!!newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
-            variant="success"
-            size="sm"
-            class="pull-right me-2"
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            :disabled="!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
+            color="success"
+            size="small"
             @click="createNewSource">
             Create
-          </b-button>
-        </div>
-      </template>
-    </b-modal> <!-- /add source modal -->
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /add source modal -->
 
     <!-- import config modal -->
-    <b-modal
-      size="xl"
-      @hidden="cancelImportConfig"
+    <v-dialog
       v-model="showImportConfigModal"
-      title="Import Config"
-      :header-bg-variant="getTheme"
-      :header-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
-      :body-bg-variant="getTheme"
-      :body-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
-      :footer-bg-variant="getTheme"
-      :footer-text-variant="getTheme === 'dark' ? 'light' : 'dark'">
-      <b-container fluid>
-        <span v-html="$t('wise.config.learnMoreSourceHtml')" />
-        <b-alert
-          variant="danger"
-          :show="!!importConfigError">
-          {{ importConfigError }}
-        </b-alert>
-        <b-form-textarea
-          v-model="importConfigText"
-          :placeholder="$t('wise.config.importConfigTextPlaceholder')"
-          rows="10"
-          max-rows="20" />
-      </b-container>
-      <template #footer>
-        <div class="w-100">
-          <b-button
-            variant="warning"
-            size="sm"
-            class="float-left"
+      max-width="900"
+      @update:model-value="(v) => { if (!v) cancelImportConfig(); }">
+      <v-card>
+        <v-card-title>Import Config</v-card-title>
+        <v-card-text>
+          <span v-html="$t('wise.config.learnMoreSourceHtml')" />
+          <v-alert
+            v-if="!!importConfigError"
+            type="error"
+            class="my-2">
+            {{ importConfigError }}
+          </v-alert>
+          <v-textarea
+            v-model="importConfigText"
+            :placeholder="$t('wise.config.importConfigTextPlaceholder')"
+            rows="10"
+            max-rows="20" />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="warning"
+            size="small"
             @click="cancelImportConfig">
             {{ $t('common.cancel') }}
-          </b-button>
-          <form class="form-inline pull-right ms-5">
-            <div class="input-group input-group-sm">
-              <input
-                type="text"
-                id="config-pin-code"
-                class="form-control"
-                v-model="configCode"
-                :placeholder="$t('wise.config.configCodePlaceholder')">
-              <BTooltip
-                target="config-pin-code"
-                :title="$t('wise.config.configCodeTip')" />
-              <b-button
-                class="ms-auto"
-                variant="success"
-                :disabled="!importConfigText || !configCode"
-                @click="importConfig">
-                {{ $t('wise.config.saveRestart') }}
-              </b-button>
-            </div>
-          </form>
-        </div>
-      </template>
-    </b-modal> <!-- /import config modal -->
+          </v-btn>
+          <v-spacer />
+          <div
+            class="d-flex align-center"
+            style="gap: 8px; max-width: 420px;">
+            <v-text-field
+              id="config-pin-code-import"
+              v-model="configCode"
+              :placeholder="$t('wise.config.configCodePlaceholder')"
+              density="compact" />
+            <v-tooltip activator="#config-pin-code-import">
+              {{ $t('wise.config.configCodeTip') }}
+            </v-tooltip>
+            <v-btn
+              color="success"
+              size="small"
+              :disabled="!importConfigText || !configCode"
+              @click="importConfig">
+              {{ $t('wise.config.saveRestart') }}
+            </v-btn>
+          </div>
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /import config modal -->
   </div>
 </template>
 
@@ -675,6 +685,16 @@ export default {
     selectedSourceSplit: function () {
       return this.selectedSourceKey.split(':')[0];
     },
+    newSourceItems () {
+      const usedKeys = Object.keys(this.currConfig).map(k => k.split(':')[0]);
+      return Object.keys(this.configDefs)
+        .filter(k => !this.configDefs[k].service)
+        .map(source => ({
+          value: source,
+          title: source,
+          disabled: this.configDefs[source].singleton && usedKeys.includes(source)
+        }));
+    },
     sidebarOptions: function () {
       const options = {};
       // Note: Services are already added to currConfig. This assists rendering them first
@@ -748,6 +768,14 @@ export default {
     }
   },
   methods: {
+    /* Map Bootstrap-era alert variants (danger/warning/info/success) to
+       Vuetify v-alert types. */
+    alertVariantToType (variant) {
+      if (variant === 'danger') return 'error';
+      if (variant === 'warning') return 'warning';
+      if (variant === 'success') return 'success';
+      return 'info';
+    },
     loadCurrentUser: function () {
       WiseService.getCurrentUser().then((user) => {
         this.isWiseAdmin = user && Array.isArray(user.roles) && user.roles.includes('wiseAdmin');
@@ -1230,6 +1258,16 @@ export default {
 </script>
 
 <style scoped>
+/* Tighten the vertical tab strip (sources sidebar) to match
+   viewer's settings page. Vuetify's compact-density v-tab is ~36px,
+   which feels loose for a side nav of dozens of sources. */
+.v-tab {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 0.85rem !important;
+  justify-content: flex-start !important;
+}
 .source-btn {
   width: 100%;
   font-size: .9rem;
@@ -1271,6 +1309,32 @@ input.br-0 {
 input.csv-cell {
   margin-top: -1px;
   width: 130px !important;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  border: 1px solid rgb(var(--v-theme-outline));
+  background: rgb(var(--v-theme-input-bg));
+  color: rgb(var(--v-theme-foreground));
+}
+input.csv-cell:focus {
+  outline: none;
+  border-color: rgb(var(--v-theme-primary));
+}
+input.csv-cell.csv-cell--disabled {
+  background: rgb(var(--v-theme-input-bg-disabled));
+  color: rgb(var(--v-theme-foreground));
+  opacity: 0.7;
+}
+.csv-cell-group {
+  display: inline-flex;
+  align-items: center;
+}
+.wise-help-links a {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+  margin-right: 6px;
+}
+.wise-help-links a:hover {
+  text-decoration: underline;
 }
 
 .col-control {

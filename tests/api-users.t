@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 282;
+use Test::More tests => 276;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -31,7 +31,7 @@ my $json;
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
-anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
+anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 ', "CSV Users");
 
 # csv formula injection - userName/expression starting with a trigger char must be neutralized with a leading '
@@ -122,7 +122,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerGetToken("/api/appInfo", $token);
     eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "dbAdmin", "mcpUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
     my @roles = sort @{$json->{user}->{roles}};
-    eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
+    eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "dbAdmin", "parliamentUser", "usersAdmin", "wiseUser"]'));
 
 # Check default user settings
     $json = viewerGetToken("/api/appInfo", $token);
@@ -189,16 +189,52 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
     is($json->{success}, 1, "restore logo setting");
 
-# user css - no theme returns 404
-    my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
-    is($cssResponse->code, 404, "user css returns 404 without theme");
+# update user settings - vuetifyTheme is the shared cross-app theme key (string)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyTheme":"cotton-candy"}', $test1Token);
+    is($json->{success}, 1, "update vuetifyTheme setting");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{vuetifyTheme}, "cotton-candy", "vuetifyTheme string stored");
 
-# user css - with theme returns CSS
-    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"theme":"custom-theme:#000000,#FFFFFF,#CCCCCC,#007bff,#cce5ff,#28a745,#d4edda,#ffc107,#fff3cd,#dc3545,#f8d7da,#17a2b8,#d1ecf1,#6c757d,#e2e3e5"}', $test1Token);
-    is($json->{success}, 1, "update user settings with theme");
-    $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
-    is($cssResponse->code, 200, "user css returns 200 with theme");
-    like($cssResponse->content, qr/color/, "user css contains color styles");
+# update user settings - vuetifyCustomTheme is on the object allowlist, so its object value is kept
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":true,"colors":{"primary":"#ff00ff"}}}', $test1Token);
+    is($json->{success}, 1, "update vuetifyCustomTheme object setting");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#ff00ff", "vuetifyCustomTheme object stored");
+    ok($json->{vuetifyCustomTheme}->{dark}, "vuetifyCustomTheme dark flag stored");
+
+# update user settings - explicit null unsets the key (deleted, not stored as a literal null)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":null}', $test1Token);
+    is($json->{success}, 1, "unset vuetifyCustomTheme with null succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{vuetifyCustomTheme}, "vuetifyCustomTheme deleted by null, not stored as null");
+
+# infoFieldsConfigId points at the loaded sessions info field layout, so it has
+# to survive a settings save like any other setting
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"infoFieldsConfigId":"abc123"}', $test1Token);
+    is($json->{success}, 1, "set infoFieldsConfigId succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{infoFieldsConfigId}, "abc123", "infoFieldsConfigId is persisted");
+
+# and null clears it, so deleting the loaded layout can unset the pointer
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"infoFieldsConfigId":null}', $test1Token);
+    is($json->{success}, 1, "unset infoFieldsConfigId succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{infoFieldsConfigId}, "infoFieldsConfigId deleted by null");
+
+# update user settings - a key omitted from the body is preserved (partial save must not wipe siblings)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":false,"colors":{"primary":"#abcdef"}}}', $test1Token);
+    is($json->{success}, 1, "re-set vuetifyCustomTheme object");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyTheme":"arkime-dark"}', $test1Token);
+    is($json->{success}, 1, "partial update of vuetifyTheme only");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{vuetifyTheme}, "arkime-dark", "vuetifyTheme updated by partial save");
+    eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#abcdef", "omitted vuetifyCustomTheme preserved by partial save");
+
+# update user settings - keys not on the allowlist are silently dropped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"notARealSetting":"nope"}', $test1Token);
+    is($json->{success}, 1, "update with unknown key succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{notARealSetting}, "unknown setting key was dropped");
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
@@ -320,142 +356,19 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     delete $users->{data}->[$test2pos]->{lastUsed};
     eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
-# isPP body param validation
-    my $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "__proto__", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    is($info->{text}, "Invalid value for name", "column: __proto__ body value blocked");
-    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "constructor", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    is($info->{text}, "Invalid value for name", "column: constructor body value blocked");
-
-# Session Table Column Layout CRUD
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "column: empty");
-
-    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    ok($info->{success}, "column: create success");
-    is($info->{name}, "column1", "column: create name");
-
-    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column2", "columns": ["source.ip","destination.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
-    ok($info->{success}, "column: create success");
-    is($info->{name}, "column2", "column: create name");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]}]'), "column: 1 item");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]}]'), "column: 1 item admin");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionstable/fred?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(! $info->{success}, "column: delete not found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["source.ip","destination.ip"]}]'), "column: 1 item");
-
-    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip","info"], "order": [["lastPacket","asc"]]}', $test1Token);
-    ok($info->{success}, "column: update");
-
-# column: mass assignment - extra properties should be stripped
-    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip"], "order": [["lastPacket","asc"]], "evil": "injected"}', $test1Token);
-    ok($info->{success}, "column: update with extra props");
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!exists $info->[0]->{evil}, "column: extra property stripped");
-
-# column: update should sanitize name (strip special chars)
-    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1!", "columns": ["source.ip"], "order": [["lastPacket","asc"]]}', $test1Token);
-    ok($info->{success}, "column: update with special chars in name");
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    is($info->[0]->{name}, "column1", "column: updated name is sanitized");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionstable/column1?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "column: delete found");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionstable/column2?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "column: delete found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "column: empty");
-
-
 # Current
-    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    my $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
     ok(!exists $info->{passStore}, "current: no passtore");
 
-# session table info column fields CRUD
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "sessionsinfofields fields: empty");
-
-    $info = viewerPostToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip"]}', $test1Token);
-    ok($info->{success}, "sessionsinfofields fields: create success");
-    is($info->{name}, "sfields1", "sessionsinfofields fields: create name");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "sessionsinfofields fields: 1 item");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "sessionsinfofields fields: 1 item admin");
-
-    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
-    ok($info->{success}, "sessionsinfofields fields: update success");
-
-# sessionsinfofields: mass assignment - extra properties should be stripped
-    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
-    ok($info->{success}, "sessionsinfofields: update with extra props");
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!exists $info->[0]->{evil}, "sessionsinfofields: extra property stripped");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/fred?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!$info->{success}, "sessionsinfofields fields: delete not found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip","node"]}]'), "sessionsinfofields fields: 1 item");
-
-    $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "sessionsinfofields fields: delete found");
-
-    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "sessionsinfofields fields: empty");
-
-# spiview fields
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "spiview fields: empty");
-
-    $info = viewerPostToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip"]}', $test1Token);
-    ok($info->{success}, "spiview fields: create success");
-    is($info->{name}, "sfields1", "spiview fields: create name");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "spiview fields: 1 item");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip"]}]'), "spiview fields: 1 item admin");
-
-    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
-    ok($info->{success}, "spiview fields: update success");
-
-# spiview: mass assignment - extra properties should be stripped
-    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
-    ok($info->{success}, "spiview: update with extra props");
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!exists $info->[0]->{evil}, "spiview: extra property stripped");
-
-    $info = viewerDeleteToken("/api/user/layouts/spiview/fred?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(!$info->{success}, "spiview fields: delete not found");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["source.ip","destination.ip","node"]}]'), "spiview fields: 1 item");
-
-    $info = viewerDeleteToken("/api/user/layouts/spiview/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
-    ok($info->{success}, "spiview fields: delete found");
-
-    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    eq_or_diff($info, from_json("[]"), "spiview fields: empty");
-
-# Page config tests
+# Page config tests, layouts are shareables now so config only carries state
     $info = viewerGetToken("/api/user/config/sessions?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(exists $info->{colConfigs}, "sessions config has colConfigs");
-    ok(exists $info->{infoConfigs}, "sessions config has infoConfigs");
+    ok(exists $info->{tableState}, "sessions config has tableState");
+    ok(!exists $info->{colConfigs}, "sessions config no longer has colConfigs");
+    ok(!exists $info->{infoConfigs}, "sessions config no longer has infoConfigs");
 
     $info = viewerGetToken("/api/user/config/spiview?arkimeRegressionUser=sac-test1", $test1Token);
-    ok(exists $info->{fieldConfigs}, "spiview config has fieldConfigs");
+    ok(exists $info->{spiviewFields}, "spiview config has spiviewFields");
+    ok(!exists $info->{fieldConfigs}, "spiview config no longer has fieldConfigs");
 
     $info = viewerGetToken("/api/user/config/badpage?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "unsupported page returns error");
@@ -477,6 +390,72 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
+
+# Help notes
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge", '{"noteId":"sessions"}', $token2);
+    ok(!$info->{success}, "can't dismiss help note for another user");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"BAD ID!"}', $test1Token);
+    is($info->{success}, 0, "invalid note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "invalid note id i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":123}', $test1Token);
+    is($info->{success}, 0, "numeric note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "numeric note id i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"sessions"}', $test1Token);
+    ok($info->{success}, "dismiss help note");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions"]'), "dismissed help notes contains sessions");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"sessions"}', $test1Token);
+    ok($info->{success}, "dismiss help note repeat");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions"]'), "dismissed help notes deduped");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"v7"}', $test1Token);
+    ok($info->{success}, "dismiss help note with digit id");
+
+    # users schema has the field (db version 87)
+    $info = esGet("/tests_users_v30/_mapping");
+    is($info->{tests_users_v30}->{mappings}->{properties}->{dismissedHelpNotes}->{type}, "keyword", "users mapping has dismissedHelpNotes keyword");
+
+    # note id length boundary
+    my $noteId32 = 'a' x 32;
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", qq({"noteId":"$noteId32"}), $test1Token);
+    ok($info->{success}, "32 char note id accepted");
+
+    my $noteId33 = 'a' x 33;
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", qq({"noteId":"$noteId33"}), $test1Token);
+    is($info->{success}, 0, "33 char note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "33 char note id i18n");
+
+    # noteId wins when both noteId and msgNum are sent
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"msgNum":1,"noteId":"both"}', $test1Token);
+    is($info->{i18n}, "api.users.dismissedNote", "noteId takes precedence over msgNum");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{welcomeMsgNum}, 2, "msgNum ignored when noteId present");
+
+    # fill to the 50 entry cap (array already has sessions, v7, a x32, both)
+    for my $i (1..46) {
+        viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", qq({"noteId":"fill$i"}), $test1Token);
+    }
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    is(scalar @{$info->{dismissedHelpNotes}}, 50, "dismissed help notes at cap");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"overflow"}', $test1Token);
+    is($info->{success}, 0, "note dismissal rejected at cap");
+    is($info->{i18n}, "api.users.tooManyDismissedNotes", "too many dismissed notes i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"all"}', $test1Token);
+    ok($info->{success}, "dismiss all bypasses the cap");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    is(scalar @{$info->{dismissedHelpNotes}}, 51, "all added past the cap");
+    ok((grep { $_ eq "all" } @{$info->{dismissedHelpNotes}}), "dismissed help notes contains all");
 
 # user time limit
     $json = viewerPostToken("/api/user/sac-test2", '{"timeLimit":"72", "roles": ["arkimeUser"]}', $token);
@@ -635,7 +614,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
-anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
+anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
 role:sac-test1,UserName,true,false,false,"",,,,,,,,,
 role:sac-test2,UserName,true,false,false,"role:sac-test1",,,,,,,,,
