@@ -313,18 +313,66 @@ class Config {
       }
     }, true);
 
-    ArkimeConfig.registerSecrets([
-      'elasticsearchAPIKey', 'elasticsearchBasicAuth', 'esClientKeyPass',
-      'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth', 'multiESBasicAuth',
-      'esProxySigV4SecretAccessKey', 'esProxySigV4SessionToken',
-      's3SecretAccessKey', 'sqsSecretAccessKey', 'clickhousePassword'
-    ]);
-
-    ArkimeConfig.registerValidated({
+    ArkimeConfig.registerSettings({
+      multiESBasicAuth: { secret: true },
+      esProxySigV4SecretAccessKey: { secret: true },
+      esProxySigV4SessionToken: { secret: true },
+      s3SecretAccessKey: { secret: true },
+      sqsSecretAccessKey: { secret: true },
+      clickhousePassword: { secret: true },
+      kafkaSSLKeyPassword: { secret: true },
       uploadFileSizeLimit: { type: 'int', min: 0 },
       maxSessionsQueried: { type: 'int', min: 0 },
-      elasticsearch: { type: 'urls' },
-      usersElasticsearch: { type: 'urls' }
+      huntLimit: { type: 'int', min: 0 },
+      huntAdminLimit: { type: 'int', min: 0 },
+      huntWarn: { type: 'int', min: 0 },
+      huntThrottleMs: { type: 'int', min: 0 },
+      maxAggSize: { type: 'int', min: 1 },
+      spiDataMaxIndices: { type: 'int', min: 1, unlimited: -1 },
+      // db.js only applies this when truthy, so 0 already means "no override"
+      esMaxConcurrentShardRequests: { type: 'int', min: 1, unlimited: 0 },
+      tsharkMaxConcurrent: { type: 'int', min: 0 },
+      tsharkMaxPackets: { type: 'int', min: 1 },
+      tsharkMemoryLimitMB: { type: 'int', min: 0, unlimited: -1 },
+      tsharkTimeoutMs: { type: 'int', min: 1 },
+      summaryChunkDelay: { type: 'int', min: 0 },
+      turnOffGraphDays: { type: 'int', min: 0 },
+      elasticsearchTimeout: { type: 'int', min: 1 },
+      elasticsearchScrollTimeout: { type: 'int', min: 1 },
+      dbFlushTimeout: { type: 'int', min: 0 },
+      viewPort: { type: 'int', min: 1, max: 65535 },
+      esProxyPort: { type: 'int', min: 1, max: 65535 },
+      multiESPort: { type: 'int', min: 1, max: 65535 },
+      // packetPortal.js only starts a dedicated listener when truthy, so 0
+      // already means "no dedicated port, fall back to packetPortalListen"
+      packetPortalPort: { type: 'int', min: 1, max: 65535, unlimited: 0 },
+      // both readers parseFloat it, so '5G' silently becomes 5 and 'five' becomes
+      // NaN, which no comparison is ever true for - the disk then never expires
+      freeSpaceG: {
+        type: 're',
+        re: /^-?(\d+(\.\d*)?|\.\d+)%?$/,
+        help: 'a number of gigabytes or a percentage of the disk, eg 5 or 5%'
+      },
+      // capture exits on anything else, viewer would silently guess the index length
+      rotateIndex: {
+        type: 'enum',
+        values: ['hourly', 'hourly2', 'hourly3', 'hourly4', 'hourly6', 'hourly8', 'hourly12', 'daily', 'weekly', 'monthly']
+      },
+      multiES: { type: 'bool' },
+      queryAllIndices: { type: 'bool' },
+      valueAutoComplete: { type: 'bool' },
+      // esProxy.js also reads these under [tee] for the secondary ES output,
+      // which isn't part of the default section chain get()/getArray() walk
+      esProxySigV4: { type: 'bool', sections: ['tee'] },
+      hstsHeader: { type: 'bool' },
+      postPcapFetch: { type: 'bool' },
+      packetPortalListen: { type: 'bool' }
+    });
+
+    // elasticsearchAPIKey/elasticsearchBasicAuth are secret-only (no type), so
+    // there's nothing for #validateSettings to check under [tee] for them
+    ArkimeConfig.registerSettings({
+      elasticsearch: { sections: ['tee'] }
     });
 
     await ArkimeConfig.initialize({

@@ -634,13 +634,13 @@ class WISESourceAPI {
  * what anything showing the config goes by - covers the static wiseService
  * and cache defs as well as every source's. */
 function registerConfigDefSecrets () {
-  const names = [];
+  const settings = {};
   for (const configDef of Object.values(internals.configDefs)) {
     for (const field of configDef?.fields ?? []) {
-      if (field.password && field.name) { names.push(field.name); }
+      if (field.password && field.name) { settings[field.name] = { secret: true }; }
     }
   }
-  ArkimeConfig.registerSecrets(names);
+  ArkimeConfig.registerSettings(settings);
 }
 
 // ----------------------------------------------------------------------------
@@ -1816,16 +1816,6 @@ function main () {
 }
 
 async function buildConfigAndStart () {
-  ArkimeConfig.registerSecrets([
-    'elasticsearchAPIKey', 'elasticsearchBasicAuth',
-    'usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth'
-  ]);
-
-  ArkimeConfig.registerValidated({
-    elasticsearch: { type: 'urls' },
-    usersElasticsearch: { type: 'urls' }
-  });
-
   // Load config
   await ArkimeConfig.initialize({
     defaultConfigFile: `${version.config_prefix}/etc/wiseService.ini`,

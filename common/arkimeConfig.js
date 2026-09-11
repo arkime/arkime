@@ -337,37 +337,34 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
-  static #VALIDATED = {};
-
-  /**
-   * Register settings to validate at config load, so a broken access control
-   * or resource bound stops the process instead of being ignored. Owners
-   * register their own. Call before initialize().
-   *
-   *   int/float  - must parse and satisfy min. `unlimited` names the one value
-   *                allowed below min, eg -1 for no limit.
-   *   cidrs      - every entry must be a usable CIDR
-   *   urls       - every entry must be a url, the scheme may be left off
-   */
-  static registerValidated (specs) {
-    Object.assign(ArkimeConfig.#VALIDATED, specs);
-  }
-
-  // ----------------------------------------------------------------------------
+  static #SETTINGS = {};
   static #SECRETS = new Set();
 
   /**
-   * Register settings that hold a credential, so anything showing the config
-   * hides them. Owners register their own, the same way they register what to
-   * validate - guessing from the name is only a backstop.
+   * Register what is known about settings, so a broken access control or
+   * resource bound stops the process instead of being ignored, and anything
+   * showing the config hides credentials. Owners register their own, a spec
+   * may say both. Call before initialize().
    *
-   * @param {string[]} keys - the setting names, without a section
+   *   secret     - holds a credential, guessing from the name is a backstop
+   *   int/float  - must parse and satisfy min and max. `unlimited` names the
+   *                one value allowed outside them, eg -1 for no limit.
+   *   bool       - must be true or false, the only spellings getFull coerces
+   *   enum       - must be one of `values`
+   *   re         - must match `re`, with `help` naming the shape for the error
+   *   cidrs      - every entry must be a usable CIDR
+   *   urls       - every entry must be a url, the scheme may be left off
+   *   sections   - also validate the setting's value in these named sections,
+   *                eg 'tee', which can hold their own override and are never
+   *                part of the default section chain `get`/`getArray` walk
+   *
+   * @param {object} specs - setting name, without a section, to its spec
    */
-  static registerSecrets (keys) {
-    for (const key of keys ?? []) {
-      if (typeof key === 'string' && key !== '') {
-        ArkimeConfig.#SECRETS.add(key.toLowerCase());
-      }
+  static registerSettings (specs) {
+    for (const [key, spec] of Object.entries(specs ?? {})) {
+      if (key === '' || spec === undefined) { continue; }
+      ArkimeConfig.#SETTINGS[key] = { ...ArkimeConfig.#SETTINGS[key], ...spec };
+      if (spec.secret) { ArkimeConfig.#SECRETS.add(key.toLowerCase()); }
     }
   }
 
@@ -382,15 +379,19 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
-  static #validateSetting (key, spec) {
+  // section is the extra named section to validate instead of the default
+  // section chain, eg 'tee' - undefined means the normal get()/getArray() walk
+  static #validateSetting (key, spec, section) {
+    const label = section === undefined ? key : `[${section}] ${key}`;
+
     if (spec.type === 'cidrs') {
-      const list = ArkimeConfig.getArray(key);
+      const list = section === undefined ? ArkimeConfig.getArray(key) : ArkimeConfig.getFullArray(section, key);
       // An empty list is how 'not set' looks, leave that to the caller
       if (list === undefined || list.length === 0) { return undefined; }
 
       const { bad } = ArkimeUtil.buildIpTrie(list);
       if (bad.length) {
-        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+        return `${label} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
           bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
           ". Each entry must be a full address with an optional in range prefix length, eg '10.0.0.1/32' or '10.0.0.0/8'.";
       }
@@ -398,28 +399,51 @@ class ArkimeConfig {
     }
 
     if (spec.type === 'urls') {
-      const list = ArkimeConfig.getArray(key);
+      const list = section === undefined ? ArkimeConfig.getArray(key) : ArkimeConfig.getFullArray(section, key);
       if (list === undefined || list.length === 0) { return undefined; }
 
       const bad = list.filter(url => ArkimeUtil.parseUrl(url) === undefined);
       if (bad.length) {
-        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+        return `${label} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
           bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
           ". Each entry must be a url, eg 'http://localhost:9200' or 'localhost:9200'.";
       }
       return undefined;
     }
 
-    const raw = ArkimeConfig.get(key);
+    const raw = section === undefined ? ArkimeConfig.get(key) : ArkimeConfig.getFull(section, key);
     if (raw === undefined || raw === '') { return undefined; } // empty is unset
+
+    if (spec.type === 'bool') {
+      // exactly what getFull coerces - anything else stays a truthy string, so
+      // an operator turning a switch off with 0 or False would turn it on
+      if (typeof raw === 'boolean' || raw === 'true' || raw === 'false') { return undefined; }
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which is not a boolean. Use true or false.`;
+    }
+
+    if (spec.type === 'enum') {
+      if (spec.values.includes(raw)) { return undefined; }
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which must be one of ${spec.values.join(', ')}.`;
+    }
+
+    if (spec.type === 're') {
+      // match and not test, so a global regex can't carry lastIndex between settings
+      if (String(raw).match(spec.re)) { return undefined; }
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which must be ${spec.help}.`;
+    }
 
     const value = ArkimeConfig.#parseNumeric(raw, spec.type === 'int');
     if (value === undefined) {
-      return `${key} is '${ArkimeUtil.sanitizeStr(raw)}', which is not ${spec.type === 'int' ? 'an integer' : 'a number'}.`;
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which is not ${spec.type === 'int' ? 'an integer' : 'a number'}.`;
     }
-    if (value < spec.min && value !== spec.unlimited) {
-      return `${key} is ${value}, which is below the minimum of ${spec.min}` +
-        (spec.unlimited !== undefined ? `. Use ${spec.unlimited} for no limit.` : '.');
+    if (value !== spec.unlimited) {
+      const unlimited = spec.unlimited !== undefined ? `. Use ${spec.unlimited} for no limit.` : '.';
+      if (spec.min !== undefined && value < spec.min) {
+        return `${label} is ${value}, which is below the minimum of ${spec.min}${unlimited}`;
+      }
+      if (spec.max !== undefined && value > spec.max) {
+        return `${label} is ${value}, which is above the maximum of ${spec.max}${unlimited}`;
+      }
     }
     return undefined;
   }
@@ -432,9 +456,16 @@ class ArkimeConfig {
   static #validateSettings () {
     const errors = [];
 
-    for (const [key, spec] of Object.entries(ArkimeConfig.#VALIDATED)) {
-      const error = ArkimeConfig.#validateSetting(key, spec);
+    for (const [key, spec] of Object.entries(ArkimeConfig.#SETTINGS)) {
+      if (spec.type === undefined) { continue; } // secret only, nothing to check
+      let error = ArkimeConfig.#validateSetting(key, spec);
       if (error) { errors.push(error); }
+      // sections aren't part of the default section chain, so a broken
+      // override there would otherwise silently start
+      for (const section of spec.sections ?? []) {
+        error = ArkimeConfig.#validateSetting(key, spec, section);
+        if (error) { errors.push(error); }
+      }
     }
 
     if (errors.length === 0) { return; }
@@ -831,5 +862,18 @@ class ConfigHttp {
 }
 ArkimeConfig.registerScheme('http', ConfigHttp);
 ArkimeConfig.registerScheme('https', ConfigHttp);
+
+// The elasticsearch connection is spread over arkimeUtil, every app's db layer
+// and the cli tools, with no one module owning it, so it is registered here
+// instead of by each of the four apps
+ArkimeConfig.registerSettings({
+  elasticsearchAPIKey: { secret: true },
+  elasticsearchBasicAuth: { secret: true },
+  esClientKeyPass: { secret: true },
+  usersElasticsearchAPIKey: { secret: true },
+  usersElasticsearchBasicAuth: { secret: true },
+  elasticsearch: { type: 'urls' },
+  usersElasticsearch: { type: 'urls' }
+});
 
 module.exports = ArkimeConfig;

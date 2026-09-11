@@ -1174,8 +1174,6 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
-  ArkimeConfig.registerSecrets(['usersElasticsearchAPIKey', 'usersElasticsearchBasicAuth']);
-
   ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
   Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
 
@@ -2255,11 +2253,6 @@ app.use((req, res, next) => {
 // MAIN
 // ----------------------------------------------------------------------------
 async function main () {
-  ArkimeConfig.registerValidated({
-    elasticsearch: { type: 'urls' },
-    usersElasticsearch: { type: 'urls' }
-  });
-
   try {
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/parliament.ini`,

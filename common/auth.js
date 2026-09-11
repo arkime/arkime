@@ -1613,9 +1613,10 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
-ArkimeConfig.registerSecrets(['passwordSecret', 'serverSecret']);
-
-ArkimeConfig.registerValidated({
+ArkimeConfig.registerSettings({
+  passwordSecret: { secret: true },
+  serverSecret: { secret: true },
+  authClientSecret: { secret: true },
   userAuthIps: { type: 'cidrs' },
   // A non numeric skew becomes NaN, and jose compares exp against NaN, which is
   // always false - so an expired token would verify forever

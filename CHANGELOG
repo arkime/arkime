@@ -63,6 +63,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - The _flipSrcDst rule op used to only swap the ips and ports, leaving the rest of the session pointing the old way.
           It now also swaps the per-direction data: packets, bytes, databytes, payload8, mac, oui, dscp, ttl,
           tcp seq/state tracking and zero window counts, so flipped sessions are saved self consistent
+  - More settings are validated at startup, so a value that used to be silently ignored now refuses to start. Booleans
+          must be true or false (not 0, 1 or False), rotateIndex must be one capture accepts, freeSpaceG must be a
+          number or a percentage, and the hunt/tshark limits, timeouts and ports must be numbers in range
 ## Release
   - #4253 Node 24.21.0
 ## All
