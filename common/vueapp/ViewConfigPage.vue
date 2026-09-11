@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <div
       class="arkime-container-fluid"
-      :style="{ marginTop: `${titlebarHeight + (needTotp ? 0 : 50)}px` }">
+      :style="{ marginTop: `${titlebarHeight + (needTotp ? 0 : 48)}px` }">
       <!-- error -->
       <div
         v-if="error"

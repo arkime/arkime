@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
               cols="auto"
               class="d-flex align-center">
               <arkime-paging
+                v-if="files"
                 :records-total="recordsTotal"
                 :records-filtered="recordsFiltered"
                 @change-paging="changePaging"

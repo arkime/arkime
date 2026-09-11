@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
             @change-search="loadSummary" />
 
           <!-- toolbar row -->
-          <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav">
+          <div class="d-flex justify-start align-center ms-2 gap-2 page-subnav page-subnav--tall">
             <!-- chart color palette -->
             <v-menu>
               <template #activator="{ props }">

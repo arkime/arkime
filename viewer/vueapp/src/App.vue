@@ -360,6 +360,12 @@ body {
   min-height: 48px;
   padding-block: 8px;
 }
+/* …or when the row's own controls are already 44px tall (e.g. size="large"
+   buttons on Arkime/Spiview) -- they already fill the band exactly, so the
+   breathing room meant for 32px controls would only push the band taller. */
+.page-shell .page-subnav.page-subnav--tall {
+  padding-block: 0;
+}
 
 /* page tab strip: a chrome row of pill tabs below the search toolbar, in its
    own tinted band. Lives outside the collapsible so the tabs stay visible when
@@ -422,6 +428,11 @@ body {
 .page-tab-strip .v-btn .v-icon {
   font-size: 15px;
   margin-inline-end: 6px;
+}
+/* the icon+label content sits a hair high relative to its own baseline inside
+   the pill -- independent of how the pill itself is centered in the band */
+.page-tab-strip .v-btn .v-btn__content {
+  transform: translateY(-1px);
 }
 /* +/- collapse indicator for section headers: mark the header `.collapsed`
    when shut and give it a `.when-opened` (mdi-minus) / `.when-closed`
