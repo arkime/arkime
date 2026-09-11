@@ -407,7 +407,7 @@ class MCPViewerAPIs {
         name: 'arkime_remove_tags',
         title: 'Untag sessions',
         description: 'Remove one or more tags from sessions. Tags only: this does NOT modify packet data, does NOT delete or scrub sessions, and does NOT change any other session field.',
-        annotations: { readOnlyHint: false, destructiveHint: false },
+        annotations: { readOnlyHint: false, destructiveHint: true },
         inputSchema: sessionQuerySchema({
           tags: { type: 'string', description: 'Comma separated tags to remove.' },
           ids: { type: 'string', description: 'Optional comma separated session ids. When omitted, every session matching the expression is untagged.' }
