@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <template #chrome>
       <ArkimeCollapsible>
         <div class="page-toolbar">
-          <v-row class="g-1 featherprint-form px-1 pt-2 pb-1 align-center justify-start page-subnav">
+          <v-row class="g-1 featherprint-form px-1 align-center justify-start page-subnav page-subnav--primary">
             <!-- tracked: name/ip/mac filter -->
             <v-col v-if="section === 'tracked'">
               <div class="arkime-input-group arkime-input-group--fluid">
@@ -974,10 +974,6 @@ export default {
 .featherprint-form {
   z-index: 6;
   background-color: rgb(var(--v-theme-secondary-lightest));
-  /* reserve a constant height so the tab strip below doesn't shift as the
-     toolbar swaps controls between tabs (alerts adds a select, lookup a
-     full input + select + button) */
-  min-height: 52px;
 }
 
 /* expanded detail row: tinted like the session detail row so it reads as

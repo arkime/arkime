@@ -328,31 +328,70 @@ body {
 }
 
 /* page sub-navbar band: the page-specific control row below the search
-   toolbar — a comfortable fixed-height band with vertically-centered
-   content, matching the Sessions paging bar. */
+   toolbar. Every page's band is the same 44px height with its content
+   vertically centered, so the chrome doesn't jump between tabs. The band
+   owns its own flex/height/padding — pages must not add vertical padding
+   or margins to it (they'd push the content off center). It grows past
+   44px only when the controls genuinely wrap to a second row. */
 .page-shell .page-subnav {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   min-height: 44px;
+  /* exactly fills the band around a 32px control, so a single row lands at
+     44px and a wrapped one keeps the same breathing room top and bottom */
+  padding-block: 6px;
+}
+/* v-row bands carry Vuetify's negative gutter margin, which paints them 4px
+   above the chrome (clipped under the navbar) and 4px past its bottom, and
+   the cols' block padding inflates the row. Strip both so a v-row band lands
+   on exactly the same box as a plain-div one. */
+.page-shell .page-subnav.v-row {
+  margin-block: 0;
+}
+.page-shell .page-subnav.v-row > .v-col {
+  padding-block: 0;
+}
+/* …except when the band is the page's FIRST chrome row — sitting directly
+   under the navbar with no search toolbar above it. Those match the taller
+   48px band <arkime-search> and .sub-navbar use, so the row under the navbar
+   is the same height on every tab. */
+.page-shell .page-subnav.page-subnav--primary {
+  min-height: 48px;
+  padding-block: 8px;
+}
+/* …or when the row's own controls are already 44px tall (e.g. size="large"
+   buttons on Arkime/Spiview) -- they already fill the band exactly, so the
+   breathing room meant for 32px controls would only push the band taller. */
+.page-shell .page-subnav.page-subnav--tall {
+  padding-block: 0;
 }
 
 /* page tab strip: a chrome row of pill tabs below the search toolbar, in its
    own tinted band. Lives outside the collapsible so the tabs stay visible when
    the toolbar is collapsed. Same quaternary-lightest tint as the sub-navbars. */
 .page-tab-bar {
-  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
   background-color: rgb(var(--v-theme-quaternary-lightest));
-  border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  /* the tab bar is the last chrome row on the pages that have one, and its
+     opaque background hides .page-toolbar's drop shadow -- carry the shadow
+     here too so the chrome casts onto the content like it does elsewhere.
+     Downward-only (like .sub-navbar) so it doesn't dark-line the band above,
+     and it replaces the hairline border this band used to draw. */
+  box-shadow: 0 8px 16px -8px black;
 }
 /* v-btn-toggle at density="compact" has a baked-in height (~24px) that clips
-   taller children -- pin it to the pill height and let it grow so the active
-   pill isn't cropped. */
+   taller children -- let it size to the pills and centre them, so the strip
+   sits in the middle of the band like every other row of controls. */
 .page-tab-strip {
   background-color: transparent !important;
   border: 0 !important;
   gap: 2px;
   height: auto !important;
-  min-height: 34px !important;
+  align-items: center !important;
   overflow: visible !important;
 }
 /* Strip the button-group chrome (no shared border) so the tabs read as a nav
@@ -370,7 +409,6 @@ body {
   border: 0 !important;
   color: rgb(var(--v-theme-foreground)) !important;
   opacity: 0.78;
-  transform: translateY(3px);
 }
 .page-tab-strip .v-btn:hover {
   background-color: rgb(var(--v-theme-background)) !important;
@@ -387,12 +425,14 @@ body {
   background-color: rgb(var(--v-theme-primary)) !important;
   filter: brightness(1.08);
 }
-.page-tab-strip .v-btn .v-btn__content {
-  transform: translateY(-1px);
-}
 .page-tab-strip .v-btn .v-icon {
   font-size: 15px;
   margin-inline-end: 6px;
+}
+/* the icon+label content sits a hair high relative to its own baseline inside
+   the pill -- independent of how the pill itself is centered in the band */
+.page-tab-strip .v-btn .v-btn__content {
+  transform: translateY(-1px);
 }
 /* +/- collapse indicator for section headers: mark the header `.collapsed`
    when shut and give it a `.when-opened` (mdi-minus) / `.when-closed`

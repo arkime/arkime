@@ -36,7 +36,10 @@ SPDX-License-Identifier: Apache-2.0
         @update:model-value="currentPageUpdated" />
     </div>
 
+    <!-- only once the caller has counts: rendering early flashes
+         "showing all 0" before the first response lands -->
     <div
+      v-if="recordsFiltered !== undefined"
       id="pagingInfo"
       class="arkime-input-group paging-info-wrapper cursor-help">
       <span class="arkime-input-label">
@@ -76,8 +79,17 @@ SPDX-License-Identifier: Apache-2.0
 .paging-wrapper {
   padding: 0 4px;
 }
+/* fill the group vertically and centre at every level: the list items are
+   `display: list-item`, so left alone their buttons sit on a text baseline
+   and ride a few px low in the sub-navbar band */
+.paging-wrapper :deep(.v-pagination),
 .paging-wrapper :deep(.v-pagination__list) {
+  display: flex;
   height: 100%;
+  align-items: center;
+}
+.paging-wrapper :deep(.v-pagination__list > li) {
+  display: flex;
   align-items: center;
 }
 /* Restyle the v-select to match .arkime-input-group -- override
@@ -138,13 +150,15 @@ const props = defineProps({
     type: Number,
     default: 50
   },
+  // left undefined until the caller has counts, so the info label can stay
+  // blank instead of flashing "showing all 0" before the first response
   recordsTotal: {
     type: Number,
-    default: 0
+    default: undefined
   },
   recordsFiltered: {
     type: Number,
-    default: 0
+    default: undefined
   }
 });
 
@@ -163,6 +177,7 @@ const pagingInfoTitle = computed(() => {
 });
 
 const totalPages = computed(() => {
+  if (!props.recordsFiltered) { return 1; }
   return Math.max(1, Math.ceil(props.recordsFiltered / pageLength.value));
 });
 

@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
             :num-matching-sessions="filtered" /> <!-- /search navbar -->
 
           <!-- info navbar -->
-          <div class="d-flex align-center info-nav mx-1 gap-2 page-subnav">
+          <div class="d-flex align-center info-nav mx-1 gap-2 page-subnav page-subnav--tall">
             <div v-if="!dataLoading">
               <!-- field config save button -->
               <v-menu

@@ -331,7 +331,13 @@ pre {
   left: 0;
   right: 0;
   z-index: 100;
-  padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
+  /* same 48px band as the viewer's search bar / first .page-subnav, with the
+     title vertically centered -- symmetric padding, height from min-height,
+     not from the content plus lopsided padding */
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 var(--px-md) 0 13px;
   background-color: rgb(var(--v-theme-secondary-lightest));
   /* drop-shadow only below -- a full all-sides shadow leaks up under
      the primary navbar. */

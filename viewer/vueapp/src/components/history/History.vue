@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <ArkimeCollapsible>
         <div class="page-toolbar">
           <!-- search navbar -->
-          <div class="history-search px-1 pt-2 pb-1 d-flex flex-column gap-2">
+          <div class="history-search px-1 d-flex flex-column justify-center gap-2">
             <!-- search row: cluster + search expression + search button -->
             <div class="d-flex align-center search-row">
               <Clusters />
@@ -103,7 +103,7 @@ SPDX-License-Identifier: Apache-2.0
               :records-filtered="recordsFiltered"
               @change-paging="changePaging" />
             <arkime-toast
-              class="ms-2 mb-3 mt-1 d-inline"
+              class="ms-2 d-inline"
               :message="msg"
               :type="msgType"
               :done="messageDone" />
@@ -439,9 +439,9 @@ export default {
     return {
       error: '',
       loading: false,
-      history: {},
-      recordsTotal: 0,
-      recordsFiltered: 0,
+      history: undefined, // undefined until loaded; [] once loaded and empty
+      recordsTotal: undefined,
+      recordsFiltered: undefined,
       expandedLogs: { change: false },
       colSpan: 8,
       filters: {},
@@ -628,7 +628,7 @@ export default {
     /* helper functions ------------------------------------------ */
     loadData: function () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
-        this.history = {};
+        this.history = [];
         return;
       }
 
@@ -682,6 +682,8 @@ export default {
 <style scoped>
 /* navbar styles ------------------- */
 .history-page .history-search {
+  /* same 48px band as <arkime-search> on the other pages */
+  min-height: 48px;
   z-index: 5;
   border: none;
   background-color: rgb(var(--v-theme-secondary-lightest));
@@ -701,11 +703,9 @@ export default {
   height: 32px;
 }
 
-/* navbar with pagination */
+/* navbar with pagination -- sizing/centering comes from .page-subnav */
 .history-page .history-paging {
   z-index: 4;
-  display: flex;
-  align-items: center;
 }
 
 .history-page .history-table {

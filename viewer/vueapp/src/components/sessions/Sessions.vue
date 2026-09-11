@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             @set-columns="loadColumns" /> <!-- /search navbar -->
 
           <!-- paging navbar -->
-          <div class="d-flex justify-start align-center paging-navbar">
+          <div class="d-flex justify-start align-center px-1 page-subnav">
             <arkime-paging
               :records-total="sessions.recordsTotal"
               :records-filtered="sessions.recordsFiltered"
@@ -2408,12 +2408,6 @@ table.sessions-table thead tr th.sessions-options-cell {
 </style>
 
 <style scoped>
-/* paging sub-navbar: fixed band height, controls centered within it */
-.paging-navbar {
-  height: 44px;
-  padding: 0 4px;
-}
-
 .sessions-content {
   min-height: 500px;
 }

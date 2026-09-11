@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
             dense
             align="center"
             justify="start"
-            class="px-1 pt-2 pb-1 page-subnav">
+            class="px-1 page-subnav page-subnav--primary">
             <v-col cols="auto">
               <h4 class="mb-0">
                 {{ $t('navigation.featherprintadmin') }}

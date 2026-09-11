@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <ArkimeCollapsible>
         <div class="page-toolbar">
           <!-- stats sub navbar -->
-          <v-row class="g-1 stats-form px-1 pt-2 pb-1 align-center justify-start page-subnav">
+          <v-row class="g-1 stats-form px-1 align-center justify-start page-subnav page-subnav--primary">
             <v-col
               cols="auto"
               class="flex-grow-1">
@@ -960,9 +960,6 @@ export default {
 .stats-form {
   z-index : 6;
   background-color: rgb(var(--v-theme-secondary-lightest));
-  /* reserve a constant height so the tab strip below doesn't shift as sub-tabs
-     show different controls (Capture Graphs has fewer/shorter ones) */
-  min-height: 52px;
 }
 
 /* Vuetify pins compact button groups to a fixed height

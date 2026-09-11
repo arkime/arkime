@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 v-if="spiGraphType === 'connections'"
                 id="connections-controls-anchor"
-                class="connections-controls-anchor d-flex flex-wrap align-center gap-1 mt-1 mb-1" />
+                class="connections-controls-anchor d-flex flex-wrap align-center gap-1" />
 
               <!-- intensity select (heatmap only) -->
               <div
@@ -175,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 v-if="['pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
                 id="spigraph-subfield-anchor"
-                class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1 mt-1" />
+                class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1" />
             </div>
           </div>
         </div>
@@ -736,14 +736,9 @@ export default {
   text-transform: none;
   letter-spacing: normal;
 }
-/* symmetric band padding: even spacing for single-row vs multi-row subnavs */
-.spigraph-page .page-subnav {
-  padding-block: 6px;
-}
 /* "add another field" on its own row: full-width forces a flex-wrap break */
 .spigraph-page .spigraph-subfield-anchor {
   flex: 1 0 100%;
-  padding-bottom: 6px;
 }
 
 /* field typeahead */
