@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     </template>
     <template v-else>
       <slot>
-        Integration Views
+        {{ $t('cont3xt.views.integrationViews') }}
       </slot>
     </template>
     <span v-if="showSelectedView && getSelectedView">
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                       icon="mdi-share"
                       class="me-1 cursor-help"
                       v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
-                      v-tooltip="`Shared with you by ${view.creator}`" />
+                      v-tooltip="$t('common.sharedTip', { creator: view.creator })" />
                     <span class="ellipsis no-overflow">
                       {{ view.name }}
                     </span>
@@ -72,8 +72,8 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="warning"
-                        v-tooltip="'Cancel'"
-                        title="Cancel"
+                        v-tooltip="$t('common.cancel')"
+                        :title="$t('common.cancel')"
                         class="float-right ms-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="toggleDeleteView(view._id)">
@@ -85,8 +85,8 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="error"
-                        v-tooltip="'Are you sure?'"
-                        title="Are you sure?"
+                        v-tooltip="$t('common.areYouSure')"
+                        :title="$t('common.areYouSure')"
                         class="float-right ms-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="deleteView(view)">
@@ -100,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
                         color="error"
                         class="float-right ms-1"
                         v-if="!confirmDeleteView[view._id]"
-                        v-tooltip:top="'Delete this view.'"
+                        v-tooltip:top="$t('cont3xt.views.deleteTip')"
                         @click.stop.prevent="toggleDeleteView(view._id)">
                         <v-icon icon="mdi-trash-can" />
                       </v-btn>
@@ -117,10 +117,10 @@ SPDX-License-Identifier: Apache-2.0
               class="small"
               v-if="!getViews.length || !filteredViews.length">
               <template v-if="!getViews.length">
-                No saved views.
+                {{ $t('cont3xt.views.none') }}
               </template>
               <template v-else>
-                No views match your search.
+                {{ $t('cont3xt.views.noMatch') }}
               </template>
             </v-list-item>
             <v-list-item

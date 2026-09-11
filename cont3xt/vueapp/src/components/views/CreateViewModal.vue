@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- header -->
       <template #title>
         <h4 class="mb-0">
-          Create New View
+          {{ $t('cont3xt.views.createNew') }}
         </h4>
       </template> <!-- /header -->
       <!-- form -->
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="closeModal"
             color="warning">
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-alert
             height="40px"
@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="create"
             color="success">
-            Create
+            {{ $t('common.create') }}
           </v-btn>
         </div>
       </template> <!-- /footer -->
@@ -51,6 +51,9 @@ SPDX-License-Identifier: Apache-2.0
 import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps({
   modelValue: {
@@ -97,7 +100,7 @@ function create () {
   error.value = '';
 
   if (!view.value.name) {
-    error.value = 'Name required';
+    error.value = t('cont3xt.views.nameRequired');
     return;
   }
 

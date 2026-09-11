@@ -42,8 +42,8 @@ SPDX-License-Identifier: Apache-2.0
   <h3
     v-else
     class="text-warning">
-    <span v-if="node && node.indicator">No display for {{ node.indicator.itype }}</span>
-    <span v-else>No indicator given</span>
+    <span v-if="node && node.indicator">{{ $t('cont3xt.itypes.noDisplay', { itype: node.indicator.itype }) }}</span>
+    <span v-else>{{ $t('cont3xt.itypes.noIndicator') }}</span>
   </h3>
 </template>
 

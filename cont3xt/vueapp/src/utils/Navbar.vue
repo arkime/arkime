@@ -44,12 +44,12 @@ SPDX-License-Identifier: Apache-2.0
         <span
           v-if="healthError"
           class="me-2 text-medium-emphasis">
-          {{ healthError || 'Network Error' }} - try
+          {{ healthError || $t('errors.networkError') }} - {{ $t('cont3xt.nav.tryTo') }}
           <a
             tabindex="-1"
             @click="reload"
             class="cursor-pointer">
-            reloading the page
+            {{ $t('cont3xt.nav.reloadPage') }}
           </a>
         </span>
 
@@ -104,7 +104,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-tooltip
         activator="parent"
         v-if="getLoading.total">
-        {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }}
+        {{ getLoading.failed > 0
+          ? $t('cont3xt.nav.fetchProgressFailedTip', { received: getLoading.received, total: getLoading.total, failed: getLoading.failed })
+          : $t('cont3xt.nav.fetchProgressTip', { received: getLoading.received, total: getLoading.total }) }}
       </v-tooltip>
     </div>
   </span>

@@ -16,7 +16,9 @@ SPDX-License-Identifier: Apache-2.0
       @click.stop="setAsDefaultOverview"
       :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
       :style="iTypeColorStyleMap[overview.iType]"
-      v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`" />
+      v-tooltip:end="isSetAsDefault
+        ? $t('cont3xt.overviews.defaultForItype', { itype: overview.iType })
+        : $t('cont3xt.overviews.setDefaultForItype', { itype: overview.iType })" />
   </div>
 </template>
 

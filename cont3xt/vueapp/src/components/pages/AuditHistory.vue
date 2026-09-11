@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           color="info"
           size="64"
           indeterminate />
-        <p>Loading history...</p>
+        <p>{{ $t('cont3xt.history.loading') }}</p>
       </div>
     </v-overlay>
     <div class="d-flex flex-row align-center mb-2 mx-4">
@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           v-debounce="val => search = val"
           class="w-100 medium-input"
-          placeholder="Search history by indicator, iType, or tags (case-sensitive)"
+          :placeholder="$t('cont3xt.history.searchPlaceholder')"
           clearable />
       </div>
 
@@ -43,14 +43,14 @@ SPDX-License-Identifier: Apache-2.0
       <v-btn
         class="ms-2 search-row-btn"
         color="primary"
-        v-tooltip="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'"
+        v-tooltip="seeAllTip"
         @click="seeAllChanged"
         v-if="roles.includes('cont3xtAdmin')"
-        :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
+        :title="seeAllTip">
         <v-icon
           class="me-1"
           icon="mdi-account-circle" />
-        See {{ seeAll ? ' MY ' : ' ALL ' }} History
+        {{ seeAll ? $t('cont3xt.history.seeMine') : $t('cont3xt.history.seeAll') }}
       </v-btn>
     </div>
 
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
       v-model:sort-by="sortBy"
       v-model:items-per-page="itemsPerPage"
       @update:options="loadAuditsFromSearch"
-      :no-data-text="(search === '') ? 'There is no history to show for this period' : `There are no entries that match the search '${search}'`">
+      :no-data-text="(search === '') ? $t('cont3xt.history.none') : $t('cont3xt.history.noMatch', { search })">
       <!-- customize set-width columns -->
       <template #colgroup="scope">
         <col
@@ -85,8 +85,8 @@ SPDX-License-Identifier: Apache-2.0
           class="mini-table-button me-1"
           color="warning"
           variant="outlined"
-          v-tooltip:top.close-on-content-click="'Delete history item'"
-          title="Delete history item">
+          v-tooltip:top.close-on-content-click="$t('cont3xt.history.deleteTip')"
+          :title="$t('cont3xt.history.deleteTip')">
           <v-icon icon="mdi-trash-can" />
         </v-btn>
         <v-btn
@@ -96,8 +96,8 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           class="mini-table-button"
           color="success"
-          v-tooltip:top.close-on-content-click="'Repeat search'"
-          title="Repeat search">
+          v-tooltip:top.close-on-content-click="$t('cont3xt.history.repeatTip')"
+          :title="$t('cont3xt.history.repeatTip')">
           <v-icon icon="mdi-open-in-new" />
         </v-btn>
       </template>
@@ -157,6 +157,9 @@ import { useRouter, useRoute } from 'vue-router';
 import { paramStr } from '@/utils/paramStr';
 import { ref, computed, watch } from 'vue';
 import { useGetters } from '@/vue3-helpers';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const store = useStore();
 const router = useRouter();
@@ -187,7 +190,7 @@ const headers = computed(() => {
       sortable: false
     },
     {
-      title: 'Time',
+      title: t('cont3xt.history.colTime'),
       key: 'issuedAt',
       value: format('issuedAt', reDateString),
       setWidth: '12rem',
@@ -196,41 +199,41 @@ const headers = computed(() => {
     },
     ...(showUserIds
       ? [{
-        title: 'User ID',
+        title: t('cont3xt.history.colUserId'),
         key: 'userId',
         setWidth: '5rem'
       }]
       : []),
     {
-      title: 'iType',
+      title: t('cont3xt.history.colItype'),
       key: 'iType',
       setWidth: '5rem'
     },
     {
-      title: 'Indicator',
+      title: t('cont3xt.history.colIndicator'),
       key: 'indicator',
       setWidth: '30rem'
     },
     {
-      title: 'Tags',
+      title: t('cont3xt.history.colTags'),
       key: 'tags',
       sortable: false
     },
     {
-      title: 'View',
+      title: t('cont3xt.history.colView'),
       key: 'viewId',
       setWidth: '8rem',
       sortable: false
     },
     {
-      title: 'Results',
+      title: t('cont3xt.history.colResults'),
       key: 'resultCount',
       setWidth: '4rem',
       tdClass: 'text-end',
       value: format('resultCount', orQuestionMark)
     },
     {
-      title: 'Took',
+      title: t('cont3xt.history.colTook'),
       key: 'took',
       setWidth: '4rem',
       cellProps: { class: 'text-end' },
@@ -251,10 +254,10 @@ const timeRangeInfo = ref({
   stopMs: Date.now() // now
 });
 const lastTimeRangeInfoSearched = ref(null);
-const timePlaceHolderTip = ref({
-  title: 'These values specify the date range searched.<br>' +
-      'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
-});
+const timePlaceHolderTip = computed(() => ({ title: t('cont3xt.history.timeTipHtml') }));
+const seeAllTip = computed(() => seeAll.value
+  ? t('cont3xt.history.seeMineTip')
+  : t('cont3xt.history.seeAllTip'));
 const sortBy = ref([{ key: 'issuedAt', order: 'desc' }]);
 const search = ref('');
 const page = ref(1);

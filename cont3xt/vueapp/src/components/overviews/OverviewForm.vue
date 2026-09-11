@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
   <v-form v-else>
     <v-text-field
       class="mb-3"
-      label="Card Name"
+      :label="$t('cont3xt.overviews.cardName')"
       trim
       required
       autofocus
@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <v-text-field
       class="mb-3"
-      label="Card Title"
+      :label="$t('cont3xt.overviews.cardTitle')"
       trim
       required
       autofocus
@@ -54,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
       :rules="[isDefaultOverview ? true : iTypes.includes(localOverview.iType)]"
       :disabled="isDefaultOverview"
       @update:model-value="updateOverview"
-      label="iType">
+      :label="$t('cont3xt.overviews.itype')">
       <template #append-inner>
         <v-icon
           icon="mdi-information"
@@ -66,28 +66,28 @@ SPDX-License-Identifier: Apache-2.0
     <!-- overview roles -->
     <RoleDropdown
       :roles="getRoles"
-      display-text="Who Can View"
+      :display-text="$t('cont3xt.whoCanView')"
       class="me-1"
       :selected-roles="localOverview.viewRoles"
       @selected-roles-updated="updateViewRoles"
       :disabled="isDefaultOverview" />
     <RoleDropdown
       :roles="getRoles"
-      display-text="Who Can Edit"
+      :display-text="$t('cont3xt.whoCanEdit')"
       :selected-roles="localOverview.editRoles"
       @selected-roles-updated="updateEditRoles" />
     <v-icon
       size="large"
       icon="mdi-information"
       class="cursor-help ms-2 me-1"
-      v-tooltip="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'" />
+      v-tooltip="$t('cont3xt.overviews.rolesTip')" />
     <span v-if="!localOverview.creator || (getUser && localOverview.creator === getUser.userId)">
-      As the creator, you can always view and edit your overviews.
+      {{ $t('cont3xt.overviews.creatorNote') }}
     </span>
     <div
       class="mt-2"
       v-if="localOverview.creator">
-      Created by
+      {{ $t('cont3xt.createdBy') }}
       <span class="text-info">
         {{ localOverview.creator }}
       </span>
@@ -100,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
       color="primary"
       class="mt-4 w-100"
       @click="prependFieldRef">
-      Add Field
+      {{ $t('cont3xt.overviews.addField') }}
     </v-btn>
     <drag-update-list
       class="d-flex flex-column ga-3 mt-3"
@@ -124,7 +124,7 @@ SPDX-License-Identifier: Apache-2.0
               :opened="fieldRef.expanded"
               :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}" />
             <v-select
-              label="Source"
+              :label="$t('cont3xt.overviews.source')"
               trim
               :value="fieldRef.from"
               :dirty="!!fieldRef.from"
@@ -140,9 +140,9 @@ SPDX-License-Identifier: Apache-2.0
             </v-select>
             <v-select
               class="ms-2 flex-grow-1"
-              label="Field"
+              :label="$t('cont3xt.overviews.field')"
               trim
-              no-data-text="For field options, select a valid source"
+              :no-data-text="$t('cont3xt.overviews.noFieldOptions')"
               :value="getField(fieldRef)"
               :dirty="!!getField(fieldRef)"
               :disabled="!fieldRef.from"
@@ -159,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-text-field
               v-if="!isCustom(fieldRef)"
               class="ms-2"
-              label="Label"
+              :label="$t('cont3xt.overviews.label')"
               trim
               v-model="fieldRef.alias"
               @input="updateOverview">
@@ -175,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
               color="primary"
               size="small"
               class="ms-2"
-              v-tooltip="'Actions'" />
+              v-tooltip="$t('cont3xt.overviews.actions')" />
           </v-form>
           <template v-if="fieldRef.expanded">
             <textarea
@@ -202,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
       color="primary"
       class="mt-4 w-100"
       @click="appendFieldRef">
-      Add Field
+      {{ $t('cont3xt.overviews.addField') }}
     </v-btn>
   </v-form>
 </template>
@@ -251,29 +251,29 @@ export default {
       localOverview: JSON.parse(JSON.stringify(this.modifiedOverview)),
       confirmDelete: false,
       rawEditText: undefined,
-      nameTip: {
-        title: 'This name will be used to identify this overview in the Overview Selector and will be viewable by those you share this with.'
-      },
-      titleTip: {
-        title: 'Set the title to display for this card. <code>%{query}</code> will be replaced by the queried indicator.'
-      },
-      iTypeTip: {
-        title: 'The indicator type to display this overview for... Can be either: <code>domain</code>, <code>ip</code>, <code>url</code>, <code>email</code>, <code>phone</code>, <code>hash</code>, or <code>text</code>.'
-      },
-      fieldRefFromTip: {
-        title: 'Select the <code>name</code> of the Integration you would like to show a field from.'
-      },
-      fieldRefFieldTip: {
-        title: 'Select the <code>label</code> of the field you would like to show from the given Integration, or <code>Custom</code> to make your own.'
-      },
-      fieldRefAliasTip: {
-        title: 'Optionally, change the label that will be displayed with this field.'
-      },
       iTypes
     };
   },
   computed: {
     ...mapGetters(['getIntegrations', 'getRoles', 'getUser']),
+    nameTip () {
+      return { title: this.$t('cont3xt.overviews.nameTipHtml') };
+    },
+    titleTip () {
+      return { title: this.$t('cont3xt.overviews.titleTipHtml') };
+    },
+    iTypeTip () {
+      return { title: this.$t('cont3xt.overviews.itypeTipHtml') };
+    },
+    fieldRefFromTip () {
+      return { title: this.$t('cont3xt.overviews.fieldFromTipHtml') };
+    },
+    fieldRefFieldTip () {
+      return { title: this.$t('cont3xt.overviews.fieldTipHtml') };
+    },
+    fieldRefAliasTip () {
+      return { title: this.$t('cont3xt.overviews.fieldAliasTipHtml') };
+    },
     sourceOptions () {
       const sources = Object.keys(this.getIntegrations);
       sources.sort();
@@ -310,7 +310,7 @@ export default {
             this.updateOverview();
           } catch (err) {
             console.warn('Invalid JSON for raw overview', err);
-            this.$store.commit('SET_OVERVIEWS_ERROR', 'Invalid JSON');
+            this.$store.commit('SET_OVERVIEWS_ERROR', this.$t('cont3xt.invalidJson'));
           }
           // clear rawEditText to be parsed again if rawEditMode triggered
           this.rawEditText = undefined;
@@ -344,22 +344,22 @@ export default {
     createFieldActions (i) {
       return [
         {
-          text: 'Push to the TOP',
+          text: this.$t('cont3xt.overviews.pushTop'),
           icon: 'mdi-arrow-up-circle',
           action: () => this.sendToTop(i)
         },
         {
-          text: 'Push to the BOTTOM',
+          text: this.$t('cont3xt.overviews.pushBottom'),
           icon: 'mdi-arrow-down-circle',
           action: () => this.sendToBottom(i)
         },
         {
-          text: 'Add a field after this one',
+          text: this.$t('cont3xt.overviews.addFieldAfter'),
           icon: 'mdi-plus-circle',
           action: () => this.insertFieldRef(i + 1)
         },
         {
-          text: 'Remove this field',
+          text: this.$t('cont3xt.overviews.removeField'),
           icon: 'mdi-close-circle',
           action: () => this.deleteFieldRef(i)
         }
@@ -435,7 +435,7 @@ export default {
         fieldRef.custom = JSON.parse(fieldRef._customRawEdit);
         delete fieldRef._error;
       } catch (err) {
-        fieldRef._error = 'ERROR: Invalid JSON';
+        fieldRef._error = this.$t('cont3xt.overviews.invalidJsonError');
       }
       this.updateOverview();
     },
@@ -504,7 +504,7 @@ export default {
         });
       } catch (err) {
         console.warn('Invalid JSON for raw overview', err);
-        this.$store.commit('SET_OVERVIEWS_ERROR', 'Invalid JSON');
+        this.$store.commit('SET_OVERVIEWS_ERROR', this.$t('cont3xt.invalidJson'));
       }
     }
   }

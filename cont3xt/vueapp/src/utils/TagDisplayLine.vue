@@ -11,14 +11,14 @@ SPDX-License-Identifier: Apache-2.0
       variant="tonal"
       tabindex="0"
       @click="clearTags"
-      title="Clear tags"
+      :title="$t('cont3xt.tags.clearTip')"
       class="border-0 px-1 py-0 ma-0 btn-revert-size"
       id="clear-tags"
       v-if="tags.length > 0">
       <v-tooltip
         activator="#clear-tags"
         location="top">
-        Clear tags
+        {{ $t('cont3xt.tags.clearTip') }}
       </v-tooltip>
       <v-icon icon="mdi-trash-can" />
     </v-btn>
@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           size="x-small"
           @click="removeTag(index)"
-          title="Remove tag"
+          :title="$t('cont3xt.tags.removeTip')"
           class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width">
           <v-icon
             icon="mdi-close"
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
         id="off-screen-counter"
         class="rounded ps-1 ms-1 bold no-wrap cursor-help"
         :class="{ invisible: tagsOffScreen <= 0 }">
-        <span>+ {{ tagsOffScreen }} more</span>
+        <span>{{ $t('cont3xt.tags.moreCount', { count: tagsOffScreen }) }}</span>
         <interactive-tooltip
           v-if="!(tagsOffScreen <= 0 && !checkInProgress)"
           target="off-screen-counter"
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
                   variant="text"
                   tabindex="0"
                   @click="removeTag(index)"
-                  title="Remove tag"
+                  :title="$t('cont3xt.tags.removeTip')"
                   class="bg-error border-0 px-1 py-0 ma-0">
                   <v-icon
                     icon="mdi-close"

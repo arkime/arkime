@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
           @click.stop="toggleCollapse">
           <v-icon
             icon="mdi-plus"
-            size="large" /> {{ children.length }} hidden
+            size="large" /> {{ $t('cont3xt.itypes.hiddenCount', children.length) }}
         </cont3xt-card>
       </template>
       <template v-else>

@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-icon
           icon="mdi-cog"
           class="me-1" />
-        <span>Cont3xt Settings</span>
+        <span>{{ $t('cont3xt.settings.title') }}</span>
       </span>
     </div> <!-- /sub navbar -->
 
@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             :active="visibleTab === 'views'">
             <span>
-              <v-icon icon="mdi-eye mdi-fw" />Views
+              <v-icon icon="mdi-eye mdi-fw" />{{ $t('cont3xt.settings.views') }}
             </span>
             <v-btn
               size="x-small"
@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               v-if="visibleTab === 'views'"
               @click.stop.prevent="openViewForm"
-              v-tooltip="'Create a new view'">
+              v-tooltip="$t('cont3xt.settings.newViewTip')">
               <v-icon icon="mdi-plus-circle" />
             </v-btn>
           </v-btn>
@@ -55,7 +55,7 @@ SPDX-License-Identifier: Apache-2.0
             color="primary"
             variant="text"
             :active="visibleTab === 'integrations'">
-            <v-icon icon="mdi-key mdi-fw" />Integrations
+            <v-icon icon="mdi-key mdi-fw" />{{ $t('cont3xt.settings.integrations') }}
           </v-btn>
           <v-btn
             @click="openView('overviews')"
@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             :active="visibleTab === 'overviews'">
             <span>
-              <v-icon icon="mdi-file mdi-fw" />Overviews
+              <v-icon icon="mdi-file mdi-fw" />{{ $t('cont3xt.settings.overviews') }}
             </span>
             <v-btn
               size="x-small"
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               v-if="visibleTab === 'overviews'"
               @click.stop.prevent="openOverviewForm"
-              v-tooltip="'Create a new overview'">
+              v-tooltip="$t('cont3xt.settings.newOverviewTip')">
               <v-icon icon="mdi-plus-circle" />
             </v-btn>
           </v-btn>
@@ -108,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             :active="visibleTab === 'linkgroups'">
             <span>
-              <v-icon icon="mdi-link mdi-fw" />Link Groups
+              <v-icon icon="mdi-link mdi-fw" />{{ $t('cont3xt.settings.linkGroups') }}
             </span>
             <v-btn
               size="x-small"
@@ -116,7 +116,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               v-if="visibleTab === 'linkgroups'"
               @click.stop.prevent="openLinkGroupForm"
-              v-tooltip="'Create a new link group'">
+              v-tooltip="$t('cont3xt.settings.newLinkGroupTip')">
               <v-icon icon="mdi-plus-circle" />
             </v-btn>
           </v-btn>
@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
                   :id="`${lg._id}-tt`"
                   class="drag-handle me-2" />
                 <id-tooltip :target="`${lg._id}-tt`">
-                  Drag &amp; drop to reorder Link Groups
+                  {{ $t('cont3xt.linkPanel.dragReorderTip') }}
                 </id-tooltip>
                 {{ lg.name }}
               </v-btn>
@@ -156,7 +156,7 @@ SPDX-License-Identifier: Apache-2.0
             color="primary"
             variant="text"
             :active="visibleTab === 'password'">
-            <v-icon icon="mdi-lock mdi-fw" />Password
+            <v-icon icon="mdi-lock mdi-fw" />{{ $t('cont3xt.settings.password') }}
           </v-btn>
           <v-btn
             @click="openView('themes')"
@@ -165,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
             color="primary"
             variant="text"
             :active="visibleTab === 'themes'">
-            <v-icon icon="mdi-brush mdi-fw" />Themes
+            <v-icon icon="mdi-brush mdi-fw" />{{ $t('cont3xt.settings.themes') }}
           </v-btn>
         </div>
       </v-col>
@@ -183,7 +183,7 @@ SPDX-License-Identifier: Apache-2.0
           <create-view-modal v-model="viewModalOpen" />
           <div class="me-3 w-100 d-flex justify-space-between align-center">
             <h1>
-              Views
+              {{ $t('cont3xt.settings.views') }}
             </h1>
             <v-text-field
               class="ms-4 me-2 flex-grow-1 medium-input"
@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-icon
                 icon="mdi-plus-circle"
                 class="me-1" />
-              New View
+              {{ $t('cont3xt.settings.newView') }}
             </v-btn>
 
             <v-btn
@@ -208,13 +208,13 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               flat
               @click="seeAllViews = !seeAllViews; seeAllViewsChanged()"
-              v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
+              v-tooltip="seeAllViewsTip"
               v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
+              :title="seeAllViewsTip">
               <v-icon
                 class="me-1"
                 icon="mdi-account-circle" />
-              See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
+              {{ seeAllViews ? $t('cont3xt.settings.seeMineViews') : $t('cont3xt.settings.seeAllViews') }}
             </v-btn>
           </div>
           <div class="d-flex flex-wrap">
@@ -223,12 +223,12 @@ SPDX-License-Identifier: Apache-2.0
               class="row lead mt-4"
               v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
               <div class="col">
-                No Views are configured or shared for you to edit.
+                {{ $t('cont3xt.settings.noViews') }}
                 <v-btn
                   variant="text"
                   color="primary"
                   @click="openViewForm">
-                  Create one!
+                  {{ $t('cont3xt.createOne') }}
                 </v-btn>
               </div>
             </div> <!-- /no views -->
@@ -237,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
               class="row lead mt-4"
               v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
               <div class="col">
-                No Views match your search.
+                {{ $t('cont3xt.settings.noViewsMatch') }}
               </div>
             </div> <!-- /no view results -->
             <!-- views -->
@@ -257,8 +257,8 @@ SPDX-License-Identifier: Apache-2.0
                           <v-btn
                             size="small"
                             color="primary"
-                            v-tooltip="'Transfer ownership of this view'"
-                            title="Transfer ownership of this view"
+                            v-tooltip="$t('cont3xt.views.transferTip')"
+                            :title="$t('cont3xt.views.transferTip')"
                             v-if="canTransferView(view)"
                             @click="openTransferResource(view)">
                             <v-icon icon="mdi-share" />
@@ -269,7 +269,7 @@ SPDX-License-Identifier: Apache-2.0
                               size="small"
                               color="error"
                               v-if="!confirmDeleteView[view._id]"
-                              v-tooltip:top="'Delete this view.'"
+                              v-tooltip:top="$t('cont3xt.views.deleteTip')"
                               @click.stop.prevent="toggleDeleteView(view._id)">
                               <v-icon icon="mdi-trash-can" />
                             </v-btn>
@@ -279,8 +279,8 @@ SPDX-License-Identifier: Apache-2.0
                             <v-btn
                               size="small"
                               color="warning"
-                              v-tooltip="'Cancel'"
-                              title="Cancel"
+                              v-tooltip="$t('common.cancel')"
+                              :title="$t('common.cancel')"
                               v-if="confirmDeleteView[view._id]"
                               @click.stop.prevent="toggleDeleteView(view._id)">
                               <v-icon icon="mdi-cancel" />
@@ -291,8 +291,8 @@ SPDX-License-Identifier: Apache-2.0
                             <v-btn
                               size="small"
                               color="error"
-                              v-tooltip="'Are you sure?'"
-                              title="Are you sure?"
+                              v-tooltip="$t('common.areYouSure')"
+                              :title="$t('common.areYouSure')"
                               v-if="confirmDeleteView[view._id]"
                               @click.stop.prevent="deleteView(view)">
                               <v-icon icon="mdi-check-bold" />
@@ -307,7 +307,7 @@ SPDX-License-Identifier: Apache-2.0
                           <v-icon
                             icon="mdi-check-bold"
                             class="me-2" />
-                          Saved!
+                          {{ $t('cont3xt.settings.saved') }}
                         </v-alert>
                         <v-alert
                           color="error"
@@ -317,7 +317,7 @@ SPDX-License-Identifier: Apache-2.0
                           <v-icon
                             icon="mdi-alert"
                             class="me-2" />
-                          Error!
+                          {{ $t('cont3xt.settings.errored') }}
                         </v-alert>
                         <div class="d-flex ga-1">
                           <transition name="buttons">
@@ -326,7 +326,7 @@ SPDX-License-Identifier: Apache-2.0
                               size="small"
                               color="warning"
                               @click="cancelUpdateView(view)"
-                              v-tooltip="'Cancel changes to this view'">
+                              v-tooltip="$t('cont3xt.views.cancelChangesTip')">
                               <v-icon icon="mdi-cancel" />
                             </v-btn>
                           </transition>
@@ -336,7 +336,7 @@ SPDX-License-Identifier: Apache-2.0
                               size="small"
                               color="success"
                               @click="saveView(view)"
-                              v-tooltip="'Save this view'">
+                              v-tooltip="$t('cont3xt.views.saveTip')">
                               <v-icon icon="mdi-content-save" />
                             </v-btn>
                           </transition>
@@ -358,7 +358,7 @@ SPDX-License-Identifier: Apache-2.0
         <div v-if="visibleTab === 'integrations'">
           <div class="ms-2 me-3 w-100 d-flex justify-space-between align-center">
             <h1>
-              Integrations
+              {{ $t('cont3xt.settings.integrations') }}
             </h1>
             <v-text-field
               autofocus
@@ -368,7 +368,7 @@ SPDX-License-Identifier: Apache-2.0
               density="compact"
               hide-details
               v-debounce="updateIntegrationSearchTerm"
-              placeholder="Search integrations"
+              :placeholder="$t('cont3xt.settings.searchIntegrations')"
               clearable />
             <div class="me-3 no-wrap">
               <v-btn
@@ -379,7 +379,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-icon
                   icon="mdi-pencil-box"
                   class="me-2" />
-                Raw Edit
+                {{ $t('cont3xt.settings.rawEdit') }}
               </v-btn>
               <v-btn
                 variant="outlined"
@@ -388,7 +388,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-icon
                   icon="mdi-content-save"
                   class="me-2" />
-                Save
+                {{ $t('common.save') }}
               </v-btn>
             </div>
           </div>
@@ -418,7 +418,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="lead ms-2 mt-4"
               v-if="displayedIntegrationRows.length === 0">
-              No integrations match your search.
+              {{ $t('cont3xt.settings.noIntegrationsMatch') }}
             </div>
 
             <!-- integration list -->
@@ -437,7 +437,9 @@ SPDX-License-Identifier: Apache-2.0
                     type="button"
                     class="integration-row__chevron"
                     :aria-expanded="!!expandedIntegrations[key]"
-                    :aria-label="`${expandedIntegrations[key] ? 'Collapse' : 'Expand'} ${key} settings`"
+                    :aria-label="expandedIntegrations[key]
+                      ? $t('cont3xt.settings.collapseIntegrationTip', { name: key })
+                      : $t('cont3xt.settings.expandIntegrationTip', { name: key })"
                     @click.stop="toggleIntegration(key)">
                     <v-icon :icon="expandedIntegrations[key] ? 'mdi-chevron-down' : 'mdi-chevron-right'" />
                   </button>
@@ -481,7 +483,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="integration-row__home"
                     :href="setting.homePage"
                     @click.stop
-                    v-tooltip="`${key} home page`">
+                    v-tooltip="$t('cont3xt.settings.integrationHomeTip', { name: key })">
                     <v-icon icon="mdi-home" />
                   </a>
                   <span
@@ -496,7 +498,7 @@ SPDX-License-Identifier: Apache-2.0
                     <div
                       v-if="Object.keys(setting.settings).length === 0"
                       class="text-medium-emphasis font-italic">
-                      No configurable settings for this integration.
+                      {{ $t('cont3xt.settings.noIntegrationSettings') }}
                     </div>
                     <template
                       v-for="(field, name) in setting.settings"
@@ -559,7 +561,7 @@ SPDX-License-Identifier: Apache-2.0
           <create-overview-modal v-model="overviewModalOpen" />
           <div class="ms-2 me-3 w-100 d-flex flex-row justify-space-between align-center">
             <h1>
-              Overviews
+              {{ $t('cont3xt.settings.overviews') }}
             </h1>
             <div class="d-flex flex-row">
               <v-btn
@@ -567,7 +569,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="primary"
                 @click="openOverviewForm">
                 <v-icon icon="mdi-plus-circle" />
-                New Overview
+                {{ $t('cont3xt.settings.newOverview') }}
               </v-btn>
               <v-btn
                 role="checkbox"
@@ -575,13 +577,13 @@ SPDX-License-Identifier: Apache-2.0
                 color="secondary"
                 flat
                 @click="seeAllOverviews = !seeAllOverviews; seeAllOverviewsChanged()"
-                v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
+                v-tooltip="seeAllOverviewsTip"
                 v-if="roles.includes('cont3xtAdmin')"
-                :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
+                :title="seeAllOverviewsTip">
                 <v-icon
                   class="me-1"
                   icon="mdi-account-circle" />
-                See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
+                {{ seeAllOverviews ? $t('cont3xt.settings.seeMineOverviews') : $t('cont3xt.settings.seeAllOverviews') }}
               </v-btn>
             </div>
           </div>
@@ -610,13 +612,13 @@ SPDX-License-Identifier: Apache-2.0
               v-else
               class="d-flex flex-column">
               <span>
-                No Overviews configured.
+                {{ $t('cont3xt.settings.noOverviews') }}
               </span>
               <v-btn
                 variant="outlined"
                 color="primary"
                 @click="openOverviewForm">
-                Create one!
+                {{ $t('cont3xt.createOne') }}
               </v-btn>
             </div>
           </div>
@@ -629,7 +631,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- link groups -->
           <div class="ms-2 me-3 w-100 d-flex flex-row justify-space-between align-center">
             <h1>
-              Link Groups
+              {{ $t('cont3xt.settings.linkGroups') }}
             </h1>
             <span class="d-flex flex-row">
               <v-btn
@@ -640,7 +642,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-icon
                   icon="mdi-plus-circle"
                   class="me-1" />
-                New Group
+                {{ $t('cont3xt.settings.newLinkGroup') }}
               </v-btn>
               <v-btn
                 role="checkbox"
@@ -648,13 +650,13 @@ SPDX-License-Identifier: Apache-2.0
                 color="secondary"
                 flat
                 @click="seeAllLinkGroups = !seeAllLinkGroups; seeAllLinkGroupsChanged()"
-                v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+                v-tooltip="seeAllLinkGroupsTip"
                 v-if="roles.includes('cont3xtAdmin')"
-                :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
+                :title="seeAllLinkGroupsTip">
                 <v-icon
                   class="me-1"
                   icon="mdi-account-circle" />
-                See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
+                {{ seeAllLinkGroups ? $t('cont3xt.settings.seeMineLinkGroups') : $t('cont3xt.settings.seeAllLinkGroups') }}
               </v-btn>
             </span>
           </div>
@@ -682,12 +684,12 @@ SPDX-License-Identifier: Apache-2.0
             class="row lead mt-4"
             v-if="getLinkGroups && !getLinkGroups.length">
             <div class="col">
-              No Link Groups are configured.
+              {{ $t('cont3xt.settings.noLinkGroups') }}
               <v-btn
                 variant="text"
                 color="primary"
                 @click="openLinkGroupForm">
-                Create one!
+                {{ $t('cont3xt.createOne') }}
               </v-btn>
             </div>
           </div> <!-- /no link groups -->
@@ -696,7 +698,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- password settings -->
         <div v-if="visibleTab === 'password' && !disablePassword">
           <h1>
-            Change Password
+            {{ $t('cont3xt.settings.changePassword') }}
           </h1>
 
           <v-form>
@@ -709,31 +711,31 @@ SPDX-License-Identifier: Apache-2.0
                   type="password"
                   v-model="currentPassword"
                   @keydown.enter="changePassword"
-                  label="Current Password"
-                  placeholder="Enter your current password" />
+                  :label="$t('cont3xt.settings.currentPassword')"
+                  :placeholder="$t('cont3xt.settings.currentPasswordPlaceholder')" />
                 <!-- new password -->
                 <v-text-field
                   class="mt-2"
                   type="password"
                   v-model="newPassword"
                   @keydown.enter="changePassword"
-                  label="New Password"
-                  placeholder="Enter a new password" />
+                  :label="$t('cont3xt.settings.newPassword')"
+                  :placeholder="$t('cont3xt.settings.newPasswordPlaceholder')" />
                 <!-- confirm new password -->
                 <v-text-field
                   class="mt-2"
                   type="password"
                   v-model="confirmNewPassword"
                   @keydown.enter="changePassword"
-                  label="Confirm New Password"
-                  placeholder="Confirm your new password" />
+                  :label="$t('cont3xt.settings.confirmPassword')"
+                  :placeholder="$t('cont3xt.settings.confirmPasswordPlaceholder')" />
                 <!-- change password button -->
                 <v-btn
                   type="button"
                   color="success"
                   class="mt-2"
                   @click="changePassword">
-                  Change Password
+                  {{ $t('cont3xt.settings.changePassword') }}
                 </v-btn>
               </v-col>
             </v-row>
@@ -743,11 +745,10 @@ SPDX-License-Identifier: Apache-2.0
         <!-- theme settings -->
         <div v-if="visibleTab === 'themes'">
           <h1 class="mb-3">
-            Themes
+            {{ $t('cont3xt.settings.themes') }}
           </h1>
           <p class="text-medium-emphasis mb-4">
-            Choose a theme or build your own. Themes are saved to your
-            account and apply across all Arkime apps.
+            {{ $t('cont3xt.settings.themesInfo') }}
           </p>
           <ThemePicker
             :model-value="getTheme"
@@ -800,19 +801,17 @@ import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 let timeout;
 
 // status descriptors for an integration's configuration state (most-actionable first)
+// label/tooltip come from cont3xt.settings.status.* so they follow the locale
 const STATUS_META = {
-  needsKey: { id: 'needsKey', label: 'Needs key', icon: 'mdi-key-alert-outline', color: 'warning', cls: 'text-warning', tooltip: 'This integration requires credentials that have not been configured.' },
-  configured: { id: 'configured', label: 'Configured', icon: 'mdi-check-circle', color: 'success', cls: 'text-success', tooltip: 'Configured with your credentials.' },
-  global: { id: 'global', label: 'Shared account', icon: 'mdi-earth', color: 'info', cls: 'text-info', tooltip: 'Globally configured by your administrator with a shared account. Fill the fields below to override it.' },
-  partial: { id: 'partial', label: 'Partial key', icon: 'mdi-key-alert', color: 'warning', cls: 'text-warning', tooltip: 'You have filled some but not all credential fields. The blank fields fall back to the shared account — complete or clear them.' },
-  optional: { id: 'optional', label: 'Optional key', icon: 'mdi-key-outline', color: 'info', cls: 'text-info', tooltip: 'Works without credentials, but you can add a key for higher limits or more data.' },
-  ready: { id: 'ready', label: 'No key needed', icon: 'mdi-check', color: 'secondary', cls: 'text-medium-emphasis', tooltip: 'Ready to use — no configuration required.' },
-  disabled: { id: 'disabled', label: 'Disabled', icon: 'mdi-cancel', color: 'secondary', cls: 'text-medium-emphasis', tooltip: 'You have disabled this integration. Expand to re-enable it.' },
-  locked: { id: 'locked', label: 'Locked', icon: 'mdi-lock', color: 'secondary', cls: 'text-medium-emphasis', tooltip: 'Locked by your administrator. It uses the global configuration and your settings are ignored.' }
+  needsKey: { id: 'needsKey', icon: 'mdi-key-alert-outline', color: 'warning', cls: 'text-warning' },
+  configured: { id: 'configured', icon: 'mdi-check-circle', color: 'success', cls: 'text-success' },
+  global: { id: 'global', icon: 'mdi-earth', color: 'info', cls: 'text-info' },
+  partial: { id: 'partial', icon: 'mdi-key-alert', color: 'warning', cls: 'text-warning' },
+  optional: { id: 'optional', icon: 'mdi-key-outline', color: 'info', cls: 'text-info' },
+  ready: { id: 'ready', icon: 'mdi-check', color: 'secondary', cls: 'text-medium-emphasis' },
+  disabled: { id: 'disabled', icon: 'mdi-cancel', color: 'secondary', cls: 'text-medium-emphasis' },
+  locked: { id: 'locked', icon: 'mdi-lock', color: 'secondary', cls: 'text-medium-emphasis' }
 };
-
-// shown when no integrations have saved values, so the raw editor isn't a blank box
-const RAW_EDIT_PLACEHOLDER = 'No integrations configured yet. Add settings in INI format, e.g.\n\n[AbuseIPDB]\nkey=YOUR_API_KEY\n\n[Censys]\nid=YOUR_ID\nsecret=YOUR_SECRET';
 
 export default {
   name: 'Cont3xtSettings',
@@ -844,7 +843,6 @@ export default {
       expandedIntegrations: {},
       revealedFields: {},
       integrationStatusFilter: 'all',
-      rawEditPlaceholder: RAW_EDIT_PLACEHOLDER,
       // overviews
       overviewModalOpen: false,
       iTypes,
@@ -950,7 +948,7 @@ export default {
       return this.sortedFilteredIntegrationSettings.map(([key, setting]) => ({
         key,
         setting,
-        status: this.statusOf(setting),
+        status: this.translateStatus(this.statusOf(setting)),
         itypes: this.getIntegrations[key]?.itypes ?? [],
         // parent integrations (empty itypes) aren't in getIntegrations, so fall
         // back to the icon the settings endpoint returns for the row itself
@@ -974,7 +972,20 @@ export default {
       }
       return Object.values(STATUS_META)
         .filter(meta => counts[meta.id] || this.integrationStatusFilter === meta.id)
-        .map(meta => ({ ...meta, count: counts[meta.id] ?? 0 }));
+        .map(meta => ({ ...this.translateStatus(meta), count: counts[meta.id] ?? 0 }));
+    },
+    // shown when no integrations have saved values, so the raw editor isn't a blank box
+    rawEditPlaceholder () {
+      return this.$t('cont3xt.settings.rawEditPlaceholder');
+    },
+    seeAllViewsTip () {
+      return this.seeAllViews ? this.$t('cont3xt.settings.seeMineViewsTip') : this.$t('cont3xt.settings.seeAllViewsTip');
+    },
+    seeAllOverviewsTip () {
+      return this.seeAllOverviews ? this.$t('cont3xt.settings.seeMineOverviewsTip') : this.$t('cont3xt.settings.seeAllOverviewsTip');
+    },
+    seeAllLinkGroupsTip () {
+      return this.seeAllLinkGroups ? this.$t('cont3xt.settings.seeMineLinkGroupsTip') : this.$t('cont3xt.settings.seeAllLinkGroupsTip');
     },
     disablePassword () {
       if (!this.getUser) { return true; } // wait for user to be initialized
@@ -1073,7 +1084,7 @@ export default {
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
       } else {
-        this.showError('Cannot parse the resource you want to transfer');
+        this.showError(this.$t('cont3xt.settings.cannotTransfer'));
       }
     },
     /* INTEGRATIONS! ------------------------- */
@@ -1087,7 +1098,7 @@ export default {
       const settings = this.getIntegrationSettingValues();
 
       UserService.setIntegrationSettings({ settings }).then((response) => {
-        this.showMessage({ variant: 'success', message: 'Saved!' });
+        this.showMessage({ variant: 'success', message: this.$t('cont3xt.settings.saved') });
         // NOTE: don't need to do anything with the data (the store does it)
         Cont3xtService.getIntegrations();
       }).catch((err) => {
@@ -1131,6 +1142,14 @@ export default {
     /* toggles the expanded config panel for an integration row */
     toggleIntegration (key) {
       this.expandedIntegrations[key] = !this.expandedIntegrations[key];
+    },
+    /* adds the translated label/tooltip to a status descriptor */
+    translateStatus (meta) {
+      return {
+        ...meta,
+        label: this.$t(`cont3xt.settings.status.${meta.id}`),
+        tooltip: this.$t(`cont3xt.settings.status.${meta.id}Tip`)
+      };
     },
     /* computes the configuration status descriptor for an integration */
     statusOf (setting) {
@@ -1304,22 +1323,22 @@ export default {
       this.msg = '';
 
       if (!this.currentPassword) {
-        this.showError('You must enter your current password');
+        this.showError(this.$t('cont3xt.settings.needCurrentPassword'));
         return;
       }
 
       if (!this.newPassword) {
-        this.showError('You must enter a new password');
+        this.showError(this.$t('cont3xt.settings.needNewPassword'));
         return;
       }
 
       if (!this.confirmNewPassword) {
-        this.showError('You must confirm your new password');
+        this.showError(this.$t('cont3xt.settings.needConfirmPassword'));
         return;
       }
 
       if (this.newPassword !== this.confirmNewPassword) {
-        this.showError("Your passwords don't match");
+        this.showError(this.$t('cont3xt.settings.passwordMismatch'));
         return;
       }
 
@@ -1333,7 +1352,7 @@ export default {
         this.currentPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
+        this.showMessage({ variant: 'success', message: response.text || this.$t('cont3xt.settings.passwordUpdated') });
       }).catch((error) => {
         // display error message to user
         this.showError(error.text || error);
