@@ -439,9 +439,9 @@ export default {
     return {
       error: '',
       loading: false,
-      history: {},
-      recordsTotal: 0,
-      recordsFiltered: 0,
+      history: undefined, // undefined until loaded; [] once loaded and empty
+      recordsTotal: undefined,
+      recordsFiltered: undefined,
       expandedLogs: { change: false },
       colSpan: 8,
       filters: {},
@@ -628,7 +628,7 @@ export default {
     /* helper functions ------------------------------------------ */
     loadData: function () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
-        this.history = {};
+        this.history = [];
         return;
       }
 

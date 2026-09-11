@@ -1645,6 +1645,13 @@ export default {
   top: 8px;
   right: 10px;
 }
+
+/* icon-only triggers: size="large" reserves ~78px of text-button min-width,
+   which made these two read as oversized next to the 32px controls */
+.field-vis-trigger.v-btn {
+  min-width: 0;
+  padding-inline: 8px;
+}
 </style>
 
 <style>
