@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-icon icon="mdi-tray-arrow-up" />&nbsp;
         {{ $t('uploads.uploadFile') }}
       </span>
-      <div class="float-right small toast-container">
+      <div class="ms-auto small toast-container">
         <arkime-toast
           class="me-1"
           :message="msg"

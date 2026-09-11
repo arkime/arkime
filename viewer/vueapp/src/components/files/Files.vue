@@ -11,13 +11,13 @@ SPDX-License-Identifier: Apache-2.0
             dense
             align="center"
             justify="start"
-            class="page-subnav">
+            class="page-subnav page-subnav--primary">
+            <!-- d-flex so the inline-flex pager doesn't sit on a text baseline
+                 and stretch the band past the other tabs' 44px -->
             <v-col
               cols="auto"
-              align-self="start"
-              class="mt-2">
+              class="d-flex align-center">
               <arkime-paging
-                v-if="files"
                 :records-total="recordsTotal"
                 :records-filtered="recordsFiltered"
                 @change-paging="changePaging"

@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- search row: expression input + submit + actions all on one
            flex line. Expression input grows to fill the remaining
            space (via .arkime-input-group--fluid in ExpressionTypeahead). -->
-      <div class="d-flex align-start gap-1 mb-1 search-row">
+      <div class="d-flex align-center gap-1 mb-1 search-row">
         <!-- search box typeahead -->
         <expression-typeahead
           class="flex-grow-1"
@@ -1014,11 +1014,22 @@ form {
 }
 
 /* viz options gear: docked under the right end of the search form (its
-   position-relative parent) so it follows the toolbar chrome in flow */
+   position-relative parent) so it follows the toolbar chrome in flow.
+   It overhangs into the page's 44px sub-navbar band, so span that band
+   exactly and centre in it rather than nudging with a percentage. */
 .viz-options-btn-container {
   position: absolute;
-  top: 108%; /* a nudge past the form bottom centers it in the paging bar */
+  top: 100%;
   right: 4px;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  height: 44px;
+}
+/* Vuetify pins compact button groups to a fixed 36px -- taller than the
+   32px buttons inside, which would leave the visible button sitting high
+   in the band. Let the group size to its buttons. */
+.viz-options-btn-container :deep(.viz-options-btn.v-btn-group) {
+  height: auto;
 }
 </style>

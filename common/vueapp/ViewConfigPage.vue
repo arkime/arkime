@@ -477,7 +477,7 @@ const blindCount = computed(() => counts.value.blind);
   left: 0;
   right: 0;
   z-index: 100;
-  height: 50px;
+  height: 48px;
   padding: 0 var(--px-md) 0 13px;
   background-color: rgb(var(--v-theme-quaternary-lightest));
   box-shadow: 0 8px 16px -8px black;

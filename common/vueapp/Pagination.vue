@@ -76,8 +76,17 @@ SPDX-License-Identifier: Apache-2.0
 .paging-wrapper {
   padding: 0 4px;
 }
+/* fill the group vertically and centre at every level: the list items are
+   `display: list-item`, so left alone their buttons sit on a text baseline
+   and ride a few px low in the sub-navbar band */
+.paging-wrapper :deep(.v-pagination),
 .paging-wrapper :deep(.v-pagination__list) {
+  display: flex;
   height: 100%;
+  align-items: center;
+}
+.paging-wrapper :deep(.v-pagination__list > li) {
+  display: flex;
   align-items: center;
 }
 /* Restyle the v-select to match .arkime-input-group -- override

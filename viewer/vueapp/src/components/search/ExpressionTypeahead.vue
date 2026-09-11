@@ -3,9 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    class="mb-1"
-    :class="{ 'big-typeahead': bigTypeahead }">
+  <div :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
     <div class="arkime-input-group arkime-input-group--fluid">
       <span
