@@ -72,8 +72,8 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="warning"
-                        v-tooltip="cancelTip"
-                        :title="cancelTip"
+                        v-tooltip="$t('common.cancel')"
+                        :title="$t('common.cancel')"
                         class="float-right ms-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="toggleDeleteView(view._id)">
@@ -85,8 +85,8 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="error"
-                        v-tooltip="areYouSureTip"
-                        :title="areYouSureTip"
+                        v-tooltip="$t('common.areYouSure')"
+                        :title="$t('common.areYouSure')"
                         class="float-right ms-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="deleteView(view)">
@@ -140,18 +140,13 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import UserService from '@/components/services/UserService';
 
-import { reactive, ref, computed, watch, onMounted } from 'vue';
+import { reactive, ref, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
 import { useRouter, useRoute } from 'vue-router';
-import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
-
-const { t } = useI18n();
-const cancelTip = computed(() => t('common.cancel'));
-const areYouSureTip = computed(() => t('common.areYouSure'));
 
 const store = useStore();
 const {

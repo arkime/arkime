@@ -150,8 +150,8 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
               size="small"
-              v-tooltip="cancelTip"
-              :title="cancelTip"
+              v-tooltip="$t('common.cancel')"
+              :title="$t('common.cancel')"
               color="warning"
               variant="elevated"
               v-if="confirmDelete"
@@ -165,8 +165,8 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="error"
               variant="elevated"
-              v-tooltip="areYouSureTip"
-              :title="areYouSureTip"
+              v-tooltip="$t('common.areYouSure')"
+              :title="$t('common.areYouSure')"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
               <v-icon icon="mdi-check-bold mdi-fw" />
@@ -195,8 +195,8 @@ SPDX-License-Identifier: Apache-2.0
             color="info"
             variant="elevated"
             v-if="canTransfer(linkGroup)"
-            v-tooltip="transferTip"
-            :title="transferTip"
+            v-tooltip="$t('cont3xt.linkGroups.transferTip')"
+            :title="$t('cont3xt.linkGroups.transferTip')"
             @click="$emit('open-transfer-resource', linkGroup)">
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
@@ -261,8 +261,8 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
               size="small"
-              v-tooltip="cancelTip"
-              :title="cancelTip"
+              v-tooltip="$t('common.cancel')"
+              :title="$t('common.cancel')"
               color="warning"
               variant="elevated"
               v-if="confirmDelete"
@@ -277,8 +277,8 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="error"
               variant="elevated"
-              v-tooltip="areYouSureTip"
-              :title="areYouSureTip"
+              v-tooltip="$t('common.areYouSure')"
+              :title="$t('common.areYouSure')"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
               <v-icon icon="mdi-check-bold" />
@@ -301,8 +301,8 @@ SPDX-License-Identifier: Apache-2.0
             color="info"
             variant="elevated"
             v-if="canTransfer(linkGroup)"
-            v-tooltip="transferTip"
-            :title="transferTip"
+            v-tooltip="$t('cont3xt.linkGroups.transferTip')"
+            :title="$t('cont3xt.linkGroups.transferTip')"
             @click="$emit('open-transfer-resource', linkGroup)">
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
@@ -415,15 +415,6 @@ export default {
     },
     collapsedLinkGroups () {
       return this.$store.state.collapsedLinkGroups;
-    },
-    cancelTip () {
-      return this.$t('common.cancel');
-    },
-    areYouSureTip () {
-      return this.$t('common.areYouSure');
-    },
-    transferTip () {
-      return this.$t('cont3xt.linkGroups.transferTip');
     },
     filteredLinks () {
       const links = [];

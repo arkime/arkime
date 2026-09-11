@@ -257,8 +257,8 @@ SPDX-License-Identifier: Apache-2.0
                           <v-btn
                             size="small"
                             color="primary"
-                            v-tooltip="viewsTransferTip"
-                            :title="viewsTransferTip"
+                            v-tooltip="$t('cont3xt.views.transferTip')"
+                            :title="$t('cont3xt.views.transferTip')"
                             v-if="canTransferView(view)"
                             @click="openTransferResource(view)">
                             <v-icon icon="mdi-share" />
@@ -279,8 +279,8 @@ SPDX-License-Identifier: Apache-2.0
                             <v-btn
                               size="small"
                               color="warning"
-                              v-tooltip="cancelTip"
-                              :title="cancelTip"
+                              v-tooltip="$t('common.cancel')"
+                              :title="$t('common.cancel')"
                               v-if="confirmDeleteView[view._id]"
                               @click.stop.prevent="toggleDeleteView(view._id)">
                               <v-icon icon="mdi-cancel" />
@@ -291,8 +291,8 @@ SPDX-License-Identifier: Apache-2.0
                             <v-btn
                               size="small"
                               color="error"
-                              v-tooltip="areYouSureTip"
-                              :title="areYouSureTip"
+                              v-tooltip="$t('common.areYouSure')"
+                              :title="$t('common.areYouSure')"
                               v-if="confirmDeleteView[view._id]"
                               @click.stop.prevent="deleteView(view)">
                               <v-icon icon="mdi-check-bold" />
@@ -986,15 +986,6 @@ export default {
     },
     seeAllLinkGroupsTip () {
       return this.seeAllLinkGroups ? this.$t('cont3xt.settings.seeMineLinkGroupsTip') : this.$t('cont3xt.settings.seeAllLinkGroupsTip');
-    },
-    cancelTip () {
-      return this.$t('common.cancel');
-    },
-    areYouSureTip () {
-      return this.$t('common.areYouSure');
-    },
-    viewsTransferTip () {
-      return this.$t('cont3xt.views.transferTip');
     },
     disablePassword () {
       if (!this.getUser) { return true; } // wait for user to be initialized

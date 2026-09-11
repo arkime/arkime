@@ -85,8 +85,8 @@ SPDX-License-Identifier: Apache-2.0
           class="mini-table-button me-1"
           color="warning"
           variant="outlined"
-          v-tooltip:top.close-on-content-click="deleteTip"
-          :title="deleteTip">
+          v-tooltip:top.close-on-content-click="$t('cont3xt.history.deleteTip')"
+          :title="$t('cont3xt.history.deleteTip')">
           <v-icon icon="mdi-trash-can" />
         </v-btn>
         <v-btn
@@ -96,8 +96,8 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           class="mini-table-button"
           color="success"
-          v-tooltip:top.close-on-content-click="repeatTip"
-          :title="repeatTip">
+          v-tooltip:top.close-on-content-click="$t('cont3xt.history.repeatTip')"
+          :title="$t('cont3xt.history.repeatTip')">
           <v-icon icon="mdi-open-in-new" />
         </v-btn>
       </template>
@@ -258,8 +258,6 @@ const timePlaceHolderTip = computed(() => ({ title: t('cont3xt.history.timeTipHt
 const seeAllTip = computed(() => seeAll.value
   ? t('cont3xt.history.seeMineTip')
   : t('cont3xt.history.seeAllTip'));
-const deleteTip = computed(() => t('cont3xt.history.deleteTip'));
-const repeatTip = computed(() => t('cont3xt.history.repeatTip'));
 const sortBy = ref([{ key: 'issuedAt', order: 'desc' }]);
 const search = ref('');
 const page = ref(1);

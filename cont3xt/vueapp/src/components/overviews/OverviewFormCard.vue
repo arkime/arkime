@@ -100,8 +100,8 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             size="small"
             color="info"
-            v-tooltip="transferTip"
-            :title="transferTip"
+            v-tooltip="$t('cont3xt.overviews.transferTip')"
+            :title="$t('cont3xt.overviews.transferTip')"
             v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
             <v-icon icon="mdi-share mdi-fw" />
@@ -122,8 +122,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="warning"
-              v-tooltip="cancelTip"
-              :title="cancelTip"
+              v-tooltip="$t('common.cancel')"
+              :title="$t('common.cancel')"
               :disabled="isDefaultOverview"
               v-if="confirmDelete && !isDefaultOverview"
               @click="confirmDelete = false">
@@ -135,8 +135,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="error"
-              v-tooltip="areYouSureTip"
-              :title="areYouSureTip"
+              v-tooltip="$t('common.areYouSure')"
+              :title="$t('common.areYouSure')"
               :disabled="isDefaultOverview"
               v-if="confirmDelete && !isDefaultOverview"
               @click="deleteOverview">
@@ -245,15 +245,6 @@ export default {
     },
     isSetAsDefault () {
       return this.getCorrectedSelectedOverviewIdMap[this.overview.iType] === this.overview._id;
-    },
-    cancelTip () {
-      return this.$t('common.cancel');
-    },
-    areYouSureTip () {
-      return this.$t('common.areYouSure');
-    },
-    transferTip () {
-      return this.$t('cont3xt.overviews.transferTip');
     }
   },
   methods: {
