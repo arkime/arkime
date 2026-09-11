@@ -1,4 +1,4 @@
-use Test::More tests => 75;
+use Test::More tests => 84;
 use ArkimeTest;
 use strict;
 
@@ -32,7 +32,15 @@ ArkimeConfig.registerSettings({
   viewPort: { type: 'int', min: 1, max: 65535 },
   freeSpaceG: { type: 're', re: /^-?(\d+(\.\d*)?|\.\d+)%?$/, help: 'a number of gigabytes or a percentage of the disk, eg 5 or 5%' },
   rotateIndex: { type: 'enum', values: ['hourly', 'hourly2', 'hourly3', 'hourly4', 'hourly6', 'hourly8', 'hourly12', 'daily', 'weekly', 'monthly'] },
-  multiES: { type: 'bool' }
+  multiES: { type: 'bool' },
+  // both consuming readers only apply these when truthy, so 0 already means
+  // "no override" - it must not be a boot failure
+  esMaxConcurrentShardRequests: { type: 'int', min: 1, unlimited: 0 },
+  packetPortalPort: { type: 'int', min: 1, max: 65535, unlimited: 0 },
+  // [tee] holds its own override of these, which isn't part of the default
+  // section chain get()/getArray() walk
+  esProxySigV4: { type: 'bool', sections: ['tee'] },
+  elasticsearch: { sections: ['tee'] }
 });
 
 const mode = process.argv[4];
@@ -175,6 +183,37 @@ is($code, 1, "multiES=0 refuses to start rather than reading as on");
 
 ($code, $out) = tryConfig("multiES=False");
 is($code, 1, "a capitalised False refuses to start rather than reading as on");
+
+################################################################################
+# unlimited as a sentinel for "no override", not just "no limit" - the
+# consuming code already treats 0 as unset, so validation must allow it too
+################################################################################
+($code, $out) = tryConfig("esMaxConcurrentShardRequests=0");
+is($code, 0, "esMaxConcurrentShardRequests=0 starts, it already means no override");
+
+($code, $out) = tryConfig("esMaxConcurrentShardRequests=-1");
+is($code, 1, "esMaxConcurrentShardRequests below the minimum and not the sentinel still refuses to start");
+
+($code, $out) = tryConfig("packetPortalPort=0");
+is($code, 0, "packetPortalPort=0 starts, it already means shared mode");
+
+($code, $out) = tryConfig("packetPortalPort=70000");
+is($code, 1, "packetPortalPort above the maximum still refuses to start");
+
+################################################################################
+# sections. [tee] holds its own elasticsearch/esProxySigV4 override, which
+# isn't part of the default section chain get()/getArray() walk
+################################################################################
+($code, $out) = tryConfig("esProxySigV4=true\n[tee]\nesProxySigV4=false");
+is($code, 0, "a valid esProxySigV4 in both the default and [tee] sections starts");
+
+($code, $out) = tryConfig("[tee]\nesProxySigV4=1");
+is($code, 1, "a non boolean esProxySigV4 under [tee] refuses to start");
+like($out, qr/\[tee\] esProxySigV4 is '1', which is not a boolean/, "and names the section and the setting");
+
+($code, $out) = tryConfig("elasticsearch=http://es1:9200\n[tee]\nelasticsearch=http://es2 :9200");
+is($code, 1, "a malformed elasticsearch url under [tee] refuses to start");
+like($out, qr/\[tee\] elasticsearch has 1 unusable entry: 'http:\/\/es2 :9200'/, "and names the section and quotes the bad entry");
 
 ################################################################################
 # a valid allow list must still match the right peers. Both allow lists had

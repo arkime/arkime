@@ -329,7 +329,8 @@ class Config {
       huntThrottleMs: { type: 'int', min: 0 },
       maxAggSize: { type: 'int', min: 1 },
       spiDataMaxIndices: { type: 'int', min: 1, unlimited: -1 },
-      esMaxConcurrentShardRequests: { type: 'int', min: 1 },
+      // db.js only applies this when truthy, so 0 already means "no override"
+      esMaxConcurrentShardRequests: { type: 'int', min: 1, unlimited: 0 },
       tsharkMaxConcurrent: { type: 'int', min: 0 },
       tsharkMaxPackets: { type: 'int', min: 1 },
       tsharkMemoryLimitMB: { type: 'int', min: 0, unlimited: -1 },
@@ -342,7 +343,9 @@ class Config {
       viewPort: { type: 'int', min: 1, max: 65535 },
       esProxyPort: { type: 'int', min: 1, max: 65535 },
       multiESPort: { type: 'int', min: 1, max: 65535 },
-      packetPortalPort: { type: 'int', min: 1, max: 65535 },
+      // packetPortal.js only starts a dedicated listener when truthy, so 0
+      // already means "no dedicated port, fall back to packetPortalListen"
+      packetPortalPort: { type: 'int', min: 1, max: 65535, unlimited: 0 },
       // both readers parseFloat it, so '5G' silently becomes 5 and 'five' becomes
       // NaN, which no comparison is ever true for - the disk then never expires
       freeSpaceG: {
@@ -358,10 +361,18 @@ class Config {
       multiES: { type: 'bool' },
       queryAllIndices: { type: 'bool' },
       valueAutoComplete: { type: 'bool' },
-      esProxySigV4: { type: 'bool' },
+      // esProxy.js also reads these under [tee] for the secondary ES output,
+      // which isn't part of the default section chain get()/getArray() walk
+      esProxySigV4: { type: 'bool', sections: ['tee'] },
       hstsHeader: { type: 'bool' },
       postPcapFetch: { type: 'bool' },
       packetPortalListen: { type: 'bool' }
+    });
+
+    // elasticsearchAPIKey/elasticsearchBasicAuth are secret-only (no type), so
+    // there's nothing for #validateSettings to check under [tee] for them
+    ArkimeConfig.registerSettings({
+      elasticsearch: { sections: ['tee'] }
     });
 
     await ArkimeConfig.initialize({
