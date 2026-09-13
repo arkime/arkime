@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 45;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -6,6 +6,7 @@ use Data::Dumper;
 use strict;
 
 my $MCP = "http://$ArkimeTest::host:3218/mcp";
+my $token = getCont3xtTokenCookie('superAdmin');
 
 # Raw POST so we can assert on status codes and headers
 sub mcpRaw {
@@ -78,7 +79,7 @@ is($response->header("Allow"), "POST", "405 advertises Allow: POST");
 ################################################################################
 $json = rpc("tools/list");
 my $tools = $json->{result}->{tools};
-is(scalar @{$tools}, 7, "tools/list returns every cont3xt tool");
+is(scalar @{$tools}, 8, "tools/list returns every cont3xt tool");
 
 my $bad = 0;
 my %names;
@@ -91,6 +92,7 @@ foreach my $tool (@{$tools}) {
 is($bad, 0, "every tool has a name, description, object inputSchema and is read only");
 ok(defined $names{"cont3xt_search"}, "cont3xt_search is present");
 ok(defined $names{"cont3xt_classify"}, "cont3xt_classify is present");
+ok(defined $names{"cont3xt_ui_link"}, "cont3xt_ui_link is present");
 
 ################################################################################
 # tools/call
@@ -98,6 +100,14 @@ ok(defined $names{"cont3xt_classify"}, "cont3xt_classify is present");
 $json = callTool("cont3xt_classify", '{"query":"8.8.8.8"}');
 is($json->{result}->{isError}, JSON::false, "cont3xt_classify succeeds");
 is($json->{result}->{structuredContent}->{itype}, "ip", "cont3xt_classify detects an ip");
+# web ui links use arkimeWebURL from the test config; classify only prefills
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=OC44LjguOA%3D%3D", "cont3xt_classify links to the prefilled search page");
+
+# b is latin1 base64, wider chars have no link
+$json = callTool("cont3xt_classify", '{"query":"bücher.de"}');
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=YvxjaGVyLmRl", "cont3xt_classify encodes b the way the ui does");
+$json = callTool("cont3xt_classify", '{"query":"例え.jp"}');
+ok(!defined $json->{result}->{structuredContent}->{uiUrl}, "cont3xt_classify has no link for a query the ui cannot encode");
 
 $json = callTool("cont3xt_classify", '{"query":"example.com"}');
 is($json->{result}->{structuredContent}->{itype}, "domain", "cont3xt_classify detects a domain");
@@ -117,6 +127,32 @@ my $search = $json->{result}->{structuredContent};
 is($search->{indicators}->[0]->{itype}, "ip", "cont3xt_search classified the indicator");
 ok(scalar @{$search->{results}} > 0, "cont3xt_search returns integration results");
 ok(!defined $search->{partial}, "cont3xt_search completed rather than timing out");
+is($search->{uiUrl}, "http://localhost:3218/?b=OC44LjguOA%3D%3D&submit=y&skipChildren=true", "cont3xt_search links to the same search in the web ui");
+
+# search with a view
+$json = cont3xtPostToken('/api/view?arkimeRegressionUser=superAdmin', to_json({ name => "mcpview", integrations => ["nosuchintegration"] }), $token);
+is($json->{success}, JSON::true, "created a view for the mcp tests");
+my $viewId = $json->{view}->{_id};
+esGet("/_refresh");
+
+$json = callTool("cont3xt_search", '{"query":"8.8.8.8","view":"mcpview","skipChildren":true}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_search with a view by name succeeds");
+is(scalar @{$json->{result}->{structuredContent}->{results}}, 0, "cont3xt_search only ran the view's integrations");
+is($json->{result}->{structuredContent}->{view}->{name}, "mcpview", "cont3xt_search reports the view it used");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=OC44LjguOA%3D%3D&submit=y&view=$viewId&skipChildren=true", "cont3xt_search link selects the view");
+
+$json = callTool("cont3xt_search", '{"query":"8.8.8.8","view":"nosuchview"}');
+is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects an unknown view");
+
+$json = callTool("cont3xt_ui_link", '{"query":"example.com"}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_ui_link succeeds");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=ZXhhbXBsZS5jb20%3D", "cont3xt_ui_link builds a prefill link by default");
+
+$json = callTool("cont3xt_ui_link", '{"query":"example.com","submit":true,"view":"mcpview"}');
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=ZXhhbXBsZS5jb20%3D&submit=y&view=mcpview", "cont3xt_ui_link passes the view through for the ui to resolve");
+
+$json = cont3xtDeleteToken("/api/view/$viewId?arkimeRegressionUser=superAdmin", '{}', $token);
+is($json->{success}, JSON::true, "removed the mcp test view");
 
 $json = callTool("cont3xt_search", '{"query":""}');
 is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects an empty query");

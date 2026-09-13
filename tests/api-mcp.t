@@ -1,4 +1,4 @@
-use Test::More tests => 90;
+use Test::More tests => 112;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -127,6 +127,7 @@ ok(defined $names{"arkime_fields"}, "arkime_fields is present");
 ok(defined $names{"arkime_sessions"}, "arkime_sessions is present");
 ok($names{"arkime_sessions"}->{annotations}->{readOnlyHint}, "arkime_sessions is marked read only");
 ok(!$names{"arkime_add_tags"}->{annotations}->{readOnlyHint}, "arkime_add_tags is not marked read only");
+ok($names{"arkime_ui_link"}->{annotations}->{readOnlyHint}, "arkime_ui_link is present and read only");
 
 # pcap and admin surfaces must never be exposed
 my $forbidden = 0;
@@ -154,6 +155,49 @@ is(scalar @{$json->{result}->{structuredContent}->{data}}, 2, "arkime_sessions h
 $json = callTool("arkime_sessions", '{"date":-1,"length":1,"expression":"ip.dst == 10.0.0.1"}');
 is($json->{result}->{isError}, JSON::false, "arkime_sessions with an expression succeeds");
 
+# web ui links use arkimeWebURL from the test config
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?length=1&expression=ip.dst+%3D%3D+10.0.0.1&date=-1", "arkime_sessions links to the same query in the web ui");
+
+my $sessionId = $json->{result}->{structuredContent}->{data}->[0]->{id};
+$json = callTool("arkime_session_detail", "{\"id\":\"$sessionId\"}");
+is($json->{result}->{isError}, JSON::false, "arkime_session_detail succeeds");
+is($json->{result}->{structuredContent}->{id}, $sessionId, "arkime_session_detail returns the session");
+(my $prefixless = $sessionId) =~ s/^[^:]*://;
+$prefixless =~ s/^.\@//;
+like($json->{result}->{structuredContent}->{uiUrl}, qr{^http://localhost:8123/arkime/sessions\?expression=id\+%3D%3D\+\Q$prefixless\E&openAll=1&startTime=\d+&stopTime=\d+$}, "arkime_session_detail links to the ui permalink");
+
+$json = callTool("arkime_ui_link", '{"page":"spigraph","exp":"ip.dst","size":5,"expression":"ip.dst == 10.0.0.1","date":2,"startTime":1,"stopTime":2}');
+is($json->{result}->{isError}, JSON::false, "arkime_ui_link succeeds");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/spigraph?exp=ip.dst&size=5&expression=ip.dst+%3D%3D+10.0.0.1&startTime=1&stopTime=2", "arkime_ui_link builds a spigraph link, dropping date when a window is given");
+
+# date=-1 with a window
+$json = callTool("arkime_ui_link", '{"expression":"ip.dst == 10.0.0.1","date":-1,"startTime":1,"stopTime":2}');
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?expression=ip.dst+%3D%3D+10.0.0.1&date=-1&startTime=1&stopTime=2", "arkime_ui_link keeps date=-1 alongside a window");
+
+$json = callTool("arkime_ui_link", '{"id":"abc"}');
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?expression=id+%3D%3D+abc&openAll=1&date=-1", "arkime_ui_link builds a session permalink");
+is(scalar @{$json->{result}->{content}}, 1, "without a protocol version header the link is only in the json");
+
+$json = callTool("arkime_ui_link", '{"id":"abc","expression":"ip.dst == 1.1.1.1","date":1}');
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?expression=id+%3D%3D+abc&openAll=1&date=-1", "arkime_ui_link ignores expression and date when id is given");
+
+$json = callTool("arkime_ui_link", '{"page":"constructor"}');
+is($json->{result}->{isError}, JSON::true, "arkime_ui_link rejects a prototype property as a page");
+like($json->{result}->{content}->[0]->{text}, qr/Unknown page/, "arkime_ui_link names the bad page");
+
+# 2025-06-18 client, resource_link content
+$response = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
+    Content => '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"arkime_ui_link","arguments":{"id":"abc"}}}',
+    "Content-Type" => "application/json", "MCP-Protocol-Version" => "2025-06-18");
+$json = from_json($response->content);
+is(scalar @{$json->{result}->{content}}, 2, "a 2025-06-18 client gets a second content block");
+is($json->{result}->{content}->[1]->{type}, "resource_link", "the second content block is a resource_link");
+is($json->{result}->{content}->[1]->{uri}, $json->{result}->{structuredContent}->{uiUrl}, "the resource_link uri is the web ui link");
+ok(defined $json->{result}->{content}->[1]->{name}, "the resource_link has a name");
+
+$json = callTool("arkime_ui_link", '{"page":"nope"}');
+is($json->{result}->{isError}, JSON::true, "arkime_ui_link rejects an unknown page");
+
 # a bad expression must fail the tool, not the http request
 $response = mcpRaw('{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"arkime_sessions","arguments":{"expression":"this is not valid &&"}}}');
 is($response->code, 200, "a failing tool is still http 200");
@@ -164,6 +208,7 @@ ok(defined $json->{result}->{content}->[0]->{text}, "a failing tool explains its
 $json = callTool("arkime_spigraph", '{"date":-1,"exp":"ip.dst","size":3}');
 is($json->{result}->{isError}, JSON::false, "arkime_spigraph succeeds");
 ok(scalar @{$json->{result}->{structuredContent}->{items}} > 0, "arkime_spigraph returns items");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/spigraph?exp=ip.dst&size=3&date=-1", "arkime_spigraph links to the same query in the web ui");
 
 $json = callTool("arkime_unique", '{"date":-1,"exp":"ip.dst","counts":1}');
 is($json->{result}->{isError}, JSON::false, "arkime_unique succeeds");
@@ -240,6 +285,13 @@ is($json->{result}->{structuredContent}->{data}->[0]->{name}, "mcpview", "the cr
 # tagging nothing is a tool error, not an http error
 $json = callTool("arkime_add_tags", '{"date":-1,"expression":"ip.dst == 199.199.199.199","tags":"mcpnomatch"}');
 is($json->{result}->{isError}, JSON::true, "arkime_add_tags with no matches is a tool error");
+
+# tagging by id
+$json = callTool("arkime_add_tags", "{\"date\":-1,\"ids\":\"$sessionId\",\"tags\":\"mcplink\"}");
+is($json->{result}->{isError}, JSON::false, "arkime_add_tags by id succeeds");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?expression=id+%3D%3D+%5B$prefixless%5D&date=-1", "arkime_add_tags links to the tagged session");
+$json = callTool("arkime_remove_tags", "{\"date\":-1,\"ids\":\"$sessionId\",\"tags\":\"mcplink\"}");
+is($json->{result}->{isError}, JSON::false, "arkime_remove_tags by id succeeds");
 
 $json = callTool("arkime_create_hunt", '{"name":"mcphunt","search":"zzz","searchType":"ascii","startTime":1,"stopTime":2,"expression":"ip.dst == 199.199.199.199"}');
 is($json->{result}->{isError}, JSON::true, "arkime_create_hunt with no matching sessions is a tool error");

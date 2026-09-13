@@ -11,6 +11,7 @@
 
 const MCPServer = require('../common/mcpServer');
 const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
 const { MCPToolError } = MCPServer;
 
 class MCPCont3xtAPIs {
@@ -85,6 +86,39 @@ class MCPCont3xtAPIs {
   }
 
   // --------------------------------------------------------------------------
+  /* Search page link, see Cont3xt.vue; undefined when btoa can't encode the query */
+  static #searchUiQuery (query, options = {}) {
+    if (/[^\u0000-\u00ff]/.test(query)) { return undefined; }
+    return ['', {
+      b: Buffer.from(query, 'latin1').toString('base64'),
+      submit: options.submit ? 'y' : undefined,
+      view: options.view,
+      skipChildren: options.skipChildren ? 'true' : undefined
+    }];
+  }
+
+  // --------------------------------------------------------------------------
+  /* Look up a view by id, then by exact name, among the views the user can see */
+  static async #findView (req, View, view) {
+    const body = await MCPServer.callApiOrThrow(req, {
+      method: 'GET',
+      url: '/api/views',
+      handlers: [View.apiGet]
+    });
+    const byId = body.views?.find(v => v._id === view);
+    if (byId !== undefined) { return byId; }
+
+    const byName = body.views?.filter(v => v.name === view) ?? [];
+    if (byName.length > 1) {
+      throw new MCPToolError(`${byName.length} views are named ${ArkimeUtil.safeStr(view)}, use the id instead`);
+    }
+    if (byName.length === 0) {
+      throw new MCPToolError(`No view with id or name ${ArkimeUtil.safeStr(view)}`);
+    }
+    return byName[0];
+  }
+
+  // --------------------------------------------------------------------------
   static #buildTools (apis) {
     const { Integration, View, Overview, LinkGroup } = apis;
 
@@ -104,7 +138,8 @@ class MCPCont3xtAPIs {
             throw new MCPToolError('query must be a non empty string');
           }
           return Integration.classify(args.query.trim());
-        }
+        },
+        ui: (args) => MCPCont3xtAPIs.#searchUiQuery(args.query.trim())
       },
       {
         name: 'cont3xt_list_integrations',
@@ -116,12 +151,13 @@ class MCPCont3xtAPIs {
           method: 'GET',
           url: '/api/integration',
           handlers: [Integration.apiList]
-        })
+        }),
+        ui: () => ['settings#integrations']
       },
       {
         name: 'cont3xt_search',
         title: 'Enrich indicators',
-        description: 'Look up one or more indicators (IPs, domains, URLs, emails, hashes) across every enabled intelligence integration and return the combined results. This is the main cont3xt tool. Only integrations the user has configured and is allowed to see are queried.',
+        description: 'Look up one or more indicators (IPs, domains, URLs, emails, hashes) across every enabled intelligence integration and return the combined results. This is the main cont3xt tool. Only integrations the user has configured and is allowed to see are queried. The result includes uiUrl, a link that runs the same search in the Cont3xt web UI.',
         annotations: { readOnlyHint: true },
         inputSchema: {
           type: 'object',
@@ -132,21 +168,36 @@ class MCPCont3xtAPIs {
               items: { type: 'string' },
               description: 'Restrict to these integration names. Fewer integrations means a faster answer.'
             },
+            view: { type: 'string', description: 'Id or name of a saved view, as listed by cont3xt_views. Runs only the integrations in the view, unless doIntegrations is also given.' },
             skipChildren: { type: 'boolean', description: 'Do not also look up derived indicators (the domain of an email, the host of a url).' },
             skipCache: { type: 'boolean', description: 'Bypass the cache and re-query the integrations.' }
           },
           required: ['query']
         },
-        handler: async (args, req) => MCPCont3xtAPIs.#runSearch(req, {
-          url: '/api/integration/search',
-          body: {
-            query: args.query,
-            ...(args.doIntegrations ? { doIntegrations: args.doIntegrations } : {}),
-            ...(args.skipChildren !== undefined ? { skipChildren: args.skipChildren } : {}),
-            ...(args.skipCache !== undefined ? { skipCache: args.skipCache } : {})
-          },
-          handlers: [Integration.apiSearch]
-        })
+        handler: async (args, req) => {
+          let doIntegrations = args.doIntegrations;
+          let view;
+          if (args.view !== undefined) {
+            const found = await MCPCont3xtAPIs.#findView(req, View, args.view);
+            view = { id: found._id, name: found.name };
+            doIntegrations ??= found.integrations ?? [];
+          }
+
+          const data = await MCPCont3xtAPIs.#runSearch(req, {
+            url: '/api/integration/search',
+            body: {
+              query: args.query,
+              ...(doIntegrations ? { doIntegrations } : {}),
+              ...(view ? { viewId: view.id } : {}),
+              ...(args.skipChildren !== undefined ? { skipChildren: args.skipChildren } : {}),
+              ...(args.skipCache !== undefined ? { skipCache: args.skipCache } : {})
+            },
+            handlers: [Integration.apiSearch]
+          });
+          if (view) { data.view = view; }
+          return data;
+        },
+        ui: (args, data) => MCPCont3xtAPIs.#searchUiQuery(args.query, { submit: true, view: data.view?.id, skipChildren: args.skipChildren })
       },
       {
         name: 'cont3xt_integration_search',
@@ -175,19 +226,21 @@ class MCPCont3xtAPIs {
             throw new MCPToolError(body.text ?? 'Integration search failed');
           }
           return body;
-        }
+        },
+        ui: (args) => MCPCont3xtAPIs.#searchUiQuery(args.query)
       },
       {
         name: 'cont3xt_views',
         title: 'List views',
-        description: 'List the saved cont3xt views available to the current user. A view id can be passed to cont3xt_search to restrict which integrations run.',
+        description: 'List the saved cont3xt views available to the current user. A view id or name can be passed as the view parameter of cont3xt_search to restrict which integrations run.',
         annotations: { readOnlyHint: true },
         inputSchema: { type: 'object', properties: {} },
         handler: async (args, req) => MCPServer.callApiOrThrow(req, {
           method: 'GET',
           url: '/api/views',
           handlers: [View.apiGet]
-        })
+        }),
+        ui: () => ['settings#views']
       },
       {
         name: 'cont3xt_overviews',
@@ -199,7 +252,8 @@ class MCPCont3xtAPIs {
           method: 'GET',
           url: '/api/overview',
           handlers: [Overview.apiGet]
-        })
+        }),
+        ui: () => ['settings#overviews']
       },
       {
         name: 'cont3xt_link_groups',
@@ -211,7 +265,34 @@ class MCPCont3xtAPIs {
           method: 'GET',
           url: '/api/linkGroup',
           handlers: [LinkGroup.apiGet]
-        })
+        }),
+        ui: () => ['settings#linkgroups']
+      },
+      {
+        name: 'cont3xt_ui_link',
+        title: 'Link to the web UI',
+        description: 'Build a link that opens the Cont3xt web UI with the given indicators filled in, without querying anything. Use when the user wants to continue in the browser, or to share a search. cont3xt_search already returns uiUrl for the search it ran.',
+        annotations: { readOnlyHint: true },
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'One or more indicators, separated by spaces, commas or tabs.' },
+            view: { type: 'string', description: 'Id or name of a saved view to select.' },
+            skipChildren: { type: 'boolean', description: 'Do not look up derived indicators.' },
+            submit: { type: 'boolean', description: 'Run the search as soon as the page opens, instead of only filling it in. Defaults to false.' }
+          },
+          required: ['query']
+        },
+        handler: async (args) => {
+          if (typeof args.query !== 'string' || args.query.trim() === '') {
+            throw new MCPToolError('query must be a non empty string');
+          }
+          const link = MCPCont3xtAPIs.#searchUiQuery(args.query.trim(), { submit: args.submit, view: args.view, skipChildren: args.skipChildren });
+          if (link === undefined) { throw new MCPToolError('The web UI can only link to indicators made of latin1 characters'); }
+          const url = MCPServer.webUrl(...link);
+          if (url === undefined) { throw new MCPToolError('No web UI url is configured'); }
+          return { uiUrl: url };
+        }
       }
     ];
   }

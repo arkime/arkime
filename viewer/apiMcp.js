@@ -16,7 +16,9 @@ const MCPServer = require('../common/mcpServer');
 const ArkimeConfig = require('../common/arkimeConfig');
 const User = require('../common/user');
 const Auth = require('../common/auth');
+const ArkimeUtil = require('../common/arkimeUtil');
 const BuildQuery = require('./buildQuery');
+const Db = require('./db');
 const { MCPToolError } = MCPServer;
 
 // The standard SessionsQuery parameters, see apiSessions.js SessionsQuery
@@ -38,6 +40,17 @@ const SESSION_QUERY_PROPS = {
     description: "Which session timestamp the time window applies to. Defaults to 'last'."
   }
 };
+
+// Query params each web ui page reads on top of the session query params
+const UI_PAGE_KEYS = {
+  sessions: ['length'],
+  spigraph: ['exp', 'size'],
+  spiview: ['spi'],
+  connections: ['srcField', 'dstField'],
+  hunt: []
+};
+
+const UI_NOTE = ' The result includes uiUrl, a link that opens the same query in the Arkime web UI.';
 
 function sessionQuerySchema (extra = {}, required = []) {
   return {
@@ -104,6 +117,44 @@ class MCPViewerAPIs {
   }
 
   // --------------------------------------------------------------------------
+  /* Web ui query for a page from the tool args, resolving time like the api does */
+  static #uiQuery (page, args) {
+    const ui = {};
+    for (const key of UI_PAGE_KEYS[page]) {
+      if (args[key] !== undefined) { ui[key] = args[key]; }
+    }
+    for (const key of Object.keys(SESSION_QUERY_PROPS)) {
+      if (args[key] !== undefined) { ui[key] = args[key]; }
+    }
+    ui.date ??= 1;
+    if (ui.startTime !== undefined && ui.stopTime !== undefined && String(ui.date) !== '-1') {
+      delete ui.date;
+    }
+    return ui;
+  }
+
+  // --------------------------------------------------------------------------
+  /* The ui's own session permalink, see sessionDetailData.js */
+  static #sessionUiQuery (id, session = {}) {
+    const query = { expression: `id == ${Db.sid2Id(String(id))}`, openAll: 1, cluster: session.cluster };
+    if (session.firstPacket !== undefined && session.lastPacket !== undefined) {
+      query.startTime = Math.floor(session.firstPacket / 1000);
+      query.stopTime = Math.ceil(session.lastPacket / 1000);
+    } else {
+      query.date = -1;
+    }
+    return query;
+  }
+
+  // --------------------------------------------------------------------------
+  /* Sessions page for what a tag tool touched */
+  static #tagsUiQuery (args) {
+    if (args.ids === undefined) { return MCPViewerAPIs.#uiQuery('sessions', args); }
+    const ids = String(args.ids).split(',').map(id => Db.sid2Id(id.trim())).filter(id => id !== '');
+    return { expression: `id == [${ids.join(',')}]`, date: -1 };
+  }
+
+  // --------------------------------------------------------------------------
   static #buildTools (apis) {
     const { SessionAPIs, StatsAPIs, MiscAPIs, ConnectionAPIs, ViewAPIs, HuntAPIs, ShortcutAPIs, HistoryAPIs } = apis;
     const mw = MCPViewerAPIs.#mw;
@@ -130,7 +181,7 @@ class MCPViewerAPIs {
       {
         name: 'arkime_sessions',
         title: 'Search sessions',
-        description: 'Search network sessions (connections) and return matching records. This is the primary search tool.',
+        description: 'Search network sessions (connections) and return matching records. This is the primary search tool.' + UI_NOTE,
         annotations: { readOnlyHint: true },
         inputSchema: sessionQuerySchema({
           length: { type: 'number', description: 'How many sessions to return, default 100.' },
@@ -142,12 +193,13 @@ class MCPViewerAPIs {
           url: '/api/sessions',
           query: MCPViewerAPIs.#sessionQuery(args, ['length', 'start', 'fields', 'order']),
           handlers: [mw.logAction('sessions'), SessionAPIs.getSessions]
-        })
+        }),
+        ui: (args) => ['sessions', MCPViewerAPIs.#uiQuery('sessions', args)]
       },
       {
         name: 'arkime_session_detail',
         title: 'Get one session',
-        description: 'Fetch the full metadata (SPI data) for a single session by its Arkime session id.',
+        description: 'Fetch the full metadata (SPI data) for a single session by its Arkime session id.' + UI_NOTE,
         annotations: { readOnlyHint: true },
         inputSchema: {
           type: 'object',
@@ -159,12 +211,13 @@ class MCPViewerAPIs {
           url: `/api/session/${args.id}`,
           params: { id: args.id },
           handlers: [mw.logAction(), SessionAPIs.getSessionById]
-        })
+        }),
+        ui: (args, session) => ['sessions', MCPViewerAPIs.#sessionUiQuery(args.id, session)]
       },
       {
         name: 'arkime_spigraph',
         title: 'Top values over time',
-        description: 'Aggregate one field across matching sessions: returns the top values with session/packet/byte counts plus a time series for each. Use to answer "what are the top N x" questions.',
+        description: 'Aggregate one field across matching sessions: returns the top values with session/packet/byte counts plus a time series for each. Use to answer "what are the top N x" questions.' + UI_NOTE,
         annotations: { readOnlyHint: true },
         inputSchema: sessionQuerySchema({
           exp: { type: 'string', description: "Field expression name to aggregate on, eg 'ip.dst' or 'http.host'." },
@@ -174,12 +227,13 @@ class MCPViewerAPIs {
           url: '/api/spigraph',
           query: MCPViewerAPIs.#sessionQuery(args, ['exp', 'size']),
           handlers: [mw.logAction('spigraph'), mw.expToField, SessionAPIs.getSPIGraph]
-        })
+        }),
+        ui: (args) => ['spigraph', MCPViewerAPIs.#uiQuery('spigraph', args)]
       },
       {
         name: 'arkime_spiview',
         title: 'Field value summary',
-        description: 'Return the top values for several fields at once for the matching sessions. Cheaper than many arkime_spigraph calls when you just want an overview.',
+        description: 'Return the top values for several fields at once for the matching sessions. Cheaper than many arkime_spigraph calls when you just want an overview.' + UI_NOTE,
         annotations: { readOnlyHint: true },
         inputSchema: sessionQuerySchema({
           spi: { type: 'string', description: "Comma separated dbField names, each optionally :count, eg 'destination.ip:10,http.host:5'." }
@@ -188,7 +242,8 @@ class MCPViewerAPIs {
           url: '/api/spiview',
           query: MCPViewerAPIs.#sessionQuery(args, ['spi']),
           handlers: [mw.logAction('spiview'), SessionAPIs.getSPIView]
-        })
+        }),
+        ui: (args) => ['spiview', MCPViewerAPIs.#uiQuery('spiview', args)]
       },
       {
         name: 'arkime_unique',
@@ -207,7 +262,8 @@ class MCPViewerAPIs {
           });
           if (result.status >= 400) { throw new MCPToolError(result.body?.text ?? 'unique failed'); }
           return { values: result.text.split('\n').filter(l => l !== '') };
-        }
+        },
+        ui: (args) => ['spigraph', MCPViewerAPIs.#uiQuery('spigraph', args)]
       },
       {
         name: 'arkime_multiunique',
@@ -226,12 +282,13 @@ class MCPViewerAPIs {
           });
           if (result.status >= 400) { throw new MCPToolError(result.body?.text ?? 'multiunique failed'); }
           return { values: result.text.split('\n').filter(l => l !== '') };
-        }
+        },
+        ui: (args) => ['sessions', MCPViewerAPIs.#uiQuery('sessions', args)]
       },
       {
         name: 'arkime_connections',
         title: 'Connection graph',
-        description: 'Build a node/link graph of who talked to whom for the matching sessions. Returns nodes and links with session, packet and byte totals.',
+        description: 'Build a node/link graph of who talked to whom for the matching sessions. Returns nodes and links with session, packet and byte totals.' + UI_NOTE,
         annotations: { readOnlyHint: true },
         inputSchema: sessionQuerySchema({
           srcField: { type: 'string', description: "Field expression for the source node, default 'ip.src'." },
@@ -241,7 +298,8 @@ class MCPViewerAPIs {
           url: '/api/connections',
           query: MCPViewerAPIs.#sessionQuery(args, ['srcField', 'dstField']),
           handlers: [mw.logAction('connections'), ConnectionAPIs.getConnections]
-        })
+        }),
+        ui: (args) => ['connections', MCPViewerAPIs.#uiQuery('connections', args)]
       },
       {
         name: 'arkime_buildquery',
@@ -253,7 +311,8 @@ class MCPViewerAPIs {
           url: '/api/buildquery',
           query: MCPViewerAPIs.#sessionQuery(args),
           handlers: [mw.logAction('query'), SessionAPIs.getQuery]
-        })
+        }),
+        ui: (args) => ['sessions', MCPViewerAPIs.#uiQuery('sessions', args)]
       },
       {
         name: 'arkime_views',
@@ -308,7 +367,8 @@ class MCPViewerAPIs {
             ...(args.history !== undefined ? { history: args.history } : {})
           },
           handlers: [User.checkPermissions(['packetSearch']), HuntAPIs.getHunts]
-        })
+        }),
+        ui: () => ['hunt']
       },
       {
         name: 'arkime_stats',
@@ -327,7 +387,8 @@ class MCPViewerAPIs {
           url: '/api/stats',
           query: { length: args.length ?? 500, ...(args.filter ? { filter: args.filter } : {}) },
           handlers: [User.checkPermissions(['hideStats']), StatsAPIs.getStats]
-        })
+        }),
+        ui: () => ['stats']
       },
       {
         name: 'arkime_esindices',
@@ -359,7 +420,8 @@ class MCPViewerAPIs {
           url: '/api/files',
           query: { length: args.length ?? 100, start: args.start ?? 0 },
           handlers: [mw.logAction('files'), User.checkPermissions(['hideFiles']), MiscAPIs.getFiles]
-        })
+        }),
+        ui: () => ['files']
       },
       {
         name: 'arkime_histories',
@@ -378,7 +440,8 @@ class MCPViewerAPIs {
           url: '/api/histories',
           query: { length: args.length ?? 100, ...(args.searchTerm ? { searchTerm: args.searchTerm } : {}) },
           handlers: [HistoryAPIs.getHistories]
-        })
+        }),
+        ui: () => ['history']
       },
 
       // --------------------------------------------------------------- write
@@ -401,7 +464,8 @@ class MCPViewerAPIs {
             body: q,
             handlers: [mw.checkHeaderToken, mw.logAction('addTags'), SessionAPIs.addTags]
           });
-        }
+        },
+        ui: (args) => ['sessions', MCPViewerAPIs.#tagsUiQuery(args)]
       },
       {
         name: 'arkime_remove_tags',
@@ -420,7 +484,8 @@ class MCPViewerAPIs {
             body: q,
             handlers: [mw.checkHeaderToken, mw.logAction('removeTags'), User.checkPermissions(['removeEnabled']), SessionAPIs.removeTags]
           });
-        }
+        },
+        ui: (args) => ['sessions', MCPViewerAPIs.#tagsUiQuery(args)]
       },
       {
         name: 'arkime_create_view',
@@ -504,6 +569,43 @@ class MCPViewerAPIs {
             },
             handlers: [mw.logAction('hunt'), User.checkPermissions(['packetSearch']), HuntAPIs.createHunt]
           });
+        },
+        ui: () => ['hunt']
+      },
+
+      // ---------------------------------------------------------------- link
+      {
+        name: 'arkime_ui_link',
+        title: 'Link to the web UI',
+        description: 'Build a link that opens a page of the Arkime web UI with the given query already applied, without running the query. Use when the user wants to continue in the browser, or to share what was found. The search tools already return uiUrl for the query they ran, so this is only needed for a different page or query. When id is given, expression and date are ignored.',
+        annotations: { readOnlyHint: true },
+        inputSchema: sessionQuerySchema({
+          page: {
+            type: 'string',
+            enum: Object.keys(UI_PAGE_KEYS),
+            description: 'Which page to open. Defaults to sessions.'
+          },
+          id: { type: 'string', description: 'A session id to open on the sessions page, instead of an expression.' },
+          exp: { type: 'string', description: "spigraph: field expression name to aggregate on, eg 'ip.dst'." },
+          size: { type: 'number', description: 'spigraph: how many values to show.' },
+          spi: { type: 'string', description: "spiview: comma separated dbField names, each optionally :count, eg 'destination.ip:10'." },
+          srcField: { type: 'string', description: 'connections: field expression for the source node.' },
+          dstField: { type: 'string', description: 'connections: field expression for the destination node.' }
+        }),
+        handler: async (args) => {
+          const page = args.page ?? 'sessions';
+          if (!Object.hasOwn(UI_PAGE_KEYS, page)) { throw new MCPToolError(`Unknown page ${ArkimeUtil.safeStr(page)}`); }
+
+          const query = MCPViewerAPIs.#uiQuery(page, args);
+          if (args.id !== undefined && page === 'sessions') {
+            delete query.date;
+            delete query.expression;
+            Object.assign(query, MCPViewerAPIs.#sessionUiQuery(args.id));
+          }
+
+          const url = MCPServer.webUrl(page, query);
+          if (url === undefined) { throw new MCPToolError('No web UI url is configured'); }
+          return { uiUrl: url };
         }
       }
     ];

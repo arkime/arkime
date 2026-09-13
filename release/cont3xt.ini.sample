@@ -39,6 +39,16 @@ httpRealm=Moloch
 # default cache timeout
 cacheTimeout=1d
 
+# MCP (Model Context Protocol) - exposes POST /mcp so an AI assistant can query
+# cont3xt. Off by default, the caller needs the mcpUser and cont3xtUser roles.
+# Tool results include a link to the same search in the web ui, built from
+# arkimeWebURL, the url users open cont3xt at. Defaults to this host.
+# See https://arkime.com/settings#mcp for the auth modes.
+#mcpEnabled=true
+#mcpAuthMode=header
+#mcpAllowedIps=10.0.0.1/32
+#arkimeWebURL=https://cont3xt.example.com/
+
 # By default use a cache that will survive restarts but local to instance
 [cache]
 type=lmdb
