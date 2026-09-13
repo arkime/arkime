@@ -165,7 +165,6 @@ initializeLanguage();
 <style scoped>
 .btn-language {
   line-height: 1rem;
-  margin-bottom: 2px;
   padding: 1px 5px 0 5px !important;
 }
 .flag-icon {

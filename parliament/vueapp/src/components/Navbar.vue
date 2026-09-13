@@ -77,7 +77,7 @@ SPDX-License-Identifier: Apache-2.0
           color="error"
           variant="flat"
           size="small"
-          class="ms-2"
+          class="ms-2 es-issues-btn"
           @click="scrollToNextNonGreenCluster">
           {{ $t('parliament.navEsIssues') }}
           <v-chip
@@ -300,5 +300,11 @@ export default {
 /* navbar shell + nav-btn typography come from common/vueapp/arkime-navbar.css */
 .refresh-interval-select {
   max-width: 180px;
+}
+/* 30px, not the 32px common.css gives every other v-btn, so this sits
+   on the same rows as the 30px refresh select beside it. */
+.es-issues-btn.v-btn {
+  height: 30px !important;
+  min-height: 30px !important;
 }
 </style>

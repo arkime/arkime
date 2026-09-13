@@ -344,8 +344,23 @@ pre {
   box-shadow: 0 8px 16px -8px black;
 }
 .sub-navbar .sub-navbar-title {
+  /* Flex row so the leading v-icon centers on the text whatever size it
+     is -- inline, vertical-align: middle drops it onto the x-height and
+     a bigger icon also shoves the text off the band's center. */
+  display: inline-flex;
+  align-items: center;
   font-size: 19px;
   font-weight: bold;
+}
+/* A centered line box is not centered text: the font leaves more room
+   above the cap than below the baseline, so the text alone reads low.
+   Lift it by that difference -- the icon is already centered. Keeping
+   the title text in its own inline span (rather than as a bare text
+   node) also lets anything trailing it, like View Config's config-file
+   path, sit on the title's baseline. */
+.sub-navbar .sub-navbar-title > span {
+  position: relative;
+  top: -0.025em;
 }
 .sub-navbar .sub-navbar-title .fa-stack {
   margin-top: -14px;
@@ -451,9 +466,10 @@ pre {
    Vuetify's $button-height SCSS variable (viewer/vueapp/src/vuetify-settings.scss);
    apply it via CSS for the other apps so all v-btn instances render at
    the same compact height as viewer. Exclude .v-btn--icon so Vuetify's
-   natural square sizing keeps icon buttons circular. .roles-dropdown
-   opts out so its own RoleDropdown.vue height rule wins. */
-.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon):not(.roles-dropdown) {
+   natural square sizing keeps icon buttons circular. .roles-dropdown,
+   .arkime-nav-btn and .es-issues-btn opt out so their own height rules
+   win. */
+.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon):not(.roles-dropdown):not(.arkime-nav-btn):not(.es-issues-btn) {
   height: 32px !important;
   min-height: 32px !important;
 }

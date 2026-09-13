@@ -75,8 +75,10 @@ SPDX-License-Identifier: Apache-2.0
   margin-left: 3rem;
 }
 
-/* nav buttons -- typography only. Pill bg + text color handled by
-   :variant + :style on the v-btn (theme-adaptive via CSS vars). */
+/* nav buttons -- typography + a 30px pill, a pixel shorter top and
+   bottom than the 32px common.css gives every other v-btn. Pill bg +
+   text color handled by :variant + :style on the v-btn (theme-adaptive
+   via CSS vars). */
 .arkime-navbar .arkime-nav-btn {
   text-transform: uppercase;
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -84,7 +86,8 @@ SPDX-License-Identifier: Apache-2.0
   font-weight: 500;
   letter-spacing: 0.4px;
   margin: 0;
-  height: 26px !important;
+  height: 30px !important;
+  min-height: 30px !important;
   padding: 0 12px !important;
   border-radius: 5px;
 }
