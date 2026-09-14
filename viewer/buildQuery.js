@@ -349,6 +349,7 @@ class BuildQuery {
   static async #build (req, buildCb, queryOverride = null) {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
+    const timeLimit = req.user.getTimeLimit(); // role-aggregated, not just req.user.timeLimit
 
     // queryOverride can supersede req.query if specified
     const reqQuery = queryOverride || req.query;
@@ -364,17 +365,17 @@ class BuildQuery {
 
     const interval = startAndStopParams[2];
 
-    if ((parseFloat(reqQuery.date) > parseFloat(req.user.timeLimit)) ||
-      ((reqQuery.date === '-1') && req.user.timeLimit)) {
+    if ((parseFloat(reqQuery.date) > parseFloat(timeLimit)) ||
+      ((reqQuery.date === '-1') && timeLimit)) {
       timeLimitExceeded = true;
-    } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (req.user.timeLimit) &&
-               ((reqQuery.stopTime - reqQuery.startTime) / 3600 > req.user.timeLimit)) {
+    } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (timeLimit) &&
+               ((reqQuery.stopTime - reqQuery.startTime) / 3600 > timeLimit)) {
       timeLimitExceeded = true;
     }
 
     if (timeLimitExceeded) {
-      console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`);
-      return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
+      console.log(`${req.user.userName} trying to exceed time limit: ${timeLimit} hours`);
+      return buildCb(`User time limit (${timeLimit} hours) exceeded`, {});
     }
 
     const limit = Math.min(Config.getInt('maxSessionsQueried', 2000000), +reqQuery.length || 100);
