@@ -219,7 +219,7 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "sessions search with extra query clause rejected");
 is ($response->content, "Not authorized for API");
 
-# PSECBUGS-116238 - path confusion: the guard checks a path decoded by Express
+# path confusion: the guard checks a path decoded by Express
 # (req.params['0']) while the proxied request uses the raw, still-encoded url
 # (req.url); a %3f/%23 makes the two resolve to different endpoints.
 
