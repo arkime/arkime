@@ -14,8 +14,8 @@ copy_elasticsearch() {
             export ARKIME__usersPrefix="$ARKIME__prefix"
         fi
     fi
-
 }
+
 ######################################################################
 run_forever() {
     local dir="$1"
@@ -42,6 +42,12 @@ run_parliament() {
 ######################################################################
 run_viewer() {
     run_forever "$BASEDIR/viewer" "$BASEDIR/bin/node" viewer.js "$@"
+}
+
+######################################################################
+run_esproxy() {
+    copy_elasticsearch
+    run_forever "$BASEDIR/viewer" "$BASEDIR/bin/node" esProxy.js "$@"
 }
 
 ######################################################################
@@ -83,25 +89,26 @@ trap cleanup SIGINT
 show_help() {
     echo "Usage: $0 <command> [options] -- <command argument1> <command argument2> ..."
     echo "Commands:"
-    echo "  capture              Run capture"
-    echo "  capture-viewer       Run capture and viewer"
-    echo "  db.pl                Run db.pl"
-    echo "  viewer               Run viewer"
-    echo "  cont3xt              Run cont3xt"
-    echo "  parliament           Run parliament"
-    echo "  wise                 Run wise"
+    echo "  capture            Run capture"
+    echo "  capture-viewer     Run capture and viewer"
+    echo "  db.pl              Run db.pl"
+    echo "  viewer             Run viewer"
+    echo "  cont3xt            Run cont3xt"
+    echo "  parliament         Run parliament"
+    echo "  wise               Run wise"
+    echo "  esproxy            Run esproxy"
     echo
     echo "Options:"
-    echo "  --add-admin            Add an admin user if missing, please change password ASAP"
-    echo "  --basedir <dir>        Use a different base directory for Arkime, default is /opt/arkime"
-    echo "  --db <args>            Run db.pl with args, can be specified multiple times"
-    echo "  --forever              Run the tools forever, default is just once"
-    echo "  --insecure             Disable TLS certificate verification for ES/OS connections"
-    echo "                         (applies to --wait-for-db, --db, and --add-admin). INSECURE,"
-    echo "                         use only with self-signed certs in trusted networks."
-    echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
-    echo "  --wait-for-db <dburl>  Wait for Elasticsearch/OpenSearch to be ready before running command"
-    echo "  --                     All arguments after this are passed to the command"
+    echo "  --add-admin        Add an admin user if missing, please change password ASAP"
+    echo "  --basedir <dir>    Use a different base directory for Arkime, default is /opt/arkime"
+    echo "  --db <args>        Run db.pl with args, can be specified multiple times"
+    echo "  --forever          Run the tools forever, default is just once"
+    echo "  --insecure         Disable TLS certificate verification for ES/OS connections"
+    echo "                     (applies to --wait-for-db, --db, and --add-admin). INSECURE,"
+    echo "                     use only with self-signed certs in trusted networks."
+    echo "  --update-geo       Run /opt/arkime/bin/arkime_update_geo.sh"
+    echo "  --wait-for-db <dburl> Wait for Elasticsearch/OpenSearch to be ready before running command"
+    echo "  --                 All arguments after this are passed to the command"
     echo
     echo "Examples:"
     echo "  $0 capture --db 'http://es:9200 init --ifneeded'"
@@ -109,8 +116,8 @@ show_help() {
     echo "  $0 capture --db 'http://es:9200 upgradenoprompt --ifneeded --compression gzip'"
     echo
     echo "Deprecated (use --db instead):"
-    echo "  --init <dburl>         Use: --db '<dburl> init --ifneeded'"
-    echo "  --upgrade <dburl>      Use: --db '<dburl> upgradenoprompt --ifneeded'"
+    echo "  --init <dburl>     Use: --db '<dburl> init --ifneeded'"
+    echo "  --upgrade <dburl>  Use: --db '<dburl> upgradenoprompt --ifneeded'"
     echo "  --ilm <force> <delete> Use: --db '<dburl> init --ifneeded --ilm' --db '<dburl> ilm <force> <delete>'"
     echo "  --ism <force> <delete> Use: --db '<dburl> init --ifneeded --ism' --db '<dburl> ism <force> <delete>'"
     echo
@@ -290,6 +297,10 @@ case "$command" in
         echo "Starting parliament"
         run_parliament "$@"
         ;;
+    esproxy)
+        echo "Starting esproxy"
+        run_esproxy "$@"
+        ;;
     db|db.pl)
         echo "Starting db"
         run_db "$@"
@@ -314,4 +325,3 @@ case "$command" in
         exit 1
         ;;
 esac
-
