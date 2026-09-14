@@ -76,12 +76,10 @@ const cspHeader = (process.env.NODE_ENV === 'development')
 
 // The url users open cont3xt at, arkimeWebURL, defaulting to this host
 function arkimeWebURL () {
-  let webUrl = ArkimeConfig.get('arkimeWebURL', `${os.hostname()}${internals.webBasePath}`);
-  if (!webUrl.startsWith('http')) {
-    const isHttps = ArkimeConfig.get('keyFile') && ArkimeConfig.get('certFile');
-    webUrl = `${isHttps ? 'https' : 'http'}://${webUrl}`;
-  }
-  return webUrl;
+  return ArkimeConfig.webURL(
+    () => `${os.hostname()}${internals.webBasePath}`,
+    ArkimeConfig.get('keyFile') && ArkimeConfig.get('certFile')
+  );
 }
 
 function setCookie (req, res, next) {

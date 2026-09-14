@@ -1,4 +1,4 @@
-use Test::More tests => 112;
+use Test::More tests => 122;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -158,6 +158,17 @@ is($json->{result}->{isError}, JSON::false, "arkime_sessions with an expression 
 # web ui links use arkimeWebURL from the test config
 is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?length=1&expression=ip.dst+%3D%3D+10.0.0.1&date=-1", "arkime_sessions links to the same query in the web ui");
 
+# the Sessions page always opens at its own saved page/sort, ignoring start
+# and order in the url, so a link would misrepresent a paged/sorted query -
+# there must be no link at all rather than a misleading one
+$json = callTool("arkime_sessions", '{"date":-1,"length":1,"start":1,"expression":"ip.dst == 10.0.0.1"}');
+is($json->{result}->{isError}, JSON::false, "arkime_sessions with start succeeds");
+ok(!defined $json->{result}->{structuredContent}->{uiUrl}, "arkime_sessions has no link when start is set");
+
+$json = callTool("arkime_sessions", '{"date":-1,"length":1,"order":"firstPacket:asc","expression":"ip.dst == 10.0.0.1"}');
+is($json->{result}->{isError}, JSON::false, "arkime_sessions with order succeeds");
+ok(!defined $json->{result}->{structuredContent}->{uiUrl}, "arkime_sessions has no link when order is set");
+
 my $sessionId = $json->{result}->{structuredContent}->{data}->[0]->{id};
 $json = callTool("arkime_session_detail", "{\"id\":\"$sessionId\"}");
 is($json->{result}->{isError}, JSON::false, "arkime_session_detail succeeds");
@@ -185,6 +196,12 @@ $json = callTool("arkime_ui_link", '{"page":"constructor"}');
 is($json->{result}->{isError}, JSON::true, "arkime_ui_link rejects a prototype property as a page");
 like($json->{result}->{content}->[0]->{text}, qr/Unknown page/, "arkime_ui_link names the bad page");
 
+# a non-string page (eg an array) must not slip past the Object.hasOwn guard
+# via key coercion and crash MCPServer.webUrl instead of failing cleanly
+$json = callTool("arkime_ui_link", '{"page":["sessions"]}');
+is($json->{result}->{isError}, JSON::true, "arkime_ui_link rejects a non-string page");
+like($json->{result}->{content}->[0]->{text}, qr/Unknown page/, "arkime_ui_link names the bad non-string page instead of crashing");
+
 # 2025-06-18 client, resource_link content
 $response = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
     Content => '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"arkime_ui_link","arguments":{"id":"abc"}}}',
@@ -194,6 +211,14 @@ is(scalar @{$json->{result}->{content}}, 2, "a 2025-06-18 client gets a second c
 is($json->{result}->{content}->[1]->{type}, "resource_link", "the second content block is a resource_link");
 is($json->{result}->{content}->[1]->{uri}, $json->{result}->{structuredContent}->{uiUrl}, "the resource_link uri is the web ui link");
 ok(defined $json->{result}->{content}->[1]->{name}, "the resource_link has a name");
+
+# an unrecognized protocol version header must not be mistaken for newer by a
+# lexicographic compare (eg "3" sorts after "2025-06-18" as a string)
+$response = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
+    Content => '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"arkime_ui_link","arguments":{"id":"abc"}}}',
+    "Content-Type" => "application/json", "MCP-Protocol-Version" => "3");
+$json = from_json($response->content);
+is(scalar @{$json->{result}->{content}}, 1, "an unrecognized protocol version does not get a resource_link");
 
 $json = callTool("arkime_ui_link", '{"page":"nope"}');
 is($json->{result}->{isError}, JSON::true, "arkime_ui_link rejects an unknown page");
@@ -292,6 +317,15 @@ is($json->{result}->{isError}, JSON::false, "arkime_add_tags by id succeeds");
 is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?expression=id+%3D%3D+%5B$prefixless%5D&date=-1", "arkime_add_tags links to the tagged session");
 $json = callTool("arkime_remove_tags", "{\"date\":-1,\"ids\":\"$sessionId\",\"tags\":\"mcplink\"}");
 is($json->{result}->{isError}, JSON::false, "arkime_remove_tags by id succeeds");
+
+# an empty-string ids must be treated the same way the real handler treats it
+# (falsy -> tag by expression), so the link reflects the broad expression
+# actually used instead of falsely claiming zero sessions were touched
+$json = callTool("arkime_add_tags", '{"date":-1,"expression":"ip.dst == 10.0.0.1","ids":"","tags":"mcpempty"}');
+is($json->{result}->{isError}, JSON::false, "arkime_add_tags with an empty-string ids succeeds");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:8123/arkime/sessions?expression=ip.dst+%3D%3D+10.0.0.1&date=-1", "arkime_add_tags with an empty-string ids links to the expression, not an empty id list");
+$json = callTool("arkime_remove_tags", '{"date":-1,"expression":"ip.dst == 10.0.0.1","tags":"mcpempty"}');
+is($json->{result}->{isError}, JSON::false, "cleans up the mcpempty tag");
 
 $json = callTool("arkime_create_hunt", '{"name":"mcphunt","search":"zzz","searchType":"ascii","startTime":1,"stopTime":2,"expression":"ip.dst == 199.199.199.199"}');
 is($json->{result}->{isError}, JSON::true, "arkime_create_hunt with no matching sessions is a tool error");

@@ -180,7 +180,7 @@ class MCPCont3xtAPIs {
           if (args.view !== undefined) {
             const found = await MCPCont3xtAPIs.#findView(req, View, args.view);
             view = { id: found._id, name: found.name };
-            doIntegrations ??= found.integrations ?? [];
+            doIntegrations ??= found.integrations;
           }
 
           const data = await MCPCont3xtAPIs.#runSearch(req, {
@@ -197,7 +197,14 @@ class MCPCont3xtAPIs {
           if (view) { data.view = view; }
           return data;
         },
-        ui: (args, data) => MCPCont3xtAPIs.#searchUiQuery(args.query, { submit: true, view: data.view?.id, skipChildren: args.skipChildren })
+        ui: (args, data) => {
+          // An explicit doIntegrations restriction with no view has nowhere to
+          // go in the URL (the web UI only reads a view from the query string),
+          // so a link built without it would search a different, usually wider,
+          // set of integrations than what was actually run - omit it instead.
+          if (args.doIntegrations && !data.view) { return undefined; }
+          return MCPCont3xtAPIs.#searchUiQuery(args.query, { submit: true, view: data.view?.id, skipChildren: args.skipChildren });
+        }
       },
       {
         name: 'cont3xt_integration_search',

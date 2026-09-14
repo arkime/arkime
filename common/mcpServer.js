@@ -209,7 +209,7 @@ class MCPServer {
     try {
       const data = await tool.handler(args, req);
 
-      if (tool.ui && data !== null && typeof data === 'object' && !Array.isArray(data)) {
+      if (tool.ui && ArkimeUtil.isPlainObject(data)) {
         const link = tool.ui(args, data);
         const url = link && MCPServer.webUrl(...link);
         if (url !== undefined) { data.uiUrl = url; }
@@ -217,9 +217,11 @@ class MCPServer {
 
       const content = [{ type: 'text', text: JSON.stringify(data) }];
 
-      // resource_link needs a 2025-06-18 client
+      // resource_link needs a 2025-06-18 client. Compare against the known
+      // list, not a lexicographic '>=', so an unrecognized header value (eg a
+      // non-conforming client sending "3") can't be mistaken for newer
       const version = req.headers['mcp-protocol-version'];
-      if (ArkimeUtil.isString(data?.uiUrl) && ArkimeUtil.isString(version) && version >= '2025-06-18') {
+      if (ArkimeUtil.isString(data?.uiUrl) && version === PROTOCOL_VERSIONS[0]) {
         content.push({
           type: 'resource_link',
           uri: data.uiUrl,

@@ -1,4 +1,4 @@
-use Test::More tests => 45;
+use Test::More tests => 51;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -129,6 +129,13 @@ ok(scalar @{$search->{results}} > 0, "cont3xt_search returns integration results
 ok(!defined $search->{partial}, "cont3xt_search completed rather than timing out");
 is($search->{uiUrl}, "http://localhost:3218/?b=OC44LjguOA%3D%3D&submit=y&skipChildren=true", "cont3xt_search links to the same search in the web ui");
 
+# an explicit doIntegrations restriction has no representation in the web ui's
+# url (only a view does), so the link must be omitted rather than pointing at
+# a search that could run a different, wider set of integrations
+$json = callTool("cont3xt_search", '{"query":"8.8.8.8","doIntegrations":["test"],"skipChildren":true}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_search with an explicit doIntegrations succeeds");
+ok(!defined $json->{result}->{structuredContent}->{uiUrl}, "cont3xt_search has no link when doIntegrations is set without a view");
+
 # search with a view
 $json = cont3xtPostToken('/api/view?arkimeRegressionUser=superAdmin', to_json({ name => "mcpview", integrations => ["nosuchintegration"] }), $token);
 is($json->{success}, JSON::true, "created a view for the mcp tests");
@@ -153,6 +160,20 @@ is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=ZXhh
 
 $json = cont3xtDeleteToken("/api/view/$viewId?arkimeRegressionUser=superAdmin", '{}', $token);
 is($json->{success}, JSON::true, "removed the mcp test view");
+
+# a view with no integrations field at all means "no restriction" (matching
+# how the web ui treats it), not "restrict to zero integrations"
+$json = cont3xtPostToken('/api/view?arkimeRegressionUser=superAdmin', to_json({ name => "mcpnointegrations" }), $token);
+is($json->{success}, JSON::true, "created a view with no integrations list");
+my $noIntegrationsViewId = $json->{view}->{_id};
+esGet("/_refresh");
+
+$json = callTool("cont3xt_search", "{\"query\":\"8.8.8.8\",\"view\":\"$noIntegrationsViewId\",\"skipChildren\":true}");
+is($json->{result}->{isError}, JSON::false, "cont3xt_search with an unrestricted view succeeds");
+ok(scalar @{$json->{result}->{structuredContent}->{results}} > 0, "cont3xt_search with a view lacking an integrations list runs unrestricted, not zero integrations");
+
+$json = cont3xtDeleteToken("/api/view/$noIntegrationsViewId?arkimeRegressionUser=superAdmin", '{}', $token);
+is($json->{success}, JSON::true, "removed the no-integrations test view");
 
 $json = callTool("cont3xt_search", '{"query":""}');
 is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects an empty query");

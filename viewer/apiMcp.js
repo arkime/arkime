@@ -77,13 +77,19 @@ class MCPViewerAPIs {
   static get tools () { return MCPViewerAPIs.#tools; }
 
   // --------------------------------------------------------------------------
-  /* Pull only the defined session query params out of the tool arguments, so a
-   * model can't smuggle arbitrary query params into the underlying handler */
-  static #sessionQuery (args, extraKeys = []) {
-    const query = {};
-    for (const key of [...Object.keys(SESSION_QUERY_PROPS), ...extraKeys]) {
-      if (args[key] !== undefined) { query[key] = args[key]; }
+  /* Only the keys in `keys` that are actually set on args, so a model can't
+   * smuggle arbitrary params into the underlying handler */
+  static #pick (args, keys) {
+    const picked = {};
+    for (const key of keys) {
+      if (args[key] !== undefined) { picked[key] = args[key]; }
     }
+    return picked;
+  }
+
+  // --------------------------------------------------------------------------
+  static #sessionQuery (args, extraKeys = []) {
+    const query = MCPViewerAPIs.#pick(args, [...Object.keys(SESSION_QUERY_PROPS), ...extraKeys]);
     query.date ??= 1;
     MCPViewerAPIs.#checkQueryDays(query);
     return query;
@@ -119,13 +125,7 @@ class MCPViewerAPIs {
   // --------------------------------------------------------------------------
   /* Web ui query for a page from the tool args, resolving time like the api does */
   static #uiQuery (page, args) {
-    const ui = {};
-    for (const key of UI_PAGE_KEYS[page]) {
-      if (args[key] !== undefined) { ui[key] = args[key]; }
-    }
-    for (const key of Object.keys(SESSION_QUERY_PROPS)) {
-      if (args[key] !== undefined) { ui[key] = args[key]; }
-    }
+    const ui = MCPViewerAPIs.#pick(args, [...UI_PAGE_KEYS[page], ...Object.keys(SESSION_QUERY_PROPS)]);
     ui.date ??= 1;
     if (ui.startTime !== undefined && ui.stopTime !== undefined && String(ui.date) !== '-1') {
       delete ui.date;
@@ -147,9 +147,12 @@ class MCPViewerAPIs {
   }
 
   // --------------------------------------------------------------------------
-  /* Sessions page for what a tag tool touched */
+  /* Sessions page for what a tag tool touched. Mirrors addTags/removeTags'
+   * own `if (req.body.ids)` truthy check (apiSessions.js) so an empty-string
+   * ids can't make this look like nothing was touched when the handler
+   * actually fell back to tagging by expression. */
   static #tagsUiQuery (args) {
-    if (args.ids === undefined) { return MCPViewerAPIs.#uiQuery('sessions', args); }
+    if (!args.ids) { return MCPViewerAPIs.#uiQuery('sessions', args); }
     const ids = String(args.ids).split(',').map(id => Db.sid2Id(id.trim())).filter(id => id !== '');
     return { expression: `id == [${ids.join(',')}]`, date: -1 };
   }
@@ -194,7 +197,10 @@ class MCPViewerAPIs {
           query: MCPViewerAPIs.#sessionQuery(args, ['length', 'start', 'fields', 'order']),
           handlers: [mw.logAction('sessions'), SessionAPIs.getSessions]
         }),
-        ui: (args) => ['sessions', MCPViewerAPIs.#uiQuery('sessions', args)]
+        // The Sessions page always opens at its own saved page/sort - it never
+        // reads start/order from the url - so a link would misrepresent a
+        // paged or custom-sorted query. Only link when neither is in play.
+        ui: (args) => (args.start || args.order ? undefined : ['sessions', MCPViewerAPIs.#uiQuery('sessions', args)])
       },
       {
         name: 'arkime_session_detail',
@@ -594,7 +600,12 @@ class MCPViewerAPIs {
         }),
         handler: async (args) => {
           const page = args.page ?? 'sessions';
-          if (!Object.hasOwn(UI_PAGE_KEYS, page)) { throw new MCPToolError(`Unknown page ${ArkimeUtil.safeStr(page)}`); }
+          // typeof check first: Object.hasOwn coerces its key (eg an array
+          // like ["sessions"] stringifies to "sessions" and would pass), which
+          // would leave `page` a non-string reaching MCPServer.webUrl below
+          if (typeof page !== 'string' || !Object.hasOwn(UI_PAGE_KEYS, page)) {
+            throw new MCPToolError(`Unknown page ${ArkimeUtil.safeStr(page)}`);
+          }
 
           const query = MCPViewerAPIs.#uiQuery(page, args);
           if (args.id !== undefined && page === 'sessions') {
