@@ -290,6 +290,24 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * The url users open this app at, from the arkimeWebURL setting - used to
+   * build links back to the web ui (eg MCP tool result uiUrls).
+   * @param {function} defaultHost () => the host[:port][/basePath] to fall back
+   *        to when arkimeWebURL isn't set. A function so the fallback (which
+   *        may be non-trivial to compute) is only evaluated when actually needed.
+   * @param {boolean} isHttps Whether to default to https when the value has no scheme
+   */
+  static webURL (defaultHost, isHttps) {
+    let webUrl = ArkimeConfig.get('arkimeWebURL');
+    if (webUrl === undefined) { webUrl = defaultHost(); }
+    if (!webUrl.startsWith('http')) {
+      webUrl = `${isHttps ? 'https' : 'http'}://${webUrl}`;
+    }
+    return webUrl;
+  }
+
+  // ----------------------------------------------------------------------------
   /* Parse a config value as a number, undefined if it isn't one. parseInt
    * would take '10k' as 10, and json/yaml hand us real numbers, so 2.9 must
    * not pass as an integer either. Empty means unset. */

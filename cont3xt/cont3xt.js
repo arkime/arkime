@@ -11,6 +11,7 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 const path = require('path');
+const os = require('os');
 const version = require('../common/version');
 const User = require('../common/user');
 const Auth = require('../common/auth');
@@ -92,6 +93,14 @@ ArkimeConfig.loaded(() => {
     cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
   }
 });
+
+// The url users open cont3xt at, arkimeWebURL, defaulting to this host
+function arkimeWebURL () {
+  return ArkimeConfig.webURL(
+    () => `${os.hostname()}${internals.webBasePath}`,
+    ArkimeConfig.get('keyFile') && ArkimeConfig.get('certFile')
+  );
+}
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -226,7 +235,8 @@ app.use('/mcp', MCPServer.router({
   version: version.version,
   serviceRole: 'cont3xtUser',
   tools: MCPCont3xtAPIs.tools,
-  enabled: () => ArkimeConfig.get('mcpEnabled', false)
+  enabled: () => ArkimeConfig.get('mcpEnabled', false),
+  webUrl: arkimeWebURL
 }));
 
 // Set up auth, all APIs registered below will use passport

@@ -381,7 +381,8 @@ app.use('/mcp', MCPServer.router({
   version: version.version,
   serviceRole: 'arkimeUser',
   tools: MCPViewerAPIs.tools,
-  enabled: () => ArkimeConfig.get('mcpEnabled', false)
+  enabled: () => ArkimeConfig.get('mcpEnabled', false),
+  webUrl: Config.arkimeWebURL
 }));
 
 // password, testing, or anonymous mode setup ---------------------------------

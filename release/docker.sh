@@ -14,8 +14,8 @@ copy_elasticsearch() {
             export ARKIME__usersPrefix="$ARKIME__prefix"
         fi
     fi
-
 }
+
 ######################################################################
 run_forever() {
     local dir="$1"
@@ -42,6 +42,12 @@ run_parliament() {
 ######################################################################
 run_viewer() {
     run_forever "$BASEDIR/viewer" "$BASEDIR/bin/node" viewer.js "$@"
+}
+
+######################################################################
+run_esproxy() {
+    copy_elasticsearch
+    run_forever "$BASEDIR/viewer" "$BASEDIR/bin/node" esProxy.js "$@"
 }
 
 ######################################################################
@@ -83,13 +89,14 @@ trap cleanup SIGINT
 show_help() {
     echo "Usage: $0 <command> [options] -- <command argument1> <command argument2> ..."
     echo "Commands:"
-    echo "  capture              Run capture"
-    echo "  capture-viewer       Run capture and viewer"
-    echo "  db.pl                Run db.pl"
-    echo "  viewer               Run viewer"
-    echo "  cont3xt              Run cont3xt"
-    echo "  parliament           Run parliament"
-    echo "  wise                 Run wise"
+    echo "  capture                Run capture"
+    echo "  capture-viewer         Run capture and viewer"
+    echo "  cont3xt                Run cont3xt"
+    echo "  db.pl                  Run db.pl"
+    echo "  esproxy                Run esproxy"
+    echo "  parliament             Run parliament"
+    echo "  viewer                 Run viewer"
+    echo "  wise                   Run wise"
     echo
     echo "Options:"
     echo "  --add-admin            Add an admin user if missing, please change password ASAP"
@@ -290,6 +297,10 @@ case "$command" in
         echo "Starting parliament"
         run_parliament "$@"
         ;;
+    esproxy)
+        echo "Starting esproxy"
+        run_esproxy "$@"
+        ;;
     db|db.pl)
         echo "Starting db"
         run_db "$@"
@@ -314,4 +325,3 @@ case "$command" in
         exit 1
         ;;
 esac
-
