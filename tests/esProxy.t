@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 51;
+use Test::More tests => 64;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -218,3 +218,79 @@ $req->content($search_extra);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "sessions search with extra query clause rejected");
 is ($response->content, "Not authorized for API");
+
+# path confusion: the guard checks a path decoded by Express
+# (req.params['0']) while the proxied request uses the raw, still-encoded url
+# (req.url); a %3f/%23 makes the two resolve to different endpoints.
+
+# GET - guard sees the decoded string terminate at %3f, matching the
+# allowlisted /_cat/health; the raw url actually collapses to /_search
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cat/health%3fz/../../_search");
+is ($response->code, 400, "GET path confusion via %3f rejected");
+
+# GET - same bypass using %23 (#) as the terminator
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cat/health%23z/../../_search");
+is ($response->code, 400, "GET path confusion via %23 rejected");
+
+# POST - guard matches the exact-match allowlist entry /tests_stats/_search;
+# the raw url actually collapses to /_bulk, skipping validateBulk() entirely
+my $bulk_bad_index = qq({"index":{"_index":"evil_index","_id":"1"}}\n{"field":"value"}\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_search%3f/../../_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_bad_index);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST path confusion into _bulk rejected");
+
+# DELETE - a startsWith() guard is fooled the same way: the decoded id looks
+# like it starts with the sensor's own doc prefix, but the raw url collapses
+# to a different index entirely
+$response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-%3fz/../../../tests_sessions3-2024"));
+is ($response->code, 400, "DELETE path confusion to a different index rejected");
+
+# query strings: capture sends these exact urls through esProxy and the guard
+# must keep allowing them. Express strips the query before the wildcard param,
+# so normalizeUrlPath() only sees a ?/# when it arrived percent-encoded; these
+# catch a guard change (say, checking req.url) that would lock capture out.
+
+# GET - getExact entries, see arkime_db_health_check, arkime_db_load_fields,
+# and the template _meta check in capture/db.c
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cat/health?format=json");
+is ($response->code, 200, "GET _cat/health with format query allowed");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_fields/_search?size=3000");
+is ($response->code, 200, "GET fields _search with size query allowed");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_template/tests_sessions3_template?filter_path=**._meta");
+is ($response->code, 200, "GET sessions3 template with filter_path query allowed");
+
+# POST - exact path compare; capture writes its stats doc with an external
+# version that it bumps from the current one, so do the same and re-post the
+# existing source to leave the doc unchanged
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test");
+is ($response->code, 200, "GET stats doc allowed");
+my $stats = from_json($response->content);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test?version_type=external&version=" . ($stats->{_version} + 1));
+$req->header('Content-Type' => 'application/json');
+$req->content(to_json($stats->{_source}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 200, "POST stats doc with version query allowed");
+
+# POST - exact path compare; capture creates the fn sequence with version 100,
+# ES answers 409 once the sequence has advanced past that, but never the
+# guard's 400
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sequence/_doc/fn-test?version_type=external&version=100");
+$req->header('Content-Type' => 'application/json');
+$req->content("{}");
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201 || $response->code == 409, "POST sequence doc with version query allowed") or diag($response->code);
+isnt ($response->content, "Not authorized for API", "POST sequence doc with version query not rejected by guard");
+
+# POST/DELETE - startsWith compare; capture creates file docs with refresh=true
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99999?refresh=true");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test","num":99999,"name":"/tmp/esProxy-query.pcap","first":0,"locked":0}));
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201, "POST files doc with refresh query allowed") or diag($response->code);
+
+$response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99999"));
+is ($response->code, 200, "DELETE files doc allowed");
