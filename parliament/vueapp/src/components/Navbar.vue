@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           color="primary"
           size="small"
-          class="ms-2">
+          class="ms-2 nav-link-btn">
           {{ $t('navigation.cont3xt') }}
         </v-btn>
 
@@ -110,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           color="info"
           size="small"
-          class="ms-2">
+          class="ms-2 nav-link-btn">
           {{ $t('navigation.wise') }}
         </v-btn>
 
@@ -301,9 +301,12 @@ export default {
 .refresh-interval-select {
   max-width: 180px;
 }
-/* 30px, not the 32px common.css gives every other v-btn, so this sits
-   on the same rows as the 30px refresh select beside it. */
-.es-issues-btn.v-btn {
+/* 30px, not the 32px common.css gives every other v-btn, so these sit
+   on the same row as the 30px refresh select beside them -- cont3xt/wise
+   share the class so the whole action row reads as one consistent
+   height instead of alternating 30/32/30. */
+.es-issues-btn.v-btn,
+.nav-link-btn.v-btn {
   height: 30px !important;
   min-height: 30px !important;
 }

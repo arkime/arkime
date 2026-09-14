@@ -547,11 +547,15 @@ SPDX-License-Identifier: Apache-2.0
                     </template>
                     <a
                       v-if="cluster.type !== 'disabled'"
-                      class="no-decoration"
-                      :href="`${cluster.url}/sessions`">
+                      class="no-decoration text-truncate cluster-title-text"
+                      :href="`${cluster.url}/sessions`"
+                      :title="cluster.title">
                       {{ cluster.title }}
                     </a>
-                    <span v-else>
+                    <span
+                      v-else
+                      class="text-truncate cluster-title-text"
+                      :title="cluster.title">
                       {{ cluster.title }}
                     </span>
                     <a
@@ -1732,13 +1736,19 @@ export default {
   font-weight: 500;
 }
 
-/* Cluster titles are user-supplied and can be one long unbroken word.
-   As a flex item the title keeps min-width: auto, which would push the
-   status chip beside it clean out of the card, so let it shrink and
-   break mid-word. */
+/* Cluster titles are user-supplied and can be arbitrarily long. As a
+   flex item the title keeps min-width: auto, which would push the
+   status chip beside it clean out of the card, so let it shrink -- and
+   truncate with an ellipsis rather than wrap: wrapping would grow this
+   row past one line, floating the leading type-icon and trailing
+   stats-link icon (align-items:center flex siblings) between the
+   wrapped lines instead of next to the title's text. The full title is
+   still available via the native title="" tooltip. */
 .cluster-title {
   min-width: 0;
-  overflow-wrap: anywhere;
+}
+.cluster-title-text {
+  min-width: 0;
 }
 
 /* cluster ES status chip lives at top-right of each card; nudge size to match the old badge.

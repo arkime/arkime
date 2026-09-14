@@ -14,9 +14,10 @@ SPDX-License-Identifier: Apache-2.0
           icon="mdi-cog-outline"
           size="small"
           class="me-1" />
-        <span>{{ $t('viewConfig.title') }}<code
+        <span>{{ $t('viewConfig.title') }}</span>
+        <code
           v-if="config?.configFile"
-          class="text-caption text-medium-emphasis ms-3">{{ config.configFile }}</code></span>
+          class="text-caption text-medium-emphasis ms-3 text-truncate config-file-path">{{ config.configFile }}</code>
       </span>
       <v-spacer />
       <!-- where a bare key is looked up, in order -->
@@ -462,18 +463,21 @@ const blindCount = computed(() => counts.value.blind);
 </script>
 
 <style scoped>
-/* The config path shares the title's baseline by living inside the
-   title span, which is text-no-wrap -- so without these it can neither
-   wrap nor shrink and a long path shoves the info tooltip off the far
-   end of the fixed band. min-width lets the flex item shrink; the
-   ellipsis truncates the path instead of the band overflowing. */
+/* The config path sits beside the title inside .sub-navbar-title so it
+   shares the title's baseline, but it truncates independently of the
+   title: the title span is flex-shrink:0 so it's always shown in full,
+   and only the (potentially much longer) path shrinks and ellipsizes,
+   instead of the two sharing one truncated box. min-width:0 on the
+   title element lets that shrinking happen instead of the band
+   overflowing and shoving the info tooltip off the far end. */
 .sub-navbar-title {
   min-width: 0;
 }
 .sub-navbar-title > span {
+  flex-shrink: 0;
+}
+.config-file-path {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Band 1 is the real .sub-navbar (common/common.css) -- same class, same

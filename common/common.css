@@ -467,9 +467,9 @@ pre {
    apply it via CSS for the other apps so all v-btn instances render at
    the same compact height as viewer. Exclude .v-btn--icon so Vuetify's
    natural square sizing keeps icon buttons circular. .roles-dropdown,
-   .arkime-nav-btn and .es-issues-btn opt out so their own height rules
-   win. */
-.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon):not(.roles-dropdown):not(.arkime-nav-btn):not(.es-issues-btn) {
+   .arkime-nav-btn, .es-issues-btn and .nav-link-btn opt out so their
+   own height rules win. */
+.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon):not(.roles-dropdown):not(.arkime-nav-btn):not(.es-issues-btn):not(.nav-link-btn) {
   height: 32px !important;
   min-height: 32px !important;
 }
