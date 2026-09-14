@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 51;
+use Test::More tests => 55;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -218,3 +218,31 @@ $req->content($search_extra);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "sessions search with extra query clause rejected");
 is ($response->content, "Not authorized for API");
+
+# PSECBUGS-116238 - path confusion: the guard checks a path decoded by Express
+# (req.params['0']) while the proxied request uses the raw, still-encoded url
+# (req.url); a %3f/%23 makes the two resolve to different endpoints.
+
+# GET - guard sees the decoded string terminate at %3f, matching the
+# allowlisted /_cat/health; the raw url actually collapses to /_search
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cat/health%3fz/../../_search");
+is ($response->code, 400, "GET path confusion via %3f rejected");
+
+# GET - same bypass using %23 (#) as the terminator
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cat/health%23z/../../_search");
+is ($response->code, 400, "GET path confusion via %23 rejected");
+
+# POST - guard matches the exact-match allowlist entry /tests_stats/_search;
+# the raw url actually collapses to /_bulk, skipping validateBulk() entirely
+my $bulk_bad_index = qq({"index":{"_index":"evil_index","_id":"1"}}\n{"field":"value"}\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_search%3f/../../_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_bad_index);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST path confusion into _bulk rejected");
+
+# DELETE - a startsWith() guard is fooled the same way: the decoded id looks
+# like it starts with the sensor's own doc prefix, but the raw url collapses
+# to a different index entirely
+$response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-%3fz/../../../tests_sessions3-2024"));
+is ($response->code, 400, "DELETE path confusion to a different index rejected");
