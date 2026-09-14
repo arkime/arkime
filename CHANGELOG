@@ -46,7 +46,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4260 Add esproxy to docker.sh (thanks @rht-jbittner)
 ## All
   - #4215 Fix email searches, periodic queries and cont3xt history deletes ignoring permissions that come from a role instead of the user (thanks @Juwon1405)
-  - #4642 Fix session queries not enforcing a timeLimit that comes only from a role instead of the user
   - #4233 Fix a malformed userAuthIps or mcpAllowedIps entry allowing every source ip, and an empty userAuthIps denying every request
   - #4233 Fix an expired JWT still verifying, and the mcp query window, upload size and session query limits being ignored, when the setting was not a number
   - #4233 Fix a /0 CIDR matching a single address in excludeIPs/onlyIPs and the wise and cont3xt ip sources
@@ -65,6 +64,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
   - #4241 Fix the entire session pcap download ignoring the user's forced expression on segments
+  - #4262 Fix session queries not enforcing a timeLimit that comes only from a role instead of the user
 ## WISE
   - Remove the PassiveTotal source, the API was retired by Microsoft
 
