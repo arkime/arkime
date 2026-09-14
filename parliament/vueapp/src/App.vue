@@ -4,29 +4,32 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div id="app">
-    <div v-if="compatibleBrowser">
+    <template v-if="compatibleBrowser">
+      <app-banner />
       <parliament-navbar />
-      <router-view class="margin-for-nav-sm" />
+      <router-view />
       <parliament-footer />
-    </div>
-    <div v-else>
-      <parliament-upgrade-browser />
-    </div>
+    </template>
+    <parliament-upgrade-browser v-else />
   </div>
 </template>
 
 <script>
 import ParliamentNavbar from './components/Navbar.vue';
 import ParliamentService from './components/parliament.service.js';
+import UserService from './components/user.service.js';
 import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
 import ParliamentFooter from '@common/Footer.vue';
+import AppBanner from '@common/AppBanner.vue';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
   components: {
     ParliamentNavbar,
     ParliamentUpgradeBrowser,
-    ParliamentFooter
+    ParliamentFooter,
+    AppBanner
   },
   data: function () {
     return {
@@ -45,28 +48,30 @@ export default {
     ParliamentService.getParliament().then((data) => {
       this.$store.commit('setParliament', data);
     });
+
+    // Hydrate the Vuetify theme from user.settings; if the server has
+    // no value yet, push localStorage up so the choice follows the user
+    // to other browsers/devices on next load.
+    UserService.getUser().then((user) => {
+      applyServerTheme(user?.settings, (themeId, customTheme) => {
+        this.$store.commit('hydrateThemeFromServer', { themeId, customTheme });
+      });
+    }).catch(() => { /* ignore */ });
   }
 };
 </script>
 
 <style>
 /* app styles -------------------------------- */
-body { background-color: #F0F0F0; }
+body {
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+}
 
 a.no-href { color: #007bff !important; }
 a.no-href:hover { color: #0056b3 !important; }
 
 .text-muted-more { color: #DDDDDD; }
-
-/* small, condensed styles ------------------- */
-.alert.alert-sm  {
-  font-size: .85rem;
-  padding: .25rem .4rem;
-  margin-bottom: .5rem;
-}
-.alert.alert-sm > .close {
-  line-height: .75;
-}
 
 /* see top level common.css info area for usage */
 .info-area { color: #777777; }

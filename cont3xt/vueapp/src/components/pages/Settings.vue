@@ -3,671 +3,776 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row
-    no-gutters
-    class="d-flex flex-row flex-grow-1 overflow-hidden">
-    <!-- navigation -->
-    <v-col
-      xl="2"
-      lg="3"
-      md="3"
-      sm="4"
-      xs="12"
-      role="tablist"
-      aria-orientation="vertical"
-      class="h-100 overflow-auto no-overflow-x">
-      <div class="nav d-flex flex-column nav-pills pt-3 pb-4 px-4">
-        <v-btn
-          @click="openView('views')"
-          block
-          class="nav-link cursor-pointer btn-space-between"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'views'">
-          <span>
-            <v-icon icon="mdi-eye mdi-fw" />Views
-          </span>
+  <div class="settings-page d-flex flex-column flex-grow-1 overflow-hidden">
+    <!-- sub navbar -->
+    <div class="sub-navbar">
+      <span class="sub-navbar-title">
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
+        <span>{{ $t('cont3xt.settings.title') }}</span>
+      </span>
+    </div> <!-- /sub navbar -->
+
+    <v-row
+      no-gutters
+      class="d-flex flex-row flex-grow-1 overflow-hidden">
+      <!-- navigation -->
+      <v-col
+        xl="1"
+        lg="2"
+        md="2"
+        sm="3"
+        xs="12"
+        role="tablist"
+        aria-orientation="vertical"
+        class="h-100 overflow-auto no-overflow-x">
+        <div class="nav d-flex flex-column pt-3 pb-4 px-4">
           <v-btn
-            size="x-small"
-            class="float-right"
-            color="secondary"
-            v-if="visibleTab === 'views'"
-            @click.stop.prevent="openViewForm"
-            v-tooltip="'Create a new view'">
-            <v-icon icon="mdi-plus-circle" />
-          </v-btn>
-        </v-btn>
-        <v-btn
-          @click="openView('integrations')"
-          block
-          class="nav-link cursor-pointer justify-start"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'integrations'">
-          <v-icon icon="mdi-key mdi-fw" />Integrations
-        </v-btn>
-        <v-btn
-          @click="openView('overviews')"
-          block
-          class="nav-link cursor-pointer btn-space-between"
-          :class="{ 'mb-1': visibleTab === 'overviews' }"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'overviews'">
-          <span>
-            <v-icon icon="mdi-file mdi-fw" />Overviews
-          </span>
-          <v-btn
-            size="x-small"
-            class="float-right"
-            color="secondary"
-            v-if="visibleTab === 'overviews'"
-            @click.stop.prevent="openOverviewForm"
-            v-tooltip="'Create a new overview'">
-            <v-icon icon="mdi-plus-circle" />
-          </v-btn>
-        </v-btn>
-        <template v-if="visibleTab === 'overviews'">
-          <!-- overviews -->
-          <div
-            v-for="iType in iTypes"
-            :key="iType"
-            class="itype-group-container"
-            :style="{ 'border-color': iTypeColorMap[iType] }">
-            <v-btn
-              v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
-              size="small"
-              :key="overview._id"
-              :title="overview.name"
-              @click="setActiveOverviewId(overview._id)"
-              block
-              class="nav-link cursor-pointer btn-space-between"
-              color="primary"
-              variant="text"
-              :active="activeOverviewId === overview._id">
-              <overview-selector-line :overview="overview" />
-            </v-btn>
-          </div>
-        </template>
-        <v-btn
-          @click="openView('linkgroups')"
-          block
-          class="nav-link cursor-pointer btn-space-between"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'linkgroups'">
-          <span>
-            <v-icon icon="mdi-link mdi-fw" />Link Groups
-          </span>
-          <v-btn
-            size="x-small"
-            class="float-right"
-            color="secondary"
-            v-if="visibleTab === 'linkgroups'"
-            @click.stop.prevent="openLinkGroupForm"
-            v-tooltip="'Create a new link group'">
-            <v-icon icon="mdi-plus-circle" />
-          </v-btn>
-        </v-btn>
-        <template v-if="visibleTab === 'linkgroups'">
-          <drag-update-list
-            class="d-flex flex-column"
-            style="margin-left: 1rem"
-            :value="getLinkGroups || []"
-            @update="updateList">
-            <v-btn
-              v-for="(lg, i) in getLinkGroups"
-              :key="lg._id"
-              block
-              size="small"
-              variant="text"
-              color="primary"
-              class="justify-start mt-1"
-              @click="selectedLinkGroup = i"
-              :title="lg.name"
-              :active="selectedLinkGroup === i">
-              <v-icon
-                icon="mdi-menu"
-                :id="`${lg._id}-tt`"
-                class="drag-handle mr-2" />
-              <id-tooltip :target="`${lg._id}-tt`">
-                Drag &amp; drop to reorder Link Groups
-              </id-tooltip>
-              {{ lg.name }}
-            </v-btn>
-          </drag-update-list>
-        </template>
-        <v-btn
-          v-if="!disablePassword"
-          @click="openView('password')"
-          block
-          class="nav-link cursor-pointer justify-start"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'password'">
-          <v-icon icon="mdi-lock mdi-fw" />Password
-        </v-btn>
-      </div>
-    </v-col>
-
-    <v-col
-      xl="10"
-      lg="9"
-      md="9"
-      sm="8"
-      xs="12"
-      class="overflow-auto h-100 pt-3 pb-4 pr-4">
-      <!-- view settings -->
-      <div v-if="visibleTab === 'views'">
-        <!-- view create form -->
-        <create-view-modal v-model="viewModalOpen" />
-        <div class="mr-3 w-100 d-flex justify-space-between align-center">
-          <h1>
-            Views
-          </h1>
-          <v-text-field
-            class="ml-4 mr-2 flex-grow-1 medium-input"
-            autofocus
-            prepend-inner-icon="mdi-magnify"
-            v-debounce="val => searchTerm = val"
-            clearable />
-          <v-btn
-            class="no-wrap search-row-btn"
-            @click="openViewForm"
-            variant="outlined"
-            color="success">
-            <v-icon
-              icon="mdi-plus-circle"
-              class="mr-1" />
-            New View
-          </v-btn>
-
-          <v-btn
-            role="checkbox"
-            class="mx-2 no-wrap search-row-btn"
-            color="secondary"
-            flat
-            @click="seeAllViews = !seeAllViews; seeAllViewsChanged()"
-            v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
-            v-if="roles.includes('cont3xtAdmin')"
-            :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
-            <v-icon
-              class="mr-1"
-              icon="mdi-account-circle" />
-            See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
-          </v-btn>
-        </div>
-        <div class="d-flex flex-wrap">
-          <!-- no views -->
-          <div
-            class="row lead mt-4"
-            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
-            <div class="col">
-              No Views are configured or shared for you to edit.
-              <v-btn
-                variant="text"
-                color="primary"
-                @click="openViewForm">
-                Create one!
-              </v-btn>
-            </div>
-          </div> <!-- /no views -->
-          <!-- no view results -->
-          <div
-            class="row lead mt-4"
-            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
-            <div class="col">
-              No Views match your search.
-            </div>
-          </div> <!-- /no view results -->
-          <!-- views -->
-          <div class="d-flex flex-row flex-wrap align-stretch justify-space-between">
-            <template v-for="view in filteredViews">
-              <div
-                class="px-2 pb-4 flex-grow-1"
-                :id="view._id"
-                :key="`${view._id}`"
-                v-if="view._editable || roles.includes('cont3xtAdmin')">
-                <v-card
-                  variant="tonal"
-                  elevation="4">
-                  <template #title>
-                    <div class="w-100 d-flex justify-space-between align-start">
-                      <div class="d-flex ga-1">
-                        <v-btn
-                          class="square-btn-sm"
-                          size="small"
-                          color="primary"
-                          v-tooltip="'Transfer ownership of this view'"
-                          title="Transfer ownership of this view"
-                          v-if="canTransferView(view)"
-                          @click="openTransferResource(view)">
-                          <v-icon icon="mdi-share" />
-                        </v-btn>
-                        <!-- delete button -->
-                        <transition name="buttons">
-                          <v-btn
-                            class="square-btn-sm"
-                            size="small"
-                            color="error"
-                            v-if="!confirmDeleteView[view._id]"
-                            v-tooltip:top="'Delete this view.'"
-                            @click.stop.prevent="toggleDeleteView(view._id)">
-                            <v-icon icon="mdi-trash-can" />
-                          </v-btn>
-                        </transition> <!-- /delete button -->
-                        <!-- cancel confirm delete button -->
-                        <transition name="buttons">
-                          <v-btn
-                            class="square-btn-sm"
-                            size="small"
-                            color="warning"
-                            v-tooltip="'Cancel'"
-                            title="Cancel"
-                            v-if="confirmDeleteView[view._id]"
-                            @click.stop.prevent="toggleDeleteView(view._id)">
-                            <v-icon icon="mdi-cancel" />
-                          </v-btn>
-                        </transition> <!-- /cancel confirm delete button -->
-                        <!-- confirm delete button -->
-                        <transition name="buttons">
-                          <v-btn
-                            class="square-btn-sm"
-                            size="small"
-                            color="error"
-                            v-tooltip="'Are you sure?'"
-                            title="Are you sure?"
-                            v-if="confirmDeleteView[view._id]"
-                            @click.stop.prevent="deleteView(view)">
-                            <v-icon icon="mdi-check-bold" />
-                          </v-btn>
-                        </transition> <!-- /confirm delete button -->
-                      </div>
-                      <v-alert
-                        color="success"
-                        height="32px"
-                        v-if="view.success"
-                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                        <v-icon
-                          icon="mdi-check-bold"
-                          class="mr-2" />
-                        Saved!
-                      </v-alert>
-                      <v-alert
-                        color="error"
-                        height="32px"
-                        v-if="view.error"
-                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                        <v-icon
-                          icon="mdi-alert"
-                          class="mr-2" />
-                        Error!
-                      </v-alert>
-                      <div class="d-flex ga-1">
-                        <transition name="buttons">
-                          <v-btn
-                            v-if="updatedViewMap[view._id]"
-                            class="square-btn-sm"
-                            size="small"
-                            color="warning"
-                            @click="cancelUpdateView(view)"
-                            v-tooltip="'Cancel changes to this view'">
-                            <v-icon icon="mdi-cancel" />
-                          </v-btn>
-                        </transition>
-                        <transition name="buttons">
-                          <v-btn
-                            v-if="updatedViewMap[view._id]"
-                            class="square-btn-sm"
-                            size="small"
-                            color="success"
-                            @click="saveView(view)"
-                            v-tooltip="'Save this view'">
-                            <v-icon icon="mdi-content-save" />
-                          </v-btn>
-                        </transition>
-                      </div>
-                    </div>
-                  </template>
-                  <ViewForm
-                    class="ma-4"
-                    :view="view"
-                    @update-view="updateView" />
-                </v-card>
-              </div>
-            </template> <!-- /views -->
-          </div>
-        </div>
-      </div> <!-- /view settings -->
-
-      <!-- integrations settings -->
-      <div v-if="visibleTab === 'integrations'">
-        <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
-          <h1>
-            Integrations
-          </h1>
-          <v-text-field
-            autofocus
-            class="ml-4 mr-2 medium-input"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            v-debounce="updateIntegrationSearchTerm"
-            placeholder="Search integrations"
-            clearable />
-          <div class="mr-3 no-wrap">
-            <v-btn
-              class="mr-1"
-              variant="outlined"
-              color="warning"
-              @click="toggleRawIntegrationSettings">
-              <v-icon
-                icon="mdi-pencil-box"
-                class="mr-2" />
-              Raw Edit
-            </v-btn>
-            <v-btn
-              variant="outlined"
-              color="success"
-              @click="saveIntegrationSettings">
-              <v-icon
-                icon="mdi-content-save"
-                class="mr-2" />
-              Save
-            </v-btn>
-          </div>
-        </div>
-        <div
-          class="d-flex flex-wrap"
-          :class="{ 'flex-column': rawIntegrationSettings }">
-          <template v-if="!rawIntegrationSettings">
-            <div
-              class="row lead mt-4"
-              v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
-              <div class="col">
-                No Integrations match your search.
-              </div>
-            </div>
-            <div
-              :key="key"
-              class="px-2 pb-4 flex-grow-1"
-              v-for="([key, setting]) in sortedFilteredIntegrationSettings">
-              <v-card variant="tonal">
-                <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
-                  <img
-                    v-if="getIntegrations[key]"
-                    class="integration-setting-img"
-                    :src="getIntegrations[key].icon">
-                  <h4 class="ml-1 text-truncate">
-                    {{ key }}
-                  </h4>
-                  <div class="mb-2">
-                    <v-icon
-                      size="large"
-                      icon="mdi-lock"
-                      v-if="setting.locked"
-                      class="mr-2 cursor-help"
-                      v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'" />
-                    <span
-                      size="large"
-                      icon="mdi-earth"
-                      class="mr-2 cursor-help"
-                      v-if="setting.globalConfiged"
-                      v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'" />
-                    <a
-                      target="_blank"
-                      :href="setting.homePage"
-                      v-if="!!setting.homePage"
-                      v-tooltip="`${key} home page`">
-                      <v-icon
-                        icon="mdi-home"
-                        size="large" />
-                    </a>
-                  </div>
-                </v-card-title>
-                <div class="d-flex flex-column ga-2 mb-2">
-                  <template
-                    v-for="(field, name) in setting.settings"
-                    :key="name">
-                    <v-checkbox
-                      slim
-                      density="compact"
-                      class="ml-1"
-                      v-if="field.type === 'boolean'"
-                      v-model="setting.values[name]">
-                      <template #label>
-                        <span class="ma-0">{{ name }}</span>
-                      </template>
-                    </v-checkbox>
-                    <v-text-field
-                      v-else
-                      class="ml-2 mr-2"
-                      variant="outlined"
-                      :disabled="setting.locked"
-                      v-model="setting.values[name]"
-                      :rules="[(value) => !field.required || !!value?.length]"
-                      :type="field.password && !field.showValue ? 'password' : 'text'">
-                      <template #label>
-                        {{ name }}<span
-                          class="text-info"
-                          v-if="field.required">*</span>
-                      </template>
-                    </v-text-field>
-                  </template>
-                </div>
-              </v-card>
-            </div>
-          </template>
-          <textarea
-            v-else
-            rows="20"
-            size="sm"
-            @input="e => debounceRawEdit(e)"
-            class="form-control form-control-sm"
-            :value="createINI(rawIntegrationSettings)" />
-        </div>
-      </div> <!-- /integrations settings -->
-
-      <!-- overviews settings -->
-      <div v-if="visibleTab === 'overviews'">
-        <!-- overview create form -->
-        <create-overview-modal v-model="overviewModalOpen" />
-        <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
-          <h1>
-            Overviews
-          </h1>
-          <div class="d-flex flex-row">
-            <v-btn
-              variant="outlined"
-              color="primary"
-              @click="openOverviewForm">
-              <v-icon icon="mdi-plus-circle" />
-              New Overview
-            </v-btn>
-            <v-btn
-              role="checkbox"
-              class="mx-2 no-wrap"
-              color="secondary"
-              flat
-              @click="seeAllOverviews = !seeAllOverviews; seeAllOverviewsChanged()"
-              v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
-              v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
-              <v-icon
-                class="mr-1"
-                icon="mdi-account-circle" />
-              See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
-            </v-btn>
-          </div>
-        </div>
-
-        <!-- overview error -->
-        <v-alert
-          closable
-          color="error"
-          style="z-index: 2000;"
-          v-model="overviewsError"
-          class="position-fixed bottom-0 mb-2 ml-2 left-0">
-          {{ getOverviewsError }}
-        </v-alert> <!-- /overview error -->
-
-        <div class="d-flex flex-wrap pl-4">
-          <!-- overview-form-card uses :key to reset form when swapping active overview -->
-          <overview-form-card
-            v-if="activeOverviewId && activeUnModifiedOverview"
-            :key="activeOverviewId"
-            :overview="activeUnModifiedOverview"
-            :modified-overview="activeModifiedOverview"
-            @update-modified-overview="updateModifiedOverview"
-            @overview-deleted="activeOverviewDeleted"
-            @open-transfer-resource="openTransferResource" />
-          <div
-            v-else
-            class="d-flex flex-column">
+            @click="openView('views')"
+            block
+            class="cursor-pointer btn-space-between"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'views'">
             <span>
-              No Overviews configured.
+              <v-icon icon="mdi-eye mdi-fw" />{{ $t('cont3xt.settings.views') }}
             </span>
             <v-btn
-              variant="outlined"
-              color="primary"
-              @click="openOverviewForm">
-              Create one!
+              size="x-small"
+              class="float-right"
+              color="secondary"
+              v-if="visibleTab === 'views'"
+              @click.stop.prevent="openViewForm"
+              v-tooltip="$t('cont3xt.settings.newViewTip')">
+              <v-icon icon="mdi-plus-circle" />
             </v-btn>
-          </div>
-        </div>
-      </div> <!-- /overviews settings -->
-
-      <!-- link group settings -->
-      <div v-if="visibleTab === 'linkgroups'">
-        <!-- link group create form -->
-        <create-link-group-modal v-model="linkgroupModalOpen" />
-        <!-- link groups -->
-        <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
-          <h1>
-            Link Groups
-          </h1>
-          <span class="d-flex flex-row">
+          </v-btn>
+          <v-btn
+            @click="openView('integrations')"
+            block
+            class="cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'integrations'">
+            <v-icon icon="mdi-key mdi-fw" />{{ $t('cont3xt.settings.integrations') }}
+          </v-btn>
+          <v-btn
+            @click="openView('overviews')"
+            block
+            class="cursor-pointer btn-space-between"
+            :class="{ 'mb-1': visibleTab === 'overviews' }"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'overviews'">
+            <span>
+              <v-icon icon="mdi-file mdi-fw" />{{ $t('cont3xt.settings.overviews') }}
+            </span>
             <v-btn
-              class="search-row-btn"
+              size="x-small"
+              class="float-right"
+              color="secondary"
+              v-if="visibleTab === 'overviews'"
+              @click.stop.prevent="openOverviewForm"
+              v-tooltip="$t('cont3xt.settings.newOverviewTip')">
+              <v-icon icon="mdi-plus-circle" />
+            </v-btn>
+          </v-btn>
+          <template v-if="visibleTab === 'overviews'">
+            <!-- overviews -->
+            <div
+              v-for="iType in iTypes"
+              :key="iType"
+              class="itype-group-container"
+              :style="{ 'border-color': iTypeColorMap[iType] }">
+              <v-btn
+                v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
+                size="small"
+                :key="overview._id"
+                :title="overview.name"
+                @click="setActiveOverviewId(overview._id)"
+                block
+                class="cursor-pointer btn-space-between"
+                color="primary"
+                variant="text"
+                :active="activeOverviewId === overview._id">
+                <overview-selector-line :overview="overview" />
+              </v-btn>
+            </div>
+          </template>
+          <v-btn
+            @click="openView('linkgroups')"
+            block
+            class="cursor-pointer btn-space-between"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'linkgroups'">
+            <span>
+              <v-icon icon="mdi-link mdi-fw" />{{ $t('cont3xt.settings.linkGroups') }}
+            </span>
+            <v-btn
+              size="x-small"
+              class="float-right"
+              color="secondary"
+              v-if="visibleTab === 'linkgroups'"
+              @click.stop.prevent="openLinkGroupForm"
+              v-tooltip="$t('cont3xt.settings.newLinkGroupTip')">
+              <v-icon icon="mdi-plus-circle" />
+            </v-btn>
+          </v-btn>
+          <template v-if="visibleTab === 'linkgroups'">
+            <drag-update-list
+              class="d-flex flex-column"
+              style="margin-left: 1rem"
+              :value="getLinkGroups || []"
+              @update="updateList">
+              <v-btn
+                v-for="(lg, i) in getLinkGroups"
+                :key="lg._id"
+                block
+                size="small"
+                variant="text"
+                color="primary"
+                class="justify-start mt-1"
+                @click="selectedLinkGroup = i"
+                :title="lg.name"
+                :active="selectedLinkGroup === i">
+                <v-icon
+                  icon="mdi-menu"
+                  :id="`${lg._id}-tt`"
+                  class="drag-handle me-2" />
+                <id-tooltip :target="`${lg._id}-tt`">
+                  {{ $t('cont3xt.linkPanel.dragReorderTip') }}
+                </id-tooltip>
+                {{ lg.name }}
+              </v-btn>
+            </drag-update-list>
+          </template>
+          <v-btn
+            v-if="!disablePassword"
+            @click="openView('password')"
+            block
+            class="cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'password'">
+            <v-icon icon="mdi-lock mdi-fw" />{{ $t('cont3xt.settings.password') }}
+          </v-btn>
+          <v-btn
+            @click="openView('themes')"
+            block
+            class="cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'themes'">
+            <v-icon icon="mdi-brush mdi-fw" />{{ $t('cont3xt.settings.themes') }}
+          </v-btn>
+        </div>
+      </v-col>
+
+      <v-col
+        xl="11"
+        lg="10"
+        md="10"
+        sm="9"
+        xs="12"
+        class="overflow-auto h-100 settings-content-pane">
+        <!-- view settings -->
+        <div v-if="visibleTab === 'views'">
+          <!-- view create form -->
+          <create-view-modal v-model="viewModalOpen" />
+          <div class="me-3 w-100 d-flex justify-space-between align-center">
+            <h1>
+              {{ $t('cont3xt.settings.views') }}
+            </h1>
+            <v-text-field
+              class="ms-4 me-2 flex-grow-1 medium-input"
+              autofocus
+              prepend-inner-icon="mdi-magnify"
+              v-debounce="val => searchTerm = val"
+              clearable />
+            <v-btn
+              class="no-wrap search-row-btn"
+              @click="openViewForm"
               variant="outlined"
-              color="primary"
-              @click="openLinkGroupForm">
+              color="success">
               <v-icon
                 icon="mdi-plus-circle"
-                class="mr-1" />
-              New Group
+                class="me-1" />
+              {{ $t('cont3xt.settings.newView') }}
             </v-btn>
+
             <v-btn
               role="checkbox"
               class="mx-2 no-wrap search-row-btn"
               color="secondary"
               flat
-              @click="seeAllLinkGroups = !seeAllLinkGroups; seeAllLinkGroupsChanged()"
-              v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+              @click="seeAllViews = !seeAllViews; seeAllViewsChanged()"
+              v-tooltip="seeAllViewsTip"
               v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
+              :title="seeAllViewsTip">
               <v-icon
-                class="mr-1"
+                class="me-1"
                 icon="mdi-account-circle" />
-              See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
-            </v-btn>
-          </span>
-        </div>
-
-        <!-- link group error -->
-        <v-alert
-          closable
-          color="error"
-          style="z-index: 2000;"
-          v-model="linkGroupsError"
-          class="position-fixed bottom-0 mb-2 ml-2 left-0">
-          {{ getLinkGroupsError }}
-        </v-alert> <!-- /link group error -->
-
-        <!-- link groups -->
-        <link-group-card
-          v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
-          :link-group="getLinkGroups[selectedLinkGroup]"
-          :key="getLinkGroups[selectedLinkGroup]._id"
-          :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
-          @update-link-group="updateLinkGroup"
-          @open-transfer-resource="openTransferResource" /> <!-- /link groups -->
-        <!-- no link groups -->
-        <div
-          class="row lead mt-4"
-          v-if="getLinkGroups && !getLinkGroups.length">
-          <div class="col">
-            No Link Groups are configured.
-            <v-btn
-              variant="text"
-              color="primary"
-              @click="openLinkGroupForm">
-              Create one!
+              {{ seeAllViews ? $t('cont3xt.settings.seeMineViews') : $t('cont3xt.settings.seeAllViews') }}
             </v-btn>
           </div>
-        </div> <!-- /no link groups -->
-      </div> <!-- /link group settings -->
+          <div class="d-flex flex-wrap">
+            <!-- no views -->
+            <div
+              class="row lead mt-4"
+              v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
+              <div class="col">
+                {{ $t('cont3xt.settings.noViews') }}
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  @click="openViewForm">
+                  {{ $t('cont3xt.createOne') }}
+                </v-btn>
+              </div>
+            </div> <!-- /no views -->
+            <!-- no view results -->
+            <div
+              class="row lead mt-4"
+              v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
+              <div class="col">
+                {{ $t('cont3xt.settings.noViewsMatch') }}
+              </div>
+            </div> <!-- /no view results -->
+            <!-- views -->
+            <div class="d-flex flex-row flex-wrap align-stretch justify-space-between">
+              <template v-for="view in filteredViews">
+                <div
+                  class="px-2 pb-4 flex-grow-1"
+                  :id="view._id"
+                  :key="`${view._id}`"
+                  v-if="view._editable || roles.includes('cont3xtAdmin')">
+                  <v-card
+                    variant="tonal"
+                    elevation="4">
+                    <template #title>
+                      <div class="w-100 d-flex justify-space-between align-start">
+                        <div class="d-flex ga-1">
+                          <v-btn
+                            size="small"
+                            color="primary"
+                            v-tooltip="$t('cont3xt.views.transferTip')"
+                            :title="$t('cont3xt.views.transferTip')"
+                            v-if="canTransferView(view)"
+                            @click="openTransferResource(view)">
+                            <v-icon icon="mdi-share" />
+                          </v-btn>
+                          <!-- delete button -->
+                          <transition name="buttons">
+                            <v-btn
+                              size="small"
+                              color="error"
+                              v-if="!confirmDeleteView[view._id]"
+                              v-tooltip:top="$t('cont3xt.views.deleteTip')"
+                              @click.stop.prevent="toggleDeleteView(view._id)">
+                              <v-icon icon="mdi-trash-can" />
+                            </v-btn>
+                          </transition> <!-- /delete button -->
+                          <!-- cancel confirm delete button -->
+                          <transition name="buttons">
+                            <v-btn
+                              size="small"
+                              color="warning"
+                              v-tooltip="$t('common.cancel')"
+                              :title="$t('common.cancel')"
+                              v-if="confirmDeleteView[view._id]"
+                              @click.stop.prevent="toggleDeleteView(view._id)">
+                              <v-icon icon="mdi-cancel" />
+                            </v-btn>
+                          </transition> <!-- /cancel confirm delete button -->
+                          <!-- confirm delete button -->
+                          <transition name="buttons">
+                            <v-btn
+                              size="small"
+                              color="error"
+                              v-tooltip="$t('common.areYouSure')"
+                              :title="$t('common.areYouSure')"
+                              v-if="confirmDeleteView[view._id]"
+                              @click.stop.prevent="deleteView(view)">
+                              <v-icon icon="mdi-check-bold" />
+                            </v-btn>
+                          </transition> <!-- /confirm delete button -->
+                        </div>
+                        <v-alert
+                          color="success"
+                          height="32px"
+                          v-if="view.success"
+                          class="mb-0 mt-0 me-1 ms-1">
+                          <v-icon
+                            icon="mdi-check-bold"
+                            class="me-2" />
+                          {{ $t('cont3xt.settings.saved') }}
+                        </v-alert>
+                        <v-alert
+                          color="error"
+                          height="32px"
+                          v-if="view.error"
+                          class="mb-0 mt-0 me-1 ms-1">
+                          <v-icon
+                            icon="mdi-alert"
+                            class="me-2" />
+                          {{ $t('cont3xt.settings.errored') }}
+                        </v-alert>
+                        <div class="d-flex ga-1">
+                          <transition name="buttons">
+                            <v-btn
+                              v-if="updatedViewMap[view._id]"
+                              size="small"
+                              color="warning"
+                              @click="cancelUpdateView(view)"
+                              v-tooltip="$t('cont3xt.views.cancelChangesTip')">
+                              <v-icon icon="mdi-cancel" />
+                            </v-btn>
+                          </transition>
+                          <transition name="buttons">
+                            <v-btn
+                              v-if="updatedViewMap[view._id]"
+                              size="small"
+                              color="success"
+                              @click="saveView(view)"
+                              v-tooltip="$t('cont3xt.views.saveTip')">
+                              <v-icon icon="mdi-content-save" />
+                            </v-btn>
+                          </transition>
+                        </div>
+                      </div>
+                    </template>
+                    <ViewForm
+                      class="ma-4"
+                      :view="view"
+                      @update-view="updateView" />
+                  </v-card>
+                </div>
+              </template> <!-- /views -->
+            </div>
+          </div>
+        </div> <!-- /view settings -->
 
-      <!-- password settings -->
-      <div v-if="visibleTab === 'password' && !disablePassword">
-        <h1>
-          Change Password
-        </h1>
-
-        <v-form>
-          <v-row no-gutters>
-            <v-col
-              cols="9"
-              class="mt-4">
-              <!-- current password -->
-              <v-text-field
-                type="password"
-                v-model="currentPassword"
-                @keydown.enter="changePassword"
-                label="Current Password"
-                placeholder="Enter your current password" />
-              <!-- new password -->
-              <v-text-field
-                class="mt-2"
-                type="password"
-                v-model="newPassword"
-                @keydown.enter="changePassword"
-                label="New Password"
-                placeholder="Enter a new password" />
-              <!-- confirm new password -->
-              <v-text-field
-                class="mt-2"
-                type="password"
-                v-model="confirmNewPassword"
-                @keydown.enter="changePassword"
-                label="Confirm New Password"
-                placeholder="Confirm your new password" />
-              <!-- change password button -->
+        <!-- integrations settings -->
+        <div v-if="visibleTab === 'integrations'">
+          <div class="ms-2 me-3 w-100 d-flex justify-space-between align-center">
+            <h1>
+              {{ $t('cont3xt.settings.integrations') }}
+            </h1>
+            <v-text-field
+              autofocus
+              class="ms-4 me-2 medium-input"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              v-debounce="updateIntegrationSearchTerm"
+              :placeholder="$t('cont3xt.settings.searchIntegrations')"
+              clearable />
+            <div class="me-3 no-wrap">
               <v-btn
-                type="button"
-                color="success"
-                class="mt-2"
-                @click="changePassword">
-                Change Password
+                class="me-1"
+                variant="outlined"
+                color="warning"
+                @click="toggleRawIntegrationSettings">
+                <v-icon
+                  icon="mdi-pencil-box"
+                  class="me-2" />
+                {{ $t('cont3xt.settings.rawEdit') }}
               </v-btn>
-            </v-col>
-          </v-row>
-        </v-form>
-      </div> <!-- /password settings -->
-    </v-col>
-    <!-- messages -->
-    <v-alert
-      v-if="!!msg"
-      class="position-fixed bottom-0 mb-2 ml-2"
-      style="z-index: 2000;"
-      :color="msgType"
-      dismissible>
-      {{ msg }}
-    </v-alert> <!-- messages -->
+              <v-btn
+                variant="outlined"
+                color="success"
+                @click="saveIntegrationSettings">
+                <v-icon
+                  icon="mdi-content-save"
+                  class="me-2" />
+                {{ $t('common.save') }}
+              </v-btn>
+            </div>
+          </div>
 
-    <transfer-resource
-      v-model="transferResourceModalOpen"
-      @transfer-resource="submitTransfer" />
-  </v-row>
+          <template v-if="!rawIntegrationSettings">
+            <!-- status summary strip -->
+            <div class="d-flex flex-wrap ga-2 ms-2 me-3 mt-3 mb-1">
+              <v-chip
+                v-for="bucket in statusSummary"
+                :key="bucket.id"
+                size="small"
+                label
+                variant="tonal"
+                :color="bucket.color"
+                class="cursor-pointer"
+                :class="{ 'status-chip--active': integrationStatusFilter === bucket.id }"
+                @click="integrationStatusFilter = integrationStatusFilter === bucket.id ? 'all' : bucket.id">
+                <v-icon
+                  :icon="bucket.icon"
+                  start
+                  size="small" />
+                {{ bucket.count }} {{ bucket.label }}
+              </v-chip>
+            </div>
+
+            <!-- no results -->
+            <div
+              class="lead ms-2 mt-4"
+              v-if="displayedIntegrationRows.length === 0">
+              {{ $t('cont3xt.settings.noIntegrationsMatch') }}
+            </div>
+
+            <!-- integration list -->
+            <div class="integration-list ms-2 me-3 mt-2">
+              <div
+                v-for="{ key, setting, status, itypes, icon } in displayedIntegrationRows"
+                :key="key"
+                class="integration-row"
+                :class="[`integration-row--${status.id}`, { 'integration-row--open': expandedIntegrations[key] }]">
+                <!-- row header — div is a mouse-only convenience; the chevron button
+                     is the accessible toggle so interactive controls aren't nested -->
+                <div
+                  class="integration-row__header"
+                  @click="toggleIntegration(key)">
+                  <button
+                    type="button"
+                    class="integration-row__chevron"
+                    :aria-expanded="!!expandedIntegrations[key]"
+                    :aria-label="expandedIntegrations[key]
+                      ? $t('cont3xt.settings.collapseIntegrationTip', { name: key })
+                      : $t('cont3xt.settings.expandIntegrationTip', { name: key })"
+                    @click.stop="toggleIntegration(key)">
+                    <v-icon :icon="expandedIntegrations[key] ? 'mdi-chevron-down' : 'mdi-chevron-right'" />
+                  </button>
+                  <img
+                    v-if="icon"
+                    class="integration-row__icon"
+                    :alt="key"
+                    :src="icon">
+                  <span
+                    v-else
+                    class="integration-row__icon" />
+                  <span class="integration-row__name text-truncate">
+                    {{ key }}
+                  </span>
+                  <!-- itype chips -->
+                  <span class="integration-row__itypes">
+                    <v-icon
+                      v-for="iType in itypes"
+                      :key="iType"
+                      :icon="iTypeIconMap[iType]"
+                      size="small"
+                      class="itype-dot"
+                      :style="iTypeColorStyleMap[iType]"
+                      v-tooltip="iType" />
+                  </span>
+                  <!-- status -->
+                  <span
+                    class="integration-row__status"
+                    :class="status.cls"
+                    v-tooltip="status.tooltip">
+                    <v-icon
+                      :icon="status.icon"
+                      size="small"
+                      class="me-1" />
+                    {{ status.label }}
+                  </span>
+                  <!-- home link -->
+                  <a
+                    v-if="!!setting.homePage"
+                    target="_blank"
+                    class="integration-row__home"
+                    :href="setting.homePage"
+                    @click.stop
+                    v-tooltip="$t('cont3xt.settings.integrationHomeTip', { name: key })">
+                    <v-icon icon="mdi-home" />
+                  </a>
+                  <span
+                    v-else
+                    class="integration-row__home" />
+                </div>
+                <!-- expandable body — v-if so the form mounts only when expanded -->
+                <v-expand-transition>
+                  <div
+                    v-if="expandedIntegrations[key]"
+                    class="integration-row__body">
+                    <div
+                      v-if="Object.keys(setting.settings).length === 0"
+                      class="text-medium-emphasis font-italic">
+                      {{ $t('cont3xt.settings.noIntegrationSettings') }}
+                    </div>
+                    <template
+                      v-for="(field, name) in setting.settings"
+                      :key="name">
+                      <v-checkbox
+                        v-if="field.type === 'boolean'"
+                        slim
+                        hide-details
+                        density="compact"
+                        :label="name"
+                        :disabled="setting.locked"
+                        v-model="setting.values[name]" />
+                      <v-text-field
+                        v-else
+                        type="text"
+                        autocomplete="off"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                        :disabled="setting.locked"
+                        v-model="setting.values[name]"
+                        :rules="[(value) => !field.required || !!value?.length]"
+                        :class="{ 'masked-input': field.password && !revealedFields[`${key}.${name}`] }">
+                        <template #label>
+                          {{ name }}<span
+                            class="text-warning"
+                            v-if="field.required">*</span>
+                        </template>
+                        <template
+                          #append-inner
+                          v-if="field.password">
+                          <v-icon
+                            class="cursor-pointer"
+                            :icon="revealedFields[`${key}.${name}`] ? 'mdi-eye-off' : 'mdi-eye'"
+                            @click="toggleFieldReveal(key, name)" />
+                        </template>
+                      </v-text-field>
+                    </template>
+                  </div>
+                </v-expand-transition>
+              </div>
+            </div>
+          </template>
+
+          <v-textarea
+            v-else
+            rows="20"
+            no-resize
+            hide-details
+            variant="outlined"
+            class="raw-integration-edit ms-2 me-3 mt-3"
+            :placeholder="rawEditPlaceholder"
+            :model-value="createINI(rawIntegrationSettings)"
+            @update:model-value="debounceRawEdit" />
+        </div> <!-- /integrations settings -->
+
+        <!-- overviews settings -->
+        <div v-if="visibleTab === 'overviews'">
+          <!-- overview create form -->
+          <create-overview-modal v-model="overviewModalOpen" />
+          <div class="ms-2 me-3 w-100 d-flex flex-row justify-space-between align-center">
+            <h1>
+              {{ $t('cont3xt.settings.overviews') }}
+            </h1>
+            <div class="d-flex flex-row">
+              <v-btn
+                variant="outlined"
+                color="primary"
+                @click="openOverviewForm">
+                <v-icon icon="mdi-plus-circle" />
+                {{ $t('cont3xt.settings.newOverview') }}
+              </v-btn>
+              <v-btn
+                role="checkbox"
+                class="mx-2 no-wrap"
+                color="secondary"
+                flat
+                @click="seeAllOverviews = !seeAllOverviews; seeAllOverviewsChanged()"
+                v-tooltip="seeAllOverviewsTip"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllOverviewsTip">
+                <v-icon
+                  class="me-1"
+                  icon="mdi-account-circle" />
+                {{ seeAllOverviews ? $t('cont3xt.settings.seeMineOverviews') : $t('cont3xt.settings.seeAllOverviews') }}
+              </v-btn>
+            </div>
+          </div>
+
+          <!-- overview error -->
+          <v-alert
+            closable
+            color="error"
+            style="z-index: 2000;"
+            v-model="overviewsError"
+            class="position-fixed bottom-0 mb-2 ms-2 left-0">
+            {{ getOverviewsError }}
+          </v-alert> <!-- /overview error -->
+
+          <div class="d-flex flex-wrap ps-4">
+            <!-- overview-form-card uses :key to reset form when swapping active overview -->
+            <overview-form-card
+              v-if="activeOverviewId && activeUnModifiedOverview"
+              :key="activeOverviewId"
+              :overview="activeUnModifiedOverview"
+              :modified-overview="activeModifiedOverview"
+              @update-modified-overview="updateModifiedOverview"
+              @overview-deleted="activeOverviewDeleted"
+              @open-transfer-resource="openTransferResource" />
+            <div
+              v-else
+              class="d-flex flex-column">
+              <span>
+                {{ $t('cont3xt.settings.noOverviews') }}
+              </span>
+              <v-btn
+                variant="outlined"
+                color="primary"
+                @click="openOverviewForm">
+                {{ $t('cont3xt.createOne') }}
+              </v-btn>
+            </div>
+          </div>
+        </div> <!-- /overviews settings -->
+
+        <!-- link group settings -->
+        <div v-if="visibleTab === 'linkgroups'">
+          <!-- link group create form -->
+          <create-link-group-modal v-model="linkgroupModalOpen" />
+          <!-- link groups -->
+          <div class="ms-2 me-3 w-100 d-flex flex-row justify-space-between align-center">
+            <h1>
+              {{ $t('cont3xt.settings.linkGroups') }}
+            </h1>
+            <span class="d-flex flex-row">
+              <v-btn
+                class="search-row-btn"
+                variant="outlined"
+                color="primary"
+                @click="openLinkGroupForm">
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="me-1" />
+                {{ $t('cont3xt.settings.newLinkGroup') }}
+              </v-btn>
+              <v-btn
+                role="checkbox"
+                class="mx-2 no-wrap search-row-btn"
+                color="secondary"
+                flat
+                @click="seeAllLinkGroups = !seeAllLinkGroups; seeAllLinkGroupsChanged()"
+                v-tooltip="seeAllLinkGroupsTip"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllLinkGroupsTip">
+                <v-icon
+                  class="me-1"
+                  icon="mdi-account-circle" />
+                {{ seeAllLinkGroups ? $t('cont3xt.settings.seeMineLinkGroups') : $t('cont3xt.settings.seeAllLinkGroups') }}
+              </v-btn>
+            </span>
+          </div>
+
+          <!-- link group error -->
+          <v-alert
+            closable
+            color="error"
+            style="z-index: 2000;"
+            v-model="linkGroupsError"
+            class="position-fixed bottom-0 mb-2 ms-2 left-0">
+            {{ getLinkGroupsError }}
+          </v-alert> <!-- /link group error -->
+
+          <!-- link groups -->
+          <link-group-card
+            v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
+            :link-group="getLinkGroups[selectedLinkGroup]"
+            :key="getLinkGroups[selectedLinkGroup]._id"
+            :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
+            @update-link-group="updateLinkGroup"
+            @open-transfer-resource="openTransferResource" /> <!-- /link groups -->
+          <!-- no link groups -->
+          <div
+            class="row lead mt-4"
+            v-if="getLinkGroups && !getLinkGroups.length">
+            <div class="col">
+              {{ $t('cont3xt.settings.noLinkGroups') }}
+              <v-btn
+                variant="text"
+                color="primary"
+                @click="openLinkGroupForm">
+                {{ $t('cont3xt.createOne') }}
+              </v-btn>
+            </div>
+          </div> <!-- /no link groups -->
+        </div> <!-- /link group settings -->
+
+        <!-- password settings -->
+        <div v-if="visibleTab === 'password' && !disablePassword">
+          <h1>
+            {{ $t('cont3xt.settings.changePassword') }}
+          </h1>
+
+          <v-form>
+            <v-row no-gutters>
+              <v-col
+                cols="9"
+                class="mt-4">
+                <!-- current password -->
+                <v-text-field
+                  type="password"
+                  v-model="currentPassword"
+                  @keydown.enter="changePassword"
+                  :label="$t('cont3xt.settings.currentPassword')"
+                  :placeholder="$t('cont3xt.settings.currentPasswordPlaceholder')" />
+                <!-- new password -->
+                <v-text-field
+                  class="mt-2"
+                  type="password"
+                  v-model="newPassword"
+                  @keydown.enter="changePassword"
+                  :label="$t('cont3xt.settings.newPassword')"
+                  :placeholder="$t('cont3xt.settings.newPasswordPlaceholder')" />
+                <!-- confirm new password -->
+                <v-text-field
+                  class="mt-2"
+                  type="password"
+                  v-model="confirmNewPassword"
+                  @keydown.enter="changePassword"
+                  :label="$t('cont3xt.settings.confirmPassword')"
+                  :placeholder="$t('cont3xt.settings.confirmPasswordPlaceholder')" />
+                <!-- change password button -->
+                <v-btn
+                  type="button"
+                  color="success"
+                  class="mt-2"
+                  @click="changePassword">
+                  {{ $t('cont3xt.settings.changePassword') }}
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
+        </div> <!-- /password settings -->
+
+        <!-- theme settings -->
+        <div v-if="visibleTab === 'themes'">
+          <h1 class="mb-3">
+            {{ $t('cont3xt.settings.themes') }}
+          </h1>
+          <p class="text-medium-emphasis mb-4">
+            {{ $t('cont3xt.settings.themesInfo') }}
+          </p>
+          <ThemePicker
+            :model-value="getTheme"
+            :themes="themes"
+            :custom-theme="getCustomTheme"
+            @update:model-value="onThemeChange"
+            @update:custom-theme="onCustomThemeChange" />
+        </div> <!-- /theme settings -->
+      </v-col>
+      <!-- messages -->
+      <v-alert
+        v-if="!!msg"
+        class="position-fixed bottom-0 mb-2 ms-2"
+        style="z-index: 2000;"
+        :color="msgType"
+        dismissible>
+        {{ msg }}
+      </v-alert> <!-- messages -->
+
+      <transfer-resource
+        v-model="transferResourceModalOpen"
+        @transfer-resource="submitTransfer" />
+    </v-row>
+  </div>
 </template>
 
 <script>
@@ -685,12 +790,28 @@ import OverviewService from '@/components/services/OverviewService';
 import OverviewFormCard from '@/components/overviews/OverviewFormCard.vue';
 import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
-import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
-import CommonUserService from '@real_common/UserService';
+import { iTypes, iTypeIconMap, iTypeColorMap, iTypeColorStyleMap } from '@/utils/iTypes';
+import CommonUserService from '@common/UserService';
 import TransferResource from '@common/TransferResource.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
+import ThemePicker from '@common/ThemePicker.vue';
+import { THEMES } from '@common/themes/manifest.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 let timeout;
+
+// status descriptors for an integration's configuration state (most-actionable first)
+// label/tooltip come from cont3xt.settings.status.* so they follow the locale
+const STATUS_META = {
+  needsKey: { id: 'needsKey', icon: 'mdi-key-alert-outline', color: 'warning', cls: 'text-warning' },
+  configured: { id: 'configured', icon: 'mdi-check-circle', color: 'success', cls: 'text-success' },
+  global: { id: 'global', icon: 'mdi-earth', color: 'info', cls: 'text-info' },
+  partial: { id: 'partial', icon: 'mdi-key-alert', color: 'warning', cls: 'text-warning' },
+  optional: { id: 'optional', icon: 'mdi-key-outline', color: 'info', cls: 'text-info' },
+  ready: { id: 'ready', icon: 'mdi-check', color: 'secondary', cls: 'text-medium-emphasis' },
+  disabled: { id: 'disabled', icon: 'mdi-cancel', color: 'secondary', cls: 'text-medium-emphasis' },
+  locked: { id: 'locked', icon: 'mdi-lock', color: 'secondary', cls: 'text-medium-emphasis' }
+};
 
 export default {
   name: 'Cont3xtSettings',
@@ -704,7 +825,8 @@ export default {
     CreateViewModal,
     CreateLinkGroupModal,
     TransferResource,
-    DragUpdateList
+    DragUpdateList,
+    ThemePicker
   },
   data () {
     return {
@@ -712,15 +834,21 @@ export default {
       msg: '',
       msgType: '',
       visibleTab: 'views',
+      // theme picker source list (the 10 baked-in themes)
+      themes: THEMES,
       // integrations
       integrationSettings: {},
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
+      expandedIntegrations: {},
+      revealedFields: {},
+      integrationStatusFilter: 'all',
       // overviews
       overviewModalOpen: false,
       iTypes,
       iTypeIconMap,
       iTypeColorMap,
+      iTypeColorStyleMap,
       activeOverviewId: undefined,
       modifiedOverviewMap: {},
       // link groups
@@ -769,7 +897,8 @@ export default {
   computed: {
     ...mapGetters([
       'getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser',
-      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap'
+      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap',
+      'getTheme', 'getCustomTheme'
     ]),
     seeAllViews: {
       get () { return this.$store.state.seeAllViews; },
@@ -813,9 +942,54 @@ export default {
       entries.sort(([aKey], [bKey]) => aKey.localeCompare(bKey));
       return entries;
     },
+    // per-row view models — status & itypes computed once each, consumed by the
+    // list, the filter, and the summary chips (respects search, ignores status filter)
+    integrationRows () {
+      return this.sortedFilteredIntegrationSettings.map(([key, setting]) => ({
+        key,
+        setting,
+        status: this.translateStatus(this.statusOf(setting)),
+        itypes: this.getIntegrations[key]?.itypes ?? [],
+        // parent integrations (empty itypes) aren't in getIntegrations, so fall
+        // back to the icon the settings endpoint returns for the row itself
+        icon: this.getIntegrations[key]?.icon ?? setting.icon
+      }));
+    },
+    // rows narrowed by the selected status filter; an expanded row stays visible
+    // even if its status flips out of the filter mid-edit (so the form can't vanish)
+    displayedIntegrationRows () {
+      if (this.integrationStatusFilter === 'all') { return this.integrationRows; }
+      return this.integrationRows.filter(
+        row => row.status.id === this.integrationStatusFilter || this.expandedIntegrations[row.key]
+      );
+    },
+    // chips shown above the list — statuses with at least one integration, plus the
+    // active filter (even at count 0) so it never becomes an invisible dead-end
+    statusSummary () {
+      const counts = {};
+      for (const row of this.integrationRows) {
+        counts[row.status.id] = (counts[row.status.id] ?? 0) + 1;
+      }
+      return Object.values(STATUS_META)
+        .filter(meta => counts[meta.id] || this.integrationStatusFilter === meta.id)
+        .map(meta => ({ ...this.translateStatus(meta), count: counts[meta.id] ?? 0 }));
+    },
+    // shown when no integrations have saved values, so the raw editor isn't a blank box
+    rawEditPlaceholder () {
+      return this.$t('cont3xt.settings.rawEditPlaceholder');
+    },
+    seeAllViewsTip () {
+      return this.seeAllViews ? this.$t('cont3xt.settings.seeMineViewsTip') : this.$t('cont3xt.settings.seeAllViewsTip');
+    },
+    seeAllOverviewsTip () {
+      return this.seeAllOverviews ? this.$t('cont3xt.settings.seeMineOverviewsTip') : this.$t('cont3xt.settings.seeAllOverviewsTip');
+    },
+    seeAllLinkGroupsTip () {
+      return this.seeAllLinkGroups ? this.$t('cont3xt.settings.seeMineLinkGroupsTip') : this.$t('cont3xt.settings.seeAllLinkGroupsTip');
+    },
     disablePassword () {
       if (!this.getUser) { return true; } // wait for user to be initialized
-      return !!this.$constants.DEMO_MODE || (!!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled);
+      return !!this.$constants.DISABLE_USER_PASSWORD_UI && !!this.getUser.headerAuthEnabled;
     }
   },
   watch: {
@@ -910,19 +1084,21 @@ export default {
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
       } else {
-        this.showError('Cannot parse the resource you want to transfer');
+        this.showError(this.$t('cont3xt.settings.cannotTransfer'));
       }
     },
     /* INTEGRATIONS! ------------------------- */
-    /* toggles the visibility of the value of password fields */
-    toggleVisiblePasswordField (field) {
-      field.showValue = !field.showValue;
+    /* toggles password-field visibility, keyed outside the settings object so it
+       survives the re-clone that search/raw-edit do to filteredIntegrationSettings */
+    toggleFieldReveal (key, fieldName) {
+      const id = `${key}.${fieldName}`;
+      this.revealedFields[id] = !this.revealedFields[id];
     },
     saveIntegrationSettings () {
       const settings = this.getIntegrationSettingValues();
 
       UserService.setIntegrationSettings({ settings }).then((response) => {
-        this.showMessage({ variant: 'success', message: 'Saved!' });
+        this.showMessage({ variant: 'success', message: this.$t('cont3xt.settings.saved') });
         // NOTE: don't need to do anything with the data (the store does it)
         Cont3xtService.getIntegrations();
       }).catch((err) => {
@@ -937,16 +1113,16 @@ export default {
       const settings = this.getIntegrationSettingValues();
       this.rawIntegrationSettings = settings;
     },
-    debounceRawEdit (e) {
+    debounceRawEdit (value) {
       if (timeout) { clearTimeout(timeout); }
       // debounce the textarea so it only updates the integration settings after keyups cease for 400ms
       timeout = setTimeout(() => {
         timeout = null;
-        this.updateRawIntegrationSettings(e);
+        this.updateRawIntegrationSettings(value);
       }, 400);
     },
-    updateRawIntegrationSettings (e) {
-      const rawIntegrationSettings = this.parseINI(e.target.value);
+    updateRawIntegrationSettings (value) {
+      const rawIntegrationSettings = this.parseINI(value);
 
       for (const s in this.integrationSettings) {
         if (rawIntegrationSettings[s] && this.integrationSettings[s]) {
@@ -962,6 +1138,39 @@ export default {
       }
 
       return setting.values[sname] ? setting.values[sname].length > 0 : false;
+    },
+    /* toggles the expanded config panel for an integration row */
+    toggleIntegration (key) {
+      this.expandedIntegrations[key] = !this.expandedIntegrations[key];
+    },
+    /* adds the translated label/tooltip to a status descriptor */
+    translateStatus (meta) {
+      return {
+        ...meta,
+        label: this.$t(`cont3xt.settings.status.${meta.id}`),
+        tooltip: this.$t(`cont3xt.settings.status.${meta.id}Tip`)
+      };
+    },
+    /* computes the configuration status descriptor for an integration */
+    statusOf (setting) {
+      const fields = Object.entries(setting.settings ?? {});
+      const isFilled = (fieldName) => !!setting.values?.[fieldName]?.length;
+      const requiredFields = fields.filter(([, f]) => f.required && f.type !== 'boolean');
+      const optionalFields = fields.filter(([, f]) => !f.required && f.type !== 'boolean');
+
+      // match the backend: only true/'true' disables (INI strings 'false' are truthy)
+      const disabled = setting.values?.disabled;
+      if (setting.locked) { return STATUS_META.locked; }
+      if (disabled === true || disabled === 'true') { return STATUS_META.disabled; }
+      if (requiredFields.length && requiredFields.every(([fieldName]) => isFilled(fieldName))) { return STATUS_META.configured; }
+      if (setting.globalConfiged) {
+        // some local fields filled override the shared account but leave gaps it falls back on
+        return requiredFields.some(([fieldName]) => isFilled(fieldName)) ? STATUS_META.partial : STATUS_META.global;
+      }
+      if (requiredFields.length) { return STATUS_META.needsKey; }
+      if (optionalFields.some(([fieldName]) => isFilled(fieldName))) { return STATUS_META.configured; }
+      if (optionalFields.length) { return STATUS_META.optional; }
+      return STATUS_META.ready;
     },
     /* OVERVIEWS! ---------------------------- */
     setActiveOverviewToFirst () {
@@ -1114,22 +1323,22 @@ export default {
       this.msg = '';
 
       if (!this.currentPassword) {
-        this.showError('You must enter your current password');
+        this.showError(this.$t('cont3xt.settings.needCurrentPassword'));
         return;
       }
 
       if (!this.newPassword) {
-        this.showError('You must enter a new password');
+        this.showError(this.$t('cont3xt.settings.needNewPassword'));
         return;
       }
 
       if (!this.confirmNewPassword) {
-        this.showError('You must confirm your new password');
+        this.showError(this.$t('cont3xt.settings.needConfirmPassword'));
         return;
       }
 
       if (this.newPassword !== this.confirmNewPassword) {
-        this.showError("Your passwords don't match");
+        this.showError(this.$t('cont3xt.settings.passwordMismatch'));
         return;
       }
 
@@ -1143,7 +1352,7 @@ export default {
         this.currentPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
+        this.showMessage({ variant: 'success', message: response.text || this.$t('cont3xt.settings.passwordUpdated') });
       }).catch((error) => {
         // display error message to user
         this.showError(error.text || error);
@@ -1253,27 +1462,28 @@ export default {
       this.filteredViews = editedViews.filter((view) => {
         return view.name.toString().toLowerCase().match(query)?.length > 0;
       });
+    },
+    /* THEME --------------------------------------------------- */
+    onThemeChange (newThemeId) {
+      this.$store.commit('SET_THEME', newThemeId);
+    },
+    onCustomThemeChange (newCustomTheme) {
+      if (!newCustomTheme || typeof newCustomTheme.colors !== 'object' || !newCustomTheme.colors) return;
+      const safe = {
+        dark: !!newCustomTheme.dark,
+        colors: { ...newCustomTheme.colors }
+      };
+      registerVuetifyTheme(this.$vuetify, 'custom1', safe);
+      this.$store.commit('SET_CUSTOM_THEME', safe);
+      if (this.getTheme !== 'custom1') {
+        this.$store.commit('SET_THEME', 'custom1');
+      }
     }
   }
 };
 </script>
 
 <style scoped>
-.nav-pills {
-  max-width: 100%;
-  position: relative;
-}
-.nav-pills .nav-link {
-  max-width: 100%;
-  overflow: hidden;
-  position: relative;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.sub-nav-link {
-  padding-left: 32px !important;
-}
 .sub-nav-handle {
   top: 12px;
   left: 1.4rem;
@@ -1282,13 +1492,132 @@ export default {
   position: relative;
 }
 
-.alert.alert-sm {
-  padding: 0.2rem 0.8rem;
-}
-
 .integration-setting-img {
   height:27px;
   margin-left: -8px;
+}
+
+/* integrations list */
+.status-chip--active {
+  outline: 2px solid currentColor;
+  outline-offset: -1px;
+}
+
+.integration-list {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.integration-row {
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.integration-row:last-child {
+  border-bottom: none;
+}
+
+.integration-row--needsKey { border-left-color: rgb(var(--v-theme-warning)); }
+.integration-row--open { background: rgba(var(--v-theme-on-surface), 0.03); }
+
+.integration-row__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  min-height: 44px;
+  user-select: none;
+}
+
+.integration-row__header:hover {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+.integration-row__chevron {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.integration-row__chevron:hover {
+  opacity: 1;
+}
+
+.integration-row__chevron:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  opacity: 1;
+}
+
+.integration-row__icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.integration-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.integration-row__itypes {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.85;
+}
+
+.integration-row__status {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 130px;
+  justify-content: flex-end;
+}
+
+.integration-row__home {
+  flex: 0 0 auto;
+  width: 24px;
+  text-align: center;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.integration-row__home:hover {
+  opacity: 1;
+}
+
+.integration-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem 0.85rem 2.6rem;
+}
+
+.raw-integration-edit :deep(textarea) {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* mask secret values without type=password, which triggers Chrome/LastPass autofill */
+.masked-input :deep(input) {
+  -webkit-text-security: disc;
 }
 
 .itype-group-container {

@@ -3,29 +3,33 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-button
-    :size="size"
+  <v-btn
+    :size="vuetifySize"
     v-if="logoutUrl"
     class="ms-2"
-    @click="logout"
-    id="logout-button"
-    variant="outline-warning">
-    <span class="fa fa-sign-out fa-fw" />
-    <BTooltip
-      target="logout-button"
-      placement="bottom">
+    variant="flat"
+    color="warning"
+    @click="logout">
+    <v-icon icon="mdi-logout" />
+    <v-tooltip
+      activator="parent"
+      location="bottom">
       {{ $t('common.logout') }}
-    </BTooltip>
-  </b-button>
+    </v-tooltip>
+  </v-btn>
 </template>
 
 <script>
+// Map Bootstrap-style size names ('sm', 'md', 'lg') to Vuetify size names
+// so callers passing legacy BVN-era sizes still work during the migration.
+const SIZE_MAP = { sm: 'small', md: 'default', lg: 'large' };
+
 export default {
   name: 'Logout',
   props: {
     size: {
       type: String,
-      default: 'md'
+      default: 'default'
     },
     basePath: {
       type: String,
@@ -36,6 +40,11 @@ export default {
     return {
       logoutUrl: this.$constants.LOGOUT_URL
     };
+  },
+  computed: {
+    vuetifySize () {
+      return SIZE_MAP[this.size] || this.size;
+    }
   },
   methods: {
     logout () {

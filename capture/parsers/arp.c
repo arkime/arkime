@@ -8,7 +8,7 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int arpMProtocol;
+LOCAL int mProtocolArp;
 LOCAL int macField;
 LOCAL int ouiField;
 LOCAL int opcodeField;
@@ -20,12 +20,11 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = arpMProtocol;
     if (data[7] == 1)
-        memcpy(sessionId + 2, data + 24, 4);
+        memcpy(sessionId + 1, data + 24, 4);
     else
-        memcpy(sessionId + 2, data + 14, 4);
-    sessionId[6] = sessionId[7] = 0;
+        memcpy(sessionId + 1, data + 14, 4);
+    sessionId[5] = sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -76,7 +75,7 @@ LOCAL ArkimePacketRC arp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
     arp_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = arpMProtocol;
+    packet->mProtocol = mProtocolArp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -108,8 +107,8 @@ void arkime_parser_init()
                                   (char *)NULL);
 
     arkime_packet_set_ethernet_cb(0x0806, arp_packet_enqueue);
-    arpMProtocol = arkime_mprotocol_register("arp",
-                                             SESSION_OTHER,
+    mProtocolArp = arkime_mprotocol_register("arp",
+                                             0,
                                              arp_create_sessionid,
                                              arp_pre_process,
                                              arp_process,

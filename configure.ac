@@ -1,4 +1,4 @@
-AC_INIT([arkime],[6.7.1-GIT])
+AC_INIT([arkime],[7.0.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -649,6 +649,31 @@ AS_IF([test "x$with_python" != "xno"], [
 
 AC_SUBST([PYTHON_CFLAGS])
 AC_SUBST([PYTHON_LIBS])
+
+dnl Checks for libxdp, used by the afxdp reader. Optional, linux only.
+AC_ARG_WITH([libxdp],
+  AS_HELP_STRING([--with-libxdp], [Build the AF_XDP reader (requires libxdp)]))
+
+have_libxdp=no
+AS_IF([test "x$with_libxdp" != "xno"], [
+    PKG_CHECK_MODULES([LIBXDP], [libxdp >= 1.2.0], [
+        AC_DEFINE([HAVE_LIBXDP], [1], [Define to 1 if libxdp is available for the afxdp reader.])
+        dnl libxdp has no version macro or runtime call, pkg-config is the only source
+        LIBXDP_VERSION=`$PKG_CONFIG --modversion libxdp`
+        AC_DEFINE_UNQUOTED([LIBXDP_VERSION], ["$LIBXDP_VERSION"], [Version of libxdp capture was built against.])
+        have_libxdp=yes
+        AC_MSG_NOTICE([Found libxdp $LIBXDP_VERSION, afxdp reader enabled.])
+    ], [
+        AS_IF([test "x$with_libxdp" = "xyes"], [
+            AC_MSG_ERROR([libxdp was requested but not found via pkg-config. Install libxdp-dev.])
+        ], [
+            AC_MSG_WARN([libxdp not found via pkg-config, afxdp reader disabled.])
+        ])
+    ])
+])
+
+AC_SUBST([LIBXDP_CFLAGS])
+AC_SUBST([LIBXDP_LIBS])
 
 dnl jemalloc
 AC_ARG_WITH(jemalloc,

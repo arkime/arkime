@@ -17,20 +17,26 @@ SPDX-License-Identifier: Apache-2.0
         :queue-count="job.queueCount"
         :hide-text="true" />
       &nbsp;
-      <span
-        class="badge bg-secondary cursor-help percent-done-badge"
+      <v-chip
+        size="x-small"
+        variant="flat"
+        color="grey"
+        class="cursor-help percent-done-badge"
         v-if="job.failedSessionIds && job.failedSessionIds.length"
         :id="`jobmatches${job.id}`">
         {{ round((((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100), 1) }}%
-      </span>
-      <span
+      </v-chip>
+      <v-chip
         v-else
-        class="badge bg-secondary cursor-help percent-done-badge"
+        size="x-small"
+        variant="flat"
+        color="grey"
+        class="cursor-help percent-done-badge"
         :id="`jobmatches${job.id}`">
         {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
-        <BTooltip
+        <v-tooltip
           v-if="job.failedSessionIds && job.failedSessionIds.length"
-          :target="`jobmatches${job.id}`">
+          :activator="`[id='jobmatches${job.id}']`">
           <span
             v-html="$t('hunts.row-foundHtml', {
               matched: commaString(job.matchedSessions),
@@ -42,10 +48,10 @@ SPDX-License-Identifier: Apache-2.0
                 remaining: commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length)
               })" />
           </div>
-        </BTooltip>
-        <BTooltip
+        </v-tooltip>
+        <v-tooltip
           v-else
-          :target="`jobmatches${job.id}`">
+          :activator="`[id='jobmatches${job.id}']`">
           <span
             v-html="$t('hunts.row-foundHtml', {
               matched: commaString(job.matchedSessions),
@@ -57,27 +63,32 @@ SPDX-License-Identifier: Apache-2.0
                 remaining: commaString(job.totalSessions - job.searchedSessions)
               })" />
           </div>
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-chip>
       <template v-if="job.errors && job.errors.length">
-        <span
+        <v-chip
           :id="`joberrors${job.id}`"
-          class="badge bg-danger cursor-help">
-          <span class="fa fa-exclamation-triangle" />
-          <BTooltip :target="`joberrors${job.id}`">
+          size="x-small"
+          variant="flat"
+          color="error"
+          class="cursor-help ms-1">
+          <v-icon icon="mdi-alert" />
+          <v-tooltip :activator="`[id='joberrors${job.id}']`">
             {{ $t('hunts.hadErrorsTip') }}
-          </BTooltip>
-        </span>
+          </v-tooltip>
+        </v-chip>
       </template>
     </td>
     <td>
       {{ commaString(job.matchedSessions) }}
       <template v-if="job.removed">
         <span :id="`removed${job.id}`">
-          <span class="fa fa-info-circle fa-fw cursor-help text-warning" />
-          <BTooltip :target="`removed${job.id}`">
+          <v-icon
+            icon="mdi-information"
+            class="cursor-help text-warning" />
+          <v-tooltip :activator="`[id='removed${job.id}']`">
             {{ $t('hunts.huntRemovedTip') }}
-          </BTooltip>
+          </v-tooltip>
         </span>
       </template>
     </td>
@@ -100,144 +111,181 @@ SPDX-License-Identifier: Apache-2.0
         {{ job.id }}
       </span>
     </td>
-    <td class="no-wrap">
+    <td class="no-wrap text-end">
       <template v-if="canEdit">
-        <button
+        <v-btn
           :id="`removejob${job.id}`"
           @click="$emit('removeJob', job, arrayName)"
           :disabled="job.loading"
-          type="button"
+          icon
+          color="error"
+          variant="flat"
+          size="small"
+          density="comfortable"
           :aria-label="$t('hunts.removeHuntTip')"
-          class="ms-1 pull-right btn btn-sm btn-danger">
-          <span
-            v-if="!job.loading"
-            class="fa fa-trash-o fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`removejob${job.id}`">
+          class="ms-1">
+          <v-icon
+            icon="mdi-trash-can-outline"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin"
+            v-else />
+          <v-tooltip :activator="`[id='removejob${job.id}']`">
             {{ $t('hunts.removeHuntTip') }}
-          </BTooltip>
-        </button>
+          </v-tooltip>
+        </v-btn>
       </template>
-      <button
-        type="button"
+      <v-btn
         :id="`remove${job.id}`"
         @click="$emit('removeFromSessions', job)"
         :aria-label="$t('common.remove')"
-        class="ms-1 pull-right btn btn-sm btn-danger"
+        icon
+        color="error"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        class="ms-1"
         v-if="canEdit && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
-        <span
-          v-if="!job.loading"
-          class="fa fa-times fa-fw" />
-        <span
-          v-else
-          class="fa fa-spinner fa-spin fa-fw" />
-        <BTooltip
+        <v-icon
+          icon="mdi-close"
+          v-if="!job.loading" />
+        <v-icon
+          icon="mdi-loading"
+          class="mdi-spin"
+          v-else />
+        <v-tooltip
           v-if="job.matchedSessions && !job.removed && user.removeEnabled"
-          :target="`remove${job.id}`">
+          :activator="`[id='remove${job.id}']`">
           <span v-html="$t('hunts.removeFromSessionsTipHtml')" />
-        </BTooltip>
-      </button>
-      <span v-if="canView">
-        <button
-          type="button"
+        </v-tooltip>
+      </v-btn>
+      <template v-if="canView">
+        <v-btn
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
           :aria-label="$t('common.open')"
-          class="ms-1 pull-right btn btn-sm btn-theme-primary">
-          <span class="fa fa-folder-open fa-fw" />
-          <BTooltip
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="primaryBtnStyle"
+          class="ms-1">
+          <v-icon icon="mdi-folder-open" />
+          <v-tooltip
             v-if="job.matchedSessions && !job.removed"
-            :target="`openresults${job.id}`">
+            :activator="`[id='openresults${job.id}']`">
             <span v-html="$t('hunts.openSessionsTipHtml')" />
-          </BTooltip>
-        </button>
-      </span>
+          </v-tooltip>
+        </v-btn>
+      </template>
       <template v-if="canRerun && !job.unrunnable && (canView)">
-        <button
+        <v-btn
           :id="`rerun${job.id}`"
-          type="button"
           @click="$emit('rerunJob', job)"
           :aria-label="$t('hunts.rerunTip')"
-          class="ms-1 pull-right btn btn-sm btn-theme-secondary">
-          <span class="fa fa-refresh fa-fw" />
-          <BTooltip :target="`rerun${job.id}`">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          class="ms-1">
+          <v-icon icon="mdi-refresh" />
+          <v-tooltip :activator="`[id='rerun${job.id}']`">
             {{ $t('hunts.rerunTip') }}
-          </BTooltip>
-        </button>
+          </v-tooltip>
+        </v-btn>
       </template>
       <template v-if="canRepeat && !job.unrunnable && canEdit">
-        <button
+        <v-btn
           :id="`repeat${job.id}`"
-          type="button"
           @click="$emit('repeatJob', job)"
           :aria-label="$t('hunts.repeatTip')"
-          class="ms-1 pull-right btn btn-sm btn-theme-tertiary">
-          <span class="fa fa-repeat fa-fw" />
-          <BTooltip :target="`repeat${job.id}`">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="tertiaryBtnStyle"
+          class="ms-1">
+          <v-icon icon="mdi-repeat" />
+          <v-tooltip :activator="`[id='repeat${job.id}']`">
             {{ $t('hunts.repeatTip') }}
-          </BTooltip>
-        </button>
+          </v-tooltip>
+        </v-btn>
       </template>
       <template v-if="canCancel && canEdit">
-        <button
+        <v-btn
           :id="`cancel${job.id}`"
           @click="$emit('cancelJob', job)"
           :disabled="job.loading"
-          type="button"
           :aria-label="$t('hunts.cancelTip')"
-          class="ms-1 pull-right btn btn-sm btn-danger">
-          <span
-            v-if="!job.loading"
-            class="fa fa-ban fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`cancel${job.id}`">
+          icon
+          color="error"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          class="ms-1">
+          <v-icon
+            icon="mdi-cancel"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin"
+            v-else />
+          <v-tooltip :activator="`[id='cancel${job.id}']`">
             {{ $t('hunts.cancelTip') }}
-          </BTooltip>
-        </button>
+          </v-tooltip>
+        </v-btn>
       </template>
       <template v-if="(job.status === 'running' || job.status === 'queued') && canEdit">
-        <button
+        <v-btn
           :id="`pause${job.id}`"
           :disabled="job.loading"
           @click="$emit('pauseJob', job)"
-          type="button"
           :aria-label="$t('hunts.pauseTip')"
-          class="ms-1 pull-right btn btn-sm btn-warning">
-          <span
-            v-if="!job.loading"
-            class="fa fa-pause fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`pause${job.id}`">
+          icon
+          color="warning"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          class="ms-1">
+          <v-icon
+            icon="mdi-pause"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin"
+            v-else />
+          <v-tooltip :activator="`[id='pause${job.id}']`">
             {{ $t('hunts.pauseTip') }}
-          </BTooltip>
-        </button>
+          </v-tooltip>
+        </v-btn>
       </template>
       <template v-else-if="job.status === 'paused' && canEdit">
-        <button
+        <v-btn
           :id="`resume${job.id}`"
           :disabled="job.loading"
           @click="$emit('playJob', job)"
-          type="button"
           :aria-label="$t('hunts.resumeTip')"
-          class="ms-1 pull-right btn btn-sm btn-theme-secondary">
-          <span
-            v-if="!job.loading"
-            class="fa fa-play fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`resume${job.id}`">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          class="ms-1">
+          <v-icon
+            icon="mdi-play"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin"
+            v-else />
+          <v-tooltip :activator="`[id='resume${job.id}']`">
             {{ $t('hunts.resumeTip') }}
-          </BTooltip>
-        </button>
+          </v-tooltip>
+        </v-btn>
       </template>
     </td>
   </tr>
@@ -277,6 +325,23 @@ export default {
   components: {
     ToggleBtn,
     HuntStatus
+  },
+  data () {
+    return {
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
+    };
   },
   computed: {
     canEdit () {

@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import dr from 'defang-refang';
 import { dateString, reDateString } from './filters';
 import { applyPostProcess } from './applyPostProcess';
