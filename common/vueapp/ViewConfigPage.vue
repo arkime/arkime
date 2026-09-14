@@ -14,11 +14,11 @@ SPDX-License-Identifier: Apache-2.0
           icon="mdi-cog-outline"
           size="small"
           class="me-1" />
-        {{ $t('viewConfig.title') }}
+        <span>{{ $t('viewConfig.title') }}</span>
+        <code
+          v-if="config?.configFile"
+          class="text-caption text-medium-emphasis ms-3 text-truncate config-file-path">{{ config.configFile }}</code>
       </span>
-      <code
-        v-if="config?.configFile"
-        class="text-caption text-medium-emphasis ms-3">{{ config.configFile }}</code>
       <v-spacer />
       <!-- where a bare key is looked up, in order -->
       <v-tooltip
@@ -463,6 +463,23 @@ const blindCount = computed(() => counts.value.blind);
 </script>
 
 <style scoped>
+/* The config path sits beside the title inside .sub-navbar-title so it
+   shares the title's baseline, but it truncates independently of the
+   title: the title span is flex-shrink:0 so it's always shown in full,
+   and only the (potentially much longer) path shrinks and ellipsizes,
+   instead of the two sharing one truncated box. min-width:0 on the
+   title element lets that shrinking happen instead of the band
+   overflowing and shoving the info tooltip off the far end. */
+.sub-navbar-title {
+  min-width: 0;
+}
+.sub-navbar-title > span {
+  flex-shrink: 0;
+}
+.config-file-path {
+  min-width: 0;
+}
+
 /* Band 1 is the real .sub-navbar (common/common.css) -- same class, same
    height, same fixed band Settings/Config/Upload use everywhere else.
    Band 2 sits flush underneath it, same fixed mechanism, offset by

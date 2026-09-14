@@ -6,8 +6,10 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <v-icon icon="mdi-tray-arrow-up" />&nbsp;
-        {{ $t('uploads.uploadFile') }}
+        <v-icon
+          icon="mdi-tray-arrow-up"
+          class="me-1" />
+        <span>{{ $t('uploads.uploadFile') }}</span>
       </span>
       <div class="ms-auto small toast-container">
         <arkime-toast

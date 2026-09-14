@@ -499,99 +499,105 @@ SPDX-License-Identifier: Apache-2.0
               :class="{'cluster-highlight': highlightedClusterId === cluster.id}"
               variant="elevated">
               <v-card-text class="pa-2">
-                <!-- cluster ES status chip -->
-                <v-chip
-                  v-if="cluster.type !== 'disabled' && stats[cluster.id]"
-                  :href="`${cluster.url}/stats?statsTab=2`"
-                  :color="clusterStatusColor(cluster.id)"
-                  size="small"
-                  variant="flat"
-                  class="float-right cluster-status-chip">
-                  <span v-if="stats[cluster.id].status">
-                    {{ stats[cluster.id].status }}
-                  </span>
-                  <v-icon
-                    v-if="stats[cluster.id].healthError"
-                    icon="mdi-alert"
-                    size="small" />
-                  <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
-                    ????
-                  </span>
-                  <v-tooltip
-                    activator="parent"
-                    location="top">
-                    <span>{{ $t('parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
-                    <span v-if="stats[cluster.id].esVersion">
-                      <br>{{ $t('parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
+                <!-- cluster title + ES status chip -->
+                <div class="d-flex align-start ga-2 mb-2">
+                  <h5 class="d-flex align-center mb-0 cluster-title">
+                    <span
+                      v-if="isAdmin && !searchTerm && editMode"
+                      class="cluster-handle">
+                      <v-icon
+                        icon="mdi-view-grid"
+                        size="x-small" />
                     </span>
-                  </v-tooltip>
-                </v-chip>
-                <h5>
-                  <span
-                    v-if="isAdmin && !searchTerm && editMode"
-                    class="cluster-handle">
-                    <v-icon
-                      icon="mdi-view-grid"
-                      size="x-small" />
-                  </span>
-                  <template v-if="cluster.type === 'multiviewer'">
-                    <v-icon
-                      icon="mdi-sitemap"
-                      size="x-small"
-                      class="text-medium-emphasis cursor-help me-2">
+                    <template v-if="cluster.type === 'multiviewer'">
+                      <v-icon
+                        icon="mdi-sitemap"
+                        size="x-small"
+                        class="text-medium-emphasis cursor-help me-2">
+                        <v-tooltip
+                          activator="parent"
+                          location="top">
+                          {{ $t('parliament.clusterType-multiviewerTip') }}
+                        </v-tooltip>
+                      </v-icon>
+                    </template>
+                    <template v-if="cluster.type === 'disabled'">
+                      <v-icon
+                        icon="mdi-eye-off"
+                        size="x-small"
+                        class="text-medium-emphasis cursor-help me-2">
+                        <v-tooltip
+                          activator="parent"
+                          location="top">
+                          {{ $t('parliament.clusterType-disabledTip') }}
+                        </v-tooltip>
+                      </v-icon>
+                    </template>
+                    <template v-if="cluster.type === 'noAlerts'">
+                      <v-icon
+                        icon="mdi-bell-off"
+                        size="x-small"
+                        class="text-medium-emphasis cursor-help me-2">
+                        <v-tooltip
+                          activator="parent"
+                          location="top">
+                          {{ $t('parliament.clusterType-noAlertsTip') }}
+                        </v-tooltip>
+                      </v-icon>
+                    </template>
+                    <a
+                      v-if="cluster.type !== 'disabled'"
+                      class="no-decoration text-truncate cluster-title-text"
+                      :href="`${cluster.url}/sessions`"
+                      :title="cluster.title">
+                      {{ cluster.title }}
+                    </a>
+                    <span
+                      v-else
+                      class="text-truncate cluster-title-text"
+                      :title="cluster.title">
+                      {{ cluster.title }}
+                    </span>
+                    <a
+                      :href="`${cluster.url}/stats?statsTab=0`"
+                      class="no-decoration ms-2 d-flex align-center">
+                      <v-icon
+                        icon="mdi-chart-bar"
+                        size="x-small" />
                       <v-tooltip
                         activator="parent"
                         location="top">
-                        {{ $t('parliament.clusterType-multiviewerTip') }}
+                        {{ $t('parliament.statsLinkTip') }}
                       </v-tooltip>
-                    </v-icon>
-                  </template>
-                  <template v-if="cluster.type === 'disabled'">
+                    </a>
+                  </h5>
+                  <v-chip
+                    v-if="cluster.type !== 'disabled' && stats[cluster.id]"
+                    :href="`${cluster.url}/stats?statsTab=2`"
+                    :color="clusterStatusColor(cluster.id)"
+                    size="small"
+                    variant="flat"
+                    class="ms-auto flex-shrink-0 cluster-status-chip">
+                    <span v-if="stats[cluster.id].status">
+                      {{ stats[cluster.id].status }}
+                    </span>
                     <v-icon
-                      icon="mdi-eye-off"
-                      size="x-small"
-                      class="text-medium-emphasis cursor-help me-2">
-                      <v-tooltip
-                        activator="parent"
-                        location="top">
-                        {{ $t('parliament.clusterType-disabledTip') }}
-                      </v-tooltip>
-                    </v-icon>
-                  </template>
-                  <template v-if="cluster.type === 'noAlerts'">
-                    <v-icon
-                      icon="mdi-bell-off"
-                      size="x-small"
-                      class="text-medium-emphasis cursor-help me-2">
-                      <v-tooltip
-                        activator="parent"
-                        location="top">
-                        {{ $t('parliament.clusterType-noAlertsTip') }}
-                      </v-tooltip>
-                    </v-icon>
-                  </template>
-                  <a
-                    v-if="cluster.type !== 'disabled'"
-                    class="no-decoration"
-                    :href="`${cluster.url}/sessions`">
-                    {{ cluster.title }}
-                  </a>
-                  <span v-else>
-                    {{ cluster.title }}
-                  </span>
-                  <a
-                    :href="`${cluster.url}/stats?statsTab=0`"
-                    class="no-decoration ms-2">
-                    <v-icon
-                      icon="mdi-chart-bar"
-                      size="x-small" />
+                      v-if="stats[cluster.id].healthError"
+                      icon="mdi-alert"
+                      size="small" />
+                    <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
+                      ????
+                    </span>
                     <v-tooltip
                       activator="parent"
                       location="top">
-                      {{ $t('parliament.statsLinkTip') }}
+                      <span>{{ $t('parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
+                      <span v-if="stats[cluster.id].esVersion">
+                        <br>{{ $t('parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
+                      </span>
                     </v-tooltip>
-                  </a>
-                </h5> <!-- /cluster title -->
+                  </v-chip>
+                </div> <!-- /cluster title -->
                 <!-- cluster description -->
                 <p
                   class="text-medium-emphasis text-body-2 mb-2"
@@ -1730,8 +1736,26 @@ export default {
   font-weight: 500;
 }
 
-/* cluster ES status chip lives at top-right of each card; nudge size to match the old badge */
+/* Cluster titles are user-supplied and can be arbitrarily long. As a
+   flex item the title keeps min-width: auto, which would push the
+   status chip beside it clean out of the card, so let it shrink -- and
+   truncate with an ellipsis rather than wrap: wrapping would grow this
+   row past one line, floating the leading type-icon and trailing
+   stats-link icon (align-items:center flex siblings) between the
+   wrapped lines instead of next to the title's text. The full title is
+   still available via the native title="" tooltip. */
+.cluster-title {
+  min-width: 0;
+}
+.cluster-title-text {
+  min-width: 0;
+}
+
+/* cluster ES status chip lives at top-right of each card; nudge size to match the old badge.
+   Height matches the title's line-height so top-aligning the chip also
+   centers it on the first line of a title that wraps. */
 .cluster-status-chip { font-size: 0.7rem; }
+.cluster-status-chip.v-chip { height: 24px; }
 
 /* per-cluster stat chips should distribute across the card width.
    flex: 1 1 auto so each chip is at least as wide as its content, but
