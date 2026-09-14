@@ -2213,7 +2213,7 @@ app.get('/cyberchef.html', [cyberchefCspHeader], express.static( // cyberchef cl
 
 app.get( // cyberchef endpoint
   '/cyberchef/:nodeName/session/:id',
-  [User.checkPermissions(['webEnabled']), checkProxyRequest, cyberchefCspHeader],
+  [User.checkPermissions(['webEnabled', 'hidePcap', 'disablePcapDownload']), checkProxyRequest, cyberchefCspHeader],
   MiscAPIs.cyberChef
 );
 
