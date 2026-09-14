@@ -251,7 +251,9 @@ app.use((req, res, next) => {
 
 function normalizeUrlPath (path) {
   const normalizedUrl = new URL(path, 'https://0.0.0.0/');
-  return normalizedUrl.pathname;
+  // keep search+hash: the guard must see everything that gets forwarded,
+  // or an encoded ?/# lets this diverge from the raw url doProxyFull sends
+  return normalizedUrl.pathname + normalizedUrl.search + normalizedUrl.hash;
 }
 
 // Save the post body
@@ -571,9 +573,12 @@ app.post('*', saveBody, (req, res) => {
 // Delete requests
 app.delete('*', (req, res) => {
   const path = normalizeUrlPath(req.params['0']);
+  const filesDocPrefix = `/${prefix}files/_doc/${req.sensor.node}-`;
 
   // Empty IFs since those are allowed requests and will run code at end
-  if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}-`)) {
+  // id must be a single path segment, or a decoded ?/# could still hide a
+  // traversal to a different index in what startsWith() alone would allow
+  if (path.startsWith(filesDocPrefix) && !path.slice(filesDocPrefix.length).includes('/')) {
   } else {
     console.log(`DELETE failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');

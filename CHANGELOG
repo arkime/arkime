@@ -157,10 +157,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4228 Update the Censys integration to the new Censys Platform API; it now needs a personal access token instead of an api id and secret
   - #4229 Replace the BGPView integration with RIPEstat, BGPView shut down in November 2025
   - Remove the PassiveTotal integration, the API was retired by Microsoft
+## ESProxy
+  - #4264 Fix a sensor being able to reach any Elasticsearch API through esProxy by percent-encoding a ? or # in the url
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
   - #4241 Fix the entire session pcap download ignoring the user's forced expression on segments
+  - #4262 Fix session queries not enforcing a timeLimit that comes only from a role instead of the user
+  - #4263 Fix users with hidePcap or disablePcapDownload still being able to view packets through CyberChef
 ## WISE
   - Remove the PassiveTotal source, the API was retired by Microsoft
 

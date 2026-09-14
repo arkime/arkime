@@ -1858,6 +1858,10 @@ class User {
     return this.#allExpression;
   }
 
+  getTimeLimit () {
+    return this.#allTimeLimit;
+  }
+
   /**
    * Returns all roles that the current user has assignment access to
    */
