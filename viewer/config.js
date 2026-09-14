@@ -137,11 +137,7 @@ class Config {
 
   // ----------------------------------------------------------------------------
   static arkimeWebURL () {
-    let webUrl = Config.get('arkimeWebURL', `${Config.hostName()}${Config.basePath()}`);
-    if (!webUrl.startsWith('http')) {
-      webUrl = Config.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
-    }
-    return webUrl;
+    return ArkimeConfig.webURL(() => `${Config.hostName()}${Config.basePath()}`, Config.isHTTPS());
   }
 
   // ----------------------------------------------------------------------------

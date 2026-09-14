@@ -50,16 +50,22 @@ class MCPServer {
    *
    * @param {string} options.serviceName Used as the WWW-Authenticate realm and serverInfo.name
    * @param {string} options.version Reported as serverInfo.version
-   * @param {object[]} options.tools The tools to expose, see #tool shape below
+   * @param {object[]} options.tools The tools to expose: { name, title, description,
+   *        inputSchema, annotations, handler(args, req), ui(args, data) }. ui is
+   *        optional and returns [path, params] for the web ui link added to the
+   *        result as uiUrl, or undefined for no link.
    * @param {function} [options.authenticate] async (req) => user. Defaults to the
    *        mcpAuthMode driven authenticator, built lazily on first request.
    * @param {function} [options.enabled] () => bool, checked per request
    * @param {string} [options.serviceRole] The role needed to use this service at
    *        all (eg arkimeUser). The caller must hold this AND the MCP role.
+   * @param {function} [options.webUrl] () => the browser facing base url of the
+   *        service, used for tool.ui links. No links when omitted.
    */
   static router (options) {
     const router = express.Router();
     const tools = new Map(options.tools.map(t => [t.name, t]));
+    MCPServer.#webUrlFn = options.webUrl;
 
     // Routes are registered before the config is loaded (viewer.js builds the
     // whole app at require time and only awaits Config.initialize() later), so
@@ -176,7 +182,7 @@ class MCPServer {
         }))
       };
     case 'tools/call':
-      return await MCPServer.#callTool(req, params, tools);
+      return await MCPServer.#callTool(req, params, tools, options);
     case 'resources/list':
       return { resources: [] };
     case 'resources/templates/list':
@@ -189,7 +195,7 @@ class MCPServer {
   }
 
   // ----------------------------------------------------------------------------
-  static async #callTool (req, params, tools) {
+  static async #callTool (req, params, tools, options) {
     const tool = tools.get(params.name);
     if (tool === undefined) {
       throw new MCPRPCError(INVALID_PARAMS, `Unknown tool ${ArkimeUtil.safeStr(params.name)}`);
@@ -202,11 +208,30 @@ class MCPServer {
 
     try {
       const data = await tool.handler(args, req);
-      return {
-        content: [{ type: 'text', text: JSON.stringify(data) }],
-        structuredContent: data,
-        isError: false
-      };
+
+      if (tool.ui && ArkimeUtil.isPlainObject(data)) {
+        const link = tool.ui(args, data);
+        const url = link && MCPServer.webUrl(...link);
+        if (url !== undefined) { data.uiUrl = url; }
+      }
+
+      const content = [{ type: 'text', text: JSON.stringify(data) }];
+
+      // resource_link needs a 2025-06-18 client. Compare against the known
+      // list, not a lexicographic '>=', so an unrecognized header value (eg a
+      // non-conforming client sending "3") can't be mistaken for newer
+      const version = req.headers['mcp-protocol-version'];
+      if (ArkimeUtil.isString(data?.uiUrl) && version === PROTOCOL_VERSIONS[0]) {
+        content.push({
+          type: 'resource_link',
+          uri: data.uiUrl,
+          name: 'Open in web UI',
+          description: `${tool.title ?? tool.name} in the ${options.serviceName} web UI`,
+          mimeType: 'text/html'
+        });
+      }
+
+      return { content, structuredContent: data, isError: false };
     } catch (err) {
       // A failing tool is a successful http request with isError set, so the
       // model can see what went wrong instead of the client seeing a 500
@@ -353,6 +378,27 @@ class MCPServer {
       console.log('MCP: blocked by mcpAllowedIps', ArkimeUtil.sanitizeStr(ip));
     }
     return allowed;
+  }
+
+  // ----------------------------------------------------------------------------
+  static #webUrlFn;
+
+  /**
+   * Build a web ui url from the service's base url, options.webUrl
+   *
+   * @param {string} path Page within the app, eg 'sessions' or 'settings#views'
+   * @param {object} [params] Query string values, undefined/null are dropped
+   * @returns {string|undefined} undefined when the service has no base url
+   */
+  static webUrl (path, params = {}) {
+    const base = ArkimeUtil.parseUrl(MCPServer.#webUrlFn?.());
+    if (base === undefined) { return undefined; }
+
+    const url = new URL(path.replace(/^\/+/, ''), base.href.replace(/\/*$/, '/'));
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) { url.searchParams.append(key, String(value)); }
+    }
+    return url.href;
   }
 
   // ----------------------------------------------------------------------------
