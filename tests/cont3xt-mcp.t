@@ -1,4 +1,4 @@
-use Test::More tests => 51;
+use Test::More tests => 96;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -119,6 +119,19 @@ $json = callTool("cont3xt_list_integrations");
 is($json->{result}->{isError}, JSON::false, "cont3xt_list_integrations succeeds");
 ok(defined $json->{result}->{structuredContent}->{integrations}, "cont3xt_list_integrations returns integrations");
 
+# mcpDefaultView (mcpdefault in the test config) applies to every search that
+# names neither a view nor doIntegrations, so until the view exists those fail
+# loudly instead of quietly running every integration
+$json = callTool("cont3xt_search", '{"query":"8.8.8.8","skipChildren":true}');
+is($json->{result}->{isError}, JSON::true, "cont3xt_search fails when mcpDefaultView names a missing view");
+like($json->{result}->{content}->[0]->{text}, qr/mcpDefaultView/, "the error names the setting");
+
+# no integrations list means unrestricted, matching the web ui
+$json = cont3xtPostToken('/api/view?arkimeRegressionUser=superAdmin', to_json({ name => "mcpdefault" }), $token);
+is($json->{success}, JSON::true, "created the default view for the mcp tests");
+my $defaultViewId = $json->{view}->{_id};
+esGet("/_refresh");
+
 # the search handler streams newline delimited json, the tool must buffer it
 # all and fold it into a single result
 $json = callTool("cont3xt_search", '{"query":"8.8.8.8","skipChildren":true}');
@@ -127,7 +140,8 @@ my $search = $json->{result}->{structuredContent};
 is($search->{indicators}->[0]->{itype}, "ip", "cont3xt_search classified the indicator");
 ok(scalar @{$search->{results}} > 0, "cont3xt_search returns integration results");
 ok(!defined $search->{partial}, "cont3xt_search completed rather than timing out");
-is($search->{uiUrl}, "http://localhost:3218/?b=OC44LjguOA%3D%3D&submit=y&skipChildren=true", "cont3xt_search links to the same search in the web ui");
+is($search->{view}->{name}, "mcpdefault", "cont3xt_search used mcpDefaultView");
+is($search->{uiUrl}, "http://localhost:3218/?b=OC44LjguOA%3D%3D&submit=y&view=$defaultViewId&skipChildren=true", "cont3xt_search links to the same search in the web ui, default view included");
 
 # an explicit doIntegrations restriction has no representation in the web ui's
 # url (only a view does), so the link must be omitted rather than pointing at
@@ -175,8 +189,114 @@ ok(scalar @{$json->{result}->{structuredContent}->{results}} > 0, "cont3xt_searc
 $json = cont3xtDeleteToken("/api/view/$noIntegrationsViewId?arkimeRegressionUser=superAdmin", '{}', $token);
 is($json->{success}, JSON::true, "removed the no-integrations test view");
 
-$json = callTool("cont3xt_search", '{"query":""}');
+$json = callTool("cont3xt_search", '{"query":"","doIntegrations":["csv:rir"]}');
 is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects an empty query");
+
+################################################################################
+# overview (the default) vs full detail
+################################################################################
+# the default answer is the overview per indicator, results only says which
+# integrations answered, the raw data is left out
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50","doIntegrations":["csv:rir","json:ipwise"],"skipChildren":true}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_search overview detail succeeds");
+$search = $json->{result}->{structuredContent};
+is(scalar @{$search->{results}}, 2, "overview detail still lists every integration that answered");
+my ($rir) = grep { $_->{integration} eq "csv:rir" } @{$search->{results}};
+ok(!exists $rir->{data}, "overview detail leaves the raw integration data out");
+is($rir->{count}, 1, "overview detail reports each integration's result count");
+is(scalar @{$search->{overviews}}, 1, "overview detail has one overview per indicator");
+is($search->{overviews}->[0]->{indicator}->{query}, "10.20.30.50", "the overview names its indicator");
+ok(ref $search->{overviews}->[0]->{fields} eq "ARRAY", "the overview has a fields array");
+
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50","doIntegrations":["csv:rir","json:ipwise"],"skipChildren":true,"detail":"full"}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_search full detail succeeds");
+$search = $json->{result}->{structuredContent};
+($rir) = grep { $_->{integration} eq "csv:rir" } @{$search->{results}};
+is($rir->{data}->{data}->{Designation}, "IANA - Private Use", "full detail returns the raw integration data");
+ok(!defined $search->{overviews}, "full detail has no overviews");
+
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50","doIntegrations":["csv:rir"],"detail":"nope"}');
+is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects an unknown detail");
+
+# an overview pulls linked card fields or its own custom fields out of each
+# integration's data, exactly what the web ui's overview card shows
+$json = cont3xtPutToken('/api/overview?arkimeRegressionUser=superAdmin', to_json({
+    name => "mcpoverview", title => "MCP %{query}", iType => "ip",
+    viewRoles => ["cont3xtUser"], editRoles => ["superAdmin"],
+    fields => [
+        { type => "linked", from => "json:ipwise", field => "data", alias => "IPWise" },
+        { type => "custom", from => "csv:rir", custom => { label => "Designation", field => "data.Designation" } },
+        { type => "linked", from => "csv:rir", field => "nosuchfield" },
+        { type => "custom", from => "csv:rir", custom => { label => "Empty", field => "data.WHOIS" } }
+    ]
+}), $token);
+is($json->{success}, JSON::true, "created an overview for the mcp tests");
+esGet("/_refresh");
+
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50","doIntegrations":["csv:rir","json:ipwise"],"skipChildren":true,"overview":"mcpoverview"}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_search with an overview by name succeeds");
+my $ov = $json->{result}->{structuredContent}->{overviews}->[0];
+is($ov->{overview}->{name}, "mcpoverview", "the requested overview was used");
+is(scalar @{$ov->{fields}}, 2, "empty fields and fields whose integration didn't answer are left out");
+is($ov->{fields}->[0]->{label}, "IPWise", "a linked field is labelled with its alias");
+is($ov->{fields}->[0]->{integration}, "json:ipwise", "a field names the integration it came from");
+is($ov->{fields}->[0]->{value}->{tag}, "ipwise-array", "a linked json card field carries the integration's data");
+is($ov->{fields}->[1]->{label}, "Designation", "a custom field is labelled by its own label");
+is($ov->{fields}->[1]->{value}, "IANA - Private Use", "a custom field reads its path out of the data");
+is(scalar @{$ov->{warnings}}, 1, "a linked field that doesn't exist is reported");
+like($ov->{warnings}->[0], qr/nosuchfield/, "the warning names the missing field");
+
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50","doIntegrations":["csv:rir"],"overview":"nosuchoverview"}');
+is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects an unknown overview");
+
+$json = cont3xtGet('/api/overview?arkimeRegressionUser=superAdmin');
+my ($mcpOverview) = grep { $_->{name} eq "mcpoverview" } @{$json->{overviews}};
+$json = cont3xtDeleteToken("/api/overview/$mcpOverview->{_id}?arkimeRegressionUser=superAdmin", '{}', $token);
+is($json->{success}, JSON::true, "removed the mcp test overview");
+
+################################################################################
+# tags
+################################################################################
+$json = callTool("cont3xt_search", '{"query":"10.20.30.51","view":"mcpdefault","doIntegrations":["csv:rir"],"skipChildren":true,"tags":["mcptag","case-42"]}');
+is($json->{result}->{isError}, JSON::false, "cont3xt_search with tags succeeds");
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=MTAuMjAuMzAuNTE%3D&submit=y&view=$defaultViewId&tags=mcptag%2Ccase-42&skipChildren=true", "the web ui link carries the tags");
+# the audit is written after the response is sent, give it a moment to land
+sleep(1);
+esGet("/_flush");
+esGet("/_refresh");
+$json = cont3xtGet('/api/audits?searchTerm=mcptag&arkimeRegressionUser=superAdmin');
+is(scalar @{$json->{audits}}, 1, "the tags were recorded in the search history");
+eq_or_diff($json->{audits}->[0]->{tags}, ["mcptag", "case-42"], "the history has every tag");
+$json = cont3xtDeleteToken("/api/audit/$json->{audits}->[0]->{_id}?arkimeRegressionUser=superAdmin", '{}', $token);
+is($json->{success}, JSON::true, "removed the tagged history entry");
+
+$json = callTool("cont3xt_search", '{"query":"10.20.30.51","doIntegrations":["csv:rir"],"tags":"mcptag"}');
+is($json->{result}->{isError}, JSON::true, "cont3xt_search rejects tags that aren't an array");
+
+$json = callTool("cont3xt_ui_link", '{"query":"example.com","tags":["a","b"],"submit":true}');
+is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=ZXhhbXBsZS5jb20%3D&submit=y&tags=a%2Cb", "cont3xt_ui_link carries the tags");
+
+################################################################################
+# mcpMaxResultBytes (2048 in the test config)
+################################################################################
+# the largest entries are emptied and marked, never silently cut
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50 10.20.30.51 10.20.30.52 10.20.30.53","doIntegrations":["csv:rir","json:ipwise","Maxmind"],"skipChildren":true,"detail":"full"}');
+is($json->{result}->{isError}, JSON::false, "an oversized full search still succeeds");
+$search = $json->{result}->{structuredContent};
+ok(defined $search->{truncated}, "an oversized result is marked truncated");
+ok($search->{truncated}->{bytes} > 2048, "truncated reports the original size");
+is($search->{truncated}->{limit}, 2048, "truncated reports the limit");
+my @omitted = grep { $_->{omitted} } @{$search->{results}};
+is(scalar @omitted, $search->{truncated}->{omitted}, "every omitted entry is counted");
+ok(scalar @omitted > 0 && scalar @omitted < scalar @{$search->{results}}, "only as many entries as needed were omitted");
+ok(!exists $omitted[0]->{data} && $omitted[0]->{bytes} > 0, "an omitted entry has no data but says how big it was");
+ok(length(to_json($search)) <= 2048, "the result is within the limit");
+
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50","doIntegrations":["csv:rir"],"skipChildren":true,"detail":"full"}');
+ok(!defined $json->{result}->{structuredContent}->{truncated}, "a result within the limit is untouched");
+
+$json = cont3xtDeleteToken("/api/view/$defaultViewId?arkimeRegressionUser=superAdmin", '{}', $token);
+is($json->{success}, JSON::true, "removed the mcp default view");
 
 $json = callTool("cont3xt_views");
 is($json->{result}->{isError}, JSON::false, "cont3xt_views succeeds");
