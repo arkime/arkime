@@ -28,7 +28,7 @@ class MiscAPIs {
   // --------------------------------------------------------------------------
   static async #getClusters () {
     const clusters = { active: [], inactive: [] };
-    if (Config.get('multiES', false)) {
+    if (Config.getBool('multiES', false)) {
       try {
         const { body: results } = await Db.getClusterDetails();
         clusters.active = results.active;

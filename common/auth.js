@@ -109,7 +109,7 @@ class Auth {
     options.authConfig.redirectURIs ??= ArkimeConfig.get('authRedirectURIs');
     options.authConfig.trustProxy ??= ArkimeConfig.get('authTrustProxy');
     options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
-    options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
+    options.authConfig.cookieSecure ??= ArkimeConfig.getBool('authCookieSecure', true);
     options.authConfig.oidcScope ??= ArkimeConfig.get('authOIDCScope', 'openid');
     options.authConfig.jwsAlgorithm ??= ArkimeConfig.get('authJwsAlgorithm', 'RS256');
 
