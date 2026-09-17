@@ -210,7 +210,9 @@ class MCPServer {
     try {
       const data = await tool.handler(args, req);
 
-      if (tool.ui && ArkimeUtil.isPlainObject(data)) {
+      // A handler that budgets its result size attaches uiUrl itself, so the
+      // link is inside the budget rather than appended after it
+      if (tool.ui && ArkimeUtil.isPlainObject(data) && data.uiUrl === undefined) {
         const link = tool.ui(args, data);
         const url = link && MCPServer.webUrl(...link);
         if (url !== undefined) { data.uiUrl = url; }

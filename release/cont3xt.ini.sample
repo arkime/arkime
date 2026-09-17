@@ -48,6 +48,14 @@ cacheTimeout=1d
 #mcpAuthMode=header
 #mcpAllowedIps=10.0.0.1/32
 #arkimeWebURL=https://cont3xt.example.com/
+# cont3xt_search answers with the overview for each indicator by default, the
+# raw integration data is only sent when asked for. Either way a result larger
+# than this many bytes has its largest entries dropped and marked omitted, so
+# one lookup can't flood the assistant's context. -1 for no limit.
+#mcpMaxResultBytes=100000
+# View (id or name) an MCP search uses when the assistant doesn't pick one, so
+# an operator decides which integrations a routine lookup hits, not the model
+#mcpDefaultView=MCP
 
 # By default use a cache that will survive restarts but local to instance
 [cache]

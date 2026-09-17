@@ -154,6 +154,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4224 Add dhcp.yiaddr, the server assigned address from OFFER/ACK, and dhcp.paramReqList, the parameter request list
   - #4224 Add DNS PTR and SRV answer parsing
 ## Cont3xt
+  - #4265 The MCP search tool now answers with the overview for each indicator instead of every integration's raw data, which could be far more than an assistant can read at once.
+          Ask for detail=full to get the raw data, and use cont3xt_integration_search to pull one integration.
+  - #4265 Add mcpMaxResultBytes, a cap on the size of an MCP tool result; entries over it are dropped and marked omitted rather than truncated silently
+  - #4265 Add mcpDefaultView, the view an MCP search uses when the assistant doesn't pick one
+  - #4265 MCP searches can now record tags in the cont3xt history, and web ui links carry them
   - #4228 Update the Censys integration to the new Censys Platform API; it now needs a personal access token instead of an api id and secret
   - #4229 Replace the BGPView integration with RIPEstat, BGPView shut down in November 2025
   - Remove the PassiveTotal integration, the API was retired by Microsoft
