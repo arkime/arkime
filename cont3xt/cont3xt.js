@@ -46,7 +46,7 @@ app.use(helmet.xssFilter()); // disables browsers' buggy cross-site scripting fi
 app.use(helmet.noSniff()); // mitigates MIME type sniffing
 
 function setupHSTS () {
-  if (ArkimeConfig.get('hstsHeader', false)) {
+  if (ArkimeConfig.getBool('hstsHeader', false)) {
     app.use(helmet.hsts({
       maxAge: 31536000,
       includeSubDomains: true
@@ -215,7 +215,7 @@ app.use('/mcp', MCPServer.router({
   version: version.version,
   serviceRole: 'cont3xtUser',
   tools: MCPCont3xtAPIs.tools,
-  enabled: () => ArkimeConfig.get('mcpEnabled', false),
+  enabled: () => ArkimeConfig.getBool('mcpEnabled', false),
   webUrl: arkimeWebURL
 }));
 
@@ -438,7 +438,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     nonce: res.locals.nonce,
     version: version.version,
     path: internals.webBasePath,
-    disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
+    disableUserPasswordUI: ArkimeConfig.getBool('disableUserPasswordUI', true),
     demoMode: req.user.isDemoMode(),
     environment: process.env.NODE_ENV,
     manifest

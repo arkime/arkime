@@ -441,7 +441,7 @@ class ViewerUtils {
 
   // ----------------------------------------------------------------------------
   static addCluster (cluster, options = {}) {
-    if (cluster && Config.get('multiES', false)) {
+    if (cluster && Config.getBool('multiES', false)) {
       options.cluster = cluster;
     }
     return options;

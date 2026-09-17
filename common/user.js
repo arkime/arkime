@@ -121,7 +121,7 @@ class User {
       });
     }
 
-    User.#demoMode = ArkimeConfig.get('demoMode', false);
+    User.#demoMode = ArkimeConfig.getBool('demoMode', false);
     if (typeof User.#demoMode !== 'boolean') {
       User.#demoMode = new Set(ArkimeConfig.getArray('demoMode'));
     }

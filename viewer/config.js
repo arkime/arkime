@@ -104,6 +104,8 @@ class Config {
 
   static getFloat = ArkimeConfig.getFloat;
 
+  static getBool = ArkimeConfig.getBool;
+
   // ----------------------------------------------------------------------------
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements
   static getArray = ArkimeConfig.getArray;

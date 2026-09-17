@@ -135,7 +135,7 @@ ArkimeConfig.loaded(() => {
 
   securityApp.use(helmet.hidePoweredBy());
   securityApp.use(helmet.xssFilter());
-  if (Config.get('hstsHeader', false) && Config.isHTTPS()) {
+  if (Config.getBool('hstsHeader', false) && Config.isHTTPS()) {
     securityApp.use(helmet.hsts({
       maxAge: 31536000,
       includeSubDomains: true
@@ -354,7 +354,7 @@ app.use('/mcp', MCPServer.router({
   version: version.version,
   serviceRole: 'arkimeUser',
   tools: MCPViewerAPIs.tools,
-  enabled: () => ArkimeConfig.get('mcpEnabled', false),
+  enabled: () => ArkimeConfig.getBool('mcpEnabled', false),
   webUrl: Config.arkimeWebURL
 }));
 
@@ -1251,7 +1251,7 @@ async function expireCheckAll () {
 // ============================================================================
 // APIs disabled in demoMode, needs to be before real callbacks
 ArkimeConfig.loaded(() => {
-  if (Config.get('demoMode', false)) {
+  if (Config.getBool('demoMode', false)) {
     console.log('WARNING - Starting in demo mode, some APIs disabled');
   }
 });
@@ -2269,7 +2269,7 @@ app.use(cspHeader, setCookie, (req, res) => {
   const footerConfig = Config.get('footerTemplate', '_version_ | <a href="https://arkime.com">arkime.com</a> | _responseTime_')
     .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ commaString(responseTime) }}ms');
 
-  const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
+  const limit = req.user.hasRole('arkimeAdmin') ? Config.getInt('huntAdminLimit', 10000000) : Config.getInt('huntLimit', 1000000);
 
   const appContext = {
     theme,
@@ -2281,15 +2281,15 @@ app.use(cspHeader, setCookie, (req, res) => {
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
-    huntWarn: Config.get('huntWarn', 100000),
+    huntWarn: Config.getInt('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
     anonymousMode: Auth.isAnonymousMode() && !ArkimeConfig.regressionTests,
-    businessDayStart: Config.get('businessDayStart', false),
-    businessDayEnd: Config.get('businessDayEnd', false),
+    businessDayStart: Config.getFloat('businessDayStart', false),
+    businessDayEnd: Config.getFloat('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
-    turnOffGraphDays: Config.get('turnOffGraphDays', 30),
-    disableUserPasswordUI: Config.get('disableUserPasswordUI', true),
+    turnOffGraphDays: Config.getInt('turnOffGraphDays', 30),
+    disableUserPasswordUI: Config.getBool('disableUserPasswordUI', true),
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),

@@ -352,6 +352,19 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * A boolean setting, the default if it isn't true/false. Anything else in
+   * an if() would be truthy, so 'multiES=no' must not turn multiES on.
+   */
+  static getBool (sectionKey, d) {
+    const raw = ArkimeConfig.get(sectionKey);
+    if (raw === undefined || raw === '') { return d; }
+    if (raw === true || raw === false) { return raw; }
+    console.log(`WARNING - ${sectionKey} is '${ArkimeUtil.sanitizeStr(raw)}', not true or false, using ${d}`);
+    return d;
+  }
+
+  // ----------------------------------------------------------------------------
   static #VALIDATED = {};
 
   /**
