@@ -20,7 +20,6 @@ PCAP=1.10.4
 LUA=5.3.6
 DAQ=2.0.7
 NGHTTP2=1.57.0
-ZSTD=1.5.5
 KAFKA=1.5.3
 
 NODE=24.21.0
@@ -35,7 +34,6 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=0
-BUILDZSTD=1
 DOJEMALLOC=0
 DOTCMALLOC=0
 EXTRACONFIGURE=""
@@ -189,22 +187,20 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   if [[ "$VERSION_ID" == 8* ]]; then
     sudo yum install -y python312 python3.12-devel
   elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-    sudo yum install -y libmaxminddb-devel libzstd-devel
+    sudo yum install -y libmaxminddb-devel
     if [[ "$VERSION_ID" == 9* ]]; then
       sudo yum install -y python3.12 python3.12-devel
     fi
-    BUILDZSTD=0
   elif [[ "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y libmaxminddb-devel libpcap-devel libzstd-devel librdkafka-devel python3-devel
+    sudo yum install -y libmaxminddb-devel libpcap-devel librdkafka-devel python3-devel
     WITHMAXMIND=" "
     PCAPBUILD=" "
-    BUILDZSTD=0
     BUILDKAFKA=0
     export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
     export KAFKA_LIBS="-lrdkafka"
     KAFKABUILD="--with-kafka=no"
   elif [[ "$ID" == "fedora" ]]; then
-    sudo yum install -y libmaxminddb-devel libpcap-devel libnghttp2-devel yara-devel lua-devel libzstd-devel librdkafka-devel python3-devel
+    sudo yum install -y libmaxminddb-devel libpcap-devel libnghttp2-devel yara-devel lua-devel librdkafka-devel python3-devel
     DOTHIRDPARTY=0
     export LUA_CFLAGS="-I/usr/include"
     export LUA_LIBS="-llua"
@@ -213,7 +209,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   fi
-  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -417,7 +413,6 @@ if [ "$UNAME" = "Darwin" ]; then
 elif [ -f "/etc/arch-release" ]; then
     DOKAFKA=1
     BUILDKAFKA=0
-    BUILDZSTD=0
 
     echo './configure \
       --prefix=$TDIR \
@@ -445,7 +440,6 @@ elif [ -f "/etc/alpine-release" ] ; then
 
     DOKAFKA=1
     BUILDKAFKA=0
-    BUILDZSTD=0
 
     (cd thirdparty; buildYara)
 
@@ -587,27 +581,6 @@ else
     fi
   fi
 
-  # zstd
-  if [ $BUILDZSTD -eq 1 ]; then
-    WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
-    if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
-      curl -sSfLO https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
-    fi
-
-    if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
-      tar zxf zstd-$ZSTD.tar.gz
-      ( cd zstd-$ZSTD; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding zstd"
-    fi
-  else
-    WITHZSTD=""
-  fi
-
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
@@ -632,8 +605,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
