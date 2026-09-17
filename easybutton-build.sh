@@ -16,8 +16,6 @@
 # newer yara requires newer ssl, issues on Centos 7
 YARA=4.2.3
 MAXMIND=1.7.1
-PCAP=1.10.4
-LUA=5.3.6
 DAQ=2.0.7
 NGHTTP2=1.57.0
 KAFKA=1.5.3
@@ -186,21 +184,31 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
 
   if [[ "$VERSION_ID" == 8* ]]; then
     sudo yum install -y python312 python3.12-devel
-  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-    sudo yum install -y libmaxminddb-devel
+  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 10* ]]; then
+    sudo yum install -y libmaxminddb-devel libnghttp2-devel yara-devel librdkafka-devel
     if [[ "$VERSION_ID" == 9* ]]; then
       sudo yum install -y python3.12 python3.12-devel
+      if [ $DODAQ -eq 1 ]; then
+        # daq is only packaged in EPEL, and only for EL9
+        sudo yum install -y daq-devel
+      fi
+    else
+      sudo yum install -y python3-devel
     fi
-  elif [[ "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y libmaxminddb-devel libpcap-devel librdkafka-devel python3-devel
-    WITHMAXMIND=" "
-    PCAPBUILD=" "
-    BUILDKAFKA=0
+    DOTHIRDPARTY=0
+    export LUA_CFLAGS="-I/usr/include"
+    export LUA_LIBS="-llua"
+    with_lua=no
     export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
     export KAFKA_LIBS="-lrdkafka"
-    KAFKABUILD="--with-kafka=no"
+    with_kafka=no
+  elif [[ "$VERSION_ID" == 2023 ]]; then
+    # Amazon Linux 2023 has no yara or librdkafka packages, those still come from thirdparty
+    sudo yum install -y libmaxminddb-devel libnghttp2-devel
+    WITHMAXMIND=" "
+    WITHNGHTTP2=" "
   elif [[ "$ID" == "fedora" ]]; then
-    sudo yum install -y libmaxminddb-devel libpcap-devel libnghttp2-devel yara-devel lua-devel librdkafka-devel python3-devel
+    sudo yum install -y libmaxminddb-devel libnghttp2-devel yara-devel librdkafka-devel python3-devel
     DOTHIRDPARTY=0
     export LUA_CFLAGS="-I/usr/include"
     export LUA_LIBS="-llua"
@@ -209,7 +217,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   fi
-  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -509,58 +517,25 @@ else
     WITHMAXMIND="--with-maxminddb=thirdparty/libmaxminddb-$MAXMIND"
   fi
 
-  # libpcap
-  if [ ! -z "$PCAPBUILD" ]; then
-    echo "ARKIME: pcapbuild $PCAPBUILD"
+  # nghttp2
+  if [ ! -z "$WITHNGHTTP2" ]; then
+    echo "ARKIME: withnghttp2 $WITHNGHTTP2"
   else
-    if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-      curl -sSfLO https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    WITHNGHTTP2="--with-nghttp2=thirdparty/nghttp2-$NGHTTP2"
+    if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
+      curl -sSfLO https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
     fi
-    if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
-      tar zxf libpcap-$PCAP.tar.gz
-      echo "ARKIME: Building libpcap";
-      (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
+
+    if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
+      tar zxf nghttp2-$NGHTTP2.tar.gz
+      ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
       fi
     else
-      echo "ARKIME: NOT rebuilding libpcap";
+      echo "ARKIME: Not rebuilding nghttp2"
     fi
-    PCAPDIR=$TPWD/libpcap-$PCAP
-    PCAPBUILD="--with-libpcap=$PCAPDIR"
-  fi
-
-  # nghttp2
-  if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
-    curl -sSfLO https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
-  fi
-
-  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
-    tar zxf nghttp2-$NGHTTP2.tar.gz
-    ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
-  else
-    echo "ARKIME: Not rebuilding nghttp2"
-  fi
-
-  # lua
-  if [ ! -f "lua-$LUA.tar.gz" ]; then
-    curl -sSfLO https://www.lua.org/ftp/lua-$LUA.tar.gz
-  fi
-
-  if [ ! -f "lua-$LUA/src/liblua.a" ]; then
-    tar zxf lua-$LUA.tar.gz
-    ( cd lua-$LUA; make MYCFLAGS=-fPIC linux)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
-  else
-    echo "ARKIME: Not rebuilding lua"
   fi
 
   # daq
@@ -571,7 +546,7 @@ else
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
       tar zxf daq-$DAQ.tar.gz
-      ( cd daq-$DAQ; autoreconf -f -i; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
+      ( cd daq-$DAQ; autoreconf -f -i; ./configure; make; sudo make install)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
@@ -605,8 +580,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $KAFKABUILD $EXTRACONFIGURE"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $KAFKABUILD $EXTRACONFIGURE
+  echo "./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHNGHTTP2 $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHNGHTTP2 $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
