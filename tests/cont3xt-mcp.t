@@ -1,4 +1,4 @@
-use Test::More tests => 96;
+use Test::More tests => 97;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -279,10 +279,12 @@ is($json->{result}->{structuredContent}->{uiUrl}, "http://localhost:3218/?b=ZXhh
 ################################################################################
 # mcpMaxResultBytes (2048 in the test config)
 ################################################################################
-# the largest entries are emptied and marked, never silently cut
-$json = callTool("cont3xt_search", '{"query":"10.20.30.50 10.20.30.51 10.20.30.52 10.20.30.53","doIntegrations":["csv:rir","json:ipwise","Maxmind"],"skipChildren":true,"detail":"full"}');
+# the largest entries are emptied and marked, never silently cut. The view
+# makes the web ui link part of the result, and the cap must hold with it
+$json = callTool("cont3xt_search", '{"query":"10.20.30.50 10.20.30.51 10.20.30.52 10.20.30.53","view":"mcpdefault","doIntegrations":["csv:rir","json:ipwise","Maxmind"],"skipChildren":true,"detail":"full"}');
 is($json->{result}->{isError}, JSON::false, "an oversized full search still succeeds");
 $search = $json->{result}->{structuredContent};
+like($search->{uiUrl}, qr/^http:\/\/localhost:3218\/\?b=.*&view=$defaultViewId&/, "the oversized result still carries its web ui link");
 ok(defined $search->{truncated}, "an oversized result is marked truncated");
 ok($search->{truncated}->{bytes} > 2048, "truncated reports the original size");
 is($search->{truncated}->{limit}, 2048, "truncated reports the limit");

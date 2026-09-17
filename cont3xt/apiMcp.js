@@ -403,6 +403,23 @@ class MCPCont3xtAPIs {
   static #buildTools (apis) {
     const { Integration, View, Overview, LinkGroup } = apis;
 
+    // Tools that cap their result size attach the link themselves before
+    // capping, mcpServer only adds one when the handler didn't
+    const attachLink = (data, link) => {
+      const url = link && MCPServer.webUrl(...link);
+      if (url !== undefined) { data.uiUrl = url; }
+      return data;
+    };
+
+    // An explicit doIntegrations restriction with no view has nowhere to go
+    // in the URL (the web UI only reads a view from the query string), so a
+    // link built without it would search a different, usually wider, set of
+    // integrations than what was actually run - omit it instead.
+    const searchLink = (args, data) => {
+      if (args.doIntegrations && !data.view) { return undefined; }
+      return MCPCont3xtAPIs.#searchUiQuery(args.query, { submit: true, view: data.view?.id, tags: args.tags, skipChildren: args.skipChildren });
+    };
+
     return [
       {
         name: 'cont3xt_classify',
@@ -497,6 +514,7 @@ class MCPCont3xtAPIs {
             handlers: [Integration.apiSearch]
           });
           if (view) { data.view = view; }
+          attachLink(data, searchLink(args, data));
 
           if (args.detail === 'full') {
             return MCPCont3xtAPIs.#fit(data, data.results, 'data');
@@ -505,14 +523,7 @@ class MCPCont3xtAPIs {
           await MCPCont3xtAPIs.#summarize(req, apis, data, args.overview);
           return MCPCont3xtAPIs.#fit(data, data.overviews.flatMap(o => o.fields), 'value');
         },
-        ui: (args, data) => {
-          // An explicit doIntegrations restriction with no view has nowhere to
-          // go in the URL (the web UI only reads a view from the query string),
-          // so a link built without it would search a different, usually wider,
-          // set of integrations than what was actually run - omit it instead.
-          if (args.doIntegrations && !data.view) { return undefined; }
-          return MCPCont3xtAPIs.#searchUiQuery(args.query, { submit: true, view: data.view?.id, tags: args.tags, skipChildren: args.skipChildren });
-        }
+        ui: searchLink
       },
       {
         name: 'cont3xt_integration_search',
@@ -543,12 +554,12 @@ class MCPCont3xtAPIs {
           }
 
           const limit = ArkimeConfig.getInt('mcpMaxResultBytes', 100000);
-          if (limit < 0 || MCPCont3xtAPIs.#bytes(body) <= limit) { return body; }
+          const bytes = MCPCont3xtAPIs.#bytes(body); // decided on and reported as the same size
+          if (limit < 0 || bytes <= limit) { return body; }
 
           // Too big to hand over whole: fall back to what the ui's card shows
           const cards = await MCPCont3xtAPIs.#cards(req, Integration);
           const fields = cards.get(body.name) ?? [];
-          const bytes = MCPCont3xtAPIs.#bytes(body.data);
           const summary = {
             purpose: body.purpose,
             indicator: body.indicator,
@@ -556,6 +567,7 @@ class MCPCont3xtAPIs {
             fields: fields.map(field => MCPCont3xtAPIs.#fieldEntry(field.label, undefined, field, body.data)).filter(e => e !== undefined)
           };
           summary.fields.forEach(e => delete e.integration);
+          attachLink(summary, MCPCont3xtAPIs.#searchUiQuery(args.query));
           MCPCont3xtAPIs.#fit(summary, summary.fields, 'value');
           summary.truncated = {
             bytes,
