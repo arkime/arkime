@@ -100,7 +100,6 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d glib2 -d libnghttp2 -d lua-libs -d python3-libs -d curl"
     package: rpm
     python: python3
-    prbuild: true
 
   - version: debian12_amd64
     container: andywick/arkime-build-d12:6.0.0-2
@@ -132,7 +131,6 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d glib2 -d libnghttp2 -d lua-libs -d python3-libs -d curl"
     package: rpm
     python: python3
-    prbuild: true
     runson: ubuntu-24.04-arm
 
   - version: ubuntu2204_arm64
