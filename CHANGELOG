@@ -68,6 +68,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           number or a percentage, and the hunt/tshark limits, timeouts and ports must be numbers in range
 ## Release
   - #4253 Node 24.21.0
+  - #4266 easybutton-build.sh no longer builds glib, curl, zstd, lua or libpcap, the OS packages are used everywhere.
+          EL9 and EL10 also use the OS yara, libmaxminddb, nghttp2 and librdkafka, AL2023 uses the OS libmaxminddb
+          and nghttp2. The rpm and deb packages now depend on those libraries instead of bundling static copies
+  - #4267 Amazon Linux 2027 support, uses the OS libraries except yara and librdkafka which AL2027 does not package
 ## All
   - Add a "newer release available" check to the version menu in viewer, cont3xt, parliament and wise. It only ever sends
           the major version. Controlled by the new checkForUpdates setting: off, manual (the default, nothing is sent until 
