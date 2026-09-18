@@ -220,7 +220,7 @@ class BuildQuery {
    */
   static async lookupQueryItems (query) {
     BuildQuery.#collapseQuery(query);
-    if (Config.get('multiES', false)) {
+    if (Config.getBool('multiES', false)) {
       return;
     }
 
@@ -560,7 +560,7 @@ class BuildQuery {
     req._arkimeESQuery = JSON.stringify(query);
 
     if (reqQuery.date === '-1' || // An all query
-        Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
+        Config.getBool('queryAllIndices', Config.getBool('multiES', false))) { // queryAllIndices (default: multiES)
       req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
       return buildCb(err ?? lerr, query, req._arkimeESQueryIndices); // Then we just go against all indices for a slight overhead
     }

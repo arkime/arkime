@@ -22,7 +22,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const internals = {
   isProduction: false,
   multiES: false,
-  CYBERCHEFVERSION: '11.3.0',
+  CYBERCHEFVERSION: '11.4.0',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
   rightClicks: {},
   fieldActions: {},
@@ -109,7 +109,7 @@ ArkimeConfig.loaded(() => {
                            60 + // How long before ES reindexes
                            20; // Transmit and extra time
   internals.prefix = Config.get('prefix', 'arkime_');
-  internals.multiES = Config.get('multiES', false);
+  internals.multiES = Config.getBool('multiES', false);
 
   // make sure there's an _ after the prefix
   if (internals.prefix && !internals.prefix.endsWith('_')) {

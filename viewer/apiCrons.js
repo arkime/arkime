@@ -68,7 +68,7 @@ class CronAPIs {
       setTimeout(CronAPIs.#updatePrimaryViewer, 1000, true);
       setInterval(CronAPIs.#updatePrimaryViewer, 45 * 1000, true);
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
-    } else if (!Config.get('multiES', false)) {
+    } else if (!Config.getBool('multiES', false)) {
       const info = await Db.getQueriesNode();
       if (info.node === undefined) {
         console.log(`WARNING - No cronQueries=true found in ${ArkimeConfig.configFile}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);

@@ -1838,7 +1838,7 @@ class SessionAPIs {
           return;
         }
 
-        const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
+        const cluster = (Config.getBool('multiES', false) && session.cluster) ? session.cluster : undefined;
 
         try {
           await Db.addTagsToSession(session._index, session._id, allTagNames, cluster);
@@ -1867,7 +1867,7 @@ class SessionAPIs {
           return;
         }
 
-        const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
+        const cluster = (Config.getBool('multiES', false) && session.cluster) ? session.cluster : undefined;
 
         try {
           await Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster);
@@ -2750,7 +2750,7 @@ class SessionAPIs {
     let aggSize = +Config.get('maxAggSize', 10000);
 
     if (req.query.autocomplete !== undefined) {
-      if (!Config.get('valueAutoComplete', !Config.get('multiES', false))) {
+      if (!Config.getBool('valueAutoComplete', !Config.getBool('multiES', false))) {
         res.send([]);
         return;
       }

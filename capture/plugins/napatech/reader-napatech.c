@@ -422,15 +422,15 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
 
         if ((status = NT_ConfigOpen(&hCfg, "arkime-ntpl")) != NT_SUCCESS) {
             NT_ExplainError(status, errBuf, sizeof(errBuf));
-            g_free(ntplFile);
             CONFIGEXIT("Napatech: NT_ConfigOpen failed: %s", errBuf);
+            g_free(ntplFile);
         }
 
         FILE *f = fopen(ntplFile, "r");
         if (!f) {
             NT_ConfigClose(hCfg);
-            g_free(ntplFile);
             CONFIGEXIT("Napatech: Cannot open ntplFile '%s': %s", ntplFile, strerror(errno));
+            g_free(ntplFile);
         }
 
         char line[4096];
@@ -448,8 +448,8 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
                 NT_ExplainError(status, errBuf, sizeof(errBuf));
                 fclose(f);
                 NT_ConfigClose(hCfg);
-                g_free(ntplFile);
                 CONFIGEXIT("Napatech: NTPL line %d failed: %s", linenum, errBuf);
+                g_free(ntplFile);
             }
         }
         fclose(f);
