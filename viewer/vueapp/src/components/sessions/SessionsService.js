@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import qs from 'qs';
 import store from '../../store';
 import Utils from '../utils/utils';
@@ -113,14 +117,14 @@ export default {
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
    * @param {string} cluster  The Elasticsearch cluster that the session belongs to
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
+   * @returns {Promise<{html: string, info: object}>} The detail html and the
+   *                            session fields (rootId, packets, etc.) the row omits.
    */
   getDetail: async function (id, node, cluster) {
     return await fetchWrapper({
       url: `api/session/${node}/${id}/detail`,
       params: { cluster },
-      headers: { 'Content-Type': 'text/html' }
+      headers: { 'Content-Type': 'application/json' }
     });
   },
 
@@ -139,6 +143,25 @@ export default {
       params: { ...params, cluster },
       url: `api/session/${node}/${id}/packets`,
       headers: { 'Content-Type': 'text/html' }
+    };
+
+    return cancelFetchWrapper(options);
+  },
+
+  /**
+   * Gets a tshark dissection of the session pcap as NDJSON
+   * (one JSON-encoded packet per line). Streamed by the viewer.
+   * @param {string} id       The unique id of the session
+   * @param {string} node     The node that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster the session belongs to
+   * @param {Object} params   Extra query params (length, payload, hidden)
+   * @returns {Object} { controller, fetcher } as for cancelFetchWrapper
+   */
+  getTshark (id, node, cluster, params) {
+    const options = {
+      params: { ...params, cluster },
+      url: `api/session/${node}/${id}/tshark`,
+      headers: { 'Content-Type': 'text/plain', Accept: 'application/x-ndjson' }
     };
 
     return cancelFetchWrapper(options);
@@ -244,10 +267,12 @@ export default {
    */
   exportPcap: function (params, routeParams) {
     return new Promise((resolve, reject) => {
-      const filename = params.filename || 'sessions.pcap';
+      const format = params.format === 'pcapng' ? 'pcapng' : 'pcap';
+      delete params.format;
+      const filename = params.filename || `sessions.${format}`;
       delete params.filename; // don't need this anymore
 
-      const baseUrl = `api/sessions/pcap/${filename}`;
+      const baseUrl = `api/sessions/${format}/${filename}`;
       // save segments for later because getReqOptions deletes it
       const segments = params.segments;
 
@@ -264,16 +289,26 @@ export default {
       // add sort to params
       options.params.order = store.state.sortsParam;
 
-      const url = `${baseUrl}?${qs.stringify(options.params)}`;
+      const query = qs.stringify(options.params);
 
-      // use a link so any errors do not redirect to a broken page
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.click();
-      link.remove();
+      const download = () => {
+        // use a link so any errors do not redirect to a broken page
+        const link = document.createElement('a');
+        link.href = `${baseUrl}?${query}`;
+        link.download = filename;
+        link.click();
+        link.remove();
+        return resolve({ success: true });
+      };
 
-      return resolve({ success: true });
+      if (format !== 'pcap') { return download(); }
+
+      // a classic pcap can only hold one link type, so ask first and give the
+      // user a message instead of a failed download
+      fetchWrapper({ url: `${baseUrl}?${query}&check=true` }).then((check) => {
+        if (check.needsPcapng) { return reject({ ...check, needsPcapng: true }); }
+        download();
+      }).catch(() => download());
     });
   },
 

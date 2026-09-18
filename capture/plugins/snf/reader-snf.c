@@ -115,7 +115,8 @@ LOCAL void *reader_snf_thread(gpointer posv)
 /******************************************************************************/
 LOCAL void reader_snf_start()
 {
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, DLT_EN10MB, config.snapLen);
 
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     int i, r;

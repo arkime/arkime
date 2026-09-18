@@ -3,307 +3,287 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-modal
-    size="xl"
-    id="create-user-modal"
-    @hidden="$emit('close')"
+  <v-dialog
     :model-value="showModal"
-    :title="createMode === 'user' ? $t('users.createNewUser') : $t('users.createNewRole')">
-    <!-- create form -->
-    <b-form>
-      <div class="row">
-        <b-input-group
-          size="sm"
-          class="col-md-6 mt-2">
-          <template #prepend>
-            <b-input-group-text>
-              {{ $t('users.userId') }}
-              <sup>*</sup>
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            autofocus
-            autocomplete="userid"
-            :placeholder="$t('users.userIdPlaceholder')"
-            v-model.lazy="newUser.userId"
-            :state="newUser.userId.length > 0" />
-        </b-input-group>
-        <b-input-group
-          size="sm"
-          class="col-md-6 mt-2">
-          <template #prepend>
-            <b-input-group-text>
-              {{ $t('users.userName') }}
-              <sup>*</sup>
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            autocomplete="username"
-            :placeholder="$t('users.userNamePlaceholder')"
-            v-model.lazy="newUser.userName"
-            :state="newUser.userName.length > 0" />
-        </b-input-group>
-      </div>
-      <b-input-group
-        size="sm"
-        class="mt-2">
-        <template #prepend>
-          <b-input-group-text
-            id="create-user-expression"
-            class="cursor-help">
-            {{ $t('users.forcedExpression') }}
-            <BTooltip target="create-user-expression">
-              {{ $t('users.forcedExpressionTip') }}
-            </BTooltip>
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          autocomplete="expression"
-          :placeholder="$t('users.forcedExpressionPlaceholder')"
-          v-model.lazy="newUser.expression" />
-      </b-input-group>
-      <div class="row">
-        <div class="col-md-6">
-          <b-input-group
-            size="sm"
-            class="mt-2">
-            <template #prepend>
-              <b-input-group-text
-                id="create-user-time-limit"
-                class="cursor-help">
-                {{ $t('users.queryTimeLimit') }}
-                <BTooltip target="create-user-time-limit">
-                  {{ $t('users.queryTimeLimitTip') }}
-                </BTooltip>
-              </b-input-group-text>
+    @update:model-value="(val) => { if (!val) $emit('close'); }"
+    max-width="1140">
+    <v-card density="compact">
+      <v-card-title>
+        {{ createMode === 'user' ? $t('users.createNewUser') : $t('users.createNewRole') }}
+      </v-card-title>
+      <v-card-text>
+        <!-- create form -->
+        <form>
+          <v-row dense>
+            <v-col
+              cols="12"
+              md="6">
+              <v-text-field
+                density="compact"
+                variant="outlined"
+                hide-details
+                autofocus
+                autocomplete="userid"
+                :label="`${$t('users.userId')} *`"
+                :placeholder="$t('users.userIdPlaceholder')"
+                v-model.lazy="newUser.userId" />
+            </v-col>
+            <v-col
+              cols="12"
+              md="6">
+              <v-text-field
+                density="compact"
+                variant="outlined"
+                hide-details
+                autocomplete="username"
+                :label="`${$t('users.userName')} *`"
+                :placeholder="$t('users.userNamePlaceholder')"
+                v-model.lazy="newUser.userName" />
+            </v-col>
+          </v-row>
+
+          <v-text-field
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mt-2"
+            autocomplete="expression"
+            :label="$t('users.forcedExpression')"
+            :placeholder="$t('users.forcedExpressionPlaceholder')"
+            v-model.lazy="newUser.expression">
+            <template #append-inner>
+              <v-icon
+                icon="mdi-information"
+                class="cursor-help"
+                id="create-user-expression" />
+              <v-tooltip activator="#create-user-expression">
+                {{ $t('users.forcedExpressionTip') }}
+              </v-tooltip>
             </template>
-            <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
-            <select
-              class="form-control"
-              v-model.lazy="newUser.timeLimit">
-              <option value="1">
-                {{ $t('common.hourCount', { count: 1 }) }}
-              </option>
-              <option value="6">
-                {{ $t('common.hourCount', { count: 6 }) }}
-              </option>
-              <option value="24">
-                {{ $t('common.hourCount', { count: 24 }) }}
-              </option>
-              <option value="48">
-                {{ $t('common.hourCount', { count: 48 }) }}
-              </option>
-              <option value="72">
-                {{ $t('common.hourCount', { count: 72 }) }}
-              </option>
+          </v-text-field>
 
-              <option value="168">
-                {{ $t('common.weekCount', { count: 1 }) }}
-              </option>
-              <option value="336">
-                {{ $t('common.weekCount', { count: 2 }) }}
-              </option>
+          <v-row
+            dense
+            class="mt-2">
+            <v-col
+              cols="12"
+              md="6">
+              <v-select
+                density="compact"
+                variant="outlined"
+                hide-details
+                item-title="text"
+                item-value="value"
+                :items="timeLimitOptions"
+                :label="$t('users.queryTimeLimit')"
+                v-model.lazy="newUser.timeLimit">
+                <template #append-inner>
+                  <v-icon
+                    icon="mdi-information"
+                    class="cursor-help"
+                    id="create-user-time-limit" />
+                  <v-tooltip activator="#create-user-time-limit">
+                    {{ $t('users.queryTimeLimitTip') }}
+                  </v-tooltip>
+                </template>
+              </v-select>
+            </v-col>
+            <v-col
+              cols="12"
+              md="6"
+              class="d-inline-flex align-center">
+              <template v-if="roles">
+                <RoleDropdown
+                  :roles="roles"
+                  :display-text="$t('users.roles')"
+                  @selected-roles-updated="updateNewUserRoles" />
+                <v-icon
+                  icon="mdi-information"
+                  size="small"
+                  class="cursor-help ms-2"
+                  id="create-user-roles" />
+                <v-tooltip activator="#create-user-roles">
+                  {{ $t('users.rolesTip') }}
+                </v-tooltip>
+              </template>
+              <template v-if="createMode === 'role'">
+                <UserDropdown
+                  class="ms-3"
+                  :display-text="$t('users.roleAssigners')"
+                  :selected-users="newUser.roleAssigners"
+                  @selected-users-updated="updateNewRoleAssigners">
+                  {{ $t('users.roleAssigners') }}
+                </UserDropdown>
+                <v-icon
+                  icon="mdi-information"
+                  size="small"
+                  class="cursor-help ms-2"
+                  id="create-user-role-assigners" />
+                <v-tooltip activator="#create-user-role-assigners">
+                  {{ $t('users.roleAssignersTip') }}
+                </v-tooltip>
+              </template>
+            </v-col>
+          </v-row>
 
-              <option value="720">
-                {{ $t('common.monthCount', { count: 1 }) }}
-              </option>
-              <option value="1440">
-                {{ $t('common.monthCount', { count: 2 }) }}
-              </option>
-              <option value="4380">
-                {{ $t('common.monthCount', { count: 6 }) }}
-              </option>
+          <v-text-field
+            v-if="createMode === 'user'"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mt-2"
+            type="password"
+            :error="validatePassword === false"
+            :label="`${$t('users.password')} *`"
+            :placeholder="$t('users.passwordPlaceholder')"
+            autocomplete="new-password"
+            v-model.lazy="newUser.password" />
 
-              <option value="8760">
-                {{ $t('common.yearCount', { count: 1 }) }}
-              </option>
-              <option value="undefined">
-                {{ $t('common.allCareful') }}
-              </option>
-            </select>
-          </b-input-group>
-        </div>
-        <div class="col-md-6 mt-2 d-inline-flex align-items-center">
-          <template v-if="roles">
-            <RoleDropdown
-              :roles="roles"
-              :display-text="$t('users.roles')"
-              @selected-roles-updated="updateNewUserRoles" />
-            <span
-              id="create-user-roles"
-              class="fa fa-info-circle fa-lg cursor-help ms-2">
-              <BTooltip target="create-user-roles">
-                {{ $t('users.rolesTip') }}
-              </BTooltip>
-            </span>
-          </template>
-          <template v-if="createMode === 'role'">
-            <UserDropdown
-              class="ms-3"
-              :display-text="$t('users.roleAssigners')"
-              :selected-users="newUser.roleAssigners"
-              @selected-users-updated="updateNewRoleAssigners">
-              {{ $t('users.roleAssigners') }}
-            </UserDropdown>
-            <span
-              id="create-user-role-assigners"
-              class="fa fa-info-circle fa-lg cursor-help ms-2">
-              <BTooltip target="create-user-role-assigners">
-                {{ $t('users.roleAssignersTip') }}
-              </BTooltip>
-            </span>
-          </template>
-        </div>
-      </div>
-      <b-input-group
-        size="sm"
-        class="mb-2 mt-2"
-        v-if="createMode === 'user'">
-        <template #prepend>
-          <b-input-group-text>
-            {{ $t('users.password') }}<sup>*</sup>
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          type="password"
-          :state="validatePassword"
-          :placeholder="$t('users.passwordPlaceholder')"
-          autocomplete="new-password"
-          v-model.lazy="newUser.password" />
-      </b-input-group>
-      <b-form-checkbox
-        inline
-        v-model="newUser.enabled">
-        {{ $t('users.enabled') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        v-if="createMode === 'user'"
-        v-model="newUser.webEnabled">
-        {{ $t('users.webEnabled') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        v-if="createMode === 'user'"
-        v-model="newUser.headerAuthEnabled">
-        {{ $t('users.headerAuthEnabled') }}
-      </b-form-checkbox>
+          <div class="d-inline-flex align-center gap-3 mt-2">
+            <v-checkbox
+              density="compact"
+              hide-details
+              :label="$t('users.enabled')"
+              v-model="newUser.enabled" />
+            <v-checkbox
+              v-if="createMode === 'user'"
+              density="compact"
+              hide-details
+              :label="$t('users.webEnabled')"
+              v-model="newUser.webEnabled" />
+            <v-checkbox
+              v-if="createMode === 'user'"
+              density="compact"
+              hide-details
+              :label="$t('users.headerAuthEnabled')"
+              v-model="newUser.headerAuthEnabled" />
+          </div>
 
-      <!-- User permission tri-state toggles -->
-      <div
-        v-if="createMode === 'user'"
-        class="user-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.emailSearch"
-          :label="$t('users.disableEmailSearch')"
-          :negated="true"
-          @update:model-value="setRoleField('emailSearch', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.removeEnabled"
-          :label="$t('users.disableDataRemoval')"
-          :negated="true"
-          @update:model-value="setRoleField('removeEnabled', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.packetSearch"
-          :label="$t('users.disableHunting')"
-          :negated="true"
-          @update:model-value="setRoleField('packetSearch', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.hideStats"
-          :label="$t('users.hideStatsPage')"
-          @update:model-value="setRoleField('hideStats', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.hideFiles"
-          :label="$t('users.hideFilesPage')"
-          @update:model-value="setRoleField('hideFiles', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.hidePcap"
-          :label="$t('users.hidePcap')"
-          @update:model-value="setRoleField('hidePcap', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.disablePcapDownload"
-          :label="$t('users.disablePcapDownload')"
-          @update:model-value="setRoleField('disablePcapDownload', $event)" />
-      </div>
+          <!-- User permission tri-state toggles -->
+          <div
+            v-if="createMode === 'user'"
+            class="user-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.emailSearch"
+              :label="$t('users.disableEmailSearch')"
+              :negated="true"
+              @update:model-value="setRoleField('emailSearch', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.removeEnabled"
+              :label="$t('users.disableDataRemoval')"
+              :negated="true"
+              @update:model-value="setRoleField('removeEnabled', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.packetSearch"
+              :label="$t('users.disableHunting')"
+              :negated="true"
+              @update:model-value="setRoleField('packetSearch', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.hideStats"
+              :label="$t('users.hideStatsPage')"
+              @update:model-value="setRoleField('hideStats', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.hideFiles"
+              :label="$t('users.hideFilesPage')"
+              @update:model-value="setRoleField('hideFiles', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.hidePcap"
+              :label="$t('users.hidePcap')"
+              @update:model-value="setRoleField('hidePcap', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.disablePcapDownload"
+              :label="$t('users.disablePcapDownload')"
+              @update:model-value="setRoleField('disablePcapDownload', $event)" />
+          </div>
 
-      <!-- Role permission tri-state toggles -->
-      <div
-        v-if="createMode === 'role'"
-        class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.emailSearch"
-          :label="$t('users.disableEmailSearch')"
-          :negated="true"
-          @update:model-value="setRoleField('emailSearch', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.removeEnabled"
-          :label="$t('users.disableDataRemoval')"
-          :negated="true"
-          @update:model-value="setRoleField('removeEnabled', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.packetSearch"
-          :label="$t('users.disableHunting')"
-          :negated="true"
-          @update:model-value="setRoleField('packetSearch', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.hideStats"
-          :label="$t('users.hideStatsPage')"
-          @update:model-value="setRoleField('hideStats', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.hideFiles"
-          :label="$t('users.hideFilesPage')"
-          @update:model-value="setRoleField('hideFiles', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.hidePcap"
-          :label="$t('users.hidePcap')"
-          @update:model-value="setRoleField('hidePcap', $event)" />
-        <TriStateToggle
-          class="toggle-group rounded p-1"
-          :model-value="newUser.disablePcapDownload"
-          :label="$t('users.disablePcapDownload')"
-          @update:model-value="setRoleField('disablePcapDownload', $event)" />
-      </div>
-    </b-form> <!-- /create form -->
-    <!-- create form error -->
-    <div
-      v-if="createError"
-      class="alert alert-danger mt-2 mb-0">
-      {{ createError }}
-    </div> <!-- /create form error -->
-    <!-- modal footer -->
-    <template #footer>
-      <div class="w-100 d-flex justify-content-between">
-        <b-button
-          :title="$t('common.cancel')"
-          variant="danger"
-          @click="$emit('close')">
-          <span class="fa fa-times" />
-          {{ $t('common.cancel') }}
-        </b-button>
-        <div>
-          <BButton
-            variant="primary"
+          <!-- Role permission tri-state toggles -->
+          <div
+            v-if="createMode === 'role'"
+            class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.emailSearch"
+              :label="$t('users.disableEmailSearch')"
+              :negated="true"
+              @update:model-value="setRoleField('emailSearch', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.removeEnabled"
+              :label="$t('users.disableDataRemoval')"
+              :negated="true"
+              @update:model-value="setRoleField('removeEnabled', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.packetSearch"
+              :label="$t('users.disableHunting')"
+              :negated="true"
+              @update:model-value="setRoleField('packetSearch', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.hideStats"
+              :label="$t('users.hideStatsPage')"
+              @update:model-value="setRoleField('hideStats', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.hideFiles"
+              :label="$t('users.hideFilesPage')"
+              @update:model-value="setRoleField('hideFiles', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.hidePcap"
+              :label="$t('users.hidePcap')"
+              @update:model-value="setRoleField('hidePcap', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.disablePcapDownload"
+              :label="$t('users.disablePcapDownload')"
+              @update:model-value="setRoleField('disablePcapDownload', $event)" />
+          </div>
+        </form> <!-- /create form -->
+        <!-- create form error -->
+        <v-alert
+          v-if="createError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mt-2 mb-0">
+          {{ createError }}
+        </v-alert> <!-- /create form error -->
+      </v-card-text>
+      <v-card-actions>
+        <div class="w-100 d-flex justify-space-between">
+          <v-btn
+            size="large"
+            color="error"
+            variant="flat"
+            :title="$t('common.cancel')"
+            @click="$emit('close')">
+            <v-icon
+              start
+              icon="mdi-close" />
+            {{ $t('common.cancel') }}
+          </v-btn>
+          <v-btn
+            size="large"
+            color="primary"
+            variant="flat"
             @click="createUser(createMode === 'role')">
-            <span class="fa fa-plus-circle me-1" />
+            <v-icon
+              start
+              icon="mdi-plus-circle" />
             {{ $t('common.create') }}
-          </BButton>
+          </v-btn>
         </div>
-      </div>
-    </template> <!-- /modal footer -->
-  </b-modal>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -360,6 +340,24 @@ export default {
       newUser: { ...defaultNewUser },
       validatePassword: undefined
     };
+  },
+  computed: {
+    timeLimitOptions () {
+      return [
+        { value: '1', text: this.$t('common.hourCount', { count: 1 }) },
+        { value: '6', text: this.$t('common.hourCount', { count: 6 }) },
+        { value: '24', text: this.$t('common.hourCount', { count: 24 }) },
+        { value: '48', text: this.$t('common.hourCount', { count: 48 }) },
+        { value: '72', text: this.$t('common.hourCount', { count: 72 }) },
+        { value: '168', text: this.$t('common.weekCount', { count: 1 }) },
+        { value: '336', text: this.$t('common.weekCount', { count: 2 }) },
+        { value: '720', text: this.$t('common.monthCount', { count: 1 }) },
+        { value: '1440', text: this.$t('common.monthCount', { count: 2 }) },
+        { value: '4380', text: this.$t('common.monthCount', { count: 6 }) },
+        { value: '8760', text: this.$t('common.yearCount', { count: 1 }) },
+        { value: 'undefined', text: this.$t('common.allCareful') }
+      ];
+    }
   },
   watch: {
     showModal (newVal) {
@@ -430,7 +428,7 @@ export default {
 
 <style scoped>
 .toggle-group {
-  background-color: var(--color-white);
-  color: var(--color-gray-dark);
+  background-color: rgb(var(--v-theme-white));
+  color: rgb(var(--v-theme-neutral-dark));
 }
 </style>

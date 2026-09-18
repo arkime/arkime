@@ -178,8 +178,8 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         gpointer               ikey;
 
         ghash = session->fields[httpXffField]->ghash;
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        g_hash_table_iter_init(&iter, ghash);
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             memcpy(&prefix.add.sin6.s6_addr, ikey, 16);
             cnt = patricia_search_all(allIps, &prefix, 1, nodes);
             for (i = 0; i < cnt; i++) {
@@ -212,8 +212,8 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         ghash = config.fields[dnsHostField]->getCb(session, dnsHostField);
 
         if (ghash) {
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 HASH_FIND(s_, allDomains, ikey, tstring);
                 if (tstring)
                     tagger_process_match(session, tstring->infos, dnsHostField);
@@ -235,8 +235,8 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         ghash = config.fields[dnsMailServerField]->getCb(session, dnsMailServerField);
 
         if (ghash) {
-            g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            g_hash_table_iter_init(&iter, ghash);
+            while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                 HASH_FIND(s_, allDomains, ikey, tstring);
                 if (tstring) {
                     tagger_process_match(session, tstring->infos, dnsMailServerField);
@@ -300,7 +300,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 }
 
 /******************************************************************************/
-LOCAL void tagger_free_ip (TaggerIP_t *tip)
+LOCAL void tagger_free_ip(TaggerIP_t *tip)
 {
     g_ptr_array_free(tip->infos, TRUE);
     ARKIME_TYPE_FREE(TaggerIP_t, tip);
@@ -700,7 +700,7 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
 /*
  * Get the list of files from ES, when called at start up it will be a sync call
  */
-LOCAL gboolean tagger_fetch_files (gpointer sync)
+LOCAL gboolean tagger_fetch_files(gpointer sync)
 {
     char                key[500];
     int                 key_len;

@@ -8,20 +8,22 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- Example 1: Simple translation -->
     <div class="mb-3">
-      <label class="form-label">{{ $t('search.expression') }}</label>
-      <input
-        type="text"
-        class="form-control"
-        :placeholder="$t('search.expression')">
+      <v-text-field
+        density="compact"
+        variant="outlined"
+        hide-details
+        :label="$t('search.expression')"
+        :placeholder="$t('search.expression')" />
     </div>
 
     <!-- Example 2: Using useI18n composable -->
     <div class="mb-3">
-      <button
-        @click="performSearch"
-        class="btn btn-primary">
+      <v-btn
+        color="primary"
+        variant="flat"
+        @click="performSearch">
         {{ searchButtonText }}
-      </button>
+      </v-btn>
       <span
         v-if="isLoading"
         class="ms-2">{{ loadingText }}</span>
@@ -34,25 +36,24 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- Example 4: Translations in data attributes and computed properties -->
     <div class="mb-3">
-      <select
-        v-model="selectedTimeRange"
-        class="form-select">
-        <option value="">
-          {{ $t('search.timeRange') }}
-        </option>
-        <option
-          v-for="range in timeRangeOptions"
-          :key="range.value"
-          :value="range.value">
-          {{ range.label }}
-        </option>
-      </select>
+      <v-select
+        density="compact"
+        variant="outlined"
+        hide-details
+        item-title="label"
+        item-value="value"
+        :items="timeRangeOptions"
+        :label="$t('search.timeRange')"
+        v-model="selectedTimeRange" />
     </div>
 
     <!-- Example 5: Dynamic translation with variables -->
-    <div class="alert alert-info">
+    <v-alert
+      type="info"
+      variant="tonal"
+      density="compact">
       {{ welcomeMessage }}
-    </div>
+    </v-alert>
 
     <!-- Language switcher integration -->
     <div class="mb-3">
@@ -140,14 +141,5 @@ export default {
 .i18n-example {
   max-width: 600px;
   margin: 0 auto;
-}
-
-.form-label {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.alert {
-  border-radius: 0.375rem;
 }
 </style>

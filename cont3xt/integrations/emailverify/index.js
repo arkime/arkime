@@ -9,6 +9,7 @@ const emailValidator = new EmailValidator();
 
 class EmailVerifyIntegration extends Integration {
   name = 'EmailVerify';
+  icon = 'integrations/emailverify/icon.png';
   itypes = {
     email: 'fetchEmail'
   };

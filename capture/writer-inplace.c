@@ -20,7 +20,7 @@ extern ArkimeConfig_t        config;
 
 LOCAL ARKIME_LOCK_DEFINE(filePtr2Id);
 
-extern ArkimeOfflineInfo_t  offlineInfo[256];
+extern ArkimeFileInfo_t  fileInfo[256];
 
 /******************************************************************************/
 LOCAL uint32_t writer_inplace_queue_length()
@@ -34,7 +34,8 @@ LOCAL void writer_inplace_exit()
 /******************************************************************************/
 LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 {
-    const char *readerName = offlineInfo[packet->readerPos].filename;
+    const ArkimeFileInfo_t *fi = &fileInfo[packet->readerPos];
+    const char *readerName = fi->filename;
 
     uint32_t outputId = 0;
     if (config.pcapReprocess) {
@@ -42,15 +43,25 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
             LOGEXIT("ERROR - Can't reprocess %s, no files record found in OpenSearch/Elasticsearch for node %s", readerName, config.nodeName);
         }
     } else {
+        // For pcapng sources, record each interface's IDB offset so the viewer
+        // can find link types for read-back/export without rescanning.
+        char interfaceOffsets[ARKIME_MAX_INTERFACES_PER_FILE * 22 + 4];
+        char *interfaceOffsetsArg = ARKIME_VAR_ARG_STR_SKIP;
+        if (fi->isPcapNG && fi->numInterfaces > 0) {
+            arkime_packet_interface_offsets_json(interfaceOffsets, sizeof(interfaceOffsets), fi->interfaces, fi->numInterfaces);
+            interfaceOffsetsArg = interfaceOffsets;
+        }
+
         char *filename;
-        filename = arkime_db_create_file_full(&packet->ts, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
+        filename = arkime_db_create_file_full(&packet->ts, readerName, fi->size, !config.noLockPcap, &outputId,
                                               "packetPosEncoding", config.gapPacketPos ? "gap0" : ARKIME_VAR_ARG_STR_SKIP,
-                                              "scheme", offlineInfo[packet->readerPos].scheme ? offlineInfo[packet->readerPos].scheme : ARKIME_VAR_ARG_STR_SKIP,
-                                              "extra", offlineInfo[packet->readerPos].extra ? offlineInfo[packet->readerPos].extra : ARKIME_VAR_ARG_STR_SKIP,
+                                              "scheme", fi->scheme ? fi->scheme : ARKIME_VAR_ARG_STR_SKIP,
+                                              "extra", fi->extra ? fi->extra : ARKIME_VAR_ARG_STR_SKIP,
+                                              "interfaceOffsets", interfaceOffsetsArg,
                                               (char *)NULL);
         g_free(filename);
     }
-    offlineInfo[packet->readerPos].outputId = outputId;
+    fileInfo[packet->readerPos].outputId = outputId;
     return outputId;
 }
 
@@ -58,10 +69,10 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 LOCAL void writer_inplace_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     // Check without lock first since outputId is only set once and never cleared
-    long outputId = offlineInfo[packet->readerPos].outputId;
+    long outputId = fileInfo[packet->readerPos].outputId;
     if (!outputId) {
         ARKIME_LOCK(filePtr2Id);
-        outputId = offlineInfo[packet->readerPos].outputId;
+        outputId = fileInfo[packet->readerPos].outputId;
         if (!outputId)
             outputId = writer_inplace_create(packet);
         ARKIME_UNLOCK(filePtr2Id);
@@ -70,10 +81,10 @@ LOCAL void writer_inplace_write(const ArkimeSession_t *const session, ArkimePack
     packet->writerFileNum = outputId;
     packet->writerFilePos = packet->readerFilePos;
     if (session->lastFileNum == 0) {
-        ARKIME_THREAD_INCR(offlineInfo[packet->readerPos].sessionsStarted);
-        ARKIME_THREAD_INCR(offlineInfo[packet->readerPos].sessionsPresent);
+        ARKIME_THREAD_INCR(fileInfo[packet->readerPos].sessionsStarted);
+        ARKIME_THREAD_INCR(fileInfo[packet->readerPos].sessionsPresent);
     } else if (session->lastFileNum != outputId) {
-        ARKIME_THREAD_INCR(offlineInfo[packet->readerPos].sessionsPresent);
+        ARKIME_THREAD_INCR(fileInfo[packet->readerPos].sessionsPresent);
     }
 }
 /******************************************************************************/

@@ -318,7 +318,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         snprintf(deletePost, needed, "Action=DeleteMessage&ReceiptHandle=%s", receiptHandle);
         g_free(receiptHandle);
 
-        arkime_http_schedule(server, "POST", deleteFullPath, -1, deletePost, strlen(deletePost), headers, ARKIME_HTTP_PRIORITY_DROPABLE, sqs_delete_done, NULL);
+        arkime_http_schedule(server, "POST", deleteFullPath, -1, deletePost, strlen(deletePost), headers, ARKIME_HTTP_PRIORITY_DROPPABLE, sqs_delete_done, NULL);
 
         g_free(item->receiptHandle);
         g_free(item->bucket);
