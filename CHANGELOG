@@ -44,6 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4233 A list setting entry containing a space is no longer silently dropped, and a yaml key with no value now means unset
 ## Release
   - #4260 Add esproxy to docker.sh (thanks @rht-jbittner)
+  - #4270 CyberChef 11.4.0
 ## All
   - #4215 Fix email searches, periodic queries and cont3xt history deletes ignoring permissions that come from a role instead of the user (thanks @Juwon1405)
   - #4233 Fix a malformed userAuthIps or mcpAllowedIps entry allowing every source ip, and an empty userAuthIps denying every request
