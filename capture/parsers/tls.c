@@ -483,7 +483,9 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     BSB bsb;
                     BSB_IMPORT_bsb(ebsb, bsb, elen);
 
-                    BSB_IMPORT_skip(bsb, 2);  // len
+                    uint16_t llen = 0;
+                    BSB_IMPORT_u16(bsb, llen);  // list len
+                    BSB_SHRINK_REMAINING(bsb, llen);
                     uint8_t alen = 0;
                     BSB_IMPORT_u08(bsb, alen);  // len
                     const uint8_t *astr = NULL;
