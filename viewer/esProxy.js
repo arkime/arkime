@@ -397,9 +397,8 @@ app.get('*', (req, res) => {
   } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
-  } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
-  } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
-  } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node)) {
+  } else if (isSessionsDocPath(path, '_doc')) {
   } else {
     console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
@@ -418,6 +417,30 @@ function isSessionsIndex (_index) {
 
 function isFieldsIndex (_index) {
   return _index.startsWith(`${prefix}fields`);
+}
+
+// A sensor may only touch its own <node>-<id> doc, never a sibling node
+// name sharing the prefix (test vs test2) or dash-joined into it (test vs
+// test-x) - the id itself must be all-numeric like the ones capture writes.
+function isOwnFilesDoc (path, node) {
+  const docPrefix = `/${prefix}files/_doc/${node}-`;
+  const remainder = path.slice(docPrefix.length);
+  return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+$/.test(remainder.split(/[?#]/, 1)[0]);
+}
+
+function isOwnDstatsDoc (path, node) {
+  const docPrefix = `/${prefix}dstats/_doc/${node}-`;
+  const remainder = path.slice(docPrefix.length);
+  return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+-\d+$/.test(remainder.split(/[?#]/, 1)[0]);
+}
+
+// Anchor to the actual configured prefix instead of accepting any string
+// where the prefix should be, which let a sensor cross into another
+// Arkime cluster's sessions index on a shared ES/OpenSearch backend.
+function isSessionsDocPath (path, action) {
+  const suffix = new RegExp(`^[^/]+/${action}/[^/]+$`);
+  return (path.startsWith(`/${oldprefix}sessions2-`) && suffix.test(path.slice(`/${oldprefix}sessions2-`.length))) ||
+    (path.startsWith(`/${prefix}sessions3-`) && suffix.test(path.slice(`/${prefix}sessions3-`.length)));
 }
 
 function validateBulk (req) {
@@ -546,13 +569,13 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith('/tagger')) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
-  } else if (path.startsWith(`/${prefix}dstats/_doc/${req.sensor.node}`)) {
-  } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
+  } else if (isOwnDstatsDoc(path, req.sensor.node)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
   } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && (validateSearchIds(req) || validateSearchRootId(req))) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
-  } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
+  } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     if (Config.debug) {
       console.log(req.body.toString('utf8'));
@@ -572,12 +595,9 @@ app.post('*', saveBody, (req, res) => {
 // Delete requests
 app.delete('*', (req, res) => {
   const path = normalizeUrlPath(req.params['0']);
-  const filesDocPrefix = `/${prefix}files/_doc/${req.sensor.node}-`;
 
   // Empty IFs since those are allowed requests and will run code at end
-  // id must be a single path segment, or a decoded ?/# could still hide a
-  // traversal to a different index in what startsWith() alone would allow
-  if (path.startsWith(filesDocPrefix) && !path.slice(filesDocPrefix.length).includes('/')) {
+  if (isOwnFilesDoc(path, req.sensor.node)) {
   } else {
     console.log(`DELETE failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');

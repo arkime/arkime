@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 64;
+use Test::More tests => 82;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -294,3 +294,72 @@ ok ($response->code == 200 || $response->code == 201, "POST files doc with refre
 
 $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99999"));
 is ($response->code, 200, "DELETE files doc allowed");
+
+# PSECBUGS-117110: node isolation bypass via un-delimited prefix match.
+# "test2" is a real configured sensor whose name starts with "test", so the
+# old `startsWith(files/_doc/<node>)` check (with no trailing delimiter)
+# let sensor "test" touch sensor "test2"'s file docs.
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test2-1");
+is ($response->code, 400, "GET file doc for sibling node name (test2) rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test2-1");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test2","name":"evil.pcap"}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST file doc replace for sibling node name (test2) rejected");
+is ($response->content, "Not authorized for API");
+
+# PSECBUGS-117110 follow-up: the dstats route had the identical un-delimited
+# bug (never fixed alongside files) - "test2-59-60" also starts with "test".
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_dstats/_doc/test2-59-60");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test2","interval":60}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST dstats doc for sibling node name (test2) rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_dstats/_doc/test-59-60?refresh=true");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test","interval":60}));
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201, "POST own dstats doc allowed") or diag($response->code);
+
+# PSECBUGS-117110 follow-up: a delimiter alone isn't enough - a sibling node
+# name that is itself dash-joined into the requester's name ("test-x") must
+# still be rejected, not just an undelimited substring match ("test2").
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-x-1");
+is ($response->code, 400, "GET file doc for dash-joined sibling name (test-x) rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-x-1");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test-x","name":"evil.pcap"}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST file doc replace for dash-joined sibling name (test-x) rejected");
+is ($response->content, "Not authorized for API");
+
+# PSECBUGS-117110: cross-prefix session bypass. The old sessions2-/sessions3-
+# regexes accepted any string ([^/]*) where the configured prefix should be,
+# so a valid sensor could read/update a known session doc under an unrelated
+# Arkime cluster's prefix on a shared ES/OpenSearch backend.
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/other_sessions3-2024/_doc/1");
+is ($response->code, 400, "GET session doc under unrelated sessions3 prefix rejected");
+is ($response->content, "Not authorized for API");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/other_sessions2-2024/_doc/1");
+is ($response->code, 400, "GET session doc under unrelated sessions2 prefix rejected");
+is ($response->content, "Not authorized for API");
+
+my $evil_update = qq({"script":{"source":"ctx._source.marker='evil'"}});
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/other_sessions3-2024/_update/1");
+$req->header('Content-Type' => 'application/json');
+$req->content($evil_update);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST session update under unrelated sessions3 prefix rejected");
+is ($response->content, "Not authorized for API");
+
+# Correct-prefix session doc requests must still reach ES (proving the fix
+# didn't just lock everything down); ES itself 404s since the id doesn't exist.
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/nonexistent-id");
+isnt ($response->content, "Not authorized for API", "GET session doc under correct prefix is proxied to ES, not blocked by guard");
