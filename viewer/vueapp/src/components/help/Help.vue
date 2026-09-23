@@ -169,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-sm-12">
           <a
             class="btn btn-link"
-            href="https://arkime.com">Home Page</a> |
+            href="https://arkime.com">Arkime Home</a> |
           <a
             class="btn btn-link"
             href="https://arkime.com/faq">FAQ</a> |
@@ -181,7 +181,10 @@ SPDX-License-Identifier: Apache-2.0
             href="https://github.com/arkime/arkime">GitHub</a> |
           <a
             class="btn btn-link"
-            href="https://slackinvite.arkime.com/">Request Slack Invite</a>
+            href="https://slackinvite.arkime.com/">Join us on Slack</a> |
+          <a
+            class="btn btn-link"
+            href="https://arkime.com/sponsor">Sponsor Arkime</a>
         </div>
       </div>
 
