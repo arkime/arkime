@@ -102,7 +102,6 @@ jobs:
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           export PATH=/opt/arkime/bin:$PATH
-          ${{ matrix.npmgcc }}
           make install
 
       - name: package arch
@@ -135,7 +134,7 @@ jobs:
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
-        if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
+        if: ${{ matrix.version == 'el9.x86_64' }}
         run: |
           export ARKIME_VERSION="$RELEASE_TAG"
           rm -rf /data/moloch; mkdir -p /data
@@ -185,7 +184,7 @@ jobs:
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026. The EL 8 builds will stop in May 2026, please upgrade.
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el9 download for RHEL 9 not RHEL 10. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026.
 
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx
@@ -265,7 +264,7 @@ jobs:
           envs: 'RELEASE_TAG'
           prepare: |
             pkg update -f
-            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar pcre2 python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime
@@ -313,7 +312,7 @@ jobs:
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026. The EL 8 builds will stop in May 2026, please upgrade.
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el9 download for RHEL 9 not RHEL 10. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026.
 
 ############# Docker Manifest #############
   create-manifest:
