@@ -397,9 +397,8 @@ app.get('*', (req, res) => {
   } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
-  } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
-  } else if (path.match(/^\/[^/]*sessions2-[^/]+\/_doc\/[^/]+$/)) {
-  } else if (path.match(/^\/[^/]*sessions3-[^/]+\/_doc\/[^/]+$/)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node)) {
+  } else if (isSessionsDocPath(path, '_doc')) {
   } else {
     console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
@@ -418,6 +417,26 @@ function isSessionsIndex (_index) {
 
 function isFieldsIndex (_index) {
   return _index.startsWith(`${prefix}fields`);
+}
+
+// Only the sensor's own <node>-<num> doc, so node "test" can't match "test2" or "test-x"
+function isOwnFilesDoc (path, node, action = '_doc') {
+  const docPrefix = `/${prefix}files/${action}/${node}-`;
+  const remainder = path.slice(docPrefix.length);
+  return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+$/.test(remainder.split(/[?#]/, 1)[0]);
+}
+
+function isOwnDstatsDoc (path, node) {
+  const docPrefix = `/${prefix}dstats/_doc/${node}-`;
+  const remainder = path.slice(docPrefix.length);
+  return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+-\d+$/.test(remainder.split(/[?#]/, 1)[0]);
+}
+
+// Only sessions indices with our configured prefix
+function isSessionsDocPath (path, action) {
+  const suffix = new RegExp(`^[^/]+/${action}/[^/]+$`);
+  return (path.startsWith(`/${oldprefix}sessions2-`) && suffix.test(path.slice(`/${oldprefix}sessions2-`.length))) ||
+    (path.startsWith(`/${prefix}sessions3-`) && suffix.test(path.slice(`/${prefix}sessions3-`.length)));
 }
 
 function validateBulk (req) {
@@ -536,6 +555,17 @@ function validateUpdate (req) {
   }
 }
 
+// Partial doc update only, and it can't move the file to another node
+function validateFilesUpdate (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return Object.keys(json).length === 1 && typeof json.doc === 'object' && json.doc !== null &&
+      (json.doc.node === undefined || json.doc.node === req.sensor.node);
+  } catch (e) {
+    return false;
+  }
+}
+
 // Post requests
 app.post('*', saveBody, (req, res) => {
   const path = normalizeUrlPath(req.params['0']);
@@ -546,13 +576,14 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.startsWith('/tagger')) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
-  } else if (path.startsWith(`/${prefix}dstats/_doc/${req.sensor.node}`)) {
-  } else if (path.startsWith(`/${prefix}files/_doc/${req.sensor.node}`)) {
+  } else if (isOwnDstatsDoc(path, req.sensor.node)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
   } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && (validateSearchIds(req) || validateSearchRootId(req))) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
-  } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
+  } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     if (Config.debug) {
       console.log(req.body.toString('utf8'));
@@ -572,12 +603,9 @@ app.post('*', saveBody, (req, res) => {
 // Delete requests
 app.delete('*', (req, res) => {
   const path = normalizeUrlPath(req.params['0']);
-  const filesDocPrefix = `/${prefix}files/_doc/${req.sensor.node}-`;
 
   // Empty IFs since those are allowed requests and will run code at end
-  // id must be a single path segment, or a decoded ?/# could still hide a
-  // traversal to a different index in what startsWith() alone would allow
-  if (path.startsWith(filesDocPrefix) && !path.slice(filesDocPrefix.length).includes('/')) {
+  if (isOwnFilesDoc(path, req.sensor.node)) {
   } else {
     console.log(`DELETE failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');

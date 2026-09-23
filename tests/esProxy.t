@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 64;
+use Test::More tests => 89;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -292,5 +292,92 @@ $req->content(qq({"node":"test","num":99999,"name":"/tmp/esProxy-query.pcap","fi
 $response = $ArkimeTest::userAgent->request($req);
 ok ($response->code == 200 || $response->code == 201, "POST files doc with refresh query allowed") or diag($response->code);
 
+# Files _update - capture updates its own file docs as they close
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"doc": {"filesize": 1234, "packets": 5}}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 200, "POST own files update allowed") or diag($response->content);
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test2-99999");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"doc": {"filesize": 1234}}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST files update for other node rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"doc": {"node": "test2"}}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST files update changing node rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"script": {"source": "ctx._source.node='test2'"}}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST files update with script rejected");
+is ($response->content, "Not authorized for API");
+
 $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99999"));
 is ($response->code, 200, "DELETE files doc allowed");
+
+# Node "test" must not touch files docs of a node whose name starts with "test"
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test2-1");
+is ($response->code, 400, "GET file doc for sibling node name (test2) rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test2-1");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test2","name":"evil.pcap"}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST file doc replace for sibling node name (test2) rejected");
+is ($response->content, "Not authorized for API");
+
+# Same for dstats docs
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_dstats/_doc/test2-59-60");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test2","interval":60}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST dstats doc for sibling node name (test2) rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_dstats/_doc/test-59-60?refresh=true");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test","interval":60}));
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201, "POST own dstats doc allowed") or diag($response->code);
+
+# Or a node name that is dash-joined onto it
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-x-1");
+is ($response->code, 400, "GET file doc for dash-joined sibling name (test-x) rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-x-1");
+$req->header('Content-Type' => 'application/json');
+$req->content(qq({"node":"test-x","name":"evil.pcap"}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST file doc replace for dash-joined sibling name (test-x) rejected");
+is ($response->content, "Not authorized for API");
+
+# Session doc get/update must use the configured prefix
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/other_sessions3-2024/_doc/1");
+is ($response->code, 400, "GET session doc under unrelated sessions3 prefix rejected");
+is ($response->content, "Not authorized for API");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/other_sessions2-2024/_doc/1");
+is ($response->code, 400, "GET session doc under unrelated sessions2 prefix rejected");
+is ($response->content, "Not authorized for API");
+
+my $evil_update = qq({"script":{"source":"ctx._source.marker='evil'"}});
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/other_sessions3-2024/_update/1");
+$req->header('Content-Type' => 'application/json');
+$req->content($evil_update);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST session update under unrelated sessions3 prefix rejected");
+is ($response->content, "Not authorized for API");
+
+# Correct prefix is still proxied
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/nonexistent-id");
+isnt ($response->content, "Not authorized for API", "GET session doc under correct prefix is proxied to ES, not blocked by guard");
