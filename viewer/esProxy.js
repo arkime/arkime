@@ -419,11 +419,9 @@ function isFieldsIndex (_index) {
   return _index.startsWith(`${prefix}fields`);
 }
 
-// A sensor may only touch its own <node>-<id> doc, never a sibling node
-// name sharing the prefix (test vs test2) or dash-joined into it (test vs
-// test-x) - the id itself must be all-numeric like the ones capture writes.
-function isOwnFilesDoc (path, node) {
-  const docPrefix = `/${prefix}files/_doc/${node}-`;
+// Only the sensor's own <node>-<num> doc, so node "test" can't match "test2" or "test-x"
+function isOwnFilesDoc (path, node, action = '_doc') {
+  const docPrefix = `/${prefix}files/${action}/${node}-`;
   const remainder = path.slice(docPrefix.length);
   return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+$/.test(remainder.split(/[?#]/, 1)[0]);
 }
@@ -434,9 +432,7 @@ function isOwnDstatsDoc (path, node) {
   return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+-\d+$/.test(remainder.split(/[?#]/, 1)[0]);
 }
 
-// Anchor to the actual configured prefix instead of accepting any string
-// where the prefix should be, which let a sensor cross into another
-// Arkime cluster's sessions index on a shared ES/OpenSearch backend.
+// Only sessions indices with our configured prefix
 function isSessionsDocPath (path, action) {
   const suffix = new RegExp(`^[^/]+/${action}/[^/]+$`);
   return (path.startsWith(`/${oldprefix}sessions2-`) && suffix.test(path.slice(`/${oldprefix}sessions2-`.length))) ||
@@ -559,6 +555,17 @@ function validateUpdate (req) {
   }
 }
 
+// Partial doc update only, and it can't move the file to another node
+function validateFilesUpdate (req) {
+  try {
+    const json = JSON.parse(req.body.toString('utf8'));
+    return Object.keys(json).length === 1 && typeof json.doc === 'object' && json.doc !== null &&
+      (json.doc.node === undefined || json.doc.node === req.sensor.node);
+  } catch (e) {
+    return false;
+  }
+}
+
 // Post requests
 app.post('*', saveBody, (req, res) => {
   const path = normalizeUrlPath(req.params['0']);
@@ -571,6 +578,7 @@ app.post('*', saveBody, (req, res) => {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (isOwnDstatsDoc(path, req.sensor.node)) {
   } else if (isOwnFilesDoc(path, req.sensor.node)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
   } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && (validateSearchIds(req) || validateSearchRootId(req))) {
