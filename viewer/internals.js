@@ -137,10 +137,14 @@ ArkimeConfig.loaded(() => {
   internals.tsharkMemoryLimitMB = parseInt(Config.get('tsharkMemoryLimitMB', 1024));
   internals.tsharkWrapper = Config.getArray('tsharkWrapper', '');
   internals.tsharkRunning = 0;
+});
 
+// ----------------------------------------------------------------------------
+internals.initTshark = () => {
   // Scratch dir for tshark. mkdtemp so another user can't pre-create it: the
   // fifos we hand tshark live here, and the empty/ subdir is where every
   // WIRESHARK_* var points so no personal profile, plugin or init.lua loads.
+  // Called after dropUser/dropGroup so the dir is owned by the user running tshark.
   try {
     internals.tsharkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'arkime-tshark-'));
     internals.tsharkEmptyDir = path.join(internals.tsharkDir, 'empty');
@@ -229,6 +233,6 @@ ArkimeConfig.loaded(() => {
     });
   };
   probeNext(0);
-});
+};
 
 module.exports = internals;

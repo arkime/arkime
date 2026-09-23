@@ -2498,6 +2498,7 @@ async function main () {
 
   const server = ArkimeUtil.createHttpServer(app, viewHost, Config.get('viewPort', '8005'));
   server.setTimeout(20 * 60 * 1000);
+  internals.initTshark();
 
   // Second viewer-to-viewer transport: packet portals. Starts outbound dialers
   // and, for an acceptor, listens for inbound portals -- on a dedicated
