@@ -153,7 +153,6 @@ jobs:
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
-          ${{ matrix.npmgcc }}
           INSTALL_BUNDLE=bundle make install
 
       - name: lint
@@ -268,7 +267,7 @@ jobs:
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
-        if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
+        if: ${{ matrix.version == 'el9.x86_64' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           rm -rf /data/moloch; mkdir -p /data
@@ -431,7 +430,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar pcre2 python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime

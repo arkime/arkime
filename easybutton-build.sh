@@ -4,21 +4,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This script will
-# * use apt-get/yum to install OS dependencies
-# * download known working versions of arkime dependencies
-# * build them statically
+# * use apt-get/yum/pkg/brew to install OS dependencies
+# * build the few thirdparty libraries the OS does not package (yara and
+#   librdkafka on Amazon Linux, daq on request) statically
 # * configure capture to use them
 # * build capture
 # * install node unless --nonode
 # * install arkime if --install
 
 
-# newer yara requires newer ssl, issues on Centos 7
-YARA=4.2.3
-MAXMIND=1.7.1
+YARA=4.5.8
 DAQ=2.0.7
-NGHTTP2=1.57.0
-KAFKA=1.5.3
+KAFKA=2.15.1
 
 NODE=24.21.0
 
@@ -182,10 +179,8 @@ echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
 
-  if [[ "$VERSION_ID" == 8* ]]; then
-    sudo yum install -y python312 python3.12-devel
-  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y libmaxminddb-devel libnghttp2-devel yara-devel librdkafka-devel
+  if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 10* ]]; then
+    sudo yum install -y yara-devel librdkafka-devel
     if [[ "$VERSION_ID" == 9* ]]; then
       sudo yum install -y python3.12 python3.12-devel
       if [ $DODAQ -eq 1 ]; then
@@ -203,12 +198,10 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   elif [[ "$VERSION_ID" == 2023 || "$VERSION_ID" == 2027 ]]; then
-    # Amazon Linux has no yara or librdkafka packages, those still come from thirdparty
-    sudo yum install -y libmaxminddb-devel libnghttp2-devel
-    WITHMAXMIND=" "
-    WITHNGHTTP2=" "
+    # Amazon Linux has no yara or librdkafka packages, build those from thirdparty
+    DOTHIRDPARTY=1
   elif [[ "$ID" == "fedora" ]]; then
-    sudo yum install -y libmaxminddb-devel libnghttp2-devel yara-devel librdkafka-devel python3-devel
+    sudo yum install -y yara-devel librdkafka-devel python3-devel
     DOTHIRDPARTY=0
     export LUA_CFLAGS="-I/usr/include"
     export LUA_LIBS="-llua"
@@ -217,7 +210,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   fi
-  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel libmaxminddb-devel libnghttp2-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -238,16 +231,7 @@ fi
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
 
-  if [[ "$VERSION_CODENAME" == "trixie" ]]; then
-      # D13
-      sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
-  elif [[ "$VERSION_CODENAME" == "resolute" ]]; then
-      # U26
-      sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
-  else
-      # D12, U22, U24
-      sudo apt-get -qq install curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
-  fi
+  sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
 
   # Ubuntu 22 does not have libnl-genl-3-dev or python3-pip
   if [[ "$VERSION_CODENAME" != "jammy" ]]; then
@@ -270,7 +254,7 @@ if [ -f "/etc/debian_version" ]; then
     sudo apt-get -qq install curl libgoogle-perftools-dev
   fi
 
-  # Just use OS packages, currently for Ubuntu 22/24
+  # Use OS packages for everything
   if [ $DOTHIRDPARTY -eq 0 ]; then
     sudo apt-get -qq install curl libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
     if [ $? -ne 0 ]; then
@@ -291,9 +275,9 @@ if [ "$UNAME" = "Darwin" ]; then
   DONODE=0
   DOINSTALL=0
   if [ -x "/opt/local/bin/port" ]; then
-    sudo port install curl libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml nghttp2 librdkafka zstd
+    sudo port install curl libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic lua libyaml nghttp2 librdkafka zstd
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
-    brew install curl libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl autoconf automake pkg-config nghttp2 zstd librdkafka
+    brew install curl libpcap yara glib jansson ossp-uuid libmaxminddb libmagic lua libyaml openssl autoconf automake pkg-config nghttp2 zstd librdkafka
   else
     echo "ARKIME: Please install MacPorts or Homebrew"
     exit 1
@@ -301,7 +285,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -318,12 +302,12 @@ if [ "$UNAME" = "FreeBSD" ]; then
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
-  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
   mkdir -p thirdparty
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
@@ -495,49 +479,6 @@ else
 
   buildYara
 
-  # Maxmind
-  if [ ! -z "$WITHMAXMIND" ]; then
-    echo "ARKIME: withmaxmind $WITHMAXMIND"
-  else
-    if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
-      curl -sSfLO https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
-    fi
-
-    if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
-      tar zxf libmaxminddb-$MAXMIND.tar.gz
-
-      (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding libmaxmind"
-    fi
-    WITHMAXMIND="--with-maxminddb=thirdparty/libmaxminddb-$MAXMIND"
-  fi
-
-  # nghttp2
-  if [ ! -z "$WITHNGHTTP2" ]; then
-    echo "ARKIME: withnghttp2 $WITHNGHTTP2"
-  else
-    WITHNGHTTP2="--with-nghttp2=thirdparty/nghttp2-$NGHTTP2"
-    if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
-      curl -sSfLO https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
-    fi
-
-    if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
-      tar zxf nghttp2-$NGHTTP2.tar.gz
-      ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding nghttp2"
-    fi
-  fi
-
   # daq
   if [ $DODAQ -eq 1 ]; then
     if [ ! -f "daq-$DAQ.tar.gz" ]; then
@@ -559,7 +500,7 @@ else
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
-      curl -sSfL -o librdkafka-$KAFKA.tar.gz https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz
+      curl -sSfL -o librdkafka-$KAFKA.tar.gz https://github.com/confluentinc/librdkafka/archive/v$KAFKA.tar.gz
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
@@ -580,8 +521,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHNGHTTP2 $KAFKABUILD $EXTRACONFIGURE"
-        ./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHNGHTTP2 $KAFKABUILD $EXTRACONFIGURE
+  echo "./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then

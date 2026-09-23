@@ -174,6 +174,8 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
+    extern int magic_version(void);
+    extern const char *OpenSSL_version(int);
 
     char buf[1024];
     BSB  bsb;
@@ -185,11 +187,9 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     BSB_EXPORT_sprintf(bsb, "curl: %s\n", curl_version());
     BSB_EXPORT_sprintf(bsb, "glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
     BSB_EXPORT_sprintf(bsb, "libpcap: %s\n", pcap_lib_version());
+    BSB_EXPORT_sprintf(bsb, "magic: %d.%02d\n", magic_version() / 100, magic_version() % 100);
     BSB_EXPORT_sprintf(bsb, "maxminddb: %s\n", MMDB_lib_version());
-#ifdef HAVE_LIBPCRE
-    extern char *pcre_version(void);
-    BSB_EXPORT_sprintf(bsb, "pcre: %s\n", pcre_version());
-#endif
+    BSB_EXPORT_sprintf(bsb, "openssl: %s\n", OpenSSL_version(0));
     BSB_EXPORT_sprintf(bsb, "yaml: %s\n", yaml_get_version_string());
     BSB_EXPORT_sprintf(bsb, "yara: %s\n", arkime_yara_version());
     BSB_EXPORT_sprintf(bsb, "zlib: %s\n", zlibVersion());
@@ -209,6 +209,7 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     // libxdp has no runtime version call, this is what capture was built against
     BSB_EXPORT_sprintf(bsb, "libxdp: %s\n", LIBXDP_VERSION);
 #endif
+    BSB_EXPORT_sprintf(bsb, "compiler: %s\n", __VERSION__);
 
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
@@ -224,10 +225,11 @@ LOCAL void parse_args(int argc, char **argv)
     GOptionContext *context;
 
     extern char *curl_version(void);
+    extern int magic_version(void);
+    extern const char *OpenSSL_version(int);
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
-    //extern int magic_version(void);
 
     context = g_option_context_new("- capture");
     g_option_context_add_main_entries(context, entries, NULL);
@@ -253,13 +255,9 @@ LOCAL void parse_args(int argc, char **argv)
         printf("curl: %s\n", curl_version());
         printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
         printf("libpcap: %s\n", pcap_lib_version());
-        //printf("magic: %d\n", magic_version());
+        printf("magic: %d.%02d\n", magic_version() / 100, magic_version() % 100);
         printf("maxminddb: %s\n", MMDB_lib_version());
-        //printf("openssl: %s\n", OpenSSL_version(0));
-#ifdef HAVE_LIBPCRE
-        extern char *pcre_version(void);
-        printf("pcre: %s\n", pcre_version());
-#endif
+        printf("openssl: %s\n", OpenSSL_version(0));
         printf("yaml: %s\n", yaml_get_version_string());
         printf("yara: %s\n", arkime_yara_version());
         printf("zlib: %s\n", zlibVersion());
@@ -279,6 +277,7 @@ LOCAL void parse_args(int argc, char **argv)
         // libxdp has no runtime version call, this is what capture was built against
         printf("libxdp: %s\n", LIBXDP_VERSION);
 #endif
+        printf("compiler: %s\n", __VERSION__);
 
         exit(0);
     }
