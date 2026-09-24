@@ -8,6 +8,7 @@ import vue from '@vitejs/plugin-vue';
 import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
+import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -22,7 +23,8 @@ export default defineConfig({
   },
   plugins: [
     vue({}),
-    Vuetify({ treeShake: true })
+    Vuetify({ treeShake: true }),
+    thirdPartyLicenses({ file: fileURLToPath(new URL('./third-party-licenses.json', import.meta.url)) })
   ],
   resolve: {
     alias: {
