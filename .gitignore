@@ -60,6 +60,7 @@ wiseService/vueapp/dist
 
 # cont3xt
 cont3xt/vueapp/dist
+*/vueapp/third-party-licenses.json
 
 # common
 common/version.js

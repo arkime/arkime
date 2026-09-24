@@ -40,3 +40,25 @@ for my $key (keys %$cont3xtJson) {
     $DONE{$key} = 1;
     handle($key, $cont3xtJson->{$key});
 }
+
+# The Vue apps are bundled by vite from devDependencies that license-checker
+# never sees. common/vite-plugin-third-party-licenses.mjs records what each
+# production bundle actually contains when 'npm run bundle:min' runs.
+for my $app (qw(viewer cont3xt parliament wiseService)) {
+    my $file = "$app/vueapp/third-party-licenses.json";
+    if (! -f $file) {
+        print STDERR "notice.txt.pl: missing $file, run 'npm run bundle:min' in $app first\n";
+        exit 1;
+    }
+    open(my $fh, '<', $file) or die "$file: $!";
+    my $deps = from_json(do { local $/; <$fh> });
+    close($fh);
+    for my $dep (@$deps) {
+        my $key = "$dep->{name}\@$dep->{version}";
+        next if ($DONE{$key});
+        $DONE{$key} = 1;
+        print "================================================================================\n";
+        print "$key - $dep->{license} - $dep->{repository}\n\n";
+        print $dep->{licenseText} // "", "\n";
+    }
+}

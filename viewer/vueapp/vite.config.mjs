@@ -9,6 +9,7 @@ import vue from '@vitejs/plugin-vue';
 import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
+import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -35,7 +36,8 @@ export default defineConfig({
       styles: {
         configFile: 'viewer/vueapp/src/vuetify-settings.scss'
       }
-    })
+    }),
+    thirdPartyLicenses({ file: fileURLToPath(new URL('./third-party-licenses.json', import.meta.url)) })
   ],
   resolve: {
     alias: {
