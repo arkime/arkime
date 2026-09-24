@@ -159,7 +159,7 @@ jobs:
         if: ${{ matrix.notice }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
+          (npm install license-checker; release/notice.txt.pl /opt/arkime release/VIEWERNOTICE release/CAPTURENOTICE > NOTICE.txt)
 
       - name: upload github
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
