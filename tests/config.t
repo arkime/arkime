@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 100;
+use Test::More tests => 101;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -484,3 +484,4 @@ ok((grep { $_ eq "wiseService" } @{$vc->{defaultSections}}), "wise reads its own
 is($vc->{sections}->{cache}->{redisURL}, "[redacted]", "a wise field marked password is hidden whatever it is named");
 is($vc->{sections}->{'splunk:test'}->{password}, "[redacted]", "a wise source password is hidden");
 is($vc->{sections}->{'databricks:test'}->{token}, "[redacted]", "a wise source token is hidden");
+is($vc->{sections}->{'misp:test'}->{key}, "[redacted]", "a wise misp key is hidden");

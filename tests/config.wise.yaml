@@ -78,6 +78,19 @@ splunk:test:
   keyPath: ip
   query: search index=threats ip="%%SEARCHTERM%%" | fields ip, threat
   fields: field:tags;shortcut:threat
+misp:test:
+  url: https://localhost:9998
+  key: misp-test-key
+  insecure: true
+  tags: mispwise
+  pageSize: 2
+misp:api:
+  url: https://localhost:9998
+  key: misp-test-key
+  insecure: true
+  mode: api
+  tags: mispapi
+  onlyIPs: 10.66.0.0/16
 databricks:test:
   type: databrickstest
   tags: databrickswise

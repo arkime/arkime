@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 171;
+use Test::More tests => 184;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -186,7 +186,7 @@ eq_or_diff(from_json($wise), from_json('[{"field":"email.dst","len":10,"value":"
 '),"ALL 12345678\@aol.com");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/rightClicks")->content;
-eq_or_diff(from_json($wise), from_json('{"ALLTESTWISE":{"url":"http://www.example.com","all":true,"name":"AllWiseTest"},"USERTEST":{"url": "https://example.com", "name": "usertest", "category": "url","users":{"sac-test1":1},"notUsers":{"test101":1}},"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'),"right clicks");
+eq_or_diff(from_json($wise), from_json('{"ALLTESTWISE":{"url":"http://www.example.com","all":true,"name":"AllWiseTest"},"misp-test":{"name":"MISP test Event","url":"https://localhost:9998/events/view/%TEXT%","fields":"misp.event-id"},"misp-api":{"name":"MISP api Event","url":"https://localhost:9998/events/view/%TEXT%","fields":"misp.event-id"},"USERTEST":{"url": "https://example.com", "name": "usertest", "category": "url","users":{"sac-test1":1},"notUsers":{"test101":1}},"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"}}'),"right clicks");
 
 my $pwd = "*/pcap";
 
@@ -313,9 +313,72 @@ eq_or_diff(\@wise, from_json('[
 {"key":"77.77.77.78","ops":[{"field":"tags","len":14,"value":"databrickswise"},{"field":"tags","len":16,"value":"databricks-phish"}]}
 ]', {relaxed=>1}), "databricks:test dump");
 
+# MISP source (periodic paged bulk load against mini-wise-source.js)
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/ip/10.66.0.1")->content;
+eq_or_diff(from_json($wise), from_json('[{"field":"misp.server","len":4,"value":"test"},
+{"field":"misp.event-id","len":2,"value":"42"},
+{"field":"misp.event-id","len":2,"value":"43"},
+{"field":"misp.event","len":15,"value":"Mini MISP Event"},
+{"field":"misp.event","len":17,"value":"Second Mini Event"},
+{"field":"misp.threat-level","len":4,"value":"high"},
+{"field":"misp.threat-level","len":3,"value":"low"},
+{"field":"misp.category","len":16,"value":"Network activity"},
+{"field":"misp.org","len":7,"value":"MiniOrg"},
+{"field":"misp.tag","len":9,"value":"tlp:green"},
+{"field":"misp.tag","len":31,"value":"misp-galaxy:threat-actor=\"Mini\""},
+{"field":"tags","len":8,"value":"mispwise"}]'), "misp ip merged across events");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/ip/10.66.0.5")->content);
+is($wise->[1]->{value}, "42", "misp domain|ip loads the ip");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/domain/mini-misp.example.com")->content);
+is($wise->[1]->{value}, "42", "misp domain|ip loads the lowercased domain");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/md5/d41d8cd98f00b204e9800998ecf8427e")->content);
+is($wise->[4]->{value}, "Payload delivery", "misp filename|md5 loads the lowercased md5");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/url/" . uri_escape("mini-misp.example.com/evil/path"))->content);
+is($wise->[1]->{value}, "42", "misp url loads without the scheme");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/ip/10.66.0.99")->content;
+eq_or_diff($wise, '[]', "misp miss");
+
+# MISP source in api mode, per item lookups cached by wise
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/ip/10.66.0.1")->content;
+eq_or_diff(from_json($wise), from_json('[{"field":"misp.server","len":3,"value":"api"},
+{"field":"misp.event-id","len":2,"value":"42"},
+{"field":"misp.event-id","len":2,"value":"43"},
+{"field":"misp.event","len":15,"value":"Mini MISP Event"},
+{"field":"misp.event","len":17,"value":"Second Mini Event"},
+{"field":"misp.threat-level","len":4,"value":"high"},
+{"field":"misp.threat-level","len":3,"value":"low"},
+{"field":"misp.category","len":16,"value":"Network activity"},
+{"field":"misp.org","len":7,"value":"MiniOrg"},
+{"field":"misp.tag","len":9,"value":"tlp:green"},
+{"field":"misp.tag","len":31,"value":"misp-galaxy:threat-actor=\"Mini\""},
+{"field":"tags","len":7,"value":"mispapi"}]'), "misp api ip merged across events");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/domain/MINI-misp.example.com")->content);
+is($wise->[1]->{value}, "42", "misp api domain matches half of domain|ip");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/md5/d41d8cd98f00b204e9800998ecf8427e")->content);
+is($wise->[4]->{value}, "Payload delivery", "misp api md5 matches half of filename|md5");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/url/" . uri_escape("mini-misp.example.com/evil/path"))->content);
+is($wise->[1]->{value}, "42", "misp api url matches with a scheme added");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/ip/10.0.0.1")->content;
+eq_or_diff($wise, '[]', "misp api onlyIPs skips lookup");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/url/%25")->content;
+eq_or_diff($wise, '[]', "misp api never sends a wildcard");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/ip/10.66.0.99")->content;
+eq_or_diff($wise, '[]', "misp api miss");
+
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","misp:api","misp:test","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
@@ -354,11 +417,11 @@ is ($wise, 'Received malformed packet');
 
 # Views
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/views")->content;
-eq_or_diff($wise, '{"cloud":"if (session.cloud)\\n  div.sessionDetailMeta.bold Public Cloud\\n  dl.sessionDetailMeta\\n    +arrayList(session.cloud, \'service\', \'Service\', \'cloud.service\')\\n    +arrayList(session.cloud, \'region\', \'Region\', \'cloud.region\')\\n","file:email":"if (session.wise)\\n  div.sessionDetailMeta.bold Wise\\n  dl.sessionDetailMeta\\n    +arrayList(session.wise, \'str\', \'Str\', \'wise.str\')\\n    +arrayList(session.wise, \'int\', \'Int\', \'wise.int\')\\n    +arrayList(session.wise, \'float\', \'Float\', \'wise.float\')\\n"}');
+eq_or_diff($wise, '{"misp":"if (session.misp)\\n  div.sessionDetailMeta.bold MISP\\n  dl.sessionDetailMeta\\n    +arrayList(session.misp, \'server\', \'Server\', \'misp.server\')\\n    +arrayList(session.misp, \'eventId\', \'Event Id\', \'misp.event-id\')\\n    +arrayList(session.misp, \'event\', \'Event\', \'misp.event\')\\n    +arrayList(session.misp, \'threatLevel\', \'Threat Level\', \'misp.threat-level\')\\n    +arrayList(session.misp, \'category\', \'Category\', \'misp.category\')\\n    +arrayList(session.misp, \'org\', \'Org\', \'misp.org\')\\n    +arrayList(session.misp, \'tag\', \'Tag\', \'misp.tag\')\\n","cloud":"if (session.cloud)\\n  div.sessionDetailMeta.bold Public Cloud\\n  dl.sessionDetailMeta\\n    +arrayList(session.cloud, \'service\', \'Service\', \'cloud.service\')\\n    +arrayList(session.cloud, \'region\', \'Region\', \'cloud.region\')\\n","file:email":"if (session.wise)\\n  div.sessionDetailMeta.bold Wise\\n  dl.sessionDetailMeta\\n    +arrayList(session.wise, \'str\', \'Str\', \'wise.str\')\\n    +arrayList(session.wise, \'int\', \'Int\', \'wise.int\')\\n    +arrayList(session.wise, \'float\', \'Float\', \'wise.float\')\\n"}');
 
 # Fields
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/fields")->content;
-is(length($wise), 666);
+is(length($wise), 1392);
 
 my $info = viewerGet("/api/fields");
 eq_or_diff($info->{"wise.int.cnt"}, from_json('{"friendlyName":"Int Cnt","type":"integer","exp":"wise.int.cnt","help":"Unique number of Help Int","dbField":"wise.intCnt","group":"wise","dbField2":"wise.intCnt"}'));
@@ -369,7 +432,7 @@ eq_or_diff($wise, '{"ASDFWISE":{"url":"https://www.asdf.com?expression=%EXPRESSI
 
 # Value Actions
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/valueActions")->content;
-eq_or_diff($wise, '{"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"},"USERTEST":{"url":"https://example.com","name":"usertest","category":"url","users":{"sac-test1":1},"notUsers":{"test101":1}},"ALLTESTWISE":{"url":"http://www.example.com","name":"AllWiseTest","all":true}}');
+eq_or_diff($wise, '{"misp-test":{"name":"MISP test Event","url":"https://localhost:9998/events/view/%TEXT%","fields":"misp.event-id"},"misp-api":{"name":"MISP api Event","url":"https://localhost:9998/events/view/%TEXT%","fields":"misp.event-id"},"VTIP":{"url":"https://www.virustotal.com/en/ip-address/%TEXT%/information/","name":"Virus Total IP","category":"ip"},"VTHOST":{"url":"https://www.virustotal.com/en/domain/%HOST%/information/","name":"Virus Total Host","category":"host"},"VTURL":{"url":"https://www.virustotal.com/latest-scan/%URL%","name":"Virus Total URL","category":"url"},"USERTEST":{"url":"https://example.com","name":"usertest","category":"url","users":{"sac-test1":1},"notUsers":{"test101":1}},"ALLTESTWISE":{"url":"http://www.example.com","name":"AllWiseTest","all":true}}');
 
 # __proto__
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:mac/__proto__/00:12:1e:f2:61:3d")->content;

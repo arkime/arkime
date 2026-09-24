@@ -19,6 +19,8 @@
  *           @databricks/sql so the wire encoding is always correct. Responses
  *           use "direct results" so no separate fetch round-trip is needed.
  *
+ * MISP - attributes/restSearch for the cont3xt misp integration.
+ *
  * Usage: node mini-wise-source.js [--debug] <port>
  *
  * To add fake data, edit SPLUNK_ROWS / DATABRICKS_ROWS below. Each row is a
@@ -151,6 +153,85 @@ function handleSplunk (req, res, body) {
 
   log(`SPLUNK 404 ${req.method} ${req.url}`);
   return send(res, 404, 'application/json', '{}');
+}
+
+// ----------------------------------------------------------------------------
+// MISP REST emulation (cont3xt misp integration)
+// ----------------------------------------------------------------------------
+const MISP_ATTRIBUTES = [{
+  id: '1',
+  event_id: '42',
+  type: 'ip-dst',
+  category: 'Network activity',
+  to_ids: true,
+  value: '10.66.0.1',
+  comment: 'mini misp',
+  timestamp: '1700000000',
+  Event: { id: '42', info: 'Mini MISP Event', threat_level_id: '1', Orgc: { name: 'MiniOrg' } },
+  Tag: [{ name: 'tlp:green' }, { name: 'misp-galaxy:threat-actor="Mini"' }]
+}, {
+  id: '2',
+  event_id: '43',
+  type: 'ip-dst|port',
+  category: 'Network activity',
+  to_ids: true,
+  value: '10.66.0.1|443',
+  timestamp: '1700000001',
+  Event: { id: '43', info: 'Second Mini Event', threat_level_id: '3', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '3',
+  event_id: '42',
+  type: 'domain|ip',
+  category: 'Network activity',
+  to_ids: true,
+  value: 'Mini-MISP.Example.com|10.66.0.5',
+  timestamp: '1700000002',
+  Event: { id: '42', info: 'Mini MISP Event', threat_level_id: '1', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '4',
+  event_id: '42',
+  type: 'filename|md5',
+  category: 'Payload delivery',
+  to_ids: true,
+  value: 'evil.exe|D41D8CD98F00B204E9800998ECF8427E',
+  timestamp: '1700000003',
+  Event: { id: '42', info: 'Mini MISP Event', threat_level_id: '1', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '5',
+  event_id: '42',
+  type: 'url',
+  category: 'Network activity',
+  to_ids: true,
+  value: 'https://mini-misp.example.com/evil/path',
+  timestamp: '1700000004',
+  Event: { id: '42', info: 'Mini MISP Event', threat_level_id: '1', Orgc: { name: 'MiniOrg' } }
+}];
+
+function handleMisp (req, res, body) {
+  if (req.headers.authorization !== 'misp-test-key') {
+    return send(res, 403, 'application/json', JSON.stringify({ message: 'Authentication failed' }));
+  }
+  let query = {};
+  try { query = JSON.parse(body); } catch (e) {}
+
+  // single lookups match either half of a composite value, like MISP
+  let attrs = MISP_ATTRIBUTES;
+  if (Array.isArray(query.type)) {
+    attrs = attrs.filter((a) => query.type.includes(a.type));
+  }
+  if (query.value !== undefined) {
+    const values = (Array.isArray(query.value) ? query.value : [query.value]).map((v) => String(v).toLowerCase());
+    attrs = attrs.filter((a) => {
+      const parts = a.type.includes('|') ? a.value.split('|') : [a.value];
+      return parts.some((p) => values.includes(p.toLowerCase()));
+    });
+  } else {
+    const limit = query.limit ?? MISP_ATTRIBUTES.length;
+    const page = query.page ?? 1;
+    attrs = attrs.slice((page - 1) * limit, page * limit);
+  }
+  log(`MISP restSearch value=${JSON.stringify(query.value)} page=${query.page} -> ${attrs.length} attribute(s)`);
+  return sendJSON(res, { response: { Attribute: attrs } });
 }
 
 // ----------------------------------------------------------------------------
@@ -331,6 +412,10 @@ const server = https.createServer({ key: KEY, cert: CERT }, (req, res) => {
     if (req.url.split('?')[0] === '/_shutdown') {
       send(res, 200, 'text/plain', 'bye');
       return server.close(() => process.exit(0));
+    }
+
+    if (req.url.split('?')[0] === '/attributes/restSearch') {
+      return handleMisp(req, res, bodyBuf.toString('utf8'));
     }
 
     if ((req.headers['content-type'] || '').includes('application/x-thrift')) {
