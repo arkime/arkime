@@ -134,6 +134,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password
+  - #4279 New MISP integration, configured with [misp:<name>] sections so multiple instances are supported
+## WISE
+  - #4279 New MISP source that either periodically bulk loads attributes or queries per item, configured with [misp:<name>] sections
 
 
 6.7.1 2026/08/xx

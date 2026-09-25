@@ -327,6 +327,17 @@ class WISESourceAPI {
 
   // ----------------------------------------------------------------------------
   /**
+   * Get from the config section a boolean or default, anything but true/false is the default
+   *
+   * @param {string} section - The section in the config file the key is in
+   * @param {string} sectionKey - The key to get from the section
+   * @param {boolean} [default] - the default value to return if key is not found or not a boolean
+   * @returns {boolean} - The value found or the default value
+   */
+  getConfigBool = ArkimeConfig.getFullBool;
+
+  // ----------------------------------------------------------------------------
+  /**
    * Get a list of all the sections in the config file
    *
    * @returns {string|Array} - A list of all the sections in the config file
