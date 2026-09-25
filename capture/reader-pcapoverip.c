@@ -18,7 +18,6 @@
 #include "glib-object.h"
 #include "pcap.h"
 #include "arkime.h"
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 extern ArkimeConfig_t        config;
 
 LOCAL ArkimePacketBatch_t   batch;
@@ -97,12 +96,12 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             poic->isNanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
 
             // TODO: Really we should save the header per connection and do stuff
-            if (first) {
-                if (poic->needSwap) {
-                    h->dlt = SWAP32(h->dlt);
-                }
-                arkime_packet_set_dltsnap(h->dlt, config.snapLen);
+            if (poic->needSwap) {
+                h->dlt = SWAP32(h->dlt);
+            }
+            arkime_packet_set_interface(poic->interface, 0, h->dlt, config.snapLen);
 
+            if (first) {
                 if (config.bpf && !deadPcap) {
                     deadPcap = pcap_open_dead(h->dlt, config.snapLen);
                     if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -279,7 +278,7 @@ LOCAL void pcapoverip_client_start()
 
     pcapoverip_client_check_connections(NULL);
     g_timeout_add_seconds(5, pcapoverip_client_check_connections, NULL);
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
 LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer data)
@@ -338,7 +337,7 @@ LOCAL void pcapoverip_server_start()
     int fd = g_socket_get_fd(socket);
 
     arkime_watch_fd(fd, ARKIME_GIO_READ_COND, pcapoverip_server_read_cb, socket);
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
 LOCAL int pcapoverip_stats(ArkimeReaderStats_t *stats)

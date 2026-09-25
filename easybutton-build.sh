@@ -4,29 +4,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This script will
-# * use apt-get/yum to install OS dependencies
-# * download known working versions of arkime dependencies
-# * build them statically
+# * use apt-get/yum/pkg/brew to install OS dependencies
+# * build the few thirdparty libraries the OS does not package (yara and
+#   librdkafka on Amazon Linux, daq on request) statically
 # * configure capture to use them
 # * build capture
 # * install node unless --nonode
 # * install arkime if --install
 
 
-# newer glib requires pcre2, issues on Centos 7
-GLIB=2.72.4
-# newer yara requires newer ssl, issues on Centos 7
-YARA=4.2.3
-MAXMIND=1.7.1
-PCAP=1.10.4
-CURL=8.4.0
-LUA=5.3.6
+YARA=4.5.8
 DAQ=2.0.7
-NGHTTP2=1.57.0
-ZSTD=1.5.5
-KAFKA=1.5.3
+KAFKA=2.15.1
 
-NODE=22.23.2
+NODE=24.21.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -38,7 +29,6 @@ DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=0
-BUILDZSTD=1
 DOJEMALLOC=0
 DOTCMALLOC=0
 EXTRACONFIGURE=""
@@ -189,29 +179,29 @@ echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
 
-  if [[ "$VERSION_ID" == 8* ]]; then
-    sudo yum install -y python312 python3.12-devel
-  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel
+  if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 10* ]]; then
+    sudo yum install -y yara-devel librdkafka-devel
     if [[ "$VERSION_ID" == 9* ]]; then
       sudo yum install -y python3.12 python3.12-devel
+      if [ $DODAQ -eq 1 ]; then
+        # daq is only packaged in EPEL, and only for EL9
+        sudo yum install -y daq-devel
+      fi
+    else
+      sudo yum install -y python3-devel
     fi
-    WITHGLIB=" "
-    WITHCURL=" "
-    BUILDZSTD=0
-  elif [[ "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel python3-devel
-    WITHGLIB=" "
-    WITHCURL=" "
-    WITHMAXMIND=" "
-    PCAPBUILD=" "
-    BUILDZSTD=0
-    BUILDKAFKA=0
+    DOTHIRDPARTY=0
+    export LUA_CFLAGS="-I/usr/include"
+    export LUA_LIBS="-llua"
+    with_lua=no
     export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
     export KAFKA_LIBS="-lrdkafka"
-    KAFKABUILD="--with-kafka=no"
+    with_kafka=no
+  elif [[ "$VERSION_ID" == 2023 || "$VERSION_ID" == 2027 ]]; then
+    # Amazon Linux has no yara or librdkafka packages, build those from thirdparty
+    DOTHIRDPARTY=1
   elif [[ "$ID" == "fedora" ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libnghttp2-devel yara-devel lua-devel libzstd-devel librdkafka-devel python3-devel
+    sudo yum install -y yara-devel librdkafka-devel python3-devel
     DOTHIRDPARTY=0
     export LUA_CFLAGS="-I/usr/include"
     export LUA_LIBS="-llua"
@@ -220,11 +210,16 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   fi
-  sudo yum -y install --skip-broken curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel libmaxminddb-devel libnghttp2-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
   fi
+  # libxdp is optional and enables the xdp reader. On EL it lives in the CRB
+  # repo, which the build containers already enable. Best effort, capture builds
+  # fine without it.
+  sudo yum -y install libxdp-devel || echo "ARKIME: libxdp-devel not installed, the xdp reader will not be built. On EL it needs the CRB repo, 'dnf config-manager --set-enabled crb'"
+
   if [ $DOJEMALLOC -eq 1 ]; then
     sudo yum -y install jemalloc-devel
   fi
@@ -236,16 +231,7 @@ fi
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
 
-  if [[ "$VERSION_CODENAME" == "trixie" ]]; then
-      # D13
-      sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
-  elif [[ "$VERSION_CODENAME" == "resolute" ]]; then
-      # U26
-      sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
-  else
-      # D12, U22, U24
-      sudo apt-get -qq install curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
-  fi
+  sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
 
   # Ubuntu 22 does not have libnl-genl-3-dev or python3-pip
   if [[ "$VERSION_CODENAME" != "jammy" ]]; then
@@ -256,6 +242,11 @@ if [ -f "/etc/debian_version" ]; then
     echo "ARKIME: apt-get failed"
     exit 1
   fi
+
+  # libxdp is optional and enables the xdp reader, Ubuntu 22 doesn't have it at
+  # all. Best effort, capture builds fine without it.
+  sudo apt-get -qq install libxdp-dev || echo "ARKIME: libxdp-dev not available, the xdp reader will not be built"
+
   if [ $DOJEMALLOC -eq 1 ]; then
     sudo apt-get -qq install curl libjemalloc-dev
   fi
@@ -263,7 +254,7 @@ if [ -f "/etc/debian_version" ]; then
     sudo apt-get -qq install curl libgoogle-perftools-dev
   fi
 
-  # Just use OS packages, currently for Ubuntu 22/24
+  # Use OS packages for everything
   if [ $DOTHIRDPARTY -eq 0 ]; then
     sudo apt-get -qq install curl libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
     if [ $? -ne 0 ]; then
@@ -284,9 +275,9 @@ if [ "$UNAME" = "Darwin" ]; then
   DONODE=0
   DOINSTALL=0
   if [ -x "/opt/local/bin/port" ]; then
-    sudo port install curl libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml nghttp2 librdkafka zstd
+    sudo port install curl libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic lua libyaml nghttp2 librdkafka zstd
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
-    brew install curl libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl autoconf automake pkg-config nghttp2 zstd librdkafka
+    brew install curl libpcap yara glib jansson ossp-uuid libmaxminddb libmagic lua libyaml openssl autoconf automake pkg-config nghttp2 zstd librdkafka
   else
     echo "ARKIME: Please install MacPorts or Homebrew"
     exit 1
@@ -294,7 +285,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -311,12 +302,12 @@ if [ "$UNAME" = "FreeBSD" ]; then
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
-  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
   mkdir -p thirdparty
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
@@ -414,7 +405,6 @@ if [ "$UNAME" = "Darwin" ]; then
 elif [ -f "/etc/arch-release" ]; then
     DOKAFKA=1
     BUILDKAFKA=0
-    BUILDZSTD=0
 
     echo './configure \
       --prefix=$TDIR \
@@ -442,7 +432,6 @@ elif [ -f "/etc/alpine-release" ] ; then
 
     DOKAFKA=1
     BUILDKAFKA=0
-    BUILDZSTD=0
 
     (cd thirdparty; buildYara)
 
@@ -488,129 +477,7 @@ else
 
   TPWD=`pwd`
 
-  # glib
-  if [ ! -z "$WITHGLIB" ]; then
-    echo "ARKIME: withglib $WITHGLIB"
-  else
-    WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
-    if [ ! -f "glib-$GLIB.tar.xz" ]; then
-      GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
-      curl -sSfLO "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
-    fi
-
-    if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
-      sudo pip3 install meson
-      git clone https://github.com/ninja-build/ninja.git
-      (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
-      xzcat glib-$GLIB.tar.xz | tar xf -
-      (export PATH=$TPWD/ninja:$PATH; cd glib-$GLIB ; meson _build -Ddefault_library=static -Dselinux=disabled -Dxattr=false -Dlibmount=disabled; ninja -C _build)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding glib"
-    fi
-  fi
-
   buildYara
-
-  # Maxmind
-  if [ ! -z "$WITHMAXMIND" ]; then
-    echo "ARKIME: withmaxmind $WITHMAXMIND"
-  else
-    if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
-      curl -sSfLO https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
-    fi
-
-    if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
-      tar zxf libmaxminddb-$MAXMIND.tar.gz
-
-      (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding libmaxmind"
-    fi
-    WITHMAXMIND="--with-maxminddb=thirdparty/libmaxminddb-$MAXMIND"
-  fi
-
-  # libpcap
-  if [ ! -z "$PCAPBUILD" ]; then
-    echo "ARKIME: pcapbuild $PCAPBUILD"
-  else
-    if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-      curl -sSfLO https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
-    fi
-    if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
-      tar zxf libpcap-$PCAP.tar.gz
-      echo "ARKIME: Building libpcap";
-      (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: NOT rebuilding libpcap";
-    fi
-    PCAPDIR=$TPWD/libpcap-$PCAP
-    PCAPBUILD="--with-libpcap=$PCAPDIR"
-  fi
-
-  # curl
-  if [ ! -z "$WITHCURL" ]; then
-    echo "ARKIME: withcurl $WITHCURL"
-  else
-    WITHCURL="--with-curl=thirdparty/curl-$CURL"
-    if [ ! -f "curl-$CURL.tar.gz" ]; then
-      curl -sSfLO https://curl.haxx.se/download/curl-$CURL.tar.gz
-    fi
-
-    if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
-      tar zxf curl-$CURL.tar.gz
-      ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding curl"
-    fi
-  fi
-
-  # nghttp2
-  if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
-    curl -sSfLO https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
-  fi
-
-  if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
-    tar zxf nghttp2-$NGHTTP2.tar.gz
-    ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
-  else
-    echo "ARKIME: Not rebuilding nghttp2"
-  fi
-
-  # lua
-  if [ ! -f "lua-$LUA.tar.gz" ]; then
-    curl -sSfLO https://www.lua.org/ftp/lua-$LUA.tar.gz
-  fi
-
-  if [ ! -f "lua-$LUA/src/liblua.a" ]; then
-    tar zxf lua-$LUA.tar.gz
-    ( cd lua-$LUA; make MYCFLAGS=-fPIC linux)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
-  else
-    echo "ARKIME: Not rebuilding lua"
-  fi
 
   # daq
   if [ $DODAQ -eq 1 ]; then
@@ -620,7 +487,7 @@ else
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
       tar zxf daq-$DAQ.tar.gz
-      ( cd daq-$DAQ; autoreconf -f -i; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
+      ( cd daq-$DAQ; autoreconf -f -i; ./configure; make; sudo make install)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
@@ -630,31 +497,10 @@ else
     fi
   fi
 
-  # zstd
-  if [ $BUILDZSTD -eq 1 ]; then
-    WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
-    if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
-      curl -sSfLO https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
-    fi
-
-    if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
-      tar zxf zstd-$ZSTD.tar.gz
-      ( cd zstd-$ZSTD; $MAKE)
-      if [ $? -ne 0 ]; then
-        echo "ARKIME: $MAKE failed"
-        exit 1
-      fi
-    else
-      echo "ARKIME: Not rebuilding zstd"
-    fi
-  else
-    WITHZSTD=""
-  fi
-
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
-      curl -sSfL -o librdkafka-$KAFKA.tar.gz https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz
+      curl -sSfL -o librdkafka-$KAFKA.tar.gz https://github.com/confluentinc/librdkafka/archive/v$KAFKA.tar.gz
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
@@ -675,8 +521,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
+  echo "./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR --with-yara=thirdparty/yara/yara-$YARA $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then

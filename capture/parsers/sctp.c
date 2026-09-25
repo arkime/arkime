@@ -29,7 +29,7 @@ struct sctphdr {
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL int                    sctpMProtocol;
+extern int                   mProtocolSctp;
 LOCAL int                    sctp_raw_packet_func;
 LOCAL int                    protoIdField;
 LOCAL int                    maxSctpOutOfOrderPackets;
@@ -53,7 +53,7 @@ LOCAL ArkimePacketRC sctp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
         arkime_session_id(sessionId, ip4->ip_src.s_addr, sctphdr->sctp_sport,
                           ip4->ip_dst.s_addr, sctphdr->sctp_dport, packet->vlan, packet->vni);
     }
-    packet->mProtocol = sctpMProtocol;
+    packet->mProtocol = mProtocolSctp;
     packet->hash = arkime_session_hash(sessionId);
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -122,7 +122,7 @@ LOCAL int64_t sctp_tsn_diff(int64_t a, int64_t b)
 LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const cbsb, int chunkFlags, uint32_t protoId)
 {
     int addBefore = 0;
-    ArkimeSctpData_t *fsd = 0 ;
+    ArkimeSctpData_t *fsd = 0;
     DLL_FOREACH(sd_, sctp, fsd) {
         if (tsn == fsd->tsn && which == fsd->which) { // Already have this tsn
             return;
@@ -425,8 +425,8 @@ void arkime_parser_init()
     maxSctpOutOfOrderPackets = arkime_config_int(NULL, "maxSctpOutOfOrderPackets", 256, 64, 10000);
 
     arkime_packet_set_ip_cb(IPPROTO_SCTP, sctp_packet_enqueue);
-    sctpMProtocol = arkime_mprotocol_register("sctp",
-                                              SESSION_SCTP,
+    mProtocolSctp = arkime_mprotocol_register("sctp",
+                                              ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_MED,
                                               sctp_create_sessionid,
                                               sctp_pre_process,
                                               sctp_process,

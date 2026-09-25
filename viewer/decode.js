@@ -762,6 +762,7 @@ class ItemHexFormatterStream extends Transform {
     super({ objectMode: true });
     mkname(this, 'ItemHexFormatterStream');
     this.showOffsets = options['ITEM-HEX'] ? options['ITEM-HEX'].showOffsets || false : false;
+    this.find = options.find;
   }
 
   _transform (item, encoding, callback) {
@@ -769,10 +770,26 @@ class ItemHexFormatterStream extends Transform {
       return callback(null, item);
     }
 
-    let out = '<pre>';
     let i, ilen;
 
     const input = item.data;
+
+    // find-in-packets: per-byte hit mask + per-match start byte (for anchoring)
+    let hit = null;
+    let starts = null;
+    if (this.find) {
+      const ranges = findMatchRanges(input, this.find);
+      if (ranges.length) {
+        hit = new Uint8Array(input.length);
+        starts = new Uint8Array(input.length);
+        for (const [s, e] of ranges) {
+          if (s < input.length) { starts[s] = 1; }
+          for (let b = s; b < e && b < input.length; b++) { hit[b] = 1; }
+        }
+      }
+    }
+
+    let out = '<pre>';
     for (let pos = 0, poslen = input.length; pos < poslen; pos += 16) {
       const line = input.slice(pos, Math.min(pos + 16, input.length));
       if (this.showOffsets) {
@@ -785,8 +802,13 @@ class ItemHexFormatterStream extends Transform {
           out += ' ';
         }
         if (i < line.length) {
+          const b = pos + i;
           const paddedLine = line[i].toString(16).padStart(2, '0');
-          out += paddedLine;
+          if (hit && hit[b]) {
+            out += '<span class="find-hit' + (starts[b] ? ' find-hit-start' : '') + '">' + paddedLine + '</span>';
+          } else {
+            out += paddedLine;
+          }
         } else {
           out += '  ';
         }
@@ -795,10 +817,11 @@ class ItemHexFormatterStream extends Transform {
       out += ' ';
 
       for (i = 0, ilen = line.length; i < ilen; i++) {
-        if (line[i] <= 32 || line[i] > 128) {
-          out += '.';
+        const ch = (line[i] <= 32 || line[i] > 128) ? '.' : ArkimeUtil.safeStr(line.toString('ascii', i, i + 1));
+        if (hit && hit[pos + i]) {
+          out += '<span class="find-hit">' + ch + '</span>';
         } else {
-          out += ArkimeUtil.safeStr(line.toString('ascii', i, i + 1));
+          out += ch;
         }
       }
       out += '\n';
@@ -832,6 +855,96 @@ function createItemSorterStream (options) {
   stream.items = [];
   return stream;
 }
+/// /////////////////////////////////////////////////////////////////////////////
+// find-in-packets: match on the raw item bytes so a hit highlights in every render
+// mode. find = { search, searchType, regex }.
+
+// Merge sorted [start,end) ranges, collapsing overlaps/adjacency.
+function mergeRanges (ranges) {
+  if (ranges.length < 2) { return ranges; }
+  ranges.sort((a, b) => a[0] - b[0]);
+  const out = [ranges[0]];
+  for (let i = 1; i < ranges.length; i++) {
+    const last = out[out.length - 1];
+    if (ranges[i][0] <= last[1]) {
+      last[1] = Math.max(last[1], ranges[i][1]);
+    } else {
+      out.push(ranges[i]);
+    }
+  }
+  return out;
+}
+
+function findMatchRanges (buf, spec) {
+  if (!spec || !spec.search) { return []; }
+  const ranges = [];
+  try {
+    switch (spec.searchType) {
+    case 'asciicase':
+    case 'ascii': {
+      const ci = spec.searchType === 'ascii';
+      const hay = ci ? buf.toString('latin1').toLowerCase() : buf.toString('latin1');
+      const needle = ci ? spec.search.toLowerCase() : spec.search;
+      if (!needle) { break; }
+      let i = 0;
+      while ((i = hay.indexOf(needle, i)) !== -1) {
+        ranges.push([i, i + needle.length]);
+        i += needle.length;
+      }
+      break;
+    }
+    case 'hex': {
+      const hay = buf.toString('hex');
+      const needle = spec.search.toLowerCase().replace(/[^0-9a-f]/g, '');
+      if (!needle) { break; }
+      let i = 0;
+      while ((i = hay.indexOf(needle, i)) !== -1) {
+        if (i % 2 === 0) { ranges.push([i / 2, Math.ceil((i + needle.length) / 2)]); } // byte-aligned only
+        i += 1;
+      }
+      break;
+    }
+    case 'regex':
+    case 'hexregex': {
+      if (!spec.regex) { break; }
+      const hex = spec.searchType === 'hexregex';
+      const hay = hex ? buf.toString('hex') : buf.toString('latin1');
+      spec.regex.lastIndex = 0;
+      let m;
+      while ((m = spec.regex.exec(hay)) !== null) {
+        if (m[0].length === 0) { spec.regex.lastIndex++; continue; }
+        if (hex) {
+          ranges.push([Math.floor(m.index / 2), Math.ceil((m.index + m[0].length) / 2)]);
+        } else {
+          ranges.push([m.index, m.index + m[0].length]);
+        }
+      }
+      break;
+    }
+    }
+  } catch (e) { /* bad search -> no highlights */ }
+  return mergeRanges(ranges);
+}
+
+// Escaped text with find matches wrapped in find-hit spans (ascii/utf8/natural).
+function findWrapDecoded (buf, spec, encoding, naturalBr) {
+  const ranges = findMatchRanges(buf, spec);
+  const esc = (a, b) => {
+    const s = ArkimeUtil.safeStr(buf.toString(encoding, a, b));
+    return naturalBr ? s.replace(/\r?\n/g, '<br>') : s;
+  };
+  if (!ranges.length) { return esc(0, buf.length); }
+  let out = '';
+  let pos = 0;
+  for (const [s, e] of ranges) {
+    if (s > pos) { out += esc(pos, s); }
+    out += '<span class="find-hit find-hit-start">' + esc(s, e) + '</span>';
+    pos = e;
+  }
+  out += esc(pos, buf.length);
+  return out;
+}
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 module.exports = exports = {};
@@ -875,19 +988,19 @@ exports.register('ITEM-PRINTER', through.ctor({ objectMode: true }, function (it
 exports.register('ITEM-HEX', ItemHexFormatterStream);
 exports.register('ITEM-UTF8', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
-    item.html = '<pre>' + ArkimeUtil.safeStr(item.data.toString('utf8')) + '</pre>';
+    item.html = '<pre>' + findWrapDecoded(item.data, this.options?.find, 'utf8', false) + '</pre>';
   }
   callback(null, item);
 }));
 exports.register('ITEM-ASCII', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
-    item.html = '<pre>' + ArkimeUtil.safeStr(item.data.toString('binary')) + '</pre>';
+    item.html = '<pre>' + findWrapDecoded(item.data, this.options?.find, 'latin1', false) + '</pre>';
   }
   callback(null, item);
 }));
 exports.register('ITEM-NATURAL', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
-    item.html = ArkimeUtil.safeStr(item.data.toString()).replace(/\r?\n/g, '<br>');
+    item.html = findWrapDecoded(item.data, this.options?.find, 'utf8', true);
   }
   callback(null, item);
 }));

@@ -34,7 +34,6 @@ typedef enum {
 } ArkimeCompressionMode;
 
 extern ArkimeConfig_t        config;
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 LOCAL  gboolean              localPcapIndex;
 LOCAL  ArkimeCompressionMode compressionMode = ARKIME_COMPRESSION_NONE;
 LOCAL  gboolean              simpleShortHeader;
@@ -44,8 +43,9 @@ LOCAL  int                   simpleFreeOutputBuffers;
 
 // mmap output buffer size: pcapWriteSize plus room for one worst-case record
 // written past the flush threshold: a max packet body (ARKIME_PACKET_MAX_LEN)
-// plus its 16 byte pcap record header.
-#define ARKIME_SIMPLE_BUFSIZE (config.pcapWriteSize + ARKIME_PACKET_MAX_LEN + 16)
+// plus its record header. pcapng EPB framing (28 byte header + up to 3 pad + 4
+// trailing length) is the largest, so reserve 64 bytes of headroom.
+#define ARKIME_SIMPLE_BUFSIZE (config.pcapWriteSize + ARKIME_PACKET_MAX_LEN + 64)
 
 // Information about the current file being written to, all items that are constant per file should be here
 typedef struct {
@@ -63,6 +63,9 @@ typedef struct {
     uint8_t              dek[256];
     z_stream             z_strm;
     uint8_t              thread;
+    uint8_t              pcapng;
+    uint8_t              kind;
+    uint32_t             firstPacket;
 #ifdef HAVE_ZSTD
     ZSTD_CStream        *zstd_strm;
     ZSTD_outBuffer       zstd_out;
@@ -92,15 +95,22 @@ LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
 LOCAL  ARKIME_COND_DEFINE(simpleQ);
 
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
-enum ArkimeDEKMode { ARKIME_DEK_AES192CBC, ARKIME_DEK_AES256GCM };
 
 #define INDEX_FILES_CACHE_SIZE (ARKIME_MAX_PACKET_THREADS-1)
 
+// Per write thread we keep a separate open output file for each output "kind":
+// one classic pcap file per supported DLT index (a classic pcap header carries a
+// single global link type, so different DLTs can't share a file) plus one shared
+// pcapng file (whose Interface Description Blocks carry every DLT). This keeps a
+// mixed --copy of classic + pcapng inputs (or inputs with differing DLTs) from
+// being interleaved into one file under the wrong link type.
+#define ARKIME_SIMPLE_PCAPNG_KIND ARKIME_DLT_MAX
+#define ARKIME_SIMPLE_NUM_KINDS   (ARKIME_DLT_MAX + 1)
+
 typedef struct {
-    ArkimeSimple_t *currentInfo;
+    ArkimeSimple_t *currentInfo[ARKIME_SIMPLE_NUM_KINDS];
     struct timeval  lastSave;
-    struct timeval  fileAge;
-    uint32_t        firstPacket;
+    struct timeval  fileAge[ARKIME_SIMPLE_NUM_KINDS];
 
     struct {
         int64_t  fileNum;
@@ -114,7 +124,6 @@ LOCAL ArkimeSimpleHead_t     freeList;
 ARKIME_LOCK_DEFINE(freeList);
 LOCAL uint32_t               pageSize;
 LOCAL enum ArkimeSimpleMode  simpleMode;
-LOCAL enum ArkimeDEKMode     simpleDEKMode;
 LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
@@ -211,9 +220,9 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
 }
 
 /******************************************************************************/
-LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
+LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int kind, int closing)
 {
-    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo[kind];
 
     info->closing = closing;
     if (!closing) {
@@ -221,7 +230,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         int writeSize = (info->bufpos / pageSize) * pageSize;
 
         // Create next buffer
-        ArkimeSimple_t *ninfo = simpleThreadData[thread].currentInfo = writer_simple_alloc(info);
+        ArkimeSimple_t *ninfo = simpleThreadData[thread].currentInfo[kind] = writer_simple_alloc(info);
 
         // Copy what we aren't going to write to next buffer
         memcpy(ninfo->buf, info->buf + writeSize, info->bufpos - writeSize);
@@ -277,7 +286,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         default:
             break;
         }
-        simpleThreadData[thread].currentInfo = NULL; // This will cause a new file to be allocated on next packet
+        simpleThreadData[thread].currentInfo[kind] = NULL; // This will cause a new file to be allocated on next packet
     }
 
     // Send to write q to actually write to disk
@@ -290,7 +299,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
     ARKIME_COND_SIGNAL(simpleQ);
     ARKIME_UNLOCK(simpleQ);
 
-    return simpleThreadData[thread].currentInfo;
+    return simpleThreadData[thread].currentInfo[kind];
 }
 /******************************************************************************/
 LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int deklen,
@@ -308,50 +317,36 @@ LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int 
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
 
-    if (simpleDEKMode == ARKIME_DEK_AES256GCM) {
-        uint8_t salt[16];
-        uint8_t iv[12];
-        uint8_t tag[16];
-        uint8_t kek[32];
+    uint8_t salt[16];
+    uint8_t iv[12];
+    uint8_t tag[16];
+    uint8_t kek[32];
 
-        // Generate random salt and IV
-        RAND_bytes(salt, sizeof(salt));
-        RAND_bytes(iv, sizeof(iv));
+    // Generate random salt and IV
+    RAND_bytes(salt, sizeof(salt));
+    RAND_bytes(iv, sizeof(iv));
 
-        // Derive key using PBKDF2 with SHA-256, 350000 iterations
-        PKCS5_PBKDF2_HMAC(kekstr, strlen(kekstr), salt, sizeof(salt), 350000, EVP_sha256(), sizeof(kek), kek);
+    // Derive key using PBKDF2 with SHA-256, 350000 iterations
+    PKCS5_PBKDF2_HMAC(kekstr, strlen(kekstr), salt, sizeof(salt), 350000, EVP_sha256(), sizeof(kek), kek);
 
-        // Encrypt using AES-256-GCM
-        EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
-        EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, sizeof(iv), NULL);
-        EVP_EncryptInit_ex(ctx, NULL, NULL, kek, iv);
+    // Encrypt using AES-256-GCM
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, sizeof(iv), NULL);
+    EVP_EncryptInit_ex(ctx, NULL, NULL, kek, iv);
 
-        if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
-            LOGEXIT("ERROR - Encrypting key failed");
-        ciphertext_len = len;
+    if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
+        LOGEXIT("ERROR - Encrypting key failed");
+    ciphertext_len = len;
 
-        EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
-        ciphertext_len += len;
+    EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
+    ciphertext_len += len;
 
-        // Get the GCM tag
-        EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, sizeof(tag), tag);
+    // Get the GCM tag
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, sizeof(tag), tag);
 
-        arkime_sprint_hex_string(outsalthex, salt, sizeof(salt));
-        arkime_sprint_hex_string(outivhex, iv, sizeof(iv));
-        arkime_sprint_hex_string(outtaghex, tag, sizeof(tag));
-    } else {
-        uint8_t kek[EVP_MAX_KEY_LENGTH];
-        uint8_t kekiv[EVP_MAX_IV_LENGTH];
-
-        EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
-
-        EVP_EncryptInit_ex(ctx, EVP_aes_192_cbc(), NULL, kek, kekiv);
-        if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
-            LOGEXIT("ERROR - Encrypting key failed");
-        ciphertext_len = len;
-        EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
-        ciphertext_len += len;
-    }
+    arkime_sprint_hex_string(outsalthex, salt, sizeof(salt));
+    arkime_sprint_hex_string(outivhex, iv, sizeof(iv));
+    arkime_sprint_hex_string(outtaghex, tag, sizeof(tag));
 
     g_free(kekstr);
     EVP_CIPHER_CTX_free(ctx);
@@ -434,9 +429,9 @@ LOCAL char *writer_simple_get_kekId()
     return g_strndup(okek, j);
 }
 /******************************************************************************/
-LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
+LOCAL void writer_simple_write_output(int thread, int kind, const uint8_t *data, int len)
 {
-    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo[kind];
 
     switch (compressionMode) {
     case ARKIME_COMPRESSION_NONE:
@@ -453,7 +448,7 @@ LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
             // The current zlib buffer is full
             if (info->file->z_strm.avail_out == 0) {
                 info->bufpos = info->file->z_strm.next_out - info->buf;
-                info = writer_simple_process_buf(info->file->thread, 0);
+                info = writer_simple_process_buf(info->file->thread, kind, 0);
             }
             deflate(&info->file->z_strm, Z_NO_FLUSH);
         }
@@ -470,7 +465,7 @@ LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
             // The current zstd buffer is full
             if (info->file->zstd_out.pos == info->file->zstd_out.size) {
                 info->bufpos = info->file->zstd_out.pos;
-                info = writer_simple_process_buf(info->file->thread, 0);
+                info = writer_simple_process_buf(info->file->thread, kind, 0);
             }
         }
         info->file->posInBlock += len;
@@ -484,9 +479,9 @@ LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
     info->file->packetBytesWritten += len;
 }
 /******************************************************************************/
-LOCAL void writer_simple_gzip_make_new_block(int thread)
+LOCAL void writer_simple_gzip_make_new_block(int thread, int kind)
 {
-    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo[kind];
 
     deflate(&info->file->z_strm, Z_FULL_FLUSH);
     info->bufpos = (uint8_t *)info->file->z_strm.next_out - info->buf;
@@ -494,15 +489,15 @@ LOCAL void writer_simple_gzip_make_new_block(int thread)
     info->file->posInBlock = 0;
 }
 /******************************************************************************/
-LOCAL void writer_simple_zstd_make_new_block(int thread)
+LOCAL void writer_simple_zstd_make_new_block(int thread, int kind)
 {
-    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo[kind];
 #ifdef HAVE_ZSTD
     while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_end) != 0) {
         // The current zstd buffer is full
         if (info->file->zstd_out.pos == info->file->zstd_out.size) {
             info->bufpos = info->file->zstd_out.pos;
-            info = writer_simple_process_buf(info->file->thread, 0);
+            info = writer_simple_process_buf(info->file->thread, kind, 0);
         }
     }
     info->bufpos = info->file->zstd_out.pos;
@@ -522,8 +517,16 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
 
     int thread = session->thread;
 
+    // Pick which parallel output file this packet belongs to: pcapng sources all
+    // share the single pcapng file (its IDBs carry every DLT); classic sources
+    // get one file per supported DLT so each classic pcap stays single-link-type.
+    int dltIndex = arkime_packet_dlt_index(packet);
+    if (dltIndex < 0)
+        dltIndex = 0;
+    const int kind = fileInfo[packet->readerPos].isPcapNG ? ARKIME_SIMPLE_PCAPNG_KIND : dltIndex;
+
     // Need to open a new file
-    if (!simpleThreadData[thread].currentInfo) {
+    if (!simpleThreadData[thread].currentInfo[kind]) {
         char  dekhex[1024];
         char *name = 0;
         char *kekId;
@@ -541,9 +544,25 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         }
 
         ArkimeSimple_t *info;
-        info = simpleThreadData[thread].currentInfo = writer_simple_alloc(NULL);
+        info = simpleThreadData[thread].currentInfo[kind] = writer_simple_alloc(NULL);
         info->file = ARKIME_TYPE_ALLOC0(ArkimeSimpleFile_t);
         info->file->thread = thread;
+        info->file->kind = kind;
+
+        // For a pcapng source we copy out as pcapng: a Section Header Block (28
+        // bytes) followed by one Interface Description Block (20 bytes) per
+        // supported DLT. Record each interface's IDB offset so the viewer can
+        // map an EPB's interface_id to a link type without rescanning.
+        char interfaceOffsets[ARKIME_DLT_MAX * 22 + 4];
+        char *interfaceOffsetsArg = ARKIME_VAR_ARG_STR_SKIP;
+        if (fileInfo[packet->readerPos].isPcapNG) {
+            const int dltCount = arkime_packet_dlt_index_count();
+            ArkimeInterfaceInfo_t outIfaces[ARKIME_DLT_MAX];
+            for (int d = 0; d < dltCount; d++)
+                outIfaces[d].blockOffset = 28 + d * 20;
+            arkime_packet_interface_offsets_json(interfaceOffsets, sizeof(interfaceOffsets), outIfaces, dltCount);
+            interfaceOffsetsArg = interfaceOffsets;
+        }
 
         switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
@@ -573,7 +592,14 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
 
         switch (simpleMode) {
         case ARKIME_SIMPLE_NORMAL:
-            if (simpleShortHeader)
+            if (kind == ARKIME_SIMPLE_PCAPNG_KIND) {
+                if (compressionMode == ARKIME_COMPRESSION_GZIP)
+                    name = ".pcapng.gz";
+                else if (compressionMode == ARKIME_COMPRESSION_ZSTD)
+                    name = ".pcapng.zst";
+                else
+                    name = ".pcapng";
+            } else if (simpleShortHeader)
                 name = ".arkime";
             else if (compressionMode == ARKIME_COMPRESSION_GZIP)
                 name = ".pcap.gz";
@@ -586,6 +612,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
+                                              "interfaceOffsets", interfaceOffsetsArg,
                                               (char *)NULL);
             break;
         case ARKIME_SIMPLE_XOR2048: {
@@ -600,7 +627,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "encoding", "xor-2048",
                                               "dek", dekhex,
                                               "kekId", kekId,
-                                              "dekEncoding", simpleDEKMode == ARKIME_DEK_AES256GCM ? "aes-256-gcm" : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekEncoding", "aes-256-gcm",
                                               "dekSalt", deksalthex[0] ? deksalthex : ARKIME_VAR_ARG_STR_SKIP,
                                               "dekIv", dekivhex[0] ? dekivhex : ARKIME_VAR_ARG_STR_SKIP,
                                               "dekTag", dektaghex[0] ? dektaghex : ARKIME_VAR_ARG_STR_SKIP,
@@ -608,6 +635,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
+                                              "interfaceOffsets", interfaceOffsetsArg,
                                               (char *)NULL);
             g_free(kekId);
             break;
@@ -633,7 +661,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "iv", ivhex,
                                               "dek", dekhex,
                                               "kekId", kekId,
-                                              "dekEncoding", simpleDEKMode == ARKIME_DEK_AES256GCM ? "aes-256-gcm" : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekEncoding", "aes-256-gcm",
                                               "dekSalt", deksalthex[0] ? deksalthex : ARKIME_VAR_ARG_STR_SKIP,
                                               "dekIv", dekivhex[0] ? dekivhex : ARKIME_VAR_ARG_STR_SKIP,
                                               "dekTag", dektaghex[0] ? dektaghex : ARKIME_VAR_ARG_STR_SKIP,
@@ -641,6 +669,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
                                               "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
+                                              "interfaceOffsets", interfaceOffsetsArg,
                                               (char *)NULL);
             g_free(kekId);
             break;
@@ -652,83 +681,144 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         /* If offline pcap honor umask, otherwise disable other RW */
         unlink(name);
         if (config.pcapReadOffline) {
-            simpleThreadData[thread].currentInfo->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+            simpleThreadData[thread].currentInfo[kind]->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         } else {
-            simpleThreadData[thread].currentInfo->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+            simpleThreadData[thread].currentInfo[kind]->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         }
-        if (simpleThreadData[thread].currentInfo->file->fd < 0) {
+        if (simpleThreadData[thread].currentInfo[kind]->file->fd < 0) {
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
 
-        if (simpleShortHeader) {
-            simpleThreadData[thread].firstPacket = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
-            ArkimePcapFileHdr_t   pcapFileHeader2;
-            memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
-            pcapFileHeader2.magic = 0xa1b2c3d5;
-            pcapFileHeader2.thiszone = simpleThreadData[thread].firstPacket;
-            writer_simple_write_output(thread, (uint8_t *)&pcapFileHeader2, 20);
-        } else {
-            writer_simple_write_output(thread, (uint8_t *)&pcapFileHeader, 20);
-        }
+        const ArkimeInterfaceInfo_t *iface = &fileInfo[packet->readerPos].interfaces[packet->interfaceIndex];
+        ArkimePcapFileHdr_t   pcapHeader;
+        pcapHeader.magic = 0xa1b2c3d4;
+        pcapHeader.version_major = 2;
+        pcapHeader.version_minor = 4;
+        pcapHeader.thiszone = 0;
+        pcapHeader.sigfigs = 0;
+        pcapHeader.snaplen = iface->snaplen;
+        pcapHeader.dlt = iface->dlt;
 
-        uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
-        writer_simple_write_output(thread, (uint8_t *)&linktype, 4);
+        ArkimeSimpleFile_t *sfile = simpleThreadData[thread].currentInfo[kind]->file;
+        sfile->pcapng = fileInfo[packet->readerPos].isPcapNG;
+
+        if (sfile->pcapng) {
+            // Section Header Block
+            uint8_t shb[28];
+            memset(shb, 0, sizeof(shb));
+            *(uint32_t *)(shb +  0) = 0x0A0D0D0A;
+            *(uint32_t *)(shb +  4) = 28;
+            *(uint32_t *)(shb +  8) = 0x1A2B3C4D;
+            *(uint16_t *)(shb + 12) = 1;          // major
+            *(uint16_t *)(shb + 14) = 0;          // minor
+            *(int64_t *)(shb + 16) = -1;          // section length unknown
+            *(uint32_t *)(shb + 24) = 28;
+            writer_simple_write_output(thread, kind, shb, 28);
+
+            // One Interface Description Block per supported DLT so a packet's
+            // interface_id in each EPB is just its supported-DLT index.
+            const int dltCount = arkime_packet_dlt_index_count();
+            for (int d = 0; d < dltCount; d++) {
+                uint8_t idb[20];
+                *(uint32_t *)(idb +  0) = 0x00000001;
+                *(uint32_t *)(idb +  4) = 20;
+                *(uint16_t *)(idb +  8) = arkime_packet_dlt_to_linktype(arkime_packet_index_to_dlt(d));
+                *(uint16_t *)(idb + 10) = 0;      // reserved
+                *(uint32_t *)(idb + 12) = iface->snaplen;
+                *(uint32_t *)(idb + 16) = 20;
+                writer_simple_write_output(thread, kind, idb, 20);
+            }
+        } else if (simpleShortHeader) {
+            sfile->firstPacket = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
+            pcapHeader.magic = 0xa1b2c3d5;
+            pcapHeader.thiszone = sfile->firstPacket;
+            writer_simple_write_output(thread, kind, (uint8_t *)&pcapHeader, 20);
+            uint32_t linktype = arkime_packet_dlt_to_linktype(iface->dlt);
+            writer_simple_write_output(thread, kind, (uint8_t *)&linktype, 4);
+        } else {
+            writer_simple_write_output(thread, kind, (uint8_t *)&pcapHeader, 20);
+            uint32_t linktype = arkime_packet_dlt_to_linktype(iface->dlt);
+            writer_simple_write_output(thread, kind, (uint8_t *)&linktype, 4);
+        }
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
         g_free(name);
 
         // Make a new block for start of packets
         if (compressionMode == ARKIME_COMPRESSION_GZIP)
-            writer_simple_gzip_make_new_block(thread);
+            writer_simple_gzip_make_new_block(thread, kind);
         else if (compressionMode == ARKIME_COMPRESSION_ZSTD)
-            writer_simple_zstd_make_new_block(thread);
-        gettimeofday(&simpleThreadData[thread].fileAge, NULL);
+            writer_simple_zstd_make_new_block(thread, kind);
+        gettimeofday(&simpleThreadData[thread].fileAge[kind], NULL);
     }
 
-    packet->writerFileNum = simpleThreadData[thread].currentInfo->file->id;
+    packet->writerFileNum = simpleThreadData[thread].currentInfo[kind]->file->id;
     if (session->lastFileNum == 0) {
-        simpleThreadData[thread].currentInfo->file->sessionsStarted++;
-        simpleThreadData[thread].currentInfo->file->sessionsPresent++;
+        simpleThreadData[thread].currentInfo[kind]->file->sessionsStarted++;
+        simpleThreadData[thread].currentInfo[kind]->file->sessionsPresent++;
     } else if (session->lastFileNum != packet->writerFileNum) {
-        simpleThreadData[thread].currentInfo->file->sessionsPresent++;
+        simpleThreadData[thread].currentInfo[kind]->file->sessionsPresent++;
     }
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
-        if (simpleThreadData[thread].currentInfo->file->posInBlock >= simpleCompressionBlockSize) {
-            writer_simple_gzip_make_new_block(thread);
+        if (simpleThreadData[thread].currentInfo[kind]->file->posInBlock >= simpleCompressionBlockSize) {
+            writer_simple_gzip_make_new_block(thread, kind);
         }
 
-        packet->writerFilePos = (simpleThreadData[thread].currentInfo->file->blockStart << uncompressedBits) + simpleThreadData[thread].currentInfo->file->posInBlock;
+        packet->writerFilePos = (simpleThreadData[thread].currentInfo[kind]->file->blockStart << uncompressedBits) + simpleThreadData[thread].currentInfo[kind]->file->posInBlock;
     } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
-        if (simpleThreadData[thread].currentInfo->file->posInBlock >= simpleCompressionBlockSize) {
-            writer_simple_zstd_make_new_block(thread);
+        if (simpleThreadData[thread].currentInfo[kind]->file->posInBlock >= simpleCompressionBlockSize) {
+            writer_simple_zstd_make_new_block(thread, kind);
         }
 
-        packet->writerFilePos = (simpleThreadData[thread].currentInfo->file->blockStart << uncompressedBits) + simpleThreadData[thread].currentInfo->file->posInBlock;
+        packet->writerFilePos = (simpleThreadData[thread].currentInfo[kind]->file->blockStart << uncompressedBits) + simpleThreadData[thread].currentInfo[kind]->file->posInBlock;
     } else {
-        packet->writerFilePos = simpleThreadData[thread].currentInfo->file->pos;
+        packet->writerFilePos = simpleThreadData[thread].currentInfo[kind]->file->pos;
     }
 
-    simpleThreadData[thread].currentInfo->file->lastPacketTime = packet->ts;
-    simpleThreadData[thread].currentInfo->file->packets++;
-    if (simpleShortHeader) {
+    simpleThreadData[thread].currentInfo[kind]->file->lastPacketTime = packet->ts;
+    simpleThreadData[thread].currentInfo[kind]->file->packets++;
+    if (simpleThreadData[thread].currentInfo[kind]->file->pcapng) {
+        const uint32_t caplen = packet->pktlen;
+        const uint32_t pad = (4 - (caplen & 3)) & 3;
+        const uint32_t total = 32 + caplen + pad;
+        const uint64_t ts = (uint64_t)packet->ts.tv_sec * 1000000 + packet->ts.tv_usec;
+
+        uint8_t hdr[28];
+        *(uint32_t *)(hdr +  0) = 0x00000006;        // Enhanced Packet Block
+        *(uint32_t *)(hdr +  4) = total;
+        *(uint32_t *)(hdr +  8) = dltIndex;          // interface_id
+        *(uint32_t *)(hdr + 12) = ts >> 32;          // timestamp high
+        *(uint32_t *)(hdr + 16) = ts & 0xffffffff;   // timestamp low
+        *(uint32_t *)(hdr + 20) = caplen;
+        *(uint32_t *)(hdr + 24) = caplen;            // original length
+        writer_simple_write_output(thread, kind, hdr, 28);
+        writer_simple_write_output(thread, kind, packet->pkt, caplen);
+        if (pad) {
+            uint8_t zero[4] = {0};
+            writer_simple_write_output(thread, kind, zero, pad);
+        }
+        writer_simple_write_output(thread, kind, (uint8_t *)&total, 4);
+    } else if (simpleShortHeader) {
+        ArkimeSimpleFile_t *sfile = simpleThreadData[thread].currentInfo[kind]->file;
         char header[6];
         // LLLL LLLL LLLL LLLL
         memcpy(header, &packet->pktlen, 2);
 
         // SSSS SSSS SSSS MMMM MMMM MMMM MMMM MMMM
         uint32_t t;
-        if (simpleThreadData[thread].firstPacket > packet->ts.tv_sec) {
+        if (sfile->firstPacket > packet->ts.tv_sec) {
             LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
             // Time stamp is too early, just pretend it's at firstPacket time
             t = packet->ts.tv_usec;
         } else {
-            t = ((packet->ts.tv_sec - simpleThreadData[thread].firstPacket) << 20) | packet->ts.tv_usec;
+            t = ((packet->ts.tv_sec - sfile->firstPacket) << 20) | packet->ts.tv_usec;
         }
 
         memcpy(header + 2, &t, 4);
 
-        writer_simple_write_output(thread, (uint8_t *)&header, 6);
+        writer_simple_write_output(thread, kind, (uint8_t *)&header, 6);
+        writer_simple_write_output(thread, kind, packet->pkt, packet->pktlen);
     } else {
         struct arkime_pcap_sf_pkthdr hdr;
 
@@ -736,14 +826,14 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         hdr.ts.tv_usec = packet->ts.tv_usec;
         hdr.caplen     = packet->pktlen;
         hdr.pktlen     = packet->pktlen;
-        writer_simple_write_output(thread, (uint8_t *)&hdr, 16);
+        writer_simple_write_output(thread, kind, (uint8_t *)&hdr, 16);
+        writer_simple_write_output(thread, kind, packet->pkt, packet->pktlen);
     }
-    writer_simple_write_output(thread, packet->pkt, packet->pktlen);
 
-    if (simpleThreadData[thread].currentInfo->bufpos > config.pcapWriteSize) {
-        writer_simple_process_buf(thread, 0);
-    } else if (simpleThreadData[thread].currentInfo->file->packetBytesWritten >= config.maxFileSizeB) {
-        writer_simple_process_buf(thread, 1);
+    if (simpleThreadData[thread].currentInfo[kind]->bufpos > config.pcapWriteSize) {
+        writer_simple_process_buf(thread, kind, 0);
+    } else if (simpleThreadData[thread].currentInfo[kind]->file->packetBytesWritten >= config.maxFileSizeB) {
+        writer_simple_process_buf(thread, kind, 1);
     }
 }
 /******************************************************************************/
@@ -811,8 +901,10 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
 LOCAL void writer_simple_exit()
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        if (simpleThreadData[thread].currentInfo) {
-            writer_simple_process_buf(thread, 1);
+        for (int kind = 0; kind < ARKIME_SIMPLE_NUM_KINDS; kind++) {
+            if (simpleThreadData[thread].currentInfo[kind]) {
+                writer_simple_process_buf(thread, kind, 1);
+            }
         }
     }
 
@@ -839,24 +931,33 @@ LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, g
 
     const int thread = GPOINTER_TO_INT(uw1);
 
-    // No data or not enough bytes, reset the time
-    if (!simpleThreadData[thread].currentInfo || simpleThreadData[thread].currentInfo->bufpos < (uint32_t)pageSize) {
+    gboolean hasData = FALSE;
+    for (int kind = 0; kind < ARKIME_SIMPLE_NUM_KINDS; kind++) {
+        ArkimeSimple_t *ci = simpleThreadData[thread].currentInfo[kind];
+
+        // No data or not enough bytes for this kind
+        if (!ci || ci->bufpos < (uint32_t)pageSize)
+            continue;
+        hasData = TRUE;
+
+        if (config.maxFileTimeM > 0 && now.tv_sec - simpleThreadData[thread].fileAge[kind].tv_sec >= config.maxFileTimeM * 60) {
+            writer_simple_process_buf(thread, kind, 1);
+            continue;
+        }
+
+        // Last add must be 10 seconds ago and have more than pageSize bytes
+        if (now.tv_sec - simpleThreadData[thread].lastSave.tv_sec < 10)
+            continue;
+
+        // Don't force writes for gzip for now
+        if (compressionMode != ARKIME_COMPRESSION_GZIP) {
+            writer_simple_process_buf(thread, kind, 0);
+        }
+    }
+
+    // Nothing buffered anywhere, reset the time so we don't busy-check
+    if (!hasData) {
         simpleThreadData[thread].lastSave = now;
-        return;
-    }
-
-    if (config.maxFileTimeM > 0 && now.tv_sec - simpleThreadData[thread].fileAge.tv_sec >= config.maxFileTimeM * 60) {
-        writer_simple_process_buf(thread, 1);
-        return;
-    }
-
-    // Last add must be 10 seconds ago and have more than pageSize bytes
-    if (now.tv_sec - simpleThreadData[thread].lastSave.tv_sec < 10)
-        return;
-
-    // Don't force writes for gzip for now
-    if (compressionMode != ARKIME_COMPRESSION_GZIP) {
-        writer_simple_process_buf(thread, 0);
     }
 }
 /******************************************************************************/
@@ -1074,15 +1175,11 @@ void writer_simple_init(const char *name)
         g_free(mode);
     }
 
-    char *dekMode = arkime_config_str(NULL, "simpleDEKEncoding", "aes-192-cbc");
-    if (strcmp(dekMode, "aes-256-gcm") == 0) {
-        simpleDEKMode = ARKIME_DEK_AES256GCM;
-    } else if (strcmp(dekMode, "aes-192-cbc") == 0) {
-        simpleDEKMode = ARKIME_DEK_AES192CBC;
-        LOG("WARNING - simpleDEKEncoding aes-192-cbc is INSECURE, set simpleDEKEncoding=aes-256-gcm once all instances are upgraded to Arkime 6.2.0 or later");
-    } else {
-        CONFIGEXIT("Unknown simpleDEKEncoding '%s', must be 'aes-256-gcm' or 'aes-192-cbc'", dekMode);
-    }
+    // The DEK is always aes-256-gcm now. aes-256-gcm is still accepted since the
+    // old warning told people to set it; anything else would change behavior.
+    char *dekMode = arkime_config_str(NULL, "simpleDEKEncoding", NULL);
+    if (dekMode && strcmp(dekMode, "aes-256-gcm") != 0)
+        CONFIGEXIT("simpleDEKEncoding has been removed, the DEK is always encrypted with aes-256-gcm now.");
     g_free(dekMode);
 
     // Since we are doing direct IO must be a multiple of pagesize;
@@ -1138,7 +1235,9 @@ void writer_simple_init(const char *name)
 
     for (int thread = 0; thread < config.packetThreads; thread++) {
         simpleThreadData[thread].lastSave = now;
-        simpleThreadData[thread].fileAge = now;
+        for (int kind = 0; kind < ARKIME_SIMPLE_NUM_KINDS; kind++) {
+            simpleThreadData[thread].fileAge[kind] = now;
+        }
     }
 
     g_thread_unref(g_thread_new("arkime-simple", &writer_simple_thread, NULL));

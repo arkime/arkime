@@ -6,17 +6,14 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int esisMProtocol;
+LOCAL int mProtocolEsis;
 LOCAL int typeField;
 
 /******************************************************************************/
-LOCAL void esis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(packet))
+LOCAL void esis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 4;
-    sessionId[1] = esisMProtocol;
-    sessionId[2] = sessionId[3] = 0;
-
-    // lump all esis into the same session
+    // One session per talker pair instead of one session for everything
+    arkime_session_id_ether(sessionId, packet, 12);
 }
 /******************************************************************************/
 LOCAL int esis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -62,13 +59,17 @@ LOCAL ArkimePacketRC esis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
+    // Need src/dst MACs for the session id
+    if ((int)packet->pktlen - (int)packet->etherOffset < 12)
+        return ARKIME_PACKET_CORRUPT;
+
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
 
     esis_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = esisMProtocol;
+    packet->mProtocol = mProtocolEsis;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -76,8 +77,8 @@ LOCAL ArkimePacketRC esis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 void arkime_parser_init()
 {
     arkime_packet_set_ethernet_cb(0x890D, esis_packet_enqueue);
-    esisMProtocol = arkime_mprotocol_register("esis",
-                                              SESSION_OTHER,
+    mProtocolEsis = arkime_mprotocol_register("esis",
+                                              0,
                                               esis_create_sessionid,
                                               esis_pre_process,
                                               esis_process,

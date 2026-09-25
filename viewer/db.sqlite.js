@@ -124,8 +124,7 @@ class DbSQLiteImpl {
     hits = this.#filterShareables(hits, params);
     const total = hits.length;
 
-    // Sort by name ascending
-    this.#sortHits(hits, 'name', 'asc');
+    this.#sortHits(hits, params.sortField || 'name', params.sortOrder || 'asc');
 
     const from = params.from || 0;
     const size = params.size || 50;
@@ -264,8 +263,10 @@ class DbSQLiteImpl {
   }
 
   #filterShareables (hits, params) {
-    // Filter by type
-    hits = hits.filter(h => h.source.type === params.type);
+    // Filter by type, no type means every type the user can see
+    if (params.type) {
+      hits = hits.filter(h => h.source.type === params.type);
+    }
 
     // Filter by permissions
     hits = hits.filter(h => {
@@ -284,6 +285,12 @@ class DbSQLiteImpl {
 
       return false;
     });
+
+    if (params.searchTerm) {
+      const term = params.searchTerm.toLowerCase();
+      hits = hits.filter(h => ['name', 'description', 'type', 'creator']
+        .some(f => (h.source[f] || '').toLowerCase().includes(term)));
+    }
 
     return hits;
   }

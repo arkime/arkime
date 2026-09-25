@@ -1,57 +1,64 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
+  <div
+    class="d-flex flex-nowrap gap-1 align-start text-start"
     @keyup.stop.prevent.enter="exportPcapAction">
-    <BCol cols="auto">
-      <SegmentSelect v-model:segments="segments" />
-    </BCol>
+    <SegmentSelect v-model:segments="segments" />
 
-    <BCol
-      cols="auto"
-      class="flex-fill">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text">
-          {{ $t('sessions.exports.filename') }}
-        </span>
-        <b-form-input
-          autofocus
-          type="text"
-          :model-value="filename"
-          class="form-control"
-          :placeholder="$t('sessions.exports.filenamePlaceholder')"
-          @update:model-value="filename = $event" />
-      </div>
+    <div class="flex-fill">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        :model-value="filename"
+        :label="$t('sessions.exports.filename')"
+        :placeholder="$t('sessions.exports.filenamePlaceholder')"
+        @update:model-value="filename = $event" />
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
+        <v-btn
+          v-if="needsPcapng"
+          size="x-small"
+          variant="tonal"
+          class="ms-2"
+          @click="exportAsPcapng">
+          {{ $t('sessions.exports.exportPCAPNG') }}
+        </v-btn>
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
-      <button
-        class="btn btn-sm btn-theme-tertiary me-1"
-        @click="exportPcapAction"
-        type="button">
-        <span class="fa fa-paper-plane-o" />&nbsp;
-        {{ $t('sessions.exports.exportPCAP') }}
-      </button>
-      <button
+    <div class="d-flex gap-1">
+      <v-btn
+        size="large"
+        variant="flat"
+        :style="tertiaryBtnStyle"
+        @click="exportPcapAction">
+        <v-icon
+          icon="mdi-send-outline"
+          class="me-1" />
+        {{ format === 'pcapng' ? $t('sessions.exports.exportPCAPNG') : $t('sessions.exports.exportPCAP') }}
+      </v-btn>
+      <v-btn
+        size="large"
         id="cancelExportPcap"
-        class="btn btn-sm btn-warning"
+        color="warning"
+        variant="flat"
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        type="button">
-        <span class="fa fa-ban" />
-        <BTooltip target="cancelExportPcap">
+        @click="$emit('done', null, false, false)">
+        <v-icon icon="mdi-cancel" />
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
-      </button>
-    </BCol>
-  </BRow>
+        </v-tooltip>
+      </v-btn>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -84,6 +91,10 @@ const props = defineProps({
   numMatching: {
     type: Number,
     default: 0
+  },
+  format: {
+    type: String,
+    default: 'pcap' // pcap | pcapng, chosen from the export menu
   }
 });
 
@@ -92,8 +103,17 @@ const emit = defineEmits(['done']);
 
 // Reactive state
 const error = ref('');
+const needsPcapng = ref(false);
 const segments = ref('no');
-const filename = ref('sessions.pcap');
+// The chosen format can change locally when a pcap export is bumped to pcapng
+const format = ref(props.format === 'pcapng' ? 'pcapng' : 'pcap');
+const filename = ref(`sessions.${format.value}`);
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
+};
 
 // Access route
 const route = useRoute();
@@ -109,6 +129,7 @@ const exportPcapAction = async () => {
     start: props.start,
     applyTo: props.applyTo,
     filename: filename.value,
+    format: format.value,
     segments: segments.value,
     sessions: props.sessions,
     numVisible: props.numVisible,
@@ -120,6 +141,17 @@ const exportPcapAction = async () => {
     emit('done', resolveMessage(response, t), true, true); // Emit the done event with the response text
   } catch (err) {
     error.value = resolveMessage(err, t) || t('sessions.exports.unknownErr');
+    needsPcapng.value = err?.needsPcapng === true;
   }
+};
+
+const exportAsPcapng = () => {
+  format.value = 'pcapng';
+  error.value = '';
+  needsPcapng.value = false;
+  if (/\.pcapng?$/i.test(filename.value)) {
+    filename.value = filename.value.replace(/\.pcapng?$/i, '.pcapng');
+  }
+  exportPcapAction();
 };
 </script>

@@ -82,6 +82,7 @@ ArkimeConfig.loaded(() => {
 });
 
 const clients = {};
+const chImpls = {}; // optional per-node ClickHouse sessions backend
 let nodes = [];
 const clusters = {};
 const clusterList = [];
@@ -208,6 +209,26 @@ function node2ESBasicAuth (node) {
   return null;
 }
 
+// Parse `sessionsDbUrl:<full-url>` from a multiESNodes entry. Unlike the
+// other node2* parsers, the value can itself contain `:` (e.g. scheme +
+// port), so split on the first `:` only.
+function node2SessionsDbUrl (node) {
+  const parts = node.split(',');
+  for (let p = 1; p < parts.length; p++) {
+    const idx = parts[p].indexOf(':');
+    if (idx < 0) { continue; }
+    if (parts[p].substring(0, idx) === 'sessionsDbUrl') {
+      return parts[p].substring(idx + 1);
+    }
+  }
+  return null;
+}
+
+// True if the `:index` route segment refers to a sessions index.
+function isSessionsIndex (idx) {
+  return idx && /sessions3/.test(idx);
+}
+
 function getActiveNodes (clusterin) {
   if (clusterin) {
     if (!Array.isArray(clusterin)) {
@@ -290,7 +311,7 @@ function makeRequest (url, options, cb) {
   preq.end();
 }
 
-function simpleGather (req, res, bodies, doneCb) {
+function simpleGather (req, res, bodies, doneCb, preFetched) {
   let cluster = null;
   if (req.query.cluster) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
@@ -302,6 +323,23 @@ function simpleGather (req, res, bodies, doneCb) {
     return doneCb(true, [{}]);
   }
   async.map(activeNodes, (node, asyncCb) => {
+    if (preFetched && Object.prototype.hasOwnProperty.call(preFetched, node)) {
+      let result = preFetched[node];
+      // Apply the same prefix→MULTIPREFIX_ rewrite the HTTP path does
+      // (see makeRequest), so multi-cluster viewers see consistent
+      // _index values regardless of whether a backend is ES or CH.
+      const prefix = node2Prefix(node);
+      if (prefix && !req._skipReplace) {
+        try {
+          let s = JSON.stringify(result);
+          s = s.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
+          s = s.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+          result = JSON.parse(s);
+        } catch (e) { /* leave result untouched on error */ }
+      }
+      result.cluster = clusters[node];
+      return asyncCb(null, result);
+    }
     const nodeName = node2Name(node);
     let nodeUrl = node2Url(node) + req.url;
 
@@ -459,6 +497,37 @@ function simpleGatherAdd (req, res) {
 function simpleGatherFirst (req, res) {
   simpleGather(req, res, null, (err, results) => {
     res.send(results[0]);
+  });
+}
+
+// Count for sessions indices on CH-backed clusters: dispatch to db.ch.js
+// numberOfDocuments per node and let simpleGatherAdd sum the counts.
+function sessionsCount (req, res) {
+  const indexParam = req.params.index;
+  if (!isSessionsIndex(indexParam)) { return simpleGatherAdd(req, res); }
+  const cluster = req.query.cluster
+    ? (Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(','))
+    : null;
+  const activeNodes = getActiveNodes(cluster);
+  const preFetched = {};
+  async.each(activeNodes, (node, cb) => {
+    if (!chImpls[node]) { return cb(); }
+    chImpls[node].numberOfDocuments(indexParam, {})
+      .then((r) => { preFetched[node] = { count: Number(r.count || 0) }; cb(); })
+      .catch((err) => {
+        console.log(`multies CH _count failed for cluster '${node2Name(node)}':`, err.message);
+        preFetched[node] = { count: 0 };
+        cb();
+      });
+  }, () => {
+    simpleGather(req, res, null, (err, results) => {
+      const obj = results[0];
+      for (let i = 1; i < results.length; i++) {
+        shallowAdd(obj, results[i]);
+      }
+      obj.cluster_name = 'COMBINED';
+      res.send(obj);
+    }, preFetched);
   });
 }
 
@@ -677,6 +746,42 @@ app.get(['/:index/:type/_search', '/:index/_search'], (req, res) => {
 });
 
 app.get('/:index/:type/:id', function (req, res) {
+  if (isSessionsIndex(req.params.index)) {
+    const cluster = req.query.cluster
+      ? (Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(','))
+      : null;
+    const activeNodes = getActiveNodes(cluster);
+    const preFetched = {};
+    return async.each(activeNodes, (node, cb) => {
+      if (!chImpls[node]) { return cb(); }
+      chImpls[node].getSession(req.params.id, {})
+        .then((hit) => {
+          if (hit) {
+            preFetched[node] = { _id: hit._id, _index: hit._index, _source: hit._source, fields: hit.fields, found: true };
+          } else {
+            preFetched[node] = { _id: req.params.id, _index: req.params.index, found: false };
+          }
+          cb();
+        })
+        .catch((err) => {
+          console.log(`multies CH get failed for cluster '${node2Name(node)}':`, err.message);
+          preFetched[node] = { _id: req.params.id, found: false, error: err.message };
+          cb();
+        });
+    }, () => {
+      simpleGather(req, res, null, (err, results) => {
+        for (let i = 0; i < results.length; i++) {
+          if (results[i].found) {
+            if (results[i]._source) { results[i]._source.cluster = results[i].cluster; }
+            if (results[i].fields) { results[i].fields.cluster = results[i].cluster; }
+            return res.send(results[i]);
+          }
+        }
+        res.send(results[0]);
+      }, preFetched);
+    });
+  }
+
   simpleGather(req, res, null, (err, results) => {
     for (let i = 0; i < results.length; i++) {
       if (results[i].found) {
@@ -800,22 +905,76 @@ function agg2Obj (field, agg) {
   return obj;
 }
 
-function agg2Arr (agg, type) {
+// Metric aggregation operators we can merge across clusters. Anything else
+// (avg, percentiles, ...) can't be recombined from per-cluster results alone
+// and is summed, which is what this code has always done.
+const METRIC_OPS = ['sum', 'min', 'max', 'value_count', 'cardinality', 'avg'];
+
+/**
+ * The declared operator of each metric sub-aggregation of a bucket aggregation,
+ * eg { bytes: 'sum', packets: 'sum', first: 'min' }, so merging buckets across
+ * clusters can combine each sub-agg the way the query asked rather than
+ * assuming they are all sums. apiSessions writes sub-aggs under `aggs`, while
+ * apiStats and buildQuery use `aggregations`.
+ * @returns {object|undefined} operator by sub-agg name (undefined if none)
+ */
+function subAggOps (aggConfig) {
+  const subs = aggConfig?.aggs ?? aggConfig?.aggregations;
+  if (!subs) { return undefined; }
+  const ops = {};
+  for (const subName in subs) {
+    const op = METRIC_OPS.find(o => subs[subName]?.[o]);
+    if (op) { ops[subName] = op; }
+  }
+  return Object.keys(ops).length ? ops : undefined;
+}
+
+/** Combine two metric values per the aggregation's declared operator. */
+function mergeMetric (op, v1, v2) {
+  if (op === 'min') { return Math.min(v1, v2); }
+  if (op === 'max') { return Math.max(v1, v2); }
+  return v1 + v2;
+}
+
+function agg2Arr (agg, type, order) {
   let arr = [];
   for (const attrname in agg) {
     arr.push(agg[attrname]);
   }
 
   if (type === 'histogram') {
-    arr = arr.sort((a, b) => { return a.key - b.key; });
-  } else {
-    arr = arr.sort((a, b) => {
-      if (b.doc_count !== a.doc_count) {
-        return b.doc_count - a.doc_count;
-      }
-      return a.key - b.key;
-    });
+    return arr.sort((a, b) => { return a.key - b.key; });
   }
+
+  // terms: honor the order the query asked for (_count, _key or a metric
+  // sub-agg's sum), matching what a single cluster returns; the ES default
+  // is doc_count descending
+  const orderKey = order ? Object.keys(order)[0] : '_count';
+  const dir = order && order[orderKey] === 'asc' ? 1 : -1;
+  const orderValue = (bucket) => {
+    if (orderKey === '_count') { return bucket.doc_count; }
+    if (orderKey === '_key') { return bucket.key; }
+    return bucket[orderKey]?.value ?? 0;
+  };
+  arr = arr.sort((a, b) => {
+    const av = orderValue(a);
+    const bv = orderValue(b);
+    if (av !== bv) {
+      if (typeof av === 'string' || typeof bv === 'string') {
+        return dir * String(av).localeCompare(String(bv));
+      }
+      return dir * (av - bv);
+    }
+    // ES breaks ties on the key, ascending, in the field's own term order.
+    // Numeric keys we can reproduce. For string keys the right order depends
+    // on the field type (an ip field orders numerically, a keyword field
+    // lexicographically) and isn't recoverable from a response, so keep the
+    // order the buckets were merged in — imposing one would disagree with what
+    // a single cluster returns. Returning 0 rather than subtracting strings
+    // (which yielded NaN) keeps the comparator consistent and the sort stable.
+    if (typeof a.key === 'number' && typeof b.key === 'number') { return a.key - b.key; }
+    return 0;
+  });
   return arr;
 }
 
@@ -844,15 +1003,19 @@ function aggConvert2Arr (aggs) {
       // Recursively convert nested aggregations within the filter
       for (const nestedAgg in aggs[aggname]) {
         if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
-          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type);
+          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type, aggs[aggname][nestedAgg]._order);
           delete aggs[aggname][nestedAgg]._type;
+          delete aggs[aggname][nestedAgg]._order;
+          delete aggs[aggname][nestedAgg]._subAggs;
         }
       }
     }
     // Handle standard bucket aggregations
     else if (aggs[aggname].buckets) {
-      aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
+      aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type, aggs[aggname]._order);
       delete aggs[aggname]._type;
+      delete aggs[aggname]._order;
+      delete aggs[aggname]._subAggs;
     }
   }
 }
@@ -919,9 +1082,17 @@ function aggAdd (obj1, obj2) {
           const o2 = obj2[aggname].buckets[entry];
 
           o1.doc_count += o2.doc_count;
-          if (o1.db) {
-            o1.db.value += o2.db.value;
-            o1.pa.value += o2.pa.value;
+          // merge metric sub-aggs (the timeline's source.bytes/client.bytes, the
+          // summary widgets' bytes/packets/mN, /api/stats' first, ...) each per
+          // the operator its query declared, defaulting to sum
+          const subOps = obj1[aggname]._subAggs;
+          for (const sub in o2) {
+            if (o2[sub] === null || typeof o2[sub] !== 'object' || typeof o2[sub].value !== 'number') { continue; }
+            if (o1[sub] === undefined) {
+              o1[sub] = o2[sub];
+            } else if (typeof o1[sub].value === 'number') {
+              o1[sub].value = mergeMetric(subOps?.[sub], o1[sub].value, o2[sub].value);
+            }
           }
         }
       }
@@ -1089,16 +1260,16 @@ function newResult (search) {
           const nestedAggs = aggConfig.aggs || aggConfig.aggregations;
           for (const nestedAgg in nestedAggs) {
             if (nestedAggs[nestedAgg].histogram) {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
             } else {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', _order: nestedAggs[nestedAgg].terms?.order, _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
             }
           }
         }
       } else if (aggConfig.histogram) {
-        result.aggregations[agg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+        result.aggregations[agg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       } else {
-        result.aggregations[agg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+        result.aggregations[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       }
     }
   }
@@ -1155,6 +1326,7 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
 
 app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   const bodies = {};
+  const preFetched = {};
   let search;
   try {
     search = JSON.parse(req.body);
@@ -1177,10 +1349,25 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
   }
 
+  const indexParam = req.params.index;
+  const sessionsRoute = isSessionsIndex(indexParam);
   const activeNodes = getActiveNodes(cluster);
   async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {
       // console.log("DEBUG - OUTGOING SEARCH", node, JSON.stringify(body, null, 2));
+      if (chImpls[node] && sessionsRoute) {
+        chImpls[node].searchSessions(indexParam, body, {})
+          .then((result) => {
+            preFetched[node] = result;
+            asyncCb(null);
+          })
+          .catch((err) => {
+            console.log(`multies CH search failed for cluster '${node2Name(node)}':`, err.message);
+            preFetched[node] = { hits: { total: 0, hits: [] }, error: err.message };
+            asyncCb(null);
+          });
+        return;
+      }
       bodies[node] = JSON.stringify(body);
       asyncCb(null);
     });
@@ -1203,15 +1390,44 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
       sortResultsAndTruncate(search, obj);
 
       res.send(obj);
-    });
+    }, preFetched);
   });
 });
 
 function msearch (req, res) {
   const lines = req.body.split(/[\r\n]/);
   const bodies = {};
+  const preFetched = {};
   const activeNodes = getActiveNodes();
   async.each(activeNodes, (node, nodeCb) => {
+    if (chImpls[node]) {
+      const pairs = []; // {header, query}
+      let allSessions = true;
+      for (let i = 0; i + 1 < lines.length; i += 2) {
+        if (lines[i] === '' && lines[i + 1] === '') { continue; }
+        let header;
+        try { header = lines[i] === '{}' || lines[i] === '' ? {} : JSON.parse(lines[i]); } catch (e) { allSessions = false; break; }
+        const idx = Array.isArray(header.index) ? header.index[0] : header.index;
+        if (!isSessionsIndex(idx)) { allSessions = false; break; }
+        pairs.push({ header, query: lines[i + 1] });
+      }
+      if (allSessions && pairs.length) {
+        return Promise.all(pairs.map((pair) => new Promise((resolve) => {
+          fixQuery(node, pair.query, (err, fixed) => {
+            const idx = Array.isArray(pair.header.index) ? pair.header.index[0] : pair.header.index;
+            chImpls[node].searchSessions(idx, fixed, {})
+              .then(resolve)
+              .catch((err2) => {
+                console.log(`multies CH msearch failed for cluster '${node2Name(node)}':`, err2.message);
+                resolve({ hits: { total: 0, hits: [] }, error: err2.message });
+              });
+          });
+        }))).then((responses) => {
+          preFetched[node] = { responses };
+          nodeCb();
+        });
+      }
+    }
     const nlines = [];
     async.eachSeries(lines, (line, lineCb) => {
       if (line === '{}' || line === '') {
@@ -1250,7 +1466,7 @@ function msearch (req, res) {
       }
 
       res.send(obj);
-    });
+    }, preFetched);
   });
 }
 
@@ -1269,6 +1485,17 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     const prefix = node2Prefix(node);
     const index = req.params.index.replace(/MULTIPREFIX_/g, prefix).replace(/arkime_sessions2/g, 'sessions2');
     const id = req.params.id;
+
+    if (chImpls[node] && isSessionsIndex(req.params.index)) {
+      try {
+        const result = await chImpls[node].updateSession(index, id, body);
+        return res.send(result);
+      } catch (err) {
+        console.log('ERROR - CH /%s/%s/%s/_update', ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.id), err);
+        return res.send({});
+      }
+    }
+
     const params = {
       retry_on_conflict: 3,
       index,
@@ -1295,10 +1522,10 @@ app.post(['/:index/history', '/*history*/_doc'], simpleGatherFirst);
 app.post('/:index/:type/_msearch', msearch);
 app.post('/_msearch', msearch);
 
-app.get('/:index/_count', simpleGatherAdd);
-app.post('/:index/_count', simpleGatherAdd);
-app.get('/:index/:type/_count', simpleGatherAdd);
-app.post('/:index/:type/_count', simpleGatherAdd);
+app.get('/:index/_count', sessionsCount);
+app.post('/:index/_count', sessionsCount);
+app.get('/:index/:type/_count', sessionsCount);
+app.post('/:index/:type/_count', sessionsCount);
 
 app.post('/_cache/clear', simpleGather1Cluster);
 app.post('/_cluster/reroute', simpleGather1Cluster);
@@ -1430,6 +1657,18 @@ async function premain () {
     }
 
     clients[node] = new Client(esClientOptions);
+
+    const chUrl = node2SessionsDbUrl(node);
+    if (chUrl) {
+      try {
+        const DbCHImpl = require('./db.ch.js');
+        chImpls[node] = new DbCHImpl({ sessionsDbUrl: chUrl, prefix: node2Prefix(node) });
+        console.log(`multies: ClickHouse sessions backend for cluster '${nodeName}' -> ${chUrl}`);
+      } catch (err) {
+        console.log(`multies: failed to create ClickHouse backend for cluster '${nodeName}':`, err.message);
+        process.exit(1);
+      }
+    }
   }
 
   // Now check version numbers

@@ -9,6 +9,7 @@ import vue from '@vitejs/plugin-vue';
 import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
+import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -28,12 +29,14 @@ export default defineConfig({
       styles: {
         configFile: 'cont3xt/vueapp/src/vuetify-settings.scss'
       }
-    })
+    }),
+    thirdPartyLicenses({ file: fileURLToPath(new URL('./third-party-licenses.json', import.meta.url)) })
   ],
   resolve: {
     alias: {
-      '@common': fileURLToPath(new URL('../common/vueapp', import.meta.url)),
-      '@real_common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
+      // Point at the SHARED common/vueapp (repo root) -- cont3xt no longer
+      // ships its own duplicate copy under cont3xt/common/vueapp.
+      '@common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       vue: fileURLToPath(new URL('../../node_modules/vue', import.meta.url))
     }

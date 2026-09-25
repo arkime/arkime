@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev7" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "dev7" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -153,7 +153,6 @@ jobs:
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
-          ${{ matrix.npmgcc }}
           INSTALL_BUNDLE=bundle make install
 
       - name: lint
@@ -175,6 +174,7 @@ jobs:
           cat /tmp/os
           curl http://localhost:9200/_cat/health
           free -h || true
+          npm run test:unit
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
 
       - name: viewer test arkimedb
@@ -193,6 +193,28 @@ jobs:
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
           head /tmp/arkimedb.log
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: viewer test clickhouse
+        if: ${{ matrix.viewertest == 'clickhouse' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+          curl -fsSL -o /usr/local/bin/arkimedb "https://github.com/arkime/arkime-testdb/releases/latest/download/arkimedb-linux-${arch}"
+          chmod +x /usr/local/bin/arkimedb
+          mkdir -p /tmp/arkimedb-data
+          arkimedb serve --data-dir /tmp/arkimedb-data --port 9200 > /tmp/arkimedb.log 2>&1 &
+          curl -fsSL https://clickhouse.com/ | sh
+          mv clickhouse /usr/local/bin/clickhouse
+          mkdir -p /tmp/clickhouse-data
+          (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && curl -fsS http://localhost:9200/ >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
+          curl -fsS http://localhost:9100/ping || (tail -50 /tmp/clickhouse.log; exit 1)
+          clickhouse client --query "SELECT version()"
+          (cd tests ; G_SLICE=always-malloc ./tests_ch.sh --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}
@@ -236,7 +258,7 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
+          (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)
@@ -245,7 +267,7 @@ jobs:
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
-        if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
+        if: ${{ matrix.version == 'el9.x86_64' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           rm -rf /data/moloch; mkdir -p /data
@@ -305,8 +327,9 @@ jobs:
         if: ${{ matrix.notice }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
-          ls -l NOT*
+          (npm install license-checker; release/notice.txt.pl /opt/arkime release/NOTICEHEADER release/CAPTURENOTICE release/VIEWERNOTICE > NOTICE.txt)
+          release/sbom.mjs > arkime-sbom.cdx.json
+          ls -l NOT* arkime-sbom*
 
       - name: upload github
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
@@ -322,6 +345,7 @@ jobs:
             *.rpm
             *.zst
             NOTICE.txt
+            arkime-sbom.cdx.json
 
       - name: tag last-commit
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
@@ -408,7 +432,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar pcre2 python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime
@@ -423,7 +447,7 @@ jobs:
             ls -l *.pkg
 
             if [ "${{ matrix.ja4plus }}" = "true" ]; then
-              (cd .. ; git clone https://github.com/arkime/ja4)
+              (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so

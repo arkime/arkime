@@ -9,6 +9,11 @@ const ArkimeConfig = require('../../../common/arkimeConfig');
 const ArkimeUtil = require('../../../common/arkimeUtil');
 const { Client } = require('@elastic/elasticsearch');
 
+ArkimeConfig.registerSettings({
+  apiKey: { secret: true },
+  basicAuth: { secret: true }
+});
+
 class ElasticsearchIntegration extends Integration {
   // Integration Items
   name;

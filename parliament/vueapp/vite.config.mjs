@@ -1,21 +1,20 @@
 // NOTE: vueapp/build/** & vueapp/config/** currently unused - we may want to add back in check-versions.js?
 
 import { fileURLToPath } from 'node:url';
-import inject from '@rollup/plugin-inject';
 
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import Components from 'unplugin-vue-components/vite';
-import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
+import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
+import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
     port: 5175,
-    strictPort: true, // fail if port is already in use
+    strictPort: true // fail if port is already in use
   },
   root: fileURLToPath(new URL('../../', import.meta.url)), // routing back to top-level allows us to use files from the other directories (eg. top-level common)
   define: {
@@ -24,9 +23,8 @@ export default defineConfig({
   },
   plugins: [
     vue({}),
-    Components({
-      resolvers: [BootstrapVueNextResolver()],
-    })
+    Vuetify({ treeShake: true }),
+    thirdPartyLicenses({ file: fileURLToPath(new URL('./third-party-licenses.json', import.meta.url)) })
   ],
   resolve: {
     alias: {

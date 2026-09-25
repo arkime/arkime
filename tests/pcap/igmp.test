@@ -10,12 +10,9 @@
      "bytes" : 0,
      "ip" : "224.0.0.22",
      "mac" : [
-      "01:00:5e:00:00:16",
-      "01:00:5e:01:01:01",
-      "01:00:5e:02:02:02",
-      "01:00:5e:03:03:03"
+      "01:00:5e:00:00:16"
      ],
-     "mac-cnt" : 4,
+     "mac-cnt" : 1,
      "packets" : 0,
      "port" : 0
     },
@@ -23,77 +20,665 @@
     "fileId" : [],
     "firstPacket" : 1571745677855,
     "ipProtocol" : 2,
-    "lastPacket" : 1571746105265,
-    "length" : 427410,
+    "lastPacket" : 1571745708881,
+    "length" : 31026,
     "network" : {
-     "bytes" : 1590,
-     "packets" : 29
+     "bytes" : 490,
+     "packets" : 7
     },
     "node" : "test",
     "packetLen" : [
      86,
      86,
      86,
-     66,
-     66,
-     66,
-     86,
-     66,
-     66,
-     66,
-     66,
-     66,
-     66,
      86,
      86,
-     66,
-     66,
-     66,
      86,
+     86
+    ],
+    "packetPos" : [
+     24,
+     110,
+     196,
+     480,
+     962,
+     1048,
+     1332
+    ],
+    "packetRange" : {
+     "gte" : 1571745677855,
+     "lte" : 1571745708881
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 490,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.100",
+     "mac" : [
+      "08:00:27:30:c5:75"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.1.1.1",
+     "mac" : [
+      "01:00:5e:01:01:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745678388,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571745680288,
+    "length" : 1900,
+    "network" : {
+     "bytes" : 150,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
      66,
      66,
+     66
+    ],
+    "packetPos" : [
+     282,
+     566,
+     764
+    ],
+    "packetRange" : {
+     "gte" : 1571745678388,
+     "lte" : 1571745680288
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 150,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.1",
+     "mac" : [
+      "08:00:27:a5:d7:eb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.2.2.2",
+     "mac" : [
+      "01:00:5e:02:02:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745678388,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571745680288,
+    "length" : 1900,
+    "network" : {
+     "bytes" : 150,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
      66,
      66,
+     66
+    ],
+    "packetPos" : [
+     414,
+     698,
+     896
+    ],
+    "packetRange" : {
+     "gte" : 1571745678388,
+     "lte" : 1571745680288
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 150,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.1",
+     "mac" : [
+      "08:00:27:a5:d7:eb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.3.3.3",
+     "mac" : [
+      "01:00:5e:03:03:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745678388,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571745680288,
+    "length" : 1900,
+    "network" : {
+     "bytes" : 150,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
      66,
      66,
+     66
+    ],
+    "packetPos" : [
+     348,
+     632,
+     830
+    ],
+    "packetRange" : {
+     "gte" : 1571745678388,
+     "lte" : 1571745680288
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 150,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.1",
+     "mac" : [
+      "08:00:27:a5:d7:eb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.5.1.1",
+     "mac" : [
+      "01:00:5e:05:01:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745708388,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571745709888,
+    "length" : 1500,
+    "network" : {
+     "bytes" : 150,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     66,
+     66,
+     66
+    ],
+    "packetPos" : [
+     1134,
+     1418,
+     1616
+    ],
+    "packetRange" : {
+     "gte" : 1571745708388,
+     "lte" : 1571745709888
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 150,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.1",
+     "mac" : [
+      "08:00:27:a5:d7:eb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.6.2.2",
+     "mac" : [
+      "01:00:5e:06:02:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745708388,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571745709888,
+    "length" : 1500,
+    "network" : {
+     "bytes" : 150,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     66,
+     66,
+     66
+    ],
+    "packetPos" : [
+     1266,
+     1550,
+     1748
+    ],
+    "packetRange" : {
+     "gte" : 1571745708388,
+     "lte" : 1571745709888
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 150,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.1",
+     "mac" : [
+      "08:00:27:a5:d7:eb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "239.7.3.3",
+     "mac" : [
+      "01:00:5e:07:03:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745708388,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571745709888,
+    "length" : 1500,
+    "network" : {
+     "bytes" : 150,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     66,
+     66,
+     66
+    ],
+    "packetPos" : [
+     1200,
+     1484,
+     1682
+    ],
+    "packetRange" : {
+     "gte" : 1571745708388,
+     "lte" : 1571745709888
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 150,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.1",
+     "mac" : [
+      "08:00:27:a5:d7:eb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-19m10"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.1",
+     "mac" : [
+      "01:00:5e:00:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571745729389,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571746105265,
+    "length" : 375876,
+    "network" : {
+     "bytes" : 200,
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
      66,
      66,
      66,
      66
     ],
     "packetPos" : [
-     24,
-     110,
-     196,
-     282,
-     348,
-     414,
-     480,
-     566,
-     632,
-     698,
-     764,
-     830,
-     896,
-     962,
-     1048,
-     1134,
-     1200,
-     1266,
-     1332,
-     1418,
-     1484,
-     1550,
-     1616,
-     1682,
-     1748,
      1814,
      1880,
      1946,
      2012
     ],
     "packetRange" : {
-     "gte" : 1571745677855,
+     "gte" : 1571745729389,
      "lte" : 1571746105265
     },
     "protocol" : [
@@ -112,17 +697,16 @@
        "name" : "Microsoft Corporation"
       }
      },
-     "bytes" : 1590,
+     "bytes" : 200,
      "geo" : {
       "country_iso_code" : "US"
      },
-     "ip" : "20.0.1.100",
+     "ip" : "20.0.1.1",
      "mac" : [
-      "08:00:27:30:c5:75",
       "08:00:27:a5:d7:eb"
      ],
-     "mac-cnt" : 2,
-     "packets" : 29,
+     "mac-cnt" : 1,
+     "packets" : 4,
      "port" : 0
     },
     "srcDscp" : [

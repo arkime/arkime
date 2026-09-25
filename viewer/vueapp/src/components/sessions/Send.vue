@@ -3,79 +3,77 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
+  <div
+    class="d-flex flex-nowrap gap-1 align-start text-start"
     @keyup.stop.prevent.enter="sendAction">
-    <BCol cols="auto">
-      <SegmentSelect v-model:segments="segments" />
-    </BCol>
+    <SegmentSelect v-model:segments="segments" />
 
-    <BCol
-      cols="auto"
-      class="flex-fill">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text">
-          {{ $t('sessions.tags') }}
-        </span>
-        <input
-          autofocus
-          type="text"
-          v-model="tags"
-          class="form-control"
-          :placeholder="$t('sessions.tagsPlaceholder')">
-      </div>
+    <div class="flex-fill">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        v-model="tags"
+        :label="$t('sessions.tags')"
+        :placeholder="$t('sessions.tagsPlaceholder')" />
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
-      <button
-        type="button"
-        @click="sendAction"
-        :title="$t('sessions.send.send')"
-        :class="{'disabled':loading}"
-        class="btn btn-sm btn-theme-tertiary me-1">
+    <div class="d-flex gap-1">
+      <v-btn
+        size="large"
+        variant="flat"
+        :style="tertiaryBtnStyle"
+        :disabled="loading"
+        @click="sendAction">
         <span v-if="!loading">
-          <span class="fa fa-paper-plane-o" />&nbsp;
+          <v-icon
+            icon="mdi-send-outline"
+            class="me-1" />
           {{ $t('sessions.send.send') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <v-icon
+            icon="mdi-loading"
+            class="mdi-spin me-1" />
           {{ $t('common.sending') }}
         </span>
-      </button>
-      <button
-        type="button"
+      </v-btn>
+      <v-btn
+        size="large"
         id="cancelSendBtn"
+        color="warning"
+        variant="flat"
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        class="btn btn-sm btn-warning">
-        <span class="fa fa-ban" />
-        <BTooltip target="cancelSendBtn">
+        @click="$emit('done', null, false, false)">
+        <v-icon icon="mdi-cancel" />
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
-      </button>
-    </BCol>
-  </BRow>
+        </v-tooltip>
+      </v-btn>
+    </div>
+  </div>
 
-  <div class="row mt-2">
-    <div class="col">
+  <v-row class="mt-2">
+    <v-col cols="auto">
       <p class="text-info small mb-0">
         <em>
           <strong>
-            <span class="fa fa-info-circle me-2" />
+            <v-icon
+              icon="mdi-information"
+              class="me-2" />
             {{ $t('sessions.send.info') }}
           </strong>
         </em>
       </p>
-    </div>
-  </div>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
@@ -123,6 +121,12 @@ const error = ref('');
 const loading = ref(false);
 const segments = ref('no');
 const tags = ref(''); // This is named 'tags' but might be used for other purposes in send context or just for consistency
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
+};
 
 // Access route
 const route = useRoute();

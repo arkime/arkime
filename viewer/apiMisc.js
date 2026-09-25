@@ -179,6 +179,7 @@ class MiscAPIs {
     }`
     };
     actions.reverseDNS = { category: 'ip', name: 'Get Reverse DNS', url: 'api/reversedns?ip=%TEXT%', actionType: 'fetch' };
+    actions.featherprintLookup = { category: 'ip', name: 'Featherprint Lookup', url: 'featherprint/lookup?ip=%TEXT%&%DATE%' };
     actions.bodyHashMd5 = { category: 'md5', url: 'api/session/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
     actions.bodyHashSha256 = { category: 'sha256', url: 'api/session/%NODE%/%ID%/bodyHash/%TEXT%', name: 'Download File' };
 

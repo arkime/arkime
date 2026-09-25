@@ -42,7 +42,6 @@ LOCAL pthread_t        mainThread;
 ArkimeThreadData_t     arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
-extern ArkimePcapFileHdr_t     pcapFileHeader;
 
 ARKIME_LOCK_DEFINE(LOG);
 
@@ -175,6 +174,8 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
+    extern int magic_version(void);
+    extern const char *OpenSSL_version(int);
 
     char buf[1024];
     BSB  bsb;
@@ -186,11 +187,9 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     BSB_EXPORT_sprintf(bsb, "curl: %s\n", curl_version());
     BSB_EXPORT_sprintf(bsb, "glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
     BSB_EXPORT_sprintf(bsb, "libpcap: %s\n", pcap_lib_version());
+    BSB_EXPORT_sprintf(bsb, "magic: %d.%02d\n", magic_version() / 100, magic_version() % 100);
     BSB_EXPORT_sprintf(bsb, "maxminddb: %s\n", MMDB_lib_version());
-#ifdef HAVE_LIBPCRE
-    extern char *pcre_version(void);
-    BSB_EXPORT_sprintf(bsb, "pcre: %s\n", pcre_version());
-#endif
+    BSB_EXPORT_sprintf(bsb, "openssl: %s\n", OpenSSL_version(0));
     BSB_EXPORT_sprintf(bsb, "yaml: %s\n", yaml_get_version_string());
     BSB_EXPORT_sprintf(bsb, "yara: %s\n", arkime_yara_version());
     BSB_EXPORT_sprintf(bsb, "zlib: %s\n", zlibVersion());
@@ -206,6 +205,11 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     const char *Py_GetVersion();
     BSB_EXPORT_sprintf(bsb, "python: %s\n", Py_GetVersion());
 #endif
+#ifdef HAVE_LIBXDP
+    // libxdp has no runtime version call, this is what capture was built against
+    BSB_EXPORT_sprintf(bsb, "libxdp: %s\n", LIBXDP_VERSION);
+#endif
+    BSB_EXPORT_sprintf(bsb, "compiler: %s\n", __VERSION__);
 
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
@@ -221,10 +225,11 @@ LOCAL void parse_args(int argc, char **argv)
     GOptionContext *context;
 
     extern char *curl_version(void);
+    extern int magic_version(void);
+    extern const char *OpenSSL_version(int);
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
-    //extern int magic_version(void);
 
     context = g_option_context_new("- capture");
     g_option_context_add_main_entries(context, entries, NULL);
@@ -250,13 +255,9 @@ LOCAL void parse_args(int argc, char **argv)
         printf("curl: %s\n", curl_version());
         printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
         printf("libpcap: %s\n", pcap_lib_version());
-        //printf("magic: %d\n", magic_version());
+        printf("magic: %d.%02d\n", magic_version() / 100, magic_version() % 100);
         printf("maxminddb: %s\n", MMDB_lib_version());
-        //printf("openssl: %s\n", OpenSSL_version(0));
-#ifdef HAVE_LIBPCRE
-        extern char *pcre_version(void);
-        printf("pcre: %s\n", pcre_version());
-#endif
+        printf("openssl: %s\n", OpenSSL_version(0));
         printf("yaml: %s\n", yaml_get_version_string());
         printf("yara: %s\n", arkime_yara_version());
         printf("zlib: %s\n", zlibVersion());
@@ -272,6 +273,11 @@ LOCAL void parse_args(int argc, char **argv)
         const char *Py_GetVersion();
         printf("python: %s\n", Py_GetVersion());
 #endif
+#ifdef HAVE_LIBXDP
+        // libxdp has no runtime version call, this is what capture was built against
+        printf("libxdp: %s\n", LIBXDP_VERSION);
+#endif
+        printf("compiler: %s\n", __VERSION__);
 
         exit(0);
     }
@@ -924,8 +930,8 @@ LOCAL gboolean arkime_ready_gfunc(gpointer UNUSED(user_data))
     }
     arkime_command_start();
     arkime_readers_start();
-    if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
-        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_dltsnap");
+    if (!config.pcapReadOffline && fileInfo[0].numInterfaces == 0)
+        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_interface");
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
@@ -1149,7 +1155,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
-    pcapFileHeader.dlt = DLT_EN10MB;
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
     arkime_hex_init();
@@ -1173,6 +1179,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_reader_scheme_register("fuzz", NULL, NULL);
     return 0;
@@ -1210,7 +1218,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
-    pcapFileHeader.dlt = DLT_EN10MB;
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
     arkime_hex_init();
@@ -1234,6 +1242,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
     return 0;
@@ -1344,6 +1354,8 @@ int main(int argc, char **argv)
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);
 

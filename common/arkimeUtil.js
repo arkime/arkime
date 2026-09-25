@@ -609,7 +609,8 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Check the Arkime Schema Version
+   * Check the Arkime Schema Version and return it. With minVersion it is a
+   * fatal startup check; without, failures just return undefined.
    */
   static async checkArkimeSchemaVersion (esClient, prefix, minVersion) {
     prefix = ArkimeUtil.formatPrefix(prefix);
@@ -623,18 +624,21 @@ class ArkimeUtil {
       try {
         const molochDbVersion = doc[`${prefix}sessions3_template`].mappings._meta.molochDbVersion;
 
-        if (molochDbVersion < minVersion) {
+        if (minVersion !== undefined && molochDbVersion < minVersion) {
           console.log(`ERROR - Current database version (${molochDbVersion}) is less than required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
           if (doc._node) {
             console.log(`On node ${doc._node}`);
           }
           process.exit(1);
         }
+        return molochDbVersion;
       } catch (e) {
+        if (minVersion === undefined) { return undefined; }
         console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
         process.exit(1);
       }
     } catch (err) {
+      if (minVersion === undefined) { return undefined; }
       console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
       process.exit(1);
     }
@@ -761,6 +765,40 @@ class ArkimeUtil {
     }
 
     return prefix + '_';
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Resolve the client side update check settings.
+   *
+   * Returns mode 'off' unless both settings are valid, so a typo fails closed
+   * rather than silently enabling off-origin requests. The origin is handed to
+   * CSP connect-src, which is what actually permits the browser to make them.
+   *
+   * @param {function} get a config getter, eg Config.get or ArkimeConfig.get
+   * @returns {object} { mode, url, origin }
+   */
+  static updateCheckConfig (get) {
+    const off = { mode: 'off', url: '', origin: undefined };
+
+    const mode = get('checkForUpdates', 'manual');
+    if (mode === 'off' || mode === false || mode === 'false') { return off; }
+
+    if (mode !== 'manual' && mode !== 'auto') {
+      console.log(`WARNING - unknown checkForUpdates value '${mode}', disabling update checks (expected off, manual, or auto)`);
+      return off;
+    }
+
+    const url = get('updateCheckUrl', 'https://versions.arkime.com');
+
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') { throw new Error('bad protocol'); }
+      return { mode, url, origin: parsed.origin };
+    } catch (err) {
+      console.log(`WARNING - invalid updateCheckUrl '${url}', disabling update checks`);
+      return off;
+    }
   }
 
   // ----------------------------------------------------------------------------
