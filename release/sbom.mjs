@@ -68,6 +68,10 @@ const rootDeps = new Set();
 function addComponent (c) {
   const existing = components.get(c['bom-ref']);
   if (!existing) { components.set(c['bom-ref'], c); return c; }
+  // another source may know things the first did not
+  for (const f of ['licenses', 'hashes', 'externalReferences']) {
+    if (existing[f] === undefined && c[f] !== undefined) { existing[f] = c[f]; }
+  }
   // merge properties from another source
   for (const p of c.properties ?? []) {
     existing.properties ??= [];
@@ -82,8 +86,46 @@ function addEdge (from, to) {
   dependsOn.get(from).add(to);
 }
 
+// the lock only carries a license when npm freshly resolved the package from the
+// registry, so fall back to the installed package.json (present after make install)
+function packageLicense (dir) {
+  let pkg;
+  try { pkg = readJson(path.join(dir, 'package.json')); } catch { return undefined; }
+  if (typeof pkg.license === 'string' && !/^(UNKNOWN|SEE LICENSE IN)/i.test(pkg.license)) { return pkg.license; }
+  if (pkg.license?.type) { return pkg.license.type; }
+  if (Array.isArray(pkg.licenses)) {
+    const types = pkg.licenses.map(l => typeof l === 'string' ? l : l.type).filter(Boolean);
+    return types.length > 1 ? `(${types.join(' OR ')})` : types[0];
+  }
+  return licenseFileId(dir);
+}
+
+// last resort: recognise the common license texts
+function licenseFileId (dir) {
+  let names;
+  try { names = fs.readdirSync(dir); } catch { return undefined; }
+  const file = names.find(n => /^(licen[cs]e|copying)/i.test(n));
+  if (!file) { return undefined; }
+  let text;
+  try { text = fs.readFileSync(path.join(dir, file), 'utf8'); } catch { return undefined; }
+  return licenseFromText(text);
+}
+
+function licenseFromText (text) {
+  if (!text) { return undefined; }
+  text = text.slice(0, 2000);
+  if (/Apache License,?\s+Version 2\.0/i.test(text)) { return 'Apache-2.0'; }
+  if (/Permission is hereby granted, free of charge/i.test(text)) { return 'MIT'; }
+  if (/Permission to use, copy, modify, and\/or distribute this software for any purpose/i.test(text)) { return 'ISC'; }
+  if (/Redistribution and use in source and binary forms/i.test(text)) {
+    return /Neither the name|may not be used to endorse/i.test(text) ? 'BSD-3-Clause' : 'BSD-2-Clause';
+  }
+  return undefined;
+}
+
 function lockGraph (lockFile, label) {
   const lock = readJson(lockFile);
+  const lockDir = path.dirname(lockFile);
   const pk = lock.packages;
   const root = pk[''];
 
@@ -107,13 +149,15 @@ function lockGraph (lockFile, label) {
     const name = e.name ?? key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length);
     const ref = purlNpm(name, e.version);
     refOf.set(key, ref);
+    let lic = e.license;
+    if (!lic || /^(UNKNOWN|SEE LICENSE IN)/i.test(lic)) { lic = packageLicense(path.join(lockDir, key)) ?? licenseFileId(path.join(lockDir, key)) ?? lic; }
     const c = {
       type: 'library',
       'bom-ref': ref,
       name,
       version: e.version,
       purl: ref,
-      licenses: licenses(e.license),
+      licenses: licenses(lic),
       hashes: hashes(e.integrity),
       externalReferences: e.resolved ? [{ type: 'distribution', url: e.resolved }] : undefined,
       properties: [{ name: 'arkime:lockfile', value: label }]
@@ -157,13 +201,15 @@ for (const app of APPS) {
   }
   for (const d of readJson(file)) {
     const ref = purlNpm(d.name, d.version);
+    let lic = d.license;
+    if (!lic || /^(UNKNOWN|SEE LICENSE IN)/i.test(lic)) { lic = licenseFromText(d.licenseText) ?? lic; }
     addComponent({
       type: 'library',
       'bom-ref': ref,
       name: d.name,
       version: d.version,
       purl: ref,
-      licenses: licenses(d.license),
+      licenses: licenses(lic),
       externalReferences: d.repository ? [{ type: 'vcs', url: d.repository }] : undefined,
       properties: [{ name: 'arkime:bundled-into', value: app }]
     });
