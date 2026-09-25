@@ -205,6 +205,42 @@ const MISP_ATTRIBUTES = [{
   value: 'https://mini-misp.example.com/evil/path',
   timestamp: '1700000004',
   Event: { id: '42', info: 'Mini MISP Event', threat_level_id: '1', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '6',
+  event_id: '44',
+  type: 'url',
+  category: 'Network activity',
+  to_ids: true,
+  value: 'https://MINI-MISP.example.com/evil%20path',
+  timestamp: '1700000005',
+  Event: { id: '44', info: 'Escaped Mini Event', threat_level_id: '2', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '7',
+  event_id: '44',
+  type: 'url',
+  category: 'Network activity',
+  to_ids: true,
+  value: 'http://noslash.example.com',
+  timestamp: '1700000006',
+  Event: { id: '44', info: 'Escaped Mini Event', threat_level_id: '2', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '8',
+  event_id: '44',
+  type: 'ip-src',
+  category: 'Network activity',
+  to_ids: true,
+  value: '2001:DB8:0:0::1',
+  timestamp: '1700000007',
+  Event: { id: '44', info: 'Escaped Mini Event', threat_level_id: '2', Orgc: { name: 'MiniOrg' } }
+}, {
+  id: '9',
+  event_id: '44',
+  type: 'ip-dst',
+  category: 'Network activity',
+  to_ids: true,
+  value: '10.67.0.0/24',
+  timestamp: '1700000008',
+  Event: { id: '44', info: 'Escaped Mini Event', threat_level_id: '2', Orgc: { name: 'MiniOrg' } }
 }];
 
 function handleMisp (req, res, body) {

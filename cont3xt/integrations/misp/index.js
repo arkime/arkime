@@ -79,10 +79,10 @@ class MISPIntegration extends Integration {
     this.#key = ArkimeConfig.getFull(section, 'key', ArkimeConfig.exit);
     this.#maxResults = parseInt(ArkimeConfig.getFull(section, 'maxResults', 50), 10);
     if (!(this.#maxResults > 0)) { this.#maxResults = 50; }
-    this.#enforceWarninglist = ArkimeConfig.getFull(section, 'enforceWarninglist', true);
-    this.#toIds = ArkimeConfig.getFull(section, 'toIds', false);
+    this.#enforceWarninglist = ArkimeConfig.getFullBool(section, 'enforceWarninglist', true);
+    this.#toIds = ArkimeConfig.getFullBool(section, 'toIds', false);
 
-    if (ArkimeConfig.getFull(section, 'insecure', false)) {
+    if (ArkimeConfig.getFullBool(section, 'insecure', false)) {
       this.#httpsAgent = new https.Agent({ rejectUnauthorized: false });
     }
 
@@ -92,9 +92,10 @@ class MISPIntegration extends Integration {
     });
 
     this.card.title = `${this.name} for %{query}`;
+    // the query lands in the path unencoded, so no urls
     this.card.searchUrls = [{
       url: `${this.#url}/attributes/index/searchvalue:%{query}`,
-      itypes,
+      itypes: itypes.filter(itype => itype !== 'url'),
       name: `Search ${this.name} for %{query}`
     }];
 
@@ -103,14 +104,14 @@ class MISPIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   async fetchItem (user, item) {
-    // MISP treats % as a wildcard and a leading ! as NOT, only do exact matches
-    if (item.includes('%') || item.startsWith('!')) {
+    // MISP treats % as a wildcard, a leading ! as NOT and splits on && and ||, only do exact matches
+    if (item.includes('%') || item.startsWith('!') || item.includes('&&') || item.includes('||')) {
       return Integration.NoResult;
     }
 
     try {
       const body = {
-        value: item,
+        value: [item],
         returnFormat: 'json',
         limit: this.#maxResults,
         page: 1,
@@ -128,7 +129,8 @@ class MISPIntegration extends Integration {
           'User-Agent': this.userAgent()
         },
         httpsAgent: this.#httpsAgent,
-        maxRedirects: 0
+        maxRedirects: 0,
+        timeout: 30 * 1000
       });
 
       const attrs = result.data?.response?.Attribute;

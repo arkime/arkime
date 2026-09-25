@@ -8,6 +8,7 @@
 
 const axios = require('axios');
 const https = require('https');
+const iptrie = require('arkime-iptrie');
 const WISESource = require('./wiseSource.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 
@@ -31,6 +32,11 @@ const TYPE_MAP = Object.assign(Object.create(null), {
   url: [['url', 0]],
   'ja3-fingerprint-md5': [['ja3', 0]]
 });
+
+// MISP treats % as a wildcard, a leading ! as NOT and splits on && and ||
+function hasMispOperator (value) {
+  return value.startsWith('!') || value.includes('&&') || value.includes('||');
+}
 
 const THREAT_LEVELS = new Map([['1', 'high'], ['2', 'medium'], ['3', 'low'], ['4', 'undefined']]);
 const WISE_TYPES = ['ip', 'domain', 'email', 'md5', 'sha256', 'url', 'ja3'];
@@ -63,12 +69,12 @@ class MISPSource extends WISESource {
 
     this.serverName = api.getConfig(section, 'name', section.substring(5));
     this.last = api.getConfig(section, 'last', this.mode === 'bulk' ? '30d' : undefined);
-    this.toIds = api.getConfig(section, 'toIds', true);
-    this.published = api.getConfig(section, 'published', true);
-    this.enforceWarninglist = api.getConfig(section, 'enforceWarninglist', true);
+    this.toIds = api.getConfigBool(section, 'toIds', true);
+    this.published = api.getConfigBool(section, 'published', true);
+    this.enforceWarninglist = api.getConfigBool(section, 'enforceWarninglist', true);
     this.mispTags = api.getConfig(section, 'mispTags');
 
-    if (api.getConfig(section, 'insecure', false)) {
+    if (api.getConfigBool(section, 'insecure', false)) {
       this.httpsAgent = new https.Agent({ rejectUnauthorized: false });
     }
 
@@ -97,6 +103,7 @@ class MISPSource extends WISESource {
 
     this.maps = {};
     WISE_TYPES.forEach((t) => { this.maps[t] = new Map(); });
+    this.ipTrie = new iptrie.IPTrie();
 
     if (this.mode === 'api') {
       this.maxResults = parseInt(api.getConfig(section, 'maxResults', 50), 10);
@@ -208,13 +215,17 @@ class MISPSource extends WISESource {
       }
 
       const maps = {};
+      const ipTrie = new iptrie.IPTrie();
       WISE_TYPES.forEach((t) => {
         maps[t] = new Map();
         items[t].forEach((info, key) => {
-          maps[t].set(key, this.#encode(info));
+          const result = this.#encode(info);
+          if (t === 'ip' && !ArkimeUtil.addCidrToTrie(ipTrie, key, result, { mapV4: false })) { return; }
+          maps[t].set(key, result);
         });
       });
       this.maps = maps;
+      this.ipTrie = ipTrie;
       console.log(this.section, '- Done Loading', count, 'attributes', this.itemCount(), 'items');
     } catch (err) {
       console.log(this.section, '- Load failed, keeping previous data', err?.response?.status ?? '', err?.response?.data?.message ?? err.message);
@@ -225,8 +236,9 @@ class MISPSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   async #apiLookup (wtype, value, cb) {
-    // MISP treats % as a wildcard and a leading ! as NOT, only do exact matches
-    if (value.includes('%') || value.startsWith('!')) {
+    // only do exact matches, urls may have %XX escapes in the path which are
+    // wildcards to MISP so those results are filtered below
+    if (hasMispOperator(value) || (wtype === 'url' ? !/^[^%/]+(\/([^%]|%[0-9a-fA-F]{2})*)?$/.test(value) : value.includes('%'))) {
       return cb(null, WISESource.emptyResult);
     }
 
@@ -234,8 +246,16 @@ class MISPSource extends WISESource {
       return cb('dropped');
     }
 
-    // capture sends urls as host/path, MISP stores them with a scheme
-    const values = wtype === 'url' ? [value, `http://${value}`, `https://${value}`] : value;
+    // capture sends urls as host/path, MISP stores them with a scheme and maybe without the trailing /
+    let values = [value];
+    if (wtype === 'url') {
+      values = [value, `http://${value}`, `https://${value}`];
+      if (value.endsWith('/')) {
+        const noSlash = value.slice(0, -1);
+        values.push(`http://${noSlash}`, `https://${noSlash}`);
+      }
+    }
+    const wanted = wtype === 'url' ? this.#normalize('url', value) : undefined;
     const body = this.#searchBody(TYPES_BY_WISE[wtype]);
     body.value = values;
     body.limit = this.maxResults;
@@ -247,10 +267,10 @@ class MISPSource extends WISESource {
       const info = MISPSource.#newInfo();
       let found = false;
       attrs.forEach((a) => {
-        if (a && typeof a === 'object') {
-          MISPSource.#addInfo(info, a);
-          found = true;
-        }
+        if (!a || typeof a !== 'object') { return; }
+        if (wanted !== undefined && !this.#attrMatches(a, 'url', wanted)) { return; }
+        MISPSource.#addInfo(info, a);
+        found = true;
       });
       cb(null, found ? this.#encode(info) : WISESource.emptyResult);
     } catch (err) {
@@ -266,10 +286,23 @@ class MISPSource extends WISESource {
   }
 
   // ----------------------------------------------------------------------------
+  #attrMatches (a, wtype, wanted) {
+    if (!ArkimeUtil.isString(a.value) || !ArkimeUtil.isString(a.type)) { return false; }
+    const parts = a.type.includes('|') ? a.value.split('|') : [a.value];
+    return (TYPE_MAP[a.type] ?? []).some(([t, idx]) => t === wtype && this.#normalize(t, parts[idx]) === wanted);
+  }
+
+  // ----------------------------------------------------------------------------
   #normalize (wtype, value) {
     if (!value) { return undefined; }
     value = value.trim();
     switch (wtype) {
+    case 'ip': {
+      // canonical form so it matches what capture sends, keeps any CIDR prefix
+      const parsed = ArkimeUtil.parseCidr(value, { mapV4: false });
+      if (!parsed) { return undefined; }
+      return parsed.prefix === (parsed.addr.includes(':') ? 128 : 32) ? parsed.addr : `${parsed.addr}/${parsed.prefix}`;
+    }
     case 'domain':
     case 'email':
     case 'md5':
@@ -280,7 +313,7 @@ class MISPSource extends WISESource {
       // capture looks up host/path, without the scheme or query string
       value = value.replace(/^https?:\/\//i, '').replace(/[?#].*$/, '');
       if (!value.includes('/')) { value += '/'; }
-      return value;
+      return value.replace(/^[^/]*/, (host) => host.toLowerCase());
     default:
       return value;
     }
@@ -306,7 +339,8 @@ class MISPSource extends WISESource {
   #encode (info) {
     const args = [this.serverField, this.serverName];
     // result count is a single byte, leave room for the tags setting
-    const push = (field, set) => set.forEach((v) => { if (args.length < 400) { args.push(field, v); } });
+    const maxArgs = 2 * (255 - this.tagsResult[0]);
+    const push = (field, set) => set.forEach((v) => { if (args.length < maxArgs) { args.push(field, v); } });
     push(this.eventIdField, info.eventIds);
     push(this.eventField, info.events);
     push(this.threatLevelField, info.threatLevels);
@@ -321,8 +355,10 @@ class MISPSource extends WISESource {
     if (this.mode === 'api') {
       return this.#apiLookup(wtype, value, cb);
     }
-    const key = wtype === 'ip' || wtype === 'url' ? value : value.toLowerCase();
-    cb(null, this.maps[wtype].get(key));
+    if (wtype === 'ip') {
+      return cb(null, this.ipTrie.find(value));
+    }
+    cb(null, this.maps[wtype].get(this.#normalize(wtype, value)));
   }
 
   getIp (ip, cb) { this.#get('ip', ip, cb); }
@@ -362,7 +398,7 @@ exports.initSource = function (api) {
     fields: [
       { name: 'url', required: true, help: 'The MISP server url' },
       { name: 'key', password: true, required: true, help: 'The MISP auth key' },
-      { name: 'mode', required: false, help: 'bulk (default) periodically loads matching attributes into memory, api queries MISP for each item not in the wise cache and should be used with onlyIPs or excludeIPs' },
+      { name: 'mode', required: false, help: 'bulk (default) periodically loads matching attributes into memory, api queries MISP for each item not in the wise cache and should be used with onlyIPs or excludeIPs. api mode only matches MISP urls without a query string and ignores ip CIDR attributes' },
       { name: 'name', required: false, help: 'Name stored in misp.server, defaults to the section name after misp:' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'last', required: false, help: 'Only use attributes from events published within this window, bulk mode default 30d, api mode default all' },

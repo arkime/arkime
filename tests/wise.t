@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 184;
+use Test::More tests => 193;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -340,6 +340,18 @@ is($wise->[4]->{value}, "Payload delivery", "misp filename|md5 loads the lowerca
 $wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/url/" . uri_escape("mini-misp.example.com/evil/path"))->content);
 is($wise->[1]->{value}, "42", "misp url loads without the scheme");
 
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/url/" . uri_escape("mini-misp.example.com/evil%20path"))->content);
+is($wise->[1]->{value}, "44", "misp url lowercases the host");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/url/" . uri_escape("noslash.example.com/"))->content);
+is($wise->[1]->{value}, "44", "misp url without a path matches /");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/ip/2001:db8::1")->content);
+is($wise->[1]->{value}, "44", "misp ipv6 is canonicalized");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/ip/10.67.0.9")->content);
+is($wise->[1]->{value}, "44", "misp ip CIDR attribute matches");
+
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:test/ip/10.66.0.99")->content;
 eq_or_diff($wise, '[]', "misp miss");
 
@@ -372,6 +384,21 @@ eq_or_diff($wise, '[]', "misp api onlyIPs skips lookup");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/url/%25")->content;
 eq_or_diff($wise, '[]', "misp api never sends a wildcard");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/url/" . uri_escape("mini-misp.example.com/evil%20path"))->content);
+is($wise->[1]->{value}, "44", "misp api url allows escapes in the path");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/url/" . uri_escape("mini-misp.example.com/evil%2"))->content;
+eq_or_diff($wise, '[]', "misp api url rejects a bare %");
+
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/url/" . uri_escape("noslash.example.com/"))->content);
+is($wise->[1]->{value}, "44", "misp api url matches without the trailing /");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/email/" . uri_escape("&&x\@example.com"))->content;
+eq_or_diff($wise, '[]', "misp api never sends &&");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/email/" . uri_escape("a||x\@example.com"))->content;
+eq_or_diff($wise, '[]', "misp api never sends ||");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/misp:api/ip/10.66.0.99")->content;
 eq_or_diff($wise, '[]', "misp api miss");
