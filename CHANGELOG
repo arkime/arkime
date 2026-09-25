@@ -68,6 +68,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           number or a percentage, and the hunt/tshark limits, timeouts and ports must be numbers in range
 ## Release
   - #4253 Node 24.21.0
+  - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm
+          packages, the libraries built into capture, the bundled Node.js and CyberChef
   - #4266 easybutton-build.sh no longer builds glib, curl, zstd, lua or libpcap, the OS packages are used everywhere.
           EL9 and EL10 also use the OS yara, libmaxminddb, nghttp2 and librdkafka, AL2023 uses the OS libmaxminddb
           and nghttp2. The rpm and deb packages now depend on those libraries instead of bundling static copies

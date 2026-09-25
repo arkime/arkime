@@ -61,6 +61,7 @@ wiseService/vueapp/dist
 # cont3xt
 cont3xt/vueapp/dist
 */vueapp/third-party-licenses.json
+arkime-sbom.cdx.json
 
 # common
 common/version.js

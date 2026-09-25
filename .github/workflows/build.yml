@@ -328,7 +328,8 @@ jobs:
         run: |
           export PATH=/opt/arkime/bin:$PATH
           (npm install license-checker; release/notice.txt.pl /opt/arkime release/VIEWERNOTICE release/CAPTURENOTICE > NOTICE.txt)
-          ls -l NOT*
+          release/sbom.mjs > arkime-sbom.cdx.json
+          ls -l NOT* arkime-sbom*
 
       - name: upload github
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
@@ -344,6 +345,7 @@ jobs:
             *.rpm
             *.zst
             NOTICE.txt
+            arkime-sbom.cdx.json
 
       - name: tag last-commit
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
