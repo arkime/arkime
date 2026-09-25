@@ -1,22 +1,12 @@
-Arkime capture links against the following third-party libraries. On every
-supported platform they are dynamically linked from the operating system's own
-packages and are not distributed as part of Arkime; their licenses ship with
-the operating system:
-
-  glib2 (LGPL-2.1), libcurl (curl), libpcap (BSD), libmaxminddb (Apache-2.0),
-  nghttp2 (MIT), libyaml (MIT), libmagic (BSD), zlib (zlib), zstd (BSD),
-  lua (MIT), OpenSSL (Apache-2.0), libxdp (LGPL-2.1 or BSD-2-Clause), and on
-  Linux distributions that package them, yara (BSD-3-Clause) and librdkafka
-  (BSD-2-Clause).
-
-The optional pfring plugin dynamically links libpfring (LGPL-2.1).
+Code built into Arkime capture.
 
 Amazon Linux does not package yara or librdkafka, so the Amazon Linux packages
-of Arkime contain statically linked copies of both. Their licenses, and the
-licenses of the components librdkafka itself bundles, follow.
+of Arkime contain statically linked copies of both; every other platform links
+the OS packages. Their licenses, and the licenses of the components librdkafka
+itself bundles, follow.
 
-Arkime capture also compiles in the source of http_parser, js0n, patricia and
-xxHash, and db.c contains the mkpath routine from nfdump; their licenses follow.
+capture also compiles in the source of http_parser, js0n, patricia and xxHash,
+and db.c contains the mkpath routine from nfdump; their licenses follow.
 
 ================================================================================
 yara - BSD-3-Clause - https://virustotal.github.io/yara/
