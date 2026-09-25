@@ -104,7 +104,7 @@ function packageLicense (dir) {
 function licenseFileId (dir) {
   let names;
   try { names = fs.readdirSync(dir); } catch { return undefined; }
-  const file = names.find(n => /^(licen[cs]e|copying)/i.test(n));
+  const file = names.find(n => /^(licen[cs]e|copying)/i.test(n)) ?? names.find(n => /^readme/i.test(n));
   if (!file) { return undefined; }
   let text;
   try { text = fs.readFileSync(path.join(dir, file), 'utf8'); } catch { return undefined; }
