@@ -60,7 +60,9 @@ export async function createI18nInstance(apiUrl) {
     globalInjection: true, // enable global $t function
     silentTranslationWarn: true, // suppress translation warnings in production
     silentFallbackWarn: true, // suppress fallback warnings in production
-    escapeParameterHtml: true, // escape HTML in translations to prevent XSS
+    // Params are NOT escaped: escapeParameterHtml is ignored with legacy:false, and
+    // escapeParameter would double escape every {{ $t() }}. Any user data passed to a
+    // $t() rendered with v-html (the ...Html keys) must go through escapeHtml() first.
     messages: {
       en: { loading: 'Loading...' } // temporary placeholder
     }

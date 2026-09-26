@@ -160,6 +160,11 @@ class Auth {
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#requiredAuthHeaderHmacs = Auth.#requiredAuthHeaderVal?.map(v => crypto.createHmac('sha256', 'compare').update(v).digest());
+    // Without values #headerAuth would skip the requiredAuthHeader check entirely
+    if (ArkimeUtil.isString(Auth.#requiredAuthHeader) && !Auth.#requiredAuthHeaderVal?.length) {
+      console.log(`ERROR - requiredAuthHeader=${ArkimeUtil.sanitizeStr(Auth.#requiredAuthHeader)} is set but requiredAuthHeaderVal is missing or empty`);
+      process.exit(1);
+    }
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     if (Auth.#userAutoCreateTmpl) {
       console.log('WARNING - userAutoCreateTmpl is deprecated and INSECURE, use [user-auto-create] section instead. This functionality will be removed in Arkime 7.');
@@ -195,6 +200,11 @@ class Auth {
 
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
+    // Accepts plaintext s2s tokens, so never from config alone
+    if (Auth.#s2sRegressionTests && !ArkimeConfig.regressionTests) {
+      console.log('ERROR - s2sRegressionTests requires --regressionTests');
+      process.exit(1);
+    }
     Auth.#authConfig = options.authConfig;
     Auth.#jwks = undefined; // rebuilt on next use, the jwks url may have changed
     Auth.#caTrustCerts = ArkimeUtil.certificateFileToArray(options.caTrustFile);
@@ -292,6 +302,13 @@ class Auth {
     // Every header mode reads the userId (or the JWT) out of this header
     if (Auth.#strategies.includes('header') && !ArkimeUtil.isString(Auth.#userNameHeader)) {
       console.log(`ERROR - userNameHeader missing from config file, required for authMode=${ArkimeUtil.sanitizeStr(options.mode)}`);
+      process.exit(1);
+    }
+
+    // mcpAuthMode defaults to header, independent of authMode
+    if (ArkimeConfig.getBool('mcpEnabled', false) && ArkimeConfig.getArray('mcpAuthMode', 'header').includes('header') &&
+        !ArkimeUtil.isString(Auth.#userNameHeader)) {
+      console.log('ERROR - userNameHeader missing from config file, required for mcpAuthMode=header (the default). Set userNameHeader or set mcpAuthMode to jwt');
       process.exit(1);
     }
 
@@ -496,7 +513,12 @@ class Auth {
   /* Authenticate using a username http header set by a trusted upstream proxy.
    * Exposed via Auth.headerAuth() so the MCP endpoint can reuse it. */
   static #headerAuth (req, done) {
-    if (Auth.#userNameHeader !== undefined && req.headers[Auth.#userNameHeader] === undefined) {
+    // Unset for non header authModes, MCP can still get here with mcpAuthMode=header
+    if (!ArkimeUtil.isString(Auth.#userNameHeader)) {
+      return done(null, false);
+    }
+
+    if (req.headers[Auth.#userNameHeader] === undefined) {
       if (ArkimeConfig.debug > 0) {
         console.log(`AUTH: didn't find ${Auth.#userNameHeader} in the headers`, req.headers);
       }
@@ -846,7 +868,12 @@ class Auth {
     }
 
     // ----------------------------------------------------------------------------
-    passport.use('form', new LocalStrategy((userId, password, done) => {
+    passport.use('form', new LocalStrategy({ passReqToCallback: true }, (req, userId, password, done) => {
+      // passport-local falls back to the query string, which ends up in access and proxy logs,
+      // and the strategy runs on every unauthenticated request, not just /api/login
+      if (req.query.username !== undefined || req.query.password !== undefined) {
+        return done('Credentials must be in the POST body');
+      }
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
@@ -1009,9 +1036,9 @@ class Auth {
 
     User.setUser(userId, nuser, (err, info) => {
       if (err) {
-        console.log('OpenSearch/Elasticsearch error adding user: (%s):(%s):', userId, JSON.stringify(nuser), err);
+        console.log('OpenSearch/Elasticsearch error adding user: (%s):(%s):', userId, JSON.stringify(User.forLog(nuser)), err);
       } else {
-        console.log('Added user: %s:%s', userId, JSON.stringify(nuser));
+        console.log('Added user: %s:%s', userId, JSON.stringify(User.forLog(nuser)));
       }
       return User.getUserCache(userId, cb);
     });

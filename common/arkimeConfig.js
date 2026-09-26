@@ -578,14 +578,23 @@ class ConfigIni {
   }
 
   static save (uri, config, cb) {
-    function encode (str) {
-      return typeof (str) === 'string' ? str.replace(/[\n\r]/g, '\\n') : str;
+    // Coerce first, a non-string (array from JSON) can still contain newlines
+    function encode (value) {
+      return String(value).replace(/[\n\r]/g, '\\n');
     }
 
     let output = '';
     for (const section of Object.keys(config)) {
-      output += `[${encode(section)}]\n`;
+      if (/[\n\r]/.test(section)) {
+        return cb(`Invalid section name ${JSON.stringify(section)}`);
+      }
+      output += `[${section}]\n`;
       for (const key of Object.keys(config[section])) {
+        // The loader trims lines, a key with = or a leading [ # ; would be read back as a
+        // different key, a section or a comment
+        if (/[\n\r=]/.test(key) || /^\s*[[#;]/.test(key)) {
+          return cb(`Invalid key name ${JSON.stringify(key)} in section ${JSON.stringify(section)}`);
+        }
         output += `${key}=${encode(config[section][key])}\n`;
       }
     }

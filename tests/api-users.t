@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 282;
+use Test::More tests => 286;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -87,6 +87,10 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerPostToken("/api/user", '{"userId": "sac-test1", "userName": "UserName", "enabled":true, "password":"abc", "expression": false}', $token);
     eq_or_diff($json, from_json('{"text": "Expression must be a string when present", "success": false}'));
 
+# roleAssigners must be an array when set, a stored false broke getAssignableRoles for every user
+    $json = viewerPostToken("/api/user", '{"userId": "sac-test1", "userName": "UserName", "enabled":true, "password":"abc", "roleAssigners": false}', $token);
+    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array of strings", "success": false}'));
+
 # Add User 1
     $json = viewerPostToken("/api/user", '{"userId": "sac-test1", "userName": "UserName", "enabled":true, "password":"password", "roles": ["arkimeUser"]}', $token);
     eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
@@ -138,6 +142,9 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $json = viewerPostToken("/api/user/sac-test1", '{"userName":"UserNameUpdated", "removeEnabled":true, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "roles":["usersAdmin"], "packetSearch": false}', $token);
     eq_or_diff($json, from_json('{"text": "Only superAdmin user can enable Admin roles on a user", "success": false}'));
+
+    $json = viewerPostToken("/api/user/sac-test1", '{"userName":"UserNameUpdated", "roles":["arkimeUser"], "roleAssigners": false}', $token);
+    eq_or_diff($json, from_json('{"text": "roleAssigners field must be an array of strings", "success": false}'));
 # Update User Server 1
     $json = viewerPostToken("/api/user/sac-test1?arkimeRegressionUser=superAdmin", '{"userName":"UserNameUpdated", "removeEnabled":true, "headerAuthEnabled":true, "expression":"foo", "emailSearch":true, "webEnabled":true, "roles":["usersAdmin", "arkimeUser"], "packetSearch": false}', $superAdminToken);
     eq_or_diff($json, from_json('{"text": "User sac-test1 updated successfully", "success": true}'));
@@ -909,6 +916,12 @@ my $uaToken = getTokenCookie('testusersadmin');
     # Admin trying to disable own TOTP with wrong code - should fail
     $json = viewerPostToken("/api/user/totp/disable", '{"code": "000000"}', $token);
     is($json->{success}, 0, "Admin cannot disable own TOTP with wrong code");
+
+    # Admin can't enroll TOTP for another user, the secret would come back to the admin
+    $json = viewerPostToken("/api/user/totp/setup?userId=sac-totpuser", '{}', $token);
+    is($json->{success}, 0, "Admin cannot set up TOTP for another user");
+    $json = viewerPostToken("/api/user/totp/confirm?userId=sac-totpuser", '{"code": "000000"}', $token);
+    is($json->{success}, 0, "Admin cannot confirm TOTP for another user");
 
     # Admin can disable another user's TOTP without code
     $json = viewerPostToken("/api/user/totp/disable?userId=sac-totpuser", '{}', $token);

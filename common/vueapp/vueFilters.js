@@ -424,18 +424,54 @@ export const searchFields = function (searchTerm, fields, excludeTokens, exclude
  * @returns {string}      The fully built expression
  */
 export const buildExpression = function (field, value, op) {
-  // for values required to be strings in the search expression
+  return `${field} ${op} ${expressionValue(value)}`;
+};
 
-  const needQuotes = (value !== 'EXISTS!' && !(value.startsWith('[') && value.endsWith(']')) &&
-    /[^-+a-zA-Z0-9_.@:*?/,]+/.test(value)) ||
+/**
+ * Builds a list expression for search, each value quoted as needed
+ *
+ * @example
+ * '{{ buildListExpression('ip.dst', ['10.0.0.1', '10.0.0.2'], '==') }}'
+ *
+ * @param {string} field  The field name
+ * @param {Array} values  The field values, nested arrays are flattened
+ * @param {string} op     The relational operator
+ * @returns {string}      The fully built expression
+ */
+export const buildListExpression = function (field, values, op) {
+  // The list parser splits on , and ] even inside quotes, so those values get their own clause
+  const listValues = [];
+  const clauses = [];
+  for (const value of values.flat()) {
+    if (/[,\]]/.test(value.toString())) {
+      clauses.push(buildExpression(field, value, op));
+    } else {
+      listValues.push(expressionValue(value));
+    }
+  }
+
+  // An empty list stays [] like the pivots always built, '' would mean match everything
+  if (listValues.length || clauses.length === 0) { clauses.unshift(`${field} ${op} [${listValues.join(',')}]`); }
+  if (clauses.length === 1) { return clauses[0]; }
+  return `(${clauses.join(op === '!=' ? ' && ' : ' || ')})`;
+};
+
+// Values come from captured data, so never trust their shape, eg a value that looks like a [list]
+function expressionValue (value) {
+  value = value.toString();
+
+  // for values required to be strings in the search expression
+  const needQuotes = (value !== 'EXISTS!' && /[^-+a-zA-Z0-9_.@:*?/]+/.test(value)) ||
     (value.startsWith('/') && value.endsWith('/'));
 
   // escape unescaped quotes
-  value = value.toString().replace(/\\([\s\S])|(")/g, '\\$1$2');
+  value = value.replace(/\\([\s\S])|(")/g, '\\$1$2');
+  // an odd trailing backslash would escape the closing quote
+  if (value.match(/\\*$/)[0].length % 2 === 1) { value += '\\'; }
   if (needQuotes) { value = `"${value}"`; }
 
-  return `${field} ${op} ${value}`;
-};
+  return value;
+}
 
 /**
  * Searches cluster for a term

@@ -42,6 +42,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           Checked: userAuthIps, mcpAllowedIps, mcpMaxQueryDays, authJwtClockSkew, uploadFileSizeLimit, maxSessionsQueried,
           elasticsearch, usersElasticsearch, cont3xt itypes, and the wise excludeIPs, onlyIPs and reversedns ips.
   - #4233 A list setting entry containing a space is no longer silently dropped, and a yaml key with no value now means unset
+  - #4283 mcpEnabled with the default header mcpAuthMode now requires userNameHeader, and requiredAuthHeader now requires requiredAuthHeaderVal, otherwise the service refuses to start
+  - #4283 Form login no longer accepts the username and password in the url query string
 ## Release
   - #4260 Add esproxy to docker.sh (thanks @rht-jbittner)
   - #4270 CyberChef 11.4.0
@@ -51,6 +53,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4233 Fix an expired JWT still verifying, and the mcp query window, upload size and session query limits being ignored, when the setting was not a number
   - #4233 Fix a /0 CIDR matching a single address in excludeIPs/onlyIPs and the wise and cont3xt ip sources
   - #4259 MCP tool results now include a link that opens the same query in the viewer or cont3xt web ui, built from arkimeWebURL
+  - #4283 Two-factor authentication can only be set up by the user themselves
+  - #4283 Fix a user's search restrictions briefly not applying while their roles update at login
 ## Capture
   - #4217 Fix HTTP/2 sessions leaving http.uri empty, only http.uri.path was filled in
   - #4223 Fix JA4 being wrong when the TLS/DTLS client hello has GREASE values in the signature algorithms extension
@@ -69,14 +73,18 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Remove the PassiveTotal integration, the API was retired by Microsoft
 ## ESProxy
   - #4264 Fix a sensor being able to reach any Elasticsearch API through esProxy by percent-encoding a ? or # in the url
+## Parliament
+  - #4283 Fix crashing on a notifier with a mixed case type or a non text field value
 ## Viewer
   - #4216 Fix multi viewer hanging or failing queries when one cluster is down or unhealthy (thanks @Juwon1405)
   - #4222 Fix session PCAP/CSV export success toast showing "[object Object]"
   - #4241 Fix the entire session pcap download ignoring the user's forced expression on segments
   - #4262 Fix session queries not enforcing a timeLimit that comes only from a role instead of the user
   - #4263 Fix users with hidePcap or disablePcapDownload still being able to view packets through CyberChef
+  - #4283 Fix pivot and click to search values from captured traffic being able to change the rest of the search
 ## WISE
   - Remove the PassiveTotal source, the API was retired by Microsoft
+  - #4283 Fix saving the config from the web ui being able to add settings that weren't edited
 
 6.7.0 2026/08/19
 ## Release

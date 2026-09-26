@@ -1114,7 +1114,12 @@ async function buildAlert (cluster, issue) {
     if (!setNotifier.alerts[issue.type]) { continue; }
 
     const config = {};
-    const notifierDef = Notifier.notifierTypes[setNotifier.type];
+    // older notifiers may have a mixed case type
+    const notifierDef = Notifier.notifierTypes[setNotifier.type?.toLowerCase()];
+    if (!notifierDef) {
+      console.log(`Unknown notifier type ${ArkimeUtil.sanitizeStr(setNotifier.type)} for ${ArkimeUtil.sanitizeStr(setNotifier.name)}`);
+      continue;
+    }
 
     for (const f in notifierDef.fields) {
       const fieldDef = notifierDef.fields[f];

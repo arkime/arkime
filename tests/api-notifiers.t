@@ -1,4 +1,4 @@
-use Test::More tests => 98;
+use Test::More tests => 101;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -92,6 +92,17 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   my ($evilNotifier) = grep { $_->{id} eq $evilId } @{$notifiers};
   ok(!exists $evilNotifier->{evil}, "extra field not stored in notifier");
   viewerDeleteToken("/api/notifier/$evilId", $token);
+
+# fields must each be an object with a name and a string/boolean value, anything else crashes senders
+  $json = viewerPostToken("/api/notifier", '{"name":"testbad","type":"slack","fields":[null]}', $token);
+  is($json->{text}, "Notifier fields must each have a name", "null field rejected");
+  $json = viewerPostToken("/api/notifier", '{"name":"testbad","type":"slack","fields":[{"name":"slackWebhookUrl","value":1}]}', $token);
+  is($json->{text}, "Notifier field slackWebhookUrl must be a string or true/false", "non-string field value rejected");
+
+# type is stored lowercase so parliament can look it up
+  $json = viewerPostToken("/api/notifier", '{"name":"testcase","type":"SLACK","fields":[{"name":"slackWebhookUrl","value":"testcaseurl"}]}', $token);
+  is($json->{notifier}->{type}, "slack", "mixed case type stored lowercase");
+  viewerDeleteToken("/api/notifier/$json->{notifier}->{id}", $token);
 
 # teams notifier
   $json = viewerPostToken("/api/notifier", '{"name":"teams1","type":"teams","fields":[]}', $token);

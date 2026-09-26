@@ -251,6 +251,7 @@ sub showHelp($)
     print "    --removeRole <role>        - Role to remove, may be repeated\n";
     print "    --set <field>=<value>      - Set a user field, may be repeated (eg --set packetSearch=true)\n";
     print "    --unset <field>            - Remove a user field so it falls back to any role value, may be repeated\n";
+    print "                                 (--unset totpSecret resets a lost TOTP)\n";
     print "    --regex                    - Treat <pattern> as a regex instead of a glob\n";
     print "    --dryrun                   - Print what would change without changing anything\n";
     print "      eg: db.pl <host:port> users-update '*' --addRole mcpUser --dryrun\n";
@@ -8923,8 +8924,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
 
+    # totpSecret can only be cleared, the way to reset a lost TOTP when no other admin can
+    my %unsettable = (%settable, totpSecret => 1);
     foreach my $field (@UNSETPERM) {
-        showHelp("Unknown user field '$field', must be one of: " . join(", ", sort keys %settable)) if (!$settable{$field});
+        showHelp("Unknown user field '$field', must be one of: " . join(", ", sort keys %unsettable)) if (!$unsettable{$field});
     }
 
     # Glob by default since these are bulk edits and a stray regex '.' would

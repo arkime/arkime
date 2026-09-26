@@ -902,8 +902,9 @@ async function processQuery (req, query, cb) {
   }
 
   // Fetch the cache for this query
-  // md5/sha256 results can depend on contentType, so include it in the cache and in-progress keys
-  const valueKey = query.contentType !== undefined ? query.value + '-' + query.contentType : query.value;
+  // md5/sha256 results can depend on contentType, so include it in the cache and in-progress keys.
+  // Join with ; since value was split on it, any other char lets a bare value collide
+  const valueKey = query.contentType !== undefined ? query.value + ';' + query.contentType : query.value;
   const cacheKey = query.typeName + '-' + valueKey;
   let cacheResult = await internals.cache.get(cacheKey);
   if (req.timedout) {

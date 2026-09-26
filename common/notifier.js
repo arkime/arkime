@@ -172,6 +172,17 @@ class Notifier {
     if (!foundNotifier) {
       return 'Unknown notifier type';
     }
+    notifier.type = type; // store lowercase, parliament looks types up case sensitively
+
+    // Senders call string methods on these, so a bad field would throw when an alert fires
+    for (const field of notifier.fields) {
+      if (typeof field !== 'object' || field === null || !ArkimeUtil.isString(field.name)) {
+        return 'Notifier fields must each have a name';
+      }
+      if (field.value !== undefined && typeof field.value !== 'string' && typeof field.value !== 'boolean') {
+        return `Notifier field ${field.name} must be a string or true/false`;
+      }
+    }
 
     // check that required notifier fields exist
     for (const field of foundNotifier.fields) {

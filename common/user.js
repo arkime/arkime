@@ -145,6 +145,18 @@ class User {
   }
 
   /**
+   * Copy of a user that is safe to log, without the password hash, TOTP secret or cont3xt keys
+   */
+  static forLog (user) {
+    if (!user || typeof user !== 'object') { return user; }
+    const copy = { ...user };
+    delete copy.passStore;
+    delete copy.totpSecret;
+    delete copy.cont3xt;
+    return copy;
+  }
+
+  /**
    * Flush any in memory data
    */
   static flushCache () {
@@ -408,14 +420,13 @@ class User {
 
     try {
       const users = await User.searchUsers({});
-      const usersList = users.users.map((user) => {
-        return user.userId;
-      });
+      // Set, the list comes from the request and can be long
+      const usersSet = new Set(users.users.map(user => user.userId));
 
       const validUsers = [];
       const invalidUsers = [];
       for (const user of userIdList) {
-        if (usersList.includes(user)) {
+        if (usersSet.has(user)) {
           validUsers.push(user);
         } else {
           invalidUsers.push(user);
@@ -814,7 +825,8 @@ class User {
       return res.serverError(403, `User defined roles can't have a system Admin role`);
     }
 
-    if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
+    // Check anything set, not just truthy, a stored false breaks getAssignableRoles for everyone
+    if (req.body.roleAssigners !== undefined && req.body.roleAssigners !== null && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
       return res.serverError(403, 'roleAssigners field must be an array of strings');
     }
 
@@ -849,7 +861,7 @@ class User {
 
     User.getUser(req.body.userId, (err, user) => {
       if (user) {
-        console.log('Trying to add duplicate user', util.inspect(err, false, 50), user);
+        console.log('Trying to add duplicate user', ArkimeUtil.sanitizeStr(req.body.userId));
         return res.serverError(403, 'User already exists');
       }
 
@@ -877,7 +889,7 @@ class User {
       };
 
       if (ArkimeConfig.debug) {
-        console.log('Creating new user', nuser);
+        console.log('Creating new user', User.forLog(nuser));
       }
 
       User.setUser(req.body.userId, nuser, (err, info) => {
@@ -982,7 +994,8 @@ class User {
       return res.serverError(403, `User defined roles can't have a system Admin role`);
     }
 
-    if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
+    // Check anything set, not just truthy, a stored false breaks getAssignableRoles for everyone
+    if (req.body.roleAssigners !== undefined && req.body.roleAssigners !== null && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
       return res.serverError(403, 'roleAssigners field must be an array of strings');
     }
 
@@ -1050,11 +1063,11 @@ class User {
 
       User.setUser(userId, user, (err, info) => {
         if (ArkimeConfig.debug) {
-          console.log('setUser', user, err, info);
+          console.log('setUser', User.forLog(user), err, info);
         }
 
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), User.forLog(user), info);
           return res.serverError(500, 'Error updating user');
         }
 
@@ -1119,11 +1132,11 @@ class User {
 
       User.setUser(userId, user, (err, info) => {
         if (ArkimeConfig.debug) {
-          console.log('setUser', user, err, info);
+          console.log('setUser', User.forLog(user), err, info);
         }
 
         if (err) {
-          console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), user, info);
+          console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), User.forLog(user), info);
           return res.serverError(500, 'Error updating user role');
         }
 
@@ -1265,6 +1278,11 @@ class User {
    * @returns {string} qrCodeDataUrl - The QR code as a data URL for display.
    */
   static async apiSetupTotp (req, res) {
+    // The new secret is returned to the caller, so only enroll yourself
+    if (req.settingUser.userId !== req.user.userId) {
+      return res.serverError(403, 'Can only set up two-factor authentication for yourself');
+    }
+
     const secret = User.#generateTotpSecret();
     const qrCodeUri = User.#getTotpKeyUri(req.settingUser.userId, secret);
 
@@ -1295,6 +1313,10 @@ class User {
    * @returns {string} text - The success/error message to display to the user.
    */
   static async apiConfirmTotp (req, res) {
+    if (req.settingUser.userId !== req.user.userId) {
+      return res.serverError(403, 'Can only set up two-factor authentication for yourself');
+    }
+
     if (!ArkimeUtil.isString(req.body.code)) {
       return res.serverError(403, 'Missing verification code');
     }
@@ -1407,10 +1429,70 @@ class User {
    * Convert array of roles to set of fully expanded roles
    */
   static async roles2ExpandedSet (roles) {
+    return (await User.#expandFields({ roles }, false)).allRoles;
+  }
+
+  /**
+   * Compute the expanded roles, settings, expression and timeLimit for a user
+   * from itself and the enabled roles it uses. Doesn't modify user, so callers
+   * can swap the results in with no await in between.
+   */
+  static async #expandFields (user, withSettings = true) {
     const allRoles = new Set();
+    const allSettings = {};
+    let allExpression;
+    let allTimeLimit = user.timeLimit;
 
     // The roles we need to process to see if any subroles
-    const rolesQ = [...roles ?? []];
+    const rolesQ = [...user.roles ?? []];
+
+    // First do settings, skipped when only the roles are wanted
+    const needSettings = [];
+    for (const col of withSettings ? allSettingColumns : []) {
+      // null means cleared, which has to behave the same as never set or a
+      // cleared field would silently mean "denied, ignore my roles". Clearing a
+      // field is how db.pl users-update --unset restores role inheritance.
+      if (user[col] !== undefined && user[col] !== null) {
+        allSettings[col] = user[col];
+      } else {
+        needSettings.push(col);
+      }
+    }
+
+    // We only look at our direct roles for settings, since those should already be expanded
+    for (const r of withSettings ? rolesQ : []) {
+      if (systemRolesMapping.has(r)) {
+        continue;
+      }
+
+      const role = await User.getUserCache(r);
+      if (!role || !role.enabled) { continue; }
+
+      for (const col of needSettings) {
+        if (!role.#allSettings[col]) {
+          continue;
+        }
+
+        if (allSettings[col] !== undefined) {
+          // Keep booleans boolean - bitwise |= would yield 1, breaking the
+          // strict === true checks in checkPermissions
+          allSettings[col] = allSettings[col] || role.#allSettings[col];
+        } else {
+          allSettings[col] = role.#allSettings[col];
+        }
+      }
+    }
+
+    for (const col of needSettings) {
+      if (allSettings[col] === undefined) {
+        allSettings[col] = false;
+      }
+    }
+
+    // Now do expression and timeLimit
+    if (user.expression && user.expression.trim().length > 0) {
+      allExpression = '(' + user.expression.trim() + ')';
+    }
 
     while (rolesQ.length) {
       const r = rolesQ.pop();
@@ -1430,6 +1512,22 @@ class User {
       if (!role || !role.enabled) { continue; }
       allRoles.add(r);
 
+      if (role.expression && role.expression.trim().length > 0) {
+        if (!allExpression) {
+          allExpression = '(' + role.expression.trim() + ')';
+        } else {
+          allExpression += ' && (' + role.expression.trim() + ')';
+        }
+      }
+
+      if (role.timeLimit !== undefined) {
+        if (allTimeLimit === undefined) {
+          allTimeLimit = role.timeLimit;
+        } else {
+          allTimeLimit = Math.min(allTimeLimit, role.timeLimit);
+        }
+      }
+
       // schedule any sub roles
       if (!role.roles) { continue; }
       role.roles.forEach(r2 => {
@@ -1438,7 +1536,7 @@ class User {
       });
     }
 
-    return allRoles;
+    return { allRoles, allSettings, allExpression, allTimeLimit };
   }
 
   /**
@@ -1472,107 +1570,16 @@ class User {
 
   /**
    * Create the combined variables from ourselves and enabled roles we use.
+   * force recomputes, the old values stay visible until the new ones are ready.
    */
-  async expandFromRoles () {
-    if (this.#allRoles !== undefined) { return; }
-    const allRoles = new Set();
-
-    // The roles we need to process to see if any subroles
-    const rolesQ = [...this.roles ?? []];
-
-    // First do settings
-    const needSettings = [];
-    for (const col of allSettingColumns) {
-      // null means cleared, which has to behave the same as never set or a
-      // cleared field would silently mean "denied, ignore my roles". Clearing a
-      // field is how db.pl users-update --unset restores role inheritance.
-      if (this[col] !== undefined && this[col] !== null) {
-        this.#allSettings[col] = this[col];
-      } else {
-        needSettings.push(col);
-      }
-    }
-
-    // We only look at our direct roles for settings, since those should already be expanded
-    for (const r of rolesQ) {
-      if (systemRolesMapping.has(r)) {
-        continue;
-      }
-
-      const role = await User.getUserCache(r);
-      if (!role || !role.enabled) { continue; }
-
-      for (const col of needSettings) {
-        if (!role.#allSettings[col]) {
-          continue;
-        }
-
-        if (this.#allSettings[col] !== undefined) {
-          // Keep booleans boolean - bitwise |= would yield 1, breaking the
-          // strict === true checks in checkPermissions
-          this.#allSettings[col] = this.#allSettings[col] || role.#allSettings[col];
-        } else {
-          this.#allSettings[col] = role.#allSettings[col];
-        }
-      }
-    }
-
-    for (const col of needSettings) {
-      if (this.#allSettings[col] === undefined) {
-        this.#allSettings[col] = false;
-      }
-    }
-
-    // Now do expression and timeLimit
-    if (this.expression && this.expression.trim().length > 0) {
-      this.#allExpression = '(' + this.expression.trim() + ')';
-    }
-
-    this.#allTimeLimit = this.timeLimit;
-
-    while (rolesQ.length) {
-      const r = rolesQ.pop();
-
-      // Deal with system roles first, they are easy
-      if (systemRolesMapping.has(r)) {
-        allRoles.add(r);
-        systemRolesMapping.get(r).forEach(allRoles.add, allRoles);
-        continue;
-      }
-
-      // Already processed
-      if (allRoles.has(r)) { continue; }
-
-      // See if role actually exists
-      const role = await User.getUserCache(r);
-      if (!role || !role.enabled) { continue; }
-      allRoles.add(r);
-
-      if (role.expression && role.expression.trim().length > 0) {
-        if (!this.#allExpression) {
-          this.#allExpression = '(' + role.expression.trim() + ')';
-        } else {
-          this.#allExpression += ' && (' + role.expression.trim() + ')';
-        }
-      }
-
-      if (role.timeLimit !== undefined) {
-        if (this.#allTimeLimit === undefined) {
-          this.#allTimeLimit = role.timeLimit;
-        } else {
-          this.#allTimeLimit = Math.min(this.#allTimeLimit, role.timeLimit);
-        }
-      }
-
-      // schedule any sub roles
-      if (!role.roles) { continue; }
-      role.roles.forEach(r2 => {
-        if (allRoles.has(r2)) { return; } // Already processed
-        rolesQ.push(r2);
-      });
-    }
-
+  async expandFromRoles (force = false) {
+    if (this.#allRoles !== undefined && !force) { return; }
+    const { allRoles, allSettings, allExpression, allTimeLimit } = await User.#expandFields(this);
+    // No await between these, concurrent requests share this cached user
     this.#allRoles = allRoles;
+    this.#allSettings = allSettings;
+    this.#allExpression = allExpression;
+    this.#allTimeLimit = allTimeLimit;
   }
 
   /**
@@ -1824,13 +1831,7 @@ class User {
     }
 
     this.roles = newRoles;
-    // Clear memoized permission state so expandFromRoles recomputes from the
-    // new roles instead of early-returning on the startup expansion
-    this.#allRoles = undefined;
-    this.#allExpression = undefined;
-    this.#allTimeLimit = undefined;
-    this.#allSettings = {};
-    await this.expandFromRoles();
+    await this.expandFromRoles(true);
     await new Promise((resolve, reject) => {
       this.save((err) => {
         if (err) { reject(err); } else { resolve(); }
