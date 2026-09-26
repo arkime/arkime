@@ -169,11 +169,12 @@ SPDX-License-Identifier: Apache-2.0
         <v-col
           cols="12"
           sm="12">
-          <a href="https://arkime.com">Home Page</a> |
+          <a href="https://arkime.com">Arkime Home</a> |
           <a href="https://arkime.com/faq">FAQ</a> |
           <a href="https://arkime.com/learn">Docs</a> |
           <a href="https://github.com/arkime/arkime">GitHub</a> |
-          <a href="https://slackinvite.arkime.com/">Request Slack Invite</a>
+          <a href="https://slackinvite.arkime.com/">Join us on Slack</a> |
+          <a href="https://arkime.com/sponsor">Sponsor Arkime</a>
         </v-col>
       </v-row>
 

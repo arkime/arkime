@@ -821,7 +821,7 @@ import FieldActions from './FieldActions.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 import { createLayoutService } from '../users/ShareableService';
 // import utils
-import { searchFields, buildExpression } from '@common/vueFilters.js';
+import { searchFields, buildExpression, buildListExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 import { attachTableGrips } from '@common/composables/useColumnResize.js';
 // import external
@@ -1811,8 +1811,7 @@ export default {
         }
       }
 
-      const valueStr = `[${values.join(',')}]`;
-      const expression = buildExpression(exp, valueStr, '==');
+      const expression = buildListExpression(exp, values, '==');
 
       const routeData = this.$router.resolve({
         path: '/sessions',

@@ -50,6 +50,47 @@ SPDX-License-Identifier: Apache-2.0
       class="overflow-auto h-100">
       <!-- general -->
       <div v-if="visibleTab === 'general'">
+        <h3 id="links">
+          <v-icon
+            icon="mdi-link"
+            class="mr-2" />
+          Links
+        </h3>
+        <p>
+          <a
+            class="no-decoration"
+            href="https://arkime.com"><v-icon
+              icon="mdi-home"
+              class="mr-1" />Arkime Home</a> |
+          <a
+            class="no-decoration"
+            href="https://arkime.com/faq"><v-icon
+              icon="mdi-frequently-asked-questions"
+              class="mr-1" />FAQ</a> |
+          <a
+            class="no-decoration"
+            href="https://arkime.com/learn"><v-icon
+              icon="mdi-book-open-variant"
+              class="mr-1" />Docs</a> |
+          <a
+            class="no-decoration"
+            href="https://github.com/arkime/arkime"><v-icon
+              icon="mdi-github"
+              class="mr-1" />GitHub</a> |
+          <a
+            class="no-decoration"
+            href="https://slackinvite.arkime.com/"><v-icon
+              icon="mdi-slack"
+              class="mr-1" />Join us on Slack</a> |
+          <a
+            class="no-decoration"
+            href="https://arkime.com/sponsor"><v-icon
+              icon="mdi-heart-outline"
+              class="mr-1" />Sponsor Arkime</a>
+        </p>
+
+        <hr class="w-100 my-4">
+
         <h3 id="search">
           <v-icon
             icon="mdi-magnify"

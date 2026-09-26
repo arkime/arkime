@@ -505,7 +505,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import FieldActions from '../sessions/FieldActions.vue';
-import { commaString, searchFields, buildExpression } from '@common/vueFilters.js';
+import { commaString, searchFields, buildListExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
 import Utils from '../utils/utils';
@@ -895,8 +895,7 @@ export default {
         values.push(val.key);
       }
 
-      const valueStr = `[${values.join(',')}]`;
-      const expression = buildExpression(fieldExp, valueStr, '==');
+      const expression = buildListExpression(fieldExp, values, '==');
 
       const routeData = this.$router.resolve({
         path: '/sessions',
