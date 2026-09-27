@@ -276,7 +276,7 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
 
             char *out = g_convert((char *)str + extra, startquestion - str - extra, "utf-8", "CP1252", &bread, &bwritten, &error);
             if (error) {
-                LOG("WARNING - failed converting %s to utf-8 %s ", "CP1252", error->message);
+                LOG_RATE(60, "WARNING - failed converting %s to utf-8 %s ", "CP1252", error->message);
                 arkime_field_string_add(pos, session, string, len, TRUE);
                 g_error_free(error);
                 return;
@@ -325,7 +325,7 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
             } else {
                 char *out = g_convert((char *)question + 3, olen, "utf-8", fmt, &bread, &bwritten, &error);
                 if (error) {
-                    LOG("WARNING - failed converting %s to utf-8 %s ", str + 2, error->message);
+                    LOG_RATE(60, "WARNING - failed converting %s to utf-8 %s ", str + 2, error->message);
                     arkime_field_string_add(pos, session, string, len, TRUE);
                     g_error_free(error);
                     return;
@@ -350,7 +350,7 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
             } else {
                 char *out = g_convert((char *)question + 3, olen, "utf-8", fmt, &bread, &bwritten, &error);
                 if (error) {
-                    LOG("WARNING - failed converting %s to utf-8 %s ", str + 2, error->message);
+                    LOG_RATE(60, "WARNING - failed converting %s to utf-8 %s ", str + 2, error->message);
                     arkime_field_string_add(pos, session, string, len, TRUE);
                     g_error_free(error);
                     return;

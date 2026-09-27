@@ -321,6 +321,10 @@ sub parse_path {
         return (undef, undef);
     }
 
+    # Like S3, the key is the percent-decoded path ('+' is literal in paths)
+    $bucket = path_decode($bucket);
+    $key = path_decode($key) if defined $key;
+
     # Reject path-traversal / absolute-path / NUL-byte attempts before any
     # filesystem use. Bucket must be a single safe segment; key may contain
     # subdirectories but no '..' components, no leading '/', no NULs.
@@ -535,8 +539,8 @@ sub list_objects_resp {
         my ($k, $v) = split /=/, $pair, 2;
         $params{$k} = $v // '' if defined $k;
     }
-    my $prefix    = $params{prefix}    // '';
-    my $delimiter = $params{delimiter} // '';
+    my $prefix    = url_decode($params{prefix}    // '');
+    my $delimiter = url_decode($params{delimiter} // '');
     my $max_keys  = $params{'max-keys'} // 5;
     my $start     = url_decode($params{'continuation-token'} // '0');
     $start = 0 unless $start =~ /^\d+$/;
@@ -561,11 +565,13 @@ sub list_objects_resp {
     my $next_start = $start + $max_keys;
     my $is_truncated = ($next_start < $total) ? 'true' : 'false';
 
+    my $prefix_x    = xml_escape($prefix);
+    my $delimiter_x = xml_escape($delimiter);
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <ListBucketResult>
   <Name>$bucket</Name>
-  <Prefix>$prefix</Prefix>
-  <Delimiter>$delimiter</Delimiter>
+  <Prefix>$prefix_x</Prefix>
+  <Delimiter>$delimiter_x</Delimiter>
   <MaxKeys>$max_keys</MaxKeys>
   <IsTruncated>$is_truncated</IsTruncated>};
 
@@ -579,9 +585,10 @@ sub list_objects_resp {
         my $size = $obj->{size};
         my $etag = $obj->{etag};
         my $date = amz_date();
+        my $key_x = xml_escape($key);
         $xml .= qq{
   <Contents>
-    <Key>$key</Key>
+    <Key>$key_x</Key>
     <LastModified>$date</LastModified>
     <ETag>$etag</ETag>
     <Size>$size</Size>
@@ -589,9 +596,10 @@ sub list_objects_resp {
     }
 
     for my $cp (sort keys %common_prefixes) {
+        my $cp_x = xml_escape($cp);
         $xml .= qq{
   <CommonPrefixes>
-    <Prefix>$cp</Prefix>
+    <Prefix>$cp_x</Prefix>
   </CommonPrefixes>};
     }
 
@@ -604,6 +612,30 @@ sub url_decode {
     return '' unless defined $s;
     $s =~ s/\+/ /g;
     $s =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;
+    return $s;
+}
+
+sub path_decode {
+    my $s = shift;
+    $s =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;
+    return $s;
+}
+
+sub xml_escape {
+    my $s = shift;
+    $s =~ s/&/&amp;/g;
+    $s =~ s/</&lt;/g;
+    $s =~ s/>/&gt;/g;
+    $s =~ s/"/&quot;/g;
+    $s =~ s/'/&apos;/g;
+    return $s;
+}
+
+# S3 event notifications URL encode the key, with spaces as '+'
+sub s3_event_key_encode {
+    my $s = shift;
+    $s =~ s{([^A-Za-z0-9\-_.~/ ])}{sprintf("%%%02X", ord($1))}ge;
+    $s =~ s/ /+/g;
     return $s;
 }
 
@@ -711,7 +743,7 @@ sub sqs_enqueue_resp {
         my $bucket = $qp{bucket} // '';
         my $key    = $qp{key}    // '';
         my $b_esc  = json_escape_string($bucket);
-        my $k_esc  = json_escape_string($key);
+        my $k_esc  = json_escape_string(s3_event_key_encode($key));
         $msg_body = qq({"Records":[{"s3":{"bucket":{"name":"$b_esc"},"object":{"key":"$k_esc"}}}]});
     }
     my ($rh, $mid) = sqs_add_message($qname, $msg_body);
@@ -796,7 +828,7 @@ sub fire_bucket_notification {
     my ($bucket, $key, $event_name, $size, $etag) = @_;
     my $configs = $bucket_notifications{$bucket} // return;
     my $b_esc = json_escape_string($bucket);
-    my $k_esc = json_escape_string($key);
+    my $k_esc = json_escape_string(s3_event_key_encode($key));
     my $e_esc = json_escape_string("s3:$event_name");
     my $etag_clean = $etag;
     $etag_clean =~ s/^"|"$//g if defined $etag_clean;

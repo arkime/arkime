@@ -474,6 +474,18 @@ FILE *arkime_state_file_open(const char *name, const char *mode)
         return NULL;
     }
 
+    // stateDir defaults to /tmp, so don't trust a file another user could have planted
+    if (mode[0] == 'r') {
+        struct stat st;
+        if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) ||
+            (st.st_uid != geteuid() && st.st_uid != 0) ||
+            (st.st_mode & (S_IWGRP | S_IWOTH))) {
+            LOG("WARNING - Ignoring state file `%s`, it must be a regular file owned by this user or root and not group or world writable", path);
+            close(fd);
+            return NULL;
+        }
+    }
+
     FILE *fp = fdopen(fd, mode);
     if (!fp) {
         LOG("ERROR - fdopen failed for state file `%s`: %s", path, strerror(errno));

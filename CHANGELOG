@@ -165,6 +165,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4224 Add ssdp parser
   - #4224 Add dhcp.yiaddr, the server assigned address from OFFER/ACK, and dhcp.paramReqList, the parameter request list
   - #4224 Add DNS PTR and SRV answer parsing
+  - #4284 Fix a crafted CAMEL (TCAP) packet hanging a packet thread forever
+  - #4284 Fix IPv4 fragments never being reassembled when the last fragment arrived first
+  - #4284 Fix pcap filenames, S3 keys and WISE field definitions being written unescaped into Elasticsearch requests, which could add or change documents and broke --skip/--reprocess for some filenames
+  - #4284 Fix SQS messages being able to point capture's signed S3 requests at another host or bucket, and S3 keys with special characters failing to load
+  - #4284 Fix crashes from a _closeNow rule matching while a session was being saved, a WISE field definition with an unknown field and no db:, and a fields entry with no type
 ## Cont3xt
   - #4265 The MCP search tool now answers with the overview for each indicator instead of every integration's raw data, which could be far more than an assistant can read at once.
           Ask for detail=full to get the raw data, and use cont3xt_integration_search to pull one integration.

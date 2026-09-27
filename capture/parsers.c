@@ -482,7 +482,17 @@ const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char
             } else {
                 mlen = strlen(m);
             }
-            return arkime_field_string_add(field, session, m, mlen, TRUE);
+            arkime_field_string_add(field, session, m, mlen, TRUE);
+
+            // Callers keep this past mid saves and libmagic reuses its buffer, so intern it
+            if (!semi)
+                return g_intern_string(m);
+
+            char buf[128];
+            mlen = MIN(mlen, (int)sizeof(buf) - 1);
+            memcpy(buf, m, mlen);
+            buf[mlen] = 0;
+            return g_intern_string(buf);
         }
         return NULL;
     case ARKIME_MAGICMODE_NONE:

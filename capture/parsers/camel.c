@@ -134,21 +134,22 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
 
         BSB_IMPORT_u08(bsb, tagLen);
 
-        int lenVal = tagLen;
+        uint32_t ulen = tagLen;
         if (tagLen & 0x80) {
             int numBytes = tagLen & 0x7f;
             if (numBytes > 4)
                 break;
-            lenVal = 0;
+            ulen = 0;
             for (int i = 0; i < numBytes && BSB_REMAINING(bsb) > 0; i++) {
                 uint8_t b = 0;
                 BSB_IMPORT_u08(bsb, b);
-                lenVal = (lenVal << 8) | b;
+                ulen = (ulen << 8) | b;
             }
         }
 
-        if (BSB_IS_ERROR(bsb) || lenVal > BSB_REMAINING(bsb))
+        if (BSB_IS_ERROR(bsb) || ulen > (uint32_t)BSB_REMAINING(bsb))
             break;
+        int lenVal = ulen;
 
         const uint8_t *valData = BSB_WORK_PTR(bsb);
 

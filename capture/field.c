@@ -155,12 +155,16 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
         return;
     }
 
-    if (info->kind) {
-        if (strncmp(info->kind, "lo", 2) == 0) {
-            info->strKind = ARKIME_FIELD_STRKIND_LOWER;
-        } else if (strncmp(info->kind, "up", 2) == 0) {
-            info->strKind = ARKIME_FIELD_STRKIND_UPPER;
-        }
+    if (!info->kind) {
+        LOG("WARNING - Field %s has no type, skipping", info->expression);
+        arkime_field_free_info(info);
+        return;
+    }
+
+    if (strncmp(info->kind, "lo", 2) == 0) {
+        info->strKind = ARKIME_FIELD_STRKIND_LOWER;
+    } else if (strncmp(info->kind, "up", 2) == 0) {
+        info->strKind = ARKIME_FIELD_STRKIND_UPPER;
     }
 
     // Ignore old style http.request/http.response, will remove in the future
@@ -252,13 +256,11 @@ int arkime_field_define_text_full(const char *field, const char *text, int *shor
     }
 
     if (!db) {
-        int pos = arkime_field_by_exp(field);
+        int pos = arkime_field_by_exp_ignore_error(field);
+        if (pos == -1)
+            LOG("ERROR - Field '%s' isn't already defined and there is no 'db:' in '%s'", field, text);
         g_strfreev(elements);
-        if (pos != -1)
-            return pos;
-
-        LOG("Didn't find field 'db:' in '%s'", text);
-        return -1;
+        return pos;
     }
 
     if (!kind) {
@@ -362,12 +364,30 @@ LOCAL int arkime_field_group_num(const char *group, int len)
     return groupNum;
 }
 /******************************************************************************/
+// Names can come from WISE and ES and are used raw as JSON keys and values
+LOCAL gboolean arkime_field_valid_name(const char *name)
+{
+    if (!name || !*name)
+        return FALSE;
+
+    for (; *name; name++) {
+        if (!g_ascii_isalnum(*name) && *name != '.' && *name != '_' && *name != '-' && *name != '@')
+            return FALSE;
+    }
+    return TRUE;
+}
+/******************************************************************************/
 int arkime_field_define(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, ArkimeFieldType type, int flags, ...)
 {
     char dbField2[100];
     char expression2[1000];
     char friendlyName2[1000];
     char help2[1000];
+
+    if (!arkime_field_valid_name(expression) || !arkime_field_valid_name(dbField)) {
+        LOG("ERROR - Ignoring field '%s' db '%s', only letters, numbers, '.', '_', '-' and '@' are allowed", expression, dbField);
+        return -1;
+    }
 
     ArkimeFieldInfo_t *minfo = 0;
     HASH_FIND(d_, fieldsByDb, dbField, minfo);
@@ -1938,26 +1958,25 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
         case  ARKIME_FIELD_TYPE_IP_GHASH:
             if (valuelen == -1)
                 valuelen = strlen(value);
-            if (ops->flags & ARKIME_FIELD_OPS_FLAGS_COPY)
+            op->strLenOrInt = valuelen;
+            if (ops->flags & ARKIME_FIELD_OPS_FLAGS_COPY) {
+                // g_utf8_* can read past the end of invalid utf8
+                gboolean utf8 = (config.fields[fieldPos]->flags & ARKIME_FIELD_FLAG_FORCE_UTF8) && g_utf8_validate(value, valuelen, NULL);
                 switch (config.fields[fieldPos]->strKind) {
                 case ARKIME_FIELD_STRKIND_NORMAL:
                     op->str = g_strndup(value, valuelen);
                     break;
                 case ARKIME_FIELD_STRKIND_LOWER:
-                    if (config.fields[fieldPos]->flags & ARKIME_FIELD_FLAG_FORCE_UTF8)
-                        op->str = g_utf8_strdown(value, valuelen);
-                    else
-                        op->str = g_ascii_strdown(value, valuelen);
+                    op->str = utf8 ? g_utf8_strdown(value, valuelen) : g_ascii_strdown(value, valuelen);
+                    op->strLenOrInt = strlen(op->str);
                     break;
                 case ARKIME_FIELD_STRKIND_UPPER:
-                    if (config.fields[fieldPos]->flags & ARKIME_FIELD_FLAG_FORCE_UTF8)
-                        op->str = g_utf8_strup(value, valuelen);
-                    else
-                        op->str = g_ascii_strup(value, valuelen);
+                    op->str = utf8 ? g_utf8_strup(value, valuelen) : g_ascii_strup(value, valuelen);
+                    op->strLenOrInt = strlen(op->str);
                     break;
-                } else
+                }
+            } else
                 op->str = value;
-            op->strLenOrInt = valuelen;
             break;
         default:
             LOG("WARNING - Unsupported expression type %d for %s", config.fields[fieldPos]->type, value);

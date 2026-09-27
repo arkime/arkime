@@ -13,6 +13,8 @@ extern ArkimeConfig_t        config;
 LOCAL int certsField;
 LOCAL int certAltField;
 
+#define MAX_CERTS 100
+
 extern uint8_t    arkime_char_to_hexstr[256][3];
 
 LOCAL uint32_t tls_process_certificate_wInfo_func;
@@ -372,7 +374,8 @@ LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
              */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                element->utf8 = atag == 12;
+                // g_utf8_strdown can read past the end of invalid utf8
+                element->utf8 = atag == 12 && g_utf8_validate((char *)value, alen, NULL);
                 if (element->utf8)
                     element->str = g_utf8_strdown((char *)value, alen);
                 else
@@ -438,6 +441,12 @@ LOCAL void certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *data, u
 LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *data, int clen)
 {
     int            badreason;
+
+    // Real chains are short, don't let a peer grow the session record without bound
+    if (session->fields[certsField] && HASH_COUNT(o_, *(session->fields[certsField]->ohash)) >= MAX_CERTS) {
+        arkime_session_add_tag(session, "cert:max-certs");
+        return 0;
+    }
 
     ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
 
@@ -577,7 +586,8 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
     }
 
 
-    if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
+    // certinfo_save writes up to ~450 fixed bytes per cert plus escaped strings
+    if (!arkime_field_object_add(certsField, session, fobject, clen * 3 + 300)) {
         certinfo_free(fobject);
         certs = 0;
     }

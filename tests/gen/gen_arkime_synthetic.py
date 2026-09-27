@@ -20,6 +20,7 @@ Layout:
   - ... (see main() for the full section list)
   - tls_256ext (8 packets)
   - dhcpv6_relay (6 packets)
+  - ip4_frag_last_first (2 packets, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -2700,6 +2701,50 @@ def sec_http2_pseudo_order():
     return build()
 
 
+def sec_ip4_frag_last_first():
+    # IPv4 UDP datagram split into two fragments sent final fragment
+    # (MF clear) first. Regression for arkime_packet_frags_process only
+    # noting the final fragment when it wasn't the first seen, so the
+    # datagram was never reassembled and the session was never created.
+    # Session 10.9.21.1:40300 -> 10.9.21.2:40301 (Ethernet linktype).
+
+    TS_START = 1700017000.0
+    CLI_MAC = bytes.fromhex('02aa00002101')
+    SRV_MAC = bytes.fromhex('02aa00002102')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    payload = b'lastfragmentfirst!reassembledOK!' * 2   # 64 bytes
+    udp = struct.pack('>HHHH', 40300, 40301, 8 + len(payload), 0) + payload
+
+    def frag(data, off, mf):
+        flags_off = (0x2000 if mf else 0) | (off // 8)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + len(data), 0x2101, flags_off, 64, 17, 0,
+                         socket.inet_aton('10.9.21.1'), socket.inet_aton('10.9.21.2'))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        return SRV_MAC + CLI_MAC + b'\x08\x00' + ip + data
+
+    pkts = [
+        frag(udp[32:], 32, False),   # final fragment first
+        frag(udp[:32], 0, True),
+    ]
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -2729,6 +2774,7 @@ def main():
     out += sec_ip6_deep_offset()
     out += sec_dns_https_trailing_empty_param()
     out += sec_http2_pseudo_order()
+    out += sec_ip4_frag_last_first()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

@@ -1192,11 +1192,13 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->insecure = config.insecure; // Default to global setting
 
     // If https to localhost or 127.0.0.1 we don't check the cert
-    if (!config.insecure &&
-        (strncmp("https://localhost", server->snames[0].name, 17) == 0 ||
-         strncmp("https://127.0.0.1", server->snames[0].name, 17) == 0)) {
-        LOG("WARNING - Using insecure mode for %s", server->snames[0].name);
-        server->insecure = 1;
+    for (i = 0; !server->insecure && i < server->snamesCnt; i++) {
+        const char *name = server->snames[i].name;
+        if ((strncmp("https://localhost", name, 17) == 0 || strncmp("https://127.0.0.1", name, 17) == 0) &&
+            (name[17] == 0 || name[17] == ':' || name[17] == '/')) {
+            LOG("WARNING - Using insecure mode for %s", name);
+            server->insecure = 1;
+        }
     }
 
     server->multi = curl_multi_init();

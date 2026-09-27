@@ -178,14 +178,31 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         uint32_t keyLen = 0;
         uint8_t *key = (uint8_t *)arkime_js0n_get_path(s3, s3Len, keyPath, &keyLen);
 
-        if (key)
+        // S3 event keys are form encoded, decode and reencode for the s3 uri
+        char *rawKey = NULL;
+        if (key) {
             key[keyLen] = 0;
+            g_strdelimit((char *)key, "+", ' ');
+            rawKey = g_uri_unescape_string((char *)key, NULL);
+            if (!rawKey)
+                LOG("WARNING - Skipping S3 key with bad encoding: %s", key);
+        }
 
-        if (bucket && key && g_regex_match(config.offlineRegex, (char *)key, 0, NULL)) {
-            sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), g_strndup((char *)bucket, bucketLen), g_strndup((char *)key, keyLen));
+        // Anyone who can send to the queue controls the bucket name
+        char *bucketStr = bucket ? g_strndup((char *)bucket, bucketLen) : NULL;
+        if (bucketStr && !arkime_reader_scheme_s3_valid_bucket(bucketStr)) {
+            LOG("WARNING - Skipping Invalid S3 bucket: %s", bucketStr);
+            g_free(bucketStr);
+            bucketStr = NULL;
+        }
+
+        if (bucketStr && rawKey && g_regex_match(config.offlineRegex, rawKey, 0, NULL)) {
+            sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), bucketStr, g_uri_escape_string(rawKey, "/", FALSE));
         } else {
+            g_free(bucketStr);
             sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), NULL, NULL);
         }
+        g_free(rawKey);
         g_free(body);
     }
 

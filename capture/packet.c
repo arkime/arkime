@@ -622,12 +622,20 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     memcpy(key + 4, &ip4->ip_dst.s_addr, 4);
     memcpy(key + 8, &ip4->ip_id, 2);
 
+    uint16_t          ip_off = ntohs(ip4->ip_off);
+    uint16_t          ip_flags = ip_off & ~IP_OFFMASK;
+    ip_off &= IP_OFFMASK;
+
     HASH_FIND(fragh_, fragsHash, key, frags);
 
     if (!frags) {
         frags = ARKIME_TYPE_ALLOC0_ALIGNED(ArkimeFrags_t);
         memcpy(frags->key, key, 10);
         frags->secs = packet->ts.tv_sec;
+        // The last fragment (MF clear) may be the first one seen
+        if ((ip_flags & IP_MF) == 0) {
+            frags->haveNoFlags = 1;
+        }
         HASH_ADD(fragh_, fragsHash, key, frags);
         DLL_PUSH_TAIL(fragl_, &fragsList, frags);
         DLL_INIT(packet_, &frags->packets);
@@ -641,11 +649,6 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     } else {
         DLL_MOVE_TAIL(fragl_, &fragsList, frags);
     }
-
-    uint16_t          ip_off = ntohs(ip4->ip_off);
-    uint16_t          ip_flags = ip_off & ~IP_OFFMASK;
-    ip_off &= IP_OFFMASK;
-
 
     // Last fragment = MF clear; ignore DF/reserved bits
     if ((ip_flags & IP_MF) == 0) {
