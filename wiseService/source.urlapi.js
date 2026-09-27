@@ -43,9 +43,14 @@ class URLApiSource extends WISESource {
   // ----------------------------------------------------------------------------
   async sendResult (key, cb) {
 
-    let url = `${this.url}`;
-
-    url = url.replace(/{value}/g, encodeURIComponent(key));
+    // Replace with functions so a $& or $' in the looked up value isn't
+    // treated as a replacement pattern. Standard base64 has / + = so it is
+    // still url encoded; base64url is url safe as is.
+    const b64 = Buffer.from(key).toString('base64');
+    const url = this.url
+      .replace(/{value}/g, () => encodeURIComponent(key))
+      .replace(/{valueBase64}/g, () => encodeURIComponent(b64))
+      .replace(/{valueBase64Url}/g, () => b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
 
     axios.get(url, { headers: this.headers })
       .then((response) => {
@@ -79,7 +84,7 @@ exports.initSource = function (api) {
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'url', required: true, help: 'The URL to load, {value} will be replaced' },
+      { name: 'url', required: true, help: 'The URL to load, {value} is replaced with the url encoded value, {valueBase64} with the base64 (url encoded) value, {valueBase64Url} with the base64url value' },
       { name: 'resultField', required: true, help: 'Field that is required to be in the result' },
       { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
     ]

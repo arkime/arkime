@@ -90,6 +90,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## WISE
   - Remove the PassiveTotal source, the API was retired by Microsoft
   - #4283 Fix saving the config from the web ui being able to add settings that weren't edited
+  - #4285 urlapi sources can use {valueBase64} and {valueBase64Url} in the url for apis that want the value base64 encoded
 
 6.7.0 2026/08/19
 ## Release
