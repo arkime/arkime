@@ -402,7 +402,8 @@ void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
 /******************************************************************************/
 void arkime_session_mark_for_close(ArkimeSession_t *session)
 {
-    if (session->closingQ)
+    // Already closing, or already unlinked because it's being saved
+    if (session->closingQ || !session->q_next)
         return;
 
     session->closingQ = 1;

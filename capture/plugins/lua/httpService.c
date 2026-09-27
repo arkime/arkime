@@ -67,7 +67,8 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
     lua_pushlstring(L, (char *)lhttp->data, lhttp->len);
 
     if (lua_pcall(L, 2, 0, 0) != 0) {
-        LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
+        LOG_RATE(60, "ERROR - lua http service callback failed, skipping: %s", lua_tostring(L, -1));
+        lua_pop(L, 1);
     }
 
     luaL_unref(L, LUA_REGISTRYINDEX, lhttp->ref);

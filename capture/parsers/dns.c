@@ -13,6 +13,7 @@
 #define DEFAULT_JSON_LEN 200
 #define HOST_IP_JSON_LEN 250
 #define ANSWER_JSON_LEN 200
+#define DNS_MAX_JSON_SIZE 200000
 
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)
 #define FNV_PRIME ((uint32_t)0x01000193)
@@ -1452,7 +1453,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             answer->ttl = anttl;
 
             DLL_PUSH_TAIL(t_, &dns->answers, answer);
-            jsonLen += ANSWER_JSON_LEN;
+            // namelen may have been reused for rdata names, so measure the owner name
+            jsonLen += ANSWER_JSON_LEN + strlen(answer->name) * 2;
             continue;
 
 continueerr:
@@ -1463,6 +1465,10 @@ continueerr:
     dns->headerFlags = (data[2] & 0x07) << 4 | ((data[3] & 0xf0) >> 4);
 
     session->fields[dnsField]->jsonSize += jsonLen;
+
+    // Object fields don't trigger a mid save themselves, so bound DNS here
+    if (session->fields[dnsField]->jsonSize > DNS_MAX_JSON_SIZE)
+        session->midSave = 1;
 }
 /******************************************************************************/
 LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)

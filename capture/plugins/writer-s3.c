@@ -272,6 +272,7 @@ LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
             for (i = 1; i < last; i++) {
                 BSB_EXPORT_sprintf(bsb, "<Part><PartNumber>%d</PartNumber><ETag>%s</ETag></Part>\n", i, file->partNumbers[i]);
                 g_free(file->partNumbers[i]);
+                file->partNumbers[i] = NULL;
             }
             BSB_EXPORT_cstr(bsb, "</CompleteMultipartUpload>\n");
 
@@ -398,7 +399,10 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     g_regex_match_full(regex, (char *)data, len, 0, 0, &match_info, NULL);
     ARKIME_LOCK(uploadState);
     if (g_match_info_matches(match_info)) {
-        file->uploadId = g_match_info_fetch(match_info, 1);
+        // Encode it since it goes into query strings, real UploadIds are unchanged
+        char *uploadId = g_match_info_fetch(match_info, 1);
+        file->uploadId = g_uri_escape_string(uploadId, NULL, FALSE);
+        g_free(uploadId);
         file->partNumber = 1;
         file->partNumberResponses = 1;
     } else {

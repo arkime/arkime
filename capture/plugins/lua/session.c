@@ -87,8 +87,10 @@ LOCAL void molua_classify_cb(ArkimeSession_t *session, const uint8_t *data, int 
     molua_pushArkimeSession(L, session);
     lua_pushlstring(L, (char *)data, len);
     lua_pushnumber(L, which);
+    // Packet data can make a script fail, so don't exit capture
     if (lua_pcall(L, 3, 0, 0) != 0) {
-        LOGEXIT("error running function %s: %s", (char *)uw, lua_tostring(L, -1));
+        LOG_RATE(60, "ERROR - lua classify function %s failed, skipping: %s", (char *)uw, lua_tostring(L, -1));
+        lua_pop(L, 1);
     }
 }
 
@@ -103,7 +105,9 @@ LOCAL int molua_parsers_cb(ArkimeSession_t *session, void *uw, const uint8_t *da
     lua_pushnumber(L, which);
 
     if (lua_pcall(L, 3, 1, 0) != 0) {
-        LOGEXIT("error running parser function %s", lua_tostring(L, -1));
+        LOG_RATE(60, "ERROR - lua parser function failed, skipping: %s", lua_tostring(L, -1));
+        lua_pop(L, 1);
+        return 0;
     }
 
     int num = lua_tointeger(L, -1);
@@ -181,12 +185,12 @@ LOCAL void molua_http_cb(int callback_type, ArkimeSession_t *session, const http
         lua_pushvalue(L, -3);
         lua_pushnumber(L, hp->type == HTTP_REQUEST ? 0 : 1);
 
-        if (lua_pcall(L, 3, 1, 0) != 0) {
-            molua_stackDump(L);
-            LOGEXIT("error running http callback function %s type %d", lua_tostring(L, -1), callback_type);
-        }
-
-        int num = lua_tointeger(L, -1);
+        // On error turn the callback off for this session, the error is left where the result would be
+        int num = -1;
+        if (lua_pcall(L, 3, 1, 0) != 0)
+            LOG_RATE(60, "ERROR - lua http callback %s type %d failed, skipping for session: %s", callbackRefs[callback_type][i], callback_type, lua_tostring(L, -1));
+        else
+            num = lua_tointeger(L, -1);
         if (num == -1) {
             if (!mp) {
                 mp = session->pluginData[molua_pluginIndex] = ARKIME_TYPE_ALLOC0(MoluaPlugin_t);
@@ -214,12 +218,11 @@ LOCAL void molua_http_on_body_cb(ArkimeSession_t *session, http_parser *hp, cons
         molua_pushArkimeSession(L, session);
         lua_pushvalue(L, -3);
 
-        if (lua_pcall(L, 2, 1, 0) != 0) {
-            molua_stackDump(L);
-            LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
-        }
-
-        int num = lua_tointeger(L, -1);
+        int num = -1;
+        if (lua_pcall(L, 2, 1, 0) != 0)
+            LOG_RATE(60, "ERROR - lua http body callback %s failed, skipping for session: %s", callbackRefs[MOLUA_REF_HTTP][i], lua_tostring(L, -1));
+        else
+            num = lua_tointeger(L, -1);
         if (num == -1) {
             if (!mp) {
                 mp = session->pluginData[molua_pluginIndex] = ARKIME_TYPE_ALLOC0(MoluaPlugin_t);
@@ -379,8 +382,8 @@ LOCAL void molua_pre_save(ArkimeSession_t *session, int final)
         lua_pushboolean(L, final);
 
         if (lua_pcall(L, 2, 0, 0) != 0) {
-            molua_stackDump(L);
-            LOGEXIT("error running pre save callback function %s type %d", lua_tostring(L, -1), MOLUA_REF_PRE_SAVE);
+            LOG_RATE(60, "ERROR - lua pre save callback %s failed, skipping: %s", callbackRefs[MOLUA_REF_PRE_SAVE][i], lua_tostring(L, -1));
+            lua_pop(L, 1);
         }
     }
 }
@@ -399,8 +402,8 @@ LOCAL void molua_save(ArkimeSession_t *session, int final)
         lua_pushboolean(L, final);
 
         if (lua_pcall(L, 2, 0, 0) != 0) {
-            molua_stackDump(L);
-            LOGEXIT("error running save callback function %s type %d", lua_tostring(L, -1), MOLUA_REF_SAVE);
+            LOG_RATE(60, "ERROR - lua save callback %s failed, skipping: %s", callbackRefs[MOLUA_REF_SAVE][i], lua_tostring(L, -1));
+            lua_pop(L, 1);
         }
     }
 
@@ -970,4 +973,7 @@ void luaopen_arkimesession(lua_State *L)
 
     if (certsField == 0)
         certsField = arkime_field_by_exp("cert");
+
+    // molua_save frees the per session plugin data even if no script registers a save callback
+    MS_register_all_save_cbs();
 }

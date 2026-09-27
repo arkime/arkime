@@ -2200,7 +2200,9 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         name = g_regex_replace_literal(numHexRegex, name1, -1, 0, (char *)arkime_char_to_hexstr[num % 256], 0, NULL);
         g_free(name1);
 
-        BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", num, name, fp, config.nodeName, size, locked);
+        BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":", num);
+        arkime_db_js0n_str(&jbsb, (uint8_t *)name, TRUE);
+        BSB_EXPORT_sprintf(jbsb, ", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", fp, config.nodeName, size, locked);
         key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     } else {
 
@@ -2292,7 +2294,9 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         snprintf(filename + flen, sizeof(filename) - flen, "/%s-%02d%02d%02d-%08u%s", config.nodeName, tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, num, name);
         name = 0;
 
-        BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":\"%s\", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", num, filename, fp, config.nodeName, locked);
+        BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":", num);
+        arkime_db_js0n_str(&jbsb, (uint8_t *)filename, TRUE);
+        BSB_EXPORT_sprintf(jbsb, ", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", fp, config.nodeName, locked);
         key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     }
 
@@ -2321,14 +2325,14 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         // HACK: But need num as we create this
         if (strcmp(field, "indexFilename") == 0) {
             char *value1 = g_regex_replace_literal(numRegex, value, -1, 0, numstr, 0, NULL);
-            BSB_EXPORT_sprintf(jbsb, "\"%s\"", value1);
+            arkime_db_js0n_str(&jbsb, (uint8_t *)value1, TRUE);
             g_free(value1);
         } else if (field[0] == '#') {
             BSB_EXPORT_sprintf(jbsb, "%ld", (long)value);
         } else if (*value == '{' || *value == '[') {
             BSB_EXPORT_sprintf(jbsb, "%s", value);
         } else {
-            BSB_EXPORT_sprintf(jbsb, "\"%s\"", value);
+            arkime_db_js0n_str(&jbsb, (uint8_t *)value, TRUE);
         }
     }
     va_end(args);
@@ -2687,6 +2691,76 @@ LOCAL void arkime_db_fieldbsb_make()
     }
 }
 /******************************************************************************/
+// Only allow raw JSON of the form ["name","name2"] or [], like the aliases and category arrays
+LOCAL gboolean arkime_db_field_names_array(const char *value)
+{
+    if (*value++ != '[')
+        return FALSE;
+
+    while (*value == ' ')
+        value++;
+    if (*value == ']')
+        return value[1] == 0;
+
+    while (1) {
+        while (*value == ' ')
+            value++;
+        if (*value++ != '"')
+            return FALSE;
+        const char *start = value;
+        while (g_ascii_isalnum(*value) || *value == '.' || *value == '_' || *value == '-' || *value == '@')
+            value++;
+        if (value == start || *value++ != '"')
+            return FALSE;
+        while (*value == ' ')
+            value++;
+        if (*value == ']')
+            return value[1] == 0;
+        if (*value++ != ',')
+            return FALSE;
+    }
+}
+/******************************************************************************/
+// Is the value already the body of a JSON string, no bare quotes or control chars and only valid escapes
+LOCAL gboolean arkime_db_field_json_string_body(const char *value)
+{
+    for (; *value; value++) {
+        if (*value == '"' || (uint8_t)*value < 0x20)
+            return FALSE;
+        if (*value != '\\')
+            continue;
+        value++;
+        if (*value == 'u') {
+            for (int i = 1; i <= 4; i++) {
+                if (!g_ascii_isxdigit(value[i]))
+                    return FALSE;
+            }
+            value += 4;
+        } else if (!*value || !strchr("\"\\/bfnrt", *value)) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+/******************************************************************************/
+// Field definitions can come from WISE, so escape everything except simple name arrays
+LOCAL void arkime_db_field_kv(const char *key, const char *value)
+{
+    BSB_EXPORT_sprintf(fieldBSB, "\"%s\": ", key);
+    if (!value) {
+        BSB_EXPORT_cstr(fieldBSB, "\"\"");
+    } else if (arkime_db_field_names_array(value)) {
+        BSB_EXPORT_ptr(fieldBSB, value, strlen(value));
+    } else if (strcmp(key, "regex") == 0 && arkime_db_field_json_string_body(value)) {
+        // Plugins have always passed regex already JSON escaped
+        BSB_EXPORT_u08(fieldBSB, '"');
+        BSB_EXPORT_ptr(fieldBSB, value, strlen(value));
+        BSB_EXPORT_u08(fieldBSB, '"');
+    } else {
+        arkime_db_js0n_str(&fieldBSB, (uint8_t *)value, TRUE);
+    }
+}
+/******************************************************************************/
 void arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap)
 {
     if (config.dryRun)
@@ -2695,12 +2769,16 @@ void arkime_db_add_field(const char *group, const char *kind, const char *expres
     arkime_db_fieldbsb_make();
 
     BSB_EXPORT_sprintf(fieldBSB, "{\"index\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
-    BSB_EXPORT_sprintf(fieldBSB, "{\"friendlyName\": \"%s\", \"group\": \"%s\", \"help\": \"%s\", \"dbField2\": \"%s\", \"type\": \"%s\"",
-                       friendlyName,
-                       group,
-                       help,
-                       dbField,
-                       kind);
+    BSB_EXPORT_u08(fieldBSB, '{');
+    arkime_db_field_kv("friendlyName", friendlyName);
+    BSB_EXPORT_cstr(fieldBSB, ", ");
+    arkime_db_field_kv("group", group);
+    BSB_EXPORT_cstr(fieldBSB, ", ");
+    arkime_db_field_kv("help", help);
+    BSB_EXPORT_cstr(fieldBSB, ", ");
+    arkime_db_field_kv("dbField2", dbField);
+    BSB_EXPORT_cstr(fieldBSB, ", ");
+    arkime_db_field_kv("type", kind);
 
     if (haveap) {
         while (1) {
@@ -2712,11 +2790,8 @@ void arkime_db_add_field(const char *group, const char *kind, const char *expres
             if (!value)
                 break;
 
-            BSB_EXPORT_sprintf(fieldBSB, ", \"%s\": ", field);
-            if (*value == '{' || *value == '[')
-                BSB_EXPORT_sprintf(fieldBSB, "%s", value);
-            else
-                BSB_EXPORT_sprintf(fieldBSB, "\"%s\"", value);
+            BSB_EXPORT_cstr(fieldBSB, ", ");
+            arkime_db_field_kv(field, value);
         }
     }
 
@@ -2742,12 +2817,8 @@ void arkime_db_update_field(const char *expression, const char *name, const char
 
     BSB_EXPORT_sprintf(fieldBSB, "{\"update\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
 
-    BSB_EXPORT_sprintf(fieldBSB, "{\"doc\": {\"%s\":", name);
-    if (*value == '[') {
-        BSB_EXPORT_sprintf(fieldBSB, "%s", value);
-    } else {
-        arkime_db_js0n_str(&fieldBSB, (uint8_t *)value, TRUE);
-    }
+    BSB_EXPORT_cstr(fieldBSB, "{\"doc\": {");
+    arkime_db_field_kv(name, value);
     BSB_EXPORT_cstr(fieldBSB, "}}\n");
 }
 /******************************************************************************/
@@ -2796,12 +2867,24 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
 {
     size_t                 data_len;
-    char                   key[2000];
+    char                   key[200];
     int                    key_len;
 
-    key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_search?rest_total_hits_as_int&size=1&sort=num:desc&q=node%%3A%%22%s%%22+AND+name%%3A%%22%s%%22", config.prefix, config.nodeName, filename);
+    key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_search?rest_total_hits_as_int", config.prefix);
 
-    uint8_t *data = arkime_http_get(esServer, key, key_len, &data_len);
+    // Escaping can expand each byte to 6
+    int   size = 6 * (strlen(config.nodeName) + strlen(filename)) + 200;
+    char *body = g_malloc(size);
+    BSB   bsb;
+    BSB_INIT(bsb, body, size);
+    BSB_EXPORT_cstr(bsb, "{\"size\":1,\"sort\":[{\"num\":\"desc\"}],\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"node\":[");
+    arkime_db_js0n_str(&bsb, (uint8_t *)config.nodeName, TRUE);
+    BSB_EXPORT_cstr(bsb, "]}},{\"term\":{\"name\":");
+    arkime_db_js0n_str(&bsb, (uint8_t *)filename, TRUE);
+    BSB_EXPORT_cstr(bsb, "}}]}}}");
+
+    uint8_t *data = arkime_http_send_sync(esServer, "POST", key, key_len, body, BSB_LENGTH(bsb), NULL, &data_len, NULL);
+    g_free(body);
 
     if (!data) {
         return FALSE;
