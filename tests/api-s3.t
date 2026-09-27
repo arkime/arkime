@@ -1,4 +1,4 @@
-use Test::More tests => 27;
+use Test::More tests => 42;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -81,6 +81,54 @@ system("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http:
 system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $sqstag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqs.log 2>&1");
 
 countTest2($expected, "date=-1&expression=" . uri_escape("tags=$sqstag"));
+
+# --- S3 keys with URL/XML special characters must be encoded in the request path ---
+my $specialDir = "special-$sqsvalue";
+my $specialKey = "$specialDir/a?b&c d+e#f%g'h.pcap";
+my $encodedKey = "$specialDir/a%3Fb%26c%20d%2Be%23f%25g%27h.pcap";
+
+# From a bucket listing (XML escaped keys)
+system(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://testbucket/$specialKey" > /dev/null 2>&1));
+my $listtag = "s3list-$sqsvalue";
+system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $listtag -r s3http://127.0.0.1:4566/testbucket/$specialDir/ > /tmp/arkime.capture.s3list.log 2>&1");
+countTest2($expected, "date=-1&expression=" . uri_escape("tags=$listtag"));
+
+esGet("/tests2_files/_refresh");
+my $fjson = esPost("/tests2_files/_search?rest_total_hits_as_int=true", to_json({query => {term => {name => "s3http://127.0.0.1:4566/testbucket/$encodedKey"}}}));
+is ($fjson->{hits}->{total}, 1, "files record name has the encoded key");
+is ($fjson->{hits}->{hits}->[0]->{_source}->{extra}->{path}, "/$specialKey", "files record extra.path has the raw key");
+
+# A listing prefix with special characters
+system(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://testbucket/pre fix&$sqsvalue/x.pcap" > /dev/null 2>&1));
+my $prefixtag = "s3prefix-$sqsvalue";
+system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $prefixtag -r 's3http://127.0.0.1:4566/testbucket/pre%20fix%26$sqsvalue/' > /tmp/arkime.capture.s3prefix.log 2>&1");
+countTest2($expected, "date=-1&expression=" . uri_escape("tags=$prefixtag"));
+
+# From an SQS bucket notification (URL encoded keys)
+my $sqsspecialtag = "sqsspecial-$sqsvalue";
+system(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://sqsbucket/$specialKey" > /dev/null 2>&1));
+system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $sqsspecialtag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqsspecial.log 2>&1");
+countTest2($expected, "date=-1&expression=" . uri_escape("tags=$sqsspecialtag"));
+
+# A key with .. segments must not reach another bucket
+my $travtag = "sqstrav-$sqsvalue";
+system(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://testbucket/$specialDir/plain.pcap" > /dev/null 2>&1));
+system("curl -s -X POST 'http://localhost:4566/_sqs_enqueue/000000000000/sqsqueue?bucket=sqsbucket&key=" . uri_escape("x/../../testbucket/$specialDir/plain.pcap") . "' > /dev/null");
+system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $travtag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqstrav.log 2>&1");
+countTest2(0, "date=-1&expression=" . uri_escape("tags=$travtag"));
+is (system("grep -q 'Invalid S3 key' /tmp/arkime.capture.sqstrav.log"), 0, "traversal key rejected");
+
+# --- SQS bucket names must not change the S3 host or path ---
+my $badtag = "sqsbadbucket-$sqsvalue";
+foreach my $bucket ("evil.example#", "localhost?", "a/../testbucket") {
+    system("curl -s -X POST 'http://localhost:4566/_sqs_enqueue/000000000000/sqsqueue?bucket=" . uri_escape($bucket) . "&key=" . uri_escape("$specialDir/plain.pcap") . "' > /dev/null");
+}
+system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $badtag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqsbadbucket.log 2>&1");
+countTest2(0, "date=-1&expression=" . uri_escape("tags=$badtag"));
+is (`grep -c 'Invalid S3 bucket' /tmp/arkime.capture.sqsbadbucket.log` + 0, 3, "bad SQS buckets rejected");
+
+system(qq(../capture/capture -o disablePython=true -c config.test.ini -n s3-test -r "s3://evil.example#/$specialDir/plain.pcap" > /tmp/arkime.capture.s3badbucket.log 2>&1));
+is (system("grep -q 'Invalid S3 bucket' /tmp/arkime.capture.s3badbucket.log"), 0, "bad s3:// bucket rejected");
 
 # --- s3Expire (issue #4099): force expire via regressionTests endpoint ---
 my $filesQuery = '{"query":{"bool":{"must":[{"prefix":{"name":"s3://"}}],"must_not":{"term":{"locked":1}}}}}';

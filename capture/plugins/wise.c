@@ -212,8 +212,7 @@ LOCAL void wise_load_fields()
         fieldsMap[0][i] = arkime_field_define_text(str, NULL);
         if (fieldsMap[0][i] == -1) {
             fieldsTS = 0;
-            if (config.debug)
-                LOG("Couldn't define field - %d %d %s", i, fieldsMap[0][i], BSB_WORK_PTR(bsb));
+            LOG("ERROR - WISE server %s returned field definition %d that can't be used and will be ignored, fix it on the WISE server: '%s'", wiseHost, i, str);
         }
         BSB_IMPORT_skip(bsb, len);
     }
@@ -365,8 +364,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
             fieldsMap[hashPos][i] = arkime_field_define_text(str, NULL);
             if (fieldsMap[hashPos][i] == -1) {
                 fieldsTS = 0;
-                if (config.debug)
-                    LOG("Couldn't define field - %d %d %s", i, fieldsMap[hashPos][i], BSB_WORK_PTR(bsb));
+                LOG_RATE(60, "ERROR - WISE server %s returned field definition %d that can't be used and will be ignored, fix it on the WISE server: '%s'", wiseHost, i, str);
             }
             BSB_IMPORT_skip(bsb, len);
         }

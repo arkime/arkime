@@ -19,8 +19,6 @@ LOCAL char                  *s3Region;
 LOCAL gboolean               inited;
 LOCAL gboolean               s3PathAccessStyle;
 
-LOCAL char                   extraInfo[600];
-
 /* S3Item is used to get the list of files from the http thread into the scheme thread */
 typedef struct s3_item {
     struct s3_item  *item_next, *item_prev;
@@ -46,6 +44,7 @@ typedef struct s3_request {
     ArkimeSchemeAction_t  *actions;
     const char            *url;
     char                  *continuation; // Continuation token, http thread -> scheme thread
+    char                  *extraInfo;    // JSON describing the object, saved in the files record
     uint8_t                isDir : 1;    // Doing a prefix match
     uint8_t                isS3 : 1;     // Use S3 URL
     uint8_t                tryAgain : 1; // Try again because wrong region
@@ -111,6 +110,97 @@ LOCAL void scheme_s3_parse_region(const uint8_t *data, int data_len, const char 
     }
 }
 
+/******************************************************************************/
+// Bucket names end up in hostnames and paths, so only allow host safe names.
+// Also allows the legacy us-east-1 uppercase, underscore, and length rules.
+gboolean arkime_reader_scheme_s3_valid_bucket(const char *bucket)
+{
+    int len = strlen(bucket);
+    if (len < 3 || len > 255)
+        return FALSE;
+
+    if (!g_ascii_isalnum(bucket[0]) || !g_ascii_isalnum(bucket[len - 1]))
+        return FALSE;
+
+    for (int i = 0; i < len; i++) {
+        if (!g_ascii_isalnum(bucket[i]) && bucket[i] != '.' && bucket[i] != '-' && bucket[i] != '_')
+            return FALSE;
+    }
+
+    return strstr(bucket, "..") == NULL;
+}
+/******************************************************************************/
+// ListObjects keys are XML escaped
+LOCAL char *scheme_s3_xml_unescape(const char *str)
+{
+    GString *out = g_string_sized_new(strlen(str));
+
+    while (*str) {
+        if (*str != '&') {
+            g_string_append_c(out, *str++);
+            continue;
+        }
+
+        const char *semi = strchr(str, ';');
+        if (!semi)
+            goto bad;
+
+        int len = semi - str + 1;
+        if (len == 5 && memcmp(str, "&amp;", 5) == 0) {
+            g_string_append_c(out, '&');
+        } else if (len == 4 && memcmp(str, "&lt;", 4) == 0) {
+            g_string_append_c(out, '<');
+        } else if (len == 4 && memcmp(str, "&gt;", 4) == 0) {
+            g_string_append_c(out, '>');
+        } else if (len == 6 && memcmp(str, "&quot;", 6) == 0) {
+            g_string_append_c(out, '"');
+        } else if (len == 6 && memcmp(str, "&apos;", 6) == 0) {
+            g_string_append_c(out, '\'');
+        } else if (str[1] == '#') {
+            char *end;
+            gunichar c;
+            if (str[2] == 'x' || str[2] == 'X')
+                c = strtoul(str + 3, &end, 16);
+            else
+                c = strtoul(str + 2, &end, 10);
+            if (end != semi || c == 0 || !g_unichar_validate(c))
+                goto bad;
+            g_string_append_unichar(out, c);
+        } else {
+            goto bad;
+        }
+        str = semi + 1;
+    }
+    return g_string_free(out, FALSE);
+
+bad:
+    g_string_free(out, TRUE);
+    return NULL;
+}
+/******************************************************************************/
+// Decode a uri encoded key, reject . and .. segments, and return the key
+// encoded the way SigV4 expects. Sets *raw to the decoded key.
+LOCAL char *scheme_s3_key_encode(const char *encoded, char **raw)
+{
+    char *key = g_uri_unescape_string(encoded, NULL);
+    if (!key || !*key) {
+        g_free(key);
+        return NULL;
+    }
+
+    char **segs = g_strsplit(key, "/", 0);
+    for (int i = 0; segs[i]; i++) {
+        if (strcmp(segs[i], ".") == 0 || strcmp(segs[i], "..") == 0) {
+            g_strfreev(segs);
+            g_free(key);
+            return NULL;
+        }
+    }
+    g_strfreev(segs);
+
+    *raw = key;
+    return g_uri_escape_string(key, "/", FALSE);
+}
 /******************************************************************************/
 LOCAL char *scheme_s3_escape(const char *str, int len)
 {
@@ -187,16 +277,27 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
         *end = 0;
         start = end + 6;
 
-        if (!g_regex_match(config.offlineRegex, key, 0, NULL)) {
+        char *rawKey = scheme_s3_xml_unescape(key);
+        if (!rawKey) {
+            LOG("WARNING - Skipping S3 key with bad XML escaping: %s", key);
             continue;
         }
 
+        if (!g_regex_match(config.offlineRegex, rawKey, 0, NULL)) {
+            g_free(rawKey);
+            continue;
+        }
+
+        char *encKey = g_uri_escape_string(rawKey, "/", FALSE);
+        g_free(rawKey);
+
         char uri[2000];
         if (req->isS3) {
-            snprintf(uri, sizeof(uri), "s3://%s/%s", req->url, key);
+            snprintf(uri, sizeof(uri), "s3://%s/%s", req->url, encKey);
         } else {
-            snprintf(uri, sizeof(uri), "s3%s/%s", req->url, key);
+            snprintf(uri, sizeof(uri), "s3%s/%s", req->url, encKey);
         }
+        g_free(encKey);
 
         s3_enqueue(s3Items, uri);
     }
@@ -205,6 +306,31 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
     s3Items->done = 1;
     ARKIME_COND_BROADCAST(s3Items->lock);
     ARKIME_UNLOCK(s3Items->lock);
+}
+/******************************************************************************/
+LOCAL char *scheme_s3_extra(const char *endpoint, const char *bucket, const char *region, const char *path, gboolean pathStyle)
+{
+    // Escaping can expand each byte to 6
+    int size = 6 * (strlen(endpoint) + strlen(bucket) + strlen(region) + strlen(path)) + 100;
+    char *extraInfo = g_malloc(size);
+
+    BSB bsb;
+    BSB_INIT(bsb, extraInfo, size);
+    BSB_EXPORT_cstr(bsb, "{\"endpoint\":");
+    arkime_db_js0n_str(&bsb, (uint8_t *)endpoint, TRUE);
+    BSB_EXPORT_cstr(bsb, ",\"bucket\":");
+    arkime_db_js0n_str(&bsb, (uint8_t *)bucket, TRUE);
+    BSB_EXPORT_cstr(bsb, ",\"region\":");
+    arkime_db_js0n_str(&bsb, (uint8_t *)region, TRUE);
+    BSB_EXPORT_cstr(bsb, ",\"path\":");
+    arkime_db_js0n_str(&bsb, (uint8_t *)path, TRUE);
+    BSB_EXPORT_sprintf(bsb, ", \"pathStyle\": %s}", pathStyle ? "true" : "false");
+    BSB_EXPORT_u08(bsb, 0);
+
+    if (config.debug)
+        LOG("extraInfo: %s", extraInfo);
+
+    return extraInfo;
 }
 /******************************************************************************/
 LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
@@ -219,7 +345,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
             return 1;
         }
     }
-    return arkime_reader_scheme_process(req->url, data, data_len, extraInfo, req->actions);
+    return arkime_reader_scheme_process(req->url, data, data_len, req->extraInfo, req->actions);
 }
 /******************************************************************************/
 LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
@@ -274,6 +400,18 @@ LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *
     return server;
 }
 /******************************************************************************/
+// The prefix comes from a uri so may be encoded, decode it and then encode it as a query value
+LOCAL char *scheme_s3_prefix_encode(const char *prefix)
+{
+    if (!prefix || !*prefix)
+        return NULL;
+
+    char *raw = g_uri_unescape_string(prefix, NULL);
+    char *encoded = g_uri_escape_string(raw ? raw : prefix, NULL, FALSE);
+    g_free(raw);
+    return encoded;
+}
+/******************************************************************************/
 LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     char **uris = g_strsplit(dir, "/", 4);
@@ -284,9 +422,16 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         return 1;
     }
 
+    if (!arkime_reader_scheme_s3_valid_bucket(uris[2])) {
+        LOG("ERROR - Invalid S3 bucket %s", dir);
+        g_strfreev(uris);
+        return 1;
+    }
+
+    char *prefix = scheme_s3_prefix_encode(uris[3]);
     char uri[2000];
-    if (uris[3]) {
-        snprintf(uri, sizeof(uri), "s3://%s/?list-type=2&prefix=%s", uris[2], uris[3]);
+    if (prefix) {
+        snprintf(uri, sizeof(uri), "s3://%s/?list-type=2&prefix=%s", uris[2], prefix);
     } else {
         snprintf(uri, sizeof(uri), "s3://%s/?list-type=2", uris[2]);
     }
@@ -338,8 +483,8 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         if (req.continuation) {
             char *uri2;
 
-            if (uris[3]) {
-                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, uris[3]);
+            if (prefix) {
+                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, prefix);
             } else {
                 uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2", uris[2], req.continuation);
             }
@@ -373,6 +518,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
+    g_free(prefix);
     g_strfreev(uris);
     return 1;
 }
@@ -407,8 +553,8 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 
     char **paths = g_strsplit(path, "/", 3);  // Split into at most 3: empty, bucket, prefix
 
-    if (!paths[0] || !paths[1] || paths[1][0] == 0) {
-        LOG("ERROR - S3 directory URL missing bucket: %s", dir);
+    if (!paths[0] || !paths[1] || paths[1][0] == 0 || !arkime_reader_scheme_s3_valid_bucket(paths[1])) {
+        LOG("ERROR - S3 directory URL missing or invalid bucket: %s", dir);
         g_strfreev(paths);
         curl_free(scheme);
         curl_free(host);
@@ -449,9 +595,10 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     char shpb[1000];
     snprintf(shpb, sizeof(shpb), "%s/%s", schemehostport, paths[1]);
 
+    char *prefix = scheme_s3_prefix_encode(paths[2]);
     char uri[2000];
-    if (paths[2] && paths[2][0] != 0) {
-        snprintf(uri, sizeof(uri), "%s/?list-type=2&prefix=%s", shpb, paths[2]);
+    if (prefix) {
+        snprintf(uri, sizeof(uri), "%s/?list-type=2&prefix=%s", shpb, prefix);
     } else {
         snprintf(uri, sizeof(uri), "%s/?list-type=2", shpb);
     }
@@ -479,8 +626,8 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
         if (req.continuation) {
             char *uri2;
 
-            if (paths[2] && paths[2][0] != 0) {
-                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, paths[2]);
+            if (prefix) {
+                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, prefix);
             } else {
                 uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
             }
@@ -514,6 +661,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
+    g_free(prefix);
     g_strfreev(paths);
     return 1;
 }
@@ -541,11 +689,29 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
 
     char **uris = g_strsplit(uri, "/", 0);
 
-    if (!uris[0] || !uris[1] || !uris[2]) {
+    if (!uris[0] || !uris[1] || !uris[2] || !uris[3]) {
         LOG("ERROR - Invalid S3 uri %s", uri);
         g_strfreev(uris);
         return 1;
     }
+
+    if (!arkime_reader_scheme_s3_valid_bucket(uris[2])) {
+        LOG("ERROR - Invalid S3 bucket %s", uri);
+        g_strfreev(uris);
+        return 1;
+    }
+
+    char *rawKey = NULL;
+    char *encKey = scheme_s3_key_encode(uri + 6 + strlen(uris[2]), &rawKey);
+    if (!encKey) {
+        LOG("ERROR - Invalid S3 key %s", uri);
+        g_strfreev(uris);
+        return 1;
+    }
+    char *reqPath = g_strconcat("/", encKey, NULL);
+    char *extraPath = g_strconcat("/", rawKey, NULL);
+    g_free(encKey);
+    g_free(rawKey);
 
     S3Request req = {
         .actions = actions,
@@ -578,18 +744,17 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
 
         void *server = scheme_s3_make_server(creds, schemehostport, region);
 
-        snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": %s}",
-                 schemehostport,
-                 uris[2],
-                 region,
-                 uri + 5 + strlen(uris[2]),
-                 s3PathAccessStyle ? "true" : "false");
-        scheme_s3_request(server, creds, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, scheme_s3_read);
+        g_free(req.extraInfo);
+        req.extraInfo = scheme_s3_extra(schemehostport, uris[2], region, extraPath, s3PathAccessStyle);
+        scheme_s3_request(server, creds, reqPath, uris[2], &req, s3PathAccessStyle, scheme_s3_read);
 
         ARKIME_LOCK(waiting);
         ARKIME_LOCK(waiting);
         ARKIME_UNLOCK(waiting);
     } while (req.tryAgain);
+    g_free(req.extraInfo);
+    g_free(reqPath);
+    g_free(extraPath);
     g_strfreev(uris);
 
     return 0;
@@ -618,7 +783,8 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     }
 
     CURLU *h = curl_url();
-    curl_url_set(h, CURLUPART_URL, uri, CURLU_NON_SUPPORT_SCHEME);
+    // PATH_AS_IS so .. segments reach the key check instead of being collapsed
+    curl_url_set(h, CURLUPART_URL, uri, CURLU_NON_SUPPORT_SCHEME | CURLU_PATH_AS_IS);
 
     int rc = 0;
     char *scheme = NULL;
@@ -633,6 +799,16 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     char *path = NULL;
     rc += curl_url_get(h, CURLUPART_PATH, &path, 0);
 
+    // Keys are uri encoded, so a query or fragment means a bad key
+    char *query = NULL;
+    char *fragment = NULL;
+    curl_url_get(h, CURLUPART_QUERY, &query, 0);
+    curl_url_get(h, CURLUPART_FRAGMENT, &fragment, 0);
+    if (query || fragment)
+        rc++;
+    curl_free(query);
+    curl_free(fragment);
+
     if (rc) {
         LOG("Error parsing %s", uri);
         curl_free(scheme);
@@ -645,8 +821,8 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
 
     char **paths = g_strsplit(path, "/", 0);
 
-    if (!paths[0] || !paths[1] || paths[1][0] == 0) {
-        LOG("ERROR - S3 file URL missing bucket: %s", uri);
+    if (!paths[0] || !paths[1] || paths[1][0] == 0 || !paths[2] || !arkime_reader_scheme_s3_valid_bucket(paths[1])) {
+        LOG("ERROR - S3 file URL missing or invalid bucket or key: %s", uri);
         g_strfreev(paths);
         curl_free(scheme);
         curl_free(host);
@@ -655,6 +831,23 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
         curl_url_cleanup(h);
         return 1;
     }
+
+    char *rawKey = NULL;
+    char *encKey = scheme_s3_key_encode(path + 2 + strlen(paths[1]), &rawKey);
+    if (!encKey) {
+        LOG("ERROR - Invalid S3 key %s", uri);
+        g_strfreev(paths);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
+    char *reqPath = g_strconcat("/", encKey, NULL);
+    char *extraPath = g_strconcat("/", rawKey, NULL);
+    g_free(encKey);
+    g_free(rawKey);
 
     char schemehostport[300];
     if (port)
@@ -685,24 +878,19 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
 
     void *server = scheme_s3_make_server(creds, schemehostport, region);
 
-    snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": true}",
-             schemehostport,
-             paths[1],
-             region,
-             path + 1 + strlen(paths[1]));
-    if (config.debug)
-        LOG("extraInfo: %s", extraInfo);
-
     S3Request req = {
         .actions = actions,
         .url = uri,
+        .extraInfo = scheme_s3_extra(schemehostport, paths[1], region, extraPath, TRUE),
         .isDir = FALSE,
         .isS3 = FALSE,
         .tryAgain = FALSE,
         .first = TRUE
     };
 
-    scheme_s3_request(server, creds, path + 1 + strlen(paths[1]), paths[1], &req, TRUE, scheme_s3_read);
+    scheme_s3_request(server, creds, reqPath, paths[1], &req, TRUE, scheme_s3_read);
+    g_free(reqPath);
+    g_free(extraPath);
 
     curl_free(scheme);
     curl_free(host);
@@ -714,6 +902,7 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     ARKIME_LOCK(waiting);
     ARKIME_LOCK(waiting);
     ARKIME_UNLOCK(waiting);
+    g_free(req.extraInfo);
 
     return 0;
 }
