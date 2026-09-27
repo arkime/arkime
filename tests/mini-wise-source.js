@@ -13,6 +13,9 @@
  *
  * Splunk  - plain REST/JSON: /services/auth/login, /services/server/info,
  *           and a oneshot search POST to .../search/jobs.
+ * URLApi  - GET /urlapi/<value>/<valueBase64>/<valueBase64Url> echoes each
+ *           decoded path segment back as JSON so source.urlapi.js placeholder
+ *           encoding can be checked. A first segment of "miss" returns 404.
  * Databricks - Thrift TBinaryProtocol over HTTP POST (Content-Type
  *           application/x-thrift), the Hive TCLIService API. We reuse the
  *           real thrift library + the generated TCLIService types shipped with
@@ -151,6 +154,18 @@ function handleSplunk (req, res, body) {
 
   log(`SPLUNK 404 ${req.method} ${req.url}`);
   return send(res, 404, 'application/json', '{}');
+}
+
+// ----------------------------------------------------------------------------
+// URLApi emulation
+// ----------------------------------------------------------------------------
+function handleURLApi (req, res) {
+  const segs = req.url.split('?')[0].split('/').slice(2).map((s) => decodeURIComponent(s));
+  log(`URLAPI ${req.url} -> ${JSON.stringify(segs)}`);
+  if (segs[0] === undefined || segs[0] === 'miss') {
+    return send(res, 404, 'application/json', '{}');
+  }
+  return sendJSON(res, { value: segs[0], b64: segs[1], b64url: segs[2] });
 }
 
 // ----------------------------------------------------------------------------
@@ -335,6 +350,10 @@ const server = https.createServer({ key: KEY, cert: CERT }, (req, res) => {
 
     if ((req.headers['content-type'] || '').includes('application/x-thrift')) {
       return handleThrift(req, res, bodyBuf);
+    }
+
+    if (req.url.startsWith('/urlapi/')) {
+      return handleURLApi(req, res);
     }
 
     return handleSplunk(req, res, bodyBuf.toString('utf8'));
