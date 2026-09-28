@@ -8,12 +8,15 @@ Basic Arkime Installation steps:
      /opt/arkime/bin/Configure
  4) The Configure script can install OpenSearch/Elasticsearch for you or you can install yourself
  5) Initialize/Upgrade OpenSearch/Elasticsearch Arkime configuration
+    "--esuser admin" prompts for the admin user's password; drop or update if needed.
+    Add --insecure if using a self signed cert with a non localhost ESHOST.
+    If using the Configure demo install, use http://localhost:9200 with no --esuser.
   a) If this is the first install, or want to delete all data
-      /opt/arkime/db/db.pl http://ESHOST:9200 init
+      /opt/arkime/db/db.pl --esuser admin https://ESHOST:9200 init
   b) If this is an update to an Arkime package
-      /opt/arkime/db/db.pl http://ESHOST:9200 upgrade
+      /opt/arkime/db/db.pl --esuser admin https://ESHOST:9200 upgrade
  6) Add an admin user if a new install or after an init
-      /opt/arkime/bin/arkime_add_user.sh admin "Admin User" THEPASSWORD --admin
+      /opt/arkime/bin/arkime_add_user.sh admin "Admin User" - --admin
  7) Start everything
       systemctl start arkimecapture.service
       systemctl start arkimeviewer.service
@@ -22,7 +25,7 @@ Basic Arkime Installation steps:
       /opt/arkime/logs/capture.log
  9) Visit http://arkimeHOST:8005 with your favorite browser.
       user: admin
-      password: THEPASSWORD from step #6
+      password: the password entered in step #6
 
 If you want IP -> Geo/ASN to work, you need to setup a maxmind account and the geoipupdate program.
 See https://arkime.com/faq#maxmind
