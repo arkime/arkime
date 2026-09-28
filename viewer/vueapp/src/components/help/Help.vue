@@ -169,12 +169,24 @@ SPDX-License-Identifier: Apache-2.0
         <v-col
           cols="12"
           sm="12">
-          <a href="https://arkime.com">Arkime Home</a> |
-          <a href="https://arkime.com/faq">FAQ</a> |
-          <a href="https://arkime.com/learn">Docs</a> |
-          <a href="https://github.com/arkime/arkime">GitHub</a> |
-          <a href="https://slackinvite.arkime.com/">Join us on Slack</a> |
-          <a href="https://arkime.com/sponsor">Sponsor Arkime</a>
+          <a href="https://arkime.com"><v-icon
+            icon="mdi-home"
+            class="mr-1" />Arkime Home</a> |
+          <a href="https://arkime.com/faq"><v-icon
+            icon="mdi-frequently-asked-questions"
+            class="mr-1" />FAQ</a> |
+          <a href="https://arkime.com/learn"><v-icon
+            icon="mdi-book-open-variant"
+            class="mr-1" />Docs</a> |
+          <a href="https://github.com/arkime/arkime"><v-icon
+            icon="mdi-github"
+            class="mr-1" />GitHub</a> |
+          <a href="https://slackinvite.arkime.com/"><v-icon
+            icon="mdi-slack"
+            class="mr-1" />Join us on Slack</a> |
+          <a href="https://arkime.com/sponsor"><v-icon
+            icon="mdi-heart-outline"
+            class="mr-1" />Sponsor Arkime</a>
         </v-col>
       </v-row>
 

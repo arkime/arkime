@@ -360,10 +360,19 @@ class ArkimeConfig {
    * an if() would be truthy, so 'multiES=no' must not turn multiES on.
    */
   static getBool (sectionKey, d) {
-    const raw = ArkimeConfig.get(sectionKey);
+    return ArkimeConfig.getFullBool(ArkimeConfig.#defaultSections, sectionKey, d);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * A boolean setting from the given sections, like getBool.
+   */
+  static getFullBool (sections, sectionKey, d) {
+    const raw = ArkimeConfig.getFull(sections, sectionKey);
     if (raw === undefined || raw === '') { return d; }
     if (raw === true || raw === false) { return raw; }
-    console.log(`WARNING - ${sectionKey} is '${ArkimeUtil.sanitizeStr(raw)}', not true or false, using ${d}`);
+    const label = ArkimeUtil.isString(sections) ? `[${sections}] ${sectionKey}` : sectionKey;
+    console.log(`WARNING - ${label} is '${ArkimeUtil.sanitizeStr(raw)}', not true or false, using ${d}`);
     return d;
   }
 
