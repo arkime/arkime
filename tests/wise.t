@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 171;
+use Test::More tests => 173;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -306,6 +306,19 @@ eq_or_diff($wise, from_json('[{"field":"tags","len":16,"value":"databricks-phish
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/databrickstest/9.9.9.9")->content;
 eq_or_diff($wise, '[]', "databricks miss");
 
+# urlapi - the mini server echoes back what each url placeholder was replaced with.
+# The value has $& so a replacement pattern would show, and base64 encodes to / + and == padding
+my $key = 'http://example.com/a?b=$&c~~';
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapitest/" . uri_escape($key))->content;
+$wise = from_json($wise);
+eq_or_diff($wise, from_json('[{"field":"urlapi.value","len":28,"value":"http://example.com/a?b=$&c~~"},
+{"field":"urlapi.b64","len":40,"value":"aHR0cDovL2V4YW1wbGUuY29tL2E/Yj0kJmN+fg=="},
+{"field":"urlapi.b64url","len":38,"value":"aHR0cDovL2V4YW1wbGUuY29tL2E_Yj0kJmN-fg"},
+{"field":"tags","len":10,"value":"urlapiwise"}]'), "urlapi placeholders");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapitest/miss")->content;
+eq_or_diff($wise, '[]', "urlapi miss");
+
 $wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/databricks:test")->content . "]";
 @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
 eq_or_diff(\@wise, from_json('[
@@ -315,11 +328,11 @@ eq_or_diff(\@wise, from_json('[
 
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","urlapi:test","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
-eq_or_diff($wise, '["databrickstest","domain","email","ip","ja3","mac","md5","sha256","splunktest","url"]',"types");
+eq_or_diff($wise, '["databrickstest","domain","email","ip","ja3","mac","md5","sha256","splunktest","url","urlapitest"]',"types");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types/file:ip")->content;
 eq_or_diff($wise, '["ip"]',"types file:ip");
@@ -358,7 +371,7 @@ eq_or_diff($wise, '{"cloud":"if (session.cloud)\\n  div.sessionDetailMeta.bold P
 
 # Fields
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/fields")->content;
-is(length($wise), 666);
+is(length($wise), 908);
 
 my $info = viewerGet("/api/fields");
 eq_or_diff($info->{"wise.int.cnt"}, from_json('{"friendlyName":"Int Cnt","type":"integer","exp":"wise.int.cnt","help":"Unique number of Help Int","dbField":"wise.intCnt","group":"wise","dbField2":"wise.intCnt"}'));
