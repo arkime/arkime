@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 129;
+use Test::More tests => 133;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -134,6 +134,19 @@ $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7'
 $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test7Token);
 is ($response->content, "Missing file");
 is ($response->code, 403);
+
+# Filename and tags are sanitized before reaching uploadCommand, and the tmp file is removed
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test7Token,
+    Content_Type => 'form-data',
+    Content => [
+        tags => 'good,bad;tag,$(x)',
+        file => [undef, 'a;rm -rf x$(id).pcap', 'Content-Type' => 'application/octet-stream', Content => 'notreallyapcap']
+    ]);
+is ($response->code, 200);
+like ($response->content, qr/^true  --tag good --tag badtag --tag x arm-rfxid\.pcap &#47;tmp&#47;[0-9a-f]{32}<br>/);
+my ($tmpFile) = $response->content =~ /&#47;tmp&#47;([0-9a-f]{32})/;
+ok (defined $tmpFile, "upload tmp file name returned");
+ok (!-e "/tmp/$tmpFile", "upload tmp file removed");
 
 # No arkimeUser role
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test8', 'test8' );
