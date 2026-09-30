@@ -1674,13 +1674,31 @@ Db.isLocalView = async function (node) {
   }
 };
 
-Db.deleteFile = async (node, id, path) => {
+Db.deleteFile = async (node, id, num, path) => {
   try {
     await fs.promises.unlink(path);
   } catch (err) {
     console.log('EXPIRE - error deleting file', node, id, path, err);
   }
   await Db.deleteDocument('files', id);
+
+  // Session metadata that pointed into this file no longer has a pcap to
+  // back it, and would otherwise be searchable-but-broken until it ages
+  // out on its own schedule (up to 30 days later, independent of this
+  // file's lifetime). Delete it now so metadata never outlives its pcap.
+  try {
+    const { body: result } = await internals.client7.deleteByQuery({
+      index: fixIndex(Db.getSessionIndices()),
+      body: { query: { bool: { filter: [{ term: { node } }, { term: { fileId: num } }] } } },
+      conflicts: 'proceed',
+      refresh: false
+    });
+    if (result && result.deleted) {
+      console.log(`EXPIRE - deleted ${result.deleted} session(s) referencing expired file`, node, num, path);
+    }
+  } catch (err) {
+    console.log('EXPIRE - error deleting sessions for expired file', node, num, path, err);
+  }
 };
 
 Db.session2Sid = function (item) {
