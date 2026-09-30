@@ -879,7 +879,15 @@ LOCAL gboolean arkime_quit_gfunc(gpointer UNUSED(user_data))
 // Once all clear stop the writer and wait for all clears again
     if (writerExit) {
         writerExit = FALSE;
-        if (!config.dryRun && config.copyPcap) {
+        // config.copyPcap covers offline mode's --copy case, which already
+        // had a real writer to finalize. Live capture (!pcapReadOffline)
+        // also always has one (arkime_writers_start(NULL) in
+        // arkime_ready_gfunc resolves to the configured writer, "simple" by
+        // default) but was never included here - meaning a live capture's
+        // currently-open pcap file never got its final size/packet count
+        // written back on any clean shutdown, leaving arkime_files_v30
+        // permanently missing that data for every file open at the time.
+        if (!config.dryRun && (config.copyPcap || !config.pcapReadOffline)) {
             arkime_writer_exit();
             if (config.debug)
                 LOG("Write exit finished");
