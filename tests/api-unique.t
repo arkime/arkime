@@ -1,4 +1,4 @@
-use Test::More tests => 46;
+use Test::More tests => 66;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -236,6 +236,17 @@ eq_or_diff($txt,
 
 $txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
+
+# other ways to ask for all time
+foreach my $param ("date=-1.0", "date=-01", "date=-1e0", "date=bad", "segments=all", "startTime=notatime&stopTime=alsonot", "date=73", "startTime=1386000000&stopTime=1386360000") {
+    $txt = get("$param&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
+    eq_or_diff($txt, "User time limit (72 hours) exceeded\n", "time limit $param");
+}
+
+foreach my $param ("date=72", "startTime=1386000000&stopTime=1386003600") {
+    $txt = get("$param&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
+    isnt($txt, "User time limit (72 hours) exceeded\n", "time limit allows $param");
+}
 
 # same restriction, but timeLimit comes only from a role, not the user's own record
 viewerPostToken("/api/user", '{"userId": "role:sac-timelimit", "userName": "sac-timelimit", "enabled":true, "webEnabled":true, "timeLimit":"72"}', $token);

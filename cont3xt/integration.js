@@ -225,7 +225,8 @@ class Integration {
       return { itype: 'hash' };
     }
 
-    if (str.startsWith('xn--')) {
+    // Integrations put domains in urls, so only hostname characters
+    if (str.startsWith('xn--') && /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/.test(str)) {
       try {
         const decoded = punycode.toUnicode(str);
         return { itype: 'domain', decoded };
@@ -756,8 +757,11 @@ class Integration {
       Integration.#startIntegrationsList(shared, indicator, undefined, integrations);
       if (!shared.skipChildren) {
         if (itype === 'email') {
-          const dquery = query.slice(query.indexOf('@') + 1);
-          Integration.#startIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+          // Last @, a quoted local part can have @ and url characters
+          const dquery = query.slice(query.lastIndexOf('@') + 1);
+          if (Integration.classify(dquery).itype === 'domain') {
+            Integration.#startIntegrationsList(shared, { query: dquery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+          }
         } else if (itype === 'url') {
           const url = new URL(query);
           if (Integration.classify(url.hostname).itype === 'ip') {

@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 286;
+use Test::More tests => 290;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1548,3 +1548,25 @@ is($json->{enabled}, 0, "Other user TOTP disabled by admin");
 $adminValidCode = generate_totp($adminTotpSecret);
 $json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-cont3xtadmin", '{"code": "' . $adminValidCode . '"}', $adminToken);
 ok($json->{success}, "Admin disable own TOTP with valid code");
+
+# punycode with url characters isn't a domain, integrations put domains in urls
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "xn--p1ai.v2/iris-investigate/?domain=example.com&junk=",
+  doIntegrations => ["none"]
+}));
+is($json->[0]->{indicators}->[0]->{itype}, "text", "punycode with url characters is text");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "xn--p1ai",
+  doIntegrations => ["none"]
+}));
+is($json->[0]->{indicators}->[0]->{itype}, "domain", "punycode tld is a domain");
+
+# email child domain is after the last @, a quoted local part can have @ and url characters
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => '"a@/../../v1/account?x="@example.com',
+  doIntegrations => ["none"]
+}));
+is($json->[0]->{indicators}->[0]->{itype}, "email");
+my ($emailLink) = grep { $_->{purpose} eq "link" } @{$json};
+eq_or_diff($emailLink->{indicator}, from_json('{"query": "example.com", "itype": "domain"}'), "email child domain");

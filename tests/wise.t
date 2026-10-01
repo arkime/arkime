@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 195;
+use Test::More tests => 198;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -597,6 +597,16 @@ is($wise, '{"success":false,"text":"Source notfound not found"}');
 
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/source/notfound/put", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8");
 is($wise->content, '{"success":false,"text":"Source notfound not found"}');
+
+# typeName must be a type a source declared, not any get* method, getSourceRaw(cb) used to crash wise
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sourceRaw/x")->content;
+is($wise, '[]', "undeclared type sourceRaw");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:ip/sourceRaw/x")->content;
+is($wise, '[]', "undeclared type sourceRaw on one source");
+
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/file:ip/ip/10.0.0.3")->content;
+like($wise, qr/wisebyip1/, "wise still up after undeclared types");
 
 # url
 $wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:aws-ips/ip/3.5.140.0")->content);

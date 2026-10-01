@@ -142,6 +142,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 
 6.8.1 2026/10/xx
+## Cont3xt
+  - #4300 Fix some indicators that aren't domains being sent to domain integrations
+## ESProxy
+  - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
+## Viewer
+  - #4300 Fix users with a time limit being able to search outside of it
+  - #4300 Fix Connections CSV export not quoting values
+## WISE
+  - #4300 Fix a lookup request being able to crash wiseService
 
 6.8.0 2026/09/30
 ## Breaking

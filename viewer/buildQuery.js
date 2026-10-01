@@ -366,12 +366,13 @@ class BuildQuery {
 
     const interval = startAndStopParams[2];
 
-    if ((parseFloat(reqQuery.date) > parseFloat(timeLimit)) ||
-      ((reqQuery.date === '-1') && timeLimit)) {
-      timeLimitExceeded = true;
-    } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (timeLimit) &&
-               ((reqQuery.stopTime - reqQuery.startTime) / 3600 > timeLimit)) {
-      timeLimitExceeded = true;
+    // Check the window determineQueryTimes resolved, the one the query uses, so
+    // date=-1.0, segments=all and bad times can't slip past a hand rolled check
+    if (timeLimit) {
+      const [startSec, stopSec] = startAndStopParams;
+      if (startSec === null || isNaN(startSec) || isNaN(stopSec) || (stopSec - startSec) / 3600 > timeLimit) {
+        timeLimitExceeded = true;
+      }
     }
 
     if (timeLimitExceeded) {
@@ -641,8 +642,10 @@ class BuildQuery {
       interval = toInterval(stopTimeSec - startTimeSec);
     } else {
       const queryDate = reqQuery.date || 1;
-      startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseFloat(queryDate));
-      stopTimeSec = Date.now() / 1000;
+      // One clock read, two could straddle a second and make the window 1s wider
+      // than asked, which trips a timeLimit equal to date
+      stopTimeSec = Math.floor(Date.now() / 1000);
+      startTimeSec = stopTimeSec - 60 * 60 * parseFloat(queryDate);
 
       interval = toInterval(60 * 60 * parseFloat(queryDate));
     }
