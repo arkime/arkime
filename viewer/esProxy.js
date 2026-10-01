@@ -248,11 +248,14 @@ app.use((req, res, next) => {
 // Proxy code to real ES
 // ===========================================================================
 
-function normalizeUrlPath (path) {
-  const normalizedUrl = new URL(path, 'https://0.0.0.0/');
-  // keep search+hash: the guard must see everything that gets forwarded,
-  // or an encoded ?/# lets this diverge from the raw url doProxyFull sends
-  return normalizedUrl.pathname + normalizedUrl.search + normalizedUrl.hash;
+// Parse the raw url once, the guard checks req.esPath and doProxyFull forwards
+// req.esPath + req.esSearch, so both see the same thing. Don't use req.params,
+// Express decodes it and an encoded ?/# then splits it differently.
+function normalizeUrlPath (req) {
+  const url = new URL(req.url, 'http://0.0.0.0/');
+  req.esPath = url.pathname;
+  req.esSearch = url.search;
+  return req.esPath;
 }
 
 // Save the post body
@@ -291,7 +294,7 @@ function saveBody (req, res, next) {
 
 async function doProxyFull (config, req, res) {
   let result = '';
-  const esUrl = config.elasticsearch + req.url;
+  const esUrl = config.elasticsearch + req.esPath + req.esSearch;
   console.log(`URL ${req.method} "%s"`, ArkimeUtil.sanitizeStr(esUrl));
   const url = new URL(esUrl);
   const options = { method: req.method };
@@ -388,7 +391,7 @@ async function doProxy (req, res) {
 
 // Get requests
 app.get('*', (req, res) => {
-  const path = normalizeUrlPath(req.params['0']);
+  const path = normalizeUrlPath(req);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
@@ -423,13 +426,13 @@ function isFieldsIndex (_index) {
 function isOwnFilesDoc (path, node, action = '_doc') {
   const docPrefix = `/${prefix}files/${action}/${node}-`;
   const remainder = path.slice(docPrefix.length);
-  return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+$/.test(remainder.split(/[?#]/, 1)[0]);
+  return path.startsWith(docPrefix) && /^\d+$/.test(remainder);
 }
 
 function isOwnDstatsDoc (path, node) {
   const docPrefix = `/${prefix}dstats/_doc/${node}-`;
   const remainder = path.slice(docPrefix.length);
-  return path.startsWith(docPrefix) && !remainder.includes('/') && /^\d+-\d+$/.test(remainder.split(/[?#]/, 1)[0]);
+  return path.startsWith(docPrefix) && /^\d+-\d+$/.test(remainder);
 }
 
 // Only sessions indices with our configured prefix
@@ -568,7 +571,7 @@ function validateFilesUpdate (req) {
 
 // Post requests
 app.post('*', saveBody, (req, res) => {
-  const path = normalizeUrlPath(req.params['0']);
+  const path = normalizeUrlPath(req);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
@@ -602,7 +605,7 @@ app.post('*', saveBody, (req, res) => {
 
 // Delete requests
 app.delete('*', (req, res) => {
-  const path = normalizeUrlPath(req.params['0']);
+  const path = normalizeUrlPath(req);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (isOwnFilesDoc(path, req.sensor.node)) {
@@ -618,7 +621,7 @@ app.delete('*', (req, res) => {
 
 // Put requests
 app.put('*', (req, res) => {
-  const path = normalizeUrlPath(req.params['0']);
+  const path = normalizeUrlPath(req);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (putExact[path]) {
