@@ -1,4 +1,4 @@
-use Test::More tests => 16;
+use Test::More tests => 17;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -115,16 +115,21 @@ my ($json, $mjson);
     my $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?date=-1&dstField=cert.notAfter&expression=" . uri_escape("$files"))->content;
     $csv =~ s/\r//g;
     eq_or_diff($csv, qq(Source, Destination, Sessions, Bytes, Bytes, Data bytes, Packets, Packets, Arkime Node
-"10.180.156.185","1418212800000",3,32958,26760,93,test
-"10.180.156.185","1648944000000",3,32958,26760,93,test
+"10.180.156.185","1418212800000",3,32958,26760,93,"test"
+"10.180.156.185","1648944000000",3,32958,26760,93,"test"
 ));
+
+# csv string values are quoted, this user-agent has a comma
+    $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?date=-1&fields=http.useragent&expression=" . uri_escape("file=*/pcap/http-content-gzip.pcap"))->content;
+    $csv =~ s/\r//g;
+    like($csv, qr/^"10\.0\.0\.1","10\.0\.0\.2",1,"Mozilla\/5\.0 \(Windows NT 6\.1\) AppleWebKit\/537\.36 \(KHTML, like Gecko\) Chrome\/36\.0\.1985\.125 Safari\/537\.36"$/m, "csv quotes values with commas");
 
 # csv with pipe separator
     $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?date=-1&separator=%7C&dstField=cert.notAfter&expression=" . uri_escape("$files"))->content;
     $csv =~ s/\r//g;
     eq_or_diff($csv, qq(Source| Destination| Sessions| Bytes| Bytes| Data bytes| Packets| Packets| Arkime Node
-"10.180.156.185"|"1418212800000"|3|32958|26760|93|test
-"10.180.156.185"|"1648944000000"|3|32958|26760|93|test
+"10.180.156.185"|"1418212800000"|3|32958|26760|93|"test"
+"10.180.156.185"|"1648944000000"|3|32958|26760|93|"test"
 ), "csv with pipe separator");
 
 # csv with invalid field should not crash

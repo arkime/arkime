@@ -552,8 +552,16 @@ class ConnectionAPIs {
         for (let f = 0, flen = fields.length; f < flen; f++) {
           const df = displayFields[fields[f]];
           if (df) {
+            // Same as the sessions csv, each value made safe and quoted, since
+            // they come from traffic and can have separators or formulas
             const val = links[i][df.dbField];
-            res.write(val !== undefined && val !== null ? ArkimeUtil.csvSafeStr(val.toString()) : '');
+            if (Array.isArray(val)) {
+              res.write('"' + val.map(v => ArkimeUtil.csvSafeStr(String(v)).replaceAll('"', '""')).join(', ') + '"');
+            } else if (typeof val === 'number') {
+              res.write(String(val));
+            } else if (val !== undefined && val !== null) {
+              res.write('"' + ArkimeUtil.csvSafeStr(String(val)).replaceAll('"', '""') + '"');
+            }
           } else {
             res.write('');
           }

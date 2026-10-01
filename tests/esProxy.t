@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 89;
+use Test::More tests => 95;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -7,6 +7,8 @@ use Data::Dumper;
 use Test::Differences;
 use JSON -support_by_pp;
 use HTTP::Request;
+use IO::Socket::INET;
+use MIME::Base64;
 use strict;
 
 my $response;
@@ -219,9 +221,9 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "sessions search with extra query clause rejected");
 is ($response->content, "Not authorized for API");
 
-# path confusion: the guard checks a path decoded by Express
+# path confusion: if the guard checks a path decoded by Express
 # (req.params['0']) while the proxied request uses the raw, still-encoded url
-# (req.url); a %3f/%23 makes the two resolve to different endpoints.
+# (req.url), a %3f/%23 makes the two resolve to different endpoints.
 
 # GET - guard sees the decoded string terminate at %3f, matching the
 # allowlisted /_cat/health; the raw url actually collapses to /_search
@@ -247,10 +249,40 @@ is ($response->code, 400, "POST path confusion into _bulk rejected");
 $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-%3fz/../../../tests_sessions3-2024"));
 is ($response->code, 400, "DELETE path confusion to a different index rejected");
 
+# startsWith() allowlist entries, the %3f/%23 lands in the guard's search/hash
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger%3f/../../tests_users/_search");
+is ($response->code, 400, "GET /tagger path confusion via %3f rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger%23/../../tests_users/_search");
+is ($response->code, 400, "GET /tagger path confusion via %23 rejected");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger%3f/../../tests_users/_count");
+$req->header('Content-Type' => 'application/json');
+$req->content('{}');
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST /tagger path confusion via %3f rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/%3f/../../../_cluster/settings");
+is ($response->code, 400, "GET users doc path confusion into _cluster rejected");
+
+# raw socket, LWP would escape the backslashes
+sub rawStatus {
+    my ($method, $path) = @_;
+    my $sock = IO::Socket::INET->new(PeerAddr => $ArkimeTest::host, PeerPort => 7200, Proto => 'tcp') or return 0;
+    print $sock "$method $path HTTP/1.0\r\nHost: $ArkimeTest::host\r\nAuthorization: Basic " . encode_base64("test:test", "") . "\r\nConnection: close\r\n\r\n";
+    local $/;
+    my $resp = <$sock>;
+    close $sock;
+    return ($resp =~ m{^HTTP/\S+ (\d+)})[0];
+}
+
+is (rawStatus("GET", "/tests_files/_doc/test-1"), 200, "raw socket own files doc allowed");
+# WHATWG URL turns the backslashes into slashes, isOwnFilesDoc only looked for /
+is (rawStatus("DELETE", "/tests_files/_doc/test-5%3f\\..\\..\\..\\tests_esproxy_nosuchindex"), 400, "DELETE backslash path confusion rejected");
+
 # query strings: capture sends these exact urls through esProxy and the guard
-# must keep allowing them. Express strips the query before the wildcard param,
-# so normalizeUrlPath() only sees a ?/# when it arrived percent-encoded; these
-# catch a guard change (say, checking req.url) that would lock capture out.
+# must keep allowing them. The guard only checks the pathname; these catch a
+# guard change (say, checking the full req.url) that would lock capture out.
 
 # GET - getExact entries, see arkime_db_health_check, arkime_db_load_fields,
 # and the template _meta check in capture/db.c

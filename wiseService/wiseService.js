@@ -872,15 +872,11 @@ async function processQuery (req, query, cb) {
     return cb('__proto__ invalid type name');
   }
 
-  let typeInfo = internals.types.get(query.typeName);
-
-  // First time we've seen this typeName, only create if a source handles it
+  // Only types sources declared with addSource, otherwise typeName picks any
+  // get* method on a source, like getSourceRaw(cb)
+  const typeInfo = internals.types.get(query.typeName);
   if (!typeInfo) {
-    typeInfo = addType(query.typeName);
-    if (typeInfo.sources.length === 0) {
-      internals.types.delete(query.typeName);
-      return cb(undefined, WISESource.emptyResult);
-    }
+    return cb(undefined, WISESource.emptyResult);
   }
 
   typeInfo.requestStats++;
