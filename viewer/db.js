@@ -96,6 +96,9 @@ Db.initialize = async (info) => {
 
   internals.regressionTests = info.regressionTests ?? false;
 
+  internals.deleteSessionsOnFileExpire = info.deleteSessionsOnFileExpire === 'true' || info.deleteSessionsOnFileExpire === true || false;
+  delete info.deleteSessionsOnFileExpire;
+
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
   if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); }
   if (info.esClientKey) {
@@ -1682,10 +1685,15 @@ Db.deleteFile = async (node, id, num, path) => {
   }
   await Db.deleteDocument('files', id);
 
-  // Session metadata that pointed into this file no longer has a pcap to
-  // back it, and would otherwise be searchable-but-broken until it ages
-  // out on its own schedule (up to 30 days later, independent of this
-  // file's lifetime). Delete it now so metadata never outlives its pcap.
+  // Off by default - most deployments want session metadata to remain
+  // searchable even after its pcap is gone (storage-constrained setups
+  // often keep lightweight metadata around long after the bulky packet
+  // data has aged out). Opt in with deleteSessionsOnFileExpire=true to
+  // delete the metadata too, so it never outlives its pcap.
+  if (!internals.deleteSessionsOnFileExpire) {
+    return;
+  }
+
   try {
     const { body: result } = await internals.client7.deleteByQuery({
       index: fixIndex(Db.getSessionIndices()),

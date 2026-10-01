@@ -2427,7 +2427,8 @@ async function premain () {
     isPrimaryViewer: CronAPIs.isPrimaryViewer,
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
     maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
-    regressionTests: ArkimeConfig.regressionTests
+    regressionTests: ArkimeConfig.regressionTests,
+    deleteSessionsOnFileExpire: Config.get('deleteSessionsOnFileExpire', false)
   });
 
   Notifier.initialize({
