@@ -23,6 +23,7 @@ exports.init = function (api) {
 
 /**
  * Build an Adaptive Card payload for a Teams Workflows webhook
+ * @ignore
  */
 exports.buildTeamsMessage = function (message, links) {
   const card = {
