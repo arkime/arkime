@@ -3,19 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid overflow-auto">
+  <div class="arkime-container-fluid">
     <UsersCommon
-      :dark="getTheme === 'dark'"
       v-if="getUser"
       :roles="getRoles"
       parent-app="Parliament"
       :current-user="getUser"
       @update-roles="updateRoles"
-      @update-current-user="updateCurrentUser">
-      <template #loading>
-        <ArkimeLoading />
-      </template>
-    </UsersCommon>
+      @update-current-user="updateCurrentUser" />
   </div>
 </template>
 
@@ -29,10 +24,11 @@ export default {
   name: 'Users',
   components: { UsersCommon },
   computed: {
-    ...mapGetters(['getUser', 'getRoles', 'getTheme'])
+    ...mapGetters(['getUser', 'getRoles'])
   },
   created () {
-    UserService.getUser();
+    // the /users route guard (router.js requireUser) already fetches the
+    // current user before this component mounts, so only roles need fetching here
     UserService.getRoles();
   },
   methods: {

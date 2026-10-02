@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
+  <div class="arkime-container-fluid">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -11,23 +11,35 @@ SPDX-License-Identifier: Apache-2.0
       :message="error" />
 
     <div v-show="!error">
-      <span
+      <v-icon
         id="captureStatsHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
-        <BTooltip target="captureStatsHelp">
+        icon="mdi-help-circle-outline"
+        size="small"
+        class="cursor-help mt-2 float-right">
+        <v-tooltip activator="#captureStatsHelp">
           <span v-html="$t('stats.cstats.helpTipHtml')" />
-        </BTooltip>
-      </span>
+        </v-tooltip>
+      </v-icon>
 
       <arkime-paging
-        v-if="stats"
+        v-if="stats && statsView === 'table'"
         class="mt-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         @change-paging="changePaging"
         :length-default="200" />
 
+      <node-dashboard
+        v-if="statsView === 'dashboard'"
+        :data="stats"
+        :gauges="dashboardGauges"
+        :status="nodeStatus"
+        :status-text="nodeStatusText"
+        :badge="nodeVersion"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )" />
+
       <arkime-table
+        v-else
         id="captureStatsTable"
         :data="stats"
         :load-data="loadData"
@@ -44,19 +56,40 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="table-sm table-hover text-end small" />
+        table-classes="text-end small">
+        <template #cell-freeSpaceM="{ item }">
+          <resource-bar
+            :percent="item.freeSpaceP"
+            :color="freeSpaceColor(item)"
+            :label="freeSpaceLabel(item)" />
+        </template>
+        <template #cell-cpu="{ item }">
+          <resource-bar
+            :percent="item.cpu / 100.0"
+            :label="cpuLabel(item)" />
+        </template>
+        <template #cell-memory="{ item }">
+          <resource-bar
+            :percent="item.memoryP"
+            :label="memoryLabel(item)" />
+        </template>
+      </arkime-table>
     </div>
   </div>
 </template>
 
 <script>
 import '../../cubismoverrides.css';
+import { themedColor } from '@common/themes/themedColor.js';
 import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
+import ResourceBar from './ResourceBar.vue';
+import NodeDashboard from './NodeDashboard.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
+import { targetBandColor } from './resourceColor.js';
 import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
@@ -64,6 +97,8 @@ let oldD3, cubism; // lazy load old d3 and cubism
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
+
+const OUT_OF_DATE_SECS = 300; // Arkime's "out of date" window — matches the server's now-5m rule
 
 export default {
   name: 'NodeStats',
@@ -99,13 +134,19 @@ export default {
     cluster: {
       type: String,
       default: ''
+    },
+    statsView: {
+      type: String,
+      default: 'table'
     }
   },
   components: {
     ArkimePaging,
     ArkimeError,
     ArkimeLoading,
-    ArkimeTable
+    ArkimeTable,
+    ResourceBar,
+    NodeDashboard
   },
   data: function () {
     return {
@@ -139,19 +180,19 @@ export default {
       return [ // node stats table columns
         // default columns
         intl({ id: 'nodeName', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false }),
-        intl({ id: 'currentTime', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
+        intl({ id: 'currentTime', sort: 'currentTime', width: 210, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
         intl({ id: 'monitoring', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } }),
-        intl({ id: 'freeSpaceM', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } }),
-        intl({ id: 'cpu', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return round(item.cpu / 100.0, 1) + '%'; } }),
-        intl({ id: 'memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } }),
+        intl({ id: 'freeSpaceM', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.freeSpaceLabel(item); }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } }),
+        intl({ id: 'cpu', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return this.cpuLabel(item); } }),
+        intl({ id: 'memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.memoryLabel(item); }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } }),
         intl({ id: 'packetQueue', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.packetQueue); } }),
         intl({ id: 'diskQueue', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.diskQueue); } }),
         intl({ id: 'esQueue', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.esQueue); } }),
         // deltaPackets, deltaSessions, deltaDropped use an id that doesn't match sort to not break saved columns
         intl({ id: 'deltaPackets', sort: 'deltaPacketsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaPacketsPerSec); } }),
-        intl({ id: 'deltaBytesPerSec', sort: 'deltaBytesPerSec', width: 80, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true }),
-        intl({ id: 'deltaSessions', sort: 'deltaSessionsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } }),
-        intl({ id: 'deltaDropped', sort: 'deltaDroppedPerSec', width: 130, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } }),
+        intl({ id: 'deltaBytesPerSec', sort: 'deltaBytesPerSec', width: 85, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true }),
+        intl({ id: 'deltaSessions', sort: 'deltaSessionsPerSec', width: 105, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } }),
+        intl({ id: 'deltaDropped', sort: 'deltaDroppedPerSec', width: 150, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } }),
         // all the rest of the available stats
         intl({ id: 'deltaBitsPerSec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBits(item.deltaBitsPerSec); } }),
         intl({ id: 'deltaWrittenBytesPerSec', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaWrittenBytesPerSec); } }),
@@ -179,17 +220,28 @@ export default {
         intl({ id: 'ver', sort: 'ver', width: 140, doStats: false })
       ];
     },
+    dashboardGauges: function () {
+      // capture nodes are rarely cpu/mem bound — lead with what operators watch:
+      // drops, backpressure, throughput, retention/uptime, and disk vs target.
+      return [
+        { title: this.$t('stats.cstats.deltaDropped'), kind: 'value', text: (n) => roundCommaString(n.deltaTotalDroppedPerSec) + '/s', color: (n) => n.deltaTotalDroppedPerSec > 0 ? 'error' : 'success' },
+        { title: this.$t('stats.queues'), kind: 'value', text: (n) => this.queuesText(n), color: (n) => this.queuesColor(n) },
+        { title: this.$t('stats.cstats.deltaBitsPerSec'), kind: 'value', text: (n) => humanReadableBits(n.deltaBitsPerSec) },
+        { title: this.$t('stats.cstats.retention'), kind: 'value', text: (n) => readableTimeCompact(n.retention * 1000) },
+        { title: this.$t('stats.uptime'), kind: 'value', text: (n) => readableTimeCompact(n.runningTime * 1000) },
+        { title: this.$t('stats.cstats.freeSpaceM'), kind: 'bar', percent: (n) => n.freeSpaceP, label: (n) => this.freeSpaceLabel(n), color: (n) => this.freeSpaceColor(n) }
+      ];
+    },
     colors: function () {
       // build colors array from css variables
-      const styles = window.getComputedStyle(document.body);
-      const primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      const primaryLight = styles.getPropertyValue('--color-primary').trim();
-      const primary = styles.getPropertyValue('--color-primary-dark').trim();
-      const primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      const secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      const secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      const secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      const secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      const primaryLighter = themedColor('primary-light');
+      const primaryLight = themedColor('primary');
+      const primary = themedColor('primary-dark');
+      const primaryDark = themedColor('primary-darker');
+      const secondaryLighter = themedColor('tertiary-light');
+      const secondaryLight = themedColor('tertiary');
+      const secondary = themedColor('tertiary-dark');
+      const secondaryDark = themedColor('tertiary-darker');
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
     },
     loading: {
@@ -233,10 +285,22 @@ export default {
     cluster: function () {
       this.query.cluster = this.cluster;
       this.loadData();
+    },
+    statsView: function () {
+      // the dashboard fetches every node unpaged, so reload when switching into
+      // it (the table view reloads via the table component's own mount)
+      if (this.statsView === 'dashboard') {
+        this.loadData();
+      }
     }
   },
   created: function () {
-    // don't need to load data (table component does it)
+    // the table component triggers the initial load on mount; in dashboard view
+    // there's no table, so load here
+    if (this.statsView === 'dashboard') {
+      this.loadData();
+    }
+
     // set a recurring server req if necessary
     if (this.dataInterval !== '0') {
       this.setRequestInterval();
@@ -268,6 +332,54 @@ export default {
       this.query.desc = !this.query.desc;
       this.loadData();
     },
+    /* resource meter labels (shared by table cells and dashboard gauges) --- */
+    cpuLabel (item) {
+      return round(item.cpu / 100.0, 1) + '%';
+    },
+    memoryLabel (item) {
+      return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)';
+    },
+    freeSpaceLabel (item) {
+      return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)';
+    },
+    captureLiveness (item) {
+      // reuse Arkime's own liveness rules: "out of date" if it hasn't reported
+      // in OUT_OF_DATE_SECS, "no sessions" if monitoring < 1 — either way it
+      // isn't capturing (red dot); green when capturing. Prefer the server's
+      // authoritative flag; fall back to the client clock (older/multi-cluster).
+      const outOfDate = item.outOfDate !== undefined
+        ? item.outOfDate
+        : (Date.now() / 1000) - item.currentTime > OUT_OF_DATE_SECS;
+      if (outOfDate) {
+        return { token: 'error', text: this.$t('stats.nodeOutOfDate') };
+      }
+      if (item.monitoring < 1) {
+        return { token: 'error', text: this.$t('stats.nodeNoSessions') };
+      }
+      return { token: 'success', text: this.$t('stats.nodeCapturing') };
+    },
+    nodeStatus (item) { return this.captureLiveness(item).token; },
+    nodeStatusText (item) { return this.captureLiveness(item).text; },
+    nodeVersion (item) {
+      return (item.ver || '').replace(/-GIT$/, '');
+    },
+    freeSpaceColor (item) {
+      // color disk relative to this node's own recycle target (freeSpaceTargetP)
+      return targetBandColor(item.freeSpaceP, item.freeSpaceTargetP);
+    },
+    queuesText (item) {
+      // show only the queues that are backing up (labeled), else a clean "0"
+      const qs = [['pkt', item.packetQueue], ['disk', item.diskQueue], ['es', item.esQueue]].filter(([, v]) => v > 0);
+      return qs.length ? qs.map(([k, v]) => k + ' ' + roundCommaString(v)).join(' · ') : '0';
+    },
+    queuesColor (item) {
+      const p = item.packetQueue || 0;
+      const d = item.diskQueue || 0;
+      const e = item.esQueue || 0;
+      if (p >= 100 || d >= 100 || e >= 100) { return 'error'; } // clearly backing up
+      if (p > 0 || d > 0 || e > 0) { return 'warning'; }
+      return 'success';
+    },
     /* helper functions ---------------------------------------------------- */
     setRequestInterval: function () {
       reqPromise = setInterval(() => {
@@ -289,8 +401,14 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
+      // the dashboard shows a card per node, so fetch the whole fleet (node
+      // counts are bounded — not in the thousands) instead of the paged slice
+      const params = this.statsView === 'dashboard'
+        ? { ...this.query, start: 0, length: 10000 }
+        : this.query;
+
       try {
-        const response = await StatsService.getStats(this.query);
+        const response = await StatsService.getStats(params);
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;

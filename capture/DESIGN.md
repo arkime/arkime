@@ -71,10 +71,11 @@ This phase is responsible for actually processing the packets and generating the
 You only need to create new process callbacks for special ethernet and ip protocols.
 The callbacks are set with the arkime_mprotocol_register
 
-arkime_mprotocol_register (char *name, int ses, create_session_id, pre_process, process)
+arkime_mprotocol_register (char *name, uint32_t flags, create_session_id, pre_process, process, session_free, mid_save, session_timeout)
 
 * name - the name of this protocol
-* ses - the SESSION_* type, usually SESSION_OTHER
+* flags - ARKIME_MPROTOCOL_FLAG_* ored together, usually 0. Controls whether sessions get a
+  community id and roughly how many sessions to expect, see arkime.h
 * create_session_id - required - Given a packet, fill in the session id
 * pre_process - required - called before saving/rules. Given the session, packet, isNewSession - can be used to set any initial SPI data fields or packet direction
 * process - optional - called after saving to disk and rules.  Should generate most of the SPI data or enqueue for higher level protocol decoding.  Returns if the packet should be freed or not yet.

@@ -6,13 +6,21 @@ import store from '@/store';
 import setReqHeaders from '@common/setReqHeaders';
 import { parseRoles } from '@common/vueFilters';
 
+// App.vue's mount-time fetch, the /users and /roles route guards, and the
+// navbar's admin-menu fallback all independently call getUser() around the
+// same time on page load. Share one in-flight request instead of firing an
+// identical fetch for each caller.
+let pendingGetUser;
+
 export default {
   /**
-   * Fetches the list of user roles.
+   * Fetches the current user.
    * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getUser () {
-    return new Promise((resolve, reject) => {
+    if (pendingGetUser) { return pendingGetUser; }
+
+    pendingGetUser = new Promise((resolve, reject) => {
       fetch('api/user').then((response) => {
         if (!response.ok) { // test for bad response code
           throw new Error(response.statusText);
@@ -24,7 +32,11 @@ export default {
       }).catch((err) => { // this catches an issue within the ^ .then
         return reject(err);
       });
+    }).finally(() => {
+      pendingGetUser = undefined;
     });
+
+    return pendingGetUser;
   },
 
   /**

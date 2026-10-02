@@ -17,6 +17,7 @@ void reader_libpcap_init(const char *);
 void reader_tpacketv3_init(const char *);
 void reader_bpf_init(const char *);
 void reader_netmap_init(const char *);
+void reader_xdp_init(const char *);
 void reader_null_init(const char *);
 void reader_pcapoverip_init(const char *);
 void reader_tzsp_init(const char *);
@@ -30,7 +31,7 @@ ArkimeReaderExit   arkime_reader_exit;
 char              *readerFileName[256];
 ArkimeFieldOps_t   readerFieldOps[256];
 
-ArkimeOfflineInfo_t  offlineInfo[256];
+ArkimeFileInfo_t  fileInfo[256];
 
 ArkimeFilenameOps_t  readerFilenameOps[256];
 int                  readerFilenameOpsNum;
@@ -75,6 +76,7 @@ void arkime_readers_init()
     arkime_readers_add("scheme", arkime_reader_scheme_init);
     arkime_readers_add("bpf", reader_bpf_init);
     arkime_readers_add("netmap", reader_netmap_init);
+    arkime_readers_add("xdp", reader_xdp_init);
 }
 
 /******************************************************************************/

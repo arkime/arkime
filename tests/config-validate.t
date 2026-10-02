@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 84;
 use ArkimeTest;
 use strict;
 
@@ -24,12 +24,23 @@ const ArkimeUtil = require(path.join(common, 'arkimeUtil'));
 // apps do: viewer.js/cont3xt.js require mcpServer, and auth registers its own.
 require(path.join(common, 'mcpServer'));
 require(path.join(common, 'auth'));
-// viewer/config.js registers these before calling initialize
-ArkimeConfig.registerValidated({
+// viewer/config.js registers these before calling initialize, the elasticsearch
+// urls come with arkimeConfig itself
+ArkimeConfig.registerSettings({
   uploadFileSizeLimit: { type: 'int', min: 0 },
   maxSessionsQueried: { type: 'int', min: 0 },
-  elasticsearch: { type: 'urls' },
-  usersElasticsearch: { type: 'urls' }
+  viewPort: { type: 'int', min: 1, max: 65535 },
+  freeSpaceG: { type: 're', re: /^-?(\d+(\.\d*)?|\.\d+)%?$/, help: 'a number of gigabytes or a percentage of the disk, eg 5 or 5%' },
+  rotateIndex: { type: 'enum', values: ['hourly', 'hourly2', 'hourly3', 'hourly4', 'hourly6', 'hourly8', 'hourly12', 'daily', 'weekly', 'monthly'] },
+  multiES: { type: 'bool' },
+  // both consuming readers only apply these when truthy, so 0 already means
+  // "no override" - it must not be a boot failure
+  esMaxConcurrentShardRequests: { type: 'int', min: 1, unlimited: 0 },
+  packetPortalPort: { type: 'int', min: 1, max: 65535, unlimited: 0 },
+  // [tee] holds its own override of these, which isn't part of the default
+  // section chain get()/getArray() walk
+  esProxySigV4: { type: 'bool', sections: ['tee'] },
+  elasticsearch: { sections: ['tee'] }
 });
 
 const mode = process.argv[4];
@@ -109,6 +120,100 @@ is($code, 0, "uploadFileSizeLimit=0 starts");
 # an empty value means unset, which is a common container idiom
 ($code, $out) = tryConfig("uploadFileSizeLimit=");
 is($code, 0, "an empty numeric value is treated as unset");
+
+################################################################################
+# max, so a port that can never be bound is caught at load and not at listen
+################################################################################
+($code, $out) = tryConfig("viewPort=8005");
+is($code, 0, "a viewPort in range starts");
+
+($code, $out) = tryConfig("viewPort=70000");
+is($code, 1, "a viewPort above the maximum refuses to start");
+like($out, qr/viewPort is 70000, which is above the maximum of 65535/, "and names the setting and the bound");
+
+($code, $out) = tryConfig("viewPort=0");
+is($code, 1, "a viewPort below the minimum refuses to start");
+
+################################################################################
+# enum. capture CONFIGEXITs on an unknown rotateIndex, viewer used to guess instead
+################################################################################
+($code, $out) = tryConfig("rotateIndex=hourly6");
+is($code, 0, "a known rotateIndex starts");
+
+($code, $out) = tryConfig("rotateIndex=hourly5");
+is($code, 1, "an hourly step capture does not support refuses to start");
+like($out, qr/rotateIndex is 'hourly5', which must be one of hourly, hourly2, .*monthly/, "and lists every rotation capture accepts");
+
+################################################################################
+# re. freeSpaceG is parseFloat'd, so a unit suffix quietly changes the target and
+# a word makes it NaN, which stops expiry from ever running
+################################################################################
+($code, $out) = tryConfig("freeSpaceG=5");
+is($code, 0, "freeSpaceG as gigabytes starts");
+
+($code, $out) = tryConfig("freeSpaceG=5%");
+is($code, 0, "freeSpaceG as a percent starts");
+
+($code, $out) = tryConfig("freeSpaceG=0.5%");
+is($code, 0, "a fractional percent starts");
+
+($code, $out) = tryConfig("freeSpaceG=5G");
+is($code, 1, "a unit suffix refuses to start");
+like($out, qr/freeSpaceG is '5G', which must be a number of gigabytes or a percentage of the disk, eg 5 or 5%/, "and says what the shape is");
+
+($code, $out) = tryConfig("freeSpaceG=five");
+is($code, 1, "a word refuses to start rather than becoming NaN");
+
+################################################################################
+# bool. Only true and false are coerced, so anything else an operator writes to
+# turn a switch off is a truthy string that turns it on - catch it at load
+################################################################################
+($code, $out) = tryConfig("multiES=false");
+is($code, 0, "multiES=false starts");
+
+($code, $out) = tryConfig("multiES=true");
+is($code, 0, "multiES=true starts");
+
+($code, $out) = tryConfig("multiES=maybe");
+is($code, 1, "a non boolean multiES refuses to start");
+like($out, qr/multiES is 'maybe', which is not a boolean/, "and names the setting");
+
+($code, $out) = tryConfig("multiES=0");
+is($code, 1, "multiES=0 refuses to start rather than reading as on");
+
+($code, $out) = tryConfig("multiES=False");
+is($code, 1, "a capitalised False refuses to start rather than reading as on");
+
+################################################################################
+# unlimited as a sentinel for "no override", not just "no limit" - the
+# consuming code already treats 0 as unset, so validation must allow it too
+################################################################################
+($code, $out) = tryConfig("esMaxConcurrentShardRequests=0");
+is($code, 0, "esMaxConcurrentShardRequests=0 starts, it already means no override");
+
+($code, $out) = tryConfig("esMaxConcurrentShardRequests=-1");
+is($code, 1, "esMaxConcurrentShardRequests below the minimum and not the sentinel still refuses to start");
+
+($code, $out) = tryConfig("packetPortalPort=0");
+is($code, 0, "packetPortalPort=0 starts, it already means shared mode");
+
+($code, $out) = tryConfig("packetPortalPort=70000");
+is($code, 1, "packetPortalPort above the maximum still refuses to start");
+
+################################################################################
+# sections. [tee] holds its own elasticsearch/esProxySigV4 override, which
+# isn't part of the default section chain get()/getArray() walk
+################################################################################
+($code, $out) = tryConfig("esProxySigV4=true\n[tee]\nesProxySigV4=false");
+is($code, 0, "a valid esProxySigV4 in both the default and [tee] sections starts");
+
+($code, $out) = tryConfig("[tee]\nesProxySigV4=1");
+is($code, 1, "a non boolean esProxySigV4 under [tee] refuses to start");
+like($out, qr/\[tee\] esProxySigV4 is '1', which is not a boolean/, "and names the section and the setting");
+
+($code, $out) = tryConfig("elasticsearch=http://es1:9200\n[tee]\nelasticsearch=http://es2 :9200");
+is($code, 1, "a malformed elasticsearch url under [tee] refuses to start");
+like($out, qr/\[tee\] elasticsearch has 1 unusable entry: 'http:\/\/es2 :9200'/, "and names the section and quotes the bad entry");
 
 ################################################################################
 # a valid allow list must still match the right peers. Both allow lists had

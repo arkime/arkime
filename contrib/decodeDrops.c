@@ -1,4 +1,10 @@
-/* Use this tool to decode the /tmp/<node>.tcp.drops.[46] files */
+/******************************************************************************/
+/* decodeDrops.c  -- Use this tool to decode the /tmp/<node>.tcp.drops.[46] files
+ *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

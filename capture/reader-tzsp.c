@@ -13,7 +13,6 @@
 #include "glib-object.h"
 #include "pcap.h"
 #include "arkime.h"
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 extern ArkimeConfig_t        config;
 
 LOCAL uint64_t              dropped;
@@ -157,5 +156,5 @@ void reader_tzsp_init(const char *UNUSED(name))
         }
     }
 
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 }

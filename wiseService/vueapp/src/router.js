@@ -8,7 +8,39 @@ import Query from '@/components/Query.vue';
 import Config from '@/components/Config.vue';
 import Help from '@/components/Help.vue';
 import Stats from '@/components/Stats.vue';
+import Settings from '@/components/Settings.vue';
+import Banner from '@common/BannerPage.vue';
+import ViewConfigPage from '@common/ViewConfigPage.vue';
+import store, { hasRole } from '@/store';
+import WiseService from '@/components/wise.service';
 import Wise404 from '@/components/404.vue';
+
+// Admin pages are hidden from the navbar when the user lacks the role;
+// guard the routes too so they can't be reached by typing the url directly.
+// On a hard load the user isn't fetched yet, so pull it first.
+async function requireRole (role) {
+  if (!store.state.user) {
+    try {
+      const user = await WiseService.getCurrentUser();
+      // api/user sits behind isWiseUser, which answers non-users with a
+      // 200 { success: false } body instead of an error status
+      if (user?.userId) { store.commit('SET_USER', user); }
+    } catch { /* treated as no access */ }
+  }
+  if (!hasRole(store.state, role)) { return { name: 'Stats' }; }
+}
+
+// View Config access is a server setting (viewConfigMode) as well as a role,
+// so the server hands the answer back on the user
+async function requireCanViewConfig () {
+  if (!store.state.user) {
+    try {
+      const user = await WiseService.getCurrentUser();
+      if (user?.userId) { store.commit('SET_USER', user); }
+    } catch { /* treated as no access */ }
+  }
+  if (!store.state.user?.canViewConfig) { return { name: 'Stats' }; }
+}
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by wiseService.js
@@ -42,6 +74,23 @@ const router = createRouter({
       path: '/config',
       name: 'Config',
       component: Config
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: Settings
+    },
+    {
+      path: '/banner',
+      name: 'Banner',
+      component: Banner,
+      beforeEnter: async () => await requireRole('wiseAdmin')
+    },
+    {
+      path: '/viewconfig',
+      name: 'ViewConfig',
+      component: ViewConfigPage,
+      beforeEnter: async () => await requireCanViewConfig()
     },
     {
       path: '/help',

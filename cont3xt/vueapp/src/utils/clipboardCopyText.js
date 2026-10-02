@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 export async function clipboardCopyText (text) {
   try {
     await navigator.clipboard.writeText(text);

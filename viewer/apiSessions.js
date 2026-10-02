@@ -10,25 +10,28 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const async = require('async');
+const { spawn, spawnSync } = require('child_process');
 const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
+const net = require('net');
 const path = require('path');
 const PNG = require('pngjs').PNG;
 const pug = require('pug');
+const sax = require('sax');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
-const version = require('../common/version');
 const internals = require('./internals');
 const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
+const RE2 = require('re2');
 const BuildQuery = require('./buildQuery');
 
 // Replace pug's escape with the same algorithm plus {. Detail HTML must be
@@ -75,6 +78,107 @@ ArkimeConfig.loaded(() => {
     }
   }
 });
+
+// Sink for classic pcap exports. Every record must share the file header's
+// link type, so output is held back until deferLimit bytes have been produced:
+// a conflict found before that can still be reported to the client as a JSON
+// error instead of a silently wrong file, after that the caller can only abort
+// the stream. Records are written exactly as read: a classic source keeps its
+// on-disk header and byte order, and the only synthesized header is for a
+// pcapng source (which has no classic file header), built from the packets'
+// link type as little-endian microseconds to match what readPacketNg emits.
+class PcapOutput {
+  static deferLimit = 1024 * 1024;
+
+  #res;
+  #writeHeader;
+  #pending = [];
+  #pendingBytes = 0;
+  #headerBytes;   // classic source header to copy through, when known
+  #headerSet = false;
+  #pcapng = false; // first source was pcapng, so synthesize the header
+  committed = false;
+  linkType;
+
+  constructor (res, writeHeader) {
+    this.#res = res;
+    this.#writeHeader = writeHeader;
+  }
+
+  // Learn the file header from the first source. A classic file's header is
+  // copied through verbatim (byte order and snaplen preserved); a pcapng file
+  // has no classic header, so mark it for synthesis at commit time.
+  useSourceHeader (pcap, header) {
+    if (this.#headerSet) { return; }
+    this.#headerSet = true;
+    if (pcap.isPcapNG) {
+      this.#pcapng = true;
+    } else if (header && header.length >= 24) {
+      this.#headerBytes = Buffer.from(header.subarray(0, 24));
+    }
+  }
+
+  // A complete classic pcap fetched from another node: keep its 24-byte header
+  // as this export's header if we don't already have one.
+  useHeaderBytes (buf) {
+    if (this.#headerSet) { return; }
+    this.#headerSet = true;
+    if (buf && buf.length >= 24) {
+      this.#headerBytes = Buffer.from(buf.subarray(0, 24));
+    }
+  }
+
+  // Returns an Error when linkType can't be represented in this export
+  check (linkType) {
+    if (this.linkType === undefined) {
+      this.linkType = linkType;
+      return undefined;
+    }
+    if (linkType === this.linkType) {
+      return undefined;
+    }
+    return PcapOutput.formatError([this.linkType, linkType]);
+  }
+
+  static formatError (linkTypes) {
+    const names = linkTypes.map(lt => Pcap.linkTypeName(lt)).join(', ');
+    const err = new Error(`Sessions span multiple link types (${names}), download as pcapng instead`);
+    err.i18n = 'api.sessions.pcapngRequired';
+    err.i18nParams = { linkTypes: names };
+    err.linkTypes = linkTypes;
+    return err;
+  }
+
+  write (chunk, cb) {
+    if (this.committed) {
+      return this.#res.write(chunk, cb);
+    }
+    // Copy so callers can recycle their buffer right away
+    this.#pending.push(Buffer.from(chunk));
+    this.#pendingBytes += chunk.length;
+    if (cb) { cb(); }
+    if (this.#pendingBytes >= PcapOutput.deferLimit) {
+      this.commit();
+    }
+  }
+
+  commit () {
+    if (this.committed) { return; }
+    this.committed = true;
+    if (this.#writeHeader) {
+      if (this.#headerBytes) {
+        this.#res.write(this.#headerBytes);
+      } else if (this.#pcapng && this.linkType !== undefined) {
+        this.#res.write(Pcap.makeHeaderPcap(this.linkType));
+      }
+    }
+    for (const chunk of this.#pending) {
+      this.#res.write(chunk);
+    }
+    this.#pending = [];
+    this.#pendingBytes = 0;
+  }
+}
 
 class SessionAPIs {
   static #scriptAggs = {
@@ -374,6 +478,22 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  // searchType matches hunt's vocabulary; regex types pre-compile with RE2.
+  static #buildFindOptions (search, searchType) {
+    if (!search) { return undefined; }
+    searchType = searchType || 'ascii';
+    const findOpts = { search, searchType };
+    if (searchType === 'regex' || searchType === 'hexregex') {
+      try {
+        findOpts.regex = new RE2(search, searchType === 'regex' ? 'gi' : 'g');
+      } catch (e) {
+        return undefined; // invalid regex -> no highlighting
+      }
+    }
+    return findOpts;
+  }
+
+  // --------------------------------------------------------------------------
   static #localSessionDetailReturn (req, res, session, incoming) {
     // console.log("ALW", JSON.stringify(incoming));
     const numPackets = req.query.packets || 200;
@@ -398,6 +518,9 @@ class SessionAPIs {
       'ITEM-CB': {
       }
     };
+
+    const findOpts = SessionAPIs.#buildFindOptions(req.query.search, req.query.searchType);
+    if (findOpts) { options.find = findOpts; }
 
     if (req.query.needgzip) {
       options['ITEM-HTTP'].order.push('BODY-UNCOMPRESS');
@@ -604,97 +727,96 @@ class SessionAPIs {
 
     let fileNum;
     let itemPos = 0;
-    let lastMsg;
     async.eachLimit(fields.packetPos, limit || 1, async (pos) => {
       if (pos < 0) {
         fileNum = pos * -1;
         return;
       }
 
-      // Get the pcap file for this node and filenum, if it isn't opened then do the filename lookup and open it
-      const opcap = Pcap.get(fields.node + ':' + fileNum);
-      if (opcap.isCorrupt()) {
-        throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
-      } else if (!opcap.isOpen()) {
-        const file = await Db.fileIdToFile(fields.node, fileNum);
-        if (!file) {
-          const msg = util.format("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
-          if (lastMsg !== msg) {
-            lastMsg = msg;
-            console.log(msg);
-          }
-          throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
-        }
-        if (file.kekId) {
-          file.kek = Config.sectionGet('keks', file.kekId, undefined);
-          if (file.kek === undefined) {
-            console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
-            throw new Error("Couldn't find kek " + file.kekId + ' in keks section');
-          }
-        }
-
-        const ipcap = Pcap.get(fields.node + ':' + file.num);
-
-        try {
-          ipcap.open(file);
-        } catch (err) {
-          console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
-          if (err.code === 'EACCES') {
-            // Find all the directories to check
-            const checks = [];
-            let dir = path.resolve(file.name);
-            while ((dir = path.dirname(dir)) !== '/') {
-              checks.push(dir);
-            }
-
-            // Check them in reverse order, smallest to largest
-            let i = checks.length - 1;
-            for (i; i >= 0; i--) {
-              try {
-                fs.accessSync(checks[i], fs.constants.X_OK);
-              } catch (e) {
-                console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
-                break;
-              }
-            }
-
-            // No directory issue, check the file itself
-            if (i === -1) {
-              try {
-                fs.accessSync(file.name, fs.constants.R_OK);
-              } catch (e) {
-                console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
-              }
-            }
-          }
-          throw new Error("Couldn't open file " + err);
-        }
-
-        if (headerCb) {
-          headerCb(ipcap, ipcap.readHeader());
-          headerCb = null;
-        }
-        return new Promise((resolve, reject) => {
-          processFile(ipcap, pos, itemPos++, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
-      } else {
-        if (headerCb) {
-          headerCb(opcap, opcap.readHeader());
-          headerCb = null;
-        }
-        return new Promise((resolve, reject) => {
-          processFile(opcap, pos, itemPos++, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
+      const pcap = await SessionAPIs.#openPcap(fields.node, fileNum);
+      if (headerCb) {
+        headerCb(pcap, pcap.readHeader());
+        headerCb = null;
       }
+      return new Promise((resolve, reject) => {
+        processFile(pcap, pos, itemPos++, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
     }, (pcapErr, results) => {
       endCb(pcapErr, fields);
     });
+  }
+
+  // --------------------------------------------------------------------------
+  // Get the pcap file for this node and filenum, if it isn't opened then do the
+  // filename lookup and open it. Throws when the file is gone or unreadable.
+  static #lastOpenMsg;
+  static async #openPcap (node, fileNum) {
+    const opcap = Pcap.get(node + ':' + fileNum);
+    if (opcap.isCorrupt()) {
+      throw new Error('Only have SPI data, PCAP file no longer available for ' + node + '-' + fileNum);
+    }
+    if (opcap.isOpen()) {
+      return opcap;
+    }
+
+    const file = await Db.fileIdToFile(node, fileNum);
+    if (!file) {
+      const msg = util.format("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", node, fileNum);
+      if (SessionAPIs.#lastOpenMsg !== msg) {
+        SessionAPIs.#lastOpenMsg = msg;
+        console.log(msg);
+      }
+      throw new Error('Only have SPI data, PCAP file no longer available for ' + node + '-' + fileNum);
+    }
+    if (file.kekId) {
+      file.kek = Config.sectionGet('keks', file.kekId, undefined);
+      if (file.kek === undefined) {
+        console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
+        throw new Error("Couldn't find kek " + file.kekId + ' in keks section');
+      }
+    }
+
+    const ipcap = Pcap.get(node + ':' + file.num);
+
+    try {
+      ipcap.open(file);
+    } catch (err) {
+      console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
+      if (err.code === 'EACCES') {
+        // Find all the directories to check
+        const checks = [];
+        let dir = path.resolve(file.name);
+        while ((dir = path.dirname(dir)) !== '/') {
+          checks.push(dir);
+        }
+
+        // Check them in reverse order, smallest to largest
+        let i = checks.length - 1;
+        for (i; i >= 0; i--) {
+          try {
+            fs.accessSync(checks[i], fs.constants.X_OK);
+          } catch (e) {
+            console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
+            break;
+          }
+        }
+
+        // No directory issue, check the file itself
+        if (i === -1) {
+          try {
+            fs.accessSync(file.name, fs.constants.R_OK);
+          } catch (e) {
+            console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
+          }
+        }
+      }
+      throw new Error("Couldn't open file " + err);
+    }
+
+    return ipcap;
   }
 
   // --------------------------------------------------------------------------
@@ -707,13 +829,20 @@ class SessionAPIs {
     }
 
     const block = await getBlock(info, 0);
-    obj = { info, header: block.slice(0, 24) };
+    // A pcapng file has no fixed classic header; keep the whole first block so
+    // Pcap.make can parse its Section Header + Interface Description Blocks.
+    const isNg = block.length >= 4 && block.readUInt32LE(0) === 0x0a0d0d0a;
+    obj = { info, header: isNg ? block : block.slice(0, 24) };
     headerlru.set(key, obj);
     return obj;
   }
 
   // --------------------------------------------------------------------------
   static async #getPacket (pcap, info, pos, getBlock) {
+    if (pcap.isPcapNG) {
+      return SessionAPIs.#getPacketNg(pcap, info, pos, getBlock);
+    }
+
     let block = await getBlock(info, pos);
     if (block.length < 16) {
       const block2 = await getBlock(info, pos + block.length);
@@ -727,6 +856,25 @@ class SessionAPIs {
     }
 
     return block.slice(0, len);
+  }
+
+  // --------------------------------------------------------------------------
+  // Read one pcapng packet block from a scheme (http/s3) file and return it in
+  // the classic 16-byte-header form, fetching more blocks if it straddles a
+  // block boundary. Mirrors the disk readPacketNg via the shared decoder.
+  static async #getPacketNg (pcap, info, pos, getBlock) {
+    let block = await getBlock(info, pos);
+    if (!block || block.length === 0) { return null; }
+
+    let dec = Pcap.decodeNgBlock(block, pcap.ngInterfaces, pcap.linkType);
+    while (dec && !Buffer.isBuffer(dec) && dec.need > block.length) {
+      const more = await getBlock(info, pos + block.length);
+      if (!more || more.length === 0) { break; }
+      block = Buffer.concat([block, more]);
+      dec = Pcap.decodeNgBlock(block, pcap.ngInterfaces, pcap.linkType);
+    }
+
+    return Buffer.isBuffer(dec) ? dec : null;
   }
 
   // --------------------------------------------------------------------------
@@ -754,7 +902,7 @@ class SessionAPIs {
         console.log('Failure fetching header', e.response ?? e);
         return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
       }
-      pcap = Pcap.make(h.info.name, h.header);
+      pcap = Pcap.make(h.info.name, h.header, h.info.interfaceOffsets);
       if (headerCb) {
         headerCb(pcap, h.header);
         headerCb = null;
@@ -773,16 +921,30 @@ class SessionAPIs {
     }
 
     const postPcapFetch = Config.get('postPcapFetch');
+    const check = extension === 'pcap' && req.query.check === 'true';
 
-    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map() };
+    const writerOptions = req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map(), check: SessionAPIs.#newLinkTypeAcc() };
+
+    if (extension === 'pcap') {
+      await SessionAPIs.#pcapLinkTypeCheck(req, list, writerOptions.check);
+      if (!check && writerOptions.check.linkTypes.size > 1) {
+        writerOptions.error ??= PcapOutput.formatError([...writerOptions.check.linkTypes]);
+      }
+    }
 
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
+      if (writerOptions.error) { return; }
+
       if (await ViewerUtils.isLocalView(fields.node)) {
+        if (check) { return; }
         // Get from our DISK
         await new Promise((resolve) => {
-          pcapWriter(res, item, req.arkimeWriterOptions, resolve);
+          pcapWriter(res, item, writerOptions, (err) => {
+            if (err?.i18n) { writerOptions.error ??= err; }
+            resolve();
+          });
         });
       } else {
         // Get from remote DISK
@@ -798,7 +960,7 @@ class SessionAPIs {
           }
           const { viewUrl, client, ca } = result;
 
-          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
+          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension + (check ? '?check=true' : '');
           let options;
           if (postPcapFetch) {
             options = {
@@ -833,20 +995,15 @@ class SessionAPIs {
                 chunks.push(chunk);
               });
               pres.on('end', () => {
-                if (chunks.length === 0) {
-                  resolve();
-                  return;
-                }
                 const buffer = Buffer.concat(chunks);
-                if (buffer.length < 24) {
-                  resolve();
-                  return;
-                }
-                if (req.arkimeWriterOptions.writeHeader) {
-                  req.arkimeWriterOptions.writeHeader = false;
-                  res.write(buffer);
+                if (pres.statusCode !== 200) {
+                  SessionAPIs.#remotePcapError(fields.node, sessionPath, pres.statusCode, buffer, writerOptions);
+                } else if (check) {
+                  SessionAPIs.#mergeLinkTypeCheck(buffer, writerOptions.check);
+                } else if (extension === 'pcapng') {
+                  SessionAPIs.#writeRemotePcapNg(res, buffer, writerOptions);
                 } else {
-                  res.write(buffer.subarray(24));
+                  SessionAPIs.#writeRemotePcap(res, buffer, writerOptions);
                 }
                 resolve();
               });
@@ -953,7 +1110,8 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #sessionsPcap (req, res, pcapWriter, extension) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    const check = extension === 'pcap' && req.query.check === 'true';
+    ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
 
     const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId', 'packetPos'];
 
@@ -962,7 +1120,10 @@ class SessionAPIs {
         res.status(404);
         return res.end(JSON.stringify({ success: false, text: 'no sessions found', i18n: 'api.sessions.noSessionsFound' }));
       }
-      res.end();
+      if (check) {
+        return res.send(SessionAPIs.#linkTypeCheckResult(req.arkimeWriterOptions?.check));
+      }
+      SessionAPIs.#endPcap(res, req.arkimeWriterOptions, req.arkimeWriterOptions?.error);
     }
 
     if (req.query.ids) {
@@ -1000,22 +1161,223 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static #pcapMime (extension) {
+    return extension === 'pcapng' ? 'application/x-pcapng' : 'application/vnd.tcpdump.pcap';
+  }
+
+  // --------------------------------------------------------------------------
+  // Finish a classic pcap export. A link type conflict is a JSON 400 while
+  // nothing has been streamed yet; after that the only honest option is to
+  // abort the download so the client doesn't keep a silently wrong file.
+  static #endPcap (res, writerOptions, err) {
+    const out = writerOptions?.out;
+    if (err?.i18n) {
+      if (out?.committed) {
+        console.log('ERROR - aborting pcap download already in progress -', err.message);
+        return res.destroy();
+      }
+      return res.serverError(400, err.message, err.i18n, err.i18nParams);
+    }
+    out?.commit();
+    res.end();
+  }
+
+  // --------------------------------------------------------------------------
+  static #newLinkTypeAcc () {
+    return { linkTypes: new Set(), possible: new Set(), multi: false };
+  }
+
+  // --------------------------------------------------------------------------
+  static #linkTypeCheckResult (acc) {
+    const linkTypes = acc ? [...acc.linkTypes] : [];
+    const result = {
+      success: true,
+      needsPcapng: linkTypes.length > 1,
+      mayNeedPcapng: acc?.multi === true,
+      linkTypes,
+      possibleLinkTypes: acc ? [...acc.possible] : []
+    };
+    if (result.needsPcapng) {
+      const err = PcapOutput.formatError(linkTypes);
+      result.text = err.message;
+      result.i18n = err.i18n;
+      result.i18nParams = err.i18nParams;
+    }
+    return result;
+  }
+
+  // --------------------------------------------------------------------------
+  static #mergeLinkTypeCheck (buffer, acc) {
+    try {
+      const json = JSON.parse(buffer.toString());
+      for (const lt of json.linkTypes ?? []) { acc.linkTypes.add(lt); }
+      for (const lt of json.possibleLinkTypes ?? []) { acc.possible.add(lt); }
+      if (json.mayNeedPcapng) { acc.multi = true; }
+    } catch (err) {
+      console.log('ERROR - bad pcap check response', util.inspect(err, false, 50));
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Cheap file-level look at the link types a classic pcap export of items
+  // would contain, without reading any packets. Exact for classic pcap files
+  // (one link type per file); a pcapng file with several link types only
+  // records them as possible, since which interfaces a session used isn't
+  // known until its packets are read. Remote nodes are skipped, they check
+  // their own files. Items are session ids, list entries, or search hits.
+  static async #pcapLinkTypeCheck (req, items, acc) {
+    const seen = new Set();
+    for (const item of items) {
+      let fields = item?.fields;
+      if (!fields?.packetPos || !fields?.node) {
+        try {
+          const options = ViewerUtils.addCluster(req.query?.cluster, { _source: false, fields: ['node', 'packetPos'] });
+          const session = await Db.getSession(typeof item === 'string' ? item : Db.session2Sid(item), options);
+          if (!session.found) { continue; }
+          fields = session.fields;
+        } catch (err) {
+          continue;
+        }
+      }
+      if (!fields?.packetPos || !await ViewerUtils.isLocalView(fields.node)) { continue; }
+      if (internals.writers.get(Config.getFull(fields.node, 'pcapWriteMethod'))?.processSessionId) { continue; }
+
+      for (const pos of fields.packetPos) {
+        const key = `${fields.node}:${-pos}`;
+        if (pos >= 0 || seen.has(key)) { continue; }
+        seen.add(key);
+        try {
+          const file = await Db.fileIdToFile(fields.node, -pos);
+          if (!file || schemes.get(file.scheme)?.getBlock) { continue; }
+          const pcap = await SessionAPIs.#openPcap(fields.node, -pos);
+          pcap.ref();
+          const linkTypes = new Set(pcap.isPcapNG ? pcap.ngInterfaces.map(i => i.linkType) : [pcap.linkType]);
+          pcap.unref();
+          if (linkTypes.size === 1) {
+            acc.linkTypes.add([...linkTypes][0]);
+          } else {
+            acc.multi = true;
+            for (const lt of linkTypes) { acc.possible.add(lt); }
+          }
+        } catch (err) {
+          // The export itself reports unreadable files
+        }
+      }
+    }
+    return acc;
+  }
+
+  // --------------------------------------------------------------------------
+  static #remotePcapError (node, sessionPath, statusCode, buffer, writerOptions) {
+    let json;
+    try {
+      json = JSON.parse(buffer.toString());
+    } catch (err) {
+    }
+    if (json?.i18n) {
+      const err = new Error(json.text);
+      err.i18n = json.i18n;
+      err.i18nParams = json.i18nParams;
+      writerOptions.error ??= err;
+    } else {
+      console.log(`ERROR - node ${ArkimeUtil.sanitizeStr(node)} returned ${statusCode} for ${ArkimeUtil.sanitizeStr(sessionPath)}`);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Append a complete classic pcap fetched from another node to this export
+  static #writeRemotePcap (res, buffer, writerOptions) {
+    if (buffer.length < 24) { return; }
+    const out = writerOptions.out ??= new PcapOutput(res, writerOptions.writeHeader !== false);
+    const magic = buffer.readUInt32LE(0);
+    let linkType;
+    if (magic === 0xa1b2c3d4 || magic === 0xa1b23c4d) {
+      linkType = buffer.readUInt32LE(20);
+    } else if (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1) {
+      linkType = buffer.readUInt32BE(20);
+    } else {
+      console.log('ERROR - remote pcap response is missing its file header');
+      return;
+    }
+    const err = out.check(linkType);
+    if (err) {
+      writerOptions.error ??= err;
+      return;
+    }
+    out.useHeaderBytes(buffer);
+    out.write(buffer.subarray(24));
+  }
+
+  // --------------------------------------------------------------------------
+  // Merge a complete pcapng fetched from another node into this export: drop
+  // its Section Header Block, fold its Interface Description Blocks into the
+  // export-wide link type -> interface id map (emitting an IDB only for link
+  // types not seen before) and rewrite each Enhanced Packet Block's
+  // interface_id to the merged id. Other blocks pass through untouched.
+  static #writeRemotePcapNg (res, buffer, writerOptions) {
+    const ngInterfaces = writerOptions.ngInterfaces ??= new Map();
+    const remoteIds = [];
+    let pos = 0;
+    let start = 0;
+    const flush = (end) => {
+      if (end > start) { res.write(buffer.subarray(start, end)); }
+    };
+
+    while (pos + 12 <= buffer.length) {
+      const blockType = buffer.readUInt32LE(pos);
+      const blockLen = buffer.readUInt32LE(pos + 4);
+      if (blockLen < 12 || blockLen % 4 !== 0 || pos + blockLen > buffer.length) { break; }
+
+      if (blockType === 0x0A0D0D0A) { // Section Header Block
+        if (buffer.readUInt32LE(pos + 8) !== 0x1A2B3C4D) {
+          console.log('ERROR - remote pcapng response is not little-endian, skipping');
+          return;
+        }
+        flush(pos);
+        start = pos + blockLen;
+        if (writerOptions.writeHeader) {
+          res.write(Pcap.makeShbNg());
+          writerOptions.writeHeader = false;
+        }
+      } else if (blockType === 0x00000001) { // Interface Description Block
+        flush(pos);
+        start = pos + blockLen;
+        const linkType = buffer.readUInt16LE(pos + 8);
+        let id = ngInterfaces.get(linkType);
+        if (id === undefined) {
+          id = ngInterfaces.size;
+          ngInterfaces.set(linkType, id);
+          res.write(Pcap.makeIdbNg(linkType, buffer.readUInt32LE(pos + 12)));
+        }
+        remoteIds.push(id);
+      } else if (blockType === 0x00000006) { // Enhanced Packet Block
+        buffer.writeUInt32LE(remoteIds[buffer.readUInt32LE(pos + 8)] ?? 0, pos + 8);
+      }
+      pos += blockLen;
+    }
+    flush(pos);
+  }
+
+  // --------------------------------------------------------------------------
   static #writePcap (res, id, writerOptions, doneCb) {
+    const out = writerOptions.out ??= new PcapOutput(res, writerOptions.writeHeader !== false);
     let writePos = 0;
     let boffset = 0;
     const packets = new Map();
+    let formatErr;
 
     let b = SessionAPIs.#getWritePcapBuffer();
 
     // Retrieve all the packets in parallel (10) and chunk
     // them when sending them
-    SessionAPIs.processSessionId(id, false, (pcap, packet) => {
-      if (writerOptions.writeHeader) {
-        res.write(packet);
-        writerOptions.writeHeader = false;
-      }
+    SessionAPIs.processSessionId(id, false, (pcap, header) => {
+      out.useSourceHeader(pcap, header);
     }, (pcap, packet, cb, pos) => {
-      // Save this packet in its spot
+      if (formatErr) { return cb(formatErr); }
+      formatErr = out.check(Pcap.packetLinkType(pcap, packet));
+      if (formatErr) { return cb(formatErr); }
+
+      // Save this packet in its spot, byte-for-byte as read from the source
       packets.set(pos, packet);
 
       // Send any packets we have in order
@@ -1026,7 +1388,7 @@ class SessionAPIs {
 
         if (boffset + packet.length > b.length) {
           const bToReturn = b;
-          res.write(b.slice(0, boffset), () => {
+          out.write(b.slice(0, boffset), () => {
             SessionAPIs.#putWritePcapBuffer(bToReturn);
           });
           boffset = 0;
@@ -1037,14 +1399,20 @@ class SessionAPIs {
       }
       cb(null);
     }, (err, session) => {
+      // processSessionId drops per packet errors once it has the session
+      // fields, so the link type conflict has to be carried out by hand
+      err = formatErr ?? err;
       if (err) {
-        res.status(500);
-        if (!ArkimeConfig.regressionTests) {
-          console.trace('writePcap', err);
+        if (!err.i18n) {
+          res.status(500);
+          if (!ArkimeConfig.regressionTests) {
+            console.trace('writePcap', err);
+          }
         }
+        SessionAPIs.#putWritePcapBuffer(b);
         return doneCb(err);
       }
-      res.write(b.slice(0, boffset), () => {
+      out.write(b.slice(0, boffset), () => {
         SessionAPIs.#putWritePcapBuffer(b);
         // Wait til this buffer is written to call doneCb
         doneCb(null);
@@ -1054,33 +1422,68 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #writePcapNg (res, id, writerOptions, doneCb) {
-    let b = Buffer.alloc(0xfffe);
+    // One buffered EPB must fit entirely: a max-length packet (16-byte pcap
+    // record header + up to ARKIME_PACKET_MAX_LEN=0x10000 bytes of frame) plus
+    // the EPB header, padding, and trailing block length. 0x10100 leaves room.
+    const ngBufSize = 0x10100;
+    let b = Buffer.alloc(ngBufSize);
     let boffset = 0;
+
+    // Map of link type -> interface id, shared across every session/file in this
+    // export (writerOptions persists for the whole download). This merges and
+    // dedups interfaces from multiple pcapng/pcap files: each distinct link type
+    // gets exactly one Interface Description Block, and each packet's EPB
+    // interface_id is remapped to it.
+    writerOptions.ngInterfaces ??= new Map();
+    const ngInterfaces = writerOptions.ngInterfaces;
+
+    // Emit one IDB (lazily) the first time a link type is seen. IDBs go straight
+    // to res, flushing any buffered EPBs first so they precede the EPBs that
+    // reference them.
+    const interfaceIdFor = (pcap, buffer) => {
+      const linkType = (buffer.ngLinkType !== undefined) ? buffer.ngLinkType : pcap.linkType;
+      let ifaceId = ngInterfaces.get(linkType);
+      if (ifaceId === undefined) {
+        ifaceId = ngInterfaces.size;
+        if (boffset > 0) {
+          res.write(b.slice(0, boffset));
+          boffset = 0;
+          b = Buffer.alloc(ngBufSize);
+        }
+        res.write(Pcap.makeIdbNg(linkType, 262144));
+        ngInterfaces.set(linkType, ifaceId);
+      }
+      return ifaceId;
+    };
 
     SessionAPIs.processSessionId(id, true, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
-        res.write(pcap.getHeaderNg());
+        res.write(Pcap.makeShbNg());
         writerOptions.writeHeader = false;
       }
     }, (pcap, buffer, cb) => {
+      buffer = Pcap.exportRecord(pcap, buffer);
+      const interfaceId = interfaceIdFor(pcap, buffer);
+
       if (boffset + buffer.length + 20 > b.length) {
         res.write(b.slice(0, boffset));
         boffset = 0;
-        b = Buffer.alloc(0xfffe);
+        b = Buffer.alloc(ngBufSize);
       }
 
       /* Need to write the ng block, and convert the old timestamp */
       b.writeUInt32LE(0x00000006, boffset); // Block Type
       const len = ((buffer.length + 20 + 3) >> 2) << 2;
       b.writeUInt32LE(len, boffset + 4); // Block Len 1
-      b.writeUInt32LE(0, boffset + 8); // Interface Id
+      b.writeUInt32LE(interfaceId, boffset + 8); // Interface Id
 
+      // exportRecord made the header little-endian microseconds
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
       b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
       b.writeUInt32LE(time % 0x100000000, boffset + 16); // Timestamp Low
 
-      buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
+      buffer.copy(b, boffset + 20, 8, buffer.length); // cap_len, packet_len, frame
       b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
       boffset += len - 8;
 
@@ -1089,29 +1492,12 @@ class SessionAPIs {
       boffset += 8;
 
       cb(null);
-    }, (err, session) => {
+    }, (err) => {
       if (err) {
         console.log('ERROR - writePcapNg', util.inspect(err, false, 50));
         return doneCb(err);
       }
       res.write(b.slice(0, boffset));
-
-      session.version = version.version;
-      delete session.packetPos;
-      const json = JSON.stringify(session);
-
-      const len = ((json.length + 20 + 3) >> 2) << 2;
-      b = Buffer.alloc(len);
-
-      b.writeUInt32LE(0x80808080, 0); // Block Type
-      b.writeUInt32LE(len, 4); // Block Len 1
-      b.write('MOWL', 8); // Magic
-      b.writeUInt32LE(json.length, 12); // JSON Length
-      b.write(json, 16); // JSON Data
-      b.fill(0, 16 + json.length, 16 + json.length + (4 - (json.length % 4)) % 4); // padding
-      b.writeUInt32LE(len, len - 4); // Block Len 2
-      res.write(b);
-
       doneCb(err);
     });
   }
@@ -1969,6 +2355,7 @@ class SessionAPIs {
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - The expression field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
+   * @param {string} metric - Optional numeric (integer) field exp (dashboard widgets). When set, its per-value sum is added as a <dbField>Histo timeline series and per-item total (drives heatmap intensity / treemap size). 'sessions' and non-numeric fields are ignored (doc_count is used).
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -1983,6 +2370,14 @@ class SessionAPIs {
     if (req.query.field !== undefined && !ArkimeUtil.isString(req.query.field, 0)) {
       return res.serverError(403, `Bad 'field' parameter`, 'api.sessions.badFieldParam');
     }
+
+    // Optional metric (dashboard widgets): a numeric field exp whose per-value
+    // sum drives heatmap intensity / treemap size. Resolve it to a dbField and
+    // stash it so buildQuery sums it and graphMerge emits a <dbField>Histo series
+    // (reusing the timeline-data-filter machinery). 'sessions' and non-numeric
+    // fields resolve to undefined and are ignored (doc_count is used instead).
+    const metricDbField = ViewerUtils.metricDbField(req.query.metric);
+    if (metricDbField) { req.query.metricField = metricDbField; }
 
     BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
@@ -2010,6 +2405,17 @@ class SessionAPIs {
         query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
       } else {
         query.aggregations.field = { terms: { field, size: size * 2 } };
+      }
+
+      // Rank the candidate Top-N pool by the sort metric. Without this the terms agg
+      // returns the top size*2 BY SESSION COUNT (ES default) before the metric sort
+      // runs, dropping high-metric/low-count values. Order by the <dbField>Histo sum.
+      const sortMetricField = /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
+        ? req.query.sort.replace(/Histo$/, '')
+        : undefined;
+      if (sortMetricField && !query.aggregations.field.aggregations) {
+        query.aggregations.field.aggregations = { metricValue: { sum: { field: sortMetricField } } };
+        query.aggregations.field.terms.order = { metricValue: 'desc' };
       }
 
       Promise.all([
@@ -2608,7 +3014,8 @@ class SessionAPIs {
    *
    * Gets SPI data for a session.
    * @name /session/:nodeName/:id/detail
-   * @returns {html} The html to display as session detail
+   * @returns {object} { html, info } - the detail html plus the session
+   * fields the client row may not carry (rootId, communityId, packets, etc.)
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
@@ -2651,16 +3058,81 @@ class SessionAPIs {
         }
         const html = sanitizeHtml(data, {
           parser: { decodeEntities: false }, // keep &#123; from pugEscapeVue so it survives to the client
-          allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
+          allowedTags: [
+            // Standard HTML
+            'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
+            'pre', 'span', 'br', 'img', 'ul', 'li', 'dl', 'dt', 'dd',
+            'template', 'button',
+            // Vuetify components used in the pug session-detail
+            'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
+            'v-alert', 'v-icon',
+            // Arkime / app components
+            'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions',
+            'arkime-export-pcap', 'arkime-remove-data',
+            'arkime-send-sessions', 'field-actions'
+          ],
           allowedClasses: {
-            '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
+            '*': [
+              // App-specific
+              'ts-value', 'text-theme-quaternary', 'file',
+              'sessionsrc', 'sessiondst', 'session-detail-ts',
+              'session-detail', 'session-detail-cards', 'session-detail-card',
+              'session-options', 'session-options-btn',
+              'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
+              'clickable-label', 'clickable-label-menu', 'detail-field',
+              'tag-list', 'session-card-title', 'no-wrap', 'str', 'bytes',
+              // Vuetify spacing/utility classes used inside the pug
+              'cursor-pointer',
+              'mb-2', 'mt-2', 'me-1', 'me-5', 'ms-1', 'ms-auto',
+              'float-end', 'small',
+              // Shared toolbar styling -- matches the .arkime-pcap-toolbar
+              // bar used by the Packets + tshark toolbars in SessionDetail.vue
+              'arkime-pcap-toolbar',
+              // Inline-HTML add-tag button (rendered by pug arrayList helper)
+              'arkime-tag-add-btn',
+              // Material Design Icons (sessionPackets.pug renders via v-html
+              // so it can't use <v-icon>; must use raw <i class="mdi ..."> form)
+              'mdi', 'mdi-information', 'mdi-24px', 'mdi-plus-circle'
+            ]
           },
           allowedAttributes: {
             img: ['src'],
-            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidepackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            '*': [
+              // Standard HTML / Vue
+              'class', 'style', 'title', 'value', 'target', 'href',
+              'download', 'type', 'disabled',
+              // Vue directives / bindings (incl. slot props for v-menu's
+              // #activator slot which uses v-bind="activatorProps")
+              'v-if', 'v-for', 'v-bind', 'v-on',
+              'v-has-permission', 'key', ':key',
+              ':href', ':download', '@click', '@done',
+              '#activator', '#default', '#button-content',
+              // Component custom props / slots used across the template
+              'sessionid', 'hidepackets', 'pull-left',
+              'expr', ':expr', ':separator', ':field',
+              ':sessions', ':cluster', ':single',
+              ':message', ':type', ':done', ':add',
+              'text', ':text', 'suffix', 'columns',
+              // Vuetify component props (v-btn, v-menu, v-list, v-alert, v-icon)
+              'variant', 'size', 'density', 'activator', 'location',
+              'icon', 'prepend-icon', 'append-icon'
+            ]
           }
         });
-        res.send(html);
+        // getDetail returns scalar fields, but be tolerant of array-shaped ones
+        const netPackets = session.network?.packets;
+        const info = {
+          id: session.id,
+          node: session.node,
+          cluster: session.cluster,
+          rootId: session.rootId,
+          communityId: session.network?.community_id,
+          firstPacket: session.firstPacket,
+          lastPacket: session.lastPacket,
+          packets: Array.isArray(netPackets) ? netPackets[0] : netPackets,
+          hasPackets: !!(session.packetPos && session.packetPos.length > 0)
+        };
+        res.send({ html, info });
       });
     });
   }
@@ -2680,6 +3152,350 @@ class SessionAPIs {
       SessionAPIs.#localSessionDetail(req, res);
     } else {
       return ViewerUtils.proxyRequest(req, res);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/:nodeName/:id/tshark
+   *
+   * Runs tshark against the session's pcap and streams a converted PDML
+   * dissection as NDJSON (one JSON object per packet per line). Always
+   * dispatched on the *central* viewer that received the request; the pcap is
+   * fetched from the owning node when needed.
+   *
+   * Each emitted line looks like:
+   *   {"layers":[
+   *     {"name":"frame","label":"Frame 1: ...","fields":[
+   *       {"name":"frame.len","label":"Frame Length: 197","show":"197","pos":0,"size":0},
+   *       ...]
+   *     },
+   *     {"name":"eth","label":"Ethernet II, ...","fields":[
+   *       {"name":"eth.dst","label":"Destination: ...","show":"...","value":"<hex>","pos":0,"size":6,
+   *        "fields":[...]}
+   *     ]},
+   *     ...
+   *   ],
+   *    "bytes":"<hex of the raw frame>"}
+   *
+   * @name /session/:nodeName/:id/tshark
+   * @param {string} hidden=false - "true" to include fields tshark marks hide="yes"
+   * @param {string} payload=false - "true" to include the raw "data" proto layer
+   *   for unparsed payload bytes (otherwise passes `--disable-protocol data`
+   *   to tshark)
+   * @param {string} bytes=true - "false" to omit the "bytes" hex of each frame
+   *   ("bytes" carries at most the first 16KB of a frame; frame.cap_len has the
+   *   real captured length)
+   * @param {number} length - number of packets to dissect, capped at the
+   *   `tsharkMaxPackets` config value (which is also the default)
+   * @returns {ndjson} One JSON-encoded packet per line
+   */
+  static async getTshark (req, res) {
+    ArkimeUtil.noCache(req, res, 'application/x-ndjson');
+
+    if (!internals.tsharkPath) {
+      res.status(503);
+      return res.end(JSON.stringify({ success: false, text: 'tshark not configured on this viewer' }));
+    }
+
+    // Each request forks a dissector; without a ceiling a single user can fork
+    // the viewer host to death. Reject rather than queue so the client finds
+    // out now instead of holding a connection open behind the timeout.
+    if (internals.tsharkRunning >= internals.tsharkMaxConcurrent) {
+      res.status(503);
+      res.set('Retry-After', '2');
+      return res.end(JSON.stringify({ success: false, text: `too many tshark requests in flight, max ${internals.tsharkMaxConcurrent}` }));
+    }
+    internals.tsharkRunning++;
+    let slotHeld = true;
+
+    const includeHidden = req.query.hidden === 'true';
+    const includePayload = req.query.payload === 'true';
+    const includeBytes = req.query.bytes !== 'false';
+
+    // tshark refuses non-regular stdin (S_ISSOCK / S_ISFIFO can both trip it
+    // depending on version/build); Node's stdio 'pipe' is a socketpair on
+    // macOS and on some Linux configurations. Always go through a mkfifo'd
+    // named pipe so tshark sees a real openable path.
+    const useStdin = false;
+
+    let finished = false;
+    let child;
+    let writeStream;
+    let fifoPath;
+
+    const cleanup = () => {
+      if (writeStream && !writeStream.destroyed) { try { writeStream.destroy(); } catch (e) { /* ignore */ } }
+      if (fifoPath) { fs.unlink(fifoPath, () => {}); fifoPath = undefined; }
+    };
+    const finish = (errStatus, errText) => {
+      if (finished) { return; }
+      finished = true;
+      clearTimeout(timer);
+      if (child) { try { child.kill('SIGKILL'); } catch (e) { /* already exited */ } }
+      cleanup();
+      if (slotHeld) { slotHeld = false; internals.tsharkRunning--; }
+      if (errStatus && !res.headersSent) {
+        res.status(errStatus);
+        res.end(JSON.stringify({ success: false, text: errText }));
+      } else if (!res.writableEnded) {
+        try { res.end(); } catch (e) { /* ignore */ }
+      }
+    };
+    const timer = setTimeout(() => {
+      finish(504, `tshark timed out after ${internals.tsharkTimeoutMs}ms`);
+    }, internals.tsharkTimeoutMs);
+    res.on('close', () => finish());
+
+    let pktLen = parseInt(req.query.length);
+    if (!Number.isFinite(pktLen) || pktLen <= 0) { pktLen = internals.tsharkMaxPackets; }
+    if (pktLen > internals.tsharkMaxPackets) { pktLen = internals.tsharkMaxPackets; }
+
+    const tsharkArgs = ['-T', 'pdml', '-n', '-c', String(pktLen)];
+    if (!includePayload) {
+      tsharkArgs.push('--disable-protocol', 'data');
+    }
+    if (useStdin) {
+      tsharkArgs.unshift('-r', '-');
+      try {
+        const cmd = internals.tsharkCommand(tsharkArgs);
+        child = spawn(cmd.cmd, cmd.args, { stdio: ['pipe', 'pipe', 'pipe'], env: internals.tsharkEnv });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+      writeStream = child.stdin;
+    } else {
+      fifoPath = path.join(internals.tsharkDir, `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.fifo`);
+      const mk = spawnSync('mkfifo', ['-m', '600', fifoPath]);
+      if (mk.status !== 0) {
+        fifoPath = undefined;
+        return finish(500, 'mkfifo failed: ' + ArkimeUtil.safeStr((mk.stderr || '').toString().trim() || ('exit ' + mk.status)));
+      }
+      tsharkArgs.unshift('-r', fifoPath);
+      try {
+        const cmd = internals.tsharkCommand(tsharkArgs);
+        child = spawn(cmd.cmd, cmd.args, { stdio: ['ignore', 'pipe', 'pipe'], env: internals.tsharkEnv });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+    }
+
+    let stderrBuf = '';
+    child.stderr.on('data', (b) => {
+      if (stderrBuf.length < 8192) { stderrBuf += b.toString().slice(0, 8192 - stderrBuf.length); }
+    });
+
+    // --- raw frame tap -------------------------------------------------------
+    // PDML carries per-field hex but never the whole frame, so the hex pane in
+    // the UI would have nothing to show. Sniff the same classic-pcap byte
+    // stream we hand tshark, split it into records, and stash each frame's hex
+    // keyed by its 1-based number. tshark reads the fifo we just wrote, so a
+    // frame is always tapped before its </packet> comes back out.
+    // Matches the hex pane's own render cap -- sending more would be bytes the
+    // UI can never show. SharkBytes.vue reports how much was left off, using
+    // frame.cap_len rather than this truncated length.
+    const TAP_MAX_PACKET = 16384;   // per frame
+    const TAP_MAX_PENDING = 1 << 24; // total hex chars held waiting for tshark
+    const rawFrames = new Map();
+    let rawPending = 0;
+    let rawCount = 0;
+    let tapBuf = Buffer.alloc(0);
+    let tapHeader = true;
+    let tapLE = true;
+    let tapOff = !includeBytes;
+
+    const tapFeed = (chunk) => {
+      if (tapOff) { return; }
+      tapBuf = tapBuf.length ? Buffer.concat([tapBuf, chunk]) : Buffer.from(chunk);
+      for (;;) {
+        if (tapHeader) {
+          if (tapBuf.length < 24) { return; }
+          const magic = tapBuf.readUInt32LE(0);
+          if (magic === 0xa1b2c3d4 || magic === 0xa1b23c4d) {
+            tapLE = true;
+          } else if (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1) {
+            tapLE = false;
+          } else { // not classic pcap -- give up, the UI just shows no hex
+            tapOff = true;
+            tapBuf = Buffer.alloc(0);
+            return;
+          }
+          tapBuf = Buffer.from(tapBuf.subarray(24));
+          tapHeader = false;
+        }
+        if (tapBuf.length < 16) { return; }
+        const inclLen = tapLE ? tapBuf.readUInt32LE(8) : tapBuf.readUInt32BE(8);
+        if (inclLen > 0x400000) { // not a pcap record after all
+          tapOff = true;
+          tapBuf = Buffer.alloc(0);
+          return;
+        }
+        if (tapBuf.length < 16 + inclLen) { return; }
+        rawCount++;
+        if (rawCount >= pktLen) { tapOff = true; } // tshark stops at -c pktLen; the pump does not
+        if (rawPending < TAP_MAX_PENDING) {
+          const hex = tapBuf.subarray(16, 16 + Math.min(inclLen, TAP_MAX_PACKET)).toString('hex');
+          rawPending += hex.length;
+          rawFrames.set(rawCount, hex);
+        }
+        tapBuf = Buffer.from(tapBuf.subarray(16 + inclLen));
+      }
+    };
+
+    const takeRawFrame = (num) => {
+      const hex = rawFrames.get(num);
+      if (hex === undefined) { return undefined; }
+      rawFrames.delete(num);
+      rawPending -= hex.length;
+      return hex;
+    };
+
+    // --- PDML -> NDJSON streaming converter ---------------------------------
+    // SAX-stream tshark's PDML output. Build one packet at a time as a stack
+    // of proto/field nodes; on </packet> serialize a compact JSON line. We
+    // never buffer more than one packet at a time.
+    const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: true });
+    let packet = null;          // { layers: [...] } currently being built
+    let stack = null;           // array of containers we're inside (proto or field), top is current
+    let pdmlCount = 0;          // 1-based packet number, matches the raw frame tap
+    parser.on('opentag', (node) => {
+      if (!packet) {
+        if (node.name === 'packet') { packet = { layers: [] }; stack = []; }
+        return;
+      }
+      const a = node.attributes;
+      if (node.name === 'proto') {
+        const proto = { name: a.name || '', label: a.showname || a.name || '', fields: [] };
+        if (a.pos !== undefined) { proto.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { proto.size = parseInt(a.size); }
+        packet.layers.push(proto);
+        stack.push(proto);
+      } else if (node.name === 'field') {
+        if (!includeHidden && a.hide === 'yes') { stack.push(null); return; }
+        const f = { name: a.name || '', label: a.showname || a.show || a.name || '' };
+        if (a.show !== undefined && a.show !== '') { f.show = a.show; }
+        if (a.value !== undefined && a.value !== '') { f.value = a.value; }
+        if (a.pos !== undefined) { f.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { f.size = parseInt(a.size); }
+        if (a.hide === 'yes') { f.hide = true; }
+        const cur = stack[stack.length - 1];
+        if (cur) {
+          if (!cur.fields) { cur.fields = []; }
+          cur.fields.push(f);
+        }
+        stack.push(f);
+      }
+    });
+    parser.on('closetag', (tagName) => {
+      if (!packet) { return; }
+      if (tagName === 'packet') {
+        // Drop empty fields arrays for compactness.
+        const stripEmpty = (n) => {
+          if (n && n.fields) {
+            if (n.fields.length === 0) { delete n.fields; }
+            else { for (const c of n.fields) { stripEmpty(c); } }
+          }
+        };
+        for (const l of packet.layers) { stripEmpty(l); }
+        pdmlCount++;
+        const raw = takeRawFrame(pdmlCount);
+        if (raw !== undefined) { packet.bytes = raw; }
+        if (!res.writableEnded) {
+          res.write(JSON.stringify(packet));
+          res.write('\n');
+        }
+        packet = null;
+        stack = null;
+      } else if (tagName === 'proto' || tagName === 'field') {
+        if (stack) { stack.pop(); }
+      }
+    });
+    parser.on('error', (err) => {
+      // Don't kill the response on bad XML — log and keep going if possible.
+      console.log('tshark pdml parse error:', err.message);
+      try { parser._parser.error = null; parser._parser.resume(); } catch (e) { /* ignore */ }
+    });
+
+    child.stdout.pipe(parser);
+    child.on('error', (err) => finish(500, 'tshark process error: ' + ArkimeUtil.safeStr(err.message)));
+    child.on('close', (code) => {
+      if (code !== 0 && !res.headersSent) {
+        finish(500, 'tshark exited ' + code + ': ' + ArkimeUtil.safeStr(stderrBuf.trim()));
+      } else {
+        finish();
+      }
+    });
+
+    const wireWriteStream = () => {
+      writeStream.on('error', (err) => {
+        if (err.code !== 'EPIPE') { finish(500, 'pcap stream error: ' + ArkimeUtil.safeStr(err.message)); }
+      });
+    };
+
+    const startPcapPump = async () => {
+      if (await ViewerUtils.isLocalView(req.params.nodeName)) {
+        const sink = {
+          write: (chunk, cb) => {
+            tapFeed(chunk);
+            if (!writeStream || !writeStream.writable) { if (cb) { setImmediate(cb); } return false; }
+            return writeStream.write(chunk, cb);
+          },
+          status: () => sink
+        };
+        const writerOptions = { writeHeader: true };
+        SessionAPIs.#writePcap(sink, req.params.id, writerOptions, (err) => {
+          if (err && !finished) {
+            return finish(500, 'failed to read local pcap: ' + ArkimeUtil.safeStr(err.message || err));
+          }
+          writerOptions.out?.commit();
+          if (writeStream && writeStream.writable) { writeStream.end(); }
+        });
+      } else {
+        // makeStreamRequest already encodeURI()s the path; encodeURIComponent on the id would double-encode '@' (%40 -> %2540) and 500 the owning node
+        const remotePath = `/api/session/${req.params.nodeName}/${req.params.id}/pcap`;
+        ViewerUtils.makeStreamRequest(req.params.nodeName, remotePath, req.user, (pres) => {
+          if (pres.statusCode !== 200) {
+            finish(502, 'remote node returned status ' + pres.statusCode);
+            pres.resume();
+            return;
+          }
+          pres.on('error', (err) => finish(502, 'error streaming remote pcap: ' + ArkimeUtil.safeStr(err.message)));
+          pres.pipe(writeStream);
+          pres.on('data', tapFeed);
+        }, (err) => {
+          finish(502, 'error contacting remote node: ' + ArkimeUtil.safeStr(err.message || err));
+        }, req.query.cluster);
+      }
+    };
+
+    if (useStdin) {
+      wireWriteStream();
+      startPcapPump();
+    } else {
+      // Opening the write end of a fifo BLOCKS until a reader shows up, and
+      // fs.open runs on the libuv threadpool (4 threads by default). If tshark
+      // never gets as far as opening the fifo -- it died, or the client hung up
+      // and we SIGKILLed it -- that thread stays pinned forever, and unlinking
+      // the fifo does not release it; a handful of aborted requests would wedge
+      // every file read in the process. Open non-blocking instead and retry:
+      // ENXIO just means tshark has not opened its end yet. net.Socket rather
+      // than fs.createWriteStream because the fd stays non-blocking and only
+      // libuv's pipe handling deals with EAGAIN correctly.
+      const openDeadline = Date.now() + internals.tsharkTimeoutMs;
+      const openFifo = () => {
+        if (finished) { return; }
+        fs.open(fifoPath, fs.constants.O_WRONLY | fs.constants.O_NONBLOCK, (openErr, fd) => { // eslint-disable-line no-bitwise
+          if (finished) { if (!openErr) { try { fs.closeSync(fd); } catch (e) { /* ignore */ } } return; }
+          if (openErr) {
+            if (openErr.code === 'ENXIO' && Date.now() < openDeadline) { return setTimeout(openFifo, 10); }
+            return finish(500, 'failed to open fifo: ' + ArkimeUtil.safeStr(openErr.message));
+          }
+          writeStream = new net.Socket({ fd, readable: false, writable: true });
+          wireWriteStream();
+          startPcapPump();
+        });
+      };
+      openFifo();
     }
   }
 
@@ -2815,39 +3631,33 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * GET - /api/sessions/summary
+   * POST/GET - /api/sessions/summary
    *
-   * Get summary info by id or by query.
+   * Backs the Arkime tab modular dashboard. Streams a JSON array whose first
+   * element is the top-level stats/map/graph chunk (omitted when noStats is set),
+   * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp summed per value), metrics (array of numeric field exps, each summed per value — the multi-metric table's columns; falls back to [metricType]), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
+   * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
+   * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
+   * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
+   * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, length, order, expression, data[] } or { id, field, error } on per-widget failure. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's sum, or session count), metricValues (each requested metric's sum keyed by exp, + 'sessions') }.
    *
    */
   static summary (req, res) {
-    let topNum = 20;
-    if (req.query.length) {
-      topNum = parseInt(req.query.length);
-    }
-    if (!Number.isFinite(topNum) || topNum <= 0) {
-      topNum = 20;
-    }
-    if (topNum > 1000) {
-      topNum = 1000;
+    // Clamp a requested top/bottom N to a sane range
+    function clampLength (val, fallback) {
+      let n = parseInt(val);
+      if (!Number.isFinite(n) || n <= 0) { n = fallback; }
+      if (n > 1000) { n = 1000; }
+      return n;
     }
 
-    const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
-
-    // Validate and parse fields parameter - should be a comma-separated string of field names
-    if (!req.body.fields || !ArkimeUtil.isString(req.body.fields)) {
-      return res.status(400).send({ error: 'Missing or invalid fields parameter in request body - must be a comma-separated string of field names' });
-    }
-
-    // Parse comma-separated string into array
-    const aggFields = req.body.fields.split(',').map(f => f.trim()).filter(f => f.length > 0);
-
-    if (aggFields.length === 0) {
-      return res.status(400).send({ error: 'Fields parameter cannot be empty' });
-    }
+    // Global limit/order are defaults for widgets that don't set their own
+    const defaultTopNum = clampLength(req.query.length, 20);
+    const defaultOrder = req.body.order === 'asc' ? 'asc' : 'desc';
 
     // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {
@@ -2869,47 +3679,98 @@ class SessionAPIs {
     // Special fields that don't have a direct database field mapping
     const specialFields = ['ip', 'ip.dst:port'];
 
-    // Build mapping of field exp to aggregation name and dbField
-    const fieldConfig = {};
-    for (const fieldExp of aggFields) {
-      let aggName;
-
-      // Handle special fields that use Painless scripts
-      if (specialFields.includes(fieldExp)) {
-        aggName = fieldExp === 'ip' ? 'allIp' : 'dstIpPort';
-        fieldConfig[fieldExp] = {
-          aggName,
-          isSpecial: true
-        };
-        continue;
+    // Build the list of widgets to aggregate. The modular dashboard sends a
+    // `widgets` array of per-widget specs ({id, field, length, order, expression,
+    // viewMode, metricType}); the legacy summary page sends a comma-separated
+    // `fields` string with a single global length/order. Both are supported.
+    let rawWidgets;
+    if (Array.isArray(req.body.widgets)) {
+      rawWidgets = req.body.widgets; // may be empty -> stats-only response
+    } else if (req.body.fields && ArkimeUtil.isString(req.body.fields)) {
+      rawWidgets = req.body.fields
+        .split(',').map(f => f.trim()).filter(f => f.length > 0)
+        .map(f => ({ field: f }));
+      // an all-whitespace/comma fields string carries no field names
+      if (rawWidgets.length === 0) {
+        return res.status(400).send({ error: 'Fields parameter cannot be empty' });
       }
-
-      // Handle regular fields from Config.getFieldsMap()
-      const field = fieldsMap[fieldExp];
-      if (!field) {
-        console.log(`Warning: Unknown field expression '${fieldExp}' in summary aggFields`);
-        continue;
-      }
-      // Create a unique aggregation name from the field expression
-      aggName = fieldExp.replace(/\./g, '_');
-      fieldConfig[fieldExp] = {
-        aggName,
-        dbField: field.dbField
-      };
+    } else {
+      return res.status(400).send({ error: 'Missing or invalid widgets/fields parameter in request body' });
     }
 
-    function convert (agg) {
+    // Normalize each requested widget into an aggregation spec
+    const widgetSpecs = [];
+    for (let i = 0; i < rawWidgets.length; i++) {
+      const w = rawWidgets[i] || {};
+      const fieldExp = w.field;
+      if (!ArkimeUtil.isString(fieldExp)) { continue; }
+
+      const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
+      const spec = {
+        id: ArkimeUtil.isString(w.id) ? w.id : `w${i}`,
+        field: fieldExp,
+        aggName: `agg${i}`,
+        length: clampLength(w.length, defaultTopNum),
+        order: w.order === 'asc' ? 'asc' : (w.order === 'desc' ? 'desc' : defaultOrder),
+        expression: ArkimeUtil.isString(w.expression) && w.expression.length > 0 ? w.expression : undefined,
+        // viewMode/metricType are owned by the client; the response only echoes
+        // sensible field-based defaults for the legacy fields-string callers.
+        viewMode: metadata.viewMode,
+        metricType: (ArkimeUtil.isString(w.metricType) && w.metricType.length > 0) ? w.metricType : metadata.metricType
+      };
+
+      if (specialFields.includes(fieldExp)) {
+        spec.isSpecial = true;
+      } else {
+        const field = fieldsMap[fieldExp];
+        if (!field) {
+          console.log(`Warning: Unknown field expression '${fieldExp}' in summary widgets`);
+          spec.unknown = true;
+        } else {
+          spec.dbField = field.dbField;
+        }
+      }
+
+      // numeric field exps summed per bucket. Tables send metrics[]; charts send
+      // one metricType. Non-numeric dropped; sortMetric orders Top-N (else count).
+      const requestedMetrics = (Array.isArray(w.metrics) && w.metrics.length)
+        ? w.metrics
+        : (spec.metricType && spec.metricType !== 'sessions' ? [spec.metricType] : []);
+      spec.metrics = [];
+      for (const exp of requestedMetrics) {
+        if (!ArkimeUtil.isString(exp) || exp === 'sessions') { continue; }
+        const dbField = ViewerUtils.metricDbField(exp);
+        if (dbField && !spec.metrics.some(m => m.exp === exp)) {
+          spec.metrics.push({ exp, dbField, aggKey: `m${spec.metrics.length}` });
+        }
+      }
+      const sortExp = ArkimeUtil.isString(w.sortMetric) ? w.sortMetric : spec.metrics[0]?.exp;
+      spec.sortAggKey = spec.metrics.find(m => m.exp === sortExp)?.aggKey;
+
+      widgetSpecs.push(spec);
+    }
+
+    // `value` = the sort metric's sum (or session count). `metricValues` holds
+    // each requested metric keyed by exp (+ 'sessions') for the table's columns.
+    function convert (agg, limit, spec) {
       if (!agg || !agg.buckets) {
         return [];
       }
 
       const results = [];
-      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+      for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
+        const bucket = agg.buckets[i];
+        const metricValues = { sessions: bucket.doc_count };
+        for (const m of (spec.metrics || [])) {
+          metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
+        }
         results.push({
-          item: agg.buckets[i].key,
-          sessions: agg.buckets[i].doc_count,
-          bytes: agg.buckets[i].bytes.value,
-          packets: agg.buckets[i].packets.value
+          item: bucket.key,
+          sessions: bucket.doc_count,
+          bytes: bucket.bytes.value,
+          packets: bucket.packets.value,
+          value: spec.sortAggKey ? (bucket[spec.sortAggKey]?.value ?? 0) : bucket.doc_count,
+          metricValues
         });
       }
       return results;
@@ -2989,126 +3850,139 @@ class SessionAPIs {
       /******************************/
       /* Phase 1, top level and map */
 
-      // Top level aggregations
-      const aggregations = {
-        firstPacket: {
-          min: {
-            field: 'firstPacket'
-          }
-        },
-        lastPacket: {
-          max: {
-            field: 'lastPacket'
-          }
-        },
-        bytes: {
-          sum: {
-            field: 'network.bytes'
-          }
-        },
-        dataBytes: {
-          sum: {
-            field: 'totDataBytes'
-          }
-        },
-        packets: {
-          sum: {
-            field: 'network.packets'
-          }
+      // Phase 1 (top-level stats + map + graph) is skipped for incremental
+      // single-widget fetches (noStats): the dashboard stats/viz don't change
+      // when adding/editing/retrying one widget, so the client omits them and
+      // ignores the stats chunk — recomputing them here would be wasted work.
+      const noStats = req.query.noStats === true || req.query.noStats === 'true';
+
+      if (!noStats) {
+        // Top level aggregations
+        const aggregations = {
+          firstPacket: { min: { field: 'firstPacket' } },
+          lastPacket: { max: { field: 'lastPacket' } },
+          bytes: { sum: { field: 'network.bytes' } },
+          dataBytes: { sum: { field: 'totDataBytes' } },
+          packets: { sum: { field: 'network.packets' } }
+        };
+        query.aggregations ??= {};
+        query.aggregations = { ...query.aggregations, ...aggregations };
+
+        const phase1 = await Db.searchSessions(indices, query, options);
+        const map = ViewerUtils.mapMerge(phase1.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
+
+        // Handle case where there's no data
+        if (!phase1.aggregations) {
+          return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
         }
-      };
-      query.aggregations ??= {};
-      query.aggregations = { ...query.aggregations, ...aggregations };
 
-      const phase1 = await Db.searchSessions(indices, query, options);
-      const map = ViewerUtils.mapMerge(phase1.aggregations);
-      const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
-
-      // Handle case where there's no data
-      if (!phase1.aggregations) {
-        return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
+        const response = {
+          firstPacket: phase1.aggregations.firstPacket.value,
+          lastPacket: phase1.aggregations.lastPacket.value,
+          sessions: phase1.hits.total,
+          bytes: phase1.aggregations.bytes.value,
+          dataBytes: phase1.aggregations.dataBytes.value,
+          packets: phase1.aggregations.packets.value,
+          map,
+          graph
+        };
+        response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
+        await send(response, false);
       }
 
-      const response = {
-        firstPacket: phase1.aggregations.firstPacket.value,
-        lastPacket: phase1.aggregations.lastPacket.value,
-        sessions: phase1.hits.total,
-        bytes: phase1.aggregations.bytes.value,
-        dataBytes: phase1.aggregations.dataBytes.value,
-        packets: phase1.aggregations.packets.value,
-        map,
-        graph
+      /*****************************************/
+      /* Phase 2 Requested widget aggregations */
+
+      // Per-widget local expressions are ANDed with the global search. Build (and
+      // cache) one base query per distinct combined expression so widgets that share
+      // a filter — or use none — don't rebuild the query.
+      const queryCache = new Map();
+      const globalExpression = req.query.expression;
+
+      const widgetBaseQuery = async (expression) => {
+        if (!expression) { return query; } // reuse the global base query
+        const combined = globalExpression ? `(${globalExpression}) && (${expression})` : expression;
+        if (queryCache.has(combined)) { return queryCache.get(combined); }
+        const override = { ...req.query, expression: combined };
+        const built = await BuildQuery.buildPromise(req, override);
+        queryCache.set(combined, built.query);
+        return built.query;
       };
-      response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
-      await send(response, false);
 
-      /****************************************/
-      /* Phase 2 Requested field aggregations */
-
-      // Field aggregations - dynamically added based on requested fields
-      for (const fieldExp in fieldConfig) {
+      // INVARIANT: this loop runs strictly sequentially (it awaits each search
+      // before the next). Each iteration mutates its base query in place
+      // (aggregations/size/_source) — both the shared no-expression `query` and
+      // the cached per-expression queries are reused across widgets. Do NOT
+      // parallelize without cloning the query per iteration.
+      for (const spec of widgetSpecs) {
         if (clientDisconnected || res.destroyed) { break; }
         try {
-          const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
-          const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
-          query.aggregations = {};
+          if (spec.unknown) {
+            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.field}` }, false);
+            continue;
+          }
 
-          if (isSpecial) {
-            // Handle special fields with Painless scripts
-            if (fieldExp === 'ip') {
-              query.aggregations[aggName] = {
-                terms: {
-                  script: {
-                    source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
-                    lang: 'painless'
-                  },
-                  size: topNum,
-                  order: { _count: sortOrder }
-                },
-                aggs: extraAggs
-              };
-            } else if (fieldExp === 'ip.dst:port') {
-              query.aggregations[aggName] = {
-                terms: {
-                  script: {
-                    source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
-                    lang: 'painless'
-                  },
-                  size: topNum,
-                  order: { _count: sortOrder }
-                },
-                aggs: extraAggs
-              };
-            }
+          const wquery = await widgetBaseQuery(spec.expression);
+          wquery._source = false;
+          wquery.size = 0;
+          delete wquery.sort;
+          wquery.aggregations = {};
+
+          // Per-widget metric: when a numeric field is selected, sum it per
+          // bucket and order Top/Bottom N by that sum; otherwise order by count.
+          const widgetAggs = { ...extraAggs };
+          for (const m of spec.metrics) {
+            widgetAggs[m.aggKey] = { sum: { field: m.dbField } };
+          }
+          const termsOrder = spec.sortAggKey ? { [spec.sortAggKey]: spec.order } : { _count: spec.order };
+
+          if (spec.isSpecial) {
+            // Special fields use Painless scripts (no direct dbField mapping)
+            const source = spec.field === 'ip'
+              ? "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];"
+              : "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];";
+            wquery.aggregations[spec.aggName] = {
+              terms: {
+                script: { source, lang: 'painless' },
+                size: spec.length,
+                order: termsOrder
+              },
+              aggs: widgetAggs
+            };
           } else {
             // Regular field aggregations
-            query.aggregations[aggName] = {
+            wquery.aggregations[spec.aggName] = {
               terms: {
-                field: dbField,
-                size: topNum,
-                order: { _count: sortOrder }
+                field: spec.dbField,
+                size: spec.length,
+                order: termsOrder
               },
-              aggs: extraAggs
+              aggs: widgetAggs
             };
           }
 
-          const phase2 = await Db.searchSessions(indices, query, options);
+          const phase2 = await Db.searchSessions(indices, wquery, options);
           const field = {
-            field: fieldExp,
-            viewMode: metadata.viewMode,
-            metricType: metadata.metricType,
+            id: spec.id,
+            field: spec.field,
+            viewMode: spec.viewMode,
+            metricType: spec.metricType,
+            length: spec.length,
+            order: spec.order,
+            expression: spec.expression,
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration
           };
-          if (fieldExp === 'ip.dst:port') {
-            field.data = convert(phase2.aggregations[aggName]).map(ipDstPortProcessor);
-          } else {
-            field.data = convert(phase2.aggregations[aggName]);
+          let data = convert(phase2.aggregations[spec.aggName], spec.length, spec);
+          if (spec.field === 'ip.dst:port') {
+            data = data.map(ipDstPortProcessor);
           }
+          field.data = data;
           await send(field, false);
         } catch (fieldErr) {
-          // Send error for this specific field, continue with others
-          await send({ field: fieldExp, error: fieldErr.message || String(fieldErr) }, false);
+          // Send error for this specific widget, continue with others
+          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr) }, false);
         }
       }
       if (!res.destroyed) {
@@ -3175,7 +4049,8 @@ class SessionAPIs {
    * @param {string} ids - The list of ids to return sessions for
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {boolean} segments=false - When set return linked segments
-   * @returns {pcap} A PCAP file with the sessions requested
+   * @param {boolean} check=false - When set don't download anything, instead return JSON describing whether the sessions span more than one link type (needsPcapng) and so can only be downloaded as pcapng
+   * @returns {pcap} A PCAP file with the sessions requested. A 400 JSON error with i18n api.sessions.pcapngRequired is returned instead when the sessions span more than one link type.
    * @example
    *   Returns pcap for sessions with the source IP of 1.2.3.4
    *   curl -v 'http://localhost:8005/api/sessions/pcap/anyfilename.pcap?date=-1&expression=ip.src%3D%3D1.2.3.4'
@@ -3209,21 +4084,12 @@ class SessionAPIs {
    * @returns {pcap} A PCAP file with the session requested
    */
   static getPCAPFromNode (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
-    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
-      res.end();
-    });
+    return SessionAPIs.#nodePcap(req, res, req.params.id, SessionAPIs.#writePcap, 'pcap');
   }
 
   // --------------------------------------------------------------------------
   static postPCAPFromNode (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
-    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-
-    SessionAPIs.#writePcap(res, req.body, { writeHeader }, () => {
-      res.end();
-    });
+    return SessionAPIs.#nodePcap(req, res, req.body, SessionAPIs.#writePcap, 'pcap');
   }
 
   // --------------------------------------------------------------------------
@@ -3236,10 +4102,29 @@ class SessionAPIs {
    * @returns {pcap} A PCAPNG file with the session requested
    */
   static getPCAPNGFromNode (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
-    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
-    SessionAPIs.#writePcapNg(res, req.params.id, { writeHeader }, () => {
-      res.end();
+    return SessionAPIs.#nodePcap(req, res, req.params.id, SessionAPIs.#writePcapNg, 'pcapng');
+  }
+
+  // --------------------------------------------------------------------------
+  static postPCAPNGFromNode (req, res) {
+    return SessionAPIs.#nodePcap(req, res, req.body, SessionAPIs.#writePcapNg, 'pcapng');
+  }
+
+  // --------------------------------------------------------------------------
+  // Single session download served by the node that owns its pcap files.
+  // check=true on a pcap request answers the link type question only.
+  static async #nodePcap (req, res, idOrSession, pcapWriter, extension) {
+    const check = extension === 'pcap' && req.query?.check === 'true';
+    ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
+
+    if (check) {
+      const acc = await SessionAPIs.#pcapLinkTypeCheck(req, [idOrSession], SessionAPIs.#newLinkTypeAcc());
+      return res.send(SessionAPIs.#linkTypeCheckResult(acc));
+    }
+
+    const writerOptions = { writeHeader: req.query?.noHeader !== 'true' };
+    pcapWriter(res, idOrSession, writerOptions, (err) => {
+      SessionAPIs.#endPcap(res, writerOptions, err);
     });
   }
 
@@ -3249,10 +4134,29 @@ class SessionAPIs {
    *
    * Retrieve the pcap for a session given the session id and node name.
    * @name /session/entire/:nodeName/:id/pcap
-   * @returns {pcap} A PCAP file with the session requested
+   * @param {boolean} check=false - When set don't download anything, instead return JSON describing whether the session spans more than one link type (needsPcapng) and so can only be downloaded as pcapng
+   * @returns {pcap} A PCAP file with the session requested. A 400 JSON error with i18n api.sessions.pcapngRequired is returned instead when the session spans more than one link type.
    */
-  static async getEntirePCAP (req, res) {
-    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
+  static getEntirePCAP (req, res) {
+    return SessionAPIs.#entirePcap(req, res, SessionAPIs.#writePcap, 'pcap');
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/entire/:nodeName/:id/pcapng OR /api/session/entire/:nodeName/:id.pcapng
+   *
+   * Retrieve the pcapng for a session given the session id and node name.
+   * @name /session/entire/:nodeName/:id/pcapng
+   * @returns {pcap} A PCAPNG file with the session requested
+   */
+  static getEntirePCAPNG (req, res) {
+    return SessionAPIs.#entirePcap(req, res, SessionAPIs.#writePcapNg, 'pcapng');
+  }
+
+  // --------------------------------------------------------------------------
+  static async #entirePcap (req, res, pcapWriter, extension) {
+    const check = extension === 'pcap' && req.query.check === 'true';
+    ArkimeUtil.noCache(req, res, check ? 'application/json' : SessionAPIs.#pcapMime(extension));
 
     const writerOptions = { writeHeader: true };
 
@@ -3277,18 +4181,29 @@ class SessionAPIs {
     };
 
     if (Config.debug) {
-      console.log('/api/session/entire/%s/%s/pcap query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), JSON.stringify(query, false, 2));
+      console.log('/api/session/entire/%s/%s/%s query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), extension, JSON.stringify(query, false, 2));
     }
 
-    Db.searchSessions(Db.getSessionIndices(true), query, null, (err, data) => {
+    Db.searchSessions(Db.getSessionIndices(true), query, null, async (err, data) => {
       if (err || !data?.hits?.hits) {
         console.log('ERROR - /api/session/entire query', util.inspect(err, false, 50));
         return res.status(500).end();
       }
+
+      if (extension === 'pcap') {
+        const acc = await SessionAPIs.#pcapLinkTypeCheck(req, data.hits.hits, SessionAPIs.#newLinkTypeAcc());
+        if (check) {
+          return res.send(SessionAPIs.#linkTypeCheckResult(acc));
+        }
+        if (acc.linkTypes.size > 1) {
+          return SessionAPIs.#endPcap(res, writerOptions, PcapOutput.formatError([...acc.linkTypes]));
+        }
+      }
+
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
-        SessionAPIs.#writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
+        pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {
-        res.end();
+        SessionAPIs.#endPcap(res, writerOptions, err);
       });
     });
   }
