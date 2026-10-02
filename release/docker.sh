@@ -17,11 +17,15 @@ copy_elasticsearch() {
 }
 
 ######################################################################
+# Called in the background so the main script can catch SIGTERM.
+# The SIGTERM from cleanup reaches the program too; let it finish before stopping
 run_forever() {
     local dir="$1"
     shift
-    while true; do
-        (cd "$dir" && "$@")
+    local stopping=0
+    trap 'stopping=1' SIGTERM
+    while [ $stopping -eq 0 ]; do
+        (cd "$dir" && exec "$@")
         if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
     done
@@ -72,18 +76,21 @@ run_capture() {
 }
 
 ######################################################################
-# Function to kill all background processes on script exit
+# Stop all programs and wait for them to exit. As PID 1 in a container, exiting
+# early would kill them before they finish (capture needs to save sessions and
+# close its pcap files), so use a long enough "docker stop -t" or stop_grace_period.
 cleanup() {
     echo "Stopping all programs..."
     # Send SIGTERM to every process in this script's process group so
     # grandchildren (e.g. node/capture spawned from subshells in run_forever)
-    # are stopped, not just direct children.
-    trap - SIGINT SIGTERM
+    # are stopped, not just direct children. Ignore it ourselves so we can wait.
+    trap '' SIGINT SIGTERM
     kill -TERM 0 2>/dev/null
+    wait
     exit 0
 }
-# Trap SIGINT (Ctrl+C) and call the cleanup function
-trap cleanup SIGINT
+# Trap SIGINT (Ctrl+C) and SIGTERM (docker stop) and call the cleanup function
+trap cleanup SIGINT SIGTERM
 
 ######################################################################
 show_help() {
@@ -287,19 +294,23 @@ fi
 case "$command" in
     wise)
         echo "Starting wise"
-        run_wise "$@"
+        run_wise "$@" &
+        wait $!
         ;;
     viewer)
         echo "Starting viewer"
-        run_viewer "$@"
+        run_viewer "$@" &
+        wait $!
         ;;
     parliament)
         echo "Starting parliament"
-        run_parliament "$@"
+        run_parliament "$@" &
+        wait $!
         ;;
     esproxy)
         echo "Starting esproxy"
-        run_esproxy "$@"
+        run_esproxy "$@" &
+        wait $!
         ;;
     db|db.pl)
         echo "Starting db"
@@ -307,11 +318,13 @@ case "$command" in
         ;;
     cont3xt)
         echo "Starting cont3xt"
-        run_cont3xt "$@"
+        run_cont3xt "$@" &
+        wait $!
         ;;
     capture)
         echo "Starting capture"
-        run_capture "$@"
+        run_capture "$@" &
+        wait $!
         ;;
     capture-viewer)
         echo "Starting capture"
