@@ -142,6 +142,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 
 6.8.1 2026/10/xx
+## Release
+  - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
 ## ESProxy
