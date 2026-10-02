@@ -12,6 +12,7 @@ let cachedLocales = null;
  * Handler for loading and serving locale files
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
+ * @ignore
  */
 function getLocales(req, res) {
   if (cachedLocales !== null) {
