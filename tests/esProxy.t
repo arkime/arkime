@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 95;
+use Test::More tests => 142;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -64,6 +64,28 @@ $req->header('Content-Type' => 'application/x-ndjson');
 $req->content($bulk_valid);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "bulk with valid prefixed sessions3 index");
+
+# Bulk - _index must be a single sessions index name, same check as the _search and _doc paths
+foreach my $test (
+    ["tests_sessions3-2024,tests_users", "comma list"],
+    ["tests_sessions3-*", "wildcard"],
+    ["tests_sessions3-2024:tests_users", "remote cluster"],
+    ["tests_sessions3-2024/../tests_users", "slash"],
+    ["tests_sessions3-", "empty suffix"],
+) {
+    my ($index, $name) = @$test;
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+    $req->header('Content-Type' => 'application/x-ndjson');
+    $req->content(qq({"index":{"_index":"$index","_id":"1"}}\n{"field":"value"}\n));
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 400, "bulk index with $name rejected");
+}
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content(qq({"create":{"_index":1,"_id":"1"}}\n{"field":"value"}\n));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "bulk create with non string _index rejected");
 
 # Bulk - substring match should be rejected (index contains sessions2 but wrong prefix)
 my $bulk_bad_substr = qq({"index":{"_index":"evil_sessions2_hack","_id":"1"}}\n{"field":"value"}\n);
@@ -221,6 +243,38 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "sessions search with extra query clause rejected");
 is ($response->content, "Not authorized for API");
 
+# Sessions search - every index must be a sessions index and the ids body must be a single id lookup.
+# The bodies, query params and %2C encoded index lists are what the sensor viewer's es client sends,
+# Db.getSession and getEntirePCAP through Db.search/Db.searchSessions.
+my $search_ids = qq({"query":{"ids":{"values":["240101-abc"]}},"_source":["cert","dns","zeekintel"],"fields":["*"],"profile":false});
+my $search_entire = qq({"size":1000,"_source":["rootId"],"sort":{"lastPacket":{"order":"asc"}},"query":{"bool":{"filter":[{"term":{"rootId":"240101-abc"}}]}},"profile":false});
+my $search_ids_aggs = qq({"query":{"ids":{"values":["240101-abc"]}},"size":0,"aggs":{"u":{"terms":{"field":"userId"}}}});
+my $search_ids_two = qq({"query":{"ids":{"values":["240101-abc"]},"match_all":{}}});
+my $session_params = "rest_total_hits_as_int=true";
+my $entire_params = "preference=primaries&ignore_unavailable=true&rest_total_hits_as_int=true";
+foreach my $test (
+    ["tests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id allowed"],
+    ["tests_sessions2-2024%2Ctests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id in sessions2 and sessions3 allowed"],
+    ["partial-tests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id in partial index allowed"],
+    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire, 200, "sessions search by rootId across all sessions allowed"],
+    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params&max_concurrent_shard_requests=5", $search_entire, 200, "sessions search by rootId with max_concurrent_shard_requests allowed"],
+    ["tests_sessions3-2024,tests_users/_search", $search_ids, 400, "sessions search with non sessions index rejected"],
+    ["tests_sessions3-2024%2Ctests_users/_search", $search_ids, 400, "sessions search with encoded non sessions index rejected"],
+    ["tests_sessions3-2024%252Ctests_users/_search", $search_ids, 400, "sessions search with double encoded comma rejected"],
+    ["tests_sessions3-2024:tests_users/_search", $search_ids, 400, "sessions search with remote cluster rejected"],
+    ["tests_sessions3-2024%2C-tests_sessions3-2024/_search", $search_ids, 400, "sessions search with index exclusion rejected"],
+    ["tests_users%2Ctests_sessions3-2024/_search", $search_entire, 400, "sessions search starting with non sessions index rejected"],
+    ["tests_sessions3-2024/_search", $search_ids_aggs, 400, "sessions search by id with aggs rejected"],
+    ["tests_sessions3-2024/_search", $search_ids_two, 400, "sessions search by id with extra query clause rejected"],
+) {
+    my ($path, $body, $code, $name) = @$test;
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$path");
+    $req->header('Content-Type' => 'application/json');
+    $req->content($body);
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, $code, $name);
+}
+
 # path confusion: if the guard checks a path decoded by Express
 # (req.params['0']) while the proxied request uses the raw, still-encoded url
 # (req.url), a %3f/%23 makes the two resolve to different endpoints.
@@ -256,11 +310,33 @@ is ($response->code, 400, "GET /tagger path confusion via %3f rejected");
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger%23/../../tests_users/_search");
 is ($response->code, 400, "GET /tagger path confusion via %23 rejected");
 
+# GET /tagger must be the tagger index only, not a multi-index expression
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger,tests_users/_search");
+is ($response->code, 400, "GET /tagger multi-index rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger*/_search");
+is ($response->code, 400, "GET /tagger wildcard rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_mapping");
+is ($response->code, 400, "GET /tagger other api rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_search?_source=md5&size=999");
+is ($response->code, 200, "GET /tagger/_search allowed");
+
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger%3f/../../tests_users/_count");
 $req->header('Content-Type' => 'application/json');
 $req->content('{}');
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "POST /tagger path confusion via %3f rejected");
+
+# capture never POSTs to tagger
+foreach my $path ("/tagger/_search", "/tagger,tests_users/_delete_by_query", "/tagger/_bulk") {
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200$path");
+    $req->header('Content-Type' => 'application/json');
+    $req->content('{}');
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 400, "POST $path rejected");
+}
 
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/%3f/../../../_cluster/settings");
 is ($response->code, 400, "GET users doc path confusion into _cluster rejected");
@@ -281,8 +357,8 @@ is (rawStatus("GET", "/tests_files/_doc/test-1"), 200, "raw socket own files doc
 is (rawStatus("DELETE", "/tests_files/_doc/test-5%3f\\..\\..\\..\\tests_esproxy_nosuchindex"), 400, "DELETE backslash path confusion rejected");
 
 # query strings: capture sends these exact urls through esProxy and the guard
-# must keep allowing them. The guard only checks the pathname; these catch a
-# guard change (say, checking the full req.url) that would lock capture out.
+# must keep allowing them. Only query param names capture and the sensor viewer
+# send are allowed; these catch a guard change that would lock capture out.
 
 # GET - getExact entries, see arkime_db_health_check, arkime_db_load_fields,
 # and the template _meta check in capture/db.c
@@ -323,6 +399,25 @@ $req->header('Content-Type' => 'application/json');
 $req->content(qq({"node":"test","num":99999,"name":"/tmp/esProxy-query.pcap","first":0,"locked":0}));
 $response = $ArkimeTest::userAgent->request($req);
 ok ($response->code == 200 || $response->code == 201, "POST files doc with refresh query allowed") or diag($response->code);
+
+# query params that replace or widen the validated request are rejected
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_count?q=userId:admin");
+is ($response->code, 400, "GET users _count with q query rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_count?%71=userId:admin");
+is ($response->code, 400, "GET users _count with encoded q query rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_search?source=%7B%7D&source_content_type=application/json");
+is ($response->code, 400, "GET tagger _search with source query rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cluster/health?wait_for_status=green");
+is ($response->code, 400, "GET cluster health with wait_for query rejected");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_search?q=*&size=10000");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_ids);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST sessions _search with valid body and q query rejected");
 
 # Files _update - capture updates its own file docs as they close
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
@@ -413,3 +508,36 @@ is ($response->content, "Not authorized for API");
 # Correct prefix is still proxied
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/nonexistent-id");
 isnt ($response->content, "Not authorized for API", "GET session doc under correct prefix is proxied to ES, not blocked by guard");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/partial-tests_sessions3-2024/_doc/nonexistent-id");
+isnt ($response->content, "Not authorized for API", "GET session doc in partial index is proxied to ES, not blocked by guard");
+
+# Session doc get/update must be one sessions index, not a multi-index expression
+foreach my $index ("tests_sessions3-2024,tests_users", "tests_sessions3-*", "tests_sessions3-2024:tests_users", "tests_sessions3-2024%2Ftests_users") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$index/_doc/1");
+    is ($response->code, 400, "GET session doc in $index rejected");
+}
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024,tests_users/_update/1");
+$req->header('Content-Type' => 'application/json');
+$req->content($evil_update);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST session update in multi-index expression rejected");
+
+# The sensor viewer's es client encodes the commas in index lists, these are its startup and not found retry calls
+foreach my $test (
+    ["_nodes/stats/jvm%2Cprocess%2Cfs%2Cos%2Cindices%2Cthread_pool", 200, "GET nodes stats with encoded commas allowed"],
+    ["tests_sessions2-*%2Cpartial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET viewer sessions alias list allowed"],
+    ["tests_sessions3-2024/_refresh", 200, "GET sessions index refresh allowed"],
+    ["tests_sessions2-2024%2Ctests_sessions3-2024/_refresh", 200, "GET sessions2 and sessions3 index refresh allowed"],
+    ["tests_*/_refresh", 200, "GET capture exit refresh allowed"],
+    ["tests_queries/_doc/primary-viewer", 200, "GET primary viewer doc allowed"],
+    ["tests_queries/_doc/other", 400, "GET other queries doc rejected"],
+    ["tests_users/_refresh", 400, "GET users index refresh rejected"],
+    ["tests_sessions3-*/_refresh", 400, "GET sessions wildcard refresh rejected"],
+    ["tests_sessions3-2024%2Ctests_users/_refresh", 400, "GET sessions and users index refresh rejected"],
+) {
+    my ($path, $code, $name) = @$test;
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$path");
+    is ($response->code, $code, $name);
+}
