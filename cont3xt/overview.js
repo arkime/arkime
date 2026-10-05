@@ -415,30 +415,6 @@ const defaultOverviewPropertiesForIType = {
       },
       {
         type: 'linked',
-        from: 'PT DNS',
-        field: 'firstSeen',
-        alias: 'PT PDNS First Seen'
-      },
-      {
-        type: 'linked',
-        from: 'PT Whois',
-        field: 'expiresAt',
-        alias: 'Domain Expiry date'
-      },
-      {
-        type: 'linked',
-        from: 'PT Whois',
-        field: 'contactEmail',
-        alias: 'PT contact email'
-      },
-      {
-        type: 'linked',
-        from: 'PT Whois',
-        field: 'organization',
-        alias: 'PT organization'
-      },
-      {
-        type: 'linked',
         from: 'Threatstream',
         field: 'Objects',
         alias: 'ThreatStream events'
@@ -460,12 +436,6 @@ const defaultOverviewPropertiesForIType = {
         from: 'VT Domain',
         field: 'detected_urls',
         alias: 'VT detected urls'
-      },
-      {
-        type: 'linked',
-        from: 'PT DNS',
-        field: 'results',
-        alias: 'PT PDNS'
       }
     ]
   },
