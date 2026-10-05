@@ -32,6 +32,7 @@ let elasticsearch;
 let sensors;
 let oldprefix;
 let prefix;
+let sessionsIndexRe;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 let sigV4Signer = null;
@@ -44,15 +45,23 @@ ArkimeConfig.loaded(() => {
   sensors = Config.configMap('esproxy-sensors');
   prefix = ArkimeUtil.formatPrefix(Config.get('prefix', 'arkime_'));
   oldprefix = prefix === 'arkime_' ? '' : prefix;
+  // Sessions indices only, with our configured prefix
+  const esc = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  sessionsIndexRe = new RegExp(`^(?:${esc(oldprefix)}sessions2-|(?:partial-)?${esc(prefix)}sessions3-)[A-Za-z0-9_*-]+$`);
   console.log('sensors', sensors);
 
   for (const sensor in sensors) {
-    sensors[sensor].node = sensor;
-    if (sensors[sensor].ip) {
-      sensors[sensor].ip = sensors[sensor].ip.split(',');
+    const { pass, ip } = sensors[sensor];
+    // A blank or missing pass/ip turns that check off, refuse to run open
+    if ((pass === undefined && ip === undefined) ||
+        (pass !== undefined && !ArkimeUtil.isString(pass)) ||
+        (ip !== undefined && !ArkimeUtil.isString(ip))) {
+      console.log(`ERROR - esproxy-sensors '${sensor}' must set a non empty 'pass' and/or 'ip'`);
+      process.exit(1);
     }
-    if (sensors[sensor].pass === undefined && !sensors[sensor].ip) {
-      console.log(`WARNING - esproxy-sensors '${sensor}' has neither 'pass' nor 'ip' set; any client that knows the sensor name can authenticate.`);
+    sensors[sensor].node = sensor;
+    if (ip) {
+      sensors[sensor].ip = ip.split(',');
     }
   }
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
@@ -170,6 +179,8 @@ ArkimeConfig.loaded(() => {
   getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
   getExact[`/${prefix}sessions3-*/_alias`] = 1;
   getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/${oldprefix}sessions2-*,partial-${prefix}sessions3-*,${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/${prefix}*/_refresh`] = 1;
   getExact[`/${prefix}stats/_stats`] = 1;
   getExact[`/${prefix}users/_stats`] = 1;
   getExact[`/${prefix}users/_count`] = 1;
@@ -178,6 +189,7 @@ ArkimeConfig.loaded(() => {
   getExact[`/${prefix}files/_stats`] = 1;
   getExact[`/${prefix}fields/_search`] = 1;
   getExact[`/${prefix}queries/_mapping`] = 1;
+  getExact[`/${prefix}queries/_doc/primary-viewer`] = 1;
   getExact[`/${prefix}files/_mapping`] = 1;
 
   postExact[`/${prefix}stats/_search`] = 1;
@@ -245,19 +257,32 @@ app.use((req, res, next) => {
   return next();
 });
 
-// ============================================================================
-// Proxy code to real ES
-// ===========================================================================
+// Params like q= and source= override a validated body, only allow what capture and the sensor viewer send
+const allowedQueryParams = new Set([
+  '_source', 'filter_path', 'format', 'ignore_unavailable', 'max_concurrent_shard_requests', 'preference',
+  'refresh', 'rest_total_hits_as_int', 'retry_on_conflict', 'size', 'timeout', 'version', 'version_type'
+]);
 
 // Parse the raw url once, the guard checks req.esPath and doProxyFull forwards
 // req.esPath + req.esSearch, so both see the same thing. Don't use req.params,
 // Express decodes it and an encoded ?/# then splits it differently.
-function normalizeUrlPath (req) {
+// The es client encodes the commas in index lists and es decodes them, so do the same.
+app.use((req, res, next) => {
   const url = new URL(req.url, 'http://0.0.0.0/');
-  req.esPath = url.pathname;
+  req.esPath = url.pathname.replace(/%2C/gi, ',');
   req.esSearch = url.search;
-  return req.esPath;
-}
+  for (const key of url.searchParams.keys()) {
+    if (!allowedQueryParams.has(key)) {
+      console.log(`Query param failed node: ${req.sensor.node} param:>%s<:`, ArkimeUtil.sanitizeStr(key));
+      return res.status(400).send('Not authorized for API');
+    }
+  }
+  return next();
+});
+
+// ============================================================================
+// Proxy code to real ES
+// ===========================================================================
 
 // Save the post body
 
@@ -392,17 +417,18 @@ async function doProxy (req, res) {
 
 // Get requests
 app.get('*', (req, res) => {
-  const path = normalizeUrlPath(req);
+  const path = req.esPath;
 
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
-  } else if (path.startsWith('/tagger')) {
+  } else if (path === '/tagger/_search' || path.startsWith('/tagger/_source/')) {
   } else if (path.startsWith(`/${prefix}users/_doc/`)) {
   } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (isOwnFilesDoc(path, req.sensor.node)) {
   } else if (isSessionsDocPath(path, '_doc')) {
+  } else if (isSessionsIndicesPath(path, '_refresh')) {
   } else {
     console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
@@ -415,8 +441,9 @@ app.get('*', (req, res) => {
 
 // Validate Bulk
 
-function isSessionsIndex (_index) {
-  return _index.startsWith(`${oldprefix}sessions2-`) || _index.startsWith(`${prefix}sessions3-`);
+// Wildcards only for search, es would also resolve one in a bulk _index or _doc path
+function isSessionsIndex (_index, wildcard = false) {
+  return ArkimeUtil.isString(_index) && sessionsIndexRe.test(_index) && (wildcard || !_index.includes('*'));
 }
 
 function isFieldsIndex (_index) {
@@ -436,11 +463,10 @@ function isOwnDstatsDoc (path, node) {
   return path.startsWith(docPrefix) && /^\d+-\d+$/.test(remainder);
 }
 
-// Only sessions indices with our configured prefix
+// /<sessions index>/<action>/<id>
 function isSessionsDocPath (path, action) {
-  const suffix = new RegExp(`^[^/]+/${action}/[^/]+$`);
-  return (path.startsWith(`/${oldprefix}sessions2-`) && suffix.test(path.slice(`/${oldprefix}sessions2-`.length))) ||
-    (path.startsWith(`/${prefix}sessions3-`) && suffix.test(path.slice(`/${prefix}sessions3-`.length)));
+  const m = path.match(/^\/([^/]+)\/([^/]+)\/[^/]+$/);
+  return m !== null && m[2] === action && isSessionsIndex(m[1]);
 }
 
 function validateBulk (req) {
@@ -517,14 +543,26 @@ function validateFilesSearch (req) {
   }
 }
 
+// Db.getSession looks up a single session by id
+const searchIdsKeys = ['query', '_source', 'fields', 'profile'];
 function validateSearchIds (req) {
   try {
     const json = JSON.parse(req.body.toString('utf8'));
-    return json.query.ids.values.length === 1;
+    if (!Object.keys(json).every(key => searchIdsKeys.includes(key))) { return false; }
+    if (Object.keys(json.query).length !== 1 || Object.keys(json.query.ids).length !== 1) { return false; }
+    const values = json.query.ids.values;
+    return Array.isArray(values) && values.length === 1 && ArkimeUtil.isString(values[0]);
   } catch (e) {
     return false;
   }
 }
+
+// /<sessions index>,<sessions index>/<action>
+function isSessionsIndicesPath (path, action, wildcard = false) {
+  const m = path.match(/^\/([^/]+)\/([^/]+)$/);
+  return m !== null && m[2] === action && m[1].split(',').every(index => isSessionsIndex(index, wildcard));
+}
+
 // getEntirePCAP looks up every session sharing a rootId
 const searchRootIdKeys = ['size', '_source', 'sort', 'query', 'profile'];
 function validateSearchRootId (req) {
@@ -572,12 +610,11 @@ function validateFilesUpdate (req) {
 
 // Post requests
 app.post('*', saveBody, (req, res) => {
-  const path = normalizeUrlPath(req);
+  const path = req.esPath;
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
   } else if (path.startsWith(`/${prefix}fields/_doc/`)) {
-  } else if (path.startsWith('/tagger')) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (isOwnDstatsDoc(path, req.sensor.node)) {
@@ -585,7 +622,7 @@ app.post('*', saveBody, (req, res) => {
   } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
-  } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && (validateSearchIds(req) || validateSearchRootId(req))) {
+  } else if (isSessionsIndicesPath(path, '_search', true) && (validateSearchIds(req) || validateSearchRootId(req))) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
@@ -606,7 +643,7 @@ app.post('*', saveBody, (req, res) => {
 
 // Delete requests
 app.delete('*', (req, res) => {
-  const path = normalizeUrlPath(req);
+  const path = req.esPath;
 
   // Empty IFs since those are allowed requests and will run code at end
   if (isOwnFilesDoc(path, req.sensor.node)) {
@@ -622,7 +659,7 @@ app.delete('*', (req, res) => {
 
 // Put requests
 app.put('*', (req, res) => {
-  const path = normalizeUrlPath(req);
+  const path = req.esPath;
 
   // Empty IFs since those are allowed requests and will run code at end
   if (putExact[path]) {

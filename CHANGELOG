@@ -142,12 +142,17 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 
 6.8.1 2026/10/xx
+## Breaking
+  - #4309 esProxy refuses to start if an esproxy-sensors entry has an empty pass or ip, or neither
+  - #4309 esProxy rejects query parameters that capture and viewer don't send, including extra parameters added to esBulkQuery
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
 ## ESProxy
   - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
+  - #4309 Fix a capture node being able to read and change other indices through esProxy
+  - #4309 Fix some viewer and capture requests being wrongly rejected by esProxy
 ## Viewer
   - #4300 Fix users with a time limit being able to search outside of it
   - #4300 Fix Connections CSV export not quoting values

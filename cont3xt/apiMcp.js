@@ -28,6 +28,7 @@ class MCPCont3xtAPIs {
 
   /**
    * @param {object} options.apis { Integration, View, Overview, LinkGroup, Audit }
+   * @ignore
    */
   static initialize (options) {
     MCPCont3xtAPIs.#tools = MCPCont3xtAPIs.#buildTools(options.apis);
@@ -43,6 +44,7 @@ class MCPCont3xtAPIs {
    * finishes and only ends after the last one, so we buffer to completion. It
    * also has no timeout of its own - a hung integration would never call
    * finishWrite - so we always impose one and report what did arrive.
+   * @ignore
    */
   static async #runSearch (req, options) {
     const timeout = +ArkimeConfig.get('mcpCont3xtTimeout', 60000);
@@ -161,6 +163,7 @@ class MCPCont3xtAPIs {
   /**
    * Pick the overview for each itype: the one asked for, else the user's
    * selection for that itype, else the itype default. Same order as the ui.
+   * @ignore
    */
   static async #overviews (req, Overview, wanted) {
     const body = await MCPServer.callApiOrThrow(req, {
@@ -197,6 +200,7 @@ class MCPCont3xtAPIs {
    * The value a card field selects from an integration's data, following
    * formatValue.js in the ui minus the display only parts (defang, post
    * processing). Tables become rows of label:value, dates become ISO strings.
+   * @ignore
    */
   static #fieldValue (data, field, depth = 0) {
     let value = data;
@@ -259,6 +263,7 @@ class MCPCont3xtAPIs {
    * Distill one indicator's results the way the ui's overview card does: each
    * overview field names an integration and one of its card fields (or its
    * own custom field), and takes that value from the integration's data.
+   * @ignore
    */
   static #buildOverview (overview, cards, dataByIntegration) {
     const fields = [];
@@ -302,6 +307,7 @@ class MCPCont3xtAPIs {
    * Overview mode: replace the raw per integration data with the overview for
    * each indicator, plus which integrations answered so the model knows what
    * cont3xt_integration_search could still fetch.
+   * @ignore
    */
   static async #summarize (req, apis, data, wantedOverview) {
     const [cards, overviewFor] = await Promise.all([
@@ -348,6 +354,7 @@ class MCPCont3xtAPIs {
    * Keep the result under mcpMaxResultBytes by emptying the largest of
    * `entries[key]` first, marking each one omitted rather than silently
    * shrinking. Sets `truncated` on the result when anything went.
+   * @ignore
    */
   static #fit (data, entries, key) {
     const limit = ArkimeConfig.getInt('mcpMaxResultBytes', 100000);

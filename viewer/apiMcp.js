@@ -100,6 +100,7 @@ class MCPViewerAPIs {
    * Cap how much time an MCP query may span, mcpMaxQueryDays, default 7 days,
    * -1 for no limit. This is the width of the window, not how far back it
    * reaches.
+   * @ignore
    */
   static #checkQueryDays (query) {
     // Validated at config load, so this is a plain read

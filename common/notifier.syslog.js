@@ -61,6 +61,7 @@ exports.init = function (api) {
 
 /**
  * Build an RFC 5424 syslog message
+ * @ignore
  */
 exports.buildSyslogMessage = function (config, message) {
   const facility = FACILITIES.get(config.facility) ?? FACILITIES.get('local0');

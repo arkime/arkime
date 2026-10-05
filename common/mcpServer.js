@@ -36,6 +36,7 @@ const INTERNAL_ERROR = -32603;
  * Thrown by a tool handler to fail the tool call without failing the http
  * request. The MCP spec wants tool errors reported as a normal 200 result with
  * isError set, so the model can see and react to them.
+ * @ignore
  */
 class MCPToolError extends Error {
   constructor (text) {
@@ -355,6 +356,7 @@ class MCPServer {
    * Without this a header mode /mcp would accept a spoofed username from
    * anywhere the port is reachable, while the web ui on the same port would not.
    * Any other mode, or an explicit list, is used as given.
+   * @ignore
    */
   static #checkIps (req) {
     if (MCPServer.#ips === undefined) {

@@ -1521,6 +1521,7 @@ class User {
    * Compute the expanded roles, settings, expression and timeLimit for a user
    * from itself and the enabled roles it uses. Doesn't modify user, so callers
    * can swap the results in with no await in between.
+   * @ignore
    */
   static async #expandFields (user, withSettings = true) {
     const allRoles = new Set();

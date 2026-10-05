@@ -492,6 +492,7 @@ class ArkimeConfig {
   /**
    * Check every access control and resource bound in one pass so the operator
    * sees all of them at once, then refuse to start if any is broken.
+   * @ignore
    */
   static #validateSettings () {
     const errors = [];

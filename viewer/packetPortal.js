@@ -72,6 +72,7 @@ const SESSION_WINDOW = 1024 * 1024;
  * serializes later -- which corrupts the bytes. That is the only real
  * incompatibility, and copying in _write settles it. Everything else here is
  * plumbing to look enough like a net.Socket.
+ * @ignore
  */
 class H2Socket extends streamLib.Duplex {
   #h2;
