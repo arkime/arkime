@@ -17,24 +17,24 @@ import zlib
 # Packets accumulated before per-session generator code existed
 # (zlib-compressed pcap prefix, including the 24-byte global header)
 LEGACY = zlib.decompress(base64.b64decode(
-    'eNqllV1IFFEUx8+M4pqpY9qH5D6YfWCSy7qaJRs62Ae9REtEFBWxrKOuuTvTzmpraYiV9BARYWSR'
-    'pi8hVir1kBGEUIIPCUY9BEH0UFLQBz4YfTzUOTN313GcaNW7DHN37rm/Oed/zrnz6un9Xh4SITr+'
-    '/AHg8O4vOOvf22SDUpzT1VEgf73YVqeMDk79TIadAPlkJiZ93zfSx1XhNTY4JtgBEj4SxcPnwu7r'
-    'AHXzoYwRSbAPjgHYJpD0yZOZC+IwwPGF+vIJSS88GUh5BFDPKP1I6Lei3NQp028tKdm50NmtaRMe'
-    'AY4kgsySA5E7499wziWLAKt99X4pGHZIEW9AqZccPjlAVlw+rmXNfshx+CwdOHqTZpOC/1MBnGU4'
-    'T8N55n5JDW/XeAAB5nk7WrZbeR5h8fMmFV8AJB4lzw8Wap57xLmep+pvJls9ClUKNUqh/0cRjDMr'
-    '1eMpFCAA/2CI9Fw6HK2Qe4cB5PlQeCIJ9gdDAEIPkh5RhXRhMpWF+oJ1IfRShXTdATjBKL+Q8MuK'
-    '8plRllhSUOf8Ck3nZ1ghGXhfadDZhvoV1EQKVUlV/XKw0Oksciu+ULWjuEZRSFB3GQ1Na8rDilmL'
-    'EMvBcknxGR5z6+mZUnPS+Cxnrh1QxWU3YHLxxaLBtkfPP7nN3YrOQ3H2SvUhU1Z6EdBCSkwe03tF'
-    'XJwS5uo0RzpHEZV5Xom7K608L9E8P5eXdzcDOLz4h52UQzz5Nl0bwKXly3Bo52AK/vA8C8+HyBNV'
-    'sD/sJGJyRZqNR2IejhmibaKBEcvRptyK6GTEDUYfieJJen4JEWk+WT7ul4pcxbi7kdFcOHdZ0dYx'
-    'msvoH0XZLKz7sRSPiJOMkI52dJkJHOiENQfM/vhOvDwCCfAueu7jcKDpBNb/NryvNWV9o1rqjaU9'
-    '0nTKHQhIjvqw5AhKYTdGU7IZYvVvj67JihTyhuUQGbGMZ1s8pz6w16qq1Z4c6z1aT+QXFzldpU7t'
-    '7aVbtpaJZrsIU+cJbnhipe8QU+e2Wd/x0fRdqM5l/XsWU6dVXJw65p74V9SWSjXFWc0dUyN9Lvw+'
-    'ufjHrXp/XHHtX0n9UYxjppqzLpyaD5EnqmB/3ErENw1va6k/duCYIa5STsfZHx3TRh+J8r7x9o2Z'
-    '/sCE4u7mOPvjKmf0j6K81t32nPqjhREmcfekFeE182eP2Z8tX6qCWAHDpJOhAvqwPwScJ5hPRa/P'
-    'F46VABajO+hVHX5VPxU304j1R5ZhKfptEAz/qeazvF6vwUb/BtTJtUFHlSyJsQXuneEb8CE6P8Oi'
-    'HsA/A1ZR97Coz5t1+/1sxyhG3Uq5NEStiIuL2lz3puhmK/AXVTDJrA=='))
+    'eNqllVtIFGEUx8+MkWXpmHax3AezCya5rKtuyYYN3eglWiKiqIhlHW3N3Zl2Nl3tglhJDxERRhZd'
+    '9CWki0o9ZAQhpOCDglIPPYUPJQVd6KHoAtU5M9+u4+dEa37LMN/Od77fnPM/53zz4tmDDhFmQXz8'
+    '/g0g4D1YeDq4syEVPDinq7VQ/Xi+uUYb6P78fQ5sBSggM3n21119nUIlXoPdg5IDIOUtUXxiHmy/'
+    'ClAzHcogkSRH9yBA6giS3vmy8kDuBTjyv768Q9KoLxMpjwFqGeUOEu7YUa6blC+vbCk5edB209Am'
+    '2gcCSQRZpXtid4c/4VyYIwMsC9QGlXDUqcT8Ia1WcQbUEFkJBbiWPfmhIOCzDBDoTYZNGv6fD+Aq'
+    'x3k6zrN2K3p0s8EDCDHPW9Cyxc7zGItf5FQcBZh1kDzfW2R47pOnej7ffDPZmlHoSqROifw7inCS'
+    'WakaTqMAAcSHPaTnvN54hdzfD6BOhyISSXI87AGQ2pH0mCrkBiZT+19fsC6kDqqQG3cBjjLKDyT8'
+    'sKO8Z5S5thTUuWCjoXM/Vkgm3hdbdE5F/QqrY0W6outBNVzkchV7tUCkyllSrWkkqLechqE15WHR'
+    'pEVI5GChogUsj4VV9Eyrrrc+y51qB1RxOccwufhi2WLbbuaf3BZuxeeRJHulah+XlQ4EnCQlxg+Z'
+    'vSLPTAm+OvlIpyiiM8834e5Ndp6XGp6fyc+/lwkCXuKjNsohnnxrr3Th0sIFOIxzMA1/eJ5Fp0MU'
+    'iSo5HrURpfjXzjIRifk4JoipI8cYsQJpFXZEFyOutvpIFN/soQuISA+o6pGgUuwuwd11jObGuduO'
+    'tpLR3Lx/J6SV3+bhEVHPCBloRxdPEMAkLN/D+xM4+vwApMBY/NzH4UTTEaz/DXhfwWV9je7xJ9Ie'
+    'a2j0hkKKszaqOMNK1IvRlJZBov4d8TVVUyL+qBohI5bxHJvn1AeOw7putyfXfo/REwUlxS63x2W8'
+    '3bNufbnM28WYOk9xw1M7fXuYOrd5fYcHMrahOhfN71lCnSZ5ZurwPfG3qG2Vakiymls/93W68fvk'
+    'Fp80mf1xyb17MfVHCY6Jas4+1zgdokhUyfGkiSgXPUsrqD+24JggLtGOJ9kfrV+sPhLldd3taxP9'
+    'gQnF3SeS7I/LAu/flZvNQ9QfJxlhHHeP2xFeMn928P6s+1AZxgroJZ0sFdCJ/SHhPIU/Ff2BQDRR'
+    'AliM3rBfdwZ181Qso5Hoj2zLUvzbIFn+U81n+/1+i435DahRD4edlaoiJxaEMcs34E18fopF3YV/'
+    'uuyibmdRn+V1+9m/ZQCjbqJcWqLW5JlFzdc9F91kBf4AlB/Kmw=='))
 
 
 

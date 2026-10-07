@@ -103,6 +103,10 @@
      ],
      "method-CONNECT" : 1,
      "methodCnt" : 1,
+     "path" : [
+      "ts01-b.cloudsink.net:443"
+     ],
+     "pathCnt" : 1,
      "requestHeader" : [
       "user-agent"
      ],

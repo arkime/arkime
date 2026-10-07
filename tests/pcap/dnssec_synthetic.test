@@ -5944,6 +5944,141 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "bytes" : 178,
+     "ip" : "10.9.58.2",
+     "mac" : [
+      "02:aa:00:00:28:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "cname" : "xn--99999999.bad-idna.example",
+        "name" : "xn--zzzzzzzzz.bad-idna.example",
+        "ttl" : 300,
+        "type" : "CNAME"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.9.58.100",
+        "name" : "xn--99999999.bad-idna.example",
+        "ttl" : 300,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 2,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "xn--99999999.bad-idna.example",
+       "xn--zzzzzzzzz.bad-idna.example"
+      ],
+      "hostCnt" : 2,
+      "ip" : [
+       "10.9.58.100"
+      ],
+      "ipCnt" : 1,
+      "opcode" : "QUERY",
+      "puny" : [
+       "xn--99999999.bad-idna.example",
+       "xn--zzzzzzzzz.bad-idna.example"
+      ],
+      "punyCnt" : 2,
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "xn--zzzzzzzzz.bad-idna.example",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstPayload8" : "4242818000010002",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700021800000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700021800010,
+    "length" : 10,
+    "network" : {
+     "bytes" : 268,
+     "community_id" : "1:fpQ+nzXmqxtUq2h6t7TJk9QXXPQ=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     106,
+     194
+    ],
+    "packetPos" : [
+     46000,
+     46106
+    ],
+    "packetRange" : {
+     "gte" : 1700021800000,
+     "lte" : 1700021800010
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 136
+    },
+    "source" : {
+     "bytes" : 90,
+     "ip" : "10.9.58.1",
+     "mac" : [
+      "02:aa:00:00:28:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49902
+    },
+    "srcPayload8" : "4242010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "bad-punycode"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 184
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
      "bytes" : 29
     },
     "destination" : {

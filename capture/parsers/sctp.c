@@ -252,6 +252,25 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
     }
 }
 /******************************************************************************/
+// A packet must carry the tag the other side chose once it is known. INIT carries 0, and
+// ABORT and SHUTDOWN COMPLETE with the T bit carry the sender's own tag.
+LOCAL gboolean sctp_vtag_ok(const ArkimeSession_t *session, int dir, uint32_t vtag, const uint8_t *chunk, int chunkLen)
+{
+    if (chunkLen >= 4 && chunk[0] == 1)
+        return vtag == 0;
+
+    const uint32_t expected = session->sctpData.initTag[dir ^ 1];
+    if (expected == 0 || vtag == expected)
+        return TRUE;
+
+    if (chunkLen >= 4 && (chunk[0] == 6 || chunk[0] == 14) && (chunk[1] & 0x01)) {
+        const uint32_t own = session->sctpData.initTag[dir];
+        return own == 0 || vtag == own;
+    }
+
+    return FALSE;
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
@@ -261,8 +280,17 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
     if (session->stopTCP)
         return 1;
 
+    const struct sctphdr *sctphdr = (struct sctphdr *)(packet->pkt + packet->payloadOffset);
+    const uint8_t *chunks = packet->pkt + packet->payloadOffset + sizeof(struct sctphdr);
+    const int chunksLen = packet->payloadLen - sizeof(struct sctphdr);
+
+    if (!sctp_vtag_ok(session, packet->direction, ntohl(sctphdr->sctp_verification_tag), chunks, chunksLen)) {
+        arkime_session_add_tag(session, "sctp:bad-vtag");
+        return 1;
+    }
+
     BSB bsb;
-    BSB_INIT(bsb, packet->pkt + packet->payloadOffset + sizeof(struct sctphdr), packet->payloadLen - sizeof(struct sctphdr));
+    BSB_INIT(bsb, chunks, chunksLen);
 
     //LOG("SCTP: len %d dir %d", packet->payloadLen, packet->direction);
     while (BSB_REMAINING(bsb) >= 4) {

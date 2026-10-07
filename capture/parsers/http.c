@@ -52,6 +52,7 @@ typedef struct {
     uint16_t         isConnect: 2; // Keep track of each side that is CONNECT and completed headers
     uint16_t         reclassify: 2; // Keep track of each side that needs to reclassify still
     uint16_t         classified: 2; // Sides already handed to the classifiers before the CONNECT reply
+    uint16_t         tunnelHttp: 1; // Tunnel bytes looked like http, so a parse error still gets classified
     uint16_t         http2Upgrade: 2; // 1 offered in response headers, 2 switched by a 101
     uint16_t         websocketUpgrade: 2;
 } HTTPInfo_t;
@@ -215,6 +216,83 @@ void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const 
     http_common_add_header_value(session, pos, (char *)value, valuelen);
 }
 /******************************************************************************/
+// Percent decode in place, returns the new length
+LOCAL int http_percent_decode(char *s, int len)
+{
+    int out = 0;
+    for (int i = 0; i < len; i++) {
+        if (s[i] == '%' && i + 2 < len && g_ascii_isxdigit(s[i + 1]) && g_ascii_isxdigit(s[i + 2])) {
+            s[out++] = (g_ascii_xdigit_value(s[i + 1]) << 4) | g_ascii_xdigit_value(s[i + 2]);
+            i += 2;
+        } else {
+            s[out++] = s[i];
+        }
+    }
+    return out;
+}
+/******************************************************************************/
+// Sub-parser lookup key for a request path: no scheme or host, percent decoded (twice, for
+// double encoded paths), lowercased, \ treated as /, repeated / collapsed and . and .. segments resolved
+LOCAL int http_subparser_key(const char *path, int len, char *key, int keySize)
+{
+    if (len > 0 && path[0] != '/') {
+        const char *sep = g_strstr_len(path, len, "://");
+        if (sep) {
+            const char *slash = memchr(sep + 3, '/', len - (sep + 3 - path));
+            if (!slash)
+                return -1;
+            len -= slash - path;
+            path = slash;
+        }
+    }
+
+    char dec[256];
+    if (len >= (int)sizeof(dec))
+        return -1;
+    memcpy(dec, path, len);
+    int dlen = http_percent_decode(dec, len);
+    if (memchr(dec, '%', dlen))
+        dlen = http_percent_decode(dec, dlen);
+
+    for (int i = 0; i < dlen; i++)
+        dec[i] = dec[i] == '\\' ? '/' : g_ascii_tolower(dec[i]);
+
+    int klen = 0;
+    for (int i = 0; i < dlen;) {
+        while (i < dlen && dec[i] == '/')
+            i++;
+        const int start = i;
+        while (i < dlen && dec[i] != '/')
+            i++;
+        const int slen = i - start;
+
+        if (slen == 0 || (slen == 1 && dec[start] == '.'))
+            continue;
+
+        if (slen == 2 && dec[start] == '.' && dec[start + 1] == '.') {
+            while (klen > 0 && key[klen - 1] != '/')
+                klen--;
+            if (klen > 0)
+                klen--;
+            continue;
+        }
+
+        if (klen + 1 + slen >= keySize)
+            return -1;
+        key[klen++] = '/';
+        memcpy(key + klen, dec + start, slen);
+        klen += slen;
+    }
+
+    if (dlen > 0 && dec[dlen - 1] == '/') {
+        if (klen + 1 >= keySize)
+            return -1;
+        key[klen++] = '/';
+    }
+    key[klen] = 0;
+    return klen;
+}
+/******************************************************************************/
 void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
 {
     const char *end = url + len;
@@ -265,15 +343,14 @@ void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
         arkime_field_string_add(pathField, session, url, len, TRUE);
     }
 
-    // Lookup http sub-parser by path (lowercased, no query).
-    if (pathLen > 0 && pathLen < 256 && g_hash_table_size(httpSubParsers) > 0) {
+    // Lookup http sub-parser by normalized path
+    if (pathLen > 0 && g_hash_table_size(httpSubParsers) > 0) {
         char key[256];
-        for (int i = 0; i < pathLen; i++)
-            key[i] = tolower((unsigned char)pathStart[i]);
-        key[pathLen] = 0;
-        ArkimeParserInfo_t *info = g_hash_table_lookup(httpSubParsers, key);
-        if (info && info->parserFunc) {
-            info->parserFunc(session, info->uw, (const uint8_t *)url, len, 0);
+        if (http_subparser_key(pathStart, pathLen, key, sizeof(key)) > 0) {
+            ArkimeParserInfo_t *info = g_hash_table_lookup(httpSubParsers, key);
+            if (info && info->parserFunc) {
+                info->parserFunc(session, info->uw, (const uint8_t *)url, len, 0);
+            }
         }
     }
 }
@@ -745,6 +822,7 @@ LOCAL int arkime_hp_cb_on_headers_complete(http_parser *parser)
         http->urlString = NULL;
         http->hostString = NULL;
     } else if (http->urlString) {
+        http_common_parse_url(session, http->urlString->str, http->urlString->len);
 
         if (http->urlString->len > MAX_URL_LENGTH) {
             truncated = TRUE;
@@ -786,6 +864,29 @@ LOCAL int arkime_hp_cb_on_headers_complete(http_parser *parser)
 /*############################## SHARED ##############################*/
 /******************************************************************************/
 LOCAL void http_save(ArkimeSession_t *session, void *uw, int final);
+/******************************************************************************/
+// A status line starts with HTTP/1., a request line of any method ends with it.
+// Without a whole line yet, an uppercase method token is enough
+LOCAL gboolean http_is_message_start(const uint8_t *data, int len)
+{
+    if (len <= 0)
+        return FALSE;
+
+    if (memcmp(data, "HTTP/1.", MIN(len, 7)) == 0)
+        return TRUE;
+
+    if (!g_ascii_isupper(data[0]))
+        return FALSE;
+
+    const uint8_t *eol = memchr(data, '\n', len);
+    if (eol)
+        return arkime_memstr((const char *)data, eol - data, " HTTP/1.", 8) != NULL;
+
+    int i = 1;
+    while (i < len && g_ascii_isupper(data[i]))
+        i++;
+    return i == len || data[i] == ' ';
+}
 /******************************************************************************/
 // After a 101 the rest of the connection belongs to the upgraded protocol. Its hook
 // takes over this parser's slot and gets data, so http must not be used after this returns TRUE
@@ -830,14 +931,22 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         // Check if either side needs to be classified
         if (http->reclassify & (1 << dir)) {
             http->reclassify &= ~(1 << dir);
-            arkime_parsers_classify_tcp(session, data, remaining, which);
 
-            // Both sides have been reclassified, remove http parser
-            if (http->reclassify == 0 && http->isConnect == 0x3) {
-                http_save(session, http, FALSE); // flush method counts before unregister
-                arkime_parsers_unregister(session, uw);
+            // Plain http through the tunnel, keep parsing it here
+            if (http_is_message_start(data, remaining)) {
+                http->isConnect = 0;
+                http->reclassify = 0;
+                http->tunnelHttp = 1;
+            } else {
+                arkime_parsers_classify_tcp(session, data, remaining, which);
+
+                // Both sides have been reclassified, remove http parser
+                if (http->reclassify == 0 && http->isConnect == 0x3) {
+                    http_save(session, http, FALSE); // flush method counts before unregister
+                    arkime_parsers_unregister(session, uw);
+                }
+                return 0;
             }
-            return 0;
         }
     }
 
@@ -851,8 +960,9 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, http->parsers[dir].http_errno);
 #endif
         if (len <= 0) {
-            // Tunnel bytes after a CONNECT whose reply hasn't been seen, let the classifiers have them
-            if ((http->isConnect & (1 << dir)) && http->isConnect != 0x3) {
+            // Tunnel bytes after a CONNECT whose reply hasn't been seen, or that only looked
+            // like http, let the classifiers have them
+            if (((http->isConnect & (1 << dir)) && http->isConnect != 0x3) || http->tunnelHttp) {
                 arkime_parsers_classify_tcp(session, data, remaining, which);
                 http->classified |= (1 << dir);
             }

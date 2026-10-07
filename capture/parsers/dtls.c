@@ -341,8 +341,49 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
 }
 
 /******************************************************************************/
-LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+LOCAL void dtls_handshake(ArkimeSession_t *session, uint8_t handshakeType, const uint8_t *data, int len)
 {
+    switch (handshakeType) {
+    case 1: // client hello
+        arkime_parsers_call_named_func(dtls_process_client_hello_func, session, data, len, NULL);
+        break;
+    case 2: // server hello
+        arkime_parsers_call_named_func(dtls_process_server_hello_func, session, data, len, NULL);
+        break;
+    case 11: // Certificate
+        arkime_parsers_call_named_func(tls_process_server_certificate_func, session, data, len, NULL);
+        break;
+    }
+}
+/******************************************************************************/
+// Append a handshake fragment in order, returns TRUE once the whole message is buffered.
+// state is the message being reassembled, (msgSeq << 8 | type) + 1
+LOCAL gboolean dtls_fragment(ArkimeParserBuf_t *pb, int which, uint8_t handshakeType, uint16_t msgSeq, uint32_t handshakeLen,
+                             uint32_t frameOffset, const uint8_t *data, uint32_t fragmentLength)
+{
+    if (handshakeLen > pb->bufMax || frameOffset + fragmentLength > handshakeLen)
+        return FALSE;
+
+    const int key = ((msgSeq << 8) | handshakeType) + 1;
+    if (pb->state[which] != key) {
+        arkime_parser_buf_del(pb, which, pb->len[which]);
+        pb->state[which] = key;
+    }
+
+    // Fragment past a gap, drop it
+    if ((int)frameOffset > pb->len[which])
+        return FALSE;
+
+    const int end = frameOffset + fragmentLength;
+    if (end > pb->len[which])
+        arkime_parser_buf_add(pb, which, data + (pb->len[which] - frameOffset), end - pb->len[which]);
+
+    return pb->len[which] >= (int)handshakeLen;
+}
+/******************************************************************************/
+LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
+{
+    ArkimeParserBuf_t *pb = uw;
     BSB bbuf;
 
     if (len < 13)
@@ -370,32 +411,25 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         while (BSB_NOT_ERROR(bbuf) && BSB_NOT_ERROR(msgBuf) && BSB_REMAINING(msgBuf) > 12) {
             uint8_t handshakeType = 0;
             BSB_IMPORT_u08(msgBuf, handshakeType);
-            BSB_IMPORT_skip(msgBuf, 3); // handshakeLen
-            BSB_IMPORT_skip(msgBuf, 2); // msgSeq
+            uint32_t handshakeLen = 0;
+            BSB_IMPORT_u24(msgBuf, handshakeLen);
+            uint16_t msgSeq = 0;
+            BSB_IMPORT_u16(msgBuf, msgSeq);
             uint32_t frameOffset = 0;
             BSB_IMPORT_u24(msgBuf, frameOffset);
             uint32_t fragmentLength = 0;
             BSB_IMPORT_u24(msgBuf, fragmentLength);
-            // Don't handle fragmented packets yet
-            if (frameOffset != 0) {
-                BSB_IMPORT_skip(msgBuf, fragmentLength);
-                continue;
-            }
 
             // Not enough data left
             if (BSB_IS_ERROR(msgBuf) || fragmentLength > BSB_REMAINING(msgBuf))
                 break;
 
-            switch (handshakeType) {
-            case 1: // client hello
-                arkime_parsers_call_named_func(dtls_process_client_hello_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
-                break;
-            case 2: // server hello
-                arkime_parsers_call_named_func(dtls_process_server_hello_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
-                break;
-            case 11: // Certificate
-                arkime_parsers_call_named_func(tls_process_server_certificate_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
-                break;
+            if (frameOffset == 0 && fragmentLength >= handshakeLen) {
+                dtls_handshake(session, handshakeType, BSB_WORK_PTR(msgBuf), fragmentLength);
+            } else if (dtls_fragment(pb, which, handshakeType, msgSeq, handshakeLen, frameOffset, BSB_WORK_PTR(msgBuf), fragmentLength)) {
+                dtls_handshake(session, handshakeType, pb->buf[which], handshakeLen);
+                arkime_parser_buf_del(pb, which, pb->len[which]);
+                pb->state[which] = 0;
             }
             BSB_IMPORT_skip(msgBuf, fragmentLength);
         }
@@ -408,8 +442,11 @@ LOCAL void dtls_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 {
     if (len < 100 || data[13] != 1)
         return;
+    if (arkime_parsers_has_registered(session, dtls_udp_parser))
+        return;
     arkime_session_add_protocol(session, "dtls");
-    arkime_parsers_register(session, dtls_udp_parser, uw, 0);
+    ArkimeParserBuf_t *pb = arkime_parser_buf_create2(1024, 0xffff);
+    arkime_parsers_register(session, dtls_udp_parser, pb, arkime_parser_buf_session_free);
 }
 /******************************************************************************/
 void arkime_parser_init()
