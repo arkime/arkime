@@ -43,6 +43,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
+## db.pl
+  - #4312 Fix users-update --removeRole usersAdmin not removing usersAdmin
+  - #4312 Fix initorupgrade erasing everything when OpenSearch/Elasticsearch returns an error
+  - #4312 backup, export and users-export files are now only readable by the owner
+  - #4312 expire/rotate now reject an invalid <num> or --history instead of deleting indices
 ## ESProxy
   - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
   - #4309 Fix a capture node being able to read and change other indices through esProxy
