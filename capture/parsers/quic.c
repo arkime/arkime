@@ -23,9 +23,10 @@ typedef struct {
 
 typedef struct {
     uint8_t        cbuf[8000];
+    uint8_t        cmap[1000];
     uint16_t       clen;
-    uint16_t       cbytes;
     uint8_t        packets;
+    uint8_t        totalPackets;
 } QUICIetfInfo_t;
 
 LOCAL uint32_t tls_process_client_hello_func;
@@ -371,12 +372,30 @@ LOCAL void quic_ietf_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(QUICIetfInfo_t, (QUICIetfInfo_t *)uw);
 }
 /******************************************************************************/
+// Have all the CRYPTO bytes from 0 to len been received
+LOCAL gboolean quic_crypto_have(const QUICIetfInfo_t *info, uint32_t len)
+{
+    if (len > info->clen)
+        return FALSE;
+
+    uint32_t full = len >> 3;
+    for (uint32_t i = 0; i < full; i++) {
+        if (info->cmap[i] != 0xff)
+            return FALSE;
+    }
+    for (uint32_t i = full << 3; i < len; i++) {
+        if ((info->cmap[i >> 3] & (1 << (i & 7))) == 0)
+            return FALSE;
+    }
+    return TRUE;
+}
+/******************************************************************************/
 LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
 {
     QUICIetfInfo_t *info = (QUICIetfInfo_t *)uw;
 
-    // Give up if the ClientHello hasn't been assembled within a few packets
-    if (++info->packets >= 16)
+    // Give up if the ClientHello hasn't been assembled within the session's first packets
+    if (++info->totalPackets >= 64)
         return ARKIME_PARSER_UNREGISTER;
 
     // Min length for quic packets because of padding
@@ -406,6 +425,10 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     // Skip server packets (dlen == 0) since we only want client initials
     if (dlen == 0)
         return 0;
+
+    // Give up if the ClientHello hasn't been assembled within a few client initials
+    if (++info->packets >= 32)
+        return ARKIME_PARSER_UNREGISTER;
 
     // Source
     int slen = 0;
@@ -514,6 +537,7 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     }
     int pn_length = (packet0 & 0x03) + 1;
     uint64_t pn = 0;
+    const int pnOffset = BSB_WORK_PTR(bsb) - data;
 
     for (int i = 0; i < pn_length; i++) {
         uint8_t tmp = 0;
@@ -535,15 +559,30 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     int outLen = sizeof(out);
 
     // Only decrypt this packet's ciphertext (packet_len covers pn + payload + 16 byte tag),
-    // not the rest of the datagram which may hold coalesced packets; clamp to out[]
-    int cipherLen = MIN((int)(packet_len - pn_length - 16), (int)sizeof(out));
+    // not the rest of the datagram which may hold coalesced packets
+    int cipherLen = (int)(packet_len - pn_length - 16);
+    if (cipherLen <= 0 || cipherLen > (int)sizeof(out))
+        return 0;
+    const uint8_t *tag = BSB_WORK_PTR(bsb) + cipherLen;
 
+    // AAD is the header with header protection removed
+    uint8_t aad[3000];
+    const int aadLen = pnOffset + pn_length;
+    memcpy(aad, data, aadLen);
+    aad[0] = packet0;
+    for (int i = 0; i < pn_length; i++) {
+        aad[pnOffset + i] ^= mask[i + 1];
+    }
+
+    int tmpLen = 0;
     pp_cipher_ctx = EVP_CIPHER_CTX_new();
     rc = EVP_DecryptInit(pp_cipher_ctx, pp_cipher, keyOkm, nonce);
+    rc += EVP_DecryptUpdate(pp_cipher_ctx, NULL, &tmpLen, aad, aadLen);
     rc += EVP_DecryptUpdate(pp_cipher_ctx, out, &outLen, BSB_WORK_PTR(bsb), cipherLen);
-    //rc = EVP_DecryptFinal(pp_cipher_ctx, out, &outLen); --> Not sure why this isn't needed
+    rc += EVP_CIPHER_CTX_ctrl(pp_cipher_ctx, EVP_CTRL_GCM_SET_TAG, 16, (void *)tag);
+    rc += EVP_DecryptFinal(pp_cipher_ctx, out + outLen, &tmpLen) > 0;
     EVP_CIPHER_CTX_free(pp_cipher_ctx);
-    if (rc != 2) {
+    if (rc != 5) {
         if (config.debug)
             LOG("Couldn't decrypt packet: %d", rc);
         return 0;
@@ -571,9 +610,10 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
             if (offset < sizeof(info->cbuf)) {
                 uint32_t toCopy = MIN(length, sizeof(info->cbuf) - offset);
                 memcpy(info->cbuf + offset, BSB_WORK_PTR(bsb), toCopy);
+                for (uint32_t i = offset; i < offset + toCopy; i++)
+                    info->cmap[i >> 3] |= 1 << (i & 7);
                 if (offset + toCopy > info->clen)
                     info->clen = offset + toCopy;
-                info->cbytes += toCopy;
             }
 
             BSB_IMPORT_skip(bsb, length);
@@ -583,15 +623,13 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
         break;
     }
 
-    // Try to decode the ClientHello once we have all bytes covered contiguously
-    // from offset 0. We detect contiguous coverage by comparing the running
-    // total of CRYPTO bytes copied (cbytes) with clen (max offset reached);
-    // they match when there are no gaps and no overlap. The TLS handshake
-    // header is type(1) + length(3).
-    if (info->clen >= 4 && info->cbytes == info->clen && info->cbuf[0] == 0x01) {
-        uint32_t hsLen = (info->cbuf[1] << 16) | (info->cbuf[2] << 8) | info->cbuf[3];
-        if ((uint32_t)info->clen >= 4 + hsLen) {
-            arkime_parsers_call_named_func(tls_process_client_hello_func, session, info->cbuf, info->clen, NULL);
+    // Decode the ClientHello once all of it has arrived, give up if it can never fit in cbuf
+    if (quic_crypto_have(info, 4) && info->cbuf[0] == 0x01) {
+        uint32_t hsLen = 4 + ((info->cbuf[1] << 16) | (info->cbuf[2] << 8) | info->cbuf[3]);
+        if (hsLen > sizeof(info->cbuf))
+            return ARKIME_PARSER_UNREGISTER;
+        if (quic_crypto_have(info, hsLen)) {
+            arkime_parsers_call_named_func(tls_process_client_hello_func, session, info->cbuf, hsLen, NULL);
             return ARKIME_PARSER_UNREGISTER;
         }
     }

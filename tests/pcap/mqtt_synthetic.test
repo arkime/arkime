@@ -932,6 +932,14 @@
       "cleanSession"
      ],
      "flagsCnt" : 1,
+     "qos" : [
+      0
+     ],
+     "qosCnt" : 1,
+     "topic" : [
+      "oversize/ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"
+     ],
+     "topicCnt" : 1,
      "type" : [
       "CONNECT",
       "PUBLISH"
@@ -997,10 +1005,9 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "mqtt:message-too-long",
      "zeek:intel"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 1,
     "tcpSynAckValidated" : true,
     "tcpSynValidated" : true,
     "tcpflags" : {
@@ -1022,6 +1029,298 @@
      "src" : 12288
     },
     "totDataBytes" : 8239,
+    "user" : [
+     "gateway_user"
+    ],
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8249
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.0.0.100",
+     "packets" : 5,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000200000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000200500,
+    "length" : 500,
+    "mqtt" : {
+     "clientId" : [
+      "iot-gateway-west"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "type" : [
+      "CONNECT",
+      "PUBLISH"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 8689,
+     "community_id" : "1:QkSoWLOAU7qzwfAkBS672sy6F7w=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     100,
+     56,
+     4152,
+     56,
+     4152,
+     56,
+     69,
+     56
+    ],
+    "packetPos" : [
+     12420,
+     12476,
+     12532,
+     12588,
+     12688,
+     12744,
+     16896,
+     16952,
+     21104,
+     21160,
+     21229
+    ],
+    "packetRange" : {
+     "gte" : 1700000200000,
+     "lte" : 1700000200500
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 8489,
+     "ip" : "192.168.1.62",
+     "packets" : 6,
+     "port" : 55558
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "102a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "mqtt:message-too-long",
+     "zeek:intel"
+    ],
+    "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 20480
+    },
+    "totDataBytes" : 8249,
+    "user" : [
+     "gateway_user"
+    ],
+    "userCnt" : 1,
+    "zeekintel" : [
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     }
+    ],
+    "zeekintelCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 9047
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.0.0.100",
+     "packets" : 5,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000210000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000210500,
+    "length" : 500,
+    "mqtt" : {
+     "clientId" : [
+      "iot-gateway-west"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "type" : [
+      "CONNECT",
+      "SUBSCRIBE"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 9487,
+     "community_id" : "1:rh2hm+PurQ6OQHvra623Iohhba0=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     100,
+     56,
+     4152,
+     56,
+     4152,
+     56,
+     867,
+     56
+    ],
+    "packetPos" : [
+     21285,
+     21341,
+     21397,
+     21453,
+     21553,
+     21609,
+     25761,
+     25817,
+     29969,
+     30025,
+     30892
+    ],
+    "packetRange" : {
+     "gte" : 1700000210000,
+     "lte" : 1700000210500
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 9287,
+     "ip" : "192.168.1.63",
+     "packets" : 6,
+     "port" : 55559
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "102a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "mqtt:message-too-long",
+     "zeek:intel"
+    ],
+    "tagsCnt" : 2,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 20480
+    },
+    "totDataBytes" : 9047,
     "user" : [
      "gateway_user"
     ],

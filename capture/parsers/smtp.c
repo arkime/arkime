@@ -645,7 +645,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 #ifdef EMAILDEBUG
             printf("%d %d header => %s\n", which, *state, line->str);
 #endif
-            if (strcmp(line->str, ".") == 0) {
+            if (!(email->inBDAT & 1 << which) && strcmp(line->str, ".") == 0) {
                 email->needStatus[which] = 1;
                 *state = EMAIL_CMD;
             } else if (*line->str == 0) {
@@ -883,7 +883,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 #endif
             if (*line->str == 0) {
                 *state = EMAIL_MIME_DATA;
-            } else if (strcmp(line->str, ".") == 0) {
+            } else if (!(email->inBDAT & 1 << which) && strcmp(line->str, ".") == 0) {
                 email->needStatus[which] = 1;
                 *state = EMAIL_CMD;
             } else {

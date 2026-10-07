@@ -84,7 +84,12 @@ LOCAL int sip_parse_header(ArkimeSession_t *session, const uint8_t *line, int li
         }
     }
 
-    if (colonPos <= 0)
+    // Header name may have whitespace before the colon
+    int nameLen = colonPos;
+    while (nameLen > 0 && (line[nameLen - 1] == ' ' || line[nameLen - 1] == '\t'))
+        nameLen--;
+
+    if (nameLen <= 0)
         return -1;
 
     // Skip whitespace after colon
@@ -102,26 +107,26 @@ LOCAL int sip_parse_header(ArkimeSession_t *session, const uint8_t *line, int li
     const char *value = (char *)line + valueStart;
 
     // Match headers (including compact forms from RFC 3261)
-    if ((colonPos == 7 && strncasecmp(name, "Call-ID", 7) == 0) ||
-        (colonPos == 1 && (*name == 'i' || *name == 'I'))) {
+    if ((nameLen == 7 && strncasecmp(name, "Call-ID", 7) == 0) ||
+        (nameLen == 1 && (*name == 'i' || *name == 'I'))) {
         arkime_field_string_add(callIdField, session, value, valueLen, TRUE);
-    } else if ((colonPos == 4 && strncasecmp(name, "From", 4) == 0) ||
-               (colonPos == 1 && (*name == 'f' || *name == 'F'))) {
+    } else if ((nameLen == 4 && strncasecmp(name, "From", 4) == 0) ||
+               (nameLen == 1 && (*name == 'f' || *name == 'F'))) {
         arkime_field_string_add(fromField, session, value, valueLen, TRUE);
         sip_extract_user(session, value, valueLen);
-    } else if ((colonPos == 2 && strncasecmp(name, "To", 2) == 0) ||
-               (colonPos == 1 && (*name == 't' || *name == 'T'))) {
+    } else if ((nameLen == 2 && strncasecmp(name, "To", 2) == 0) ||
+               (nameLen == 1 && (*name == 't' || *name == 'T'))) {
         arkime_field_string_add(toField, session, value, valueLen, TRUE);
         sip_extract_user(session, value, valueLen);
-    } else if (colonPos == 10 && strncasecmp(name, "User-Agent", 10) == 0) {
+    } else if (nameLen == 10 && strncasecmp(name, "User-Agent", 10) == 0) {
         arkime_field_string_add(userAgentField, session, value, valueLen, TRUE);
-    } else if ((colonPos == 3 && strncasecmp(name, "Via", 3) == 0) ||
-               (colonPos == 1 && (*name == 'v' || *name == 'V'))) {
+    } else if ((nameLen == 3 && strncasecmp(name, "Via", 3) == 0) ||
+               (nameLen == 1 && (*name == 'v' || *name == 'V'))) {
         arkime_field_string_add(viaField, session, value, valueLen, TRUE);
-    } else if ((colonPos == 7 && strncasecmp(name, "Contact", 7) == 0) ||
-               (colonPos == 1 && (*name == 'm' || *name == 'M'))) {
+    } else if ((nameLen == 7 && strncasecmp(name, "Contact", 7) == 0) ||
+               (nameLen == 1 && (*name == 'm' || *name == 'M'))) {
         arkime_field_string_add(contactField, session, value, valueLen, TRUE);
-    } else if (colonPos == 13 && strncasecmp(name, "Authorization", 13) == 0) {
+    } else if (nameLen == 13 && strncasecmp(name, "Authorization", 13) == 0) {
         // Extract username from Digest auth
         const char *userPtr = arkime_memcasestr(value, valueLen, "username=\"", 10);
         if (userPtr) {
@@ -134,8 +139,8 @@ LOCAL int sip_parse_header(ArkimeSession_t *session, const uint8_t *line, int li
                 }
             }
         }
-    } else if ((colonPos == 14 && strncasecmp(name, "Content-Length", 14) == 0) ||
-               (colonPos == 1 && (*name == 'l' || *name == 'L'))) {
+    } else if ((nameLen == 14 && strncasecmp(name, "Content-Length", 14) == 0) ||
+               (nameLen == 1 && (*name == 'l' || *name == 'L'))) {
         return arkime_atoin(value, valueLen);
     }
 
@@ -259,6 +264,10 @@ LOCAL int sip_process(ArkimeSession_t *session, const uint8_t *data, int len, in
     int contentLength = 0;
     *isResponse = 0;
 
+    // Skip CRLF keepalives before the start line
+    while (offset < len && (data[offset] == '\r' || data[offset] == '\n'))
+        offset++;
+
     while (offset < len) {
         int lineLen = 0;
         int consumed = sip_find_line(data + offset, len - offset, &lineLen);
@@ -311,6 +320,15 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
 
     // Find double CRLF to detect end of message headers
     while (sip->len[which] > 4) {
+        // Skip CRLF keepalives between messages
+        int skip = 0;
+        while (skip < sip->len[which] && (sip->buf[which][skip] == '\r' || sip->buf[which][skip] == '\n'))
+            skip++;
+        if (skip > 0) {
+            arkime_parser_buf_del(sip, which, skip);
+            continue;
+        }
+
         // Look for end of headers
         int endPos = -1;
         for (int i = 0; i < sip->len[which] - 3; i++) {
@@ -451,6 +469,7 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"REGISTER sip:", 13, sip_udp_classify);
     arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"OPTIONS sip:", 12, sip_udp_classify);
     arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"NOTIFY sip:", 11, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"\r\n", 2, sip_udp_classify);
 
     // TCP classifiers
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"SIP/2.0", 7, sip_tcp_classify);
@@ -458,4 +477,5 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"REGISTER sip:", 13, sip_tcp_classify);
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"OPTIONS sip:", 12, sip_tcp_classify);
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"NOTIFY sip:", 11, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"\r\n", 2, sip_tcp_classify);
 }

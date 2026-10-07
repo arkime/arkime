@@ -5,6 +5,7 @@ Layout:
   - LEGACY blob: packets 1-47 (original mqtt sessions, raw-IPv4 linktype 228)
   - mqtt_unsub (7 packets)
   - mqtt_oversized_pub (9 packets)
+  - mqtt_too_long (2 sessions, 22 packets)
 
 Run from the tests directory:  python3 gen/gen_mqtt_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -127,8 +128,9 @@ def sec_mqtt_oversized_pub():
     # 
     # Session (192.168.1.61:55557 -> 10.0.0.100:1883):
     #   SYN, SYN-ACK, ACK, CONNECT (v3.1.1), ACK, then a PUBLISH whose variable
-    #   header (2-byte topic len + 8190-byte topic = 8192 = bufMax) passes the
-    #   headerNeeded > bufMax check, but fixed header (3 bytes) + variable header
+    #   header (2-byte topic len + 8190-byte topic = 8192 = bufMax) is exactly
+    #   bufMax, so with its 3 byte fixed header the message is bufMax + 3.
+    #   Expect the topic to be recorded, split across two segments.
 
 
     CLI_IP = '192.168.1.61'
@@ -143,8 +145,7 @@ def sec_mqtt_oversized_pub():
 
     def mqtt_oversized_publish():
         # topic length 8190 -> headerNeeded = 2 + 8190 = 8192 (== bufMax, passes)
-        # remainingLen = 8192, fixed header = 1 + 2 varint = 3 bytes
-        # total 8195 > bufMax 8192 -> buffer truncates -> old code stalls
+        # remainingLen = 8192, fixed header = 1 + 2 varint = 3 bytes, total 8195
         topic = b'oversize/' + b't' * 8181  # 8190 bytes
         remaining_len = 2 + len(topic)
         assert remaining_len == 8192
@@ -208,11 +209,97 @@ def sec_mqtt_oversized_pub():
     return build()
 
 
+def sec_mqtt_too_long():
+    # Append MQTT message-too-long regression sessions to mqtt_synthetic.pcap
+    #
+    # Session (192.168.1.62:55558 -> 10.0.0.100:1883):
+    #   CONNECT then a PUBLISH whose topic (8200 bytes) is larger than bufMax.
+    # Session (192.168.1.63:55559 -> 10.0.0.100:1883):
+    #   CONNECT then a SUBSCRIBE whose remaining length (9000) is larger than bufMax.
+    # Both expect the mqtt:message-too-long tag.
+
+    SRV_IP = '10.0.0.100'
+    SRV_PORT = 1883
+    TS_START = 1700000200.0
+
+    CONNECT = bytes.fromhex('102a00044d5154540482003c0010696f742d676174657761792d77657374000c676174657761795f75736572')
+
+
+    def varint(n):
+        out = b''
+        while True:
+            b = n % 128
+            n //= 128
+            out += bytes([b | 0x80 if n else b])
+            if not n:
+                return out
+
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+
+    def ip_tcp(src, dst, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return ip + tcp + payload  # linktype 228 = raw IPv4
+
+
+    def session(cli_ip, cli_port, ts, message):
+        cseq, sseq = 0x5000, 0x6000
+        pkts = []
+        pkts.append(ip_tcp(cli_ip, SRV_IP, cli_port, SRV_PORT, cseq, 0, 0x02))          # SYN
+        pkts.append(ip_tcp(SRV_IP, cli_ip, SRV_PORT, cli_port, sseq, cseq + 1, 0x12))   # SYN-ACK
+        cseq += 1
+        sseq += 1
+        pkts.append(ip_tcp(cli_ip, SRV_IP, cli_port, SRV_PORT, cseq, sseq, 0x10))       # ACK
+        pkts.append(ip_tcp(cli_ip, SRV_IP, cli_port, SRV_PORT, cseq, sseq, 0x18, CONNECT))
+        cseq += len(CONNECT)
+        pkts.append(ip_tcp(SRV_IP, cli_ip, SRV_PORT, cli_port, sseq, cseq, 0x10))       # ACK
+        for i in range(0, len(message), 4096):
+            chunk = message[i:i + 4096]
+            pkts.append(ip_tcp(cli_ip, SRV_IP, cli_port, SRV_PORT, cseq, sseq, 0x18, chunk))
+            cseq += len(chunk)
+            pkts.append(ip_tcp(SRV_IP, cli_ip, SRV_PORT, cli_port, sseq, cseq, 0x10))   # ACK
+
+        out = b''
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+        return out
+
+
+    topic = b'toolong/' + b't' * 8192
+    publish = b'\x30' + varint(2 + len(topic)) + struct.pack('>H', len(topic)) + topic
+
+    filt = b'toolong/' + b'f' * 8987
+    body = struct.pack('>H', 1) + struct.pack('>H', len(filt)) + filt + b'\x00'
+    assert len(body) == 9000
+    subscribe = b'\x82' + varint(len(body)) + body
+
+    out = session('192.168.1.62', 55558, TS_START, publish)
+    out += session('192.168.1.63', 55559, TS_START + 10, subscribe)
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/mqtt_synthetic.pcap'
     out = LEGACY
     out += sec_mqtt_unsub()
     out += sec_mqtt_oversized_pub()
+    out += sec_mqtt_too_long()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

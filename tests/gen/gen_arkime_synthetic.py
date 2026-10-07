@@ -20,7 +20,22 @@ Layout:
   - ... (see main() for the full section list)
   - tls_256ext (8 packets)
   - dhcpv6_relay (6 packets)
-  - ip4_frag_last_first (2 packets, appended last)
+  - ip4_frag_last_first (2 packets)
+  - http2_stream_slots (2 sessions, 72 packets)
+  - tls_hello_reassembly (3 sessions, 38 packets)
+  - quic_duplicate_crypto (3 packets)
+  - udp_tunnel_port_fallback (2 sessions, 4 packets)
+  - http_upgrade_not_switched (2 sessions, 20 packets)
+  - http_connect_407 (12 packets)
+  - smtp_bdat_dot_header (17 packets)
+  - stun_tcp_channeldata (10 packets)
+  - sip_tcp_crlf_hcolon (8 packets)
+  - quic_bad_tag (3 packets)
+  - http_auth_challenge (12 packets)
+  - ftp_helo_late (17 packets)
+  - http_connect_variants (4 sessions, 38 packets)
+  - http_101_leftover (2 sessions, 19 packets)
+  - http2_path_upgrade_hook (12 packets, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -2745,6 +2760,819 @@ def sec_ip4_frag_last_first():
     return out
 
 
+def sec_http2_stream_slots():
+    # Append HTTP/2 stream slot regression sessions to arkime_synthetic.pcap.
+    #
+    # Session 10.9.22.1:49701 -> 10.9.22.2:80 (Ethernet linktype):
+    #   16 GET streams are left open so every stream slot is used, stream 33
+    #   then adds :authority and :path to the HPACK dynamic table, the open
+    #   streams are reset, and stream 35 uses dynamic table indexes 63/62.
+    #   Expect http.uri hidden.example/hidden and tag http2:too-many-streams.
+    #
+    # Session 10.9.23.1:49702 -> 10.9.23.2:80 (Ethernet linktype):
+    #   17 request/response pairs where each response's END_STREAM DATA frame
+    #   is split across two TCP segments. Expect host s16.example.
+
+    TS_START = 1700021000.0
+
+    CLI_MAC = bytes.fromhex('02aa00001601')
+    SRV_MAC = bytes.fromhex('02aa00001602')
+
+    PREFACE = b'PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n'
+
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+
+    def frame(ftype, flags, streamid, body=b''):
+        return struct.pack('>BHBBI', len(body) >> 16, len(body) & 0xffff,
+                           ftype, flags, streamid) + body
+
+
+    def hstr(value):
+        return bytes([len(value)]) + value.encode()
+
+
+    def session(cli_ip, srv_ip, cli_port, ts, client_server):
+        pkts = []
+        cseq, sseq = 0x3000, 0x4000
+
+        def c(flags, payload=b''):
+            nonlocal cseq
+            pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80,
+                                   cseq, sseq, flags, payload))
+            cseq += len(payload)
+
+        def s(flags, payload=b''):
+            nonlocal sseq
+            pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 80, cli_port,
+                                   sseq, cseq, flags, payload))
+            sseq += len(payload)
+
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80,
+                               cseq, 0, 0x02))                     # SYN
+        cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 80, cli_port,
+                               sseq, cseq, 0x12))                  # SYN-ACK
+        sseq += 1
+        c(0x10)                                                    # ACK
+
+        c(0x18, PREFACE + frame(0x04, 0, 0))                       # preface + empty SETTINGS
+        s(0x18, frame(0x04, 0, 0))
+
+        client_server(c, s)
+
+        c(0x11)                                                    # FIN
+        cseq += 1
+        s(0x11)                                                    # FIN
+        sseq += 1
+        c(0x10)
+
+        out = b''
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+        return out
+
+
+    def no_slot(c, s):
+        # GET, http, / and :authority as a literal without indexing
+        busy = b''
+        for sid in range(1, 33, 2):
+            busy += frame(0x01, 0x04, sid, b'\x82\x86\x84\x01' + hstr('busy.example'))
+        c(0x18, busy)
+
+        # :authority and :path as literals with incremental indexing
+        c(0x18, frame(0x01, 0x05, 33, b'\x82\x86\x41' + hstr('hidden.example') + b'\x44' + hstr('/hidden')))
+
+        c(0x18, b''.join(frame(0x03, 0, sid, struct.pack('>I', 8)) for sid in range(1, 33, 2)))
+
+        c(0x18, frame(0x01, 0x05, 35, b'\x82\x86\xbf\xbe'))
+        s(0x18, frame(0x01, 0x05, 35, b'\x88'))
+
+
+    def split_end_stream(c, s):
+        body = b'<html>' + b'x' * 188 + b'</html>'
+        for i in range(17):
+            sid = 2 * i + 1
+            c(0x18, frame(0x01, 0x05, sid, b'\x82\x86\x84\x01' + hstr('s%d.example' % i)))
+            resp = frame(0x01, 0x04, sid, b'\x88') + frame(0x00, 0x01, sid, body)
+            s(0x18, resp[:-100])
+            s(0x18, resp[-100:])
+
+
+    out = session('10.9.22.1', '10.9.22.2', 49701, TS_START, no_slot)
+    out += session('10.9.23.1', '10.9.23.2', 49702, TS_START + 100, split_end_stream)
+    return out
+
+
+def _tls_hellos():
+    def ext(etype, data):
+        return struct.pack('>HH', etype, len(data)) + data
+
+    def client_hello(sni, alpn=b'http/1.1', pad=0, pad_first=False):
+        ciphers = [0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f, 0xc02c, 0xc030, 0x009c]
+        name = sni.encode()
+        exts = ext(0x0015, b'\0' * pad) if pad and pad_first else b''
+        exts += ext(0x0000, struct.pack('>HBH', len(name) + 3, 0, len(name)) + name)
+        exts += ext(0x000a, struct.pack('>HHH', 4, 0x001d, 0x0017))
+        exts += ext(0x000b, b'\x01\x00')
+        exts += ext(0x000d, struct.pack('>HHH', 4, 0x0403, 0x0804))
+        exts += ext(0x0010, struct.pack('>HB', len(alpn) + 1, len(alpn)) + alpn)
+        exts += ext(0x002b, b'\x04\x03\x04\x03\x03')
+        exts += ext(0x0033, struct.pack('>HHH', 36, 0x001d, 32) + bytes(range(32)))
+        if pad and not pad_first:
+            exts += ext(0x0015, b'\0' * pad)
+        body = b'\x03\x03' + bytes(range(0x20, 0x40)) + b'\x00'
+        body += struct.pack('>H', len(ciphers) * 2) + b''.join(struct.pack('>H', c) for c in ciphers)
+        body += b'\x01\x00' + struct.pack('>H', len(exts)) + exts
+        return b'\x01' + struct.pack('>I', len(body))[1:] + body
+
+    def server_hello():
+        exts = ext(0x002b, b'\x03\x04') + ext(0x0033, struct.pack('>HH', 0x001d, 32) + bytes(range(32, 64)))
+        body = b'\x03\x03' + bytes(range(0x40, 0x60)) + b'\x00' + b'\x13\x01' + b'\x00'
+        body += struct.pack('>H', len(exts)) + exts
+        return b'\x02' + struct.pack('>I', len(body))[1:] + body
+
+    return client_hello, server_hello
+
+
+def sec_tls_hello_reassembly():
+    # Append TLS Client Hello reassembly regression sessions to arkime_synthetic.pcap.
+    #
+    # Session 10.9.24.1:49801 -> 10.9.24.2:443 (Ethernet linktype):
+    #   Client Hello handshake split across two TLS records in two TCP segments,
+    #   the SNI (split-records.example) is only in the second record.
+    #
+    # Session 10.9.25.1:49802 -> 10.9.25.2:443 (Ethernet linktype):
+    #   First client TCP segment is only 3 bytes of the TLS record header,
+    #   SNI short-segment.example.
+    #
+    # Session 10.9.46.1:49803 -> 10.9.46.2:443 (Ethernet linktype):
+    #   Client Hello longer than a 16384 byte record, so a full record plus a
+    #   2000+ byte second record, sent in 1460 byte TCP segments. Padding comes
+    #   first so the SNI (big-hello.example) is only in the second record.
+
+    TS_START = 1700021300.0
+
+    CLI_MAC = bytes.fromhex('02aa00001801')
+    SRV_MAC = bytes.fromhex('02aa00001802')
+
+    client_hello, server_hello = _tls_hellos()
+
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+
+    def record(hs):
+        return b'\x16\x03\x01' + struct.pack('>H', len(hs)) + hs
+
+
+    def session(cli_ip, srv_ip, cli_port, ts, client_segments):
+        pkts = []
+        cseq, sseq = 0x5000, 0x6000
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 443, cseq, 0, 0x02)); cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 443, cli_port, sseq, cseq, 0x12)); sseq += 1
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 443, cseq, sseq, 0x10))
+        for seg in client_segments:
+            pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 443, cseq, sseq, 0x18, seg)); cseq += len(seg)
+        shello = record(server_hello())
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 443, cli_port, sseq, cseq, 0x18, shello)); sseq += len(shello)
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 443, cseq, sseq, 0x11)); cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 443, cli_port, sseq, cseq, 0x11)); sseq += 1
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 443, cseq, sseq, 0x10))
+
+        out = b''
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+        return out
+
+
+    hs = client_hello('split-records.example')
+    out = session('10.9.24.1', '10.9.24.2', 49801, TS_START, [record(hs[:60]), record(hs[60:])])
+    rec = record(client_hello('short-segment.example'))
+    out += session('10.9.25.1', '10.9.25.2', 49802, TS_START + 100, [rec[:3], rec[3:]])
+    hs = client_hello('big-hello.example', pad=18500, pad_first=True)
+    big = record(hs[:16384]) + record(hs[16384:])
+    out += session('10.9.46.1', '10.9.46.2', 49803, TS_START + 200, [big[i:i + 1460] for i in range(0, len(big), 1460)])
+    return out
+
+
+def _quic_initial(dcid, pn, frames, bad_tag=False):
+    # QUIC v1 client Initial with a 1 byte packet number, padded to a 1200 byte datagram
+    import hashlib
+    import hmac
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    def hkdf_expand_label(secret, label, length):
+        full = b'tls13 ' + label
+        info = struct.pack('>HB', length, len(full)) + full + b'\x00'
+        return hmac.new(secret, info + b'\x01', hashlib.sha256).digest()[:length]
+
+    salt = bytes.fromhex('38762cf7f55934b34d179ae6a4c80cadccbb7f0a')
+    secret = hkdf_expand_label(hmac.new(salt, dcid, hashlib.sha256).digest(), b'client in', 32)
+    key = hkdf_expand_label(secret, b'quic key', 16)
+    iv = hkdf_expand_label(secret, b'quic iv', 12)
+    hp = hkdf_expand_label(secret, b'quic hp', 16)
+
+    hdr_len = 1 + 4 + 1 + len(dcid) + 1 + 1 + 2 + 1
+    plain = frames + b'\0' * (1200 - hdr_len - 16 - len(frames))
+    hdr = b'\xc0' + struct.pack('>I', 1) + bytes([len(dcid)]) + dcid + b'\x00\x00'
+    hdr += struct.pack('>H', 0x4000 | (1 + len(plain) + 16)) + bytes([pn])
+
+    ct = AESGCM(key).encrypt(iv[:-1] + bytes([iv[-1] ^ pn]), plain, hdr)
+    if bad_tag:
+        ct = ct[:-1] + bytes([ct[-1] ^ 0xff])
+
+    enc = Cipher(algorithms.AES(hp), modes.ECB()).encryptor()
+    mask = enc.update(ct[3:19]) + enc.finalize()
+    hdr = bytes([hdr[0] ^ (mask[0] & 0x0f)]) + hdr[1:-1] + bytes([hdr[-1] ^ mask[1]])
+    return hdr + ct
+
+
+def _quic_crypto(offset, data):
+    return b'\x06' + struct.pack('>HH', 0x4000 | offset, 0x4000 | len(data)) + data
+
+
+def _quic_session(cli_ip, srv_ip, cli_port, ts, dcid, client_datagrams):
+    # Client Initials, with a server long header packet after the first
+    cli_mac = bytes.fromhex('02aa00001a01')
+    srv_mac = bytes.fromhex('02aa00001a02')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_udp(src, dst, smac, dmac, sport, dport, payload=b''):
+        udplen = 8 + len(payload)
+        iplen = 20 + udplen
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 17, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        udp = struct.pack('>HHHH', sport, dport, udplen, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 17, udplen)
+        ck = csum(pseudo + udp + payload)
+        udp = udp[:6] + struct.pack('>H', ck if ck else 0xffff)
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+    srv = b'\xc0' + struct.pack('>I', 1) + b'\x00\x08' + dcid + bytes(1200 - 14)
+    pkts = [eth_ip_udp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 443, client_datagrams[0]),
+            eth_ip_udp(srv_ip, cli_ip, srv_mac, cli_mac, 443, cli_port, srv)]
+    for d in client_datagrams[1:]:
+        pkts.append(eth_ip_udp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 443, d))
+
+    out = b''
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_quic_duplicate_crypto():
+    # Append a QUIC v1 CRYPTO overlap regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.26.1:52101 -> 10.9.26.2:443 UDP (Ethernet linktype):
+    #   Client Hello (SNI quic-dup.example) sent in two Initial packets, the
+    #   second resends the first 400 bytes of CRYPTO data before the rest.
+    #   Needs the python cryptography package to build the Initial packets.
+
+    client_hello, _ = _tls_hellos()
+    dcid = bytes.fromhex('8394c8f03e515708')
+    hs = client_hello('quic-dup.example', alpn=b'h3', pad=500)
+    return _quic_session('10.9.26.1', '10.9.26.2', 52101, 1700021500.0, dcid, [
+        _quic_initial(dcid, 0, _quic_crypto(0, hs[:400])),
+        _quic_initial(dcid, 1, _quic_crypto(0, hs[:400]) + _quic_crypto(400, hs[400:])),
+    ])
+
+
+def sec_udp_tunnel_port_fallback():
+    # Append UDP tunnel port fallback regression sessions to arkime_synthetic.pcap.
+    #
+    # Session 10.9.30.1:40001 -> 10.9.30.2:4789 UDP (Ethernet linktype):
+    #   VXLAN header whose inner frame has a bad IPv4 header, so decap fails
+    #   and the packets must still be a UDP session.
+    #
+    # Session 10.9.31.1:40002 -> 10.9.31.2:6081 UDP (Ethernet linktype):
+    #   Geneve header (ethernet protocol) with a truncated inner frame.
+
+    TS_START = 1700021800.0
+
+    CLI_MAC = bytes.fromhex('02aa00001e01')
+    SRV_MAC = bytes.fromhex('02aa00001e02')
+
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+
+    def eth_ip_udp(src, dst, smac, dmac, sport, dport, payload=b''):
+        udplen = 8 + len(payload)
+        iplen = 20 + udplen
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 17, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        udp = struct.pack('>HHHH', sport, dport, udplen, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 17, udplen)
+        ck = csum(pseudo + udp + payload)
+        udp = udp[:6] + struct.pack('>H', ck if ck else 0xffff)
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+
+    def build():
+        inner_eth = bytes.fromhex('02bb000000010200bb000002') + b'\x08\x00'
+        vxlan = b'\x08\x00\x00\x00\x00\x00\x2a\x00' + inner_eth + b'\x15' + bytes(39)
+        geneve = b'\x00\x00\x65\x58\x00\x00\x2b\x00' + b'\x02\xbb\x00\x00'
+        reply = b'tunnel-port-reply'
+        pkts = [
+            eth_ip_udp('10.9.30.1', '10.9.30.2', CLI_MAC, SRV_MAC, 40001, 4789, vxlan),
+            eth_ip_udp('10.9.30.2', '10.9.30.1', SRV_MAC, CLI_MAC, 4789, 40001, reply),
+            eth_ip_udp('10.9.31.1', '10.9.31.2', CLI_MAC, SRV_MAC, 40002, 6081, geneve),
+            eth_ip_udp('10.9.31.2', '10.9.31.1', SRV_MAC, CLI_MAC, 6081, 40002, reply),
+        ]
+
+        out = b''
+        ts = TS_START
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+        return out
+    return build()
+
+
+def sec_http_upgrade_not_switched():
+    # Append HTTP Upgrade regression sessions to arkime_synthetic.pcap.
+    #
+    # Session 10.9.32.1:49951 -> 10.9.32.2:80 (Ethernet linktype):
+    #   POST with "Upgrade: websocket" and a body, answered with a 200 that
+    #   carries "Upgrade: h2,h2c" and a body that looks like a request. Neither
+    #   body may be parsed as a message, and a second GET /after-upgrade must
+    #   still be recorded.
+    #
+    # Session 10.9.33.1:49952 -> 10.9.33.2:80 (Ethernet linktype):
+    #   200 response with "Upgrade: h2c" but no 101, so the following
+    #   GET /after-h2c must still be parsed as http.
+
+    TS_START = 1700021900.0
+
+    CLI_MAC = bytes.fromhex('02aa00001f01')
+    SRV_MAC = bytes.fromhex('02aa00001f02')
+
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+
+    def session(cli_ip, srv_ip, cli_port, ts, exchanges):
+        pkts = []
+        cseq, sseq = 0x7000, 0x8000
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80, cseq, 0, 0x02)); cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 80, cli_port, sseq, cseq, 0x12)); sseq += 1
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80, cseq, sseq, 0x10))
+        for req, resp in exchanges:
+            pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80, cseq, sseq, 0x18, req)); cseq += len(req)
+            pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 80, cli_port, sseq, cseq, 0x18, resp)); sseq += len(resp)
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80, cseq, sseq, 0x11)); cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, SRV_MAC, CLI_MAC, 80, cli_port, sseq, cseq, 0x11)); sseq += 1
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, CLI_MAC, SRV_MAC, cli_port, 80, cseq, sseq, 0x10))
+
+        out = b''
+        for p in pkts:
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+        return out
+
+
+    fake = b'GET /fake-from-body HTTP/1.1\r\nHost: injected.example\r\n\r\n'
+    req1 = (b'POST /upgrade-post HTTP/1.1\r\nHost: upgrade.example\r\nUpgrade: websocket\r\n'
+            b'Connection: Upgrade\r\nContent-Length: %d\r\n\r\n' % len(fake)) + fake
+    resp1 = (b'HTTP/1.1 200 OK\r\nUpgrade: h2,h2c\r\nConnection: Upgrade\r\nContent-Length: %d\r\n\r\n' % len(fake)) + fake
+    req2 = b'GET /after-upgrade HTTP/1.1\r\nHost: upgrade.example\r\n\r\n'
+    resp2 = b'HTTP/1.1 204 No Content\r\n\r\n'
+    out = session('10.9.32.1', '10.9.32.2', 49951, TS_START, [(req1, resp1), (req2, resp2)])
+
+    req3 = b'GET / HTTP/1.1\r\nHost: h2c-offer.example\r\n\r\n'
+    resp3 = b'HTTP/1.1 200 OK\r\nUpgrade: h2c\r\nConnection: Upgrade\r\nContent-Length: 2\r\n\r\nok'
+    req4 = b'GET /after-h2c HTTP/1.1\r\nHost: h2c-offer.example\r\n\r\n'
+    resp4 = b'HTTP/1.1 204 No Content\r\n\r\n'
+    out += session('10.9.33.1', '10.9.33.2', 49952, TS_START + 100, [(req3, resp3), (req4, resp4)])
+    return out
+
+
+def _tcp_session(cli_ip, srv_ip, cli_port, srv_port, ts, segments):
+    # 3-way handshake, then ('c'|'s', payload) segments, then FIN close
+    cli_mac = bytes.fromhex('02aa00002301')
+    srv_mac = bytes.fromhex('02aa00002302')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    pkts = []
+    cseq, sseq = 0x9000, 0xa000
+
+    def c(flags, payload=b''):
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, sseq, flags, payload))
+
+    def s(flags, payload=b''):
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, srv_mac, cli_mac, srv_port, cli_port, sseq, cseq, flags, payload))
+
+    pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, 0, 0x02))
+    cseq += 1
+    s(0x12)
+    sseq += 1
+    c(0x10)
+    for side, payload in segments:
+        if side == 'c':
+            c(0x18, payload)
+            cseq += len(payload)
+        else:
+            s(0x18, payload)
+            sseq += len(payload)
+    c(0x11)
+    cseq += 1
+    s(0x11)
+    sseq += 1
+    c(0x10)
+
+    out = b''
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_http_connect_407():
+    # Append an HTTP CONNECT proxy auth regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.35.1:49970 -> 10.9.35.2:3128 (Ethernet linktype):
+    #   CONNECT answered with 407, the client retries with Proxy-Authorization
+    #   (user proxyuser), gets a 200 and then sends a TLS Client Hello
+    #   (SNI connect-tunnel.example). Expect both CONNECTs, the proxy user,
+    #   and tls in the same session.
+    client_hello, server_hello = _tls_hellos()
+
+    def record(hs):
+        return b'\x16\x03\x01' + struct.pack('>H', len(hs)) + hs
+
+    return _tcp_session('10.9.35.1', '10.9.35.2', 49970, 3128, 1700022000.0, [
+        ('c', b'CONNECT connect-tunnel.example:443 HTTP/1.1\r\nHost: connect-tunnel.example:443\r\n\r\n'),
+        ('s', b'HTTP/1.1 407 Proxy Authentication Required\r\nContent-Length: 0\r\n\r\n'),
+        ('c', b'CONNECT connect-tunnel.example:443 HTTP/1.1\r\nHost: connect-tunnel.example:443\r\n'
+              b'Proxy-Authorization: Basic cHJveHl1c2VyOnNlY3JldA==\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 Connection established\r\n\r\n'),
+        ('c', record(client_hello('connect-tunnel.example'))),
+        ('s', record(server_hello())),
+    ])
+
+
+def sec_smtp_bdat_dot_header():
+    # Append an SMTP BDAT regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.36.1:49971 -> 10.9.36.2:25 (Ethernet linktype):
+    #   BDAT LAST chunk whose header section contains a lone "." line followed
+    #   by MAIL FROM/RCPT TO lines. Only bdat-sender@example.com and
+    #   bdat-rcpt@example.com may be recorded, not the injected addresses.
+    chunk = (b'Subject: bdat dot test\r\n.\r\n'
+             b'MAIL FROM:<injected-from@evil.example>\r\n'
+             b'RCPT TO:<injected-to@evil.example>\r\n'
+             b'\r\nbody line\r\n')
+    return _tcp_session('10.9.36.1', '10.9.36.2', 49971, 25, 1700022100.0, [
+        ('s', b'220 mail.example ESMTP\r\n'),
+        ('c', b'EHLO client.example\r\n'),
+        ('s', b'250-mail.example\r\n250 CHUNKING\r\n'),
+        ('c', b'MAIL FROM:<bdat-sender@example.com>\r\n'),
+        ('s', b'250 2.1.0 Ok\r\n'),
+        ('c', b'RCPT TO:<bdat-rcpt@example.com>\r\n'),
+        ('s', b'250 2.1.5 Ok\r\n'),
+        ('c', b'BDAT %d LAST\r\n' % len(chunk) + chunk),
+        ('s', b'250 2.0.0 Ok\r\n'),
+        ('c', b'QUIT\r\n'),
+        ('s', b'221 2.0.0 Bye\r\n'),
+    ])
+
+
+def sec_stun_tcp_channeldata():
+    # Append a TURN over TCP ChannelData regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.37.1:49972 -> 10.9.37.2:3478 (Ethernet linktype):
+    #   Allocate request/response, then a padded ChannelData message followed by
+    #   a Binding request with SOFTWARE after-channeldata, which must be recorded.
+    def stun(mtype, txid, software):
+        sw = software.encode()
+        attr = struct.pack('>HH', 0x8022, len(sw)) + sw + b'\0' * (-len(sw) % 4)
+        return struct.pack('>HHI', mtype, len(attr), 0x2112a442) + txid + attr
+
+    data = b'relayed-application-data-bytes'
+    channel = struct.pack('>HH', 0x4000, len(data)) + data + b'\0' * (-len(data) % 4)
+    return _tcp_session('10.9.37.1', '10.9.37.2', 49972, 3478, 1700022200.0, [
+        ('c', stun(0x0003, b'\x01' * 12, 'turn-client')),
+        ('s', stun(0x0103, b'\x01' * 12, 'turn-server')),
+        ('c', channel + stun(0x0001, b'\x02' * 12, 'after-channeldata')),
+        ('s', stun(0x0101, b'\x02' * 12, 'turn-server')),
+    ])
+
+
+def sec_sip_tcp_crlf_hcolon():
+    # Append a SIP over TCP keepalive / header whitespace regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.38.1:49973 -> 10.9.38.2:5060 (Ethernet linktype):
+    #   REGISTER preceded by a CRLF keepalive, using "Name : value" headers
+    #   including "Content-Length :" with a body that looks like a SIP request.
+    #   Expect user crlfuser and call-id crlf-call@10.9.38.1, not body-injected.
+    body = b'INVITE sip:body-injected@example.com SIP/2.0\r\n\r\n'
+    req = (b'\r\nREGISTER sip:example.com SIP/2.0\r\n'
+           b'Via : SIP/2.0/TCP 10.9.38.1:49973;branch=z9hG4bKcrlf\r\n'
+           b'From : <sip:crlfuser@example.com>;tag=1\r\n'
+           b'To : <sip:crlfuser@example.com>\r\n'
+           b'Call-ID : crlf-call@10.9.38.1\r\n'
+           b'CSeq: 1 REGISTER\r\n'
+           b'Content-Length : %d\r\n\r\n' % len(body)) + body
+    resp = (b'\r\nSIP/2.0 200 OK\r\n'
+            b'Via: SIP/2.0/TCP 10.9.38.1:49973;branch=z9hG4bKcrlf\r\n'
+            b'Call-ID: crlf-call@10.9.38.1\r\n'
+            b'CSeq: 1 REGISTER\r\n'
+            b'Content-Length: 0\r\n\r\n')
+    return _tcp_session('10.9.38.1', '10.9.38.2', 49973, 5060, 1700022300.0, [
+        ('c', req),
+        ('s', resp),
+    ])
+
+
+def sec_quic_bad_tag():
+    # Append a QUIC v1 Initial AEAD tag regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.39.1:52102 -> 10.9.39.2:443 UDP (Ethernet linktype):
+    #   First Initial has a Client Hello for quic-decoy.example but a bad AEAD
+    #   tag, the second is valid with quic-real.example. Expect only the real SNI.
+    client_hello, _ = _tls_hellos()
+    dcid = bytes.fromhex('5a5b5c5d5e5f6061')
+    decoy = client_hello('quic-decoy.example', alpn=b'h3')
+    real = client_hello('quic-real.example', alpn=b'h3')
+    return _quic_session('10.9.39.1', '10.9.39.2', 52102, 1700022400.0, dcid, [
+        _quic_initial(dcid, 0, _quic_crypto(0, decoy), bad_tag=True),
+        _quic_initial(dcid, 1, _quic_crypto(0, real)),
+    ])
+
+
+def sec_http_auth_challenge():
+    # Append an HTTP auth challenge regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.40.1:49974 -> 10.9.40.2:80 (Ethernet linktype):
+    #   401 with WWW-Authenticate: Basic realm="arkime-test", a retry with
+    #   Authorization for authuser, then a response whose WWW-Authenticate
+    #   carries base64 for planted:x. Expect http.user authuser only.
+    return _tcp_session('10.9.40.1', '10.9.40.2', 49974, 80, 1700022500.0, [
+        ('c', b'GET /private HTTP/1.1\r\nHost: auth.example\r\n\r\n'),
+        ('s', b'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm="arkime-test"\r\nContent-Length: 0\r\n\r\n'),
+        ('c', b'GET /private HTTP/1.1\r\nHost: auth.example\r\nAuthorization: Basic YXV0aHVzZXI6cGFzcw==\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n'),
+        ('c', b'GET /again HTTP/1.1\r\nHost: auth.example\r\n\r\n'),
+        ('s', b'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic cGxhbnRlZDp4\r\nContent-Length: 0\r\n\r\n'),
+    ])
+
+
+def sec_ftp_helo_late():
+    # Append an FTP late HELO regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.41.1:49975 -> 10.9.41.2:21 (Ethernet linktype):
+    #   USER/PASS/RETR, then a HELO after FTP commands, then STOR. Expect ftp
+    #   to stay with filenames secret.zip and after-helo.txt.
+    return _tcp_session('10.9.41.1', '10.9.41.2', 49975, 21, 1700022600.0, [
+        ('s', b'220 ftp.example FTP server ready\r\n'),
+        ('c', b'USER ftpuser\r\n'),
+        ('s', b'331 Password required\r\n'),
+        ('c', b'PASS secret\r\n'),
+        ('s', b'230 Logged in\r\n'),
+        ('c', b'RETR secret.zip\r\n'),
+        ('s', b'226 Transfer complete\r\n'),
+        ('c', b'HELO cover.example\r\n'),
+        ('s', b'500 Unknown command\r\n'),
+        ('c', b'STOR after-helo.txt\r\n'),
+        ('s', b'226 Transfer complete\r\n'),
+    ])
+
+
+def sec_http_connect_variants():
+    # Append HTTP CONNECT regression sessions to arkime_synthetic.pcap.
+    #
+    # Session 10.9.42.1:49976 -> 10.9.42.2:3128 (Ethernet linktype):
+    #   Client sends its TLS Client Hello before the proxy's 200 arrives.
+    #   Expect tls with SNI connect-early.example.
+    #
+    # Session 10.9.43.1:49977 -> 10.9.43.2:3128 (Ethernet linktype):
+    #   CONNECT and a TLS Client Hello, the proxy reply is never seen.
+    #   Expect tls with SNI connect-noreply.example.
+    #
+    # Session 10.9.44.1:49978 -> 10.9.44.2:3128 (Ethernet linktype):
+    #   CONNECT refused with 403, then a plain proxied GET on the same
+    #   connection. Expect http.uri plain.example/after-403 and no tls.
+    #
+    # Session 10.9.45.1:49979 -> 10.9.45.2:3128 (Ethernet linktype):
+    #   CONNECT 200 followed by an SSH exchange in the tunnel. Expect ssh.
+    client_hello, server_hello = _tls_hellos()
+
+    def record(hs):
+        return b'\x16\x03\x01' + struct.pack('>H', len(hs)) + hs
+
+    def connect(host):
+        return b'CONNECT %s:443 HTTP/1.1\r\nHost: %s:443\r\n\r\n' % (host, host)
+
+    ok = b'HTTP/1.1 200 Connection established\r\n\r\n'
+
+    out = _tcp_session('10.9.42.1', '10.9.42.2', 49976, 3128, 1700022700.0, [
+        ('c', connect(b'connect-early.example')),
+        ('c', record(client_hello('connect-early.example'))),
+        ('s', ok),
+        ('s', record(server_hello())),
+    ])
+    out += _tcp_session('10.9.43.1', '10.9.43.2', 49977, 3128, 1700022800.0, [
+        ('c', connect(b'connect-noreply.example')),
+        ('c', record(client_hello('connect-noreply.example'))),
+    ])
+    out += _tcp_session('10.9.44.1', '10.9.44.2', 49978, 3128, 1700022900.0, [
+        ('c', connect(b'connect-refused.example')),
+        ('s', b'HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n'),
+        ('c', b'GET http://plain.example/after-403 HTTP/1.1\r\nHost: plain.example\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok'),
+    ])
+    out += _tcp_session('10.9.45.1', '10.9.45.2', 49979, 3128, 1700023000.0, [
+        ('c', b'CONNECT ssh.example:22 HTTP/1.1\r\nHost: ssh.example:22\r\n\r\n'),
+        ('s', ok),
+        ('c', b'SSH-2.0-OpenSSH_9.6\r\n'),
+        ('s', b'SSH-2.0-OpenSSH_9.3\r\n'),
+    ])
+    return out
+
+
+def sec_http_101_leftover():
+    # Append HTTP 101 upgrade regression sessions to arkime_synthetic.pcap.
+    #
+    # Session 10.9.47.1:49980 -> 10.9.47.2:80 (Ethernet linktype):
+    #   h2c upgrade. The 101 segment also carries the server's SETTINGS and a
+    #   HEADERS :status 204 for stream 1, then the client sends its preface and
+    #   a request for h2c-after.example/after-h2c-upgrade on stream 3 answered 200.
+    #   Expect http2, status codes 101, 200 and 204, and the http.uri.
+    #
+    # Session 10.9.48.1:49981 -> 10.9.48.2:80 (Ethernet linktype):
+    #   websocket upgrade. The 101 segment also carries a server text frame,
+    #   then the client sends a masked text frame. Expect websocket frameCnt 2
+    #   and both text samples.
+    def frame(ftype, flags, streamid, body=b''):
+        return struct.pack('>BHBBI', len(body) >> 16, len(body) & 0xffff, ftype, flags, streamid) + body
+
+    def hstr(value):
+        return bytes([len(value)]) + value.encode()
+
+    preface = b'PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n'
+    req = (b'GET / HTTP/1.1\r\nHost: h2c-after.example\r\nConnection: Upgrade, HTTP2-Settings\r\n'
+           b'Upgrade: h2c\r\nHTTP2-Settings: AAMAAABkAAQCAAAAAAIAAAAA\r\n\r\n')
+    resp = (b'HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n'
+            + frame(0x04, 0, 0) + frame(0x01, 0x05, 1, b'\x89'))
+    out = _tcp_session('10.9.47.1', '10.9.47.2', 49980, 80, 1700023100.0, [
+        ('c', req),
+        ('s', resp),
+        ('c', preface + frame(0x04, 0, 0) + frame(0x01, 0x05, 3, b'\x82\x86\x41' + hstr('h2c-after.example') + b'\x44' + hstr('/after-h2c-upgrade'))),
+        ('s', frame(0x01, 0x05, 3, b'\x88')),
+    ])
+
+    def ws_frame(text, mask=None):
+        payload = text.encode()
+        hdr = b'\x81' + bytes([len(payload) | (0x80 if mask else 0)])
+        if mask:
+            payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
+            return hdr + mask + payload
+        return hdr + payload
+
+    wsreq = (b'GET /chat HTTP/1.1\r\nHost: ws-after.example\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n'
+             b'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n')
+    wsresp = (b'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n'
+              b'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n') + ws_frame('server first frame')
+    out += _tcp_session('10.9.48.1', '10.9.48.2', 49981, 80, 1700023200.0, [
+        ('c', wsreq),
+        ('s', wsresp),
+        ('c', ws_frame('client reply frame', mask=b'\x12\x34\x56\x78')),
+    ])
+    return out
+
+
+def sec_http2_path_upgrade_hook():
+    # Append an HTTP/2 :path upgrade hook regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.52.1:49981 -> 10.9.52.2:179 (Ethernet linktype):
+    #   h2c client whose server side speaks BGP, so the bgp parser is registered
+    #   without parser state. The client requests :path websocket and :path http2,
+    #   which match the http upgrade hook names, then the server sends KEEPALIVE
+    #   and UPDATE. Expect bgp.type OPEN, KEEPALIVE and UPDATE.
+    def frame(ftype, flags, streamid, body=b''):
+        return struct.pack('>BHBBI', len(body) >> 16, len(body) & 0xffff, ftype, flags, streamid) + body
+
+    def hstr(value):
+        return bytes([len(value)]) + value.encode()
+
+    def bgp(mtype, body=b''):
+        return b'\xff' * 16 + struct.pack('>HB', 19 + len(body), mtype) + body
+
+    def get(streamid, path):
+        return frame(0x01, 0x05, streamid, b'\x82\x86\x04' + hstr(path) + b'\x01' + hstr('h2hook.example'))
+
+    bgp_open = bgp(1, bytes.fromhex('04fde800b40a09340200'))
+    return _tcp_session('10.9.52.1', '10.9.52.2', 49981, 179, 1700023200.0, [
+        ('c', b'PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n' + frame(0x04, 0, 0)),
+        ('s', bgp_open),
+        ('c', get(1, 'websocket')),
+        ('c', get(3, 'http2')),
+        ('s', bgp(4)),
+        ('s', bgp(2, b'\x00\x00\x00\x00')),
+    ])
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -2775,6 +3603,21 @@ def main():
     out += sec_dns_https_trailing_empty_param()
     out += sec_http2_pseudo_order()
     out += sec_ip4_frag_last_first()
+    out += sec_http2_stream_slots()
+    out += sec_tls_hello_reassembly()
+    out += sec_quic_duplicate_crypto()
+    out += sec_udp_tunnel_port_fallback()
+    out += sec_http_upgrade_not_switched()
+    out += sec_http_connect_407()
+    out += sec_smtp_bdat_dot_header()
+    out += sec_stun_tcp_channeldata()
+    out += sec_sip_tcp_crlf_hcolon()
+    out += sec_quic_bad_tag()
+    out += sec_http_auth_challenge()
+    out += sec_ftp_helo_late()
+    out += sec_http_connect_variants()
+    out += sec_http_101_leftover()
+    out += sec_http2_path_upgrade_hook()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

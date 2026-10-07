@@ -55,6 +55,7 @@ LOCAL void tcp_mid_save(ArkimeSession_t *session)
     session->tcpData.synValidated = 0;
     session->tcpData.synAckValidated = 0;
     session->tcpData.srcISNCnt = 0;
+    session->closeValidated = 0;
     memset(session->tcpData.tcpFlagCnt, 0, sizeof(session->tcpData.tcpFlagCnt));
 }
 /******************************************************************************/
@@ -88,6 +89,21 @@ LOCAL int64_t tcp_sequence_diff(int64_t a, int64_t b)
         return b - a - 0x100000000LL;
 
     return b - a;
+}
+/******************************************************************************/
+// Mark this direction closed if the RST/FIN seq is near the expected seq, or seq can't be checked
+#define TCP_CLOSE_WINDOW 0x100000
+LOCAL void tcp_close_check(ArkimeSession_t *session, int dir, uint32_t seq)
+{
+    // Loss in this direction shows up as out of order here, or as the other side acking bytes never seen
+    if ((session->synSet & (1 << dir)) == 0 || (session->outOfOrder & (1 << dir)) || (session->ackedUnseenSegment & (1 << (dir ^ 1)))) {
+        session->closeValidated |= (1 << dir);
+        return;
+    }
+
+    int64_t diff = tcp_sequence_diff(seq, session->tcpData.tcpSeq[dir]);
+    if (diff >= -TCP_CLOSE_WINDOW && diff <= TCP_CLOSE_WINDOW)
+        session->closeValidated |= (1 << dir);
 }
 /******************************************************************************/
 LOCAL void tcp_packet_finish(ArkimeSession_t *session)
@@ -274,6 +290,10 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             session->synSet |= (1 << packet->direction);
         }
         return 1;
+    }
+
+    if (tcphdr->th_flags & (TH_RST | TH_FIN)) {
+        tcp_close_check(session, packet->direction, seq);
     }
 
     if (tcphdr->th_flags & TH_RST) {
@@ -495,7 +515,7 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     // in the same session instead of splitting one flow into two.
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
         ntohl(tcphdr->th_seq) != session->tcpData.synSeq[0]) {
-        if (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]) {
+        if (session->closeValidated) {
             return 1;
         }
 
