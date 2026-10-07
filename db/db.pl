@@ -8131,9 +8131,15 @@ sub dbESVersion {
 ################################################################################
 sub dbVersion {
 my ($loud) = @_;
-    my $version;
+    my $url = "/_template/${OLDPREFIX}sessions2_template,${PREFIX}sessions3_template?filter_path=**._meta";
+    logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
+    my $response = $main::userAgent->get("${main::elasticsearch}$url");
 
-    $version = esGet("/_template/${OLDPREFIX}sessions2_template,${PREFIX}sessions3_template?filter_path=**._meta", 1);
+    # 404 is a fresh install
+    if ($response->code != 200 && $response->code != 404) {
+        die "Couldn't GET '${main::elasticsearch}$url' to check the Arkime version, the http status code is " . $response->code . "\n" . $response->content . "\n";
+    }
+    my $version = $response->code == 200 ? from_json($response->content) : undef;
 
     if (defined $version &&
         exists $version->{"${PREFIX}sessions3_template"} &&
@@ -8299,7 +8305,7 @@ sub parseArgs {
     for (;$pos <= $#ARGV; $pos++) {
         if ($ARGV[$pos] eq "--shards") {
             $pos++;
-            die "--shards must be a positive number" if (!defined $ARGV[$pos] || $ARGV[$pos] !~ /^\d+$/ || int($ARGV[$pos]) < 1);
+            die "--shards must be a positive number\n" if (!defined $ARGV[$pos] || $ARGV[$pos] !~ /^\d+$/ || int($ARGV[$pos]) < 1);
             $SHARDS = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--replicas") {
             $pos++;
@@ -8309,6 +8315,7 @@ sub parseArgs {
             $REFRESH = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--history") {
             $pos++;
+            die "--history must be a positive number\n" if (!defined $ARGV[$pos] || $ARGV[$pos] !~ /^\d+$/ || int($ARGV[$pos]) < 1);
             $HISTORY = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--segments") {
             $pos++;
@@ -8569,6 +8576,9 @@ if ($CLIENTCERT ne "") {
     )
 }
 
+# Exported files are only readable by the owner
+umask(077) if ($ARGV[1] =~ /^(export|backup|users-?export)$/);
+
 if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $fh;
     if ($ARGV[2] =~ /\.gz$/) {
@@ -8686,6 +8696,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] =~ /^(rotate|expire)$/) {
     showHelp("Invalid expire <type>") if ($ARGV[2] !~ /^(hourly|hourly[23468]|hourly12|daily|weekly|monthly)$/);
+    showHelp("Invalid expire <num>, must be a positive number") if ($ARGV[3] !~ /^\d+$/ || int($ARGV[3]) < 1);
 
     # First handle sessions expire
     my $indicesa = esGet("/_cat/indices/${OLDPREFIX}sessions2-*,${PREFIX}sessions3-*?format=json", 1);
@@ -8944,7 +8955,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     # Fetch the roles plus anything we might unset, so we only report users that
     # actually have the field, without pulling every full user document
-    my $srcParam = join(",", "userId", "roles", @UNSETPERM);
+    my $srcParam = join(",", "userId", "roles", "createEnabled", @UNSETPERM);
     my $users = esGet("/${PREFIX}users/_search?size=10000&_source=${srcParam}");
     my $total = $users->{hits}->{total}->{value} // $users->{hits}->{total};
     logmsg "WARNING - more than 10000 users, only the first 10000 were considered\n" if (defined $total && $total > 10000);
@@ -8965,6 +8976,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
         if (@ADDROLE || @REMOVEROLE) {
             my @roles = @{$hit->{_source}->{roles} // []};
+            # Legacy createEnabled means usersAdmin
+            push(@roles, "usersAdmin") if ($hit->{_source}->{createEnabled} && !grep { $_ eq "usersAdmin" } @roles);
             my %have = map { $_ => 1 } @roles;
             my %remove = map { $_ => 1 } @REMOVEROLE;
 
@@ -8981,7 +8994,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
                 @roles = @kept;
             }
 
-            $doc{roles} = \@roles if (@what);
+            if (@what) {
+                $doc{roles} = \@roles;
+                $doc{createEnabled} = (grep { $_ eq "usersAdmin" } @roles) ? JSON::true : JSON::false;
+            }
         }
 
         foreach my $field (keys %sets) {
