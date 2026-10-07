@@ -395,7 +395,7 @@ app.get('*', (req, res) => {
 
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
-  } else if (path.startsWith('/tagger')) {
+  } else if (path === '/tagger/_search' || /^\/tagger\/_source\/[^/,*]+$/.test(path)) {
   } else if (path.startsWith(`/${prefix}users/_doc/`)) {
   } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
@@ -440,6 +440,13 @@ function isSessionsDocPath (path, action) {
   const suffix = new RegExp(`^[^/]+/${action}/[^/]+$`);
   return (path.startsWith(`/${oldprefix}sessions2-`) && suffix.test(path.slice(`/${oldprefix}sessions2-`.length))) ||
     (path.startsWith(`/${prefix}sessions3-`) && suffix.test(path.slice(`/${prefix}sessions3-`.length)));
+}
+
+// Every index in the comma list must be a sessions index
+function isSessionsSearchPath (path) {
+  const match = path.match(/^\/([^/]+)\/_search$/);
+  return match !== null && match[1].split(',').every(index =>
+    isSessionsIndex(index) || index.startsWith(`partial-${prefix}sessions3-`));
 }
 
 function validateBulk (req) {
@@ -576,7 +583,6 @@ app.post('*', saveBody, (req, res) => {
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
   } else if (path.startsWith(`/${prefix}fields/_doc/`)) {
-  } else if (path.startsWith('/tagger')) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (isOwnDstatsDoc(path, req.sensor.node)) {
@@ -584,7 +590,7 @@ app.post('*', saveBody, (req, res) => {
   } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
   } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
-  } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && (validateSearchIds(req) || validateSearchRootId(req))) {
+  } else if (isSessionsSearchPath(path) && (validateSearchIds(req) || validateSearchRootId(req))) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));

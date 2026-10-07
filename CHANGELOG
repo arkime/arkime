@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
 ## ESProxy
   - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
+  - #xxxx Fix a capture node being able to reach other indices through tagger and sessions search requests
 ## Viewer
   - #4300 Fix users with a time limit being able to search outside of it
   - #4300 Fix Connections CSV export not quoting values

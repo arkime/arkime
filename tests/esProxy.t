@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 95;
+use Test::More tests => 110;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -219,6 +219,60 @@ $req->header('Content-Type' => 'application/json');
 $req->content($search_extra);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "sessions search with extra query clause rejected");
+is ($response->content, "Not authorized for API");
+
+# Sessions search - every index in the comma list must be a sessions index
+my $search_ids = qq({"query":{"ids":{"values":["admin"]}}});
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3*,*/_search");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_ids);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "sessions search with wildcard index in list rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024,tests_users/_search");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_ids);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "sessions search with users index in list rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions2-*,tests_sessions3-*/_search");
+$req->header('Content-Type' => 'application/json');
+$req->content($search_ids);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 200, "sessions search with sessions2 and sessions3 list allowed");
+
+# Tagger - only the two GETs the tagger plugin makes are allowed
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_search?_source=md5&size=999");
+isnt ($response->content, "Not authorized for API", "GET tagger search allowed");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_source/foo");
+isnt ($response->content, "Not authorized for API", "GET tagger source allowed");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger,tests_users/_search");
+is ($response->code, 400, "GET tagger search with extra index rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content(qq({"index":{"_index":"tests_users","_id":"eviladmin"}}\n{"userId":"eviladmin","roles":["superAdmin"]}\n));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST tagger bulk rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger/_msearch");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content(qq({"index":"tests_users"}\n{"query":{"match_all":{}}}\n));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST tagger msearch rejected");
+is ($response->content, "Not authorized for API");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger,tests_users/_delete_by_query");
+$req->header('Content-Type' => 'application/json');
+$req->content('{"query":{"match_all":{}}}');
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST tagger delete_by_query rejected");
 is ($response->content, "Not authorized for API");
 
 # path confusion: if the guard checks a path decoded by Express
