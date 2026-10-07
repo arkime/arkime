@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 607
+#define ARKIME_API_VERSION 608
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -564,7 +564,7 @@ typedef struct {
     int      len[2];
     int      state[2];
     int      skipping[2];
-    uint16_t bufSize[2];
+    int      bufSize[2];
     uint16_t bufMax;
     int      serverWhich;
     uint8_t  version;
@@ -725,11 +725,11 @@ typedef struct {
     uint32_t                synISN[2];
     char                    tcpState[2];
     uint16_t                tcpFlagCnt[ARKIME_TCPFLAG_MAX];
+    uint8_t                 srcISNCnt;
     uint8_t                 synSeen          : 2;
     uint8_t                 synAckSeen       : 2;
     uint8_t                 synValidated     : 2;
     uint8_t                 synAckValidated  : 2;
-    uint8_t                 srcISNCnt;
 } ArkimeTcpDataHead_t;
 
 #define ARKIME_TCP_STATE_FIN     1
@@ -849,6 +849,7 @@ typedef struct arkime_session {
     uint16_t               diskOverload: 1;
     uint16_t               pq: 1;
     uint16_t               synSet: 2;
+    uint16_t               closeValidated: 2; // per direction, saw an in sequence RST or FIN
     uint16_t               inStoppedSave: 1;
     uint16_t               v6: 1;
 
@@ -1230,8 +1231,13 @@ const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char
 typedef void (* ArkimeClassifyFunc)(ArkimeSession_t *session, const uint8_t *data, int remaining, int which, void *uw);
 
 void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw);
-void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc);
+// Returns FALSE if the parser couldn't be registered, ffunc has then already been called on uw
+gboolean arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc);
 #define arkime_parsers_register(session, func, uw, ffunc) arkime_parsers_register2(session, func, uw, ffunc, NULL)
+// Put the new parser in the slot of the one owning oldUw, so a parser switching protocols
+// mid segment isn't followed by the new parser seeing the same segment again. The old parser
+// is freed, so its caller must return right away. Returns FALSE and frees uw if oldUw isn't registered
+gboolean arkime_parsers_replace(ArkimeSession_t *session, void *oldUw, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc);
 gboolean arkime_parsers_has_registered(const ArkimeSession_t *session, ArkimeParserFunc func);
 
 void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);

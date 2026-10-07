@@ -51,7 +51,8 @@ typedef struct {
     uint16_t         which: 1;
     uint16_t         isConnect: 2; // Keep track of each side that is CONNECT and completed headers
     uint16_t         reclassify: 2; // Keep track of each side that needs to reclassify still
-    uint16_t         http2Upgrade: 1;
+    uint16_t         classified: 2; // Sides already handed to the classifiers before the CONNECT reply
+    uint16_t         http2Upgrade: 2; // 1 offered in response headers, 2 switched by a 101
     uint16_t         websocketUpgrade: 2;
 } HTTPInfo_t;
 
@@ -360,7 +361,7 @@ LOCAL int arkime_hp_cb_on_body(http_parser *parser, const char *at, size_t lengt
 }
 
 /******************************************************************************/
-LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
+LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str, gboolean isResponse)
 {
     gsize olen;
 
@@ -381,6 +382,10 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
             arkime_parsers_ntlm_decode_base64(session, b64, strlen(b64));
         return;
     }
+
+    // Server challenges have no user
+    if (isResponse)
+        return;
 
     if (strncasecmp("basic", str, 5) == 0) {
         str += 5;
@@ -543,7 +548,7 @@ LOCAL int arkime_hp_cb_on_header_value(http_parser *parser, const char *at, size
             arkime_field_string_add(tagsReqField, session, lower, -1, TRUE);
         else {
             arkime_field_string_add(tagsResField, session, lower, -1, TRUE);
-            if (strcmp(lower, "upgrade") == 0 && length >= 3 && memcmp(at, "h2c", 3) == 0) {
+            if (strcmp(lower, "upgrade") == 0 && length >= 3 && memcmp(at, "h2c", 3) == 0 && http->http2Upgrade == 0) {
                 http->http2Upgrade = 1;
             }
         }
@@ -613,16 +618,26 @@ LOCAL int arkime_hp_cb_on_headers_complete(http_parser *parser)
     LOG("HTTPDEBUG: which: %d code: %d method: %d upgrade: %d", http->which, parser->status_code, parser->method, parser->upgrade);
 #endif
 
-    if (parser->method == HTTP_CONNECT) {
-        http->reclassify |= (1 << http->which);
+    // Only CONNECT or a 101 response switches protocols, any other Upgrade header stays http
+    if (parser->upgrade && parser->method != HTTP_CONNECT && parser->status_code != 101)
+        parser->upgrade = 0;
+
+    if (http->http2Upgrade == 1 && parser->status_code != 0)
+        http->http2Upgrade = (parser->status_code == 101) ? 2 : 0;
+
+    if (parser->method == HTTP_CONNECT && parser->status_code == 0) {
+        // Wait for the proxy's response before reclassifying
         http->isConnect |= (1 << http->which);
-    } else if (http->isConnect && parser->status_code >= 200 && parser->status_code < 300) {
-        // Successful response to a CONNECT: this direction becomes tunnel bytes
-        // after the headers, so mark it for reclassify and skip the fake
-        // EOF-terminated body so tunnel bytes aren't hashed as http body
-        http->reclassify |= (1 << http->which);
-        http->isConnect |= (1 << http->which);
-        skipBody = 1;
+    } else if (http->isConnect && parser->status_code >= 200) {
+        if (parser->status_code < 300) {
+            // Both directions become tunnel bytes after the headers, skip the fake
+            // EOF-terminated body so tunnel bytes aren't hashed as http body
+            http->reclassify = 0x3 & ~http->classified;
+            http->isConnect = 0x3;
+            skipBody = 1;
+        } else {
+            http->isConnect = 0;
+        }
     }
 
     int len = arkime_snprintf_len(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
@@ -660,13 +675,13 @@ LOCAL int arkime_hp_cb_on_headers_complete(http_parser *parser)
     }
 
     if (http->authString && http->authString->str[0]) {
-        arkime_http_parse_authorization(session, http->authString->str);
+        arkime_http_parse_authorization(session, http->authString->str, parser->status_code != 0);
         g_string_truncate(http->authString, 0);
     }
 
     /* Adding an additional check for proxy-authorization string*/
     if (http->proxyAuthString && http->proxyAuthString->str[0]) {
-        arkime_http_parse_authorization(session, http->proxyAuthString->str);
+        arkime_http_parse_authorization(session, http->proxyAuthString->str, parser->status_code != 0);
         g_string_truncate(http->proxyAuthString, 0);
     }
 
@@ -772,22 +787,37 @@ LOCAL int arkime_hp_cb_on_headers_complete(http_parser *parser)
 /******************************************************************************/
 LOCAL void http_save(ArkimeSession_t *session, void *uw, int final);
 /******************************************************************************/
+// After a 101 the rest of the connection belongs to the upgraded protocol. Its hook
+// takes over this parser's slot and gets data, so http must not be used after this returns TRUE
+LOCAL gboolean http_handoff(ArkimeSession_t *session, HTTPInfo_t *http, const uint8_t *data, int remaining, int which)
+{
+    const char *name;
+
+    if (http->http2Upgrade == 2)
+        name = "http2";
+    else if (http->websocketUpgrade == 2)
+        name = "websocket";
+    else
+        return FALSE;
+
+    http_save(session, http, FALSE); // flush method counts before http is freed
+
+    ArkimeParserInfo_t *info = g_hash_table_lookup(httpSubParsers, name);
+    if (info && info->parserFunc) {
+        info->parserFunc(session, http, data, remaining, which);
+    } else {
+        arkime_parsers_classify_tcp(session, data, remaining, which);
+        arkime_parsers_unregister(session, http);
+    }
+    return TRUE;
+}
+/******************************************************************************/
 LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     HTTPInfo_t            *http          = uw;
 
-    if (http->http2Upgrade) {
-        arkime_parsers_classify_tcp(session, data, remaining, which);
-        return ARKIME_PARSER_UNREGISTER;
-    }
-
-    if (http->websocketUpgrade == 2) {
-        ArkimeParserInfo_t *info = g_hash_table_lookup(httpSubParsers, "websocket");
-        if (info && info->parserFunc) {
-            info->parserFunc(session, info->uw, data, remaining, which);
-        }
-        return ARKIME_PARSER_UNREGISTER;
-    }
+    if (http_handoff(session, http, data, remaining, which))
+        return 0;
 
     int dir = ARKIME_WHICH_GET_DIR(which);
 
@@ -821,6 +851,11 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         LOG("HTTPDEBUG: parse result: %d input: %d errno: %d", len, remaining, http->parsers[dir].http_errno);
 #endif
         if (len <= 0) {
+            // Tunnel bytes after a CONNECT whose reply hasn't been seen, let the classifiers have them
+            if ((http->isConnect & (1 << dir)) && http->isConnect != 0x3) {
+                arkime_parsers_classify_tcp(session, data, remaining, which);
+                http->classified |= (1 << dir);
+            }
             http->wParsers &= ~(1 << dir);
             if (!http->wParsers) {
                 arkime_parsers_unregister(session, uw);
@@ -829,6 +864,10 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
         data += len;
         remaining -= len;
+
+        // A 101 switched protocols, the rest of this segment is the new protocol
+        if (remaining > 0 && http_handoff(session, http, data, remaining, which))
+            return 0;
     }
     return 0;
 }

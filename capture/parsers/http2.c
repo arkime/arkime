@@ -117,11 +117,22 @@ LOCAL void http2_spos_free(HTTP2Info_t *http2, uint32_t streamId)
     }
 }
 /******************************************************************************/
+LOCAL void http2_stream_end(HTTP2Info_t *http2, uint32_t streamId, int which)
+{
+    int spos = http2_spos_get(http2, streamId, FALSE);
+    if (spos == -1)
+        return;
+
+    http2->streams[spos].ended |= (1 << which);
+    if (http2->streams[spos].ended == 0x3)
+        http2_spos_free(http2, streamId);
+}
+/******************************************************************************/
 LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, uint8_t *in, int inlen)
 {
     int spos = http2_spos_get(http2, streamId, TRUE);
     if (spos == -1)
-        return;
+        arkime_session_add_tag(session, "http2:too-many-streams");
 
     if (!http2->hd_inflater[which])
         nghttp2_hd_inflate_new(&http2->hd_inflater[which]);
@@ -135,6 +146,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
     char     path[MAX_URL_LENGTH];
     int      pathLen = 0;
     gboolean truncated = FALSE;
+    gboolean overBudget = FALSE;
 
 #ifdef HTTPDEBUG
     LOG("%u,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
@@ -157,15 +169,14 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
         in += rv;
         inlen -= rv;
 
-        if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
+        if ((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) && !overBudget) {
             headerCount++;
             headerBytes += nv.namelen + nv.valuelen;
             if (headerCount > 256 || headerBytes > 65536) {
+                // Stop recording, but keep inflating
                 arkime_session_add_tag(session, "http2:hpack-budget-exceeded");
-                nghttp2_hd_inflate_end_headers(http2->hd_inflater[which]);
-                return;
-            }
-            if (nv.name[0] == ':') {
+                overBudget = TRUE;
+            } else if (nv.name[0] == ':') {
                 if (nv.namelen == 7 && memcmp(nv.name, ":method", 7) == 0) {
                     arkime_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
                 } else if (nv.namelen == 10 && memcmp(nv.name, ":authority", 10) == 0) {
@@ -177,10 +188,12 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
                     }
 
                     // http.uri keeps any port, like http/1 does
-                    HTTP2Stream_t *stream = &http2->streams[spos];
-                    stream->authorityLen = MIN(nv.valuelen, sizeof(stream->authority));
-                    for (int i = 0; i < stream->authorityLen; i++)
-                        stream->authority[i] = g_ascii_tolower(nv.value[i]);
+                    if (spos != -1) {
+                        HTTP2Stream_t *stream = &http2->streams[spos];
+                        stream->authorityLen = MIN(nv.valuelen, sizeof(stream->authority));
+                        for (int i = 0; i < stream->authorityLen; i++)
+                            stream->authority[i] = g_ascii_tolower(nv.value[i]);
+                    }
                 } else if (nv.namelen == 5 && memcmp(nv.name, ":path", 5) == 0) {
                     http_common_parse_url(session, (char *)nv.value, nv.valuelen);
 
@@ -215,7 +228,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
         }
     }
 
-    if (pathLen == 0)
+    if (pathLen == 0 || spos == -1)
         return;
 
     // http.uri is authority + path, matching what http/1 builds from Host + url
@@ -444,13 +457,7 @@ LOCAL int http2_parse_frame(ArkimeSession_t *session, HTTP2Info_t *http2, int wh
     http2->lastType[which] = type;
 
     if (flags & NGHTTP2_FLAG_END_STREAM) {
-        int spos = http2_spos_get(http2, streamId, FALSE);
-        if (spos != -1) {
-            http2->streams[spos].ended |= (1 << which);
-            if (http2->streams[spos].ended == 0x3) {
-                http2_spos_free(http2, streamId);
-            }
-        }
+        http2_stream_end(http2, streamId, which);
     }
 
 cleanup:
@@ -473,6 +480,8 @@ LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         int used = MIN(http2->dataNeeded[which], len);
         http2->dataNeeded[which] -= used;
         http2_parse_frame_data(session, http2, which, 0, http2->dataStreamId[which], data, used, FALSE);
+        if (http2->dataNeeded[which] == 0 && http2->isEnd[which])
+            http2_stream_end(http2, http2->dataStreamId[which], which);
         if (used == len)
             return 0;
 
@@ -491,6 +500,7 @@ LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, i
     http2->used[which] += len;
 
     if (http2->used[which] > 24 && http2->data[which][0] == 'P' && memcmp(http2->data[which], "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24) == 0) {
+        http2->which = which; // only the client sends the preface
         http2->used[which] -= 24;
         memmove(http2->data[which], http2->data[which] + 24, http2->used[which]);
     }
@@ -546,9 +556,27 @@ LOCAL void http2_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data),
     arkime_parsers_register2(session, http2_parse, http2, http2_free, http2_save);
 }
 /******************************************************************************/
+// Called by the http parser on a 101 h2c upgrade, uw is the http parser's state which this
+// takes over from. The data may be the server's first frames, the client's preface sets which
+LOCAL int http2_upgrade_sub(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
+{
+    HTTP2Info_t            *http2          = ARKIME_TYPE_ALLOC0(HTTP2Info_t);
+    http2->which = -1;
+
+    if (!arkime_parsers_replace(session, uw, http2_parse, http2, http2_free, http2_save))
+        return 0;
+
+    arkime_session_add_protocol(session, "http2");
+
+    if (remaining > 0 && http2_parse(session, http2, data, remaining, which) == ARKIME_PARSER_UNREGISTER)
+        arkime_parsers_unregister(session, http2);
+    return 0;
+}
+/******************************************************************************/
 void arkime_parser_init()
 {
     arkime_parsers_classifier_register_tcp("http2", NULL, 0, (uint8_t *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
+    arkime_parsers_register_sub("http", "http2", http2_upgrade_sub, NULL);
 
     methodField = arkime_field_define("http", "termfield",
                                       "http.method", "HTTP Request Method", "http.method",
