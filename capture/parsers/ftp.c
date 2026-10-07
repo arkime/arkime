@@ -20,10 +20,11 @@ typedef struct {
     GString  *line[2];
     uint8_t   serverWhich;
     uint8_t   sawBanner;
+    uint8_t   sawCommand;
 } FTPInfo_t;
 
 /******************************************************************************/
-LOCAL int ftp_process_client_line(ArkimeSession_t *session, const char *line, int len)
+LOCAL int ftp_process_client_line(FTPInfo_t *ftp, ArkimeSession_t *session, const char *line, int len)
 {
     while (len > 0 && (*line == ' ' || *line == '\t')) {
         line++;
@@ -46,8 +47,11 @@ LOCAL int ftp_process_client_line(ArkimeSession_t *session, const char *line, in
     }
     cmd[cmdLen] = 0;
 
-    if (strcmp(cmd, "HELO") == 0 || strcmp(cmd, "EHLO") == 0 || strcmp(cmd, "LHLO") == 0)
+    // SMTP that was classified as FTP, only before any FTP command
+    if (!ftp->sawCommand && (strcmp(cmd, "HELO") == 0 || strcmp(cmd, "EHLO") == 0 || strcmp(cmd, "LHLO") == 0))
         return 1;
+
+    ftp->sawCommand = 1;
 
     const char *arg = space ? space + 1 : NULL;
     int argLen = space ? (len - cmdLen - 1) : 0;
@@ -139,7 +143,7 @@ LOCAL int ftp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         if (lineLen > 0) {
             if (isServer) {
                 ftp_process_server_line(ftp, session, buf->str, lineLen);
-            } else if (ftp_process_client_line(session, buf->str, lineLen)) {
+            } else if (ftp_process_client_line(ftp, session, buf->str, lineLen)) {
                 arkime_field_free_one(session, bannerField);
                 arkime_field_free_one(session, commandField);
                 arkime_field_free_one(session, filenameField);

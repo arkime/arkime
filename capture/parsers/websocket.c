@@ -261,18 +261,16 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     return 0;
 }
 /******************************************************************************/
-LOCAL int websocket_register_sub(ArkimeSession_t *session,
-                                 void *UNUSED(uw),
-                                 const uint8_t *UNUSED(data),
-                                 int UNUSED(remaining),
-                                 int UNUSED(which))
+// Called by the http parser on a 101, uw is the http parser's state which this takes over from
+LOCAL int websocket_register_sub(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    if (arkime_parsers_has_registered(session, websocket_tcp_parser))
-        return 0;
-
     WebSocketInfo_t *ws = ARKIME_TYPE_ALLOC0(WebSocketInfo_t);
     ws->buf = arkime_parser_buf_create();
-    arkime_parsers_register2(session, websocket_tcp_parser, ws, websocket_free, websocket_save);
+    if (!arkime_parsers_replace(session, uw, websocket_tcp_parser, ws, websocket_free, websocket_save))
+        return 0;
+
+    if (remaining > 0 && websocket_tcp_parser(session, ws, data, remaining, which) == ARKIME_PARSER_UNREGISTER)
+        arkime_parsers_unregister(session, ws);
     return 0;
 }
 /******************************************************************************/

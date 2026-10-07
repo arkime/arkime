@@ -894,6 +894,7 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
 
     arkime_command_respond(cc, output, BSB_LENGTH(bsb));
 }
+#define ARKIME_PACKET_DECAP_FAILED(rc) ((rc) == ARKIME_PACKET_UNKNOWN_IP || (rc) == ARKIME_PACKET_UNKNOWN_ETHER || (rc) == ARKIME_PACKET_CORRUPT)
 /******************************************************************************/
 LOCAL ArkimePacketRC arkime_packet_call_enqueue(const ArkimePacketEnqueue_t *cb, ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
@@ -1061,15 +1062,13 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
             // Use the UDP datagram length, not the IP remainder, so trailing
             // padding is not fed to tunnel decapsulators as smuggled payload.
             int cbLen = MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr);
+            const ArkimePacket_t saved = *packet;
             int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr), cbLen);
-            if (rc != ARKIME_PACKET_UNKNOWN_IP)
+            if (!ARKIME_PACKET_DECAP_FAILED(rc))
                 return rc;
 
-            // Reset state on UNKNOWN_IP
-            packet->v6 = 0;
-            packet->ipOffset = (uint8_t *)data - packet->pkt;
-            packet->payloadOffset = packet->ipOffset + ip_hdr_len;
-            packet->payloadLen = ip_len - ip_hdr_len;
+            // Couldn't decapsulate, process as a plain UDP packet
+            *packet = saved;
         }
 
         if (config.enablePacketDedup) {
@@ -1295,15 +1294,13 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                 // Use the UDP datagram length, not the IP remainder, so trailing
                 // padding is not fed to tunnel decapsulators as smuggled payload.
                 int cbLen = MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr);
+                const ArkimePacket_t saved = *packet;
                 int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr), cbLen);
-                if (rc != ARKIME_PACKET_UNKNOWN_IP)
+                if (!ARKIME_PACKET_DECAP_FAILED(rc))
                     return rc;
 
-                // Reset state on UNKNOWN_IP
-                packet->v6 = 1;
-                packet->ipOffset = (uint8_t *)data - packet->pkt;
-                packet->payloadOffset = packet->ipOffset + ip_hdr_len;
-                packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
+                // Couldn't decapsulate, process as a plain UDP packet
+                *packet = saved;
             }
 
             if (config.enablePacketDedup) {

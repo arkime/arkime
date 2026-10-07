@@ -1287,24 +1287,26 @@ char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int leng
     return buf;
 }
 /******************************************************************************/
-void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc)
+gboolean arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc)
 {
 #ifdef DEBUG_PARSERS
     LOG("session: %p func: %p uw: %p", session, func, uw);
 #endif
 
-    if (session->parserNum > 30) {
-        char ipStr[200];
-        arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
-        LOG("WARNING - Too many parsers registered: %d %s", session->parserNum, ipStr);
-        return;
-    }
-
     // Check if this is a duplicate
     for (int i = 0; i < session->parserNum; i++) {
         if (session->parserInfo[i].parserFunc == func && session->parserInfo[i].uw == uw) {
-            return;
+            return TRUE;
         }
+    }
+
+    if (session->parserNum > 30) {
+        char ipStr[200];
+        arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
+        LOG_RATE(10, "WARNING - Too many parsers registered: %d %s", session->parserNum, ipStr);
+        if (ffunc)
+            ffunc(session, uw);
+        return FALSE;
     }
 
     if (session->parserNum >= session->parserLen) {
@@ -1322,6 +1324,29 @@ void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, 
     session->parserInfo[session->parserNum].parserSaveFunc = sfunc;
 
     session->parserNum++;
+    return TRUE;
+}
+/******************************************************************************/
+gboolean arkime_parsers_replace(ArkimeSession_t *session, void *oldUw, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc)
+{
+    // Many parsers register with a NULL uw, so it can't identify a slot
+    for (int i = 0; oldUw && i < session->parserNum; i++) {
+        if (session->parserInfo[i].uw != oldUw || !session->parserInfo[i].parserFunc)
+            continue;
+
+        if (session->parserInfo[i].parserFreeFunc)
+            session->parserInfo[i].parserFreeFunc(session, oldUw);
+
+        session->parserInfo[i].parserFunc = func;
+        session->parserInfo[i].uw = uw;
+        session->parserInfo[i].parserFreeFunc = ffunc;
+        session->parserInfo[i].parserSaveFunc = sfunc;
+        return TRUE;
+    }
+
+    if (ffunc)
+        ffunc(session, uw);
+    return FALSE;
 }
 /******************************************************************************/
 gboolean arkime_parsers_has_registered(const ArkimeSession_t *session, ArkimeParserFunc func)
@@ -1826,12 +1851,12 @@ LOCAL void arkime_parser_buf_grow(ArkimeParserBuf_t *pb, int which, int needed)
     if (needed <= pb->bufSize[which])
         return;
 
-    // Double until we have enough, then clamp to bufMax
+    // Double until we have enough, then clamp to bufMax or needed
     int newSize = pb->bufSize[which];
     while (newSize < needed)
         newSize *= 2;
     if (newSize > pb->bufMax)
-        newSize = pb->bufMax;
+        newSize = MAX(pb->bufMax, needed);
     if (newSize <= pb->bufSize[which])
         return;
 
@@ -1858,7 +1883,12 @@ int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data,
         pb->skipping[which] = 0;
     }
 
-    // Grow the buffer if needed (up to bufMax)
+    // Caller couldn't drain a full buffer. Parsers compare message bodies to bufMax,
+    // so leave room for framing bytes before deciding they are stuck
+    if (pb->len[which] >= pb->bufMax + 16)
+        return -1;
+
+    // Grow the buffer if needed, may go past bufMax by one add
     if (pb->len[which] + len > pb->bufSize[which]) {
         arkime_parser_buf_grow(pb, which, pb->len[which] + len);
     }

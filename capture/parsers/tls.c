@@ -642,6 +642,37 @@ LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int
 }
 
 /******************************************************************************/
+// A Client Hello longer than its record continues in the next record, splice that
+// record's payload onto this one by dropping its 5 byte header.
+// Returns 1 if merged, 0 if there is nothing to merge, -1 if more data is needed
+LOCAL int tls_merge_next_record(ArkimeParserBuf_t *tls, int which, int need)
+{
+    uint8_t *buf = tls->buf[which];
+
+    if (need < 9)
+        return 0;
+
+    int hsLen = ((buf[6] << 16) | (buf[7] << 8) | buf[8]) + 4;
+    if (hsLen <= need - 5 || hsLen + 5 > tls->bufMax)
+        return 0;
+
+    if (tls->len[which] < need + 5)
+        return -1;
+
+    if (buf[need] != 0x16 || buf[need + 1] != 0x03 || buf[need + 2] > 0x03)
+        return 0;
+
+    int recLen = need - 5 + ((buf[need + 3] << 8) | buf[need + 4]);
+    if (recLen + 5 > tls->bufMax)
+        return 0;
+
+    memmove(buf + need, buf + need + 5, tls->len[which] - need - 5);
+    tls->len[which] -= 5;
+    buf[3] = recLen >> 8;
+    buf[4] = recLen & 0xff;
+    return 1;
+}
+/******************************************************************************/
 LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     ArkimeParserBuf_t    *tls          = uw;
@@ -675,6 +706,14 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         if (need > tls->len[which])
             return 0;
 
+        // Confirm sessions that were classified on a short first segment
+        if (need >= 6 && (tls->buf[which][5] == 1 || tls->buf[which][5] == 2))
+            arkime_session_add_protocol(session, "tls");
+
+        // Direction wasn't known at classify time, only a Client Hello starts the client side
+        if (tls->serverWhich == -1 && need >= 6)
+            tls->serverWhich = (tls->buf[which][5] == 1) ? (which + 1) % 2 : which;
+
         // Now actually process server or client records
         if (which == tls->serverWhich) {
             if (tls_process_server_handshake_record(session, tls->buf[which] + 5, need - 5)) {
@@ -687,6 +726,11 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         } else {
             // need >= 6 so we don't read byte 5 of a zero length record
             if (need >= 6 && tls->buf[which][5] == 1) {
+                int merged = tls_merge_next_record(tls, which, need);
+                if (merged == -1)
+                    return 0;
+                if (merged == 1)
+                    continue;
                 tls_process_client(session, tls->buf[which], need);
             }
         }
@@ -698,44 +742,63 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     return 0;
 }
 /******************************************************************************/
-LOCAL void tls_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
+LOCAL void tls_save(ArkimeSession_t *session, void *uw, int final)
 {
     ArkimeParserBuf_t    *tls          = uw;
+
+    if (tls->serverWhich == -1)
+        return;
 
     int which = tls->serverWhich;
     if (tls->len[which] > 5 && tls->buf[which][0] == 0x16) {
         tls_process_server_handshake_record(session, tls->buf[which] + 5, tls->len[which] - 5);
         tls->len[which] = 0;
     }
+
+    // A complete Client Hello record still waiting for its next record won't get it now
+    which = (which + 1) % 2;
+    if (final && tls->len[which] >= 6 && tls->buf[which][0] == 0x16 && tls->buf[which][5] == 1) {
+        int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
+        if (need <= tls->len[which]) {
+            tls_process_client(session, tls->buf[which], need);
+            tls->len[which] = 0;
+        }
+    }
 }
 /******************************************************************************/
 LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
-    if (len < 6 || data[2] > 0x03)
-        return;
-
-    if (arkime_session_has_protocol(session, "tls"))
-        return;
-
     /* 1 Content Type - 0x16
      * 2 Version 0x0301 - 0x03 - 03
      * 2 Length
      * 1 Message Type 1 - Client Hello, 2 Server Hello
      */
-    if (data[2] <= 0x03 && (data[5] == 1 || data[5] == 2)) {
+    if (len >= 3 && data[2] > 0x03)
+        return;
+
+    if (len >= 6 && data[5] != 1 && data[5] != 2)
+        return;
+
+    if (arkime_session_has_protocol(session, "tls") || arkime_parsers_has_registered(session, tls_parser))
+        return;
+
+    // A short first segment can't be confirmed yet, tls_parser adds the protocol once it sees a hello
+    if (len >= 6)
         arkime_session_add_protocol(session, "tls");
 
-        ArkimeParserBuf_t  *tls = arkime_parser_buf_create2(2048, 18437);
+    // A record is at most 18437 bytes, but a Client Hello merged from several records can be longer
+    ArkimeParserBuf_t  *tls = arkime_parser_buf_create2(2048, 65535);
 
-        arkime_parsers_register2(session, tls_parser, tls, arkime_parser_buf_session_free, tls_save);
-
-        if (data[5] == 1) {
-            //tls_process_client(session, data, (int)len);
-            tls->serverWhich      = (which + 1) % 2;
-        } else {
-            tls->serverWhich      = which;
-        }
+    // A short first segment can't tell which side this is, tls_parser decides when it sees a hello
+    if (len < 6) {
+        tls->serverWhich      = -1;
+    } else if (data[5] == 1) {
+        tls->serverWhich      = (which + 1) % 2;
+    } else {
+        tls->serverWhich      = which;
     }
+
+    arkime_parsers_register2(session, tls_parser, tls, arkime_parser_buf_session_free, tls_save);
 }
 /******************************************************************************/
 void arkime_parser_init()

@@ -904,6 +904,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     }
 
     if (qr == 0) {
+        if (session->fields[dnsField]->jsonSize > DNS_MAX_JSON_SIZE)
+            session->midSave = 1;
         return;
     }
 
