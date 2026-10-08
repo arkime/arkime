@@ -348,7 +348,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
     return arkime_reader_scheme_process(req->url, data, data_len, req->extraInfo, req->actions);
 }
 /******************************************************************************/
-LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
+LOCAL gboolean scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
 {
     char           objectkey[1600];
 
@@ -377,9 +377,8 @@ LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, con
     req->first = TRUE;
     req->tryAgain = FALSE;
     if (cb)
-        arkime_http_schedule2(server, "GET", objectkey, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, cb, req);
-    else
-        arkime_http_schedule(server, "GET", objectkey, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, req);
+        return arkime_http_schedule2(server, "GET", objectkey, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, cb, req);
+    return arkime_http_schedule(server, "GET", objectkey, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, req);
 }
 /******************************************************************************/
 LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *schemehostport, const char *region)
@@ -724,6 +723,7 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
 
     const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
+    int rc = 0;
     do {
         const char *region = g_hash_table_lookup(bucket2Region, uris[2]);
         if (!region) {
@@ -746,7 +746,11 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
 
         g_free(req.extraInfo);
         req.extraInfo = scheme_s3_extra(schemehostport, uris[2], region, extraPath, s3PathAccessStyle);
-        scheme_s3_request(server, creds, reqPath, uris[2], &req, s3PathAccessStyle, scheme_s3_read);
+        if (scheme_s3_request(server, creds, reqPath, uris[2], &req, s3PathAccessStyle, scheme_s3_read)) {
+            LOG("ERROR - Failed to request %s", uri);
+            rc = 1;
+            break;
+        }
 
         ARKIME_LOCK(waiting);
         ARKIME_LOCK(waiting);
@@ -757,7 +761,7 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
     g_free(extraPath);
     g_strfreev(uris);
 
-    return 0;
+    return rc;
 }
 /******************************************************************************/
 // s3http://hostport/bucketname/key
@@ -888,7 +892,7 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
         .first = TRUE
     };
 
-    scheme_s3_request(server, creds, reqPath, paths[1], &req, TRUE, scheme_s3_read);
+    gboolean failed = scheme_s3_request(server, creds, reqPath, paths[1], &req, TRUE, scheme_s3_read);
     g_free(reqPath);
     g_free(extraPath);
 
@@ -899,12 +903,16 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     g_strfreev(paths);
     curl_url_cleanup(h);
 
-    ARKIME_LOCK(waiting);
-    ARKIME_LOCK(waiting);
-    ARKIME_UNLOCK(waiting);
+    if (failed) {
+        LOG("ERROR - Failed to request %s", uri);
+    } else {
+        ARKIME_LOCK(waiting);
+        ARKIME_LOCK(waiting);
+        ARKIME_UNLOCK(waiting);
+    }
     g_free(req.extraInfo);
 
-    return 0;
+    return failed ? 1 : 0;
 }
 /******************************************************************************/
 LOCAL void scheme_s3_exit()

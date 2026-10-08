@@ -26,7 +26,7 @@ LOCAL uint64_t              packets;
 LOCAL int                   port;
 
 LOCAL struct bpf_program    bpfp;
-LOCAL pcap_t               *deadPcap;
+LOCAL gboolean              bpfCompiled;
 
 typedef struct {
     GSocket                *socket;
@@ -102,11 +102,9 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             arkime_packet_set_interface(poic->interface, 0, h->dlt, config.snapLen);
 
             if (first) {
-                if (config.bpf && !deadPcap) {
-                    deadPcap = pcap_open_dead(h->dlt, config.snapLen);
-                    if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-                        CONFIGEXIT("Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
-                    }
+                if (config.bpf && !bpfCompiled) {
+                    arkime_readers_compile_bpf("PcapOverIP", h->dlt, config.snapLen, config.bpf, &bpfp);
+                    bpfCompiled = TRUE;
                 }
                 first = 0;
             }

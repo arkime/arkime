@@ -7,6 +7,7 @@
  */
 
 #include "arkime.h"
+#include "pcap.h"
 
 extern ArkimeConfig_t        config;
 
@@ -153,6 +154,19 @@ void arkime_readers_start()
     g_strfreev(filenameOpsStr);
 
     arkime_reader_start();
+}
+/******************************************************************************/
+// Compile a bpf filter for readers that filter in software, exits on error
+void arkime_readers_compile_bpf(const char *name, int dlt, int snaplen, const char *filter, struct bpf_program *bpf)
+{
+    pcap_t *dead = pcap_open_dead(dlt, snaplen);
+    if (!dead) {
+        CONFIGEXIT("%s: Couldn't create pcap handle to compile bpf filter '%s'", name, filter);
+    }
+    if (pcap_compile(dead, bpf, filter, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+        CONFIGEXIT("%s: Couldn't compile bpf filter '%s': %s", name, filter, pcap_geterr(dead));
+    }
+    pcap_close(dead);
 }
 /******************************************************************************/
 void arkime_readers_exit()

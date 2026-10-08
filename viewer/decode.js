@@ -20,6 +20,8 @@ const async = require('async');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 
+const MAX_BODY_SIZE = 32 * 1024 * 1024;
+
 const internals = {
   registry: {},
   settings: {},
@@ -258,14 +260,22 @@ class CollectBodyStream extends Writable {
     this.headerInfo = headerInfo;
 
     this.buffers = [];
+    this.length = 0;
 
     this.on('finish', function (err) {
-      this.collector.bodyDone(item, Buffer.concat(this.buffers), this.headerInfo);
+      this.collector.bodyDone(item, Buffer.concat(this.buffers, this.length), this.headerInfo);
     });
   }
 
   _write (chunk, encoding, callback) {
-    this.buffers.push(chunk);
+    if (this.length < MAX_BODY_SIZE) {
+      if (this.length + chunk.length > MAX_BODY_SIZE) {
+        chunk = chunk.subarray(0, MAX_BODY_SIZE - this.length);
+        console.log('WARNING - body truncated at', MAX_BODY_SIZE, 'bytes', this.headerInfo.bodyName ?? '');
+      }
+      this.buffers.push(chunk);
+      this.length += chunk.length;
+    }
     callback(null);
   }
 }

@@ -160,6 +160,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4314 Fix HTTP paths and tags missing for requests without a Host header, unusual paths, or plain HTTP through a CONNECT proxy
   - #4314 Fix DNS queries with invalid punycode being dropped, SIP parsing stopping on long connections, and spoofed SCTP packets being parsed
   - #4314 GRE that can't be decoded is now saved as a session when saveUnknownPackets includes ip:gre
+  - #4315 Fix WISE lookups being skipped for some sessions on busy sensors
+  - #4315 Fix pcap files being lost when S3 uploads back up, and S3 reading hanging on very long object keys
+  - #4315 The snf and netmap readers now apply the bpf setting
+  - #4315 Fix the Lua pattern_ismatch function being able to crash capture
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
 ## db.pl
@@ -174,6 +178,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4300 Fix users with a time limit being able to search outside of it
   - #4300 Fix Connections CSV export not quoting values
+  - #4315 Fix viewing packets or uncompressed bodies from some sessions using excessive memory
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
 

@@ -559,7 +559,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
                 if (f < 20 && fieldShortHand[f] != 0xffffffff)
                     pos = fieldShortHand[f];
             } else {
-                pos = arkime_field_by_exp(parts[j]);
+                pos = arkime_field_by_exp_ignore_error(parts[j]);
             }
             if (pos == -1) {
                 LOG("WARNING - Unknown expression field %s", parts[j]);
