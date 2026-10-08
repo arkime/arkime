@@ -1205,6 +1205,7 @@
       "saveTip": "Salvar alterações nesta consulta",
       "deleteTip": "Excluir esta consulta",
       "transferTip": "Transferir esta consulta para outro usuário",
+      "transferDisabledWarning": "A transferência desativa esta consulta e remove seus papéis de edição. Avise o novo proprietário que ele precisa reativá-la.",
       "queryNotTagged": "Esta consulta não adicionou tags a nenhuma sessão"
     },
     "password": {

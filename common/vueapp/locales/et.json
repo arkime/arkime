@@ -1205,6 +1205,7 @@
       "saveTip": "Salvesta muudatused sellele päringule",
       "deleteTip": "Kustuta see päring",
       "transferTip": "Edasta see päring teisele kasutajale",
+      "transferDisabledWarning": "Edastamine keelab selle päringu ja eemaldab selle muutmisrollid. Teavita uut omanikku, et ta peab selle uuesti lubama.",
       "queryNotTagged": "See päring pole ühtegi seanssi märgistanud"
     },
     "password": {

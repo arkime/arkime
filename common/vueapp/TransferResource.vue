@@ -26,6 +26,12 @@ SPDX-License-Identifier: Apache-2.0
           @keyup.stop.prevent.enter="transferResource"
           :placeholder="$t('settings.transfer.id')" />
       </b-input-group> <!-- /user ID input -->
+      <div
+        v-if="message"
+        class="mt-2 small text-warning">
+        <span class="fa fa-exclamation-triangle me-1" />
+        {{ message }}
+      </div>
     </b-form>
     <!-- modal footer -->
     <template #footer>
@@ -57,6 +63,10 @@ export default {
     showModal: {
       type: Boolean,
       default: false
+    },
+    message: {
+      type: String,
+      default: ''
     }
   },
   data () {

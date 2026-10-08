@@ -291,6 +291,11 @@ class Auth {
       Auth.#strategies = ['s2s'];
       break;
     case 'regressionTests':
+      // Lets any caller pick their user, so never from config alone
+      if (!ArkimeConfig.regressionTests) {
+        console.log('ERROR - authMode=regressionTests requires --regressionTests');
+        process.exit(1);
+      }
       Auth.#strategies = ['regressionTests'];
       Auth.regressionTests = true;
       break;
@@ -1322,10 +1327,11 @@ class Auth {
         throw new Error('Malformed auth token');
       }
 
-      let key = Auth.#keyCache.get(`${secret}:${salt}`);
-      if (!key) {
+      const cacheKey = `${secret}:${salt}`;
+      let key = Auth.#keyCache.get(cacheKey);
+      const cached = !!key;
+      if (!cached) {
         key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 300000, 32, 'sha256');
-        Auth.#keyCache.set(`${secret}:${salt}`, key);
       }
 
       const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'hex'));
@@ -1333,6 +1339,9 @@ class Auth {
 
       let decrypted = decipher.update(data, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
+
+      // Only cache keys that decrypted, so forged salts can't evict real ones
+      if (!cached) { Auth.#keyCache.set(cacheKey, key); }
 
       return JSON.parse(decrypted);
     } catch (error) {

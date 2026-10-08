@@ -103,6 +103,7 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment-timezone';
 import { mapGetters } from 'vuex';
 
+import { commaString } from '@common/vueFilters.js';
 import WiseService from './wise.service.js';
 
 let dataInterval;
@@ -162,7 +163,7 @@ export default {
             Object.keys(this.sourceStats[0]).forEach(key => {
               const obj = { key, label: this.$t(`wise.stats.source-${key}`), sortable: true };
               if (key !== 'source') {
-                obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+                obj.formatter = commaString;
                 obj.tdClass = 'text-right';
                 obj.thClass = 'text-right';
               }
@@ -179,7 +180,7 @@ export default {
             Object.keys(this.typeStats[0]).forEach(key => {
               const obj = { key, label: this.$t(`wise.stats.type-${key}`), sortable: true };
               if (key !== 'type') {
-                obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+                obj.formatter = commaString;
                 obj.tdClass = 'text-right';
                 obj.thClass = 'text-right';
               }
