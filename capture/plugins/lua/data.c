@@ -171,7 +171,14 @@ LOCAL int MD_pattern_ismatch(lua_State *L)
 {
     const MD_t *data = checkArkimeData(L, 1);
     GPatternSpec *pattern = *(GPatternSpec **)luaL_checkudata(L, 2, "ArkimePattern");
-    lua_pushboolean(L, g_pattern_match(pattern, data->len, data->str, NULL));
+
+    if (!g_utf8_validate(data->str, data->len, NULL)) {
+        lua_pushboolean(L, FALSE);
+        return 1;
+    }
+    char *str = g_strndup(data->str, data->len);
+    lua_pushboolean(L, g_pattern_match(pattern, data->len, str, NULL));
+    g_free(str);
     return 1;
 }
 
