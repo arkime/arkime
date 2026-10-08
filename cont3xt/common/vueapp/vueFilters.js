@@ -52,10 +52,20 @@ export const round = function (value, decimals) {
  * @returns {string}  The number string with commas
  */
 export const commaString = function (input) {
-  if (isNaN(input)) { return 0; }
+  if (input === null || isNaN(input)) { return 0; }
 
+  // Not a lookahead regex, that is quadratic on long digit strings
   const parts = input.toString().split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const m = /^(-?)(\d+)$/.exec(parts[0]);
+  if (m) {
+    const digits = m[2];
+    const head = digits.length % 3 || 3;
+    let out = digits.slice(0, head);
+    for (let i = head; i < digits.length; i += 3) {
+      out += ',' + digits.slice(i, i + 3);
+    }
+    parts[0] = m[1] + out;
+  }
   return parts.join('.');
 };
 
