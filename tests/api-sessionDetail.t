@@ -1,4 +1,4 @@
-use Test::More tests => 57;
+use Test::More tests => 59;
 
 use Cwd;
 use URI::Escape;
@@ -275,11 +275,13 @@ ok($sd =~ m{exportUnique\(&quot;iscool&quot;, 0\)}s, "custom view field menu in 
 ok($sd =~ m{\{name: "Is cool"\}}s, "custom view label in /detail");
 ok($sd =~ m{value="yes"}s, "custom view value in /detail");
 
-my $cvEscaped = 'Evil \\"\\u003cb\\u003e\\u007b\\u007bx\\u007d\\u007d';
+my $cvEscaped = 'Evil\' + (7*191) + \'\\"\\u003cb\\u003e\\u007b\\u007bx\\u007d\\u007d';
 ok($sd =~ m{\{name: "\Q$cvEscaped\E"\}}s, "hostile label escaped in \$t text");
 ok($sd =~ m{exportUnique\(&quot;evillabel&quot;, 0\)}s, "hostile label field menu in /detail");
-ok($sd !~ m{Evil "<b>}s, "hostile label never raw in /detail");
-ok($sd !~ m{\{name: "Evil "}s, "hostile label never breaks out of the name string");
+ok($sd !~ m{'"<b>}s, "hostile label never raw in /detail");
+ok($sd !~ m{\{name: "\QEvil' + (7*191) + '"\E}s, "hostile label never breaks out of the name string");
+ok($sd =~ m{text="\QEvil' + (7*191) + '\E}s, "hostile label kept literal in dropdown text");
+ok($sd !~ m{Evil1337}s, "hostile label never evaluated as pug");
 
 esDelete("/$noPcapIndex/_doc/$cvDocId?refresh=true");
 
