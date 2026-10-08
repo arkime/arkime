@@ -20,7 +20,7 @@
     "body-parser": "^1.20.5",
     "bson": "^1.1.5",
     "chalk": "^4.1.2",
-    "compression": "^1.8.1",
+    "compression": "^1.8.2",
     "connect-timeout": "^1.9.1",
     "console-stamp": "^3.1.2",
     "csv": "^6.6.3",
