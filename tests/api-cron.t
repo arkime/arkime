@@ -1,4 +1,4 @@
-use Test::More tests => 63;
+use Test::More tests => 64;
 use Cwd;
 use ArkimeTest;
 use JSON;
@@ -121,8 +121,11 @@ ok($json->{success}, "non-admin creator can transfer ownership");
 eq_or_diff($json->{query}->{creator}, "sac-test2");
 ok(!$json->{query}->{enabled}, "non-admin transfer disables query");
 is(@{$json->{query}->{editRoles}}, 0, "non-admin transfer clears editRoles");
-$json = viewerDeleteToken("/api/cron/$key3", $token);
-ok($json->{success}, "transferred query can be deleted");
+# new owner can re-share editRoles, then sac-test1 can delete using editRoles
+$json = viewerPostToken("/api/cron/$key3?arkimeRegressionUser=sac-test2", '{"creator":"sac-test2","name":"sac-test1xfer","query":"tags == nomatch","action":"tag","tags":"tls","editRoles":["arkimeUser"]}', $test2Token);
+ok($json->{success}, "new owner can re-share editRoles");
+$json = viewerDeleteToken("/api/cron/$key3?arkimeRegressionUser=sac-test1", $test1Token);
+ok($json->{success}, "editRoles user can delete query");
 
 # sac-test2 lost editRoles access on transfer
 $json = viewerDeleteToken("/api/cron/$key?arkimeRegressionUser=sac-test2", $test2Token);
