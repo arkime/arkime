@@ -1205,6 +1205,7 @@
       "saveTip": "保存对此查询的更改",
       "deleteTip": "删除此查询",
       "transferTip": "将此查询转让给其他用户",
+      "transferDisabledWarning": "转让后此查询将被禁用，其编辑角色也会被移除。请告知新所有者需要重新启用它。",
       "queryNotTagged": "此查询尚未标记任何会话"
     },
     "password": {

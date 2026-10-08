@@ -391,6 +391,12 @@ class CronAPIs {
         return;
       }
 
+      // new owner must re-enable and re-share edit, so a query can't run with someone else's access unreviewed
+      if (doc.doc.creator !== cron.creator) {
+        doc.doc.enabled = false;
+        doc.doc.editRoles = [];
+      }
+
       if (doc.doc.enabled !== cron.enabled) { // the query was enabled or disabled
         doc.doc.lastToggledBy = req.settingUser.userId;
         doc.doc.lastToggled = Math.floor(Date.now() / 1000);

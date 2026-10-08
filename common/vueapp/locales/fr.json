@@ -1205,6 +1205,7 @@
       "saveTip": "Enregistrer les modifications de cette requête",
       "deleteTip": "Supprimer cette requête",
       "transferTip": "Transférer cette requête à un autre utilisateur",
+      "transferDisabledWarning": "Le transfert désactive cette requête et supprime ses rôles d'édition. Prévenez le nouveau propriétaire qu'il doit la réactiver.",
       "queryNotTagged": "Cette requête n'a marqué aucune session"
     },
     "password": {
