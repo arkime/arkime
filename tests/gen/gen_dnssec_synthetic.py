@@ -5,6 +5,7 @@ Layout:
   - LEGACY blob: all 10 packets (predate generator code; add new
     sessions as section functions below)
   - dns_query_midsave (481 packets)
+  - dns_bad_idna (2 packets)
 
 Run from the tests directory:  python3 gen/gen_dnssec_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -82,10 +83,62 @@ def sec_dns_query_midsave():
     return build()
 
 
+def sec_dns_bad_idna():
+    # Session 10.9.58.1:49902 -> 10.9.58.2:53 (UDP):
+    #   Query for xn--zzzzzzzzz.bad-idna.example, which isn't valid punycode, answered
+    #   with a CNAME to xn--99999999.bad-idna.example (also invalid) and an A record.
+    #   Expect the raw names, the A record ip and the bad-punycode tag.
+    TS_START = 1700021800.0
+    CMAC = bytes.fromhex('02aa00002801')
+    SMAC = bytes.fromhex('02aa00002802')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def build_udp(src_str, dst_str, sport, dport, payload, smac, dmac):
+        src = bytes(map(int, src_str.split('.')))
+        dst = bytes(map(int, dst_str.split('.')))
+        udp_len = 8 + len(payload)
+        udp = struct.pack('!HHHH', sport, dport, udp_len, 0)
+        pseudo = src + dst + struct.pack('!BBH', 0, 17, udp_len)
+        udp = udp[:6] + struct.pack('!H', csum(pseudo + udp + payload))
+        ip = struct.pack('!BBHHHBBH4s4s', 0x45, 0, 20 + udp_len, 0x9102, 0, 64, 17, 0, src, dst)
+        ip = ip[:10] + struct.pack('!H', csum(ip)) + ip[12:]
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+    def qname(name):
+        return b''.join(bytes([len(p)]) + p.encode() for p in name.split('.')) + b'\0'
+
+    qn = qname('xn--zzzzzzzzz.bad-idna.example')
+    cn = qname('xn--99999999.bad-idna.example')
+    q = struct.pack('!HHHHHH', 0x4242, 0x0100, 1, 0, 0, 0) + qn + struct.pack('!HH', 1, 1)
+    a = struct.pack('!HHHHHH', 0x4242, 0x8180, 1, 2, 0, 0) + qn + struct.pack('!HH', 1, 1)
+    a += b'\xc0\x0c' + struct.pack('!HHIH', 5, 1, 300, len(cn)) + cn
+    a += cn + struct.pack('!HHIH', 1, 1, 300, 4) + bytes([10, 9, 58, 100])
+    pkts = [
+        build_udp('10.9.58.1', '10.9.58.2', 49902, 53, q, CMAC, SMAC),
+        build_udp('10.9.58.2', '10.9.58.1', 53, 49902, a, SMAC, CMAC),
+    ]
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.01
+    return out
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/dnssec_synthetic.pcap'
     out = LEGACY
     out += sec_dns_query_midsave()
+    out += sec_dns_bad_idna()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

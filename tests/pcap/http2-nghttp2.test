@@ -52,10 +52,11 @@
      ],
      "methodCnt" : 2,
      "path" : [
+      "*",
       "/",
       "/stylesheets/screen.css"
      ],
-     "pathCnt" : 2,
+     "pathCnt" : 3,
      "requestHeader" : [
       "accept",
       "accept-encoding",

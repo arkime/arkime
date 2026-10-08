@@ -399,8 +399,12 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
     } else {
         svcbData->dname = g_hostname_to_unicode(name);
         if (!svcbData->dname) {
-            ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
-            return NULL;
+            // Keep the raw name if it can be stored
+            if (!g_utf8_validate(name, namelen, NULL)) {
+                ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
+                return NULL;
+            }
+            svcbData->dname = g_strndup(name, namelen);
         }
     }
 
@@ -535,10 +539,18 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
         if (host)
             g_free(host);
 
-        // Don't leave the caller's pointer dangling at the freed host
-        if (uniSet)
-            *uniSet = NULL;
-        return 1;
+        // Keep the raw name if it can be stored
+        if (g_utf8_validate(string, len, NULL)) {
+            host = g_ascii_strdown(string, len);
+            hostlen = len;
+            if (uniSet)
+                *uniSet = host;
+        } else {
+            // Don't leave the caller's pointer dangling at the freed host
+            if (uniSet)
+                *uniSet = NULL;
+            return 1;
+        }
     }
 
     ArkimeString_t *hstring;
@@ -802,7 +814,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 } else {
                     arkime_session_add_tag(session, "bad-hostname");
                 }
-                return;
+
+                // Keep the raw name if it can be stored
+                if (!g_utf8_validate(name, namelen, NULL))
+                    return;
+                key.query.hostname = g_ascii_strdown(name, namelen);
             }
         }
 
@@ -1079,7 +1095,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 } else {
                     answer->nsdname = g_hostname_to_unicode(name);
                     if (!answer->nsdname) {
-                        goto continueerr;
+                        // Keep the raw name if it can be stored
+                        if (!g_utf8_validate(name, namelen, NULL))
+                            goto continueerr;
+                        answer->nsdname = g_strndup(name, namelen);
                     }
                 }
                 break;

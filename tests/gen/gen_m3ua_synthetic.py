@@ -17,24 +17,24 @@ import zlib
 # Packets accumulated before per-session generator code existed
 # (zlib-compressed pcap prefix, including the 24-byte global header)
 LEGACY = zlib.decompress(base64.b64decode(
-    'eNrdl21IU1EYgN97d910V2hTyywpNYtRfsz5rVPnR6F9KmrMGWqmJhkpJOqvEowUKtB/iRJK/pAJ'
-    'EiX2YViRZJTSB/4ISfoRlP/6wEIRsvPqnYPLZdvZLmKdMTbuzp77nvc559z3zDy/288CB7a2sgLA'
-    'kE/f27pzywd4yCLf8Q01zR3dVtCGxeYUe8NBgDjsZrpyxqRmGEbNsixv5s3Y8ativJ78FOAXd7Jl'
-    'lacmL1DMI7EwwiUioSHVRpxM0uxnCbG9OjvUTlS9ReJAhDsxdvs/0xFEAIgaEn8SooF8N0gRwwVi'
-    'vjjGxtFLXTwAh4ShSB6GybVhKULfGqFyRhzTE/2RU6CAVsyVEA7LgBJlNCgAzrYFQBX4gELFc9lV'
-    'oOayA0B9vDI/l8NE1+3ThStVoL3qRah9QRWBrayqtd9HqeJQp4EZV+o4JVvAnA/u38EyGgLW+7Wq'
-    'ukKzq9t9frSpum42FRk031fH7xNFldESvgQ7WiZ27UHr1rGpObsj/gESLVFU1gXiq9eN3Wh9bmrM'
-    'aidu6UOi1a0Yg+YK+tA6I2pIXIqisi4QNRfDXtisN0fzUEmuVUoRigRCiDgmuLF8iFiPw1wJ1hUM'
-    'MGg9nNVAEPl8SRR2egGKVGrJpFDbZup0NFUWLLxldZ7NLg6gKexqz6t/BxKD9VSmBOL7h5l5aCon'
-    'NkxrJwY2ILFO706MtYu+RjTFihoS7+upTAnEx8bJDJupxBge8KJFinBUIOjEMSXkbU0hpiIwVyJT'
-    'wcQU2UsY8htrxr2UYRWrd7LGUI2+lC/FjrOHO8fQUDH5hz2fO81I/BNDZUgg3hvx3oaGOppriu3E'
-    '3SYkHjO4E+N8Qu8IGlKIGhJ7DVSGBOKHpZ5am6HRWB5GybVRKcKgsINOiWNqyTXWEkMdmCuRoRZi'
-    '6ALaIW4WyG5q20gXGLKRmtm1jXRo+psf3UaqtW2kxdh+kY20BtvvtfXZE+f8OVA2pSZZU3Mct9me'
-    'Ayfi/+XoB+Odz8HyXIwcRyD1FF/wmJCW4HxllSeJM+ioNrkuO3HONaJolI4qsqhEuYmXE90ZtaM6'
-    '9I3sxKIk50//8u3rRBme/h83/I6pyVQrQqJGaveY8C6ZypwLlV9IitzE+hSqFeBCvftUdqIm1Z1R'
-    'O6ryK2Qnfkp1XqeVh6wTPajTrhk36k6fjVQrQKJ6jUzzlNCURmXKhZp8QnaiJp1qxrtwEjktO/FO'
-    'ujujdnT+4jLkJg5mOK+kyybWiZu0ks43/Q+jGDBRrVyJc9EXjwl7M6lmmAunvQbZiY8yqVaqC2dc'
-    'VZbcxMIsd0bt6GR/S1biX/yapS0='))
+    'eNrdl2tIFFEUx+/MjrvtTuCuCWZKPjJZyOeq+dbVNZDKNHywruArH5Ch0ge1vigYKdQHJTCtSCUN'
+    'WUUiSENBg4T6sFKBH8IyPwg9PvVAowiyc3TWhWFw9rJDWHdZZmDu/d1zzv/ec89devpwmCUccbbN'
+    'TUIYeO6/Zzz/6xhPsuEd/6SutXvATgyhcTnF+8gJQuKxm/nKObOOYRgdy7K8lbdixw+quSb45OsT'
+    'X9K2xdPBj6g+IrEwwi0i0JCKRKSMdub1sUDsqrWEuIial0gciaC1ESkDN9MmAOFLRA2J34BogneT'
+    'FDFMIBaIbbzxJniCJ4RDwngkTyZh8KQUYWibUL0kting1sYoUZEOjJVgDssQNYrRrCKkvtOX1BAt'
+    'UWl4zlJDdJzFl+jOVBfkcjh9Q7gxTK0hhqteQB3yr/TrYDUdw1q1hkM5Tcyc2sip2bPMhcDhQyyj'
+    'B3CMT4emN8RS26X92qnp7W8pMum/bPmvjaKKaClfih1tC4ePoOr2WceKSyP+MRJtUVSqAxEpfvz9'
+    'QVR9xTFrdxG9h5Bop7YRKQ22/GRUnRE1JP6MolJdsHFmvu+iU/XWaJ5Uw+BqKUKRQAgW27RW2J8M'
+    'qsdjrATVVQxhUPUwVk/84fkcJOzxIiik2gCLQudcqYvRVFGw8TbsOL/8YwSVwq6uuB7oRmJgDJVS'
+    'QMTPjY3TQ6hUTlyowUX0a0ZiQwytjUh53ehdj0qxoobE6RgqpQQbT73rtziVSozlCYbCJkU4LRCM'
+    'YptS8sJXQakIjJVIqUBQCnIJA99YK+ZShlVtzWSPpfK+jC/Djssne2ZRoWIY4YpngBWJv2OpFAIi'
+    'Uh5N9AehQt2tdcUuYpAZiXkmWhuRcsn/Mo8KqUQNiXdMVAoJNj4rqRp0KjQVx5MpGDwlRRgTMqhD'
+    'bFNZ+6c6UKgbYyVSqA0UakR1QJt1yKbORLrOQCK1stuJdHzxsw9dIjU4E2kxtg1IpHXYvm/vz9vx'
+    '8udAuUMHUdNxHLfXzoH8hH/Z+rEE+TVYkYuWowdSp/i6x4T04/I7qyJJHMHdapPrihNX3COKvNyt'
+    'IotKVJrYnkjrtVwd+kJxYlGS/OlfcXCHqMDp//avz5iaTLUjJGqkLo8Jr5KplHOj8gtOUZrYlEK1'
+    'A9yod58oTtSn0notV+VXKk5cTZWv0yqCd4ge1GnX0v7WTGtpVDtAonqNTPeU0JJOpZQbNfmC4kR9'
+    'BtWKd+MmUqU48UEGrddy9y8uU2niWKZ8JV2+sEPco5V0gfl/8GLETLVzJe5F7z0mHM2iWmFu3Paa'
+    'FSfOZFHtVDfuuJpspYmF2bRey93s7ypK/APPjvo4'))
 
 
 def sec_m3ua_sctp_ooo():
@@ -100,7 +100,9 @@ def sec_m3ua_sctp_ooo():
 
 
     def sctp_packet(src, dst, chunks):
-        sctp = struct.pack('>HHII', 2905, 2905, 0, 0)
+        # INIT carries 0, otherwise the tag the destination announced
+        vtag = 0 if chunks[0][0] == 1 else (0x44332211 if src.startswith(('10.5', '10.7')) else 0x11223344)
+        sctp = struct.pack('>HHII', 2905, 2905, vtag, 0)
         body = b''
         for c in chunks:
             body += c + b'\0' * ((4 - len(c) % 4) % 4)

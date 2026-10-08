@@ -155,6 +155,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4313 Fix UDP traffic on VXLAN, Geneve and GTP ports being dropped when it isn't tunneled traffic
   - #4313 Fix a spoofed RST or FIN splitting a TCP session and hiding the rest of the traffic
   - #4313 Fix DNS, HTTP, FTP, SIP, SMTP and STUN parsing stopping early or recording wrong values on unusual but valid traffic
+  - #4314 Fix DTLS and QUIC SNI and JA4 missing for fragmented DTLS Client Hellos and QUIC v2
+  - #4314 Fix SMB file names, shares and users missing for SMB on port 139 and for compound or chained commands
+  - #4314 Fix HTTP paths and tags missing for requests without a Host header, unusual paths, or plain HTTP through a CONNECT proxy
+  - #4314 Fix DNS queries with invalid punycode being dropped, SIP parsing stopping on long connections, and spoofed SCTP packets being parsed
+  - #4314 GRE that can't be decoded is now saved as a session when saveUnknownPackets includes ip:gre
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
 ## db.pl

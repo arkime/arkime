@@ -70,12 +70,16 @@
      "lte" : 1476605364001
     },
     "protocol" : [
+     "smb",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 908
+    },
+    "smb" : {
+     "dialect" : "SMB 3.0.2"
     },
     "source" : {
      "bytes" : 745,
@@ -222,12 +226,20 @@
      "lte" : 1476605374755
     },
     "protocol" : [
+     "smb",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 1177
+    },
+    "smb" : {
+     "dialect" : "NT LM 0.12",
+     "share" : [
+      "\\\\SCV\\IPC$"
+     ],
+     "shareCnt" : 1
     },
     "source" : {
      "bytes" : 1707,

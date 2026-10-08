@@ -47,6 +47,10 @@
       "f73d2a4f4331dc56920d51fe6ba8ebc9"
      ],
      "md5Cnt" : 1,
+     "path" : [
+      "/Hello"
+     ],
+     "pathCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
