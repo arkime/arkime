@@ -574,6 +574,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <transfer-resource
       :show-modal="showTransferModal"
+      :message="$t('settings.cron.transferDisabledWarning')"
       @transfer-resource="submitTransferQuery" />
   </div>
 </template>
