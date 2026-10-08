@@ -22,7 +22,6 @@ LOCAL uint64_t              packets;
 LOCAL int                   tzspPort;
 
 LOCAL struct bpf_program    bpfp;
-LOCAL pcap_t               *deadPcap;
 
 /******************************************************************************/
 LOCAL void *tzsp_thread(gpointer UNUSED(uw))
@@ -150,11 +149,8 @@ void reader_tzsp_init(const char *UNUSED(name))
 
     arkime_reader_start         = tzsp_server_start;
     arkime_reader_stats         = tzsp_stats;
-    deadPcap = pcap_open_dead(DLT_EN10MB, config.snapLen);
     if (config.bpf) {
-        if (pcap_compile(deadPcap, &bpfp, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            CONFIGEXIT("Couldn't compile bpf filter '%s' with %s", config.bpf, pcap_geterr(deadPcap));
-        }
+        arkime_readers_compile_bpf("TZSP", DLT_EN10MB, config.snapLen, config.bpf, &bpfp);
     }
 
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);

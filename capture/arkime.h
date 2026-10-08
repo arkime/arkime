@@ -1713,6 +1713,8 @@ extern ArkimeReaderExit  arkime_reader_exit;
 
 void arkime_readers_init();
 void arkime_readers_set(char *name);
+struct bpf_program;
+void arkime_readers_compile_bpf(const char *name, int dlt, int snaplen, const char *filter, struct bpf_program *bpf);
 void arkime_readers_start();
 void arkime_readers_add(char *name, ArkimeReaderInit func);
 void arkime_readers_exit();

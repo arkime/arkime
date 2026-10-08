@@ -496,12 +496,7 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
      * capture thread before any packet allocation. */
     use_sw_bpf = FALSE;
     if (config.bpf) {
-        pcap_t *dead = pcap_open_dead(DLT_EN10MB, config.snapLen);
-        if (pcap_compile(dead, &sw_bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            CONFIGEXIT("Napatech: Couldn't compile bpf filter '%s': %s",
-                       config.bpf, pcap_geterr(dead));
-        }
-        pcap_close(dead);
+        arkime_readers_compile_bpf("Napatech", DLT_EN10MB, config.snapLen, config.bpf, &sw_bpf);
         use_sw_bpf = TRUE;
         LOG("Napatech: software BPF filter active: '%s'", config.bpf);
     }

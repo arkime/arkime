@@ -26,6 +26,8 @@ LOCAL int                    snfNumRings;
 LOCAL int                    snfNumProcs;
 LOCAL int                    snfProcNum;
 LOCAL uint64_t               totalPktsRead[MAX_INTERFACES][MAX_RINGS];
+LOCAL struct bpf_program     bpf;
+LOCAL gboolean               useBpf;
 
 /******************************************************************************/
 LOCAL int reader_snf_stats(ArkimeReaderStats_t *stats)
@@ -92,6 +94,9 @@ LOCAL void *reader_snf_thread(gpointer posv)
             break;
         }
 
+        if (useBpf && bpf_filter(bpf.bf_insns, (u_char *)req.pkt_addr, req.length, req.length) == 0)
+            continue;
+
         ArkimePacket_t *packet = arkime_packet_alloc();
 
         packet->pkt           = (u_char *)req.pkt_addr;
@@ -151,6 +156,11 @@ LOCAL void reader_snf_init(const char *UNUSED(name))
 
     int snfDataRingSize = arkime_config_int(NULL, "snfDataRingSize", 0, 0, 0x7fffffff);
     int snfFlags = arkime_config_int(NULL, "snfFlags", -1, 0, -1);
+
+    if (config.bpf) {
+        arkime_readers_compile_bpf("Myricom", DLT_EN10MB, config.snapLen, config.bpf, &bpf);
+        useBpf = TRUE;
+    }
 
     int err;
     if ((err = snf_init(SNF_VERSION_API)) != 0) {

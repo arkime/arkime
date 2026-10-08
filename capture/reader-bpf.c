@@ -174,21 +174,13 @@ LOCAL int open_bpf_device()
 /******************************************************************************/
 LOCAL void bpf_set_filter(ArkimeBpf_t *reader, const char *filterstr)
 {
-    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
-    if (!dpcap) {
-        CONFIGEXIT("Failed to create dead pcap handle for BPF filter compilation");
-    }
-
-    if (pcap_compile(dpcap, &reader->bpf, filterstr, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-        CONFIGEXIT("BPF filter compilation failed for '%s': %s", filterstr, pcap_geterr(dpcap));
-    }
+    arkime_readers_compile_bpf("BPF", pcapFileHeader.dlt, pcapFileHeader.snaplen, filterstr, &reader->bpf);
 
     if (ioctl(reader->fd, BIOCSETF, &reader->bpf) < 0) {
         CONFIGEXIT("Failed to set BPF filter: %s", strerror(errno));
     }
 
     reader->hasBpf = TRUE;
-    pcap_close(dpcap);
 }
 
 /******************************************************************************/

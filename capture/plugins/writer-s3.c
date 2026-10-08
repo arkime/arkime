@@ -356,6 +356,17 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
+// Must hold uploadState lock
+LOCAL void writer_s3_init_failed_locked(SavepcapS3File_t *file)
+{
+    file->uploadFailed = 1;
+    SavepcapS3Output_t *output;
+    while (DLL_POP_HEAD(os3_, &file->outputQ, output)) {
+        arkime_http_free_buffer(output->buf);
+        ARKIME_TYPE_FREE(SavepcapS3Output_t, output);
+    }
+}
+/******************************************************************************/
 LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
@@ -378,12 +389,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
             // writes; the file struct itself stays in fileQ since a packet
             // thread may still hold it as its current file
             ARKIME_LOCK(uploadState);
-            file->uploadFailed = 1;
-            SavepcapS3Output_t *output;
-            while (DLL_POP_HEAD(os3_, &file->outputQ, output)) {
-                arkime_http_free_buffer(output->buf);
-                ARKIME_TYPE_FREE(SavepcapS3Output_t, output);
-            }
+            writer_s3_init_failed_locked(file);
             ARKIME_UNLOCK(uploadState);
         }
         return;
@@ -406,7 +412,8 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
         file->partNumber = 1;
         file->partNumberResponses = 1;
     } else {
-        LOGEXIT("ERROR - Unknown s3 response: %.*s", len, data);
+        LOG("ERROR - S3 init failed code=%d for %s, giving up: %.*s", code, file->outputFileName, len, data);
+        writer_s3_init_failed_locked(file);
     }
     g_match_info_free(match_info);
 
@@ -446,6 +453,19 @@ LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value,
 
     if (config.debug)
         LOG("Part-Etag: %s %d", file->outputFileName, pn);
+}
+/******************************************************************************/
+typedef struct {
+    ArkimeHttpResponse_cb cb;
+    gpointer              uw;
+} S3DroppedRequest_t;
+
+LOCAL gboolean writer_s3_dropped_cb(gpointer uw)
+{
+    S3DroppedRequest_t *dropped = uw;
+    dropped->cb(500, NULL, 0, dropped->uw);
+    ARKIME_TYPE_FREE(S3DroppedRequest_t, dropped);
+    return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
 LOCAL void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
@@ -609,7 +629,15 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
     headers[nextHeader] = NULL;
 
     ARKIME_THREAD_INCR(inprogress);
-    arkime_http_send(s3Server, method, fullpath, strlen(fullpath), (char *)data, len, headers, FALSE, cb, uw);
+    // BEST priority so pcap uploads are never dropped under load; backpressure
+    // comes from writer_s3_queue_length instead
+    if (arkime_http_schedule(s3Server, method, fullpath, strlen(fullpath), (char *)data, len, headers, ARKIME_HTTP_PRIORITY_BEST, cb, uw)) {
+        // Run the failure callback from the main loop
+        S3DroppedRequest_t *dropped = ARKIME_TYPE_ALLOC(S3DroppedRequest_t);
+        dropped->cb = cb;
+        dropped->uw = uw;
+        g_timeout_add(0, writer_s3_dropped_cb, dropped);
+    }
     g_checksum_free(checksum);
 }
 /******************************************************************************/

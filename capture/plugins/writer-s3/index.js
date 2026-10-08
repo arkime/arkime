@@ -21,6 +21,7 @@ const DEFAULT_COMPRESSED_BLOCK_SIZE = 100000;
 const COMPRESSED_WITHIN_BLOCK_BITS = 20;
 const COMPRESSED_GZIP = 1;
 const COMPRESSED_ZSTD = 2;
+const MAX_UNCOMPRESSED_BLOCK_SIZE = (1 << COMPRESSED_WITHIN_BLOCK_BITS) + 0x20000;
 
 const S3DEBUG = false;
 // Store up to 100 items
@@ -224,12 +225,9 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
                 const sp = data.subPackets[i];
                 if (!decompressed[sp.rangeStart]) {
                   const offset = sp.rangeStart - data.rangeStart;
-                  if (data.compressed === COMPRESSED_GZIP) {
-                    decompressed[sp.rangeStart] = zlib.inflateRawSync(body.subarray(offset, offset + data.info.compressionBlockSize),
-                      { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-                  } else if (data.compressed === COMPRESSED_ZSTD) {
-                    decompressed[sp.rangeStart] = zlib.zstdDecompressSync(body.subarray(offset, offset + data.info.compressionBlockSize),
-                      { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+                  if (data.compressed === COMPRESSED_GZIP || data.compressed === COMPRESSED_ZSTD) {
+                    decompressed[sp.rangeStart] = await Pcap.decompressBlock(data.compressed === COMPRESSED_GZIP ? 'gzip' : 'zstd',
+                      body.subarray(offset, offset + data.info.compressionBlockSize), MAX_UNCOMPRESSED_BLOCK_SIZE);
                   }
                   const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                   lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);

@@ -213,12 +213,8 @@ void reader_tpacketv3_init(const char *UNUSED(name))
 
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
-    pcap_t *dpcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
-
     if (config.bpf) {
-        if (pcap_compile(dpcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            CONFIGEXIT("Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(dpcap));
-        }
+        arkime_readers_compile_bpf("TPacketV3", pcapFileHeader.dlt, pcapFileHeader.snaplen, config.bpf, &bpf);
     }
 
     int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
@@ -297,8 +293,6 @@ void reader_tpacketv3_init(const char *UNUSED(name))
 
         fanout_group_id++;
     }
-
-    pcap_close(dpcap);
 
     arkime_reader_start         = reader_tpacketv3_start;
     arkime_reader_exit          = reader_tpacketv3_exit;

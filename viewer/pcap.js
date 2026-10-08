@@ -75,6 +75,43 @@ class Pcap {
   }
 
   // --------------------------------------------------------------------------
+  // Decompress a gzip or zstd block, stopping after maxLength bytes.
+  // Gzip blocks are one deflate stream separated by Z_FULL_FLUSH, so the
+  // compressed slice inflates on into following blocks; everything past the
+  // current block is unused, so truncating loses nothing and bounds memory.
+  static decompressBlock (compression, buffer, maxLength) {
+    return new Promise((resolve, reject) => {
+      const opts = { finishFlush: zlib.constants.Z_SYNC_FLUSH };
+      const stream = compression === 'gzip' ? zlib.createInflateRaw(opts) : zlib.createZstdDecompress(opts);
+      const chunks = [];
+      let len = 0;
+      let done = false;
+
+      const finish = () => {
+        if (done) { return; }
+        done = true;
+        stream.destroy();
+        const out = Buffer.concat(chunks, len);
+        resolve(out.length > maxLength ? out.subarray(0, maxLength) : out);
+      };
+
+      stream.on('data', (chunk) => {
+        if (done) { return; }
+        chunks.push(chunk);
+        len += chunk.length;
+        if (len >= maxLength) { finish(); }
+      });
+      stream.on('end', finish);
+      stream.on('error', (err) => {
+        if (done) { return; }
+        done = true;
+        reject(err);
+      });
+      stream.end(buffer);
+    });
+  }
+
+  // --------------------------------------------------------------------------
   static make (key, header) {
     const pcap = new Pcap(key);
     pcap.headBuffer = header;
@@ -332,7 +369,7 @@ class Pcap {
       const buffer = Buffer.alloc(blockSize);
 
       try {
-        fs.read(this.fd, buffer, 0, buffer.length, blockStart, (err, bytesRead, readBuffer) => {
+        fs.read(this.fd, buffer, 0, buffer.length, blockStart, async (err, bytesRead, readBuffer) => {
           readBuffer = readBuffer.slice(0, bytesRead);
 
           // Make sure we have at least some data
@@ -358,10 +395,8 @@ class Pcap {
           // Uncompress if needed
           if (this.uncompressedBits) {
             try {
-              if (this.compression === 'gzip') {
-                readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-              } else if (this.compression === 'zstd') {
-                readBuffer = zlib.zstdDecompressSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+              if (this.compression === 'gzip' || this.compression === 'zstd') {
+                readBuffer = await Pcap.decompressBlock(this.compression, readBuffer, this.uncompressedBitsSize + 0x20000);
               }
             } catch (e) {
               console.log('PCAP uncompress issue', this.key, blockStart, buffer.length, bytesRead, e);

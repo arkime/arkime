@@ -82,7 +82,7 @@ Find str inside of data
 ### data:pattern_ismatch(compiledPattern)
 Perform a glob match
 * compiledPattern = results of a previous ArkimeData.pattern_create call
-* returns = true if match
+* returns = true if match, always false if data isn't valid UTF-8
 
 ### data:pcre_ismatch(compiledPCRE)
 Perform a pcre match

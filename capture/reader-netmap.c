@@ -49,6 +49,8 @@ LOCAL int                    threadsPerInterface;
 LOCAL struct nm_desc        *nmdPerInterface[MAX_INTERFACES];
 LOCAL ArkimeReaderStats_t    gStats;
 LOCAL ARKIME_LOCK_DEFINE(gStats);
+LOCAL struct bpf_program     bpf;
+LOCAL gboolean               useBpf;
 
 /******************************************************************************/
 int reader_netmap_stats(ArkimeReaderStats_t *stats)
@@ -99,19 +101,21 @@ LOCAL void *reader_netmap_thread(gpointer readerv)
                 struct netmap_slot *slot = &ring->slot[i];
                 unsigned char *buf = (unsigned char *)NETMAP_BUF(ring, slot->buf_idx);
 
-                ArkimePacket_t *packet = arkime_packet_alloc();
-                packet->pkt = buf;
-                packet->pktlen = slot->len;
+                if (!useBpf || bpf_filter(bpf.bf_insns, buf, slot->len, slot->len) != 0) {
+                    ArkimePacket_t *packet = arkime_packet_alloc();
+                    packet->pkt = buf;
+                    packet->pktlen = slot->len;
 
-                // Get current time for packet timestamp
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                packet->ts = tv;
+                    // Get current time for packet timestamp
+                    struct timeval tv;
+                    gettimeofday(&tv, NULL);
+                    packet->ts = tv;
 
-                packet->readerPos = reader->interfacePos;
+                    packet->readerPos = reader->interfacePos;
 
-                arkime_packet_batch(&batch, packet);
-                reader->packets++;
+                    arkime_packet_batch(&batch, packet);
+                    reader->packets++;
+                }
 
                 ring->head = ring->cur = nm_ring_next(ring, i);
             }
@@ -126,13 +130,10 @@ LOCAL void *reader_netmap_thread(gpointer readerv)
 }
 
 /******************************************************************************/
-LOCAL void netmap_set_filter(ArkimeNetmap_t *UNUSED(reader), const char *UNUSED(filterstr))
+LOCAL void netmap_set_filter(const char *filterstr)
 {
-    // Netmap doesn't support in-kernel BPF filtering the same way
-    // Filtering would need to be done at application level if needed
-    if (config.debug) {
-        LOG("Netmap filtering at application level not yet implemented");
-    }
+    arkime_readers_compile_bpf("Netmap", DLT_EN10MB, config.snapLen, filterstr, &bpf);
+    useBpf = TRUE;
 }
 
 /******************************************************************************/
@@ -163,6 +164,10 @@ void reader_netmap_init(const char *UNUSED(name))
 
     threadsPerInterface = arkime_config_int(NULL, "netmapThreads", 1, 1, MAX_THREADS_PER_INTERFACE);
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+
+    if (config.bpf) {
+        netmap_set_filter(config.bpf);
+    }
 
     char nmspec[256];
     numReaders = 0;
@@ -220,11 +225,6 @@ void reader_netmap_init(const char *UNUSED(name))
 
             if (config.debug) {
                 LOG("Thread %d for interface %s assigned rings %u-%u", t, config.interface[i], reader->ringStart, reader->ringEnd);
-            }
-
-            // Set up netmap filter if provided
-            if (config.bpf) {
-                netmap_set_filter(reader, config.bpf);
             }
 
             numReaders++;
