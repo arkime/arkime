@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
+  - #4316 Cyberchef 11.5.0
 ## Capture
   - #4313 Fix TLS and QUIC SNI and JA4 sometimes missing when the Client Hello is split or retransmitted
   - #4313 Fix HTTP/2 headers being wrong or missing on busy connections
