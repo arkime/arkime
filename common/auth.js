@@ -1306,9 +1306,13 @@ class Auth {
     return Auth.obj2authNext(obj, secret);
   }
 
+  // Max hex data length for auth strings stored server side, like cont3xt keys.
+  // Anything a peer sends us uses the much smaller default.
+  static STORED_AUTH_MAX = 1024 * 1024;
+
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  static auth2objNext (auth, secret) {
+  static auth2objNext (auth, secret, maxDataLen = 8192) {
     secret ??= Auth.#serverSecret;
     try {
       const parsed = JSON.parse(auth);
@@ -1323,7 +1327,7 @@ class Auth {
       if (typeof iv !== 'string' || iv.length !== 24 || !isHex.test(iv) ||
           typeof salt !== 'string' || salt.length !== 32 || !isHex.test(salt) ||
           typeof tag !== 'string' || tag.length !== 32 || !isHex.test(tag) ||
-          typeof data !== 'string' || data.length === 0 || data.length > 8192 || !isHex.test(data)) {
+          typeof data !== 'string' || data.length === 0 || data.length > maxDataLen || !isHex.test(data)) {
         throw new Error('Malformed auth token');
       }
 
@@ -1353,12 +1357,12 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  static auth2obj (auth, secret) {
+  static auth2obj (auth, secret, maxDataLen) {
     // New json style
-    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret); }
+    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret, maxDataLen); }
 
     // New json style, but still encoded, bad proxy probably
-    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret); }
+    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret, maxDataLen); }
 
     // IV.E.H
     const parts = auth.split('.');
