@@ -449,9 +449,10 @@ function parseCustomView (key, input) {
       continue;
     }
     const dbPath = info.dbField.split('.');
+    const dbField = dbPath.pop();
     viewFields.push({
-      path: dbPath.slice(0, -1),
-      field: dbPath[dbPath.length - 1],
+      path: dbPath,
+      field: dbField,
       title: String(info.friendlyName ?? field),
       expr: field
     });
