@@ -1,26 +1,29 @@
+//- Safe JS string for Vue expressions, since Vue decodes entities in them
+- function vueStr (s) { return JSON.stringify(String(s)).replace(/[<>&{}]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')); }
+
 //- Display a clickable value
 mixin clickableValue(expr, value, parse, session)
   if (Array.isArray(value) && value.length > 0)
     - value=value[0]
 
   if (value !== undefined)
-    arkime-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField('${expr}')`, session=session, pull-left=true)
+    arkime-session-field.detail-field(expr=expr, value=value, parse=parse, :field=`getField(${vueStr(expr)})`, session=session, pull-left=true)
   else
     | &nbsp;
 
 mixin clickableLabelBody(field, title)
-  b-dropdown-item(@click=`exportUnique('${field}', 0)`)
-    | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
-  b-dropdown-item(@click=`exportUnique('${field}', 1)`)
-    | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
-  b-dropdown-item(@click=`openSpiGraph('${field}')`)
-    | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
-  b-dropdown-item(@click=`toggleColVis('${field}')`)
-    | {{ $t('sessions.toggleColumn', {name: "#{title}"} ) }}
-  b-dropdown-item(@click=`toggleInfoVis('${field}')`)
-    | {{ $t('sessions.toggleInfoColumn', {name: "#{title}"} ) }}
-  b-dropdown-item(@click=`fieldExists('${field}', '==')`)
-    | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
+  b-dropdown-item(@click=`exportUnique(${vueStr(field)}, 0)`)
+    | {{ $t('sessions.exportUnique', {name: !{vueStr(title)}} ) }}
+  b-dropdown-item(@click=`exportUnique(${vueStr(field)}, 1)`)
+    | {{ $t('sessions.exportUniqueCounts', {name: !{vueStr(title)}} ) }}
+  b-dropdown-item(@click=`openSpiGraph(${vueStr(field)})`)
+    | {{ $t('sessions.openSpiGraph', {name: !{vueStr(title)}} ) }}
+  b-dropdown-item(@click=`toggleColVis(${vueStr(field)})`)
+    | {{ $t('sessions.toggleColumn', {name: !{vueStr(title)}} ) }}
+  b-dropdown-item(@click=`toggleInfoVis(${vueStr(field)})`)
+    | {{ $t('sessions.toggleInfoColumn', {name: !{vueStr(title)}} ) }}
+  b-dropdown-item(@click=`fieldExists(${vueStr(field)}, '==')`)
+    | {{ $t('sessions.addExists', {name: !{vueStr(title)}} ) }}
 
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
@@ -30,7 +33,7 @@ mixin clickableLabel(field, title)
 
 //- Display a clickable field action in the field menu
 mixin clickableFieldActions(fieldExpr, sep)
-  field-actions(:expr=`'${fieldExpr}'`, :separator=`${sep}`)
+  field-actions(:expr=vueStr(fieldExpr), :separator=`${sep}`)
 
 mixin arrayPrint(container, field, expr)
   if ((container && container[field]))
@@ -63,6 +66,13 @@ mixin arrayList(container, field, title, expr, extra, max, session)
       if (extra)
         |!{extra}
       div(style="display:inline;") &nbsp;
+
+//- Custom view fields, passed as data so field docs never become pug source
+mixin customViewFields(session, fields)
+  each f in (fields || [])
+    - const container = f.path.reduce((o, p) => (o && Object.hasOwn(o, p)) ? o[p] : undefined, session)
+    if (container && Object.hasOwn(container, f.field))
+      +arrayList(container, f.field, f.title, f.expr)
 
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, region, city)
@@ -124,36 +134,36 @@ mixin ipArrayList(container, field, title, expr, max)
   if (container[field])
     dt
       b-dropdown.clickable-label(text=title, size="sm", variant="default")
-        b-dropdown-item(@click="exportUnique('" + expr  + "', 0)")
-          | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
-          | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="openSpiGraph('" + expr  + "')")
-          | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr)}, 0)`)
+          | {{ $t('sessions.exportUnique', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr)}, 1)`)
+          | {{ $t('sessions.exportUniqueCounts', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`openSpiGraph(${vueStr(expr)})`)
+          | {{ $t('sessions.openSpiGraph', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
-        b-dropdown-item(@click="exportUnique('" + expr  + ".country', 0)")
-          | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="exportUnique('" + expr  + ".country', 1)")
-          | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="openSpiGraph('" + expr  + ".country')")
-          | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr + '.country')}, 0)`)
+          | {{ $t('sessions.exportUniqueCountry', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr + '.country')}, 1)`)
+          | {{ $t('sessions.exportUniqueCountryCounts', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`openSpiGraph(${vueStr(expr + '.country')})`)
+          | {{ $t('sessions.openSpiGraphCountry', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
-        b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 0)")
-          | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 1)")
-          | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="openSpiGraph('" + expr  + ".asn')")
-          | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr + '.asn')}, 0)`)
+          | {{ $t('sessions.exportUniqueASN', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr + '.asn')}, 1)`)
+          | {{ $t('sessions.exportUniqueASNCounts', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`openSpiGraph(${vueStr(expr + '.asn')})`)
+          | {{ $t('sessions.openSpiGraphASN', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
-        b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 0)")
-          | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 1)")
-          | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
-        b-dropdown-item(@click="openSpiGraph('" + expr  + ".rir')")
-          | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr + '.rir')}, 0)`)
+          | {{ $t('sessions.exportUniqueRIR', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr + '.rir')}, 1)`)
+          | {{ $t('sessions.exportUniqueRIRCounts', {name: !{vueStr(title)}} ) }}
+        b-dropdown-item(@click=`openSpiGraph(${vueStr(expr + '.rir')})`)
+          | {{ $t('sessions.openSpiGraphRIR', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
-        b-dropdown-item(@click="fieldExists('" + expr  + "', '==')")
-          | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
+        b-dropdown-item(@click=`fieldExists(${vueStr(expr)}, '==')`)
+          | {{ $t('sessions.addExists', {name: !{vueStr(title)}} ) }}
 
     dd
       - fieldShort = (field.endsWith("Ip") ? field.slice(0, -2) : field)
@@ -194,7 +204,7 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
   for headerName in headerNames
     dt
       b-dropdown.clickable-label(size="sm", text=headerName, variant="default")
-        b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
+        b-dropdown-item(@click=`exportUnique(${vueStr(expr)}, 1)`)
           | {{ $t('sessions.exportUniqueHeader') }}
     - var headerValues = Array.from (headers[headerName]);
     dd
@@ -208,32 +218,32 @@ mixin ipArrayListDNS(container, field, title, expr, max)
     dt
       b-dropdown.clickable-label(text=title, size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
-          | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUnique', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
-          | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueCounts', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "ip." + expr  + "')")
-          | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
+          | {{ $t('sessions.openSpiGraph', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" +   "country." + expr + "', 0)")
-          | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueCountry', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="exportUnique('" +  "country." + expr + "', 1)")
-          | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueCountryCounts', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "country." + expr +"')")
-          | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
+          | {{ $t('sessions.openSpiGraphCountry', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + "asn." + expr + "', 0)")
-          | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueASN', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
-          | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueASNCounts', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "asn." + expr + "')")
-          | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
+          | {{ $t('sessions.openSpiGraphASN', {name: !{vueStr(title)}} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 0)")
-          | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueRIR', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 1)")
-          | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
+          | {{ $t('sessions.exportUniqueRIRCounts', {name: !{vueStr(title)}} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "rir." + expr + "')")
-          | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
+          | {{ $t('sessions.openSpiGraphRIR', {name: !{vueStr(title)}} ) }}
     dd
       each ip,i in container[field + "Ip"]
         if (i == max)
