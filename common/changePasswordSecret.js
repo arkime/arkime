@@ -133,7 +133,7 @@ async function run (oldArg, newArg) {
     // cont3xt keys, encrypted with Auth.obj2auth(secret = sha256(passwordSecret))
     if (typeof user.cont3xt?.keys === 'string' && user.cont3xt.keys.length > 0) {
       try {
-        const obj = Auth.auth2obj(user.cont3xt.keys, oldKey);
+        const obj = Auth.auth2obj(user.cont3xt.keys, oldKey, Auth.STORED_AUTH_MAX);
         user.cont3xt.keys = Auth.obj2auth(obj, newKey);
         changed.push('cont3xt keys');
       } catch (e) {

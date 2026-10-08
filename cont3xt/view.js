@@ -123,7 +123,13 @@ class View {
       return res.send({ success: false, text: msg });
     }
 
-    const result = await Db.putView(null, view);
+    let result;
+    try {
+      result = await Db.putView(null, view);
+    } catch (err) {
+      console.log('ERROR - creating view', err);
+      return res.send({ success: false, text: 'Database error' });
+    }
     if (!result) {
       return res.send({ success: false, text: 'ES Error' });
     }
@@ -169,7 +175,8 @@ class View {
       }
       return res.send({ success: true, text: 'Success' });
     } catch (err) {
-      return res.send({ success: false, text: err.toString() });
+      console.log('ERROR - updating view', err);
+      return res.send({ success: false, text: 'Database error' });
     }
   }
 
@@ -188,11 +195,16 @@ class View {
       return res.send({ success: false, text: 'View not found' });
     }
 
-    const results = await Db.deleteView(req.params.id);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' });
+    try {
+      const results = await Db.deleteView(req.params.id);
+      if (!results) {
+        return res.send({ success: false, text: 'ES Error' });
+      }
+      return res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      console.log('ERROR - deleting view', err);
+      return res.send({ success: false, text: 'Database error' });
     }
-    return res.send({ success: true, text: 'Success' });
   }
 }
 
