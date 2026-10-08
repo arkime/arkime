@@ -318,6 +318,8 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
         return ARKIME_PARSER_UNREGISTER;
     }
 
+    int messages = 0;
+
     // Find double CRLF to detect end of message headers
     while (sip->len[which] > 4) {
         // Skip CRLF keepalives between messages
@@ -350,6 +352,7 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
 
         int isResponse = 0;
         int contentLength = sip_process(session, sip->buf[which], endPos, &isResponse);
+        messages++;
 
         // Delete headers
         arkime_parser_buf_del(sip, which, endPos);
@@ -360,9 +363,10 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
         }
     }
 
-    // Limit parsing
-    sip->version++;
-    if (sip->version > 200) {
+    // Give up on streams that stop producing sip messages, a body being skipped is still progress
+    if (messages > 0 || sip->skipping[which] > 0) {
+        sip->version = 0;
+    } else if (++sip->version > 200) {
         return ARKIME_PARSER_UNREGISTER;
     }
 

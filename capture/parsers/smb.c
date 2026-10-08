@@ -26,6 +26,9 @@ typedef struct {
     uint16_t           flags2[2];
     uint8_t            version[2];
     char               state[2];
+    char               nextState[2];
+    uint32_t           nextRemlen[2];
+    uint16_t           andxOffset[2];
     char              *dialects[MAX_SMB1_DIALECTS];
     uint8_t            dialectsLen;
 } SMBInfo_t;
@@ -41,6 +44,7 @@ typedef struct {
 #define SMB1_SETUP_ANDX        14
 #define SMB1_NEGOTIATE_REQ     15
 #define SMB1_NEGOTIATE_RSP     16
+#define SMB1_ANDX_SKIP         17
 
 #define SMB2_TREE_CONNECT      20
 #define SMB2_CREATE            21
@@ -275,6 +279,51 @@ LOCAL void smb_remlen_consume(uint32_t *remlen, const uint8_t *start, const uint
         *remlen -= consumed;
 }
 /******************************************************************************/
+LOCAL char smb1_request_state(uint8_t cmd)
+{
+    switch (cmd) {
+    case 0x06:
+        return SMB1_DELETE;
+    case 0x2d:
+        return SMB1_OPEN_ANDX;
+    case 0x72:
+        return SMB1_NEGOTIATE_REQ;
+    case 0x73:
+        return SMB1_SETUP_ANDX;
+    case 0x75:
+        return SMB1_TREE_CONNECT_ANDX;
+    case 0xa2:
+        return SMB1_CREATE_ANDX;
+    case 0x24: // LOCKING_ANDX
+    case 0x2e: // READ_ANDX
+    case 0x2f: // WRITE_ANDX
+    case 0x74: // LOGOFF_ANDX
+        return SMB1_ANDX_SKIP;
+    default:
+        return SMB_SKIP;
+    }
+}
+/******************************************************************************/
+// An AndX block names the next command and its offset from the SMB header, limit this
+// block to the bytes before it and queue the next one
+LOCAL void smb1_andx_next(SMBInfo_t *smb, const BSB *bsb, uint32_t *remlen, int which)
+{
+    if (*remlen < 5 || BSB_REMAINING(*bsb) < 5 || BSB_WORK_PTR(*bsb)[0] < 2)
+        return;
+
+    const uint8_t *p = BSB_WORK_PTR(*bsb);
+    const uint8_t  cmd = p[1];
+    const uint16_t offset = p[3] | (p[4] << 8);
+
+    if (cmd == 0xff || offset <= smb->andxOffset[which] || offset - smb->andxOffset[which] > *remlen)
+        return;
+
+    smb->nextRemlen[which] = *remlen - (offset - smb->andxOffset[which]);
+    smb->nextState[which] = smb1_request_state(cmd);
+    *remlen = offset - smb->andxOffset[which];
+    smb->andxOffset[which] = offset;
+}
+/******************************************************************************/
 LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
@@ -292,29 +341,9 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         BSB_IMPORT_u08(*bsb, flags);
         BSB_LIMPORT_u16(*bsb, smb->flags2[which]);
         BSB_IMPORT_skip(*bsb, 20);
+        smb->andxOffset[which] = 32;
         if ((flags & SMB1_FLAGS_REPLY) == 0) {
-            switch (cmd) {
-            case 0x06:
-                *state = SMB1_DELETE;
-                break;
-            case 0x2d:
-                *state = SMB1_OPEN_ANDX;
-                break;
-            case 0x72:
-                *state = SMB1_NEGOTIATE_REQ;
-                break;
-            case 0x73:
-                *state = SMB1_SETUP_ANDX;
-                break;
-            case 0x75:
-                *state = SMB1_TREE_CONNECT_ANDX;
-                break;
-            case 0xa2:
-                *state = SMB1_CREATE_ANDX;
-                break;
-            default:
-                *state = SMB_SKIP;
-            }
+            *state = smb1_request_state(cmd);
         } else {
             switch (cmd) {
             case 0x72:
@@ -334,6 +363,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        smb1_andx_next(smb, bsb, remlen, which);
         BSB mbsb; // clamp parsing to this message so bogus lengths can't reach the next one
         BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
         *remlen = 0;
@@ -366,6 +396,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        smb1_andx_next(smb, bsb, remlen, which);
         BSB mbsb;
         BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
         *remlen = 0;
@@ -389,6 +420,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         if (BSB_REMAINING(*bsb) < *remlen) {
             return 1;
         }
+        smb1_andx_next(smb, bsb, remlen, which);
         BSB mbsb;
         BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
         *remlen = 0;
@@ -435,6 +467,15 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             }
         }
 
+        break;
+    }
+    case SMB1_ANDX_SKIP: {
+        // Unhandled AndX request, find the chained command before skipping this one
+        if (*remlen >= 5 && BSB_REMAINING(*bsb) < 5) {
+            return 1;
+        }
+        smb1_andx_next(smb, bsb, remlen, which);
+        *state = SMB_SKIP;
         break;
     }
     case SMB1_NEGOTIATE_REQ: {
@@ -486,7 +527,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
 
@@ -494,6 +535,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
     case SMB_SMBHEADER: {
         uint16_t  flags = 0;
         uint16_t  cmd = 0;
+        uint32_t  nextCommand = 0;
 
         if (BSB_REMAINING(*bsb) < 64) {
             return 1;
@@ -509,7 +551,8 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
         BSB_LIMPORT_u16(*bsb, cmd);
         BSB_IMPORT_skip(*bsb, 2);
         BSB_LIMPORT_u32(*bsb, flags);
-        BSB_IMPORT_skip(*bsb, 44);
+        BSB_LIMPORT_u32(*bsb, nextCommand);
+        BSB_IMPORT_skip(*bsb, 40);
 
         if ((flags & SMB2_FLAGS_SERVER_TO_REDIR) == 0) {
             switch (cmd) {
@@ -535,6 +578,13 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
         LOG("%d cmd: %x flags: %x newstate: %d remlen: %u", which, cmd, flags, *state, *remlen);
 #endif
         smb_remlen_consume(remlen, start, BSB_WORK_PTR(*bsb));
+
+        // Compound request or response, the next header is nextCommand bytes from this one
+        if (nextCommand >= 64 && nextCommand - 64 <= *remlen) {
+            smb->nextRemlen[which] = *remlen - (nextCommand - 64);
+            smb->nextState[which] = SMB_SMBHEADER;
+            *remlen = nextCommand - 64;
+        }
         break;
     }
     case SMB2_NEGOTIATE: {
@@ -656,7 +706,7 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             BSB_INIT(bsb, buf, *buflen);
         }
 
-        if (*state != SMB_SKIP && *remlen > MAX_SMB_BUFFER) {
+        if (*state != SMB_SKIP && *state != SMB1_ANDX_SKIP && *remlen > MAX_SMB_BUFFER) {
 #ifndef FUZZLOCH
             LOG("WARNING - Not enough room to parse SMB packet of size %u", *remlen);
 #endif
@@ -675,9 +725,10 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
                     break;
                 }
 
-                BSB_IMPORT_skip(bsb, 1);
+                uint8_t nbType = 0;
+                BSB_IMPORT_u08(bsb, nbType);
                 BSB_IMPORT_u24(bsb, *remlen);
-                if (*remlen < 32) {
+                if (nbType != 0 || *remlen < 32) {
                     // Too short to contain even a minimal SMB header; skip the bytes.
                     *state = SMB_SKIP;
                     break;
@@ -702,6 +753,13 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
                 } else {
                     done = smb2_parse(session, smb, &bsb, state, remlen, which);
                 }
+            }
+
+            // Continue with the next command of a compound or AndX chain
+            if (*state == SMB_NETBIOS && smb->nextRemlen[which]) {
+                *remlen = smb->nextRemlen[which];
+                *state = smb->nextState[which];
+                smb->nextRemlen[which] = 0;
             }
 
 #ifdef SMBDEBUG
@@ -741,11 +799,8 @@ LOCAL void smb_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(SMBInfo_t, smb);
 }
 /******************************************************************************/
-LOCAL void smb_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void smb_register(ArkimeSession_t *session)
 {
-    if (data[4] != 0xff && data[4] != 0xfe)
-        return;
-
     if (arkime_session_has_protocol(session, "smb"))
         return;
 
@@ -754,6 +809,23 @@ LOCAL void smb_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSE
     SMBInfo_t            *smb          = ARKIME_TYPE_ALLOC0(SMBInfo_t);
 
     arkime_parsers_register(session, smb_parser, smb, smb_free);
+}
+/******************************************************************************/
+LOCAL void smb_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+    if (data[4] != 0xff && data[4] != 0xfe)
+        return;
+
+    smb_register(session);
+}
+/******************************************************************************/
+// NetBIOS session request, SMB over TCP/139 starts with this instead of an SMB message
+LOCAL void smb_nbss_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 72 || data[4] != 0x20)
+        return;
+
+    smb_register(session);
 }
 /******************************************************************************/
 void arkime_parser_init()
@@ -817,4 +889,5 @@ void arkime_parser_init()
                         (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("smb", NULL, 5, (uint8_t *)"SMB", 3, smb_classify);
+    arkime_parsers_classifier_register_tcp("smb", NULL, 0, (uint8_t *)"\x81\x00", 2, smb_nbss_classify);
 }

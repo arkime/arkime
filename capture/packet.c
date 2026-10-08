@@ -1931,7 +1931,19 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
     }
 
     if (ipCbs[type]) {
-        return arkime_packet_call_enqueue(ipCbs[type], batch, packet, data, len);
+        if (type != IPPROTO_GRE || !ipCbs[ARKIME_IPPROTO_UNKNOWN] || !BIT_ISSET(type, config.ipSavePcap))
+            return arkime_packet_call_enqueue(ipCbs[type], batch, packet, data, len);
+
+        // With saveUnknownPackets ip:gre, GRE that can't be decapsulated is still a session
+        // of its own IP protocol, unless it will be saved as a corrupt session instead
+        const ArkimePacket_t saved = *packet;
+        ArkimePacketRC rc = arkime_packet_call_enqueue(ipCbs[type], batch, packet, data, len);
+        if (!ARKIME_PACKET_DECAP_FAILED(rc) || (rc == ARKIME_PACKET_CORRUPT && config.corruptSavePcap))
+            return rc;
+
+        *packet = saved;
+        packet->tunnel |= ARKIME_PACKET_TUNNEL_GRE;
+        return arkime_packet_call_enqueue(ipCbs[ARKIME_IPPROTO_UNKNOWN], batch, packet, data, len);
     }
 
     if (config.logUnknownProtocols)

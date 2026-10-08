@@ -402,8 +402,8 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     if (len < 1100 || len > 3000)
         return 0;
 
-    // Only look for long form initial
-    if ((data[0] & 0xf0) != 0xc0)
+    // Only look for long form
+    if ((data[0] & 0xc0) != 0xc0)
         return 0;
 
     int rc;
@@ -415,6 +415,11 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     BSB_IMPORT_u08(bsb, flags); // Still partially encrypted
     uint32_t version = 0;
     BSB_IMPORT_u32(bsb, version);
+
+    // Initial packet type is 0 in v1 and 1 in v2
+    const gboolean isV2 = (version == 0x6b3343cf);
+    if (((flags >> 4) & 0x03) != (isV2 ? 1 : 0))
+        return 0;
 
     int dlen = 0;
     // Destination
@@ -468,8 +473,8 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     static const uint8_t salt_v2[20] = { 0x0d, 0xed, 0xe3, 0xde, 0xf7, 0x00, 0xa6, 0xdb, 0x81, 0x93, 0x81, 0xbe, 0x6e, 0x26, 0x9d, 0xcb, 0xf9, 0xbd, 0x2e, 0xd9 };
 
     const uint8_t *salt;
-    if (version == 0x6b3343cf) {
-        salt = salt_v2; // QUIC v2
+    if (isV2) {
+        salt = salt_v2;
     } else if (version == 0x00000001 || ((version >> 8) == 0xff0000 && (version & 0xff) >= 33)) {
         salt = salt_v1; // QUIC v1 or draft-33+
     } else if ((version >> 8) == 0xff0000 && (version & 0xff) >= 29) {
@@ -491,13 +496,13 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     hkdfExpandLabel(prk, prkLen, "tls13 client in", clientOkm, sizeof(clientOkm));
 
     uint8_t hpOkm[16];
-    hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic hp", hpOkm, sizeof(hpOkm));
+    hkdfExpandLabel(clientOkm, sizeof(clientOkm), isV2 ? "tls13 quicv2 hp" : "tls13 quic hp", hpOkm, sizeof(hpOkm));
 
     uint8_t keyOkm[16];
-    hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic key", keyOkm, sizeof(keyOkm));
+    hkdfExpandLabel(clientOkm, sizeof(clientOkm), isV2 ? "tls13 quicv2 key" : "tls13 quic key", keyOkm, sizeof(keyOkm));
 
     uint8_t ivOkm[12];
-    hkdfExpandLabel(clientOkm, sizeof(clientOkm), "tls13 quic iv", ivOkm, sizeof(ivOkm));
+    hkdfExpandLabel(clientOkm, sizeof(clientOkm), isV2 ? "tls13 quicv2 iv" : "tls13 quic iv", ivOkm, sizeof(ivOkm));
 
     // Get mask input data
     BSB_IMPORT_skip(bsb, 4);

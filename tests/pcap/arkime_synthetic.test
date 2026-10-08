@@ -9606,11 +9606,12 @@
      ],
      "methodCnt" : 3,
      "path" : [
+      "*",
       "/authority-first",
       "/no-authority",
       "/with-port"
      ],
-     "pathCnt" : 3,
+     "pathCnt" : 4,
      "requestHeader" : [
       "user-agent"
      ],
@@ -9785,10 +9786,11 @@
      ],
      "methodCnt" : 2,
      "path" : [
+      "*",
       "/",
       "/hidden"
      ],
-     "pathCnt" : 2,
+     "pathCnt" : 3,
      "statuscode" : [
       200
      ],
@@ -9965,9 +9967,10 @@
      ],
      "methodCnt" : 2,
      "path" : [
+      "*",
       "/"
      ],
-     "pathCnt" : 1,
+     "pathCnt" : 2,
      "sha256" : [
       "2b5f3e2f195e57e7c0a2713441f6465cc8259a89c9499b806fed99740a5212d3"
      ],
@@ -13501,10 +13504,11 @@
      ],
      "methodCnt" : 2,
      "path" : [
+      "*",
       "http2",
       "websocket"
      ],
-     "pathCnt" : 2,
+     "pathCnt" : 3,
      "uri" : [
       "*",
       "h2hook.examplehttp2",
@@ -13602,6 +13606,3672 @@
      "src" : 36864
     },
     "totDataBytes" : 176
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.53.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023400000,
+    "ipProtocol" : 47,
+    "lastPacket" : 1700023400000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 38,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     54
+    ],
+    "packetPos" : [
+     161965
+    ],
+    "packetRange" : {
+     "gte" : 1700023400000,
+     "lte" : 1700023400000
+    },
+    "protocol" : [
+     "gre",
+     "unknown-ip"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 38,
+     "ip" : "10.9.53.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.53.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023400050,
+    "ipProtocol" : 47,
+    "lastPacket" : 1700023400050,
+    "length" : 0,
+    "network" : {
+     "bytes" : 38,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     54
+    ],
+    "packetPos" : [
+     162019
+    ],
+    "packetRange" : {
+     "gte" : 1700023400050,
+     "lte" : 1700023400050
+    },
+    "protocol" : [
+     "gre",
+     "unknown-ip"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 38,
+     "ip" : "10.9.53.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.54.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023400100,
+    "ipProtocol" : 47,
+    "lastPacket" : 1700023400100,
+    "length" : 0,
+    "network" : {
+     "bytes" : 58,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     74
+    ],
+    "packetPos" : [
+     162073
+    ],
+    "packetRange" : {
+     "gte" : 1700023400100,
+     "lte" : 1700023400100
+    },
+    "protocol" : [
+     "gre",
+     "unknown-ip"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 58,
+     "ip" : "10.9.54.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.54.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023400150,
+    "ipProtocol" : 47,
+    "lastPacket" : 1700023400150,
+    "length" : 0,
+    "network" : {
+     "bytes" : 58,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     74
+    ],
+    "packetPos" : [
+     162147
+    ],
+    "packetRange" : {
+     "gte" : 1700023400150,
+     "lte" : 1700023400150
+    },
+    "protocol" : [
+     "gre",
+     "unknown-ip"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 58,
+     "ip" : "10.9.54.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 270
+    },
+    "destination" : {
+     "bytes" : 107,
+     "ip" : "10.9.55.2",
+     "mac" : [
+      "02:aa:00:00:26:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 4433
+    },
+    "dstPayload8" : "16fefd0000000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023500000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700023500100,
+    "length" : 100,
+    "network" : {
+     "bytes" : 461,
+     "community_id" : "1:Gs3kJ+5rBmxFPA0CW3LPuAVD9WQ=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     203,
+     183,
+     123
+    ],
+    "packetPos" : [
+     162221,
+     162424,
+     162607
+    ],
+    "packetRange" : {
+     "gte" : 1700023500000,
+     "lte" : 1700023500100
+    },
+    "protocol" : [
+     "dtls",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 65
+    },
+    "source" : {
+     "bytes" : 354,
+     "ip" : "10.9.55.1",
+     "mac" : [
+      "02:aa:00:00:26:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 50001
+    },
+    "srcPayload8" : "16fefd0000000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tls" : {
+     "ja4" : [
+      "dd2d040400_4a8290356eb7_d53a366970a9"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "dd2d040400_009c,c00a,c02b,c02f_000a,000d,0015_0403,0804"
+     ],
+     "ja4_rCnt" : 1
+    },
+    "totDataBytes" : 335
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1200
+    },
+    "destination" : {
+     "bytes" : 1243,
+     "ip" : "10.9.56.2",
+     "mac" : [
+      "02:aa:00:00:1a:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 443
+    },
+    "dstPayload8" : "c000000001000801",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023600000,
+    "http" : {
+     "host" : [
+      "quic-v2.example"
+     ],
+     "hostCnt" : 1
+    },
+    "ipProtocol" : 17,
+    "lastPacket" : 1700023600050,
+    "length" : 50,
+    "network" : {
+     "bytes" : 2485,
+     "community_id" : "1:sO0iWHy5MCPDIAMGurmpxJMo/bY=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     1258,
+     1259
+    ],
+    "packetPos" : [
+     162730,
+     163988
+    ],
+    "packetRange" : {
+     "gte" : 1700023600000,
+     "lte" : 1700023600050
+    },
+    "protocol" : [
+     "quic",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1201
+    },
+    "source" : {
+     "bytes" : 1242,
+     "ip" : "10.9.56.1",
+     "mac" : [
+      "02:aa:00:00:1a:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 52103
+    },
+    "srcPayload8" : "d36b3343cf080102",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tls" : {
+     "ja3" : [
+      "bfac7621a436950c3917c9ee0dc549fc"
+     ],
+     "ja3Cnt" : 1,
+     "ja3string" : [
+      "771,4865-4866-4867-49195-49199-49196-49200-156,0-10-11-13-16-43-51,29-23,0"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "q13d0807h3_a572d5f12f44_078775ef5e04"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "q13d0807h3_009c,1301,1302,1303,c02b,c02c,c02f,c030_000a,000b,000d,002b,0033_0403,0804"
+     ],
+     "ja4_rCnt" : 1
+    },
+    "totDataBytes" : 2401
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 80
+    },
+    "destination" : {
+     "bytes" : 194,
+     "ip" : "10.9.57.2",
+     "mac" : [
+      "02:aa:00:00:27:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 40000
+    },
+    "dstPayload8" : "7265616c2d736572",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023700000,
+    "ipProtocol" : 132,
+    "lastPacket" : 1700023700250,
+    "length" : 250,
+    "network" : {
+     "bytes" : 412,
+     "community_id" : "1:MkuqHFFlqUTJtvji01PXtSU4ZRw=",
+     "packets" : 6
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     90,
+     66,
+     94,
+     94
+    ],
+    "packetPos" : [
+     165247,
+     165329,
+     165411,
+     165501,
+     165567,
+     165661
+    ],
+    "packetRange" : {
+     "gte" : 1700023700000,
+     "lte" : 1700023700250
+    },
+    "protocol" : [
+     "sctp"
+    ],
+    "protocolCnt" : 1,
+    "sctp" : {
+     "protoId" : [
+      200
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 56
+    },
+    "source" : {
+     "bytes" : 218,
+     "ip" : "10.9.57.1",
+     "mac" : [
+      "02:aa:00:00:27:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 38101
+    },
+    "srcPayload8" : "7265616c2d636c69",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "sctp:bad-vtag"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 136
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 47
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.9.59.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023800000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/certsrv/./x/../%63ertfnsh.asp"
+     ],
+     "pathCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "0"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "/certsrv/./x/../%63ertfnsh.asp"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700023800350,
+    "length" : 350,
+    "network" : {
+     "bytes" : 517,
+     "community_id" : "1:ueLB1D7j/auBoWc7sWy7daY5gDI=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     117,
+     108,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     165755,
+     165825,
+     165895,
+     165965,
+     166082,
+     166190,
+     166260,
+     166330
+    ],
+    "packetRange" : {
+     "gte" : 1700023800000,
+     "lte" : 1700023800350
+    },
+    "protocol" : [
+     "adcs-web",
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 38
+    },
+    "source" : {
+     "bytes" : 317,
+     "ip" : "10.9.59.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50101
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "474554202f636572",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 85
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 65
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.9.60.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 5985
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023810000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "winrm.example"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "POST"
+     ],
+     "method-POST" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "//wsman"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "content-length",
+      "host"
+     ],
+     "requestHeaderCnt" : 2,
+     "requestHeaderField" : [
+      "content-length"
+     ],
+     "requestHeaderValue" : [
+      "0"
+     ],
+     "requestHeaderValueCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "0"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "winrm.example//wsman"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700023810350,
+    "length" : 350,
+    "network" : {
+     "bytes" : 535,
+     "community_id" : "1:9dgXp1KCP/uqxoupiaeMaTCkjuI=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     135,
+     108,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     166400,
+     166470,
+     166540,
+     166610,
+     166745,
+     166853,
+     166923,
+     166993
+    ],
+    "packetRange" : {
+     "gte" : 1700023810000,
+     "lte" : 1700023810350
+    },
+    "protocol" : [
+     "http",
+     "tcp",
+     "winrm"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 38
+    },
+    "source" : {
+     "bytes" : 335,
+     "ip" : "10.9.60.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50102
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "504f5354202f2f77",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 103
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 84
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.9.61.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023820000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "enroll.example"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "http://enroll.example/certsrv/mscep/mscep.dll"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "0"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "http://enroll.example/certsrv/mscep/mscep.dll"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700023820350,
+    "length" : 350,
+    "network" : {
+     "bytes" : 554,
+     "community_id" : "1:bxKE70rZQ7T8ri7Gov3FecDWUWQ=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     154,
+     108,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     167063,
+     167133,
+     167203,
+     167273,
+     167427,
+     167535,
+     167605,
+     167675
+    ],
+    "packetRange" : {
+     "gte" : 1700023820000,
+     "lte" : 1700023820350
+    },
+    "protocol" : [
+     "adcs-ndes",
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 38
+    },
+    "source" : {
+     "bytes" : 354,
+     "ip" : "10.9.61.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50103
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "4745542068747470",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 122
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 61
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.9.62.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023830000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "pki.example"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/certsrv/%2563ertrqxt.asp"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "0"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "pki.example/certsrv/%2563ertrqxt.asp"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700023830350,
+    "length" : 350,
+    "network" : {
+     "bytes" : 531,
+     "community_id" : "1:e0Rj5aXE09C7OMA1YpXPgr1Xcnw=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     131,
+     108,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     167745,
+     167815,
+     167885,
+     167955,
+     168086,
+     168194,
+     168264,
+     168334
+    ],
+    "packetRange" : {
+     "gte" : 1700023830000,
+     "lte" : 1700023830350
+    },
+    "protocol" : [
+     "adcs-web",
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 38
+    },
+    "source" : {
+     "bytes" : 331,
+     "ip" : "10.9.62.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50104
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "474554202f636572",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 99
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 113
+    },
+    "destination" : {
+     "bytes" : 299,
+     "ip" : "10.9.63.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 3128
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023900000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "plain.example",
+      "plain.example:80"
+     ],
+     "hostCnt" : 2,
+     "md5" : [
+      "335cf4508dd597be4bfc9caa3e08b901"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "CONNECT",
+      "GET"
+     ],
+     "method-CONNECT" : 1,
+     "method-GET" : 1,
+     "methodCnt" : 2,
+     "path" : [
+      "/inside-tunnel",
+      "plain.example:80"
+     ],
+     "pathCnt" : 2,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "6"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "106b086224a4d945eae25f7be3805a931a873270326dd868b0e41f71ee9fff72"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "plain.example/inside-tunnel",
+      "plain.example:80"
+     ],
+     "uriCnt" : 2
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700023900450,
+    "length" : 450,
+    "network" : {
+     "bytes" : 736,
+     "community_id" : "1:3Z27+w6jnbMuLjlp4UD4Bc6ds/s=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     131,
+     109,
+     122,
+     114,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     168404,
+     168474,
+     168544,
+     168614,
+     168745,
+     168854,
+     168976,
+     169090,
+     169160,
+     169230
+    ],
+    "packetRange" : {
+     "gte" : 1700023900000,
+     "lte" : 1700023900450
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 83
+    },
+    "source" : {
+     "bytes" : 437,
+     "ip" : "10.9.63.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 50105
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "434f4e4e45435420",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 196
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 133
+    },
+    "destination" : {
+     "bytes" : 303,
+     "ip" : "10.9.68.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 3128
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700023910000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "dav.example",
+      "dav.example:80"
+     ],
+     "hostCnt" : 2,
+     "method" : [
+      "CONNECT",
+      "PROPFIND"
+     ],
+     "method-CONNECT" : 1,
+     "methodCnt" : 2,
+     "path" : [
+      "/files",
+      "dav.example:80"
+     ],
+     "pathCnt" : 2,
+     "requestHeader" : [
+      "content-length",
+      "depth",
+      "host"
+     ],
+     "requestHeaderCnt" : 3,
+     "requestHeaderField" : [
+      "content-length",
+      "depth"
+     ],
+     "requestHeaderValue" : [
+      "0",
+      "1"
+     ],
+     "requestHeaderValueCnt" : 2,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "0"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200,
+      207
+     ],
+     "statuscodeCnt" : 2,
+     "uri" : [
+      "dav.example/files",
+      "dav.example:80"
+     ],
+     "uriCnt" : 2
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700023910450,
+    "length" : 450,
+    "network" : {
+     "bytes" : 760,
+     "community_id" : "1:LShVqYqNog6/flqF9JhKt2FoTUQ=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     127,
+     109,
+     146,
+     118,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     169300,
+     169370,
+     169440,
+     169510,
+     169637,
+     169746,
+     169892,
+     170010,
+     170080,
+     170150
+    ],
+    "packetRange" : {
+     "gte" : 1700023910000,
+     "lte" : 1700023910450
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 87
+    },
+    "source" : {
+     "bytes" : 457,
+     "ip" : "10.9.68.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 50110
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "434f4e4e45435420",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 220
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 322
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.9.64.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 445
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024000000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024000300,
+    "length" : 300,
+    "network" : {
+     "bytes" : 700,
+     "community_id" : "1:6EeVJeb5I1B4Ab6egLpc0/GdIyo=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     392,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     170220,
+     170290,
+     170360,
+     170430,
+     170822,
+     170892,
+     170962
+    ],
+    "packetRange" : {
+     "gte" : 1700024000000,
+     "lte" : 1700024000300
+    },
+    "protocol" : [
+     "smb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "smb" : {
+     "filename" : [
+      "compound-first.txt",
+      "compound-second.txt"
+     ],
+     "filenameCnt" : 2
+    },
+    "source" : {
+     "bytes" : 592,
+     "ip" : "10.9.64.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50106
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "0000013efe534d42",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 322
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 170
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.9.65.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 445
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024010000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024010300,
+    "length" : 300,
+    "network" : {
+     "bytes" : 548,
+     "community_id" : "1:04gPneWXtf29DQ1fSybTiliUFcw=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     240,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     171032,
+     171102,
+     171172,
+     171242,
+     171482,
+     171552,
+     171622
+    ],
+    "packetRange" : {
+     "gte" : 1700024010000,
+     "lte" : 1700024010300
+    },
+    "protocol" : [
+     "smb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "smb" : {
+     "domain" : [
+      "ANDXDOM"
+     ],
+     "domainCnt" : 1,
+     "os" : [
+      "Unix"
+     ],
+     "osCnt" : 1,
+     "share" : [
+      "\\\\ANDXSRV\\DATA"
+     ],
+     "shareCnt" : 1,
+     "user" : [
+      "andxuser"
+     ],
+     "userCnt" : 1,
+     "version" : [
+      "Samba"
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 440,
+     "ip" : "10.9.65.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50107
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "000000a6ff534d42",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 170
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 180
+    },
+    "destination" : {
+     "bytes" : 352,
+     "ip" : "10.9.66.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 139
+    },
+    "dstPayload8" : "8200000000000080",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024100000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024100450,
+    "length" : 450,
+    "network" : {
+     "bytes" : 856,
+     "community_id" : "1:taYKUQVBrmmYyfgDx/kKb7RgXV8=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     142,
+     74,
+     178,
+     202,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     171692,
+     171762,
+     171832,
+     171902,
+     172044,
+     172118,
+     172296,
+     172498,
+     172568,
+     172638
+    ],
+    "packetRange" : {
+     "gte" : 1700024100000,
+     "lte" : 1700024100450
+    },
+    "protocol" : [
+     "smb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 136
+    },
+    "smb" : {
+     "dialect" : "SMB 3.1.1"
+    },
+    "source" : {
+     "bytes" : 504,
+     "ip" : "10.9.66.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 50108
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "8100004420434143",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 316
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 47026
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.9.67.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 5060
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024200000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024210749,
+    "length" : 10749,
+    "network" : {
+     "bytes" : 58690,
+     "community_id" : "1:EyIL162qYkeaxXf+C1ZOSqxLRR8=",
+     "packets" : 216
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     291,
+     291,
+     291,
+     291,
+     291,
+     291,
+     291,
+     291,
+     291,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     293,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     295,
+     287,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     172708,
+     172778,
+     172848,
+     172918,
+     173209,
+     173500,
+     173791,
+     174082,
+     174373,
+     174664,
+     174955,
+     175246,
+     175537,
+     175830,
+     176123,
+     176416,
+     176709,
+     177002,
+     177295,
+     177588,
+     177881,
+     178174,
+     178467,
+     178760,
+     179053,
+     179346,
+     179639,
+     179932,
+     180225,
+     180518,
+     180811,
+     181104,
+     181397,
+     181690,
+     181983,
+     182276,
+     182569,
+     182862,
+     183155,
+     183448,
+     183741,
+     184034,
+     184327,
+     184620,
+     184913,
+     185206,
+     185499,
+     185792,
+     186085,
+     186378,
+     186671,
+     186964,
+     187257,
+     187550,
+     187843,
+     188136,
+     188429,
+     188722,
+     189015,
+     189308,
+     189601,
+     189894,
+     190187,
+     190480,
+     190773,
+     191066,
+     191359,
+     191652,
+     191945,
+     192238,
+     192531,
+     192824,
+     193117,
+     193410,
+     193703,
+     193996,
+     194289,
+     194582,
+     194875,
+     195168,
+     195461,
+     195754,
+     196047,
+     196340,
+     196633,
+     196926,
+     197219,
+     197512,
+     197805,
+     198098,
+     198391,
+     198684,
+     198977,
+     199270,
+     199563,
+     199856,
+     200149,
+     200442,
+     200735,
+     201028,
+     201321,
+     201614,
+     201907,
+     202202,
+     202497,
+     202792,
+     203087,
+     203382,
+     203677,
+     203972,
+     204267,
+     204562,
+     204857,
+     205152,
+     205447,
+     205742,
+     206037,
+     206332,
+     206627,
+     206922,
+     207217,
+     207512,
+     207807,
+     208102,
+     208397,
+     208692,
+     208987,
+     209282,
+     209577,
+     209872,
+     210167,
+     210462,
+     210757,
+     211052,
+     211347,
+     211642,
+     211937,
+     212232,
+     212527,
+     212822,
+     213117,
+     213412,
+     213707,
+     214002,
+     214297,
+     214592,
+     214887,
+     215182,
+     215477,
+     215772,
+     216067,
+     216362,
+     216657,
+     216952,
+     217247,
+     217542,
+     217837,
+     218132,
+     218427,
+     218722,
+     219017,
+     219312,
+     219607,
+     219902,
+     220197,
+     220492,
+     220787,
+     221082,
+     221377,
+     221672,
+     221967,
+     222262,
+     222557,
+     222852,
+     223147,
+     223442,
+     223737,
+     224032,
+     224327,
+     224622,
+     224917,
+     225212,
+     225507,
+     225802,
+     226097,
+     226392,
+     226687,
+     226982,
+     227277,
+     227572,
+     227867,
+     228162,
+     228457,
+     228752,
+     229047,
+     229342,
+     229637,
+     229932,
+     230227,
+     230522,
+     230817,
+     231112,
+     231407,
+     231702,
+     231997,
+     232292,
+     232587,
+     232882,
+     233177,
+     233472,
+     233767,
+     234062,
+     234357,
+     234644,
+     234714,
+     234784
+    ],
+    "packetRange" : {
+     "gte" : 1700024200000,
+     "lte" : 1700024210749
+    },
+    "protocol" : [
+     "http",
+     "sip",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "sip" : {
+     "callid" : [
+      "after-200@10.9.67.1",
+      "options-keepalive@10.9.67.1"
+     ],
+     "callidCnt" : 2,
+     "from" : [
+      "<sip:pbx@example.com>;tag=1"
+     ],
+     "fromCnt" : 1,
+     "method" : [
+      "OPTIONS"
+     ],
+     "methodCnt" : 1,
+     "to" : [
+      "<sip:trunk.example>"
+     ],
+     "toCnt" : 1,
+     "user" : [
+      "pbx"
+     ],
+     "userCnt" : 1,
+     "via" : [
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK1",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK10",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK100",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK101",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK102",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK103",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK104",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK105",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK106",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK107",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK108",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK109",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK11",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK110",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK111",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK112",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK113",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK114",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK115",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK116",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK117",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK118",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK119",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK12",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK120",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK121",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK122",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK123",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK124",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK125",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK126",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK127",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK128",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK129",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK13",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK130",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK131",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK132",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK133",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK134",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK135",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK136",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK137",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK138",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK139",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK14",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK140",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK141",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK142",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK143",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK144",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK145",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK146",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK147",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK148",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK149",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK15",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK150",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK151",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK152",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK153",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK154",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK155",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK156",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK157",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK158",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK159",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK16",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK160",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK161",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK162",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK163",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK164",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK165",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK166",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK167",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK168",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK169",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK17",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK170",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK171",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK172",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK173",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK174",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK175",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK176",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK177",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK178",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK179",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK18",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK180",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK181",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK182",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK183",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK184",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK185",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK186",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK187",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK188",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK189",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK19",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK190",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK191",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK192",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK193",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK194",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK195",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK196",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK197",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK198",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK199",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK2",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK20",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK200",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK201",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK202",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK203",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK204",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK205",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK206",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK207",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK208",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK209",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK21",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK210",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK22",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK23",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK24",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK25",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK26",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK27",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK28",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK29",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK3",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK30",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK31",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK32",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK33",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK34",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK35",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK36",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK37",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK38",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK39",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK4",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK40",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK41",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK42",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK43",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK44",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK45",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK46",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK47",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK48",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK49",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK5",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK50",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK51",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK52",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK53",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK54",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK55",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK56",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK57",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK58",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK59",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK6",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK60",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK61",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK62",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK63",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK64",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK65",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK66",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK67",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK68",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK69",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK7",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK70",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK71",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK72",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK73",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK74",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK75",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK76",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK77",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK78",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK79",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK8",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK80",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK81",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK82",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK83",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK84",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK85",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK86",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK87",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK88",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK89",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK9",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK90",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK91",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK92",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK93",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK94",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK95",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK96",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK97",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK98",
+      "SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK99"
+     ],
+     "viaCnt" : 210
+    },
+    "source" : {
+     "bytes" : 58582,
+     "ip" : "10.9.67.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 214,
+     "port" : 50109
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "4f5054494f4e5320",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 210,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 47026
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 180
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.9.69.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 445
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024300000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024300300,
+    "length" : 300,
+    "network" : {
+     "bytes" : 558,
+     "community_id" : "1:sGIO0HZWLLYALt4ArCr+cEWw0b4=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     250,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     234854,
+     234924,
+     234994,
+     235064,
+     235314,
+     235384,
+     235454
+    ],
+    "packetRange" : {
+     "gte" : 1700024300000,
+     "lte" : 1700024300300
+    },
+    "protocol" : [
+     "smb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "smb" : {
+     "domain" : [
+      "ANDXDOM"
+     ],
+     "domainCnt" : 1,
+     "os" : [
+      "Unix"
+     ],
+     "osCnt" : 1,
+     "share" : [
+      "\\\\ANDXSRV\\LOGS"
+     ],
+     "shareCnt" : 1,
+     "user" : [
+      "andxuser2"
+     ],
+     "userCnt" : 1,
+     "version" : [
+      "Samba"
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 450,
+     "ip" : "10.9.69.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 50111
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "000000b0ff534d42",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 180
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 20959
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.9.70.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 5060
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024400000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024410599,
+    "length" : 10599,
+    "network" : {
+     "bytes" : 32461,
+     "community_id" : "1:PPPUNybMbTXvLIYLAJEMnOUsv8E=",
+     "packets" : 213
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     317,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     282,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     235524,
+     235594,
+     235664,
+     235734,
+     236051,
+     236221,
+     236391,
+     236561,
+     236731,
+     236901,
+     237071,
+     237241,
+     237411,
+     237581,
+     237751,
+     237921,
+     238091,
+     238261,
+     238431,
+     238601,
+     238771,
+     238941,
+     239111,
+     239281,
+     239451,
+     239621,
+     239791,
+     239961,
+     240131,
+     240301,
+     240471,
+     240641,
+     240811,
+     240981,
+     241151,
+     241321,
+     241491,
+     241661,
+     241831,
+     242001,
+     242171,
+     242341,
+     242511,
+     242681,
+     242851,
+     243021,
+     243191,
+     243361,
+     243531,
+     243701,
+     243871,
+     244041,
+     244211,
+     244381,
+     244551,
+     244721,
+     244891,
+     245061,
+     245231,
+     245401,
+     245571,
+     245741,
+     245911,
+     246081,
+     246251,
+     246421,
+     246591,
+     246761,
+     246931,
+     247101,
+     247271,
+     247441,
+     247611,
+     247781,
+     247951,
+     248121,
+     248291,
+     248461,
+     248631,
+     248801,
+     248971,
+     249141,
+     249311,
+     249481,
+     249651,
+     249821,
+     249991,
+     250161,
+     250331,
+     250501,
+     250671,
+     250841,
+     251011,
+     251181,
+     251351,
+     251521,
+     251691,
+     251861,
+     252031,
+     252201,
+     252371,
+     252541,
+     252711,
+     252881,
+     253051,
+     253221,
+     253391,
+     253561,
+     253731,
+     253901,
+     254071,
+     254241,
+     254411,
+     254581,
+     254751,
+     254921,
+     255091,
+     255261,
+     255431,
+     255601,
+     255771,
+     255941,
+     256111,
+     256281,
+     256451,
+     256621,
+     256791,
+     256961,
+     257131,
+     257301,
+     257471,
+     257641,
+     257811,
+     257981,
+     258151,
+     258321,
+     258491,
+     258661,
+     258831,
+     259001,
+     259171,
+     259341,
+     259511,
+     259681,
+     259851,
+     260021,
+     260191,
+     260361,
+     260531,
+     260701,
+     260871,
+     261041,
+     261211,
+     261381,
+     261551,
+     261721,
+     261891,
+     262061,
+     262231,
+     262401,
+     262571,
+     262741,
+     262911,
+     263081,
+     263251,
+     263421,
+     263591,
+     263761,
+     263931,
+     264101,
+     264271,
+     264441,
+     264611,
+     264781,
+     264951,
+     265121,
+     265291,
+     265461,
+     265631,
+     265801,
+     265971,
+     266141,
+     266311,
+     266481,
+     266651,
+     266821,
+     266991,
+     267161,
+     267331,
+     267501,
+     267671,
+     267841,
+     268011,
+     268181,
+     268351,
+     268521,
+     268691,
+     268861,
+     269031,
+     269201,
+     269371,
+     269541,
+     269711,
+     269881,
+     270051,
+     270221,
+     270391,
+     270561,
+     270731,
+     270901,
+     271183,
+     271253,
+     271323
+    ],
+    "packetRange" : {
+     "gte" : 1700024400000,
+     "lte" : 1700024410599
+    },
+    "protocol" : [
+     "sip",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "sip" : {
+     "callid" : [
+      "after-body@10.9.70.1",
+      "long-body@10.9.70.1"
+     ],
+     "callidCnt" : 2,
+     "from" : [
+      "<sip:alice@example.com>;tag=1"
+     ],
+     "fromCnt" : 1,
+     "method" : [
+      "INVITE",
+      "OPTIONS"
+     ],
+     "methodCnt" : 2,
+     "to" : [
+      "<sip:bob@example.com>",
+      "<sip:example.com>"
+     ],
+     "toCnt" : 2,
+     "user" : [
+      "alice",
+      "bob"
+     ],
+     "userCnt" : 2,
+     "via" : [
+      "SIP/2.0/TCP 10.9.70.1:50112;branch=z9hG4bK1",
+      "SIP/2.0/TCP 10.9.70.1:50112;branch=z9hG4bK2"
+     ],
+     "viaCnt" : 2
+    },
+    "source" : {
+     "bytes" : 32353,
+     "ip" : "10.9.70.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 211,
+     "port" : 50112
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "494e564954452073",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 207,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 20959
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 118
+    },
+    "destination" : {
+     "bytes" : 282,
+     "ip" : "10.9.71.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 3128
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024500000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "plain.example",
+      "plain.example:80"
+     ],
+     "hostCnt" : 2,
+     "method" : [
+      "CONNECT",
+      "GET"
+     ],
+     "method-CONNECT" : 1,
+     "method-GET" : 1,
+     "methodCnt" : 2,
+     "path" : [
+      "/split-request-line",
+      "plain.example:80"
+     ],
+     "pathCnt" : 2,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200,
+      204
+     ],
+     "statuscodeCnt" : 2,
+     "uri" : [
+      "plain.example/split-request-line",
+      "plain.example:80"
+     ],
+     "uriCnt" : 2
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024500500,
+    "length" : 500,
+    "network" : {
+     "bytes" : 778,
+     "community_id" : "1:hM/D/sYNROoKJ72e5W6YN0e/AxE=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     131,
+     109,
+     84,
+     113,
+     97,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     271393,
+     271463,
+     271533,
+     271603,
+     271734,
+     271843,
+     271927,
+     272040,
+     272137,
+     272207,
+     272277
+    ],
+    "packetRange" : {
+     "gte" : 1700024500000,
+     "lte" : 1700024500500
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 66
+    },
+    "source" : {
+     "bytes" : 496,
+     "ip" : "10.9.71.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 50113
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "434f4e4e45435420",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 5,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 184
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 84
+    },
+    "destination" : {
+     "bytes" : 360,
+     "ip" : "10.9.72.2",
+     "mac" : [
+      "02:aa:00:00:23:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 3128
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "email" : {
+     "smtpHello" : [
+      "mail.example"
+     ],
+     "smtpHelloCnt" : 1
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700024600000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "mail.example",
+      "mail.example:25"
+     ],
+     "hostCnt" : 2,
+     "method" : [
+      "CONNECT"
+     ],
+     "methodCnt" : 1,
+     "path" : [
+      "mail.example:25"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "mail.example:25"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700024600599,
+    "length" : 599,
+    "network" : {
+     "bytes" : 876,
+     "community_id" : "1:40dSm2HhowAeictF6lE6vXeb9/g=",
+     "packets" : 13
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     129,
+     109,
+     83,
+     76,
+     112,
+     76,
+     79,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     272347,
+     272417,
+     272487,
+     272557,
+     272686,
+     272795,
+     272878,
+     272954,
+     273066,
+     273142,
+     273221,
+     273291,
+     273361
+    ],
+    "packetRange" : {
+     "gte" : 1700024600000,
+     "lte" : 1700024600599
+    },
+    "protocol" : [
+     "http",
+     "smtp",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 90
+    },
+    "source" : {
+     "bytes" : 516,
+     "ip" : "10.9.72.1",
+     "mac" : [
+      "02:aa:00:00:23:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 50114
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "434f4e4e45435420",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 7,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 36864
+    },
+    "totDataBytes" : 174
    },
    "header" : {
     "index" : {
@@ -16888,6 +20558,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "sctp:bad-vtag"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 20
    },
    "header" : {
@@ -17530,6 +21204,10 @@
       "PRI"
      ],
      "methodCnt" : 1,
+     "path" : [
+      "*"
+     ],
+     "pathCnt" : 1,
      "uri" : [
       "*"
      ],
@@ -25034,6 +28712,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "sctp:bad-vtag"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 20
    },
    "header" : {

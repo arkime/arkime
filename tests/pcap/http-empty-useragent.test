@@ -33,6 +33,10 @@
      ],
      "method-GET" : 1,
      "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
      "requestHeader" : [
       "user-agent"
      ],

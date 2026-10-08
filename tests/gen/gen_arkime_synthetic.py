@@ -35,7 +35,20 @@ Layout:
   - ftp_helo_late (17 packets)
   - http_connect_variants (4 sessions, 38 packets)
   - http_101_leftover (2 sessions, 19 packets)
-  - http2_path_upgrade_hook (12 packets, appended last)
+  - http2_path_upgrade_hook (12 packets)
+  - gre_undecodable (2 sessions, 4 packets)
+  - dtls_fragmented_hello (3 packets)
+  - quic_v2 (2 packets)
+  - sctp_bad_vtag (6 packets)
+  - http_subparser_paths (4 sessions, 32 packets)
+  - http_connect_plain (2 sessions, 20 packets)
+  - smb_compound_andx (2 sessions, 14 packets)
+  - smb_nbss_139 (10 packets)
+  - sip_tcp_long (216 packets)
+  - smb_andx_skip (7 packets)
+  - sip_tcp_body_skip (212 packets)
+  - http_connect_split_line (11 packets)
+  - http_connect_smtp_guess (13 packets, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -2997,8 +3010,8 @@ def sec_tls_hello_reassembly():
     return out
 
 
-def _quic_initial(dcid, pn, frames, bad_tag=False):
-    # QUIC v1 client Initial with a 1 byte packet number, padded to a 1200 byte datagram
+def _quic_initial(dcid, pn, frames, bad_tag=False, v2=False):
+    # QUIC v1 (or v2) client Initial with a 1 byte packet number, padded to a 1200 byte datagram
     import hashlib
     import hmac
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -3009,15 +3022,20 @@ def _quic_initial(dcid, pn, frames, bad_tag=False):
         info = struct.pack('>HB', length, len(full)) + full + b'\x00'
         return hmac.new(secret, info + b'\x01', hashlib.sha256).digest()[:length]
 
-    salt = bytes.fromhex('38762cf7f55934b34d179ae6a4c80cadccbb7f0a')
+    if v2:
+        salt = bytes.fromhex('0dede3def700a6db819381be6e269dcbf9bd2ed9')
+        version, first, prefix = 0x6b3343cf, 0xd0, b'quicv2 '
+    else:
+        salt = bytes.fromhex('38762cf7f55934b34d179ae6a4c80cadccbb7f0a')
+        version, first, prefix = 1, 0xc0, b'quic '
     secret = hkdf_expand_label(hmac.new(salt, dcid, hashlib.sha256).digest(), b'client in', 32)
-    key = hkdf_expand_label(secret, b'quic key', 16)
-    iv = hkdf_expand_label(secret, b'quic iv', 12)
-    hp = hkdf_expand_label(secret, b'quic hp', 16)
+    key = hkdf_expand_label(secret, prefix + b'key', 16)
+    iv = hkdf_expand_label(secret, prefix + b'iv', 12)
+    hp = hkdf_expand_label(secret, prefix + b'hp', 16)
 
     hdr_len = 1 + 4 + 1 + len(dcid) + 1 + 1 + 2 + 1
     plain = frames + b'\0' * (1200 - hdr_len - 16 - len(frames))
-    hdr = b'\xc0' + struct.pack('>I', 1) + bytes([len(dcid)]) + dcid + b'\x00\x00'
+    hdr = bytes([first]) + struct.pack('>I', version) + bytes([len(dcid)]) + dcid + b'\x00\x00'
     hdr += struct.pack('>H', 0x4000 | (1 + len(plain) + 16)) + bytes([pn])
 
     ct = AESGCM(key).encrypt(iv[:-1] + bytes([iv[-1] ^ pn]), plain, hdr)
@@ -3573,6 +3591,373 @@ def sec_http2_path_upgrade_hook():
     ])
 
 
+def _eth_ip(src, dst, smac, dmac, proto, payload):
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + len(payload), 1, 0, 64, proto, 0,
+                     bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+    ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+    return dmac + smac + b'\x08\x00' + ip + payload
+
+
+def _records(pkts, ts):
+    out = b''
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def sec_gre_undecodable():
+    # Append GRE regression sessions to arkime_synthetic.pcap.
+    #
+    # 10.9.53.1 <-> 10.9.53.2: GRE keepalives (protocol type 0) both ways.
+    # 10.9.54.1 <-> 10.9.54.2: GRE version 2 headers, which aren't defined.
+    # Neither can be decapsulated, expect an ip protocol 47 session for each.
+    amac = bytes.fromhex('02aa00002501')
+    bmac = bytes.fromhex('02aa00002502')
+    keepalive = b'\x00\x00\x00\x00'
+    v2 = b'\x00\x02\x08\x00' + bytes(20)
+    pkts = [
+        _eth_ip('10.9.53.1', '10.9.53.2', amac, bmac, 47, keepalive),
+        _eth_ip('10.9.53.2', '10.9.53.1', bmac, amac, 47, keepalive),
+        _eth_ip('10.9.54.1', '10.9.54.2', amac, bmac, 47, v2),
+        _eth_ip('10.9.54.2', '10.9.54.1', bmac, amac, 47, v2),
+    ]
+    return _records(pkts, 1700023400.0)
+
+
+def sec_dtls_fragmented_hello():
+    # Append a DTLS fragmented Client Hello regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.55.1:50001 -> 10.9.55.2:4433 UDP (Ethernet linktype):
+    #   DTLS 1.2 Client Hello split into two handshake fragments in two datagrams,
+    #   the SNI (dtls-frag.example) is only in the second fragment, then a Server Hello.
+    #   dtls.c doesn't store the SNI, expect a JA4 with the SNI flag (dd2d...) and the
+    #   ciphers and extensions from both fragments in ja4_r.
+    def ext(etype, data):
+        return struct.pack('>HH', etype, len(data)) + data
+
+    name = b'dtls-frag.example'
+    ciphers = [0xc02b, 0xc02f, 0xc00a, 0x009c]
+    exts = ext(0x0015, bytes(120))
+    exts += ext(0x0000, struct.pack('>HBH', len(name) + 3, 0, len(name)) + name)
+    exts += ext(0x000a, struct.pack('>HHH', 4, 0x001d, 0x0017))
+    exts += ext(0x000d, struct.pack('>HHH', 4, 0x0403, 0x0804))
+    chello = b'\xfe\xfd' + bytes(range(0x20, 0x40)) + b'\x00' + b'\x00'
+    chello += struct.pack('>H', len(ciphers) * 2) + b''.join(struct.pack('>H', c) for c in ciphers)
+    chello += b'\x01\x00' + struct.pack('>H', len(exts)) + exts
+
+    shello = b'\xfe\xfd' + bytes(range(0x40, 0x60)) + b'\x00' + b'\xc0\x2b' + b'\x00' + b'\x00\x00'
+
+    def record(seq, hstype, body, offset, frag):
+        hs = struct.pack('>B', hstype) + struct.pack('>I', len(body))[1:] + struct.pack('>H', 0)
+        hs += struct.pack('>I', offset)[1:] + struct.pack('>I', len(frag))[1:] + frag
+        return b'\x16\xfe\xfd' + struct.pack('>HHI', 0, 0, seq) + struct.pack('>H', len(hs)) + hs
+
+    def udp(src, dst, smac, dmac, sport, dport, payload):
+        return _eth_ip(src, dst, smac, dmac, 17, struct.pack('>HHHH', sport, dport, 8 + len(payload), 0) + payload)
+
+    cmac = bytes.fromhex('02aa00002601')
+    smac = bytes.fromhex('02aa00002602')
+    split = 120
+    pkts = [
+        udp('10.9.55.1', '10.9.55.2', cmac, smac, 50001, 4433, record(0, 1, chello, 0, chello[:split])),
+        udp('10.9.55.1', '10.9.55.2', cmac, smac, 50001, 4433, record(1, 1, chello, split, chello[split:])),
+        udp('10.9.55.2', '10.9.55.1', smac, cmac, 4433, 50001, record(0, 2, shello, 0, shello)),
+    ]
+    return _records(pkts, 1700023500.0)
+
+
+def sec_quic_v2():
+    # Append a QUIC v2 Initial regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.56.1:52103 -> 10.9.56.2:443 UDP (Ethernet linktype):
+    #   QUIC v2 (RFC 9369) client Initial with SNI quic-v2.example.
+    client_hello, _ = _tls_hellos()
+    dcid = bytes.fromhex('0102030405060708')
+    hs = client_hello('quic-v2.example', alpn=b'h3')
+    return _quic_session('10.9.56.1', '10.9.56.2', 52103, 1700023600.0, dcid, [
+        _quic_initial(dcid, 0, _quic_crypto(0, hs), v2=True),
+    ])
+
+
+def sec_sctp_bad_vtag():
+    # Append an SCTP verification tag regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.57.1:38101 -> 10.9.57.2:40000, IP proto 132 (SCTP):
+    #   INIT/INIT-ACK set the tags, then a DATA chunk with PPID 201 and a SHUTDOWN
+    #   COMPLETE both carry a wrong verification tag, then real DATA with PPID 200
+    #   in both directions. Expect sctp.protoId 200 only and the sctp:bad-vtag tag.
+    cli, srv = '10.9.57.1', '10.9.57.2'
+    cmac = bytes.fromhex('02aa00002701')
+    smac = bytes.fromhex('02aa00002702')
+    CLI_TAG, SRV_TAG, BAD_TAG = 0x51510001, 0x52520002, 0xdeadbeef
+
+    table = []
+    for i in range(256):
+        c = i
+        for _ in range(8):
+            c = (c >> 1) ^ 0x82F63B78 if c & 1 else c >> 1
+        table.append(c)
+
+    def crc32c(data):
+        c = 0xFFFFFFFF
+        for b in data:
+            c = table[(c ^ b) & 0xFF] ^ (c >> 8)
+        return c ^ 0xFFFFFFFF
+
+    def chunk(ctype, flags, body):
+        clen = 4 + len(body)
+        return struct.pack('>BBH', ctype, flags, clen) + body + b'\x00' * ((4 - (clen & 3)) & 3)
+
+    def pkt(src, dst, smacx, dmacx, sport, dport, vtag, chunks):
+        sctp = struct.pack('>HHII', sport, dport, vtag, 0) + chunks
+        sctp = sctp[:8] + struct.pack('<I', crc32c(sctp)) + sctp[12:]
+        return _eth_ip(src, dst, smacx, dmacx, 132, sctp)
+
+    c2s = lambda vtag, chunks: pkt(cli, srv, cmac, smac, 38101, 40000, vtag, chunks)
+    s2c = lambda vtag, chunks: pkt(srv, cli, smac, cmac, 40000, 38101, vtag, chunks)
+    init = lambda ctype, tag, tsn: chunk(ctype, 0, struct.pack('>IIHHI', tag, 65535, 4, 4, tsn))
+    data = lambda tsn, ppid, payload: chunk(0, 0x03, struct.pack('>IHHI', tsn, 0, 0, ppid) + payload)
+
+    pkts = [
+        c2s(0, init(1, CLI_TAG, 100)),
+        s2c(CLI_TAG, init(2, SRV_TAG, 200)),
+        c2s(BAD_TAG, data(100, 201, b'spoofed-data')),
+        s2c(BAD_TAG, chunk(14, 0, b'')),
+        c2s(SRV_TAG, data(100, 200, b'real-client-data')),
+        s2c(CLI_TAG, data(200, 200, b'real-server-data')),
+    ]
+    return _records(pkts, 1700023700.0)
+
+
+def sec_http_subparser_paths():
+    # Append HTTP sub-parser path regression sessions to arkime_synthetic.pcap.
+    #
+    # 10.9.59.1: no Host header, path /certsrv/./x/../%63ertfnsh.asp, expect http.path and adcs-web
+    # 10.9.60.1: path //wsman, expect winrm
+    # 10.9.61.1: absolute url http://enroll.example/certsrv/mscep/mscep.dll, expect adcs-ndes
+    # 10.9.62.1: double encoded path /certsrv/%2563ertrqxt.asp, expect adcs-web
+    ok = b'HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n'
+    out = _tcp_session('10.9.59.1', '10.9.59.2', 50101, 80, 1700023800.0, [
+        ('c', b'GET /certsrv/./x/../%63ertfnsh.asp HTTP/1.1\r\n\r\n'),
+        ('s', ok),
+    ])
+    out += _tcp_session('10.9.60.1', '10.9.60.2', 50102, 5985, 1700023810.0, [
+        ('c', b'POST //wsman HTTP/1.1\r\nHost: winrm.example\r\nContent-Length: 0\r\n\r\n'),
+        ('s', ok),
+    ])
+    out += _tcp_session('10.9.61.1', '10.9.61.2', 50103, 80, 1700023820.0, [
+        ('c', b'GET http://enroll.example/certsrv/mscep/mscep.dll HTTP/1.1\r\nHost: enroll.example\r\n\r\n'),
+        ('s', ok),
+    ])
+    out += _tcp_session('10.9.62.1', '10.9.62.2', 50104, 80, 1700023830.0, [
+        ('c', b'GET /certsrv/%2563ertrqxt.asp HTTP/1.1\r\nHost: pki.example\r\n\r\n'),
+        ('s', ok),
+    ])
+    return out
+
+
+def sec_http_connect_plain():
+    # Append HTTP CONNECT with plain http in the tunnel regression sessions to arkime_synthetic.pcap.
+    #
+    # 10.9.63.1:50105 -> 10.9.63.2:3128: CONNECT plain.example:80 gets a 200, then GET /inside-tunnel
+    #   goes through the tunnel. Expect methods CONNECT and GET and http.uri plain.example/inside-tunnel.
+    # 10.9.68.1:50110 -> 10.9.68.2:3128: same with a WebDAV PROPFIND /files in the tunnel.
+    #   Expect methods CONNECT and PROPFIND and http.uri dav.example/files.
+    out = _tcp_session('10.9.63.1', '10.9.63.2', 50105, 3128, 1700023900.0, [
+        ('c', b'CONNECT plain.example:80 HTTP/1.1\r\nHost: plain.example:80\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 Connection established\r\n\r\n'),
+        ('c', b'GET /inside-tunnel HTTP/1.1\r\nHost: plain.example\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\ninside'),
+    ])
+    out += _tcp_session('10.9.68.1', '10.9.68.2', 50110, 3128, 1700023910.0, [
+        ('c', b'CONNECT dav.example:80 HTTP/1.1\r\nHost: dav.example:80\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 Connection established\r\n\r\n'),
+        ('c', b'PROPFIND /files HTTP/1.1\r\nHost: dav.example\r\nDepth: 1\r\nContent-Length: 0\r\n\r\n'),
+        ('s', b'HTTP/1.1 207 Multi-Status\r\nContent-Length: 0\r\n\r\n'),
+    ])
+    return out
+
+
+def _smb2_header(cmd, flags=0, next_command=0):
+    return (b'\xfeSMB' + struct.pack('<HHIHHII', 64, 0, 0, cmd, 1, flags, next_command) +
+            struct.pack('<QIIQ', 1, 0, 1, 0x1000) + bytes(16))
+
+
+def _smb2_create(name, last):
+    # CREATE request for name, padded to 8 bytes unless it's the last in a compound
+    fname = name.encode('utf-16-le')
+    body = struct.pack('<HBBIQQIIIIIHHII', 57, 0, 0, 2, 0, 0, 0x80, 0, 7, 1, 0, 120, len(fname), 0, 0) + fname
+    msg_len = 64 + len(body)
+    pad = 0 if last else (-msg_len) % 8
+    return msg_len + pad, body + bytes(pad)
+
+
+def _nbss(msg, mtype=0):
+    return struct.pack('>BBH', mtype, 0, len(msg)) + msg
+
+
+def sec_smb_compound_andx():
+    # Append SMB compound and AndX chain regression sessions to arkime_synthetic.pcap.
+    #
+    # 10.9.64.1 -> :445: SMB2 compound of two CREATE requests, expect filenames
+    #                    compound-first.txt and compound-second.txt
+    # 10.9.65.1 -> :445: SMB1 SESSION_SETUP_ANDX chained to TREE_CONNECT_ANDX, expect
+    #                    user andxuser and share \\ANDXSRV\DATA
+    len1, body1 = _smb2_create('compound-first.txt', False)
+    len2, body2 = _smb2_create('compound-second.txt', True)
+    compound = _smb2_header(5, 0, len1) + body1 + _smb2_header(5) + body2
+    out = _tcp_session('10.9.64.1', '10.9.64.2', 50106, 445, 1700024000.0, [
+        ('c', _nbss(compound)),
+    ])
+
+    hdr = _smb1_header(0x73)
+    out += _tcp_session('10.9.65.1', '10.9.65.2', 50107, 445, 1700024010.0, [
+        ('c', _nbss(hdr + _smb1_setup_tree('andxuser', '\\\\ANDXSRV\\DATA', 32))),
+    ])
+    return out
+
+
+def _smb1_header(cmd):
+    return b'\xffSMB' + struct.pack('<BIBHH8sHHHHH', cmd, 0, 0x18, 0xc803, 0, bytes(8), 0, 0xffff, 1, 0, 1)
+
+
+def _smb1_setup_tree(username, share, base):
+    # SESSION_SETUP_ANDX chained to TREE_CONNECT_ANDX, base is the setup's offset from the SMB header
+    user = (username + '\0').encode('utf-16-le') + 'ANDXDOM\0'.encode('utf-16-le')
+    user += 'Unix\0'.encode('utf-16-le') + 'Samba\0'.encode('utf-16-le')
+    setup_bytes = b'\x00' + user           # one byte pad so the unicode strings are aligned
+    setup_len = 1 + 26 + 2 + len(setup_bytes)
+    tree_offset = base + setup_len + ((base + setup_len) % 2)
+    setup = struct.pack('<BBBHHHHIHHII', 13, 0x75, 0, tree_offset, 65535, 2, 0, 0, 0, 0, 0, 0x8000)
+    setup += struct.pack('<H', len(setup_bytes)) + setup_bytes
+    setup += bytes(tree_offset - base - len(setup))
+    path = (share + '\0').encode('utf-16-le')
+    tree_bytes = b'\x00' + path + b'?????\x00'
+    tree = struct.pack('<BBBHHH', 4, 0xff, 0, 0, 0, 1) + struct.pack('<H', len(tree_bytes)) + tree_bytes
+    return setup + tree
+
+
+def sec_smb_nbss_139():
+    # Append an SMB over NetBIOS session service regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.66.1:50108 -> 10.9.66.2:139 (Ethernet linktype):
+    #   NetBIOS SESSION REQUEST and positive response, then an SMB2 NEGOTIATE
+    #   request/response. Expect protocol smb and dialect SMB 3.1.1.
+    name = b'\x20' + b'CA' * 16 + b'\x00'
+    neg_req = _smb2_header(0) + struct.pack('<HHHHI', 36, 1, 1, 0, 0) + bytes(16) + bytes(8) + struct.pack('<H', 0x0311) + bytes(2)
+    neg_rsp = _smb2_header(0, 1) + struct.pack('<HHHH', 65, 1, 0x0311, 0) + bytes(56)
+    return _tcp_session('10.9.66.1', '10.9.66.2', 50108, 139, 1700024100.0, [
+        ('c', _nbss(name + name, 0x81)),
+        ('s', _nbss(b'', 0x82)),
+        ('c', _nbss(neg_req)),
+        ('s', _nbss(neg_rsp)),
+    ])
+
+
+def sec_sip_tcp_long():
+    # Append a long SIP over TCP regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.67.1:50109 -> 10.9.67.2:5060 (Ethernet linktype):
+    #   210 OPTIONS keepalives in their own segments, the last one with a different
+    #   Call-ID. Expect call ids options-keepalive@10.9.67.1 and after-200@10.9.67.1.
+    def options(callid, cseq):
+        return (b'OPTIONS sip:trunk.example SIP/2.0\r\n'
+                b'Via: SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK%d\r\n'
+                b'From: <sip:pbx@example.com>;tag=1\r\n'
+                b'To: <sip:trunk.example>\r\n'
+                b'Call-ID: %s\r\n'
+                b'CSeq: %d OPTIONS\r\n'
+                b'Content-Length: 0\r\n\r\n' % (cseq, callid, cseq))
+
+    segments = [('c', options(b'options-keepalive@10.9.67.1', i)) for i in range(1, 210)]
+    segments.append(('c', options(b'after-200@10.9.67.1', 210)))
+    return _tcp_session('10.9.67.1', '10.9.67.2', 50109, 5060, 1700024200.0, segments)
+
+
+def sec_smb_andx_skip():
+    # Append an SMB1 AndX chain behind an unhandled command regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.69.1:50111 -> 10.9.69.2:445 (Ethernet linktype):
+    #   LOGOFF_ANDX chained to SESSION_SETUP_ANDX chained to TREE_CONNECT_ANDX.
+    #   Expect user andxuser2 and share \\ANDXSRV\LOGS.
+    logoff = struct.pack('<BBBH', 2, 0x73, 0, 40) + struct.pack('<H', 1) + b'\x00'  # 8 bytes, next at 40
+    msg = _smb1_header(0x74) + logoff + _smb1_setup_tree('andxuser2', '\\\\ANDXSRV\\LOGS', 40)
+    return _tcp_session('10.9.69.1', '10.9.69.2', 50111, 445, 1700024300.0, [
+        ('c', _nbss(msg)),
+    ])
+
+
+def sec_sip_tcp_body_skip():
+    # Append a SIP over TCP with a long body regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.70.1:50112 -> 10.9.70.2:5060 (Ethernet linktype):
+    #   An INVITE whose 20500 byte body arrives in 205 segments of 100 bytes, then an OPTIONS.
+    #   Expect call ids long-body@10.9.70.1 and after-body@10.9.70.1.
+    body = b'x' * 20500
+    message = (b'INVITE sip:bob@example.com SIP/2.0\r\n'
+               b'Via: SIP/2.0/TCP 10.9.70.1:50112;branch=z9hG4bK1\r\n'
+               b'From: <sip:alice@example.com>;tag=1\r\n'
+               b'To: <sip:bob@example.com>\r\n'
+               b'Call-ID: long-body@10.9.70.1\r\n'
+               b'CSeq: 1 INVITE\r\n'
+               b'Content-Type: text/plain\r\n'
+               b'Content-Length: %d\r\n\r\n' % len(body))
+    options = (b'OPTIONS sip:example.com SIP/2.0\r\n'
+               b'Via: SIP/2.0/TCP 10.9.70.1:50112;branch=z9hG4bK2\r\n'
+               b'From: <sip:alice@example.com>;tag=1\r\n'
+               b'To: <sip:example.com>\r\n'
+               b'Call-ID: after-body@10.9.70.1\r\n'
+               b'CSeq: 2 OPTIONS\r\n'
+               b'Content-Length: 0\r\n\r\n')
+    segments = [('c', message)] + [('c', body[i:i + 100]) for i in range(0, len(body), 100)] + [('c', options)]
+    return _tcp_session('10.9.70.1', '10.9.70.2', 50112, 5060, 1700024400.0, segments)
+
+
+def sec_http_connect_split_line():
+    # Append an HTTP CONNECT tunnel regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.71.1:50113 -> 10.9.71.2:3128 (Ethernet linktype):
+    #   CONNECT plain.example:80 gets a 200, then the first tunnelled request line is
+    #   split across two segments. Expect methods CONNECT and GET and
+    #   http.uri plain.example/split-request-line.
+    return _tcp_session('10.9.71.1', '10.9.71.2', 50113, 3128, 1700024500.0, [
+        ('c', b'CONNECT plain.example:80 HTTP/1.1\r\nHost: plain.example:80\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 Connection established\r\n\r\n'),
+        ('c', b'GET /split-req'),
+        ('c', b'uest-line HTTP/1.1\r\nHost: plain.example\r\n\r\n'),
+        ('s', b'HTTP/1.1 204 No Content\r\n\r\n'),
+    ])
+
+
+def sec_http_connect_smtp_guess():
+    # Append an HTTP CONNECT tunnel misdetected as http regression session to arkime_synthetic.pcap.
+    #
+    # Session 10.9.72.1:50114 -> 10.9.72.2:3128 (Ethernet linktype):
+    #   CONNECT mail.example:25 gets a 200, then the client sends a partial 'EHLO mail.exa'
+    #   with no newline, which looks like an http request line, before the server banner.
+    #   Expect protocols http and smtp, the smtp classifier still sees the tunnel bytes.
+    return _tcp_session('10.9.72.1', '10.9.72.2', 50114, 3128, 1700024600.0, [
+        ('c', b'CONNECT mail.example:25 HTTP/1.1\r\nHost: mail.example:25\r\n\r\n'),
+        ('s', b'HTTP/1.1 200 Connection established\r\n\r\n'),
+        ('c', b'EHLO mail.exa'),
+        ('c', b'mple\r\n'),
+        ('s', b'220 mail.example ESMTP\r\n250 mail.example\r\n'),
+        ('c', b'QUIT\r\n'),
+        ('s', b'221 bye\r\n'),
+    ])
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -3618,6 +4003,19 @@ def main():
     out += sec_http_connect_variants()
     out += sec_http_101_leftover()
     out += sec_http2_path_upgrade_hook()
+    out += sec_gre_undecodable()
+    out += sec_dtls_fragmented_hello()
+    out += sec_quic_v2()
+    out += sec_sctp_bad_vtag()
+    out += sec_http_subparser_paths()
+    out += sec_http_connect_plain()
+    out += sec_smb_compound_andx()
+    out += sec_smb_nbss_139()
+    out += sec_sip_tcp_long()
+    out += sec_smb_andx_skip()
+    out += sec_sip_tcp_body_skip()
+    out += sec_http_connect_split_line()
+    out += sec_http_connect_smtp_guess()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)
