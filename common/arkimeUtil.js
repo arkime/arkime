@@ -73,6 +73,28 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Add thousands separators to a number, linear time even for huge digit
+   * strings. Keep in sync with commaString in common/vueapp/vueFilters.js.
+   */
+  static commaString (input) {
+    if (input === null || isNaN(input)) { return 0; }
+
+    const parts = input.toString().split('.');
+    const m = /^(-?)(\d+)$/.exec(parts[0]);
+    if (m) {
+      const digits = m[2];
+      const head = digits.length % 3 || 3;
+      let out = digits.slice(0, head);
+      for (let i = head; i < digits.length; i += 3) {
+        out += ',' + digits.slice(i, i + 3);
+      }
+      parts[0] = m[1] + out;
+    }
+    return parts.join('.');
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Replace ESC character with *ESC*. This should be used when console.log of
    * any user input to stop ESC 52 issues
    */

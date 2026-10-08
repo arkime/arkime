@@ -68,7 +68,8 @@ const internals = {
   stats: new Map(),
   parliamentName: 'parliament',
   httpsAgent: new https.Agent({ rejectUnauthorized: !ArkimeConfig.insecure }),
-  updateInProgress: false
+  updateInProgress: false,
+  issuesDirty: false // issues changed during this poll, updateParliament writes them once
 };
 
 // ----------------------------------------------------------------------------
@@ -1087,7 +1088,7 @@ function formatIssueMessage (cluster, issue) {
     let value = ': ';
 
     if (issue.type === 'esDropped') {
-      value += issue.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      value += ArkimeUtil.commaString(issue.value);
     } else if (issue.type === 'outOfDate') {
       value += new Date(issue.value);
     } else if (issue.type === 'lowDiskSpace' || issue.type === 'lowDiskSpaceES') {
@@ -1357,16 +1358,7 @@ function setIssue (cluster, newIssue) {
     console.log('Setting issue:', JSON.stringify(newIssue, null, 2));
   }
 
-  const issuesError = validateIssues();
-  if (!issuesError) {
-    fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-      (err) => {
-        if (err) {
-          console.log('Unable to write issue:', err.message ?? err);
-        }
-      }
-    );
-  }
+  internals.issuesDirty = true;
 }
 
 function getHealth (cluster) {
@@ -1461,6 +1453,9 @@ async function getStats (cluster) {
       cluster.monitoring = 0;
 
       for (const stat of stats.data) {
+        // remote data, a non string nodeName breaks issue search and the UI
+        const nodeName = String(stat.nodeName ?? '');
+
         // sum delta bytes per second
         if (stat.deltaBytesPerSec) {
           cluster.deltaBPS += Number(stat.deltaBytesPerSec) || 0;
@@ -1483,14 +1478,14 @@ async function getStats (cluster) {
         if ((now - stat.currentTime) > Parliament.getGeneralSetting('outOfDate')) {
           setIssue(cluster, {
             type: 'outOfDate',
-            node: stat.nodeName,
+            node: nodeName,
             value: stat.currentTime * 1000
           });
         }
 
         // look for no packets issue
         if (stat.deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
-          const id = cluster.title + ':' + stat.nodeName;
+          const id = cluster.title + ':' + nodeName;
 
           // only set the noPackets issue if there is a record of this cluster/node
           // having noPackets and that issue has persisted for the set length of time
@@ -1498,7 +1493,7 @@ async function getStats (cluster) {
             Date.now() - noPacketsMap.get(id) >= (Parliament.getGeneralSetting('noPacketsLength') * 1000)) {
             setIssue(cluster, {
               type: 'noPackets',
-              node: stat.nodeName,
+              node: nodeName,
               value: stat.deltaPacketsPerSec
             });
           } else if (!noPacketsMap.has(id)) {
@@ -1508,14 +1503,15 @@ async function getStats (cluster) {
         } else {
           // the node is seeing packets again, clear the record so a future
           // dip has to persist for noPacketsLength again
-          noPacketsMap.delete(cluster.title + ':' + stat.nodeName);
+          noPacketsMap.delete(cluster.title + ':' + nodeName);
         }
 
-        if (stat.deltaESDroppedPerSec > 0) {
+        const esDropped = Number(stat.deltaESDroppedPerSec) || 0;
+        if (esDropped > 0) {
           setIssue(cluster, {
             type: 'esDropped',
-            node: stat.nodeName,
-            value: stat.deltaESDroppedPerSec
+            node: nodeName,
+            value: esDropped
           });
         }
 
@@ -1534,7 +1530,7 @@ async function getStats (cluster) {
         if (shouldCreateIssue) {
           setIssue(cluster, {
             type: 'lowDiskSpace',
-            node: stat.nodeName,
+            node: nodeName,
             value: stat.freeSpaceP,
             freeSpaceM: stat.freeSpaceM,
             thresholdType: lowDiskSpaceType
@@ -1563,7 +1559,7 @@ async function getStats (cluster) {
           if (shouldCreateESIssue) {
             setIssue(cluster, {
               type: 'lowDiskSpaceES',
-              node: esNode.nodeName,
+              node: String(esNode.nodeName ?? ''),
               value: esNode.freeSpaceP,
               freeSpaceM: esNode.freeSpaceM,
               thresholdType: lowDiskSpaceESType
@@ -1589,18 +1585,32 @@ async function getStats (cluster) {
   });
 }
 
+// Writes the issues file. The dirty flag is cleared before the async write so
+// a setIssue that lands mid-write stays dirty, and set again if the write fails.
+function saveIssues () {
+  if (validateIssues()) { return; }
+
+  internals.issuesDirty = false;
+  fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
+    (err) => {
+      if (err) {
+        console.log('Unable to write issues:', err.message ?? err);
+        internals.issuesDirty = true;
+      }
+    }
+  );
+}
+
 // Chains all promises for requests for health and stats for each cluster in the parliament
 // this also sets all the issues in the issues.json file
 async function updateParliament () {
   internals.updateInProgress = true;
-  const parliament = await Parliament.getParliament();
+  let issuesRemoved = false;
 
-  if (!parliament) {
-    internals.updateInProgress = false;
-    return Promise.resolve();
-  }
+  try {
+    const parliament = await Parliament.getParliament();
+    if (!parliament) { return; }
 
-  return new Promise((resolve, reject) => {
     const promises = [];
     for (const group of parliament.groups) {
       if (group.clusters) {
@@ -1617,40 +1627,28 @@ async function updateParliament () {
       }
     }
 
-    const issuesRemoved = cleanUpIssues();
+    issuesRemoved = cleanUpIssues();
 
-    Promise.all(promises).then((results) => {
-      if (issuesRemoved) { // save the issues that were removed
-        const issuesError = validateIssues();
-        if (!issuesError) {
-          fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-            (err) => {
-              if (err) {
-                console.log('Unable to write issue:', err.message ?? err);
-              }
-            }
-          );
-        }
+    const results = await Promise.all(promises);
+    for (const result of results) {
+      internals.stats.set(result.cluster.id, result.cluster);
+    }
+
+    if (ArkimeConfig.debug) {
+      console.log('Parliament stats updated!');
+      if (issuesRemoved) {
+        console.log('Issues updated!');
       }
-
-      for (const result of results) {
-        internals.stats.set(result.cluster.id, result.cluster);
-      }
-
-      if (ArkimeConfig.debug) {
-        console.log('Parliament stats updated!');
-        if (issuesRemoved) {
-          console.log('Issues updated!');
-        }
-      }
-
-      internals.updateInProgress = false;
-      return resolve();
-    }).catch((error) => {
-      console.log('Parliament update error:', error.message ?? error);
-      return resolve();
-    });
-  });
+    }
+  } catch (error) {
+    console.log('Parliament update error:', error.message ?? error);
+  } finally {
+    // save the issues once per poll, even a failed one, not on every setIssue
+    if (issuesRemoved || internals.issuesDirty) {
+      saveIssues();
+    }
+    internals.updateInProgress = false;
+  }
 }
 
 function removeIssue (issueType, clusterId, nodeId) {
@@ -2309,7 +2307,10 @@ async function main () {
     }
 
     setInterval(() => {
-      updateParliament();
+      // a slow cluster can make an update outlast the interval, don't stack them
+      if (!internals.updateInProgress) {
+        updateParliament();
+      }
       processAlerts();
     }, 10000);
     updateParliament();

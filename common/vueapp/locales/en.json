@@ -1424,6 +1424,7 @@
       "saveTip": "Save changes to this query",
       "deleteTip": "Delete this query",
       "transferTip": "Transfer this query to another user",
+      "transferDisabledWarning": "Transferring disables this query and removes its edit roles. Let the new owner know they need to re-enable it.",
       "queryNotTagged": "This query has not tagged any sessions"
     },
     "password": {

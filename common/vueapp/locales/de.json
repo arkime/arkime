@@ -1424,6 +1424,7 @@
       "saveTip": "Änderungen an dieser Abfrage speichern",
       "deleteTip": "Diese Abfrage löschen",
       "transferTip": "Diese Abfrage an einen anderen Benutzer übertragen",
+      "transferDisabledWarning": "Durch die Übertragung wird diese Abfrage deaktiviert und ihre Bearbeitungsrollen werden entfernt. Teilen Sie dem neuen Eigentümer mit, dass er sie wieder aktivieren muss.",
       "queryNotTagged": "Diese Abfrage hat keine Sitzungen markiert"
     },
     "password": {

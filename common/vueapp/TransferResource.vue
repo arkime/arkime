@@ -23,6 +23,15 @@ SPDX-License-Identifier: Apache-2.0
           :placeholder="$t('settings.transfer.id')"
           @update:model-value="userId = $event"
           @keyup.stop.prevent.enter="transferResource" />
+        <div
+          v-if="message"
+          class="mt-2 text-caption text-warning">
+          <v-icon
+            size="small"
+            start
+            icon="mdi-alert" />
+          {{ message }}
+        </div>
       </v-card-text>
       <v-card-actions>
         <div class="w-100 d-flex justify-space-between">
@@ -60,6 +69,10 @@ export default {
     showModal: {
       type: Boolean,
       default: false
+    },
+    message: {
+      type: String,
+      default: ''
     }
   },
   data () {

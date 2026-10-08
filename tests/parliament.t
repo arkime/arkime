@@ -1,4 +1,4 @@
-use Test::More tests => 114;
+use Test::More tests => 128;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -343,6 +343,7 @@ ok($result->{success});
 
 $result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "down1", "url": "http://127.0.0.1:1"}', $parliamentAdminToken);
 ok($result->{success});
+my $down1Id = $result->{cluster}->{id};
 $result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "down2", "url": "http://127.0.0.1:1"}', $parliamentAdminToken);
 ok($result->{success});
 
@@ -353,6 +354,20 @@ parliamentGet("/regressionTests/updateParliament");
 # sanity: there are issues to filter/sort over
 $result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(scalar @{$result->{issues}} >= 2);
+
+# the poll saves its issues to the issues file once per cycle (written async, so allow a moment)
+my $issuesOnDisk = [];
+for (my $i = 0; $i < 10; $i++) {
+    if (open(my $fh, '<', 'parliament.dev.issues.json')) {
+        local $/;
+        my $data = eval { from_json(<$fh>) };
+        close($fh);
+        $issuesOnDisk = $data if ref $data eq 'ARRAY';
+    }
+    last if grep { ($_->{clusterId} // '') eq $down1Id } @$issuesOnDisk;
+    sleep(1);
+}
+ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesOnDisk), "poll issues are written to the issues file");
 
 # filter passed as an array is ignored instead of throwing (500) on .toLowerCase()
 $result = parliamentGetToken("/parliament/api/issues?filter=a&filter=b&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -372,3 +387,71 @@ viewerGet("/regressionTests/deleteAllUsers");
 
 # delete the parliament?
 esDelete("/tests_parliament/_doc/parliamenttest");
+
+# commaString used to be a lookahead regex that was quadratic on long digit
+# strings, so a polled cluster could hang parliament with a huge stat value.
+# Check every copy formats like the old regex and stays fast.
+
+my $runner = "/tmp/arkime-comma-string-$$.mjs";
+END { unlink $runner if $runner; }
+
+open(my $rf, '>', $runner) or die "can't write $runner";
+print $rf <<'JS';
+import path from 'path';
+import { createRequire } from 'module';
+import { pathToFileURL } from 'url';
+
+const root = path.resolve(process.argv[2]);
+const require = createRequire(import.meta.url);
+const impls = {
+  arkimeUtil: require(path.join(root, 'common/arkimeUtil')).commaString,
+  vueFilters: (await import(pathToFileURL(path.join(root, 'common/vueapp/vueFilters.js')))).commaString
+};
+
+function oldCommaString (input) {
+  if (isNaN(input)) { return 0; }
+  const parts = input.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
+const cases = [0, 1, 12, 123, 1234, 12345, 123456, 1234567, -1234567, 1234.5, '1234567.891', '0.00', 'abc', 1e21];
+for (let i = 0; i < 1000; i++) {
+  cases.push(Math.floor(Math.random() * 10 ** (1 + i % 15)) * (i % 2 ? -1 : 1));
+}
+const expected = cases.map(oldCommaString);
+
+const big = '9'.repeat(1000000);
+const out = {};
+for (const [name, fn] of Object.entries(impls)) {
+  const got = cases.map(fn);
+  const mismatch = got.findIndex((v, i) => v !== expected[i]);
+  const start = Date.now();
+  const res = fn(big);
+  out[name] = {
+    mismatch: mismatch === -1 ? null : { input: cases[mismatch], got: got[mismatch], expected: expected[mismatch] },
+    bigMs: Date.now() - start,
+    bigOk: res.length === 1333333 && /^9(,999)+$/.test(res),
+    nullOk: fn(null) === 0
+  };
+}
+console.log('RESULT ' + JSON.stringify(out));
+JS
+close($rf);
+
+my $output = `node $runner .. 2>&1`;
+is($? >> 8, 0, "runner exits cleanly") or diag($output);
+my ($json) = $output =~ /^RESULT (.*)$/m;
+my $commaResult = from_json($json // '{}');
+
+foreach my $name (qw(arkimeUtil vueFilters)) {
+    my $r = $commaResult->{$name};
+    ok(defined $r, "$name loaded");
+    is($r->{mismatch}, undef, "$name matches old regex output") or diag(to_json($r->{mismatch}));
+    ok($r->{bigOk}, "$name formats a 1M digit string");
+    cmp_ok($r->{bigMs}, '<', 1000, "$name handles a 1M digit string in linear time");
+    ok($r->{nullOk}, "$name returns 0 for null instead of throwing");
+}
+
+ok($output !~ /Error/, "no errors") or diag($output);
+is(scalar(keys %$commaResult), 2, "all implementations tested");

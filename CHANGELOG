@@ -176,10 +176,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
   - #4309 Fix a capture node being able to read and change other indices through esProxy
   - #4309 Fix some viewer and capture requests being wrongly rejected by esProxy
+## Parliament
+  - #4325 Fix a monitored cluster being able to hang or slow down Parliament
+  - #4325 Fix issue search and the dashboard failing for some node names
 ## Viewer
   - #4300 Fix users with a time limit being able to search outside of it
   - #4300 Fix Connections CSV export not quoting values
   - #4315 Fix viewing packets or uncompressed bodies from some sessions using excessive memory
+  - #4324 Transferring a periodic query to another user now disables it and clears its edit roles
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
 

@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 33;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -132,6 +132,16 @@ like($out, qr/s2sRegressionTests requires --regressionTests/, "and says why");
 
 ($code, $out) = tryConfig("s2sRegressionTests=true", "", "--regressionTests");
 is($code, 0, "s2sRegressionTests with --regressionTests starts");
+
+################################################################################
+# authMode=regressionTests lets any caller pick their user, config alone must not turn it on
+################################################################################
+($code, $out) = tryConfig("authMode=regressionTests");
+is($code, 1, "authMode=regressionTests from config alone refuses to start");
+like($out, qr/authMode=regressionTests requires --regressionTests/, "and says why");
+
+($code, $out) = tryConfig("authMode=regressionTests", "", "--regressionTests");
+is($code, 0, "authMode=regressionTests with --regressionTests starts");
 
 ################################################################################
 # credentials in the query string are refused, they end up in access and proxy logs

@@ -113,6 +113,7 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment-timezone';
 import { mapGetters } from 'vuex';
 
+import { commaString } from '@common/vueFilters.js';
 import WiseService from './wise.service.js';
 
 let dataInterval;
@@ -163,7 +164,7 @@ export default {
         if (data && data.startTime) {
           this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
         }
-        const commaFormat = (v) => v == null ? '' : v.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+        const commaFormat = (v) => v == null ? '' : commaString(v);
 
         if (data && data.sources) {
           this.sourceTableHeaders = [];
