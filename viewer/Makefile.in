@@ -3,8 +3,8 @@ MKDIR_P = mkdir -p
 VIEWERDIR = $(DESTDIR)@prefix@/viewer
 CP = /bin/cp
 INSTALL_BUNDLE ?= "bundle:min"
-CYBERCHEF_VERSION=11.4.0
-CYBERCHEF_SHA=49d1a5634a67a3b806c6db0fdca7dcecb41a776c
+CYBERCHEF_VERSION=11.5.0
+CYBERCHEF_SHA=8cd426dd4f40f1423912d5fad91b578a86a65112
 
 
 all: arkimeparser.js
