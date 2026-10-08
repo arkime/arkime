@@ -22,7 +22,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const internals = {
   isProduction: false,
   multiES: false,
-  CYBERCHEFVERSION: '11.4.0',
+  CYBERCHEFVERSION: '11.5.0',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
   rightClicks: {},
   fieldActions: {},

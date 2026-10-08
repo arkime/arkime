@@ -197,14 +197,14 @@ include:
 
   ############# FreeBSD #############
   - version: freebsd14.x86_64
-    freebsdrelease: "14.4"
+    freebsdrelease: "14.5"
     buildopt: "--kafka"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d curl"
     ja4plus: true
     prbuild: true
 
   - version: freebsd15.x86_64
-    freebsdrelease: "15.0"
+    freebsdrelease: "15.1"
     buildopt: "--kafka"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d curl"
 
