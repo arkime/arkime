@@ -1,4 +1,4 @@
-use Test::More tests => 191;
+use Test::More tests => 199;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -307,6 +307,30 @@ doTest('host.http == [a\,b\,c\,d\,e]', '{"terms":{"http.host":["a,b,c,d,e"]}}');
 
 # Invalid port error message
 doTest('ip == 1.2.3.4:80x', '80x not a valid port');
+
+# Time range filters
+sub doTimeTest {
+my ($json, $expected, $name) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    eq_or_diff($json->{esquery}->{query}->{bool}->{filter}, from_json($expected), $name, {context => 3});
+}
+
+doTimeTest(viewerGet('/api/buildquery?date=-1'), '[]', 'date=-1 has no time filter');
+doTimeTest(viewerGet('/api/buildquery?date=-1.0'), '[]', 'date=-1.0 has no time filter');
+doTimeTest(viewerPost('/api/buildquery', '{"date":-1}'), '[]', 'POST date -1 has no time filter');
+doTimeTest(viewerGet('/api/buildquery?startTime=1386000000&stopTime=1386003600'), '[{"range":{"lastPacket":{"gte":1386000000000,"lte":1386003600000}}}]', 'startTime and stopTime');
+doTimeTest(viewerGet('/api/buildquery?startTime=0&stopTime=0'), '[{"range":{"lastPacket":{"gte":0,"lte":0}}}]', 'stopTime=0 is bounded');
+doTimeTest(viewerGet('/api/buildquery?startTime=1386000000&stopTime=0'), '[{"range":{"lastPacket":{"gte":1386000000000,"lte":0}}}]', 'stopTime before startTime is bounded');
+doTimeTest(viewerPost('/api/buildquery', '{"startTime":0,"stopTime":0}'), '[{"range":{"lastPacket":{"gte":0,"lte":0}}}]', 'POST stopTime 0 is bounded');
+
+# A view id wins over a view named after that id
+viewerGet("/regressionTests/deleteAllViews");
+my $viewId = viewerPostToken("/api/view", '{"name":"bqview1","expression":"ip.src == 1.1.1.1"}', $token)->{view}->{id};
+viewerPostToken("/api/view", '{"name":"' . $viewId . '","expression":"ip.src == 2.2.2.2"}', $token);
+$json = viewerGet("/api/buildquery?date=-1&view=$viewId");
+my $esquery = to_json($json->{esquery});
+ok($esquery =~ /1\.1\.1\.1/ && $esquery !~ /2\.2\.2\.2/, "view id wins over a view named after it");
+viewerGet("/regressionTests/deleteAllViews");
 
 # Delete shortcuts
 viewerGet("/regressionTests/deleteAllShortcuts");

@@ -626,6 +626,42 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   }
 
   // --------------------------------------------------------------------------
+  // Build the sessions query a hunt searches, as the hunt's user
+  static async #buildHuntQuery (hunt, user) {
+    const fakeReq = {
+      user,
+      query: {
+        from: 0,
+        size: 100, // only fetch 100 items at a time
+        _source: ['_id', 'node'],
+        sort: 'lastPacket:asc'
+      }
+    };
+
+    if (hunt.query.expression) {
+      fakeReq.query.expression = hunt.query.expression;
+    }
+
+    if (hunt.query.view) {
+      fakeReq.query.view = hunt.query.view;
+    }
+
+    const { query } = await BuildQuery.buildPromise(fakeReq);
+
+    await BuildQuery.lookupQueryItems(query.query.bool.filter);
+    query.query.bool.filter[0] = {
+      range: {
+        lastPacket: {
+          gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+          lt: hunt.query.stopTime * 1000
+        }
+      }
+    };
+
+    return query;
+  }
+
+  // --------------------------------------------------------------------------
   // Do the house keeping before actually running the hunt job
   static async #processHuntJob (hunt) {
     HuntAPIs.#runningHuntJob = hunt;
@@ -663,36 +699,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return;
     }
 
-    const fakeReq = {
-      user,
-      query: {
-        from: 0,
-        size: 100, // only fetch 100 items at a time
-        _source: ['_id', 'node'],
-        sort: 'lastPacket:asc'
-      }
-    };
-
-    if (hunt.query.expression) {
-      fakeReq.query.expression = hunt.query.expression;
-    }
-
-    if (hunt.query.view) {
-      fakeReq.query.view = hunt.query.view;
-    }
-
     try {
-      const { query } = await BuildQuery.buildPromise(fakeReq);
-
-      await BuildQuery.lookupQueryItems(query.query.bool.filter);
-      query.query.bool.filter[0] = {
-        range: {
-          lastPacket: {
-            gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-            lt: hunt.query.stopTime * 1000
-          }
-        }
-      };
+      const query = await HuntAPIs.#buildHuntQuery(hunt, user);
 
       query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
 
@@ -917,6 +925,22 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     // Convert notifier array to comma-separated string for storage
     if (ArkimeUtil.isStringArray(req.body.notifier)) {
       hunt.notifier = req.body.notifier.join(',');
+    }
+
+    try {
+      const query = await HuntAPIs.#buildHuntQuery(hunt, req.user);
+      query.size = 0;
+      query.track_total_hits = true;
+      delete query.sort;
+      const result = await Db.searchSessions(Db.getSessionIndices(true), query, {});
+      hunt.totalSessions = result.hits.total;
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/hunt count`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Error creating hunt', 'api.hunts.errorCreating');
+    }
+
+    if (hunt.totalSessions > limit) {
+      return res.serverError(403, `This hunt applies to too many sessions. Narrow down your session search to less than ${limit} first.`, 'api.hunts.tooManySessions', { limit });
     }
 
     const response = { success: true, hunt };

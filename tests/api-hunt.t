@@ -1,4 +1,4 @@
-use Test::More tests => 349;
+use Test::More tests => 350;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -313,6 +313,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   is ($json->{success}, 0, "can't remove hunt name and id from hunts with no matches");
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   my $id8 = $json->{hunt}->{id};
+  cmp_ok($json->{hunt}->{totalSessions}, '>', 1, "hunt totalSessions is counted by the server");
   viewerGet("/regressionTests/processHuntJobs");
   $json = viewerPutToken("/api/hunt/$id8/removefromsessions?arkimeRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 1, "can remove hunt name and id from sessions");

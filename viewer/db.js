@@ -1727,23 +1727,28 @@ Db.sid2Index = function (id, options) {
     if (id[0] === 'x') {
       // ver is x@, which indicates user-specified queryExtraIndices,
       //   so the id will be formatted x@_index:_id
-      // console.log(`Db.sid2Index: ${id.substr(2, colon - 2)}`);
       const index = id.substr(2, colon - 2);
-      if (internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+      if (colon > 2 && /^[\w.+-]+$/.test(index) && internals.queryExtraIndicesRegex.some(re => re.test(index))) {
         return index;
       } else {
         throw new Error('Db.sid2Index: ERROR - queryExtraIndices regex did not match');
       }
-    } else {
-      if (colon > 0) {
-        return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);
-      }
-      return 'sessions' + id[0] + '-' + id.substr(2, id.indexOf('-') - 2);
     }
+
+    const indexDate = (colon > 0) ? id.substr(2, colon - 2) : id.substr(2, id.indexOf('-') - 2);
+    if ((id[0] !== '2' && id[0] !== '3') || !/^[\w-]+$/.test(indexDate)) {
+      throw new Error('Db.sid2Index: ERROR - invalid session id');
+    }
+    return 'sessions' + id[0] + '-' + indexDate;
   }
 
-  const s3 = 'sessions3-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
-  const s2 = 'sessions2-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
+  const date = (colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-'));
+  if (!/^[\w-]+$/.test(date)) {
+    throw new Error('Db.sid2Index: ERROR - invalid session id');
+  }
+
+  const s3 = 'sessions3-' + date;
+  const s2 = 'sessions2-' + date;
 
   if (!internals.aliasesCache) {
     return s3;
@@ -1766,7 +1771,7 @@ Db.sid2Index = function (id, options) {
     return results;
   }
 
-  return results[0];
+  return results[0] ?? fs3;
 };
 
 Db.loadFields = async () => {

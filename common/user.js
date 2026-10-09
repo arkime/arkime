@@ -1108,7 +1108,7 @@ class User {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
-    User.getUser(userId, (err, user) => {
+    User.getUser(userId, async (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
@@ -1121,6 +1121,18 @@ class User {
           return res.serverError(403, 'Can not add a role that the user already has');
         }
         roles.push(roleId);
+
+        if (userId.startsWith('role:')) {
+          let rolesSet;
+          try {
+            rolesSet = await User.roles2ExpandedSet(roles);
+          } catch (e) {
+            return res.serverError(500, 'Error updating user role');
+          }
+          if (roleId === userId || rolesSet.has(userId)) {
+            return res.serverError(403, `Can't have circular role dependencies`);
+          }
+        }
       } else {
         if (!hasRole) {
           return res.serverError(403, 'Can not remove a role that the user does not have');
