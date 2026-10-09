@@ -114,6 +114,7 @@ include:
     docker: true
     ja4plus: true
     prbuild: true
+    runson: blacksmith-4vcpu-ubuntu-2404
     viewertest: packetpocket
 
   ############# ARM #############
