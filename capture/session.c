@@ -295,7 +295,7 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
 uint32_t arkime_session_hash(const void *key)
 {
-    uint32_t *p = (uint32_t *)key;
+    const uint32_t *p = (const uint32_t *)key;
     const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0]);
 
     uint32_t h1 = hashSalt;
