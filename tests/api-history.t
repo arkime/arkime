@@ -1,4 +1,4 @@
-use Test::More tests => 61;
+use Test::More tests => 63;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -245,3 +245,13 @@ my ($url) = @_;
 
     $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
     is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Cluster: body cluster is still recorded");
+
+# A time range wider than an integer is still recorded in history
+    viewerGet("/api/sessions?startTime=-2129218200&stopTime=2482597800&expression=" . uri_escape("file=$pwd/socks-https-example.pcap"));
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is ($json->{data}->[0]->{expression}, "file=$pwd/socks-https-example.pcap", "Range: wide range is still recorded");
+    is ($json->{data}->[0]->{range}, 2147483647, "Range: range is capped");

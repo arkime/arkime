@@ -741,6 +741,8 @@ function logAction (uiPage) {
     } else if (req.query.startTime && req.query.stopTime) {
       log.range = req.query.stopTime - req.query.startTime;
     }
+    // range is mapped as an integer
+    if (log.range > 0x7fffffff) { log.range = 0x7fffffff; }
 
     // Views live in their own index now; resolve async and let finish() await it
     let viewPromise;
@@ -793,7 +795,7 @@ function logAction (uiPage) {
       if (viewPromise) { await viewPromise; }
 
       try {
-        Db.historyIt(log, req.body.cluster ?? req.query.cluster);
+        await Db.historyIt(log, req.body.cluster ?? req.query.cluster);
       } catch (err) {
         console.log('log history error', err);
       }
