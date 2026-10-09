@@ -49,7 +49,7 @@ LOCAL ArkimeReaderStats_t   gStats;
 LOCAL ARKIME_LOCK_DEFINE(gStats);
 
 /******************************************************************************/
-int reader_bpf_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_bpf_stats(ArkimeReaderStats_t *stats)
 {
     ARKIME_LOCK(gStats);
     memset(&gStats, 0, sizeof(gStats));
@@ -73,7 +73,6 @@ LOCAL void *reader_bpf_thread(gpointer readerv)
     struct pollfd pfd;
     struct bpf_hdr *bh;
     u_char *p;
-    int bytes;
     int caplen;
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, reader->interfacePos, NULL);
@@ -86,7 +85,7 @@ LOCAL void *reader_bpf_thread(gpointer readerv)
     pfd.events = POLLIN;
 
     while (!config.quitting) {
-        bytes = read(reader->fd, reader->buf, reader->bufsize);
+        int bytes = read(reader->fd, reader->buf, reader->bufsize);
         if (bytes < 0) {
             if (errno != EINTR && errno != EAGAIN) {
                 LOG("BPF read error on %s: %s", config.interface[reader->interfacePos], strerror(errno));
@@ -184,7 +183,7 @@ LOCAL void bpf_set_filter(ArkimeBpf_t *reader, const char *filterstr)
 }
 
 /******************************************************************************/
-void reader_bpf_start()
+LOCAL void reader_bpf_start()
 {
     char name[100];
     for (int i = 0; i < numReaders; i++) {
@@ -194,7 +193,7 @@ void reader_bpf_start()
 }
 
 /******************************************************************************/
-void reader_bpf_exit()
+LOCAL void reader_bpf_exit()
 {
     for (int i = 0; i < numReaders; i++) {
         if (readers[i].fd >= 0) {
@@ -266,13 +265,13 @@ void reader_bpf_init(const char *UNUSED(name))
         }
 
         if (config.debug) {
-            LOG("BPF buffer size for interface %s: %u", config.interface[i], blen);
+            LOG("BPF buffer size for interface %s: %d", config.interface[i], blen);
         }
 
         reader->bufsize = blen;
         reader->buf = malloc(blen);
         if (!reader->buf) {
-            CONFIGEXIT("Failed to allocate BPF buffer of size %u", blen);
+            CONFIGEXIT("Failed to allocate BPF buffer of size %d", blen);
         }
 
         // Set promiscuous mode

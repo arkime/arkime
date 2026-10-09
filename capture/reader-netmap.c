@@ -53,7 +53,7 @@ LOCAL struct bpf_program     bpf;
 LOCAL gboolean               useBpf;
 
 /******************************************************************************/
-int reader_netmap_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_netmap_stats(ArkimeReaderStats_t *stats)
 {
     ARKIME_LOCK(gStats);
     memset(&gStats, 0, sizeof(gStats));
@@ -137,7 +137,7 @@ LOCAL void netmap_set_filter(const char *filterstr)
 }
 
 /******************************************************************************/
-void reader_netmap_start()
+LOCAL void reader_netmap_start()
 {
     char name[100];
     for (int i = 0; i < numReaders; i++) {
@@ -147,7 +147,7 @@ void reader_netmap_start()
 }
 
 /******************************************************************************/
-void reader_netmap_exit()
+LOCAL void reader_netmap_exit()
 {
     for (int i = 0; config.interface[i]; i++) {
         if (nmdPerInterface[i]) {
