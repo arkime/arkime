@@ -45,6 +45,7 @@ let oldprefix;
 let prefix;
 let sessionsIndexRe;
 let historyDocRe;
+let unsafeLogging = false;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 let sigV4Signer = null;
@@ -87,6 +88,10 @@ ArkimeConfig.loaded(() => {
     }
   }
   console.log('ESPROXY sensors configured: %d', Object.keys(sensors).length);
+  unsafeLogging = Config.getBool('esProxyUnsafeLogging', false);
+  if (unsafeLogging) {
+    console.log('WARNING - esProxyUnsafeLogging=true: raw request bodies and bulk errors may contain passwords, captured traffic, and other sensitive data. Use only for controlled troubleshooting.');
+  }
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
   const esClientKey = Config.get('esClientKey');
@@ -579,8 +584,11 @@ function validateBulk (req) {
         throw new Error('Missing create, update, delete or index operation');
       }
     } catch (err) {
-      // Parser errors can contain body snippets. Log only validation metadata.
+      // Parser errors can contain body snippets. Raw diagnostics require opt-in.
       console.log('Bulk validation failed at line %d (body bytes: %d)', i + 1, body.length);
+      if (unsafeLogging) {
+        console.log('UNSAFE bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
+      }
       return false;
     }
     // delete has no body line, all others do
@@ -750,8 +758,14 @@ app.post('*', saveBody, (req, res) => {
     if (Config.debug) {
       console.log('UPDATE body bytes: %d', req.body.length);
     }
+    if (unsafeLogging) {
+      console.log('UNSAFE UPDATE body: %s', ArkimeUtil.sanitizeStr(req.body.toString('utf8')));
+    }
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>%s<: body bytes: %d`, ArkimeUtil.sanitizeStr(path), Buffer.isBuffer(req.body) ? req.body.length : 0);
+    if (unsafeLogging && Buffer.isBuffer(req.body)) {
+      console.log('UNSAFE POST body: %s', ArkimeUtil.sanitizeStr(req.body.toString('utf8')));
+    }
     return res.status(400).send('Not authorized for API');
   }
   if (req.bulkEmpty) {
