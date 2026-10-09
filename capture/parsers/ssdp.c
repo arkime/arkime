@@ -116,7 +116,7 @@ LOCAL int ssdp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 
     int isReq = (len >= 9 && memcmp(data, "M-SEARCH ", 9) == 0) ||
                 (len >= 9 && memcmp(data, "NOTIFY * ", 9) == 0);
-    int isResp = (len >= 7 && memcmp(data, "HTTP/1.", 7) == 0);
+    int isResp = memcmp(data, "HTTP/1.", 7) == 0;
     if (!isReq && !isResp) return 0;
 
     ssdp_extract(session, data, len);
@@ -137,7 +137,7 @@ LOCAL void ssdp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 
     int isReq = (len >= 9 && memcmp(data, "M-SEARCH ", 9) == 0) ||
                 (len >= 9 && memcmp(data, "NOTIFY * ", 9) == 0);
-    int isResp = (len >= 7 && memcmp(data, "HTTP/1.", 7) == 0);
+    int isResp = memcmp(data, "HTTP/1.", 7) == 0;
 
     if (!isReq && !isResp) return;
 

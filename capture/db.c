@@ -619,7 +619,7 @@ LOCAL ARKIME_LOCK_DEFINE(outputted);
 do { \
     if (config.fields[POS]->type != ARKIME_FIELD_TYPE_STR_HASH) \
         break; \
-    ArkimeStringHashStd_t *shash = session->fields[POS]->shash; \
+    const ArkimeStringHashStd_t *shash = session->fields[POS]->shash; \
     ArkimeString_t        *hstring; \
     if (FLAGS & ARKIME_FIELD_FLAG_CNT) { \
         BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%d,", config.fields[POS]->dbField, HASH_COUNT(s_, *shash)); \
