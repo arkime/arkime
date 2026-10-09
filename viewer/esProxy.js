@@ -48,7 +48,6 @@ ArkimeConfig.loaded(() => {
   // Sessions indices only, with our configured prefix
   const esc = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   sessionsIndexRe = new RegExp(`^(?:${esc(oldprefix)}sessions2-|(?:partial-)?${esc(prefix)}sessions3-)[A-Za-z0-9_*-]+$`);
-  console.log('sensors', sensors);
 
   for (const sensor in sensors) {
     const { pass, ip } = sensors[sensor];
@@ -64,6 +63,7 @@ ArkimeConfig.loaded(() => {
       sensors[sensor].ip = ip.split(',');
     }
   }
+  console.log('ESPROXY sensors configured: %d', Object.keys(sensors).length);
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
   const esClientKey = Config.get('esClientKey');
@@ -512,11 +512,11 @@ function validateBulk (req) {
         const _index = json.delete._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else {
-        console.log('Failed bulk', JSON.stringify(json, null, 2));
         throw new Error('Missing create, update, delete or index operation');
       }
     } catch (err) {
-      console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
+      // Parser errors can contain body snippets. Log only validation metadata.
+      console.log('Bulk validation failed at line %d (body bytes: %d)', i + 1, body.length);
       return false;
     }
     // delete has no body line, all others do
@@ -626,12 +626,10 @@ app.post('*', saveBody, (req, res) => {
   } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     if (Config.debug) {
-      console.log(req.body.toString('utf8'));
+      console.log('UPDATE body bytes: %d', req.body.length);
     }
   } else {
-    console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
-    // Log failed body for debugging hacking
-    console.log(req.body.toString('utf8'));
+    console.log(`POST failed node: ${req.sensor.node} path:>%s<: body bytes: %d`, ArkimeUtil.sanitizeStr(path), Buffer.isBuffer(req.body) ? req.body.length : 0);
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res).catch(e => {
