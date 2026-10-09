@@ -548,7 +548,7 @@ class MCPViewerAPIs {
           const count = await MCPServer.callApiOrThrow(req, {
             url: '/api/sessions',
             query: { ...query, length: 0 },
-            handlers: [SessionAPIs.getSessions]
+            handlers: [mw.logAction('sessions'), SessionAPIs.getSessions]
           });
 
           const totalSessions = count?.recordsFiltered ?? 0;
@@ -571,7 +571,8 @@ class MCPViewerAPIs {
               query: {
                 expression: args.expression,
                 startTime: args.startTime,
-                stopTime: args.stopTime
+                stopTime: args.stopTime,
+                view: args.view
               }
             },
             handlers: [mw.logAction('hunt'), User.checkPermissions(['packetSearch']), HuntAPIs.createHunt]

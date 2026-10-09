@@ -504,7 +504,7 @@ class UserAPIs {
       res.setHeader('Last-Modified', date);
 
       if (err) { return error(err); }
-      if (!req.user.settings.theme) { return error('no custom theme defined'); }
+      if (!ArkimeUtil.isString(req.user.settings.theme)) { return error('no custom theme defined'); }
 
       const theme = req.user.settings.theme.split(':');
 
@@ -581,6 +581,9 @@ class UserAPIs {
       'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
       const val = req.body[key];
       if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val)) {
+        return obj;
+      }
+      if (key === 'theme' && val !== undefined && typeof val !== 'string') {
         return obj;
       }
       obj[key] = val;

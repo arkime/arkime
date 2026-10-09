@@ -396,11 +396,11 @@ class BuildQuery {
       reqQuery.bounding = 'both';
     }
 
-    if ((reqQuery.date && reqQuery.date === '-1') ||
+    if ((reqQuery.date && parseFloat(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
       // interval is already assigned above from result of determineQueryTimes
 
-    } else if (reqQuery.startTime !== undefined && reqQuery.stopTime) {
+    } else if (reqQuery.startTime !== undefined && Number.isFinite(reqQuery.stopTime)) {
       switch (reqQuery.bounding) {
       case 'first':
         query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });

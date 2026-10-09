@@ -811,7 +811,7 @@ class User {
       return res.serverError(403, 'User roles must be system roles or start with "role:"');
     }
 
-    const rolesSet = await User.roles2ExpandedSet(req.body.roles);
+    const rolesSet = await User.roles2ExpandedSet(req.body.roles, true);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
     if (isRole && (rolesSet.has(req.body.userId) || req.body.roles.includes(req.body.userId))) {
       return res.serverError(403, `Can't have circular role dependencies`);
@@ -980,7 +980,7 @@ class User {
       return res.serverError(403, 'User roles must be system roles or start with "role:"');
     }
 
-    const rolesSet = await User.roles2ExpandedSet(req.body.roles);
+    const rolesSet = await User.roles2ExpandedSet(req.body.roles, true);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
     if (isRole && (rolesSet.has(userId) || req.body.roles.includes(userId))) {
       return res.serverError(403, `Can't have circular role dependencies`);
@@ -1108,7 +1108,7 @@ class User {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
     }
 
-    User.getUser(userId, (err, user) => {
+    User.getUser(userId, async (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found');
@@ -1121,6 +1121,18 @@ class User {
           return res.serverError(403, 'Can not add a role that the user already has');
         }
         roles.push(roleId);
+
+        if (userId.startsWith('role:')) {
+          let rolesSet;
+          try {
+            rolesSet = await User.roles2ExpandedSet(roles, true);
+          } catch (e) {
+            return res.serverError(500, 'Error updating user role');
+          }
+          if (roleId === userId || rolesSet.has(userId)) {
+            return res.serverError(403, `Can't have circular role dependencies`);
+          }
+        }
       } else {
         if (!hasRole) {
           return res.serverError(403, 'Can not remove a role that the user does not have');
@@ -1428,8 +1440,8 @@ class User {
   /**
    * Convert array of roles to set of fully expanded roles
    */
-  static async roles2ExpandedSet (roles) {
-    return (await User.#expandFields({ roles }, false)).allRoles;
+  static async roles2ExpandedSet (roles, includeDisabled = false) {
+    return (await User.#expandFields({ roles }, false, includeDisabled)).allRoles;
   }
 
   /**
@@ -1438,7 +1450,7 @@ class User {
    * can swap the results in with no await in between.
    * @ignore
    */
-  static async #expandFields (user, withSettings = true) {
+  static async #expandFields (user, withSettings = true, includeDisabled = false) {
     const allRoles = new Set();
     const allSettings = {};
     let allExpression;
@@ -1508,9 +1520,10 @@ class User {
       // Already processed
       if (allRoles.has(r)) { continue; }
 
-      // See if role actually exists
+      // See if role actually exists. A disabled role still counts for cycle
+      // detection, since it can be enabled later
       const role = await User.getUserCache(r);
-      if (!role || !role.enabled) { continue; }
+      if (!role || (!role.enabled && !includeDisabled)) { continue; }
       allRoles.add(r);
 
       if (role.expression && role.expression.trim().length > 0) {
