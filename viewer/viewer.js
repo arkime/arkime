@@ -1147,7 +1147,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
             }
           });
         }
-        await Db.deleteFile(fields.node, item._id, fields.name);
+        await Db.deleteFile(fields.node, item._id, fields.num, fields.name);
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);
@@ -2427,7 +2427,8 @@ async function premain () {
     isPrimaryViewer: CronAPIs.isPrimaryViewer,
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
     maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
-    regressionTests: ArkimeConfig.regressionTests
+    regressionTests: ArkimeConfig.regressionTests,
+    deleteSessionsOnFileExpire: Config.get('deleteSessionsOnFileExpire', false)
   });
 
   Notifier.initialize({
