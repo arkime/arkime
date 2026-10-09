@@ -444,22 +444,27 @@ function parseCustomView (key, input) {
   }
   output += ')\n';
   output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
+  // Field docs are sensor-writable, so field info is render data, not pug source
+  output += `      +customViewFields(session, customViewFields[${JSON.stringify(key)}])\n`;
 
+  const viewFields = [];
   for (const field of fields.split(',')) {
     const info = fieldsMap[field];
-    if (!info) {
+    if (!info || !ArkimeUtil.isString(info.dbField)) {
       continue;
     }
-    const pos = info.dbField.lastIndexOf('.');
-    if (pos === -1) {
-      output += `      +arrayList(session, '${info.dbField}', '${info.friendlyName}', '${field}')\n`;
-    } else {
-      output += `      +arrayList(session.${info.dbField.slice(0, pos)}, '${info.dbField.slice(pos + 1)}', '${info.friendlyName}', '${field}')\n`;
-    }
+    const dbPath = info.dbField.split('.');
+    const dbField = dbPath.pop();
+    viewFields.push({
+      path: dbPath,
+      field: dbField,
+      title: String(info.friendlyName ?? field),
+      expr: field
+    });
   }
 
   output += '\n';
-  return output;
+  return { output, viewFields };
 }
 
 function createSessionDetail () {
@@ -492,11 +497,15 @@ function createSessionDetail () {
   }
 
   const customViews = Config.keys('custom-views') || [];
+  const customViewFields = {};
 
   for (const key of customViews) {
     const view = Config.sectionGet('custom-views', key);
-    found[key] = parseCustomView(key, view);
+    const { output, viewFields } = parseCustomView(key, view);
+    found[key] = output;
+    customViewFields[key] = viewFields;
   }
+  internals.customViewFields = customViewFields;
 
   const makers = internals.pluginEmitter.listeners('makeSessionDetail');
   async.each(makers, function (cb, nextCb) {

@@ -2641,6 +2641,7 @@ class SessionAPIs {
         query: req.query,
         basedir: '/',
         hidePackets,
+        customViewFields: internals.customViewFields,
         reqFields: Config.headers('headers-http-request'),
         resFields: Config.headers('headers-http-response'),
         emailFields: Config.headers('headers-email')
