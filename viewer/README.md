@@ -80,6 +80,33 @@ Now browse to the app at `http://localhost:8123`.
 ---
 
 
+### ESPROXY diagnostic logging
+
+`esProxyUnsafeLogging` defaults to `false`. ESPROXY normally logs the sensor
+count and request-validation metadata without dumping sensor credentials or
+request bodies. Increasing `debug` does not enable raw payload logging.
+
+For temporary troubleshooting, set `esProxyUnsafeLogging=true` in the configuration
+section used by ESPROXY (for example, `[esproxy]` when starting with `-n esproxy`):
+
+```ini
+[esproxy]
+esProxyUnsafeLogging=true
+```
+
+This enables rejected POST bodies, bulk-validation errors and offending lines
+(decompressed for gzip bulk requests), and accepted session-update bodies,
+regardless of the debug level. It emits a startup warning. The sensor credential
+map remains hidden; the option does not change authentication or request validation.
+
+Raw bodies and error details can contain passwords, captured traffic, and other
+sensitive data. Use only in a controlled troubleshooting environment, restrict
+access to the logs, and set the option back to `false` and restart afterward.
+This option does not control shared configuration logging: `debug` can still
+print configuration values, and `--dumpConfig` still prints the full configuration.
+
+---
+
 ### External File Fixes:
 
 [cubism](https://github.com/square/cubism) has a [bug](https://github.com/square/cubism/issues/16) where it hijacks the entire window's keydown listener. This caused issues with other window keydown listeners throughout the application. The current solution is to remove cubism's window keydown listener entirely. Since cubism is no longer being supported, we have opted to host a minified stable version in the public directory that includes this change.
