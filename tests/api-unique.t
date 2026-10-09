@@ -1,4 +1,4 @@
-use Test::More tests => 66;
+use Test::More tests => 70;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -246,6 +246,12 @@ foreach my $param ("date=-1.0", "date=-01", "date=-1e0", "date=bad", "segments=a
 foreach my $param ("date=72", "startTime=1386000000&stopTime=1386003600") {
     $txt = get("$param&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
     isnt($txt, "User time limit (72 hours) exceeded\n", "time limit allows $param");
+}
+
+# zero or inverted time windows
+foreach my $param ("startTime=0&stopTime=0", "startTime=1386000000&stopTime=0") {
+    $txt = get("$param&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
+    eq_or_diff($txt, "\n", "time limit $param returns nothing");
 }
 
 # same restriction, but timeLimit comes only from a role, not the user's own record

@@ -414,18 +414,17 @@ class SessionAPIs {
     } catch (e) {
       return res.serverError(400, 'Invalid decode parameter', 'api.sessions.invalidDecodeParam');
     }
-    for (const key in decodeOptions) {
-      if (ArkimeUtil.isPP(key)) { continue; }
-      if (!decode.isRegistered(key)) {
+    if (typeof decodeOptions !== 'object' || decodeOptions === null || Array.isArray(decodeOptions)) {
+      return res.serverError(400, 'Invalid decode parameter', 'api.sessions.invalidDecodeParam');
+    }
+    for (const key of Object.keys(decodeOptions)) {
+      const userOptions = decode.userOptions(key, decodeOptions[key]);
+      if (userOptions === undefined) {
         return res.serverError(400, 'Invalid decode parameter', 'api.sessions.invalidDecodeParam');
       }
-      if (key.match(/^ITEM/)) {
-        options.order.push(key);
-      } else {
-        options['ITEM-HTTP'].order.push(key);
-        options['ITEM-SMTP'].order.push(key);
-      }
-      options[key] = decodeOptions[key];
+      options['ITEM-HTTP'].order.push(key);
+      options['ITEM-SMTP'].order.push(key);
+      options[key] = userOptions;
     }
 
     if (req.query.needgzip) {
@@ -1290,7 +1289,8 @@ class SessionAPIs {
     try {
       let session;
       if (typeof idOrSession === 'object') {
-        if (idOrSession.fields.packetPos && idOrSession.fields.node) {
+        const packetPos = idOrSession.fields?.packetPos;
+        if (Array.isArray(packetPos) && packetPos.every(Number.isInteger) && ArkimeUtil.isString(idOrSession.fields.node)) {
           session = idOrSession;
         } else {
           session = await Db.getSession(Db.session2Sid(idOrSession), options);
@@ -2507,6 +2507,9 @@ class SessionAPIs {
     }
 
     const separator = req.query.separator || ', ';
+    if (!ArkimeUtil.isString(separator) || separator.length > 10) {
+      return res.type('text/plain').send('Invalid separator parameter\n');
+    }
     const doCounts = parseInt(req.query.counts, 10) || 0;
 
     let results = [];
@@ -3591,6 +3594,7 @@ class SessionAPIs {
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId', 'api.sessions.missingSaveId'); }
     if (!ArkimeUtil.isString(cluster)) { return res.serverError(200, 'Missing cluster', 'api.sessions.missingCluster'); }
     if (!internals.remoteClusters || !internals.remoteClusters[cluster]) { return res.serverError(200, 'Unknown cluster', 'api.sessions.unknownCluster'); }
+    if (req.query.tags !== undefined && !ArkimeUtil.isString(req.query.tags, 0)) { return res.serverError(200, 'When present tags must be a string', 'api.sessions.tagsMustBeString'); }
 
     const options = {
       user: req.user,

@@ -1,4 +1,4 @@
-use Test::More tests => 59;
+use Test::More tests => 78;
 
 use Cwd;
 use URI::Escape;
@@ -294,3 +294,23 @@ esDelete("/$noPcapIndex/_doc/$cvDocId?refresh=true");
 
     $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape('{"FOO":{}}'));
     is ($response->code, 400, "packets with unknown decode key returns 400 instead of hanging");
+
+    foreach my $decode ('{"hasOwnProperty":{}}', '{"toString":{}}', '{"ITEM-CB":{}}', '{"ITEM-HTTP":{}}', '{"BODY-UNBASE64":"x"}', '[]', '5') {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape($decode));
+        is ($response->code, 400, "packets with decode $decode returns 400");
+    }
+
+    foreach my $decode ('{"BODY-UNXOR":{"key":{}}}', '{"BODY-UNXOR":{"key":["01"],"skip":{}}}', '{"BODY-UNXOR":{"key":"01"}}') {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape($decode));
+        is ($response->code, 200, "packets with decode $decode returns 200");
+    }
+
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets");
+    is ($response->code, 200, "packets still work after bad decode options");
+
+# session ids that select other indices
+    foreach my $sid ('3@26m04,users:anonymous', '3@*:anonymous', 'zzzz:anonymous', '3@26m04:anonymous,x') {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/" . uri_escape($sid));
+        is ($response->code, 500, "session id $sid not found");
+        unlike ($response->content, qr/passStore|userId/, "session id $sid doesn't return a user");
+    }

@@ -102,8 +102,12 @@ class ArkimeRedisCache extends ArkimeCache {
   set (key, result) {
     super.set(key, result);
 
-    const data = BSON.serialize(result, false, true, false);
-    this.client.setex(this.prefix + key, this.cacheTimeout, data);
+    try {
+      const data = BSON.serialize(result, false, true, false);
+      this.client.setex(this.prefix + key, this.cacheTimeout, data);
+    } catch (err) {
+      console.log('ERROR - redis cache set', err.message);
+    }
   }
 }
 
@@ -144,8 +148,12 @@ class ArkimeMemcachedCache extends ArkimeCache {
   set (key, result) {
     super.set(key, result);
 
-    const data = BSON.serialize(result, false, true, false);
-    this.client.set(this.prefix + key, data, { expires: this.cacheTimeout }, () => {});
+    try {
+      const data = BSON.serialize(result, false, true, false);
+      this.client.set(this.prefix + key, data, { expires: this.cacheTimeout }, () => {});
+    } catch (err) {
+      console.log('ERROR - memcached cache set', err.message);
+    }
   }
 }
 
@@ -183,7 +191,13 @@ class ArkimeLMDBCache extends ArkimeCache {
       return super.get(key);
     }
 
-    const result = this.store.get(key);
+    // lmdb throws on keys it can't store, treat as a miss
+    let result;
+    try {
+      result = this.store.get(key);
+    } catch (err) {
+      return undefined;
+    }
     if (result !== undefined) {
       super.set(key, result);
     }
@@ -193,7 +207,11 @@ class ArkimeLMDBCache extends ArkimeCache {
   // ----------------------------------------------------------------------------
   set (key, result) {
     super.set(key, result);
-    this.store.put(key, result);
+    try {
+      this.store.put(key, result);
+    } catch (err) {
+      console.log('ERROR - lmdb cache set', err.message);
+    }
   }
 }
 
@@ -244,12 +262,12 @@ class ArkimeSQLiteCache extends ArkimeCache {
       return super.get(key);
     }
 
-    const row = this.db.prepare(`SELECT value FROM ${this.tableName} WHERE key = ? AND expires > ?`).get(key, Date.now() / 1000);
-    if (!row) {
-      return undefined;
-    }
-
     try {
+      const row = this.db.prepare(`SELECT value FROM ${this.tableName} WHERE key = ? AND expires > ?`).get(key, Date.now() / 1000);
+      if (!row) {
+        return undefined;
+      }
+
       const result = BSON.deserialize(row.value, { promoteBuffers: true });
       super.set(key, result);
       return result;
@@ -262,8 +280,12 @@ class ArkimeSQLiteCache extends ArkimeCache {
   set (key, result) {
     super.set(key, result);
 
-    const data = BSON.serialize(result, false, true, false);
-    const expires = Math.floor(Date.now() / 1000) + this.cacheTimeout;
-    this.db.prepare(`INSERT OR REPLACE INTO ${this.tableName} (key, value, expires) VALUES (?, ?, ?)`).run(key, data, expires);
+    try {
+      const data = BSON.serialize(result, false, true, false);
+      const expires = Math.floor(Date.now() / 1000) + this.cacheTimeout;
+      this.db.prepare(`INSERT OR REPLACE INTO ${this.tableName} (key, value, expires) VALUES (?, ?, ?)`).run(key, data, expires);
+    } catch (err) {
+      console.log('ERROR - sqlite cache set', err.message);
+    }
   }
 }

@@ -9,6 +9,7 @@
 
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Auth = require('../common/auth');
 const path = require('path');
 const fs = require('fs');
 const extractDomain = require('extract-domain');
@@ -873,6 +874,7 @@ class Integration {
       })
       .catch(err => {
         console.log(integration.name, itype, query, err);
+        if (res.headersSent) { return; }
         stats.directError++;
         istats.directError++;
         audit(0);
@@ -964,6 +966,11 @@ class Integration {
       if (!ArkimeUtil.isPlainObject(req.body.settings[iname])) {
         return res.send({ success: false, text: `settings.${ArkimeUtil.sanitizeStr(iname)} must be an object` });
       }
+    }
+
+    // stored encrypted as hex, must decrypt within Auth.STORED_AUTH_MAX
+    if (Buffer.byteLength(JSON.stringify(req.body.settings)) > Auth.STORED_AUTH_MAX / 4) {
+      return res.send({ success: false, text: 'Settings too large' });
     }
 
     try {

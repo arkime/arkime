@@ -61,6 +61,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4315 Fix the Lua pattern_ismatch function being able to crash capture
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
+  - #4328 Fix requests and large integration settings that could crash Cont3xt
 ## db.pl
   - #4312 Fix users-update --removeRole usersAdmin not removing usersAdmin
   - #4312 Fix initorupgrade erasing everything when OpenSearch/Elasticsearch returns an error
@@ -78,6 +79,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4300 Fix Connections CSV export not quoting values
   - #4315 Fix viewing packets or uncompressed bodies from some sessions using excessive memory
   - #4324 Transferring a periodic query to another user now disables it and clears its edit roles
+  - #4329 Fix requests that could crash or hang the viewer
+  - #4329 Fix crafted session ids being able to read data outside of the sessions indices
+  - #4329 Fix another way users with a time limit could search outside of it
+  - #4329 Fix the hunt session limit being bypassable
+  - #4329 Fix role assigners being able to create a circular role
   - #4327 Fix a capture node being able to run code in the viewer or browser through custom-views field labels
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService

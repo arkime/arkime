@@ -161,8 +161,13 @@ app.use((req, res, next) => {
 
 // Don't allow cluster if not multiviewer except for the /api/session.*/send calls
 app.use((req, res, next) => {
-  if (!internals.multiES && req.query.cluster !== undefined) {
-    delete req.query.cluster;
+  if (!internals.multiES) {
+    if (req.query.cluster !== undefined) {
+      delete req.query.cluster;
+    }
+    if (req.body?.cluster !== undefined) {
+      delete req.body.cluster;
+    }
   }
   return next();
 });
@@ -994,7 +999,7 @@ function sendSessionWorker (options, cb) {
     session.packetPos = ps;
     delete session.fileId;
 
-    if (options.tags) {
+    if (ArkimeUtil.isString(options.tags)) {
       tags = options.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
       if (!session.tags) {
         session.tags = [];
@@ -2007,15 +2012,15 @@ app.get( // session scrub on node endpoint - s2s only, used by SessionAPIs.#scru
   SessionAPIs.scrubSessionOnNode
 );
 
-app.get( // session send to node endpoint - used by SessionAPIs.#sendSessionsList
+app.get( // session send to node endpoint - s2s only, used by SessionAPIs.#sendSessionsList
   ['/api/session/:nodeName/:id/send'],
-  [checkProxyRequest],
+  [checkS2SToken, checkProxyRequest],
   SessionAPIs.sendSessionToNode
 );
 
-app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsListQL
+app.post( // sessions send to node endpoint - s2s only, used by CronAPIs.#sendSessionsListQL
   ['/api/sessions/:nodeName/send'],
-  [checkProxyRequest],
+  [checkS2SToken, checkProxyRequest],
   SessionAPIs.sendSessionsToNode
 );
 
@@ -2267,7 +2272,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  let theme = req.user?.settings?.theme || 'default-theme';
+  let theme = ArkimeUtil.isString(req.user?.settings?.theme) ? req.user.settings.theme : 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
   const titleConfig = Config.get('titleTemplate', '_cluster_ - _page_ _-view_ _-expression_')
