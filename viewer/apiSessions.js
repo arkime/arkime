@@ -3048,6 +3048,7 @@ class SessionAPIs {
         query: req.query,
         basedir: '/',
         hidePackets,
+        customViewFields: internals.customViewFields,
         reqFields: Config.headers('headers-http-request'),
         resFields: Config.headers('headers-http-response'),
         emailFields: Config.headers('headers-email')
@@ -3106,7 +3107,7 @@ class SessionAPIs {
               'download', 'type', 'disabled',
               // Vue directives / bindings (incl. slot props for v-menu's
               // #activator slot which uses v-bind="activatorProps")
-              'v-if', 'v-for', 'v-bind', 'v-on',
+              'v-if', 'v-for', 'v-bind', 'v-on', 'v-text',
               'v-has-permission', 'key', ':key',
               ':href', ':download', '@click', '@done',
               '#activator', '#default', '#button-content',

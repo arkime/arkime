@@ -190,6 +190,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4329 Fix another way users with a time limit could search outside of it
   - #4329 Fix the hunt session limit being bypassable
   - #4329 Fix role assigners being able to create a circular role
+  - #4327 Fix a capture node being able to run code in the viewer or browser through custom-views field labels
+  - #4335 Fix History not logging searches with a very long time range
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
 

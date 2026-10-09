@@ -1,4 +1,4 @@
-use Test::More tests => 81;
+use Test::More tests => 92;
 
 use Cwd;
 use URI::Escape;
@@ -286,6 +286,51 @@ ok($sd =~ m{Query A - &#123;constructor}s, "dns queryHost { escaped to &#123; in
 ok($sd !~ m{[^"]\{constructor}s, "dns queryHost has no raw { in /detail");
 
 sessionsDeleteByTag($noPcapIndex, $xssTag);
+
+# Custom view labels come from the fields index, which capture nodes can write,
+# so a hostile friendlyName must stay a plain string inside the Vue expressions
+my $cvTag = "custom-view-label-regression-tag";
+my $cvDocId = "abcdef0123456789custom00";
+my $cvDoc = '{
+  "@timestamp": 1745000000000,
+  "firstPacket": 1745000000000,
+  "lastPacket": 1745000001000,
+  "node": "test",
+  "ipProtocol": 6,
+  "source": {"ip": "10.99.99.12", "port": 1002, "bytes": 100, "packets": 1},
+  "destination": {"ip": "10.99.99.22", "port": 80, "bytes": 100, "packets": 1},
+  "network": {"packets": 2, "bytes": 200},
+  "totDataBytes": 100,
+  "length": 1,
+  "protocol": ["http"],
+  "protocolCnt": 1,
+  "http": {"host": ["customview.test"], "hostCnt": 1},
+  "iscool": ["yes"],
+  "evillabel": ["val"],
+  "tags": ["' . $cvTag . '"],
+  "tagsCnt": 1
+}';
+sessionsPost($noPcapIndex, $cvDocId, $cvDoc);
+
+my $cvList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$cvTag"));
+is (scalar @{$cvList->{data}}, 1, "custom view session indexed");
+my $cvId = $cvList->{data}->[0]->{id};
+
+$sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$cvId/detail")->content)->{html};
+ok($sd =~ m{<h4 class="session-card-title">Nice</h4>}s, "custom view title in /detail");
+ok($sd =~ m{exportUnique\(&quot;iscool&quot;, 0\)}s, "custom view field menu in /detail");
+ok($sd =~ m{\{name: "Is cool"\}}s, "custom view label in /detail");
+ok($sd =~ m{value="yes"}s, "custom view value in /detail");
+
+my $cvEscaped = 'Evil\' + (7*191) + \'\\"\\u003cb\\u003e\\u007b\\u007bx\\u007d\\u007d';
+ok($sd =~ m{\{name: "\Q$cvEscaped\E"\}}s, "hostile label escaped in \$t text");
+ok($sd =~ m{exportUnique\(&quot;evillabel&quot;, 0\)}s, "hostile label field menu in /detail");
+ok($sd !~ m{'"<b>}s, "hostile label never raw in /detail");
+ok($sd !~ m{\{name: "\QEvil' + (7*191) + '"\E}s, "hostile label never breaks out of the name string");
+ok($sd =~ m{v-text="&quot;\QEvil' + (7*191) + '\E}s, "hostile label kept literal in dropdown text");
+ok($sd !~ m{Evil1337}s, "hostile label never evaluated as pug");
+
+sessionsDeleteByTag($noPcapIndex, $cvTag);
 
 # decode parameter validation
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-zip.pcap"));

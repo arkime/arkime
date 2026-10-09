@@ -1,4 +1,4 @@
-use Test::More tests => 61;
+use Test::More tests => 69;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -245,3 +245,43 @@ my ($url) = @_;
 
     $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
     is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Cluster: body cluster is still recorded");
+
+# A time range wider than an integer is still recorded in history
+    viewerGet("/api/sessions?startTime=-2129218200&stopTime=2482597800&expression=" . uri_escape("file=$pwd/socks-https-example.pcap"));
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is ($json->{data}->[0]->{expression}, "file=$pwd/socks-https-example.pcap", "Range: wide range is still recorded");
+    is ($json->{data}->[0]->{range}, 2147483647, "Range: range is capped");
+
+# A reversed range below the integer minimum is still recorded in history
+    viewerGet("/api/sessions?startTime=2482597800&stopTime=-2129218200&expression=" . uri_escape("file=$pwd/dns-mx.pcap"));
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Range: reversed range is still recorded");
+    is ($json->{data}->[0]->{range}, -2147483648, "Range: reversed range is capped");
+
+# Date string times are resolved the same way the query resolves them
+    viewerGet("/api/sessions?startTime=2020-01-01&stopTime=2026-01-01&expression=" . uri_escape("file=$pwd/socks-https-example.pcap"));
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is ($json->{data}->[0]->{expression}, "file=$pwd/socks-https-example.pcap", "Range: date string range is recorded");
+    is ($json->{data}->[0]->{range}, 189388800, "Range: date string range is computed");
+
+# A numeric 0 startTime in a POST body is still a range
+    viewerPost("/api/sessions", '{"startTime":0,"stopTime":2482597800,"expression":"file=' . $pwd . '/dns-mx.pcap"}');
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Range: body startTime 0 is still recorded");
+    is ($json->{data}->[0]->{range}, 2147483647, "Range: body startTime 0 range is capped");
