@@ -50,6 +50,7 @@ const internals = require('./internals');
 internals.initialize(app);
 const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
+const BuildQuery = require('./buildQuery');
 const PacketPortal = require('./packetPortal');
 const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
@@ -736,13 +737,21 @@ function logAction (uiPage) {
 
     if (uiPage) { log.uiPage = uiPage; }
 
-    if (req.query.date && parseInt(req.query.date) === -1) {
+    if (req.query.date && parseFloat(req.query.date) === -1) {
       log.range = log.timestamp;
-    } else if (req.query.startTime && req.query.stopTime) {
-      log.range = req.query.stopTime - req.query.startTime;
+    } else if (req.query.startTime !== undefined && req.query.stopTime !== undefined) {
+      try {
+        // resolve the times the same way the query does so date strings work
+        const [startSec, stopSec] = BuildQuery.determineQueryTimes({ ...req.query });
+        log.range = startSec === null ? log.timestamp : stopSec - startSec;
+      } catch (err) {
+        // bad times are not a reason to skip logging
+      }
     }
     // range is mapped as an integer
-    if (log.range > 0x7fffffff) { log.range = 0x7fffffff; }
+    if (log.range !== undefined) {
+      log.range = Math.max(-0x80000000, Math.min(log.range, 0x7fffffff));
+    }
 
     // Views live in their own index now; resolve async and let finish() await it
     let viewPromise;
