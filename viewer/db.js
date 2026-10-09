@@ -673,7 +673,11 @@ Db.search = async (index, query, options) => {
 
     return results;
   } catch (err) {
-    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
+    if (err?.meta?.body?.error?.type === 'index_not_found_exception') {
+      console.log(`OpenSearch/Elasticsearch Search Error - index not found: ${err.meta.body.error.index ?? params.index}`);
+    } else {
+      console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
+    }
     throw err;
   }
 };

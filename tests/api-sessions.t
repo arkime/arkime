@@ -1,4 +1,4 @@
-use Test::More tests => 185;
+use Test::More tests => 192;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -253,6 +253,14 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $response = getBinary("/api/session/test/nonexistingid/pcap");
     is (unpack("H*", $response->content), "", "shouldn't find pcap");
     is ($response->{_rc}, "500", "can't find pcap returns 500");
+
+# posted session bodies must have a valid packetPos and node
+    foreach my $body ('{}', '[]', '{"fields":{"packetPos":"x","node":"test"}}', '{"fields":{"packetPos":[1,"2"],"node":"test"}}', '{"fields":{"packetPos":[1],"node":["test"]}}') {
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/session/test/$id/pcap", Content => $body, 'Content-Type' => 'application/json');
+        is ($response->code, 500, "post pcap with body $body returns 500");
+    }
+    $response = getBinary("/api/session/test/" . $id . "/pcap");
+    is ($response->code, 200, "can still download pcap after bad post bodies");
 
 # should be able to download multiple sessions pcap using list of ids
     $response = getBinary("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=". $id);

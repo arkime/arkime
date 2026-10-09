@@ -628,6 +628,12 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   // --------------------------------------------------------------------------
   // Build the sessions query a hunt searches, as the hunt's user
   static async #buildHuntQuery (hunt, user) {
+    // buildPromise only checks the default window, the hunt's own window replaces it below
+    const timeLimit = user.getTimeLimit();
+    if (timeLimit && (hunt.query.stopTime - hunt.query.startTime) / 3600 > timeLimit) {
+      throw new Error(`User time limit (${timeLimit} hours) exceeded`);
+    }
+
     const fakeReq = {
       user,
       query: {
@@ -712,7 +718,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       HuntAPIs.#runHuntJob(hunt.id, hunt, query, user);
     } catch (err) {
       HuntAPIs.#pauseHuntJobWithError(hunt.id, hunt, {
-        value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+        value: `Fatal Error: ${err?.message ?? err}. Fix your search and create a new hunt.`,
         unrunnable: true
       });
     }
@@ -852,7 +858,12 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'The hunt must search source or destination packets (or both)', 'api.hunts.missingSrcOrDst');
     }
     if (!req.body.query) { return res.serverError(403, 'Missing query', 'api.hunts.missingQuery'); }
-    if (req.body.query.startTime === undefined || req.body.query.stopTime === undefined) {
+    // Number() alone would accept "", null, false and [] as 0
+    const toSeconds = (v) => (typeof v === 'number' || (typeof v === 'string' && /^-?\d+$/.test(v))) ? Number(v) : NaN;
+    const startTime = toSeconds(req.body.query.startTime);
+    const stopTime = toSeconds(req.body.query.stopTime);
+    if (req.body.query.startTime === undefined || req.body.query.stopTime === undefined ||
+        !Number.isFinite(startTime) || !Number.isFinite(stopTime) || stopTime < startTime) {
       return res.serverError(403, 'Missing fully formed query (must include start time and stop time)', 'api.hunts.missingFullQuery');
     }
 
@@ -914,8 +925,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       searchedSessions: 0, // start with no sessions searched
       query: { // only use the necessary query items
         expression: req.body.query.expression,
-        startTime: req.body.query.startTime,
-        stopTime: req.body.query.stopTime,
+        startTime,
+        stopTime,
         view: req.body.query.view
       },
       description: req.body.description,
@@ -927,12 +938,18 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       hunt.notifier = req.body.notifier.join(',');
     }
 
+    let query;
     try {
-      const query = await HuntAPIs.#buildHuntQuery(hunt, req.user);
+      query = await HuntAPIs.#buildHuntQuery(hunt, req.user);
+    } catch (err) {
+      return res.serverError(400, err?.message ?? String(err));
+    }
+
+    try {
       query.size = 0;
       query.track_total_hits = true;
       delete query.sort;
-      const result = await Db.searchSessions(Db.getSessionIndices(true), query, {});
+      const result = await Db.searchSessions(Db.getSessionIndices(true), query, ViewerUtils.addCluster(req.query.cluster));
       hunt.totalSessions = result.hits.total;
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt count`, util.inspect(err, false, 50));
