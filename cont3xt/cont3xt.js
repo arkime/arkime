@@ -543,7 +543,12 @@ User.prototype.getCont3xtKeys = function () {
     return undefined;
   }
 
-  return Auth.auth2obj(v, Auth.passwordSecret256);
+  try {
+    return Auth.auth2obj(v, Auth.passwordSecret256, Auth.STORED_AUTH_MAX);
+  } catch (err) {
+    console.log('ERROR - decrypting cont3xt keys for', this.userId, err.message);
+    return undefined;
+  }
 };
 
 User.prototype.setCont3xtKeys = function (v) {
@@ -641,4 +646,13 @@ async function main () {
   ArkimeUtil.createHttpServer(app, cont3xtHost, ArkimeConfig.get('port', 3218));
 }
 
-main();
+// A rejected async express handler would otherwise exit the process
+process.on('unhandledRejection', (reason, p) => {
+  console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason);
+});
+
+// Startup failures still need to exit
+main().catch((err) => {
+  console.log('ERROR - starting cont3xt', err);
+  process.exit(1);
+});

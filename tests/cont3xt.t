@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 290;
+use Test::More tests => 310;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1570,3 +1570,107 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[0]->{indicators}->[0]->{itype}, "email");
 my ($emailLink) = grep { $_->{purpose} eq "link" } @{$json};
 eq_or_diff($emailLink->{indicator}, from_json('{"query": "example.com", "itype": "domain"}'), "email child domain");
+
+################################################################################
+### Requests that used to exit the process
+
+# null passes typeof 'object'
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => "Overview1",
+    title => "Overview of %{query}",
+    iType => "domain",
+    fields => [undef]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Field must be object"}'), "null overview field rejected");
+
+# keyword over 32766 bytes is rejected by ES on create, other dbs accept it
+my $immense = "a" x 33000;
+$json = cont3xtPutToken('/api/linkGroup', to_json({
+  name => $immense,
+  links => [{ name => "foo1", url => "http://www.foo.com", itypes => ["ip"] }]
+}), $token);
+ok($json->{success} || $json->{text} eq "Database error", "immense linkGroup name create answers without db details");
+
+$json = cont3xtPostToken('/api/view', to_json({
+  name => $immense
+}), $token);
+ok($json->{success} || $json->{text} eq "Database error", "immense view name create answers without db details");
+cont3xtDeleteToken("/api/view/$json->{view}->{_id}", "{}", $token) if ($json->{success});
+
+$json = cont3xtPutToken("/api/overview", to_json({
+    name => $immense,
+    title => "Overview of %{query}",
+    iType => "domain",
+    fields => []
+}), $token);
+ok($json->{success} || $json->{text} eq "Database error", "immense overview name create answers without db details");
+
+$json = cont3xtGet('/api/linkGroup');
+is($json->{success}, 1, "cont3xt still up after immense creates");
+foreach my $lg (grep { $_->{name} eq $immense } @{$json->{linkGroups}}) {
+  cont3xtDeleteToken("/api/linkGroup/$lg->{_id}", "{}", $token);
+}
+$json = cont3xtGet('/api/overview');
+foreach my $ov (grep { $_->{name} eq $immense } @{$json->{overviews}}) {
+  cont3xtDeleteToken("/api/overview/$ov->{_id}", "{}", $token);
+}
+
+# repeated and huge audit params, these crashed the sqlite backend
+$json = cont3xtGet('/api/audits?startMs=1&startMs=2&stopMs=9999999999999');
+is($json->{success}, 1, "array startMs ignored");
+
+$json = cont3xtGet('/api/audits?startMs=1&stopMs=3&stopMs=4');
+is($json->{success}, 1, "array stopMs ignored");
+
+$json = cont3xtGet('/api/audits?startMs=1&startMs=2&stopMs=3&stopMs=4');
+is($json->{success}, 1, "array startMs and stopMs ignored");
+
+$json = cont3xtGet('/api/audits?page=' . ("9" x 400));
+is($json->{success}, 1, "huge page clamped");
+
+$json = cont3xtGet('/api/audits?page=' . ("9" x 400) . '&itemsPerPage=10000');
+is($json->{success}, 1, "huge page with max itemsPerPage clamped");
+
+# ids and cache keys too long for lmdb
+$json = cont3xtDeleteToken('/api/audit/' . ("a" x 5000), "{}", $token);
+is($json->{success}, 0, "long audit id delete fails");
+
+my $longKey = "k" x 2100;
+$json = cont3xtPost('/api/integration/text/csv:longkey/search', to_json({
+  query => $longKey
+}));
+is($json->{data}->{_cont3xt}->{count}, 1, "long key single search found");
+
+$json = cont3xtPost('/api/integration/text/csv:longkey/search', to_json({
+  query => $longKey
+}));
+is($json->{data}->{_cont3xt}->{count}, 1, "long key single search found again");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "k" x 5000,
+  doIntegrations => ["csv:longkey"]
+}));
+is($json->[-1]->{purpose}, "finish", "long key bulk search finishes");
+
+$json = cont3xtGet('/api/linkGroup');
+is($json->{success}, 1, "cont3xt still up after long keys");
+
+# integration settings larger than the 8192 hex cookie cap still decrypt
+$json = cont3xtPutToken('/api/integration/settings', to_json({
+  settings => { Twilio => { disabled => JSON::true, junk => "x" x 10000 } }
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "large integration settings saved");
+
+$json = cont3xtGet('/api/integration/settings');
+is($json->{success}, 1, "large integration settings readable");
+
+$json = cont3xtGet('/api/integration');
+is($json->{success}, 1, "integrations listed with large settings");
+
+$json = cont3xtPutToken('/api/integration/settings', to_json({
+  settings => { Twilio => { junk => "x" x 300000 } }
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Settings too large"}'), "too large integration settings rejected");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "integration settings reset");

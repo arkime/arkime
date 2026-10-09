@@ -969,7 +969,22 @@ exports.settings = function () {
   return internals.settings;
 };
 exports.isRegistered = function (regName) {
-  return internals.registry[regName] !== undefined;
+  return Object.hasOwn(internals.registry, regName);
+};
+
+// Returns sanitized options for a user selectable decoder, or undefined if not allowed
+exports.userOptions = function (regName, value) {
+  if (!Object.hasOwn(internals.settings, regName)) { return undefined; }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) { return undefined; }
+
+  const options = {};
+  for (const field of internals.settings[regName].fields ?? []) {
+    const v = value[field.key];
+    if (typeof v === 'string' || typeof v === 'number') {
+      options[field.key] = String(v);
+    }
+  }
+  return options;
 };
 
 exports.register('BODY-UNXORBRUTEGZ', createUnxorBruteGzip, { name: 'UnXOR Brute GZip Header' });

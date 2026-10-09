@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 280;
+use Test::More tests => 290;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -242,6 +242,15 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     is($json->{success}, 1, "update with unknown key succeeds");
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{notARealSetting}, "unknown setting key was dropped");
+
+# non string theme is not stored
+    my $prevTheme = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token)->{theme};
+    foreach my $theme ('5', '["custom-theme:#000000"]', 'true') {
+        $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", "{\"theme\":$theme}", $test1Token);
+        is($json->{success}, 1, "update user settings with theme $theme");
+        $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+        is($json->{theme}, $prevTheme, "theme $theme not stored");
+    }
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
@@ -616,6 +625,21 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
 
     $json = viewerPostToken("/api/user/sac-test1/assignment?arkimeRegressionUser=sac-test1", '{"roleId": false, "newRoleState": true}', $test1Token);
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
+
+    $json = viewerPostToken("/api/user/role:sac-test1/assignment?arkimeRegressionUser=sac-test1", '{"roleId": "role:sac-test1", "newRoleState": true}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependencies","success":false}'));
+
+# circular through a disabled role
+    $json = viewerPostToken("/api/user", '{"userId": "role:sac-test3", "userName": "UserName", "enabled":false, "roles":["role:sac-test1"], "roleAssigners": ["sac-test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "Role created successfully", "success": true}'));
+
+    $json = viewerPostToken("/api/user/role:sac-test1", '{"roles":["role:sac-test3"]}', $token);
+    eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependencies", "success": false}'));
+
+    $json = viewerPostToken("/api/user/role:sac-test1/assignment?arkimeRegressionUser=sac-test1", '{"roleId": "role:sac-test3", "newRoleState": true}', $test1Token);
+    eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependencies","success":false}'));
+
+    $json = viewerDeleteToken("/api/user/role:sac-test3", $token);
 
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;

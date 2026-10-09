@@ -186,11 +186,16 @@ class LinkGroup {
       return res.send({ success: false, text: msg });
     }
 
-    const results = await Db.putLinkGroup(null, lg);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' });
+    try {
+      const results = await Db.putLinkGroup(null, lg);
+      if (!results) {
+        return res.send({ success: false, text: 'ES Error' });
+      }
+      return res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      console.log('ERROR - creating link group', err);
+      return res.send({ success: false, text: 'Database error' });
     }
-    return res.send({ success: true, text: 'Success' });
   }
 
   /**
@@ -227,7 +232,8 @@ class LinkGroup {
       }
       return res.send({ success: true, text: 'Success' });
     } catch (err) {
-      return res.send({ success: false, text: err.toString() });
+      console.log('ERROR - updating link group', err);
+      return res.send({ success: false, text: 'Database error' });
     }
   }
 
@@ -245,11 +251,16 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    const results = await Db.deleteLinkGroup(req.params.id);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' });
+    try {
+      const results = await Db.deleteLinkGroup(req.params.id);
+      if (!results) {
+        return res.send({ success: false, text: 'ES Error' });
+      }
+      return res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      console.log('ERROR - deleting link group', err);
+      return res.send({ success: false, text: 'Database error' });
     }
-    return res.send({ success: true, text: 'Success' });
   }
 }
 

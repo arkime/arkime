@@ -1,4 +1,4 @@
-use Test::More tests => 60;
+use Test::More tests => 61;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -236,3 +236,12 @@ my ($url) = @_;
 
     $json = viewerDeleteToken("/api/view/$viewId", $token);
     is ($json->{success}, 1, "View: deleted");
+
+# A cluster in a POST body is still recorded in history
+    viewerPost("/api/sessions", '{"date":-1,"cluster":"nosuchcluster","expression":"file=' . $pwd . '/dns-mx.pcap"}');
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Cluster: body cluster is still recorded");

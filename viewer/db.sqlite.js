@@ -71,29 +71,24 @@ class DbSQLiteImpl {
   }
 
   async getViewByIdOrName (idOrName, user, roles) {
+    const canAccess = (doc) => doc.user === user || doc.users?.includes(user) || doc.roles?.some(r => roles.includes(r));
+
     // Try by id first
-    let row = this.#db.prepare('SELECT id, json FROM views WHERE id = ?').get(idOrName);
-    if (!row) {
-      // Try by name - scan all and match
-      const rows = this.#db.prepare('SELECT id, json FROM views').all();
-      for (const r of rows) {
-        const doc = JSON.parse(r.json);
-        if (doc.name === idOrName) {
-          row = r;
-          break;
-        }
-      }
+    const row = this.#db.prepare('SELECT id, json FROM views WHERE id = ?').get(idOrName);
+    if (row) {
+      const doc = JSON.parse(row.json);
+      if (canAccess(doc)) { return doc; }
     }
-    if (!row) { return null; }
 
-    const source = typeof row.json === 'string' ? JSON.parse(row.json) : row.json;
-
-    // Check permissions
-    if (source.user === user) { return source; }
-    if (source.users?.includes(user)) { return source; }
-    if (source.roles?.some(r => roles.includes(r))) { return source; }
-
-    return null;
+    // Then by name, preferring the user's own view
+    let found = null;
+    for (const r of this.#db.prepare('SELECT id, json FROM views').all()) {
+      const doc = JSON.parse(r.json);
+      if (doc.name !== idOrName || !canAccess(doc)) { continue; }
+      if (doc.user === user) { return doc; }
+      found ??= doc;
+    }
+    return found;
   }
 
   async createView (doc) {
