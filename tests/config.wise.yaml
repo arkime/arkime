@@ -85,6 +85,7 @@ databricks:test:
   port: 9998
   path: /sql
   token: mock-token
+  insecure: true
   keyPath: ip
   periodic: 1000000
   query: SELECT ip, threat FROM threats
@@ -93,6 +94,7 @@ urlapi:test:
   type: urlapitest
   tags: urlapiwise
   url: https://localhost:9998/urlapi/{value}/{valueBase64}/{valueBase64Url}
+  insecure: true
   resultField: value
   fields: field:urlapi.value;db:urlapi.value;kind:termfield;friendly:Value;shortcut:value\nfield:urlapi.b64;db:urlapi.b64;kind:termfield;friendly:B64;shortcut:b64\nfield:urlapi.b64url;db:urlapi.b64url;kind:termfield;friendly:B64Url;shortcut:b64url
 reversedns:
