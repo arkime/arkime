@@ -1,8 +1,12 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <v-select
     v-model="perPage"
     class="medium-input"
-    :items="perPageOptions"
+    :items="perPageItems"
     item-title="text"
     item-value="value"
     style="max-width: fit-content" />
@@ -18,6 +22,7 @@
 
 <script setup>
 import { watch, computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // pagination id that is incremented to remove inbetween-state (otherwise, each increment [eg: '1 per page'] track currentPage locally)
 const paginationIdCounter = ref(0);
@@ -36,15 +41,15 @@ const props = defineProps({
   },
   perPageOptions: {
     type: Array,
-    default: () => [
-      { value: 50, text: '50 per page' },
-      { value: 100, text: '100 per page' },
-      { value: 200, text: '200 per page' },
-      { value: 500, text: '500 per page' }
-    ]
+    default: () => [50, 100, 200, 500]
   }
 });
 const emit = defineEmits(['per-page-change']);
+
+const { t } = useI18n();
+const perPageItems = computed(() => props.perPageOptions.map(
+  option => (typeof option === 'number' ? { value: option, text: t('common.perPage', { count: option }) } : option)
+));
 
 const maxPages = computed(() => Math.max(1, Math.ceil(props.totalItems / perPage.value)));
 

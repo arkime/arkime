@@ -30,7 +30,6 @@ void reader_bpf_init(const char *UNUSED(name))
 #include <ifaddrs.h>
 
 extern ArkimeConfig_t        config;
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 
 typedef struct {
     int                  fd;
@@ -173,7 +172,7 @@ LOCAL int open_bpf_device()
 /******************************************************************************/
 LOCAL void bpf_set_filter(ArkimeBpf_t *reader, const char *filterstr)
 {
-    arkime_readers_compile_bpf("BPF", pcapFileHeader.dlt, pcapFileHeader.snaplen, filterstr, &reader->bpf);
+    arkime_readers_compile_bpf("BPF", DLT_EN10MB, config.snapLen, filterstr, &reader->bpf);
 
     if (ioctl(reader->fd, BIOCSETF, &reader->bpf) < 0) {
         CONFIGEXIT("Failed to set BPF filter: %s", strerror(errno));
@@ -219,7 +218,8 @@ void reader_bpf_init(const char *UNUSED(name))
         CONFIGEXIT("bpfBufferSize=%d not divisible by pagesize %d", buffersize, getpagesize());
     }
 
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, DLT_EN10MB, config.snapLen);
 
     struct ifreq ifr;
     numReaders = 0;

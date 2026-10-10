@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { fetchWrapper } from '@common/fetchWrapper.js';
 
 /**
@@ -19,12 +23,13 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 export const createShareableService = (type) => ({
   /**
    * Lists all shareable items of this type that the user has access to
+   * @param {object} params - Optional extra params (viewOnly, searchTerm, sort, desc, start, length, userId)
    * @returns {Promise} Promise resolving to { data: [], recordsTotal, recordsFiltered }
    */
-  async list () {
+  async list (params) {
     return await fetchWrapper({
       url: 'api/shareables',
-      params: { type }
+      params: { type, ...params }
     });
   },
 
@@ -49,12 +54,14 @@ export const createShareableService = (type) => ({
    * @param {string[]} config.viewRoles - Roles that can view this item
    * @param {string[]} config.editUsers - Users who can edit this item
    * @param {string[]} config.editRoles - Roles that can edit this item
+   * @param {string} [userId] - Act on behalf of this user instead of the caller
    * @returns {Promise} Promise resolving to { success, shareable, id }
    */
-  async save (config) {
+  async save (config, userId) {
     return await fetchWrapper({
       url: 'api/shareable',
       method: 'POST',
+      params: { userId },
       data: {
         type,
         name: config.name,
@@ -69,36 +76,115 @@ export const createShareableService = (type) => ({
   },
 
   /**
-   * Updates an existing shareable item
+   * Updates an existing shareable item. Only the keys given are sent, and the
+   * API leaves anything omitted as it was, so a partial update cannot wipe the
+   * sharing off an item.
    * @param {string} id - The shareable ID to update
-   * @param {object} config - The updated configuration
+   * @param {object} config - The fields to change
+   * @param {string} [userId] - Act on behalf of this user instead of the caller
    * @returns {Promise} Promise resolving to { success, shareable }
    */
-  async update (id, config) {
+  async update (id, config, userId) {
     return await fetchWrapper({
       url: `api/shareable/${id}`,
       method: 'PUT',
-      data: {
-        name: config.name,
-        description: config.description,
-        data: config.data,
-        viewUsers: config.viewUsers || [],
-        viewRoles: config.viewRoles || [],
-        editUsers: config.editUsers || [],
-        editRoles: config.editRoles || []
-      }
+      params: { userId },
+      data: config
     });
   },
 
   /**
    * Deletes a shareable item
    * @param {string} id - The shareable ID to delete
+   * @param {string} [userId] - Act on behalf of this user instead of the caller
    * @returns {Promise} Promise resolving to { success, text }
    */
-  async delete (id) {
+  async delete (id, userId) {
     return await fetchWrapper({
       url: `api/shareable/${id}`,
-      method: 'DELETE'
+      method: 'DELETE',
+      params: { userId }
     });
   }
 });
+
+/**
+ * Flattens a shareable into the shape the layout UIs use. A layout is just its
+ * name plus whatever is in data, so `data` round-trips without a per-type map.
+ * @param {object} shareable - A shareable from the API
+ * @returns {object} { id, name, ...data, canEdit, canDelete, view/edit users and roles }
+ */
+export const shareableToLayout = (shareable) => ({
+  id: shareable.id,
+  name: shareable.name,
+  ...(shareable.data || {}),
+  creator: shareable.creator,
+  shared: !!shareable.shared,
+  canEdit: shareable.canEdit !== false,
+  canDelete: shareable.canDelete !== false,
+  viewUsers: shareable.viewUsers || [],
+  viewRoles: shareable.viewRoles || [],
+  editUsers: shareable.editUsers || [],
+  editRoles: shareable.editRoles || []
+});
+
+// sharing lives at the top level of a shareable, everything else is its data
+const SHARE_KEYS = ['viewUsers', 'viewRoles', 'editUsers', 'editRoles'];
+
+const splitLayout = (layout) => {
+  const { name: layoutName, ...rest } = layout;
+  const body = {};
+  if (layoutName !== undefined) { body.name = layoutName; }
+  for (const key of SHARE_KEYS) {
+    if (rest[key] !== undefined) {
+      body[key] = rest[key];
+      delete rest[key];
+    }
+  }
+  return { body, data: rest };
+};
+
+/**
+ * Creates a service for a layout type stored as shareables (column layouts,
+ * info field layouts, spiview layouts). Wraps createShareableService so callers
+ * work with flat layout objects instead of shareable envelopes.
+ *
+ * @param {string} type - The shareable type, eg 'sessionsTableLayout'
+ * @returns {Object} Service with list/create/update/delete over flat layouts
+ */
+export const createLayoutService = (type) => {
+  const shareables = createShareableService(type);
+
+  return {
+    /* Layouts the user owns or that are shared with them, view or edit.
+       Yours come first, then the ones shared with you, each still in the
+       name order the API returned.
+       @param {string} [userId] - Act on behalf of this user instead of the caller */
+    async list (userId) {
+      // the server defaults to a page size of 50; layouts were previously
+      // unbounded per-user arrays, so ask for effectively all of them
+      const response = await shareables.list({ viewOnly: false, length: 1000, userId });
+      const layouts = response.data.map(shareableToLayout);
+      return [...layouts.filter(l => !l.shared), ...layouts.filter(l => l.shared)];
+    },
+
+    async create (layout, userId) {
+      const { body, data } = splitLayout(layout);
+      const response = await shareables.save({ ...body, data }, userId);
+      return shareableToLayout(response.shareable);
+    },
+
+    /* Only the keys given are sent, so an update that leaves sharing out
+       cannot clear it */
+    async update (id, layout, userId) {
+      const { body, data } = splitLayout(layout);
+      if (Object.keys(data).length) { body.data = data; }
+      const response = await shareables.update(id, body, userId);
+      return shareableToLayout(response.shareable);
+    },
+
+    async delete (id, userId) {
+      return await shareables.delete(id, userId);
+    }
+  };
+};

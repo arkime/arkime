@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
   <span>
     <v-btn
       size="small"
-      class="ml-1 square-btn-sm"
-      v-tooltip="'Copy this link to another group'"
+      class="ms-1"
+      v-tooltip="$t('cont3xt.linkGroups.copyToGroupTip')"
       color="warning">
       <v-icon icon="mdi-content-copy" />
       <v-menu
@@ -36,32 +36,32 @@ SPDX-License-Identifier: Apache-2.0
       :actions="[
         {
           icon: 'mdi-arrow-up',
-          text: 'Push to the TOP',
+          text: $t('cont3xt.linkGroups.pushTop'),
           action: () => $emit('pushLink', { index, target: 0 })
         },
         {
           icon: 'mdi-arrow-down',
-          text: 'Push to the BOTTOM',
+          text: $t('cont3xt.linkGroups.pushBottom'),
           action: () => $emit('pushLink', { index, target: linkGroup.links.length })
         },
         {
           icon: 'mdi-format-underline',
-          text: 'Add a Separator after this link',
+          text: $t('cont3xt.linkGroups.addSeparator'),
           action: () => $emit('addSeparator', index)
         },
         {
           icon: 'mdi-link',
-          text: 'Add a Link after this link',
+          text: $t('cont3xt.linkGroups.addLink'),
           action: () => $emit('addLink', index)
         },
         {
           icon: 'mdi-close',
-          text: 'Remove this link',
+          text: $t('cont3xt.linkGroups.removeLink'),
           action: () => $emit('removeLink', index)
         }
       ]"
       flat
-      class="ml-1 square-btn-sm"
+      class="ms-1"
       tabindex="-1"
       color="info" />
   </span>

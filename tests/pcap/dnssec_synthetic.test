@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 15435
+     "bytes" : 7000
     },
     "destination" : {
      "bytes" : 93,
@@ -17,16 +17,6 @@
      "port" : 53
     },
     "dns" : [
-     {
-      "host" : [
-       "q0204.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0204.example.com"
-     },
      {
       "host" : [
        "q0032.example.com"
@@ -46,26 +36,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0166.example.com"
-     },
-     {
-      "host" : [
-       "q0359.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0359.example.com"
-     },
-     {
-      "host" : [
-       "q0205.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0205.example.com"
      },
      {
       "host" : [
@@ -99,76 +69,6 @@
      },
      {
       "host" : [
-       "q0353.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0353.example.com"
-     },
-     {
-      "host" : [
-       "q0406.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0406.example.com"
-     },
-     {
-      "host" : [
-       "q0298.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0298.example.com"
-     },
-     {
-      "host" : [
-       "q0389.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0389.example.com"
-     },
-     {
-      "host" : [
-       "q0218.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0218.example.com"
-     },
-     {
-      "host" : [
-       "q0328.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0328.example.com"
-     },
-     {
-      "host" : [
-       "q0245.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0245.example.com"
-     },
-     {
-      "host" : [
        "q0053.example.com"
       ],
       "hostCnt" : 1,
@@ -179,16 +79,6 @@
      },
      {
       "host" : [
-       "q0216.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0216.example.com"
-     },
-     {
-      "host" : [
        "q0188.example.com"
       ],
       "hostCnt" : 1,
@@ -196,16 +86,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0188.example.com"
-     },
-     {
-      "host" : [
-       "q0284.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0284.example.com"
      },
      {
       "host" : [
@@ -229,16 +109,6 @@
      },
      {
       "host" : [
-       "q0273.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0273.example.com"
-     },
-     {
-      "host" : [
        "q0160.example.com"
       ],
       "hostCnt" : 1,
@@ -249,16 +119,6 @@
      },
      {
       "host" : [
-       "q0340.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0340.example.com"
-     },
-     {
-      "host" : [
        "q0066.example.com"
       ],
       "hostCnt" : 1,
@@ -266,26 +126,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0066.example.com"
-     },
-     {
-      "host" : [
-       "q0199.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0199.example.com"
-     },
-     {
-      "host" : [
-       "q0331.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0331.example.com"
      },
      {
       "host" : [
@@ -309,36 +149,6 @@
      },
      {
       "host" : [
-       "q0255.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0255.example.com"
-     },
-     {
-      "host" : [
-       "q0311.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0311.example.com"
-     },
-     {
-      "host" : [
-       "q0401.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0401.example.com"
-     },
-     {
-      "host" : [
        "q0084.example.com"
       ],
       "hostCnt" : 1,
@@ -346,16 +156,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0084.example.com"
-     },
-     {
-      "host" : [
-       "q0250.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0250.example.com"
      },
      {
       "host" : [
@@ -369,26 +169,6 @@
      },
      {
       "host" : [
-       "q0291.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0291.example.com"
-     },
-     {
-      "host" : [
-       "q0219.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0219.example.com"
-     },
-     {
-      "host" : [
        "q0182.example.com"
       ],
       "hostCnt" : 1,
@@ -399,56 +179,6 @@
      },
      {
       "host" : [
-       "q0264.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0264.example.com"
-     },
-     {
-      "host" : [
-       "q0275.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0275.example.com"
-     },
-     {
-      "host" : [
-       "q0338.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0338.example.com"
-     },
-     {
-      "host" : [
-       "q0289.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0289.example.com"
-     },
-     {
-      "host" : [
-       "q0276.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0276.example.com"
-     },
-     {
-      "host" : [
        "q0100.example.com"
       ],
       "hostCnt" : 1,
@@ -456,16 +186,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0100.example.com"
-     },
-     {
-      "host" : [
-       "q0351.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0351.example.com"
      },
      {
       "host" : [
@@ -489,16 +209,6 @@
      },
      {
       "host" : [
-       "q0385.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0385.example.com"
-     },
-     {
-      "host" : [
        "q0049.example.com"
       ],
       "hostCnt" : 1,
@@ -516,36 +226,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0101.example.com"
-     },
-     {
-      "host" : [
-       "q0308.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0308.example.com"
-     },
-     {
-      "host" : [
-       "q0431.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0431.example.com"
-     },
-     {
-      "host" : [
-       "q0355.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0355.example.com"
      },
      {
       "host" : [
@@ -569,16 +249,6 @@
      },
      {
       "host" : [
-       "q0345.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0345.example.com"
-     },
-     {
-      "host" : [
        "q0146.example.com"
       ],
       "hostCnt" : 1,
@@ -589,26 +259,6 @@
      },
      {
       "host" : [
-       "q0244.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0244.example.com"
-     },
-     {
-      "host" : [
-       "q0271.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0271.example.com"
-     },
-     {
-      "host" : [
        "q0074.example.com"
       ],
       "hostCnt" : 1,
@@ -616,16 +266,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0074.example.com"
-     },
-     {
-      "host" : [
-       "q0265.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0265.example.com"
      },
      {
       "host" : [
@@ -649,16 +289,6 @@
      },
      {
       "host" : [
-       "q0333.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0333.example.com"
-     },
-     {
-      "host" : [
        "q0078.example.com"
       ],
       "hostCnt" : 1,
@@ -666,16 +296,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0078.example.com"
-     },
-     {
-      "host" : [
-       "q0361.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0361.example.com"
      },
      {
       "host" : [
@@ -689,46 +309,6 @@
      },
      {
       "host" : [
-       "q0423.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0423.example.com"
-     },
-     {
-      "host" : [
-       "q0225.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0225.example.com"
-     },
-     {
-      "host" : [
-       "q0386.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0386.example.com"
-     },
-     {
-      "host" : [
-       "q0238.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0238.example.com"
-     },
-     {
-      "host" : [
        "q0082.example.com"
       ],
       "hostCnt" : 1,
@@ -736,46 +316,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0082.example.com"
-     },
-     {
-      "host" : [
-       "q0248.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0248.example.com"
-     },
-     {
-      "host" : [
-       "q0317.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0317.example.com"
-     },
-     {
-      "host" : [
-       "q0261.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0261.example.com"
-     },
-     {
-      "host" : [
-       "q0362.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0362.example.com"
      },
      {
       "host" : [
@@ -806,16 +346,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0015.example.com"
-     },
-     {
-      "host" : [
-       "q0287.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0287.example.com"
      },
      {
       "host" : [
@@ -859,16 +389,6 @@
      },
      {
       "host" : [
-       "q0411.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0411.example.com"
-     },
-     {
-      "host" : [
        "q0144.example.com"
       ],
       "hostCnt" : 1,
@@ -879,16 +399,6 @@
      },
      {
       "host" : [
-       "q0342.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0342.example.com"
-     },
-     {
-      "host" : [
        "q0137.example.com"
       ],
       "hostCnt" : 1,
@@ -896,16 +406,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0137.example.com"
-     },
-     {
-      "host" : [
-       "q0201.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0201.example.com"
      },
      {
       "host" : [
@@ -929,26 +429,6 @@
      },
      {
       "host" : [
-       "q0213.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0213.example.com"
-     },
-     {
-      "host" : [
-       "q0425.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0425.example.com"
-     },
-     {
-      "host" : [
        "q0039.example.com"
       ],
       "hostCnt" : 1,
@@ -956,26 +436,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0039.example.com"
-     },
-     {
-      "host" : [
-       "q0332.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0332.example.com"
-     },
-     {
-      "host" : [
-       "q0370.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0370.example.com"
      },
      {
       "host" : [
@@ -989,16 +449,6 @@
      },
      {
       "host" : [
-       "q0344.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0344.example.com"
-     },
-     {
-      "host" : [
        "q0172.example.com"
       ],
       "hostCnt" : 1,
@@ -1006,106 +456,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0172.example.com"
-     },
-     {
-      "host" : [
-       "q0388.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0388.example.com"
-     },
-     {
-      "host" : [
-       "q0257.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0257.example.com"
-     },
-     {
-      "host" : [
-       "q0404.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0404.example.com"
-     },
-     {
-      "host" : [
-       "q0433.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0433.example.com"
-     },
-     {
-      "host" : [
-       "q0335.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0335.example.com"
-     },
-     {
-      "host" : [
-       "q0242.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0242.example.com"
-     },
-     {
-      "host" : [
-       "q0249.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0249.example.com"
-     },
-     {
-      "host" : [
-       "q0377.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0377.example.com"
-     },
-     {
-      "host" : [
-       "q0233.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0233.example.com"
-     },
-     {
-      "host" : [
-       "q0237.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0237.example.com"
      },
      {
       "host" : [
@@ -1119,26 +469,6 @@
      },
      {
       "host" : [
-       "q0229.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0229.example.com"
-     },
-     {
-      "host" : [
-       "q0349.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0349.example.com"
-     },
-     {
-      "host" : [
        "q0193.example.com"
       ],
       "hostCnt" : 1,
@@ -1146,46 +476,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0193.example.com"
-     },
-     {
-      "host" : [
-       "q0391.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0391.example.com"
-     },
-     {
-      "host" : [
-       "q0365.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0365.example.com"
-     },
-     {
-      "host" : [
-       "q0296.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0296.example.com"
-     },
-     {
-      "host" : [
-       "q0360.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0360.example.com"
      },
      {
       "host" : [
@@ -1199,16 +489,6 @@
      },
      {
       "host" : [
-       "q0382.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0382.example.com"
-     },
-     {
-      "host" : [
        "q0175.example.com"
       ],
       "hostCnt" : 1,
@@ -1216,36 +496,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0175.example.com"
-     },
-     {
-      "host" : [
-       "q0223.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0223.example.com"
-     },
-     {
-      "host" : [
-       "q0321.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0321.example.com"
-     },
-     {
-      "host" : [
-       "q0295.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0295.example.com"
      },
      {
       "host" : [
@@ -1289,56 +539,6 @@
      },
      {
       "host" : [
-       "q0280.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0280.example.com"
-     },
-     {
-      "host" : [
-       "q0200.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0200.example.com"
-     },
-     {
-      "host" : [
-       "q0272.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0272.example.com"
-     },
-     {
-      "host" : [
-       "q0417.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0417.example.com"
-     },
-     {
-      "host" : [
-       "q0427.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0427.example.com"
-     },
-     {
-      "host" : [
        "q0106.example.com"
       ],
       "hostCnt" : 1,
@@ -1366,36 +566,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0192.example.com"
-     },
-     {
-      "host" : [
-       "q0230.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0230.example.com"
-     },
-     {
-      "host" : [
-       "q0222.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0222.example.com"
-     },
-     {
-      "host" : [
-       "q0436.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0436.example.com"
      },
      {
       "host" : [
@@ -1459,16 +629,6 @@
      },
      {
       "host" : [
-       "q0341.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0341.example.com"
-     },
-     {
-      "host" : [
        "q0023.example.com"
       ],
       "hostCnt" : 1,
@@ -1479,66 +639,6 @@
      },
      {
       "host" : [
-       "q0239.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0239.example.com"
-     },
-     {
-      "host" : [
-       "q0228.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0228.example.com"
-     },
-     {
-      "host" : [
-       "q0343.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0343.example.com"
-     },
-     {
-      "host" : [
-       "q0220.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0220.example.com"
-     },
-     {
-      "host" : [
-       "q0368.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0368.example.com"
-     },
-     {
-      "host" : [
-       "q0254.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0254.example.com"
-     },
-     {
-      "host" : [
        "q0096.example.com"
       ],
       "hostCnt" : 1,
@@ -1546,56 +646,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0096.example.com"
-     },
-     {
-      "host" : [
-       "q0392.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0392.example.com"
-     },
-     {
-      "host" : [
-       "q0327.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0327.example.com"
-     },
-     {
-      "host" : [
-       "q0286.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0286.example.com"
-     },
-     {
-      "host" : [
-       "q0421.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0421.example.com"
-     },
-     {
-      "host" : [
-       "q0337.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0337.example.com"
      },
      {
       "host" : [
@@ -1629,26 +679,6 @@
      },
      {
       "host" : [
-       "q0372.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0372.example.com"
-     },
-     {
-      "host" : [
-       "q0346.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0346.example.com"
-     },
-     {
-      "host" : [
        "q0159.example.com"
       ],
       "hostCnt" : 1,
@@ -1656,16 +686,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0159.example.com"
-     },
-     {
-      "host" : [
-       "q0339.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0339.example.com"
      },
      {
       "host" : [
@@ -1679,56 +699,6 @@
      },
      {
       "host" : [
-       "q0414.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0414.example.com"
-     },
-     {
-      "host" : [
-       "q0379.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0379.example.com"
-     },
-     {
-      "host" : [
-       "q0390.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0390.example.com"
-     },
-     {
-      "host" : [
-       "q0336.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0336.example.com"
-     },
-     {
-      "host" : [
-       "q0258.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0258.example.com"
-     },
-     {
-      "host" : [
        "q0031.example.com"
       ],
       "hostCnt" : 1,
@@ -1739,16 +709,6 @@
      },
      {
       "host" : [
-       "q0329.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0329.example.com"
-     },
-     {
-      "host" : [
        "q0161.example.com"
       ],
       "hostCnt" : 1,
@@ -1756,16 +716,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0161.example.com"
-     },
-     {
-      "host" : [
-       "q0277.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0277.example.com"
      },
      {
       "host" : [
@@ -1786,86 +736,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0145.example.com"
-     },
-     {
-      "host" : [
-       "q0396.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0396.example.com"
-     },
-     {
-      "host" : [
-       "q0323.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0323.example.com"
-     },
-     {
-      "host" : [
-       "q0397.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0397.example.com"
-     },
-     {
-      "host" : [
-       "q0437.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0437.example.com"
-     },
-     {
-      "host" : [
-       "q0316.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0316.example.com"
-     },
-     {
-      "host" : [
-       "q0357.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0357.example.com"
-     },
-     {
-      "host" : [
-       "q0288.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0288.example.com"
-     },
-     {
-      "host" : [
-       "q0259.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0259.example.com"
      },
      {
       "host" : [
@@ -1906,16 +776,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0098.example.com"
-     },
-     {
-      "host" : [
-       "q0334.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0334.example.com"
      },
      {
       "host" : [
@@ -1969,16 +829,6 @@
      },
      {
       "host" : [
-       "q0326.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0326.example.com"
-     },
-     {
-      "host" : [
        "q0062.example.com"
       ],
       "hostCnt" : 1,
@@ -1986,16 +836,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0062.example.com"
-     },
-     {
-      "host" : [
-       "q0256.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0256.example.com"
      },
      {
       "host" : [
@@ -2009,16 +849,6 @@
      },
      {
       "host" : [
-       "q0426.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0426.example.com"
-     },
-     {
-      "host" : [
        "q0153.example.com"
       ],
       "hostCnt" : 1,
@@ -2026,16 +856,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0153.example.com"
-     },
-     {
-      "host" : [
-       "q0226.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0226.example.com"
      },
      {
       "host" : [
@@ -2079,26 +899,6 @@
      },
      {
       "host" : [
-       "q0253.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0253.example.com"
-     },
-     {
-      "host" : [
-       "q0387.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0387.example.com"
-     },
-     {
-      "host" : [
        "q0107.example.com"
       ],
       "hostCnt" : 1,
@@ -2119,56 +919,6 @@
      },
      {
       "host" : [
-       "q0366.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0366.example.com"
-     },
-     {
-      "host" : [
-       "q0384.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0384.example.com"
-     },
-     {
-      "host" : [
-       "q0282.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0282.example.com"
-     },
-     {
-      "host" : [
-       "q0318.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0318.example.com"
-     },
-     {
-      "host" : [
-       "q0236.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0236.example.com"
-     },
-     {
-      "host" : [
        "q0051.example.com"
       ],
       "hostCnt" : 1,
@@ -2179,16 +929,6 @@
      },
      {
       "host" : [
-       "q0322.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0322.example.com"
-     },
-     {
-      "host" : [
        "q0158.example.com"
       ],
       "hostCnt" : 1,
@@ -2196,26 +936,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0158.example.com"
-     },
-     {
-      "host" : [
-       "q0210.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0210.example.com"
-     },
-     {
-      "host" : [
-       "q0232.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0232.example.com"
      },
      {
       "host" : [
@@ -2239,36 +959,6 @@
      },
      {
       "host" : [
-       "q0325.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0325.example.com"
-     },
-     {
-      "host" : [
-       "q0393.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0393.example.com"
-     },
-     {
-      "host" : [
-       "q0415.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0415.example.com"
-     },
-     {
-      "host" : [
        "q0187.example.com"
       ],
       "hostCnt" : 1,
@@ -2286,36 +976,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0011.example.com"
-     },
-     {
-      "host" : [
-       "q0378.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0378.example.com"
-     },
-     {
-      "host" : [
-       "q0292.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0292.example.com"
-     },
-     {
-      "host" : [
-       "q0371.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0371.example.com"
      },
      {
       "host" : [
@@ -2349,26 +1009,6 @@
      },
      {
       "host" : [
-       "q0358.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0358.example.com"
-     },
-     {
-      "host" : [
-       "q0212.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0212.example.com"
-     },
-     {
-      "host" : [
        "q0028.example.com"
       ],
       "hostCnt" : 1,
@@ -2376,26 +1016,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0028.example.com"
-     },
-     {
-      "host" : [
-       "q0383.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0383.example.com"
-     },
-     {
-      "host" : [
-       "q0407.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0407.example.com"
      },
      {
       "host" : [
@@ -2439,16 +1059,6 @@
      },
      {
       "host" : [
-       "q0348.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0348.example.com"
-     },
-     {
-      "host" : [
        "q0019.example.com"
       ],
       "hostCnt" : 1,
@@ -2456,16 +1066,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0019.example.com"
-     },
-     {
-      "host" : [
-       "q0304.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0304.example.com"
      },
      {
       "host" : [
@@ -2479,26 +1079,6 @@
      },
      {
       "host" : [
-       "q0297.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0297.example.com"
-     },
-     {
-      "host" : [
-       "q0231.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0231.example.com"
-     },
-     {
-      "host" : [
        "q0123.example.com"
       ],
       "hostCnt" : 1,
@@ -2506,36 +1086,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0123.example.com"
-     },
-     {
-      "host" : [
-       "q0352.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0352.example.com"
-     },
-     {
-      "host" : [
-       "q0380.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0380.example.com"
-     },
-     {
-      "host" : [
-       "q0398.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0398.example.com"
      },
      {
       "host" : [
@@ -2569,56 +1119,6 @@
      },
      {
       "host" : [
-       "q0374.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0374.example.com"
-     },
-     {
-      "host" : [
-       "q0247.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0247.example.com"
-     },
-     {
-      "host" : [
-       "q0418.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0418.example.com"
-     },
-     {
-      "host" : [
-       "q0214.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0214.example.com"
-     },
-     {
-      "host" : [
-       "q0381.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0381.example.com"
-     },
-     {
-      "host" : [
        "q0164.example.com"
       ],
       "hostCnt" : 1,
@@ -2649,56 +1149,6 @@
      },
      {
       "host" : [
-       "q0208.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0208.example.com"
-     },
-     {
-      "host" : [
-       "q0299.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0299.example.com"
-     },
-     {
-      "host" : [
-       "q0400.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0400.example.com"
-     },
-     {
-      "host" : [
-       "q0285.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0285.example.com"
-     },
-     {
-      "host" : [
-       "q0435.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0435.example.com"
-     },
-     {
-      "host" : [
        "q0090.example.com"
       ],
       "hostCnt" : 1,
@@ -2709,26 +1159,6 @@
      },
      {
       "host" : [
-       "q0430.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0430.example.com"
-     },
-     {
-      "host" : [
-       "q0301.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0301.example.com"
-     },
-     {
-      "host" : [
        "q0191.example.com"
       ],
       "hostCnt" : 1,
@@ -2736,36 +1166,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0191.example.com"
-     },
-     {
-      "host" : [
-       "q0260.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0260.example.com"
-     },
-     {
-      "host" : [
-       "q0243.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0243.example.com"
-     },
-     {
-      "host" : [
-       "q0215.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0215.example.com"
      },
      {
       "host" : [
@@ -2786,26 +1186,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0177.example.com"
-     },
-     {
-      "host" : [
-       "q0241.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0241.example.com"
-     },
-     {
-      "host" : [
-       "q0369.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0369.example.com"
      },
      {
       "host" : [
@@ -2859,36 +1239,6 @@
      },
      {
       "host" : [
-       "q0246.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0246.example.com"
-     },
-     {
-      "host" : [
-       "q0315.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0315.example.com"
-     },
-     {
-      "host" : [
-       "q0434.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0434.example.com"
-     },
-     {
-      "host" : [
        "q0002.example.com"
       ],
       "hostCnt" : 1,
@@ -2896,16 +1246,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0002.example.com"
-     },
-     {
-      "host" : [
-       "q0203.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0203.example.com"
      },
      {
       "host" : [
@@ -2929,26 +1269,6 @@
      },
      {
       "host" : [
-       "q0373.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0373.example.com"
-     },
-     {
-      "host" : [
-       "q0267.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0267.example.com"
-     },
-     {
-      "host" : [
        "q0116.example.com"
       ],
       "hostCnt" : 1,
@@ -2956,26 +1276,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0116.example.com"
-     },
-     {
-      "host" : [
-       "q0305.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0305.example.com"
-     },
-     {
-      "host" : [
-       "q0402.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0402.example.com"
      },
      {
       "host" : [
@@ -2989,26 +1289,6 @@
      },
      {
       "host" : [
-       "q0206.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0206.example.com"
-     },
-     {
-      "host" : [
-       "q0274.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0274.example.com"
-     },
-     {
-      "host" : [
        "q0027.example.com"
       ],
       "hostCnt" : 1,
@@ -3016,16 +1296,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0027.example.com"
-     },
-     {
-      "host" : [
-       "q0313.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0313.example.com"
      },
      {
       "host" : [
@@ -3039,16 +1309,6 @@
      },
      {
       "host" : [
-       "q0439.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0439.example.com"
-     },
-     {
-      "host" : [
        "q0155.example.com"
       ],
       "hostCnt" : 1,
@@ -3056,26 +1316,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0155.example.com"
-     },
-     {
-      "host" : [
-       "q0409.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0409.example.com"
-     },
-     {
-      "host" : [
-       "q0432.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0432.example.com"
      },
      {
       "host" : [
@@ -3109,16 +1349,6 @@
      },
      {
       "host" : [
-       "q0403.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0403.example.com"
-     },
-     {
-      "host" : [
        "q0070.example.com"
       ],
       "hostCnt" : 1,
@@ -3149,16 +1379,6 @@
      },
      {
       "host" : [
-       "q0207.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0207.example.com"
-     },
-     {
-      "host" : [
        "q0068.example.com"
       ],
       "hostCnt" : 1,
@@ -3179,66 +1399,6 @@
      },
      {
       "host" : [
-       "q0428.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0428.example.com"
-     },
-     {
-      "host" : [
-       "q0293.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0293.example.com"
-     },
-     {
-      "host" : [
-       "q0303.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0303.example.com"
-     },
-     {
-      "host" : [
-       "q0312.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0312.example.com"
-     },
-     {
-      "host" : [
-       "q0251.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0251.example.com"
-     },
-     {
-      "host" : [
-       "q0354.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0354.example.com"
-     },
-     {
-      "host" : [
        "q0030.example.com"
       ],
       "hostCnt" : 1,
@@ -3246,16 +1406,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0030.example.com"
-     },
-     {
-      "host" : [
-       "q0269.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0269.example.com"
      },
      {
       "host" : [
@@ -3269,16 +1419,6 @@
      },
      {
       "host" : [
-       "q0262.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0262.example.com"
-     },
-     {
-      "host" : [
        "q0122.example.com"
       ],
       "hostCnt" : 1,
@@ -3286,26 +1426,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0122.example.com"
-     },
-     {
-      "host" : [
-       "q0307.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0307.example.com"
-     },
-     {
-      "host" : [
-       "q0420.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0420.example.com"
      },
      {
       "host" : [
@@ -3349,26 +1469,6 @@
      },
      {
       "host" : [
-       "q0395.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0395.example.com"
-     },
-     {
-      "host" : [
-       "q0235.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0235.example.com"
-     },
-     {
-      "host" : [
        "q0018.example.com"
       ],
       "hostCnt" : 1,
@@ -3379,76 +1479,6 @@
      },
      {
       "host" : [
-       "q0283.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0283.example.com"
-     },
-     {
-      "host" : [
-       "q0300.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0300.example.com"
-     },
-     {
-      "host" : [
-       "q0314.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0314.example.com"
-     },
-     {
-      "host" : [
-       "q0309.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0309.example.com"
-     },
-     {
-      "host" : [
-       "q0356.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0356.example.com"
-     },
-     {
-      "host" : [
-       "q0281.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0281.example.com"
-     },
-     {
-      "host" : [
-       "q0270.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0270.example.com"
-     },
-     {
-      "host" : [
        "q0157.example.com"
       ],
       "hostCnt" : 1,
@@ -3456,46 +1486,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0157.example.com"
-     },
-     {
-      "host" : [
-       "q0294.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0294.example.com"
-     },
-     {
-      "host" : [
-       "q0376.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0376.example.com"
-     },
-     {
-      "host" : [
-       "q0252.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0252.example.com"
-     },
-     {
-      "host" : [
-       "q0429.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0429.example.com"
      },
      {
       "host" : [
@@ -3559,16 +1549,6 @@
      },
      {
       "host" : [
-       "q0319.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0319.example.com"
-     },
-     {
-      "host" : [
        "q0059.example.com"
       ],
       "hostCnt" : 1,
@@ -3606,16 +1586,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0041.example.com"
-     },
-     {
-      "host" : [
-       "q0240.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0240.example.com"
      },
      {
       "host" : [
@@ -3669,16 +1639,6 @@
      },
      {
       "host" : [
-       "q0410.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0410.example.com"
-     },
-     {
-      "host" : [
        "q0195.example.com"
       ],
       "hostCnt" : 1,
@@ -3699,26 +1659,6 @@
      },
      {
       "host" : [
-       "q0324.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0324.example.com"
-     },
-     {
-      "host" : [
-       "q0290.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0290.example.com"
-     },
-     {
-      "host" : [
        "q0148.example.com"
       ],
       "hostCnt" : 1,
@@ -3726,16 +1666,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0148.example.com"
-     },
-     {
-      "host" : [
-       "q0263.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0263.example.com"
      },
      {
       "host" : [
@@ -3759,16 +1689,6 @@
      },
      {
       "host" : [
-       "q0227.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0227.example.com"
-     },
-     {
-      "host" : [
        "q0140.example.com"
       ],
       "hostCnt" : 1,
@@ -3789,26 +1709,6 @@
      },
      {
       "host" : [
-       "q0279.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0279.example.com"
-     },
-     {
-      "host" : [
-       "q0306.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0306.example.com"
-     },
-     {
-      "host" : [
        "q0170.example.com"
       ],
       "hostCnt" : 1,
@@ -3826,16 +1726,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0065.example.com"
-     },
-     {
-      "host" : [
-       "q0424.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0424.example.com"
      },
      {
       "host" : [
@@ -3869,16 +1759,6 @@
      },
      {
       "host" : [
-       "q0278.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0278.example.com"
-     },
-     {
-      "host" : [
        "q0009.example.com"
       ],
       "hostCnt" : 1,
@@ -3899,36 +1779,6 @@
      },
      {
       "host" : [
-       "q0405.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0405.example.com"
-     },
-     {
-      "host" : [
-       "q0394.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0394.example.com"
-     },
-     {
-      "host" : [
-       "q0209.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0209.example.com"
-     },
-     {
-      "host" : [
        "q0010.example.com"
       ],
       "hostCnt" : 1,
@@ -3939,16 +1789,6 @@
      },
      {
       "host" : [
-       "q0413.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0413.example.com"
-     },
-     {
-      "host" : [
        "q0119.example.com"
       ],
       "hostCnt" : 1,
@@ -3956,26 +1796,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0119.example.com"
-     },
-     {
-      "host" : [
-       "q0438.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0438.example.com"
-     },
-     {
-      "host" : [
-       "q0302.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0302.example.com"
      },
      {
       "host" : [
@@ -4006,16 +1826,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0086.example.com"
-     },
-     {
-      "host" : [
-       "q0221.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0221.example.com"
      },
      {
       "host" : [
@@ -4067,26 +1877,6 @@
      },
      {
       "host" : [
-       "q0320.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0320.example.com"
-     },
-     {
-      "host" : [
-       "q0310.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0310.example.com"
-     },
-     {
-      "host" : [
        "q0060.example.com"
       ],
       "hostCnt" : 1,
@@ -4104,26 +1894,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0055.example.com"
-     },
-     {
-      "host" : [
-       "q0347.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0347.example.com"
-     },
-     {
-      "host" : [
-       "q0211.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0211.example.com"
      },
      {
       "host" : [
@@ -4147,26 +1917,6 @@
      },
      {
       "host" : [
-       "q0375.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0375.example.com"
-     },
-     {
-      "host" : [
-       "q0202.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0202.example.com"
-     },
-     {
-      "host" : [
        "q0087.example.com"
       ],
       "hostCnt" : 1,
@@ -4174,16 +1924,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0087.example.com"
-     },
-     {
-      "host" : [
-       "q0224.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0224.example.com"
      },
      {
       "host" : [
@@ -4197,46 +1937,6 @@
      },
      {
       "host" : [
-       "q0350.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0350.example.com"
-     },
-     {
-      "host" : [
-       "q0408.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0408.example.com"
-     },
-     {
-      "host" : [
-       "q0363.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0363.example.com"
-     },
-     {
-      "host" : [
-       "q0367.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0367.example.com"
-     },
-     {
-      "host" : [
        "q0128.example.com"
       ],
       "hostCnt" : 1,
@@ -4244,26 +1944,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0128.example.com"
-     },
-     {
-      "host" : [
-       "q0217.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0217.example.com"
-     },
-     {
-      "host" : [
-       "q0330.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0330.example.com"
      },
      {
       "host" : [
@@ -4287,16 +1967,6 @@
      },
      {
       "host" : [
-       "q0266.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0266.example.com"
-     },
-     {
-      "host" : [
        "q0016.example.com"
       ],
       "hostCnt" : 1,
@@ -4304,16 +1974,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0016.example.com"
-     },
-     {
-      "host" : [
-       "q0399.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0399.example.com"
      },
      {
       "host" : [
@@ -4334,66 +1994,6 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0034.example.com"
-     },
-     {
-      "host" : [
-       "q0268.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0268.example.com"
-     },
-     {
-      "host" : [
-       "q0234.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0234.example.com"
-     },
-     {
-      "host" : [
-       "q0364.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0364.example.com"
-     },
-     {
-      "host" : [
-       "q0419.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0419.example.com"
-     },
-     {
-      "host" : [
-       "q0422.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0422.example.com"
-     },
-     {
-      "host" : [
-       "q0416.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0416.example.com"
      },
      {
       "host" : [
@@ -4427,16 +2027,6 @@
      },
      {
       "host" : [
-       "q0412.example.com"
-      ],
-      "hostCnt" : 1,
-      "opcode" : "QUERY",
-      "qc" : "IN",
-      "qt" : "A",
-      "queryHost" : "q0412.example.com"
-     },
-     {
-      "host" : [
        "q0108.example.com"
       ],
       "hostCnt" : 1,
@@ -4446,7 +2036,7 @@
       "queryHost" : "q0108.example.com"
      }
     ],
-    "dnsCnt" : 440,
+    "dnsCnt" : 199,
     "dstPayload8" : "0001818000010001",
     "dstTTL" : [
      64
@@ -4456,258 +2046,17 @@
     "fileId" : [],
     "firstPacket" : 1700021700000,
     "ipProtocol" : 17,
-    "lastPacket" : 1700021704409,
-    "length" : 4409,
+    "lastPacket" : 1700021701999,
+    "length" : 1999,
     "network" : {
-     "bytes" : 34050,
+     "bytes" : 15493,
      "community_id" : "1:zDPXaCOMc76prMUP20yotNGy/AA=",
-     "packets" : 442
+     "packets" : 201
     },
     "node" : "test",
     "packetLen" : [
      93,
      109,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
-     93,
      93,
      93,
      93,
@@ -5109,7 +2458,2280 @@
      19588,
      19681,
      19774,
-     19867,
+     19867
+    ],
+    "packetRange" : {
+     "gte" : 1700021700000,
+     "lte" : 1700021701999
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "rootId" : "SET",
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 51
+    },
+    "source" : {
+     "bytes" : 15400,
+     "ip" : "10.9.27.1",
+     "mac" : [
+      "02:aa:00:00:1b:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 200,
+     "port" : 49901
+    },
+    "srcPayload8" : "0001010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 7051
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 7000
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.27.2",
+     "mac" : [
+      "02:aa:00:00:1b:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "host" : [
+       "q0204.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0204.example.com"
+     },
+     {
+      "host" : [
+       "q0359.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0359.example.com"
+     },
+     {
+      "host" : [
+       "q0205.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0205.example.com"
+     },
+     {
+      "host" : [
+       "q0353.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0353.example.com"
+     },
+     {
+      "host" : [
+       "q0298.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0298.example.com"
+     },
+     {
+      "host" : [
+       "q0389.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0389.example.com"
+     },
+     {
+      "host" : [
+       "q0218.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0218.example.com"
+     },
+     {
+      "host" : [
+       "q0328.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0328.example.com"
+     },
+     {
+      "host" : [
+       "q0245.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0245.example.com"
+     },
+     {
+      "host" : [
+       "q0216.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0216.example.com"
+     },
+     {
+      "host" : [
+       "q0284.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0284.example.com"
+     },
+     {
+      "host" : [
+       "q0273.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0273.example.com"
+     },
+     {
+      "host" : [
+       "q0340.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0340.example.com"
+     },
+     {
+      "host" : [
+       "q0199.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0199.example.com"
+     },
+     {
+      "host" : [
+       "q0331.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0331.example.com"
+     },
+     {
+      "host" : [
+       "q0255.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0255.example.com"
+     },
+     {
+      "host" : [
+       "q0311.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0311.example.com"
+     },
+     {
+      "host" : [
+       "q0250.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0250.example.com"
+     },
+     {
+      "host" : [
+       "q0291.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0291.example.com"
+     },
+     {
+      "host" : [
+       "q0219.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0219.example.com"
+     },
+     {
+      "host" : [
+       "q0264.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0264.example.com"
+     },
+     {
+      "host" : [
+       "q0275.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0275.example.com"
+     },
+     {
+      "host" : [
+       "q0338.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0338.example.com"
+     },
+     {
+      "host" : [
+       "q0289.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0289.example.com"
+     },
+     {
+      "host" : [
+       "q0276.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0276.example.com"
+     },
+     {
+      "host" : [
+       "q0351.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0351.example.com"
+     },
+     {
+      "host" : [
+       "q0385.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0385.example.com"
+     },
+     {
+      "host" : [
+       "q0308.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0308.example.com"
+     },
+     {
+      "host" : [
+       "q0355.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0355.example.com"
+     },
+     {
+      "host" : [
+       "q0345.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0345.example.com"
+     },
+     {
+      "host" : [
+       "q0244.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0244.example.com"
+     },
+     {
+      "host" : [
+       "q0271.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0271.example.com"
+     },
+     {
+      "host" : [
+       "q0265.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0265.example.com"
+     },
+     {
+      "host" : [
+       "q0333.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0333.example.com"
+     },
+     {
+      "host" : [
+       "q0361.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0361.example.com"
+     },
+     {
+      "host" : [
+       "q0225.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0225.example.com"
+     },
+     {
+      "host" : [
+       "q0386.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0386.example.com"
+     },
+     {
+      "host" : [
+       "q0238.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0238.example.com"
+     },
+     {
+      "host" : [
+       "q0248.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0248.example.com"
+     },
+     {
+      "host" : [
+       "q0317.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0317.example.com"
+     },
+     {
+      "host" : [
+       "q0261.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0261.example.com"
+     },
+     {
+      "host" : [
+       "q0362.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0362.example.com"
+     },
+     {
+      "host" : [
+       "q0287.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0287.example.com"
+     },
+     {
+      "host" : [
+       "q0342.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0342.example.com"
+     },
+     {
+      "host" : [
+       "q0201.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0201.example.com"
+     },
+     {
+      "host" : [
+       "q0213.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0213.example.com"
+     },
+     {
+      "host" : [
+       "q0332.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0332.example.com"
+     },
+     {
+      "host" : [
+       "q0370.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0370.example.com"
+     },
+     {
+      "host" : [
+       "q0344.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0344.example.com"
+     },
+     {
+      "host" : [
+       "q0388.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0388.example.com"
+     },
+     {
+      "host" : [
+       "q0257.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0257.example.com"
+     },
+     {
+      "host" : [
+       "q0335.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0335.example.com"
+     },
+     {
+      "host" : [
+       "q0242.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0242.example.com"
+     },
+     {
+      "host" : [
+       "q0249.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0249.example.com"
+     },
+     {
+      "host" : [
+       "q0377.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0377.example.com"
+     },
+     {
+      "host" : [
+       "q0233.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0233.example.com"
+     },
+     {
+      "host" : [
+       "q0237.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0237.example.com"
+     },
+     {
+      "host" : [
+       "q0229.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0229.example.com"
+     },
+     {
+      "host" : [
+       "q0349.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0349.example.com"
+     },
+     {
+      "host" : [
+       "q0391.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0391.example.com"
+     },
+     {
+      "host" : [
+       "q0365.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0365.example.com"
+     },
+     {
+      "host" : [
+       "q0296.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0296.example.com"
+     },
+     {
+      "host" : [
+       "q0360.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0360.example.com"
+     },
+     {
+      "host" : [
+       "q0382.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0382.example.com"
+     },
+     {
+      "host" : [
+       "q0223.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0223.example.com"
+     },
+     {
+      "host" : [
+       "q0321.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0321.example.com"
+     },
+     {
+      "host" : [
+       "q0295.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0295.example.com"
+     },
+     {
+      "host" : [
+       "q0280.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0280.example.com"
+     },
+     {
+      "host" : [
+       "q0200.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0200.example.com"
+     },
+     {
+      "host" : [
+       "q0272.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0272.example.com"
+     },
+     {
+      "host" : [
+       "q0230.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0230.example.com"
+     },
+     {
+      "host" : [
+       "q0222.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0222.example.com"
+     },
+     {
+      "host" : [
+       "q0341.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0341.example.com"
+     },
+     {
+      "host" : [
+       "q0239.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0239.example.com"
+     },
+     {
+      "host" : [
+       "q0228.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0228.example.com"
+     },
+     {
+      "host" : [
+       "q0343.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0343.example.com"
+     },
+     {
+      "host" : [
+       "q0220.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0220.example.com"
+     },
+     {
+      "host" : [
+       "q0368.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0368.example.com"
+     },
+     {
+      "host" : [
+       "q0254.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0254.example.com"
+     },
+     {
+      "host" : [
+       "q0392.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0392.example.com"
+     },
+     {
+      "host" : [
+       "q0327.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0327.example.com"
+     },
+     {
+      "host" : [
+       "q0286.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0286.example.com"
+     },
+     {
+      "host" : [
+       "q0337.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0337.example.com"
+     },
+     {
+      "host" : [
+       "q0372.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0372.example.com"
+     },
+     {
+      "host" : [
+       "q0346.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0346.example.com"
+     },
+     {
+      "host" : [
+       "q0339.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0339.example.com"
+     },
+     {
+      "host" : [
+       "q0379.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0379.example.com"
+     },
+     {
+      "host" : [
+       "q0390.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0390.example.com"
+     },
+     {
+      "host" : [
+       "q0336.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0336.example.com"
+     },
+     {
+      "host" : [
+       "q0258.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0258.example.com"
+     },
+     {
+      "host" : [
+       "q0329.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0329.example.com"
+     },
+     {
+      "host" : [
+       "q0277.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0277.example.com"
+     },
+     {
+      "host" : [
+       "q0396.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0396.example.com"
+     },
+     {
+      "host" : [
+       "q0323.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0323.example.com"
+     },
+     {
+      "host" : [
+       "q0397.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0397.example.com"
+     },
+     {
+      "host" : [
+       "q0316.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0316.example.com"
+     },
+     {
+      "host" : [
+       "q0357.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0357.example.com"
+     },
+     {
+      "host" : [
+       "q0288.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0288.example.com"
+     },
+     {
+      "host" : [
+       "q0259.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0259.example.com"
+     },
+     {
+      "host" : [
+       "q0334.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0334.example.com"
+     },
+     {
+      "host" : [
+       "q0326.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0326.example.com"
+     },
+     {
+      "host" : [
+       "q0256.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0256.example.com"
+     },
+     {
+      "host" : [
+       "q0226.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0226.example.com"
+     },
+     {
+      "host" : [
+       "q0253.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0253.example.com"
+     },
+     {
+      "host" : [
+       "q0387.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0387.example.com"
+     },
+     {
+      "host" : [
+       "q0366.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0366.example.com"
+     },
+     {
+      "host" : [
+       "q0384.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0384.example.com"
+     },
+     {
+      "host" : [
+       "q0282.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0282.example.com"
+     },
+     {
+      "host" : [
+       "q0318.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0318.example.com"
+     },
+     {
+      "host" : [
+       "q0236.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0236.example.com"
+     },
+     {
+      "host" : [
+       "q0322.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0322.example.com"
+     },
+     {
+      "host" : [
+       "q0210.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0210.example.com"
+     },
+     {
+      "host" : [
+       "q0232.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0232.example.com"
+     },
+     {
+      "host" : [
+       "q0325.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0325.example.com"
+     },
+     {
+      "host" : [
+       "q0393.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0393.example.com"
+     },
+     {
+      "host" : [
+       "q0378.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0378.example.com"
+     },
+     {
+      "host" : [
+       "q0292.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0292.example.com"
+     },
+     {
+      "host" : [
+       "q0371.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0371.example.com"
+     },
+     {
+      "host" : [
+       "q0358.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0358.example.com"
+     },
+     {
+      "host" : [
+       "q0212.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0212.example.com"
+     },
+     {
+      "host" : [
+       "q0383.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0383.example.com"
+     },
+     {
+      "host" : [
+       "q0348.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0348.example.com"
+     },
+     {
+      "host" : [
+       "q0304.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0304.example.com"
+     },
+     {
+      "host" : [
+       "q0297.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0297.example.com"
+     },
+     {
+      "host" : [
+       "q0231.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0231.example.com"
+     },
+     {
+      "host" : [
+       "q0352.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0352.example.com"
+     },
+     {
+      "host" : [
+       "q0380.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0380.example.com"
+     },
+     {
+      "host" : [
+       "q0398.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0398.example.com"
+     },
+     {
+      "host" : [
+       "q0374.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0374.example.com"
+     },
+     {
+      "host" : [
+       "q0247.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0247.example.com"
+     },
+     {
+      "host" : [
+       "q0214.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0214.example.com"
+     },
+     {
+      "host" : [
+       "q0381.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0381.example.com"
+     },
+     {
+      "host" : [
+       "q0208.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0208.example.com"
+     },
+     {
+      "host" : [
+       "q0299.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0299.example.com"
+     },
+     {
+      "host" : [
+       "q0285.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0285.example.com"
+     },
+     {
+      "host" : [
+       "q0301.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0301.example.com"
+     },
+     {
+      "host" : [
+       "q0260.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0260.example.com"
+     },
+     {
+      "host" : [
+       "q0243.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0243.example.com"
+     },
+     {
+      "host" : [
+       "q0215.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0215.example.com"
+     },
+     {
+      "host" : [
+       "q0241.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0241.example.com"
+     },
+     {
+      "host" : [
+       "q0369.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0369.example.com"
+     },
+     {
+      "host" : [
+       "q0246.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0246.example.com"
+     },
+     {
+      "host" : [
+       "q0315.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0315.example.com"
+     },
+     {
+      "host" : [
+       "q0203.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0203.example.com"
+     },
+     {
+      "host" : [
+       "q0373.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0373.example.com"
+     },
+     {
+      "host" : [
+       "q0267.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0267.example.com"
+     },
+     {
+      "host" : [
+       "q0305.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0305.example.com"
+     },
+     {
+      "host" : [
+       "q0206.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0206.example.com"
+     },
+     {
+      "host" : [
+       "q0274.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0274.example.com"
+     },
+     {
+      "host" : [
+       "q0313.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0313.example.com"
+     },
+     {
+      "host" : [
+       "q0207.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0207.example.com"
+     },
+     {
+      "host" : [
+       "q0293.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0293.example.com"
+     },
+     {
+      "host" : [
+       "q0303.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0303.example.com"
+     },
+     {
+      "host" : [
+       "q0312.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0312.example.com"
+     },
+     {
+      "host" : [
+       "q0251.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0251.example.com"
+     },
+     {
+      "host" : [
+       "q0354.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0354.example.com"
+     },
+     {
+      "host" : [
+       "q0269.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0269.example.com"
+     },
+     {
+      "host" : [
+       "q0262.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0262.example.com"
+     },
+     {
+      "host" : [
+       "q0307.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0307.example.com"
+     },
+     {
+      "host" : [
+       "q0395.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0395.example.com"
+     },
+     {
+      "host" : [
+       "q0235.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0235.example.com"
+     },
+     {
+      "host" : [
+       "q0283.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0283.example.com"
+     },
+     {
+      "host" : [
+       "q0300.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0300.example.com"
+     },
+     {
+      "host" : [
+       "q0314.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0314.example.com"
+     },
+     {
+      "host" : [
+       "q0309.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0309.example.com"
+     },
+     {
+      "host" : [
+       "q0356.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0356.example.com"
+     },
+     {
+      "host" : [
+       "q0281.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0281.example.com"
+     },
+     {
+      "host" : [
+       "q0270.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0270.example.com"
+     },
+     {
+      "host" : [
+       "q0294.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0294.example.com"
+     },
+     {
+      "host" : [
+       "q0376.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0376.example.com"
+     },
+     {
+      "host" : [
+       "q0252.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0252.example.com"
+     },
+     {
+      "host" : [
+       "q0319.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0319.example.com"
+     },
+     {
+      "host" : [
+       "q0240.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0240.example.com"
+     },
+     {
+      "host" : [
+       "q0324.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0324.example.com"
+     },
+     {
+      "host" : [
+       "q0290.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0290.example.com"
+     },
+     {
+      "host" : [
+       "q0263.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0263.example.com"
+     },
+     {
+      "host" : [
+       "q0227.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0227.example.com"
+     },
+     {
+      "host" : [
+       "q0279.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0279.example.com"
+     },
+     {
+      "host" : [
+       "q0306.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0306.example.com"
+     },
+     {
+      "host" : [
+       "q0278.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0278.example.com"
+     },
+     {
+      "host" : [
+       "q0394.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0394.example.com"
+     },
+     {
+      "host" : [
+       "q0209.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0209.example.com"
+     },
+     {
+      "host" : [
+       "q0302.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0302.example.com"
+     },
+     {
+      "host" : [
+       "q0221.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0221.example.com"
+     },
+     {
+      "host" : [
+       "q0320.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0320.example.com"
+     },
+     {
+      "host" : [
+       "q0310.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0310.example.com"
+     },
+     {
+      "host" : [
+       "q0347.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0347.example.com"
+     },
+     {
+      "host" : [
+       "q0211.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0211.example.com"
+     },
+     {
+      "host" : [
+       "q0375.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0375.example.com"
+     },
+     {
+      "host" : [
+       "q0202.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0202.example.com"
+     },
+     {
+      "host" : [
+       "q0224.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0224.example.com"
+     },
+     {
+      "host" : [
+       "q0350.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0350.example.com"
+     },
+     {
+      "host" : [
+       "q0363.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0363.example.com"
+     },
+     {
+      "host" : [
+       "q0367.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0367.example.com"
+     },
+     {
+      "host" : [
+       "q0217.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0217.example.com"
+     },
+     {
+      "host" : [
+       "q0330.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0330.example.com"
+     },
+     {
+      "host" : [
+       "q0266.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0266.example.com"
+     },
+     {
+      "host" : [
+       "q0268.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0268.example.com"
+     },
+     {
+      "host" : [
+       "q0234.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0234.example.com"
+     },
+     {
+      "host" : [
+       "q0364.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0364.example.com"
+     }
+    ],
+    "dnsCnt" : 200,
+    "dstPayload8" : "0001818000010001",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700021700000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700021703999,
+    "length" : 3999,
+    "network" : {
+     "bytes" : 15400,
+     "community_id" : "1:zDPXaCOMc76prMUP20yotNGy/AA=",
+     "packets" : 200
+    },
+    "node" : "test",
+    "packetLen" : [
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93
+    ],
+    "packetPos" : [
      19960,
      20053,
      20146,
@@ -5309,52 +4931,11 @@
      38188,
      38281,
      38374,
-     38467,
-     38560,
-     38653,
-     38746,
-     38839,
-     38932,
-     39025,
-     39118,
-     39211,
-     39304,
-     39397,
-     39490,
-     39583,
-     39676,
-     39769,
-     39862,
-     39955,
-     40048,
-     40141,
-     40234,
-     40327,
-     40420,
-     40513,
-     40606,
-     40699,
-     40792,
-     40885,
-     40978,
-     41071,
-     41164,
-     41257,
-     41350,
-     41443,
-     41536,
-     41629,
-     41722,
-     41815,
-     41908,
-     42001,
-     42094,
-     42187,
-     42280
+     38467
     ],
     "packetRange" : {
      "gte" : 1700021700000,
-     "lte" : 1700021704409
+     "lte" : 1700021703999
     },
     "protocol" : [
      "dns",
@@ -5362,18 +4943,18 @@
     ],
     "protocolCnt" : 2,
     "rootId" : "SET",
-    "segmentCnt" : 1,
+    "segmentCnt" : 2,
     "server" : {
-     "bytes" : 51
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 33957,
+     "bytes" : 15400,
      "ip" : "10.9.27.1",
      "mac" : [
       "02:aa:00:00:1b:01"
      ],
      "mac-cnt" : 1,
-     "packets" : 441,
+     "packets" : 200,
      "port" : 49901
     },
     "srcPayload8" : "0001010000010000",
@@ -5381,7 +4962,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 15486
+    "totDataBytes" : 7000
    },
    "header" : {
     "index" : {
@@ -5393,7 +4974,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 1365
+     "bytes" : 2800
     },
     "destination" : {
      "bytes" : 0,
@@ -5408,6 +4989,16 @@
     "dns" : [
      {
       "host" : [
+       "q0406.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0406.example.com"
+     },
+     {
+      "host" : [
        "q0445.example.com"
       ],
       "hostCnt" : 1,
@@ -5415,6 +5006,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0445.example.com"
+     },
+     {
+      "host" : [
+       "q0401.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0401.example.com"
      },
      {
       "host" : [
@@ -5448,6 +5049,16 @@
      },
      {
       "host" : [
+       "q0431.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0431.example.com"
+     },
+     {
+      "host" : [
        "q0442.example.com"
       ],
       "hostCnt" : 1,
@@ -5455,6 +5066,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0442.example.com"
+     },
+     {
+      "host" : [
+       "q0423.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0423.example.com"
      },
      {
       "host" : [
@@ -5478,6 +5099,46 @@
      },
      {
       "host" : [
+       "q0411.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0411.example.com"
+     },
+     {
+      "host" : [
+       "q0425.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0425.example.com"
+     },
+     {
+      "host" : [
+       "q0404.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0404.example.com"
+     },
+     {
+      "host" : [
+       "q0433.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0433.example.com"
+     },
+     {
+      "host" : [
        "q0452.example.com"
       ],
       "hostCnt" : 1,
@@ -5485,6 +5146,36 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0452.example.com"
+     },
+     {
+      "host" : [
+       "q0417.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0417.example.com"
+     },
+     {
+      "host" : [
+       "q0427.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0427.example.com"
+     },
+     {
+      "host" : [
+       "q0436.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0436.example.com"
      },
      {
       "host" : [
@@ -5508,6 +5199,16 @@
      },
      {
       "host" : [
+       "q0421.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0421.example.com"
+     },
+     {
+      "host" : [
        "q0455.example.com"
       ],
       "hostCnt" : 1,
@@ -5518,6 +5219,16 @@
      },
      {
       "host" : [
+       "q0414.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0414.example.com"
+     },
+     {
+      "host" : [
        "q0451.example.com"
       ],
       "hostCnt" : 1,
@@ -5525,6 +5236,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0451.example.com"
+     },
+     {
+      "host" : [
+       "q0437.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0437.example.com"
      },
      {
       "host" : [
@@ -5545,6 +5266,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0450.example.com"
+     },
+     {
+      "host" : [
+       "q0426.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0426.example.com"
      },
      {
       "host" : [
@@ -5578,6 +5309,16 @@
      },
      {
       "host" : [
+       "q0415.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0415.example.com"
+     },
+     {
+      "host" : [
        "q0465.example.com"
       ],
       "hostCnt" : 1,
@@ -5588,6 +5329,16 @@
      },
      {
       "host" : [
+       "q0407.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0407.example.com"
+     },
+     {
+      "host" : [
        "q0453.example.com"
       ],
       "hostCnt" : 1,
@@ -5595,6 +5346,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0453.example.com"
+     },
+     {
+      "host" : [
+       "q0418.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0418.example.com"
      },
      {
       "host" : [
@@ -5618,6 +5379,36 @@
      },
      {
       "host" : [
+       "q0400.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0400.example.com"
+     },
+     {
+      "host" : [
+       "q0435.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0435.example.com"
+     },
+     {
+      "host" : [
+       "q0430.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0430.example.com"
+     },
+     {
+      "host" : [
        "q0475.example.com"
       ],
       "hostCnt" : 1,
@@ -5638,6 +5429,66 @@
      },
      {
       "host" : [
+       "q0434.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0434.example.com"
+     },
+     {
+      "host" : [
+       "q0402.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0402.example.com"
+     },
+     {
+      "host" : [
+       "q0439.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0439.example.com"
+     },
+     {
+      "host" : [
+       "q0409.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0409.example.com"
+     },
+     {
+      "host" : [
+       "q0432.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0432.example.com"
+     },
+     {
+      "host" : [
+       "q0403.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0403.example.com"
+     },
+     {
+      "host" : [
        "q0457.example.com"
       ],
       "hostCnt" : 1,
@@ -5648,6 +5499,16 @@
      },
      {
       "host" : [
+       "q0428.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0428.example.com"
+     },
+     {
+      "host" : [
        "q0458.example.com"
       ],
       "hostCnt" : 1,
@@ -5655,6 +5516,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0458.example.com"
+     },
+     {
+      "host" : [
+       "q0420.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0420.example.com"
      },
      {
       "host" : [
@@ -5688,6 +5559,16 @@
      },
      {
       "host" : [
+       "q0429.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0429.example.com"
+     },
+     {
+      "host" : [
        "q0476.example.com"
       ],
       "hostCnt" : 1,
@@ -5705,6 +5586,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0454.example.com"
+     },
+     {
+      "host" : [
+       "q0410.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0410.example.com"
      },
      {
       "host" : [
@@ -5735,6 +5626,16 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0446.example.com"
+     },
+     {
+      "host" : [
+       "q0424.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0424.example.com"
      },
      {
       "host" : [
@@ -5778,6 +5679,16 @@
      },
      {
       "host" : [
+       "q0405.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0405.example.com"
+     },
+     {
+      "host" : [
        "q0459.example.com"
       ],
       "hostCnt" : 1,
@@ -5798,6 +5709,26 @@
      },
      {
       "host" : [
+       "q0413.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0413.example.com"
+     },
+     {
+      "host" : [
+       "q0438.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0438.example.com"
+     },
+     {
+      "host" : [
        "q0448.example.com"
       ],
       "hostCnt" : 1,
@@ -5805,9 +5736,69 @@
       "qc" : "IN",
       "qt" : "A",
       "queryHost" : "q0448.example.com"
+     },
+     {
+      "host" : [
+       "q0408.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0408.example.com"
+     },
+     {
+      "host" : [
+       "q0399.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0399.example.com"
+     },
+     {
+      "host" : [
+       "q0419.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0419.example.com"
+     },
+     {
+      "host" : [
+       "q0422.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0422.example.com"
+     },
+     {
+      "host" : [
+       "q0416.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0416.example.com"
+     },
+     {
+      "host" : [
+       "q0412.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "q0412.example.com"
      }
     ],
-    "dnsCnt" : 40,
+    "dnsCnt" : 81,
     "dstPayload8" : "0001818000010001",
     "ethertype" : 2048,
     "fileId" : [],
@@ -5816,9 +5807,9 @@
     "lastPacket" : 1700021704799,
     "length" : 4799,
     "network" : {
-     "bytes" : 3003,
+     "bytes" : 6160,
      "community_id" : "1:zDPXaCOMc76prMUP20yotNGy/AA=",
-     "packets" : 39
+     "packets" : 80
     },
     "node" : "test",
     "packetLen" : [
@@ -5860,9 +5851,91 @@
      93,
      93,
      93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
+     93,
      93
     ],
     "packetPos" : [
+     38560,
+     38653,
+     38746,
+     38839,
+     38932,
+     39025,
+     39118,
+     39211,
+     39304,
+     39397,
+     39490,
+     39583,
+     39676,
+     39769,
+     39862,
+     39955,
+     40048,
+     40141,
+     40234,
+     40327,
+     40420,
+     40513,
+     40606,
+     40699,
+     40792,
+     40885,
+     40978,
+     41071,
+     41164,
+     41257,
+     41350,
+     41443,
+     41536,
+     41629,
+     41722,
+     41815,
+     41908,
+     42001,
+     42094,
+     42187,
+     42280,
      42373,
      42466,
      42559,
@@ -5913,18 +5986,18 @@
     ],
     "protocolCnt" : 2,
     "rootId" : "SET",
-    "segmentCnt" : 2,
+    "segmentCnt" : 3,
     "server" : {
      "bytes" : 0
     },
     "source" : {
-     "bytes" : 3003,
+     "bytes" : 6160,
      "ip" : "10.9.27.1",
      "mac" : [
       "02:aa:00:00:1b:01"
      ],
      "mac-cnt" : 1,
-     "packets" : 39,
+     "packets" : 80,
      "port" : 49901
     },
     "srcPayload8" : "0001010000010000",
@@ -5932,7 +6005,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 1365
+    "totDataBytes" : 2800
    },
    "header" : {
     "index" : {

@@ -1,0 +1,163 @@
+/*
+ * arkime-input-group.css
+ *
+ * Vuetify-themed input-group bridge. Visually models Vuetify's
+ * <v-text-field variant="outlined" density="compact"> with a
+ * prepend-inner slot: one rounded container, subtle border that lifts
+ * on hover and turns primary-colored on focus, no internal
+ * Bootstrap-style label-bg-tint cell.
+ *
+ * Replaces six copy-pasted scoped CSS blocks across:
+ *   Stats.vue, ExpressionTypeahead.vue, Files.vue, Spigraph.vue,
+ *   Spiview.vue, Connections.vue
+ *
+ * Colors come from Vuetify's --v-theme-* tokens emitted by the shared
+ * theme manifest (common/vueapp/themes/manifest.js). All four apps
+ * that import this file (viewer + cont3xt + parliament + wise) consume
+ * the same tokens. Vuetify 3 emits each color as `r,g,b` so we wrap
+ * with `rgb()` / `rgba()` here.
+ */
+
+.arkime-input-group {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  border-radius: 4px;
+  background-color: rgb(var(--v-theme-background));
+  transition: box-shadow 0.15s ease;
+  /* No resting border: a 1px border eats 2px of the border-box height, so the
+     inner input/select would only be 30px while the buttons are 32px. Dropping
+     it lets the content box (and the control) be a full 32px. Hover/focus add
+     an outset ring (no layout shift) so the field still reads as interactive. */
+  /* outer padding -- prepended labels and the input share this */
+  padding: 0 2px;
+}
+/* Fluid modifier: grow to fill the available width in a flex parent.
+   Use when the group sits inside a row/flex layout that should stretch
+   (the main search bar, the time picker columns, etc.) instead of
+   shrinking to content width. */
+.arkime-input-group--fluid {
+  display: flex;
+  width: 100%;
+  flex: 1 1 auto;
+}
+.arkime-input-group:hover {
+  box-shadow: 0 0 0 1px rgba(var(--v-theme-on-surface), 0.4);
+}
+.arkime-input-group:focus-within {
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+}
+
+/* the label that sits at the left edge of the group -- transparent
+   bg, muted text color, no internal divider. Reads as part of the
+   field, not a separate cell like Bootstrap's input-group-text. */
+.arkime-input-label {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 8px;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  white-space: nowrap;
+  font-weight: 500;
+}
+/* fixed-width variant for icon-only labels (search glyphs etc.) */
+.arkime-input-label-fw {
+  width: 32px;
+  justify-content: center;
+  padding: 0;
+}
+
+/* the input / select itself sits flush inside the container -- no
+   own border, transparent bg, takes its color from foreground. */
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0 8px;
+  background-color: transparent;
+  color: rgb(var(--v-theme-on-surface));
+  border: none;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+}
+/* native <select> arrow caret needs a touch more right padding so the
+   native browser caret doesn't bump the right border. */
+select.arkime-input-control {
+  padding-right: 24px;
+  -webkit-appearance: menulist;
+  cursor: pointer;
+}
+
+/* an icon button appended to the group reads as an inline action
+   inside the field, like v-text-field's append-inner slot. Use
+   <v-btn variant="text" icon size="small"> on the call site: that
+   gives Vuetify's canonical circular text-button look. We just size
+   it to nestle inside the 32px group and keep margins/padding tight. */
+.arkime-input-group .arkime-input-append-btn.v-btn {
+  height: 28px;
+  width: 28px;
+  min-width: 0;
+  margin: 0;
+  align-self: center;
+  border-radius: 50%;
+}
+
+/* Native checkbox styling for standalone checkboxes (not paired with a
+   v-checkbox). Replaces what Bootstrap's .form-check-input used to paint:
+   a compact box that picks up Vuetify theme tokens so it works in
+   light + dark themes. */
+/* !important on bg-color + bg-image is needed because overrides.css
+   forces every <input> to a themed background. Without !important on
+   :checked, the primary fill never paints and the white check glyph
+   reads as invisible against the forced background. */
+.arkime-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgb(var(--v-theme-outline));
+  border-radius: 3px;
+  background-color: rgb(var(--v-theme-input-bg)) !important;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.arkime-check-input:checked {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e") !important;
+  background-size: 16px 16px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* <textarea>: the base .arkime-input-control rule sets height:100%, which
+   pins a textarea to its parent's height (32px inside a group, or zero
+   in a flex-flow card-text). Override so any textarea grows with its
+   `rows` attr and keeps the native vertical resize handle. When the
+   textarea sits inside an arkime-input-group, also relax the group's
+   fixed height and top-align the label so it tracks the first line. */
+textarea.arkime-input-control {
+  height: auto;
+  min-height: 60px;
+  padding: 6px 8px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.arkime-input-group:has(textarea.arkime-input-control) {
+  height: auto;
+  min-height: 32px;
+  align-items: stretch;
+}
+.arkime-input-group:has(textarea.arkime-input-control) > .arkime-input-label {
+  align-self: stretch;
+  padding-top: 6px;
+}

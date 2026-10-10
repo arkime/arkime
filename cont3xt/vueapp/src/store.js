@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 import { createStore } from 'vuex';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
+import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
+import { postThemeSettings } from '@common/themes/persistTheme.js';
+import { VUETIFY_THEME_KEY, VUETIFY_CUSTOM_THEME_KEY } from '@common/themes/customTheme.js';
 
 const store = createStore({
   state: {
@@ -47,7 +50,11 @@ const store = createStore({
     copyShareLink: false,
     toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
-    theme: localStorage.getItem('theme') ? JSON.parse(localStorage.getItem('theme')) : undefined,
+    // Theme comes from the server (user.settings.vuetifyTheme /
+    // vuetifyCustomTheme) on boot via HYDRATE_THEME_FROM_SERVER; the
+    // manifest default applies until that resolves.
+    theme: DEFAULT_THEME_ID,
+    customTheme: null,
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
@@ -234,7 +241,23 @@ const store = createStore({
     },
     SET_THEME (state, data) {
       state.theme = data;
-      localStorage.setItem('theme', JSON.stringify(data));
+      // Persist to the shared user.settings.vuetifyTheme so the pick
+      // follows the user into viewer / parliament / wise too.
+      postThemeSettings('api/settings/update', { [VUETIFY_THEME_KEY]: data });
+    },
+    SET_CUSTOM_THEME (state, data) {
+      state.customTheme = data;
+      postThemeSettings('api/settings/update', { [VUETIFY_CUSTOM_THEME_KEY]: data ?? null });
+    },
+    /* Apply theme values from user.settings on app startup. Used by
+       App.vue's mounted hook after the initial /api/user fetch resolves. */
+    HYDRATE_THEME_FROM_SERVER (state, { themeId, customTheme }) {
+      if (customTheme && typeof customTheme === 'object' && customTheme.colors) {
+        state.customTheme = customTheme;
+      }
+      if (themeId && (themeId === 'custom1' || THEMES.some(t => t.id === themeId))) {
+        state.theme = themeId;
+      }
     },
     SET_TAGS (state, data) {
       state.tags = data;
@@ -502,8 +525,14 @@ const store = createStore({
     getTheme (state) {
       return state.theme;
     },
+    getCustomTheme (state) {
+      return state.customTheme;
+    },
     getDarkThemeEnabled (state) {
-      return state.theme === 'dark';
+      const id = state.theme;
+      if (id === 'custom1') return !!(state.customTheme && state.customTheme.dark);
+      const t = THEMES.find(x => x.id === id);
+      return t ? !!t.dark : false;
     },
     getTags (state) {
       return state.tags;

@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- header -->
       <template #title>
         <h4 class="mb-0">
-          Create New Link Group
+          {{ $t('cont3xt.linkGroups.createNew') }}
         </h4>
       </template> <!-- /header -->
       <!-- form -->
@@ -25,26 +25,26 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="closeModal"
             color="warning">
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-alert
             height="40px"
             color="error"
             v-if="!!error.length"
-            class="mb-0 alert-sm mr-1 ml-1">
+            class="mb-0 me-1 ms-1">
             {{ error }}
           </v-alert>
           <div>
             <v-btn
               color="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip:start="'Toggle raw configuration for this link group'">
+              v-tooltip:start="$t('cont3xt.linkGroups.toggleRawTip')">
               <v-icon icon="mdi-pencil" />
             </v-btn>
             <v-btn
               @click="create"
               color="success">
-              Create
+              {{ $t('common.create') }}
             </v-btn>
           </div>
         </div>
@@ -57,6 +57,9 @@ SPDX-License-Identifier: Apache-2.0
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps({
   modelValue: {
@@ -85,23 +88,23 @@ function reset () { // reset fields when hidden
 }
 function create () {
   if (!linkGroup.value.name || !linkGroup.value.name.length) {
-    error.value = 'Group Name is required';
+    error.value = t('cont3xt.linkGroups.nameRequired');
     return;
   }
 
   // validate the links
   for (const link of linkGroup.value.links) {
     if (!link.name.length) {
-      error.value = 'Link Names are required';
+      error.value = t('cont3xt.linkGroups.linkNamesRequired');
       return;
     }
     if (!link.url.length) {
-      error.value = 'Link URLs are required';
+      error.value = t('cont3xt.linkGroups.linkUrlsRequired');
       return;
     }
 
     if (!link.itypes.length) {
-      error.value = 'Must have at least one type per link';
+      error.value = t('cont3xt.linkGroups.linkItypesRequired');
       return;
     }
   }
@@ -113,9 +116,3 @@ function create () {
   });
 }
 </script>
-
-<style scoped>
-.alert.alert-sm {
-  padding: 0.4rem 0.8rem;
-}
-</style>

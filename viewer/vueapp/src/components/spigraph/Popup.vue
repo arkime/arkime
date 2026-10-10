@@ -7,20 +7,20 @@ SPDX-License-Identifier: Apache-2.0
     <template
       v-for="(field, index) of fieldList"
       :key="index">
-      <b-card
+      <div
         :key="field.exp"
         v-if="index < popupInfo.depth"
-        class="mb-2">
-        <b-card-title>
+        class="popup-card mb-2">
+        <div class="popup-card-title">
           {{ field.friendlyName }}
           <a
-            class="pull-right cursor-pointer no-decoration"
+            class="float-right cursor-pointer no-decoration"
             v-if="index === 0"
             @click="closeInfo">
-            <span class="fa fa-close" />
+            <v-icon icon="mdi-close" />
           </a>
-        </b-card-title>
-        <b-card-text>
+        </div>
+        <div class="popup-card-body">
           <arkime-session-field
             :key="field.exp"
             :field="field"
@@ -28,35 +28,24 @@ SPDX-License-Identifier: Apache-2.0
             :expr="field.exp"
             :parse="true"
             :session-btn="true" />
-        </b-card-text>
-        <template #footer>
+        </div>
+        <div class="popup-card-footer">
           <div
-            class="d-flex justify-content-around text-center"
+            class="d-flex justify-space-around text-center"
             style="line-height: 1;">
-            <div class="stat">
-              {{ $t('spigraph.tableCount') }}
+            <div
+              v-for="stat in popupStats(index)"
+              :key="stat.label"
+              class="stat">
+              {{ stat.label }}
               <br>
-              <b-badge>
-                {{ commaString(getPopupInfo(index).size) }}
-              </b-badge>
-            </div>
-            <div class="stat">
-              Src IPs
-              <br>
-              <b-badge>
-                {{ commaString(getPopupInfo(index).srcips) }}
-              </b-badge>
-            </div>
-            <div class="stat">
-              Dst IPs
-              <br>
-              <b-badge>
-                {{ commaString(getPopupInfo(index).dstips) }}
-              </b-badge>
+              <span class="stat-value">
+                {{ stat.value }}
+              </span>
             </div>
           </div>
-        </template>
-      </b-card>
+        </div>
+      </div>
     </template>
   </div>
 </template>
@@ -81,6 +70,16 @@ export default {
     commaString,
     closeInfo () {
       this.$emit('closeInfo');
+    },
+    /* The 3 stat badges in the card footer share an identical
+       structure -- collapse them into one v-for over a config list. */
+    popupStats (index) {
+      const info = this.getPopupInfo(index);
+      return [
+        { label: this.$t('spigraph.tableCount'), value: this.commaString(info.size) },
+        { label: 'Src IPs', value: this.commaString(info.srcips) },
+        { label: 'Dst IPs', value: this.commaString(info.dstips) }
+      ];
     },
     getPopupInfo (index) {
       let info = this.popupInfo;
@@ -110,31 +109,37 @@ export default {
 </script>
 
 <style scoped>
-.spigraph-popup .card {
+/* Replacement for b-card / b-card-title / b-card-text / footer slot.
+   Bordered card with a tinted title and tighter padding for the
+   spi-graph drill-down popup. */
+.spigraph-popup .popup-card {
   font-size: 0.9rem;
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  border-radius: 4px;
   box-shadow: 0px 5px 10px 0px black;
 }
-
-.spigraph-popup .card-title {
+.spigraph-popup .popup-card-title {
   font-size: 1rem;
   margin-bottom: -4px;
+  padding: 0.2rem 0.3rem;
+  font-weight: 500;
 }
-.spigraph-popup .card-footer {
+.spigraph-popup .popup-card-body {
+  padding: 0.2rem 0.3rem;
+}
+.spigraph-popup .popup-card-footer {
   font-size: 0.8rem;
+  padding: 0.2rem 0.3rem;
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
 
 .stat {
   padding: 3px;
   border-radius: 4px;
   margin: 0 5px 0 5px;
-  color: var(--color-foreground);
-  border: 1px solid var(--color-primary);
-}
-</style>
-
-<style>
-.spigraph-popup > .card > .card-body,
-.spigraph-popup > .card > .card-footer {
-  padding: 0.2rem 0.3rem !important;
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-primary));
 }
 </style>
