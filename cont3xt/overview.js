@@ -204,7 +204,7 @@ class Overview {
     }
 
     for (let i = 0; i < overview.fields.length; i++) {
-      if (typeof overview.fields[i] !== 'object') {
+      if (!ArkimeUtil.isPlainObject(overview.fields[i])) {
         return { msg: 'Field must be object' };
       }
 
@@ -272,11 +272,16 @@ class Overview {
       return res.send({ success: false, text: msg });
     }
 
-    const results = await Db.putOverview(null, overview);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' });
+    try {
+      const results = await Db.putOverview(null, overview);
+      if (!results) {
+        return res.send({ success: false, text: 'ES Error' });
+      }
+      return res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      console.log('ERROR - creating overview', err);
+      return res.send({ success: false, text: 'Database error' });
     }
-    return res.send({ success: true, text: 'Success' });
   }
 
   /**
@@ -324,7 +329,8 @@ class Overview {
       }
       return res.send({ success: true, text: 'Success' });
     } catch (err) {
-      return res.send({ success: false, text: err.toString() });
+      console.log('ERROR - updating overview', err);
+      return res.send({ success: false, text: 'Database error' });
     }
   }
 
@@ -382,11 +388,16 @@ class Overview {
       return res.send({ success: false, text: 'Overview not found' });
     }
 
-    const results = await Db.deleteOverview(req.params.id);
-    if (!results) {
-      return res.send({ success: false, text: 'ES Error' });
+    try {
+      const results = await Db.deleteOverview(req.params.id);
+      if (!results) {
+        return res.send({ success: false, text: 'ES Error' });
+      }
+      return res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      console.log('ERROR - deleting overview', err);
+      return res.send({ success: false, text: 'Database error' });
     }
-    return res.send({ success: true, text: 'Success' });
   }
 }
 

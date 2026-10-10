@@ -26,6 +26,7 @@ const internals = {
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
   rightClicks: {},
   fieldActions: {},
+  customViewFields: {},
   pluginEmitter: new EventEmitter(),
   writers: new Map(),
   uploadLimits: {},

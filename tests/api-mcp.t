@@ -1,4 +1,4 @@
-use Test::More tests => 122;
+use Test::More tests => 125;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -332,6 +332,13 @@ is($json->{result}->{isError}, JSON::true, "arkime_create_hunt with no matching 
 
 $json = callTool("arkime_create_hunt", '{"name":"mcphunt","search":"zzz","searchType":"ascii"}');
 is($json->{result}->{isError}, JSON::true, "arkime_create_hunt requires a time window");
+
+$json = callTool("arkime_create_view", '{"name":"mcphuntview","expression":"ip.dst == 10.0.0.1"}');
+is($json->{result}->{isError}, JSON::false, "arkime_create_view for hunt succeeds");
+$json = callTool("arkime_create_hunt", '{"name":"mcphuntview","search":"zzz","searchType":"ascii","startTime":1,"stopTime":2147483647,"view":"mcphuntview"}');
+is($json->{result}->{isError}, JSON::false, "arkime_create_hunt with a view succeeds");
+is($json->{result}->{structuredContent}->{hunt}->{query}->{view}, "mcphuntview", "arkime_create_hunt stores the view");
+viewerDeleteToken("/api/hunt/" . $json->{result}->{structuredContent}->{hunt}->{id}, getTokenCookie());
 
 viewerGet("/regressionTests/deleteAllViews");
 

@@ -61,7 +61,7 @@ LOCAL ARKIME_LOCK_DEFINE(gStats);
 LOCAL gboolean tpacketv3OldVlan;
 
 /******************************************************************************/
-int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
 {
     ARKIME_LOCK(gStats);
 
@@ -175,7 +175,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     return NULL;
 }
 /******************************************************************************/
-void reader_tpacketv3_start()
+LOCAL void reader_tpacketv3_start()
 {
     char name[100];
     for (int i = 0; config.interface[i]; i++) {
@@ -186,7 +186,7 @@ void reader_tpacketv3_start()
     }
 }
 /******************************************************************************/
-void reader_tpacketv3_exit()
+LOCAL void reader_tpacketv3_exit()
 {
     for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {

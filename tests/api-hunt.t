@@ -1,4 +1,4 @@
-use Test::More tests => 349;
+use Test::More tests => 361;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -58,6 +58,25 @@ my $hToken = getTokenCookie('sac-huntuser');
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   is($json->{success}, 0, "missing search text");
   is($json->{i18n}, "api.hunts.missingSearch", "missing search text i18n");
+
+# Time limit applies to the hunt window
+  $json = viewerPostToken("/api/user", '{"userId": "sac-hunttl", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true, "timeLimit":1, "roles": ["arkimeUser"]}', $token);
+  my $tlToken = getTokenCookie('sac-hunttl');
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-hunttl", '{"totalSessions":1,"name":"test hunt tl","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true, "query": {"startTime":18000, "stopTime":1536872891}}', $tlToken);
+  is($json->{success}, 0, "hunt outside time limit");
+  is($json->{text}, "User time limit (1 hours) exceeded", "hunt outside time limit text");
+  $json = viewerDeleteToken("/api/user/sac-hunttl", $token);
+
+# Bad expression is the caller's error
+  $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt bad","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true, "query": {"startTime":18000, "stopTime":1536872891, "expression":"ip.src =="}}', $token);
+  is($json->{success}, 0, "hunt bad expression");
+  like($json->{text}, qr/Parse error/, "hunt bad expression text");
+
+# Times must be numbers in order
+  foreach my $q ('{"startTime":"abc", "stopTime":1}', '{"startTime":5, "stopTime":1}', '{"startTime":{}, "stopTime":2}', '{"startTime":"", "stopTime":1}', '{"startTime":null, "stopTime":1}', '{"startTime":false, "stopTime":1}', '{"startTime":[], "stopTime":1}') {
+    $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt times","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true, "query": ' . $q . '}', $token);
+    is($json->{i18n}, "api.hunts.missingFullQuery", "hunt bad times $q");
+  }
 
 # Must have search text type to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
@@ -313,6 +332,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   is ($json->{success}, 0, "can't remove hunt name and id from hunts with no matches");
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
   my $id8 = $json->{hunt}->{id};
+  cmp_ok($json->{hunt}->{totalSessions}, '>', 1, "hunt totalSessions is counted by the server");
   viewerGet("/regressionTests/processHuntJobs");
   $json = viewerPutToken("/api/hunt/$id8/removefromsessions?arkimeRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 1, "can remove hunt name and id from sessions");

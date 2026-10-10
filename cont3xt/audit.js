@@ -14,6 +14,7 @@ class Audit {
   // the only fields an audit can be sorted on
   static SORT_FIELDS = ['issuedAt', 'indicator', 'iType'];
   static MAX_ITEMS_PER_PAGE = 10000;
+  static MAX_PAGE = 1000000;
 
   constructor (data) {
     Object.assign(this, data);
@@ -124,23 +125,31 @@ class Audit {
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
 
-    // normalize the values that reach an ES size, a sql LIMIT, a sort field
-    // name or an array index - the Db implementations don't all validate.
-    // startMs/stopMs only ever become a range bound or a bound sql param, so
-    // they are passed through as-is.
+    // normalize the values that reach an ES size, a sql LIMIT/OFFSET, a sort
+    // field name, a bound sql param or an array index - the Db implementations
+    // don't all validate. Repeated params arrive as arrays.
     const query = { ...req.query };
+    for (const key of ['startMs', 'stopMs']) {
+      const n = ArkimeUtil.isString(query[key]) ? Number(query[key]) : NaN;
+      query[key] = Number.isFinite(n) ? n : undefined;
+    }
     query.sortBy = Audit.SORT_FIELDS.includes(query.sortBy) ? query.sortBy : 'issuedAt';
     query.sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
     if (!ArkimeUtil.isString(query.searchTerm)) { query.searchTerm = undefined; }
-    query.page = Math.abs(parseInt(query.page, 10)) || 1;
+    query.page = Math.min(Math.abs(parseInt(query.page, 10)) || 1, Audit.MAX_PAGE);
     // must land in [1, MAX] - a negative LIMIT means no limit in sqlite, and
     // ES rejects a from+size past max_result_window
     query.itemsPerPage = query.itemsPerPage === '-1'
       ? Audit.MAX_ITEMS_PER_PAGE
       : Math.min(Math.abs(parseInt(query.itemsPerPage, 10)) || 100, Audit.MAX_ITEMS_PER_PAGE);
 
-    const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], query);
-    res.send({ success: true, audits, total });
+    try {
+      const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], query);
+      res.send({ success: true, audits, total });
+    } catch (err) {
+      console.log('ERROR - getting audits', err);
+      res.send({ success: false, text: 'Database error' });
+    }
   }
 
   /**
@@ -152,30 +161,35 @@ class Audit {
    * @returns {string} text - The success/error message to (optionally) display.
    */
   static async apiDelete (req, res, next) {
-    const audit = await Db.getAudit(req.params.id);
-    const roles = [...await req.user.getRoles()];
+    try {
+      const audit = await Db.getAudit(req.params.id);
+      const roles = [...await req.user.getRoles()];
 
-    if (!audit) {
-      return res.send({ success: false, text: 'History log not found' });
+      if (!audit) {
+        return res.send({ success: false, text: 'History log not found' });
+      }
+
+      // permissions ---------------------------
+      if (!req.user.getPermission('removeEnabled')) {
+        return res.send({ success: false, text: 'Can not delete a history log when user has data removal disabled.' });
+      }
+
+      if (req.user.userId !== audit.userId && !roles?.includes('cont3xtAdmin')) {
+        return res.send({ success: false, text: 'User does not have permission to delete this log.' });
+      }
+      // ----------------------------------------
+
+      const results = await Db.implementation.deleteAudit(req.params.id);
+
+      if (!results) {
+        return res.send({ success: false, text: 'Database error' });
+      }
+
+      res.send({ success: true, text: 'Success' });
+    } catch (err) {
+      console.log('ERROR - deleting audit', err);
+      res.send({ success: false, text: 'Database error' });
     }
-
-    // permissions ---------------------------
-    if (!req.user.getPermission('removeEnabled')) {
-      return res.send({ success: false, text: 'Can not delete a history log when user has data removal disabled.' });
-    }
-
-    if (req.user.userId !== audit.userId && !roles?.includes('cont3xtAdmin')) {
-      return res.send({ success: false, text: 'User does not have permission to delete this log.' });
-    }
-    // ----------------------------------------
-
-    const results = await Db.implementation.deleteAudit(req.params.id);
-
-    if (!results) {
-      return res.send({ success: false, text: 'Database error' });
-    }
-
-    res.send({ success: true, text: 'Success' });
   }
 }
 

@@ -190,7 +190,7 @@ LOCAL void wise_load_fields()
 
     if (ver == 0) {
         BSB_IMPORT_u08(bsb, cnt);
-    } else if (ver == 1) {
+    } else {
         BSB_IMPORT_u16(bsb, cnt);
     }
 

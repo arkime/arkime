@@ -1,4 +1,4 @@
-use Test::More tests => 226;
+use Test::More tests => 237;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -254,6 +254,14 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is (unpack("H*", $response->content), "", "shouldn't find pcap");
     is ($response->{_rc}, "500", "can't find pcap returns 500");
 
+# posted session bodies must have a valid packetPos and node
+    foreach my $body ('{}', '[]', '{"fields":{"packetPos":"x","node":"test"}}', '{"fields":{"packetPos":[1,"2"],"node":"test"}}', '{"fields":{"packetPos":[1],"node":["test"]}}') {
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/session/test/$id/pcap", Content => $body, 'Content-Type' => 'application/json');
+        is ($response->code, 500, "post pcap with body $body returns 500");
+    }
+    $response = getBinary("/api/session/test/" . $id . "/pcap");
+    is ($response->code, 200, "can still download pcap after bad post bodies");
+
 # should be able to download multiple sessions pcap using list of ids
     $response = getBinary("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=". $id);
     is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap using list of ids");
@@ -289,47 +297,67 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $response = getBinary("/api/sessions/pcap/sessions.pcap?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
     is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap using query");
 
+# send to node endpoints are s2s only
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/send?saveId=id&remoteCluster=test2");
+    is($response->code, 401, "send session requires s2s");
+    $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/sessions/test/send?saveId=id&remoteCluster=test2", Content => '{"ids":"abc"}', 'Content-Type' => 'application/json');
+    is($response->code, 401, "send sessions requires s2s");
+
+sub s2sGet {
+    my ($path) = @_;
+    return $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126$path", ':x-arkime-auth' => '{"path": "' . $path . '", "user": "anonymous", "date": ' . time() * 1000 . '}');
+}
+
+sub s2sPost {
+    my ($path, $content) = @_;
+    return $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126$path", Content => $content, 'Content-Type' => 'application/json', ':x-arkime-auth' => '{"path": "' . $path . '", "user": "anonymous", "date": ' . time() * 1000 . '}');
+}
+
 # Test errors for /api/session/:node/:id/send
-    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/unknownnode/$id/send");
+    $response = s2sGet("/api/session/unknownnode/abc/send");
     is(substr($response->content, 0, 50), "Can't find view url for 'unknownnode' check viewer");
 
-    $json = viewerGet("/api/session/test/$id/send");
+    $json = from_json(s2sGet("/api/session/test3/abc/send")->content);
     is($json->{success}, 0, "send session missing saveId");
     is($json->{i18n}, "api.sessions.missingSaveId", "send session missing saveId i18n");
 
-    $json = viewerGet("/api/session/test/$id/send?saveId=id");
+    $json = from_json(s2sGet("/api/session/test3/abc/send?saveId=id")->content);
     is($json->{success}, 0, "send session missing cluster");
     is($json->{i18n}, "api.sessions.missingCluster", "send session missing cluster i18n");
 
-    $json = viewerGet("/api/session/test/$id/send?saveId=id&cluster=unknown");
+    $json = from_json(s2sGet("/api/session/test3/abc/send?saveId=id&cluster=unknown")->content);
     is($json->{success}, 0, "send session cluster param missing cluster");
     is($json->{i18n}, "api.sessions.missingCluster", "send session cluster param missing cluster i18n");
 
-    $json = viewerGet("/api/session/test/$id/send?saveId=id&remoteCluster=unknown");
+    $json = from_json(s2sGet("/api/session/test3/abc/send?saveId=id&remoteCluster=unknown")->content);
     is($json->{success}, 0, "send session unknown cluster");
     is($json->{i18n}, "api.sessions.unknownCluster", "send session unknown cluster i18n");
 
+    $json = from_json(s2sGet("/api/session/test3/abc/send?saveId=id&remoteCluster=test2&tags=a&tags=b")->content);
+    is($json->{success}, 0, "send session tags array");
+    is($json->{i18n}, "api.sessions.tagsMustBeString", "send session tags array i18n");
+
 # Test errors for /api/sessions/:nodeName/send
-    my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/sessions/unknownnode/send");
+    $response = s2sPost("/api/sessions/unknownnode/send", '{}');
     is(substr($response->content, 0, 50), "Can't find view url for 'unknownnode' check viewer");
 
-    $json = viewerPost("/api/sessions/test/send", '{}');
+    $json = from_json(s2sPost("/api/sessions/test3/send", '{}')->content);
     is($json->{success}, 0, "send sessions missing saveId");
     is($json->{i18n}, "api.sessions.missingSaveId", "send sessions missing saveId i18n");
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id", '{}');
+    $json = from_json(s2sPost("/api/sessions/test3/send?saveId=id", '{}')->content);
     is($json->{success}, 0, "send sessions missing cluster");
     is($json->{i18n}, "api.sessions.missingCluster", "send sessions missing cluster i18n");
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=unknown", '{}');
+    $json = from_json(s2sPost("/api/sessions/test3/send?saveId=id&cluster=unknown", '{}')->content);
     is($json->{success}, 0, "send sessions cluster param missing cluster");
     is($json->{i18n}, "api.sessions.missingCluster", "send sessions cluster param missing cluster i18n");
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=unknown", '{}');
+    $json = from_json(s2sPost("/api/sessions/test3/send?saveId=id&remoteCluster=unknown", '{}')->content);
     is($json->{success}, 0, "send sessions unknown cluster");
     is($json->{i18n}, "api.sessions.unknownCluster", "send sessions unknown cluster i18n");
 
-    $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=test2", '{}');
+    $json = from_json(s2sPost("/api/sessions/test3/send?saveId=id&remoteCluster=test2", '{}')->content);
     is($json->{success}, 0, "send sessions missing ids");
     is($json->{i18n}, "api.sessions.missingIds", "send sessions missing ids i18n");
 

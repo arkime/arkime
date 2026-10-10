@@ -1,4 +1,4 @@
-use Test::More tests => 62;
+use Test::More tests => 92;
 
 use Cwd;
 use URI::Escape;
@@ -287,6 +287,51 @@ ok($sd !~ m{[^"]\{constructor}s, "dns queryHost has no raw { in /detail");
 
 sessionsDeleteByTag($noPcapIndex, $xssTag);
 
+# Custom view labels come from the fields index, which capture nodes can write,
+# so a hostile friendlyName must stay a plain string inside the Vue expressions
+my $cvTag = "custom-view-label-regression-tag";
+my $cvDocId = "abcdef0123456789custom00";
+my $cvDoc = '{
+  "@timestamp": 1745000000000,
+  "firstPacket": 1745000000000,
+  "lastPacket": 1745000001000,
+  "node": "test",
+  "ipProtocol": 6,
+  "source": {"ip": "10.99.99.12", "port": 1002, "bytes": 100, "packets": 1},
+  "destination": {"ip": "10.99.99.22", "port": 80, "bytes": 100, "packets": 1},
+  "network": {"packets": 2, "bytes": 200},
+  "totDataBytes": 100,
+  "length": 1,
+  "protocol": ["http"],
+  "protocolCnt": 1,
+  "http": {"host": ["customview.test"], "hostCnt": 1},
+  "iscool": ["yes"],
+  "evillabel": ["val"],
+  "tags": ["' . $cvTag . '"],
+  "tagsCnt": 1
+}';
+sessionsPost($noPcapIndex, $cvDocId, $cvDoc);
+
+my $cvList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$cvTag"));
+is (scalar @{$cvList->{data}}, 1, "custom view session indexed");
+my $cvId = $cvList->{data}->[0]->{id};
+
+$sd = decode_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$cvId/detail")->content)->{html};
+ok($sd =~ m{<h4 class="session-card-title">Nice</h4>}s, "custom view title in /detail");
+ok($sd =~ m{exportUnique\(&quot;iscool&quot;, 0\)}s, "custom view field menu in /detail");
+ok($sd =~ m{\{name: "Is cool"\}}s, "custom view label in /detail");
+ok($sd =~ m{value="yes"}s, "custom view value in /detail");
+
+my $cvEscaped = 'Evil\' + (7*191) + \'\\"\\u003cb\\u003e\\u007b\\u007bx\\u007d\\u007d';
+ok($sd =~ m{\{name: "\Q$cvEscaped\E"\}}s, "hostile label escaped in \$t text");
+ok($sd =~ m{exportUnique\(&quot;evillabel&quot;, 0\)}s, "hostile label field menu in /detail");
+ok($sd !~ m{'"<b>}s, "hostile label never raw in /detail");
+ok($sd !~ m{\{name: "\QEvil' + (7*191) + '"\E}s, "hostile label never breaks out of the name string");
+ok($sd =~ m{v-text="&quot;\QEvil' + (7*191) + '\E}s, "hostile label kept literal in dropdown text");
+ok($sd !~ m{Evil1337}s, "hostile label never evaluated as pug");
+
+sessionsDeleteByTag($noPcapIndex, $cvTag);
+
 # decode parameter validation
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-zip.pcap"));
     $id = $sdId->{data}->[0]->{id};
@@ -296,3 +341,23 @@ sessionsDeleteByTag($noPcapIndex, $xssTag);
 
     $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape('{"FOO":{}}'));
     is ($response->code, 400, "packets with unknown decode key returns 400 instead of hanging");
+
+    foreach my $decode ('{"hasOwnProperty":{}}', '{"toString":{}}', '{"ITEM-CB":{}}', '{"ITEM-HTTP":{}}', '{"BODY-UNBASE64":"x"}', '[]', '5') {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape($decode));
+        is ($response->code, 400, "packets with decode $decode returns 400");
+    }
+
+    foreach my $decode ('{"BODY-UNXOR":{"key":{}}}', '{"BODY-UNXOR":{"key":["01"],"skip":{}}}', '{"BODY-UNXOR":{"key":"01"}}') {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?decode=" . uri_escape($decode));
+        is ($response->code, 200, "packets with decode $decode returns 200");
+    }
+
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets");
+    is ($response->code, 200, "packets still work after bad decode options");
+
+# session ids that select other indices
+    foreach my $sid ('3@26m04,users:anonymous', '3@*:anonymous', 'zzzz:anonymous', '3@26m04:anonymous,x') {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/" . uri_escape($sid));
+        is ($response->code, 500, "session id $sid not found");
+        unlike ($response->content, qr/passStore|userId/, "session id $sid doesn't return a user");
+    }

@@ -65,7 +65,7 @@ class DbESImpl {
 
   async getViewByIdOrName (idOrName, user, roles) {
     const query = {
-      size: 1,
+      size: 100,
       query: {
         bool: {
           filter: [{
@@ -99,7 +99,10 @@ class DbESImpl {
     });
 
     if (hits.length === 0) { return null; }
-    return hits[0]._source;
+
+    // Prefer an id match, then the user's own view with that name
+    const hit = hits.find(h => h._id === idOrName) ?? hits.find(h => h._source.user === user) ?? hits[0];
+    return hit._source;
   }
 
   async createView (doc) {

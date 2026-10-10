@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 48;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -219,3 +219,13 @@ eq_or_diff($txt,
 my $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/multiunique.txt?date=-1&exp=node&expression=" . uri_escape("ip.src=="));
 is($res->code, 400, "multiunique malformed expression returns 400");
 ok($res->content =~ /Parse error/, "multiunique malformed expression returns parse-error text, not a crash");
+
+# separator must be a short string
+$txt = get("date=-1&exp=node&counts=1&expression=$files&separator=" . ('x' x 11));
+eq_or_diff($txt, "Invalid separator parameter\n", "long separator rejected");
+
+$txt = post('{"date":-1,"exp":"node","counts":1,"expression":"' . $filestr . '","separator":["a","b"]}');
+eq_or_diff($txt, "Invalid separator parameter\n", "array separator rejected");
+
+$txt = get("date=-1&exp=node&counts=1&expression=$files&separator=" . uri_escape("|"));
+like($txt, qr/^test\|\d+$/m, "short separator works");
