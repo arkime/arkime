@@ -429,13 +429,12 @@ my ($cmd) = @_;
         # WISE connects to the mock Splunk/Databricks server at startup, so wait for it first
         waitFor($ArkimeTest::host, 9998, 1);
 
-        # NODE_TLS_REJECT_UNAUTHORIZED=0 lets the databricks SDK accept the mock's self-signed cert
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
-            system("cd ../wiseService ; NODE_TLS_REJECT_UNAUTHORIZED=0 $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /tmp/arkime.wise &");
+            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /tmp/arkime.wise &");
         } else {
-            system("cd ../wiseService ; NODE_TLS_REJECT_UNAUTHORIZED=0 $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /dev/null &");
+            system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /dev/null &");
         }
 
         waitFor($ArkimeTest::host, 8081, 1);

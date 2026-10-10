@@ -145,6 +145,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Breaking
   - #4309 esProxy refuses to start if an esproxy-sensors entry has an empty pass or ip, or neither
   - #4309 esProxy rejects query parameters that capture and viewer don't send, including extra parameters added to esBulkQuery
+  - #4338 WISE and Cont3xt Databricks connections now verify TLS certificates, set insecure=true in the databricks section to skip
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
@@ -194,6 +195,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4335 Fix History not logging searches with a very long time range
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
+  - #4338 urlapi sources support insecure=true to skip TLS certificate verification
 
 6.8.0 2026/09/30
 ## Breaking

@@ -58,13 +58,15 @@ class DatabricksIntegration extends Integration {
     const host = ArkimeConfig.getFull(section, 'host', ArkimeConfig.exit);
     const path = ArkimeConfig.getFull(section, 'path', ArkimeConfig.exit);
     const token = ArkimeConfig.getFull(section, 'token', ArkimeConfig.exit);
+    const insecure = ArkimeConfig.insecure || ArkimeConfig.getFull(section, 'insecure', false) === true;
 
     const client = new DBSQLClient();
 
     client.connect({
       host,
       path,
-      token
+      token,
+      checkServerCertificate: !insecure
     }).then(async (client2) => {
       this.#session = await client2.openSession();
     }).catch((err) => {
