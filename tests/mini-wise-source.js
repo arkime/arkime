@@ -8,8 +8,8 @@
  *
  * Both SDKs insist on talking HTTPS to their host, so this server serves TLS
  * with an embedded self-signed cert (CN=localhost). The splunk-sdk sets
- * rejectUnauthorized:false itself; the databricks SDK does not, so the wise
- * test process is launched with NODE_TLS_REJECT_UNAUTHORIZED=0 (see tests.pl).
+ * rejectUnauthorized:false itself; the databricks and urlapi sources use
+ * insecure=true in config.wise.yaml.
  *
  * Splunk  - plain REST/JSON: /services/auth/login, /services/server/info,
  *           and a oneshot search POST to .../search/jobs.

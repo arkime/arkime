@@ -26,6 +26,8 @@ class DatabricksSource extends WISESource {
     this.mergeQuery = api.getConfig(section, 'mergeQuery');
     // no default so the required-check below can actually fire
     this.keyPath = api.getConfig(section, 'keyPath', api.getConfig(section, 'keyColumn'));
+    const insecure = api.getConfig(section, 'insecure', false);
+    this.insecure = api.insecure || insecure === true || insecure === 'true'; // ini values are strings
 
     let missing = false;
     ['host', 'path', 'token', 'query', 'keyPath'].forEach((item) => {
@@ -50,7 +52,8 @@ class DatabricksSource extends WISESource {
       host: this.host,
       port: this.port,
       path: this.path,
-      token: this.token
+      token: this.token,
+      checkServerCertificate: !this.insecure
     }).then(async (client2) => {
       this.session = await client2.openSession();
 
@@ -204,6 +207,7 @@ exports.initSource = function (api) {
       { name: 'port', required: false, help: 'The Databricks port (defaults to 443)' },
       { name: 'path', required: true, help: 'The Databricks path' },
       { name: 'token', required: true, password: true, help: 'The Databricks token' },
+      { name: 'insecure', required: false, regex: '^(true|false)$', help: 'Set to true to disable TLS certificate verification' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },
       { name: 'periodic', required: false, help: 'If set, the number of seconds between periodic full queries. If not set, an individual query is done per key.' },
       { name: 'query', required: true, help: 'The query to run against Databricks. For non periodic queries the parameter SEARCHTERM will be replaced with the key' },
