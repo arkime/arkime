@@ -18,6 +18,7 @@
        "msnialogin.passport.com"
       ],
       "altCnt" : 10,
+      "exponent" : 65537,
       "hash" : "d4:18:6b:6e:6d:82:6a:53:c9:a6:2e:f2:c0:cd:1b:45:c0:e7:e6:c4",
       "issuerCN" : [
        "verisign class 3 extended validation ssl sgc ca"
@@ -29,12 +30,15 @@
        "VeriSign Trust Network",
        "Terms of use at https://www.verisign.com/rpa (c)06"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1448927999000,
       "notBefore" : 1413504000000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 392,
       "remainingSeconds" : 33874359,
       "serial" : "0dc04875701d090d9f3645da26f51fe7",
+      "sha256" : "c879ad8b5720522d78c2025b1098417a0392e49544357cccdbbde8705012c0e3",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "login.live.com"
       ],
@@ -45,9 +49,11 @@
        "Passport"
       ],
       "validDays" : 409,
-      "validSeconds" : 35423999
+      "validSeconds" : 35423999,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "f4:a8:0a:0c:d1:e6:cf:19:0b:8c:bc:6f:bc:99:17:11:d4:82:c9:d0",
       "issuerON" : [
        "VeriSign, Inc."
@@ -55,12 +61,15 @@
       "issuerOU" : [
        "Class 3 Public Primary Certification Authority"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1636329599000,
       "notBefore" : 1162944000000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 2561,
       "remainingSeconds" : 221275959,
       "serial" : "35973187f3873a07327ece580c9b7eda",
+      "sha256" : "5bd0a995ad9721601725c889c0132e0ac00323afc6b49e1c9af27ac07f9157bf",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "verisign class 3 public primary certification authority - g5"
       ],
@@ -72,9 +81,11 @@
        "(c) 2006 VeriSign, Inc. - For authorized use only"
       ],
       "validDays" : 5478,
-      "validSeconds" : 473385599
+      "validSeconds" : 473385599,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "4a:8a:2a:0e:27:6f:f3:3b:5d:d8:8a:36:21:46:01:0f:2a:8b:6a:ee",
       "issuerCN" : [
        "verisign class 3 public primary certification authority - g5"
@@ -86,12 +97,16 @@
        "VeriSign Trust Network",
        "(c) 2006 VeriSign, Inc. - For authorized use only"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1478563199000,
       "notBefore" : 1162944000000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 735,
       "remainingSeconds" : 63509559,
       "serial" : "112a006d37e5106fd6ca7cc3efbacc18",
+      "sha256" : "89a7bfab6b842542dcd9b043ae068483961f8e8603840ffef93dded30bb3cd7c",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "verisign class 3 extended validation ssl sgc ca"
       ],
@@ -103,7 +118,8 @@
        "Terms of use at https://www.verisign.com/rpa (c)06"
       ],
       "validDays" : 3652,
-      "validSeconds" : 315619199
+      "validSeconds" : 315619199,
+      "version" : 3
      }
     ],
     "certCnt" : 3,
@@ -208,7 +224,15 @@
     "socks" : {
      "host" : "login.live.com",
      "port" : 443,
-     "user" : "fd7bcf7b5c9e1d"
+     "status" : [
+      "granted"
+     ],
+     "statusCnt" : 1,
+     "user" : "fd7bcf7b5c9e1d",
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "as" : {
@@ -294,6 +318,10 @@
       "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
      ],
      "cipherCnt" : 1,
+     "curve" : [
+      "secp256r1"
+     ],
+     "curveCnt" : 1,
      "dstSessionId" : [
       "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
      ],

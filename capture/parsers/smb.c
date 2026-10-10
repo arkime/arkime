@@ -49,6 +49,7 @@ typedef struct {
 #define SMB2_TREE_CONNECT      20
 #define SMB2_CREATE            21
 #define SMB2_NEGOTIATE         22
+#define SMB2_SESSION_SETUP     23
 
 // SMB1 Flags
 #define SMB1_FLAGS_REPLY       0x80
@@ -108,8 +109,11 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
     if (!value || atag != 16)
         return;
 
+    // negTokenResp may start with [0] negState and [1] supportedMech before the [2] responseToken
     BSB_INIT(bsb, value, alen);
-    value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    do {
+        value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+    } while (value && atag != 2 && BSB_REMAINING(bsb) > 0);
     if (!value || atag != 2)
         return;
 
@@ -349,6 +353,9 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             case 0x72:
                 *state = SMB1_NEGOTIATE_RSP;
                 break;
+            case 0x73:
+                *state = SMB1_SETUP_ANDX;
+                break;
             default:
                 *state = SMB_SKIP;
             }
@@ -449,6 +456,19 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             if (!BSB_IS_ERROR(mbsb)) {
                 smb1_parse_osverdomain(session, (char *)BSB_WORK_PTR(mbsb), BSB_REMAINING(mbsb), smb->flags2[which] & SMB1_FLAGS2_UNICODE);
             }
+        } else if (wordcount == 4) {
+            // Session Setup AndX response with extended security: AndX(4) Action(2) SecurityBlobLength(2) ByteCount(2) blob
+            BSB_IMPORT_skip(mbsb, 6);
+
+            int securitylen = 0;
+            BSB_LIMPORT_u16(mbsb, securitylen);
+
+            BSB_IMPORT_skip(mbsb, 2);
+
+            if (BSB_IS_ERROR(mbsb) || securitylen > (int)BSB_REMAINING(mbsb)) {
+                break;
+            }
+            smb_security_blob(session, BSB_WORK_PTR(mbsb), securitylen);
         } else if (wordcount == 13) {
             BSB_IMPORT_skip(mbsb, 14);
 
@@ -556,6 +576,9 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
 
         if ((flags & SMB2_FLAGS_SERVER_TO_REDIR) == 0) {
             switch (cmd) {
+            case 0x01:
+                *state = SMB2_SESSION_SETUP;
+                break;
             case 0x03:
                 *state = SMB2_TREE_CONNECT;
                 break;
@@ -569,6 +592,9 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             switch (cmd) {
             case 0x00:
                 *state = SMB2_NEGOTIATE;
+                break;
+            case 0x01:
+                *state = SMB2_SESSION_SETUP;
                 break;
             default:
                 *state = SMB_SKIP;
@@ -606,6 +632,37 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             arkime_field_string_add(dialectField, session, str, -1, TRUE);
         }
 
+        break;
+    }
+    case SMB2_SESSION_SETUP: {
+        // Request: StructureSize(2)=25 Flags(1) SecurityMode(1) Capabilities(4) Channel(4) SecurityBufferOffset(2) SecurityBufferLength(2)
+        // Response: StructureSize(2)=9 SessionFlags(2) SecurityBufferOffset(2) SecurityBufferLength(2)
+        // The offset is from the start of the 64 byte SMB2 header
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+        BSB mbsb;
+        BSB_IMPORT_bsb(*bsb, mbsb, *remlen);
+        *remlen = 0;
+        *state = SMB_NETBIOS;
+
+        uint16_t structSize = 0, secOffset = 0, secLen = 0;
+        BSB_LIMPORT_u16(mbsb, structSize);
+        if (structSize == 25)
+            BSB_IMPORT_skip(mbsb, 10);
+        else if (structSize == 9)
+            BSB_IMPORT_skip(mbsb, 2);
+        else
+            break;
+        BSB_LIMPORT_u16(mbsb, secOffset);
+        BSB_LIMPORT_u16(mbsb, secLen);
+        if (BSB_IS_ERROR(mbsb) || secOffset < 64 || secLen == 0)
+            break;
+
+        BSB_IMPORT_rewind(mbsb, BSB_POSITION(mbsb));
+        BSB_IMPORT_skip(mbsb, secOffset - 64);
+        if (!BSB_IS_ERROR(mbsb) && BSB_REMAINING(mbsb) >= secLen)
+            smb_security_blob(session, BSB_WORK_PTR(mbsb), secLen);
         break;
     }
     case SMB2_TREE_CONNECT: {

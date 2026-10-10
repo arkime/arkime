@@ -7,6 +7,49 @@
 extern ArkimeConfig_t        config;
 
 LOCAL  int bindNameField;
+LOCAL  int opField;
+LOCAL  int resultField;
+
+LOCAL const char *ldapOps[26] = {
+    [0] = "bind", [1] = "bind_response", [2] = "unbind", [3] = "search", [4] = "search_entry", [5] = "search_result",
+    [6] = "modify", [7] = "modify_response", [8] = "add", [9] = "add_response", [10] = "delete", [11] = "delete_response",
+    [12] = "modifydn", [13] = "modifydn_response", [14] = "compare", [15] = "compare_response", [16] = "abandon",
+    [19] = "search_reference", [23] = "extended", [24] = "extended_response", [25] = "intermediate_response"
+};
+
+/******************************************************************************/
+LOCAL const char *ldap_result_name(uint8_t code)
+{
+    switch (code) {
+    case 0:
+        return "success";
+    case 1:
+        return "operationsError";
+    case 2:
+        return "protocolError";
+    case 7:
+        return "authMethodNotSupported";
+    case 8:
+        return "strongerAuthRequired";
+    case 14:
+        return "saslBindInProgress";
+    case 32:
+        return "noSuchObject";
+    case 48:
+        return "inappropriateAuthentication";
+    case 49:
+        return "invalidCredentials";
+    case 50:
+        return "insufficientAccessRights";
+    case 53:
+        return "unwillingToPerform";
+    default: {
+        static __thread char buf[16];
+        snprintf(buf, sizeof(buf), "%u", code);
+        return buf;
+    }
+    }
+}
 LOCAL  int authTypeField;
 
 /******************************************************************************/
@@ -34,6 +77,8 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
         uint8_t *ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &protocolOp, &ilen);
         if (ipc != 1 || protocolOp > 25)
             return;
+        if (ldapOps[protocolOp])
+            arkime_field_string_add(opField, session, ldapOps[protocolOp], -1, TRUE);
 
         if (protocolOp == 0) {
             BSB_INIT(ibsb, ivalue, ilen);
@@ -103,7 +148,9 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
             BSB_INIT(rbsb, ivalue, ilen);
             uint32_t rpc, rtag, rlen;
             // resultCode (ENUMERATED)
-            arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            const uint8_t *rcvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            if (rcvalue && rtag == 10 && rlen == 1)
+                arkime_field_string_add(resultField, session, ldap_result_name(rcvalue[0]), -1, TRUE);
             // matchedDN (OCTET STRING)
             const uint8_t *rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
             if (rvalue && rlen >= 8 && memcmp(rvalue, "NTLMSSP\0", 8) == 0) {
@@ -222,6 +269,18 @@ void arkime_parser_init()
                                         "The auth type of ldap bind",
                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                         (char *)NULL);
+
+    opField = arkime_field_define("ldap", "termfield",
+                                  "ldap.op", "Operation", "ldap.op",
+                                  "LDAP protocol operations seen",
+                                  ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
+
+    resultField = arkime_field_define("ldap", "termfield",
+                                      "ldap.result", "Bind Result", "ldap.result",
+                                      "LDAP bind response result code",
+                                      ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     bindNameField = arkime_field_define("ldap", "termfield",
                                         "ldap.bindname", "Bind Name", "ldap.bindname",

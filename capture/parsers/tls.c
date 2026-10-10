@@ -28,6 +28,10 @@ extern uint8_t    arkime_char_to_hexstr[256][3];
 
 LOCAL uint32_t tls_process_client_hello_func;
 LOCAL uint32_t tls_process_server_hello_func;
+LOCAL int alpnField;
+LOCAL int clientAlpnField;
+LOCAL int curveField;
+LOCAL int alertField;
 LOCAL uint32_t tls_process_server_certificate_func;
 
 /******************************************************************************/
@@ -103,6 +107,158 @@ LOCAL void tls_ja4_version(uint16_t ver, char vstr[3])
     default:
         memcpy(vstr, "00", 3);
         break;
+    }
+}
+/******************************************************************************/
+LOCAL void tls_add_group(ArkimeSession_t *session, uint16_t group)
+{
+    const char *name;
+    char        buf[32];
+
+    switch (group) {
+    case 0x13:
+        name = "secp192r1";
+        break;
+    case 0x15:
+        name = "secp224r1";
+        break;
+    case 0x16:
+        name = "secp256k1";
+        break;
+    case 0x17:
+        name = "secp256r1";
+        break;
+    case 0x18:
+        name = "secp384r1";
+        break;
+    case 0x19:
+        name = "secp521r1";
+        break;
+    case 0x1a:
+        name = "brainpoolP256r1";
+        break;
+    case 0x1b:
+        name = "brainpoolP384r1";
+        break;
+    case 0x1c:
+        name = "brainpoolP512r1";
+        break;
+    case 0x1d:
+        name = "x25519";
+        break;
+    case 0x1e:
+        name = "x448";
+        break;
+    case 0x100:
+        name = "ffdhe2048";
+        break;
+    case 0x101:
+        name = "ffdhe3072";
+        break;
+    case 0x102:
+        name = "ffdhe4096";
+        break;
+    case 0x103:
+        name = "ffdhe6144";
+        break;
+    case 0x104:
+        name = "ffdhe8192";
+        break;
+    case 0x11eb:
+        name = "SecP256r1MLKEM768";
+        break;
+    case 0x11ec:
+        name = "X25519MLKEM768";
+        break;
+    case 0x6399:
+        name = "X25519Kyber768Draft00";
+        break;
+    case 0x639a:
+        name = "SecP256r1Kyber768Draft00";
+        break;
+    default:
+        if (tls_is_grease_value(group))
+            return;
+        snprintf(buf, sizeof(buf), "unknown-%u", group);
+        name = buf;
+        break;
+    }
+    arkime_field_string_add(curveField, session, name, -1, TRUE);
+}
+/******************************************************************************/
+LOCAL const char *tls_alert_name(uint8_t desc)
+{
+    switch (desc) {
+    case 0:
+        return "close_notify";
+    case 10:
+        return "unexpected_message";
+    case 20:
+        return "bad_record_mac";
+    case 21:
+        return "decryption_failed";
+    case 22:
+        return "record_overflow";
+    case 30:
+        return "decompression_failure";
+    case 40:
+        return "handshake_failure";
+    case 41:
+        return "no_certificate";
+    case 42:
+        return "bad_certificate";
+    case 43:
+        return "unsupported_certificate";
+    case 44:
+        return "certificate_revoked";
+    case 45:
+        return "certificate_expired";
+    case 46:
+        return "certificate_unknown";
+    case 47:
+        return "illegal_parameter";
+    case 48:
+        return "unknown_ca";
+    case 49:
+        return "access_denied";
+    case 50:
+        return "decode_error";
+    case 51:
+        return "decrypt_error";
+    case 60:
+        return "export_restriction";
+    case 70:
+        return "protocol_version";
+    case 71:
+        return "insufficient_security";
+    case 80:
+        return "internal_error";
+    case 86:
+        return "inappropriate_fallback";
+    case 90:
+        return "user_canceled";
+    case 100:
+        return "no_renegotiation";
+    case 109:
+        return "missing_extension";
+    case 110:
+        return "unsupported_extension";
+    case 111:
+        return "certificate_unobtainable";
+    case 112:
+        return "unrecognized_name";
+    case 113:
+        return "bad_certificate_status_response";
+    case 114:
+        return "bad_certificate_hash_value";
+    case 115:
+        return "unknown_psk_identity";
+    case 116:
+        return "certificate_required";
+    case 120:
+        return "no_application_protocol";
+    default:
+        return NULL;
     }
 }
 /******************************************************************************/
@@ -202,9 +358,30 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
             }
 
             if (etype == 0x10) { // etype 0x10 is alpn
-                if (elen == 5 && BSB_REMAINING(ebsb) >= 5 && memcmp(BSB_WORK_PTR(ebsb), "\x00\x03\x02\x68\x32", 5) == 0) {
-                    arkime_session_add_protocol(session, "http2");
+                BSB abs;
+                BSB_IMPORT_bsb(ebsb, abs, elen);
+
+                uint16_t llen = 0;
+                BSB_IMPORT_u16(abs, llen);
+                BSB_SHRINK_REMAINING(abs, llen);
+                uint8_t alen = 0;
+                BSB_IMPORT_u08(abs, alen);
+                const uint8_t *astr = NULL;
+                BSB_IMPORT_ptr(abs, astr, alen);
+                if (alen > 0 && astr && !BSB_IS_ERROR(abs)) {
+                    arkime_field_string_add(alpnField, session, (char *)astr, alen, TRUE);
+                    if (alen == 2 && memcmp(astr, "h2", 2) == 0)
+                        arkime_session_add_protocol(session, "http2");
                 }
+                continue; // Already processed ebsb above
+            }
+
+            if ((etype == 0x33 || etype == 0x28) && elen >= 4) { // key_share (0x28 in TLS 1.3 drafts), the server picks one group
+                uint16_t group = 0;
+                BSB_IMPORT_u16(ebsb, group);
+                BSB_IMPORT_skip(ebsb, elen - 2);
+                tls_add_group(session, group);
+                continue; // Already processed ebsb above
             }
 
             BSB_IMPORT_skip(ebsb, elen);
@@ -255,6 +432,11 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
             break;
         case 11:
             arkime_parsers_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
+            break;
+        case 12:
+            // ServerKeyExchange, for ECDHE it starts with curve_type named_curve(3) and the group
+            if (hlen >= 7 && hdata[4] == 3)
+                tls_add_group(session, hdata[5] << 8 | hdata[6]);
             break;
         case 14:
             return 1;
@@ -486,12 +668,18 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     uint16_t llen = 0;
                     BSB_IMPORT_u16(bsb, llen);  // list len
                     BSB_SHRINK_REMAINING(bsb, llen);
-                    uint8_t alen = 0;
-                    BSB_IMPORT_u08(bsb, alen);  // len
-                    const uint8_t *astr = NULL;
-                    BSB_IMPORT_ptr(bsb, astr, alen);
-                    if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
-                        tls_alpn_to_ja4alpn(astr, alen, ja4ALPN);
+                    gboolean first = TRUE;
+                    while (BSB_REMAINING(bsb) >= 2) {
+                        uint8_t alen = 0;
+                        BSB_IMPORT_u08(bsb, alen);  // len
+                        const uint8_t *astr = NULL;
+                        BSB_IMPORT_ptr(bsb, astr, alen);
+                        if (alen == 0 || !astr || BSB_IS_ERROR(bsb))
+                            break;
+                        if (first)
+                            tls_alpn_to_ja4alpn(astr, alen, ja4ALPN);
+                        first = FALSE;
+                        arkime_field_string_add(clientAlpnField, session, (char *)astr, alen, TRUE);
                     }
                 } else if (etype == 0x2b) { // etype 0x2b is supported version
                     BSB bsb;
@@ -690,6 +878,12 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     while (tls->len[which] >= 5) {
         // Not handshake protocol, stop looking on this direction
         if (tls->buf[which][0] != 0x16) {
+            // Alerts before ChangeCipherSpec are in the clear
+            if (tls->buf[which][0] == 0x15 && tls->len[which] >= 7 && tls->buf[which][3] == 0 && tls->buf[which][4] == 2) {
+                const char *name = tls_alert_name(tls->buf[which][6]);
+                if (name)
+                    arkime_field_string_add(alertField, session, name, -1, TRUE);
+            }
             tls->len[which] = 0;
             tls->flags |= (1 << which);
             if ((tls->flags & 3) == 3)
@@ -875,6 +1069,30 @@ void arkime_parser_init()
                                           ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
     }
+
+    alpnField = arkime_field_define("tls", "termfield",
+                                    "tls.alpn", "ALPN", "tls.alpn",
+                                    "SSL/TLS application protocol selected by the server",
+                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
+
+    clientAlpnField = arkime_field_define("tls", "termfield",
+                                          "tls.alpn.src", "Client ALPN", "tls.clientAlpn",
+                                          "SSL/TLS application protocols offered by the client",
+                                          ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    curveField = arkime_field_define("tls", "termfield",
+                                     "tls.curve", "Curve", "tls.curve",
+                                     "SSL/TLS key exchange group selected by the server",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
+
+    alertField = arkime_field_define("tls", "termfield",
+                                     "tls.alert", "Alert", "tls.alert",
+                                     "SSL/TLS alerts seen during the handshake",
+                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("tls", NULL, 0, (uint8_t *)"\x16\x03", 2, tls_classify);
 

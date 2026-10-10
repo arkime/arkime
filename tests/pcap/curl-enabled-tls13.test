@@ -356,6 +356,15 @@
       "TLS_AES_256_GCM_SHA384"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "h2",
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 2,
+     "curve" : [
+      "x25519"
+     ],
+     "curveCnt" : 1,
      "dstSessionId" : [
       "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
      ],

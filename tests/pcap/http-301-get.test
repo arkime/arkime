@@ -59,6 +59,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "host",
@@ -75,6 +79,10 @@
      "response-location" : [
       "https://www.github.com/"
      ],
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "content-length",

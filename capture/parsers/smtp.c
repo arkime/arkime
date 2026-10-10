@@ -25,6 +25,10 @@ LOCAL  ArkimeStringHashStd_t emailHeaders;
 // Not a real field, just a sentinel for the emailHeaders dispatch; -1 can
 // never collide with a defined field id
 LOCAL  int receivedField = -1;
+LOCAL  int dateField;
+LOCAL  int replyToField;
+LOCAL  int inReplyToField;
+LOCAL  int replyField;
 LOCAL  int idField;
 LOCAL  int ipField;
 LOCAL  int hostField;
@@ -515,6 +519,8 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 char tag[200];
                 snprintf(tag, sizeof(tag), "smtp:statuscode:%d", atoi(line->str));
                 arkime_session_add_tag(session, tag);
+                if (line->len > 0)
+                    arkime_field_string_add(replyField, session, line->str, MIN((int)line->len, 200), TRUE);
             } else if (strncasecmp(line->str, "MAIL FROM:", 10) == 0) {
                 *state = EMAIL_CMD;
                 arkime_field_string_add_lower(srcField, session, smtp_remove_matching(line->str + 10, '<', '>'), -1);
@@ -1147,6 +1153,30 @@ void arkime_parser_init()
                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
 
+    dateField = arkime_field_define("email", "termfield",
+                                    "email.date", "Date", "email.date",
+                                    "Email Date header",
+                                    ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
+
+    replyToField = arkime_field_define("email", "lotermfield",
+                                       "email.reply-to", "Reply-To", "email.replyTo",
+                                       "Email Reply-To header",
+                                       ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
+
+    inReplyToField = arkime_field_define("email", "termfield",
+                                         "email.in-reply-to", "In-Reply-To", "email.inReplyTo",
+                                         "Email In-Reply-To header",
+                                         ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
+
+    replyField = arkime_field_define("email", "termfield",
+                                     "email.reply", "Server Reply", "email.reply",
+                                     "SMTP server reply lines to MAIL, RCPT and DATA",
+                                     ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
+
     helloField = arkime_field_define("email", "lotermfield",
                                      "email.smtp-hello", "SMTP Hello", "email.smtpHello",
                                      "SMTP HELO/EHLO",
@@ -1164,6 +1194,9 @@ void arkime_parser_init()
     arkime_config_add_header(&emailHeaders, "user-agent", uaField);
     arkime_config_add_header(&emailHeaders, "mime-version", mvField);
     arkime_config_add_header(&emailHeaders, "received", receivedField);
+    arkime_config_add_header(&emailHeaders, "date", dateField);
+    arkime_config_add_header(&emailHeaders, "reply-to", replyToField);
+    arkime_config_add_header(&emailHeaders, "in-reply-to", inReplyToField);
     arkime_config_load_header("headers-email", "email", "Email header ", "email.", NULL, "email.header-", &emailHeaders, 0);
 
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"HELO", 4, smtp_classify);

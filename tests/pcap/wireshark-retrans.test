@@ -60,6 +60,12 @@
       "<NWIXML:notificationSequence xmlns:NWIXML=\"http://www.nokia.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:NX2SFM=\"http://www.nokia.com/nx2sfm\" xsi:schemaLocation=\"http://www.nokia.com exhalagx.xsd\"><notification><fixedHeader><domainType>com.nokia.ntc::NWIXML</domainType><typeName>alarmEvent</typeName><eventName></eventName></fixedHeader><optionalHeader><sender>MSCi-945649</sender><eventTime>2009-11-24T02:00:14+00:00</eventTime></optionalHeader><eventBody><NX2SFM:alarmNew systemDN=\"MSCi-945649/FU-OMU-0\"><NX2SFM:eventTime>2009-11-24T02:00:14+00:00</NX2SFM:eventTime><NX2SFM:specificProblem>557</NX2SFM:specificProblem><NX2SFM:alarmText>STATISTICAL REPORTS LOST</NX2SFM:alarmText><NX2SFM:additionalText1>0060 000001AE 000001FA 84 % \r\n</NX2SFM:additionalText1><NX2SFM:additionalText2></NX2SFM:additionalText2><NX2SFM:additionalText3></NX2SFM:additionalText3><NX2SFM:perceivedSeverity>warning</NX2SFM:perceivedSeverity><NX2SFM:eventType>equipment</NX2SFM:eventType><NX2SFM:alarmId>65535</NX2SFM:alarmId></NX2SFM:alarmNew></eventBody></notification></NWIXML:notificationSequence>",
       "<NWIXML:notificationSequence xmlns:NWIXML=\"http://www.nokia.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:NX2SFM=\"http://www.nokia.com/nx2sfm\" xsi:schemaLocation=\"http://www.nokia.com exhalagx.xsd\"><notification><fixedHeader><domainType>com.nokia.ntc::NWIXML</domainType><typeName>alarmEvent</typeName><eventName></eventName></fixedHeader><optionalHeader><sender>MSCi-945649</sender><eventTime>2009-11-24T02:00:20+00:00</eventTime></optionalHeader><eventBody><NX2SFM:alarmNew systemDN=\"MSCi-945649/FU-VTP-24\"><NX2SFM:eventTime>2009-11-24T02:00:20+00:00</NX2SFM:eventTime><NX2SFM:specificProblem>690</NX2SFM:specificProblem><NX2SFM:alarmText>WORKING STATE CHANGE</NX2SFM:alarmText><NX2SFM:additionalText1>WO-BU BL-SY 0000 0000 0000 00000000 00000000 00000000 \r\n</NX2SFM:additionalText1><NX2SFM:additionalText2></NX2SFM:additionalText2><NX2SFM:additionalText3></NX2SFM:additionalText3><NX2SFM:perceivedSeverity>warning</NX2SFM:perceivedSeverity><NX2SFM:eventType>equipment</NX2SFM:eventType><NX2SFM:alarmId>65535</NX2SFM:alarmId></NX2SFM:alarmNew></eventBody></notification></NWIXML:notificationSequence>"
      ],
+     "requestBodyLen" : [
+      "1090",
+      "1098",
+      "1121"
+     ],
+     "requestBodyLenCnt" : 3,
      "requestHeader" : [
       "accept-encoding",
       "cache-control",
@@ -115,6 +121,10 @@
       "tue, 24 nov 2009 02:00:20 gmt"
      ],
      "requestHeaderValueCnt" : 20,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-type",
       "date",

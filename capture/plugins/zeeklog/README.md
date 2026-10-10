@@ -114,14 +114,18 @@ Run capture with `--debug` to print the final schema of every log at startup.
 | `@tls.established` | bool | a server cipher was seen |
 | `@tls.version` | string | Arkime tls.version spelled the Zeek way (TLSv1.2 → TLSv12) |
 | `@tls.sni_matches_cert` | bool | SNI matches the leaf certificate CN or alt names |
-| `@ssl.cert_chain_fps` | vector[string] | certificate hashes (SHA1, Zeek uses SHA256) |
+| `@ssl.cert_chain_fps` | vector[string] | SHA256 certificate fingerprints |
 | `@ssl.subject` `@ssl.issuer` | string | `CN=,O=,OU=` of the first non-CA certificate |
 | `@ssh.version` | count | 1 or 2 from the banners |
 | `@ssh.host_key_fingerprint` | string | MD5 of the host key |
 | `@krb.client` | string | `cname/REALM` |
+| `@krb.request_type` | string | AS or TGS from the Kerberos message types |
+| `@http.status_code` `@http.info_code` | count | final (2xx+) and informational (1xx) HTTP status codes |
+| `@ntp.mode` | count | NTP mode name turned back into its number |
+| `@ntp.poll` `@ntp.precision` | interval | 2^exponent seconds, the way Zeek logs them |
 | `@tunnel.type` `@tunnel.action` | enum | Tunnel::GRE/VXLAN/GTPv1/GENEVE and Tunnel::DISCOVER |
 | `@dns.*` | | `trans_id rtt query qclass qclass_name qtype qtype_name rcode rcode_name AA TC RD RA Z answers TTLs rejected opcode opcode_name`, need `iterate=dns` |
-| `@x509.*` | | `fingerprint serial subject issuer not_valid_before not_valid_after key_alg key_type curve san_dns ca host_cert`, need `iterate=cert` |
+| `@x509.*` | | `fingerprint serial subject issuer not_valid_before not_valid_after key_alg key_type curve san_dns san_email san_uri san_ip ca host_cert version sig_alg key_length exponent path_len`, need `iterate=cert` |
 | `@file.*` | | `fuid source mime_type md5 sha256 filename is_orig`, need `iterate=file` |
 
 ## Differences from Zeek
@@ -150,24 +154,21 @@ them by the parser work that would close the gap.
 | conn | `local_orig` `local_resp` | a local networks setting (Zeek `Site::local_nets`) |
 | conn | `tunnel_parents` `missed_bytes` | an id for the outer tunnel session, a count of bytes lost in TCP gaps |
 | conn | `history` letters `T` `c` `g` `w` `i` `q` `^` | retransmit, bad checksum, gap, zero window and flip tracking per packet |
-| http | `status_msg` `request_body_len` `response_body_len` `info_code` `info_msg` `origin` `proxied` | the http parser keeps the status code but not the reason phrase, body sizes, 1xx responses or proxy headers |
+| http | `status_msg` `origin` `proxied` | the bundled http_parser does not deliver the reason phrase; Origin and proxy headers are not captured |
 | http | `orig_fuids` `resp_fuids` `orig_filenames` `resp_filenames` `orig_mime_types` | per direction body hashes and magic (today `http.md5`/`http.bodymagic` mix both directions) |
-| ssl | `curve` `next_protocol` `last_alert` `ssl_history` `client_cert_chain_fps` | the tls parser already walks the extensions for JA3/JA4 but does not store the negotiated group, server ALPN, alerts or client certificates |
-| ssl | `established` (approximate) | detection of the Finished / ChangeCipherSpec exchange |
-| x509 | `certificate.version` `certificate.sig_alg` `certificate.key_length` `certificate.exponent` `basic_constraints.path_len` `san.uri` `san.email` `san.ip` | more of the certificate parsed in certs.c; `fingerprint` and `cert_chain_fps` are SHA1 where Zeek uses SHA256 |
-| ssh | `server` `cipher_alg` `mac_alg` `compression_alg` `kex_alg` `host_key_alg` `auth_success` `auth_attempts` `direction` | the ssh parser merges both banners into `ssh.ver` and parses KEXINIT for HASSH without storing the chosen algorithms |
-| smtp | `date` `reply_to` `first_received` `second_received` `path` `last_reply` | Received hops, the Date/Reply-To headers and the last server reply; `from`/`to`/`subject` are stored decoded, Zeek keeps the raw header text |
-| ftp | `password` `reply_msg` `arg` `data_channel.*` | per command rows, the password is intentionally not stored |
-| kerberos | `request_type` `till` `forwardable` `renewable` `success` | message type and ticket flags; `cipher` lists every offered etype where Zeek logs the selected one |
-| ntlm | `server_nb_computer_name` `server_dns_computer_name` `server_tree_name` `success` | the AV pairs of the Type 2 challenge and the final status |
-| dhcp | `lease_time` `server_addr` `domain` `client_fqdn` `client_message` `server_message` | options 51, 54, 15, 81, 56; `msg_types` is unordered because it is a set |
+| ssl | `ssl_history` `client_cert_chain_fps` `established` (approximate) | handshake state tracking and client certificates |
+| ssh | `auth_success` `auth_attempts` `direction` | Zeek's packet size heuristics after the key exchange |
+| smtp | `first_received` `second_received` `path` | the Received hops; `from`/`to`/`subject` are stored decoded, Zeek keeps the raw header text |
+| ftp | `password` `data_channel.*` | the password is intentionally not stored, PORT/PASV channels are not tracked |
+| kerberos | `till` `success` `client_cert_*` `server_cert_*` | the request till time and PKINIT certificates |
+| ntlm | `success` | the final SMB/HTTP status after the authenticate message |
+| dhcp | `client_fqdn` `client_message` `server_message` | options 81 (partially), 56 |
 | dns | `answers` for NSEC/CAA/HTTPS records | Zeek's text form of those rdata |
 | smb | `smb_cmd.log`, `smb_files` `action` `size` `times.*`, `smb_mapping` `service` `share_type` `native_file_system` | per command tracking in the smb parser |
 | dce_rpc | `operation` `rtt` `named_pipe` | an opnum to operation name table and request/response timing |
 | snmp | `get_requests` `get_bulk_requests` `get_responses` `set_requests` `up_since` `display_string` | PDU counters |
-| socks | `version` `status` `bound.host` `bound_p` | the reply |
-| ldap | `message_id` `version` `opcode` `result` `diagnostic_message` `argument` and all of `ldap_search.log` | per message parsing, today only bind name and auth type |
-| rdp sip ntp quic radius mqtt postgresql modbus irc mysql | see the schema tables | per message fields these parsers do not extract |
+| ldap | `message_id` `version` `diagnostic_message` `argument` and all of `ldap_search.log` | per message parsing beyond the operation and bind result |
+| rdp sip quic radius mqtt postgresql modbus irc mysql | see the schema tables | per message fields these parsers do not extract |
 | weird analyzer notice software known_* syslog ocsp pe | whole logs | no Arkime equivalent |
 
 The remaining differences are structural: Zeek logs one row per request, command or file while
@@ -270,21 +271,21 @@ Trigger: `http`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | trans_depth | `@trans_depth` |
-| method | `http.method` |
-| host | `host.http` |
-| uri | `http.uri.path` |
-| referrer | `http.request.referer` |
-| version | `http.version.src` |
-| user_agent | `http.user-agent` |
+| method | `http.method:string` |
+| host | `host.http:string` |
+| uri | `http.uri.path:string` |
+| referrer | `http.request.referer:string` |
+| version | `http.version.src:string` |
+| user_agent | `http.user-agent:string` |
 | origin | `@none:string` |
-| request_body_len | `@none:count` |
-| response_body_len | `@none:count` |
-| status_code | `http.statuscode` |
+| request_body_len | `http.bodylen.src:count` |
+| response_body_len | `http.bodylen.dst:count` |
+| status_code | `@http.status_code` |
 | status_msg | `@none:string` |
-| info_code | `@none:count` |
+| info_code | `@http.info_code` |
 | info_msg | `@none:string` |
 | tags | `@empty:set[enum]` |
-| username | `http.user` |
+| username | `http.user:string` |
 | password | `@none:string` |
 | proxied | `@none:set[string]` |
 | orig_fuids | `@none:vector[string]` |
@@ -294,7 +295,7 @@ Trigger: `http`, one row per session.
 | resp_filenames | `@none:vector[string]` |
 | resp_mime_types | `http.bodymagic:vector[string]` |
 
-Always unset: `origin`, `request_body_len`, `response_body_len`, `status_msg`, `info_code`, `info_msg`, `password`, `proxied`, `orig_fuids`, `orig_filenames`, `orig_mime_types`, `resp_fuids`, `resp_filenames`
+Always unset: `origin`, `status_msg`, `info_msg`, `password`, `proxied`, `orig_fuids`, `orig_filenames`, `orig_mime_types`, `resp_fuids`, `resp_filenames`
 
 ### ssl.log
 
@@ -309,19 +310,19 @@ Trigger: `tls,dtls`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | version | `@tls.version` |
-| cipher | `tls.cipher` |
-| curve | `@none:string` |
-| server_name | `host.http` |
+| cipher | `tls.cipher:string` |
+| curve | `tls.curve:string` |
+| server_name | `host.http:string` |
 | resumed | `@tls.resumed` |
-| last_alert | `@none:string` |
-| next_protocol | `@none:string` |
+| last_alert | `tls.alert:string` |
+| next_protocol | `tls.alpn:string` |
 | established | `@tls.established` |
 | ssl_history | `@none:string` |
 | cert_chain_fps | `@ssl.cert_chain_fps` |
 | client_cert_chain_fps | `@empty:vector[string]` |
 | sni_matches_cert | `@tls.sni_matches_cert` |
 
-Always unset: `curve`, `last_alert`, `next_protocol`, `ssl_history`
+Always unset: `ssl_history`
 
 ### x509.log
 
@@ -331,28 +332,28 @@ Trigger: `tls,dtls`, one row per certificate.
 |---|---|
 | ts | `@ts` |
 | fingerprint | `@x509.fingerprint` |
-| certificate.version | `@none:count` |
+| certificate.version | `@x509.version` |
 | certificate.serial | `@x509.serial` |
 | certificate.subject | `@x509.subject` |
 | certificate.issuer | `@x509.issuer` |
 | certificate.not_valid_before | `@x509.not_valid_before` |
 | certificate.not_valid_after | `@x509.not_valid_after` |
 | certificate.key_alg | `@x509.key_alg` |
-| certificate.sig_alg | `@none:string` |
+| certificate.sig_alg | `@x509.sig_alg` |
 | certificate.key_type | `@x509.key_type` |
-| certificate.key_length | `@none:count` |
-| certificate.exponent | `@none:string` |
+| certificate.key_length | `@x509.key_length` |
+| certificate.exponent | `@x509.exponent` |
 | certificate.curve | `@x509.curve` |
 | san.dns | `@x509.san_dns` |
-| san.uri | `@none:vector[string]` |
-| san.email | `@none:vector[string]` |
-| san.ip | `@none:vector[addr]` |
+| san.uri | `@x509.san_uri` |
+| san.email | `@x509.san_email` |
+| san.ip | `@x509.san_ip` |
 | basic_constraints.ca | `@x509.ca` |
-| basic_constraints.path_len | `@none:count` |
+| basic_constraints.path_len | `@x509.path_len` |
 | host_cert | `@x509.host_cert` |
 | client_cert | `@false` |
 
-Always unset: `certificate.version`, `certificate.sig_alg`, `certificate.key_length`, `certificate.exponent`, `san.uri`, `san.email`, `san.ip`, `basic_constraints.path_len`
+Always unset: none
 
 ### files.log
 
@@ -406,16 +407,16 @@ Trigger: `ssh`, one row per session.
 | auth_success | `@none:bool` |
 | auth_attempts | `@none:count` |
 | direction | `@none:enum` |
-| client | `ssh.ver` |
-| server | `@none:string` |
-| cipher_alg | `@none:string` |
-| mac_alg | `@none:string` |
-| compression_alg | `@none:string` |
-| kex_alg | `@none:string` |
-| host_key_alg | `@none:string` |
+| client | `ssh.ver.src:string` |
+| server | `ssh.ver.dst:string` |
+| cipher_alg | `ssh.cipher:string` |
+| mac_alg | `ssh.mac:string` |
+| compression_alg | `ssh.compression:string` |
+| kex_alg | `ssh.kex:string` |
+| host_key_alg | `ssh.hostKeyAlg:string` |
 | host_key_fingerprint | `@ssh.host_key_fingerprint` |
 
-Always unset: `auth_success`, `auth_attempts`, `direction`, `server`, `cipher_alg`, `mac_alg`, `compression_alg`, `kex_alg`, `host_key_alg`
+Always unset: `auth_success`, `auth_attempts`, `direction`
 
 ### smtp.log
 
@@ -430,27 +431,27 @@ Trigger: `smtp`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | trans_depth | `@trans_depth` |
-| helo | `email.smtp-hello` |
-| mailfrom | `email.src` |
+| helo | `email.smtp-hello:string` |
+| mailfrom | `email.src:string` |
 | rcptto | `email.dst` |
-| date | `@none:string` |
-| from | `email.src` |
+| date | `email.date:string` |
+| from | `email.src:string` |
 | to | `email.dst` |
 | cc | `@none:set[string]` |
-| reply_to | `@none:string` |
-| msg_id | `email.message-id` |
-| in_reply_to | `@none:string` |
-| subject | `email.subject` |
-| x_originating_ip | `ip.email` |
+| reply_to | `email.reply-to:string` |
+| msg_id | `email.message-id:string` |
+| in_reply_to | `email.in-reply-to:string` |
+| subject | `email.subject:string` |
+| x_originating_ip | `ip.email:addr` |
 | first_received | `@none:string` |
 | second_received | `@none:string` |
-| last_reply | `@none:string` |
+| last_reply | `email.reply:string` |
 | path | `@none:vector[addr]` |
-| user_agent | `email.x-mailer` |
+| user_agent | `email.x-mailer:string` |
 | tls | `protocols?tls` |
 | fuids | `@empty:vector[string]` |
 
-Always unset: `date`, `cc`, `reply_to`, `in_reply_to`, `first_received`, `second_received`, `last_reply`, `path`
+Always unset: `cc`, `first_received`, `second_received`, `path`
 
 ### ftp.log
 
@@ -464,21 +465,21 @@ Trigger: `ftp`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| user | `user` |
+| user | `user:string` |
 | password | `@none:string` |
-| command | `ftp.command` |
-| arg | `ftp.filename` |
+| command | `ftp.command:string` |
+| arg | `ftp.filename:string` |
 | mime_type | `@none:string` |
 | file_size | `@none:count` |
-| reply_code | `ftp.responseCode` |
-| reply_msg | `@none:string` |
+| reply_code | `ftp.responseCode:count` |
+| reply_msg | `ftp.responseMsg:string` |
 | data_channel.passive | `@none:bool` |
 | data_channel.orig_h | `@none:addr` |
 | data_channel.resp_h | `@none:addr` |
 | data_channel.resp_p | `@none:port` |
 | fuid | `@none:string` |
 
-Always unset: `password`, `mime_type`, `file_size`, `reply_msg`, `data_channel.passive`, `data_channel.orig_h`, `data_channel.resp_h`, `data_channel.resp_p`, `fuid`
+Always unset: `password`, `mime_type`, `file_size`, `data_channel.passive`, `data_channel.orig_h`, `data_channel.resp_h`, `data_channel.resp_p`, `fuid`
 
 ### dhcp.log
 
@@ -488,21 +489,21 @@ Trigger: `dhcp`, one row per session.
 |---|---|
 | ts | `@ts` |
 | uids | `@uid:set[string]` |
-| client_addr | `dhcp.yiaddr` |
-| server_addr | `@resp_h` |
-| mac | `dhcp.mac` |
-| host_name | `dhcp.host` |
+| client_addr | `dhcp.yiaddr:addr` |
+| server_addr | `dhcp.serverIp:addr` |
+| mac | `dhcp.mac:string` |
+| host_name | `dhcp.host:string` |
 | client_fqdn | `@none:string` |
-| domain | `@none:string` |
-| requested_addr | `dhcp.requestIp` |
-| assigned_addr | `dhcp.yiaddr` |
-| lease_time | `@none:interval` |
+| domain | `dhcp.domain:string` |
+| requested_addr | `dhcp.requestIp:addr` |
+| assigned_addr | `dhcp.yiaddr:addr` |
+| lease_time | `dhcp.leaseTime:interval` |
 | client_message | `@none:string` |
 | server_message | `@none:string` |
 | msg_types | `dhcp.type:vector[string]` |
 | duration | `@duration` |
 
-Always unset: `client_fqdn`, `domain`, `lease_time`, `client_message`, `server_message`
+Always unset: `client_fqdn`, `client_message`, `server_message`
 
 ### kerberos.log
 
@@ -516,22 +517,22 @@ Trigger: `krb5`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| request_type | `@none:string` |
+| request_type | `@krb.request_type` |
 | client | `@krb.client` |
-| service | `krb5.sname` |
+| service | `krb5.sname:string` |
 | success | `@none:bool` |
-| error_msg | `krb5.error` |
+| error_msg | `krb5.error:string` |
 | from | `@none:time` |
 | till | `@none:time` |
-| cipher | `krb5.etype` |
-| forwardable | `@none:bool` |
-| renewable | `@none:bool` |
+| cipher | `krb5.ticketEtype:string` |
+| forwardable | `krb5.options?forwardable` |
+| renewable | `krb5.options?renewable` |
 | client_cert_subject | `@none:string` |
 | client_cert_fuid | `@none:string` |
 | server_cert_subject | `@none:string` |
 | server_cert_fuid | `@none:string` |
 
-Always unset: `request_type`, `success`, `from`, `till`, `forwardable`, `renewable`, `client_cert_subject`, `client_cert_fuid`, `server_cert_subject`, `server_cert_fuid`
+Always unset: `success`, `from`, `till`, `client_cert_subject`, `client_cert_fuid`, `server_cert_subject`, `server_cert_fuid`
 
 ### ntlm.log
 
@@ -545,15 +546,15 @@ Trigger: `ntlm`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| username | `user` |
-| hostname | `ntlm.host` |
-| domainname | `ntlm.domain` |
-| server_nb_computer_name | `@none:string` |
-| server_dns_computer_name | `@none:string` |
-| server_tree_name | `@none:string` |
+| username | `user:string` |
+| hostname | `ntlm.host:string` |
+| domainname | `ntlm.domain:string` |
+| server_nb_computer_name | `ntlm.nbComputerName:string` |
+| server_dns_computer_name | `ntlm.dnsComputerName:string` |
+| server_tree_name | `ntlm.dnsTreeName:string` |
 | success | `@none:bool` |
 
-Always unset: `server_nb_computer_name`, `server_dns_computer_name`, `server_tree_name`, `success`
+Always unset: `success`
 
 ### smb_mapping.log
 
@@ -567,7 +568,7 @@ Trigger: `smb`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| path | `smb.share` |
+| path | `smb.share:string` |
 | service | `@none:string` |
 | native_file_system | `@none:string` |
 | share_type | `@none:string` |
@@ -588,8 +589,8 @@ Trigger: `smb`, one row per session.
 | id.resp_p | `@resp_p` |
 | fuid | `@none:string` |
 | action | `@none:enum` |
-| path | `smb.share` |
-| name | `smb.fn` |
+| path | `smb.share:string` |
+| name | `smb.fn:string` |
 | size | `@none:count` |
 | prev_name | `@none:string` |
 | times.modified | `@none:time` |
@@ -613,7 +614,7 @@ Trigger: `dcerpc`, one row per session.
 | id.resp_p | `@resp_p` |
 | rtt | `@none:interval` |
 | named_pipe | `@none:string` |
-| endpoint | `dcerpc.interface` |
+| endpoint | `dcerpc.interface:string` |
 | operation | `@none:string` |
 
 Always unset: `rtt`, `named_pipe`, `operation`
@@ -632,11 +633,11 @@ Trigger: `rdp`, one row per session.
 | id.resp_p | `@resp_p` |
 | cookie | `@none:string` |
 | result | `@none:string` |
-| security_protocol | `rdp.selected-protocol` |
+| security_protocol | `rdp.selected-protocol:string` |
 | client_channels | `@none:vector[string]` |
-| keyboard_layout | `rdp.keyboard-layout` |
+| keyboard_layout | `rdp.keyboard-layout:string` |
 | client_build | `rdp.client-build:string` |
-| client_name | `rdp.client-name` |
+| client_name | `rdp.client-name:string` |
 | client_dig_product_id | `@none:string` |
 | desktop_width | `@none:count` |
 | desktop_height | `@none:count` |
@@ -662,21 +663,21 @@ Trigger: `sip`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | trans_depth | `@trans_depth` |
-| method | `sip.method` |
+| method | `sip.method:string` |
 | uri | `@none:string` |
 | date | `@none:string` |
-| request_from | `sip.from` |
-| request_to | `sip.to` |
+| request_from | `sip.from:string` |
+| request_to | `sip.to:string` |
 | response_from | `@none:string` |
 | response_to | `@none:string` |
 | reply_to | `@none:string` |
-| call_id | `sip.callid` |
+| call_id | `sip.callid:string` |
 | seq | `@none:string` |
 | subject | `@none:string` |
 | request_path | `sip.via:vector[string]` |
 | response_path | `@none:vector[string]` |
-| user_agent | `sip.user-agent` |
-| status_code | `sip.statuscode` |
+| user_agent | `sip.user-agent:string` |
+| status_code | `sip.statuscode:count` |
 | status_msg | `@none:string` |
 | warning | `@none:string` |
 | request_body_len | `@none:count` |
@@ -699,7 +700,7 @@ Trigger: `snmp`, one row per session.
 | id.resp_p | `@resp_p` |
 | duration | `@duration` |
 | version | `snmp.version:string` |
-| community | `snmp.community` |
+| community | `snmp.community:string` |
 | get_requests | `@none:count` |
 | get_bulk_requests | `@none:count` |
 | get_responses | `@none:count` |
@@ -721,18 +722,18 @@ Trigger: `socks`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| version | `@none:count` |
-| user | `socks.user` |
+| version | `socks.version:count` |
+| user | `socks.user:string` |
 | password | `@none:string` |
-| status | `@none:string` |
-| request.host | `ip.socks` |
-| request.name | `host.socks` |
-| request_p | `port.socks` |
-| bound.host | `@none:addr` |
+| status | `socks.status:string` |
+| request.host | `ip.socks:addr` |
+| request.name | `host.socks:string` |
+| request_p | `port.socks:port` |
+| bound.host | `socks.bound.ip:addr` |
 | bound.name | `@none:string` |
-| bound_p | `@none:port` |
+| bound_p | `socks.bound.port:port` |
 
-Always unset: `version`, `password`, `status`, `bound.host`, `bound.name`, `bound_p`
+Always unset: `password`, `bound.name`
 
 ### postgresql.log
 
@@ -746,9 +747,9 @@ Trigger: `postgresql`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| user | `postgresql.user` |
-| database | `postgresql.db` |
-| application_name | `postgresql.app` |
+| user | `postgresql.user:string` |
+| database | `postgresql.db:string` |
+| application_name | `postgresql.app:string` |
 | frontend | `@none:string` |
 | frontend_arg | `@none:string` |
 | backend | `@none:string` |
@@ -770,10 +771,10 @@ Trigger: `irc`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| nick | `irc.nick` |
+| nick | `irc.nick:string` |
 | user | `@none:string` |
 | command | `@none:string` |
-| value | `irc.channel` |
+| value | `irc.channel:string` |
 | addl | `@none:string` |
 
 Always unset: `user`, `command`, `addl`
@@ -790,8 +791,8 @@ Trigger: `modbus`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| tid | `modbus.transactionid` |
-| unit | `modbus.unitid` |
+| tid | `modbus.transactionid:count` |
+| unit | `modbus.unitid:count` |
 | func | `modbus.funccode:string` |
 | pdu_type | `@none:string` |
 | exception | `modbus.exccode:string` |
@@ -810,7 +811,7 @@ Trigger: `dnp3`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| fc_request | `dnp3.funcName` |
+| fc_request | `dnp3.funcName:string` |
 | fc_reply | `@none:string` |
 | iin | `@none:count` |
 
@@ -828,21 +829,21 @@ Trigger: `ntp`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| version | `ntp.version` |
-| mode | `ntp.mode:count` |
-| stratum | `ntp.stratum:count` |
-| poll | `@none:interval` |
-| precision | `@none:interval` |
-| root_delay | `@none:interval` |
-| root_disp | `@none:interval` |
-| ref_id | `ntp.ref-id` |
-| ref_time | `@none:time` |
-| org_time | `@none:time` |
-| rec_time | `@none:time` |
-| xmt_time | `@none:time` |
-| num_exts | `@none:count` |
+| version | `ntp.version:count` |
+| mode | `@ntp.mode` |
+| stratum | `ntp.stratumNum:count` |
+| poll | `@ntp.poll` |
+| precision | `@ntp.precision` |
+| root_delay | `ntp.rootDelay:interval` |
+| root_disp | `ntp.rootDispersion:interval` |
+| ref_id | `ntp.ref-id:string` |
+| ref_time | `ntp.refTime:time` |
+| org_time | `ntp.orgTime:time` |
+| rec_time | `ntp.recTime:time` |
+| xmt_time | `ntp.xmtTime:time` |
+| num_exts | `ntp.extensions:count` |
 
-Always unset: `poll`, `precision`, `root_delay`, `root_disp`, `ref_time`, `org_time`, `rec_time`, `xmt_time`, `num_exts`
+Always unset: none
 
 ### radius.log
 
@@ -856,9 +857,9 @@ Trigger: `radius`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| username | `radius.user` |
-| mac | `radius.mac` |
-| framed_addr | `radius.framed-ip` |
+| username | `radius.user:string` |
+| mac | `radius.mac:string` |
+| framed_addr | `radius.framed-ip:addr` |
 | tunnel_client | `@none:string` |
 | connect_info | `@none:string` |
 | reply_msg | `@none:string` |
@@ -879,15 +880,15 @@ Trigger: `quic`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| version | `quic.version` |
+| version | `quic.version:string` |
 | client_initial_dcid | `@none:string` |
 | client_scid | `@none:string` |
 | server_scid | `@none:string` |
-| server_name | `host.quic` |
-| client_protocol | `@none:string` |
+| server_name | `host.quic:string` |
+| client_protocol | `tls.alpn.src:string` |
 | history | `@none:string` |
 
-Always unset: `client_initial_dcid`, `client_scid`, `server_scid`, `client_protocol`, `history`
+Always unset: `client_initial_dcid`, `client_scid`, `server_scid`, `history`
 
 ### ldap.log
 
@@ -903,13 +904,13 @@ Trigger: `ldap`, one row per session.
 | id.resp_p | `@resp_p` |
 | message_id | `@none:int` |
 | version | `@none:int` |
-| opcode | `@none:string` |
-| result | `@none:string` |
+| opcode | `ldap.op:string` |
+| result | `ldap.result:string` |
 | diagnostic_message | `@none:string` |
-| object | `ldap.bindname` |
+| object | `ldap.bindname:string` |
 | argument | `@none:string` |
 
-Always unset: `message_id`, `version`, `opcode`, `result`, `diagnostic_message`, `argument`
+Always unset: `message_id`, `version`, `diagnostic_message`, `argument`
 
 ### mqtt_connect.log
 
@@ -924,10 +925,10 @@ Trigger: `mqtt`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | proto_name | `@none:string` |
-| proto_version | `mqtt.version` |
-| client_id | `mqtt.clientId` |
+| proto_version | `mqtt.version:string` |
+| client_id | `mqtt.clientId:string` |
 | connect_status | `mqtt.connackCode:string` |
-| will_topic | `mqtt.willTopic` |
+| will_topic | `mqtt.willTopic:string` |
 | will_payload | `@none:string` |
 
 Always unset: `proto_name`, `will_payload`
@@ -948,11 +949,11 @@ Trigger: `mqtt`, one row per session.
 | retain | `@none:bool` |
 | qos | `mqtt.qos:string` |
 | status | `@none:string` |
-| topic | `mqtt.topic` |
+| topic | `mqtt.topic:string` |
 | payload | `@none:string` |
-| payload_len | `@none:count` |
+| payload_len | `mqtt.payloadLen:count` |
 
-Always unset: `from_client`, `retain`, `status`, `payload`, `payload_len`
+Always unset: `from_client`, `retain`, `status`, `payload`
 
 ### websocket.log
 
@@ -966,9 +967,9 @@ Trigger: `websocket`, one row per session.
 | id.orig_p | `@orig_p` |
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
-| host | `host.http` |
-| uri | `http.uri.path` |
-| user_agent | `http.user-agent` |
+| host | `host.http:string` |
+| uri | `http.uri.path:string` |
+| user_agent | `http.user-agent:string` |
 | subprotocol | `@none:string` |
 | client_protocols | `@none:vector[string]` |
 | server_extensions | `@none:vector[string]` |
@@ -989,7 +990,7 @@ Trigger: `mysql`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | cmd | `@none:string` |
-| arg | `mysql.user` |
+| arg | `mysql.user:string` |
 | success | `@none:bool` |
 | rows | `@none:count` |
 | response | `@none:string` |

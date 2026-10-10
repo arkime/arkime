@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
 
 extern ArkimeConfig_t        config;
 
@@ -142,6 +143,8 @@ enum {
     ZS_DNS_ANSWERS, ZS_DNS_TTLS, ZS_DNS_REJECTED, ZS_DNS_OPCODE, ZS_DNS_OPCODE_NAME,
     ZS_X509_FINGERPRINT, ZS_X509_SERIAL, ZS_X509_SUBJECT, ZS_X509_ISSUER, ZS_X509_NOT_VALID_BEFORE, ZS_X509_NOT_VALID_AFTER,
     ZS_X509_KEY_ALG, ZS_X509_KEY_TYPE, ZS_X509_CURVE, ZS_X509_SAN_DNS, ZS_X509_CA, ZS_X509_HOST_CERT,
+    ZS_X509_VERSION, ZS_X509_SIG_ALG, ZS_X509_KEY_LENGTH, ZS_X509_EXPONENT, ZS_X509_PATH_LEN, ZS_X509_SAN_EMAIL, ZS_X509_SAN_URI, ZS_X509_SAN_IP,
+    ZS_KRB_REQUEST_TYPE, ZS_HTTP_STATUS_CODE, ZS_HTTP_INFO_CODE, ZS_NTP_MODE, ZS_NTP_POLL, ZS_NTP_PRECISION,
     ZS_FILE_FUID, ZS_FILE_SOURCE, ZS_FILE_MIME_TYPE, ZS_FILE_MD5, ZS_FILE_SHA256, ZS_FILE_FILENAME, ZS_FILE_IS_ORIG,
     ZS_MAX
 };
@@ -216,6 +219,20 @@ LOCAL const ZeekSpecialDef_t zeekSpecials[ZS_MAX] = {
     [ZS_X509_SAN_DNS]             = {"x509.san_dns", ZB_STRING, ZC_VECTOR},
     [ZS_X509_CA]                  = {"x509.ca", ZB_BOOL, ZC_SCALAR},
     [ZS_X509_HOST_CERT]           = {"x509.host_cert", ZB_BOOL, ZC_SCALAR},
+    [ZS_X509_VERSION]             = {"x509.version", ZB_COUNT, ZC_SCALAR},
+    [ZS_X509_SIG_ALG]             = {"x509.sig_alg", ZB_STRING, ZC_SCALAR},
+    [ZS_X509_KEY_LENGTH]          = {"x509.key_length", ZB_COUNT, ZC_SCALAR},
+    [ZS_X509_EXPONENT]            = {"x509.exponent", ZB_STRING, ZC_SCALAR},
+    [ZS_X509_PATH_LEN]            = {"x509.path_len", ZB_COUNT, ZC_SCALAR},
+    [ZS_X509_SAN_EMAIL]           = {"x509.san_email", ZB_STRING, ZC_VECTOR},
+    [ZS_X509_SAN_URI]             = {"x509.san_uri", ZB_STRING, ZC_VECTOR},
+    [ZS_X509_SAN_IP]              = {"x509.san_ip", ZB_ADDR, ZC_VECTOR},
+    [ZS_KRB_REQUEST_TYPE]         = {"krb.request_type", ZB_STRING, ZC_SCALAR},
+    [ZS_HTTP_STATUS_CODE]         = {"http.status_code", ZB_COUNT, ZC_SCALAR},
+    [ZS_HTTP_INFO_CODE]           = {"http.info_code", ZB_COUNT, ZC_SCALAR},
+    [ZS_NTP_MODE]                 = {"ntp.mode", ZB_COUNT, ZC_SCALAR},
+    [ZS_NTP_POLL]                 = {"ntp.poll", ZB_INTERVAL, ZC_SCALAR},
+    [ZS_NTP_PRECISION]            = {"ntp.precision", ZB_INTERVAL, ZC_SCALAR},
     [ZS_FILE_FUID]                = {"file.fuid", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_SOURCE]              = {"file.source", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_MIME_TYPE]           = {"file.mime_type", ZB_STRING, ZC_SCALAR},
@@ -245,27 +262,27 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "http", "http", ZITER_SESSION,
-        CONN_ID "trans_depth=@trans_depth method=http.method host=host.http uri=http.uri.path referrer=http.request.referer "
-                "version=http.version.src user_agent=http.user-agent origin=@none:string request_body_len=@none:count "
-                "response_body_len=@none:count status_code=http.statuscode status_msg=@none:string info_code=@none:count "
-                "info_msg=@none:string tags=@empty:set[enum] username=http.user password=@none:string proxied=@none:set[string] "
+        CONN_ID "trans_depth=@trans_depth method=http.method:string host=host.http:string uri=http.uri.path:string referrer=http.request.referer:string "
+                "version=http.version.src:string user_agent=http.user-agent:string origin=@none:string request_body_len=http.bodylen.src:count "
+                "response_body_len=http.bodylen.dst:count status_code=@http.status_code status_msg=@none:string info_code=@http.info_code "
+                "info_msg=@none:string tags=@empty:set[enum] username=http.user:string password=@none:string proxied=@none:set[string] "
                 "orig_fuids=@none:vector[string] orig_filenames=@none:vector[string] orig_mime_types=@none:vector[string] "
                 "resp_fuids=@none:vector[string] resp_filenames=@none:vector[string] resp_mime_types=http.bodymagic:vector[string]"
     },
     {
         "ssl", "tls,dtls", ZITER_SESSION,
-        CONN_ID "version=@tls.version cipher=tls.cipher curve=@none:string server_name=host.http resumed=@tls.resumed "
-                "last_alert=@none:string next_protocol=@none:string established=@tls.established ssl_history=@none:string "
+        CONN_ID "version=@tls.version cipher=tls.cipher:string curve=tls.curve:string server_name=host.http:string resumed=@tls.resumed "
+                "last_alert=tls.alert:string next_protocol=tls.alpn:string established=@tls.established ssl_history=@none:string "
                 "cert_chain_fps=@ssl.cert_chain_fps client_cert_chain_fps=@empty:vector[string] sni_matches_cert=@tls.sni_matches_cert"
     },
     {
         "x509", "tls,dtls", ZITER_CERT,
-        "ts=@ts fingerprint=@x509.fingerprint certificate.version=@none:count certificate.serial=@x509.serial "
+        "ts=@ts fingerprint=@x509.fingerprint certificate.version=@x509.version certificate.serial=@x509.serial "
         "certificate.subject=@x509.subject certificate.issuer=@x509.issuer certificate.not_valid_before=@x509.not_valid_before "
-        "certificate.not_valid_after=@x509.not_valid_after certificate.key_alg=@x509.key_alg certificate.sig_alg=@none:string "
-        "certificate.key_type=@x509.key_type certificate.key_length=@none:count certificate.exponent=@none:string "
-        "certificate.curve=@x509.curve san.dns=@x509.san_dns san.uri=@none:vector[string] san.email=@none:vector[string] "
-        "san.ip=@none:vector[addr] basic_constraints.ca=@x509.ca basic_constraints.path_len=@none:count host_cert=@x509.host_cert client_cert=@false"
+        "certificate.not_valid_after=@x509.not_valid_after certificate.key_alg=@x509.key_alg certificate.sig_alg=@x509.sig_alg "
+        "certificate.key_type=@x509.key_type certificate.key_length=@x509.key_length certificate.exponent=@x509.exponent "
+        "certificate.curve=@x509.curve san.dns=@x509.san_dns san.uri=@x509.san_uri san.email=@x509.san_email "
+        "san.ip=@x509.san_ip basic_constraints.ca=@x509.ca basic_constraints.path_len=@x509.path_len host_cert=@x509.host_cert client_cert=@false"
     },
     {
         "files", "http,smtp", ZITER_FILE,
@@ -277,135 +294,135 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "ssh", "ssh", ZITER_SESSION,
-        CONN_ID "version=@ssh.version auth_success=@none:bool auth_attempts=@none:count direction=@none:enum client=ssh.ver "
-                "server=@none:string cipher_alg=@none:string mac_alg=@none:string compression_alg=@none:string kex_alg=@none:string "
-                "host_key_alg=@none:string host_key_fingerprint=@ssh.host_key_fingerprint"
+        CONN_ID "version=@ssh.version auth_success=@none:bool auth_attempts=@none:count direction=@none:enum client=ssh.ver.src:string "
+                "server=ssh.ver.dst:string cipher_alg=ssh.cipher:string mac_alg=ssh.mac:string compression_alg=ssh.compression:string kex_alg=ssh.kex:string "
+                "host_key_alg=ssh.hostKeyAlg:string host_key_fingerprint=@ssh.host_key_fingerprint"
     },
     {
         "smtp", "smtp", ZITER_SESSION,
-        CONN_ID "trans_depth=@trans_depth helo=email.smtp-hello mailfrom=email.src rcptto=email.dst date=@none:string "
-                "from=email.src to=email.dst cc=@none:set[string] reply_to=@none:string msg_id=email.message-id in_reply_to=@none:string "
-                "subject=email.subject x_originating_ip=ip.email first_received=@none:string second_received=@none:string "
-                "last_reply=@none:string path=@none:vector[addr] user_agent=email.x-mailer tls=protocols?tls fuids=@empty:vector[string]"
+        CONN_ID "trans_depth=@trans_depth helo=email.smtp-hello:string mailfrom=email.src:string rcptto=email.dst date=email.date:string "
+                "from=email.src:string to=email.dst cc=@none:set[string] reply_to=email.reply-to:string msg_id=email.message-id:string in_reply_to=email.in-reply-to:string "
+                "subject=email.subject:string x_originating_ip=ip.email:addr first_received=@none:string second_received=@none:string "
+                "last_reply=email.reply:string path=@none:vector[addr] user_agent=email.x-mailer:string tls=protocols?tls fuids=@empty:vector[string]"
     },
     {
         "ftp", "ftp", ZITER_SESSION,
-        CONN_ID "user=user password=@none:string command=ftp.command arg=ftp.filename mime_type=@none:string "
-                "file_size=@none:count reply_code=ftp.responseCode reply_msg=@none:string data_channel.passive=@none:bool "
+        CONN_ID "user=user:string password=@none:string command=ftp.command:string arg=ftp.filename:string mime_type=@none:string "
+                "file_size=@none:count reply_code=ftp.responseCode:count reply_msg=ftp.responseMsg:string data_channel.passive=@none:bool "
                 "data_channel.orig_h=@none:addr data_channel.resp_h=@none:addr data_channel.resp_p=@none:port fuid=@none:string"
     },
     {
         "dhcp", "dhcp", ZITER_SESSION,
-        "ts=@ts uids=@uid:set[string] client_addr=dhcp.yiaddr server_addr=@resp_h mac=dhcp.mac host_name=dhcp.host "
-        "client_fqdn=@none:string domain=@none:string requested_addr=dhcp.requestIp assigned_addr=dhcp.yiaddr "
-        "lease_time=@none:interval client_message=@none:string server_message=@none:string msg_types=dhcp.type:vector[string] "
+        "ts=@ts uids=@uid:set[string] client_addr=dhcp.yiaddr:addr server_addr=dhcp.serverIp:addr mac=dhcp.mac:string host_name=dhcp.host:string "
+        "client_fqdn=@none:string domain=dhcp.domain:string requested_addr=dhcp.requestIp:addr assigned_addr=dhcp.yiaddr:addr "
+        "lease_time=dhcp.leaseTime:interval client_message=@none:string server_message=@none:string msg_types=dhcp.type:vector[string] "
         "duration=@duration"
     },
     {
         "kerberos", "krb5", ZITER_SESSION,
-        CONN_ID "request_type=@none:string client=@krb.client service=krb5.sname success=@none:bool error_msg=krb5.error "
-                "from=@none:time till=@none:time cipher=krb5.etype forwardable=@none:bool renewable=@none:bool "
+        CONN_ID "request_type=@krb.request_type client=@krb.client service=krb5.sname:string success=@none:bool error_msg=krb5.error:string "
+                "from=@none:time till=@none:time cipher=krb5.ticketEtype:string forwardable=krb5.options?forwardable renewable=krb5.options?renewable "
                 "client_cert_subject=@none:string client_cert_fuid=@none:string server_cert_subject=@none:string server_cert_fuid=@none:string"
     },
     {
         "ntlm", "ntlm", ZITER_SESSION,
-        CONN_ID "username=user hostname=ntlm.host domainname=ntlm.domain server_nb_computer_name=@none:string "
-                "server_dns_computer_name=@none:string server_tree_name=@none:string success=@none:bool"
+        CONN_ID "username=user:string hostname=ntlm.host:string domainname=ntlm.domain:string server_nb_computer_name=ntlm.nbComputerName:string "
+                "server_dns_computer_name=ntlm.dnsComputerName:string server_tree_name=ntlm.dnsTreeName:string success=@none:bool"
     },
     {
         "smb_mapping", "smb", ZITER_SESSION,
-        CONN_ID "path=smb.share service=@none:string native_file_system=@none:string share_type=@none:string"
+        CONN_ID "path=smb.share:string service=@none:string native_file_system=@none:string share_type=@none:string"
     },
     {
         "smb_files", "smb", ZITER_SESSION,
-        CONN_ID "fuid=@none:string action=@none:enum path=smb.share name=smb.fn size=@none:count prev_name=@none:string "
+        CONN_ID "fuid=@none:string action=@none:enum path=smb.share:string name=smb.fn:string size=@none:count prev_name=@none:string "
                 "times.modified=@none:time times.accessed=@none:time times.created=@none:time times.changed=@none:time"
     },
     {
         "dce_rpc", "dcerpc", ZITER_SESSION,
-        CONN_ID "rtt=@none:interval named_pipe=@none:string endpoint=dcerpc.interface operation=@none:string"
+        CONN_ID "rtt=@none:interval named_pipe=@none:string endpoint=dcerpc.interface:string operation=@none:string"
     },
     {
         "rdp", "rdp", ZITER_SESSION,
-        CONN_ID "cookie=@none:string result=@none:string security_protocol=rdp.selected-protocol client_channels=@none:vector[string] "
-                "keyboard_layout=rdp.keyboard-layout client_build=rdp.client-build:string client_name=rdp.client-name "
+        CONN_ID "cookie=@none:string result=@none:string security_protocol=rdp.selected-protocol:string client_channels=@none:vector[string] "
+                "keyboard_layout=rdp.keyboard-layout:string client_build=rdp.client-build:string client_name=rdp.client-name:string "
                 "client_dig_product_id=@none:string desktop_width=@none:count desktop_height=@none:count requested_color_depth=@none:string "
                 "cert_type=@none:string cert_count=@none:count cert_permanent=@none:bool encryption_level=@none:string encryption_method=@none:string"
     },
     {
         "sip", "sip", ZITER_SESSION,
-        CONN_ID "trans_depth=@trans_depth method=sip.method uri=@none:string date=@none:string request_from=sip.from "
-                "request_to=sip.to response_from=@none:string response_to=@none:string reply_to=@none:string call_id=sip.callid "
+        CONN_ID "trans_depth=@trans_depth method=sip.method:string uri=@none:string date=@none:string request_from=sip.from:string "
+                "request_to=sip.to:string response_from=@none:string response_to=@none:string reply_to=@none:string call_id=sip.callid:string "
                 "seq=@none:string subject=@none:string request_path=sip.via:vector[string] response_path=@none:vector[string] "
-                "user_agent=sip.user-agent status_code=sip.statuscode status_msg=@none:string warning=@none:string "
+                "user_agent=sip.user-agent:string status_code=sip.statuscode:count status_msg=@none:string warning=@none:string "
                 "request_body_len=@none:count response_body_len=@none:count content_type=@none:string"
     },
     {
         "snmp", "snmp", ZITER_SESSION,
-        CONN_ID "duration=@duration version=snmp.version:string community=snmp.community get_requests=@none:count "
+        CONN_ID "duration=@duration version=snmp.version:string community=snmp.community:string get_requests=@none:count "
                 "get_bulk_requests=@none:count get_responses=@none:count set_requests=@none:count display_string=@none:string up_since=@none:time"
     },
     {
         "socks", "socks", ZITER_SESSION,
-        CONN_ID "version=@none:count user=socks.user password=@none:string status=@none:string request.host=ip.socks "
-                "request.name=host.socks request_p=port.socks bound.host=@none:addr bound.name=@none:string bound_p=@none:port"
+        CONN_ID "version=socks.version:count user=socks.user:string password=@none:string status=socks.status:string request.host=ip.socks:addr "
+                "request.name=host.socks:string request_p=port.socks:port bound.host=socks.bound.ip:addr bound.name=@none:string bound_p=socks.bound.port:port"
     },
     {
         "postgresql", "postgresql", ZITER_SESSION,
-        CONN_ID "user=postgresql.user database=postgresql.db application_name=postgresql.app frontend=@none:string "
+        CONN_ID "user=postgresql.user:string database=postgresql.db:string application_name=postgresql.app:string frontend=@none:string "
                 "frontend_arg=@none:string backend=@none:string backend_arg=@none:string success=@none:bool rows=@none:count"
     },
     {
         "irc", "irc", ZITER_SESSION,
-        CONN_ID "nick=irc.nick user=@none:string command=@none:string value=irc.channel addl=@none:string"
+        CONN_ID "nick=irc.nick:string user=@none:string command=@none:string value=irc.channel:string addl=@none:string"
     },
     {
         "modbus", "modbus", ZITER_SESSION,
-        CONN_ID "tid=modbus.transactionid unit=modbus.unitid func=modbus.funccode:string pdu_type=@none:string exception=modbus.exccode:string"
+        CONN_ID "tid=modbus.transactionid:count unit=modbus.unitid:count func=modbus.funccode:string pdu_type=@none:string exception=modbus.exccode:string"
     },
     {
         "dnp3", "dnp3", ZITER_SESSION,
-        CONN_ID "fc_request=dnp3.funcName fc_reply=@none:string iin=@none:count"
+        CONN_ID "fc_request=dnp3.funcName:string fc_reply=@none:string iin=@none:count"
     },
     {
         "ntp", "ntp", ZITER_SESSION,
-        CONN_ID "version=ntp.version mode=ntp.mode:count stratum=ntp.stratum:count poll=@none:interval precision=@none:interval "
-                "root_delay=@none:interval root_disp=@none:interval ref_id=ntp.ref-id ref_time=@none:time org_time=@none:time "
-                "rec_time=@none:time xmt_time=@none:time num_exts=@none:count"
+        CONN_ID "version=ntp.version:count mode=@ntp.mode stratum=ntp.stratumNum:count poll=@ntp.poll precision=@ntp.precision "
+                "root_delay=ntp.rootDelay:interval root_disp=ntp.rootDispersion:interval ref_id=ntp.ref-id:string ref_time=ntp.refTime:time org_time=ntp.orgTime:time "
+                "rec_time=ntp.recTime:time xmt_time=ntp.xmtTime:time num_exts=ntp.extensions:count"
     },
     {
         "radius", "radius", ZITER_SESSION,
-        CONN_ID "username=radius.user mac=radius.mac framed_addr=radius.framed-ip tunnel_client=@none:string "
+        CONN_ID "username=radius.user:string mac=radius.mac:string framed_addr=radius.framed-ip:addr tunnel_client=@none:string "
                 "connect_info=@none:string reply_msg=@none:string result=@none:string ttl=@none:interval"
     },
     {
         "quic", "quic", ZITER_SESSION,
-        CONN_ID "version=quic.version client_initial_dcid=@none:string client_scid=@none:string server_scid=@none:string "
-                "server_name=host.quic client_protocol=@none:string history=@none:string"
+        CONN_ID "version=quic.version:string client_initial_dcid=@none:string client_scid=@none:string server_scid=@none:string "
+                "server_name=host.quic:string client_protocol=tls.alpn.src:string history=@none:string"
     },
     {
         "ldap", "ldap", ZITER_SESSION,
-        CONN_ID "message_id=@none:int version=@none:int opcode=@none:string result=@none:string diagnostic_message=@none:string "
-                "object=ldap.bindname argument=@none:string"
+        CONN_ID "message_id=@none:int version=@none:int opcode=ldap.op:string result=ldap.result:string diagnostic_message=@none:string "
+                "object=ldap.bindname:string argument=@none:string"
     },
     {
         "mqtt_connect", "mqtt", ZITER_SESSION,
-        CONN_ID "proto_name=@none:string proto_version=mqtt.version client_id=mqtt.clientId connect_status=mqtt.connackCode:string "
-                "will_topic=mqtt.willTopic will_payload=@none:string"
+        CONN_ID "proto_name=@none:string proto_version=mqtt.version:string client_id=mqtt.clientId:string connect_status=mqtt.connackCode:string "
+                "will_topic=mqtt.willTopic:string will_payload=@none:string"
     },
     {
         "mqtt_publish", "mqtt", ZITER_SESSION,
-        CONN_ID "from_client=@none:bool retain=@none:bool qos=mqtt.qos:string status=@none:string topic=mqtt.topic "
-                "payload=@none:string payload_len=@none:count"
+        CONN_ID "from_client=@none:bool retain=@none:bool qos=mqtt.qos:string status=@none:string topic=mqtt.topic:string "
+                "payload=@none:string payload_len=mqtt.payloadLen:count"
     },
     {
         "websocket", "websocket", ZITER_SESSION,
-        CONN_ID "host=host.http uri=http.uri.path user_agent=http.user-agent subprotocol=@none:string "
+        CONN_ID "host=host.http:string uri=http.uri.path:string user_agent=http.user-agent:string subprotocol=@none:string "
                 "client_protocols=@none:vector[string] server_extensions=@none:vector[string] client_extensions=@none:vector[string]"
     },
     {
         "mysql", "mysql", ZITER_SESSION,
-        CONN_ID "cmd=@none:string arg=mysql.user success=@none:bool rows=@none:count response=@none:string"
+        CONN_ID "cmd=@none:string arg=mysql.user:string success=@none:bool rows=@none:count response=@none:string"
     },
     {
         "tunnel", "gre,vxlan,gtp,geneve", ZITER_SESSION,
@@ -439,6 +456,11 @@ LOCAL int sshVerField;
 LOCAL int sshKeyField;
 LOCAL int krbCnameField;
 LOCAL int krbRealmField;
+LOCAL int krbMsgTypeField;
+LOCAL int httpStatusField;
+LOCAL int ntpModeField;
+LOCAL int ntpPollField;
+LOCAL int ntpPrecisionField;
 LOCAL int vlanField;
 
 /******************************************************************************/
@@ -1199,7 +1221,7 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
             items->present = TRUE;
             HASH_FORALL2(o_, *field->ohash, object) {
                 if (object->object)
-                    zeeklog_items_add_str(items, (char *)((ArkimeCertsInfo_t *)object->object)->hash);
+                    zeeklog_items_add_str(items, ((ArkimeCertsInfo_t *)object->object)->sha256);
             }
         }
         break;
@@ -1322,7 +1344,7 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
 
     case ZS_X509_FINGERPRINT:
         if (cert)
-            zeeklog_items_add_str(items, (char *)cert->hash);
+            zeeklog_items_add_str(items, cert->sha256);
         break;
     case ZS_X509_SERIAL:
         if (cert && cert->serialNumber) {
@@ -1384,6 +1406,88 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
         if (cert)
             zeeklog_items_add_bool(items, !cert->isCA);
         break;
+    case ZS_X509_VERSION:
+        if (cert)
+            zeeklog_items_addf(items, "%u", cert->version);
+        break;
+    case ZS_X509_SIG_ALG:
+        if (cert)
+            zeeklog_items_add_str(items, cert->signatureAlgorithm);
+        break;
+    case ZS_X509_KEY_LENGTH:
+        if (cert && cert->keyLength)
+            zeeklog_items_addf(items, "%u", cert->keyLength);
+        break;
+    case ZS_X509_EXPONENT:
+        if (cert && cert->exponent)
+            zeeklog_items_addf(items, "%" PRIu64, cert->exponent);
+        break;
+    case ZS_X509_PATH_LEN:
+        if (cert && cert->pathLen >= 0)
+            zeeklog_items_addf(items, "%d", cert->pathLen);
+        break;
+    case ZS_X509_SAN_EMAIL:
+        if (cert && cert->altEmail.s_count) {
+            items->present = TRUE;
+            zeeklog_items_add_string_head(items, &cert->altEmail);
+        }
+        break;
+    case ZS_X509_SAN_URI:
+        if (cert && cert->altUri.s_count) {
+            items->present = TRUE;
+            zeeklog_items_add_string_head(items, &cert->altUri);
+        }
+        break;
+    case ZS_X509_SAN_IP:
+        if (cert && cert->altIp.s_count) {
+            items->present = TRUE;
+            zeeklog_items_add_string_head(items, &cert->altIp);
+        }
+        break;
+    case ZS_KRB_REQUEST_TYPE: {
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, krbMsgTypeField, ZB_STRING);
+        const char *type = NULL;
+        for (int i = 0; i < scratch->num; i++) {
+            if (strncmp(scratch->items[i], "TGS", 3) == 0)
+                type = "TGS";
+            else if (strncmp(scratch->items[i], "AS", 2) == 0 && !type)
+                type = "AS";
+        }
+        zeeklog_items_add_str(items, type);
+        break;
+    }
+    case ZS_NTP_MODE: {
+        static const char *modes[] = {"reserved", "symmetric-active", "symmetric-passive", "client", "server", "broadcast", "control", "private"};
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, ntpModeField, ZB_STRING);
+        for (int i = 0; i < scratch->num; i++) {
+            for (int m = 0; m < (int)ARRAY_LEN(modes); m++) {
+                if (strcmp(scratch->items[i], modes[m]) == 0)
+                    zeeklog_items_addf(items, "%d", m);
+            }
+        }
+        break;
+    }
+    case ZS_NTP_POLL:
+    case ZS_NTP_PRECISION:
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, special == ZS_NTP_POLL ? ntpPollField : ntpPrecisionField, ZB_INT);
+        for (int i = 0; i < scratch->num; i++) {
+            zeeklog_items_addf(items, "%f", pow(2.0, atoi(scratch->items[i])));
+        }
+        break;
+    case ZS_HTTP_STATUS_CODE:
+    case ZS_HTTP_INFO_CODE: {
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, httpStatusField, ZB_COUNT);
+        for (int i = 0; i < scratch->num; i++) {
+            int code = atoi(scratch->items[i]);
+            if ((special == ZS_HTTP_INFO_CODE) == (code < 200))
+                zeeklog_items_add_str(items, scratch->items[i]);
+        }
+        break;
+    }
 
     case ZS_FILE_FUID:
         if (row->file.md5) {
@@ -2241,6 +2345,11 @@ void arkime_plugin_init()
     vlanField            = arkime_field_by_exp_ignore_error("vlan");
     krbCnameField        = arkime_field_by_exp_ignore_error("krb5.cname");
     krbRealmField        = arkime_field_by_exp_ignore_error("krb5.realm");
+    krbMsgTypeField      = arkime_field_by_exp_ignore_error("krb5.msgType");
+    httpStatusField      = arkime_field_by_exp_ignore_error("http.statuscode");
+    ntpModeField         = arkime_field_by_exp_ignore_error("ntp.mode");
+    ntpPollField         = arkime_field_by_exp_ignore_error("ntp.poll");
+    ntpPrecisionField    = arkime_field_by_exp_ignore_error("ntp.precision");
 
     for (int f = 0; f < ARRAY_LEN(zeekFileSources); f++) {
         ZeekFileSource_t *fs = &zeekFileSources[f];

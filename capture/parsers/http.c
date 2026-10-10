@@ -42,6 +42,7 @@ typedef struct {
     MD5_CTX          md5Ctx[2];
     GChecksum       *sha256[2];
     const char      *magicString[2];
+    uint32_t         bodyLen[2];
 
     uint16_t         wParsers: 2;
     uint16_t         inHeader: 2;
@@ -83,6 +84,8 @@ LOCAL  int keyField;
 LOCAL  int valueField;
 LOCAL  int magicField;
 LOCAL  int statuscodeField;
+LOCAL  int reqBodyLenField;
+LOCAL  int resBodyLenField;
 LOCAL  int methodField;
 LOCAL  int reqBodyField;
 LOCAL  int headerReqField;
@@ -426,6 +429,7 @@ LOCAL int arkime_hp_cb_on_body(http_parser *parser, const char *at, size_t lengt
 
     }
 
+    http->bodyLen[http->which] += length;
     MD5_Update(&http->md5Ctx[http->which], at, length);
     if (config.supportSha256) {
         g_checksum_update(http->sha256[http->which], (guchar *)at, length);
@@ -530,6 +534,9 @@ LOCAL int arkime_hp_cb_on_message_complete(http_parser *parser)
             arkime_field_string_uw_add(sha256Field, session, (char *)sha256, 64, (gpointer)http->magicString[http->which], TRUE);
         }
     }
+
+    arkime_field_int_add(http->which == http->urlWhich ? reqBodyLenField : resBodyLenField, session, http->bodyLen[http->which]);
+    http->bodyLen[http->which] = 0;
 
     return 0;
 }
@@ -1257,6 +1264,18 @@ void arkime_parser_init()
                                   "HTTP Auth Type",
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
+
+    reqBodyLenField = arkime_field_define("http", "integer",
+                                          "http.bodylen.src", "Request Body Length", "http.requestBodyLen",
+                                          "Length of the request body in bytes",
+                                          ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    resBodyLenField = arkime_field_define("http", "integer",
+                                          "http.bodylen.dst", "Response Body Length", "http.responseBodyLen",
+                                          "Length of the response body in bytes",
+                                          ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     statuscodeField = arkime_field_define("http", "integer",
                                           "http.statuscode", "HTTP Status Code", "http.statuscode",

@@ -39,7 +39,18 @@
      "bindname" : [
       "<ROOT>"
      ],
-     "bindnameCnt" : 1
+     "bindnameCnt" : 1,
+     "op" : [
+      "bind",
+      "bind_response",
+      "search",
+      "search_result"
+     ],
+     "opCnt" : 4,
+     "result" : [
+      "success"
+     ],
+     "resultCnt" : 1
     },
     "length" : 1,
     "network" : {

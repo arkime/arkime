@@ -57,6 +57,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "host",
@@ -70,6 +74,10 @@
       "*/*"
      ],
      "requestHeaderValueCnt" : 1,
+     "responseBodyLen" : [
+      5039
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "accept-ranges",
       "connection",

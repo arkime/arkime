@@ -778,6 +778,7 @@ LOCAL int ntlmHostField;
 LOCAL int ntlmTargetField;
 LOCAL int ntlmVersionField;
 LOCAL int ntlmTypeField;
+LOCAL int ntlmAvFields[6];
 
 #define NTLM_NEGOTIATE_UNICODE   0x00000001
 #define NTLM_NEGOTIATE_VERSION   0x02000000
@@ -885,11 +886,30 @@ void arkime_parsers_ntlm_decode(ArkimeSession_t *session,
         hostPos    = 24;
         versionPos = 32;
         break;
-    case 2: // CHALLENGE_MESSAGE: target secbuf @12, flags @20
+    case 2: // CHALLENGE_MESSAGE: target secbuf @12, flags @20, target info secbuf @40
         targetPos  = 12;
         BSB_LIMPORT_skip(msg, 8);          // skip target secbuf
         BSB_LIMPORT_u32(msg, flags);
         versionPos = 48;
+        {
+            BSB sb;
+            if (dlen >= 48 && arkime_ntlm_secbuf(data, dlen, 40, &sb)) {
+                // AV_PAIR list: u16 id, u16 len, unicode value, ends with MsvAvEOL(0)
+                while (BSB_REMAINING(sb) >= 4) {
+                    uint16_t avId = 0, avLen = 0;
+                    BSB_LIMPORT_u16(sb, avId);
+                    BSB_LIMPORT_u16(sb, avLen);
+                    if (BSB_IS_ERROR(sb) || avId == 0 || avLen > BSB_REMAINING(sb))
+                        break;
+                    if (avId >= 1 && avId <= 5 && avLen > 0) {
+                        BSB vb;
+                        BSB_INIT(vb, BSB_WORK_PTR(sb), avLen);
+                        arkime_ntlm_add_string(session, ntlmAvFields[avId], &vb, 1);
+                    }
+                    BSB_LIMPORT_skip(sb, avLen);
+                }
+            }
+        }
         break;
     case 3: // AUTHENTICATE_MESSAGE: lm/nt/domain/user/host/sessionkey, flags @60
         domainPos  = 28;
@@ -1162,6 +1182,36 @@ void arkime_parsers_init()
                                            "NTLMSSP client/server OS version (major.minor.build)",
                                            ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
                                            (char *)NULL);
+
+    ntlmAvFields[1] = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.nbComputerName", "NTLM NetBIOS Computer", "ntlm.nbComputerName",
+                                          "NTLMSSP server NetBIOS computer name from the challenge target info",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    ntlmAvFields[2] = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.nbDomainName", "NTLM NetBIOS Domain", "ntlm.nbDomainName",
+                                          "NTLMSSP server NetBIOS domain name from the challenge target info",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    ntlmAvFields[3] = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.dnsComputerName", "NTLM DNS Computer", "ntlm.dnsComputerName",
+                                          "NTLMSSP server DNS computer name from the challenge target info",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    ntlmAvFields[4] = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.dnsDomainName", "NTLM DNS Domain", "ntlm.dnsDomainName",
+                                          "NTLMSSP server DNS domain name from the challenge target info",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    ntlmAvFields[5] = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.dnsTreeName", "NTLM DNS Tree", "ntlm.dnsTreeName",
+                                          "NTLMSSP server DNS tree name from the challenge target info",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     ntlmTypeField = arkime_field_define("ntlm", "integer",
                                         "ntlm.type", "NTLM Message Type", "ntlm.type",

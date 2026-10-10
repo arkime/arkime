@@ -87,6 +87,17 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
+  - New zeeklog plugin writes Zeek style conn/dns/http/ssl/x509/files/... log files from sessions, see capture/plugins/zeeklog/README.md
+  - New fields to close gaps with Zeek logs: tls.alpn, tls.alpn.src, tls.curve, tls.alert; cert.sha256, cert.version,
+          cert.signatureAlgorithm, cert.keyLength, cert.exponent, cert.pathLen, cert.alt.email, cert.alt.uri, cert.alt.ip;
+          ssh.ver.src, ssh.ver.dst, ssh.kex, ssh.hostKeyAlg, ssh.cipher, ssh.mac, ssh.compression; ntlm.nbComputerName,
+          ntlm.nbDomainName, ntlm.dnsComputerName, ntlm.dnsDomainName, ntlm.dnsTreeName; http.bodylen.src, http.bodylen.dst;
+          dhcp.leaseTime, dhcp.serverIp, dhcp.domain; krb5.msgType, krb5.options, krb5.ticketEtype; email.date, email.reply-to,
+          email.in-reply-to, email.reply; ftp.responseMsg; socks.version, socks.status, socks.bound.ip, socks.bound.port;
+          mqtt.payloadLen; ldap.op, ldap.result; ntp.stratumNum, ntp.poll, ntp.precision, ntp.rootDelay, ntp.rootDispersion, ntp.refTime,
+          ntp.orgTime, ntp.recTime, ntp.xmtTime, ntp.extensions
+  - SMB session setup responses (SMB1 and SMB2) are now decoded so the NTLM challenge is seen, SMB sessions gain the ntlm protocol
+  - The SMTP Date, Reply-To and In-Reply-To headers now have their own fields instead of landing in email.headerValue
   - New xdp pcapReadMethod that reads with AF_XDP sockets, one socket and thread per nic receive queue. Linux only, requires libxdp at build time
   - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)

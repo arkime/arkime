@@ -50,6 +50,10 @@
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 2.0.0 tA6IZTQc010322 Message accepted for delivery"
+     ],
+     "replyCnt" : 1,
      "smtpHello" : [
       "adcdtest"
      ],

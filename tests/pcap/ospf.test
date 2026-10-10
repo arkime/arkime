@@ -3302,22 +3302,50 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client"
      ],
      "modeCnt" : 1,
+     "poll" : [
+      6
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      4294967272
+     ],
+     "precisionCnt" : 1,
      "refId" : [
       "INIT"
      ],
      "refIdCnt" : 1,
+     "rootDelay" : [
+      0
+     ],
+     "rootDelayCnt" : 1,
+     "rootDispersion" : [
+      3.1e-05
+     ],
+     "rootDispersionCnt" : 1,
      "stratum" : [
       "unspecified"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      0
+     ],
+     "stratumNumCnt" : 1,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1571662571.362939"
+     ],
+     "xmtTimeCnt" : 1
     },
     "packetLen" : [
      126
@@ -3524,22 +3552,50 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client"
      ],
      "modeCnt" : 1,
+     "poll" : [
+      6
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      4294967272
+     ],
+     "precisionCnt" : 1,
      "refId" : [
       "INIT"
      ],
      "refIdCnt" : 1,
+     "rootDelay" : [
+      0
+     ],
+     "rootDelayCnt" : 1,
+     "rootDispersion" : [
+      6.1e-05
+     ],
+     "rootDispersionCnt" : 1,
      "stratum" : [
       "unspecified"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      0
+     ],
+     "stratumNumCnt" : 1,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1571662573.212011"
+     ],
+     "xmtTimeCnt" : 1
     },
     "packetLen" : [
      126

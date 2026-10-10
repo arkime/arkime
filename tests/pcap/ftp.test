@@ -60,7 +60,13 @@
       "230",
       "331"
      ],
-     "responseCodeCnt" : 3
+     "responseCodeCnt" : 3,
+     "responseMsg" : [
+      "220 Welcome to mirrors.rit.edu.",
+      "230 Login successful.",
+      "331 Please specify the password."
+     ],
+     "responseMsgCnt" : 3
     },
     "initRTT" : 12,
     "ipProtocol" : 6,

@@ -157,6 +157,7 @@
        "wac.a8b5.edgecastcdn.net"
       ],
       "altCnt" : 149,
+      "exponent" : 65537,
       "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
       "issuerCN" : [
        "digicert high assurance ca-3"
@@ -167,12 +168,15 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1418212800000,
       "notBefore" : 1317600000000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 372,
       "remainingSeconds" : 32208328,
       "serial" : "062d488986c9a6d7f94901c2b5906882",
+      "sha256" : "1f95b6a991762945c6a9cf16898b2bff0d9c0671f9c7ddd3977212e668cd1dc6",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "gp1.wac.edgecastcdn.net"
       ],
@@ -180,9 +184,11 @@
        "EdgeCast Networks, Inc."
       ],
       "validDays" : 1164,
-      "validSeconds" : 100612800
+      "validSeconds" : 100612800,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
       "issuerCN" : [
        "digicert high assurance ev root ca"
@@ -193,12 +199,16 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1648944000000,
       "notBefore" : 1207137600000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3043,
       "remainingSeconds" : 262939528,
       "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+      "sha256" : "21eb37ab4cf6ef8965ec1766409ca76b8b2e03f2d1a388df734208e86deee679",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "digicert high assurance ca-3"
       ],
@@ -209,7 +219,8 @@
        "www.digicert.com"
       ],
       "validDays" : 5113,
-      "validSeconds" : 441806400
+      "validSeconds" : 441806400,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -341,7 +352,15 @@
      "GEO" : "US",
      "RIR" : "RIPE",
      "ip" : "93.184.216.119",
-     "port" : 443
+     "port" : 443,
+     "status" : [
+      "granted"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "bytes" : 1775,
@@ -604,6 +623,7 @@
        "wac.a8b5.edgecastcdn.net"
       ],
       "altCnt" : 149,
+      "exponent" : 65537,
       "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
       "issuerCN" : [
        "digicert high assurance ca-3"
@@ -614,12 +634,15 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1418212800000,
       "notBefore" : 1317600000000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 372,
       "remainingSeconds" : 32208325,
       "serial" : "062d488986c9a6d7f94901c2b5906882",
+      "sha256" : "1f95b6a991762945c6a9cf16898b2bff0d9c0671f9c7ddd3977212e668cd1dc6",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "gp1.wac.edgecastcdn.net"
       ],
@@ -627,9 +650,11 @@
        "EdgeCast Networks, Inc."
       ],
       "validDays" : 1164,
-      "validSeconds" : 100612800
+      "validSeconds" : 100612800,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
       "issuerCN" : [
        "digicert high assurance ev root ca"
@@ -640,12 +665,16 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1648944000000,
       "notBefore" : 1207137600000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3043,
       "remainingSeconds" : 262939525,
       "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+      "sha256" : "21eb37ab4cf6ef8965ec1766409ca76b8b2e03f2d1a388df734208e86deee679",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "digicert high assurance ca-3"
       ],
@@ -656,7 +685,8 @@
        "www.digicert.com"
       ],
       "validDays" : 5113,
-      "validSeconds" : 441806400
+      "validSeconds" : 441806400,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -785,7 +815,15 @@
     },
     "socks" : {
      "host" : "www.example.com",
-     "port" : 443
+     "port" : 443,
+     "status" : [
+      "granted"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "bytes" : 1791,
@@ -1056,6 +1094,7 @@
        "wac.a8b5.edgecastcdn.net"
       ],
       "altCnt" : 149,
+      "exponent" : 65537,
       "hash" : "d8:af:99:8d:b5:e0:42:a7:b4:7b:6d:41:62:75:00:a7:f7:ed:96:5c",
       "issuerCN" : [
        "digicert high assurance ca-3"
@@ -1066,12 +1105,15 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1418212800000,
       "notBefore" : 1317600000000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 372,
       "remainingSeconds" : 32208320,
       "serial" : "062d488986c9a6d7f94901c2b5906882",
+      "sha256" : "1f95b6a991762945c6a9cf16898b2bff0d9c0671f9c7ddd3977212e668cd1dc6",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "gp1.wac.edgecastcdn.net"
       ],
@@ -1079,9 +1121,11 @@
        "EdgeCast Networks, Inc."
       ],
       "validDays" : 1164,
-      "validSeconds" : 100612800
+      "validSeconds" : 100612800,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "42:85:78:55:fb:0e:a4:3f:54:c9:91:1e:30:e7:79:1d:8c:e8:27:05",
       "issuerCN" : [
        "digicert high assurance ev root ca"
@@ -1092,12 +1136,16 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1648944000000,
       "notBefore" : 1207137600000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3043,
       "remainingSeconds" : 262939520,
       "serial" : "0a5f114d035b179117d2efd4038c3f3b",
+      "sha256" : "21eb37ab4cf6ef8965ec1766409ca76b8b2e03f2d1a388df734208e86deee679",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "digicert high assurance ca-3"
       ],
@@ -1108,7 +1156,8 @@
        "www.digicert.com"
       ],
       "validDays" : 5113,
-      "validSeconds" : 441806400
+      "validSeconds" : 441806400,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -1245,8 +1294,33 @@
      "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
      "GEO" : "US",
      "RIR" : "RIPE",
+     "boundASN" : [
+      "---"
+     ],
+     "boundGEO" : [
+      "US"
+     ],
+     "boundIp" : [
+      "10.180.156.249"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      39350
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      ""
+     ],
      "ip" : "93.184.216.119",
-     "port" : 443
+     "port" : 443,
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "bytes" : 1912,

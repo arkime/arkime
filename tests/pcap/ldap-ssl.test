@@ -5,21 +5,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "2b:c2:6a:13:99:8b:2c:a0:1e:a4:65:dd:22:fb:fc:92:a0:99:fb:02",
       "issuerCN" : [
        "ldap ssl test"
       ],
+      "keyLength" : 1024,
       "notAfter" : 1738030709000,
       "notBefore" : 1422670709000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3649,
       "remainingSeconds" : 315357177,
       "serial" : "008a07e08d4ab50a7b",
+      "sha256" : "04e37c369673d289b63779665c7c9f5ae60bb4e9322715d6988b02d0cbc4c8ba",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "ldap ssl test"
       ],
       "validDays" : 3650,
-      "validSeconds" : 315360000
+      "validSeconds" : 315360000,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -51,6 +56,13 @@
     "initRTT" : 0,
     "ipProtocol" : 6,
     "lastPacket" : 1422673558484,
+    "ldap" : {
+     "op" : [
+      "extended",
+      "extended_response"
+     ],
+     "opCnt" : 2
+    },
     "length" : 25820,
     "network" : {
      "bytes" : 6801,
@@ -169,7 +181,7 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert:self-signed"
+     "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
     "tcpSynAckValidated" : true,

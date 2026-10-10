@@ -18,6 +18,9 @@ LOCAL int idField;
 LOCAL int classIdField;
 LOCAL int requestIpField;
 LOCAL int yiaddrField;
+LOCAL  int serverIpField;
+LOCAL  int leaseTimeField;
+LOCAL  int domainField;
 LOCAL int paramReqListField;
 
 LOCAL int dhcp_packet_func;
@@ -289,6 +292,32 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
             }
             break;
         }
+        case 15: // Domain Name
+            BSB_IMPORT_ptr(bsb, valueStr, l);
+            if (valueStr)
+                arkime_field_string_add_lower(domainField, session, (char *)valueStr, l);
+            break;
+        case 51: // IP Address Lease Time
+            if (l == 4) {
+                uint32_t lease = 0;
+                BSB_IMPORT_u32(bsb, lease);
+                arkime_field_int_add(leaseTimeField, session, lease);
+            } else {
+                BSB_IMPORT_skip(bsb, l);
+            }
+            break;
+        case 54: // Server Identifier
+            if (l == 4) {
+                BSB_IMPORT_ptr(bsb, valueStr, 4);
+                if (valueStr) {
+                    uint32_t ip;
+                    memcpy(&ip, valueStr, 4);
+                    arkime_field_ip4_add(serverIpField, session, ip);
+                }
+            } else {
+                BSB_IMPORT_skip(bsb, l);
+            }
+            break;
         case 81: // FQDN
             if (l < 3) {
                 BSB_IMPORT_skip(bsb, l);
@@ -414,6 +443,25 @@ void arkime_parser_init()
                                       "dhcp.yiaddr", "DHCP Assigned IP", "dhcp.yiaddrIp",
                                       "DHCP Server-Assigned IP Address (yiaddr) from OFFER/ACK",
                                       ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    serverIpField = arkime_field_define("dhcp", "ip",
+                                        "dhcp.serverIp", "Server IP", "dhcp.serverIp",
+                                        "DHCP server identifier (option 54)",
+                                        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        "category", "ip",
+                                        (char *)NULL);
+
+    leaseTimeField = arkime_field_define("dhcp", "integer",
+                                         "dhcp.leaseTime", "Lease Time", "dhcp.leaseTime",
+                                         "DHCP lease time in seconds (option 51)",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
+
+    domainField = arkime_field_define("dhcp", "lotermfield",
+                                      "dhcp.domain", "Domain", "dhcp.domain",
+                                      "DHCP domain name (option 15)",
+                                      ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
 
     paramReqListField = arkime_field_define("dhcp", "termfield",

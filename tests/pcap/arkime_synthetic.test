@@ -1180,11 +1180,19 @@
       "/certsrv/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -1377,11 +1385,19 @@
       "/certsrv/certfnsh.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -1578,6 +1594,10 @@
      "requestBody" : [
       "Mode=newreq&CertRequest=...&TargetStoreFlags=0"
      ],
+     "requestBodyLen" : [
+      46
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -1594,6 +1614,10 @@
       "application/x-www-form-urlencoded"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -1787,11 +1811,19 @@
       "/certsrv/certrqxt.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -1984,11 +2016,19 @@
       "/CERTSRV/certrqma.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -2181,11 +2221,19 @@
       "/certsrv/certrqus.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -2378,11 +2426,19 @@
       "/certsrv/certcarc.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -2580,11 +2636,19 @@
       "/certsrv/mscep/mscep.dll"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -2782,11 +2846,19 @@
       "/certsrv/mscep_admin/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -2983,6 +3055,10 @@
      "requestBody" : [
       "<soap/>"
      ],
+     "requestBodyLen" : [
+      7
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -2999,6 +3075,10 @@
       "application/x-www-form-urlencoded"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -3196,6 +3276,10 @@
      "requestBody" : [
       "<soap/>"
      ],
+     "requestBodyLen" : [
+      7
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -3212,6 +3296,10 @@
       "application/x-www-form-urlencoded"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -3405,11 +3493,19 @@
       "/unrelated/path"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -3576,6 +3672,10 @@
     "fileId" : [],
     "firstPacket" : 1700000200010,
     "http" : {
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "server"
      ],
@@ -3725,6 +3825,10 @@
     "fileId" : [],
     "firstPacket" : 1700000200100,
     "http" : {
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "server"
      ],
@@ -3874,6 +3978,10 @@
     "fileId" : [],
     "firstPacket" : 1700000200190,
     "http" : {
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "server"
      ],
@@ -4048,11 +4156,19 @@
       "/not/rpch"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      15
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type"
@@ -4241,6 +4357,10 @@
      "requestBody" : [
       "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/08/addressing\" xmlns:wsman=\"http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\"><s:Header><wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate</wsa:Action></s:Header><s:Body/></s:Envelope>"
      ],
+     "requestBodyLen" : [
+      311
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -4257,6 +4377,10 @@
       "application/soap+xml;charset=utf-8"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      13
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -4450,6 +4574,10 @@
      "requestBody" : [
       "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:rsp=\"http://schemas.microsoft.com/wbem/wsman/1/windows/shell\"><s:Header><wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/transfer/Create</wsa:Action></s:Header><s:Body><rsp:Shell><rsp:InputStreams>stdin</rsp:InputStreams><rsp:OutputStreams>stdout stderr</rsp:OutputStreams></rsp:Shell></s:Body></s:Envelope>"
      ],
+     "requestBodyLen" : [
+      376
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -4466,6 +4594,10 @@
       "application/soap+xml;charset=utf-8"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      13
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -4659,6 +4791,10 @@
      "requestBody" : [
       "<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:wsmid=\"http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd\"><s:Header/><s:Body><wsmid:Identify/></s:Body></s:Envelope>"
      ],
+     "requestBodyLen" : [
+      198
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -4675,6 +4811,10 @@
       "application/soap+xml;charset=utf-8"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      13
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -4868,6 +5008,10 @@
      "requestBody" : [
       "hello"
      ],
+     "requestBodyLen" : [
+      5
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -4884,6 +5028,10 @@
       "application/soap+xml;charset=utf-8"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      13
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -5026,21 +5174,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "f1:db:32:f8:08:f4:a3:44:4b:f8:d1:52:96:71:53:96:db:5f:d5:c6",
       "issuerCN" : [
        "keyusage-certsign-only"
       ],
+      "keyLength" : 1024,
       "notAfter" : 2019686400000,
       "notBefore" : 1704067200000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3700,
       "remainingSeconds" : 319685400,
       "serial" : "11223344",
+      "sha256" : "221857c52df726dd753d0a7e45a83819a838e36e601519c3d5243fba28707967",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "keyusage-certsign-only"
       ],
       "validDays" : 3653,
-      "validSeconds" : 315619200
+      "validSeconds" : 315619200,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -5199,21 +5352,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "70:30:fe:11:ae:a4:04:f6:24:82:c9:21:b5:b1:3f:11:90:d4:43:f4",
       "issuerCN" : [
        "keyusage-crlsign-only"
       ],
+      "keyLength" : 1024,
       "notAfter" : 2019686400000,
       "notBefore" : 1704067200000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3700,
       "remainingSeconds" : 319685400,
       "serial" : "11223344",
+      "sha256" : "a9f4df1c33f49abac4adca8d7aa0fb522993120ef44ab007a00fc7eeecbe70ed",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "keyusage-crlsign-only"
       ],
       "validDays" : 3653,
-      "validSeconds" : 315619200
+      "validSeconds" : 315619200,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -5376,21 +5534,26 @@
        "alt.example.test"
       ],
       "altCnt" : 1,
+      "exponent" : 65537,
       "hash" : "88:ef:da:f5:1c:c6:78:fe:47:d0:3b:46:a6:a3:1a:74:1b:c7:88:77",
       "issuerCN" : [
        "san-before-keyusage"
       ],
+      "keyLength" : 1024,
       "notAfter" : 2019686400000,
       "notBefore" : 1704067200000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3700,
       "remainingSeconds" : 319685400,
       "serial" : "11223344",
+      "sha256" : "ee9d3110199d6cb7a3da19f41cb44733ea367148260c2c125cb6cb6b7107e42f",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "san-before-keyusage"
       ],
       "validDays" : 3653,
-      "validSeconds" : 315619200
+      "validSeconds" : 315619200,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -5721,6 +5884,17 @@
       "rc4-hmac-exp"
      ],
      "etypeCnt" : 3,
+     "msgType" : [
+      "AS-REQ"
+     ],
+     "msgTypeCnt" : 1,
+     "options" : [
+      "canonicalize",
+      "forwardable",
+      "renewable",
+      "renewable-ok"
+     ],
+     "optionsCnt" : 4,
      "realm" : [
       "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
      ],
@@ -6321,6 +6495,14 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "clientVersion" : [
+      "ssh-2.0-hasshtest"
+     ],
+     "clientVersionCnt" : 1,
+     "serverVersion" : [
+      "ssh-2.0-testserver"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-hasshtest",
       "ssh-2.0-testserver"
@@ -6742,6 +6924,10 @@
       "/chat"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "connection",
       "host",
@@ -6763,6 +6949,10 @@
       "websocket"
      ],
      "requestHeaderValueCnt" : 4,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "sec-websocket-accept",
@@ -9612,6 +9802,10 @@
       "/with-port"
      ],
      "pathCnt" : 4,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "user-agent"
      ],
@@ -9791,6 +9985,10 @@
       "/hidden"
      ],
      "pathCnt" : 3,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "statuscode" : [
       200
      ],
@@ -9971,6 +10169,10 @@
       "/"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "sha256" : [
       "2b5f3e2f195e57e7c0a2713441f6465cc8259a89c9499b806fed99740a5212d3"
      ],
@@ -10307,6 +10509,14 @@
       "TLS_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 1,
+     "curve" : [
+      "x25519"
+     ],
+     "curveCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -10460,6 +10670,14 @@
       "TLS_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 1,
+     "curve" : [
+      "x25519"
+     ],
+     "curveCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -10575,6 +10793,10 @@
     ],
     "srcTTLCnt" : 1,
     "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "fae6e50c51b5f776cc014eaa49090fcd"
      ],
@@ -10738,6 +10960,14 @@
       "TLS_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 1,
+     "curve" : [
+      "x25519"
+     ],
+     "curveCnt" : 1,
      "ja3" : [
       "c3bd3e4b5f348af38c123a6a111811df"
      ],
@@ -10979,6 +11209,11 @@
      "requestBody" : [
       "GET /fake-from-body HTTP/1.1\r\nHost: injected.example\r\n\r\n"
      ],
+     "requestBodyLen" : [
+      "0",
+      "56"
+     ],
+     "requestBodyLenCnt" : 2,
      "requestHeader" : [
       "connection",
       "content-length",
@@ -10997,6 +11232,11 @@
       "websocket"
      ],
      "requestHeaderValueCnt" : 3,
+     "responseBodyLen" : [
+      "0",
+      "56"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "connection",
       "content-length",
@@ -11171,10 +11411,19 @@
       "/after-h2c"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      "0",
+      "2"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "connection",
       "content-length",
@@ -11349,6 +11598,10 @@
       "connect-tunnel.example:443"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "proxy-authorization"
@@ -11361,6 +11614,10 @@
       "basic chjvehl1c2vyonnly3jlda=="
      ],
      "requestHeaderValueCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -11483,6 +11740,14 @@
       "TLS_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 1,
+     "curve" : [
+      "x25519"
+     ],
+     "curveCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -12031,6 +12296,10 @@
     ],
     "srcTTLCnt" : 1,
     "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -12107,11 +12376,19 @@
       "Basic YXV0aHVzZXI6cGFzcw=="
      ],
      "request-authorizationCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "authorization",
       "host"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "www-authenticate"
@@ -12299,7 +12576,14 @@
       "331",
       "500"
      ],
-     "responseCodeCnt" : 5
+     "responseCodeCnt" : 5,
+     "responseMsg" : [
+      "220 ftp.example FTP server ready",
+      "230 Logged in",
+      "331 Password required",
+      "500 Unknown command"
+     ],
+     "responseMsgCnt" : 4
     },
     "initRTT" : 50,
     "ipProtocol" : 6,
@@ -12457,10 +12741,18 @@
       "connect-early.example:443"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -12559,6 +12851,10 @@
      "src" : 36864
     },
     "tls" : {
+     "clientAlpn" : [
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -12626,6 +12922,10 @@
       "connect-noreply.example:443"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
@@ -12716,6 +13016,10 @@
      "src" : 36864
     },
     "tls" : {
+     "clientAlpn" : [
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -12792,10 +13096,19 @@
       "http://plain.example/after-403"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      "0",
+      "2"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "content-length"
      ],
@@ -12962,10 +13275,18 @@
       "ssh.example:22"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -13044,6 +13365,14 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "clientVersion" : [
+      "ssh-2.0-openssh_9.6"
+     ],
+     "clientVersionCnt" : 1,
+     "serverVersion" : [
+      "ssh-2.0-openssh_9.3"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-openssh_9.3",
       "ssh-2.0-openssh_9.6"
@@ -13121,6 +13450,10 @@
       "/after-h2c-upgrade"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "connection",
       "host",
@@ -13139,6 +13472,10 @@
       "upgrade, http2-settings"
      ],
      "requestHeaderValueCnt" : 3,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "upgrade"
@@ -13303,6 +13640,10 @@
       "/chat"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "connection",
       "host",
@@ -13324,6 +13665,10 @@
       "websocket"
      ],
      "requestHeaderValueCnt" : 4,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "sec-websocket-accept",
@@ -13509,6 +13854,10 @@
       "websocket"
      ],
      "pathCnt" : 3,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "uri" : [
       "*",
       "h2hook.examplehttp2",
@@ -14050,6 +14399,10 @@
     ],
     "srcTTLCnt" : 1,
     "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "bfac7621a436950c3917c9ee0dc549fc"
      ],
@@ -14206,6 +14559,14 @@
       "/certsrv/./x/../%63ertfnsh.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -14360,6 +14721,10 @@
       "//wsman"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "host"
@@ -14372,6 +14737,10 @@
       "0"
      ],
      "requestHeaderValueCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -14526,10 +14895,18 @@
       "http://enroll.example/certsrv/mscep/mscep.dll"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -14684,10 +15061,18 @@
       "/certsrv/%2563ertrqxt.asp"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -14850,10 +15235,19 @@
       "plain.example:80"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      "0",
+      "6"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "content-length"
      ],
@@ -15019,6 +15413,10 @@
       "dav.example:80"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "depth",
@@ -15034,6 +15432,10 @@
       "1"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -17004,10 +17406,18 @@
       "plain.example:80"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -17164,10 +17574,18 @@
       "mail.example:25"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -17538,11 +17956,19 @@
       "/path"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      4
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length"
      ],
@@ -17762,6 +18188,10 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "serverVersion" : [
+      "ssh-2.0-openssh_8.9"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-openssh_8.9"
      ],
@@ -18809,7 +19239,11 @@
      "bindname" : [
       "cn=admin,dc"
      ],
-     "bindnameCnt" : 1
+     "bindnameCnt" : 1,
+     "op" : [
+      "bind"
+     ],
+     "opCnt" : 1
     },
     "length" : 3000,
     "network" : {
@@ -21208,6 +21642,10 @@
       "*"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "uri" : [
       "*"
      ],
@@ -21719,14 +22157,38 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client"
      ],
      "modeCnt" : 1,
+     "poll" : [
+      0
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      0
+     ],
+     "precisionCnt" : 1,
+     "rootDelay" : [
+      0
+     ],
+     "rootDelayCnt" : 1,
+     "rootDispersion" : [
+      0
+     ],
+     "rootDispersionCnt" : 1,
      "stratum" : [
       "unspecified"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      0
+     ],
+     "stratumNumCnt" : 1,
      "version" : [
       3
      ],
@@ -24259,6 +24721,10 @@
       "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
      ],
      "request-authorizationCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-language",
@@ -24286,6 +24752,10 @@
       "session=abc123; user=john; tracking=xyz789"
      ],
      "requestHeaderValueCnt" : 5,
+     "responseBodyLen" : [
+      27
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -24570,6 +25040,10 @@
      "requestBody" : [
       "{\"username\":\"testuser\",\"password\":\"testpass\"}"
      ],
+     "requestBodyLen" : [
+      45
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "content-length",
       "content-type",
@@ -24589,6 +25063,10 @@
      "response-location" : [
       "/dashboard"
      ],
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "location"
@@ -24751,10 +25229,18 @@
       "/nonexistent"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      14
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type"
@@ -24930,10 +25416,18 @@
       "/error"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      21
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type"
@@ -25089,6 +25583,10 @@
       "text/plain; charset=utf-8"
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Sat, 25 Jan 2025 12:00:00 +0000"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "recipient@example.org"
      ],
@@ -25106,14 +25604,12 @@
      ],
      "headerCnt" : 9,
      "headerField" : [
-      "date",
       "x-received"
      ],
      "headerValue" : [
-      "Sat, 25 Jan 2025 12:00:00 +0000",
       "from 192.168.1.100"
      ],
-     "headerValueCnt" : 2,
+     "headerValueCnt" : 1,
      "id" : [
       "abc123@example.com"
      ],
@@ -25471,6 +25967,14 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "clientVersion" : [
+      "ssh-2.0-putty_release_0.78"
+     ],
+     "clientVersionCnt" : 1,
+     "serverVersion" : [
+      "ssh-2.0-openssh_8.9p1 ubuntu-3ubuntu0.1"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-openssh_8.9p1 ubuntu-3ubuntu0.1",
       "ssh-2.0-putty_release_0.78"
@@ -25535,6 +26039,10 @@
       "12345678"
      ],
      "idCnt" : 1,
+     "leaseTime" : [
+      86400
+     ],
+     "leaseTimeCnt" : 1,
      "mac" : [
       "00:11:22:33:44:55"
      ],
@@ -25547,6 +26055,19 @@
       "1,3,6,15,31,33,43,44,46,47,119,121,249,252"
      ],
      "paramReqListCnt" : 1,
+     "serverASN" : [
+      "---"
+     ],
+     "serverGEO" : [
+      "---"
+     ],
+     "serverIp" : [
+      "192.168.1.1"
+     ],
+     "serverIpCnt" : 1,
+     "serverRIR" : [
+      "ARIN"
+     ],
      "type" : [
       "DISCOVER",
       "OFFER"
@@ -26157,7 +26678,11 @@
      "bindname" : [
       "cn=admin,dc=example,dc=com"
      ],
-     "bindnameCnt" : 1
+     "bindnameCnt" : 1,
+     "op" : [
+      "bind"
+     ],
+     "opCnt" : 1
     },
     "length" : 3000,
     "network" : {
@@ -26523,9 +27048,34 @@
      "bytes" : 14
     },
     "socks" : {
+     "boundASN" : [
+      "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
+     ],
+     "boundGEO" : [
+      "US"
+     ],
+     "boundIp" : [
+      "93.184.216.34"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      80
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      "RIPE"
+     ],
      "host" : "target.example.com",
      "port" : 80,
-     "user" : "proxyuser"
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "user" : "proxyuser",
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "bytes" : 320,
@@ -26895,6 +27445,8 @@
       "remainingDays" : 341,
       "remainingSeconds" : 29472968,
       "serial" : "3039",
+      "sha256" : "f4576088c7406a7a837953f77c361c4c54aa017bb9ad2097756e37ecac5742f6",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "certs.example.com"
       ],
@@ -26905,7 +27457,8 @@
        "IT Department"
       ],
       "validDays" : 365,
-      "validSeconds" : 31536000
+      "validSeconds" : 31536000,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -27097,7 +27650,13 @@
       "230",
       "331"
      ],
-     "responseCodeCnt" : 3
+     "responseCodeCnt" : 3,
+     "responseMsg" : [
+      "220 Welcome to Example FTP Server",
+      "230 Login successful",
+      "331 Password required"
+     ],
+     "responseMsgCnt" : 3
     },
     "initRTT" : 1000,
     "ipProtocol" : 6,
@@ -27429,10 +27988,18 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "clientVersion" : [
+      "ssh-2.0-libssh2_1.10.0"
+     ],
+     "clientVersionCnt" : 1,
      "hassh" : [
       "8ef02133af823909e7c079d4ea6c9626"
      ],
      "hasshCnt" : 1,
+     "serverVersion" : [
+      "ssh-2.0-openssh_8.9 freebsd-20230101"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-libssh2_1.10.0",
       "ssh-2.0-openssh_8.9 freebsd-20230101"
@@ -28286,7 +28853,16 @@
      "bindname" : [
       "cn=admin,ou=users,dc=example,dc=com"
      ],
-     "bindnameCnt" : 1
+     "bindnameCnt" : 1,
+     "op" : [
+      "bind",
+      "bind_response"
+     ],
+     "opCnt" : 2,
+     "result" : [
+      "success"
+     ],
+     "resultCnt" : 1
     },
     "length" : 4000,
     "network" : {
@@ -32352,6 +32928,18 @@
       "rc4-hmac"
      ],
      "etypeCnt" : 3,
+     "msgType" : [
+      "AS-REQ",
+      "KRB-ERROR"
+     ],
+     "msgTypeCnt" : 2,
+     "options" : [
+      "canonicalize",
+      "forwardable",
+      "renewable",
+      "renewable-ok"
+     ],
+     "optionsCnt" : 4,
      "realm" : [
       "EXAMPLE.COM"
      ],
@@ -33981,20 +34569,45 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client",
       "server"
      ],
      "modeCnt" : 2,
+     "poll" : [
+      6
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      4294967276
+     ],
+     "precisionCnt" : 1,
      "refId" : [
       "GPS"
      ],
      "refIdCnt" : 1,
+     "rootDelay" : [
+      0
+     ],
+     "rootDelayCnt" : 1,
+     "rootDispersion" : [
+      0
+     ],
+     "rootDispersionCnt" : 1,
      "stratum" : [
       "primary",
       "unspecified"
      ],
      "stratumCnt" : 2,
+     "stratumNum" : [
+      "0",
+      "1"
+     ],
+     "stratumNumCnt" : 2,
      "version" : [
       4
      ],
@@ -34224,6 +34837,18 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "cipher" : [
+      "aes256-gcm@openssh.com"
+     ],
+     "cipherCnt" : 1,
+     "clientVersion" : [
+      "ssh-2.0-arkimetest_1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "compression" : [
+      "none"
+     ],
+     "compressionCnt" : 1,
      "hassh" : [
       "a49cc9790d34027d7c2d1be7be284848"
      ],
@@ -34232,10 +34857,26 @@
       "58fe79b3754bc19e7e609c54e9d5300f"
      ],
      "hasshServerCnt" : 1,
+     "hostKeyAlg" : [
+      "ssh-ed25519"
+     ],
+     "hostKeyAlgCnt" : 1,
+     "kex" : [
+      "curve25519-sha256"
+     ],
+     "kexCnt" : 1,
      "key" : [
       "AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
      ],
      "keyCnt" : 1,
+     "mac" : [
+      "hmac-sha2-256"
+     ],
+     "macCnt" : 1,
+     "serverVersion" : [
+      "ssh-2.0-openssh_8.9"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-arkimetest_1.0",
       "ssh-2.0-openssh_8.9"
@@ -34394,6 +35035,10 @@
       "hasWill"
      ],
      "flagsCnt" : 3,
+     "payloadLen" : [
+      27
+     ],
+     "payloadLenCnt" : 1,
      "qos" : [
       1
      ],
@@ -34722,6 +35367,7 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "dc:ce:40:1f:73:33:91:31:09:f5:3d:9d:b3:2e:b0:f1:99:43:dc:77",
       "issuerCN" : [
        "testca"
@@ -34729,12 +35375,15 @@
       "issuerON" : [
        "TestCA"
       ],
+      "keyLength" : 2041,
       "notAfter" : 1768507200000,
       "notBefore" : 1736922600000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 355,
       "remainingSeconds" : 30754180,
       "serial" : "1234abcd",
+      "sha256" : "041a14702172a631efde8ad381aae3f20b9d8765fa03a3922b791286dacfe41d",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "tztest.example.com"
       ],
@@ -34742,7 +35391,8 @@
        "TZTest"
       ],
       "validDays" : 365,
-      "validSeconds" : 31584600
+      "validSeconds" : 31584600,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -35499,6 +36149,10 @@
     ],
     "tagsCnt" : 1,
     "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "b2bc2d5e347cf1b325aff36e38929a37"
      ],

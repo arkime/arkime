@@ -51,6 +51,10 @@
       "/Hello"
      ],
      "pathCnt" : 1,
+     "responseBodyLen" : [
+      8
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],

@@ -17,12 +17,15 @@
       "issuerON" : [
        "INFIGO IS"
       ],
+      "keyLength" : 384,
       "notAfter" : 1584947742000,
       "notBefore" : 1521875742000,
       "publicAlgorithm" : "id-ecPublicKey",
       "remainingDays" : 65,
       "remainingSeconds" : 5653926,
       "serial" : "5ecb7cee8ca206bf9ec00728889ad99f4362cfd9",
+      "sha256" : "37a074a3c248aef1f27cbd26093f3364765bb01a97e8b3f387f5bf0cd7b4e1b4",
+      "signatureAlgorithm" : "ecdsa-with-SHA256",
       "subjectCN" : [
        "sans isc dshield test"
       ],
@@ -30,7 +33,8 @@
        "SANS Internet Storm Center"
       ],
       "validDays" : 730,
-      "validSeconds" : 63072000
+      "validSeconds" : 63072000,
+      "version" : 3
      },
      {
       "curve" : "corrupt",
@@ -47,6 +51,8 @@
       "remainingDays" : 28,
       "remainingSeconds" : 2481434,
       "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
+      "sha256" : "45f7246e18837abc380f4c1b1cf17d3a72438407bdade09086ec65eb6a0fc4dc",
+      "signatureAlgorithm" : "ecdsa-with-SHA256",
       "subjectCN" : [
        "infigo"
       ],
@@ -54,7 +60,8 @@
        "INFIGO IS"
       ],
       "validDays" : 30,
-      "validSeconds" : 2592000
+      "validSeconds" : 2592000,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -178,9 +185,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert.alt test"
+     "cert.alt test",
+     "cert:certificate-authority"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpSynAckValidated" : true,
     "tcpSynValidated" : true,
     "tcpflags" : {
@@ -202,10 +210,27 @@
      "src" : 2717333804
     },
     "tls" : {
+     "alert" : [
+      "certificate_unknown"
+     ],
+     "alertCnt" : 1,
+     "alpn" : [
+      "http/1.1"
+     ],
+     "alpnCnt" : 1,
      "cipher" : [
       "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "H2",
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 2,
+     "curve" : [
+      "secp256r1"
+     ],
+     "curveCnt" : 1,
      "ja3" : [
       "66918128f1b9b03303d77c6f2eefd128"
      ],

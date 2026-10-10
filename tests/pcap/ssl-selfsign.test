@@ -5,21 +5,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "d5:14:6c:45:45:60:f6:78:1e:67:bb:5a:67:b6:89:d4:98:a2:ec:2e",
       "issuerCN" : [
        "molochftw"
       ],
+      "keyLength" : 1024,
       "notAfter" : 1521991598000,
       "notBefore" : 1519399598000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 29,
       "remainingSeconds" : 2591473,
       "serial" : "00b27e45d092b4dddf",
+      "sha256" : "a8364f9035b2931c1b14697b7ede7f897e6dcd06553716bebd8b9953e937cb4a",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "molochftw"
       ],
       "validDays" : 30,
-      "validSeconds" : 2592000
+      "validSeconds" : 2592000,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -125,7 +130,7 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert:self-signed"
+     "cert:certificate-authority"
     ],
     "tagsCnt" : 1,
     "tcpSynAckValidated" : true,

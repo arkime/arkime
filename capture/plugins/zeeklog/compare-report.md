@@ -6,8 +6,8 @@ Pcaps: 199
 
 | log | zeek rows | arkime rows | matched rows | columns only in zeek | columns only in arkime |
 |---|---|---|---|---|---|
-| analyzer | 17 | 0 | 0 | analyzer_kind, analyzer_name, failure_data, failure_reason, fuid, id.orig_h, id.orig_p, id.resp_h, id.resp_p, proto, ts, uid | - |
-| conn | 2390 | 994 | 741 | - | - |
+| analyzer | 18 | 0 | 0 | analyzer_kind, analyzer_name, failure_data, failure_reason, fuid, id.orig_h, id.orig_p, id.resp_h, id.resp_p, proto, ts, uid | - |
+| conn | 2391 | 995 | 742 | - | - |
 | dce_rpc | 12 | 22 | 11 | - | - |
 | dhcp | 10 | 8 | 8 | - | - |
 | dnp3 | 3 | 4 | 2 | - | - |
@@ -24,7 +24,7 @@ Pcaps: 199
 | mqtt_publish | 7 | 14 | 4 | - | - |
 | mqtt_subscribe | 1 | 0 | 0 | ack, action, granted_qos_level, id.orig_h, id.orig_p, id.resp_h, id.resp_p, qos_levels, topics, ts, uid | - |
 | mysql | 3 | 6 | 2 | - | - |
-| ntlm | 17 | 17 | 10 | - | - |
+| ntlm | 17 | 25 | 17 | - | - |
 | ntp | 11 | 7 | 7 | - | - |
 | ocsp | 1 | 0 | 0 | certStatus, hashAlgorithm, id, issuerKeyHash, issuerNameHash, nextUpdate, revokereason, revoketime, serialNumber, thisUpdate, ts | - |
 | packet_filter | 199 | 0 | 0 | failure_reason, filter, init, node, success, ts | - |
@@ -51,24 +51,23 @@ Pcaps: 199
 
 | log | column | type | zeek rows set | example |
 |---|---|---|---|---|
-| analyzer | ts | time | 17 |  |
-| analyzer | analyzer_kind | string | 17 |  |
-| analyzer | analyzer_name | string | 17 |  |
-| analyzer | uid | string | 17 |  |
-| analyzer | id.orig_h | addr | 17 |  |
-| analyzer | id.orig_p | port | 17 |  |
-| analyzer | id.resp_h | addr | 17 |  |
-| analyzer | id.resp_p | port | 17 |  |
-| analyzer | proto | enum | 17 |  |
-| analyzer | failure_reason | string | 17 |  |
+| analyzer | ts | time | 18 |  |
+| analyzer | analyzer_kind | string | 18 |  |
+| analyzer | analyzer_name | string | 18 |  |
+| analyzer | uid | string | 18 |  |
+| analyzer | id.orig_h | addr | 18 |  |
+| analyzer | id.orig_p | port | 18 |  |
+| analyzer | id.resp_h | addr | 18 |  |
+| analyzer | id.resp_p | port | 18 |  |
+| analyzer | proto | enum | 18 |  |
+| analyzer | failure_reason | string | 18 |  |
 | analyzer | failure_data | string | 1 |  |
-| conn | local_orig | bool | 2390 | 6-4-gre-ppp-udp-4-dns: zeek='T' ours=- |
-| conn | local_resp | bool | 2390 | 6-4-gre-ppp-udp-4-dns: zeek='F' ours=- |
-| conn | tunnel_parents | set[string] | 43 | 6-4-gre-ppp-udp-4-dns: zeek='C3RANe38RAYhtHHBj3' ours=- |
+| conn | local_orig | bool | 2391 | 6-4-gre-ppp-udp-4-dns: zeek='T' ours=- |
+| conn | local_resp | bool | 2391 | 6-4-gre-ppp-udp-4-dns: zeek='F' ours=- |
+| conn | tunnel_parents | set[string] | 43 | 6-4-gre-ppp-udp-4-dns: zeek='CnRBUr34MKaMjUszD2' ours=- |
 | dce_rpc | rtt | interval | 12 | dcerpc_synthetic: zeek='1.000000' ours=- |
 | dce_rpc | named_pipe | string | 1 |  |
 | dce_rpc | operation | string | 12 | dcerpc_synthetic: zeek='EfsRpcQueryRecoveryAgents' ours=- |
-| dhcp | lease_time | interval | 3 | arkime_synthetic: zeek='86400.000000' ours=- |
 | dnp3 | fc_reply | string | 3 | dnp3_synthetic: zeek='RESPONSE' ours=- |
 | dnp3 | iin | count | 3 | dnp3_synthetic: zeek='0' ours=- |
 | files | analyzers | set[string] | 1 | 80211http: zeek='(empty)' ours=- |
@@ -79,12 +78,8 @@ Pcaps: 199
 | files | missing_bytes | count | 94 | 80211http: zeek='0' ours=- |
 | files | overflow_bytes | count | 94 | 80211http: zeek='0' ours=- |
 | ftp | password | string | 3 | arkime_synthetic: zeek='secretpassword' ours=- |
-| ftp | reply_msg | string | 8 | arkime_synthetic: zeek='Login successful' ours=- |
 | http | origin | string | 4 | websocket: zeek='file://' ours=- |
-| http | request_body_len | count | 95 | 80211http: zeek='0' ours=- |
-| http | response_body_len | count | 95 | 80211http: zeek='1478' ours=- |
 | http | status_msg | string | 80 | 80211http: zeek='OK' ours=- |
-| http | info_code | count | 2 | http-100-continue: zeek='100' ours=- |
 | http | info_msg | string | 2 | http-100-continue: zeek='Continue' ours=- |
 | http | proxied | set[string] | 2 | arkime_synthetic: zeek='X-FORWARDED-FOR -> 192.168.1.100\\x2c 10.0.0.50' ours=- |
 | http | orig_fuids | vector[string] | 16 | arkime_synthetic: zeek='FNviaf2rTihd5beJg' ours=- |
@@ -94,15 +89,10 @@ Pcaps: 199
 | irc | user | string | 5 |  |
 | irc | command | string | 12 | arkime_synthetic: zeek='NICK' ours=- |
 | irc | addl | string | 5 | arkime_synthetic: zeek='0 * JohnDoe ' ours=- |
-| kerberos | request_type | string | 4 | arkime_synthetic: zeek='AS' ours=- |
 | kerberos | success | bool | 1 | arkime_synthetic: zeek='F' ours=- |
 | kerberos | till | time | 3 | arkime_synthetic: zeek='1924991999.000000' ours=- |
-| kerberos | forwardable | bool | 3 | arkime_synthetic: zeek='T' ours=- |
-| kerberos | renewable | bool | 3 | arkime_synthetic: zeek='T' ours=- |
 | ldap | message_id | int | 13 | arkime_synthetic: zeek='1' ours=- |
 | ldap | version | int | 11 | arkime_synthetic: zeek='3' ours=- |
-| ldap | opcode | string | 13 | arkime_synthetic: zeek='bind simple' ours=- |
-| ldap | result | string | 10 | ldap-and-search: zeek='success' ours=- |
 | ldap | diagnostic_message | string | 2 | ntlm_synthetic: zeek='see matchedDN' ours=- |
 | ldap | argument | string | 7 | arkime_synthetic: zeek='REDACTED' ours=- |
 | ldap_search | ts | time | 2 |  |
@@ -125,7 +115,6 @@ Pcaps: 199
 | mqtt_publish | retain | bool | 7 | arkime_synthetic: zeek='F' ours=- |
 | mqtt_publish | status | string | 7 | arkime_synthetic: zeek='ok' ours=- |
 | mqtt_publish | payload | string | 7 | arkime_synthetic: zeek='{"temp": 22.5, "unit": "C"}' ours=- |
-| mqtt_publish | payload_len | count | 7 | arkime_synthetic: zeek='27' ours=- |
 | mqtt_subscribe | ts | time | 1 |  |
 | mqtt_subscribe | uid | string | 1 |  |
 | mqtt_subscribe | id.orig_h | addr | 1 |  |
@@ -141,19 +130,7 @@ Pcaps: 199
 | mysql | success | bool | 3 | mysql-allow: zeek='T' ours=- |
 | mysql | rows | count | 2 | mysql-allow: zeek='0' ours=- |
 | mysql | response | string | 1 | mysql-deny: zeek="Access denied for user 'user0'@'host123.local' (using password: NO)" ours=- |
-| ntlm | server_nb_computer_name | string | 10 | smb-smb1-ascii: zeek='DC3' ours=- |
-| ntlm | server_dns_computer_name | string | 10 | smb-smb1-ascii: zeek='dc3.lab.domain.ex' ours=- |
-| ntlm | server_tree_name | string | 1 | smb-smb1-ascii: zeek='domain.ex' ours=- |
 | ntlm | success | bool | 5 | smb-smb1-ascii: zeek='T' ours=- |
-| ntp | poll | interval | 11 | arkime_synthetic: zeek='1.000000' ours=- |
-| ntp | precision | interval | 11 | arkime_synthetic: zeek='1.000000' ours=- |
-| ntp | root_delay | interval | 11 | arkime_synthetic: zeek='0.000000' ours=- |
-| ntp | root_disp | interval | 11 | arkime_synthetic: zeek='0.000000' ours=- |
-| ntp | ref_time | time | 11 | arkime_synthetic: zeek='0.000000' ours=- |
-| ntp | org_time | time | 11 | arkime_synthetic: zeek='0.000000' ours=- |
-| ntp | rec_time | time | 11 | arkime_synthetic: zeek='0.000000' ours=- |
-| ntp | xmt_time | time | 11 | arkime_synthetic: zeek='0.000000' ours=- |
-| ntp | num_exts | count | 11 | arkime_synthetic: zeek='0' ours=- |
 | ocsp | ts | time | 1 |  |
 | ocsp | id | string | 1 |  |
 | ocsp | hashAlgorithm | string | 1 |  |
@@ -173,7 +150,6 @@ Pcaps: 199
 | postgresql | backend_arg | string | 4 | postgres-badpass: zeek='N' ours=- |
 | postgresql | success | bool | 5 | arkime_synthetic: zeek='T' ours=- |
 | quic | client_initial_dcid | string | 10 | arkime_synthetic: zeek='5354c48bc75080b2' ours=- |
-| quic | client_protocol | string | 6 | arkime_synthetic: zeek='h3' ours=- |
 | quic | history | string | 10 | arkime_synthetic: zeek='IIS' ours=- |
 | radius | result | string | 4 | arkime_synthetic: zeek='unknown' ours=- |
 | radius | ttl | interval | 1 | arkime_synthetic: zeek='1.000000' ours=- |
@@ -196,11 +172,8 @@ Pcaps: 199
 | smb_mapping | service | string | 6 | smb-smb1-ascii: zeek='IPC' ours=- |
 | smb_mapping | native_file_system | string | 4 | smb-smbclient: zeek='NTFS' ours=- |
 | smb_mapping | share_type | string | 7 | smb-smb1-ascii: zeek='PIPE' ours=- |
-| smtp | date | string | 11 | arkime_synthetic: zeek='Sat, 25 Jan 2025 12:00:00 +0000' ours=- |
-| smtp | reply_to | string | 1 | smtp-data-521: zeek='"1234567899@aol.com" <1234567899@aol.com>' ours=- |
 | smtp | first_received | string | 9 | smtp-originating: zeek='from [10.000.000.002] (helo=[10.000.00.03])\\x09by xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net with esmtpa (Exim 4.67)\\x09(envelope-from <xxxxxxxx@xxxxxxxxx.net>)\\x09id xxxxxxxxxxxxxxxx\\x09for xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com; Mon, 13 Jan 2014 10:01:13 -0500' ours=- |
 | smtp | second_received | string | 5 | smtp-subject-8859-multi: zeek='from xxxxxxxxxxxxx.xxx.com (localhost.localdomain [127.0.0.1])\\x09by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4) with ESMTP id rBCJivEK007998\\x09for <xxxxxxxxx@xxxxxxx.com>; Thu, 12 Dec 2013 14:44:57 -0500' ours=- |
-| smtp | last_reply | string | 23 | arkime_synthetic: zeek='220 mail.example.com ESMTP' ours=- |
 | smtp | path | vector[addr] | 24 | arkime_synthetic: zeek='10.0.5.1,10.0.5.100' ours=- |
 | smtp | fuids | vector[string] | 16 | arkime_synthetic: zeek='FpL4Bh1lgHWfa5CMV1' ours='(empty)' |
 | snmp | get_requests | count | 9 | SNMPv2c_get_requests: zeek='1' ours=- |
@@ -208,22 +181,9 @@ Pcaps: 199
 | snmp | get_responses | count | 9 | SNMPv2c_get_requests: zeek='1' ours=- |
 | snmp | set_requests | count | 9 | SNMPv2c_get_requests: zeek='0' ours=- |
 | snmp | up_since | time | 1 | SNMPv2c_get_requests: zeek='1221599145.195237' ours=- |
-| socks | version | count | 8 | arkime_synthetic: zeek='5' ours=- |
-| socks | status | string | 8 | arkime_synthetic: zeek='succeeded' ours=- |
-| socks | bound.host | addr | 8 | arkime_synthetic: zeek='93.184.216.34' ours=- |
-| socks | bound_p | port | 8 | arkime_synthetic: zeek='80' ours=- |
 | ssh | auth_success | bool | 1 | tcpdump-geneve: zeek='T' ours=- |
 | ssh | auth_attempts | count | 9 | arkime_synthetic: zeek='0' ours=- |
 | ssh | direction | enum | 1 | gre-sample: zeek='INBOUND' ours=- |
-| ssh | server | string | 9 | arkime_synthetic: zeek='SSH-2.0-OpenSSH_8.9' ours=- |
-| ssh | cipher_alg | string | 5 | arkime_synthetic: zeek='aes256-gcm@openssh.com' ours=- |
-| ssh | mac_alg | string | 5 | arkime_synthetic: zeek='hmac-sha2-256' ours=- |
-| ssh | compression_alg | string | 5 | arkime_synthetic: zeek='none' ours=- |
-| ssh | kex_alg | string | 5 | arkime_synthetic: zeek='curve25519-sha256' ours=- |
-| ssh | host_key_alg | string | 5 | arkime_synthetic: zeek='ssh-ed25519' ours=- |
-| ssl | curve | string | 13 | badcurveball: zeek='secp256r1' ours=- |
-| ssl | last_alert | string | 1 | badcurveball: zeek='certificate_unknown' ours=- |
-| ssl | next_protocol | string | 2 | badcurveball: zeek='http/1.1' ours=- |
 | ssl | ssl_history | string | 36 | arkime_synthetic: zeek='Cs' ours=- |
 | ssl | client_cert_chain_fps | vector[string] | 1 | ssl-selfsign: zeek='28ab6f96a4eb1bba1c72fb980c07fc83d5816a6629ee1ebd9613b9e62d4a6805' ours='(empty)' |
 | syslog | ts | time | 5 |  |
@@ -248,26 +208,21 @@ Pcaps: 199
 | weird | notice | bool | 89 |  |
 | weird | peer | string | 89 |  |
 | weird | source | string | 63 |  |
-| x509 | certificate.version | count | 44 | arkime_synthetic: zeek='3' ours=- |
-| x509 | certificate.sig_alg | string | 44 | arkime_synthetic: zeek='sha256WithRSAEncryption' ours=- |
-| x509 | certificate.key_length | count | 43 | arkime_synthetic: zeek='2041' ours=- |
-| x509 | certificate.exponent | string | 39 | arkime_synthetic: zeek='65537' ours=- |
-| x509 | basic_constraints.path_len | count | 12 | https-connect: zeek='0' ours=- |
 
 ## conn.log
 
-pcaps with zeek rows: 192, matched rows: 741
+pcaps with zeek rows: 192, matched rows: 742
 
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 99% | 1% | 0% | 0% | bacnet-stack-services: zeek='1159067843.140235' ours='1159067992.853289'<br>bacnet-stack-services: zeek='1159067992.853289' ours='1159068136.387442'<br>dnssec_synthetic: zeek='1700021700.010000' ours='1700021700.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='CnPkG4418mlU0YJPt8' ours='C0cOhKF3McFKnYHmV8'<br>80211http: zeek='ChunLeLJ4wiGTwv7a' ours='C22P72dlzcpIMAyCUf'<br>CVE-2018-6794: zeek='CAMqnk4VjEoAmyqqpi' ours='CKy4v0V7mUTJdlCQyl' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='C8DHm91c6JNoIWAfDg' ours='C0cOhKF3McFKnYHmV8'<br>80211http: zeek='CbeFfuGvMxOz7E5kf' ours='C22P72dlzcpIMAyCUf'<br>CVE-2018-6794: zeek='Crd8KE3gNa3aiaQW0f' ours='CKy4v0V7mUTJdlCQyl' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | proto | enum | 100% | 100% | 100% | 0% | 0% | 0% | gtp-iphone: zeek='udp' ours='tcp' |
-| service | string | 38% | 80% | 31% | 16% | 1% | 39% | arkime_synthetic: zeek='http' ours='http,adcs-web'<br>arkime_synthetic: zeek='http' ours='http,adcs-web'<br>arkime_synthetic: zeek='http' ours='http,adcs-web' |
+| service | string | 38% | 80% | 31% | 15% | 1% | 39% | arkime_synthetic: zeek='http' ours='http,adcs-web'<br>arkime_synthetic: zeek='http' ours='http,adcs-web'<br>arkime_synthetic: zeek='http' ours='http,adcs-web' |
 | duration | interval | 24% | 100% | 54% | 13% | 0% | 33% | CVE-2018-6794: zeek='0.005377' ours='18.897878'<br>CVE-2018-6794: zeek='0.457120' ours='19.364190'<br>CVE-2018-6794: zeek='17.624393' ours='17.624504' |
 | orig_bytes | count | 24% | 100% | 61% | 6% | 0% | 33% | ah-esp: zeek='0' ours='760'<br>arkime_synthetic: zeek='74' ours='39'<br>bacnet-stack-services: zeek='33' ours='346' |
 | resp_bytes | count | 24% | 100% | 63% | 4% | 0% | 33% | aerospike: zeek='84' ours='0'<br>ah-esp: zeek='0' ours='760'<br>arkime_synthetic: zeek='45' ours='0' |
@@ -280,7 +235,7 @@ pcaps with zeek rows: 192, matched rows: 741
 | orig_ip_bytes | count | 100% | 100% | 75% | 25% | 0% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='99' ours='179'<br>80211http: zeek='5539' ours='6525'<br>CVE-2018-6794: zeek='2377' ours='2866' |
 | resp_pkts | count | 100% | 100% | 88% | 12% | 0% | 0% | arkime_synthetic: zeek='0' ours='1'<br>arkime_synthetic: zeek='1' ours='0'<br>arkime_synthetic: zeek='0' ours='1' |
 | resp_ip_bytes | count | 100% | 100% | 78% | 22% | 0% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='174' ours='250'<br>80211http: zeek='4421' ours='4943'<br>CVE-2018-6794: zeek='205' ours='217' |
-| tunnel_parents | set[string] | 2% | 0% | 0% | 0% | 3% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='C3RANe38RAYhtHHBj3' ours=-<br>arkime_synthetic: zeek='CV4UGD3qaa0pg8i9Ua' ours=-<br>gre-erspan-vxlan: zeek='CxRj6s1vsl6wRlgc5l' ours=- |
+| tunnel_parents | set[string] | 2% | 0% | 0% | 0% | 3% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='CnRBUr34MKaMjUszD2' ours=-<br>arkime_synthetic: zeek='Cvi3Sg3vRKEqd3XUn8' ours=-<br>gre-erspan-vxlan: zeek='CMXXWY2Ix0fP30Lvp1' ours=- |
 | ip_proto | count | 100% | 100% | 100% | 0% | 0% | 0% | gtp-iphone: zeek='17' ours='6' |
 
 ## dce_rpc.log
@@ -290,7 +245,7 @@ pcaps with zeek rows: 2, matched rows: 11
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | dcerpc_synthetic: zeek='1700000053.000000' ours='1700000048.000000'<br>dcerpc_synthetic: zeek='1700000060.000000' ours='1700000055.000000'<br>dcerpc_synthetic: zeek='1700000067.000000' ours='1700000062.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | dcerpc_synthetic: zeek='CyWlH44mqHSzwkcl0f' ours='Cb6wDaVYWXhKPxapBD'<br>dcerpc_synthetic: zeek='Cr0IwD4b2C0sV9rhYi' ours='CgHpnAWhuUc4ZlWyCj'<br>dcerpc_synthetic: zeek='Cm4MSF9xvkeLdYsX6' ours='CcXKWjGuyyq7stLHSq' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | dcerpc_synthetic: zeek='CDq92B32skHCP7Bd8' ours='Cb6wDaVYWXhKPxapBD'<br>dcerpc_synthetic: zeek='CDPm8A1cjtPwIIs8wg' ours='CgHpnAWhuUc4ZlWyCj'<br>dcerpc_synthetic: zeek='ChRpP3FLBqWXyIvw6' ours='CcXKWjGuyyq7stLHSq' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -307,19 +262,19 @@ pcaps with zeek rows: 3, matched rows: 8
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| uids | set[string] | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CP4hQf1QIWZG3PXJB6,CnxYXW1i5hLp3QmWbj' ours='COWioiCv3lY3wOK35n'<br>feather_synthetic: zeek='CKdJIE46Y3FvLKCWZf,Cbpkjs2ulzArrLBTl6' ours='CPCteBILl562x509JA'<br>feather_synthetic: zeek='CjAo35332zkWsheIG5,Cbpkjs2ulzArrLBTl6' ours='CTMqUeMdkWm6MwPRfp' |
+| uids | set[string] | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Cv5OaC1Ggf3dye4MDk,C9yiErjEcxSLR0iI' ours='COWioiCv3lY3wOK35n'<br>feather_synthetic: zeek='C17hIh47OQUdc9JCF,CQJEmA3l9MIMCY7Xrj' ours='CPCteBILl562x509JA'<br>feather_synthetic: zeek='C17hIh47OQUdc9JCF,CyZBFa33EolXzjiSbd' ours='CTMqUeMdkWm6MwPRfp' |
 | client_addr | addr | 80% | 88% | 88% | 0% | 0% | 0% |  |
-| server_addr | addr | 80% | 100% | 0% | 88% | 0% | 12% | arkime_synthetic: zeek='192.168.1.1' ours='255.255.255.255'<br>feather_synthetic: zeek='10.177.0.1' ours='255.255.255.255'<br>feather_synthetic: zeek='10.177.0.1' ours='255.255.255.255' |
+| server_addr | addr | 80% | 25% | 25% | 0% | 62% | 0% | feather_synthetic: zeek='10.177.0.1' ours=-<br>feather_synthetic: zeek='10.177.0.1' ours=-<br>feather_synthetic: zeek='10.177.0.1' ours=- |
 | mac | string | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | host_name | string | 80% | 88% | 88% | 0% | 0% | 0% |  |
 | client_fqdn | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | domain | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | requested_addr | addr | 80% | 88% | 75% | 12% | 0% | 0% | wireshark-dhcp: zeek='0.0.0.0' ours='0.0.0.0,192.168.0.10' |
 | assigned_addr | addr | 80% | 88% | 88% | 0% | 0% | 0% |  |
-| lease_time | interval | 30% | 0% | 0% | 0% | 25% | 0% | arkime_synthetic: zeek='86400.000000' ours=-<br>wireshark-dhcp: zeek='3600.000000' ours=- |
+| lease_time | interval | 30% | 25% | 25% | 0% | 0% | 0% |  |
 | client_message | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | server_message | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| msg_types | vector[string] | 100% | 100% | 88% | 12% | 0% | 0% | wireshark-dhcp: zeek='DISCOVER,OFFER' ours='ACK,OFFER,REQUEST,DISCOVER' |
+| msg_types | vector[string] | 100% | 100% | 88% | 12% | 0% | 0% | wireshark-dhcp: zeek='DISCOVER,OFFER' ours='ACK,OFFER,DISCOVER,REQUEST' |
 | duration | interval | 100% | 100% | 88% | 12% | 0% | 0% | wireshark-dhcp: zeek='0.000295' ours='0.070345' |
 
 ## dnp3.log
@@ -329,7 +284,7 @@ pcaps with zeek rows: 1, matched rows: 2
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | dnp3_synthetic: zeek='1770163205.000000' ours='1770163200.000000'<br>dnp3_synthetic: zeek='1770163212.000000' ours='1770163211.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | dnp3_synthetic: zeek='CfFVfR1Mjt7kf06K23' ours='CziEcmLyJHhARe9r2U'<br>dnp3_synthetic: zeek='CT52Ex3L8qGLPtRuY1' ours='Ch7M66uipf7Al4zVxq' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | dnp3_synthetic: zeek='Ccx0qH2RbhGvfnZ5K7' ours='CziEcmLyJHhARe9r2U'<br>dnp3_synthetic: zeek='CB4bxk3WaruYsAlpXj' ours='Ch7M66uipf7Al4zVxq' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -345,7 +300,7 @@ pcaps with zeek rows: 25, matched rows: 564
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 14% | 86% | 0% | 0% | arkime_synthetic: zeek='1778361740.002000' ours='1700000020.000000'<br>arkime_synthetic: zeek='1778361740.002000' ours='1700000020.050000'<br>arkime_synthetic: zeek='1778361745.001000' ours='1700009200.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='CnPkG4418mlU0YJPt8' ours='C0cOhKF3McFKnYHmV8'<br>arkime_synthetic: zeek='Cqw1ZbVszufnN9Nm3' ours='CKfUKvUX49OFJxXGKv'<br>arkime_synthetic: zeek='CBaqr81uAoWjzKYjYl' ours='CbWosSDG5a623WoOGn' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 6-4-gre-ppp-udp-4-dns: zeek='C8DHm91c6JNoIWAfDg' ours='C0cOhKF3McFKnYHmV8'<br>arkime_synthetic: zeek='CammOIYN3be2Qroyk' ours='CKfUKvUX49OFJxXGKv'<br>arkime_synthetic: zeek='CqfXS34strodI8CDu4' ours='CbWosSDG5a623WoOGn' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -379,7 +334,7 @@ pcaps with zeek rows: 44, matched rows: 68
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 1% | 99% | 0% | 0% | 80211http: zeek='1523241953.985407' ours='1523241953.739049'<br>80211http: zeek='1523241954.432790' ours='1523241953.739049'<br>80211http: zeek='1523241975.662871' ours='1523241953.739049' |
 | fuid | string | 100% | 100% | 0% | 100% | 0% | 0% | 80211http: zeek='FeQetr4eawmYl8gWi8' ours='Fa2lFzzd8JUGSil7Ax'<br>80211http: zeek='FP9ziX2uVzWkJkjsX9' ours='FIZi3S1UpnBIQwDUOj'<br>80211http: zeek='FHTgiZ1yydJq9UrGX3' ours='Fyrqy72WzKG92T4smX' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 80211http: zeek='ChunLeLJ4wiGTwv7a' ours='C22P72dlzcpIMAyCUf'<br>80211http: zeek='ChunLeLJ4wiGTwv7a' ours='C22P72dlzcpIMAyCUf'<br>80211http: zeek='ChunLeLJ4wiGTwv7a' ours='C22P72dlzcpIMAyCUf' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 80211http: zeek='CbeFfuGvMxOz7E5kf' ours='C22P72dlzcpIMAyCUf'<br>80211http: zeek='CbeFfuGvMxOz7E5kf' ours='C22P72dlzcpIMAyCUf'<br>80211http: zeek='CbeFfuGvMxOz7E5kf' ours='C22P72dlzcpIMAyCUf' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -412,19 +367,19 @@ pcaps with zeek rows: 2, matched rows: 3
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752643.000000' ours='1737752637.000000'<br>arkime_synthetic: zeek='1778361745.001000' ours='1700022600.000000'<br>ftp: zeek='1454301530.992076' ours='1454301530.932342' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='C8WNkPLosNat22be3' ours='CgEZy4DW4hQ9xcKbR3'<br>arkime_synthetic: zeek='CYs6JO3b4ISfQl1YOi' ours='ChlETSboW5QGtD6x2L'<br>ftp: zeek='CwXyhf4WJhLiduF2E1' ours='CgqU8ftWjyi7MfQFoE' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CBc7Se3UnxRhQLNWff' ours='CgEZy4DW4hQ9xcKbR3'<br>arkime_synthetic: zeek='CkTNYPbUTX6Q8w4w6' ours='ChlETSboW5QGtD6x2L'<br>ftp: zeek='CpeysC4CVr31L8UqNb' ours='CgqU8ftWjyi7MfQFoE' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | user | string | 100% | 100% | 67% | 33% | 0% | 0% | arkime_synthetic: zeek='<unknown>' ours='ftpuser' |
 | password | string | 23% | 0% | 0% | 0% | 67% | 0% | arkime_synthetic: zeek='secretpassword' ours=-<br>ftp: zeek='ftp@example.com' ours=- |
-| command | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='PASS' ours='PASS,USER'<br>arkime_synthetic: zeek='<init>' ours='STOR,HELO,PASS,USER,RETR'<br>ftp: zeek='PASS' ours='USER,PASS' |
+| command | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='PASS' ours='PASS,USER'<br>arkime_synthetic: zeek='<init>' ours='STOR,HELO,PASS,USER,RETR'<br>ftp: zeek='PASS' ours='PASS,USER' |
 | arg | string | 54% | 33% | 0% | 0% | 67% | 33% | arkime_synthetic: zeek='secretpassword' ours=-<br>ftp: zeek='ftp@example.com' ours=- |
 | mime_type | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | file_size | count | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | reply_code | count | 62% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='230' ours='331,230,220'<br>arkime_synthetic: zeek='220' ours='331,226,230,220,500'<br>ftp: zeek='230' ours='331,230,220' |
-| reply_msg | string | 62% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='Login successful' ours=-<br>arkime_synthetic: zeek='ftp.example FTP server ready' ours=-<br>ftp: zeek='Login successful.' ours=- |
+| reply_msg | string | 62% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Login successful' ours='331 Password required,230 Login successful,220 Welcome to Example FTP Server'<br>arkime_synthetic: zeek='ftp.example FTP server ready' ours='220 ftp.example FTP server ready,230 Logged in,331 Password required,500 Unknown command'<br>ftp: zeek='Login successful.' ours='331 Please specify the password.,230 Login successful.,220 Welcome to mirrors.rit.edu.' |
 | data_channel.passive | bool | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | data_channel.orig_h | addr | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | data_channel.resp_h | addr | 0% | 0% | 0% | 0% | 0% | 0% |  |
@@ -438,24 +393,24 @@ pcaps with zeek rows: 37, matched rows: 78
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 1% | 99% | 0% | 0% | 80211http: zeek='1523241953.976290' ours='1523241953.739049'<br>CVE-2018-6794: zeek='1516186786.707512' ours='1516186786.703072'<br>CVE-2018-6794: zeek='1516186788.621134' ours='1516186788.618106' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 80211http: zeek='ChunLeLJ4wiGTwv7a' ours='C22P72dlzcpIMAyCUf'<br>CVE-2018-6794: zeek='CAMqnk4VjEoAmyqqpi' ours='CKy4v0V7mUTJdlCQyl'<br>CVE-2018-6794: zeek='CAkds1ENpjt9F83K5' ours='CvPY9dFOoRHED5ju10' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | 80211http: zeek='CbeFfuGvMxOz7E5kf' ours='C22P72dlzcpIMAyCUf'<br>CVE-2018-6794: zeek='Crd8KE3gNa3aiaQW0f' ours='CKy4v0V7mUTJdlCQyl'<br>CVE-2018-6794: zeek='CJrGS227ZxeghNrT71' ours='CvPY9dFOoRHED5ju10' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | trans_depth | count | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| method | string | 97% | 91% | 87% | 4% | 5% | 3% | 80211http: zeek='GET' ours='POST,GET'<br>arkime_synthetic: zeek='RPC_IN_DATA' ours=-<br>arkime_synthetic: zeek='RPC_OUT_DATA' ours=- |
+| method | string | 97% | 91% | 87% | 4% | 5% | 3% | 80211http: zeek='GET' ours='GET,POST'<br>arkime_synthetic: zeek='RPC_IN_DATA' ours=-<br>arkime_synthetic: zeek='RPC_OUT_DATA' ours=- |
 | host | string | 86% | 87% | 83% | 4% | 4% | 4% | arkime_synthetic: zeek='mail.example.com' ours=-<br>arkime_synthetic: zeek='mail.example.com' ours=-<br>arkime_synthetic: zeek='mail.example.com' ours=- |
-| uri | string | 97% | 92% | 76% | 17% | 4% | 3% | 80211http: zeek='/' ours='/static/css/base.css,/static/css/index.css,/static/images/banner.jpg,/favicon.ico,/post.php,/'<br>arkime_synthetic: zeek='/certsrv/mscep/mscep.dll?operation=GetCACert&message=foo' ours='/certsrv/mscep/mscep.dll'<br>arkime_synthetic: zeek='/rpc/rpcproxy.dll?MAIL.example.com:6001' ours=- |
+| uri | string | 97% | 92% | 76% | 17% | 4% | 3% | 80211http: zeek='/' ours='/static/css/index.css,/,/favicon.ico,/post.php,/static/images/banner.jpg,/static/css/base.css'<br>arkime_synthetic: zeek='/certsrv/mscep/mscep.dll?operation=GetCACert&message=foo' ours='/certsrv/mscep/mscep.dll'<br>arkime_synthetic: zeek='/rpc/rpcproxy.dll?MAIL.example.com:6001' ours=- |
 | referrer | string | 16% | 17% | 9% | 0% | 0% | 4% |  |
 | version | string | 84% | 91% | 74% | 3% | 6% | 17% | CVE-2018-6794: zeek='1.1' ours=-<br>arkime_synthetic: zeek='1.1' ours=-<br>arkime_synthetic: zeek='1.1' ours=- |
 | user_agent | string | 68% | 53% | 62% | 0% | 4% | 4% | arkime_synthetic: zeek='MSRPC' ours=-<br>arkime_synthetic: zeek='MSRPC' ours=-<br>arkime_synthetic: zeek='MSRPC' ours=- |
 | origin | string | 4% | 0% | 0% | 0% | 1% | 0% | websocket: zeek='file://' ours=- |
-| request_body_len | count | 100% | 0% | 0% | 0% | 100% | 0% | 80211http: zeek='0' ours=-<br>CVE-2018-6794: zeek='0' ours=-<br>CVE-2018-6794: zeek='0' ours=- |
-| response_body_len | count | 100% | 0% | 0% | 0% | 100% | 0% | 80211http: zeek='1478' ours=-<br>CVE-2018-6794: zeek='20' ours=-<br>CVE-2018-6794: zeek='20' ours=- |
-| status_code | count | 84% | 78% | 78% | 5% | 0% | 3% | 80211http: zeek='200' ours='200,405,304'<br>http-100-continue: zeek='404' ours='100,404'<br>ntlm_synthetic: zeek='401' ours='401,200' |
+| request_body_len | count | 100% | 92% | 88% | 5% | 6% | 0% | 80211http: zeek='0' ours='0,39,29'<br>CVE-2018-6794: zeek='0' ours=-<br>arkime_synthetic: zeek='0' ours=- |
+| response_body_len | count | 100% | 71% | 69% | 12% | 19% | 0% | 80211http: zeek='1478' ours='0,708,575'<br>gre-erspan-vxlan: zeek='10' ours='8'<br>http-100-continue: zeek='445' ours='0,445' |
+| status_code | count | 84% | 75% | 78% | 4% | 1% | 3% | 80211http: zeek='200' ours='200,405,304'<br>ntlm_synthetic: zeek='401' ours='401,200'<br>ntlm_synthetic: zeek='401' ours='401,200' |
 | status_msg | string | 84% | 0% | 0% | 0% | 83% | 0% | 80211http: zeek='OK' ours=-<br>CVE-2018-6794: zeek='OK' ours=-<br>CVE-2018-6794: zeek='OK' ours=- |
-| info_code | count | 2% | 0% | 0% | 0% | 3% | 0% | http-100-continue: zeek='100' ours=-<br>websocket: zeek='101' ours=- |
+| info_code | count | 2% | 4% | 3% | 0% | 0% | 0% |  |
 | info_msg | string | 2% | 0% | 0% | 0% | 3% | 0% | http-100-continue: zeek='Continue' ours=-<br>websocket: zeek='Switching Protocols' ours=- |
 | tags | set[enum] | 0% | 0% | 100% | 0% | 0% | 0% |  |
 | username | string | 2% | 4% | 3% | 0% | 0% | 1% |  |
@@ -466,7 +421,7 @@ pcaps with zeek rows: 37, matched rows: 78
 | orig_mime_types | vector[string] | 13% | 0% | 0% | 0% | 9% | 0% | arkime_synthetic: zeek='text/plain' ours=-<br>arkime_synthetic: zeek='text/plain' ours=-<br>arkime_synthetic: zeek='text/plain' ours=- |
 | resp_fuids | vector[string] | 58% | 0% | 0% | 0% | 59% | 0% | 80211http: zeek='FeQetr4eawmYl8gWi8' ours=-<br>CVE-2018-6794: zeek='FCH5FwXNKkAa4ubqj' ours=-<br>CVE-2018-6794: zeek='F5oVVj4yWd6glkNU7' ours=- |
 | resp_filenames | vector[string] | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| resp_mime_types | vector[string] | 53% | 32% | 29% | 9% | 17% | 3% | 80211http: zeek='text/html' ours='application/x-gzip,text/html'<br>CVE-2018-6794: zeek='text/plain' ours=-<br>CVE-2018-6794: zeek='text/plain' ours=- |
+| resp_mime_types | vector[string] | 53% | 32% | 29% | 9% | 17% | 3% | 80211http: zeek='text/html' ours='text/html,application/x-gzip'<br>CVE-2018-6794: zeek='text/plain' ours=-<br>CVE-2018-6794: zeek='text/plain' ours=- |
 
 ## irc.log
 
@@ -475,7 +430,7 @@ pcaps with zeek rows: 2, matched rows: 5
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752421.000000' ours='1737752417.000000'<br>arkime_synthetic: zeek='1737752587.000000' ours='1737752583.000000'<br>arkime_synthetic: zeek='1737752681.000000' ours='1737752677.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Cs1wLAavPZhGLcuF2' ours='CdJ9yPJJJJo0qckJ9u'<br>arkime_synthetic: zeek='C69pyT1zvaD1TlWOs2' ours='Ca6Hd44b9BaGIPtMG6'<br>arkime_synthetic: zeek='CIw2tg1bg5hHbyPVtk' ours='C04JiEBHbCbKsrTZQf' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Cp67IW28qEnBFH3REh' ours='CdJ9yPJJJJo0qckJ9u'<br>arkime_synthetic: zeek='CIYgiZeAacdtfDHdh' ours='Ca6Hd44b9BaGIPtMG6'<br>arkime_synthetic: zeek='CrKbax2tuyVUBCzxG8' ours='C04JiEBHbCbKsrTZQf' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -483,7 +438,7 @@ pcaps with zeek rows: 2, matched rows: 5
 | nick | string | 58% | 83% | 0% | 0% | 20% | 80% | arkime_synthetic: zeek='johndoe' ours=- |
 | user | string | 42% | 0% | 0% | 0% | 0% | 0% |  |
 | command | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='NICK' ours=-<br>arkime_synthetic: zeek='NICK' ours=-<br>arkime_synthetic: zeek='NICK' ours=- |
-| value | string | 100% | 83% | 0% | 80% | 20% | 0% | arkime_synthetic: zeek='testnick' ours='#test'<br>arkime_synthetic: zeek='testuser' ours='#testchannel'<br>arkime_synthetic: zeek='johndoe' ours='#programming\\x2c#security' |
+| value | string | 100% | 83% | 0% | 80% | 20% | 0% | arkime_synthetic: zeek='testnick' ours='#test'<br>arkime_synthetic: zeek='testuser' ours='#testchannel'<br>arkime_synthetic: zeek='johndoe' ours='#programming,#security' |
 | addl | string | 42% | 0% | 0% | 0% | 40% | 0% | arkime_synthetic: zeek='0 * JohnDoe ' ours=-<br>irc: zeek='+iw xxxxx XxxxxxXxxx ' ours=- |
 
 ## kerberos.log
@@ -493,21 +448,21 @@ pcaps with zeek rows: 3, matched rows: 3
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 67% | 33% | 0% | 0% | krb5-tcp: zeek='1466265698.251011' ours='1466265698.248990' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CcjpM9Wp5YA661bT3' ours='C2xOVRJu6wl2gR1pq9'<br>krb5-tcp: zeek='CM05KH2JagXL0luMLh' ours='CSbtaXZSHmlBMA5rLO'<br>krb5-udp: zeek='CSMJMM16FJNOeufEEk' ours='CzADEDsUQeg7imt9jN' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CmFTrb11dX2nXryA9f' ours='C2xOVRJu6wl2gR1pq9'<br>krb5-tcp: zeek='C35pOt120hupjxmrm6' ours='CSbtaXZSHmlBMA5rLO'<br>krb5-udp: zeek='C8KlOv1MtlaTds3ZYa' ours='CzADEDsUQeg7imt9jN' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| request_type | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='AS' ours=-<br>krb5-tcp: zeek='AS' ours=-<br>krb5-udp: zeek='AS' ours=- |
+| request_type | string | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | client | string | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | service | string | 75% | 100% | 100% | 0% | 0% | 0% |  |
 | success | bool | 25% | 0% | 0% | 0% | 33% | 0% | arkime_synthetic: zeek='F' ours=- |
 | error_msg | string | 25% | 25% | 33% | 0% | 0% | 0% |  |
 | from | time | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | till | time | 75% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='1924991999.000000' ours=-<br>krb5-tcp: zeek='2136422885.000000' ours=-<br>krb5-udp: zeek='1466288055.000000' ours=- |
-| cipher | string | 0% | 100% | 0% | 0% | 0% | 100% |  |
-| forwardable | bool | 75% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='T' ours=-<br>krb5-tcp: zeek='T' ours=-<br>krb5-udp: zeek='T' ours=- |
-| renewable | bool | 75% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='T' ours=-<br>krb5-tcp: zeek='T' ours=-<br>krb5-udp: zeek='F' ours=- |
+| cipher | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
+| forwardable | bool | 75% | 100% | 100% | 0% | 0% | 0% |  |
+| renewable | bool | 75% | 100% | 100% | 0% | 0% | 0% |  |
 | client_cert_subject | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | client_cert_fuid | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | server_cert_subject | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
@@ -520,17 +475,17 @@ pcaps with zeek rows: 5, matched rows: 8
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 25% | 75% | 0% | 0% | arkime_synthetic: zeek='1737752602.000000' ours='1737752599.000000'<br>arkime_synthetic: zeek='1737752675.000000' ours='1737752672.000000'<br>ldap-simpleauth: zeek='1463256456.042522' ours='1463256456.040464' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CVzEd93RmVWu6kJt45' ours='CHWadKRtbhuDim6V5w'<br>arkime_synthetic: zeek='Ce3YxC1OoBWXPeiAJi' ours='CEqfglTutc37L8C02r'<br>ldap-and-search: zeek='CFCP1s2BpopZY2IZgf' ours='CwJGECzNeNOBTTbzXS' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CXwOoJ2RyY0CGcIFo' ours='CHWadKRtbhuDim6V5w'<br>arkime_synthetic: zeek='C5EmZJ1sfaJrmn0Isd' ours='CEqfglTutc37L8C02r'<br>ldap-and-search: zeek='CfEXMq1YTalyxI75pf' ours='CwJGECzNeNOBTTbzXS' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | message_id | int | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='1' ours=-<br>arkime_synthetic: zeek='1' ours=-<br>ldap-and-search: zeek='1' ours=- |
 | version | int | 85% | 0% | 0% | 0% | 88% | 0% | arkime_synthetic: zeek='3' ours=-<br>arkime_synthetic: zeek='3' ours=-<br>ldap-and-search: zeek='3' ours=- |
-| opcode | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='bind simple' ours=-<br>arkime_synthetic: zeek='bind simple' ours=-<br>ldap-and-search: zeek='bind simple' ours=- |
-| result | string | 77% | 0% | 0% | 0% | 75% | 0% | ldap-and-search: zeek='success' ours=-<br>ldap-simpleauth: zeek='success' ours=-<br>ldap-ssl: zeek='success' ours=- |
+| opcode | string | 100% | 90% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='bind simple' ours='bind'<br>arkime_synthetic: zeek='bind simple' ours='bind_response,bind'<br>ldap-and-search: zeek='bind simple' ours='search_result,bind_response,search,bind' |
+| result | string | 77% | 60% | 25% | 38% | 12% | 12% | ldap-ssl: zeek='success' ours=-<br>ntlm_synthetic: zeek='success' ours='saslBindInProgress,success'<br>ntlm_synthetic: zeek='SASL bind in progress' ours='saslBindInProgress,success' |
 | diagnostic_message | string | 15% | 0% | 0% | 0% | 12% | 0% | ntlm_synthetic: zeek='see matchedDN' ours=- |
-| object | string | 46% | 80% | 25% | 25% | 12% | 38% | ldap-simpleauth: zeek='xxxxxxxxxxx@xx.xxx.xxxxx.net' ours='CN=xxxxxxxx\\x2cOU=Users\\x2cOU=Accounts\\x2cDC=xx\\x2cDC=xxx\\x2cDC=xxxxx\\x2cDC=net,xxxxxxxxxxx@xx.xxx.xxxxx.net'<br>ldap-ssl: zeek='1.3.6.1.4.1.1466.20037 (StartTLS)' ours=-<br>ntlm_synthetic: zeek='cn=anon' ours='<ROOT>,cn=anon' |
+| object | string | 46% | 80% | 25% | 25% | 12% | 38% | ldap-simpleauth: zeek='xxxxxxxxxxx@xx.xxx.xxxxx.net' ours='xxxxxxxxxxx@xx.xxx.xxxxx.net,CN=xxxxxxxx\\x2cOU=Users\\x2cOU=Accounts\\x2cDC=xx\\x2cDC=xxx\\x2cDC=xxxxx\\x2cDC=net'<br>ldap-ssl: zeek='1.3.6.1.4.1.1466.20037 (StartTLS)' ours=-<br>ntlm_synthetic: zeek='cn=anon' ours='<ROOT>,cn=anon' |
 | argument | string | 54% | 0% | 0% | 0% | 38% | 0% | arkime_synthetic: zeek='REDACTED' ours=-<br>ldap-simpleauth: zeek='REDACTED' ours=-<br>ntlm_synthetic: zeek='NTLM' ours=- |
 
 ## modbus.log
@@ -540,7 +495,7 @@ pcaps with zeek rows: 2, matched rows: 8
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752449.000000' ours='1737752446.000000'<br>arkime_synthetic: zeek='1737752624.000000' ours='1737752621.000000'<br>arkime_synthetic: zeek='1778361745.001000' ours='1700011000.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CF2iMh3FQPDN8SbXm4' ours='CAnW1qR4oQJIZgtSOq'<br>arkime_synthetic: zeek='CFWeZr1G2hwDepsUEa' ours='CgET3VWdEAXKuT2TW3'<br>arkime_synthetic: zeek='CVxakV12HTbr8BdKQ1' ours='CbCqs9fdhZL7bjgjh9' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='C1sDpl3PQIGWj1lzl5' ours='CAnW1qR4oQJIZgtSOq'<br>arkime_synthetic: zeek='Cisgwt3NURfQaLNT27' ours='CgET3VWdEAXKuT2TW3'<br>arkime_synthetic: zeek='C8vYcvjPnVqt8hEDj' ours='CbCqs9fdhZL7bjgjh9' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -558,7 +513,7 @@ pcaps with zeek rows: 2, matched rows: 2
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737753003.000000' ours='1737753000.000000'<br>mqtt_big: zeek='1769778003.000000' ours='1769778000.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CZ0N5QDkChVhA5ALi' ours='ComWEYWv6ci3lRBrIP'<br>mqtt_big: zeek='C8BoDl32js8Kq7GRA1' ours='CYBgfAouTME30JF3NC' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CGJOxFpcqxl4uhdTl' ours='ComWEYWv6ci3lRBrIP'<br>mqtt_big: zeek='CNG20tW4RspCrmR19' ours='CYBgfAouTME30JF3NC' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -577,7 +532,7 @@ pcaps with zeek rows: 3, matched rows: 4
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737753005.000000' ours='1737753000.000000'<br>mqtt_big: zeek='1769778007.000000' ours='1769778000.000000'<br>mqtt_synthetic: zeek='1700000003.200000' ours='1700000000.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CZ0N5QDkChVhA5ALi' ours='ComWEYWv6ci3lRBrIP'<br>mqtt_big: zeek='C8BoDl32js8Kq7GRA1' ours='CYBgfAouTME30JF3NC'<br>mqtt_synthetic: zeek='CLvYTa1jkODL5pq6Vk' ours='CHkagcXqwBF585bGJS' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CGJOxFpcqxl4uhdTl' ours='ComWEYWv6ci3lRBrIP'<br>mqtt_big: zeek='CNG20tW4RspCrmR19' ours='CYBgfAouTME30JF3NC'<br>mqtt_synthetic: zeek='C3Ja5233QqWm6oMGSk' ours='CHkagcXqwBF585bGJS' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -588,7 +543,7 @@ pcaps with zeek rows: 3, matched rows: 4
 | status | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='ok' ours=-<br>mqtt_big: zeek='ok' ours=-<br>mqtt_synthetic: zeek='ok' ours=- |
 | topic | string | 100% | 64% | 25% | 75% | 0% | 0% | mqtt_big: zeek='test/small' ours='test/small,server/interrupt,test/qos2,test/afterbig,test/bigdata,test/topic1,test/topic2,test/qos1,test/#,server/bigdata,test/interleaved'<br>mqtt_synthetic: zeek='sensors/temperature' ours='sensors/temperature,sensors/humidity,commands/+,sensors/#'<br>mqtt_synthetic: zeek='public/news' ours='public/weather,public/news,public/stocks' |
 | payload | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='{"temp": 22.5, "unit": "C"}' ours=-<br>mqtt_big: zeek='Hello MQTT!' ours=-<br>mqtt_synthetic: zeek='25.5' ours=- |
-| payload_len | count | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='27' ours=-<br>mqtt_big: zeek='11' ours=-<br>mqtt_synthetic: zeek='4' ours=- |
+| payload_len | count | 100% | 50% | 25% | 75% | 0% | 0% | mqtt_big: zeek='11' ours='12000,11,13,16,11000,15000,15'<br>mqtt_synthetic: zeek='4' ours='4,3'<br>mqtt_synthetic: zeek='13' ours='13,5' |
 
 ## mysql.log
 
@@ -597,7 +552,7 @@ pcaps with zeek rows: 2, matched rows: 2
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | mysql-allow: zeek='1398217358.963625' ours='1398217358.961255'<br>mysql-deny: zeek='1398195861.495972' ours='1398195861.493255' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | mysql-allow: zeek='CONjOj4RtQUKdKQchk' ours='CJL9smqOH5wEKTQvOp'<br>mysql-deny: zeek='CJ2ke31THAjqfX7dub' ours='CemgG8p7XDwEpVZEX6' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | mysql-allow: zeek='CzQkCR2PQ0pUSwQmZ6' ours='CJL9smqOH5wEKTQvOp'<br>mysql-deny: zeek='CuYi0u26dlUMROOmNk' ours='CemgG8p7XDwEpVZEX6' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -610,23 +565,23 @@ pcaps with zeek rows: 2, matched rows: 2
 
 ## ntlm.log
 
-pcaps with zeek rows: 5, matched rows: 10
+pcaps with zeek rows: 5, matched rows: 17
 
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | ntlm_synthetic: zeek='1700000000.030000' ours='1700000000.010000'<br>ntlm_synthetic: zeek='1700000000.606000' ours='1700000000.586000'<br>ntlm_synthetic: zeek='1700000001.194000' ours='1700000001.174000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | ntlm_synthetic: zeek='CatfxE38QmJDkTuUe' ours='C0epbNOgLImHGeDtjd'<br>ntlm_synthetic: zeek='CySD7pf51kNVFGFW3' ours='CV5dIoif3da0xbWBcN'<br>ntlm_synthetic: zeek='CZ63Iw2LLwlypNxmKb' ours='CtkJvgrlGwjDcVcbum' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | ntlm_synthetic: zeek='CrmOQLwRu2fnGsrDb' ours='C0epbNOgLImHGeDtjd'<br>ntlm_synthetic: zeek='CLbKnV2q880Txd56kl' ours='CV5dIoif3da0xbWBcN'<br>ntlm_synthetic: zeek='Cy440m4PvyDnTw5U4b' ours='CtkJvgrlGwjDcVcbum' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| username | string | 76% | 88% | 70% | 0% | 0% | 20% |  |
-| hostname | string | 82% | 94% | 70% | 0% | 0% | 30% |  |
-| domainname | string | 76% | 88% | 70% | 0% | 0% | 20% |  |
-| server_nb_computer_name | string | 59% | 0% | 0% | 0% | 30% | 0% | smb-smb1-ascii: zeek='DC3' ours=-<br>smbtorture-ntlmssp-moloch-crash: zeek='VISTA2' ours=-<br>smbtorture-ntlmssp: zeek='VISTA2' ours=- |
-| server_dns_computer_name | string | 59% | 0% | 0% | 0% | 30% | 0% | smb-smb1-ascii: zeek='dc3.lab.domain.ex' ours=-<br>smbtorture-ntlmssp-moloch-crash: zeek='vista2' ours=-<br>smbtorture-ntlmssp: zeek='vista2' ours=- |
-| server_tree_name | string | 6% | 0% | 0% | 0% | 10% | 0% | smb-smb1-ascii: zeek='domain.ex' ours=- |
-| success | bool | 29% | 0% | 0% | 0% | 30% | 0% | smb-smb1-ascii: zeek='T' ours=-<br>smbtorture-ntlmssp-moloch-crash: zeek='T' ours=-<br>smbtorture-ntlmssp: zeek='T' ours=- |
+| username | string | 76% | 84% | 76% | 0% | 0% | 12% |  |
+| hostname | string | 82% | 96% | 82% | 0% | 0% | 18% |  |
+| domainname | string | 76% | 88% | 76% | 0% | 0% | 12% |  |
+| server_nb_computer_name | string | 59% | 40% | 59% | 0% | 0% | 0% |  |
+| server_dns_computer_name | string | 59% | 40% | 59% | 0% | 0% | 0% |  |
+| server_tree_name | string | 6% | 4% | 6% | 0% | 0% | 0% |  |
+| success | bool | 29% | 0% | 0% | 0% | 29% | 0% | smb-smb1-ascii: zeek='T' ours=-<br>smbtorture-ntlmssp-moloch-crash: zeek='T' ours=-<br>smbtorture-ntlmssp: zeek='T' ours=- |
 
 ## ntp.log
 
@@ -635,24 +590,24 @@ pcaps with zeek rows: 3, matched rows: 7
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CP8Kna3RWdZBB8bLG7' ours='CU4v7OjJt3y07mxCmc'<br>arkime_synthetic: zeek='Cijuiu3YYcz9sooGN5' ours='CM87HSrtAdQ1riixnc'<br>gre-sample: zeek='CLGyDe3vKxu9Q6quFd' ours='C6h8lGdJRRM2r1cCVg' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CySLcw30X0Rauz62ie' ours='CU4v7OjJt3y07mxCmc'<br>arkime_synthetic: zeek='Cnw4Dv2bJ4oc13GPT9' ours='CM87HSrtAdQ1riixnc'<br>gre-sample: zeek='CzQWuK2S8Rza5rHRP1' ours='C6h8lGdJRRM2r1cCVg' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | version | count | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| mode | count | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='3' ours='client'<br>arkime_synthetic: zeek='3' ours='client,server'<br>gre-sample: zeek='3' ours='client,server' |
-| stratum | count | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='0' ours='unspecified'<br>arkime_synthetic: zeek='0' ours='primary,unspecified'<br>gre-sample: zeek='11' ours='secondary' |
-| poll | interval | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='1.000000' ours=-<br>arkime_synthetic: zeek='64.000000' ours=-<br>gre-sample: zeek='64.000000' ours=- |
-| precision | interval | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='1.000000' ours=-<br>arkime_synthetic: zeek='0.000001' ours=-<br>gre-sample: zeek='0.000008' ours=- |
-| root_delay | interval | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='0.000000' ours=- |
-| root_disp | interval | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='0.011078' ours=- |
+| mode | count | 100% | 100% | 43% | 57% | 0% | 0% | arkime_synthetic: zeek='3' ours='3,4'<br>gre-sample: zeek='3' ours='3,4'<br>gre-sample: zeek='3' ours='3,4' |
+| stratum | count | 100% | 100% | 43% | 57% | 0% | 0% | arkime_synthetic: zeek='0' ours='0,1'<br>gre-sample: zeek='11' ours='2,11'<br>gre-sample: zeek='11' ours='11,3' |
+| poll | interval | 100% | 100% | 100% | 0% | 0% | 0% |  |
+| precision | interval | 100% | 100% | 71% | 29% | 0% | 0% | gre-sample: zeek='0.000008' ours='0.000004,0.000008'<br>gre-sample: zeek='0.000008' ours='0.000488,0.000008' |
+| root_delay | interval | 100% | 100% | 57% | 43% | 0% | 0% | gre-sample: zeek='0.000000' ours='0.014587,0.000000'<br>gre-sample: zeek='0.000000' ours='0.034409,0.000000'<br>gre-sample: zeek='0.000000' ours='0.022308,0.000000' |
+| root_disp | interval | 100% | 100% | 57% | 43% | 0% | 0% | gre-sample: zeek='0.011078' ours='0.011078,0.011292'<br>gre-sample: zeek='0.011368' ours='0.033829,0.011368'<br>gre-sample: zeek='0.011414' ours='0.047394,0.011414' |
 | ref_id | string | 100% | 86% | 29% | 57% | 14% | 0% | arkime_synthetic: zeek='\\x00\\x00\\x00\\x00' ours=-<br>arkime_synthetic: zeek='\\x00\\x00\\x00\\x00' ours='GPS'<br>gre-sample: zeek='127.127.1.1' ours='cdbcb921,7f7f0101' |
-| ref_time | time | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289964.850213' ours=- |
-| org_time | time | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289927.417650' ours=- |
-| rec_time | time | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289910.992244' ours=- |
-| xmt_time | time | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289973.849818' ours=- |
-| num_exts | count | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0' ours=-<br>arkime_synthetic: zeek='0' ours=-<br>gre-sample: zeek='0' ours=- |
+| ref_time | time | 100% | 43% | 0% | 43% | 57% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289964.850213' ours='1055289964.850212,1055289880.891366' |
+| org_time | time | 100% | 43% | 0% | 43% | 57% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289927.417650' ours='1055289927.417650,1055289973.849817' |
+| rec_time | time | 100% | 43% | 0% | 43% | 57% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289910.992244' ours='1055289910.992243,1055289993.233992' |
+| xmt_time | time | 100% | 71% | 29% | 43% | 29% | 0% | arkime_synthetic: zeek='0.000000' ours=-<br>arkime_synthetic: zeek='0.000000' ours=-<br>gre-sample: zeek='1055289973.849818' ours='1055289973.849817,1055289993.234260' |
+| num_exts | count | 100% | 100% | 100% | 0% | 0% | 0% |  |
 
 ## postgresql.log
 
@@ -661,7 +616,7 @@ pcaps with zeek rows: 4, matched rows: 5
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752606.000000' ours='1737752603.000000'<br>arkime_synthetic: zeek='1737752659.000000' ours='1737752656.000000'<br>postgres-badpass: zeek='1399312748.535522' ours='1399312748.531029' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CPHmP2uVeXd52Ju5i' ours='C1LLi4ScomA1zNAi9P'<br>arkime_synthetic: zeek='CksZjV3mnl3v4KDVV9' ours='Cl77NDan3MQ2YLngUb'<br>postgres-badpass: zeek='CpCY5Y3yvPDKtI55tj' ours='CgLjRsyr3PvJjbfsjF' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CKIwOIrzc5lKZrGR4' ours='C1LLi4ScomA1zNAi9P'<br>arkime_synthetic: zeek='CjKqZq31njX5YcQhwi' ours='Cl77NDan3MQ2YLngUb'<br>postgres-badpass: zeek='CKDrW91zdA6vDpHKth' ours='CgLjRsyr3PvJjbfsjF' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -683,7 +638,7 @@ pcaps with zeek rows: 3, matched rows: 6
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 50% | 50% | 0% | 0% | arkime_synthetic: zeek='1778361745.001000' ours='1700021500.000000'<br>arkime_synthetic: zeek='1778361745.001000' ours='1700022400.000000'<br>arkime_synthetic: zeek='1778361745.001000' ours='1700023600.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CziRtm3wFFHe1whIAg' ours='C00gJXQMWLFC7986KO'<br>arkime_synthetic: zeek='CHiUjj3oSXH1SPyLY7' ours='CwHICOWYW05KSUFFWr'<br>arkime_synthetic: zeek='Ch2sIEZ40GxWYc3V8' ours='CtLZO6VR9en9vEWNxB' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Cwp5iq1doFQTFRhOG4' ours='C00gJXQMWLFC7986KO'<br>arkime_synthetic: zeek='Cp7QgQ6f7ingGXWaa' ours='CwHICOWYW05KSUFFWr'<br>arkime_synthetic: zeek='ClIJJndBhoyFtoNmg' ours='CtLZO6VR9en9vEWNxB' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -693,7 +648,7 @@ pcaps with zeek rows: 3, matched rows: 6
 | client_scid | string | 0% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='(empty)' ours=-<br>arkime_synthetic: zeek='(empty)' ours=-<br>arkime_synthetic: zeek='(empty)' ours=- |
 | server_scid | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | server_name | string | 60% | 50% | 0% | 0% | 67% | 0% | arkime_synthetic: zeek='config.edge.skype.com' ours=-<br>arkime_synthetic: zeek='quic-v2.example' ours=-<br>quicietf: zeek='ssl.gstatic.com' ours=- |
-| client_protocol | string | 60% | 0% | 0% | 0% | 67% | 0% | arkime_synthetic: zeek='h3' ours=-<br>arkime_synthetic: zeek='h3' ours=-<br>quicietf: zeek='h3' ours=- |
+| client_protocol | string | 60% | 50% | 67% | 0% | 0% | 33% |  |
 | history | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='IIS' ours=-<br>arkime_synthetic: zeek='I' ours=-<br>arkime_synthetic: zeek='I' ours=- |
 
 ## radius.log
@@ -703,7 +658,7 @@ pcaps with zeek rows: 1, matched rows: 3
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 67% | 33% | 0% | 0% | arkime_synthetic: zeek='1778361745.001000' ours='1700013000.599999' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CC1eTr4Ae6pmDG8w99' ours='CklYaDaQfBTGFzoI81'<br>arkime_synthetic: zeek='C8f4CT2zX1oHU60bj6' ours='CjpAPsVWbaNH4Kj2eN'<br>arkime_synthetic: zeek='CRnixG10ziARg0Ub9' ours='C1NsVtjVLJKG9VYQsL' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='C3huT14p0mmSDgnI6g' ours='CklYaDaQfBTGFzoI81'<br>arkime_synthetic: zeek='CbXpkg3bFPk9UZJB5' ours='CjpAPsVWbaNH4Kj2eN'<br>arkime_synthetic: zeek='CNehDz3eZoqK5Gkny7' ours='C1NsVtjVLJKG9VYQsL' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -724,7 +679,7 @@ pcaps with zeek rows: 2, matched rows: 2
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752971.000000' ours='1737752970.000000'<br>socks5-rdp: zeek='1386644256.760443' ours='1386644255.859306' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CqL9nd3aKLQ6fmbXka' ours='CclUC8UQyck2BrMFeG'<br>socks5-rdp: zeek='C4PuQn2q2a9lAJRlQc' ours='CbBwFKZ9EiEEGPCJjQ' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CY5rpi3onh2RMADdx2' ours='CclUC8UQyck2BrMFeG'<br>socks5-rdp: zeek='CMCYdj2XkTXcbcLmSc' ours='CbBwFKZ9EiEEGPCJjQ' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -753,7 +708,7 @@ pcaps with zeek rows: 2, matched rows: 3
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 33% | 67% | 0% | 0% | gtp-iphone: zeek='1415985445.984189' ours='1415985412.100117'<br>gtp-iphone: zeek='1415985512.340163' ours='1415985444.983920' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CpJyno1kquT1zf5LH5' ours='CccBHIessMYGZnIkwc'<br>gtp-iphone: zeek='Ch8sFyrm5lkCb4316' ours='CNCTZ2849wH5z9gySj'<br>gtp-iphone: zeek='CmtTCH1mZVQVrtBWch' ours='CNCTZ2849wH5z9gySj' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CyzcxU1sOmTJllC8Ue' ours='CccBHIessMYGZnIkwc'<br>gtp-iphone: zeek='CK1hqw1VjUhic3OP4f' ours='CNCTZ2849wH5z9gySj'<br>gtp-iphone: zeek='Co8rc9rNr18kaqCG' ours='CNCTZ2849wH5z9gySj' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -787,7 +742,7 @@ pcaps with zeek rows: 5, matched rows: 6
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | smb-smb1-ascii: zeek='1429783875.385768' ours='1429783872.765752'<br>smb-smbclient: zeek='1387494788.143537' ours='1387494788.141593'<br>smbtorture-ntlmssp-moloch-crash: zeek='1132371118.591099' ours='1132371118.535687' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | smb-smb1-ascii: zeek='ClzFLl2sTkVmli7Tjc' ours='Cv87LldY9qsCutp5m5'<br>smb-smbclient: zeek='CPufYhjNakh3CgmK' ours='CJpAH8mCtQBJSzBZds'<br>smbtorture-ntlmssp-moloch-crash: zeek='CkZgpn3K0Qvh513jmb' ours='C7wnXIrokU80bUXtcP' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | smb-smb1-ascii: zeek='CtEjKEu45VzVTPOM7' ours='Cv87LldY9qsCutp5m5'<br>smb-smbclient: zeek='CTzUhI2hudKBVPdpgi' ours='CJpAH8mCtQBJSzBZds'<br>smbtorture-ntlmssp-moloch-crash: zeek='CIyqZT3jHJ1YhnjYY2' ours='C7wnXIrokU80bUXtcP' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -804,7 +759,7 @@ pcaps with zeek rows: 20, matched rows: 24
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 4% | 96% | 0% | 0% | arkime_synthetic: zeek='1737752415.000000' ours='1737752412.000000'<br>arkime_synthetic: zeek='1737752560.000000' ours='1737752557.000000'<br>smtp-data-250: zeek='1386338020.579419' ours='1386338020.379409' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Cu3CAb1w7N239wSog' ours='CEjOgiGAilD40AUIlN'<br>arkime_synthetic: zeek='CkGQk519ULyjxW7kMa' ours='CUTGcJMj2xq1wRRv9a'<br>smtp-data-250: zeek='CHjxBy4O62nZqMeK7c' ours='C8uGy9Qx0SxKEURGlE' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CvJ5UO1A5nIHKqA7qh' ours='CEjOgiGAilD40AUIlN'<br>arkime_synthetic: zeek='CF14i72ipDe7auxu2a' ours='CUTGcJMj2xq1wRRv9a'<br>smtp-data-250: zeek='CvFqAGm1kL2Gc1Onc' ours='C8uGy9Qx0SxKEURGlE' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -813,18 +768,18 @@ pcaps with zeek rows: 20, matched rows: 24
 | helo | string | 96% | 93% | 96% | 0% | 4% | 0% | smtp-nospaces: zeek='(empty)' ours=- |
 | mailfrom | string | 75% | 83% | 71% | 4% | 0% | 21% | smtp-moloch-bof: zeek='ibmuser@zpdt.example.com' ours='matt@zpdt.example.com,ibmuser@zpdt.example.com' |
 | rcptto | set[string] | 75% | 79% | 75% | 0% | 0% | 17% |  |
-| date | string | 46% | 0% | 0% | 0% | 46% | 0% | arkime_synthetic: zeek='Sat, 25 Jan 2025 12:00:00 +0000' ours=-<br>smtp-data-250: zeek='Fri, 06 Dec 2013 08:48:53 -0500' ours=-<br>smtp-data-521: zeek='Thu, 5 Dec 2013 14:56:55 +0100' ours=- |
+| date | string | 46% | 52% | 46% | 0% | 0% | 17% |  |
 | from | string | 67% | 83% | 21% | 46% | 0% | 29% | smtp-data-250: zeek='Xxxxx Xxxxxxxx <12345678@aol.com>' ours='12345678@aol.com'<br>smtp-data-521: zeek='"xxxxxxxxx 123456789" <1234567899@aol.com>' ours='1234567899@aol.com'<br>smtp-moloch-bof: zeek='matt@zpdt.example.com' ours='matt@zpdt.example.com,ibmuser@zpdt.example.com' |
 | to | set[string] | 62% | 79% | 46% | 17% | 0% | 29% | smtp-data-521: zeek='"xxxxx-xxxx" <xxxxx-xxxx@xxxx.xxx.xx.jp>' ours='xxxxx-xxxx@xxxx.xxx.xx.jp'<br>smtp-originating: zeek='xxxxxxxx xxxxxxx <xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com>' ours='xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com'<br>smtp-subject-8859-b: zeek='Xxxxxxxxxxx <xxxxxxxx@gmail.com>' ours='xxxxxxxx@gmail.com' |
 | cc | set[string] | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| reply_to | string | 4% | 0% | 0% | 0% | 4% | 0% | smtp-data-521: zeek='"1234567899@aol.com" <1234567899@aol.com>' ours=- |
+| reply_to | string | 4% | 3% | 4% | 0% | 0% | 0% |  |
 | msg_id | string | 42% | 48% | 0% | 42% | 0% | 17% | arkime_synthetic: zeek='<abc123@example.com>' ours='abc123@example.com'<br>smtp-data-250: zeek='<xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx>' ours='xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxx@xxxxx.xxxxxxx.xxx'<br>smtp-originating: zeek='<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@xxxxxxxxx.net>' ours='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@xxxxxxxxx.net' |
 | in_reply_to | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
 | subject | string | 67% | 72% | 29% | 38% | 0% | 17% | smtp-subject-8859-b: zeek='=?iso-8859-1?B?dGVzdCDlIOkg7iD4IPw=?=' ours='test å é î ø ü'<br>smtp-subject-8859-multi: zeek='4spaces    =?iso-8859-1?B?5SDpIO4g+CA=?= =?iso-8859-1?Q?=FC?=     5spaces' ours='4spaces    å é î ø ü     5spaces'<br>smtp-subject-8859-q: zeek='=?iso-8859-1?Q?=E9_=EE_=F8_=FC____________?= =?iso-8859-1?Q?_________________________________________________________?= =?iso-8859-1?Q?_________________________________________________________?= =?iso-8859-1?Q?_____?= =?iso-8859-1?Q?_?=                                                     test' ours='é î ø ü                                                                                                                                                                                         test' |
 | x_originating_ip | addr | 12% | 41% | 0% | 12% | 0% | 38% | smtp-originating: zeek='10.0.0.4' ours='10.0.0.3,10.0.0.2,10.0.0.4'<br>smtp-subject-8859-b: zeek='10.0.0.4' ours='169.254.4.195,10.180.121.108,10.0.0.4'<br>smtp-subject-gb2312-b: zeek='10.0.0.4' ours='10.180.121.151,169.254.4.195,10.0.0.4' |
 | first_received | string | 38% | 0% | 0% | 0% | 38% | 0% | smtp-originating: zeek='from [10.000.000.002] (helo=[10.000.00.03])\\x09by xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net with esmtpa (Exim 4.67)\\x09(envelope-from <xxxxxxxx@xxxxxxxxx.net>)\\x09id xxxxxxxxxxxxxxxx\\x09for xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com; Mon, 13 Jan 2014 10:01:13 -0500' ours=-<br>smtp-subject-8859-b: zeek='from xxxxxxxxxxxxxxxxx2.xxxxx.net ([169.254.4.195]) by xxxxxxxxxxxxxxxxx1.xxxxx.net ([10.180.121.108]) with mapi id 14.03.0123.003; Fri, 6 Dec 2013 14:31:10 -0500' ours=-<br>smtp-subject-8859-multi: zeek='(from xxxxx@localhost)\\x09by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4/Submit) id rBCJivm4007995\\x09for xxxxxxxxx@xxxxxxx.com; Thu, 12 Dec 2013 14:44:57 -0500' ours=- |
 | second_received | string | 21% | 0% | 0% | 0% | 21% | 0% | smtp-subject-8859-multi: zeek='from xxxxxxxxxxxxx.xxx.com (localhost.localdomain [127.0.0.1])\\x09by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4) with ESMTP id rBCJivEK007998\\x09for <xxxxxxxxx@xxxxxxx.com>; Thu, 12 Dec 2013 14:44:57 -0500' ours=-<br>smtp-subject-8859-q: zeek='from xxxxxxxxxxxxx.xxx.com (localhost.localdomain [127.0.0.1])\\x09by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4) with ESMTP id rBC38jeK000728\\x09for <xxxxxxxxx@xxxxxxx.com>; Wed, 11 Dec 2013 22:08:45 -0500' ours=-<br>smtp-subject-utf8-mixed: zeek='from xxxxxxxxxxxxx.xxx.com (localhost.localdomain [127.0.0.1])\\x09by xxxxxxxxxxxxx.xxx.com (8.14.4/8.14.4) with ESMTP id rBC3Cc5r001721\\x09for <xxxxxxxxx@xxxxxxx.com>; Wed, 11 Dec 2013 22:12:38 -0500' ours=- |
-| last_reply | string | 96% | 0% | 0% | 0% | 96% | 0% | arkime_synthetic: zeek='220 mail.example.com ESMTP' ours=-<br>arkime_synthetic: zeek='354 End data with <CR><LF>.<CR><LF>' ours=-<br>smtp-data-250: zeek='250 2.0.0 Ok: queued as 1D2BFE000094' ours=- |
+| last_reply | string | 96% | 48% | 50% | 8% | 38% | 0% | arkime_synthetic: zeek='220 mail.example.com ESMTP' ours=-<br>arkime_synthetic: zeek='354 End data with <CR><LF>.<CR><LF>' ours=-<br>smtp-decrypted: zeek='250 2.6.0 <964329.815327318-sendEmail@intra-mx2> [InternalId=3835405795330, Hostname=PCIAT-MX.shewa.intradef.gouv.fr] 17802 bytes in 0.102, 170,277 KB/sec Queued mail for delivery\\x0d\\x0a221 2.0.0 Service closing transmission channel\\x0d\\x0a' ours='250 2.6.0 <964329.815327318-sendEmail@intra-mx2> [InternalId=3835405795330, Hostname=PCIAT-MX.shewa.intradef.gouv.fr] 17802 bytes in 0.102, 170,277 KB/sec Queued mail for delivery' |
 | path | vector[addr] | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='10.0.5.1,10.0.5.100' ours=-<br>arkime_synthetic: zeek='10.2.5.1,10.2.5.100' ours=-<br>smtp-data-250: zeek='64.12.168.40,10.0.0.1' ours=- |
 | user_agent | string | 33% | 34% | 33% | 0% | 0% | 8% |  |
 | tls | bool | 100% | 100% | 83% | 17% | 0% | 0% | smtp-decrypted: zeek='T' ours='F'<br>smtp-decrypted: zeek='T' ours='F'<br>smtp-decrypted: zeek='T' ours='F' |
@@ -837,7 +792,7 @@ pcaps with zeek rows: 3, matched rows: 8
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | SNMPv2c_get_requests: zeek='Cenun71Ec4cB7WGYRe' ours='CtAcGNIv3H5CornMee'<br>SNMPv2c_get_requests: zeek='CKu3jg22FKUfmfJPbh' ours='CfXPEBPNS21CKeOi8v'<br>SNMPv2c_get_requests: zeek='CeEvbN3cssmcVOpSI4' ours='Ce3hsDDFTvxBTt3pBc' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | SNMPv2c_get_requests: zeek='Cl8ejm0efwu9vbhV3' ours='CtAcGNIv3H5CornMee'<br>SNMPv2c_get_requests: zeek='CDy0BC1PdHGzHZ8jbk' ours='CfXPEBPNS21CKeOi8v'<br>SNMPv2c_get_requests: zeek='CP6aDX1KTwBRaysz5' ours='Ce3hsDDFTvxBTt3pBc' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -859,21 +814,21 @@ pcaps with zeek rows: 8, matched rows: 8
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752617.000000' ours='1737752612.000000'<br>socks-http-example: zeek='1386004317.981218' ours='1386004317.979913'<br>socks-http-pass: zeek='1386090534.426708' ours='1386090534.425633' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='C1a8uXr3aQoMdkg4e' ours='CwEYY2C73OYBkRKIWU'<br>socks-http-example: zeek='CRaS4i1k7FjqZhOaI1' ours='CTMA2IkyGu0ETDCbdB'<br>socks-http-pass: zeek='CXLxZF3fbkN8ISORX1' ours='CiTXcaFcTv7GfWAJt1' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CKr2Tu1oY4e013iTIg' ours='CwEYY2C73OYBkRKIWU'<br>socks-http-example: zeek='C2dso91xGZpIlyr66b' ours='CTMA2IkyGu0ETDCbdB'<br>socks-http-pass: zeek='CaFNJb3hRwXsIykiJ' ours='CiTXcaFcTv7GfWAJt1' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| version | count | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='5' ours=-<br>socks-http-example: zeek='5' ours=-<br>socks-http-pass: zeek='5' ours=- |
+| version | count | 100% | 88% | 100% | 0% | 0% | 0% |  |
 | user | string | 25% | 25% | 25% | 0% | 0% | 0% |  |
 | password | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| status | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='succeeded' ours=-<br>socks-http-example: zeek='succeeded' ours=-<br>socks-http-pass: zeek='succeeded' ours=- |
+| status | string | 100% | 88% | 100% | 0% | 0% | 0% |  |
 | request.host | addr | 50% | 50% | 50% | 0% | 0% | 0% |  |
 | request.name | string | 50% | 44% | 50% | 0% | 0% | 0% |  |
 | request_p | port | 100% | 94% | 100% | 0% | 0% | 0% |  |
-| bound.host | addr | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='93.184.216.34' ours=-<br>socks-http-example: zeek='10.180.156.249' ours=-<br>socks-http-pass: zeek='10.180.156.249' ours=- |
+| bound.host | addr | 100% | 56% | 100% | 0% | 0% | 0% |  |
 | bound.name | string | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| bound_p | port | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='80' ours=-<br>socks-http-example: zeek='57268' ours=-<br>socks-http-pass: zeek='33214' ours=- |
+| bound_p | port | 100% | 56% | 100% | 0% | 0% | 0% |  |
 
 ## ssh.log
 
@@ -882,7 +837,7 @@ pcaps with zeek rows: 6, matched rows: 9
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752411.000000' ours='1737752408.000000'<br>arkime_synthetic: zeek='1737752578.000000' ours='1737752575.000000'<br>arkime_synthetic: zeek='1737752650.000000' ours='1737752647.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CgETmr1QSLdRIVgn9i' ours='CEQqia27ArV0wCngrp'<br>arkime_synthetic: zeek='C7qaqk2u9Ts0qeIx0j' ours='CtI8EWUJXTeBELRo3k'<br>arkime_synthetic: zeek='CIwlpLabYLPfgaI55' ours='CzgltW8GnrWIs2AEig' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CofyXN2NoeVFXnGoxd' ours='CEQqia27ArV0wCngrp'<br>arkime_synthetic: zeek='CHUvQL1riLybzL96Yg' ours='CtI8EWUJXTeBELRo3k'<br>arkime_synthetic: zeek='C00U0j42f9eSELFi2h' ours='CzgltW8GnrWIs2AEig' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -891,13 +846,13 @@ pcaps with zeek rows: 6, matched rows: 9
 | auth_success | bool | 11% | 0% | 0% | 0% | 11% | 0% | tcpdump-geneve: zeek='T' ours=- |
 | auth_attempts | count | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='0' ours=-<br>arkime_synthetic: zeek='0' ours=-<br>arkime_synthetic: zeek='0' ours=- |
 | direction | enum | 11% | 0% | 0% | 0% | 11% | 0% | gre-sample: zeek='INBOUND' ours=- |
-| client | string | 89% | 92% | 11% | 78% | 0% | 11% | arkime_synthetic: zeek='SSH-2.0-PuTTY_Release_0.78' ours='ssh-2.0-openssh_8.9p1 ubuntu-3ubuntu0.1,ssh-2.0-putty_release_0.78'<br>arkime_synthetic: zeek='SSH-2.0-libssh2_1.10.0' ours='ssh-2.0-libssh2_1.10.0,ssh-2.0-openssh_8.9 freebsd-20230101'<br>arkime_synthetic: zeek='SSH-2.0-ArkimeTest_1.0' ours='ssh-2.0-arkimetest_1.0,ssh-2.0-openssh_8.9' |
-| server | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='SSH-2.0-OpenSSH_8.9' ours=-<br>arkime_synthetic: zeek='SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.1' ours=-<br>arkime_synthetic: zeek='SSH-2.0-OpenSSH_8.9 FreeBSD-20230101' ours=- |
-| cipher_alg | string | 56% | 0% | 0% | 0% | 56% | 0% | arkime_synthetic: zeek='aes256-gcm@openssh.com' ours=-<br>gre-sample: zeek='blowfish-cbc' ours=-<br>ssh2-moloch-crash: zeek='aes128-ctr' ours=- |
-| mac_alg | string | 56% | 0% | 0% | 0% | 56% | 0% | arkime_synthetic: zeek='hmac-sha2-256' ours=-<br>gre-sample: zeek='hmac-md5' ours=-<br>ssh2-moloch-crash: zeek='hmac-md5' ours=- |
-| compression_alg | string | 56% | 0% | 0% | 0% | 56% | 0% | arkime_synthetic: zeek='none' ours=-<br>gre-sample: zeek='zlib' ours=-<br>ssh2-moloch-crash: zeek='none' ours=- |
-| kex_alg | string | 56% | 0% | 0% | 0% | 56% | 0% | arkime_synthetic: zeek='curve25519-sha256' ours=-<br>gre-sample: zeek='diffie-hellman-group-exchange-sha1' ours=-<br>ssh2-moloch-crash: zeek='diffie-hellman-group-exchange-sha1' ours=- |
-| host_key_alg | string | 56% | 0% | 0% | 0% | 56% | 0% | arkime_synthetic: zeek='ssh-ed25519' ours=-<br>gre-sample: zeek='ssh-rsa' ours=-<br>ssh2-moloch-crash: zeek='ssh-rsa' ours=- |
+| client | string | 89% | 77% | 89% | 0% | 0% | 0% |  |
+| server | string | 100% | 92% | 100% | 0% | 0% | 0% |  |
+| cipher_alg | string | 56% | 38% | 56% | 0% | 0% | 0% |  |
+| mac_alg | string | 56% | 38% | 56% | 0% | 0% | 0% |  |
+| compression_alg | string | 56% | 38% | 56% | 0% | 0% | 0% |  |
+| kex_alg | string | 56% | 38% | 56% | 0% | 0% | 0% |  |
+| host_key_alg | string | 56% | 38% | 56% | 0% | 0% | 0% |  |
 | host_key_fingerprint | string | 22% | 31% | 0% | 22% | 0% | 22% | gre-sample: zeek='SHA256:uBYqruQMTBP9p69Sqq9z5wFvMBG/M9+u' ours='20:7c:e5:96:b0:4e:ce:a4:db:e4:aa:29:e8:90:98:07'<br>tcpdump-geneve: zeek='SHA256:/87DY7fgzSYLsYFspqpJ1oO++rK5v74T' ours='f4:c9:98:4e:74:48:52:74:38:f4:29:a7:52:1d:e6:65' |
 
 ## ssl.log
@@ -907,21 +862,21 @@ pcaps with zeek rows: 28, matched rows: 30
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 13% | 87% | 0% | 0% | arkime_synthetic: zeek='1737752573.000000' ours='1737752570.000000'<br>arkime_synthetic: zeek='1737752635.000000' ours='1737752632.000000'<br>arkime_synthetic: zeek='1737753023.000000' ours='1737753020.000000' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CnJA5L1qBddN32DXJg' ours='CSjpcxeryyHJMfp9Mc'<br>arkime_synthetic: zeek='CGH7hWHq19v4cmha8' ours='Ce7IwPlS10bDNtq5A1'<br>arkime_synthetic: zeek='CzgM5bcJlOmymSji1' ours='CSaco5cU5T12Z0LjGV' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='Cx9I9H3QFwH2nOWWf3' ours='CSjpcxeryyHJMfp9Mc'<br>arkime_synthetic: zeek='CPxkAx1G7HQfAiQTo2' ours='Ce7IwPlS10bDNtq5A1'<br>arkime_synthetic: zeek='Cc08mu4PLu1AgP2DJ6' ours='CSaco5cU5T12Z0LjGV' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | version | string | 76% | 80% | 87% | 0% | 7% | 0% | cloudshark-dtls1: zeek='DTLSv10' ours=-<br>wireshark-dtls12: zeek='DTLSv12' ours=- |
 | cipher | string | 76% | 80% | 87% | 0% | 7% | 0% | cloudshark-dtls1: zeek='TLS_RSA_WITH_AES_256_CBC_SHA' ours=-<br>wireshark-dtls12: zeek='unknown-49407' ours=- |
-| curve | string | 35% | 0% | 0% | 0% | 43% | 0% | badcurveball: zeek='secp256r1' ours=-<br>curl-enabled-tls13: zeek='x25519' ours=-<br>https-connect: zeek='secp256r1' ours=- |
+| curve | string | 35% | 35% | 43% | 0% | 0% | 0% |  |
 | server_name | string | 51% | 43% | 40% | 0% | 3% | 0% | arkime_synthetic: zeek='test.example.com' ours=- |
 | resumed | bool | 100% | 100% | 93% | 7% | 0% | 0% | curl-enabled-tls13: zeek='F' ours='T'<br>tls-split-client-hello: zeek='F' ours='T' |
-| last_alert | string | 3% | 0% | 0% | 0% | 3% | 0% | badcurveball: zeek='certificate_unknown' ours=- |
-| next_protocol | string | 5% | 0% | 0% | 0% | 7% | 0% | badcurveball: zeek='http/1.1' ours=-<br>tls-alpn-h2: zeek='h2' ours=- |
+| last_alert | string | 3% | 2% | 3% | 0% | 0% | 0% |  |
+| next_protocol | string | 5% | 4% | 7% | 0% | 0% | 0% |  |
 | established | bool | 100% | 100% | 67% | 33% | 0% | 0% | arkime_synthetic: zeek='F' ours='T'<br>arkime_synthetic: zeek='F' ours='T'<br>arkime_synthetic: zeek='F' ours='T' |
 | ssl_history | string | 97% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='Cs' ours=-<br>arkime_synthetic: zeek='Csx' ours=-<br>arkime_synthetic: zeek='C' ours=- |
-| cert_chain_fps | vector[string] | 57% | 55% | 0% | 70% | 0% | 0% | arkime_synthetic: zeek='17e82c76564443c3780c7a2f6c28f319d234f7e4fa6f1863f084e3e6447a12b1' ours='94:55:0f:bf:2c:57:02:83:b7:f9:ec:ab:99:8b:54:41:c1:d4:2b:92'<br>arkime_synthetic: zeek='041a14702172a631efde8ad381aae3f20b9d8765fa03a3922b791286dacfe41d' ours='dc:ce:40:1f:73:33:91:31:09:f5:3d:9d:b3:2e:b0:f1:99:43:dc:77'<br>badcurveball: zeek='37a074a3c248aef1f27cbd26093f3364765bb01a97e8b3f387f5bf0cd7b4e1b4,45f7246e18837abc380f4c1b1cf17d3a72438407bdade09086ec65eb6a0fc4dc' ours='af:cc:00:61:95:f8:2b:59:cf:4a:d2:3b:34:d7:b8:a2:1a:b7:4d:af,f9:ce:21:f0:64:d4:99:f9:e9:95:e8:4d:c7:30:6d:19:62:e1:02:c4' |
+| cert_chain_fps | vector[string] | 57% | 55% | 67% | 3% | 0% | 0% | arkime_synthetic: zeek='17e82c76564443c3780c7a2f6c28f319d234f7e4fa6f1863f084e3e6447a12b1' ours='f4576088c7406a7a837953f77c361c4c54aa017bb9ad2097756e37ecac5742f6' |
 | client_cert_chain_fps | vector[string] | 3% | 0% | 67% | 3% | 0% | 30% | ssl-selfsign: zeek='28ab6f96a4eb1bba1c72fb980c07fc83d5816a6629ee1ebd9613b9e62d4a6805' ours='(empty)' |
 | sni_matches_cert | bool | 16% | 16% | 20% | 0% | 0% | 0% |  |
 
@@ -932,7 +887,7 @@ pcaps with zeek rows: 20, matched rows: 4
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 75% | 25% | 0% | 0% | gre-sample: zeek='1055289968.793044' ours='1055289987.055189' |
-| uid | string | 77% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='C5nXdT1DG4KOtI34G4' ours='CU1fUJ6tlGn4xyHlMZ'<br>arkime_synthetic: zeek='C31wuJ2oeMDrbUkf2j' ours='CYbWvcuB0vgCHG1wO9'<br>gre-erspan: zeek='C7gA994pgDSg80O5zl' ours='CTwcNiRQMAe218ZMYX' |
+| uid | string | 77% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='CVRhFLyrsL5quI7Z9' ours='CU1fUJ6tlGn4xyHlMZ'<br>arkime_synthetic: zeek='C4LcZBxelYlTFaurk' ours='CYbWvcuB0vgCHG1wO9'<br>gre-erspan: zeek='CXW9Wb3ESSYHXMr5l2' ours='CTwcNiRQMAe218ZMYX' |
 | id.orig_h | addr | 100% | 84% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 84% | 100% | 0% | 0% | 0% |  |
@@ -947,7 +902,7 @@ pcaps with zeek rows: 1, matched rows: 1
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | websocket: zeek='1475155930.826840' ours='1475155930.793984' |
-| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | websocket: zeek='ClC1duRUEvV92mMPj' ours='C8RvodavVtFHZGE2Yl' |
+| uid | string | 100% | 100% | 0% | 100% | 0% | 0% | websocket: zeek='CdYJSt3DD0ZBZ4zrCa' ours='C8RvodavVtFHZGE2Yl' |
 | id.orig_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.orig_p | port | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | id.resp_h | addr | 100% | 100% | 100% | 0% | 0% | 0% |  |
@@ -967,24 +922,24 @@ pcaps with zeek rows: 20, matched rows: 40
 | column | type | zeek set | ours set | agree | differ | zeek only | ours only | examples |
 |---|---|---|---|---|---|---|---|---|
 | ts | time | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='1737752636.000000' ours='1737752632.000000'<br>arkime_synthetic: zeek='1737753024.000000' ours='1737753020.000000'<br>badcurveball: zeek='1579293816.584116' ours='1579293816.559976' |
-| fingerprint | string | 100% | 100% | 0% | 100% | 0% | 0% | arkime_synthetic: zeek='17e82c76564443c3780c7a2f6c28f319d234f7e4fa6f1863f084e3e6447a12b1' ours='94:55:0f:bf:2c:57:02:83:b7:f9:ec:ab:99:8b:54:41:c1:d4:2b:92'<br>arkime_synthetic: zeek='041a14702172a631efde8ad381aae3f20b9d8765fa03a3922b791286dacfe41d' ours='dc:ce:40:1f:73:33:91:31:09:f5:3d:9d:b3:2e:b0:f1:99:43:dc:77'<br>badcurveball: zeek='37a074a3c248aef1f27cbd26093f3364765bb01a97e8b3f387f5bf0cd7b4e1b4' ours='af:cc:00:61:95:f8:2b:59:cf:4a:d2:3b:34:d7:b8:a2:1a:b7:4d:af' |
-| certificate.version | count | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='3' ours=-<br>arkime_synthetic: zeek='3' ours=-<br>badcurveball: zeek='3' ours=- |
+| fingerprint | string | 100% | 100% | 98% | 2% | 0% | 0% | arkime_synthetic: zeek='17e82c76564443c3780c7a2f6c28f319d234f7e4fa6f1863f084e3e6447a12b1' ours='f4576088c7406a7a837953f77c361c4c54aa017bb9ad2097756e37ecac5742f6' |
+| certificate.version | count | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | certificate.serial | string | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | certificate.subject | string | 100% | 100% | 2% | 98% | 0% | 0% | arkime_synthetic: zeek='OU=IT Department,O=Example Inc,CN=certs.example.com' ours='CN=certs.example.com,O=Example Inc,OU=IT Department'<br>arkime_synthetic: zeek='CN=tztest.example.com,O=TZTest,C=US' ours='CN=tztest.example.com,O=TZTest'<br>badcurveball: zeek='CN=SANS ISC DShield Test,O=SANS Internet Storm Center,C=US' ours='CN=sans isc dshield test,O=SANS Internet Storm Center' |
 | certificate.issuer | string | 100% | 100% | 2% | 98% | 0% | 0% | arkime_synthetic: zeek='O=Test Organization,CN=Test CA' ours='CN=test ca,O=Test Organization'<br>arkime_synthetic: zeek='CN=TestCA,O=TestCA,C=US' ours='CN=testca,O=TestCA'<br>badcurveball: zeek='CN=INFIGO,O=INFIGO IS,ST=Zagreb,C=HR' ours='CN=infigo,O=INFIGO IS' |
 | certificate.not_valid_before | time | 100% | 100% | 98% | 2% | 0% | 0% | arkime_synthetic: zeek='0.000000' ours='1736922600.000000' |
 | certificate.not_valid_after | time | 100% | 100% | 98% | 2% | 0% | 0% | arkime_synthetic: zeek='1768477920.000000' ours='1768507200.000000' |
 | certificate.key_alg | string | 100% | 100% | 100% | 0% | 0% | 0% |  |
-| certificate.sig_alg | string | 100% | 0% | 0% | 0% | 100% | 0% | arkime_synthetic: zeek='sha256WithRSAEncryption' ours=-<br>arkime_synthetic: zeek='sha256WithRSAEncryption' ours=-<br>badcurveball: zeek='ecdsa-with-SHA256' ours=- |
+| certificate.sig_alg | string | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | certificate.key_type | string | 98% | 100% | 98% | 0% | 0% | 2% |  |
-| certificate.key_length | count | 98% | 0% | 0% | 0% | 98% | 0% | arkime_synthetic: zeek='2041' ours=-<br>badcurveball: zeek='384' ours=-<br>badcurveball: zeek='384' ours=- |
-| certificate.exponent | string | 89% | 0% | 0% | 0% | 88% | 0% | arkime_synthetic: zeek='65537' ours=-<br>https-connect: zeek='65537' ours=-<br>https-connect: zeek='65537' ours=- |
+| certificate.key_length | count | 98% | 96% | 95% | 0% | 2% | 0% | badcurveball: zeek='384' ours=- |
+| certificate.exponent | string | 89% | 91% | 88% | 0% | 0% | 0% |  |
 | certificate.curve | string | 7% | 7% | 8% | 0% | 0% | 2% |  |
 | san.dns | vector[string] | 34% | 35% | 38% | 0% | 0% | 62% |  |
 | san.uri | vector[string] | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| san.email | vector[string] | 0% | 0% | 0% | 0% | 0% | 0% |  |
+| san.email | vector[string] | 0% | 2% | 0% | 0% | 0% | 0% |  |
 | san.ip | vector[addr] | 0% | 0% | 0% | 0% | 0% | 0% |  |
-| basic_constraints.ca | bool | 91% | 100% | 90% | 2% | 0% | 8% | badcurveball: zeek='T' ours='F' |
-| basic_constraints.path_len | count | 27% | 0% | 0% | 0% | 30% | 0% | https-connect: zeek='0' ours=-<br>https2-301-get: zeek='0' ours=-<br>https3-301-get: zeek='0' ours=- |
-| host_cert | bool | 100% | 100% | 98% | 2% | 0% | 0% | badcurveball: zeek='F' ours='T' |
+| basic_constraints.ca | bool | 91% | 100% | 92% | 0% | 0% | 8% |  |
+| basic_constraints.path_len | count | 27% | 28% | 30% | 0% | 0% | 0% |  |
+| host_cert | bool | 100% | 100% | 100% | 0% | 0% | 0% |  |
 | client_cert | bool | 100% | 100% | 100% | 0% | 0% | 0% |  |
