@@ -225,6 +225,10 @@ class CronAPIs {
       return res.serverError(403, 'Notifier field must be an array of strings', 'api.crons.notifierMustBeArray');
     }
 
+    if (!await Notifier.canUseNotifiers(req.user, req.body.notifier)) {
+      return res.serverError(403, "You don't have access to one or more of these notifiers", 'api.crons.notifierNotAllowed');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string', 'api.crons.usersMustBeString');
     }
@@ -384,6 +388,12 @@ class CronAPIs {
 
     try {
       const { body: { _source: cron } } = await Db.getQuery(key);
+
+      // Only notifiers being added, an editor resaving a cron keeps the ones already on it
+      const current = Array.isArray(cron.notifier) ? cron.notifier : ArkimeUtil.isString(cron.notifier) ? cron.notifier.split(',') : [];
+      if (!await Notifier.canUseNotifiers(req.user, req.body.notifier?.filter(id => !current.includes(id)))) {
+        return res.serverError(403, "You don't have access to one or more of these notifiers", 'api.crons.notifierNotAllowed');
+      }
 
       // sets the owner if it has changed
       doc.doc.creator ??= req.body.creator;

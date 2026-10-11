@@ -1,4 +1,4 @@
-use Test::More tests => 101;
+use Test::More tests => 112;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -13,7 +13,7 @@ my $notAdminToken = getTokenCookie('sac-notadmin');
 viewerGet("/regressionTests/deleteAllNotifiers");
 
 # add users for sharing tests
-  viewerPostToken("/api/user", '{"userId": "sac-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/api/user", '{"userId": "sac-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "packetSearch":true, "roles":["arkimeUser"]}', $token);
   viewerPostToken("/api/user", '{"userId": "sac-user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 # notifier types
@@ -269,6 +269,41 @@ viewerGet("/regressionTests/deleteAllNotifiers");
 # cleanup
   $json = viewerDeleteToken("/api/notifier/$snmpId", $token);
   ok($json->{success}, "snmp notifier delete success");
+
+# hunts and crons can only attach notifiers the user can see, test1 isn't shared with sac-notadmin, test3 is.
+# users:1 fails the check after the notifier one, so an allowed notifier gets that error and nothing is created.
+  my $hunt = '"totalSessions":1,"name":"notifier acl","size":50,"search":"x","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"ip.src == 10.199.199.199"}';
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-notadmin", "{$hunt,\"notifier\":[\"$id1\"],\"users\":1}", $notAdminToken);
+  is($json->{i18n}, "api.hunts.notifierNotAllowed", "hunt with unshared notifier rejected");
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-notadmin", "{$hunt,\"notifier\":[\"$id3\",\"$id1\"],\"users\":1}", $notAdminToken);
+  is($json->{i18n}, "api.hunts.notifierNotAllowed", "hunt with shared and unshared notifier rejected");
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-notadmin", "{$hunt,\"notifier\":[\"$id3\"],\"users\":1}", $notAdminToken);
+  is($json->{i18n}, "api.hunts.usersMustBeString", "hunt with shared notifier passes notifier check");
+  $json = viewerPostToken("/api/hunt", "{$hunt,\"notifier\":[\"$id1\"],\"users\":1}", $token);
+  is($json->{i18n}, "api.hunts.usersMustBeString", "admin hunt with any notifier passes notifier check");
+
+  my $cron = '"name":"notifier acl","query":"ip.src == 10.199.199.199","action":"tag","tags":"notifieracl"';
+  $json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id1\"]}", $notAdminToken);
+  is($json->{i18n}, "api.crons.notifierNotAllowed", "cron with unshared notifier rejected");
+  $json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id3\"]}", $notAdminToken);
+  ok($json->{success}, "cron with shared notifier created");
+  my $cronKey = $json->{query}->{key};
+  $json = viewerPostToken("/api/cron/$cronKey?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id3\",\"$id1\"]}", $notAdminToken);
+  is($json->{i18n}, "api.crons.notifierNotAllowed", "cron update adding unshared notifier rejected");
+  $json = viewerPostToken("/api/cron/$cronKey?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id3\"]}", $notAdminToken);
+  ok($json->{success}, "cron update keeping shared notifier allowed");
+  viewerDeleteToken("/api/cron/$cronKey?arkimeRegressionUser=sac-notadmin", $notAdminToken);
+
+# hunt list doesn't show notifier ids of hunts the user can't see the secrets of
+  $json = viewerPostToken("/api/hunt", "{$hunt,\"notifier\":[\"$id1\"]}", $token);
+  ok($json->{success}, "admin hunt with notifier created");
+  my $huntId = $json->{hunt}->{id};
+  viewerGet("/regressionTests/processHuntJobs");
+  my ($adminHunt) = grep { $_->{name} eq "notifier acl" } @{viewerGet("/api/hunts?all=true")->{data}};
+  is_deeply($adminHunt->{notifier}, [$id1], "creator sees hunt notifier");
+  my ($otherHunt) = grep { $_->{name} eq "notifier acl" } @{viewerGetToken("/api/hunts?all=true&arkimeRegressionUser=sac-notadmin", $notAdminToken)->{data}};
+  ok($otherHunt && !exists $otherHunt->{notifier}, "hunt notifier hidden from other users");
+  viewerDeleteToken("/api/hunt/$huntId", $token);
 
 # cleanup
   $json = viewerDeleteToken("/api/notifier/badid", $token);

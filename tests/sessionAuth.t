@@ -1,5 +1,6 @@
 # Session-authenticated s2s bypass regression tests (#4108)
-use Test::More tests => 25;
+use Test::More tests => 28;
+use HTTP::Date;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -98,3 +99,14 @@ is ($redir->code, 302, "login with seeded ogurl redirects");
 my $loc = $redir->header('Location') // '';
 isnt ($loc, '//evil.example.com', "login must not honor a protocol-relative (off-site) ogurl");
 is ($loc, '/', "login falls back to a safe same-origin path");
+
+# An unauthenticated session only lives for a short time, the one login creates is the normal length
+my ($seedExpires) = ($seed->header('Set-Cookie') // '') =~ /Expires=([^;]+)/i;
+my $seedLife = HTTP::Date::str2time($seedExpires) - time();
+ok ($seedLife > 0 && $seedLife <= 15 * 60, "unauthenticated session is short lived") or diag($seedExpires);
+my ($loginExpires) = ($redir->header('Set-Cookie') // '') =~ /Expires=([^;]+)/i;
+ok (HTTP::Date::str2time($loginExpires) - time() > 23 * 60 * 60, "logged in session gets the normal life") or diag($loginExpires);
+
+# A very long url isn't stored, so the session is never written
+my $long = $ua->get("http://$host:$port/" . ("a" x 5000));
+unlike ($long->header('Set-Cookie') // '', qr/ARKIME-SID=/, "unauthenticated long url doesn't create a session");

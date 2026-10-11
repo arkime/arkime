@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 60;
 use ArkimeTest;
 use strict;
 
@@ -9,9 +9,10 @@ use strict;
 my $runner = "/tmp/arkime-config-validate-$$.js";
 my $ini = "/tmp/arkime-config-validate-$$.ini";
 my $yaml = "/tmp/arkime-config-validate-$$.yaml";
+my $fieldsRunner = "/tmp/arkime-config-fields-$$.js";
 
 # Clean up even if a test dies part way through
-END { unlink $runner if $runner; unlink $ini if $ini; unlink $yaml if $yaml; }
+END { unlink $runner if $runner; unlink $ini if $ini; unlink $yaml if $yaml; unlink $fieldsRunner if $fieldsRunner; }
 
 open(my $rf, '>', $runner) or die "can't write $runner";
 print $rf <<'JS';
@@ -219,3 +220,28 @@ like($out, qr/mcpAllowedIps/, "and names it");
 ($code, $out) = tryConfig("mcpAllowedIps=10/8\nuploadFileSizeLimit=2g\nmaxSessionsQueried=abc\nmcpMaxQueryDays=sevem");
 is($code, 1, "several bad settings refuse to start");
 like($out, qr/4 bad settings/, "and all four are reported at once");
+
+################################################################################
+# viewer field definitions can be written by sensors, so an alias or ECS name
+# must never take over a real field id
+################################################################################
+open(my $ff, '>', $fieldsRunner) or die "can't write $fieldsRunner";
+print $ff <<'JS';
+const path = require('path');
+const Config = require(path.resolve(process.argv[2], 'config.js'));
+Config.loadFields([
+  { _id: 'node', _source: { group: 'general', type: 'termfield', dbField2: 'node' } },
+  { _id: 'evil.field', _source: { group: 'general', type: 'termfield', dbField2: 'evil', aliases: ['node'], fieldECS: 'node' } },
+  { _id: 'other', _source: { group: 'general', type: 'termfield', dbField2: 'other', aliases: ['other.alias'], fieldECS: 'other.ecs' } }
+]);
+const fields = Config.getFieldsMap();
+const dbFields = Config.getDBFieldsMap();
+console.log([fields.node.dbField2, dbFields.node.dbField2, fields['other.alias'].dbField2, fields['other.ecs'].dbField2].join(' '));
+JS
+close($ff);
+
+my @fieldsOut = split(' ', `node $fieldsRunner ../viewer 2>&1`);
+is($fieldsOut[0], "node", "field alias doesn't replace a field id");
+is($fieldsOut[1], "node", "field ECS name doesn't replace a db field");
+is($fieldsOut[2], "other", "field alias without a conflict still works");
+is($fieldsOut[3], "other", "field ECS name without a conflict still works");

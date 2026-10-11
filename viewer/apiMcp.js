@@ -113,7 +113,7 @@ class MCPViewerAPIs {
     // date=-1, segments=all and bad input can't slip past a hand rolled check
     const [startSec, stopSec] = BuildQuery.determineQueryTimes({ ...query });
 
-    if (startSec === null || stopSec === null || isNaN(startSec) || isNaN(stopSec)) {
+    if (startSec === null || stopSec === null || !Number.isFinite(startSec) || !Number.isFinite(stopSec)) {
       throw new MCPToolError(`Searching all data is not allowed, ${limit}. Use date or startTime/stopTime.`);
     }
 

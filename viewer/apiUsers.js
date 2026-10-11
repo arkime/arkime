@@ -94,6 +94,17 @@ class UserAPIs {
     return user.tableStates[stateName];
   }
 
+  // The user doc is fetched and parsed on every auth refresh and written whole on
+  // every change, so keep the per user UI data (table states, layouts) bounded
+  static #maxUiItems = 100;
+  static #tooLarge (obj) {
+    return JSON.stringify(obj ?? null).length > 64 * 1024;
+  }
+
+  static #userTooLarge (user) {
+    return JSON.stringify(user).length > 1024 * 1024;
+  }
+
   /**
    * @private
    * validate and set the session column layout on the user
@@ -639,6 +650,10 @@ class UserAPIs {
   static createUserLayout (req, res) {
     let result;
 
+    if (UserAPIs.#tooLarge(req.body)) {
+      return res.serverError(400, 'Layout too large');
+    }
+
     switch (req.params.type) {
     case 'sessionstable':
       result = UserAPIs.#setSessionColumnLayout(req);
@@ -655,6 +670,14 @@ class UserAPIs {
 
     if (!result.success) {
       return res.serverError(403, result.text, result.i18n);
+    }
+
+    const layouts = { sessionstable: 'columnConfigs', sessionsinfofields: 'infoFieldConfigs', spiview: 'spiviewFieldConfigs' }[req.params.type];
+    if (result.user[layouts].length > UserAPIs.#maxUiItems) {
+      return res.serverError(400, 'Too many layouts');
+    }
+    if (UserAPIs.#userTooLarge(result.user)) {
+      return res.serverError(400, 'Too much saved state');
     }
 
     User.setUser(result.user.userId, result.user, (err, info) => {
@@ -685,6 +708,10 @@ class UserAPIs {
   static updateUserLayout (req, res) {
     let result;
 
+    if (UserAPIs.#tooLarge(req.body)) {
+      return res.serverError(400, 'Layout too large');
+    }
+
     switch (req.params.type) {
     case 'sessionstable':
       result = UserAPIs.#updateSessionColumnLayout(req);
@@ -701,6 +728,9 @@ class UserAPIs {
 
     if (!result.success) {
       return res.serverError(403, result.text, result.i18n);
+    }
+    if (UserAPIs.#userTooLarge(result.user)) {
+      return res.serverError(400, 'Too much saved state');
     }
 
     User.setUser(result.user.userId, result.user, (err, info) => {
@@ -848,7 +878,17 @@ class UserAPIs {
         user.tableStates = {};
       }
 
+      if (UserAPIs.#tooLarge(req.body)) {
+        return res.serverError(400, 'State too large');
+      }
+      if (!Object.hasOwn(user.tableStates, req.params.name) && Object.keys(user.tableStates).length >= UserAPIs.#maxUiItems) {
+        return res.serverError(400, 'Too many states');
+      }
+
       user.tableStates[req.params.name] = req.body;
+      if (UserAPIs.#userTooLarge(user)) {
+        return res.serverError(400, 'Too much saved state');
+      }
 
       User.setUser(user.userId, user, (err, info) => {
         if (err) {
