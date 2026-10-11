@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 296;
+use Test::More tests => 301;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -367,6 +367,36 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip","info"], "order": [["lastPacket","asc"]]}', $test1Token);
     ok($info->{success}, "column: update");
+
+# the user doc is parsed on every auth refresh, so table states and layouts are bounded
+    my $big = "x" x (70 * 1024);
+    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "bigcolumn", "columns": ["' . $big . '"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    is($info->{text}, "Layout too large", "column: too large layout rejected");
+    $info = viewerPostToken("/api/user/state/bigstate?arkimeRegressionUser=sac-test1", '{"a": "' . $big . '"}', $test1Token);
+    is($info->{text}, "State too large", "state: too large rejected");
+    # a throwaway user, filling its states up to the limit
+    viewerPostToken("/api/user", '{"userId": "sac-statelimit", "userName": "statelimit", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+    my $limitToken = getTokenCookie('sac-statelimit');
+    my $lastState;
+    for (my $i = 0; $i <= 100; $i++) {
+        $info = viewerPostToken("/api/user/state/limitstate$i?arkimeRegressionUser=sac-statelimit", '{"a": 1}', $limitToken);
+        last if !$info->{success};
+        $lastState = "limitstate$i";
+    }
+    is($info->{text}, "Too many states", "state: over the count limit rejected");
+    $info = viewerPostToken("/api/user/state/$lastState?arkimeRegressionUser=sac-statelimit", '{"a": 2}', $limitToken);
+    ok($info->{success}, "state: existing state still updates at the limit");
+    # the whole user doc is capped too, not just each state
+    viewerPostToken("/api/user", '{"userId": "sac-statesize", "userName": "statesize", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+    my $sizeToken = getTokenCookie('sac-statesize');
+    my $chunk = "x" x (60 * 1024);
+    for (my $i = 0; $i < 20; $i++) {
+        $info = viewerPostToken("/api/user/state/sizestate$i?arkimeRegressionUser=sac-statesize", '{"a": "' . $chunk . '"}', $sizeToken);
+        last if !$info->{success};
+    }
+    is($info->{text}, "Too much saved state", "state: whole user doc size capped");
+    viewerDeleteToken("/api/user/sac-statesize", $token);
+    viewerDeleteToken("/api/user/sac-statelimit", $token);
 
 # column: mass assignment - extra properties should be stripped
     $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip"], "order": [["lastPacket","asc"]], "evil": "injected"}', $test1Token);

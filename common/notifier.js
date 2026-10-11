@@ -85,6 +85,19 @@ class Notifier {
 
   /**
    * @ignore
+   * Can user attach every notifier in ids, the same ones GET /api/notifiers lists for them.
+   * Hunts and crons send alerts by id with the notifier's stored config, so check on attach.
+   */
+  static async canUseNotifiers (user, ids) {
+    if (!ids?.length || user.hasRole('arkimeAdmin') || user.hasRole('parliamentAdmin')) { return true; }
+    const allRoles = await user.getRoles();
+    const notifiers = await Notifier.searchNotifiers({ userId: user.userId, roles: [...allRoles.keys()] });
+    const allowed = new Set(notifiers.map(n => n.id));
+    return ids.every(id => allowed.has(id));
+  }
+
+  /**
+   * @ignore
    * Create a notifier document
    * @returns {string} The id of the created notifier
    */

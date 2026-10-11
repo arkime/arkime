@@ -24,6 +24,17 @@ const EsProxyCredentials = require('./esProxyCredentials');
 // express app
 const app = express();
 
+// Largest request body, sent or after gunzip. 2x capture's max dbBulkSize (15MB), a
+// bulk can also go a session past it, or be uncompressed when compressES is off.
+const MAX_BODY = 32 * 1024 * 1024;
+const MAX_INFLATE = MAX_BODY;
+// Never let a stuck es request hold one of the shared agent sockets forever
+const ES_TIMEOUT_MS = 5 * 60 * 1000;
+
+function gunzipBounded (buf) {
+  return zlib.gunzipSync(buf, { maxOutputLength: MAX_INFLATE });
+}
+
 // ============================================================================
 // Config
 // ============================================================================
@@ -33,6 +44,7 @@ let sensors;
 let oldprefix;
 let prefix;
 let sessionsIndexRe;
+let historyDocRe;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 let sigV4Signer = null;
@@ -48,15 +60,25 @@ ArkimeConfig.loaded(() => {
   // Sessions indices only, with our configured prefix
   const esc = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   sessionsIndexRe = new RegExp(`^(?:${esc(oldprefix)}sessions2-|(?:partial-)?${esc(prefix)}sessions3-)[A-Za-z0-9_*-]+$`);
-  console.log('sensors', sensors);
+  // The viewer's weekly history index, only with our prefix
+  historyDocRe = new RegExp(`^/${esc(prefix)}history_v1-\\d+w\\d+/_doc$`);
+  // has the sensor passwords
+  if (Config.debug) {
+    console.log('sensors', sensors);
+  }
 
   for (const sensor in sensors) {
-    const { pass, ip } = sensors[sensor];
+    const { pass, ip, host } = sensors[sensor];
     // A blank or missing pass/ip turns that check off, refuse to run open
     if ((pass === undefined && ip === undefined) ||
         (pass !== undefined && !ArkimeUtil.isString(pass)) ||
         (ip !== undefined && !ArkimeUtil.isString(ip))) {
       console.log(`ERROR - esproxy-sensors '${sensor}' must set a non empty 'pass' and/or 'ip'`);
+      process.exit(1);
+    }
+    // A blank host would turn the stats hostname check off
+    if (host !== undefined && !ArkimeUtil.isString(host)) {
+      console.log(`ERROR - esproxy-sensors '${sensor}' must set a non empty 'host' when set`);
       process.exit(1);
     }
     sensors[sensor].node = sensor;
@@ -266,16 +288,19 @@ const allowedQueryParams = new Set([
 // req.esPath + req.esSearch, so both see the same thing. Don't use req.params,
 // Express decodes it and an encoded ?/# then splits it differently.
 // The es client encodes the commas in index lists and es decodes them, so do the same.
+// Forward the re-serialized params, not the raw search, so es can't split the
+// raw string differently (e.g. on ;) and see a param that wasn't checked.
 app.use((req, res, next) => {
   const url = new URL(req.url, 'http://0.0.0.0/');
   req.esPath = url.pathname.replace(/%2C/gi, ',');
-  req.esSearch = url.search;
   for (const key of url.searchParams.keys()) {
     if (!allowedQueryParams.has(key)) {
       console.log(`Query param failed node: ${req.sensor.node} param:>%s<:`, ArkimeUtil.sanitizeStr(key));
       return res.status(400).send('Not authorized for API');
     }
   }
+  const search = url.searchParams.toString();
+  req.esSearch = search ? '?' + search : '';
   return next();
 });
 
@@ -300,17 +325,18 @@ function saveBody (req, res, next) {
   // flag as parsed
   req._body = true;
 
-  // parse
-  let contentLength = parseInt(req.headers['content-length'] || '1024');
-  if (contentLength > 11000000) {
-    contentLength = 11000000;
-  }
-
-  const buf = Buffer.alloc(contentLength);
-  let pos = 0;
-  req.on('data', (chunk) => { chunk.copy(buf, pos); pos += chunk.length; });
+  // Keep only what was really sent, a too large body is refused rather than truncated
+  const chunks = [];
+  let size = 0;
+  req.on('data', (chunk) => {
+    size += chunk.length;
+    if (size <= MAX_BODY) { chunks.push(chunk); }
+  });
   req.on('end', () => {
-    req.body = buf;
+    if (size > MAX_BODY) {
+      return res.status(413).send('Request body too large');
+    }
+    req.body = Buffer.concat(chunks, size);
     next();
   });
 }
@@ -318,7 +344,6 @@ function saveBody (req, res, next) {
 // Proxy
 
 async function doProxyFull (config, req, res) {
-  let result = '';
   const esUrl = config.elasticsearch + req.esPath + req.esSearch;
   console.log(`URL ${req.method} "%s"`, ArkimeUtil.sanitizeStr(esUrl));
   const url = new URL(esUrl);
@@ -337,7 +362,7 @@ async function doProxyFull (config, req, res) {
   let bodyToSend = req._body ? req.body : null;
   if (config.sigV4Signer && bodyToSend && req.headers['content-encoding'] === 'gzip') {
     try {
-      bodyToSend = zlib.gunzipSync(bodyToSend);
+      bodyToSend = gunzipBounded(bodyToSend);
     } catch (err) {
       console.log('SigV4: failed to decompress gzip body, sending as-is');
     }
@@ -369,29 +394,39 @@ async function doProxyFull (config, req, res) {
     };
   }
 
+  // Stream the response, buffering a large one could exhaust memory. Still always a
+  // 200, which is what capture and the sensor viewers have always gotten from esProxy.
   const preq = client.request(url, options, (pres) => {
-    pres.on('data', (chunk) => {
-      result += chunk.toString();
-    });
-    pres.on('end', () => {
-      res.setHeader('content-type', 'application/json');
-      res.send(result);
-    });
+    if (!res.pipeable) {
+      pres.resume();
+      return;
+    }
+    res.setHeader('content-type', 'application/json');
+    pres.pipe(res);
   });
 
   if (!config.sigV4Signer) {
     preq.setHeader('content-type', req.headers['content-type'] || 'application/json');
-    // Copy these headers from original request to new request
-    for (const header of ['x-opaque-id', 'content-encoding', 'content-length']) {
+    // Copy these headers from original request to new request. Not content-length,
+    // node sets it from the body actually sent.
+    for (const header of ['x-opaque-id', 'content-encoding']) {
       if (req.headers[header] !== undefined) {
         preq.setHeader(header, req.headers[header]);
       }
     }
   }
 
+  preq.setTimeout(ES_TIMEOUT_MS, () => {
+    preq.destroy(new Error('timeout'));
+  });
+  // Don't keep an es socket busy for a client that went away
+  res.on?.('close', () => {
+    if (!res.writableFinished) { preq.destroy(); }
+  });
+
   preq.on('error', (e) => {
     console.log('Request error "%s"', ArkimeUtil.sanitizeStr(url), e);
-    try { res.status(502).send('ES proxy error'); } catch (err) { }
+    try { if (!res.headersSent) { res.status(502).send('ES proxy error'); } else { res.destroy(); } } catch (err) { }
   });
   if (bodyToSend) {
     preq.end(bodyToSend);
@@ -401,6 +436,7 @@ async function doProxyFull (config, req, res) {
 }
 
 async function doProxy (req, res) {
+  res.pipeable = true;
   await doProxyFull({ elasticsearch, authHeader, sigV4Signer, sigV4Credentials }, req, res);
   if (elasticsearchTee) {
     doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee, sigV4Signer: sigV4SignerTee, sigV4Credentials: sigV4CredentialsTee }, req, {
@@ -445,8 +481,9 @@ function isSessionsIndex (_index, wildcard = false) {
   return ArkimeUtil.isString(_index) && sessionsIndexRe.test(_index) && (wildcard || !_index.includes('*'));
 }
 
+// The fields alias or a versioned fields index, not just anything starting with fields
 function isFieldsIndex (_index) {
-  return _index.startsWith(`${prefix}fields`);
+  return ArkimeUtil.isString(_index) && (_index === `${prefix}fields` || (_index.startsWith(`${prefix}fields_v`) && /^\d+$/.test(_index.slice(`${prefix}fields_v`.length))));
 }
 
 // Only the sensor's own <node>-<num> doc, so node "test" can't match "test2" or "test-x"
@@ -468,6 +505,11 @@ function isSessionsDocPath (path, action) {
   return m !== null && m[2] === action && isSessionsIndex(m[1]);
 }
 
+// Field definitions control how every viewer compiles queries, including users'
+// forced expressions, so a sensor may add new fields but not redefine existing ones:
+// index becomes create, and an update may only change these display keys.
+const fieldsUpdateKeys = ['category', 'friendlyName', 'help', 'aliases'];
+
 function validateBulk (req) {
   if (!req._body) {
     return true;
@@ -478,7 +520,7 @@ function validateBulk (req) {
     body = req.body;
   } else if (req.headers['content-encoding'] === 'gzip') {
     try {
-      body = zlib.gunzipSync(req.body);
+      body = gunzipBounded(req.body);
     } catch (err) {
       console.log('Error decoding gzip for bulk');
       return false;
@@ -489,6 +531,8 @@ function validateBulk (req) {
   }
 
   const lines = body.toString('utf8').split('\n');
+  const out = [];
+  let rewrote = false;
   for (let i = 0; i < lines.length; i++) {
     // ES allows blank lines between pairs of meta/object
     if (lines[i].trim() === '') { continue; }
@@ -501,13 +545,32 @@ function validateBulk (req) {
 
         // Eventually this should only allow fields
         const _index = json.index._index;
-        if (!isSessionsIndex(_index) && !isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (isFieldsIndex(_index)) {
+          if (lines[i + 1] === undefined) { throw new Error('Missing index body'); }
+          out.push(JSON.stringify({ create: json.index }), lines[i + 1]);
+          rewrote = true;
+          i++;
+          continue;
+        }
+        if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
         if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        const update = JSON.parse(lines[i + 1]);
+        if (Object.keys(update).length !== 1 || typeof update.doc !== 'object' || update.doc === null) { throw new Error('Fields update must be a partial doc'); }
+        const doc = Object.fromEntries(Object.entries(update.doc).filter(([key]) => fieldsUpdateKeys.includes(key)));
+        if (Object.keys(doc).length !== Object.keys(update.doc).length) {
+          console.log(`Bulk dropping field update keys node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(lines[i + 1]));
+          rewrote = true;
+        }
+        if (Object.keys(doc).length > 0) {
+          out.push(lines[i], JSON.stringify({ doc }));
+        }
+        i++;
+        continue;
       } else if (typeof json.delete === 'object') {
         const _index = json.delete._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
@@ -520,23 +583,47 @@ function validateBulk (req) {
       return false;
     }
     // delete has no body line, all others do
-    if (!json.delete) {
+    if (json.delete) {
+      out.push(lines[i]);
+    } else {
+      out.push(lines[i], lines[i + 1]);
       i++;
     }
+  }
+
+  if (rewrote) {
+    // Everything was dropped, answer success without asking es, capture logs any error
+    if (out.length === 0) {
+      req.bulkEmpty = true;
+      return true;
+    }
+    req.body = Buffer.from(out.join('\n') + '\n');
+    delete req.headers['content-encoding'];
   }
 
   return true;
 }
 
-// Validate Files Search
+// Validate Files Search, the shapes capture and the sensor viewer's expiry send.
+// Only top level keys that can't widen the node filter, aggs global ignores the query.
+const filesSearchKeys = ['size', 'sort', 'query', '_source'];
 function validateFilesSearch (req) {
   try {
-    const json = JSON.parse(req.body.toString('utf8'));
-    if (json.query.bool.filter) {
-      return json.query.bool.filter[0].terms.node.includes(req.sensor.node);
-    } else {
-      return json.query.bool.must[0].terms.node.includes(req.sensor.node);
+    const json = parseDocBody(req);
+    if (!Object.keys(json).every(key => filesSearchKeys.includes(key))) { return false; }
+    if (Object.keys(json.query).length !== 1) { return false; }
+    const bool = json.query.bool;
+    if (!Object.keys(bool).every(key => ['filter', 'must', 'must_not'].includes(key))) { return false; }
+    const first = (bool.filter ?? bool.must)[0];
+    if (Object.keys(first).length !== 1 || Object.keys(first.terms).length !== 1) { return false; }
+    const nodes = first.terms.node;
+    if (!ArkimeUtil.isStringArray(nodes) || !nodes.includes(req.sensor.node)) { return false; }
+    // The expiry query lists every node on the sensor's host, with host set only
+    // allow nodes of sensors configured on that same host
+    if (req.sensor.host !== undefined) {
+      return nodes.every(node => node === req.sensor.node || (Object.hasOwn(sensors, node) && sensors[node].host === req.sensor.host));
     }
+    return true;
   } catch (e) {
     return false;
   }
@@ -546,7 +633,7 @@ function validateFilesSearch (req) {
 const searchIdsKeys = ['query', '_source', 'fields', 'profile'];
 function validateSearchIds (req) {
   try {
-    const json = JSON.parse(req.body.toString('utf8'));
+    const json = parseDocBody(req);
     if (!Object.keys(json).every(key => searchIdsKeys.includes(key))) { return false; }
     if (Object.keys(json.query).length !== 1 || Object.keys(json.query.ids).length !== 1) { return false; }
     const values = json.query.ids.values;
@@ -566,7 +653,7 @@ function isSessionsIndicesPath (path, action, wildcard = false) {
 const searchRootIdKeys = ['size', '_source', 'sort', 'query', 'profile'];
 function validateSearchRootId (req) {
   try {
-    const json = JSON.parse(req.body.toString('utf8'));
+    const json = parseDocBody(req);
     if (!Object.keys(json).every(key => searchRootIdKeys.includes(key))) { return false; }
     if (Object.keys(json.query).length !== 1) { return false; }
 
@@ -589,8 +676,43 @@ function validateSearchRootId (req) {
 }
 function validateUpdate (req) {
   try {
-    const json = JSON.parse(req.body.toString('utf8'));
+    const json = parseDocBody(req);
     return json.script !== undefined && json.doc === undefined;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Parse a json body, capture gzips bodies over 860 bytes when compressES is set
+function parseDocBody (req) {
+  let body = req.body;
+  if (req.headers['content-encoding'] === 'gzip') {
+    body = gunzipBounded(body);
+  } else if (req.headers['content-encoding'] !== undefined) {
+    throw new Error('Bad content-encoding');
+  }
+  return JSON.parse(body.toString('utf8'));
+}
+
+// Viewers use the stats hostname to decide which nodes are on their host, so
+// when the sensor has a host set it can't claim another one
+function validateStatsDoc (req) {
+  if (req.sensor.host === undefined) { return true; }
+  try {
+    const json = parseDocBody(req);
+    return typeof json === 'object' && json !== null && json.hostname === req.sensor.host;
+  } catch (e) {
+    return false;
+  }
+}
+
+// The doc body has to describe the file in the path, the viewer expiring files
+// trusts node to decide which host's disk the file is on
+function validateFilesDoc (req) {
+  try {
+    const json = parseDocBody(req);
+    const num = req.esPath.slice(`/${prefix}files/_doc/${req.sensor.node}-`.length);
+    return typeof json === 'object' && json !== null && json.node === req.sensor.node && json.num === parseInt(num, 10);
   } catch (e) {
     return false;
   }
@@ -599,7 +721,7 @@ function validateUpdate (req) {
 // Partial doc update only, and it can't move the file to another node
 function validateFilesUpdate (req) {
   try {
-    const json = JSON.parse(req.body.toString('utf8'));
+    const json = parseDocBody(req);
     return Object.keys(json).length === 1 && typeof json.doc === 'object' && json.doc !== null &&
       (json.doc.node === undefined || json.doc.node === req.sensor.node);
   } catch (e) {
@@ -613,16 +735,15 @@ app.post('*', saveBody, (req, res) => {
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path]) {
-  } else if (path.startsWith(`/${prefix}fields/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
-  } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
+  } else if (path === `/${prefix}stats/_doc/${req.sensor.node}` && validateStatsDoc(req)) {
   } else if (isOwnDstatsDoc(path, req.sensor.node)) {
-  } else if (isOwnFilesDoc(path, req.sensor.node)) {
+  } else if (isOwnFilesDoc(path, req.sensor.node) && validateFilesDoc(req)) {
   } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
   } else if (path.startsWith('/_bulk') && validateBulk(req)) {
-  } else if (path.startsWith(`/${prefix}files/_search`) && validateFilesSearch(req)) {
+  } else if (path === `/${prefix}files/_search` && validateFilesSearch(req)) {
   } else if (isSessionsIndicesPath(path, '_search', true) && (validateSearchIds(req) || validateSearchRootId(req))) {
-  } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
+  } else if (historyDocRe.test(path)) {
   } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     if (Config.debug) {
@@ -633,6 +754,9 @@ app.post('*', saveBody, (req, res) => {
     // Log failed body for debugging hacking
     console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
+  }
+  if (req.bulkEmpty) {
+    return res.send({ took: 0, errors: false, items: [] });
   }
   doProxy(req, res).catch(e => {
     console.log('Proxy error', e);

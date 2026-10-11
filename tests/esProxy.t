@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 142;
+use Test::More tests => 181;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -9,6 +9,7 @@ use JSON -support_by_pp;
 use HTTP::Request;
 use IO::Socket::INET;
 use MIME::Base64;
+use IO::Compress::Gzip;
 use strict;
 
 my $response;
@@ -139,12 +140,64 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "bulk create to sessions3 index succeeds");
 
 # Bulk - update to valid fields index
-my $bulk_update = qq({"update":{"_index":"tests_fields","_id":"1"}}\n{"doc":{"field":"value"}}\n);
+my $bulk_update = qq({"update":{"_index":"tests_fields","_id":"1"}}\n{"doc":{"help":"value"}}\n);
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
 $req->header('Content-Type' => 'application/x-ndjson');
 $req->content($bulk_update);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "bulk update to fields index succeeds");
+
+# Field definitions control how viewers compile queries, a sensor can add fields but not redefine them
+sub bulkPost {
+    my ($user, $body, $gzip) = @_;
+    my $r = HTTP::Request->new('POST', "http://$user:$user\@$ArkimeTest::host:7200/_bulk");
+    $r->header('Content-Type' => 'application/x-ndjson');
+    if ($gzip) {
+        my $gz;
+        IO::Compress::Gzip::gzip(\$body => \$gz);
+        $r->header('Content-Encoding' => 'gzip');
+        $body = $gz;
+    }
+    $r->content($body);
+    return $ArkimeTest::userAgent->request($r);
+}
+my $nodeField = esGet("/tests_fields/_doc/node")->{_source};
+
+# capture logs any error, so a bulk with nothing left after dropping keys is answered as a success
+$response = bulkPost("test", qq({"update":{"_index":"tests_fields","_id":"node"}}\n{"doc":{"dbField2":"esproxyhack"}}\n));
+is ($response->code, 200, "bulk field update of only dbField2 answered");
+like ($response->content, qr/"items":\[\]/, "bulk field update of only dbField2 not applied");
+$response = bulkPost("test", qq({"update":{"_index":"tests_fields","_id":"node"}}\n{"doc":{"help":"esproxy test help","transform":"utf8ToHex"}}\n));
+is ($response->code, 200, "bulk field update keeps allowed keys");
+$response = bulkPost("test", qq({"index":{"_index":"tests_fields","_id":"node"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxyhack"}\n), 1);
+like ($response->content, qr/"errors":\s*true/, "bulk field index of existing field not applied");
+esGet("/_refresh");
+my $nodeAfter = esGet("/tests_fields/_doc/node")->{_source};
+is ($nodeAfter->{dbField2}, "node", "existing field dbField2 unchanged");
+ok (!exists $nodeAfter->{transform}, "existing field transform unchanged");
+is ($nodeAfter->{help}, "esproxy test help", "existing field help updated");
+esPut("/tests_fields/_doc/node?refresh=true", to_json($nodeField));
+
+# capture's first add of a field goes through with every key, only later changes are limited
+$response = bulkPost("test", qq({"index":{"_index":"tests_fields","_id":"esproxy.newfield"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxynewfield","transform":"dash2Colon"}\n), 1);
+like ($response->content, qr/"errors":\s*false/, "bulk field index of new field allowed");
+esGet("/_refresh");
+is (esGet("/tests_fields/_doc/esproxy.newfield")->{_source}->{transform}, "dash2Colon", "new field created with its transform");
+$response = bulkPost("test", qq({"delete":{"_index":"tests_fields","_id":"esproxy.newfield"}}\n));
+is ($response->code, 200, "bulk field delete allowed");
+
+$response = bulkPost("test", qq({"delete":{"_index":"tests_fieldsevil","_id":"1"}}\n));
+is ($response->code, 400, "bulk delete to index starting with fields rejected");
+
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_fields/_doc/node");
+$req->header('Content-Type' => 'application/json');
+$req->content(to_json({%$nodeField, dbField2 => "esproxyhack"}));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST fields doc rejected");
+
+# A small gzip body that inflates past the limit is refused instead of blocking esProxy
+$response = bulkPost("test", "\n" x (40 * 1024 * 1024), 1);
+is ($response->code, 400, "bulk gzip bomb rejected");
 
 # Bulk - sessions index without dash should be rejected
 my $bulk_no_dash = qq({"index":{"_index":"tests_sessions3evil","_id":"1"}}\n{"field":"value"}\n);
@@ -353,6 +406,59 @@ sub rawStatus {
 }
 
 is (rawStatus("GET", "/tests_files/_doc/test-1"), 200, "raw socket own files doc allowed");
+
+# History writes only to our own prefix's weekly history index
+foreach my $test (["tests_history_v1-26w41", 1], ["other_history_v1-26w41", 0], ["tests_history_v1-x", 0], ["tests_users", 0]) {
+    my ($index, $allowed) = @$test;
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$index/_doc");
+    $req->header('Content-Type' => 'application/json');
+    $req->content('{"userId":"esproxyhistory","timestamp":1,"api":"/esproxy"}');
+    $response = $ArkimeTest::userAgent->request($req);
+    if ($allowed) {
+        ok ($response->code == 200 || $response->code == 201, "history write to $index allowed") or diag($response->code);
+        my $docId = eval { from_json($response->content)->{_id} };
+        esDelete("/$index/_doc/$docId?refresh=true") if $docId;
+    } else {
+        is ($response->code, 400, "history write to $index rejected");
+    }
+}
+
+# A content-length the client never sends must not be passed on, es would wait for it with a shared socket
+{
+    my $sock = IO::Socket::INET->new(PeerAddr => $ArkimeTest::host, PeerPort => 7200, Proto => 'tcp', Timeout => 10);
+    print $sock "GET /tests_stats/_doc/test HTTP/1.1\r\nHost: $ArkimeTest::host\r\nAuthorization: Basic " . encode_base64("test:test", "") . "\r\nContent-Length: 1\r\nConnection: close\r\n\r\n";
+    my $resp = '';
+    eval {
+        local $SIG{ALRM} = sub { die "timeout\n" };
+        alarm 10;
+        local $/;
+        $resp = <$sock> // '';
+        alarm 0;
+    };
+    close $sock;
+    like ($resp, qr{^HTTP/\S+ 200}, "GET with unsent content-length answered");
+}
+
+# A body over the limit is refused rather than truncated
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content("\n" x (32 * 1024 * 1024 + 1));
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 413, "bulk over the body limit rejected");
+
+# Files search, only the node filter shapes capture and the sensor viewer send
+sub filesSearch {
+    my ($user, $body, $path) = @_;
+    my $r = HTTP::Request->new('POST', "http://$user:$user\@$ArkimeTest::host:7200/" . ($path // "tests_files/_search"));
+    $r->header('Content-Type' => 'application/json');
+    $r->content($body);
+    return $ArkimeTest::userAgent->request($r)->code;
+}
+is (filesSearch("test", '{"size":1,"sort":[{"num":"desc"}],"query":{"bool":{"filter":[{"terms":{"node":["test"]}},{"term":{"name":"/x"}}]}}}'), 200, "files search for own node allowed");
+is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"aggs":{"all":{"global":{},"aggs":{"n":{"terms":{"field":"node"}}}}}}'), 400, "files search with aggs rejected");
+is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}}}', "tests_files/_search/template"), 400, "files search template path rejected");
+is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost","test"]}}]}}}'), 400, "files search for a node on another host rejected");
+is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost"]}}]}}}'), 200, "files search for own node with host allowed");
 # WHATWG URL turns the backslashes into slashes, isOwnFilesDoc only looked for /
 is (rawStatus("DELETE", "/tests_files/_doc/test-5%3f\\..\\..\\..\\tests_esproxy_nosuchindex"), 400, "DELETE backslash path confusion rejected");
 
@@ -371,6 +477,12 @@ is ($response->code, 200, "GET fields _search with size query allowed");
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_template/tests_sessions3_template?filter_path=**._meta");
 is ($response->code, 200, "GET sessions3 template with filter_path query allowed");
 
+# A ; isn't a param separator to the guard, so it must not become one to es either
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_fields/_search?size=1;q=_id:esproxy-nosuchid");
+# esProxy passes es errors through with a 200, so check es rejected it rather than searched,
+# the error text differs by backend
+unlike ($response->content, qr/"hits"/, "GET fields _search with ; smuggled q not searched");
+
 # POST - exact path compare; capture writes its stats doc with an external
 # version that it bumps from the current one, so do the same and re-post the
 # existing source to leave the doc unchanged
@@ -382,6 +494,37 @@ $req->header('Content-Type' => 'application/json');
 $req->content(to_json($stats->{_source}));
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "POST stats doc with version query allowed");
+
+# A sensor with host set can only put that hostname in its stats doc, viewers
+# use it to decide which nodes are on their host
+foreach my $body ('{"hostname":"some-other-host","ver":"test"}', '{"ver":"test"}', '[]') {
+    $req = HTTP::Request->new('POST', "http://esproxyhost:esproxyhost\@$ArkimeTest::host:7200/tests_stats/_doc/esproxyhost");
+    $req->header('Content-Type' => 'application/json');
+    $req->content($body);
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 400, "POST stats doc with wrong hostname rejected $body");
+}
+
+$req = HTTP::Request->new('POST', "http://esproxyhost:esproxyhost\@$ArkimeTest::host:7200/tests_stats/_doc/esproxyhost");
+$req->header('Content-Type' => 'application/json');
+$req->content('{"hostname":"esproxy-test-host","ver":"test"}');
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201, "POST stats doc with pinned hostname allowed") or diag($response->code);
+
+# capture gzips the stats doc when compressES is set
+my $statsGz;
+IO::Compress::Gzip::gzip(\'{"hostname":"some-other-host","ver":"test"}' => \$statsGz);
+$req->header('Content-Encoding' => 'gzip');
+$req->content($statsGz);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST gzip stats doc with wrong hostname rejected");
+
+IO::Compress::Gzip::gzip(\'{"hostname":"esproxy-test-host","ver":"test"}' => \$statsGz);
+$req->content($statsGz);
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201, "POST gzip stats doc with pinned hostname allowed") or diag($response->code);
+
+esDelete("/tests_stats/_doc/esproxyhost?refresh=true");
 
 # POST - exact path compare; capture creates the fn sequence with version 100,
 # ES answers 409 once the sequence has advanced past that, but never the
@@ -426,6 +569,15 @@ $req->content(qq({"doc": {"filesize": 1234, "packets": 5}}));
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "POST own files update allowed") or diag($response->content);
 
+my $updateGz;
+IO::Compress::Gzip::gzip(\'{"doc": {"filesize": 1235}}' => \$updateGz);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
+$req->header('Content-Type' => 'application/json');
+$req->header('Content-Encoding' => 'gzip');
+$req->content($updateGz);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 200, "POST gzip own files update allowed") or diag($response->content);
+
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test2-99999");
 $req->header('Content-Type' => 'application/json');
 $req->content(qq({"doc": {"filesize": 1234}}));
@@ -449,6 +601,37 @@ is ($response->content, "Not authorized for API");
 
 $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99999"));
 is ($response->code, 200, "DELETE files doc allowed");
+
+# The files doc body must describe the sensor's own file in the path, another
+# node's viewer would otherwise expire (unlink) whatever name it points at
+foreach my $body (qq({"node":"test2","num":99998,"name":"/tmp/esProxy-other.pcap","first":0,"locked":0}),
+                  qq({"num":99998,"name":"/tmp/esProxy-other.pcap","first":0,"locked":0}),
+                  qq({"node":"test","num":1,"name":"/tmp/esProxy-other.pcap","first":0,"locked":0}),
+                  qq({"node":"test","num":"99998","name":"/tmp/esProxy-other.pcap","first":0,"locked":0})) {
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99998?refresh=true");
+    $req->header('Content-Type' => 'application/json');
+    $req->content($body);
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 400, "POST files doc not matching node/num rejected $body");
+}
+
+# capture gzips larger bodies when compressES is set
+my $gz;
+IO::Compress::Gzip::gzip(\qq({"node":"test","num":99998,"name":"/tmp/esProxy-gzip.pcap","first":0,"locked":0}) => \$gz);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99998?refresh=true");
+$req->header('Content-Type' => 'application/json');
+$req->header('Content-Encoding' => 'gzip');
+$req->content($gz);
+$response = $ArkimeTest::userAgent->request($req);
+ok ($response->code == 200 || $response->code == 201, "POST gzip files doc allowed") or diag($response->code);
+
+IO::Compress::Gzip::gzip(\qq({"node":"test2","num":99998,"name":"/tmp/esProxy-gzip.pcap","first":0,"locked":0}) => \$gz);
+$req->content($gz);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "POST gzip files doc for other node rejected");
+
+$response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-99998"));
+is ($response->code, 200, "DELETE gzip files doc allowed");
 
 # Node "test" must not touch files docs of a node whose name starts with "test"
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test2-1");

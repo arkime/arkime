@@ -1,4 +1,4 @@
-use Test::More tests => 69;
+use Test::More tests => 72;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -285,3 +285,23 @@ my ($url) = @_;
     $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
     is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Range: body startTime 0 is still recorded");
     is ($json->{data}->[0]->{range}, 2147483647, "Range: body startTime 0 range is capped");
+
+# History rows can't be skipped by sending a value es would reject, a non-string
+# expression on a by-id route returns data without parsing it
+    my $historyId = viewerGet("/api/sessions?date=-1&length=1")->{data}->[0]->{id};
+    viewerGet("/api/session/$historyId?expression[a]=b");
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+    (my $historyIdPart = $historyId) =~ s/.*://;
+    $json = viewerGet("/api/histories?userId=anonymous&api=$historyIdPart");
+    is ($json->{data}->[0]->{api}, "/api/session/$historyId", "Reject: non-string expression is recorded");
+    is ($json->{data}->[0]->{expression}, '{"a":"b"}', "Reject: non-string expression is stored as a string");
+
+# A value over the es keyword term limit, only possible in a POST body
+    viewerPost("/api/sessions", '{"date":-1,"length":1,"historylong":"' . ("x" x 40000) . '"}');
+    sleep(2);
+    esGet("/_flush");
+    esGet("/_refresh");
+    $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
+    is (length($json->{data}->[0]->{query}), 8192, "Reject: long query is recorded truncated");
