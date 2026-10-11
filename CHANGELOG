@@ -88,6 +88,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4329 Fix role assigners being able to create a circular role
   - #4327 Fix a capture node being able to run code in the viewer or browser through custom-views field labels
   - #4335 Fix History not logging searches with a very long time range
+  - #4341 Fix unique values returning an empty list instead of an error when the search fails
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
   - #4338 urlapi sources support insecure=true to skip TLS certificate verification

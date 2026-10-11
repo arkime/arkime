@@ -2454,8 +2454,14 @@ class SessionAPIs {
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
-          console.log(`ERROR - ${req.method} /api/unique`, query, util.inspect(err, false, 50));
-          return doneCb ? doneCb() : res.end();
+          const esError = err.meta?.body?.error;
+          const msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
+          console.log(`ERROR - ${req.method} /api/unique`, msg);
+          if (req.query.autocomplete !== undefined) {
+            return res.serverError(400, msg);
+          }
+          res.status(400);
+          return res.type('text/plain').end(msg);
         }
         if (Config.debug) {
           console.log('/api/unique result', util.inspect(result, false, 50));
