@@ -513,7 +513,7 @@ class DbESImpl {
       if (cb) { cb(null, totalResults); }
       return totalResults;
     } catch (err) {
-      if (cb) { cb(err); }
+      if (cb) { return cb(err); }
       throw err;
     }
   }

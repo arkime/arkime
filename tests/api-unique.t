@@ -1,4 +1,4 @@
-use Test::More tests => 70;
+use Test::More tests => 74;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -260,6 +260,15 @@ viewerPostToken("/api/user", '{"userId": "sac-test2", "userName": "sac-test2", "
 
 $txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test2");
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
+
+# A search-time failure (terms agg on a text field) must not look like an empty result
+my $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=source.as.organization.name.text");
+is($res->code, 400, "unique search failure returns 400");
+ok($res->content =~ /fielddata/i, "unique search failure returns error reason");
+
+$res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=source.as.organization.name.text&autocomplete=1");
+is($res->code, 400, "unique autocomplete search failure returns 400");
+ok($res->content =~ /"success":false/, "unique autocomplete search failure returns json error");
 
 viewerDeleteToken("/api/user/sac-test1", $token);
 viewerDeleteToken("/api/user/sac-test2", $token);
