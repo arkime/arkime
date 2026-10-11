@@ -60,6 +60,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4315 Fix pcap files being lost when S3 uploads back up, and S3 reading hanging on very long object keys
   - #4315 The snf and netmap readers now apply the bpf setting
   - #4315 Fix the Lua pattern_ismatch function being able to crash capture
+  - #4340 New _maxPackets rule op to override maxPackets for matching sessions
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
   - #4328 Fix requests and large integration settings that could crash Cont3xt
