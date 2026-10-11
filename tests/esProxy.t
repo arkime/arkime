@@ -479,8 +479,9 @@ is ($response->code, 200, "GET sessions3 template with filter_path query allowed
 
 # A ; isn't a param separator to the guard, so it must not become one to es either
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_fields/_search?size=1;q=_id:esproxy-nosuchid");
-# esProxy passes es errors through with a 200, so check es rejected it rather than searched
-like ($response->content, qr/"error"/, "GET fields _search with ; smuggled q not searched");
+# esProxy passes es errors through with a 200, so check es rejected it rather than searched,
+# the error text differs by backend
+unlike ($response->content, qr/"hits"/, "GET fields _search with ; smuggled q not searched");
 
 # POST - exact path compare; capture writes its stats doc with an external
 # version that it bumps from the current one, so do the same and re-post the
