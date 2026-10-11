@@ -26,6 +26,7 @@
 #     _dontSaveSPI                - Don't save SPI data for session
 #     _maxPacketsToSave           - Don't save more than X packets
 #     _minPacketsBeforeSavingSPI  - Don't save SPI data unless this many packets
+#     _maxPackets                 - Override maxPackets, save session after this many packets
 #     <fieldname>                 - Add value to field
 #     -<fieldname>                - Remove value from field
 
@@ -156,3 +157,9 @@ rules:
     ops:
       _flipSrcDst: 1
       tags: "flip test"
+
+  - name: "maxPackets test"
+    when: "sessionSetup"
+    bpf: "host 10.89.85.15 and port 49570"
+    ops:
+      _maxPackets: 40

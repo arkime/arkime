@@ -25,7 +25,8 @@ LOCAL HASH_VAR(e_, fieldsByExp, ArkimeFieldInfo_t, 307);
 #define ARKIME_FIELD_SPECIAL_STOP_YARA     -8
 #define ARKIME_FIELD_SPECIAL_CLOSE_NOW     -9
 #define ARKIME_FIELD_SPECIAL_FLIP_SRC_DST  -10
-#define ARKIME_FIELD_SPECIAL_MIN           -10
+#define ARKIME_FIELD_SPECIAL_MAX_PACKETS   -11
+#define ARKIME_FIELD_SPECIAL_MIN           -11
 
 LOCAL va_list empty_va_list;
 
@@ -1680,6 +1681,11 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
             case ARKIME_FIELD_SPECIAL_FLIP_SRC_DST:
                 arkime_session_flip_src_dst(session);
                 break;
+            case ARKIME_FIELD_SPECIAL_MAX_PACKETS:
+                if (arkime_field_ops_should_run_int_op(op, session->maxPackets)) {
+                    session->maxPackets = op->strLenOrInt;
+                }
+                break;
             }
             continue;
         }
@@ -1887,6 +1893,12 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
         case ARKIME_FIELD_SPECIAL_FLIP_SRC_DST:
             op->strLenOrInt = 1;
             op->str = 0; // ops array isn't zeroed, arkime_field_ops_free frees str
+            break;
+        case ARKIME_FIELD_SPECIAL_MAX_PACKETS:
+            arkime_field_ops_int_parse(op, value);
+            if (op->strLenOrInt > 0xffff) op->strLenOrInt = 0xffff;
+            if (op->strLenOrInt < 1) op->strLenOrInt = 1;
+            op->str = 0;
             break;
         default:
             LOG("WARNING - Unknown special field pos %d", fieldPos);
@@ -2155,6 +2167,7 @@ void arkime_field_init()
     arkime_field_by_exp_add_special("_dontCheckYara", ARKIME_FIELD_SPECIAL_STOP_YARA);
     arkime_field_by_exp_add_special("_closeNow", ARKIME_FIELD_SPECIAL_CLOSE_NOW);
     arkime_field_by_exp_add_special("_flipSrcDst", ARKIME_FIELD_SPECIAL_FLIP_SRC_DST);
+    arkime_field_by_exp_add_special("_maxPackets", ARKIME_FIELD_SPECIAL_MAX_PACKETS);
 
     arkime_field_by_exp_add_internal("ip.src", ARKIME_FIELD_TYPE_IP, arkime_field_getcb_src_ip, NULL);
     arkime_field_by_exp_add_internal("port.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_src_port, NULL);
