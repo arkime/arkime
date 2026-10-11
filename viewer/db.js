@@ -691,8 +691,11 @@ Db.search = async (index, query, options) => {
 
     return results;
   } catch (err) {
-    if (err?.meta?.body?.error?.type === 'index_not_found_exception') {
-      console.log(`OpenSearch/Elasticsearch Search Error - index not found: ${err.meta.body.error.index ?? params.index}`);
+    const esError = err?.meta?.body?.error;
+    if (esError?.type === 'index_not_found_exception') {
+      console.log(`OpenSearch/Elasticsearch Search Error - index not found: ${esError.index ?? params.index}`);
+    } else if (esError && internals.debug < 2) {
+      console.log(`OpenSearch/Elasticsearch Search Error - ${esError.type}: ${esError.root_cause?.[0]?.reason ?? esError.reason}`);
     } else {
       console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
     }

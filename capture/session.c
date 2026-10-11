@@ -1202,6 +1202,7 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
     session = ARKIME_TYPE_ALLOC0(ArkimeSession_t);
     session->mProtocol = mProtocol;
     session->stopSaving = 0xffff;
+    session->maxPackets = mProtocols[mProtocol].maxPackets;
 
     memcpy(session->sessionId, sessionId, sessionId[0]);
 

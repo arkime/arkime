@@ -845,6 +845,8 @@ typedef struct arkime_session {
     uint8_t                minSaving;
     uint8_t                thread;
 
+    uint16_t               maxPackets;
+
     uint16_t               haveTcpSession: 1;
     uint16_t               needSave: 1;
     uint16_t               stopSPI: 1;
