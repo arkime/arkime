@@ -2454,7 +2454,8 @@ class SessionAPIs {
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
-          const msg = String(err.meta?.body?.error?.root_cause?.[0]?.reason ?? err.message ?? err);
+          const esError = err.meta?.body?.error;
+          const msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
           console.log(`ERROR - ${req.method} /api/unique`, msg);
           if (req.query.autocomplete !== undefined) {
             return res.serverError(400, msg);

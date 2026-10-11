@@ -262,11 +262,11 @@ $txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=s
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
 
 # A search-time failure (terms agg on a text field) must not look like an empty result
-my $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=source.as.organization.name.text");
+my $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=dns.hostTokens");
 is($res->code, 400, "unique search failure returns 400");
 ok($res->content =~ /fielddata/i, "unique search failure returns error reason");
 
-$res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=source.as.organization.name.text&autocomplete=1");
+$res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=dns.hostTokens&autocomplete=1");
 is($res->code, 400, "unique autocomplete search failure returns 400");
 ok($res->content =~ /"success":false/, "unique autocomplete search failure returns json error");
 
