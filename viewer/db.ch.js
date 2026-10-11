@@ -1091,6 +1091,10 @@ class DbCHImpl {
         throw chError('script terms aggregation');
       }
     } else {
+      // ES rejects terms aggs on text fields; match that instead of aggregating tokens
+      if (['textfield', 'lotextfield', 'uptextfield'].includes(dbFieldsMap()[field]?.type)) {
+        throw new Error(`Fielddata is disabled on text field [${field}]`);
+      }
       const baseCol = this.columnForField(field);
       // arrayDistinct matches ES semantics: a doc counts once per bucket even
       // if the value repeats within its array.
