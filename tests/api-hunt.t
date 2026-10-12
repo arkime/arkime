@@ -1,4 +1,4 @@
-use Test::More tests => 361;
+use Test::More tests => 366;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -53,6 +53,12 @@ my $hToken = getTokenCookie('sac-huntuser');
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
   is($json->{success}, 0, "missing hunt size");
   is($json->{i18n}, "api.hunts.missingSize", "missing hunt size i18n");
+
+# An array size used to wedge the hunt worker, so only a positive integer is allowed
+  foreach my $size ('[5,6]', '"abc"', '1.5', '0', '-1') {
+    $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt bad size","size":' . $size . ',"search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+    is($json->{i18n}, "api.hunts.invalidSize", "bad hunt size $size");
+  }
 
 # Must have search text to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);

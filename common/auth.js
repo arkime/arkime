@@ -1103,9 +1103,15 @@ class Auth {
     // A portal request is never a browser being sent to a login page, and must
     // not write to whatever session a cookie it carries happens to name
     if (!portal && req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session && req._parsedUrl.pathname !== '/auth/login/callback') {
+      // Until login this session only carries the return url (and the oidc state), keep
+      // it short lived so unauthenticated requests can't fill the store. Login regenerates it.
+      req.session.cookie.maxAge = 15 * 60 * 1000;
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
-      req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
+      // a very long one isn't kept, it only makes each unauthenticated session bigger
+      if (req.originalUrl.length <= 4096) {
+        req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
+      }
     }
 
     const savedOgurl = req.session?.ogurl;
@@ -1525,9 +1531,12 @@ class ESStore extends expressSession.Store {
       ESStore.#client = User.getClient();
       if (!ESStore.#client) {
         console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
+        // MemoryStore only drops an expired session when it is read again, all() checks every one
+        setInterval(() => ESStore.#memoryStore.all(), 60 * 1000).unref();
         return;
       }
       ESStore.start();
+      setInterval(() => ESStore.#prune(), 10 * 60 * 1000).unref();
     }, 100);
     const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
     ESStore.#index = `${prefix}sids_v50`;
@@ -1570,21 +1579,29 @@ class ESStore extends expressSession.Store {
           }
         ],
         properties: {
-          _timestamp: { type: 'date' }
+          _timestamp: { type: 'date' },
+          _expires: { type: 'date' }
         }
       }
     });
 
-    // Delete old sids, ignore errors
+    await ESStore.#prune();
+  }
+
+  // ----------------------------------------------------------------------------
+  // Delete expired sids, ignore errors. Older docs only have _timestamp.
+  static async #prune () {
+    const now = new Date().getTime();
     try {
       await ESStore.#client.deleteByQuery({
         index: ESStore.#index,
         body: {
           query: {
-            range: {
-              _timestamp: {
-                lte: new Date().getTime() - ESStore.#ttl
-              }
+            bool: {
+              should: [
+                { range: { _expires: { lte: now } } },
+                { range: { _timestamp: { lte: now - ESStore.#ttl } } }
+              ]
             }
           }
         },
@@ -1623,7 +1640,8 @@ class ESStore extends expressSession.Store {
       }
 
       const _source = response.body._source;
-      if (new Date().getTime() - _source._timestamp > ESStore.#ttl) {
+      const now = new Date().getTime();
+      if (now - _source._timestamp > ESStore.#ttl || now > (_source._expires ?? Infinity)) {
         this.destroy(sid, () => {});
         return callback();
       }
@@ -1637,6 +1655,7 @@ class ESStore extends expressSession.Store {
       return ESStore.#memoryStore.set(sid, session, callback);
     }
     session._timestamp = new Date().getTime();
+    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + ESStore.#ttl;
     ESStore.#client.index({
       index: ESStore.#index,
       id: sid,

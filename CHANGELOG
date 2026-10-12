@@ -179,6 +179,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
   - #4309 Fix a capture node being able to read and change other indices through esProxy
   - #4309 Fix some viewer and capture requests being wrongly rejected by esProxy
+  - #4342 Fix more ways a capture node could get around esProxy, new optional host setting in esproxy-sensors
 ## Parliament
   - #4325 Fix a monitored cluster being able to hang or slow down Parliament
   - #4325 Fix issue search and the dashboard failing for some node names
@@ -195,6 +196,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4327 Fix a capture node being able to run code in the viewer or browser through custom-views field labels
   - #4335 Fix History not logging searches with a very long time range
   - #4341 Fix unique values returning an empty list instead of an error when the search fails
+  - #4342 Fix captured traffic and some requests being able to hang or crash the viewer
+  - #4342 Fix users being able to search outside their time limit or use notifiers not shared with them
+  - #4342 Fix some requests not being recorded in History
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
   - #4338 urlapi sources support insecure=true to skip TLS certificate verification

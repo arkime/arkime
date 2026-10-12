@@ -167,6 +167,17 @@ class UserAPIs {
   }
 
   // USER STATE --------------------------------------------------------------------------
+  // The user doc is fetched and parsed on every auth refresh and written whole on
+  // every change, so keep the per user UI data (table states) bounded
+  static #maxUiItems = 100;
+  static #tooLarge (obj) {
+    return JSON.stringify(obj ?? null).length > 64 * 1024;
+  }
+
+  static #userTooLarge (user) {
+    return JSON.stringify(user).length > 1024 * 1024;
+  }
+
   /**
    * GET - /api/user/state/:name
    *
@@ -201,7 +212,17 @@ class UserAPIs {
         user.tableStates = {};
       }
 
+      if (UserAPIs.#tooLarge(req.body)) {
+        return res.serverError(400, 'State too large');
+      }
+      if (!Object.hasOwn(user.tableStates, req.params.name) && Object.keys(user.tableStates).length >= UserAPIs.#maxUiItems) {
+        return res.serverError(400, 'Too many states');
+      }
+
       user.tableStates[req.params.name] = req.body;
+      if (UserAPIs.#userTooLarge(user)) {
+        return res.serverError(400, 'Too much saved state');
+      }
 
       User.setUser(user.userId, user, (err, info) => {
         if (err) {

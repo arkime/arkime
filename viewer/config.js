@@ -243,6 +243,7 @@ class Config {
     internals.fieldsMap = {};
     internals.dbFieldsMap = {};
     internals.categories = {};
+    const extraNames = [];
     for (const field of data) {
       const source = field._source;
       source.exp = field._id;
@@ -270,8 +271,7 @@ class Config {
         }
       }
       if (source.fieldECS !== undefined) {
-        internals.dbFieldsMap[source.fieldECS] = source;
-        internals.fieldsMap[source.fieldECS] = source;
+        extraNames.push([source.fieldECS, source, true]);
       }
       internals.fields.push(source);
       if (!internals.categories[source.group]) {
@@ -279,7 +279,18 @@ class Config {
       }
       internals.categories[source.group].push(source);
       for (const alias of (source.aliases || [])) {
-        internals.fieldsMap[alias] = source;
+        extraNames.push([alias, source, false]);
+      }
+    }
+
+    // Field docs can be written by sensors, so an ECS name or alias never takes over
+    // a real field, otherwise it could change how users' forced expressions compile
+    for (const [extraName, source, ecs] of extraNames) {
+      if (internals.fieldsMap[extraName] === undefined) {
+        internals.fieldsMap[extraName] = source;
+      }
+      if (ecs && internals.dbFieldsMap[extraName] === undefined) {
+        internals.dbFieldsMap[extraName] = source;
       }
     }
 

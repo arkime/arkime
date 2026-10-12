@@ -86,7 +86,7 @@ class BuildQuery {
     }
 
     // Old Method
-    if (!info.iSortingCols || parseInt(info.iSortingCols, 10) === 0) {
+    if (!(parseInt(info.iSortingCols, 10) > 0)) {
       addSortDefault();
       return;
     }
@@ -95,7 +95,8 @@ class BuildQuery {
       query.sort = [];
     }
 
-    const ilen = parseInt(info.iSortingCols, 10);
+    // Cap so the loop can't be driven by a huge user supplied count
+    const ilen = Math.min(parseInt(info.iSortingCols, 10), 100);
     for (let i = 0; i < ilen; i++) {
       if (!info['iSortCol_' + i] || !info['sSortDir_' + i] || !info['mDataProp_' + info['iSortCol_' + i]]) {
         continue;
@@ -370,7 +371,7 @@ class BuildQuery {
     // date=-1.0, segments=all and bad times can't slip past a hand rolled check
     if (timeLimit) {
       const [startSec, stopSec] = startAndStopParams;
-      if (startSec === null || isNaN(startSec) || isNaN(stopSec) || (stopSec - startSec) / 3600 > timeLimit) {
+      if (startSec === null || !Number.isFinite(startSec) || !Number.isFinite(stopSec) || (stopSec - startSec) / 3600 > timeLimit) {
         timeLimitExceeded = true;
       }
     }
@@ -594,7 +595,8 @@ class BuildQuery {
       console.log('determineQueryTimes <-', reqQuery);
     }
 
-    if (reqQuery.date && isNaN(parseFloat(reqQuery.date))) {
+    // A non-finite date like -Infinity is as bad as a non-numeric one
+    if (reqQuery.date && !Number.isFinite(parseFloat(reqQuery.date))) {
       reqQuery.date = '-1';
     }
 

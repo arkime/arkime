@@ -1,4 +1,4 @@
-use Test::More tests => 237;
+use Test::More tests => 246;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -155,6 +155,15 @@ my ($url) = @_;
     $qr = $qua->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=node&order=a&order=b");
     is($qr->code, 403, "array order on unique answers instead of hanging");
 
+# Legacy iSortingCols sort still works, but a huge count can't spin the event loop
+    $qr = $qua->get("http://$ArkimeTest::host:8123/sessions.json?date=-1&length=2&iSortingCols=999999999999999");
+    is($qr->code, 200, "huge iSortingCols answers instead of hanging");
+
+    my $desc = viewerGet("/sessions.json?date=-1&length=3&iSortingCols=1&iSortCol_0=0&sSortDir_0=desc&mDataProp_0=lastPacket");
+    my $asc = viewerGet("/sessions.json?date=-1&length=3&iSortingCols=1&iSortCol_0=0&sSortDir_0=asc&mDataProp_0=lastPacket");
+    my @d = map { $_->{lastPacket} } @{$desc->{data}};
+    ok(@d == 3 && $d[0] >= $d[1] && $d[1] >= $d[2] && $asc->{data}->[0]->{lastPacket} < $d[0], "legacy iSortingCols sort applied");
+
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
@@ -254,9 +263,9 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is (unpack("H*", $response->content), "", "shouldn't find pcap");
     is ($response->{_rc}, "500", "can't find pcap returns 500");
 
-# posted session bodies must have a valid packetPos and node
+# posted session bodies, s2s only, must have a valid packetPos and node
     foreach my $body ('{}', '[]', '{"fields":{"packetPos":"x","node":"test"}}', '{"fields":{"packetPos":[1,"2"],"node":"test"}}', '{"fields":{"packetPos":[1],"node":["test"]}}') {
-        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/session/test/$id/pcap", Content => $body, 'Content-Type' => 'application/json');
+        $response = s2sPost("/api/session/test3/$id/pcap", $body);
         is ($response->code, 500, "post pcap with body $body returns 500");
     }
     $response = getBinary("/api/session/test/" . $id . "/pcap");
@@ -302,6 +311,33 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is($response->code, 401, "send session requires s2s");
     $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/sessions/test/send?saveId=id&remoteCluster=test2", Content => '{"ids":"abc"}', 'Content-Type' => 'application/json');
     is($response->code, 401, "send sessions requires s2s");
+
+# POST pcap takes the session, so its pcap file and offsets, from the body, peers only
+    $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/session/test/x.pcap", Content => '{"fields":{"node":"test","packetPos":[-1,24]}}', 'Content-Type' => 'application/json');
+    is($response->code, 401, "POST session pcap requires s2s");
+
+# node test is remote from viewer test2 (8124). The proxy signs the path it sends, so a path
+# that new URL() collapses must be refused, or it reaches s2s only routes on the peer
+    my $dots = join('/', ('%2e%2e') x 5);
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/test/x/pcap/$dots/api/session/test/abc/send?saveId=id&remoteCluster=nope");
+    is($response->code, 400, "proxy refuses dot segments");
+    unlike($response->content, qr/Unknown cluster/, "proxy dot segments don't reach s2s only send");
+
+# bodyhash builds the proxied path from the hash, a / in it must not become a path separator
+    (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
+    my $bodyHashHit = esGet("/tests_sessions3-*/_search?q=_id:$bodyHashId")->{hits}->{hits}->[0];
+    (my $bodyHashIndex = $bodyHashHit->{_index}) =~ s/^tests_/tests2_/;
+    esPost("/$bodyHashIndex/_doc/$bodyHashId?refresh=true", to_json($bodyHashHit->{_source}));
+    my $hash = "x" . ("%2F.." x 6) . "%2Fapi%2Fsession%2Ftest%2Fabc%2Fsend%3FsaveId%3Did%26remoteCluster%3Dnope";
+    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions/bodyhash/$hash?date=-1&expression=" . uri_escape("id==$bodyHashId"));
+    unlike($response->content, qr/Unknown cluster/, "bodyhash hash doesn't reach s2s only send");
+    like($response->content, qr/No match/i, "bodyhash hash looked up as a hash on the peer");
+
+# test2 has postPcapFetch, so its pcap export POSTs the session to node test
+    my $remotePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions.pcap?date=-1&expression=" . uri_escape("id==$bodyHashId"))->content;
+    my $directPcap = getBinary("/api/session/test/$id.pcap")->content;
+    ok(length($directPcap) > 24 && $remotePcap eq $directPcap, "postPcapFetch pcap export from a remote node");
+    esDelete("/$bodyHashIndex/_doc/$bodyHashId?refresh=true");
 
 sub s2sGet {
     my ($path) = @_;

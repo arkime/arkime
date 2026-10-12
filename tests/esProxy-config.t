@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 17;
 use strict;
 
 # esproxy-sensors entries that would leave esProxy auth fail open must stop it
@@ -28,9 +28,22 @@ foreach my $test (
     like ($out, qr/ERROR - esproxy-sensors 'bad' must set a non empty 'pass' and\/or 'ip'/, "$name error");
 }
 
+# a blank host would turn the stats hostname check off
+foreach my $test (
+    ["bad=pass:x;host:", "empty host"],
+    ["bad=pass:x;host:true", "boolean host"],
+) {
+    my ($sensor, $name) = @$test;
+    writeIni($sensor);
+    my $out = `node ../viewer/esProxy.js -c $ini -n bad 2>&1`;
+    is ($? >> 8, 1, "$name exits");
+    like ($out, qr/ERROR - esproxy-sensors 'bad' must set a non empty 'host' when set/, "$name error");
+}
+
 foreach my $test (
     ["good=pass:x", "pass only"],
     ["good=ip:127.0.0.1", "ip only"],
+    ["good=pass:x;host:sensor1.example.com", "pass and host"],
 ) {
     my ($sensor, $name) = @$test;
     writeIni($sensor);
