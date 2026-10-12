@@ -323,21 +323,25 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is($response->code, 400, "proxy refuses dot segments");
     unlike($response->content, qr/Unknown cluster/, "proxy dot segments don't reach s2s only send");
 
-# bodyhash builds the proxied path from the hash, a / in it must not become a path separator
-    (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
-    my $bodyHashHit = esGet("/tests_sessions3-*/_search?q=_id:$bodyHashId")->{hits}->{hits}->[0];
-    (my $bodyHashIndex = $bodyHashHit->{_index}) =~ s/^tests_/tests2_/;
-    esPost("/$bodyHashIndex/_doc/$bodyHashId?refresh=true", to_json($bodyHashHit->{_source}));
-    my $hash = "x" . ("%2F.." x 6) . "%2Fapi%2Fsession%2Ftest%2Fabc%2Fsend%3FsaveId%3Did%26remoteCluster%3Dnope";
-    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions/bodyhash/$hash?date=-1&expression=" . uri_escape("id==$bodyHashId"));
-    unlike($response->content, qr/Unknown cluster/, "bodyhash hash doesn't reach s2s only send");
-    like($response->content, qr/No match/i, "bodyhash hash looked up as a hash on the peer");
+    SKIP: {
+        skip "sessions are not in Elasticsearch to read and duplicate", 3 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
 
-# test2 has postPcapFetch, so its pcap export POSTs the session to node test
-    my $remotePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions.pcap?date=-1&expression=" . uri_escape("id==$bodyHashId"))->content;
-    my $directPcap = getBinary("/api/session/test/$id.pcap")->content;
-    ok(length($directPcap) > 24 && $remotePcap eq $directPcap, "postPcapFetch pcap export from a remote node");
-    esDelete("/$bodyHashIndex/_doc/$bodyHashId?refresh=true");
+        # bodyhash builds the proxied path from the hash, a / in it must not become a path separator
+        (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
+        my $bodyHashHit = esGet("/tests_sessions3-*/_search?q=_id:$bodyHashId")->{hits}->{hits}->[0];
+        (my $bodyHashIndex = $bodyHashHit->{_index}) =~ s/^tests_/tests2_/;
+        esPost("/$bodyHashIndex/_doc/$bodyHashId?refresh=true", to_json($bodyHashHit->{_source}));
+        my $hash = "x" . ("%2F.." x 6) . "%2Fapi%2Fsession%2Ftest%2Fabc%2Fsend%3FsaveId%3Did%26remoteCluster%3Dnope";
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions/bodyhash/$hash?date=-1&expression=" . uri_escape("id==$bodyHashId"));
+        unlike($response->content, qr/Unknown cluster/, "bodyhash hash doesn't reach s2s only send");
+        like($response->content, qr/No match/i, "bodyhash hash looked up as a hash on the peer");
+
+        # test2 has postPcapFetch, so its pcap export POSTs the session to node test
+        my $remotePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions.pcap?date=-1&expression=" . uri_escape("id==$bodyHashId"))->content;
+        my $directPcap = getBinary("/api/session/test/$id.pcap")->content;
+        ok(length($directPcap) > 24 && $remotePcap eq $directPcap, "postPcapFetch pcap export from a remote node");
+        esDelete("/$bodyHashIndex/_doc/$bodyHashId?refresh=true");
+    }
 
 sub s2sGet {
     my ($path) = @_;
