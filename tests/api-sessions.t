@@ -324,7 +324,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     unlike($response->content, qr/Unknown cluster/, "proxy dot segments don't reach s2s only send");
 
     SKIP: {
-        skip "sessions are not in Elasticsearch to read and duplicate", 3 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
+        skip "sessions are not in Elasticsearch to read and duplicate", 4 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
 
         # bodyhash builds the proxied path from the hash, a / in it must not become a path separator
         (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
