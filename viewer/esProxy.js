@@ -510,24 +510,6 @@ function isSessionsDocPath (path, action) {
 // index becomes create, and an update may only change these display keys.
 const fieldsUpdateKeys = ['category', 'friendlyName', 'help', 'aliases'];
 
-function logBulkCommand (req, json, lines, i) {
-  const operation = Object.keys(json)[0];
-  const command = json[operation];
-  if (!['index', 'create', 'update', 'delete'].includes(operation) ||
-      typeof command !== 'object' || command === null || Array.isArray(command)) { return; }
-
-  const metadata = {};
-  for (const key of ['_index', '_id']) {
-    if (typeof command[key] === 'string' || typeof command[key] === 'number') {
-      metadata[key] = command[key];
-    }
-  }
-  console.log('Bulk command node: %s line: %d %s', ArkimeUtil.sanitizeStr(req.sensor.node), i + 1, ArkimeUtil.sanitizeStr(JSON.stringify({ [operation]: metadata })));
-  if (Config.debug && operation !== 'delete' && lines[i + 1] !== undefined) {
-    console.log('Bulk body node: %s line: %d %s', ArkimeUtil.sanitizeStr(req.sensor.node), i + 2, ArkimeUtil.sanitizeStr(lines[i + 1]));
-  }
-}
-
 function validateBulk (req) {
   if (!req._body) {
     return true;
@@ -558,7 +540,6 @@ function validateBulk (req) {
     try {
       json = JSON.parse(lines[i]);
       if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
-      logBulkCommand(req, json, lines, i);
       if (typeof json.index === 'object') {
         if (typeof json.index._index !== 'string') { throw new Error('Missing index _index string'); }
 
@@ -582,7 +563,8 @@ function validateBulk (req) {
         if (Object.keys(update).length !== 1 || typeof update.doc !== 'object' || update.doc === null) { throw new Error('Fields update must be a partial doc'); }
         const doc = Object.fromEntries(Object.entries(update.doc).filter(([key]) => fieldsUpdateKeys.includes(key)));
         if (Object.keys(doc).length !== Object.keys(update.doc).length) {
-          console.log('Bulk dropping field update keys node: %s', ArkimeUtil.sanitizeStr(req.sensor.node));
+          const dropped = Object.keys(update.doc).filter(key => !fieldsUpdateKeys.includes(key));
+          console.log('Bulk dropping field update keys node: %s keys: %s', req.sensor.node, ArkimeUtil.sanitizeStr(dropped.join(',')));
           rewrote = true;
         }
         if (Object.keys(doc).length > 0) {
@@ -597,9 +579,17 @@ function validateBulk (req) {
         throw new Error('Missing create, update, delete or index operation');
       }
     } catch (err) {
-      console.log('Bulk validation failed at line %d (body bytes: %d)', i + 1, body.length);
+      // Only the failing command's operation, _index and _id, the POST failed debug log has the full body
+      let command = 'unparsable';
+      if (json !== null && typeof json === 'object') {
+        const operation = Object.keys(json)[0];
+        const { _index, _id } = json[operation] ?? {};
+        const scalar = (v) => (typeof v === 'string' || typeof v === 'number') ? v : undefined;
+        command = JSON.stringify({ [operation]: { _index: scalar(_index), _id: scalar(_id) } });
+      }
+      console.log('Bulk failed node: %s line: %d %s - %s', req.sensor.node, i + 1, ArkimeUtil.sanitizeStr(command), ArkimeUtil.sanitizeStr(err.message));
       if (Config.debug) {
-        console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
+        console.log(err);
       }
       return false;
     }
