@@ -12,18 +12,17 @@ const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 const { test } = require('node:test');
-const { gzipSync } = require('node:zlib');
+const { gzipSync, gunzipSync } = require('node:zlib');
 
 const password = 'esproxy-test-password-not-for-logs';
 const payload = 'esproxy-test-payload-not-for-logs';
 const sensors = `sensor=pass:${password}\niponly=ip:127.0.0.1`;
 const authorization = `Basic ${Buffer.from(`sensor:${password}`).toString('base64')}`;
 
-function launchProxy (t, upstream, entries, debug = 0, unsafe) {
+function launchProxy (t, upstream, entries, debug = 0) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'arkime-esproxy-logging-'));
   const config = path.join(dir, 'config.ini');
-  const unsafeSetting = unsafe === undefined ? '' : `esProxyUnsafeLogging=${unsafe}\n`;
-  fs.writeFileSync(config, `[default]\nelasticsearch=${upstream}\nprefix=tests\nesProxyHost=127.0.0.1\nesProxyPort=0\n${unsafeSetting}\n[esproxy-sensors]\n${entries}\n`);
+  fs.writeFileSync(config, `[default]\nelasticsearch=${upstream}\nprefix=tests\nesProxyHost=127.0.0.1\nesProxyPort=0\n\n[esproxy-sensors]\n${entries}\n`);
   const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^ARKIME/i.test(key) && key !== 'NODE_OPTIONS'));
   const child = spawn(process.execPath, [path.resolve(__dirname, '../viewer/esProxy.js'), '-c', config, '-n', 'esproxy', ...Array(debug).fill('--debug')], { env });
   let output = '';
@@ -73,14 +72,20 @@ async function request (base, url, body, auth = authorization, encoding) {
   return response.status;
 }
 
-const logModes = [0, 1, 3].flatMap(debug => [undefined, 'false', 'true', 'yes'].map(unsafe => ({ debug, unsafe })));
-for (const { debug, unsafe } of logModes) {
-  test(`ESPROXY logging (unsafe=${unsafe ?? 'unset'}, debug=${debug})`, { timeout: 30000 }, async t => {
+function bulkBody (...lines) {
+  return lines.map(line => JSON.stringify(line)).join('\n') + '\n';
+}
+
+for (const debug of [0, 1, 3]) {
+  test(`ESPROXY logging (debug=${debug})`, { timeout: 30000 }, async t => {
     const forwarded = [];
     const upstream = http.createServer(async (req, res) => {
       const chunks = [];
       for await (const chunk of req) { chunks.push(chunk); }
-      forwarded.push({ url: req.url, body: Buffer.concat(chunks).toString() });
+      const wireBody = Buffer.concat(chunks);
+      const encoding = req.headers['content-encoding'];
+      const body = encoding === 'gzip' ? gunzipSync(wireBody) : wireBody;
+      forwarded.push({ url: req.url, body: body.toString(), encoding, wireBody });
       res.setHeader('content-type', 'application/json');
       res.end('{"ok":true}');
     });
@@ -90,7 +95,7 @@ for (const { debug, unsafe } of logModes) {
       upstream.closeAllConnections();
       await new Promise(resolve => upstream.close(resolve));
     });
-    const proxy = launchProxy(t, `http://127.0.0.1:${upstream.address().port}`, sensors, debug, unsafe);
+    const proxy = launchProxy(t, `http://127.0.0.1:${upstream.address().port}`, sensors, debug);
     const base = await proxy.ready;
 
     assert.equal(await request(base, '/', undefined, null), 401, 'missing credentials');
@@ -100,23 +105,93 @@ for (const { debug, unsafe } of logModes) {
     assert.equal(await request(base, '/'), 200, 'correct password');
     assert.equal(await request(base, '/', undefined, `Basic ${Buffer.from('iponly:unused').toString('base64')}`), 200, 'IP-only sensor');
 
-    const bulkPayload = `${payload}-bulk`;
+    const expectedCommands = [];
+    const expectedBodies = [];
+    function expectCommand (line, command, body) {
+      expectedCommands.push({ line, command });
+      if (body !== undefined) { expectedBodies.push({ line: line + 1, body }); }
+    }
+
+    const index = 'tests_sessions3-261009';
+    const indexCommand = { index: { _index: index, _id: 'session-index' } };
+    const indexDoc = { message: `${payload}-index` };
+    const bulk = bulkBody(indexCommand, indexDoc);
+    assert.equal(await request(base, '/_bulk', bulk), 200, 'index bulk');
+    assert.equal(forwarded.at(-1).body, bulk, 'index body unchanged');
+    expectCommand(1, indexCommand, JSON.stringify(indexDoc));
+
+    const deleteCommand = { delete: { _index: 'tests_fields', _id: 'field-delete' } };
+    const createCommand = { create: { _index: index, _id: 'session-create' } };
+    const createDoc = { message: `${payload}-create` };
+    const updateCommand = { update: { _index: 'tests_fields', _id: 123 } };
+    const updateDoc = { doc: { friendlyName: `${payload}-field-label` } };
+    const mixed = bulkBody(deleteCommand, createCommand, createDoc, indexCommand, indexDoc, updateCommand, updateDoc);
+    assert.equal(await request(base, '/_bulk', mixed), 200, 'mixed operations');
+    assert.equal(forwarded.at(-1).body, mixed, 'mixed body unchanged');
+    expectCommand(1, deleteCommand);
+    expectCommand(2, createCommand, JSON.stringify(createDoc));
+    expectCommand(4, indexCommand, JSON.stringify(indexDoc));
+    expectCommand(6, updateCommand, JSON.stringify(updateDoc));
+
+    const gzipCommand = { index: { _index: index, _id: 'session-gzip' } };
+    const gzipDoc = { message: `${payload}-gzip` };
+    const gzipBulk = bulkBody(gzipCommand, gzipDoc);
+    const compressed = gzipSync(gzipBulk);
+    assert.equal(await request(base, '/_bulk', compressed, authorization, 'gzip'), 200, 'gzip bulk');
+    assert.equal(forwarded.at(-1).body, gzipBulk, 'gzip contents unchanged');
+    assert.equal(forwarded.at(-1).encoding, 'gzip', 'gzip encoding retained');
+    assert.deepEqual(forwarded.at(-1).wireBody, compressed, 'gzip bytes unchanged');
+    expectCommand(1, gzipCommand, JSON.stringify(gzipDoc));
+
+    const fieldsIndex = { index: { _index: 'tests_fields', _id: 'field-index' } };
+    const fieldsDoc = { friendlyName: `${payload}-field-create` };
+    const fieldsUpdate = { update: { _index: 'tests_fields', _id: 'field-update' } };
+    const fieldsUpdateDoc = { doc: { friendlyName: `${payload}-field-kept`, forbidden: `${payload}-field-dropped` } };
+    const fieldsDrop = { update: { _index: 'tests_fields', _id: 'field-drop' } };
+    const fieldsDropDoc = { doc: { forbidden: `${payload}-field-only-dropped` } };
+    const fieldsBulk = bulkBody(fieldsIndex, fieldsDoc, fieldsUpdate, fieldsUpdateDoc, fieldsDrop, fieldsDropDoc);
+    assert.equal(await request(base, '/_bulk', gzipSync(fieldsBulk), authorization, 'gzip'), 200, 'field rewrites');
+    assert.equal(forwarded.at(-1).body, bulkBody({ create: fieldsIndex.index }, fieldsDoc, fieldsUpdate, { doc: { friendlyName: fieldsUpdateDoc.doc.friendlyName } }), 'field index becomes create and disallowed update keys are dropped');
+    assert.equal(forwarded.at(-1).encoding, undefined, 'rewritten body is uncompressed');
+    expectCommand(1, fieldsIndex, JSON.stringify(fieldsDoc));
+    expectCommand(3, fieldsUpdate, JSON.stringify(fieldsUpdateDoc));
+    expectCommand(5, fieldsDrop, JSON.stringify(fieldsDropDoc));
+
+    const beforeDropped = forwarded.length;
+    assert.equal(await request(base, '/_bulk', bulkBody(fieldsDrop, fieldsDropDoc)), 200, 'fully dropped update');
+    assert.equal(forwarded.length, beforeDropped, 'fully dropped update is not forwarded');
+    expectCommand(1, fieldsDrop, JSON.stringify(fieldsDropDoc));
+
+    const extraMetadata = { index: { ...indexCommand.index, extra: { message: `${payload}-metadata-extra` } } };
+    const extraBulk = bulkBody(extraMetadata, indexDoc);
+    assert.equal(await request(base, '/_bulk', extraBulk), 200, 'additional metadata');
+    assert.equal(forwarded.at(-1).body, extraBulk, 'additional metadata unchanged');
+    expectCommand(1, indexCommand, JSON.stringify(indexDoc));
+
     const postPayload = `${payload}-post`;
     const updatePayload = `${payload}-update`;
-    const bulk = `{"index":{"_index":"tests_sessions3-261009"}}\n${JSON.stringify({ message: payload })}\n`;
-    assert.equal(await request(base, '/_bulk', bulk), 200, 'valid bulk is forwarded');
-    assert.equal(forwarded.at(-1).body, bulk, 'bulk body is unchanged');
     const beforeRejected = forwarded.length;
     for (const invalid of [
-      JSON.stringify({ unsupported: bulkPayload }),
-      JSON.stringify({ index: { _index: bulkPayload } }),
-      `{"${bulkPayload}"`,
-      JSON.stringify({ index: {}, extra: bulkPayload }),
-      JSON.stringify({ index: null, message: bulkPayload })
+      JSON.stringify({ unsupported: payload }),
+      `{"${payload}-syntax"`,
+      JSON.stringify({ index: {}, extra: payload }),
+      JSON.stringify({ index: null, message: payload })
     ]) {
       assert.equal(await request(base, '/_bulk', invalid), 400, 'invalid bulk is rejected');
     }
-    assert.equal(await request(base, '/_bulk', gzipSync(`{"${bulkPayload}-gzip"`), authorization, 'gzip'), 400, 'invalid compressed bulk is rejected');
+
+    const badIndex = { index: { _index: 'command-index-denied', _id: 'command-id-denied' } };
+    const rejectedDoc = { message: `${payload}-rejected` };
+    assert.equal(await request(base, '/_bulk', bulkBody(badIndex, rejectedDoc)), 400, 'unapproved bulk index');
+    expectCommand(1, badIndex, JSON.stringify(rejectedDoc));
+    const badMetadata = { index: { _index: { message: payload }, _id: { message: payload } } };
+    assert.equal(await request(base, '/_bulk', bulkBody(badMetadata, rejectedDoc)), 400, 'non-string index');
+    expectCommand(1, { index: {} }, JSON.stringify(rejectedDoc));
+
+    const malformedUpdate = `{"${payload}-field-syntax"`;
+    assert.equal(await request(base, '/_bulk', `${JSON.stringify(fieldsUpdate)}\n${malformedUpdate}\n`), 400, 'malformed field-update body');
+    expectCommand(1, fieldsUpdate, malformedUpdate);
+    assert.equal(await request(base, '/_bulk', gzipSync(`{"${payload}-gzip-syntax"`), authorization, 'gzip'), 400, 'malformed gzip command');
     assert.equal(await request(base, '/not-authorized', postPayload), 400, 'unapproved POST is rejected');
     assert.equal(await request(base, '/not-authorized', ''), 400, 'empty POST is rejected');
     assert.equal(await request(base, '/tests_sessions3-261009/_update/example', JSON.stringify({ doc: { message: payload } })), 400, 'invalid session update is rejected');
@@ -127,23 +202,31 @@ for (const { debug, unsafe } of logModes) {
     assert.equal(forwarded.at(-1).body, update, 'update body is unchanged');
     await proxy.stop();
     const logs = proxy.logs();
-    assert.ok(!logs.includes(password), 'sensor password is absent from logs');
-    if (unsafe === 'true') {
-      assert.ok(logs.includes('WARNING - esProxyUnsafeLogging=true'), 'unsafe logging emits a startup warning');
-      assert.ok(logs.includes(bulkPayload), 'unsafe bulk diagnostics include the offending line');
-      assert.ok(logs.includes(`${bulkPayload}-gzip`), 'unsafe bulk diagnostics include the decoded gzip line');
-      assert.ok(logs.includes(`UNSAFE POST body: ${postPayload}`), 'unsafe rejected POST diagnostics include the body');
-      assert.ok(logs.includes(`UNSAFE UPDATE body: ${update}`), 'unsafe update diagnostics include the body regardless of debug');
+    assert.equal(logs.includes(password), debug > 0, 'sensor password follows upstream debug behavior');
+    if (debug) {
+      assert.ok(logs.includes(`${payload}-gzip-syntax`), 'gzip failure details include the decoded line');
+      assert.ok(logs.includes(postPayload), 'rejected POST body is logged');
+      assert.ok(logs.includes(update), 'accepted session-update body is logged');
+      assert.ok(logs.includes('Bulk error'), 'bulk error details are logged');
     } else {
       assert.ok(!logs.includes(payload), 'request payload is absent from logs');
-      assert.ok(!logs.includes('WARNING - esProxyUnsafeLogging=true'), 'safe logging does not emit an unsafe warning');
-      assert.ok(!logs.includes('UNSAFE '), 'safe logging never enables raw diagnostics');
-      if (unsafe === 'yes') { assert.ok(/esProxyUnsafeLogging .*not true or false, using false/.test(logs), 'invalid flag falls back to false'); }
+      assert.ok(!logs.includes('Bulk error'), 'bulk error details are absent');
     }
-    assert.ok(logs.includes('ESPROXY sensors configured: 2'), 'startup reports sensor count');
+    const commandLogs = logs.split('\n').filter(line => line.startsWith('Bulk command node: ')).map(line => {
+      const match = line.match(/^Bulk command node: sensor line: (\d+) (.+)$/);
+      assert.ok(match, 'command log format');
+      return { line: Number(match[1]), command: JSON.parse(match[2]) };
+    });
+    assert.deepEqual(commandLogs, expectedCommands, 'each recognized incoming command is logged once');
+    const bodyLogs = logs.split('\n').filter(line => line.startsWith('Bulk body node: ')).map(line => {
+      const match = line.match(/^Bulk body node: sensor line: (\d+) (.*)$/);
+      assert.ok(match, 'body log format');
+      return { line: Number(match[1]), body: match[2] };
+    });
+    assert.deepEqual(bodyLogs, debug ? expectedBodies : [], 'document bodies follow debug and delete operations have no body');
     assert.ok(logs.includes('Bulk validation failed at line 1'), 'bulk failure has a safe diagnostic');
-    assert.ok(/POST failed .* body bytes: \d+/.test(logs), 'POST failure reports body size');
-    if (debug) { assert.ok(/UPDATE body bytes: \d+/.test(logs), 'debug update reports body size'); }
+    assert.ok(logs.includes('Bulk dropping field update keys node: sensor'), 'field-update drop event is logged');
+    assert.ok(logs.includes('POST failed node: sensor'), 'POST failure is logged');
   });
 }
 
@@ -151,16 +234,16 @@ test('empty allowlist still starts and denies access', { timeout: 30000 }, async
   const proxy = launchProxy(t, 'http://127.0.0.1:1', '');
   assert.equal(await request(await proxy.ready, '/'), 401);
   await proxy.stop();
-  assert.ok(proxy.logs().includes('ESPROXY sensors configured: 0'));
+  assert.ok(!proxy.logs().includes(password));
 });
 
-for (const unsafe of ['false', 'true']) {
-  test(`invalid sensor config exits without logging passwords (unsafe=${unsafe})`, { timeout: 30000 }, async t => {
-    const proxy = launchProxy(t, 'http://127.0.0.1:1', `${sensors}\nbad=pass:`, 0, unsafe);
+for (const debug of [0, 3]) {
+  test(`invalid sensor config exits (debug=${debug})`, { timeout: 30000 }, async t => {
+    const proxy = launchProxy(t, 'http://127.0.0.1:1', `${sensors}\nbad=pass:`, debug);
     await assert.rejects(proxy.ready, /exited before listening/);
     const [code] = await proxy.completion;
     assert.equal(code, 1);
     assert.ok(proxy.logs().includes("ERROR - esproxy-sensors 'bad'"));
-    assert.ok(!proxy.logs().includes(password));
+    assert.equal(proxy.logs().includes(password), debug > 0);
   });
 }

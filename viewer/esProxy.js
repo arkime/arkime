@@ -45,7 +45,6 @@ let oldprefix;
 let prefix;
 let sessionsIndexRe;
 let historyDocRe;
-let unsafeLogging = false;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 let sigV4Signer = null;
@@ -86,11 +85,6 @@ ArkimeConfig.loaded(() => {
     if (ip) {
       sensors[sensor].ip = ip.split(',');
     }
-  }
-  console.log('ESPROXY sensors configured: %d', Object.keys(sensors).length);
-  unsafeLogging = Config.getBool('esProxyUnsafeLogging', false);
-  if (unsafeLogging) {
-    console.log('WARNING - esProxyUnsafeLogging=true: raw request bodies and bulk errors may contain passwords, captured traffic, and other sensitive data. Use only for controlled troubleshooting.');
   }
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
@@ -516,6 +510,24 @@ function isSessionsDocPath (path, action) {
 // index becomes create, and an update may only change these display keys.
 const fieldsUpdateKeys = ['category', 'friendlyName', 'help', 'aliases'];
 
+function logBulkCommand (req, json, lines, i) {
+  const operation = Object.keys(json)[0];
+  const command = json[operation];
+  if (!['index', 'create', 'update', 'delete'].includes(operation) ||
+      typeof command !== 'object' || command === null || Array.isArray(command)) { return; }
+
+  const metadata = {};
+  for (const key of ['_index', '_id']) {
+    if (typeof command[key] === 'string' || typeof command[key] === 'number') {
+      metadata[key] = command[key];
+    }
+  }
+  console.log('Bulk command node: %s line: %d %s', ArkimeUtil.sanitizeStr(req.sensor.node), i + 1, ArkimeUtil.sanitizeStr(JSON.stringify({ [operation]: metadata })));
+  if (Config.debug && operation !== 'delete' && lines[i + 1] !== undefined) {
+    console.log('Bulk body node: %s line: %d %s', ArkimeUtil.sanitizeStr(req.sensor.node), i + 2, ArkimeUtil.sanitizeStr(lines[i + 1]));
+  }
+}
+
 function validateBulk (req) {
   if (!req._body) {
     return true;
@@ -546,6 +558,7 @@ function validateBulk (req) {
     try {
       json = JSON.parse(lines[i]);
       if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
+      logBulkCommand(req, json, lines, i);
       if (typeof json.index === 'object') {
         if (typeof json.index._index !== 'string') { throw new Error('Missing index _index string'); }
 
@@ -569,7 +582,7 @@ function validateBulk (req) {
         if (Object.keys(update).length !== 1 || typeof update.doc !== 'object' || update.doc === null) { throw new Error('Fields update must be a partial doc'); }
         const doc = Object.fromEntries(Object.entries(update.doc).filter(([key]) => fieldsUpdateKeys.includes(key)));
         if (Object.keys(doc).length !== Object.keys(update.doc).length) {
-          console.log(`Bulk dropping field update keys node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(lines[i + 1]));
+          console.log('Bulk dropping field update keys node: %s', ArkimeUtil.sanitizeStr(req.sensor.node));
           rewrote = true;
         }
         if (Object.keys(doc).length > 0) {
@@ -584,10 +597,9 @@ function validateBulk (req) {
         throw new Error('Missing create, update, delete or index operation');
       }
     } catch (err) {
-      // Parser errors can contain body snippets. Raw diagnostics require opt-in.
       console.log('Bulk validation failed at line %d (body bytes: %d)', i + 1, body.length);
-      if (unsafeLogging) {
-        console.log('UNSAFE bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
+      if (Config.debug) {
+        console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
       }
       return false;
     }
@@ -756,15 +768,12 @@ app.post('*', saveBody, (req, res) => {
   } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     if (Config.debug) {
-      console.log('UPDATE body bytes: %d', req.body.length);
-    }
-    if (unsafeLogging) {
-      console.log('UNSAFE UPDATE body: %s', ArkimeUtil.sanitizeStr(req.body.toString('utf8')));
+      console.log(req.body.toString('utf8'));
     }
   } else {
-    console.log(`POST failed node: ${req.sensor.node} path:>%s<: body bytes: %d`, ArkimeUtil.sanitizeStr(path), Buffer.isBuffer(req.body) ? req.body.length : 0);
-    if (unsafeLogging && Buffer.isBuffer(req.body)) {
-      console.log('UNSAFE POST body: %s', ArkimeUtil.sanitizeStr(req.body.toString('utf8')));
+    console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
+    if (Config.debug && Buffer.isBuffer(req.body)) {
+      console.log(req.body.toString('utf8'));
     }
     return res.status(400).send('Not authorized for API');
   }
