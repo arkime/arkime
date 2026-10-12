@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 181;
+use Test::More tests => 196;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -393,6 +393,27 @@ foreach my $path ("/tagger/_search", "/tagger,tests_users/_delete_by_query", "/t
 
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/%3f/../../../_cluster/settings");
 is ($response->code, 400, "GET users doc path confusion into _cluster rejected");
+
+# A sensor gets a user doc for s2s auth, but never its secrets
+esPut("/tests_users/_doc/esproxysecrets?refresh=true", '{"userId":"esproxysecrets","userName":"esproxysecrets","enabled":true,"roles":["arkimeAdmin"],"passStore":"SECRETPASS","totpSecret":"SECRETTOTP","cont3xt":{"keys":"SECRETKEYS"}}');
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/esproxysecrets");
+is ($response->code, 200, "GET users doc allowed");
+my $userDoc = eval { from_json($response->content)->{_source} } // {};
+is ($userDoc->{userId}, "esproxysecrets", "users doc has userId");
+eq_or_diff ($userDoc->{roles}, ["arkimeAdmin"], "users doc has roles");
+ok (!exists $userDoc->{passStore}, "users doc has no passStore");
+ok (!exists $userDoc->{totpSecret}, "users doc has no totpSecret");
+ok (!exists $userDoc->{cont3xt}, "users doc has no cont3xt");
+
+foreach my $param ("_source=passStore", "_source=passStore,totpSecret,cont3xt", "_source=*", "filter_path=_source.passStore") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/esproxysecrets?$param");
+    is ($response->code, 200, "GET users doc with $param allowed");
+    unlike ($response->content, qr/SECRET/, "users doc with $param has no secrets");
+}
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/esproxysecrets/_source");
+is ($response->code, 400, "GET users doc with extra segment rejected");
+esDelete("/tests_users/_doc/esproxysecrets?refresh=true");
 
 # raw socket, LWP would escape the backslashes
 sub rawStatus {

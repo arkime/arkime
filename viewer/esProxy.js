@@ -45,6 +45,7 @@ let oldprefix;
 let prefix;
 let sessionsIndexRe;
 let historyDocRe;
+let usersDocRe;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 let sigV4Signer = null;
@@ -62,6 +63,7 @@ ArkimeConfig.loaded(() => {
   sessionsIndexRe = new RegExp(`^(?:${esc(oldprefix)}sessions2-|(?:partial-)?${esc(prefix)}sessions3-)[A-Za-z0-9_*-]+$`);
   // The viewer's weekly history index, only with our prefix
   historyDocRe = new RegExp(`^/${esc(prefix)}history_v1-\\d+w\\d+/_doc$`);
+  usersDocRe = new RegExp(`^/${esc(prefix)}users/_doc/[^/]+$`);
   // has the sensor passwords
   if (Config.debug) {
     console.log('sensors', sensors);
@@ -458,7 +460,9 @@ app.get('*', (req, res) => {
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
   } else if (path === '/tagger/_search' || path.startsWith('/tagger/_source/')) {
-  } else if (path.startsWith(`/${prefix}users/_doc/`)) {
+  } else if (usersDocRe.test(path)) {
+    // The sensor viewer needs the user for s2s auth, never its secrets
+    req.esSearch = '?_source_excludes=passStore,totpSecret,cont3xt';
   } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {

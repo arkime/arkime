@@ -534,6 +534,10 @@ jobs:
       - name: send
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
+          GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           if [ -z "$SLACK_URL" ]; then
             echo "No SLACK_URL set, skipping Slack notification"
@@ -542,7 +546,14 @@ jobs:
           echo "Sending msg"
           export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
           echo ARKIME_VERSION: $ARKIME_VERSION
-          MSG=`git log -1 --format=%s`
-          BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"Worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-${{github.run_id}} - $MSG\"}"
+          # On pull_request runs the checkout is a synthetic merge commit, so use the PR title instead
+          if [ -n "$PR_NUMBER" ]; then
+            MSG="PR #$PR_NUMBER $PR_TITLE"
+          else
+            MSG=`git log -1 --format=%s "$HEAD_SHA"`
+          fi
+          TEXT="Worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-${{github.run_id}} - $MSG"
+          # Escape slack control chars and disable mrkdwn/#channel/@user linking so PR titles come through as plain text
+          BODY=`jq -cn --arg text "$TEXT" '{icon_emoji: ":sushi:", username: "GitAction", mrkdwn: false, link_names: false, text: ($text | gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;"))}'`
           curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
 
