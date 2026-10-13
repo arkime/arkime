@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 181;
+use Test::More tests => 332;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -184,7 +184,75 @@ like ($response->content, qr/"errors":\s*false/, "bulk field index of new field 
 esGet("/_refresh");
 is (esGet("/tests_fields/_doc/esproxy.newfield")->{_source}->{transform}, "dash2Colon", "new field created with its transform");
 $response = bulkPost("test", qq({"delete":{"_index":"tests_fields","_id":"esproxy.newfield"}}\n));
-is ($response->code, 200, "bulk field delete allowed");
+is ($response->code, 200, "bulk field delete answered");
+
+# A field delete is dropped, otherwise delete then create would redefine the field
+$response = bulkPost("test", qq({"delete":{"_index":"tests_fields","_id":"esproxy.newfield"}}\n{"index":{"_index":"tests_fields","_id":"esproxy.newfield"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxyredefined"}\n));
+is ($response->code, 200, "bulk field delete then index answered");
+like ($response->content, qr/"errors":\s*false/, "bulk field delete then index of the same id is dropped without an error");
+esGet("/_refresh");
+is (esGet("/tests_fields/_doc/esproxy.newfield")->{_source}->{dbField2}, "esproxynewfield", "bulk field delete then index does not redefine the field");
+esDelete("/tests_fields/_doc/esproxy.newfield?refresh=true");
+
+# Several field deletes in one bulk, as capture sends on start, are all dropped
+esPut("/tests_fields/_doc/esproxy.del1?refresh=true", '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxydel1"}');
+esPut("/tests_fields/_doc/esproxy.del2?refresh=true", '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxydel2"}');
+$response = bulkPost("test", qq({"delete":{"_index":"tests_fields","_id":"esproxy.del1"}}\n{"delete":{"_index":"tests_fields","_id":"esproxy.del2"}}\n));
+is ($response->code, 200, "bulk with several field deletes answered");
+esGet("/_refresh");
+ok (esGet("/tests_fields/_doc/esproxy.del1")->{found}, "first dropped field delete left the field");
+ok (esGet("/tests_fields/_doc/esproxy.del2")->{found}, "second dropped field delete left the field");
+esDelete("/tests_fields/_doc/esproxy.del1?refresh=true");
+esDelete("/tests_fields/_doc/esproxy.del2?refresh=true");
+
+# A new field has to be a definition viewers can use, dropped before it is stored
+foreach my $test (
+    ['esproxy.badfield', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":["a"]}', "array dbField2"],
+    ['esproxy.badfield', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad","transform":"__proto__"}', "proto transform"],
+    ['esproxy.badfield', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad","regex":"("}', "bad regex"],
+    ['esproxy.badfield', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad","aliases":[1]}', "non string alias"],
+    ['esproxy.badfield', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad","group":{"a":1}}', "object group"],
+    ['esproxy.badfield', '[]', "array body"],
+    ['__proto__', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad"}', "proto id"],
+    ['esproxy.badfield', '{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad","portField2":5}', "number portField2"],
+) {
+    $response = bulkPost("test", qq({"index":{"_index":"tests_fields","_id":"$test->[0]"}}\n$test->[1]\n));
+    is ($response->code, 200, "bulk field index with $test->[2] answered");
+    like ($response->content, qr/"items":\[\]/, "bulk field index with $test->[2] not applied");
+}
+esGet("/_refresh");
+ok (!esGet("/tests_fields/_doc/esproxy.badfield")->{found}, "bad field not created");
+
+# A bad field doesn't lose the rest of capture's batch of new fields
+$response = bulkPost("test", qq|{"index":{"_index":"tests_fields","_id":"esproxy.badfield"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxybad","regex":"("}\n{"index":{"_index":"tests_fields","_id":"esproxy.goodfield"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxygood"}\n|);
+is ($response->code, 200, "bulk with a bad and a good field answered");
+esGet("/_refresh");
+ok (!esGet("/tests_fields/_doc/esproxy.badfield")->{found}, "bad field in mixed bulk not created");
+ok (esGet("/tests_fields/_doc/esproxy.goodfield")->{found}, "good field in mixed bulk created");
+esDelete("/tests_fields/_doc/esproxy.goodfield?refresh=true");
+
+# A new field can't take over the db name of an existing field, viewers look fields up by it
+foreach my $test (
+    ['"dbField2":"srcIp"', "dbField2 of ip.src"],
+    ['"dbField2":"source.ip"', "fieldECS of ip.src as dbField2"],
+    ['"dbField2":"esproxycollide","fieldECS":"source.ip"', "fieldECS of ip.src"],
+    ['"dbField2":"esproxycollide","dbField":"srcIp"', "dbField2 of ip.src as dbField"],
+    ['"dbField2":"esproxycollide","aliases":["esproxy.alias"],"dbField":"node"', "dbField2 of node as dbField"],
+) {
+    $response = bulkPost("test", qq({"index":{"_index":"tests_fields","_id":"esproxy.collide"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield",$test->[0]}\n));
+    is ($response->code, 200, "bulk field index with $test->[1] answered");
+    like ($response->content, qr/"items":\[\]/, "bulk field index with $test->[1] not applied");
+}
+esGet("/_refresh");
+ok (!esGet("/tests_fields/_doc/esproxy.collide")->{found}, "colliding field not created");
+
+# Unrelated db names in the same bulk still go through
+$response = bulkPost("test", qq({"index":{"_index":"tests_fields","_id":"esproxy.collide"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"srcIp"}\n{"index":{"_index":"tests_fields","_id":"esproxy.nocollide"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxynocollide"}\n));
+is ($response->code, 200, "bulk with a colliding and a new field answered");
+esGet("/_refresh");
+ok (!esGet("/tests_fields/_doc/esproxy.collide")->{found}, "colliding field in mixed bulk not created");
+ok (esGet("/tests_fields/_doc/esproxy.nocollide")->{found}, "new field in mixed bulk created");
+esDelete("/tests_fields/_doc/esproxy.nocollide?refresh=true");
 
 $response = bulkPost("test", qq({"delete":{"_index":"tests_fieldsevil","_id":"1"}}\n));
 is ($response->code, 400, "bulk delete to index starting with fields rejected");
@@ -350,6 +418,43 @@ $req->content($bulk_bad_index);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "POST path confusion into _bulk rejected");
 
+# Stats, fields and lookups searches can't run scripts or read other indices
+sub exactSearch {
+    my ($index, $body) = @_;
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_$index/_search");
+    $r->header('Content-Type' => 'application/json');
+    $r->content($body) if (defined $body);
+    return $ArkimeTest::userAgent->request($r)->code;
+}
+foreach my $test (
+    ["stats", '{"query":{"match":{"hostname":"x"}}}', 200, "viewer hostname"],
+    ["fields", '{"size":10000}', 200, "viewer fields"],
+    ["lookups", '{"query":{"bool":{"filter":[{"bool":{"should":[{"terms":{"roles":["arkimeUser"]}},{"term":{"users":"u"}},{"term":{"userId":"u"}}]}}]}},"size":10000}', 200, "viewer shortcuts"],
+    ["stats", undef, 200, "no body"],
+    ["stats", '{"script_fields":{"x":{"script":{"source":"1"}}}}', 400, "script_fields"],
+    ["stats", '{"sort":{"_script":{"type":"number","script":"1"}}}', 400, "script sort"],
+    ["fields", '{"runtime_mappings":{"x":{"type":"keyword"}}}', 400, "runtime_mappings"],
+    ["lookups", '{"aggs":{"a":{"scripted_metric":{"map_script":"1"}}}}', 400, "scripted_metric"],
+    ["stats", '{"query":{"terms":{"hostname":{"index":"tests_users","id":"admin","path":"userId"}}}}', 400, "terms lookup"],
+    ["stats", '{"query":{"more_like_this":{"like":[{"_index":"tests_users","_id":"admin"}]}}}', 400, "more_like_this"],
+    ["stats", '{"query":{"wrapper":{"query":"eyJzY3JpcHRfc2NvcmUiOnsicXVlcnkiOnsibWF0Y2hfYWxsIjp7fX0sInNjcmlwdCI6eyJzb3VyY2UiOiIxIn19fQ=="}}}', 400, "wrapper hiding script_score"],
+    ["stats", '{"suggest":{"s":{"text":"x","phrase":{"field":"hostname","collate":{"query":{"source":"{\\"script\\":{\\"script\\":\\"1\\"}}"}}}}}}', 400, "suggest collate hiding a script"],
+    ["stats", '{"query":{"term":{"index":"x"}},"sort":{"index":"asc"},"_source":["index","_index"]}', 200, "a field named index"],
+    ["stats", '{"query":{"pinned":{"docs":[{"_index":"tests_users","_id":"admin"}],"organic":{"match_all":{}}}}}', 400, "pinned docs from another index"],
+    ["stats", '{"query":', 400, "bad json"],
+    ["lookups", '{"query":{"match_all":{}},"sort":{"description":{"order":"asc"}},"size":50}', 200, "shortcuts sorted by description"],
+    ["stats", '{"query":{"term":{"subscription":"x"}},"_source":["description","transcript"]}', 200, "field names containing script"],
+    ["stats", '{"query":{"script":{"script":"1"}}}', 400, "script query"],
+    ["stats", '{"query":{"bool":{"filter":[{"bool":{"should":[{"function_score":{"script_score":{"script":"1"}}}]}}]}}}', 400, "nested script_score"],
+    ["stats", '{"query":{"terms_set":{"x":{"terms":["a"],"minimum_should_match_script":{"source":"1"}}}}}', 400, "minimum_should_match_script"],
+    ["stats", '{"aggs":{"a":{"moving_fn":{"buckets_path":"x","window":2}}}}', 400, "moving_fn"],
+    ["stats", '{"aggs":{"a":{"terms":{"field":"x"},"aggs":{"b":{"bucket_selector":{"buckets_path":{}}}}}}}', 400, "bucket_selector"],
+    ["stats", '{"query":{"percolate":{"field":"q","index":"tests_users","id":"admin"}}}', 400, "percolate"],
+    ["stats", '{"query":{"geo_shape":{"x":{"indexed_shape":{"index":"tests_users","id":"admin","path":"p"}}}}}', 400, "geo_shape indexed_shape"],
+) {
+    is (exactSearch($test->[0], $test->[1]), $test->[2], "POST $test->[0] _search with $test->[3]");
+}
+
 # DELETE - a startsWith() guard is fooled the same way: the decoded id looks
 # like it starts with the sensor's own doc prefix, but the raw url collapses
 # to a different index entirely
@@ -393,6 +498,27 @@ foreach my $path ("/tagger/_search", "/tagger,tests_users/_delete_by_query", "/t
 
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/%3f/../../../_cluster/settings");
 is ($response->code, 400, "GET users doc path confusion into _cluster rejected");
+
+# A sensor gets a user doc for s2s auth, but never its secrets
+esPut("/tests_users/_doc/esproxysecrets?refresh=true", '{"userId":"esproxysecrets","userName":"esproxysecrets","enabled":true,"roles":["arkimeAdmin"],"passStore":"SECRETPASS","totpSecret":"SECRETTOTP","cont3xt":{"keys":"SECRETKEYS"}}');
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/esproxysecrets");
+is ($response->code, 200, "GET users doc allowed");
+my $userDoc = eval { from_json($response->content)->{_source} } // {};
+is ($userDoc->{userId}, "esproxysecrets", "users doc has userId");
+eq_or_diff ($userDoc->{roles}, ["arkimeAdmin"], "users doc has roles");
+ok (!exists $userDoc->{passStore}, "users doc has no passStore");
+ok (!exists $userDoc->{totpSecret}, "users doc has no totpSecret");
+ok (!exists $userDoc->{cont3xt}, "users doc has no cont3xt");
+
+foreach my $param ("_source=passStore", "_source=passStore,totpSecret,cont3xt", "_source=*", "filter_path=_source.passStore") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/esproxysecrets?$param");
+    is ($response->code, 200, "GET users doc with $param allowed");
+    unlike ($response->content, qr/SECRET/, "users doc with $param has no secrets");
+}
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_doc/esproxysecrets/_source");
+is ($response->code, 400, "GET users doc with extra segment rejected");
+esDelete("/tests_users/_doc/esproxysecrets?refresh=true");
 
 # raw socket, LWP would escape the backslashes
 sub rawStatus {
@@ -526,6 +652,66 @@ ok ($response->code == 200 || $response->code == 201, "POST gzip stats doc with 
 
 esDelete("/tests_stats/_doc/esproxyhost?refresh=true");
 
+# Without host set the first stats hostname sticks, so a sensor can't later
+# claim a viewer's host
+sub nowiseStats {
+    my ($body) = @_;
+    my $r = HTTP::Request->new('POST', "http://nowise:nowise\@$ArkimeTest::host:7200/tests_stats/_doc/nowise");
+    $r->header('Content-Type' => 'application/json');
+    $r->content($body);
+    return $ArkimeTest::userAgent->request($r)->code;
+}
+like (nowiseStats('{"hostname":"esproxy-nowise-host","ver":"test"}'), qr/^20[01]$/, "POST stats doc without host pins first hostname");
+is (nowiseStats('{"hostname":"some-other-host","ver":"test"}'), 400, "POST stats doc without host with new hostname rejected");
+is (nowiseStats('{"ver":"test"}'), 400, "POST stats doc without host missing hostname rejected");
+like (nowiseStats('{"hostname":"esproxy-nowise-host","ver":"test"}'), qr/^20[01]$/, "POST stats doc without host with pinned hostname allowed");
+is (filesSearch("nowise", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["nowise","esproxyhost"]}}]}}}'), 400, "files search with pinned host for a node on another host rejected");
+is (filesSearch("nowise", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["nowise"]}}]}}}'), 200, "files search with pinned host for own node allowed");
+esDelete("/tests_stats/_doc/nowise?refresh=true");
+
+# With several esProxy, a stats doc written through another one is found in es
+# before a new hostname is trusted
+sub sensorPost {
+    my ($sensor, $path, $body) = @_;
+    my $r = HTTP::Request->new('POST', "http://$sensor:$sensor\@$ArkimeTest::host:7200/$path");
+    $r->header('Content-Type' => 'application/json');
+    $r->content($body);
+    return $ArkimeTest::userAgent->request($r)->code;
+}
+esPut("/tests_stats/_doc/esproxypin1?refresh=true", '{"hostname":"esproxy-pin-host","ver":"test"}');
+is (sensorPost("esproxypin1", "tests_stats/_doc/esproxypin1", '{"hostname":"central-viewer-host","ver":"test"}'), 400, "POST stats doc with hostname differing from one another esProxy pinned rejected");
+like (sensorPost("esproxypin1", "tests_stats/_doc/esproxypin1", '{"hostname":"esproxy-pin-host","ver":"test"}'), qr/^20[01]$/, "POST stats doc with hostname another esProxy pinned allowed");
+
+# Files search, another node on the same host is found the same way
+my $pinSearch = '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxypin1","esproxypin2"]}}]}}}';
+esPut("/tests_stats/_doc/esproxypin2?refresh=true", '{"hostname":"esproxy-pin-host","ver":"test"}');
+is (filesSearch("esproxypin1", $pinSearch), 200, "files search with a same host node pinned by another esProxy allowed");
+
+# A stats doc without a hostname isn't a missing pin, nothing is trusted from it
+esPut("/tests_stats/_doc/esproxypin3?refresh=true", '{"ver":"test"}');
+is (sensorPost("esproxypin3", "tests_stats/_doc/esproxypin3", '{"hostname":"esproxy-other-host","ver":"test"}'), 400, "POST stats doc when the stored stats doc has no hostname rejected");
+is (filesSearch("esproxypin3", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxypin3"]}}]}}}'), 400, "files search when the stored stats doc has no hostname rejected");
+
+esPut("/tests_stats/_doc/esproxypin3?refresh=true", '{"hostname":"esproxy-other-host","ver":"test"}');
+is (filesSearch("esproxypin1", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxypin1","esproxypin3"]}}]}}}'), 400, "files search with a node on another host pinned by another esProxy rejected");
+esDelete("/tests_stats/_doc/esproxypin3?refresh=true");
+
+# A sensor with no stats doc anywhere isn't on any host yet, so only its own node
+is (filesSearch("esproxypin4", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxypin4","test"]}}]}}}'), 400, "files search for another node before a first stats doc rejected");
+is (filesSearch("esproxypin4", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxypin4"]}}]}}}'), 200, "files search for own node before a first stats doc allowed");
+is (filesSearch("esproxypin1", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxypin1","esproxypin4"]}}]}}}'), 400, "files search with a node that has no stats doc rejected");
+
+# A stats doc without a hostname is refused before any lookup
+is (sensorPost("esproxypin4", "tests_stats/_doc/esproxypin4", '{"ver":"test"}'), 400, "POST stats doc of a new node without hostname rejected");
+
+# A new node writes stats every 2 seconds, the first pins and the rest must match
+like (sensorPost("esproxypin4", "tests_stats/_doc/esproxypin4", '{"hostname":"esproxy-new-host","ver":"test"}'), qr/^20[01]$/, "POST first stats doc of a new node pins it");
+like (sensorPost("esproxypin4", "tests_stats/_doc/esproxypin4", '{"hostname":"esproxy-new-host","ver":"test"}'), qr/^20[01]$/, "POST next stats doc of a new node allowed");
+is (sensorPost("esproxypin4", "tests_stats/_doc/esproxypin4", '{"hostname":"esproxy-pin-host","ver":"test"}'), 400, "POST stats doc of a new node with a new hostname rejected");
+esDelete("/tests_stats/_doc/esproxypin1?refresh=true");
+esDelete("/tests_stats/_doc/esproxypin2?refresh=true");
+esDelete("/tests_stats/_doc/esproxypin4?refresh=true");
+
 # POST - exact path compare; capture creates the fn sequence with version 100,
 # ES answers 409 once the sequence has advanced past that, but never the
 # guard's 400
@@ -592,6 +778,16 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "POST files update changing node rejected");
 is ($response->content, "Not authorized for API");
 
+# Viewers trust name, indexFilename and locked when reading and expiring the file
+foreach my $field ('"name": "/opt/arkime/raw/../../../tmp/esProxy-x"', '"indexFilename": "/tmp/esProxy-x"', '"locked": 0') {
+  $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
+  $req->header('Content-Type' => 'application/json');
+  $req->content(qq({"doc": {"filesize": 1234, $field}}));
+  $response = $ArkimeTest::userAgent->request($req);
+  is ($response->code, 400, "POST files update changing $field rejected");
+  is ($response->content, "Not authorized for API");
+}
+
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
 $req->header('Content-Type' => 'application/json');
 $req->content(qq({"script": {"source": "ctx._source.node='test2'"}}));
@@ -655,9 +851,35 @@ is ($response->content, "Not authorized for API");
 
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_dstats/_doc/test-59-60?refresh=true");
 $req->header('Content-Type' => 'application/json');
-$req->content(qq({"node":"test","interval":60}));
+$req->content(qq({"nodeName":"test","interval":60}));
 $response = $ArkimeTest::userAgent->request($req);
 ok ($response->code == 200 || $response->code == 201, "POST own dstats doc allowed") or diag($response->code);
+
+# Viewers key dstats by nodeName, so it has to be the sensor's own
+foreach my $body ('{"nodeName":"test2","interval":60}', '{"nodeName":"__proto__","interval":60}', '{"interval":60}') {
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_dstats/_doc/test-59-60");
+    $req->header('Content-Type' => 'application/json');
+    $req->content($body);
+    is ($ArkimeTest::userAgent->request($req)->code, 400, "POST own dstats doc with nodeName $body rejected");
+}
+
+# On ES 7 typed routes these ids are endpoints, _search would list every hunt or user
+foreach my $test (
+    ["tests_hunts/_doc/_search", 400], ["tests_hunts/_doc/%5Fsearch", 400], ["tests_hunts/_doc/_count", 400],
+    ["tests_hunts/_doc/x/_source", 400],
+    ["tests_users/_doc/_search", 400], ["tests_users/_doc/%5Fsearch", 400],
+    ["tests_users/_doc/_mget", 400], ["tests_users/_doc/_msearch", 400], ["tests_users/_doc/_termvectors", 400],
+    ["tests_users/_doc/_mapping", 400], ["tests_users/_doc/%5fcount", 400], ["tests_hunts/_doc/_mget", 400],
+    ["tests_hunts/_doc/_validate", 400], ["tests_hunts/_doc/_rollup_search", 400],
+    # es matches routes on the raw path, an encoded / is refused anyway in case one ever doesn't
+    ["tests_users/_doc/admin%2F_source", 400], ["tests_hunts/_doc/_mapping%2Ffield%2F%2A", 400],
+) {
+    is ($ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$test->[0]")->code, $test->[1], "GET $test->[0] rejected");
+}
+foreach my $path ("tests_hunts/_doc/AbC_-def0123456789xy", "tests_hunts/_doc/_abcdefghijklmnopqrs", "tests_users/_doc/_moloch_shared",
+                  "tests_users/_doc/_viewer", "tests_users/_doc/role%3Aadmin", "tests_users/_doc/a%40b.com") {
+    isnt ($ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$path")->content, "Not authorized for API", "GET $path proxied");
+}
 
 # Or a node name that is dash-joined onto it
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_files/_doc/test-x-1");
@@ -694,6 +916,58 @@ isnt ($response->content, "Not authorized for API", "GET session doc under corre
 
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/partial-tests_sessions3-2024/_doc/nonexistent-id");
 isnt ($response->content, "Not authorized for API", "GET session doc in partial index is proxied to ES, not blocked by guard");
+
+# On ES 7 typed routes these ids are endpoints, _search would dump every session
+foreach my $id ("_search", "%5Fsearch", "_count", "_mget", "%5fmsearch") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/$id?size=10000");
+    is ($response->code, 400, "GET session doc with id $id rejected");
+}
+
+# autoGenerateId=consistent puts the node name in the id, the es client encodes it
+foreach my $id ("260101-node%3A1-5-24", "260101-node%201-5-24") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/$id");
+    isnt ($response->content, "Not authorized for API", "GET session doc with encoded id $id proxied");
+}
+# But never a / in the id. es matches routes on the raw path, refused anyway in case
+# one ever splits it into typed endpoints like _validate/query or _search/template
+foreach my $id ("a%2Fb", "_validate%2Fquery", "_search%2Ftemplate") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/$id");
+    is ($response->code, 400, "GET session doc with encoded slash id $id rejected");
+}
+
+# Session update only runs the hunt script a sensor viewer sends when a remote hunt matches
+sub sessionUpdate {
+    my ($body) = @_;
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_update/nonexistent-id");
+    $r->header('Content-Type' => 'application/json');
+    $r->content($body);
+    return $ArkimeTest::userAgent->request($r);
+}
+my $addTags = 'if (ctx._source.tags != null) { for (int i = 0; i < params.tags.length; i++) { if (ctx._source.tags.indexOf(params.tags[i]) == -1) { ctx._source.tags.add(params.tags[i]); } } ctx._source.tagsCnt = ctx._source.tags.length; } else { ctx._source.tags = params.tags; ctx._source.tagsCnt = params.tags.length; }';
+my $addHunt = 'if (ctx._source.huntId != null) { ctx._source.huntId.add(params.huntId); } else { ctx._source.huntId = [ params.huntId ]; } if (ctx._source.huntName != null) { ctx._source.huntName.add(params.huntName); } else { ctx._source.huntName = [ params.huntName ]; }';
+isnt (sessionUpdate(to_json({script => {source => "\n   $addHunt\n", lang => "painless", params => {huntId => "h1", huntName => "hunt"}}}))->content, "Not authorized for API", "POST session update with reindented viewer add hunt script proxied");
+sub sessionUpdateId {
+    my ($id) = @_;
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_update/$id");
+    $r->header('Content-Type' => 'application/json');
+    $r->content(to_json({script => {source => $addHunt, lang => "painless", params => {huntId => "h1", huntName => "hunt"}}}));
+    return $ArkimeTest::userAgent->request($r);
+}
+isnt (sessionUpdateId("260101-node%3A1-5-24")->content, "Not authorized for API", "POST session update with encoded id proxied");
+is (sessionUpdateId("_search")->code, 400, "POST session update with id _search rejected");
+is (sessionUpdateId("%5Fsearch")->code, 400, "POST session update with id %5Fsearch rejected");
+foreach my $test (
+    [{script => {source => "ctx._source.marker='evil'"}}, "other script"],
+    [{script => {source => "ctx.op='delete'"}}, "delete script"],
+    [{script => {source => $addTags, lang => "painless", params => {tags => ["a"]}}}, "central only add tags script"],
+    [{script => {source => $addHunt, params => {huntId => "h1", huntName => "hunt", x => 1}}}, "extra param"],
+    [{script => {source => $addHunt, params => {huntId => ["h1"], huntName => "hunt"}}}, "huntId not a string"],
+    [{script => {source => $addHunt, lang => "expression", params => {huntId => "h1", huntName => "hunt"}}}, "other lang"],
+    [{script => {source => $addHunt, params => {huntId => "h1", huntName => "hunt"}}, scripted_upsert => JSON::true, upsert => {}}, "upsert"],
+    [{script => {id => "stored", params => {tags => ["a"]}}}, "stored script"],
+) {
+    is (sessionUpdate(to_json($test->[0]))->code, 400, "POST session update with $test->[1] rejected");
+}
 
 # Session doc get/update must be one sessions index, not a multi-index expression
 foreach my $index ("tests_sessions3-2024,tests_users", "tests_sessions3-*", "tests_sessions3-2024:tests_users", "tests_sessions3-2024%2Ftests_users") {

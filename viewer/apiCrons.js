@@ -488,7 +488,8 @@ class CronAPIs {
       return;
     }
 
-    const nodes = {};
+    // Keyed by session node, which sensors write
+    const nodes = Object.create(null);
 
     for (const item of list) {
       if (!nodes[item.node]) {
