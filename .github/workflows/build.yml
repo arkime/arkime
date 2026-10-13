@@ -297,6 +297,13 @@ jobs:
           mv *.deb arkime_main.${{matrix.version}}.deb
           ls -l *.deb
 
+      - name: package apk
+        if: ${{ matrix.package == 'apk' }}
+        run: |
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
+          ls -l *.apk
+
       - name: sanitize
         if: ${{ matrix.viewertest == 'sanitize' }}
         run: |
@@ -344,6 +351,7 @@ jobs:
             *.so
             *.rpm
             *.zst
+            *.apk
             NOTICE.txt
             arkime-sbom.cdx.json
 

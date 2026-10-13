@@ -120,6 +120,7 @@ include:
   - version: alpine324.x86_64
     container: ghcr.io/arkime/arkime-build-alpine324:7.0.0-2
     buildopt: "--kafka"
+    package: apk
     python: python3
     prbuild: true
 
@@ -205,6 +206,7 @@ include:
   - version: alpine324.aarch64
     container: ghcr.io/arkime/arkime-build-alpine324-arm64:7.0.0-2
     buildopt: "--kafka"
+    package: apk
     python: python3
     runson: ubuntu-24.04-arm
     prbuild: true

@@ -155,6 +155,13 @@ jobs:
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration "$ITERATION" --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.deb /opt/arkime
           ls -l *.deb
 
+      - name: package apk
+        if: ${{ matrix.package == 'apk' }}
+        run: |
+          export ARKIME_VERSION="$RELEASE_TAG"
+          ./release/alpinepkg.sh $ARKIME_VERSION "$ITERATION" arkime-${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.apk /opt/arkime
+          ls -l *.apk
+
       - name: notice
         if: ${{ matrix.notice }}
         run: |
@@ -174,6 +181,7 @@ jobs:
             *.so
             *.rpm
             *.zst
+            *.apk
             NOTICE.txt
             arkime-sbom.cdx.json
           body: |
