@@ -147,6 +147,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4309 esProxy rejects query parameters that capture and viewer don't send, including extra parameters added to esBulkQuery
   - #4338 WISE and Cont3xt Databricks connections now verify TLS certificates, set insecure=true in the databricks section to skip
   - #4343 Viewers behind esProxy MUST use authMode=s2s
+  - #4345 esproxy-sensors entries without host are locked to the hostname the sensor first reported, set host if a sensor's hostname changes
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
@@ -181,7 +182,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4309 Fix a capture node being able to read and change other indices through esProxy
   - #4309 Fix some viewer and capture requests being wrongly rejected by esProxy
   - #4342 Fix more ways a capture node could get around esProxy, new optional host setting in esproxy-sensors
+  - #4330 Rejected bulk and POST request bodies are now only logged with --debug, rejected bulk logs name the failing command (thanks @rht-jbittner)
   - #4343 Fix a capture node being able to read user hashed passwords, TOTP secrets and Cont3xt keys through esProxy
+  - #4345 Fix more ways a capture node could read other nodes' data or change sessions, fields and stats through esProxy
 ## Parliament
   - #4325 Fix a monitored cluster being able to hang or slow down Parliament
   - #4325 Fix issue search and the dashboard failing for some node names
@@ -201,6 +204,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4342 Fix captured traffic and some requests being able to hang or crash the viewer
   - #4342 Fix users being able to search outside their time limit or use notifiers not shared with them
   - #4342 Fix some requests not being recorded in History
+  - #4345 Fix a capture node being able to make pcap expiry delete files outside the pcap directories
+  - #4345 Fix a capture node being able to break the field list or stats pages for every viewer
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
   - #4338 urlapi sources support insecure=true to skip TLS certificate verification

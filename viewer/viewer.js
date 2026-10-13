@@ -1207,6 +1207,19 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
     for (const item of data.hits.hits) {
       const fields = item._source || item.fields;
 
+      // The wildcard query matches strings, so a name can still climb out with ..
+      // Drop the doc instead of skipping it so bogus docs can't fill the oldest 500 and stall expiry
+      if (!isInDirs(fields.name, dirs)) {
+        console.log('EXPIRE WARNING - not deleting file outside pcapDir', ArkimeUtil.sanitizeStr(fields.name));
+        // Keep expiring the rest if the doc can't be removed, through esProxy only own docs can be
+        try {
+          await Db.deleteDocument('files', item._id);
+        } catch (err) {
+          console.log('EXPIRE ERROR - deleting files doc', ArkimeUtil.sanitizeStr(item._id), ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+        }
+        continue;
+      }
+
       let freeG;
       try {
         const stat = fs.statfsSync(fields.name);

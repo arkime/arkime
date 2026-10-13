@@ -486,8 +486,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
       }
 
-      // Gather all the hits by node
-      const hitsByNode = {};
+      // Gather all the hits by node, sensors write node
+      const hitsByNode = Object.create(null);
       for (const hit of hits) {
         (hitsByNode[hit._source.node] ??= []).push(hit);
       }
