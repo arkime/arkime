@@ -661,6 +661,7 @@ async function validateBulk (req) {
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (lines[i + 1] === undefined) { throw new Error('Missing update body'); }
         errLine = i + 1;
         const update = JSON.parse(lines[i + 1]);
         if (Object.keys(update).length !== 1 || typeof update.doc !== 'object' || update.doc === null) { throw new Error('Fields update must be a partial doc'); }
