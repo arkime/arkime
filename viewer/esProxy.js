@@ -20,6 +20,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const aws4 = require('aws4');
 const EsProxyCredentials = require('./esProxyCredentials');
+const DbESImpl = require('./db.es.js');
 
 // express app
 const app = express();
@@ -46,6 +47,7 @@ let prefix;
 let sessionsIndexRe;
 let historyDocRe;
 let usersDocRe;
+let huntsDocRe;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
 let sigV4Signer = null;
@@ -63,7 +65,8 @@ ArkimeConfig.loaded(() => {
   sessionsIndexRe = new RegExp(`^(?:${esc(oldprefix)}sessions2-|(?:partial-)?${esc(prefix)}sessions3-)[A-Za-z0-9_*-]+$`);
   // The viewer's weekly history index, only with our prefix
   historyDocRe = new RegExp(`^/${esc(prefix)}history_v1-\\d+w\\d+/_doc$`);
-  usersDocRe = new RegExp(`^/${esc(prefix)}users/_doc/[^/]+$`);
+  usersDocRe = new RegExp(`^/${esc(prefix)}users/_doc/([^/]+)$`);
+  huntsDocRe = new RegExp(`^/${esc(prefix)}hunts/_doc/([^/]+)$`);
   // has the sensor passwords
   if (Config.debug) {
     console.log('sensors', sensors);
@@ -345,6 +348,58 @@ function saveBody (req, res, next) {
 
 // Proxy
 
+// SigV4 signs the exact bytes es will hash
+async function esAuthHeaders (config, url, method, contentType, body) {
+  if (config.sigV4Signer && config.sigV4Credentials) {
+    const creds = await config.sigV4Credentials.getCredentials();
+
+    const signOpts = aws4.sign({
+      host: url.hostname,
+      path: url.pathname + (url.search || ''),
+      method,
+      service: config.sigV4Signer.service,
+      region: config.sigV4Signer.region,
+      headers: {
+        'content-type': contentType
+      },
+      body
+    }, {
+      accessKeyId: creds.accessKeyId,
+      secretAccessKey: creds.secretAccessKey,
+      sessionToken: creds.sessionToken
+    });
+
+    return signOpts.headers;
+  } else if (config.authHeader) {
+    return { Authorization: config.authHeader };
+  }
+  return undefined;
+}
+
+// esProxy's own lookups, always against the primary es
+async function esRequestJson (method, path, body) {
+  const url = new URL(elasticsearch + path);
+  const client = url.protocol === 'https:' ? https : http;
+  const data = body ? JSON.stringify(body) : '';
+  const headers = Object.assign({ 'content-type': 'application/json' },
+    await esAuthHeaders({ authHeader, sigV4Signer, sigV4Credentials }, url, method, 'application/json', data));
+
+  return new Promise((resolve, reject) => {
+    const preq = client.request(url, { method, headers, agent: client === https ? httpsAgent : httpAgent }, (pres) => {
+      const chunks = [];
+      pres.on('data', chunk => chunks.push(chunk));
+      pres.on('end', () => {
+        let json;
+        try { json = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { }
+        resolve({ statusCode: pres.statusCode, body: json });
+      });
+    });
+    preq.setTimeout(ES_TIMEOUT_MS, () => { preq.destroy(new Error('timeout')); });
+    preq.on('error', reject);
+    preq.end(data);
+  });
+}
+
 async function doProxyFull (config, req, res) {
   const esUrl = config.elasticsearch + req.esPath + req.esSearch;
   console.log(`URL ${req.method} "%s"`, ArkimeUtil.sanitizeStr(esUrl));
@@ -370,31 +425,7 @@ async function doProxyFull (config, req, res) {
     }
   }
 
-  if (config.sigV4Signer && config.sigV4Credentials) {
-    const creds = await config.sigV4Credentials.getCredentials();
-
-    const signOpts = aws4.sign({
-      host: url.hostname,
-      path: url.pathname + (url.search || ''),
-      method: req.method,
-      service: config.sigV4Signer.service,
-      region: config.sigV4Signer.region,
-      headers: {
-        'content-type': req.headers['content-type'] || 'application/json'
-      },
-      body: bodyToSend || ''
-    }, {
-      accessKeyId: creds.accessKeyId,
-      secretAccessKey: creds.secretAccessKey,
-      sessionToken: creds.sessionToken
-    });
-
-    options.headers = signOpts.headers;
-  } else if (config.authHeader) {
-    options.headers = {
-      Authorization: config.authHeader
-    };
-  }
+  options.headers = await esAuthHeaders(config, url, req.method, req.headers['content-type'] || 'application/json', bodyToSend || '');
 
   // Stream the response, buffering a large one could exhaust memory. Still always a
   // 200, which is what capture and the sensor viewers have always gotten from esProxy.
@@ -459,10 +490,10 @@ app.get('*', (req, res) => {
   // Empty IFs since those are allowed requests and will run code at end
   if (getExact[path]) {
   } else if (path === '/tagger/_search' || path.startsWith('/tagger/_source/')) {
-  } else if (usersDocRe.test(path)) {
+  } else if (isDocId(path.match(usersDocRe)?.[1])) {
     // The sensor viewer needs the user for s2s auth, never its secrets
     req.esSearch = '?_source_excludes=passStore,totpSecret,cont3xt';
-  } else if (path.startsWith(`/${prefix}hunts/_doc/`)) {
+  } else if (isDocId(path.match(huntsDocRe)?.[1])) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (isOwnFilesDoc(path, req.sensor.node)) {
@@ -503,10 +534,30 @@ function isOwnDstatsDoc (path, node) {
   return path.startsWith(docPrefix) && /^\d+-\d+$/.test(remainder);
 }
 
+// On ES 7 and OpenSearch 1 typed routes /<index>/_doc/<x> is an endpoint, not a doc,
+// when x is one of these. Those versions are frozen, so the list is complete. Ids are
+// otherwise free, user ids can start with _. es matches routes on the raw path, these
+// and / are refused decoded too in case one ever doesn't. No real id has a / in it.
+const typedEndpoints = new Set([
+  '_bulk', '_count', '_create', '_delete_by_query', '_doc', '_explain', '_field_caps', '_graph',
+  '_mapping', '_mappings', '_mget', '_msearch', '_mtermvectors', '_rank_eval', '_rollup_search',
+  '_search', '_search_shards', '_source', '_termvectors', '_update', '_update_by_query', '_validate', '_xpack'
+]);
+function isDocId (segment) {
+  if (!ArkimeUtil.isString(segment)) { return false; }
+  let id;
+  try {
+    id = decodeURIComponent(segment);
+  } catch (e) {
+    return false;
+  }
+  return !id.includes('/') && !typedEndpoints.has(id);
+}
+
 // /<sessions index>/<action>/<id>
 function isSessionsDocPath (path, action) {
-  const m = path.match(/^\/([^/]+)\/([^/]+)\/[^/]+$/);
-  return m !== null && m[2] === action && isSessionsIndex(m[1]);
+  const m = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)$/);
+  return m !== null && m[2] === action && isSessionsIndex(m[1]) && isDocId(m[3]);
 }
 
 // Field definitions control how every viewer compiles queries, including users'
@@ -514,7 +565,36 @@ function isSessionsDocPath (path, action) {
 // index becomes create, and an update may only change these display keys.
 const fieldsUpdateKeys = ['category', 'friendlyName', 'help', 'aliases'];
 
-function validateBulk (req) {
+// Viewers look fields up by these too, a new field can't claim an existing field's
+// db name or it changes how that db field is typed, displayed and compiled with db:.
+// db.pl defines the fields that legitimately share one and writes to es directly.
+const fieldNameProps = ['dbField', 'dbField2', 'fieldECS'];
+function fieldNames (source) {
+  return fieldNameProps.map(prop => source?.[prop]).filter(dbName => ArkimeUtil.isString(dbName));
+}
+
+// Drop the creates whose db names an existing field with another id already has
+async function dropFieldCollisions (creates) {
+  const names = [...new Set(creates.flatMap(create => create.names))];
+  if (names.length === 0) { return; }
+  const { statusCode, body } = await esRequestJson('POST', `/${prefix}fields/_search`, {
+    size: 10000,
+    _source: fieldNameProps,
+    query: { bool: { should: fieldNameProps.map(prop => ({ terms: { [prop]: names } })), minimum_should_match: 1 } }
+  });
+  if (statusCode !== 200 || !Array.isArray(body?.hits?.hits)) { throw new Error(`fields search status ${statusCode}`); }
+  const takenBy = new Map();
+  for (const hit of body.hits.hits) {
+    for (const dbName of fieldNames(hit._source)) {
+      (takenBy.get(dbName) ?? takenBy.set(dbName, new Set()).get(dbName)).add(hit._id);
+    }
+  }
+  for (const create of creates) {
+    create.dropped = create.names.some(dbName => [...(takenBy.get(dbName) ?? [])].some(id => id !== create.id));
+  }
+}
+
+async function validateBulk (req) {
   if (!req._body) {
     return true;
   }
@@ -535,7 +615,10 @@ function validateBulk (req) {
   }
 
   const lines = body.toString('utf8').split('\n');
+  // Strings, or a field create object that may still be dropped
   const out = [];
+  const fieldCreates = [];
+  const deletedFields = new Set();
   let rewrote = false;
   for (let i = 0; i < lines.length; i++) {
     // ES allows blank lines between pairs of meta/object
@@ -551,9 +634,21 @@ function validateBulk (req) {
         const _index = json.index._index;
         if (isFieldsIndex(_index)) {
           if (lines[i + 1] === undefined) { throw new Error('Missing index body'); }
-          out.push(JSON.stringify({ create: json.index }), lines[i + 1]);
+          const id = json.index._id;
+          const source = JSON.parse(lines[i + 1]);
           rewrote = true;
           i++;
+          // Viewers skip a bad definition, drop it here so it never gets stored but
+          // the rest of capture's batch of new fields still is
+          if (!Config.isValidFieldDoc({ _id: id, _source: source })) {
+            console.log(`Bulk dropping invalid field definition node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(lines[i - 1]));
+            continue;
+          }
+          // A delete then create of the same id would redefine it
+          if (deletedFields.has(id)) { continue; }
+          const create = { id, names: fieldNames(source), lines: [JSON.stringify({ create: json.index }), lines[i]] };
+          fieldCreates.push(create);
+          out.push(create);
           continue;
         }
         if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
@@ -578,6 +673,16 @@ function validateBulk (req) {
       } else if (typeof json.delete === 'object') {
         const _index = json.delete._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        // A delete then create redefines the field, capture only deletes obsolete
+        // http.request-/http.response- fields so dropping it just leaves them.
+        // Capture resends those on every start, so only log once per sensor.
+        if (!req.sensor.loggedFieldDelete) {
+          req.sensor.loggedFieldDelete = true;
+          console.log(`Bulk dropping field deletes node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(lines[i]));
+        }
+        if (ArkimeUtil.isString(json.delete._id)) { deletedFields.add(json.delete._id); }
+        rewrote = true;
+        continue;
       } else {
         console.log('Failed bulk', JSON.stringify(json, null, 2));
         throw new Error('Missing create, update, delete or index operation');
@@ -595,13 +700,27 @@ function validateBulk (req) {
     }
   }
 
+  if (fieldCreates.length > 0) {
+    try {
+      await dropFieldCollisions(fieldCreates);
+      for (const create of fieldCreates) {
+        if (create.dropped) { console.log(`Bulk dropping field with a db name in use node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(create.lines[0])); }
+      }
+    } catch (err) {
+      // Can't tell which are safe, drop the new fields but keep everything else
+      console.log(`Bulk dropping new fields, error checking them node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+      for (const create of fieldCreates) { create.dropped = true; }
+    }
+  }
+
   if (rewrote) {
+    const final = out.flatMap(item => typeof item === 'string' ? [item] : (item.dropped ? [] : item.lines));
     // Everything was dropped, answer success without asking es, capture logs any error
-    if (out.length === 0) {
+    if (final.length === 0) {
       req.bulkEmpty = true;
       return true;
     }
-    req.body = Buffer.from(out.join('\n') + '\n');
+    req.body = Buffer.from(final.join('\n') + '\n');
     delete req.headers['content-encoding'];
   }
 
@@ -611,7 +730,7 @@ function validateBulk (req) {
 // Validate Files Search, the shapes capture and the sensor viewer's expiry send.
 // Only top level keys that can't widen the node filter, aggs global ignores the query.
 const filesSearchKeys = ['size', 'sort', 'query', '_source'];
-function validateFilesSearch (req) {
+async function validateFilesSearch (req) {
   try {
     const json = parseDocBody(req);
     if (!Object.keys(json).every(key => filesSearchKeys.includes(key))) { return false; }
@@ -622,12 +741,15 @@ function validateFilesSearch (req) {
     if (Object.keys(first).length !== 1 || Object.keys(first.terms).length !== 1) { return false; }
     const nodes = first.terms.node;
     if (!ArkimeUtil.isStringArray(nodes) || !nodes.includes(req.sensor.node)) { return false; }
-    // The expiry query lists every node on the sensor's host, with host set only
-    // allow nodes of sensors configured on that same host
-    if (req.sensor.host !== undefined) {
-      return nodes.every(node => node === req.sensor.node || (Object.hasOwn(sensors, node) && sensors[node].host === req.sensor.host));
-    }
-    return true;
+    // The expiry query lists every node on the sensor's host, so only allow nodes of
+    // sensors on that same host. Until its first stats doc a sensor has no host, so
+    // only its own node.
+    const host = await sensorHost(req.sensor);
+    if (host === undefined) { return nodes.every(node => node === req.sensor.node); }
+    const others = nodes.filter(node => node !== req.sensor.node);
+    if (!others.every(node => Object.hasOwn(sensors, node))) { return false; }
+    const hosts = await Promise.all(others.map(node => sensorHost(sensors[node])));
+    return hosts.every(otherHost => otherHost === host);
   } catch (e) {
     return false;
   }
@@ -678,10 +800,20 @@ function validateSearchRootId (req) {
     return false;
   }
 }
+// Only the hunt script a sensor viewer runs when its remote hunt matches, tagging
+// and hunt removal run on central viewers. Any other script could rewrite or delete
+// any session. Compared ignoring whitespace since older viewers indent it differently.
+const normScript = (source) => source.replace(/\s+/g, ' ').trim();
+const addHuntScript = normScript(DbESImpl.SESSION_SCRIPTS.addHuntToSession);
 function validateUpdate (req) {
   try {
     const json = parseDocBody(req);
-    return json.script !== undefined && json.doc === undefined;
+    if (Object.keys(json).length !== 1 || typeof json.script !== 'object' || json.script === null) { return false; }
+    const { source, lang, params } = json.script;
+    if (!Object.keys(json.script).every(key => ['source', 'lang', 'params'].includes(key))) { return false; }
+    if ((lang !== undefined && lang !== 'painless') || !ArkimeUtil.isString(source)) { return false; }
+    if (normScript(source) !== addHuntScript || typeof params !== 'object' || params === null) { return false; }
+    return Object.keys(params).length === 2 && ArkimeUtil.isString(params.huntId) && ArkimeUtil.isString(params.huntName);
   } catch (e) {
     return false;
   }
@@ -698,15 +830,120 @@ function parseDocBody (req) {
   return JSON.parse(body.toString('utf8'));
 }
 
-// Viewers use the stats hostname to decide which nodes are on their host, so
-// when the sensor has a host set it can't claim another one
-function validateStatsDoc (req) {
-  if (req.sensor.host === undefined) { return true; }
+// Stats, fields and lookups searches from viewers are plain queries. A script runs
+// with es's credential, and naming another index's doc (index or _index next to id
+// or _id: terms lookup, more_like_this, percolate, geo_shape) reads it. A wrapper
+// query (base64) or a suggester collate (string template) hides any of those from
+// this check. Exact keys, so fields named description or index are fine.
+const forbiddenSearchKeys = new Set([
+  'script', 'scripts', 'script_fields', 'script_score', 'scripted_metric', '_script', 'bucket_script',
+  'bucket_selector', 'moving_fn', 'minimum_should_match_script', 'init_script', 'map_script', 'combine_script',
+  'reduce_script', 'runtime_mappings', 'wrapper', 'collate'
+]);
+function hasForbiddenSearchKey (value) {
+  if (Array.isArray(value)) { return value.some(hasForbiddenSearchKey); }
+  if (typeof value !== 'object' || value === null) { return false; }
+  if ((Object.hasOwn(value, 'index') || Object.hasOwn(value, '_index')) && (Object.hasOwn(value, 'id') || Object.hasOwn(value, '_id'))) { return true; }
+  return Object.keys(value).some(key => forbiddenSearchKeys.has(key) || hasForbiddenSearchKey(value[key]));
+}
+
+function validateSearchBody (req) {
+  if (!req._body) { return true; }
   try {
-    const json = parseDocBody(req);
-    return typeof json === 'object' && json !== null && json.hostname === req.sensor.host;
+    return !hasForbiddenSearchKey(parseDocBody(req));
   } catch (e) {
     return false;
+  }
+}
+
+// The configured host, else the hostname pinned from the sensor's first stats doc
+function knownHost (sensor) {
+  return sensor.host ?? sensor.pinnedHost;
+}
+
+// Another esProxy may have pinned the sensor since this one started, so a missing pin
+// is looked up from its stats doc (a get by id is realtime) before trusting a new one
+async function sensorHost (sensor) {
+  const host = knownHost(sensor);
+  if (host !== undefined) { return host; }
+  sensor.pinLookup ??= lookupPinnedHost(sensor).finally(() => { delete sensor.pinLookup; });
+  return sensor.pinLookup;
+}
+
+async function lookupPinnedHost (sensor) {
+  const { statusCode, body } = await esRequestJson('GET', `/${prefix}stats/_doc/${encodeURIComponent(sensor.node)}?_source=hostname`);
+  if (statusCode === 404) { return undefined; }
+  if (statusCode !== 200) { throw new Error(`status ${statusCode}`); }
+  // A stats doc that exists without a hostname isn't a missing pin, fail closed
+  if (!ArkimeUtil.isString(body?._source?.hostname)) {
+    if (!sensor.loggedNoHostname) {
+      sensor.loggedNoHostname = true;
+      console.log(`ERROR - stats doc for sensor ${sensor.node} has no hostname, set 'host' in esproxy-sensors or delete the doc`);
+    }
+    throw new Error('stats doc without hostname');
+  }
+  sensor.pinnedHost = body._source.hostname;
+  console.log(`Pinning sensor ${sensor.node} to hostname %s`, ArkimeUtil.sanitizeStr(sensor.pinnedHost));
+  return sensor.pinnedHost;
+}
+
+// Viewers use the stats hostname to decide which nodes are on their host, so
+// a sensor can't claim another one. Without a host set the first hostname seen sticks.
+async function validateStatsDoc (req) {
+  try {
+    const json = parseDocBody(req);
+    if (typeof json !== 'object' || json === null || !ArkimeUtil.isString(json.hostname)) { return false; }
+    const host = await sensorHost(req.sensor);
+    // No stats doc yet, this one sets the hostname. Nothing is pinned here since the
+    // write can still fail, the next request pins from the doc es has (a get is realtime)
+    // which also keeps several esProxy in agreement.
+    if (host === undefined) {
+      console.log(`First stats doc for sensor ${req.sensor.node} hostname %s`, ArkimeUtil.sanitizeStr(json.hostname));
+      return true;
+    }
+    return json.hostname === host;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Pin sensors without a host to the hostname already in their stats doc, so a
+// restart doesn't let the next stats doc pick a new one
+async function loadPinnedHosts () {
+  const ids = Object.keys(sensors).filter(sensor => sensors[sensor].host === undefined);
+  if (ids.length === 0) { return; }
+
+  // A bad url or credentials won't fix themselves, exit instead of never listening
+  const fatal = (msg) => {
+    console.log(`ERROR - loading stats hostnames to pin esproxy-sensors, ${msg}`);
+    process.exit(1);
+  };
+  if (!ArkimeUtil.isString(elasticsearch) || !URL.canParse(elasticsearch)) { fatal('invalid elasticsearch url'); }
+
+  while (true) {
+    let res;
+    try {
+      res = await esRequestJson('POST', `/${prefix}stats/_mget?_source=hostname`, { ids });
+    } catch (err) {
+      // es not up yet or not reachable
+      console.log('ERROR - loading stats hostnames to pin esproxy-sensors, retrying', ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      continue;
+    }
+    const { statusCode, body } = res;
+    // No stats index yet means no stats docs to pin from
+    if (statusCode === 404) { return; }
+    if (statusCode === 200 && Array.isArray(body?.docs)) {
+      for (const doc of body.docs) {
+        if (doc.found && ArkimeUtil.isString(doc._source?.hostname) && Object.hasOwn(sensors, doc._id)) {
+          sensors[doc._id].pinnedHost = doc._source.hostname;
+        }
+      }
+      return;
+    }
+    if (statusCode < 500 && statusCode !== 429) { fatal(`status ${statusCode}${body === undefined ? ' with a non JSON response' : ''}`); }
+    console.log(`ERROR - loading stats hostnames to pin esproxy-sensors, status ${statusCode}, retrying`);
+    await new Promise(resolve => setTimeout(resolve, 5000));
   }
 }
 
@@ -722,30 +959,56 @@ function validateFilesDoc (req) {
   }
 }
 
-// Partial doc update only, and it can't move the file to another node
+// Viewers key dstats by nodeName, so it must be the sensor's own
+function validateDstatsDoc (req) {
+  try {
+    const json = parseDocBody(req);
+    return typeof json === 'object' && json !== null && json.nodeName === req.sensor.node;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Partial doc update only, and it can't move the file to another node or change
+// the path or lock that viewers trust when reading and expiring the file
 function validateFilesUpdate (req) {
   try {
     const json = parseDocBody(req);
     return Object.keys(json).length === 1 && typeof json.doc === 'object' && json.doc !== null &&
-      (json.doc.node === undefined || json.doc.node === req.sensor.node);
+      (json.doc.node === undefined || json.doc.node === req.sensor.node) &&
+      !Object.hasOwn(json.doc, 'name') && !Object.hasOwn(json.doc, 'indexFilename') && !Object.hasOwn(json.doc, 'locked');
   } catch (e) {
     return false;
   }
 }
 
 // Post requests
+// Express 4 doesn't catch a rejected async handler, and an unhandled rejection
+// would exit esProxy for every sensor
 app.post('*', saveBody, (req, res) => {
+  handlePost(req, res).catch(err => {
+    console.log('POST error', ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+    if (!res.headersSent) { res.status(500).send('Internal proxy error'); }
+  });
+});
+
+async function handlePost (req, res) {
   const path = req.esPath;
 
+  // These may look up a sensor's pinned host or existing fields in es
+  const statsOk = path === `/${prefix}stats/_doc/${req.sensor.node}` && await validateStatsDoc(req);
+  const filesSearchOk = path === `/${prefix}files/_search` && await validateFilesSearch(req);
+  const bulkOk = path.startsWith('/_bulk') && await validateBulk(req);
+
   // Empty IFs since those are allowed requests and will run code at end
-  if (postExact[path]) {
+  if (postExact[path] && validateSearchBody(req)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
-  } else if (path === `/${prefix}stats/_doc/${req.sensor.node}` && validateStatsDoc(req)) {
-  } else if (isOwnDstatsDoc(path, req.sensor.node)) {
+  } else if (statsOk) {
+  } else if (isOwnDstatsDoc(path, req.sensor.node) && validateDstatsDoc(req)) {
   } else if (isOwnFilesDoc(path, req.sensor.node) && validateFilesDoc(req)) {
   } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
-  } else if (path.startsWith('/_bulk') && validateBulk(req)) {
-  } else if (path === `/${prefix}files/_search` && validateFilesSearch(req)) {
+  } else if (bulkOk) {
+  } else if (filesSearchOk) {
   } else if (isSessionsIndicesPath(path, '_search', true) && (validateSearchIds(req) || validateSearchRootId(req))) {
   } else if (historyDocRe.test(path)) {
   } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
@@ -766,7 +1029,7 @@ app.post('*', saveBody, (req, res) => {
     console.log('Proxy error', e);
     res.status(500).send('Internal proxy error');
   });
-});
+}
 
 // Delete requests
 app.delete('*', (req, res) => {
@@ -820,6 +1083,13 @@ async function main () {
   }
   if (sigV4CredentialsTee) {
     await sigV4CredentialsTee.initialize();
+  }
+
+  // Before listening, otherwise a stats doc could beat the pin
+  await loadPinnedHosts();
+  const unpinned = Object.values(sensors).filter(sensor => knownHost(sensor) === undefined);
+  if (unpinned.length > 0) {
+    console.log(`WARNING - ${unpinned.length} esproxy-sensors have no 'host' and no stats doc yet, their first stats doc will set the hostname viewers trust for them. Set 'host' to choose it instead.`);
   }
 
   ArkimeUtil.createHttpServer(app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));

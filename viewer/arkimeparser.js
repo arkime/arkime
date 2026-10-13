@@ -906,8 +906,9 @@ function stringQuery (yy, field, str) {
     checkRegex(str);
 
     str = str.substring(1, str.length - 1);
-    if (info.transform) {
-      str = global.arkime[info.transform](str).replace(/2e/g, '.');
+    const transform = fieldTransform(info);
+    if (transform) {
+      str = transform(str).replace(/2e/g, '.');
     }
     dbField = field2Raw(yy, field);
     obj = { regexp: {} };
@@ -921,7 +922,7 @@ function stringQuery (yy, field, str) {
     quoted = true;
   } else if (isArrayFull(str)) {
     const rawField = field2Raw(yy, field);
-    const strs = ListToArrayMap(str, global.arkime[info.transform]);
+    const strs = ListToArrayMap(str, fieldTransform(info));
 
     const items = [];
     let terms = null;
@@ -987,8 +988,9 @@ function stringQuery (yy, field, str) {
     return obj;
   }
 
-  if (info.transform) {
-    str = global.arkime[info.transform](str);
+  const transform = fieldTransform(info);
+  if (transform) {
+    str = transform(str);
   }
 
   if (!isNaN(str) && !quoted) {
@@ -1104,6 +1106,12 @@ function ListToArray (text, always) {
     strs[i] = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
   }
   return strs;
+}
+
+// Field docs, and so transform, can come from sensors, only use our own functions
+function fieldTransform (info) {
+  if (typeof info.transform !== 'string' || !Object.hasOwn(global.arkime, info.transform)) { return undefined; }
+  return typeof global.arkime[info.transform] === 'function' ? global.arkime[info.transform] : undefined;
 }
 
 function ListToArrayMap (text, mapCb, always) {
