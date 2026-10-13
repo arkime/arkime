@@ -117,6 +117,12 @@ include:
     runson: blacksmith-4vcpu-ubuntu-2404
     viewertest: packetpocket
 
+  - version: alpine324.x86_64
+    container: ghcr.io/arkime/arkime-build-alpine324:7.0.0-2
+    buildopt: "--kafka"
+    python: python3
+    prbuild: true
+
   ############# ARM #############
   - version: al2023.aarch64
     container: ghcr.io/arkime/arkime-build-al2023-arm64:7.0.0-2
@@ -195,6 +201,13 @@ include:
     package: rpm
     python: python3
     runson: ubuntu-24.04-arm
+
+  - version: alpine324.aarch64
+    container: ghcr.io/arkime/arkime-build-alpine324-arm64:7.0.0-2
+    buildopt: "--kafka"
+    python: python3
+    runson: ubuntu-24.04-arm
+    prbuild: true
 
   ############# FreeBSD #############
   - version: freebsd14.x86_64
