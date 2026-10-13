@@ -624,6 +624,8 @@ async function validateBulk (req) {
     // ES allows blank lines between pairs of meta/object
     if (lines[i].trim() === '') { continue; }
     let json;
+    // The line an error is about, the body line once the command parsed
+    let errLine = i;
     try {
       json = JSON.parse(lines[i]);
       if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
@@ -635,6 +637,7 @@ async function validateBulk (req) {
         if (isFieldsIndex(_index)) {
           if (lines[i + 1] === undefined) { throw new Error('Missing index body'); }
           const id = json.index._id;
+          errLine = i + 1;
           const source = JSON.parse(lines[i + 1]);
           rewrote = true;
           i++;
@@ -658,6 +661,7 @@ async function validateBulk (req) {
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        errLine = i + 1;
         const update = JSON.parse(lines[i + 1]);
         if (Object.keys(update).length !== 1 || typeof update.doc !== 'object' || update.doc === null) { throw new Error('Fields update must be a partial doc'); }
         const doc = Object.fromEntries(Object.entries(update.doc).filter(([key]) => fieldsUpdateKeys.includes(key)));
@@ -690,13 +694,15 @@ async function validateBulk (req) {
     } catch (err) {
       // Only the failing command's operation, _index and _id, the POST failed debug log has the full body
       let command = 'unparsable';
-      if (json !== null && typeof json === 'object') {
+      if (json !== null && typeof json === 'object' && !Array.isArray(json) && Object.keys(json).length > 0) {
         const operation = Object.keys(json)[0];
         const { _index, _id } = json[operation] ?? {};
         const scalar = (v) => (typeof v === 'string' || typeof v === 'number') ? v : undefined;
         command = JSON.stringify({ [operation]: { _index: scalar(_index), _id: scalar(_id) } });
       }
-      console.log('Bulk failed node: %s line: %d %s - %s', req.sensor.node, i + 1, ArkimeUtil.sanitizeStr(command), ArkimeUtil.sanitizeStr(err.message));
+      // A JSON.parse message quotes the input, which is the body
+      const reason = err instanceof SyntaxError ? 'invalid JSON' : err.message;
+      console.log('Bulk failed node: %s line: %d %s - %s', req.sensor.node, errLine + 1, ArkimeUtil.sanitizeStr(command), ArkimeUtil.sanitizeStr(reason));
       if (Config.debug) {
         console.log(err);
       }
