@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 332;
+use Test::More tests => 336;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -302,6 +302,20 @@ $req->content($bulk_bad_json);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "bulk with invalid JSON rejected");
 is ($response->content, "Not authorized for API");
+
+# Bulk - a command whose body line is missing or not JSON is rejected
+foreach my $test (
+    [qq({"update":{"_index":"tests_fields","_id":"node"}}\n), "update without body"],
+    [qq({"update":{"_index":"tests_fields","_id":"node"}}\nnot json\n), "update with invalid JSON body"],
+    [qq({"index":{"_index":"tests_fields","_id":"esproxy.nobody"}}\n), "fields index without body"],
+    [qq({"index":{"_index":"tests_fields","_id":"esproxy.nobody"}}\nnot json\n), "fields index with invalid JSON body"],
+) {
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+    $req->header('Content-Type' => 'application/x-ndjson');
+    $req->content($test->[0]);
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 400, "bulk $test->[1] rejected");
+}
 
 # Bulk - multiple operations in one action line should be rejected
 my $bulk_multi_op = qq({"index":{"_index":"tests_sessions3-2024","_id":"1"},"create":{"_index":"tests_sessions3-2024","_id":"2"}}\n{"field":"value"}\n);

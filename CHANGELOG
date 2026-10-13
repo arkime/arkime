@@ -76,6 +76,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4309 Fix a capture node being able to read and change other indices through esProxy
   - #4309 Fix some viewer and capture requests being wrongly rejected by esProxy
   - #4342 Fix more ways a capture node could get around esProxy, new optional host setting in esproxy-sensors
+  - #4330 Rejected bulk and POST request bodies are now only logged with --debug, rejected bulk logs name the failing command (thanks @rht-jbittner)
   - #4343 Fix a capture node being able to read user hashed passwords, TOTP secrets and Cont3xt keys through esProxy
   - #4345 Fix more ways a capture node could read other nodes' data or change sessions, fields and stats through esProxy
 ## Parliament

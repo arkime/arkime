@@ -624,6 +624,8 @@ async function validateBulk (req) {
     // ES allows blank lines between pairs of meta/object
     if (lines[i].trim() === '') { continue; }
     let json;
+    // The line an error is about, the body line once the command parsed
+    let errLine = i;
     try {
       json = JSON.parse(lines[i]);
       if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
@@ -635,6 +637,7 @@ async function validateBulk (req) {
         if (isFieldsIndex(_index)) {
           if (lines[i + 1] === undefined) { throw new Error('Missing index body'); }
           const id = json.index._id;
+          errLine = i + 1;
           const source = JSON.parse(lines[i + 1]);
           rewrote = true;
           i++;
@@ -658,11 +661,14 @@ async function validateBulk (req) {
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (lines[i + 1] === undefined) { throw new Error('Missing update body'); }
+        errLine = i + 1;
         const update = JSON.parse(lines[i + 1]);
         if (Object.keys(update).length !== 1 || typeof update.doc !== 'object' || update.doc === null) { throw new Error('Fields update must be a partial doc'); }
         const doc = Object.fromEntries(Object.entries(update.doc).filter(([key]) => fieldsUpdateKeys.includes(key)));
         if (Object.keys(doc).length !== Object.keys(update.doc).length) {
-          console.log(`Bulk dropping field update keys node: ${req.sensor.node}`, ArkimeUtil.sanitizeStr(lines[i + 1]));
+          const dropped = Object.keys(update.doc).filter(key => !fieldsUpdateKeys.includes(key));
+          console.log('Bulk dropping field update keys node: %s keys: %s', req.sensor.node, ArkimeUtil.sanitizeStr(dropped.join(',')));
           rewrote = true;
         }
         if (Object.keys(doc).length > 0) {
@@ -684,11 +690,23 @@ async function validateBulk (req) {
         rewrote = true;
         continue;
       } else {
-        console.log('Failed bulk', JSON.stringify(json, null, 2));
         throw new Error('Missing create, update, delete or index operation');
       }
     } catch (err) {
-      console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
+      // Only the failing command's operation, _index and _id, the POST failed debug log has the full body
+      let command = 'unparsable';
+      if (json !== null && typeof json === 'object' && !Array.isArray(json) && Object.keys(json).length > 0) {
+        const operation = Object.keys(json)[0];
+        const { _index, _id } = json[operation] ?? {};
+        const scalar = (v) => (typeof v === 'string' || typeof v === 'number') ? v : undefined;
+        command = JSON.stringify({ [operation]: { _index: scalar(_index), _id: scalar(_id) } });
+      }
+      // A JSON.parse message quotes the input, which is the body
+      const reason = err instanceof SyntaxError ? 'invalid JSON' : err.message;
+      console.log('Bulk failed node: %s line: %d %s - %s', req.sensor.node, errLine + 1, ArkimeUtil.sanitizeStr(command), ArkimeUtil.sanitizeStr(reason));
+      if (Config.debug) {
+        console.log(err);
+      }
       return false;
     }
     // delete has no body line, all others do
@@ -1018,8 +1036,9 @@ async function handlePost (req, res) {
     }
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
-    // Log failed body for debugging hacking
-    console.log(req.body.toString('utf8'));
+    if (Config.debug && Buffer.isBuffer(req.body)) {
+      console.log(req.body.toString('utf8'));
+    }
     return res.status(400).send('Not authorized for API');
   }
   if (req.bulkEmpty) {
