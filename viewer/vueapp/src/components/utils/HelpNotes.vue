@@ -13,13 +13,15 @@ SPDX-License-Identifier: Apache-2.0
         role="button"
         @click="close"
         class="no-decoration close-btn">
-        <v-icon icon="mdi-close" />
+        <v-icon
+          icon="mdi-close"
+          size="small" />
         <v-tooltip activator="parent">{{ $t('helpNotes.closeTip') }}</v-tooltip>
       </a>
       <div class="pa-3">
         <div
           v-if="message.id === 'welcome'"
-          class="text-center pe-4">
+          class="text-center pe-6">
           <v-icon
             icon="mdi-heart"
             class="text-theme-accent me-1" />
@@ -37,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <div
           v-else-if="message.id === 'v7'"
-          class="pe-4">
+          class="pe-6">
           <div class="text-center">
             <v-icon
               icon="mdi-star"
@@ -57,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <div
           v-else
-          class="text-center pe-4">
+          class="text-center pe-6">
           <v-icon
             icon="mdi-lightbulb-on-outline"
             class="text-theme-accent me-1" />
