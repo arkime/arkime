@@ -293,7 +293,10 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     while (!req->done || DLL_COUNT(item_, req->items) > 0) {
         if (!req->done && DLL_COUNT(item_, req->items) == 0) {
             creds = arkime_credentials_get("sqs", "sqsAccessKeyId", "sqsSecretAccessKey");
-            // Update tokenHeader
+            // Update the keys and tokenHeader, they rotate
+            char userpwd[256];
+            snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
+            arkime_http_set_userpwd(server, userpwd);
             if (creds->token) {
                 snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
             }
