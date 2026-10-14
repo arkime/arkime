@@ -231,7 +231,7 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
     }
 
     int i;
-    for (i = 0; out[i]; i += 4) {
+    for (i = 0; out[i] && out[i + 2]; i += 4) {
         if (config.debug > 2)
             LOG("  KEY %.*s DATA %.*s", out[i + 1], data + out[i], out[i + 3], data + out[i + 2]);
 
@@ -293,7 +293,7 @@ LOCAL void suricata_process()
     memset(&dstIp, 0, sizeof(dstIp));
 
     int i;
-    for (i = 0; out[i]; i += 4) {
+    for (i = 0; out[i] && out[i + 2]; i += 4) {
         if (config.debug > 2)
             LOG("KEY %.*s DATA %.*s", out[i + 1], line + out[i], out[i + 3], line + out[i + 2]);
 

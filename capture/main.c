@@ -587,7 +587,8 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
         return 0;
     }
 
-    for (int i = 0; out[i]; i += 4) {
+    // js0n doesn't enforce key:value pairs, so an odd token count puts the terminator at out[i + 2]
+    for (int i = 0; out[i] && out[i + 2]; i += 4) {
         if (out[i + 1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
             *olen = out[i + 3];
             return data + out[i + 2];

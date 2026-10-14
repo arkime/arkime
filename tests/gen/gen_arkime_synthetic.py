@@ -48,7 +48,8 @@ Layout:
   - smb_andx_skip (7 packets)
   - sip_tcp_body_skip (212 packets)
   - http_connect_split_line (11 packets)
-  - http_connect_smtp_guess (13 packets, appended last)
+  - http_connect_smtp_guess (13 packets)
+  - dns_limits (3 sessions, 3 packets, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -3958,6 +3959,48 @@ def sec_http_connect_smtp_guess():
     ])
 
 
+def sec_dns_limits():
+    # Append DNS responses that hit the dns.c name and per message record limits.
+    #
+    # 10.9.73.2:53 -> 10.9.73.1:40001: the first answer's owner is 245 wire bytes and
+    #   is kept, the second answer's owner reaches 309 wire bytes through a pointer to
+    #   the first, expect tag dns:name-too-long and only the first answer.
+    # 10.9.74.2:53 -> 10.9.74.1:40002: 320 answers pointing at a 247 character
+    #   question name, a large valid response, expect all 320 answers kept.
+    # 10.9.75.2:53 -> 10.9.75.1:40003: NSEC answer with two full type bitmap windows,
+    #   expect tag dns:nsec-too-many-types and only 256 types listed.
+    smac = bytes.fromhex('02aa00007301')
+    cmac = bytes.fromhex('02aa00007302')
+
+    def hdr(txid, an):
+        return struct.pack('>HHHHHH', txid, 0x8180, 1, an, 0, 0)
+
+    def rr_a(owner, ip):
+        return owner + struct.pack('>HHIH', 1, 1, 60, 4) + bytes(ip)
+
+    def udp(src, dst, sport, dport, payload):
+        return _eth_ip(src, dst, smac, cmac, 17, struct.pack('>HHHH', sport, dport, 8 + len(payload), 0) + payload)
+
+    p1 = hdr(0x7301, 2) + b'\x01q\x07example\x00' + struct.pack('>HH', 1, 1)
+    owner1Off = len(p1)
+    p1 += rr_a(b''.join(b'\x3c' + b'a' * 60 for _ in range(4)) + b'\x00', [10, 9, 73, 3])
+    p1 += rr_a(b'\x3f' + b'c' * 63 + struct.pack('>H', 0xc000 | owner1Off), [10, 9, 73, 4])
+
+    qname = b''.join(b'\x3d' + b'b' * 61 for _ in range(4)) + b'\x00'
+    p2 = hdr(0x7402, 320) + qname + struct.pack('>HH', 1, 1)
+    p2 += b''.join(rr_a(b'\xc0\x0c', [10, 9, 74, 3]) for _ in range(320))
+
+    p3 = hdr(0x7503, 1) + b'\x01n\x07example\x00' + struct.pack('>HH', 47, 1)
+    rdata = b'\x01a\x00' + b''.join(bytes([w, 32]) + b'\xff' * 32 for w in range(2))
+    p3 += b'\xc0\x0c' + struct.pack('>HHIH', 47, 1, 60, len(rdata)) + rdata
+
+    return _records([
+        udp('10.9.73.2', '10.9.73.1', 53, 40001, p1),
+        udp('10.9.74.2', '10.9.74.1', 53, 40002, p2),
+        udp('10.9.75.2', '10.9.75.1', 53, 40003, p3),
+    ], 1700024700.0)
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
@@ -4016,6 +4059,7 @@ def main():
     out += sec_sip_tcp_body_skip()
     out += sec_http_connect_split_line()
     out += sec_http_connect_smtp_guess()
+    out += sec_dns_limits()
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

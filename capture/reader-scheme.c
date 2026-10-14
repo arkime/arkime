@@ -88,6 +88,7 @@ LOCAL struct {
     int32_t                blockSize;
     int                    haveInterface;
     uint64_t               tsresol;
+    int                    gotHeader; // current load claimed readerPos
 } readerState;
 
 LOCAL void reader_scheme_pause();
@@ -164,6 +165,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     readerState.fileHeaderLen = 24;
     readerState.isPcapNG = 0;
     readerState.haveInterface = -1;
+    readerState.gotHeader = 0;
     if (readerState.packet) {
         arkime_packet_free(readerState.packet);
         readerState.packet = 0;
@@ -172,7 +174,8 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     int rcl = readerScheme->load(uri, flags, actions);
 
     gboolean notifyHandedOff = FALSE;
-    if (rcl == 0 && offlineInfo[readerState.readerPos].didBatch) {
+    // An empty or header-less file never claims a slot, readerPos is still the previous file's
+    if (rcl == 0 && readerState.gotHeader && offlineInfo[readerState.readerPos].didBatch) {
         // Stash an async file-done notification on the offlineInfo slot. The
         // packet thread will fire file-done + decref when the last packet of
         // this file has been processed.
@@ -206,8 +209,8 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
         } else {
             arkime_command_notify_file_done(actions->notifyClientRef, uri,
-                                            offlineInfo[readerState.readerPos].lastBytes,
-                                            offlineInfo[readerState.readerPos].lastPackets);
+                                            readerState.gotHeader ? offlineInfo[readerState.readerPos].lastBytes : 0,
+                                            readerState.gotHeader ? offlineInfo[readerState.readerPos].lastPackets : 0);
         }
     }
 
@@ -230,7 +233,10 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
     // if on the scheme thread and stack isn't too deep just process right away
     if (g_thread_self() == schemeThread && depth < 20) {
         depth++;
+        // A nested load (directory, sqs) claims its own slot, don't let the parent see it as its own
+        int gotHeader = readerState.gotHeader;
         arkime_reader_scheme_load_thread(uri, flags, actions);
+        readerState.gotHeader = gotHeader;
         depth--;
         return;
     }
@@ -278,6 +284,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
     }
 
     readerState.readerPos = nextPos;
+    readerState.gotHeader = 1;
     // We've wrapped around all 256 reader items, clear the previous file information
     if (offlineInfo[readerState.readerPos].filename) {
         g_free(offlineInfo[readerState.readerPos].filename);
