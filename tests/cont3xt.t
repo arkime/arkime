@@ -1718,17 +1718,23 @@ $json = eval { cont3xtPutToken('/api/integration/settings?arkimeRegressionUser=s
   settings => { Twilio => { disabled => JSON::true } }
 }), $staleToken) };
 ok(!$json || !$json->{success}, "disabled user can't save integration settings with a cached user");
-$json = esGet("/tests_users/_doc/sac-stale");
-is($json->{_source}->{enabled}, JSON::false, "user is still disabled");
+$json = viewerPost("/api/users", '{"filter": "sac-stale"}');
+my ($staleUser) = grep { $_->{userId} eq "sac-stale" } @{$json->{data}};
+is($staleUser->{enabled}, JSON::false, "user is still disabled");
 
 ################################################################################
 ### Keys that don't decrypt (eg passwordSecret changed) don't break searches
-viewerPostToken("/api/user", '{"userId": "sac-badkeys", "userName": "badkeys", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
-esPost("/tests_users/_update/sac-badkeys?refresh=true", '{"doc": {"cont3xt": {"keys": "deadbeef"}}}');
-$json = cont3xtPost('/api/integration/search?arkimeRegressionUser=sac-badkeys', to_json({
-  query => "badkeys" . time(),
-  doIntegrations => ["urlapi:test"]
-}));
-is($json->[-1]->{purpose}, "finish", "search finishes with undecryptable keys");
-my ($badKeysData) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$json};
-is($badKeysData->{data}->{data}->{key}, undef, "undecryptable keys aren't used");
+SKIP: {
+  # the bad keys are written straight into the ES users index
+  skip "users not in ES", 2 if ($ENV{USERSELASTICSEARCH} // "http") !~ /^http/;
+
+  viewerPostToken("/api/user", '{"userId": "sac-badkeys", "userName": "badkeys", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+  esPost("/tests_users/_update/sac-badkeys?refresh=true", '{"doc": {"cont3xt": {"keys": "deadbeef"}}}');
+  $json = cont3xtPost('/api/integration/search?arkimeRegressionUser=sac-badkeys', to_json({
+    query => "badkeys" . time(),
+    doIntegrations => ["urlapi:test"]
+  }));
+  is($json->[-1]->{purpose}, "finish", "search finishes with undecryptable keys");
+  my ($badKeysData) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$json};
+  is($badKeysData->{data}->{data}->{key}, undef, "undecryptable keys aren't used");
+}
