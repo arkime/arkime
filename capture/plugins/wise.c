@@ -106,6 +106,8 @@ typedef struct wiseitem_head {
 } WiseItemHead_t;
 
 #define WISE_MAX_REQUEST_ITEMS 512
+// Keep well below the uint16_t outstandingQueries limit, mid saves can keep re-adding lookups
+#define WISE_MAX_SESSION_OUTSTANDING 1000
 typedef struct wiserequest {
     BSB          bsb;
     WiseItem_t  *items[WISE_MAX_REQUEST_ITEMS];
@@ -484,7 +486,7 @@ LOCAL void wise_lookup(ArkimeSession_t *session, char *value, int type, uint16_t
     if (wi) {
         // Already being looked up
         if (wi->sessions) {
-            if (wi->numSessions >= 4096) {
+            if (wi->numSessions >= 4096 || session->outstandingQueries >= WISE_MAX_SESSION_OUTSTANDING) {
                 stats[type][INTEL_STAT_FAIL]++;
                 goto cleanup;
             }
@@ -507,7 +509,14 @@ LOCAL void wise_lookup(ArkimeSession_t *session, char *value, int type, uint16_t
             stats[type][INTEL_STAT_CACHE]++;
             goto cleanup;
         }
+    }
 
+    if (session->outstandingQueries >= WISE_MAX_SESSION_OUTSTANDING) {
+        stats[type][INTEL_STAT_FAIL]++;
+        goto cleanup;
+    }
+
+    if (wi) {
         /* Had it in cache, but it is too old */
         DLL_REMOVE(wil_, &types[type].itemList, wi);
         arkime_field_ops_free(&wi->ops);

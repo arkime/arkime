@@ -494,7 +494,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     memset(fieldShortHand, 0xff, sizeof(fieldShortHand));
 
     int i;
-    for (i = 0; out[i]; i += 4) {
+    for (i = 0; out[i] && out[i + 2]; i += 4) {
         if (out[i + 1] == 3 && memcmp("md5", data + out[i], sizeof("md5") - 1) == 0) {
             file->md5 = g_strndup((char *)data + out[i + 2], out[i + 3]);
         } else if (out[i + 1] == 4 && memcmp("tags", data + out[i], sizeof("tags") - 1) == 0) {

@@ -115,7 +115,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     }
 
     info->expression = g_strndup((char *)expression, expression_len);
-    for (int i = 0; out[i]; i += 4) {
+    for (int i = 0; out[i] && out[i + 2]; i += 4) {
         if (strncmp("group", (char *)data + out[i], 5) == 0) {
             g_free(info->group);
             info->group = g_strndup((char *)data + out[i + 2], out[i + 3]);
