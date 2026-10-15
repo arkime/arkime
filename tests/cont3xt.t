@@ -1,9 +1,10 @@
 # Test cont3xt.js
-use Test::More tests => 310;
+use Test::More tests => 332;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
+use MIME::Base64;
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -1674,3 +1675,109 @@ eq_or_diff($json, from_json('{"success": false, "text": "Settings too large"}'),
 
 $json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "integration settings reset");
+
+################################################################################
+### URLAPI - against mini-wise-source.js
+viewerPostToken("/api/user", '{"userId": "sac-urlapi", "userName": "urlapi", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+
+# placeholders are encoded, the mock decodes and echoes them back
+my $uval = 'a/b?c#d&$&>>';
+my $ub64 = encode_base64($uval, '');
+(my $ub64url = $ub64) =~ tr{+/}{-_};
+$ub64url =~ s/=+$//;
+$json = cont3xtPost('/api/integration/text/urlapi:test/search', to_json({ query => $uval }));
+is($json->{data}->{data}->{value}, $uval, "urlapi {value} encoded");
+is($json->{data}->{data}->{b64}, $ub64, "urlapi {valueBase64} encoded");
+is($json->{data}->{data}->{b64url}, $ub64url, "urlapi {valueBase64Url}");
+is($json->{data}->{_cont3xt}->{count}, 1, "urlapi count");
+
+# 404 is no result
+$json = cont3xtPost('/api/integration/text/urlapi:test/search', to_json({ query => "miss" }));
+is($json->{purpose}, "data", "urlapi miss is data");
+ok(!exists $json->{data}->{data}, "urlapi miss has no result");
+
+# redirects aren't followed by default
+$json = cont3xtPost('/api/integration/text/urlapi:redirect/search', to_json({ query => "redir" }));
+is($json->{purpose}, "fail", "urlapi redirect not followed");
+
+# a result fetched with a user's own key is only cached for that user
+sub urlapiResult {
+  my ($user, $query) = @_;
+  my $results = cont3xtPost("/api/integration/search?arkimeRegressionUser=$user", to_json({
+    query => $query,
+    doIntegrations => ["urlapi:test"]
+  }));
+  my ($result) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$results};
+  return $result->{data}->{data};
+}
+
+$json = cont3xtPutToken('/api/integration/settings', to_json({
+  settings => { "urlapi:test" => { key => "anonkey" } }
+}), $token);
+is($json->{success}, 1, "urlapi key saved");
+
+my $ucache = "urlapicache" . time();
+my $udata = urlapiResult("anonymous", $ucache);
+is($udata->{key}, "anonkey", "urlapi sends the user key");
+is($udata->{hits}, 1, "urlapi key user fetches");
+
+$udata = urlapiResult("sac-urlapi", $ucache);
+is($udata->{key}, undef, "urlapi other user doesn't get the key user's result");
+is($udata->{hits}, 2, "urlapi other user fetches");
+
+$udata = urlapiResult("sac-urlapi", $ucache);
+is($udata->{hits}, 2, "urlapi other user uses the shared cache");
+
+$udata = urlapiResult("anonymous", $ucache);
+is($udata->{key}, "anonkey", "urlapi key user uses their own cache");
+is($udata->{hits}, 1, "urlapi key user cache hit");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
+is($json->{success}, 1, "urlapi key reset");
+
+################################################################################
+### URL child domain is only the parsed hostname
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "http://example.com/../../v1/account?x=",
+  doIntegrations => ["dns"]
+}));
+my ($urlLink) = grep { $_->{purpose} eq "link" } @{$json};
+eq_or_diff($urlLink->{indicator}, from_json('{"query": "example.com", "itype": "domain"}'), "url child domain is the hostname");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "http://x/../v1/account",
+  doIntegrations => ["dns"]
+}));
+is(scalar(grep { $_->{purpose} eq "link" } @{$json}), 0, "url child skipped when the hostname isn't a domain");
+
+################################################################################
+### Integration settings save doesn't write back a stale (cached) user
+viewerPostToken("/api/user", '{"userId": "sac-stale", "userName": "stale", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+my $staleToken = getCont3xtTokenCookie('sac-stale');
+cont3xtGet('/api/integration/settings?arkimeRegressionUser=sac-stale');
+viewerPostToken("/api/user/sac-stale", '{"userId": "sac-stale", "userName": "stale", "enabled":false, "roles":["cont3xtUser"]}', $token);
+# relies on the 5s user cache, if it expired auth refuses with non-JSON, which is still a refusal
+$json = eval { cont3xtPutToken('/api/integration/settings?arkimeRegressionUser=sac-stale', to_json({
+  settings => { Twilio => { disabled => JSON::true } }
+}), $staleToken) };
+ok(!$json || !$json->{success}, "disabled user can't save integration settings with a cached user");
+$json = viewerPost("/api/users", '{"filter": "sac-stale"}');
+my ($staleUser) = grep { $_->{userId} eq "sac-stale" } @{$json->{data}};
+is($staleUser->{enabled}, JSON::false, "user is still disabled");
+
+################################################################################
+### Keys that don't decrypt (eg passwordSecret changed) don't break searches
+SKIP: {
+  # the bad keys are written straight into the ES users index
+  skip "users not in ES", 2 if ($ENV{USERSELASTICSEARCH} // "http") !~ /^http/;
+
+  viewerPostToken("/api/user", '{"userId": "sac-badkeys", "userName": "badkeys", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+  esPost("/tests_users/_update/sac-badkeys?refresh=true", '{"doc": {"cont3xt": {"keys": "deadbeef"}}}');
+  $json = cont3xtPost('/api/integration/search?arkimeRegressionUser=sac-badkeys', to_json({
+    query => "badkeys" . time(),
+    doIntegrations => ["urlapi:test"]
+  }));
+  is($json->[-1]->{purpose}, "finish", "search finishes with undecryptable keys");
+  my ($badKeysData) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$json};
+  is($badKeysData->{data}->{data}->{key}, undef, "undecryptable keys aren't used");
+}

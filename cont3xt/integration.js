@@ -10,6 +10,7 @@
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
+const User = require('../common/user');
 const path = require('path');
 const fs = require('fs');
 const extractDomain = require('extract-domain');
@@ -532,7 +533,7 @@ class Integration {
         continue;
       }
 
-      const cacheKey = `${integration.sharedCache ? 'shared' : shared.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
+      const cacheKey = `${integration.cachePrefix(shared.user, keys)}-${integration.name}-${itype}-${normalizedQuery}`;
       const stats = integration.stats;
       if (itypeStats[itype] === undefined) {
         makeITypeStats(itype);
@@ -768,8 +769,11 @@ class Integration {
           if (Integration.classify(url.hostname).itype === 'ip') {
             Integration.#startIntegrationsList(shared, { query: url.hostname, itype: 'ip' }, indicator, Integration.#integrations.ip);
           } else {
-            const equery = await extractDomain(query, { tld: true });
-            Integration.#startIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+            // Only the parsed hostname, the raw query can have / ? & that domain integrations put in urls
+            const equery = await extractDomain(url.hostname, { tld: true });
+            if (equery && Integration.classify(equery).itype === 'domain') {
+              Integration.#startIntegrationsList(shared, { query: equery, itype: 'domain' }, indicator, Integration.#integrations.domain);
+            }
           }
         }
       }
@@ -874,7 +878,7 @@ class Integration {
           audit(response._cont3xt.count ?? 0);
           res.send({ purpose: 'data', indicator, name: integration.name, data: response });
           if (Integration.#cache && integration.cacheable) {
-            const cacheKey = `${integration.sharedCache ? 'shared' : req.user.userId}-${integration.name}-${itype}-${normalizedQuery}`;
+            const cacheKey = `${integration.cachePrefix(req.user, keys)}-${integration.name}-${itype}-${normalizedQuery}`;
             Integration.#cache.set(cacheKey, response);
           }
         } else {
@@ -984,13 +988,29 @@ class Integration {
       return res.send({ success: false, text: 'Settings too large' });
     }
 
-    try {
-      await req.user.setCont3xtKeys(req.body.settings);
-    } catch (err) {
-      console.log('ERROR - saving cont3xt keys', err);
-      return res.send({ success: false, text: 'Save failed' });
-    }
-    res.send({ success: true, text: 'Saved' });
+    // Save onto a fresh copy, req.user can be stale (cached, or the body was held open)
+    // and saving it would undo an admin disable, role removal or password change
+    User.getUser(req.user.userId, async (err, user) => {
+      if (err || !user) {
+        return res.send({ success: false, text: 'Fetching user issue' });
+      }
+
+      if (!user.enabled || !user.hasRole('cont3xtUser')) {
+        return res.send({ success: false, text: 'Save failed' });
+      }
+
+      try {
+        await user.setCont3xtKeys(req.body.settings);
+      } catch (err) {
+        console.log('ERROR - saving cont3xt keys', err);
+        return res.send({ success: false, text: 'Save failed' });
+      }
+
+      // So the cached user sees the new keys right away
+      req.user.cont3xt ??= {};
+      req.user.cont3xt.keys = user.cont3xt.keys;
+      res.send({ success: true, text: 'Saved' });
+    });
   }
 
   /**
@@ -1055,7 +1075,7 @@ class Integration {
     if (user.cont3xt?.keys && !this.locked) {
       const keys = user.getCont3xtKeys();
       const configName = this.configName ?? this.name;
-      if (keys[configName]?.[key]) { return keys[configName]?.[key]; }
+      if (keys?.[configName]?.[key]) { return keys[configName][key]; }
     }
     return ArkimeConfig.getFull(this.configName ?? this.section ?? this.name, key, d);
   }
@@ -1067,9 +1087,24 @@ class Integration {
     if (user.cont3xt?.keys && !this.locked) {
       const keys = user.getCont3xtKeys();
       const configName = this.configName ?? this.name;
-      if (keys[configName]?.[key]) { return true; }
+      if (keys?.[configName]?.[key]) { return true; }
     }
     return false;
+  }
+
+  // Cache key prefix: results that used any of the user's own settings (key, host, etc.)
+  // must not go in the shared cache, or one user could feed results to everyone
+  cachePrefix (user, keys = user.getCont3xtKeys()) {
+    if (!this.sharedCache) { return user.userId; }
+    if (user.cont3xt?.keys && !this.locked && this.settings) {
+      const userKeys = keys?.[this.configName ?? this.name];
+      for (const setting in userKeys) {
+        if (setting !== 'disabled' && this.settings[setting] && !this.settings[setting].uiSetting && userKeys[setting]) {
+          return user.userId;
+        }
+      }
+    }
+    return 'shared';
   }
 
   userAgent () {

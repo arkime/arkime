@@ -206,6 +206,12 @@ class Auth {
       Auth.#doTrustProxy();
     }
 
+    // Strip basic+ first so basic+header* gets the header loopback default below
+    const addBasic = Auth.mode.startsWith('basic+');
+    if (addBasic) {
+      Auth.mode = Auth.mode.slice(6);
+    }
+
     if (options.userAuthIps?.length) {
       Auth.#userAuthIps = ArkimeUtil.buildIpTrie(options.userAuthIps).trie; // validated at config load
     } else if (Auth.mode.startsWith('header')) {
@@ -233,10 +239,6 @@ class Auth {
 
     Auth.#logoutUrl = ArkimeConfig.get('logoutUrl');
     Auth.#logoutUrlMethod = ArkimeConfig.get('logoutUrlMethod', 'POST');
-    const addBasic = Auth.mode.startsWith('basic+');
-    if (addBasic) {
-      Auth.mode = Auth.mode.slice(6);
-    }
 
     let sessionAuth = false;
     switch (Auth.mode) {

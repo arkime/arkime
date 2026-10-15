@@ -16,6 +16,11 @@
  * URLApi  - GET /urlapi/<value>/<valueBase64>/<valueBase64Url> echoes each
  *           decoded path segment back as JSON so source.urlapi.js placeholder
  *           encoding can be checked. A first segment of "miss" returns 404.
+ * Cont3xt - GET /cont3xt/echo/<value>/<valueBase64>/<valueBase64Url> for the
+ *           cont3xt urlapi integration. Same as URLApi plus the X-API-Key
+ *           header it was sent and how many times this value was fetched, so
+ *           tests can tell a cache hit from a fetch. "miss" returns 404,
+ *           /cont3xt/redirect/... redirects to /cont3xt/echo/redirected.
  * Databricks - Thrift TBinaryProtocol over HTTP POST (Content-Type
  *           application/x-thrift), the Hive TCLIService API. We reuse the
  *           real thrift library + the generated TCLIService types shipped with
@@ -168,6 +173,22 @@ function handleURLApi (req, res) {
     return send(res, 404, 'application/json', '{}');
   }
   return sendJSON(res, { value: segs[0], b64: segs[1], b64url: segs[2] });
+}
+
+const cont3xtHits = new Map();
+function handleCont3xt (req, res) {
+  const segs = req.url.split('?')[0].split('/').slice(2).map((s) => decodeURIComponent(s));
+  log(`CONT3XT ${req.url} -> ${JSON.stringify(segs)}`);
+  if (segs[0] === 'redirect') {
+    res.writeHead(302, { Location: '/cont3xt/echo/redirected' });
+    return res.end();
+  }
+  if (segs[0] !== 'echo' || segs[1] === undefined || segs[1] === 'miss') {
+    return send(res, 404, 'application/json', '{}');
+  }
+  const hits = (cont3xtHits.get(segs[1]) ?? 0) + 1;
+  cont3xtHits.set(segs[1], hits);
+  return sendJSON(res, { value: segs[1], b64: segs[2], b64url: segs[3], key: req.headers['x-api-key'] ?? null, hits });
 }
 
 // ----------------------------------------------------------------------------
@@ -475,6 +496,10 @@ const server = https.createServer({ key: KEY, cert: CERT }, (req, res) => {
 
     if (req.url.startsWith('/urlapi/')) {
       return handleURLApi(req, res);
+    }
+
+    if (req.url.startsWith('/cont3xt/')) {
+      return handleCont3xt(req, res);
     }
 
     return handleSplunk(req, res, bodyBuf.toString('utf8'));

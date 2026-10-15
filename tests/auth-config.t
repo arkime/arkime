@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 42;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -59,6 +59,28 @@ ArkimeConfig.initialize({ defaultConfigFile: iniFile, defaultSections: ['default
       // the form strategy runs on every unauthenticated request, not just /api/login
       r = await fetch(`http://127.0.0.1:${srv.address().port}/api/user?username=admin&password=secret`, { redirect: 'manual' });
       console.log('OTHER', r.status, (await r.text()).replace(/\n/g, ' '));
+      process.exit(0);
+    });
+    return;
+  }
+
+  if (mode === 'ipgate') {
+    await User.setUser('hdruser', { userId: 'hdruser', userName: 'hdruser', enabled: true, webEnabled: true, headerAuthEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('hdruser', 'secret') });
+    const express = require(require.resolve('express', { paths: [common] }));
+    const app = express();
+    // Pretend the peer is whatever x-test-peer says, so we can test a remote client
+    app.use((req, res, next) => {
+      Object.defineProperty(req.socket, 'remoteAddress', { value: req.headers['x-test-peer'] ?? '127.0.0.1', configurable: true });
+      next();
+    });
+    Auth.app(app);
+    app.get('/whoami', (req, res) => res.send(req.user.userId));
+    const srv = app.listen(0, '127.0.0.1', async () => {
+      const url = `http://127.0.0.1:${srv.address().port}/whoami`;
+      let r = await fetch(url, { headers: { 'x-user': 'hdruser', 'x-test-peer': '10.1.2.3' } });
+      console.log('REMOTE', r.status, await r.text());
+      r = await fetch(url, { headers: { 'x-user': 'hdruser' } });
+      console.log('LOCAL', r.status, await r.text());
       process.exit(0);
     });
     return;
@@ -151,6 +173,18 @@ is($code, 0, "form mode starts");
 like($out, qr/QUERY 403/, "login with credentials in the query string is refused");
 like($out, qr/BODY 302/, "login with credentials in the body works");
 like($out, qr/OTHER 403 .*POST body/, "credentials in the query string of any other url are refused");
+
+################################################################################
+# basic+header modes get the same loopback userAuthIps default as other header modes
+################################################################################
+foreach my $mode ("header", "header+basic", "basic+header", "basic+headerOnly") {
+    ($code, $out) = tryConfig("authMode=$mode\nuserNameHeader=x-user", "ipgate");
+    like($out, qr/^REMOTE 403 /m, "$mode refuses the user header from a remote peer by default");
+    like($out, qr/^LOCAL 200 hdruser$/m, "$mode accepts the user header from loopback");
+}
+
+($code, $out) = tryConfig("authMode=basic+header\nuserNameHeader=x-user\nuserAuthIps=10.0.0.0/8", "ipgate");
+like($out, qr/^REMOTE 200 hdruser$/m, "basic+header with userAuthIps set accepts the user header from that range");
 
 ################################################################################
 # config save can't inject ini lines, sections or keys

@@ -148,6 +148,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4338 WISE and Cont3xt Databricks connections now verify TLS certificates, set insecure=true in the databricks section to skip
   - #4343 Viewers behind esProxy MUST use authMode=s2s
   - #4345 esproxy-sensors entries without host are locked to the hostname the sensor first reported, set host if a sensor's hostname changes
+  - #4348 authMode=basic+header now only allows localhost until userAuthIps is set, the same as the other header modes
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
@@ -177,6 +178,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
   - #4328 Fix requests and large integration settings that could crash Cont3xt
+  - #4348 Results from a user's own integration keys or host are no longer shared with other users
+  - #4348 Fix URL searches sending more than the domain to domain integrations
+  - #4348 Fix saving integration settings undoing an admin disabling the user or removing roles
+  - #4348 New urlapi integration to look up indicators in your own JSON api, see https://arkime.com/settings#cont3xt-urlapi
 ## db.pl
   - #4312 Fix users-update --removeRole usersAdmin not removing usersAdmin
   - #4312 Fix initorupgrade erasing everything when OpenSearch/Elasticsearch returns an error
