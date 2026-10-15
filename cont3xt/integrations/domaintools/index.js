@@ -147,7 +147,7 @@ class DomainToolsWhoisIntegration extends Integration {
         return undefined;
       }
 
-      const result = await axios.get(`https://api.domaintools.com/v1/${domain}`, {
+      const result = await axios.get(`https://api.domaintools.com/v1/${encodeURIComponent(domain)}`, {
         params: {
           api_username: dtUser,
           api_key: dtKey
