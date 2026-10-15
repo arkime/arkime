@@ -1,10 +1,11 @@
 # Test cont3xt.js
-use Test::More tests => 319;
+use Test::More tests => 332;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
 use MIME::Base64;
+use LWP::UserAgent;
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -938,7 +939,7 @@ $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   viewId => 1
 }));
-eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string when present"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string of at most 256 characters when present"}'));
 
 $json = cont3xtPost('/api/integration/search', to_json({
     query => ","
@@ -1738,3 +1739,69 @@ SKIP: {
   my ($badKeysData) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$json};
   is($badKeysData->{data}->{data}->{key}, undef, "undecryptable keys aren't used");
 }
+
+################################################################################
+### Search history is written even when an integration doesn't answer in time
+my $slowVal = "slowaudit" . time();
+my $slowStart = time();
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => $slowVal,
+  doIntegrations => ["urlapi:slow"]
+}));
+is($json->[-1]->{purpose}, "finish", "search finishes at searchTimeout");
+cmp_ok(time() - $slowStart, "<", 8, "search doesn't wait for the slow integration");
+
+$json = cont3xtPost('/api/integration/text/urlapi:slow/search', to_json({ query => $slowVal }));
+is($json->{purpose}, "fail", "single search fails at searchTimeout");
+my ($slowStats) = grep { $_->{name} eq "urlapi:slow" } @{cont3xtGet('/api/integration/stats')->{stats}};
+is($slowStats->{directError}, 1, "single search timeout counts as an integration error");
+
+# A client that leaves mid search still gets it into the history, without waiting for searchTimeout
+my $leaveVal = "leaveaudit" . time();
+my $leaveStart = time();
+LWP::UserAgent->new(timeout => 1)->post("http://$ArkimeTest::host:3218/api/integration/search",
+  Content => to_json({ query => $leaveVal, doIntegrations => ["urlapi:slow"] }),
+  "Content-Type" => "application/json;charset=UTF-8");
+
+################################################################################
+### Tags, viewId and long bulk searches can't break the history write
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => [map { "t$_" } (1..51)],
+  doIntegrations => ["none"]
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "tags must have at most 50 entries"}'), "too many tags");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => ["x" x 257],
+  doIntegrations => ["none"]
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "every tag must be at most 256 characters"}'), "tag too long");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  viewId => "x" x 257,
+  doIntegrations => ["none"]
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string of at most 256 characters when present"}'), "viewId too long");
+
+# 500 indicators joined is over the ES keyword limit
+my $longVal = "longaudit" . time();
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => join(" ", map { $longVal . ("x" x 60) . $_ } (1..500)),
+  doIntegrations => ["none"]
+}));
+is($json->[-1]->{purpose}, "finish", "long bulk search finishes");
+
+sleep(1);
+esGet("/_flush");
+esGet("/_refresh");
+$json = cont3xtGet("/api/audits?searchTerm=$slowVal");
+is(scalar @{$json->{audits}}, 2, "timed out searches are in the history");
+$json = cont3xtGet("/api/audits?searchTerm=$leaveVal");
+is(scalar @{$json->{audits}}, 1, "search the client left is in the history");
+cmp_ok(time() - $leaveStart, "<", 5, "search the client left was saved before searchTimeout");
+$json = cont3xtGet("/api/audits?searchTerm=$longVal");
+is(scalar @{$json->{audits}}, 1, "long bulk search is in the history");
+cmp_ok(length($json->{audits}->[0]->{indicator}), "<=", 8000, "long bulk search indicator is truncated");

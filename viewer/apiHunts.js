@@ -203,11 +203,7 @@ class HuntAPIs {
 ${Config.arkimeWebURL()}hunt
       `;
 
-      // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-      const notifiers = hunt.notifier.split(',');
-      for (const notifierId of notifiers) {
-        Notifier.issueAlert(notifierId, message, () => {});
-      }
+      Notifier.issueAlerts(hunt.notifier, message);
     }
   }
 
@@ -432,11 +428,7 @@ ${Config.arkimeWebURL()}hunt
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
-          // Handle multiple notifiers (stored as comma-separated string)
-          const notifiers = hunt.notifier.split(',');
-          for (const notifierId of notifiers) {
-            Notifier.issueAlert(notifierId, message, () => {});
-          }
+          Notifier.issueAlerts(hunt.notifier, message);
           continueProcess();
         } else {
           return continueProcess();
@@ -613,11 +605,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
 
-          // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-          const notifiers = hunt.notifier.split(',');
-          for (const notifierId of notifiers) {
-            Notifier.issueAlert(notifierId, message, () => {});
-          }
+          Notifier.issueAlerts(hunt.notifier, message);
         }
 
         return continueProcess();
@@ -942,7 +930,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     // Convert notifier array to comma-separated string for storage
     if (ArkimeUtil.isStringArray(req.body.notifier)) {
-      hunt.notifier = req.body.notifier.join(',');
+      hunt.notifier = [...new Set(req.body.notifier)].join(',');
     }
 
     let query;

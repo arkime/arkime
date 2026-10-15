@@ -100,6 +100,12 @@ class MCPServer {
         return MCPServer.#error(res, 403, null, INVALID_REQUEST, 'Forbidden');
       }
 
+      // A cross-site html form can POST urlencoded or text/plain without a preflight, and the
+      // viewer parses urlencoded into the same shape, so only json, and before auth runs
+      if (!req.is('application/json')) {
+        return MCPServer.#error(res, 415, null, INVALID_REQUEST, 'Content-Type must be application/json');
+      }
+
       authenticate ??= MCPServer.authenticator();
 
       // Auth failure MUST be 401 + WWW-Authenticate and MUST NOT redirect, MCP
