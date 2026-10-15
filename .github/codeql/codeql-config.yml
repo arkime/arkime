@@ -1,0 +1,12 @@
+name: Arkime CodeQL config
+
+query-filters:
+  # Disabling cert verification is a supported option
+  - exclude:
+      id: js/disabling-certificate-validation
+  # Rate limiting is left to the deployment (reverse proxy, etc.)
+  - exclude:
+      id: js/missing-rate-limiting
+  # Logging alerts
+  - exclude:
+      id: js/clear-text-logging
