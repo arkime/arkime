@@ -77,9 +77,15 @@ class Audit {
   static async create (audit) {
     return new Promise((resolve, reject) => {
       const msg = Audit.verifyAudit(audit);
-
       if (msg) {
         return reject(msg);
+      }
+
+      // A bulk search joins every indicator, keep it under the ES keyword term limit (32766 bytes).
+      // Cut on a separator so the history page doesn't replay a partial indicator.
+      if (audit.indicator.length > 8000) {
+        const cut = audit.indicator.lastIndexOf(', ', 8000);
+        audit.indicator = audit.indicator.slice(0, cut > 0 ? cut : 8000);
       }
 
       Db.putAudit(null, audit).then((results) => {
