@@ -33,6 +33,7 @@ class Integration {
   static debug = ArkimeConfig.debug; // Used by integrations
 
   static #cache;
+  static #searchTimeout;
   static #cont3xtStartTime = Date.now();
   // a Map so a request can't reach Object.prototype members (constructor,
   // __proto__, toString, ...) by asking for an integration with that name
@@ -57,6 +58,13 @@ class Integration {
    */
   static initialize (options) {
     Integration.#cache = options.cache;
+    // setTimeout treats anything over ~24.8 days or under 1ms as 1ms, so keep it sane
+    const searchTimeout = ArkimeUtil.parseTimeStr(ArkimeConfig.get('searchTimeout', '2m'));
+    if (!Number.isInteger(searchTimeout) || searchTimeout < 1 || searchTimeout > 24 * 60 * 60) {
+      console.log(`ERROR - searchTimeout '${ArkimeUtil.sanitizeStr(String(ArkimeConfig.get('searchTimeout')))}' must be between 1s and 24h`);
+      process.exit(1);
+    }
+    Integration.#searchTimeout = searchTimeout * 1000;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
     const files = fs.globSync(options.integrationsPath + '**/index.js');
@@ -443,9 +451,10 @@ class Integration {
 
     // initial write for sub-indicators (ensures dependable tracking of indicator tree)
     if (parentIndicator != null) {
-      shared.res.write(JSON.stringify({ purpose: 'link', indicator, parentIndicator }));
-      shared.res.write(',\n');
+      shared.write({ purpose: 'link', indicator, parentIndicator });
     }
+
+    if (shared.finished) { return; }
 
     // do not reissue integrations if they have been started by a matching query reached via different descendants
     if (shared.queriedSet.has(`${query}-${itype}`)) { return; }
@@ -462,8 +471,7 @@ class Integration {
       if (integration.addMoreIntegrations && !shared.skipChildren) {
         integration.addMoreIntegrations(itype, response, (moreIndicator, enhanceInfo = undefined) => {
           if (moreIndicator != null && enhanceInfo != null && typeof enhanceInfo === 'object') {
-            shared.res.write(JSON.stringify({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo }));
-            shared.res.write(',\n');
+            shared.write({ purpose: 'enhance', indicator: moreIndicator, enhanceInfo });
           }
           Integration.#startIntegrationsList(shared, moreIndicator, indicator, Integration.#integrations[moreIndicator.itype]);
         });
@@ -473,15 +481,13 @@ class Integration {
         ? { _cont3xt: { createTime: Date.now() } }
         : response;
 
-      shared.res.write(JSON.stringify({ purpose: 'data', sent: shared.sent, total: shared.total, name: integration.name, indicator, data }));
-      shared.res.write(',\n');
+      shared.write({ purpose: 'data', sent: shared.sent, total: shared.total, name: integration.name, indicator, data });
     };
 
     const checkWriteDone = () => {
       // setImmediate to ensure that any pending integration lists have a chance to start (and contribute to total)
       setImmediate(() => {
-        if (shared.sent === shared.total && shared.finished !== true) {
-          shared.finished = true;
+        if (shared.sent === shared.total) {
           shared.finishWrite();
         }
       });
@@ -564,7 +570,7 @@ class Integration {
             stats.cacheGood++;
             istats.cacheGood++;
             shared.sent++;
-            shared.resultCount += response._cont3xt.count ?? 0;
+            shared.resultCount += Number(response._cont3xt.count) || 0;
             writeOne(integration, response);
             checkWriteDone();
             continue;
@@ -588,7 +594,7 @@ class Integration {
             stats.directGood++;
             istats.directGood++;
             if (!response._cont3xt) { response._cont3xt = {}; }
-            shared.resultCount += response._cont3xt.count ?? 0;
+            shared.resultCount += Number(response._cont3xt.count) || 0;
             response._cont3xt.createTime = Date.now();
             writeOne(integration, response);
             if (Integration.#cache && integration.cacheable) {
@@ -608,8 +614,7 @@ class Integration {
           shared.sent++;
           stats.directError++;
           istats.directError++;
-          shared.res.write(JSON.stringify({ purpose: 'fail', sent: shared.sent, total: shared.total, name: integration.name, indicator }));
-          shared.res.write(',\n');
+          shared.write({ purpose: 'fail', sent: shared.sent, total: shared.total, name: integration.name, indicator });
           checkWriteDone();
         });
     }
@@ -673,6 +678,13 @@ class Integration {
       if (req.body.tags.some(t => typeof t !== 'string')) {
         return res.send({ purpose: 'error', text: 'every tag must be a string' });
       }
+      // tags are saved in the history, keep them well under the ES keyword limit
+      if (req.body.tags.length > 50) {
+        return res.send({ purpose: 'error', text: 'tags must have at most 50 entries' });
+      }
+      if (req.body.tags.some(t => t.length > 256)) {
+        return res.send({ purpose: 'error', text: 'every tag must be at most 256 characters' });
+      }
     }
 
     if (req.body.doIntegrations !== undefined) {
@@ -684,8 +696,8 @@ class Integration {
       }
     }
 
-    if (req.body.viewId !== undefined && !ArkimeUtil.isString(req.body.viewId)) {
-      return res.send({ purpose: 'error', text: 'viewId must be a string when present' });
+    if (req.body.viewId !== undefined && (!ArkimeUtil.isString(req.body.viewId) || req.body.viewId.length > 256)) {
+      return res.send({ purpose: 'error', text: 'viewId must be a string of at most 256 characters when present' });
     }
 
     // dedupe and trim queries
@@ -720,15 +732,26 @@ class Integration {
       skipChildren: !!req.body.skipChildren,
       doIntegrations: req.body.doIntegrations,
       user: req.user,
-      res,
       sent: 0,
       total: 0, // runIntegrationsList will fix
       resultCount: 0, // sum of _cont3xt.count from results
       queriedSet: new Set(),
       finished: false,
-      finishWrite () { // end data write and create audit log when finished
-        res.write(JSON.stringify({ purpose: 'finish', resultCount: this.resultCount }));
-        res.end(']\n');
+      open () { return !this.finished && !res.writableEnded && !res.destroyed; }, // false once finished or the client left
+      write (obj) { // late results can arrive after a timeout or the client leaving
+        if (!this.open()) { return; }
+        res.write(JSON.stringify(obj));
+        res.write(',\n');
+      },
+      finishWrite () { // end data write and create audit log, once, whichever caller gets here first
+        if (this.finished) { return; }
+        const wasOpen = this.open();
+        this.finished = true;
+        clearTimeout(this.timer);
+        if (wasOpen) {
+          res.write(JSON.stringify({ purpose: 'finish', resultCount: this.resultCount }));
+          res.end(']\n');
+        }
 
         Audit.create({
           userId: req.user.userId,
@@ -751,6 +774,10 @@ class Integration {
     res.write('[\n');
     res.write(JSON.stringify({ purpose: 'init', indicators, sent: shared.sent, total: initialTotal, text: 'more to follow' }));
     res.write(',\n');
+
+    // An integration that never answers or the client leaving must still finish the search and audit it
+    shared.timer = setTimeout(() => shared.finishWrite(), Integration.#searchTimeout);
+    res.on('close', () => shared.finishWrite());
 
     for (const indicator of indicators) {
       const { query, itype } = indicator;
@@ -847,8 +874,13 @@ class Integration {
     // this endpoint queries the same external sources as /integration/search,
     // so it must leave the same history behind - otherwise it is a way to look
     // an indicator up without being audited
+    // audited exactly once, by the result, the error or the deadline, whichever is first
     const issuedAt = dStartTime;
+    let audited = false;
     const audit = (resultCount) => {
+      if (audited) { return false; }
+      audited = true;
+      clearTimeout(timer);
       Audit.create({
         userId: req.user.userId,
         indicator: query,
@@ -860,38 +892,49 @@ class Integration {
       }).catch((err) => {
         console.log('ERROR - creating audit log.', err);
       });
+      return true;
     };
+    const timer = setTimeout(() => {
+      if (!audit(0)) { return; }
+      stats.directError++;
+      istats.directError++;
+      if (!res.headersSent) {
+        res.status(504).send({ purpose: 'fail', indicator, name: integration.name });
+      }
+    }, Integration.#searchTimeout);
 
     integration[integration.itypes[itype]](req.user, normalizedQuery)
       .then(response => {
-        updateTime(stats, istats, Date.now() - dStartTime, 'direct');
-        stats.directFound++;
-        istats.directFound++;
-        if (response === Integration.NoResult) {
-          audit(0);
-          res.send({ purpose: 'data', indicator, name: integration.name, data: { _cont3xt: { createTime: Date.now() } } });
-        } else if (response) {
-          stats.directGood++;
-          istats.directGood++;
+        const hasData = response && response !== Integration.NoResult;
+        if (hasData) {
           if (!response._cont3xt) { response._cont3xt = {}; }
           response._cont3xt.createTime = Date.now();
-          audit(response._cont3xt.count ?? 0);
-          res.send({ purpose: 'data', indicator, name: integration.name, data: response });
-          if (Integration.#cache && integration.cacheable) {
+          if (Integration.#cache && integration.cacheable) { // even a late answer is worth keeping
             const cacheKey = `${integration.cachePrefix(req.user, keys)}-${integration.name}-${itype}-${normalizedQuery}`;
             Integration.#cache.set(cacheKey, response);
           }
+        }
+
+        // the deadline already answered and counted it as an error
+        if (!audit(hasData ? Number(response._cont3xt.count) || 0 : 0)) { return; }
+
+        updateTime(stats, istats, Date.now() - dStartTime, 'direct');
+        stats.directFound++;
+        istats.directFound++;
+        if (hasData) {
+          stats.directGood++;
+          istats.directGood++;
+          res.send({ purpose: 'data', indicator, name: integration.name, data: response });
         } else {
-          audit(0);
           res.send({ purpose: 'data', indicator, name: integration.name, data: { _cont3xt: { createTime: Date.now() } } });
         }
       })
       .catch(err => {
         console.log(integration.name, itype, query, err);
         if (res.headersSent) { return; }
+        if (!audit(0)) { return; }
         stats.directError++;
         istats.directError++;
-        audit(0);
         res.status(500).send({ purpose: 'fail', indicator, name: integration.name });
       });
   }

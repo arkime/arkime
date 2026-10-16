@@ -254,7 +254,7 @@ class CronAPIs {
 
     // Convert notifier array to comma-separated string for storage
     if (req.body.notifier && req.body.notifier.length > 0) {
-      doc.doc.notifier = req.body.notifier.join(',');
+      doc.doc.notifier = [...new Set(req.body.notifier)].join(',');
     }
 
     if (ArkimeUtil.isString(req.body.description)) {
@@ -377,7 +377,7 @@ class CronAPIs {
 
     // Convert notifier array to comma-separated string for storage
     if (req.body.notifier && req.body.notifier.length > 0) {
-      doc.doc.notifier = req.body.notifier.join(',');
+      doc.doc.notifier = [...new Set(req.body.notifier)].join(',');
     } else {
       doc.doc.notifier = '';
     }
@@ -780,7 +780,7 @@ class CronAPIs {
             doc.doc.lastNotified = Math.floor(Date.now() / 1000);
 
             let urlPath = 'sessions?expression=';
-            const tags = cq.tags.split(',');
+            const tags = options.tags.split(','); // sanitized, cq.tags is raw user input
             for (let t = 0, tlen = tags.length; t < tlen; t++) {
               const tag = tags[t];
               urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
@@ -796,13 +796,7 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + ArkimeUtil.safeStr(c
 
             Db.refresh('*'); // Before sending alert make sure everything has been refreshed
 
-            // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-            if (cq.notifier) {
-              const notifiers = cq.notifier.split(',');
-              for (const notifierId of notifiers) {
-                Notifier.issueAlert(notifierId, message, () => {});
-              }
-            }
+            Notifier.issueAlerts(cq.notifier, message);
 
             // persist the notification state so the 10-minute throttle works
             try {

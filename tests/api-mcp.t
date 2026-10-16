@@ -1,4 +1,4 @@
-use Test::More tests => 125;
+use Test::More tests => 129;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -35,6 +35,21 @@ my ($name, $args, $user) = @_;
     $args = "{}" if (!defined $args);
     return rpc("tools/call", "{\"name\":\"$name\",\"arguments\":$args}", $user);
 }
+
+################################################################################
+# only json, so a cross-site html form (urlencoded or text/plain, no preflight) can't call tools
+################################################################################
+my $form = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
+    Content => 'jsonrpc=2.0&id=1&method=tools/call&params[name]=arkime_sessions',
+    "Content-Type" => "application/x-www-form-urlencoded");
+is($form->code, 415, "urlencoded body is refused");
+is(from_json($form->content)->{error}->{message}, "Content-Type must be application/json", "and says why");
+$form = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
+    Content => '{"jsonrpc":"2.0","id":1,"method":"ping"}', "Content-Type" => "text/plain");
+is($form->code, 415, "text/plain body is refused");
+$form = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
+    Content => '{"jsonrpc":"2.0","id":1,"method":"ping"}', "Content-Type" => "application/json; charset=utf-8");
+is($form->code, 200, "json with a charset is fine");
 
 ################################################################################
 # auth - the gateway contract: 401 + WWW-Authenticate, never a redirect

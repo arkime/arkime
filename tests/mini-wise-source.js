@@ -21,6 +21,7 @@
  *           header it was sent and how many times this value was fetched, so
  *           tests can tell a cache hit from a fetch. "miss" returns 404,
  *           /cont3xt/redirect/... redirects to /cont3xt/echo/redirected.
+ *           /cont3xt/slow/<value> answers like echo after 8 seconds.
  * Databricks - Thrift TBinaryProtocol over HTTP POST (Content-Type
  *           application/x-thrift), the Hive TCLIService API. We reuse the
  *           real thrift library + the generated TCLIService types shipped with
@@ -182,6 +183,9 @@ function handleCont3xt (req, res) {
   if (segs[0] === 'redirect') {
     res.writeHead(302, { Location: '/cont3xt/echo/redirected' });
     return res.end();
+  }
+  if (segs[0] === 'slow') {
+    return setTimeout(() => sendJSON(res, { value: segs[1] }), 8000);
   }
   if (segs[0] !== 'echo' || segs[1] === undefined || segs[1] === 'miss') {
     return send(res, 404, 'application/json', '{}');
@@ -482,8 +486,12 @@ const server = https.createServer({ key: KEY, cert: CERT }, (req, res) => {
     const bodyBuf = Buffer.concat(chunks);
 
     if (req.url.split('?')[0] === '/_shutdown') {
-      send(res, 200, 'text/plain', 'bye');
-      return server.close(() => process.exit(0));
+      // Don't wait for slow responses, the next test run needs the port
+      res.on('finish', () => {
+        server.close(() => process.exit(0));
+        server.closeAllConnections();
+      });
+      return send(res, 200, 'text/plain', 'bye');
     }
 
     if (req.url.split('?')[0] === '/attributes/restSearch') {

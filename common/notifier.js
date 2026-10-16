@@ -207,6 +207,12 @@ class Notifier {
       }
     }
 
+    // Type specific checks, like SNMPv3 settings that would send unprotected traps
+    if (foundNotifier.validate) {
+      const typeError = foundNotifier.validate(Object.fromEntries(notifier.fields.map(f => [f.name, f.value])));
+      if (typeError) { return typeError; }
+    }
+
     notifier.alerts ??= Notifier.#defaultAlerts;
     if (typeof notifier.alerts !== 'object') {
       return 'Alerts must be an object';
@@ -226,6 +232,17 @@ class Notifier {
     }
 
     return;
+  }
+
+  /**
+   * @ignore
+   * Send alertMessage to each notifier in a comma separated id list, fire and forget.
+   * Once per id, so repeating an id can't fan out into a flood of alerts.
+   */
+  static issueAlerts (ids, alertMessage) {
+    for (const id of new Set(ids.split(','))) {
+      Notifier.issueAlert(id, alertMessage, () => {});
+    }
   }
 
   static async issueAlert (id, alertMessage, continueProcess) {

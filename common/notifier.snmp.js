@@ -16,6 +16,10 @@ const VERSIONS = new Map([
   ['3', snmp.Version3]
 ]);
 
+function getVersion (config) {
+  return VERSIONS.get(String(config.version || '2c'));
+}
+
 const AUTH_PROTOCOLS = new Map([
   ['none', snmp.AuthProtocols.none],
   ['md5', snmp.AuthProtocols.md5],
@@ -33,6 +37,34 @@ const PRIV_PROTOCOLS = new Map([
   ['aes256b', snmp.PrivProtocols.aes256b],
   ['aes256r', snmp.PrivProtocols.aes256r]
 ]);
+
+// Map keys are lowercase strings, config values can be mixed case or missing
+function protoName (value) {
+  return String(value || 'none').toLowerCase();
+}
+
+// SNMPv3 settings that don't add up used to quietly send noAuthNoPriv traps, refuse them instead.
+// Returns an error string, or undefined when ok.
+function checkV3 (config) {
+  if (!config.v3User) { return 'Security username is required for SNMPv3'; }
+  const auth = protoName(config.v3AuthProtocol);
+  const priv = protoName(config.v3PrivProtocol);
+  if (!AUTH_PROTOCOLS.has(auth)) { return 'Unknown SNMPv3 auth protocol'; }
+  if (!PRIV_PROTOCOLS.has(priv)) { return 'Unknown SNMPv3 privacy protocol'; }
+  if (auth === 'none' && config.v3AuthKey) { return 'SNMPv3 auth key is set but auth protocol is none'; }
+  if (auth !== 'none' && !config.v3AuthKey) { return 'SNMPv3 auth protocol needs an auth key'; }
+  if (priv === 'none' && config.v3PrivKey) { return 'SNMPv3 privacy key is set but privacy protocol is none'; }
+  if (priv !== 'none' && !config.v3PrivKey) { return 'SNMPv3 privacy protocol needs a privacy key'; }
+  if (priv !== 'none' && auth === 'none') { return 'SNMPv3 privacy needs an auth protocol'; }
+}
+
+// Everything sendSnmpAlert would refuse, so the settings page refuses it first
+exports.validate = function (config) {
+  const version = getVersion(config);
+  if (version === undefined) { return 'Version must be 1, 2c, or 3'; }
+  if (version === snmp.Version3) { return checkV3(config); }
+  if (!config.community) { return 'Community string is required for SNMPv1/v2c'; }
+};
 
 // Default enterprise OID for Arkime Parliament alerts
 const DEFAULT_TRAP_OID = '1.3.6.1.4.1.79054.1.1';
@@ -79,7 +111,8 @@ exports.init = function (api) {
       name: 'trapOid',
       description: `Enterprise-specific trap OID (default: ${DEFAULT_TRAP_OID})`
     }],
-    sendAlert: exports.sendSnmpAlert
+    sendAlert: exports.sendSnmpAlert,
+    validate: exports.validate
   });
 };
 
@@ -90,23 +123,13 @@ exports.sendSnmpAlert = function (config, message, links, cb) {
     return;
   }
 
-  // String() since map keys are strings and config can be a number
-  const versionStr = String(config.version || '2c');
-  const version = VERSIONS.get(versionStr);
-  if (version === undefined) {
-    if (cb) { cb({ errors: { snmp: 'Version must be 1, 2c, or 3' } }); }
+  // Notifiers saved before validate existed could still have a bad combination
+  const error = exports.validate(config);
+  if (error) {
+    if (cb) { cb({ errors: { snmp: error } }); }
     return;
   }
-
-  if (version !== snmp.Version3 && !config.community) {
-    if (cb) { cb({ errors: { snmp: 'Community string is required for SNMPv1/v2c' } }); }
-    return;
-  }
-
-  if (version === snmp.Version3 && !config.v3User) {
-    if (cb) { cb({ errors: { snmp: 'Security username is required for SNMPv3' } }); }
-    return;
-  }
+  const version = getVersion(config);
 
   if (links && links.length) {
     for (const link of links) {
@@ -126,8 +149,8 @@ exports.sendSnmpAlert = function (config, message, links, cb) {
 
   let session;
   if (version === snmp.Version3) {
-    const authProto = AUTH_PROTOCOLS.get(config.v3AuthProtocol) ?? snmp.AuthProtocols.none;
-    const privProto = PRIV_PROTOCOLS.get(config.v3PrivProtocol) ?? snmp.PrivProtocols.none;
+    const authProto = AUTH_PROTOCOLS.get(protoName(config.v3AuthProtocol));
+    const privProto = PRIV_PROTOCOLS.get(protoName(config.v3PrivProtocol));
 
     let level = snmp.SecurityLevel.noAuthNoPriv;
     if (authProto !== snmp.AuthProtocols.none && privProto !== snmp.PrivProtocols.none) {

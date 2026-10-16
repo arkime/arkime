@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 50;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -62,6 +62,22 @@ ArkimeConfig.initialize({ defaultConfigFile: iniFile, defaultSections: ['default
       process.exit(0);
     });
     return;
+  }
+
+  if (mode === 'mcphdr') {
+    // The MCP header verifier, with alice not an admin and bob an admin from his last login
+    await User.setUser('alice', { userId: 'alice', userName: 'alice', enabled: true, webEnabled: true, headerAuthEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('alice', 'x') });
+    await User.setUser('bob', { userId: 'bob', userName: 'bob', enabled: true, webEnabled: true, headerAuthEnabled: true, roles: ['arkimeUser', 'arkimeAdmin'], passStore: Auth.pass2store('bob', 'x') });
+    const roles = (userId) => new Promise(resolve => User.getUser(userId, (err, user) => resolve(user ? [...user.roles].sort().join(',') : 'NONE')));
+    for (const [userId, headers] of [['alice', { groups: 'admins' }], ['bob', {}], ['carol', {}]]) {
+      try {
+        await Auth.headerAuth({ headers: { 'x-user': userId, ...headers } });
+        console.log('MCP', userId, 'OK', await roles(userId));
+      } catch (e) {
+        console.log('MCP', userId, 'ERR', await roles(userId));
+      }
+    }
+    process.exit(0);
   }
 
   if (mode === 'ipgate') {
@@ -145,6 +161,10 @@ is($code, 1, "an empty requiredAuthHeaderVal refuses to start");
 ($code, $out) = tryConfig("authMode=header\nuserNameHeader=x-user\nrequiredAuthHeader=x-group\nrequiredAuthHeaderVal=ok");
 is($code, 0, "requiredAuthHeader with a value starts");
 
+($code, $out) = tryConfig("authMode=header\nuserNameHeader=x-user\nrequiredAuthHeaderVal=ok");
+is($code, 1, "requiredAuthHeaderVal without requiredAuthHeader refuses to start");
+like($out, qr/requiredAuthHeaderVal is set but requiredAuthHeader is missing/, "and says why");
+
 ################################################################################
 # s2sRegressionTests accepts plaintext s2s tokens, config alone must not turn it on
 ################################################################################
@@ -185,6 +205,20 @@ foreach my $mode ("header", "header+basic", "basic+header", "basic+headerOnly") 
 
 ($code, $out) = tryConfig("authMode=basic+header\nuserNameHeader=x-user\nuserAuthIps=10.0.0.0/8", "ipgate");
 like($out, qr/^REMOTE 200 hdruser$/m, "basic+header with userAuthIps set accepts the user header from that range");
+
+################################################################################
+# MCP header auth on a non header site only identifies the user, other headers aren't claims
+################################################################################
+my $mappings = "[user-role-mappings]\narkimeUser=true\narkimeAdmin=vals.groups === 'admins'\n[user-auto-create]\nuserId=vals['x-user']\nenabled=true\nheaderAuthEnabled=true";
+($code, $out) = tryConfig("authMode=form\nmcpEnabled=true\nuserNameHeader=x-user\n$mappings", "mcphdr");
+like($out, qr/^MCP alice OK arkimeUser$/m, "form site: an MCP header can't map the user to more roles");
+like($out, qr/^MCP bob OK arkimeAdmin,arkimeUser$/m, "form site: MCP keeps the roles from the last login");
+like($out, qr/^MCP carol ERR NONE$/m, "form site: MCP header doesn't auto create users");
+
+($code, $out) = tryConfig("authMode=header\nmcpEnabled=true\nuserNameHeader=x-user\n$mappings", "mcphdr");
+like($out, qr/^MCP alice OK arkimeAdmin,arkimeUser$/m, "header site: the proxy's headers still map roles");
+like($out, qr/^MCP bob OK arkimeUser$/m, "header site: roles still follow the headers");
+like($out, qr/^MCP carol OK arkimeUser$/m, "header site: header auth still auto creates users");
 
 ################################################################################
 # config save can't inject ini lines, sections or keys

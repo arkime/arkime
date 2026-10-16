@@ -162,6 +162,11 @@ class Auth {
       console.log(`ERROR - requiredAuthHeader=${ArkimeUtil.sanitizeStr(Auth.#requiredAuthHeader)} is set but requiredAuthHeaderVal is missing or empty`);
       process.exit(1);
     }
+    // Values without the header to check them against would also skip it
+    if (Auth.#requiredAuthHeaderVal?.length && !ArkimeUtil.isString(Auth.#requiredAuthHeader)) {
+      console.log('ERROR - requiredAuthHeaderVal is set but requiredAuthHeader is missing or empty');
+      process.exit(1);
+    }
     if (options.userAutoCreateTmpl ?? ArkimeConfig.get('userAutoCreateTmpl')) {
       console.log('ERROR - userAutoCreateTmpl has been removed, use the [user-auto-create] section instead');
       process.exit(1);
@@ -488,18 +493,21 @@ class Auth {
       if (!user.enabled) { return done('User not enabled'); }
       if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-      try {
-        await user.updateDynamicRoles(claims);
-      } catch (e) {
-        console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
-        return done('Failed to update dynamic roles');
+      if (claims !== undefined) {
+        try {
+          await user.updateDynamicRoles(claims);
+        } catch (e) {
+          console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
+          return done('Failed to update dynamic roles');
+        }
       }
       user.setLastUsed();
       return done(null, user, authInfo);
     }
 
     User.getUserCache(userId, (err, user) => {
-      if (Auth.#userAutoCreateFuncs === undefined) {
+      // No claims means identity only, so no auto create either
+      if (claims === undefined || Auth.#userAutoCreateFuncs === undefined) {
         return authCheck(err, user);
       } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         Auth.#dynamicCreate(userId, claims, authCheck);
@@ -576,6 +584,12 @@ class Auth {
 
     if (userId.startsWith('role:')) {
       return done('Cannot authenticate with role');
+    }
+
+    // MCP header auth while authMode isn't a header mode: the header only says who the user is. The
+    // other headers aren't claims, so they don't map roles or auto create, the last login's roles stay.
+    if (!Auth.mode.startsWith('header')) {
+      return Auth.#resolveUser(userId, undefined, done);
     }
 
     return Auth.#resolveUser(userId, vals, done);

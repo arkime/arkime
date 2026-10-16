@@ -149,6 +149,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4343 Viewers behind esProxy MUST use authMode=s2s
   - #4345 esproxy-sensors entries without host are locked to the hostname the sensor first reported, set host if a sensor's hostname changes
   - #4348 authMode=basic+header now only allows localhost until userAuthIps is set, the same as the other header modes
+  - #4350 Refuse to start if requiredAuthHeaderVal is set without requiredAuthHeader
+  - #4350 SNMPv3 notifiers with an unknown auth or privacy protocol, privacy without auth, or a key without its protocol now fail instead of sending unprotected traps
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
@@ -182,6 +184,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4348 Fix URL searches sending more than the domain to domain integrations
   - #4348 Fix saving integration settings undoing an admin disabling the user or removing roles
   - #4348 New urlapi integration to look up indicators in your own JSON api, see https://arkime.com/settings#cont3xt-urlapi
+  - #4350 Fix searches never finishing or being left out of history when an integration doesn't answer, new searchTimeout setting (default 2m)
+  - #4350 Fix long searches or tags being left out of history, searches allow at most 50 tags
 ## db.pl
   - #4312 Fix users-update --removeRole usersAdmin not removing usersAdmin
   - #4312 Fix initorupgrade erasing everything when OpenSearch/Elasticsearch returns an error
@@ -216,6 +220,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4342 Fix some requests not being recorded in History
   - #4345 Fix a capture node being able to make pcap expiry delete files outside the pcap directories
   - #4345 Fix a capture node being able to break the field list or stats pages for every viewer
+  - #4350 Fix MCP header auth changing a user's roles from request headers when authMode isn't a header mode
+  - #4350 Fix /mcp accepting form posts, so another web site can't make MCP calls as a logged in user
+  - #4350 Fix periodic query alerts including unsanitized tags
+  - #4350 Fix a notifier listed more than once on a periodic query or hunt sending duplicate alerts
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
   - #4338 urlapi sources support insecure=true to skip TLS certificate verification
