@@ -1024,6 +1024,14 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  // String errors are our own messages, an Error can have server paths so only log it
+  static #itemByHashErrorMsg (req, err) {
+    if (typeof err === 'string') { return err; }
+    console.log(`ERROR - ${req.method} %s`, ArkimeUtil.sanitizeStr(req.path), util.inspect(err, false, 50));
+    return 'Error retrieving item';
+  }
+
+  // --------------------------------------------------------------------------
   static async #localGetItemByHash (nodeName, sessionID, hash, cb) {
     try {
       const { packets } = await SessionAPIs.processSessionIdAndDecode(sessionID, 10000);
@@ -4354,7 +4362,7 @@ class SessionAPIs {
               SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
-                  return res.type('text/plain').end(String(err.message ?? err));
+                  return res.type('text/plain').end(SessionAPIs.#itemByHashErrorMsg(req, err));
                 } else if (item) {
                   ArkimeUtil.noCache(req, res, 'application/force-download');
                   res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
@@ -4407,7 +4415,7 @@ class SessionAPIs {
     SessionAPIs.#localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
       if (err) {
         res.status(400);
-        return res.type('text/plain').end(String(err.message ?? err));
+        return res.type('text/plain').end(SessionAPIs.#itemByHashErrorMsg(req, err));
       } else if (item) {
         ArkimeUtil.noCache(req, res, 'application/force-download');
         res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
