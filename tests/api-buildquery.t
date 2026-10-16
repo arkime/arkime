@@ -1,4 +1,4 @@
-use Test::More tests => 199;
+use Test::More tests => 204;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -253,6 +253,15 @@ doTest('wise.float != -1-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":
 doTest('wise.float != -1.2-5', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1.2,"lte":5}}}}}');
 doTest('wise.float != -1.2-5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-1.2,"lte":5.2}}}}}');
 doTest('wise.float != -10.2--5.2', '{"bool":{"must_not":{"range":{"wise.float":{"gte":-10.2,"lte":-5.2}}}}}');
+doTest('wise.float == 1-5x', '1-5x is not a float');
+doTest('host.http.cnt == 1-5x', '1-5x is not a number');
+
+# Long digit runs used to be cubic/quadratic in the range regexes
+my $digits = ('0' x 10000) . 'x';
+my $start = time();
+doTest("wise.float == \"$digits\"", "$digits is not a float");
+doTest("host.http.cnt == \"$digits\"", "$digits is not a number");
+cmp_ok(time() - $start, '<', 5, 'long digit range values parse quickly');
 
 doTest('wise.float > 1', '{"range":{"wise.float":{"gt":1}}}');
 doTest('wise.float >= 1', '{"range":{"wise.float":{"gte":1}}}');
