@@ -1793,7 +1793,7 @@ function getRemoteConfig (req, res) {
 
   ViewerUtils.makeRequest(node, '/api/viewconfig/remote', req.user, (err, response) => {
     if (err) {
-      console.log(`ERROR - ${req.method} ${ArkimeUtil.sanitizeStr(req.url)}`, err);
+      console.log('ERROR - %s %s', req.method, ArkimeUtil.sanitizeStr(req.url), err);
       return res.serverError(502, `Error fetching config from node ${ArkimeUtil.safeStr(node)}`);
     }
 
