@@ -1,4 +1,4 @@
-use Test::More tests => 78;
+use Test::More tests => 79;
 
 use Cwd;
 use URI::Escape;
@@ -102,6 +102,10 @@ my $pwd = "*/pcap";
 
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/bodyhash/87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a")->content;
     is($sd, "No match", "No Match");
+
+    # An Error from decoding isn't sent back, it can have server paths
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/260101-AAAAAAAAAAAAAAAAAAAAAAAA/bodyhash/a4a7b8b5eaf4c2cf356b1052133c6cdb")->content;
+    is($sd, "Error retrieving item", "bodyhash error is generic");
 
 # Global bodyHash
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/sessions/bodyhash/87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec?date=-1&expression=http.sha256=87b94c6c763d2ae6e47cfb9c35e6d54d8a84bf125cbc9430082a9f1b3e592bec")->content;

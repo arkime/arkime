@@ -1165,7 +1165,8 @@ function termOrTermsInt (dbField, str) {
   } else {
     str = stripQuotes(str);
     let match;
-    if ((match = str.match(/(-?\d+)-(-?\d+)/))) {
+    // Anchored and unambiguous, the unanchored version was quadratic on long digit strings
+    if ((match = str.match(/^(-?\d+)-(-?\d+)$/))) {
       obj = { range: {} };
       obj.range[dbField] = { gte: parseInt(match[1]), lte: parseInt(match[2]) };
       return obj;
@@ -1199,7 +1200,7 @@ function termOrTermsFloat (dbField, str) {
     let match;
     if (str.match(/^-?\d+$/) || str.match(/^-?\d+\.\d+$/)) {
       // good non range
-    } else if ((match = str.match(/(-?\d*\.?\d*)-(-?\d*\.?\d*)/))) {
+    } else if ((match = str.match(/^(-?(?:\d+(?:\.\d*)?|\.\d+))-(-?(?:\d+(?:\.\d*)?|\.\d+))$/))) {
       obj = { range: {} };
       obj.range[dbField] = { gte: parseFloat(match[1]), lte: parseFloat(match[2]) };
       return obj;

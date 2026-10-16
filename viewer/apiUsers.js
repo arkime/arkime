@@ -682,7 +682,7 @@ class UserAPIs {
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/layouts/%s`, ArkimeUtil.sanitizeStr(req.params.type), util.inspect(err, false, 50), info);
         return res.serverError(500, 'Create layout failed', 'api.users.layoutCreateFailed');
       }
 
@@ -735,7 +735,7 @@ class UserAPIs {
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/layouts/%s`, ArkimeUtil.sanitizeStr(req.params.type), util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update layout failed', 'api.users.layoutUpdateFailed');
       }
 
@@ -782,7 +782,7 @@ class UserAPIs {
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}/${req.params.name}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/layouts/%s/%s`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), info);
         return res.serverError(500, 'Delete layout failed', 'api.users.layoutDeleteFailed');
       }
 
