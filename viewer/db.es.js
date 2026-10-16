@@ -725,6 +725,7 @@ class DbESImpl {
 
   // --------------------------------------------------------------------------
   async addHuntToSession (index, id, huntId, huntName) {
+    // esProxy's validateUpdate only passes this exact body from sensor viewers
     const body = {
       script: {
         source: SESSION_SCRIPTS.addHuntToSession,

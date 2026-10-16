@@ -3280,6 +3280,7 @@ class SessionAPIs {
 
     const writerOptions = { writeHeader: true };
 
+    // esProxy's searchRootIdFilter only passes this exact query shape from sensor viewers
     const filter = [{ term: { rootId: req.params.id } }];
 
     // Unlike the other pcap endpoints this one turns a single id into every

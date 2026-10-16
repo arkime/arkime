@@ -714,6 +714,7 @@ function historyKeyword (value) {
   return str.length > 8192 ? str.slice(0, 8192) : str;
 }
 
+// esProxy's validateHistoryDoc requires userId, api, method and a numeric timestamp
 function logAction (uiPage) {
   return (req, res, next) => {
     const log = {
