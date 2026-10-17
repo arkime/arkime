@@ -472,9 +472,12 @@ async function doProxy (req, res) {
   res.pipeable = true;
   await doProxyFull({ elasticsearch, authHeader, sigV4Signer, sigV4Credentials }, req, res);
   if (elasticsearchTee) {
+    // Never let a tee failure become an unhandled rejection, that exits for every sensor
     doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee, sigV4Signer: sigV4SignerTee, sigV4Credentials: sigV4CredentialsTee }, req, {
       setHeader: () => {},
       send: () => {}
+    }).catch(e => {
+      console.log('Tee error', ArkimeUtil.sanitizeStr(e?.message ?? String(e)));
     });
   }
 }
@@ -497,7 +500,6 @@ app.get('*', (req, res) => {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (path === `/${prefix}stats/_doc/${req.sensor.node}`) {
   } else if (isOwnFilesDoc(path, req.sensor.node)) {
-  } else if (isSessionsDocPath(path, '_doc')) {
   } else if (isSessionsIndicesPath(path, '_refresh')) {
   } else {
     console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
@@ -759,31 +761,25 @@ async function validateFilesSearch (req) {
     if (Object.keys(first).length !== 1 || Object.keys(first.terms).length !== 1) { return false; }
     const nodes = first.terms.node;
     if (!ArkimeUtil.isStringArray(nodes) || !nodes.includes(req.sensor.node)) { return false; }
-    // The expiry query lists every node on the sensor's host, so only allow nodes of
-    // sensors on that same host. Until its first stats doc a sensor has no host, so
-    // only its own node.
-    const host = await sensorHost(req.sensor);
-    if (host === undefined) { return nodes.every(node => node === req.sensor.node); }
-    const others = nodes.filter(node => node !== req.sensor.node);
-    if (!others.every(node => Object.hasOwn(sensors, node))) { return false; }
-    const hosts = await Promise.all(others.map(node => sensorHost(sensors[node])));
-    return hosts.every(otherHost => otherHost === host);
+    // The expiry query lists every node on the sensor's host, so only allow those
+    const allowed = await hostNodes(req.sensor);
+    return nodes.every(node => allowed.includes(node));
   } catch (e) {
     return false;
   }
 }
 
-// Db.getSession looks up a single session by id
+// Db.getSession looks up a single session by id. The filter clauses to keep, or undefined
 const searchIdsKeys = ['query', '_source', 'fields', 'profile'];
-function validateSearchIds (req) {
+function searchIdsFilter (json) {
   try {
-    const json = parseDocBody(req);
-    if (!Object.keys(json).every(key => searchIdsKeys.includes(key))) { return false; }
-    if (Object.keys(json.query).length !== 1 || Object.keys(json.query.ids).length !== 1) { return false; }
+    if (!Object.keys(json).every(key => searchIdsKeys.includes(key))) { return undefined; }
+    if (Object.keys(json.query).length !== 1 || Object.keys(json.query.ids).length !== 1) { return undefined; }
     const values = json.query.ids.values;
-    return Array.isArray(values) && values.length === 1 && ArkimeUtil.isString(values[0]);
+    if (!Array.isArray(values) || values.length !== 1 || !ArkimeUtil.isString(values[0])) { return undefined; }
+    return [json.query];
   } catch (e) {
-    return false;
+    return undefined;
   }
 }
 
@@ -795,16 +791,14 @@ function isSessionsIndicesPath (path, action, wildcard = false) {
 
 // getEntirePCAP looks up every session sharing a rootId
 const searchRootIdKeys = ['size', '_source', 'sort', 'query', 'profile'];
-function validateSearchRootId (req) {
+function searchRootIdFilter (json) {
   try {
-    const json = parseDocBody(req);
-    if (!Object.keys(json).every(key => searchRootIdKeys.includes(key))) { return false; }
-    if (Object.keys(json.query).length !== 1) { return false; }
+    if (!Object.keys(json).every(key => searchRootIdKeys.includes(key))) { return undefined; }
+    if (Object.keys(json.query).length !== 1) { return undefined; }
 
     // pre 6.7.1 viewers sent the bare term
     if (json.query.term !== undefined) {
-      return Object.keys(json.query.term).length === 1 &&
-        ArkimeUtil.isString(json.query.term.rootId);
+      return Object.keys(json.query.term).length === 1 && ArkimeUtil.isString(json.query.term.rootId) ? [json.query] : undefined;
     }
 
     // filter only, so the user's forced expression is ANDed with the rootId
@@ -813,7 +807,26 @@ function validateSearchRootId (req) {
     return Object.keys(bool).length === 1 &&
       Array.isArray(bool.filter) &&
       Object.keys(bool.filter[0].term).length === 1 &&
-      ArkimeUtil.isString(bool.filter[0].term.rootId);
+      ArkimeUtil.isString(bool.filter[0].term.rootId) ? bool.filter : undefined;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+// Both are narrowed to the nodes on the sensor's host, so a sensor viewer can't read
+// other hosts' sessions
+async function validateSessionsSearch (req) {
+  try {
+    const json = parseDocBody(req);
+    // The forced expression clauses and sort pass through, no scripts or doc lookups there
+    if (hasForbiddenSearchKey(json)) { return false; }
+    const filter = searchIdsFilter(json) ?? searchRootIdFilter(json);
+    if (filter === undefined) { return false; }
+    const nodes = await hostNodes(req.sensor, true);
+    json.query = { bool: { filter: [...filter, { terms: { node: nodes } }] } };
+    req.body = Buffer.from(JSON.stringify(json));
+    delete req.headers['content-encoding'];
+    return true;
   } catch (e) {
     return false;
   }
@@ -821,17 +834,40 @@ function validateSearchRootId (req) {
 // Only the hunt script a sensor viewer runs when its remote hunt matches, tagging
 // and hunt removal run on central viewers. Any other script could rewrite or delete
 // any session. Compared ignoring whitespace since older viewers indent it differently.
+// es runs the proxy's copy, which leaves a session from another host alone.
 const normScript = (source) => source.replace(/\s+/g, ' ').trim();
 const addHuntScript = normScript(DbESImpl.SESSION_SCRIPTS.addHuntToSession);
-function validateUpdate (req) {
+const addHuntHostScript = `if (params.esproxyNodes.contains(ctx._source.node)) { ${addHuntScript} } else { ctx.op = 'none'; }`;
+async function validateUpdate (req) {
   try {
+    // es returns the doc when _source is asked for, even when the script makes the
+    // update a noop, which would read any session by id. The viewer never asks for it.
+    if (new URLSearchParams(req.esSearch).has('_source')) { return false; }
     const json = parseDocBody(req);
     if (Object.keys(json).length !== 1 || typeof json.script !== 'object' || json.script === null) { return false; }
     const { source, lang, params } = json.script;
     if (!Object.keys(json.script).every(key => ['source', 'lang', 'params'].includes(key))) { return false; }
     if ((lang !== undefined && lang !== 'painless') || !ArkimeUtil.isString(source)) { return false; }
     if (normScript(source) !== addHuntScript || typeof params !== 'object' || params === null) { return false; }
-    return Object.keys(params).length === 2 && ArkimeUtil.isString(params.huntId) && ArkimeUtil.isString(params.huntName);
+    if (Object.keys(params).length !== 2 || !ArkimeUtil.isString(params.huntId) || !ArkimeUtil.isString(params.huntName)) { return false; }
+    const esproxyNodes = await hostNodes(req.sensor, true);
+    const script = { lang: 'painless', source: addHuntHostScript, params: { huntId: params.huntId, huntName: params.huntName, esproxyNodes } };
+    req.body = Buffer.from(JSON.stringify({ script }));
+    delete req.headers['content-encoding'];
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// What the viewer's history logging always sends, so a sensor can't write just any
+// audit row. The index mapping is strict, which bounds the other keys.
+function validateHistoryDoc (req) {
+  try {
+    const json = parseDocBody(req);
+    return typeof json === 'object' && json !== null && !Array.isArray(json) &&
+      ArkimeUtil.isString(json.userId) && ArkimeUtil.isString(json.api) && ArkimeUtil.isString(json.method) &&
+      typeof json.timestamp === 'number';
   } catch (e) {
     return false;
   }
@@ -861,7 +897,11 @@ const forbiddenSearchKeys = new Set([
 function hasForbiddenSearchKey (value) {
   if (Array.isArray(value)) { return value.some(hasForbiddenSearchKey); }
   if (typeof value !== 'object' || value === null) { return false; }
-  if ((Object.hasOwn(value, 'index') || Object.hasOwn(value, '_index')) && (Object.hasOwn(value, 'id') || Object.hasOwn(value, '_id'))) { return true; }
+  if ((Object.hasOwn(value, 'index') || Object.hasOwn(value, '_index')) && (Object.hasOwn(value, 'id') || Object.hasOwn(value, '_id'))) {
+    // Except a $shortcut in a forced expression, a terms lookup in the lookups
+    // index, which sensors can search anyway. Its other keys are still checked.
+    if (value.index !== `${prefix}lookups` || Object.hasOwn(value, '_index')) { return true; }
+  }
   return Object.keys(value).some(key => forbiddenSearchKeys.has(key) || hasForbiddenSearchKey(value[key]));
 }
 
@@ -903,6 +943,44 @@ async function lookupPinnedHost (sensor) {
   sensor.pinnedHost = body._source.hostname;
   console.log(`Pinning sensor ${sensor.node} to hostname %s`, ArkimeUtil.sanitizeStr(sensor.pinnedHost));
   return sensor.pinnedHost;
+}
+
+// The nodes of the sensors on this sensor's host, which is all a sensor viewer handles:
+// the central viewer sends it hunts and pcap requests by the session's node. Without a
+// stats doc yet a sensor has no host, so only its own node. Only sensors that never
+// sent a stats doc are looked up here, in one mget, the rest are pinned.
+async function hostNodes (sensor, sessions = false) {
+  const host = await sensorHost(sensor);
+  if (host === undefined) {
+    // A viewer whose node name never sends stats must set host in esproxy-sensors.
+    // Capture searches files before its first stats doc, so only warn for sessions.
+    if (sessions && !sensor.loggedNoHost) {
+      sensor.loggedNoHost = true;
+      console.log(`WARNING - sensor ${sensor.node} has no stats doc or 'host' in esproxy-sensors, it only sees its own node's sessions`);
+    }
+    return [sensor.node];
+  }
+  const others = Object.values(sensors).filter(other => other !== sensor);
+  // Another sensor's stats doc without a hostname only leaves that sensor out
+  await pinHostsFromStats(others.filter(other => knownHost(other) === undefined)).catch(() => {});
+  return [sensor.node, ...others.filter(other => knownHost(other) === host).map(other => other.node)];
+}
+
+// Pin sensors from the hostnames in their stats docs, a mget is realtime
+async function pinHostsFromStats (unpinned) {
+  if (unpinned.length === 0) { return; }
+  const { statusCode, body } = await esRequestJson('POST', `/${prefix}stats/_mget?_source=hostname`, { ids: unpinned.map(sensor => sensor.node) });
+  if (statusCode !== 200 || !Array.isArray(body?.docs)) { return; }
+  pinFromStatsDocs(body.docs);
+}
+
+function pinFromStatsDocs (docs) {
+  for (const doc of docs) {
+    if (doc.found && ArkimeUtil.isString(doc._source?.hostname) && Object.hasOwn(sensors, doc._id)) {
+      sensors[doc._id].pinnedHost = doc._source.hostname;
+      console.log(`Pinning sensor ${doc._id} to hostname %s`, ArkimeUtil.sanitizeStr(doc._source.hostname));
+    }
+  }
 }
 
 // Viewers use the stats hostname to decide which nodes are on their host, so
@@ -952,11 +1030,7 @@ async function loadPinnedHosts () {
     // No stats index yet means no stats docs to pin from
     if (statusCode === 404) { return; }
     if (statusCode === 200 && Array.isArray(body?.docs)) {
-      for (const doc of body.docs) {
-        if (doc.found && ArkimeUtil.isString(doc._source?.hostname) && Object.hasOwn(sensors, doc._id)) {
-          sensors[doc._id].pinnedHost = doc._source.hostname;
-        }
-      }
+      pinFromStatsDocs(body.docs);
       return;
     }
     if (statusCode < 500 && statusCode !== 429) { fatal(`status ${statusCode}${body === undefined ? ' with a non JSON response' : ''}`); }
@@ -1017,6 +1091,8 @@ async function handlePost (req, res) {
   const statsOk = path === `/${prefix}stats/_doc/${req.sensor.node}` && await validateStatsDoc(req);
   const filesSearchOk = path === `/${prefix}files/_search` && await validateFilesSearch(req);
   const bulkOk = path.startsWith('/_bulk') && await validateBulk(req);
+  const sessionsSearchOk = isSessionsIndicesPath(path, '_search', true) && await validateSessionsSearch(req);
+  const updateOk = isSessionsDocPath(path, '_update') && await validateUpdate(req);
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path] && validateSearchBody(req)) {
@@ -1027,9 +1103,9 @@ async function handlePost (req, res) {
   } else if (isOwnFilesDoc(path, req.sensor.node, '_update') && validateFilesUpdate(req)) {
   } else if (bulkOk) {
   } else if (filesSearchOk) {
-  } else if (isSessionsIndicesPath(path, '_search', true) && (validateSearchIds(req) || validateSearchRootId(req))) {
-  } else if (historyDocRe.test(path)) {
-  } else if (isSessionsDocPath(path, '_update') && validateUpdate(req)) {
+  } else if (sessionsSearchOk) {
+  } else if (historyDocRe.test(path) && validateHistoryDoc(req)) {
+  } else if (updateOk) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     if (Config.debug) {
       console.log(req.body.toString('utf8'));
@@ -1108,7 +1184,7 @@ async function main () {
   await loadPinnedHosts();
   const unpinned = Object.values(sensors).filter(sensor => knownHost(sensor) === undefined);
   if (unpinned.length > 0) {
-    console.log(`WARNING - ${unpinned.length} esproxy-sensors have no 'host' and no stats doc yet, their first stats doc will set the hostname viewers trust for them. Set 'host' to choose it instead.`);
+    console.log(`WARNING - ${unpinned.length} esproxy-sensors have no 'host' and no stats doc yet, their first stats doc will set the hostname viewers trust for them and whose sessions they can read through esProxy. Set 'host' to choose it instead.`);
   }
 
   ArkimeUtil.createHttpServer(app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));
