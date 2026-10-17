@@ -1085,6 +1085,15 @@ app.post('*', saveBody, (req, res) => {
   });
 });
 
+// The sensor viewer's startup "no users" check. Drop the body, a query would let
+// a sensor count users matching guesses about their secrets.
+function dropUsersCountBody (req) {
+  req.body = {};
+  req._body = false;
+  delete req.headers['content-encoding'];
+  return true;
+}
+
 async function handlePost (req, res) {
   const path = req.esPath;
 
@@ -1097,6 +1106,7 @@ async function handlePost (req, res) {
 
   // Empty IFs since those are allowed requests and will run code at end
   if (postExact[path] && validateSearchBody(req)) {
+  } else if (path === `/${prefix}users/_count` && dropUsersCountBody(req)) {
   } else if (path === `/${prefix}sequence/_doc/fn-${req.sensor.node}`) {
   } else if (statsOk) {
   } else if (isOwnDstatsDoc(path, req.sensor.node) && validateDstatsDoc(req)) {
