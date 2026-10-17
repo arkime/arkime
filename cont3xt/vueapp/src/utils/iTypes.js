@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 'use strict';
 
 export const iTypes = ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text'];

@@ -104,6 +104,15 @@ class Integration {
       return;
     }
 
+    // a setting marked password is this integration saying it holds a
+    // credential, so View Config hides it without having to guess from the
+    // name - do this before the disabled check below, so a leftover
+    // credential in a disabled integration's config still gets redacted
+    ArkimeConfig.registerSettings(Object.fromEntries(
+      Object.entries(integration.settings ?? {})
+        .filter(([, setting]) => setting?.password)
+        .map(([key]) => [key, { secret: true }])));
+
     // Can disable an integration globally
     const disabled = integration.getConfig('disabled', false);
     if (disabled === true || disabled === 'true') {
@@ -410,6 +419,7 @@ class Integration {
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
+        itypes: Object.keys(integration.itypes),
         card,
         order,
         tidbits: integration.tidbits?.fields || [],
@@ -989,6 +999,7 @@ class Integration {
         values,
         globalConfiged,
         homePage: integration.homePage,
+        icon: integration.icon,
         locked: integration.locked
       };
     }

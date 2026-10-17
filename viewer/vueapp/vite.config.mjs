@@ -6,10 +6,10 @@ import inject from '@rollup/plugin-inject';
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import Components from 'unplugin-vue-components/vite';
-import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
+import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
+import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -26,11 +26,18 @@ export default defineConfig({
     vue({}),
     inject({ // jquery must be first
       $: 'jquery',
-      jQuery: 'jquery'
+      jQuery: 'jquery',
+      // Skip vuetify's SCSS/CSS — the inject plugin tries to parse them and warns.
+      // Restrict to scripts only.
+      include: ['**/*.js', '**/*.mjs', '**/*.vue']
     }),
-    Components({
-      resolvers: [BootstrapVueNextResolver()],
-    })
+    Vuetify({
+      treeShake: true,
+      styles: {
+        configFile: 'viewer/vueapp/src/vuetify-settings.scss'
+      }
+    }),
+    thirdPartyLicenses({ file: fileURLToPath(new URL('./third-party-licenses.json', import.meta.url)) })
   ],
   resolve: {
     alias: {
@@ -52,5 +59,10 @@ export default defineConfig({
   logLevel: 'warn',
   compilerOptions: {
     whitespace: 'preserve'
+  },
+  css: {
+    preprocessorOptions: {
+      sass: { api: 'modern' }
+    }
   }
 });

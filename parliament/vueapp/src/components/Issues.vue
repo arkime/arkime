@@ -3,197 +3,160 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
+  <v-container
+    fluid
+    class="px-4 pt-3 pb-0">
     <!-- page error -->
-    <b-alert
-      dismissible
-      :show="!!error"
-      class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle me-2" />
+    <v-alert
+      v-if="!!error"
+      type="error"
+      closable
+      class="mb-2"
+      @click:close="error = ''">
       {{ error }}
-    </b-alert> <!-- /page error -->
+    </v-alert> <!-- /page error -->
 
     <!-- search & paging -->
-    <div class="d-flex align-items-center mb-1">
-      <div>
-        <!-- page size -->
-        <select
-          number
-          class="form-control page-select"
-          v-model="query.length"
-          @change="updatePaging">
-          <option value="10">
-            {{ $t('common.perPage', 10) }}
-          </option>
-          <option value="50">
-            {{ $t('common.perPage', 50) }}
-          </option>
-          <option value="100">
-            {{ $t('common.perPage', 100) }}
-          </option>
-          <option value="200">
-            {{ $t('common.perPage', 200) }}
-          </option>
-          <option value="500">
-            {{ $t('common.perPage', 500) }}
-          </option>
-          <option value="1000">
-            {{ $t('common.perPage', 1000) }}
-          </option>
-        </select> <!-- /page size -->
-        <!-- paging -->
-        <b-pagination
-          size="sm"
-          :limit="5"
-          hide-ellipsis
-          @input="updatePaging"
-          v-model="currentPage"
-          :total-rows="recordsFiltered"
-          :per-page="parseInt(query.length)" /> <!-- paging -->
-        <!-- page info -->
-        <div class="pagination-info">
-          <span v-if="recordsFiltered">
-            {{ $t('common.showingRange', {start: start + 1, end: Math.min((start + query.length), recordsFiltered), total: recordsFiltered }) }}
-          </span>
-          <span v-else>
-            {{ $t('common.showingAll', {count: start, total: recordsFiltered }) }}
-          </span>
-        </div>
-        <!-- /page info -->
-        <template v-if="isUser && issues && issues.length">
-          <!-- remove/cancel all issues button -->
-          <button
-            id="removeAllAckIssuesBtn"
-            class="btn btn-outline-danger btn-sm cursor-pointer ms-2 me-1"
-            @click="removeAllAcknowledgedIssues">
-            <span class="fa fa-trash fa-fw" />
-            <transition name="visibility">
-              <span v-if="removeAllAcknowledgedIssuesConfirm">
-                {{ $t('parliament.issue.removeAllAcknowledgedIssuesConfirm') }}
-              </span>
-            </transition>
-          </button>
-          <BTooltip
-            target="removeAllAckIssuesBtn"
-            placement="bottom">
-            {{ $t('parliament.issue.removeAllAckIssuesBtnTip') }}
-          </BTooltip>
-          <transition name="slide-fade">
-            <button
-              class="btn btn-outline-warning btn-sm cursor-pointer"
+    <div class="d-flex align-center flex-nowrap mb-2 ga-2 arkime-toolbar">
+      <Pagination
+        style="height: 32px;"
+        :records-total="recordsTotal"
+        :records-filtered="recordsFiltered"
+        :length-default="parseInt(query.length) || 50"
+        @change-paging="changePaging" />
+
+      <v-menu :close-on-content-click="false">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            color="secondary"
+            variant="flat"
+            style="height: 32px;">
+            <v-icon icon="mdi-filter" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            :active="!filterIgnored"
+            @click="toggleFilter('filterIgnored')">
+            <v-list-item-title>{{ $t('parliament.issue.ignoredIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterAckd"
+            @click="toggleFilter('filterAckd')">
+            <v-list-item-title>{{ $t('parliament.issue.ackedIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterEsRed"
+            @click="toggleFilter('filterEsRed')">
+            <v-list-item-title>{{ $t('parliament.issue.esRedIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterEsDown"
+            @click="toggleFilter('filterEsDown')">
+            <v-list-item-title>{{ $t('parliament.issue.esDownIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterEsDropped"
+            @click="toggleFilter('filterEsDropped')">
+            <v-list-item-title>{{ $t('parliament.issue.esDroppedIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterOutOfDate"
+            @click="toggleFilter('filterOutOfDate')">
+            <v-list-item-title>{{ $t('parliament.issue.outOfDateIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterNoPackets"
+            @click="toggleFilter('filterNoPackets')">
+            <v-list-item-title>{{ $t('parliament.issue.noPacketsIssues') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterLowDiskSpace"
+            @click="toggleFilter('filterLowDiskSpace')">
+            <v-list-item-title>{{ $t('parliament.issue.filterLowDiskSpace') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            :active="!filterLowDiskSpaceES"
+            @click="toggleFilter('filterLowDiskSpaceES')">
+            <v-list-item-title>{{ $t('parliament.issue.filterLowDiskSpaceES') }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
+      <v-text-field
+        v-model="searchTerm"
+        :placeholder="$t('parliament.issue.searchTermPlaceholder')"
+        prepend-inner-icon="mdi-magnify"
+        clearable
+        density="compact"
+        hide-details
+        class="flex-grow-1 issues-search"
+        @input="debounceSearchInput"
+        @keyup.enter="debounceSearchInput"
+        @click:clear="clear" />
+
+      <template v-if="isUser && issues && issues.length">
+        <v-btn
+          color="error"
+          variant="outlined"
+          style="height: 32px;"
+          @click="removeAllAcknowledgedIssues">
+          <v-icon icon="mdi-delete" />
+          <transition name="visibility">
+            <span
               v-if="removeAllAcknowledgedIssuesConfirm"
-              @click="cancelRemoveAllAcknowledgedIssues">
-              <span class="fa fa-ban fa-fw" />&nbsp;
-              {{ $t('common.cancel') }}
-            </button>
+              class="ms-1">
+              {{ $t('parliament.issue.removeAllAcknowledgedIssuesConfirm') }}
+            </span>
           </transition>
-          <!-- /remove/cancel all issues button -->
-        </template>
-      </div>
-      <b-dropdown
-        no-caret
-        size="sm"
-        class="ms-1 me-1"
-        variant="secondary">
-        <template #button-content>
-          <span class="fa fa-filter fa-fw" />
-        </template>
-        <b-dropdown-item
-          :active="!filterIgnored"
-          @click.capture.stop.prevent="toggleFilter('filterIgnored')">
-          {{ $t('parliament.issue.ignoredIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterAckd"
-          @click.capture.stop.prevent="toggleFilter('filterAckd')">
-          {{ $t('parliament.issue.ackedIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterEsRed"
-          @click.capture.stop.prevent="toggleFilter('filterEsRed')">
-          {{ $t('parliament.issue.esRedIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterEsDown"
-          @click.capture.stop.prevent="toggleFilter('filterEsDown')">
-          {{ $t('parliament.issue.esDownIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterEsDropped"
-          @click.capture.stop.prevent="toggleFilter('filterEsDropped')">
-          {{ $t('parliament.issue.esDroppedIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterOutOfDate"
-          @click.capture.stop.prevent="toggleFilter('filterOutOfDate')">
-          {{ $t('parliament.issue.outOfDateIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterNoPackets"
-          @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
-          {{ $t('parliament.issue.noPacketsIssues') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterLowDiskSpace"
-          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpace')">
-          {{ $t('parliament.issue.filterLowDiskSpace') }}
-        </b-dropdown-item>
-        <b-dropdown-item
-          :active="!filterLowDiskSpaceES"
-          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpaceES')">
-          {{ $t('parliament.issue.filterLowDiskSpaceES') }}
-        </b-dropdown-item>
-      </b-dropdown>
-      <div class="flex-grow-1 ms-1">
-        <!-- search -->
-        <BInputGroup size="sm">
-          <BInputGroupText>
-            <span class="fa fa-search fa-fw" />
-          </BInputGroupText>
-          <input
-            type="text"
-            class="form-control"
-            v-model="searchTerm"
-            @input="debounceSearchInput"
-            @keyup.enter="debounceSearchInput"
-            :placeholder="$t('parliament.issue.searchTermPlaceholder')">
-          <button
-            type="button"
-            @click="clear"
-            class="btn btn-outline-secondary">
-            <span class="fa fa-close" />
-          </button>
-        </BInputGroup> <!-- /search -->
-      </div>
+          <v-tooltip
+            activator="parent"
+            location="bottom">
+            {{ $t('parliament.issue.removeAllAckIssuesBtnTip') }}
+          </v-tooltip>
+        </v-btn>
+        <transition name="slide-fade">
+          <v-btn
+            v-if="removeAllAcknowledgedIssuesConfirm"
+            color="warning"
+            variant="outlined"
+            style="height: 32px;"
+            @click="cancelRemoveAllAcknowledgedIssues">
+            <v-icon icon="mdi-cancel" />
+            {{ $t('common.cancel') }}
+          </v-btn>
+        </transition>
+      </template>
     </div> <!-- /search & paging -->
 
     <!-- table loading -->
-    <b-overlay
-      no-wrap
-      opacity=".8"
-      rounded="lg"
-      :show="loading"
-      :variant="theme"
-      class="issues-loading">
-      <template #overlay>
-        <div class="text-center">
-          <span class="fa fa-spin fa-circle-o-notch fa-2x" />
-          <h4>{{ $t('common.loading') }}</h4>
-        </div>
-      </template>
-    </b-overlay> <!-- /table loading -->
+    <v-overlay
+      v-model="loading"
+      contained
+      persistent
+      class="issues-loading"
+      :scrim="theme === 'arkime-dark' ? 'black' : 'white'">
+      <div class="text-center">
+        <v-icon
+          icon="mdi-loading"
+          class="mdi-loading"
+          size="x-large" />
+        <h3>{{ $t('common.loading') }}</h3>
+      </div>
+    </v-overlay> <!-- /table loading -->
 
     <!-- issues table -->
     <table
       style="position:relative"
       v-if="issues && issues.length"
-      :class="{ 'table-dark': getTheme === 'dark' }"
-      class="table table-hover table-sm">
+      class="arkime-table">
       <thead>
         <tr>
           <th v-if="isUser && issues.length">
             <input
               type="checkbox"
+              class="arkime-check-input"
               @click="toggleAllIssues"
               v-model="allIssuesSelected">
           </th>
@@ -202,60 +165,48 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-pointer"
             @click="sortBy('cluster')">
             {{ $t('common.cluster') }}
-            <span
-              v-if="query.sort !== 'cluster'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'cluster' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'cluster' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'cluster' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'cluster' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('title')">
             {{ $t('parliament.issue.table-issue') }}
-            <span
-              v-if="query.sort !== 'title'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'title' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'title' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'title' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'title' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('firstNoticed')">
             {{ $t('parliament.issue.table-firstNoticed') }}
-            <span
-              v-if="query.sort !== 'firstNoticed'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'firstNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'firstNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'firstNoticed' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'firstNoticed' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('lastNoticed')">
             {{ $t('parliament.issue.table-lastNoticed') }}
-            <span
-              v-if="query.sort !== 'lastNoticed'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'lastNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'lastNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'lastNoticed' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'lastNoticed' && query.order === 'desc'" />
           </th>
           <th scope="col">
             {{ $t('parliament.issue.table-value') }}
@@ -265,45 +216,36 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-pointer"
             @click="sortBy('node')">
             {{ $t('parliament.issue.table-node') }}
-            <span
-              v-if="query.sort !== 'node'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'node' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'node' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'node' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'node' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('ignoreUntil')">
             {{ $t('parliament.issue.table-ignoreUntil') }}
-            <span
-              v-if="query.sort !== 'ignoreUntil'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'ignoreUntil' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'ignoreUntil' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'ignoreUntil' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'ignoreUntil' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('acknowledged')">
             {{ $t('parliament.issue.table-ackedAt') }}
-            <span
-              v-if="query.sort !== 'acknowledged'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'acknowledged' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'acknowledged' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-if="query.sort === 'acknowledged' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-if="query.sort === 'acknowledged' && query.order === 'desc'" />
           </th>
           <th
             v-if="isUser && issues && issues.length"
@@ -312,69 +254,73 @@ SPDX-License-Identifier: Apache-2.0
             scope="col">
             <span v-if="atLeastOneIssueSelected">
               <!-- remove selected issues button -->
-              <button
-                class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-                id="removeSelectedIssuesBtn"
+              <v-btn
+                size="x-small"
+                variant="outlined"
+                color="primary"
+                class="me-1"
                 @click="removeSelectedAcknowledgedIssues">
-                <span class="fa fa-trash fa-fw" />
-              </button>
-              <BTooltip
-                target="removeSelectedIssuesBtn"
-                placement="bottom">
-                {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
-              </BTooltip>
+                <v-icon icon="mdi-delete" />
+                <v-tooltip
+                  activator="parent"
+                  location="bottom">
+                  {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
+                </v-tooltip>
+              </v-btn>
               <!-- /remove selected issues button -->
               <!-- acknowledge issues button -->
-              <button
-                class="btn btn-outline-success btn-xs cursor-pointer me-1"
-                id="acknowledgeIssuesBtn"
+              <v-btn
+                size="x-small"
+                variant="outlined"
+                color="success"
+                class="me-1"
                 @click="acknowledgeIssues">
-                <span class="fa fa-check fa-fw" />
-              </button>
-              <BTooltip
-                target="acknowledgeIssuesBtn"
-                placement="bottom">
-                {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
-              </BTooltip>
+                <v-icon icon="mdi-check" />
+                <v-tooltip
+                  activator="parent"
+                  location="bottom">
+                  {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
+                </v-tooltip>
+              </v-btn>
               <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
-              <b-dropdown
-                right
-                size="sm"
-                class="dropdown-btn-xs d-inline"
-                variant="outline-dark">
-                <template #button-content>
-                  <span class="fa fa-eye-slash fa-fw" />
-                  <span class="sr-only">
-                    Ignore
-                  </span>
+              <v-menu location="bottom end">
+                <template #activator="{ props: activatorProps }">
+                  <v-btn
+                    v-bind="activatorProps"
+                    size="x-small"
+                    variant="outlined"
+                    class="d-inline">
+                    <v-icon icon="mdi-eye-off" />
+                  </v-btn>
                 </template>
-
-                <b-dropdown-item @click="removeIgnore">
-                  {{ $t('parliament.issue.removeIgnore') }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(3600000)">
-                  {{ $t('parliament.issue.ignoreHourCount', 1) }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(21600000)">
-                  {{ $t('parliament.issue.ignoreHourCount', 6) }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(43200000)">
-                  {{ $t('parliament.issue.ignoreHourCount', 12) }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(86400000)">
-                  {{ $t('parliament.issue.ignoreDayCount', 1) }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(604800000)">
-                  {{ $t('parliament.issue.ignoreWeekCount', 1) }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(2592000000)">
-                  {{ $t('parliament.issue.ignoreMonthCount', 1) }}
-                </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(-1)">
-                  {{ $t('parliament.issue.ignoreForever') }}
-                </b-dropdown-item>
-              </b-dropdown> <!-- /ignore until dropdown -->
+                <v-list density="compact">
+                  <v-list-item @click="removeIgnore">
+                    <v-list-item-title>{{ $t('parliament.issue.removeIgnore') }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(3600000)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreHourCount', 1) }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(21600000)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreHourCount', 6) }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(43200000)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreHourCount', 12) }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(86400000)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreDayCount', 1) }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(604800000)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreWeekCount', 1) }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(2592000000)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreMonthCount', 1) }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="ignoreIssues(-1)">
+                    <v-list-item-title>{{ $t('parliament.issue.ignoreForever') }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu> <!-- /ignore until dropdown -->
             </span>
           </th>
         </tr>
@@ -395,6 +341,7 @@ SPDX-License-Identifier: Apache-2.0
               @click.stop>
               <input
                 type="checkbox"
+                class="arkime-check-input"
                 v-model="issue.selected"
                 @change="toggleIssue(issue, index)">
             </td>
@@ -444,21 +391,27 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- no issues -->
     <div v-if="!loading && (!issues || !issues.length)">
-      <hr>
+      <v-divider class="my-3" />
       <div class="info-area vertical-center text-center">
-        <div class="text-muted mt-5">
+        <div class="text-medium-emphasis mt-5">
           <span v-if="!searchTerm && !filterIgnored && !filterAckd && !filterEsRed && !filterEsDown && !filterEsDropped && !filterOutOfDate && !filterNoPackets">
-            <span class="fa fa-3x fa-smile-o text-muted-more" />
+            <v-icon
+              icon="mdi-emoticon-happy-outline"
+              size="x-large"
+              class="text-muted-more" />
             {{ $t('parliament.issue.noIssues') }}
           </span>
           <span v-else>
-            <span class="fa fa-3x fa-folder-open-o text-muted-more" />
+            <v-icon
+              icon="mdi-folder-open-outline"
+              size="x-large"
+              class="text-muted-more" />
             {{ $t('parliament.issue.noIssuesMatch') }}
           </span>
         </div>
       </div>
     </div> <!-- /no issues -->
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -466,6 +419,7 @@ import { mapGetters } from 'vuex';
 
 import ParliamentService from './parliament.service.js';
 import IssueActions from './IssueActions.vue';
+import Pagination from '@common/Pagination.vue';
 import moment from 'moment-timezone';
 import { commaString } from '@common/vueFilters.js';
 
@@ -476,7 +430,8 @@ let lastChecked = -1;
 export default {
   name: 'Issues',
   components: {
-    IssueActions
+    IssueActions,
+    Pagination
   },
   data: function () {
     return {
@@ -490,8 +445,8 @@ export default {
       atLeastOneIssueSelected: false,
       // pagination (always start on the first page)
       start: 0,
-      currentPage: 1,
       recordsFiltered: 0,
+      recordsTotal: 0,
       // searching
       searchTerm: undefined,
       // remove ALL ack issues confirm (double click)
@@ -669,11 +624,11 @@ export default {
     },
     getIssueRowClass: function (issue) {
       if (issue.ignoreUntil || issue.acknowledged) {
-        return 'table-secondary text-muted';
+        return 'arkime-table-row--muted text-medium-emphasis';
       } else if (issue.severity === 'red') {
-        return 'table-danger';
+        return 'arkime-table-row--danger';
       } else if (issue.severity === 'yellow') {
-        return 'table-warning';
+        return 'arkime-table-row--warning';
       }
 
       return '';
@@ -826,15 +781,15 @@ export default {
           this.error = error || `Unable to unignore ${selectedIssues.length} issues`;
         });
     },
-    updatePaging: function () {
-      this.start = (this.currentPage - 1) * this.query.length;
-
+    /* Fired by the shared Pagination component (page-size select or
+       page-number click). Emits { start, length, issueQuery }. */
+    changePaging: function (args) {
+      this.start = args.start;
       this.query = {
         sort: this.query.sort,
         order: this.query.order,
-        length: this.query.length
+        length: args.length
       };
-
       this.loadData();
     },
     debounceSearchInput: function () {
@@ -883,6 +838,7 @@ export default {
         this.loading = false;
         this.issues = data.issues;
         this.recordsFiltered = data.recordsFiltered;
+        this.recordsTotal = data.recordsTotal ?? data.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
         this.error = error || 'Error fetching issues. The issues below are likely out of date';
@@ -933,37 +889,6 @@ export default {
 </script>
 
 <style scoped>
-.pagination {
-  margin-bottom: 0px;
-  display: inline-flex;
-}
-
-select.page-select {
-  width: 120px;
-  font-size: .8rem;
-  display: inline-flex;
-  height: 31px !important;
-  margin-top: 1px;
-  margin-right: -5px;
-  margin-bottom: var(--px-xs);
-  padding-top: var(--px-xs);
-  padding-bottom: var(--px-xs);
-  border-right: none;
-  -webkit-appearance: none;
-  border-radius: 4px 0 0 4px;
-}
-
-.pagination-info {
-  display: inline-block;
-  font-size: .8rem;
-  color: #495057;
-  border: 1px solid #CED4DA;
-  padding: 5px 10px;
-  margin-left: -6px;
-  border-radius: 0 var(--px-sm) var(--px-sm) 0;
-  background-color: #FFFFFF;
-}
-
 /* loading overlay */
 .issues-loading {
   width: 400px;

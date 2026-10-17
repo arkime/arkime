@@ -1,4 +1,4 @@
-use Test::More tests => 133;
+use Test::More tests => 128;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -405,8 +405,7 @@ const root = path.resolve(process.argv[2]);
 const require = createRequire(import.meta.url);
 const impls = {
   arkimeUtil: require(path.join(root, 'common/arkimeUtil')).commaString,
-  vueFilters: (await import(pathToFileURL(path.join(root, 'common/vueapp/vueFilters.js')))).commaString,
-  cont3xtVueFilters: (await import(pathToFileURL(path.join(root, 'cont3xt/common/vueapp/vueFilters.js')))).commaString
+  vueFilters: (await import(pathToFileURL(path.join(root, 'common/vueapp/vueFilters.js')))).commaString
 };
 
 function oldCommaString (input) {
@@ -445,7 +444,7 @@ is($? >> 8, 0, "runner exits cleanly") or diag($output);
 my ($json) = $output =~ /^RESULT (.*)$/m;
 my $commaResult = from_json($json // '{}');
 
-foreach my $name (qw(arkimeUtil vueFilters cont3xtVueFilters)) {
+foreach my $name (qw(arkimeUtil vueFilters)) {
     my $r = $commaResult->{$name};
     ok(defined $r, "$name loaded");
     is($r->{mismatch}, undef, "$name matches old regex output") or diag(to_json($r->{mismatch}));
@@ -455,4 +454,4 @@ foreach my $name (qw(arkimeUtil vueFilters cont3xtVueFilters)) {
 }
 
 ok($output !~ /Error/, "no errors") or diag($output);
-is(scalar(keys %$commaResult), 3, "all implementations tested");
+is(scalar(keys %$commaResult), 2, "all implementations tested");

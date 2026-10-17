@@ -1,0 +1,25 @@
+Third-party notices for Arkime (https://arkime.com), Apache-2.0.
+
+This file is generated at build time by release/notice.txt.pl and has four
+parts, in this order:
+
+  1. Code built into capture: libraries statically linked on platforms whose
+     OS does not package them, and the C sources compiled in.
+  2. Files shipped as-is with viewer: the scripts in viewer/public and CyberChef.
+  3. npm packages installed for the Node.js servers (viewer, cont3xt,
+     parliament, wise), from the production dependency trees.
+  4. npm packages vite inlined into the browser bundles of the four Vue apps.
+
+Arkime capture also links against libraries provided by the operating system.
+They are declared as package dependencies and are not distributed with Arkime,
+so their licenses ship with the operating system and are not repeated here:
+
+  glib2 (LGPL-2.1), libcurl (curl), libpcap (BSD), libmaxminddb (Apache-2.0),
+  nghttp2 (MIT), libyaml (MIT), libmagic (BSD), zlib (zlib), zstd (BSD),
+  lua (MIT), OpenSSL (Apache-2.0), libxdp (LGPL-2.1 or BSD-2-Clause), and on
+  Linux distributions that package them, yara (BSD-3-Clause) and librdkafka
+  (BSD-2-Clause). The optional pfring plugin dynamically links libpfring
+  (LGPL-2.1).
+
+The bundled Node.js runtime is MIT, see https://github.com/nodejs/node.
+

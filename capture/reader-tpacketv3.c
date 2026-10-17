@@ -53,7 +53,6 @@ LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_THREADS_PER_INTERFACE];
 
 LOCAL int numThreads;
 
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 LOCAL struct bpf_program     bpf;
 
 LOCAL ArkimeReaderStats_t gStats;
@@ -211,10 +210,11 @@ void reader_tpacketv3_init(const char *UNUSED(name))
         CONFIGEXIT("tpacketv3BlockSize=%d not divisible by snapLen=%u", blocksize, config.snapLen);
     }
 
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, DLT_EN10MB, config.snapLen);
 
     if (config.bpf) {
-        arkime_readers_compile_bpf("TPacketV3", pcapFileHeader.dlt, pcapFileHeader.snaplen, config.bpf, &bpf);
+        arkime_readers_compile_bpf("TPacketV3", DLT_EN10MB, config.snapLen, config.bpf, &bpf);
     }
 
     int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);

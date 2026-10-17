@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 'use strict';
 // NOTE: modified from 'cjs -> esm' for use with Vite
 

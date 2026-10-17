@@ -6,7 +6,8 @@
     <meta name="referrer" content="no-referrer">
     <meta property="csp-nonce" content="<%= nonce %>">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>" type="text/css">
+    <link rel="stylesheet" href="mdi-font/css/materialdesignicons.min.css" nonce="<%= nonce %>" type="text/css">
+    <link rel="stylesheet" href="mdi-font/css/materialdesignicons.min.css" nonce="<%= nonce %>" type="text/css">
     <title>WISE</title>
     <% if (environment !== 'development') { %>
       <link rel="stylesheet" href="<%= manifest['wiseService/vueapp/src/main.js'].css %>" />
@@ -18,6 +19,8 @@
     const LOGOUT_URL = '<%= logoutUrl %>';
     const LOGOUT_URL_METHOD = '<%= logoutUrlMethod %>';
     const FOOTER_CONFIG = '<%= footerConfig %>';
+    const CHECK_FOR_UPDATES = '<%= checkForUpdates %>';
+    const UPDATE_CHECK_URL = '<%= updateCheckUrl %>';
   </script>
   <body>
     <div id="app"></div>

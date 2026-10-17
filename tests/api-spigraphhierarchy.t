@@ -1,4 +1,4 @@
-use Test::More tests => 17;
+use Test::More tests => 23;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -49,3 +49,12 @@ eq_or_diff($json, from_json('{"success":true,"tableResults":[{"size":9,"name":"t
 
 my $json = get("date=-1&exp=node,ip.src,ip.dst&expression=$files");
 eq_or_diff($json, from_json('{"hierarchicalResults":{"name":"Top Talkers","children":[{"srcips":9,"sizeValue":19,"children":[{"name":"10.180.156.185","dstips":1,"children":[{"name":"10.180.156.249","dstips":1,"size":9,"srcips":1}],"sizeValue":9,"srcips":1},{"children":[{"srcips":1,"size":2,"dstips":1,"name":"10.0.0.2"}],"sizeValue":2,"name":"10.0.0.1","dstips":1,"srcips":1},{"children":[{"dstips":1,"size":1,"name":"ff02::1","srcips":1},{"size":1,"dstips":1,"name":"ff02::1:ff82:95b5","srcips":1}],"sizeValue":2,"name":"fe80::211:25ff:fe82:95b5","dstips":2,"srcips":1},{"sizeValue":1,"children":[{"srcips":1,"size":1,"dstips":1,"name":"ff02::1:ff98:6e1"}],"dstips":1,"name":"::","srcips":1},{"sizeValue":1,"children":[{"name":"10.0.0.1","size":1,"dstips":1,"srcips":1}],"dstips":1,"name":"10.0.0.2","srcips":1},{"sizeValue":1,"children":[{"size":1,"dstips":1,"name":"10.0.0.2","srcips":1}],"dstips":1,"name":"10.0.0.3","srcips":1},{"srcips":1,"sizeValue":1,"children":[{"srcips":1,"dstips":1,"size":1,"name":"2001:6f8:900:7c0::2"}],"dstips":1,"name":"2001:6f8:102d:0:2d0:9ff:fee3:e8de"},{"srcips":1,"name":"2001:6f8:102d:0:1033:c4c:7e57:b19e","dstips":1,"children":[{"name":"ff02::fb","size":1,"dstips":1,"srcips":1}],"sizeValue":1},{"srcips":1,"sizeValue":1,"children":[{"name":"ff02::16","size":1,"dstips":1,"srcips":1}],"dstips":1,"name":"fe80::2d0:9ff:fee3:e8de"}],"dstips":9,"name":"test"}]},"tableResults":[{"parents":[{"name":"test","size":19},{"size":9,"name":"10.180.156.185"}],"name":"10.180.156.249","size":9},{"name":"10.0.0.2","size":2,"parents":[{"name":"test","size":19},{"size":2,"name":"10.0.0.1"}]},{"parents":[{"name":"test","size":19},{"name":"fe80::211:25ff:fe82:95b5","size":2}],"size":1,"name":"ff02::1"},{"parents":[{"size":19,"name":"test"},{"name":"fe80::211:25ff:fe82:95b5","size":2}],"name":"ff02::1:ff82:95b5","size":1},{"size":1,"name":"ff02::1:ff98:6e1","parents":[{"name":"test","size":19},{"size":1,"name":"::"}]},{"name":"10.0.0.1","size":1,"parents":[{"size":19,"name":"test"},{"size":1,"name":"10.0.0.2"}]},{"parents":[{"size":19,"name":"test"},{"size":1,"name":"10.0.0.3"}],"name":"10.0.0.2","size":1},{"size":1,"name":"2001:6f8:900:7c0::2","parents":[{"size":19,"name":"test"},{"size":1,"name":"2001:6f8:102d:0:2d0:9ff:fee3:e8de"}]},{"parents":[{"name":"test","size":19},{"name":"2001:6f8:102d:0:1033:c4c:7e57:b19e","size":1}],"size":1,"name":"ff02::fb"},{"parents":[{"name":"test","size":19},{"size":1,"name":"fe80::2d0:9ff:fee3:e8de"}],"size":1,"name":"ff02::16"}],"success":true}'));
+
+# single field (the Intersection dashboard widget): flat value/count rows with no
+# parents, honoring the size (the widget's Top-N). count == doc_count per value.
+my $hier = get("date=-1&exp=ip.src&size=3&expression=$files");
+is ($hier->{success}, 1, "single-field intersection success");
+cmp_ok (scalar(@{$hier->{tableResults}}), '>', 0, "single-field intersection returns rows");
+cmp_ok (scalar(@{$hier->{tableResults}}), '<=', 3, "single-field intersection honors size");
+is (scalar(@{$hier->{tableResults}->[0]->{parents}}), 0, "single-field intersection rows have no parents");
+ok (defined $hier->{tableResults}->[0]->{name} && defined $hier->{tableResults}->[0]->{size}, "single-field intersection row has name + size");

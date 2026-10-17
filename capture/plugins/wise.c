@@ -758,8 +758,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 }
                 case ARKIME_FIELD_TYPE_STR_GHASH: {
                     ghash = (GHashTable *)value;
-                    g_hash_table_iter_init (&iter, ghash);
-                    while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                    g_hash_table_iter_init(&iter, ghash);
+                    while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                         wise_lookup(session, ikey, type, pos);
                     }
                     break;
@@ -801,8 +801,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 break;
             case ARKIME_FIELD_TYPE_INT_GHASH:
                 ghash = session->fields[pos]->ghash;
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                g_hash_table_iter_init(&iter, ghash);
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     snprintf(buf, sizeof(buf), "%d", (int)(long)ikey);
                     wise_lookup(session, buf, type, pos);
                 }
@@ -819,8 +819,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 break;
             case ARKIME_FIELD_TYPE_FLOAT_GHASH:
                 ghash = session->fields[pos]->ghash;
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                g_hash_table_iter_init(&iter, ghash);
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     snprintf(buf, sizeof(buf), "%f", POINTER_TO_FLOAT(ikey));
                     wise_lookup(session, buf, type, pos);
                 }
@@ -830,8 +830,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 break;
             case ARKIME_FIELD_TYPE_IP_GHASH:
                 ghash = session->fields[pos]->ghash;
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                g_hash_table_iter_init(&iter, ghash);
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     wise_lookup_ip(session, (struct in6_addr *)ikey, pos);
                 }
                 break;
@@ -867,8 +867,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 break;
             case ARKIME_FIELD_TYPE_STR_GHASH:
                 ghash = session->fields[pos]->ghash;
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                g_hash_table_iter_init(&iter, ghash);
+                while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
                     if (type == INTEL_TYPE_DOMAIN)
                         wise_lookup_domain(session, ikey, pos);
                     else if (type == INTEL_TYPE_URL)
@@ -885,8 +885,8 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
     }
 
     // Tuples
-    if ((tcpTuple && session->ses == SESSION_TCP) ||
-        (udpTuple && session->ses == SESSION_UDP)) {
+    if ((tcpTuple && session->mProtocol == mProtocolTcp) ||
+        (udpTuple && session->mProtocol == mProtocolUdp)) {
         wise_lookup_tuple(session);
     }
 
@@ -1008,7 +1008,7 @@ LOCAL void wise_load_wise_types()
                 CONFIGEXIT("wise-types '%s' has too many fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
-            if  (strncmp("db:", values[v], 3) == 0)
+            if (strncmp("db:", values[v], 3) == 0)
                 pos = arkime_field_by_db(values[v] + 3);
             else
                 pos = arkime_field_by_exp(values[v]);

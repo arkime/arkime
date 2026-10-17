@@ -7,39 +7,41 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-for="(infoField, index) in infoFieldsClone"
       :key="infoField.dbField + index">
-      <div v-if="session[infoField.dbField]">
+      <div
+        v-if="session[infoField.dbField]"
+        class="info-field-row">
         <!-- label dropdown menu -->
-        <b-dropdown
-          right
-          size="sm"
-          toggle-class="rounded"
-          class="field-dropdown d-inline-block me-1"
-          variant="default"
-          :text="infoField.friendlyName">
-          <b-dropdown-item
-            @click="exportUnique(infoField.rawField || infoField.exp, 0)">
-            {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
-          </b-dropdown-item>
-          <b-dropdown-item
-            @click="exportUnique(infoField.rawField || infoField.exp, 1)">
-            {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
-          </b-dropdown-item>
-          <template v-if="infoField.portField">
-            <b-dropdown-item
-              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
-              {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
-              {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
-            </b-dropdown-item>
+        <v-menu location="bottom end">
+          <template #activator="{ props: activatorProps }">
+            <button
+              v-bind="activatorProps"
+              type="button"
+              class="clickable-label me-1">
+              {{ infoField.friendlyName }}<v-icon icon="mdi-menu-down" />
+            </button>
           </template>
-          <b-dropdown-item
-            @click="openSpiGraph(infoField.dbField)">
-            {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
-          </b-dropdown-item>
-        </b-dropdown> <!-- /label dropdown menu -->
-        <span v-if="Array.isArray(session[infoField.dbField])">
+          <v-list density="compact">
+            <v-list-item @click="exportUnique(infoField.rawField || infoField.exp, 0)">
+              {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
+            </v-list-item>
+            <v-list-item @click="exportUnique(infoField.rawField || infoField.exp, 1)">
+              {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
+            </v-list-item>
+            <template v-if="infoField.portField">
+              <v-list-item @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
+                {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
+              </v-list-item>
+              <v-list-item @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
+                {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
+              </v-list-item>
+            </template>
+            <v-list-item @click="openSpiGraph(infoField.dbField)">
+              {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
+            </v-list-item>
+          </v-list>
+        </v-menu> <!-- /label dropdown menu -->
+        <span
+          v-if="Array.isArray(session[infoField.dbField])">
           <span
             v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
             :key="value + idx">
@@ -152,13 +154,41 @@ export default {
 };
 </script>
 
-<style>
-/* clickable field labels */
-.session-info div.dropdown.field-dropdown > button {
-  margin-top: 1px;
-  margin-bottom: 1px;
-  padding: 0 4px;
-  font-size: .75rem;
-  font-weight: 500;
+<style scoped>
+/* one row per field — give a tiny vertical gap so adjacent rows don't
+   smoosh together when the info column gets dense */
+.session-info .info-field-row {
+  margin-bottom: 4px;
+}
+/* Field-label dropdown trigger — same visual treatment as the session
+   detail's .clickable-label (SessionDetail.vue). */
+.session-info button.clickable-label {
+  display: inline-block;
+  height: 21px;
+  background-color: transparent;
+  color: rgb(var(--v-theme-foreground));
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 21px;
+  padding: 0 0 0 5px;
+  border: 1px solid rgb(var(--v-theme-neutral));
+  border-radius: 0.25rem;
+  cursor: pointer;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: baseline;
+}
+.session-info button.clickable-label:hover {
+  color: #333;
+  background-color: rgb(var(--v-theme-neutral));
+  border-color: rgb(var(--v-theme-neutral));
+}
+/* shrink the dropdown chevron to text size and strip its surrounding
+   whitespace (default v-icon is a 24px box, taller than the button) */
+.session-info button.clickable-label .v-icon {
+  font-size: 16px;
+  margin: 0;
 }
 </style>
