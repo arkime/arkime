@@ -1,4 +1,4 @@
-use Test::More tests => 50;
+use Test::More tests => 59;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -97,6 +97,34 @@ ArkimeConfig.initialize({ defaultConfigFile: iniFile, defaultSections: ['default
       console.log('REMOTE', r.status, await r.text());
       r = await fetch(url, { headers: { 'x-user': 'hdruser' } });
       console.log('LOCAL', r.status, await r.text());
+      process.exit(0);
+    });
+    return;
+  }
+
+  if (mode === 'basic') {
+    await User.setUser('admin', { userId: 'admin', userName: 'admin', enabled: true, webEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('admin', 'secret') });
+    const express = require(require.resolve('express', { paths: [common] }));
+    const app = express();
+    Auth.app(app);
+    app.get('/whoami', (req, res) => res.send(req.user.userId));
+    const srv = app.listen(0, '127.0.0.1', async () => {
+      const url = `http://127.0.0.1:${srv.address().port}/whoami`;
+      const b64 = (s) => Buffer.from(s).toString('base64');
+      const cases = [
+        ['NONE', undefined],
+        ['SCHEME', 'Bearer abc'],
+        ['NOSPACE', 'Basic'],
+        ['NOCOLON', 'Basic ' + b64('admin')],
+        ['NOUSER', 'Basic ' + b64(':secret')],
+        ['BADPASS', 'Basic ' + b64('admin:wrong')],
+        ['NOUSERDB', 'Basic ' + b64('nobody:secret')],
+        ['GOOD', 'basic ' + b64('admin:secret')]
+      ];
+      for (const [label, authorization] of cases) {
+        const r = await fetch(url, { headers: authorization ? { authorization } : {} });
+        console.log('BASIC', label, r.status, r.headers.get('www-authenticate') ?? '-', (await r.text()).replace(/\n/g, ' '));
+      }
       process.exit(0);
     });
     return;
@@ -205,6 +233,20 @@ foreach my $mode ("header", "header+basic", "basic+header", "basic+headerOnly") 
 
 ($code, $out) = tryConfig("authMode=basic+header\nuserNameHeader=x-user\nuserAuthIps=10.0.0.0/8", "ipgate");
 like($out, qr/^REMOTE 200 hdruser$/m, "basic+header with userAuthIps set accepts the user header from that range");
+
+################################################################################
+# basic auth header parsing, the challenge is what makes browsers prompt
+################################################################################
+($code, $out) = tryConfig("authMode=basic", "basic");
+is($code, 0, "basic mode starts");
+like($out, qr/^BASIC NONE 401 Basic realm="Moloch" Unauthorized$/m, "no Authorization gets the Basic challenge");
+like($out, qr/^BASIC SCHEME 401 Basic realm="Moloch" /m, "another scheme gets the Basic challenge");
+like($out, qr/^BASIC NOSPACE 400 - /m, "a scheme without credentials is a bad request");
+like($out, qr/^BASIC NOCOLON 400 - /m, "credentials without a colon are a bad request");
+like($out, qr/^BASIC NOUSER 401 Basic realm="Moloch" /m, "an empty user gets the challenge");
+like($out, qr/^BASIC BADPASS 401 Basic realm="Moloch" /m, "a wrong password gets the challenge");
+like($out, qr/^BASIC NOUSERDB 401 Basic realm="Moloch" /m, "an unknown user gets the challenge");
+like($out, qr/^BASIC GOOD 200 - admin$/m, "good credentials with a lowercase scheme authenticate");
 
 ################################################################################
 # MCP header auth on a non header site only identifies the user, other headers aren't claims
