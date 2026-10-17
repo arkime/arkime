@@ -594,7 +594,8 @@ async function fixFileIds (fields) {
   fields.fileId = files;
 }
 
-// Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
+// Get a session from OpenSearch/Elasticsearch and decode packetPos if requested.
+// esProxy's searchIdsFilter only passes this exact query shape from sensor viewers.
 Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
@@ -664,6 +665,7 @@ Db.indexNow = async (index, id, doc) => {
   });
 };
 
+// Anything added to the body here must also be allowed by esProxy's sessions search validators
 Db.search = async (index, query, options) => {
   query.profile = internals.esProfile;
 

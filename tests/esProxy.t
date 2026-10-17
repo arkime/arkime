@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 336;
+use Test::More tests => 364;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -552,7 +552,7 @@ foreach my $test (["tests_history_v1-26w41", 1], ["other_history_v1-26w41", 0], 
     my ($index, $allowed) = @$test;
     $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$index/_doc");
     $req->header('Content-Type' => 'application/json');
-    $req->content('{"userId":"esproxyhistory","timestamp":1,"api":"/esproxy"}');
+    $req->content('{"userId":"esproxyhistory","timestamp":1,"api":"/esproxy","method":"GET"}');
     $response = $ArkimeTest::userAgent->request($req);
     if ($allowed) {
         ok ($response->code == 200 || $response->code == 201, "history write to $index allowed") or diag($response->code);
@@ -562,6 +562,39 @@ foreach my $test (["tests_history_v1-26w41", 1], ["other_history_v1-26w41", 0], 
         is ($response->code, 400, "history write to $index rejected");
     }
 }
+
+# and only with what the viewer's history logging always sends, so a sensor can't
+# write just any audit row
+sub historyPost {
+    my ($body, $gzip) = @_;
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_history_v1-26w41/_doc");
+    $r->header('Content-Type' => 'application/json');
+    if ($gzip) {
+        my $gz;
+        IO::Compress::Gzip::gzip(\$body => \$gz);
+        $r->header('Content-Encoding' => 'gzip');
+        $r->content($gz);
+    } else {
+        $r->content($body);
+    }
+    return $ArkimeTest::userAgent->request($r);
+}
+foreach my $test (
+    ['{"timestamp":1,"api":"/esproxy","method":"GET"}', "no userId"],
+    ['{"userId":"","timestamp":1,"api":"/esproxy","method":"GET"}', "empty userId"],
+    ['{"userId":["esproxyhistory"],"timestamp":1,"api":"/esproxy","method":"GET"}', "userId not a string"],
+    ['{"userId":"esproxyhistory","timestamp":"1","api":"/esproxy","method":"GET"}', "timestamp not a number"],
+    ['{"userId":"esproxyhistory","timestamp":1,"method":"GET"}', "no api"],
+    ['{"userId":"esproxyhistory","timestamp":1,"api":"/esproxy"}', "no method"],
+    ['[]', "array"],
+    ['"x"', "string"],
+) {
+    is (historyPost($test->[0])->code, 400, "history write with $test->[1] rejected");
+}
+$response = historyPost('{"userId":"esproxyhistory","timestamp":1,"api":"/esproxy","method":"GET"}', 1);
+ok ($response->code == 200 || $response->code == 201, "gzip history write allowed") or diag($response->code);
+my $historyId = eval { from_json($response->content)->{_id} };
+esDelete("/tests_history_v1-26w41/_doc/$historyId?refresh=true") if $historyId;
 
 # A content-length the client never sends must not be passed on, es would wait for it with a shared socket
 {
@@ -924,29 +957,12 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "POST session update under unrelated sessions3 prefix rejected");
 is ($response->content, "Not authorized for API");
 
-# Correct prefix is still proxied
-$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/nonexistent-id");
-isnt ($response->content, "Not authorized for API", "GET session doc under correct prefix is proxied to ES, not blocked by guard");
-
-$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/partial-tests_sessions3-2024/_doc/nonexistent-id");
-isnt ($response->content, "Not authorized for API", "GET session doc in partial index is proxied to ES, not blocked by guard");
-
-# On ES 7 typed routes these ids are endpoints, _search would dump every session
-foreach my $id ("_search", "%5Fsearch", "_count", "_mget", "%5fmsearch") {
-    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/$id?size=10000");
-    is ($response->code, 400, "GET session doc with id $id rejected");
-}
-
-# autoGenerateId=consistent puts the node name in the id, the es client encodes it
-foreach my $id ("260101-node%3A1-5-24", "260101-node%201-5-24") {
-    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/$id");
-    isnt ($response->content, "Not authorized for API", "GET session doc with encoded id $id proxied");
-}
-# But never a / in the id. es matches routes on the raw path, refused anyway in case
-# one ever splits it into typed endpoints like _validate/query or _search/template
-foreach my $id ("a%2Fb", "_validate%2Fquery", "_search%2Ftemplate") {
-    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_doc/$id");
-    is ($response->code, 400, "GET session doc with encoded slash id $id rejected");
+# No viewer reads a session doc by GET, Db.getSession searches by id, so the path is
+# closed with the right prefix too. On ES 7 typed routes _search would dump every session.
+foreach my $path ("tests_sessions3-2024/_doc/nonexistent-id", "partial-tests_sessions3-2024/_doc/nonexistent-id",
+                  "tests_sessions3-2024/_doc/_search?size=10000", "tests_sessions3-2024/_doc/260101-node%3A1-5-24") {
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$path");
+    is ($response->code, 400, "GET session doc $path rejected");
 }
 
 # Session update only runs the hunt script a sensor viewer sends when a remote hunt matches
@@ -983,10 +999,106 @@ foreach my $test (
     is (sessionUpdate(to_json($test->[0]))->code, 400, "POST session update with $test->[1] rejected");
 }
 
-# Session doc get/update must be one sessions index, not a multi-index expression
+# A sensor viewer only handles sessions from nodes on its host: searches are narrowed to
+# those nodes and the hunt script leaves other hosts' sessions alone. test's stats doc
+# puts it on this host, esproxyhost is configured on another one.
+my %scopeDocs = (
+    'esproxy-scope-own' => '{"node":"test","rootId":"esproxy-scope-root","lastPacket":1}',
+    'esproxy-scope-other' => '{"node":"esproxyhost","rootId":"esproxy-scope-root","lastPacket":2}',
+    'esproxy-scope-nosensor' => '{"node":"esproxy-nosuchnode","rootId":"esproxy-scope-root","lastPacket":3}',
+    'esproxy-scope-nostats' => '{"node":"esproxypin5","rootId":"esproxy-scope-root","lastPacket":4}'
+);
+esPut("/tests_sessions3-2024/_doc/$_?refresh=true", $scopeDocs{$_}) foreach (keys %scopeDocs);
+
+sub scopeSearch {
+    my ($user, $body, $gzip) = @_;
+    my $r = HTTP::Request->new('POST', "http://$user:$user\@$ArkimeTest::host:7200/tests_sessions3-2024/_search?rest_total_hits_as_int=true");
+    $r->header('Content-Type' => 'application/json');
+    if ($gzip) {
+        my $gz;
+        IO::Compress::Gzip::gzip(\$body => \$gz);
+        $r->header('Content-Encoding' => 'gzip');
+        $r->content($gz);
+    } else {
+        $r->content($body);
+    }
+    my $resp = $ArkimeTest::userAgent->request($r);
+    return "code " . $resp->code if ($resp->code != 200);
+    return join(",", sort map { $_->{_id} } @{from_json($resp->content)->{hits}->{hits}});
+}
+my $idsOwn = '{"query":{"ids":{"values":["esproxy-scope-own"]}},"_source":["node"]}';
+my $idsOther = '{"query":{"ids":{"values":["esproxy-scope-other"]}},"_source":["node"]}';
+my $rootTerm = '{"size":100,"_source":["rootId"],"query":{"term":{"rootId":"esproxy-scope-root"}}}';
+my $rootFilter = '{"size":100,"_source":["rootId"],"sort":{"lastPacket":{"order":"asc"}},"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}}]}}}';
+my $rootForced = '{"size":100,"_source":["rootId"],"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}},{"range":{"lastPacket":{"gte":0}}}]}}}';
+my $rootLookup = '{"size":100,"_source":["rootId"],"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}},{"terms":{"node":{"index":"tests_users","id":"anonymous","path":"userId"}}}]}}}';
+my $rootScriptSort = '{"size":100,"_source":["rootId"],"sort":{"_script":{"type":"number","script":{"source":"1"}}},"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}}]}}}';
+is (scopeSearch("test", $idsOwn), "esproxy-scope-own", "sessions search by id finds a session on the sensor's host");
+is (scopeSearch("test", $idsOther), "", "sessions search by id doesn't find a session on another host");
+is (scopeSearch("test", $idsOwn, 1), "esproxy-scope-own", "gzip sessions search by id finds a session on the sensor's host");
+is (scopeSearch("test", $rootTerm), "esproxy-scope-own", "sessions search by rootId term only finds the sensor's host");
+is (scopeSearch("test", $rootFilter), "esproxy-scope-own", "sessions search by rootId filter only finds the sensor's host");
+is (scopeSearch("test", $rootForced), "esproxy-scope-own", "sessions search by rootId with a forced expression clause only finds the sensor's host");
+is (scopeSearch("test", $rootLookup), "code 400", "sessions search by rootId with a terms lookup clause rejected");
+is (scopeSearch("test", $rootScriptSort), "code 400", "sessions search by rootId with a script sort rejected");
+# A $shortcut in the forced expression is a terms lookup in the lookups index, which keeps working
+esPut("/tests_lookups/_doc/esproxy-scope-shortcut?refresh=true", '{"name":"esproxyscope","string":["test"]}');
+my $rootShortcut = '{"size":100,"_source":["rootId"],"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}},{"terms":{"node":{"index":"tests_lookups","id":"esproxy-scope-shortcut","path":"string"}}}]}}}';
+my $rootShortcutIndex = '{"size":100,"_source":["rootId"],"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}},{"terms":{"node":{"_index":"tests_lookups","id":"esproxy-scope-shortcut","path":"string"}}}]}}}';
+is (scopeSearch("test", $rootShortcut), "esproxy-scope-own", "sessions search by rootId with a shortcut clause finds the sensor's host");
+is (scopeSearch("test", $rootShortcutIndex), "code 400", "sessions search by rootId with a _index lookup in lookups rejected");
+my $rootShortcutScript = '{"size":100,"_source":["rootId"],"query":{"bool":{"filter":[{"term":{"rootId":"esproxy-scope-root"}},{"terms":{"node":{"index":"tests_lookups","id":"esproxy-scope-shortcut","path":"string","script":{"source":"1"}}}}]}}}';
+is (scopeSearch("test", $rootShortcutScript), "code 400", "sessions search by rootId with a script next to a lookups lookup rejected");
+esDelete("/tests_lookups/_doc/esproxy-scope-shortcut?refresh=true");
+is (scopeSearch("esproxyhost", $idsOther), "esproxy-scope-other", "sessions search by id finds the other host's session for its own sensor");
+is (scopeSearch("esproxyhost", $rootFilter), "esproxy-scope-other", "sessions search by rootId only finds the other host for its own sensor");
+# Without a stats doc a sensor has no host, so only its own node. esproxypin5 never
+# posts one, the other pin sensors were pinned in memory by their earlier tests.
+my $idsNoStats = '{"query":{"ids":{"values":["esproxy-scope-nostats"]}},"_source":["node"]}';
+is (scopeSearch("esproxypin5", $idsNoStats), "esproxy-scope-nostats", "sessions search by id finds the session of a sensor without a stats doc");
+is (scopeSearch("esproxypin5", $idsOwn), "", "sessions search by id for a sensor without a stats doc doesn't find another node");
+
+sub scopeUpdate {
+    my ($user, $id, $gzip, $query) = @_;
+    $query //= "";
+    my $r = HTTP::Request->new('POST', "http://$user:$user\@$ArkimeTest::host:7200/tests_sessions3-2024/_update/$id?refresh=true$query");
+    $r->header('Content-Type' => 'application/json');
+    my $body = to_json({script => {source => $addHunt, lang => "painless", params => {huntId => "esproxy-scope-hunt", huntName => "scope"}}});
+    if ($gzip) {
+        my $gz;
+        IO::Compress::Gzip::gzip(\$body => \$gz);
+        $r->header('Content-Encoding' => 'gzip');
+        $r->content($gz);
+    } else {
+        $r->content($body);
+    }
+    my $resp = $ArkimeTest::userAgent->request($r);
+    return eval { from_json($resp->content)->{result} } // "code " . $resp->code;
+}
+is (scopeUpdate("test", "esproxy-scope-other"), "noop", "session hunt update leaves a session on another host alone");
+is (scopeUpdate("test", "esproxy-scope-nosensor"), "noop", "session hunt update leaves a session of an unknown node alone");
+is (scopeUpdate("test", "esproxy-scope-own"), "updated", "session hunt update changes a session on the sensor's host");
+is (scopeUpdate("test", "esproxy-scope-other", 1), "noop", "gzip session hunt update leaves a session on another host alone");
+is (scopeUpdate("esproxyhost", "esproxy-scope-other"), "updated", "session hunt update changes the other host's session for its own sensor");
+is (scopeUpdate("esproxypin5", "esproxy-scope-own"), "noop", "session hunt update for a sensor without a stats doc leaves another node alone");
+is (scopeUpdate("esproxypin5", "esproxy-scope-nostats"), "updated", "session hunt update for a sensor without a stats doc changes its own session");
+# es returns the doc with _source even for a noop, which would read any session by id
+is (scopeUpdate("test", "esproxy-scope-other", 0, "&_source=true"), "code 400", "session hunt update asking for _source rejected");
+# A first stats doc is only accepted while nothing is pinned, so the tests above ran without a host
+like (sensorPost("esproxypin5", "tests_stats/_doc/esproxypin5", '{"hostname":"esproxy-nostats-host","ver":"test"}'), qr/^20[01]$/, "sensor without a stats doc had no host during the scope tests");
+esDelete("/tests_stats/_doc/esproxypin5?refresh=true");
+is_deeply (esGet("/tests_sessions3-2024/_doc/esproxy-scope-own")->{_source}, {node => "test", rootId => "esproxy-scope-root", lastPacket => 1, huntId => ["esproxy-scope-hunt"], huntName => ["scope"]}, "own host session has the hunt");
+is_deeply (esGet("/tests_sessions3-2024/_doc/esproxy-scope-other")->{_source}, {node => "esproxyhost", rootId => "esproxy-scope-root", lastPacket => 2, huntId => ["esproxy-scope-hunt"], huntName => ["scope"]}, "other host session only has its own sensor's hunt");
+is_deeply (esGet("/tests_sessions3-2024/_doc/esproxy-scope-nosensor")->{_source}, {node => "esproxy-nosuchnode", rootId => "esproxy-scope-root", lastPacket => 3}, "unknown node session unchanged");
+esDelete("/tests_sessions3-2024/_doc/$_?refresh=true") foreach (keys %scopeDocs);
+
+# Session update must be one sessions index, not a multi-index expression, even with the allowed body
 foreach my $index ("tests_sessions3-2024,tests_users", "tests_sessions3-*", "tests_sessions3-2024:tests_users", "tests_sessions3-2024%2Ftests_users") {
-    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$index/_doc/1");
-    is ($response->code, 400, "GET session doc in $index rejected");
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$index/_update/1");
+    $req->header('Content-Type' => 'application/json');
+    $req->content(to_json({script => {source => $addHunt, lang => "painless", params => {huntId => "h1", huntName => "hunt"}}}));
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 400, "POST session update in $index rejected");
 }
 
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024,tests_users/_update/1");
