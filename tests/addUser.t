@@ -1,9 +1,10 @@
 # Test addUser.js and general authentication
-use Test::More tests => 144;
+use Test::More tests => 158;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
+use Digest::MD5 qw(md5_hex);
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -112,6 +113,52 @@ is ($response->code, 403);
 # Good password
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'authtest2', 'authtest2' );
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
+is ($response->code, 200);
+
+# Bad Digest headers, sent without letting LWP answer the challenge
+my $noAuthUA = LWP::UserAgent->new(timeout => 10, max_redirect => 0);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/");
+is ($response->code, 401);
+like ($response->header('WWW-Authenticate'), qr/Digest realm="Moloch", nonce="[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+", algorithm=MD5, qop="auth"/);
+
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => 'Digest ' . ('a,' x 3000));
+is ($response->code, 400);
+
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => 'Digest username="authtest2", realm="Moloch');
+is ($response->code, 400);
+
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => 'Digest username="authtest2", realm="Moloch", nonce="abc", uri="/", qop=auth, nc=00000001, cnonce="x", response="00000000000000000000000000000000"');
+is ($response->code, 401);
+
+# A high byte in a 32 char response or nonce must be rejected, not throw in the compare
+my ($nonce) = $response->header('WWW-Authenticate') =~ /nonce="([^"]+)"/;
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => "Digest username=\"authtest2\", realm=\"Moloch\", nonce=\"$nonce\", uri=\"/\", qop=auth, nc=00000001, cnonce=\"x\", response=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\xe9\"");
+is ($response->code, 401);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => "Digest username=\"authtest2\", realm=\"Moloch\", nonce=\"1.2.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\xe9\", uri=\"/\", qop=auth, nc=00000001, cnonce=\"x\", response=\"00000000000000000000000000000000\"");
+is ($response->code, 401);
+like ($response->header('WWW-Authenticate'), qr/^Digest realm="Moloch"/);
+
+# A nonce this viewer didn't sign (another viewer, restart) is stale, so the right password gets a silent retry
+sub digestAuth {
+  my ($user, $pass, $nonce) = @_;
+  my $ha1 = md5_hex("$user:Moloch:$pass");
+  my $ha2 = md5_hex("GET:/");
+  my $resp = md5_hex("$ha1:$nonce:00000001:x:auth:$ha2");
+  return "Digest username=\"$user\", realm=\"Moloch\", nonce=\"$nonce\", uri=\"/\", qop=auth, nc=00000001, cnonce=\"x\", response=\"$resp\"";
+}
+my $otherNonce = sprintf("%x", time()) . '.0123456789abcdef.' . ('0' x 32);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => digestAuth('authtest2', 'authtest2', $otherNonce));
+is ($response->code, 401);
+like ($response->header('WWW-Authenticate'), qr/, stale=true$/);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => digestAuth('authtest2', 'wrong', $otherNonce));
+is ($response->code, 401);
+unlike ($response->header('WWW-Authenticate'), qr/stale/);
+($nonce) = $response->header('WWW-Authenticate') =~ /nonce="([^"]+)"/;
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => digestAuth('authtest2', 'authtest2', $nonce));
+is ($response->code, 302);
+
+# Digest repeats the url in the Authorization header, long urls must still work
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/?x=" . ('a' x 5000));
 is ($response->code, 200);
 
 # /receiveSession

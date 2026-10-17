@@ -10,8 +10,6 @@
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
 const passport = require('passport');
-const DigestStrategy = require('passport-http').DigestStrategy;
-const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('arkime-iptrie');
 const CustomStrategy = require('passport-custom');
 const LocalStrategy = require('passport-local');
@@ -737,6 +735,97 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // HTTP Basic and Digest (RFC 7616 with MD5 and qop=auth) support
+  static #digestNonceMaxAge = 10 * 60; // seconds
+  static #hex32 = /^[0-9a-f]{32}$/;
+
+  static #quote (str) {
+    return '"' + str.replace(/["\\]/g, '\\$&') + '"';
+  }
+
+  static #basicChallenge () {
+    return 'Basic realm=' + Auth.#quote(Auth.#authConfig.httpRealm);
+  }
+
+  static #digestChallenge (stale) {
+    let challenge = 'Digest realm=' + Auth.#quote(Auth.#authConfig.httpRealm) +
+      ', nonce="' + Auth.#digestNonce() + '", algorithm=MD5, qop="auth"';
+    if (stale) { challenge += ', stale=true'; }
+    return challenge;
+  }
+
+  // Nonces are time.random.hmac. The key is random per process, since anything derived from
+  // passwordSecret would let anyone brute force the secret offline from a single 401.
+  static #digestNonceKey = crypto.randomBytes(32);
+  static #digestNonceHmac (data) {
+    return crypto.createHmac('sha256', Auth.#digestNonceKey).update(data).digest('hex').slice(0, 32);
+  }
+
+  static #digestNonce () {
+    const data = Math.floor(Date.now() / 1000).toString(16) + '.' + crypto.randomBytes(8).toString('hex');
+    return data + '.' + Auth.#digestNonceHmac(data);
+  }
+
+  // Returns 'ok', 'stale' or 'bad'. A nonce from another viewer, from before a restart, or outside
+  // the time window is stale, not bad, so the client retries without asking the user again
+  static #digestNonceCheck (nonce) {
+    const parts = nonce.split('.');
+    if (parts.length !== 3 || !Auth.#hex32.test(parts[2])) { return 'bad'; }
+    const hmac = Auth.#digestNonceHmac(parts[0] + '.' + parts[1]);
+    if (!crypto.timingSafeEqual(Buffer.from(parts[2]), Buffer.from(hmac))) { return 'stale'; }
+    const age = Math.floor(Date.now() / 1000) - parseInt(parts[0], 16);
+    return (age < -60 || age > Auth.#digestNonceMaxAge) ? 'stale' : 'ok';
+  }
+
+  static #isTokenChar (c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '_' || c === '-';
+  }
+
+  // Parse the key=value / key="value" list of a Digest Authorization header in one pass.
+  // Returns undefined if malformed or a key is repeated.
+  static #digestParse (str) {
+    const params = Object.create(null);
+    const len = str.length;
+    const skipWs = (pos) => { while (pos < len && (str[pos] === ' ' || str[pos] === '\t')) { pos++; } return pos; };
+    let i = 0;
+    while (i < len) {
+      while (i < len && (str[i] === ' ' || str[i] === '\t' || str[i] === ',')) { i++; }
+      if (i >= len) { break; }
+
+      const keyStart = i;
+      while (i < len && Auth.#isTokenChar(str[i])) { i++; }
+      const key = str.slice(keyStart, i).toLowerCase();
+      i = skipWs(i);
+      if (!key || str[i] !== '=') { return undefined; }
+      i = skipWs(i + 1);
+
+      let value;
+      if (str[i] === '"') {
+        const chars = [];
+        i++;
+        while (i < len && str[i] !== '"') {
+          if (str[i] === '\\') { i++; }
+          if (i < len) { chars.push(str[i]); i++; }
+        }
+        if (i >= len) { return undefined; }
+        i++;
+        value = chars.join('');
+      } else {
+        const valueStart = i;
+        while (i < len && str[i] !== ',' && str[i] !== ' ' && str[i] !== '\t') { i++; }
+        value = str.slice(valueStart, i);
+      }
+
+      if (key in params) { return undefined; }
+      params[key] = value;
+
+      i = skipWs(i);
+      if (i < len && str[i] !== ',') { return undefined; }
+    }
+    return params;
+  }
+
+  // ----------------------------------------------------------------------------
   /* Register all the strategies that are supported */
   static async #registerStrategies () {
     // ----------------------------------------------------------------------------
@@ -792,19 +881,35 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('basic', new BasicStrategy((userId, password, done) => {
+    passport.use('basic', new CustomStrategy((req, done) => {
+      const authorization = req.headers.authorization;
+      if (!authorization) { return done(null, false, Auth.#basicChallenge()); }
+
+      const space = authorization.indexOf(' ');
+      if (space < 0) { return done(null, false, 400); }
+      if (authorization.slice(0, space).toLowerCase() !== 'basic') { return done(null, false, Auth.#basicChallenge()); }
+
+      const decoded = Buffer.from(authorization.slice(space + 1).trim(), 'base64').toString();
+      const colon = decoded.indexOf(':');
+      if (colon < 0) { return done(null, false, 400); }
+      const userId = decoded.slice(0, colon);
+      const password = decoded.slice(colon + 1);
+      if (!userId || !password) { return done(null, false, Auth.#basicChallenge()); }
+
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false, Auth.#basicChallenge()); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
-        if (storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
+        if (!storeHa1 || storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) {
+          return done(null, false, Auth.#basicChallenge());
+        }
 
         user.setLastUsed();
         return done(null, user);
@@ -812,27 +917,55 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
+    passport.use('digest', new CustomStrategy((req, done) => {
+      const authorization = req.headers.authorization;
+      if (!authorization) { return done(null, false, Auth.#digestChallenge()); }
+
+      const space = authorization.indexOf(' ');
+      if (space < 0) { return done(null, false, 400); }
+      if (authorization.slice(0, space).toLowerCase() !== 'digest') { return done(null, false, Auth.#digestChallenge()); }
+
+      const creds = Auth.#digestParse(authorization.slice(space + 1));
+      if (!creds) { return done(null, false, 400); }
+      if (!creds.username) { return done(null, false, Auth.#digestChallenge()); }
+      if (!creds.realm || !creds.nonce || !creds.uri || !creds.response || !creds.nc || !creds.cnonce) { return done(null, false, 400); }
+      if (creds.qop !== 'auth') { return done(null, false, 400); }
+      if (creds.algorithm !== undefined && creds.algorithm.toUpperCase() !== 'MD5') { return done(null, false, 400); }
+      if (creds.uri !== req.url) { return done(null, false, 400); }
+      if (creds.realm !== Auth.#authConfig.httpRealm) { return done(null, false, Auth.#digestChallenge()); }
+
+      const nonceState = Auth.#digestNonceCheck(creds.nonce);
+      if (nonceState === 'bad') { return done(null, false, Auth.#digestChallenge()); }
+
+      const userId = creds.username;
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false, Auth.#digestChallenge()); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         const ha1 = Auth.store2ha1(user.passStore, user.userId);
         if (!ha1) {
           console.log('AUTH: User', userId, 'passStore could not be decrypted, denying digest auth (check passwordSecret or reset the password)');
-          return done(null, false);
+          return done(null, false, Auth.#digestChallenge());
         }
 
+        const ha2 = Auth.md5(req.method + ':' + creds.uri);
+        const expected = Auth.md5(ha1 + ':' + creds.nonce + ':' + creds.nc + ':' + creds.cnonce + ':auth:' + ha2);
+        const response = creds.response.toLowerCase();
+        if (!Auth.#hex32.test(response) || !crypto.timingSafeEqual(Buffer.from(response), Buffer.from(expected))) {
+          return done(null, false, Auth.#digestChallenge());
+        }
+
+        // Right password with an old nonce, client should retry with a new nonce without asking the user again
+        if (nonceState === 'stale') { return done(null, false, Auth.#digestChallenge(true)); }
+
         user.setLastUsed();
-        return done(null, user, { ha1 });
+        return done(null, user);
       });
-    }, (poptions, done) => {
-      return done(null, true);
     }));
 
     // ----------------------------------------------------------------------------
@@ -906,7 +1039,7 @@ class Auth {
 
         const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
-        if (storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
+        if (!storeHa1 || storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
 
         user.setLastUsed();
         return done(null, user);
