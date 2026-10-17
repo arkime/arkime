@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 364;
+use Test::More tests => 368;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -495,7 +495,7 @@ is ($response->code, 400, "GET /tagger other api rejected");
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_search?_source=md5&size=999");
 is ($response->code, 200, "GET /tagger/_search allowed");
 
-$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger%3f/../../tests_users/_count");
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tagger%3f/../../tests_users/_search");
 $req->header('Content-Type' => 'application/json');
 $req->content('{}');
 $response = $ArkimeTest::userAgent->request($req);
@@ -783,6 +783,23 @@ is ($response->code, 400, "GET users _count with q query rejected");
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_users/_count?%71=userId:admin");
 is ($response->code, 400, "GET users _count with encoded q query rejected");
 
+# POST users _count is the sensor viewer's "no users" check, esProxy drops the body
+sub usersCount {
+    my ($body, $query) = @_;
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_users/_count" . ($query // ''));
+    $r->header('Content-Type' => 'application/json');
+    $r->content($body);
+    return $ArkimeTest::userAgent->request($r);
+}
+my $usersTotal = esGet("/tests_users/_count")->{count};
+$response = usersCount('{}', '?ignore_unavailable=true');
+is ($response->code, 200, "POST users _count from the viewer allowed");
+is (from_json($response->content)->{count}, $usersTotal, "POST users _count matches es");
+$response = usersCount('{"query":{"prefix":{"passStore":"SECRET"}}}');
+is (from_json($response->content)->{count}, $usersTotal, "POST users _count ignores the sent query");
+$response = usersCount('{}', '?q=passStore:SECRET*');
+is ($response->code, 400, "POST users _count with q query rejected");
+
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_search?source=%7B%7D&source_content_type=application/json");
 is ($response->code, 400, "GET tagger _search with source query rejected");
 
@@ -923,7 +940,7 @@ foreach my $test (
 ) {
     is ($ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$test->[0]")->code, $test->[1], "GET $test->[0] rejected");
 }
-foreach my $path ("tests_hunts/_doc/AbC_-def0123456789xy", "tests_hunts/_doc/_abcdefghijklmnopqrs", "tests_users/_doc/_moloch_shared",
+foreach my $path ("tests_hunts/_doc/AbC_-def0123456789xy", "tests_hunts/_doc/_abcdefghijklmnopqrs", "tests_users/_doc/_shared_user",
                   "tests_users/_doc/_viewer", "tests_users/_doc/role%3Aadmin", "tests_users/_doc/a%40b.com") {
     isnt ($ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$path")->content, "Not authorized for API", "GET $path proxied");
 }
