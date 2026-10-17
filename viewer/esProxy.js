@@ -298,7 +298,11 @@ const allowedQueryParams = new Set([
 app.use((req, res, next) => {
   const url = new URL(req.url, 'http://0.0.0.0/');
   req.esPath = url.pathname.replace(/%2C/gi, ',');
-  for (const key of url.searchParams.keys()) {
+  for (const [key, value] of url.searchParams) {
+    // docker.sh --wait-for-db, only on cluster health where it can't do anything else
+    if (key === 'wait_for_status' && req.esPath === '/_cluster/health' && ['green', 'yellow', 'red'].includes(value)) {
+      continue;
+    }
     if (!allowedQueryParams.has(key)) {
       console.log(`Query param failed node: ${req.sensor.node} param:>%s<:`, ArkimeUtil.sanitizeStr(key));
       return res.status(400).send('Not authorized for API');
