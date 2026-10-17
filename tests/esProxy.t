@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 368;
+use Test::More tests => 371;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -803,8 +803,18 @@ is ($response->code, 400, "POST users _count with q query rejected");
 $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tagger/_search?source=%7B%7D&source_content_type=application/json");
 is ($response->code, 400, "GET tagger _search with source query rejected");
 
-$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cluster/health?wait_for_status=green");
-is ($response->code, 400, "GET cluster health with wait_for query rejected");
+# docker.sh --wait-for-db, wait_for_status only on cluster health and only a status
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cluster/health?wait_for_status=yellow&timeout=5s");
+is ($response->code, 200, "GET cluster health with wait_for_status allowed");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cluster/health?wait_for_status=blue");
+is ($response->code, 400, "GET cluster health with bad wait_for_status rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cat/health?wait_for_status=yellow");
+is ($response->code, 400, "GET cat health with wait_for_status rejected");
+
+$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/_cluster/health?wait_for_nodes=1");
+is ($response->code, 400, "GET cluster health with other wait_for query rejected");
 
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_search?q=*&size=10000");
 $req->header('Content-Type' => 'application/json');
