@@ -17,7 +17,7 @@
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite/lmdb/redis
 #   tshark - if True then this build is used by the manual tshark workflow
-#   alpinerelease - Alpine release to build in vmactions/alpine-vm, version must start with alpine
+#   Versions starting with alpine run the container with docker run in the alpine-build job, not as a job container
 
 include:
   - version: el9.x86_64
@@ -119,7 +119,7 @@ include:
     viewertest: packetpocket
 
   - version: alpine324.x86_64
-    alpinerelease: "3.24"
+    container: ghcr.io/arkime/arkime-build-alpine324:7.0.0-2
     buildopt: "--kafka"
     prbuild: true
 
@@ -203,8 +203,9 @@ include:
     runson: ubuntu-24.04-arm
 
   - version: alpine324.aarch64
-    alpinerelease: "3.24"
+    container: ghcr.io/arkime/arkime-build-alpine324-arm64:7.0.0-2
     buildopt: "--kafka"
+    runson: ubuntu-24.04-arm
     prbuild: true
 
   ############# FreeBSD #############

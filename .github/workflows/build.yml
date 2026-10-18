@@ -491,7 +491,7 @@ jobs:
       cancel-in-progress: true
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
-    timeout-minutes: 90
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -504,33 +504,22 @@ jobs:
           export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
           echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
 
-      - name: check kvm
-        run: |
-          uname -m
-          ls -l /dev/kvm || echo "No /dev/kvm, the VM will be emulated"
-
+      # JavaScript actions refuse to run in Alpine containers on arm64, so run
+      # the build with docker on the host and keep the actions outside it
       - name: Build on Alpine
-        uses: vmactions/alpine-vm@bbc5d76bdbe2d3497bdd8c6c7f09c94aa01c785e # v1.0.2
-        with:
-          release: ${{ matrix.alpinerelease }}
-          arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
-          prepare: |
-            sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories
-            apk add --no-cache bash sudo git curl perl make g++ linux-headers python3-dev pax-utils tzdata zstd
-          run: |
-            set -e
-            git config --global --add safe.directory `pwd`
-            ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
-            ls -l capture/capture
-            (cd tests; ./tests.pl)
-            INSTALL_BUNDLE=bundle make install
-            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-            ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
-            ls -l *.apk
-
-            # Clean up so we don't copy stuff back
-            make clean
-            rm -rf node_modules */node_modules
+        run: |
+          docker run --rm -i -v "$GITHUB_WORKSPACE:/work" -w /work ${{ matrix.container }} bash -s <<'EOF'
+          set -e
+          git config --global --add safe.directory /work
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ls -l capture/capture
+          export PATH=/opt/arkime/bin:$PATH
+          (cd tests; ./tests.pl)
+          INSTALL_BUNDLE=bundle make install
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
+          ls -l *.apk
+          EOF
 
       - name: upload github
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
