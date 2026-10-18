@@ -27,6 +27,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
+      alpinematrix: ${{ steps.set-matrix.outputs.alpinematrix }}
     env:
       HEAD_REF: ${{ github.head_ref }}
     steps:
@@ -41,15 +42,19 @@ jobs:
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
             FREEBSD_MATRIX='{"include":[]}'
+            ALPINE_MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
           else
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not)]}' .github/workflows/versions | jq -c)
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
+            ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine"))]}' .github/workflows/versions | jq -c)
           fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
+          echo "alpinematrix=$ALPINE_MATRIX" >> $GITHUB_OUTPUT
 
   cache-node:
     runs-on: ubuntu-latest
@@ -297,13 +302,6 @@ jobs:
           mv *.deb arkime_main.${{matrix.version}}.deb
           ls -l *.deb
 
-      - name: package apk
-        if: ${{ matrix.package == 'apk' }}
-        run: |
-          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
-          ls -l *.apk
-
       - name: sanitize
         if: ${{ matrix.viewertest == 'sanitize' }}
         run: |
@@ -351,7 +349,6 @@ jobs:
             *.so
             *.rpm
             *.zst
-            *.apk
             NOTICE.txt
             arkime-sbom.cdx.json
 
@@ -478,6 +475,73 @@ jobs:
             *.pkg
             *.so
 
+  alpine-build:
+    needs: [generate-matrix]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-matrix.outputs.alpinematrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+
+      - name: set major version
+        run: |
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
+          echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+
+      - name: check kvm
+        run: |
+          uname -m
+          ls -l /dev/kvm || echo "No /dev/kvm, the VM will be emulated"
+
+      - name: Build on Alpine
+        uses: vmactions/alpine-vm@bbc5d76bdbe2d3497bdd8c6c7f09c94aa01c785e # v1.0.2
+        with:
+          release: ${{ matrix.alpinerelease }}
+          arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
+          prepare: |
+            sed -i 's/^#\(.*community\)/\1/' /etc/apk/repositories
+            apk add --no-cache bash sudo git curl perl make g++ linux-headers python3-dev pax-utils tzdata zstd
+          run: |
+            set -e
+            git config --global --add safe.directory `pwd`
+            ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+            ls -l capture/capture
+            (cd tests; ./tests.pl)
+            INSTALL_BUNDLE=bundle make install
+            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+            ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
+            ls -l *.apk
+
+            # Clean up so we don't copy stuff back
+            make clean
+            rm -rf node_modules */node_modules
+
+      - name: upload github
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.apk
+
 ############# Docker Manifest #############
   create-manifest:
     needs: build
@@ -532,7 +596,7 @@ jobs:
   slack:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build, freebsd-build]
+    needs: [build, freebsd-build, alpine-build]
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
