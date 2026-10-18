@@ -153,7 +153,7 @@ class ThreatstreamIntegration extends Integration {
 
       // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
       if (!host.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
-        console.log(`userId: '${user.userId}' bad threatstream hostname: '%s'`, ArkimeUtil.sanitizeStr(host));
+        console.log("userId: '%s' bad threatstream hostname: '%s'", user.userId, ArkimeUtil.sanitizeStr(host));
         return undefined;
       }
       const result = await axios.get(`https://${host}/api/v2/intelligence`, {

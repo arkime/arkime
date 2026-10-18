@@ -551,7 +551,7 @@ class BuildQuery {
         const userExpression = arkimeparser.parse(req.user.getExpression());
         query.query.bool.filter.push(userExpression);
       } catch (e) {
-        console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, e);
+        console.log('ERROR - Forced expression (%s) doesn\'t compile -', req.user.getExpression(), e);
         err = e;
       }
     }

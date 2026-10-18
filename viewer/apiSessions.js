@@ -3290,7 +3290,7 @@ class SessionAPIs {
       const userExpression = await BuildQuery.userExpressionQuery(req);
       if (userExpression) { filter.push(userExpression); }
     } catch (err) {
-      console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, util.inspect(err, false, 50));
+      console.log('ERROR - Forced expression (%s) doesn\'t compile -', req.user.getExpression(), util.inspect(err, false, 50));
       return res.status(403).end();
     }
 
