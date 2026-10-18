@@ -1375,7 +1375,7 @@ class Auth {
         return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section cannot decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
+      console.log('passwordSecret set in the [%s] section cannot decrypt \'%s\' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you\'ve changed the secret.', Auth.#passwordSecretSection, userId, e);
       return '';
     }
   }
@@ -1407,7 +1407,7 @@ class Auth {
         return null;
       }
     } catch (e) {
-      console.log(`passwordSecret cannot decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
+      console.log('passwordSecret cannot decrypt TOTP secret for \'%s\'. Make sure passwordSecret is the same for all nodes/applications.', userId, e);
       return null;
     }
   }
