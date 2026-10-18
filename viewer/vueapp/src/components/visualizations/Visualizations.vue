@@ -866,13 +866,13 @@ export default {
   pointer-events: none;
 }
 /* Each control group gets uniform horizontal padding + a vertical
-   divider on its left so the groups read as discrete cells. Wider
-   inter-group spacing for breathing room. */
+   divider on its left so the groups read as discrete cells. Keep
+   inter-group spacing compact when the map shares the row. */
 .session-graph-btn-container > * {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 14px;
+  padding: 0 10px;
   min-height: 30px;
   margin: 0 !important;
 }
