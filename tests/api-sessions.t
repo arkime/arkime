@@ -340,7 +340,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
         my $remotePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions.pcap?date=-1&expression=" . uri_escape("id==$bodyHashId"))->content;
         my $directPcap = getBinary("/api/session/test/$id.pcap")->content;
         ok(length($directPcap) > 24 && $remotePcap eq $directPcap, "postPcapFetch pcap export from a remote node")
-          or diag("remote pcap " . length($remotePcap) . " bytes, direct pcap " . length($directPcap) . " bytes");
+          or diag("remote pcap " . length($remotePcap) . " bytes, direct pcap " . length($directPcap) . " bytes\nremote: " . unpack("H*", $remotePcap) . "\ndirect: " . unpack("H*", $directPcap));
         esDelete("/$bodyHashIndex/_doc/$bodyHashId?refresh=true");
     }
 
