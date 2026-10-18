@@ -825,7 +825,8 @@ class SessionAPIs {
           Auth.addS2SAuth(options, req.user, fields.node, url.pathname, ViewerUtils.getClusterSecret(req.query.cluster));
           if (!portal) { options.ca = ca; }
 
-          await new Promise((resolve) => {
+          // A keep-alive socket to the peer can be reset, so try a second time on errors
+          const fetchPcap = (retry) => new Promise((resolve) => {
             const chunks = [];
             const preq = client.request(url, options, (pres) => {
               pres.on('data', (chunk) => {
@@ -851,6 +852,10 @@ class SessionAPIs {
               });
             });
             preq.on('error', (e) => {
+              if (retry) {
+                console.log('Retry %s pcap request to fetch sessions pcap list: %s', url.pathname, String(e));
+                return fetchPcap(false).then(resolve);
+              }
               console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
               resolve();
             });
@@ -859,6 +864,7 @@ class SessionAPIs {
             }
             preq.end();
           });
+          await fetchPcap(true);
         } catch (err) {
           console.log("ERROR - Couldn't get view url for node", fields.node, '\nerror =', util.inspect(err, false, 50));
         }
@@ -3290,7 +3296,7 @@ class SessionAPIs {
       const userExpression = await BuildQuery.userExpressionQuery(req);
       if (userExpression) { filter.push(userExpression); }
     } catch (err) {
-      console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, util.inspect(err, false, 50));
+      console.log('ERROR - Forced expression (%s) doesn\'t compile -', req.user.getExpression(), util.inspect(err, false, 50));
       return res.status(403).end();
     }
 
