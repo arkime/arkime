@@ -240,7 +240,7 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <!-- spanning -->
               <div
-                class="btn-group btn-group-xs btn-group-checkboxes ms-1"
+                class="btn-group btn-group-xs btn-group-checkboxes"
                 id="toggleSpanning"
                 style="margin-top: 4px;">
                 <b-form-checkbox
