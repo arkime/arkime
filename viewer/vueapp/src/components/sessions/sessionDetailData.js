@@ -277,11 +277,10 @@ export default {
          * @param {int} startTime The start time of the session
          */
         allSessions: function (rootId, startTime) {
+          this.expression = buildExpression('rootId', rootId, '==');
+
+          if (!Number.isFinite(startTime)) { return; }
           startTime = Math.floor(startTime / 1000);
-
-          const fullExpression = `rootId == ${rootId}`;
-
-          this.expression = fullExpression;
 
           if (this.route.query.startTime) {
             if (this.route.query.startTime < startTime) {
