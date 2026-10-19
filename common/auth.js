@@ -1088,7 +1088,7 @@ class Auth {
         if (!user) { return done(obj.user + " doesn't exist"); }
         if (!user.enabled) { return done(obj.user + ' not enabled'); }
 
-        user.setLastUsed();
+        // No setLastUsed, the sending viewer already did and sensors write users through esProxy, which refuses it
         return done(null, user);
       });
     }));
