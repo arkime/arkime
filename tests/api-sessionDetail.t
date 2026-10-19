@@ -1,4 +1,4 @@
-use Test::More tests => 79;
+use Test::More tests => 83;
 
 use Cwd;
 use URI::Escape;
@@ -230,6 +230,9 @@ my $xssDoc = '{
   "protocolCnt": 1,
   "dns": [{"opcode": "QUERY", "qt": "A", "qc": "IN", "queryHost": "{constructor", "hostCnt": 1, "host": ["{constructor"]}],
   "dnsCnt": 1,
+  "rootId": "x\");window.pwn=1;(\"/../../api/users?",
+  "packetPos": [-1, 24],
+  "fileId": [1],
   "tags": ["' . $xssTag . '"],
   "tagsCnt": 1
 }';
@@ -242,6 +245,10 @@ my $xssId = $xssList->{data}->[0]->{id};
 $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$xssId/detail")->content;
 ok($sd =~ m{Query A - &#123;constructor}s, "dns queryHost { escaped to &#123; in /detail");
 ok($sd !~ m{[^"]\{constructor}s, "dns queryHost has no raw { in /detail");
+ok($sd =~ m{allSessions\(&quot;x\\&quot;\);window}s, "rootId is a JS string in the All Sessions handler");
+ok($sd !~ m{allSessions\(&quot;x&quot;\)}s, "rootId can not close the All Sessions string");
+ok($sd =~ m{href="api/session/entire/test/x%22\)%3Bwindow.pwn%3D1%3B\(%22%2F..%2F..%2Fapi%2Fusers%3F/pcap"}s, "rootId is encoded in the entire pcap href");
+ok($sd !~ m{href="[^"]*/\.\./}s, "rootId can not change the entire pcap href path");
 
 esDelete("/$noPcapIndex/_doc/$xssDocId?refresh=true");
 

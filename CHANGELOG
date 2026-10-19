@@ -122,6 +122,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4350 Fix periodic query alerts including unsanitized tags
   - #4350 Fix a notifier listed more than once on a periodic query or hunt sending duplicate alerts
   - #4351 Fix a crafted search expression being able to hang the viewer, malformed number ranges are now rejected
+  - #4359 Fix session detail not encoding some fields in links
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
   - #4338 urlapi sources support insecure=true to skip TLS certificate verification

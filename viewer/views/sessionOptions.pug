@@ -1,24 +1,24 @@
 ul.nav.nav-pills.mb-3
   if (session.rootId)
     li.nav-item
-      a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
+      a.nav-link.cursor-pointer(@click=`allSessions(${vueStr(session.rootId)}, ${Number.isFinite(Number(session.firstPacket)) ? Number(session.firstPacket) : 'null'})`) All Sessions
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
+        a.nav-link(href=`api/session/${encodeURIComponent(session.node)}/${encodeURIComponent(session.id)}/pcap`, :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
       li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', download=(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap') {{ $t('sessions.downloadEntirePCAP') }}
+        a.nav-link(href=`api/session/entire/${encodeURIComponent(session.node)}/${encodeURIComponent(session.rootId)}/pcap`, download=(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap') {{ $t('sessions.downloadEntirePCAP') }}
     else
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
+        a.nav-link(href=`api/session/${encodeURIComponent(session.node)}/${encodeURIComponent(session.id)}/pcap`, v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
           span.fa.fa-download.me-1
           | {{ $t('sessions.downloadPCAP') }}
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', :download="session.id + '-src-raw'")
+      a.nav-link(href=`api/session/raw/${encodeURIComponent(session.node)}/${encodeURIComponent(session.id)}?type=src`, :download="session.id + '-src-raw'")
         span.fa.fa-arrow-circle-up.me-1
         | {{ $t('sessions.sourceRaw') }}
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', :download="session.id + '-dst-raw'")
+      a.nav-link(href=`api/session/raw/${encodeURIComponent(session.node)}/${encodeURIComponent(session.id)}?type=dst`, :download="session.id + '-dst-raw'")
         span.fa.fa-arrow-circle-down.me-1
         | {{ $t('sessions.destinationRaw') }}
   li.nav-item
