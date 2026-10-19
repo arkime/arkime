@@ -16,6 +16,7 @@ const os = require('os');
 const version = require('../common/version');
 const Auth = require('../common/auth');
 const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const internals = {
   hostName: os.hostname(),
@@ -238,12 +239,43 @@ class Config {
   }
 
   // ----------------------------------------------------------------------------
+  // Field docs can be written by sensors, so one bad doc is skipped instead of
+  // throwing halfway and leaving every viewer without fields, and the keys used
+  // for the maps can't be anything inherited from Object.prototype.
+  // esProxy refuses the same docs before they are stored.
+  static isValidFieldDoc (field) {
+    const source = field?._source;
+    if (typeof source !== 'object' || source === null || Array.isArray(source) || !ArkimeUtil.isString(field._id)) { return false; }
+    // Used as map or query keys
+    const keyProps = ['dbField', 'dbField2', 'fieldECS', 'portField', 'portField2', 'portFieldECS', 'group', 'transform'];
+    // The parser and UI call string methods on these
+    const stringProps = ['type', 'type2', 'friendlyName', 'help', 'regex', 'requiredRight'];
+    for (const prop of [...keyProps, ...stringProps]) {
+      if (source[prop] !== undefined && typeof source[prop] !== 'string') { return false; }
+    }
+    // db.pl gives some fields a list of categories
+    if (source.category !== undefined && typeof source.category !== 'string' &&
+        !(Array.isArray(source.category) && source.category.every(cat => typeof cat === 'string'))) { return false; }
+    if (source.regex !== undefined) {
+      try { RegExp(source.regex); } catch (e) { return false; }
+    }
+    const keys = [field._id, ...keyProps.map(prop => source[prop]).filter(key => key !== undefined)];
+    if (source.aliases !== undefined) {
+      if (!Array.isArray(source.aliases) || !source.aliases.every(alias => typeof alias === 'string')) { return false; }
+      keys.push(...source.aliases);
+    }
+    return !keys.some(key => ArkimeUtil.isProtoKey(key));
+  }
+
   static loadFields (data) {
-    internals.fields = [];
-    internals.fieldsMap = {};
-    internals.dbFieldsMap = {};
-    internals.categories = {};
+    const fields = [];
+    const fieldsMap = Object.create(null);
+    const dbFieldsMap = Object.create(null);
+    const categories = Object.create(null);
+    const extraNames = [];
     for (const field of data) {
+      // ViewerUtils.loadFields already dropped and logged these
+      if (!Config.isValidFieldDoc(field)) { continue; }
       const source = field._source;
       source.exp = field._id;
 
@@ -262,30 +294,45 @@ class Config {
         }
       }
 
-      internals.fieldsMap[field._id] = source;
+      fieldsMap[field._id] = source;
       if (!source.noFacet) {
-        internals.dbFieldsMap[source.dbField] = source;
+        dbFieldsMap[source.dbField] = source;
         if (source.dbField2 !== undefined) {
-          internals.dbFieldsMap[source.dbField2] = source;
+          dbFieldsMap[source.dbField2] = source;
         }
       }
       if (source.fieldECS !== undefined) {
-        internals.dbFieldsMap[source.fieldECS] = source;
-        internals.fieldsMap[source.fieldECS] = source;
+        extraNames.push([source.fieldECS, source, true]);
       }
-      internals.fields.push(source);
-      if (!internals.categories[source.group]) {
-        internals.categories[source.group] = [];
+      fields.push(source);
+      if (!categories[source.group]) {
+        categories[source.group] = [];
       }
-      internals.categories[source.group].push(source);
+      categories[source.group].push(source);
       for (const alias of (source.aliases || [])) {
-        internals.fieldsMap[alias] = source;
+        extraNames.push([alias, source, false]);
       }
     }
 
-    for (const cat in internals.categories) {
-      internals.categories[cat] = internals.categories[cat].sort((a, b) => a.exp.localeCompare(b.exp));
+    // Field docs can be written by sensors, so an ECS name or alias never takes over
+    // a real field, otherwise it could change how users' forced expressions compile
+    for (const [extraName, source, ecs] of extraNames) {
+      if (fieldsMap[extraName] === undefined) {
+        fieldsMap[extraName] = source;
+      }
+      if (ecs && dbFieldsMap[extraName] === undefined) {
+        dbFieldsMap[extraName] = source;
+      }
     }
+
+    for (const cat in categories) {
+      categories[cat] = categories[cat].sort((a, b) => a.exp.localeCompare(b.exp));
+    }
+
+    internals.fields = fields;
+    internals.fieldsMap = fieldsMap;
+    internals.dbFieldsMap = dbFieldsMap;
+    internals.categories = categories;
   }
 
   /// ///////////////////////////////////////////////////////////////////////////////

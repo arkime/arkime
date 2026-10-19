@@ -363,7 +363,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
         }
 
-        if (packets >= mProtocols[session->mProtocol].maxPackets || session->midSave) {
+        if (packets >= session->maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
         }
     } else {
@@ -372,7 +372,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (session->stopSaving != 0 && packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
         }
-        if (packets >= mProtocols[session->mProtocol].maxPackets || session->midSave) {
+        if (packets >= session->maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
             session->stopSaving = 0;
         }

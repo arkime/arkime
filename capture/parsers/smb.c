@@ -319,7 +319,7 @@ LOCAL void smb1_andx_next(SMBInfo_t *smb, const BSB *bsb, uint32_t *remlen, int 
     const uint8_t  cmd = p[1];
     const uint16_t offset = p[3] | (p[4] << 8);
 
-    if (cmd == 0xff || offset <= smb->andxOffset[which] || offset - smb->andxOffset[which] > *remlen)
+    if (cmd == 0xff || offset <= smb->andxOffset[which] || (uint32_t)(offset - smb->andxOffset[which]) > *remlen)
         return;
 
     smb->nextRemlen[which] = *remlen - (offset - smb->andxOffset[which]);

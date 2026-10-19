@@ -85,6 +85,19 @@ class Notifier {
 
   /**
    * @ignore
+   * Can user attach every notifier in ids, the same ones GET /api/notifiers lists for them.
+   * Hunts and crons send alerts by id with the notifier's stored config, so check on attach.
+   */
+  static async canUseNotifiers (user, ids) {
+    if (!ids?.length || user.hasRole('arkimeAdmin') || user.hasRole('parliamentAdmin')) { return true; }
+    const allRoles = await user.getRoles();
+    const notifiers = await Notifier.searchNotifiers({ userId: user.userId, roles: [...allRoles.keys()] });
+    const allowed = new Set(notifiers.map(n => n.id));
+    return ids.every(id => allowed.has(id));
+  }
+
+  /**
+   * @ignore
    * Create a notifier document
    * @returns {string} The id of the created notifier
    */
@@ -194,6 +207,12 @@ class Notifier {
       }
     }
 
+    // Type specific checks, like SNMPv3 settings that would send unprotected traps
+    if (foundNotifier.validate) {
+      const typeError = foundNotifier.validate(Object.fromEntries(notifier.fields.map(f => [f.name, f.value])));
+      if (typeError) { return typeError; }
+    }
+
     notifier.alerts ??= Notifier.#defaultAlerts;
     if (typeof notifier.alerts !== 'object') {
       return 'Alerts must be an object';
@@ -213,6 +232,17 @@ class Notifier {
     }
 
     return;
+  }
+
+  /**
+   * @ignore
+   * Send alertMessage to each notifier in a comma separated id list, fire and forget.
+   * Once per id, so repeating an id can't fan out into a flood of alerts.
+   */
+  static issueAlerts (ids, alertMessage) {
+    for (const id of new Set(ids.split(','))) {
+      Notifier.issueAlert(id, alertMessage, () => {});
+    }
   }
 
   static async issueAlert (id, alertMessage, continueProcess) {

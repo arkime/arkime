@@ -181,6 +181,16 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Would str, used as a key on a plain object, hit something inherited from
+   * Object.prototype (toString, valueOf, hasOwnProperty, __proto__, ...)
+   * Only for keys, isPP is also used on values so it stays narrower.
+   */
+  static isProtoKey (str) {
+    return typeof str === 'string' && (str.startsWith('__') || str in Object.prototype || ArkimeUtil.#DANGEROUS_PROPS.has(str));
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Is str a string and a length of at least len
    */
   static isString (str, minLen = 1) {

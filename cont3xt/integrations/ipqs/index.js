@@ -134,7 +134,7 @@ class IPQSIPIntegration extends Integration {
       return response.data;
     } catch (err) {
       const errorMessage = `Unexpected error while fetching IP data: ${err.message}`;
-      console.error(`${this.name}: ${errorMessage}`, err);
+      console.error('%s: %s', this.name, errorMessage, err);
       return {
         _cont3xt: { count: 0 },
         error: errorMessage
@@ -240,7 +240,7 @@ class IPQSEmailIntegration extends Integration {
       response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
-      console.error(`${this.name}: Unexpected error fetching data for ${email}:`, err);
+      console.error('%s: Unexpected error fetching data for %s:', this.name, email, err);
       return {
         _cont3xt: { count: 0 },
         error: `Unexpected error occurred while fetching data for ${email}.`
@@ -338,7 +338,7 @@ class IPQSEmailLeakIntegration extends Integration {
       response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
-      console.error(`${this.name}: An unexpected error occurred while fetching Email Leak data for ${email}:`, err);
+      console.error('%s: An unexpected error occurred while fetching Email Leak data for %s:', this.name, email, err);
       return {
         _cont3xt: { count: 0 },
         error: `Unexpected error occurred while fetching data for ${email}.`
@@ -449,7 +449,7 @@ class IPQSUrlIntegration extends Integration {
       response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
-      console.error(`${this.name}: An unexpected error occurred while fetching URL data for ${urlParam}:`, err);
+      console.error('%s: An unexpected error occurred while fetching URL data for %s:', this.name, urlParam, err);
       return {
         _cont3xt: { count: 0 },
         error: `Unexpected error occurred while fetching data for ${urlParam}.`
@@ -564,7 +564,7 @@ class IPQSPhoneIntegration extends Integration {
       response.data._cont3xt = { count: 1 };
       return response.data;
     } catch (err) {
-      console.error(`${this.name}: An unexpected error occurred while fetching phone data for phone ${phone}:`, err);
+      console.error('%s: An unexpected error occurred while fetching phone data for phone %s:', this.name, phone, err);
       return {
         _cont3xt: { count: 0 },
         error: `Unexpected error occurred while fetching data for ${phone}.`

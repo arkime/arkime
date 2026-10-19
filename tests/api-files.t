@@ -1,4 +1,4 @@
-use Test::More tests => 57;
+use Test::More tests => 59;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -106,6 +106,18 @@ system("$cmd");
 $json = get("/api/files?sortField=name&desc=true&filter=/empty.pcap");
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 0);
+
+# empty file followed by a real one must not hang and must still parse the real one
+$cmd = "../capture/capture --scheme --tests -c config.test.ini -n test -r pcap/empty.pcap -r pcap/dns-udp.pcap 2>&1 1>/dev/null";
+my $out = "";
+eval {
+    local $SIG{ALRM} = sub { die "timeout\n" };
+    alarm 60;
+    $out = `$cmd`;
+    alarm 0;
+};
+is ($@, "", "empty pcap followed by real pcap finishes");
+like ($out, qr/"dns"/, "pcap after empty pcap is parsed");
 
 # bad sortField
 $json = viewerGet("/api/files?sortField=__proto__");

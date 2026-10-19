@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 290;
+use Test::More tests => 294;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -371,6 +371,36 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     is (@{$users->{data}}, 5, "Check second Update #2");
     delete $users->{data}->[$test2pos]->{lastUsed};
     eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+
+# the user doc is parsed on every auth refresh, so table states are bounded
+    my $big = "x" x (70 * 1024);
+    my $stateInfo = viewerPostToken("/api/user/state/bigstate?arkimeRegressionUser=sac-test1", '{"a": "' . $big . '"}', $test1Token);
+    is($stateInfo->{text}, "State too large", "state: too large rejected");
+
+    # a throwaway user, filling its states up to the limit
+    viewerPostToken("/api/user", '{"userId": "sac-statelimit", "userName": "statelimit", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+    my $limitToken = getTokenCookie('sac-statelimit');
+    my $lastState;
+    for (my $i = 0; $i <= 100; $i++) {
+        $stateInfo = viewerPostToken("/api/user/state/limitstate$i?arkimeRegressionUser=sac-statelimit", '{"a": 1}', $limitToken);
+        last if !$stateInfo->{success};
+        $lastState = "limitstate$i";
+    }
+    is($stateInfo->{text}, "Too many states", "state: over the count limit rejected");
+    $stateInfo = viewerPostToken("/api/user/state/$lastState?arkimeRegressionUser=sac-statelimit", '{"a": 2}', $limitToken);
+    ok($stateInfo->{success}, "state: existing state still updates at the limit");
+
+    # the whole user doc is capped too, not just each state
+    viewerPostToken("/api/user", '{"userId": "sac-statesize", "userName": "statesize", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+    my $sizeToken = getTokenCookie('sac-statesize');
+    my $chunk = "x" x (60 * 1024);
+    for (my $i = 0; $i < 20; $i++) {
+        $stateInfo = viewerPostToken("/api/user/state/sizestate$i?arkimeRegressionUser=sac-statesize", '{"a": "' . $chunk . '"}', $sizeToken);
+        last if !$stateInfo->{success};
+    }
+    is($stateInfo->{text}, "Too much saved state", "state: whole user doc size capped");
+    viewerDeleteToken("/api/user/sac-statesize", $token);
+    viewerDeleteToken("/api/user/sac-statelimit", $token);
 
 # Current
     my $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");

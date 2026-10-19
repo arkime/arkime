@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 18761
+     "bytes" : 18718
     },
     "destination" : {
      "as" : {
@@ -14,14 +14,14 @@
        "name" : "Linode, LLC"
       }
      },
-     "bytes" : 48832,
+     "bytes" : 13300,
      "geo" : {
       "city_name" : "Tokyo",
       "country_iso_code" : "JP",
       "region_iso_code" : "13"
      },
      "ip" : "139.162.123.134",
-     "packets" : 48,
+     "packets" : 18,
      "port" : 80
     },
     "dstPayload8" : "0000180400000000",
@@ -42,10 +42,9 @@
      ],
      "hostCnt" : 1,
      "md5" : [
-      "4b806c16dac801940f7075fd9d9b7bae",
-      "4bf2f259ee1245e1b0cbe6f0127228b5"
+      "4b806c16dac801940f7075fd9d9b7bae"
      ],
-     "md5Cnt" : 2,
+     "md5Cnt" : 1,
      "method" : [
       "GET",
       "PRI"
@@ -177,10 +176,9 @@
      ],
      "responseHeaderValueCnt" : 29,
      "sha256" : [
-      "80d4404b834c034238ac2e3caeb3a6f24dd093432fd13c5f0e64da9b0d9334bb",
       "cfd844f4f94b56e0d93d6ad47530ba9030cc8d8e41ad6ae53b30fe930efa774f"
      ],
-     "sha256Cnt" : 2,
+     "sha256Cnt" : 1,
      "statuscode" : [
       200
      ],
@@ -198,12 +196,12 @@
     },
     "initRTT" : 105,
     "ipProtocol" : 6,
-    "lastPacket" : 1593995683015,
-    "length" : 1744,
+    "lastPacket" : 1593995682318,
+    "length" : 1047,
     "network" : {
-     "bytes" : 70573,
+     "bytes" : 33262,
      "community_id" : "1:t8w2y51bTGSv9Z4iWI9ZJSV2gxg=",
-     "packets" : 101
+     "packets" : 40
     },
     "node" : "test",
     "packetLen" : [
@@ -246,68 +244,7 @@
      1426,
      1426,
      72,
-     1426,
-     72,
-     1426,
-     72,
-     72,
-     1426,
-     1426,
-     72,
-     72,
-     1426,
-     1426,
-     72,
-     72,
-     1426,
-     1426,
-     72,
-     72,
-     1426,
-     1426,
-     72,
-     72,
-     1426,
-     1426,
-     72,
-     72,
-     1426,
-     72,
-     1426,
-     72,
-     1426,
-     72,
-     1426,
-     72,
-     1426,
-     72,
-     1426,
-     72,
-     85,
-     1426,
-     1426,
-     72,
-     1426,
-     1426,
-     72,
-     72,
-     85,
-     1426,
-     1426,
-     72,
-     1426,
-     1426,
-     72,
-     74,
-     72,
-     72,
-     89,
-     72,
-     72,
-     72,
-     72,
-     72,
-     72
+     1426
     ],
     "packetPos" : [
      24,
@@ -349,7 +286,147 @@
      29576,
      31002,
      32428,
-     32500,
+     32500
+    ],
+    "packetRange" : {
+     "gte" : 1593995681271,
+     "lte" : 1593995682318
+    },
+    "protocol" : [
+     "http",
+     "http2",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "rootId" : "SET",
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 10930
+    },
+    "source" : {
+     "bytes" : 19962,
+     "ip" : "10.89.85.15",
+     "packets" : 22,
+     "port" : 49570
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "505249202a204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 30,
+     "ae" : 0,
+     "cwr" : 1,
+     "dstZero" : 0,
+     "ece" : 2,
+     "fin" : 0,
+     "psh" : 7,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2262989232
+    },
+    "totDataBytes" : 29648
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-20m07"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 13
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS63949 Linode, LLC",
+      "number" : 63949,
+      "organization" : {
+       "name" : "Linode, LLC"
+      }
+     },
+     "bytes" : 26790,
+     "geo" : {
+      "city_name" : "Tokyo",
+      "country_iso_code" : "JP",
+      "region_iso_code" : "13"
+     },
+     "ip" : "139.162.123.134",
+     "packets" : 19,
+     "port" : 80
+    },
+    "dstPayload8" : "0000180400000000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     50
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1593995681271,
+    "ipProtocol" : 6,
+    "lastPacket" : 1593995682638,
+    "length" : 1367,
+    "network" : {
+     "bytes" : 27979,
+     "community_id" : "1:t8w2y51bTGSv9Z4iWI9ZJSV2gxg=",
+     "packets" : 40
+    },
+    "node" : "test",
+    "packetLen" : [
+     72,
+     1426,
+     72,
+     72,
+     1426,
+     1426,
+     72,
+     72,
+     1426,
+     1426,
+     72,
+     72,
+     1426,
+     1426,
+     72,
+     72,
+     1426,
+     1426,
+     72,
+     72,
+     1426,
+     1426,
+     72,
+     72,
+     1426,
+     72,
+     1426,
+     72,
+     1426,
+     72,
+     1426,
+     72,
+     1426,
+     72,
+     1426,
+     72,
+     85,
+     1426,
+     1426,
+     72
+    ],
+    "packetPos" : [
      33926,
      33998,
      35424,
@@ -389,7 +466,131 @@
      59536,
      59621,
      61047,
-     62473,
+     62473
+    ],
+    "packetRange" : {
+     "gte" : 1593995681271,
+     "lte" : 1593995682638
+    },
+    "protocol" : [
+     "http",
+     "http2",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "rootId" : "SET",
+    "segmentCnt" : 2,
+    "server" : {
+     "bytes" : 27080
+    },
+    "source" : {
+     "bytes" : 1189,
+     "ip" : "10.89.85.15",
+     "packets" : 21,
+     "port" : 49570
+    },
+    "srcPayload8" : "505249202a204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 29,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 11,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 27093
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-20m07"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 30
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS63949 Linode, LLC",
+      "number" : 63949,
+      "organization" : {
+       "name" : "Linode, LLC"
+      }
+     },
+     "bytes" : 8742,
+     "geo" : {
+      "city_name" : "Tokyo",
+      "country_iso_code" : "JP",
+      "region_iso_code" : "13"
+     },
+     "ip" : "139.162.123.134",
+     "packets" : 11,
+     "port" : 80
+    },
+    "dstPayload8" : "0000180400000000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     50
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1593995681271,
+    "http" : {
+     "md5" : [
+      "4bf2f259ee1245e1b0cbe6f0127228b5"
+     ],
+     "md5Cnt" : 1,
+     "sha256" : [
+      "80d4404b834c034238ac2e3caeb3a6f24dd093432fd13c5f0e64da9b0d9334bb"
+     ],
+     "sha256Cnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1593995683015,
+    "length" : 1744,
+    "network" : {
+     "bytes" : 9332,
+     "community_id" : "1:t8w2y51bTGSv9Z4iWI9ZJSV2gxg=",
+     "packets" : 21
+    },
+    "node" : "test",
+    "packetLen" : [
+     1426,
+     1426,
+     72,
+     72,
+     85,
+     1426,
+     1426,
+     72,
+     1426,
+     1426,
+     72,
+     74,
+     72,
+     72,
+     89,
+     72,
+     72,
+     72,
+     72,
+     72,
+     72
+    ],
+    "packetPos" : [
      62545,
      63971,
      65397,
@@ -422,43 +623,37 @@
      "tcp"
     ],
     "protocolCnt" : 3,
-    "segmentCnt" : 1,
+    "rootId" : "SET",
+    "segmentCnt" : 3,
     "server" : {
-     "bytes" : 46136
+     "bytes" : 8126
     },
     "source" : {
-     "bytes" : 21741,
+     "bytes" : 590,
      "ip" : "10.89.85.15",
-     "packets" : 53,
+     "packets" : 10,
      "port" : 49570
     },
-    "srcISNCnt" : 1,
     "srcPayload8" : "505249202a204854",
     "srcTTL" : [
      64
     ],
     "srcTTLCnt" : 1,
-    "tcpSynAckValidated" : true,
-    "tcpSynValidated" : true,
     "tcpflags" : {
-     "ack" : 73,
+     "ack" : 14,
      "ae" : 0,
-     "cwr" : 1,
+     "cwr" : 0,
      "dstZero" : 0,
-     "ece" : 2,
+     "ece" : 0,
      "fin" : 2,
-     "psh" : 24,
+     "psh" : 6,
      "rst" : 0,
      "srcZero" : 0,
-     "syn" : 1,
-     "syn-ack" : 1,
+     "syn" : 0,
+     "syn-ack" : 0,
      "urg" : 0
     },
-    "tcpseq" : {
-     "dst" : 0,
-     "src" : 2262989232
-    },
-    "totDataBytes" : 64897
+    "totDataBytes" : 8156
    },
    "header" : {
     "index" : {

@@ -732,14 +732,23 @@ function checkDbAdmin (req, res, next) {
 }
 
 // log middleware -------------------------------------------------------------
+// History keyword fields are strict, a non-string or a value over the es term limit
+// makes es reject the whole row, so coerce and cap them (8192 chars is < 32766 utf8 bytes)
+function historyKeyword (value) {
+  if (value === undefined) { return undefined; }
+  const str = ArkimeUtil.isString(value, 0) ? value : JSON.stringify(value);
+  return str.length > 8192 ? str.slice(0, 8192) : str;
+}
+
+// esProxy's validateHistoryDoc requires userId, api, method and a numeric timestamp
 function logAction (uiPage) {
   return (req, res, next) => {
     const log = {
       timestamp: Math.floor(Date.now() / 1000),
       method: req.method,
       userId: req.user.userId,
-      api: req._parsedUrl.pathname,
-      expression: req.query.expression,
+      api: historyKeyword(req._parsedUrl.pathname),
+      expression: historyKeyword(req.query.expression),
       query: ''
     };
 
@@ -755,7 +764,7 @@ function logAction (uiPage) {
         log.query += `${item}=${req.query[item]}&`;
       }
     }
-    log.query = log.query.slice(0, -1);
+    log.query = historyKeyword(log.query.slice(0, -1));
 
     if (req.user.getExpression()) {
       log.forcedExpression = req.user.getExpression();
@@ -833,6 +842,12 @@ function logAction (uiPage) {
         await Db.historyIt(log, req.body.cluster ?? req.query.cluster);
       } catch (err) {
         console.log('log history error', err);
+        // Never let a request go unaudited, record at least who did what and when
+        try {
+          await Db.historyIt({ timestamp: log.timestamp, method: log.method, userId: log.userId, api: log.api, uiPage: log.uiPage });
+        } catch (err2) {
+          console.log('log history fallback error', err2);
+        }
       }
     }
 
@@ -1117,6 +1132,17 @@ internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 // ============================================================================
 // EXPIRING
 // ============================================================================
+// Index files come from sensors through esProxy, so only ever unlink one inside a pcapDir
+function isInDirs (file, dirs) {
+  if (!ArkimeUtil.isString(file)) { return false; }
+  const resolved = path.resolve(file);
+  for (const dir of dirs) {
+    const base = path.resolve(dir);
+    if (resolved.startsWith(base.endsWith(path.sep) ? base : base + path.sep)) { return true; }
+  }
+  return false;
+}
+
 // Search the oldest 500 files on a set of nodes in a set of directories.
 // If less than 10 items are returned we don't delete anything, otherwise
 // ignore the 10 most recent files and delete files until we have enough free space.
@@ -1156,10 +1182,9 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
 
   try {
     const data = await Db.search('files', query);
+    // Always log, if expiry can't search files the disk fills up
     if (data.error || !data.hits) {
-      if (Config.debug > 0) {
-        console.log('EXPIRE - device error', data.error || 'no data.hits');
-      }
+      console.log('EXPIRE ERROR - searching files', data.error || 'no data.hits');
       return;
     }
 
@@ -1177,8 +1202,24 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
     // Keep 10 most recent files by truncating array
     data.hits.hits.length -= 10;
 
+    // The index file lives in the node's first pcapDir, which may be on another device
+    const indexDirs = nodes.flatMap(node => Config.getFullArray(node, 'pcapDir', '/opt/arkime/raw'));
+
     for (const item of data.hits.hits) {
       const fields = item._source || item.fields;
+
+      // The wildcard query matches strings, so a name can still climb out with ..
+      // Drop the doc instead of skipping it so bogus docs can't fill the oldest 500 and stall expiry
+      if (!isInDirs(fields.name, dirs)) {
+        console.log('EXPIRE WARNING - not deleting file outside pcapDir', ArkimeUtil.sanitizeStr(fields.name));
+        // Keep expiring the rest if the doc can't be removed, through esProxy only own docs can be
+        try {
+          await Db.deleteDocument('files', item._id);
+        } catch (err) {
+          console.log('EXPIRE ERROR - deleting files doc', ArkimeUtil.sanitizeStr(item._id), ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+        }
+        continue;
+      }
 
       let freeG;
       try {
@@ -1191,7 +1232,9 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
       }
       if (freeG < minFreeSpaceG) {
         console.log('Deleting', item);
-        if (fields.indexFilename) {
+        if (fields.indexFilename && !isInDirs(fields.indexFilename, indexDirs)) {
+          console.log('EXPIRE WARNING - not deleting index file outside pcapDir', ArkimeUtil.sanitizeStr(fields.indexFilename));
+        } else if (fields.indexFilename) {
           fs.unlink(fields.indexFilename, (err) => {
             if (err) {
               console.log('EXPIRE - error deleting index file', fields.indexFilename, err);
@@ -1208,9 +1251,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
     }
     return;
   } catch (err) {
-    if (Config.debug > 0) {
-      console.log('EXPIRE - device error', JSON.stringify(err, null, 2));
-    }
+    console.log('EXPIRE ERROR - device', ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
     return;
   }
 }
@@ -1753,7 +1794,7 @@ function getRemoteConfig (req, res) {
 
   ViewerUtils.makeRequest(node, '/api/viewconfig/remote', req.user, (err, response) => {
     if (err) {
-      console.log(`ERROR - ${req.method} ${ArkimeUtil.sanitizeStr(req.url)}`, err);
+      console.log('ERROR - %s %s', req.method, ArkimeUtil.sanitizeStr(req.url), err);
       return res.serverError(502, `Error fetching config from node ${ArkimeUtil.safeStr(node)}`);
     }
 
@@ -2102,15 +2143,15 @@ app.get( // session node pcap endpoint
   SessionAPIs.getPCAPFromNode
 );
 
-app.post( // session node pcapng endpoint, before pcap for the same reason as the get
+app.post( // session node pcapng endpoint, before pcap for the same reason as the get - s2s only, the body is the session
   ['/api/session/:nodeName/:id[/.]pcapng'],
-  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  [checkS2SToken, checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.postPCAPNGFromNode
 );
 
-app.post( // session node pcap endpoint
+app.post( // session node pcap endpoint - s2s only, the body is the session so its file and offsets are trusted, used with postPcapFetch
   ['/api/session/:nodeName/:id[/.]pcap*'],
-  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  [checkS2SToken, checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.postPCAPFromNode
 );
 

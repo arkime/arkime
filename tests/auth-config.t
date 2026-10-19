@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 59;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -64,6 +64,72 @@ ArkimeConfig.initialize({ defaultConfigFile: iniFile, defaultSections: ['default
     return;
   }
 
+  if (mode === 'mcphdr') {
+    // The MCP header verifier, with alice not an admin and bob an admin from his last login
+    await User.setUser('alice', { userId: 'alice', userName: 'alice', enabled: true, webEnabled: true, headerAuthEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('alice', 'x') });
+    await User.setUser('bob', { userId: 'bob', userName: 'bob', enabled: true, webEnabled: true, headerAuthEnabled: true, roles: ['arkimeUser', 'arkimeAdmin'], passStore: Auth.pass2store('bob', 'x') });
+    const roles = (userId) => new Promise(resolve => User.getUser(userId, (err, user) => resolve(user ? [...user.roles].sort().join(',') : 'NONE')));
+    for (const [userId, headers] of [['alice', { groups: 'admins' }], ['bob', {}], ['carol', {}]]) {
+      try {
+        await Auth.headerAuth({ headers: { 'x-user': userId, ...headers } });
+        console.log('MCP', userId, 'OK', await roles(userId));
+      } catch (e) {
+        console.log('MCP', userId, 'ERR', await roles(userId));
+      }
+    }
+    process.exit(0);
+  }
+
+  if (mode === 'ipgate') {
+    await User.setUser('hdruser', { userId: 'hdruser', userName: 'hdruser', enabled: true, webEnabled: true, headerAuthEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('hdruser', 'secret') });
+    const express = require(require.resolve('express', { paths: [common] }));
+    const app = express();
+    // Pretend the peer is whatever x-test-peer says, so we can test a remote client
+    app.use((req, res, next) => {
+      Object.defineProperty(req.socket, 'remoteAddress', { value: req.headers['x-test-peer'] ?? '127.0.0.1', configurable: true });
+      next();
+    });
+    Auth.app(app);
+    app.get('/whoami', (req, res) => res.send(req.user.userId));
+    const srv = app.listen(0, '127.0.0.1', async () => {
+      const url = `http://127.0.0.1:${srv.address().port}/whoami`;
+      let r = await fetch(url, { headers: { 'x-user': 'hdruser', 'x-test-peer': '10.1.2.3' } });
+      console.log('REMOTE', r.status, await r.text());
+      r = await fetch(url, { headers: { 'x-user': 'hdruser' } });
+      console.log('LOCAL', r.status, await r.text());
+      process.exit(0);
+    });
+    return;
+  }
+
+  if (mode === 'basic') {
+    await User.setUser('admin', { userId: 'admin', userName: 'admin', enabled: true, webEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('admin', 'secret') });
+    const express = require(require.resolve('express', { paths: [common] }));
+    const app = express();
+    Auth.app(app);
+    app.get('/whoami', (req, res) => res.send(req.user.userId));
+    const srv = app.listen(0, '127.0.0.1', async () => {
+      const url = `http://127.0.0.1:${srv.address().port}/whoami`;
+      const b64 = (s) => Buffer.from(s).toString('base64');
+      const cases = [
+        ['NONE', undefined],
+        ['SCHEME', 'Bearer abc'],
+        ['NOSPACE', 'Basic'],
+        ['NOCOLON', 'Basic ' + b64('admin')],
+        ['NOUSER', 'Basic ' + b64(':secret')],
+        ['BADPASS', 'Basic ' + b64('admin:wrong')],
+        ['NOUSERDB', 'Basic ' + b64('nobody:secret')],
+        ['GOOD', 'basic ' + b64('admin:secret')]
+      ];
+      for (const [label, authorization] of cases) {
+        const r = await fetch(url, { headers: authorization ? { authorization } : {} });
+        console.log('BASIC', label, r.status, r.headers.get('www-authenticate') ?? '-', (await r.text()).replace(/\n/g, ' '));
+      }
+      process.exit(0);
+    });
+    return;
+  }
+
   process.exit(0);
 });
 JS
@@ -123,6 +189,10 @@ is($code, 1, "an empty requiredAuthHeaderVal refuses to start");
 ($code, $out) = tryConfig("authMode=header\nuserNameHeader=x-user\nrequiredAuthHeader=x-group\nrequiredAuthHeaderVal=ok");
 is($code, 0, "requiredAuthHeader with a value starts");
 
+($code, $out) = tryConfig("authMode=header\nuserNameHeader=x-user\nrequiredAuthHeaderVal=ok");
+is($code, 1, "requiredAuthHeaderVal without requiredAuthHeader refuses to start");
+like($out, qr/requiredAuthHeaderVal is set but requiredAuthHeader is missing/, "and says why");
+
 ################################################################################
 # s2sRegressionTests accepts plaintext s2s tokens, config alone must not turn it on
 ################################################################################
@@ -151,6 +221,46 @@ is($code, 0, "form mode starts");
 like($out, qr/QUERY 403/, "login with credentials in the query string is refused");
 like($out, qr/BODY 302/, "login with credentials in the body works");
 like($out, qr/OTHER 403 .*POST body/, "credentials in the query string of any other url are refused");
+
+################################################################################
+# basic+header modes get the same loopback userAuthIps default as other header modes
+################################################################################
+foreach my $mode ("header", "header+basic", "basic+header", "basic+headerOnly") {
+    ($code, $out) = tryConfig("authMode=$mode\nuserNameHeader=x-user", "ipgate");
+    like($out, qr/^REMOTE 403 /m, "$mode refuses the user header from a remote peer by default");
+    like($out, qr/^LOCAL 200 hdruser$/m, "$mode accepts the user header from loopback");
+}
+
+($code, $out) = tryConfig("authMode=basic+header\nuserNameHeader=x-user\nuserAuthIps=10.0.0.0/8", "ipgate");
+like($out, qr/^REMOTE 200 hdruser$/m, "basic+header with userAuthIps set accepts the user header from that range");
+
+################################################################################
+# basic auth header parsing, the challenge is what makes browsers prompt
+################################################################################
+($code, $out) = tryConfig("authMode=basic", "basic");
+is($code, 0, "basic mode starts");
+like($out, qr/^BASIC NONE 401 Basic realm="Moloch" Unauthorized$/m, "no Authorization gets the Basic challenge");
+like($out, qr/^BASIC SCHEME 401 Basic realm="Moloch" /m, "another scheme gets the Basic challenge");
+like($out, qr/^BASIC NOSPACE 400 - /m, "a scheme without credentials is a bad request");
+like($out, qr/^BASIC NOCOLON 400 - /m, "credentials without a colon are a bad request");
+like($out, qr/^BASIC NOUSER 401 Basic realm="Moloch" /m, "an empty user gets the challenge");
+like($out, qr/^BASIC BADPASS 401 Basic realm="Moloch" /m, "a wrong password gets the challenge");
+like($out, qr/^BASIC NOUSERDB 401 Basic realm="Moloch" /m, "an unknown user gets the challenge");
+like($out, qr/^BASIC GOOD 200 - admin$/m, "good credentials with a lowercase scheme authenticate");
+
+################################################################################
+# MCP header auth on a non header site only identifies the user, other headers aren't claims
+################################################################################
+my $mappings = "[user-role-mappings]\narkimeUser=true\narkimeAdmin=vals.groups === 'admins'\n[user-auto-create]\nuserId=vals['x-user']\nenabled=true\nheaderAuthEnabled=true";
+($code, $out) = tryConfig("authMode=form\nmcpEnabled=true\nuserNameHeader=x-user\n$mappings", "mcphdr");
+like($out, qr/^MCP alice OK arkimeUser$/m, "form site: an MCP header can't map the user to more roles");
+like($out, qr/^MCP bob OK arkimeAdmin,arkimeUser$/m, "form site: MCP keeps the roles from the last login");
+like($out, qr/^MCP carol ERR NONE$/m, "form site: MCP header doesn't auto create users");
+
+($code, $out) = tryConfig("authMode=header\nmcpEnabled=true\nuserNameHeader=x-user\n$mappings", "mcphdr");
+like($out, qr/^MCP alice OK arkimeAdmin,arkimeUser$/m, "header site: the proxy's headers still map roles");
+like($out, qr/^MCP bob OK arkimeUser$/m, "header site: roles still follow the headers");
+like($out, qr/^MCP carol OK arkimeUser$/m, "header site: header auth still auto creates users");
 
 ################################################################################
 # config save can't inject ini lines, sections or keys

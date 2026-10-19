@@ -77,35 +77,35 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="actions.rootId">
           <v-list-item
             prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcap')">
+            @click="downloadPcap(sessionPath, `${actions.id}-segment`, 'pcap')">
             {{ $t('sessions.downloadSegmentPCAP') }}
           </v-list-item>
           <v-list-item
             prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}-segment`, 'pcapng')">
+            @click="downloadPcap(sessionPath, `${actions.id}-segment`, 'pcapng')">
             {{ $t('sessions.downloadSegmentPCAPNG') }}
           </v-list-item>
           <v-divider />
           <v-list-item
             prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcap')">
+            @click="downloadPcap(entirePath, `${actions.communityId || actions.rootId}`, 'pcap')">
             {{ $t('sessions.downloadEntirePCAP') }}
           </v-list-item>
           <v-list-item
             prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/entire/${actions.node}/${actions.rootId}`, `${actions.communityId || actions.rootId}`, 'pcapng')">
+            @click="downloadPcap(entirePath, `${actions.communityId || actions.rootId}`, 'pcapng')">
             {{ $t('sessions.downloadEntirePCAPNG') }}
           </v-list-item>
         </template>
         <template v-else>
           <v-list-item
             prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcap')">
+            @click="downloadPcap(sessionPath, `${actions.id}`, 'pcap')">
             {{ $t('sessions.downloadPCAP') }}
           </v-list-item>
           <v-list-item
             prepend-icon="mdi-download"
-            @click="downloadPcap(`api/session/${actions.node}/${actions.id}`, `${actions.id}`, 'pcapng')">
+            @click="downloadPcap(sessionPath, `${actions.id}`, 'pcapng')">
             {{ $t('sessions.downloadPCAPNG') }}
           </v-list-item>
         </template>
@@ -116,7 +116,7 @@ SPDX-License-Identifier: Apache-2.0
       class="session-options-btn"
       variant="text"
       size="small"
-      :href="`api/session/raw/${actions.node}/${actions.id}?type=src`"
+      :href="`${rawPath}?type=src`"
       :download="`${actions.id}-src-raw`">
       <v-icon
         icon="mdi-arrow-up-circle"
@@ -127,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
       class="session-options-btn"
       variant="text"
       size="small"
-      :href="`api/session/raw/${actions.node}/${actions.id}?type=dst`"
+      :href="`${rawPath}?type=dst`"
       :download="`${actions.id}-dst-raw`">
       <v-icon
         icon="mdi-arrow-down-circle"
@@ -242,6 +242,7 @@ import qs from 'qs';
 import store from '@/store';
 import UserService from '../users/UserService';
 import { fetchWrapper } from '@common/fetchWrapper.js';
+import { buildExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
 const props = defineProps({
@@ -256,6 +257,12 @@ const { t } = useI18n();
 const remoteclusters = computed(() => store.state.remoteclusters);
 const canDownloadPcap = computed(() => UserService.hasPermission('!disablePcapDownload'));
 const canRemove = computed(() => UserService.hasPermission('removeEnabled'));
+
+// node, id and rootId come from the session doc, so encode them as path segments
+const node = computed(() => encodeURIComponent(props.actions.node));
+const sessionPath = computed(() => `api/session/${node.value}/${encodeURIComponent(props.actions.id)}`);
+const entirePath = computed(() => `api/session/entire/${node.value}/${encodeURIComponent(props.actions.rootId)}`);
+const rawPath = computed(() => `api/session/raw/${node.value}/${encodeURIComponent(props.actions.id)}`);
 
 // A classic pcap can only hold one link type. When pcap is chosen, ask the
 // server first and fall back to pcapng, telling the user why, rather than hand
@@ -284,7 +291,7 @@ const permalink = computed(() => {
   let prefixlessId = id.length > 1 ? id[1] : id[0];
   if (prefixlessId[1] === '@') { prefixlessId = prefixlessId.substr(2); }
   return `sessions?${qs.stringify({
-    expression: `id == ${prefixlessId}`,
+    expression: buildExpression('id', prefixlessId, '=='),
     startTime: Math.floor(props.actions.firstPacket / 1000),
     stopTime: Math.ceil(props.actions.lastPacket / 1000),
     cluster: props.actions.cluster,
@@ -302,7 +309,8 @@ function copyLink () {
 }
 
 function allSessions () {
-  store.commit('setExpression', `rootId == ${props.actions.rootId}`);
+  store.commit('setExpression', buildExpression('rootId', props.actions.rootId, '=='));
+  if (!Number.isFinite(props.actions.firstPacket)) { return; }
   let startTime = Math.floor(props.actions.firstPacket / 1000);
   if (route.query.startTime && route.query.startTime < startTime) {
     startTime = route.query.startTime;

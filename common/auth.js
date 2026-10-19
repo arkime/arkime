@@ -10,8 +10,6 @@
 // eslint-disable-next-line no-shadow
 const crypto = require('crypto');
 const passport = require('passport');
-const DigestStrategy = require('passport-http').DigestStrategy;
-const BasicStrategy = require('passport-http').BasicStrategy;
 const iptrie = require('arkime-iptrie');
 const CustomStrategy = require('passport-custom');
 const LocalStrategy = require('passport-local');
@@ -162,6 +160,11 @@ class Auth {
       console.log(`ERROR - requiredAuthHeader=${ArkimeUtil.sanitizeStr(Auth.#requiredAuthHeader)} is set but requiredAuthHeaderVal is missing or empty`);
       process.exit(1);
     }
+    // Values without the header to check them against would also skip it
+    if (Auth.#requiredAuthHeaderVal?.length && !ArkimeUtil.isString(Auth.#requiredAuthHeader)) {
+      console.log('ERROR - requiredAuthHeaderVal is set but requiredAuthHeader is missing or empty');
+      process.exit(1);
+    }
     if (options.userAutoCreateTmpl ?? ArkimeConfig.get('userAutoCreateTmpl')) {
       console.log('ERROR - userAutoCreateTmpl has been removed, use the [user-auto-create] section instead');
       process.exit(1);
@@ -206,6 +209,12 @@ class Auth {
       Auth.#doTrustProxy();
     }
 
+    // Strip basic+ first so basic+header* gets the header loopback default below
+    const addBasic = Auth.mode.startsWith('basic+');
+    if (addBasic) {
+      Auth.mode = Auth.mode.slice(6);
+    }
+
     if (options.userAuthIps?.length) {
       Auth.#userAuthIps = ArkimeUtil.buildIpTrie(options.userAuthIps).trie; // validated at config load
     } else if (Auth.mode.startsWith('header')) {
@@ -233,10 +242,6 @@ class Auth {
 
     Auth.#logoutUrl = ArkimeConfig.get('logoutUrl');
     Auth.#logoutUrlMethod = ArkimeConfig.get('logoutUrlMethod', 'POST');
-    const addBasic = Auth.mode.startsWith('basic+');
-    if (addBasic) {
-      Auth.mode = Auth.mode.slice(6);
-    }
 
     let sessionAuth = false;
     switch (Auth.mode) {
@@ -486,18 +491,21 @@ class Auth {
       if (!user.enabled) { return done('User not enabled'); }
       if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-      try {
-        await user.updateDynamicRoles(claims);
-      } catch (e) {
-        console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
-        return done('Failed to update dynamic roles');
+      if (claims !== undefined) {
+        try {
+          await user.updateDynamicRoles(claims);
+        } catch (e) {
+          console.log('AUTH: updateDynamicRoles failed for', ArkimeUtil.sanitizeStr(user.userId), e);
+          return done('Failed to update dynamic roles');
+        }
       }
       user.setLastUsed();
       return done(null, user, authInfo);
     }
 
     User.getUserCache(userId, (err, user) => {
-      if (Auth.#userAutoCreateFuncs === undefined) {
+      // No claims means identity only, so no auto create either
+      if (claims === undefined || Auth.#userAutoCreateFuncs === undefined) {
         return authCheck(err, user);
       } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         Auth.#dynamicCreate(userId, claims, authCheck);
@@ -574,6 +582,12 @@ class Auth {
 
     if (userId.startsWith('role:')) {
       return done('Cannot authenticate with role');
+    }
+
+    // MCP header auth while authMode isn't a header mode: the header only says who the user is. The
+    // other headers aren't claims, so they don't map roles or auto create, the last login's roles stay.
+    if (!Auth.mode.startsWith('header')) {
+      return Auth.#resolveUser(userId, undefined, done);
     }
 
     return Auth.#resolveUser(userId, vals, done);
@@ -718,6 +732,97 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // HTTP Basic and Digest (RFC 7616 with MD5 and qop=auth) support
+  static #digestNonceMaxAge = 10 * 60; // seconds
+  static #hex32 = /^[0-9a-f]{32}$/;
+
+  static #quote (str) {
+    return '"' + str.replace(/["\\]/g, '\\$&') + '"';
+  }
+
+  static #basicChallenge () {
+    return 'Basic realm=' + Auth.#quote(Auth.#authConfig.httpRealm);
+  }
+
+  static #digestChallenge (stale) {
+    let challenge = 'Digest realm=' + Auth.#quote(Auth.#authConfig.httpRealm) +
+      ', nonce="' + Auth.#digestNonce() + '", algorithm=MD5, qop="auth"';
+    if (stale) { challenge += ', stale=true'; }
+    return challenge;
+  }
+
+  // Nonces are time.random.hmac. The key is random per process, since anything derived from
+  // passwordSecret would let anyone brute force the secret offline from a single 401.
+  static #digestNonceKey = crypto.randomBytes(32);
+  static #digestNonceHmac (data) {
+    return crypto.createHmac('sha256', Auth.#digestNonceKey).update(data).digest('hex').slice(0, 32);
+  }
+
+  static #digestNonce () {
+    const data = Math.floor(Date.now() / 1000).toString(16) + '.' + crypto.randomBytes(8).toString('hex');
+    return data + '.' + Auth.#digestNonceHmac(data);
+  }
+
+  // Returns 'ok', 'stale' or 'bad'. A nonce from another viewer, from before a restart, or outside
+  // the time window is stale, not bad, so the client retries without asking the user again
+  static #digestNonceCheck (nonce) {
+    const parts = nonce.split('.');
+    if (parts.length !== 3 || !Auth.#hex32.test(parts[2])) { return 'bad'; }
+    const hmac = Auth.#digestNonceHmac(parts[0] + '.' + parts[1]);
+    if (!crypto.timingSafeEqual(Buffer.from(parts[2]), Buffer.from(hmac))) { return 'stale'; }
+    const age = Math.floor(Date.now() / 1000) - parseInt(parts[0], 16);
+    return (age < -60 || age > Auth.#digestNonceMaxAge) ? 'stale' : 'ok';
+  }
+
+  static #isTokenChar (c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '_' || c === '-';
+  }
+
+  // Parse the key=value / key="value" list of a Digest Authorization header in one pass.
+  // Returns undefined if malformed or a key is repeated.
+  static #digestParse (str) {
+    const params = Object.create(null);
+    const len = str.length;
+    const skipWs = (pos) => { while (pos < len && (str[pos] === ' ' || str[pos] === '\t')) { pos++; } return pos; };
+    let i = 0;
+    while (i < len) {
+      while (i < len && (str[i] === ' ' || str[i] === '\t' || str[i] === ',')) { i++; }
+      if (i >= len) { break; }
+
+      const keyStart = i;
+      while (i < len && Auth.#isTokenChar(str[i])) { i++; }
+      const key = str.slice(keyStart, i).toLowerCase();
+      i = skipWs(i);
+      if (!key || str[i] !== '=') { return undefined; }
+      i = skipWs(i + 1);
+
+      let value;
+      if (str[i] === '"') {
+        const chars = [];
+        i++;
+        while (i < len && str[i] !== '"') {
+          if (str[i] === '\\') { i++; }
+          if (i < len) { chars.push(str[i]); i++; }
+        }
+        if (i >= len) { return undefined; }
+        i++;
+        value = chars.join('');
+      } else {
+        const valueStart = i;
+        while (i < len && str[i] !== ',' && str[i] !== ' ' && str[i] !== '\t') { i++; }
+        value = str.slice(valueStart, i);
+      }
+
+      if (key in params) { return undefined; }
+      params[key] = value;
+
+      i = skipWs(i);
+      if (i < len && str[i] !== ',') { return undefined; }
+    }
+    return params;
+  }
+
+  // ----------------------------------------------------------------------------
   /* Register all the strategies that are supported */
   static async #registerStrategies () {
     // ----------------------------------------------------------------------------
@@ -773,19 +878,35 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('basic', new BasicStrategy((userId, password, done) => {
+    passport.use('basic', new CustomStrategy((req, done) => {
+      const authorization = req.headers.authorization;
+      if (!authorization) { return done(null, false, Auth.#basicChallenge()); }
+
+      const space = authorization.indexOf(' ');
+      if (space < 0) { return done(null, false, 400); }
+      if (authorization.slice(0, space).toLowerCase() !== 'basic') { return done(null, false, Auth.#basicChallenge()); }
+
+      const decoded = Buffer.from(authorization.slice(space + 1).trim(), 'base64').toString();
+      const colon = decoded.indexOf(':');
+      if (colon < 0) { return done(null, false, 400); }
+      const userId = decoded.slice(0, colon);
+      const password = decoded.slice(colon + 1);
+      if (!userId || !password) { return done(null, false, Auth.#basicChallenge()); }
+
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false, Auth.#basicChallenge()); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
-        if (storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
+        if (!storeHa1 || storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) {
+          return done(null, false, Auth.#basicChallenge());
+        }
 
         user.setLastUsed();
         return done(null, user);
@@ -793,27 +914,55 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('digest', new DigestStrategy({ qop: 'auth', realm: Auth.#authConfig.httpRealm }, (userId, done) => {
+    passport.use('digest', new CustomStrategy((req, done) => {
+      const authorization = req.headers.authorization;
+      if (!authorization) { return done(null, false, Auth.#digestChallenge()); }
+
+      const space = authorization.indexOf(' ');
+      if (space < 0) { return done(null, false, 400); }
+      if (authorization.slice(0, space).toLowerCase() !== 'digest') { return done(null, false, Auth.#digestChallenge()); }
+
+      const creds = Auth.#digestParse(authorization.slice(space + 1));
+      if (!creds) { return done(null, false, 400); }
+      if (!creds.username) { return done(null, false, Auth.#digestChallenge()); }
+      if (!creds.realm || !creds.nonce || !creds.uri || !creds.response || !creds.nc || !creds.cnonce) { return done(null, false, 400); }
+      if (creds.qop !== 'auth') { return done(null, false, 400); }
+      if (creds.algorithm !== undefined && creds.algorithm.toUpperCase() !== 'MD5') { return done(null, false, 400); }
+      if (creds.uri !== req.url) { return done(null, false, 400); }
+      if (creds.realm !== Auth.#authConfig.httpRealm) { return done(null, false, Auth.#digestChallenge()); }
+
+      const nonceState = Auth.#digestNonceCheck(creds.nonce);
+      if (nonceState === 'bad') { return done(null, false, Auth.#digestChallenge()); }
+
+      const userId = creds.username;
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false, Auth.#digestChallenge()); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         const ha1 = Auth.store2ha1(user.passStore, user.userId);
         if (!ha1) {
           console.log('AUTH: User', userId, 'passStore could not be decrypted, denying digest auth (check passwordSecret or reset the password)');
-          return done(null, false);
+          return done(null, false, Auth.#digestChallenge());
         }
 
+        const ha2 = Auth.md5(req.method + ':' + creds.uri);
+        const expected = Auth.md5(ha1 + ':' + creds.nonce + ':' + creds.nc + ':' + creds.cnonce + ':auth:' + ha2);
+        const response = creds.response.toLowerCase();
+        if (!Auth.#hex32.test(response) || !crypto.timingSafeEqual(Buffer.from(response), Buffer.from(expected))) {
+          return done(null, false, Auth.#digestChallenge());
+        }
+
+        // Right password with an old nonce, client should retry with a new nonce without asking the user again
+        if (nonceState === 'stale') { return done(null, false, Auth.#digestChallenge(true)); }
+
         user.setLastUsed();
-        return done(null, user, { ha1 });
+        return done(null, user);
       });
-    }, (poptions, done) => {
-      return done(null, true);
     }));
 
     // ----------------------------------------------------------------------------
@@ -887,7 +1036,7 @@ class Auth {
 
         const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
-        if (storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
+        if (!storeHa1 || storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
 
         user.setLastUsed();
         return done(null, user);
@@ -1103,9 +1252,15 @@ class Auth {
     // A portal request is never a browser being sent to a login page, and must
     // not write to whatever session a cookie it carries happens to name
     if (!portal && req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session && req._parsedUrl.pathname !== '/auth/login/callback') {
+      // Until login this session only carries the return url (and the oidc state), keep
+      // it short lived so unauthenticated requests can't fill the store. Login regenerates it.
+      req.session.cookie.maxAge = 15 * 60 * 1000;
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
-      req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
+      // a very long one isn't kept, it only makes each unauthenticated session bigger
+      if (req.originalUrl.length <= 4096) {
+        req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
+      }
     }
 
     const savedOgurl = req.session?.ogurl;
@@ -1220,7 +1375,7 @@ class Auth {
         return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section cannot decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
+      console.log('passwordSecret set in the [%s] section cannot decrypt \'%s\' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you\'ve changed the secret.', Auth.#passwordSecretSection, userId, e);
       return '';
     }
   }
@@ -1252,7 +1407,7 @@ class Auth {
         return null;
       }
     } catch (e) {
-      console.log(`passwordSecret cannot decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
+      console.log('passwordSecret cannot decrypt TOTP secret for \'%s\'. Make sure passwordSecret is the same for all nodes/applications.', userId, e);
       return null;
     }
   }
@@ -1525,9 +1680,12 @@ class ESStore extends expressSession.Store {
       ESStore.#client = User.getClient();
       if (!ESStore.#client) {
         console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
+        // MemoryStore only drops an expired session when it is read again, all() checks every one
+        setInterval(() => ESStore.#memoryStore.all(), 60 * 1000).unref();
         return;
       }
       ESStore.start();
+      setInterval(() => ESStore.#prune(), 10 * 60 * 1000).unref();
     }, 100);
     const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
     ESStore.#index = `${prefix}sids_v50`;
@@ -1570,21 +1728,29 @@ class ESStore extends expressSession.Store {
           }
         ],
         properties: {
-          _timestamp: { type: 'date' }
+          _timestamp: { type: 'date' },
+          _expires: { type: 'date' }
         }
       }
     });
 
-    // Delete old sids, ignore errors
+    await ESStore.#prune();
+  }
+
+  // ----------------------------------------------------------------------------
+  // Delete expired sids, ignore errors. Older docs only have _timestamp.
+  static async #prune () {
+    const now = new Date().getTime();
     try {
       await ESStore.#client.deleteByQuery({
         index: ESStore.#index,
         body: {
           query: {
-            range: {
-              _timestamp: {
-                lte: new Date().getTime() - ESStore.#ttl
-              }
+            bool: {
+              should: [
+                { range: { _expires: { lte: now } } },
+                { range: { _timestamp: { lte: now - ESStore.#ttl } } }
+              ]
             }
           }
         },
@@ -1623,7 +1789,8 @@ class ESStore extends expressSession.Store {
       }
 
       const _source = response.body._source;
-      if (new Date().getTime() - _source._timestamp > ESStore.#ttl) {
+      const now = new Date().getTime();
+      if (now - _source._timestamp > ESStore.#ttl || now > (_source._expires ?? Infinity)) {
         this.destroy(sid, () => {});
         return callback();
       }
@@ -1637,6 +1804,7 @@ class ESStore extends expressSession.Store {
       return ESStore.#memoryStore.set(sid, session, callback);
     }
     session._timestamp = new Date().getTime();
+    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + ESStore.#ttl;
     ESStore.#client.index({
       index: ESStore.#index,
       id: sid,

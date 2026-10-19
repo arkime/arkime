@@ -8,6 +8,58 @@
 
 'use strict';
 
+// Session update scripts, esProxy only lets sensors send addHuntToSession
+const SESSION_SCRIPTS = {
+  addTagsToSession: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
+              ctx._source.tags.add(params.tags[i]);
+            }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+        } else {
+          ctx._source.tags = params.tags;
+          ctx._source.tagsCnt = params.tags.length;
+        }
+      `,
+  removeTagsFromSession: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            int idx = ctx._source.tags.indexOf(params.tags[i]);
+            if (idx > -1) { ctx._source.tags.remove(idx); }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+          if (ctx._source.tagsCnt == 0) {
+            ctx._source.remove("tags");
+            ctx._source.remove("tagsCnt");
+          }
+        }
+      `,
+  addHuntToSession: `
+        if (ctx._source.huntId != null) {
+          ctx._source.huntId.add(params.huntId);
+        } else {
+          ctx._source.huntId = [ params.huntId ];
+        }
+        if (ctx._source.huntName != null) {
+          ctx._source.huntName.add(params.huntName);
+        } else {
+          ctx._source.huntName = [ params.huntName ];
+        }
+      `,
+  removeHuntFromSession: `
+        if (ctx._source.huntId != null) {
+          int idx = ctx._source.huntId.indexOf(params.huntId);
+          if (idx > -1) { ctx._source.huntId.remove(idx); }
+        }
+        if (ctx._source.huntName != null) {
+          int idx = ctx._source.huntName.indexOf(params.huntName);
+          if (idx > -1) { ctx._source.huntName.remove(idx); }
+        }
+      `
+};
+
 class DbESImpl {
   #client;
   #prefix;
@@ -529,7 +581,7 @@ class DbESImpl {
       if (cb) { cb(null, totalResults); }
       return totalResults;
     } catch (err) {
-      if (cb) { cb(err); }
+      if (cb) { return cb(err); }
       throw err;
     }
   }
@@ -661,19 +713,7 @@ class DbESImpl {
   async addTagsToSession (index, id, tags, cluster) {
     const body = {
       script: {
-        source: `
-        if (ctx._source.tags != null) {
-          for (int i = 0; i < params.tags.length; i++) {
-            if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
-              ctx._source.tags.add(params.tags[i]);
-            }
-          }
-          ctx._source.tagsCnt = ctx._source.tags.length;
-        } else {
-          ctx._source.tags = params.tags;
-          ctx._source.tagsCnt = params.tags.length;
-        }
-      `,
+        source: SESSION_SCRIPTS.addTagsToSession,
         lang: 'painless',
         params: { tags }
       }
@@ -688,19 +728,7 @@ class DbESImpl {
   async removeTagsFromSession (index, id, tags, cluster) {
     const body = {
       script: {
-        source: `
-        if (ctx._source.tags != null) {
-          for (int i = 0; i < params.tags.length; i++) {
-            int idx = ctx._source.tags.indexOf(params.tags[i]);
-            if (idx > -1) { ctx._source.tags.remove(idx); }
-          }
-          ctx._source.tagsCnt = ctx._source.tags.length;
-          if (ctx._source.tagsCnt == 0) {
-            ctx._source.remove("tags");
-            ctx._source.remove("tagsCnt");
-          }
-        }
-      `,
+        source: SESSION_SCRIPTS.removeTagsFromSession,
         lang: 'painless',
         params: { tags }
       }
@@ -713,20 +741,10 @@ class DbESImpl {
 
   // --------------------------------------------------------------------------
   async addHuntToSession (index, id, huntId, huntName) {
+    // esProxy's validateUpdate only passes this exact body from sensor viewers
     const body = {
       script: {
-        source: `
-        if (ctx._source.huntId != null) {
-          ctx._source.huntId.add(params.huntId);
-        } else {
-          ctx._source.huntId = [ params.huntId ];
-        }
-        if (ctx._source.huntName != null) {
-          ctx._source.huntName.add(params.huntName);
-        } else {
-          ctx._source.huntName = [ params.huntName ];
-        }
-      `,
+        source: SESSION_SCRIPTS.addHuntToSession,
         lang: 'painless',
         params: { huntId, huntName }
       }
@@ -739,16 +757,7 @@ class DbESImpl {
   async removeHuntFromSession (index, id, huntId, huntName) {
     const body = {
       script: {
-        source: `
-        if (ctx._source.huntId != null) {
-          int idx = ctx._source.huntId.indexOf(params.huntId);
-          if (idx > -1) { ctx._source.huntId.remove(idx); }
-        }
-        if (ctx._source.huntName != null) {
-          int idx = ctx._source.huntName.indexOf(params.huntName);
-          if (idx > -1) { ctx._source.huntName.remove(idx); }
-        }
-      `,
+        source: SESSION_SCRIPTS.removeHuntFromSession,
         lang: 'painless',
         params: { huntId, huntName }
       }
@@ -954,5 +963,7 @@ class DbESImpl {
     // client7 is closed by Db.close itself
   }
 }
+
+DbESImpl.SESSION_SCRIPTS = SESSION_SCRIPTS;
 
 module.exports = DbESImpl;

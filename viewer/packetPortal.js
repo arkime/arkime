@@ -759,7 +759,7 @@ class PacketPortal {
     return (req, res) => {
       const { error } = Auth.parseS2SRequest(req);
       if (error) {
-        console.log(`packetPortal: rejecting portal request for ${ArkimeUtil.sanitizeStr(req.url)} -`, error);
+        console.log('packetPortal: rejecting portal request for %s -', ArkimeUtil.sanitizeStr(req.url), error);
         res.statusCode = 401;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ success: false, text: 'Packet portal requests require s2s auth' }));

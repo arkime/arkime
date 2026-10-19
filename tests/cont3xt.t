@@ -1,9 +1,11 @@
 # Test cont3xt.js
-use Test::More tests => 310;
+use Test::More tests => 345;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
+use MIME::Base64;
+use LWP::UserAgent;
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -937,7 +939,7 @@ $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
   viewId => 1
 }));
-eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string when present"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string of at most 256 characters when present"}'));
 
 $json = cont3xtPost('/api/integration/search', to_json({
     query => ","
@@ -1674,3 +1676,175 @@ eq_or_diff($json, from_json('{"success": false, "text": "Settings too large"}'),
 
 $json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "integration settings reset");
+
+################################################################################
+### URLAPI - against mini-wise-source.js
+viewerPostToken("/api/user", '{"userId": "sac-urlapi", "userName": "urlapi", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+
+# placeholders are encoded, the mock decodes and echoes them back
+my $uval = 'a/b?c#d&$&>>';
+my $ub64 = encode_base64($uval, '');
+(my $ub64url = $ub64) =~ tr{+/}{-_};
+$ub64url =~ s/=+$//;
+$json = cont3xtPost('/api/integration/text/urlapi:test/search', to_json({ query => $uval }));
+is($json->{data}->{data}->{value}, $uval, "urlapi {value} encoded");
+is($json->{data}->{data}->{b64}, $ub64, "urlapi {valueBase64} encoded");
+is($json->{data}->{data}->{b64url}, $ub64url, "urlapi {valueBase64Url}");
+is($json->{data}->{_cont3xt}->{count}, 1, "urlapi count");
+
+# 404 is no result
+$json = cont3xtPost('/api/integration/text/urlapi:test/search', to_json({ query => "miss" }));
+is($json->{purpose}, "data", "urlapi miss is data");
+ok(!exists $json->{data}->{data}, "urlapi miss has no result");
+
+# redirects aren't followed by default
+$json = cont3xtPost('/api/integration/text/urlapi:redirect/search', to_json({ query => "redir" }));
+is($json->{purpose}, "fail", "urlapi redirect not followed");
+
+# a result fetched with a user's own key is only cached for that user
+sub urlapiResult {
+  my ($user, $query) = @_;
+  my $results = cont3xtPost("/api/integration/search?arkimeRegressionUser=$user", to_json({
+    query => $query,
+    doIntegrations => ["urlapi:test"]
+  }));
+  my ($result) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$results};
+  return $result->{data}->{data};
+}
+
+$json = cont3xtPutToken('/api/integration/settings', to_json({
+  settings => { "urlapi:test" => { key => "anonkey" } }
+}), $token);
+is($json->{success}, 1, "urlapi key saved");
+
+my $ucache = "urlapicache" . time();
+my $udata = urlapiResult("anonymous", $ucache);
+is($udata->{key}, "anonkey", "urlapi sends the user key");
+is($udata->{hits}, 1, "urlapi key user fetches");
+
+$udata = urlapiResult("sac-urlapi", $ucache);
+is($udata->{key}, undef, "urlapi other user doesn't get the key user's result");
+is($udata->{hits}, 2, "urlapi other user fetches");
+
+$udata = urlapiResult("sac-urlapi", $ucache);
+is($udata->{hits}, 2, "urlapi other user uses the shared cache");
+
+$udata = urlapiResult("anonymous", $ucache);
+is($udata->{key}, "anonkey", "urlapi key user uses their own cache");
+is($udata->{hits}, 1, "urlapi key user cache hit");
+
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
+is($json->{success}, 1, "urlapi key reset");
+
+################################################################################
+### URL child domain is only the parsed hostname
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "http://example.com/../../v1/account?x=",
+  doIntegrations => ["dns"]
+}));
+my ($urlLink) = grep { $_->{purpose} eq "link" } @{$json};
+eq_or_diff($urlLink->{indicator}, from_json('{"query": "example.com", "itype": "domain"}'), "url child domain is the hostname");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "http://x/../v1/account",
+  doIntegrations => ["dns"]
+}));
+is(scalar(grep { $_->{purpose} eq "link" } @{$json}), 0, "url child skipped when the hostname isn't a domain");
+
+################################################################################
+### Integration settings save doesn't write back a stale (cached) user
+viewerPostToken("/api/user", '{"userId": "sac-stale", "userName": "stale", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+my $staleToken = getCont3xtTokenCookie('sac-stale');
+cont3xtGet('/api/integration/settings?arkimeRegressionUser=sac-stale');
+viewerPostToken("/api/user/sac-stale", '{"userId": "sac-stale", "userName": "stale", "enabled":false, "roles":["cont3xtUser"]}', $token);
+# relies on the 5s user cache, if it expired auth refuses with non-JSON, which is still a refusal
+$json = eval { cont3xtPutToken('/api/integration/settings?arkimeRegressionUser=sac-stale', to_json({
+  settings => { Twilio => { disabled => JSON::true } }
+}), $staleToken) };
+ok(!$json || !$json->{success}, "disabled user can't save integration settings with a cached user");
+$json = viewerPost("/api/users", '{"filter": "sac-stale"}');
+my ($staleUser) = grep { $_->{userId} eq "sac-stale" } @{$json->{data}};
+is($staleUser->{enabled}, JSON::false, "user is still disabled");
+
+################################################################################
+### Keys that don't decrypt (eg passwordSecret changed) don't break searches
+SKIP: {
+  # the bad keys are written straight into the ES users index
+  skip "users not in ES", 2 if ($ENV{USERSELASTICSEARCH} // "http") !~ /^http/;
+
+  viewerPostToken("/api/user", '{"userId": "sac-badkeys", "userName": "badkeys", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
+  esPost("/tests_users/_update/sac-badkeys?refresh=true", '{"doc": {"cont3xt": {"keys": "deadbeef"}}}');
+  $json = cont3xtPost('/api/integration/search?arkimeRegressionUser=sac-badkeys', to_json({
+    query => "badkeys" . time(),
+    doIntegrations => ["urlapi:test"]
+  }));
+  is($json->[-1]->{purpose}, "finish", "search finishes with undecryptable keys");
+  my ($badKeysData) = grep { $_->{purpose} eq "data" && $_->{name} eq "urlapi:test" } @{$json};
+  is($badKeysData->{data}->{data}->{key}, undef, "undecryptable keys aren't used");
+}
+
+################################################################################
+### Search history is written even when an integration doesn't answer in time
+my $slowVal = "slowaudit" . time();
+my $slowStart = time();
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => $slowVal,
+  doIntegrations => ["urlapi:slow"]
+}));
+is($json->[-1]->{purpose}, "finish", "search finishes at searchTimeout");
+cmp_ok(time() - $slowStart, "<", 8, "search doesn't wait for the slow integration");
+
+$json = cont3xtPost('/api/integration/text/urlapi:slow/search', to_json({ query => $slowVal }));
+is($json->{purpose}, "fail", "single search fails at searchTimeout");
+my ($slowStats) = grep { $_->{name} eq "urlapi:slow" } @{cont3xtGet('/api/integration/stats')->{stats}};
+is($slowStats->{directError}, 1, "single search timeout counts as an integration error");
+
+# A client that leaves mid search still gets it into the history, without waiting for searchTimeout
+my $leaveVal = "leaveaudit" . time();
+my $leaveStart = time();
+LWP::UserAgent->new(timeout => 1)->post("http://$ArkimeTest::host:3218/api/integration/search",
+  Content => to_json({ query => $leaveVal, doIntegrations => ["urlapi:slow"] }),
+  "Content-Type" => "application/json;charset=UTF-8");
+
+################################################################################
+### Tags, viewId and long bulk searches can't break the history write
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => [map { "t$_" } (1..51)],
+  doIntegrations => ["none"]
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "tags must have at most 50 entries"}'), "too many tags");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  tags => ["x" x 257],
+  doIntegrations => ["none"]
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "every tag must be at most 256 characters"}'), "tag too long");
+
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => "example.com",
+  viewId => "x" x 257,
+  doIntegrations => ["none"]
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "viewId must be a string of at most 256 characters when present"}'), "viewId too long");
+
+# 500 indicators joined is over the ES keyword limit
+my $longVal = "longaudit" . time();
+$json = cont3xtPost('/api/integration/search', to_json({
+  query => join(" ", map { $longVal . ("x" x 60) . $_ } (1..500)),
+  doIntegrations => ["none"]
+}));
+is($json->[-1]->{purpose}, "finish", "long bulk search finishes");
+
+sleep(1);
+esGet("/_flush");
+esGet("/_refresh");
+$json = cont3xtGet("/api/audits?searchTerm=$slowVal");
+is(scalar @{$json->{audits}}, 2, "timed out searches are in the history");
+$json = cont3xtGet("/api/audits?searchTerm=$leaveVal");
+is(scalar @{$json->{audits}}, 1, "search the client left is in the history");
+cmp_ok(time() - $leaveStart, "<", 5, "search the client left was saved before searchTimeout");
+$json = cont3xtGet("/api/audits?searchTerm=$longVal");
+is(scalar @{$json->{audits}}, 1, "long bulk search is in the history");
+cmp_ok(length($json->{audits}->[0]->{indicator}), "<=", 8000, "long bulk search indicator is truncated");

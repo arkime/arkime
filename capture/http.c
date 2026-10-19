@@ -1129,7 +1129,14 @@ void arkime_http_set_userpwd(void *serverV, const char *userpwd)
 {
     ArkimeHttpServer_t        *server = serverV;
 
+    if (server->userpwd && strcmp(server->userpwd, userpwd) == 0)
+        return;
+
+    // Can be called again when credentials rotate, another thread may still be reading the old one
+    char *old = server->userpwd;
     server->userpwd = strdup(userpwd);
+    if (old)
+        arkime_free_later(old, free);
 }
 /******************************************************************************/
 void arkime_http_set_aws_sigv4(void *serverV, const char *aws_sigv4)

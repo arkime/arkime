@@ -594,7 +594,8 @@ async function fixFileIds (fields) {
   fields.fileId = files;
 }
 
-// Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
+// Get a session from OpenSearch/Elasticsearch and decode packetPos if requested.
+// esProxy's searchIdsFilter only passes this exact query shape from sensor viewers.
 Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
@@ -664,6 +665,7 @@ Db.indexNow = async (index, id, doc) => {
   });
 };
 
+// Anything added to the body here must also be allowed by esProxy's sessions search validators
 Db.search = async (index, query, options) => {
   query.profile = internals.esProfile;
 
@@ -691,8 +693,11 @@ Db.search = async (index, query, options) => {
 
     return results;
   } catch (err) {
-    if (err?.meta?.body?.error?.type === 'index_not_found_exception') {
-      console.log(`OpenSearch/Elasticsearch Search Error - index not found: ${err.meta.body.error.index ?? params.index}`);
+    const esError = err?.meta?.body?.error;
+    if (esError?.type === 'index_not_found_exception') {
+      console.log(`OpenSearch/Elasticsearch Search Error - index not found: ${esError.index ?? params.index}`);
+    } else if (esError && internals.debug < 2) {
+      console.log(`OpenSearch/Elasticsearch Search Error - ${esError.type}: ${esError.root_cause?.[0]?.reason ?? esError.reason}`);
     } else {
       console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
     }

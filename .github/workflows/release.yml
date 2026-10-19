@@ -42,6 +42,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
+      alpinematrix: ${{ steps.set-matrix.outputs.alpinematrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
@@ -52,10 +53,12 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+          MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not)]}' .github/workflows/versions | jq -c)
           FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
+          ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine"))]}' .github/workflows/versions | jq -c)
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
+          echo "alpinematrix=$ALPINE_MATRIX" >> $GITHUB_OUTPUT
 
   build-release:
     permissions:
@@ -304,6 +307,72 @@ jobs:
           files: |
             *.pkg
             *.so
+          body: |
+            ### [Installation Instructions](https://arkime.com/install) | [5.x -> 6.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_6) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
+
+            A db.pl upgrade is required when upgrading from Arkime 5 or earlier
+
+            Support Arkime's ongoing development! Become a **[GitHub Sponsor!](https://github.com/sponsors/awick)**
+
+            # :sparkles: What's new :sparkles:
+
+            ### :arrow_down: Download Info :arrow_down:
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el9 download for RHEL 9 not RHEL 10. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026.
+
+############# Alpine Build #############
+  alpine-build:
+    needs: [generate-matrix]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-matrix.outputs.alpinematrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.inputs.release_tag }}
+      cancel-in-progress: true
+
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+      ITERATION: ${{ github.event.inputs.iteration }}
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          ref: "refs/tags/v${{ github.event.inputs.release_tag }}"
+
+      # JavaScript actions refuse to run in Alpine containers on arm64, so run
+      # the build with docker on the host and keep the actions outside it
+      - name: Build on Alpine
+        run: |
+          docker run --rm -i -v "$GITHUB_WORKSPACE:/work" -w /work -e RELEASE_TAG -e ITERATION ${{ matrix.container }} bash -s <<'EOF'
+          set -e
+          git config --global --add safe.directory /work
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ls -l capture/capture
+          export PATH=/opt/arkime/bin:$PATH
+          INSTALL_BUNDLE=bundle make install
+          export ARKIME_VERSION="$RELEASE_TAG"
+          ./release/alpinepkg.sh $ARKIME_VERSION "$ITERATION" arkime-${ARKIME_VERSION}-${ITERATION}.${{matrix.version}}.apk /opt/arkime
+          ls -l *.apk
+          EOF
+
+      - name: upload github
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: "v${{ github.event.inputs.release_tag }}"
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.apk
           body: |
             ### [Installation Instructions](https://arkime.com/install) | [5.x -> 6.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_6) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
 

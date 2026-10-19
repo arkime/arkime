@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
       <summary
         ref="rowRef"
         class="shark-tree-row"
-        :class="{ 'tshark-selected': isSelected }"
+        :class="[{ 'tshark-selected': isSelected }, expertClass]"
         @click="onClick">
         <span class="tshark-label">{{ displayLabel }}</span>
       </summary>
@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
       v-else
       ref="rowRef"
       class="tshark-leaf shark-tree-row"
-      :class="{ 'tshark-selected': isSelected }"
+      :class="[{ 'tshark-selected': isSelected }, expertClass]"
       @click="onClick">
       <span class="tshark-label">{{ displayLabel }}</span>
     </span>
@@ -54,6 +54,41 @@ watchEffect(() => { if (rowRef.value) { rowRef.value.__sharkNode = props.node; }
 const hasChildren = computed(() => Array.isArray(props.node.fields) && props.node.fields.length > 0);
 
 const isSelected = computed(() => selection?.node === props.node);
+
+// Wireshark colors fields carrying expert info by severity (its "Severity level: Error" etc).
+// The field that raised it and its ancestor layers get the color.
+const EXPERT_SEVERITIES = { 0x00100000: 'chat', 0x00400000: 'note', 0x00600000: 'warn', 0x00800000: 'error' };
+const EXPERT_LABELS = { chat: 'chat', note: 'note', warning: 'warn', warn: 'warn', error: 'error' };
+
+const expertSeverity = (n) => {
+  const sev = n.fields?.find(f => f.name === '_ws.expert.severity');
+  if (sev) { return EXPERT_SEVERITIES[parseInt(sev.show)]; }
+  return EXPERT_LABELS[/\((\w+)\//.exec(n.label || '')?.[1]?.toLowerCase()];
+};
+
+const SEVERITY_RANK = { chat: 1, note: 2, warn: 3, error: 4 };
+
+const ownSeverity = (n) => {
+  const expert = n.name === '_ws.expert' ? n : n.fields?.find(f => f.name === '_ws.expert');
+  return expert && expertSeverity(expert);
+};
+
+// worst severity at or below a node, so the field and every ancestor layer carry the color
+const worstSeverity = (n) => {
+  let worst = ownSeverity(n);
+  for (const c of n.fields || []) {
+    const sev = worstSeverity(c);
+    if (sev && (!worst || SEVERITY_RANK[sev] > SEVERITY_RANK[worst])) { worst = sev; }
+  }
+  return worst;
+};
+
+// the "Expert Info (...)" node itself is only shaded grey, like Wireshark
+const expertClass = computed(() => {
+  if (props.node.name === '_ws.expert') { return 'tshark-expert-info'; }
+  const sev = worstSeverity(props.node);
+  return sev ? `tshark-expert-${sev}` : '';
+});
 
 // alt-click copies the value (and must not toggle the <details>), plain click selects
 const onClick = (e) => {
@@ -121,6 +156,11 @@ watch(() => props.expandSignal, (v) => {
   gap: 0;
   cursor: pointer;
 }
+.tshark-expert-error { background: rgba(var(--v-theme-error), 0.45); border-radius: 2px; }
+.tshark-expert-warn { background: rgba(var(--v-theme-warning), 0.45); border-radius: 2px; }
+.tshark-expert-note { background: rgba(var(--v-theme-info), 0.45); border-radius: 2px; }
+.tshark-expert-chat { background: rgba(var(--v-theme-primary), 0.3); border-radius: 2px; }
+.tshark-expert-info { background: rgba(var(--v-theme-on-surface), 0.08); border-radius: 2px; }
 .tshark-selected {
   background: rgb(var(--v-theme-primary));
   color: rgb(var(--v-theme-on-primary));

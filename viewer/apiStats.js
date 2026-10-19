@@ -317,7 +317,8 @@ class StatsAPIs {
       const result = await Db.search('dstats', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' });
 
       let i, ilen;
-      const data = {};
+      // Keyed by nodeName, which sensors write
+      const data = Object.create(null);
       const num = Math.min(Math.floor((req.query.stop - req.query.start) / req.query.step), 100000);
 
       let mult = 1;

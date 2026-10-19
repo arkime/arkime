@@ -1,7 +1,5 @@
 { 
-  // Don't suggest new packages under 3 days
   "cooldown": 3,
 
-  // @elastic/elasticsearch - can't be upgraded because OSS/Opensearch
   "reject": ["@elastic/elasticsearch"]
 }

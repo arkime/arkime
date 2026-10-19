@@ -987,7 +987,8 @@ class SessionAPIs {
           Auth.addS2SAuth(options, req.user, fields.node, url.pathname, ViewerUtils.getClusterSecret(req.query.cluster));
           if (!portal) { options.ca = ca; }
 
-          await new Promise((resolve) => {
+          // A keep-alive socket to the peer can be reset, so try a second time on errors
+          const fetchPcap = (retry) => new Promise((resolve) => {
             const chunks = [];
             const preq = client.request(url, options, (pres) => {
               pres.on('data', (chunk) => {
@@ -1008,6 +1009,10 @@ class SessionAPIs {
               });
             });
             preq.on('error', (e) => {
+              if (retry) {
+                console.log('Retry %s pcap request to fetch sessions pcap list: %s', url.pathname, String(e));
+                return fetchPcap(false).then(resolve);
+              }
               console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
               resolve();
             });
@@ -1016,11 +1021,20 @@ class SessionAPIs {
             }
             preq.end();
           });
+          await fetchPcap(true);
         } catch (err) {
           console.log("ERROR - Couldn't get view url for node", fields.node, '\nerror =', util.inspect(err, false, 50));
         }
       }
     });
+  }
+
+  // --------------------------------------------------------------------------
+  // String errors are our own messages, an Error can have server paths so only log it
+  static #itemByHashErrorMsg (req, err) {
+    if (typeof err === 'string') { return err; }
+    console.log(`ERROR - ${req.method} %s`, ArkimeUtil.sanitizeStr(req.path), util.inspect(err, false, 50));
+    return 'Error retrieving item';
   }
 
   // --------------------------------------------------------------------------
@@ -1899,42 +1913,48 @@ class SessionAPIs {
         packets[i] = obj;
         cb(null);
       }, async (err, session) => {
-        if (err) {
-          console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
-          return reject(err);
-        }
-        packets = packets.filter(Boolean);
-        if (packets.length === 0) {
-          return resolve({ session, packets: [] });
-        } else if (packets[0].ip === undefined) {
-          return resolve({ session, packets: [] });
-        } else if (packets[0].ip.p === 1) {
-          const { err: reassembleErr, results } = Pcap.reassemble_icmp(packets, numPackets);
-          if (reassembleErr) return reject(reassembleErr);
-          return resolve({ session, packets: results });
-        } else if (packets[0].ip.p === 6) {
-          // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
-          const hasFragments = packets.some(p => !p.tcp);
-          if (hasFragments) {
-            const { err: reassembleErr, results } = Pcap.reassemble_generic_ip(packets, numPackets);
+        // A throw in here would leave the promise pending forever
+        try {
+          if (err) {
+            console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
+            return reject(err);
+          }
+          packets = packets.filter(Boolean);
+          if (packets.length === 0) {
+            return resolve({ session, packets: [] });
+          } else if (packets[0].ip === undefined) {
+            return resolve({ session, packets: [] });
+          } else if (packets[0].ip.p === 1) {
+            const { err: reassembleErr, results } = Pcap.reassemble_icmp(packets, numPackets);
+            if (reassembleErr) return reject(reassembleErr);
+            return resolve({ session, packets: results });
+          } else if (packets[0].ip.p === 6) {
+            // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+            const hasFragments = packets.some(p => !p.tcp);
+            if (hasFragments) {
+              const { err: reassembleErr, results } = Pcap.reassemble_generic_ip(packets, numPackets);
+              if (reassembleErr) return reject(reassembleErr);
+              return resolve({ session, packets: results });
+            } else {
+              const key = ipaddr.parse(session.source.ip).toString();
+              const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
+              if (err) return reject(err);
+              return resolve({ session, packets: results });
+            }
+          } else if (packets[0].ip.p === 17) {
+            const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
+            if (reassembleErr) return reject(reassembleErr);
+            return resolve({ session, packets: results });
+          } else if (packets[0].ip.p === 132) {
+            const { err: reassembleErr, results } = Pcap.reassemble_sctp(packets, numPackets);
             if (reassembleErr) return reject(reassembleErr);
             return resolve({ session, packets: results });
           } else {
-            const key = ipaddr.parse(session.source.ip).toString();
-            const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
-            if (err) return reject(err);
-            return resolve({ session, packets: results });
+            return resolve({ session, packets: [] });
           }
-        } else if (packets[0].ip.p === 17) {
-          const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
-          if (reassembleErr) return reject(reassembleErr);
-          return resolve({ session, packets: results });
-        } else if (packets[0].ip.p === 132) {
-          const { err: reassembleErr, results } = Pcap.reassemble_sctp(packets, numPackets);
-          if (reassembleErr) return reject(reassembleErr);
-          return resolve({ session, packets: results });
-        } else {
-          return resolve({ session, packets: [] });
+        } catch (e) {
+          console.log('ERROR - processSessionIdAndDecode', util.inspect(e, false, 50));
+          return reject(e);
         }
       }, numPackets, 10);
     });
@@ -2860,8 +2880,14 @@ class SessionAPIs {
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
-          console.log(`ERROR - ${req.method} /api/unique`, query, util.inspect(err, false, 50));
-          return doneCb ? doneCb() : res.end();
+          const esError = err.meta?.body?.error;
+          const msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
+          console.log(`ERROR - ${req.method} /api/unique`, msg);
+          if (req.query.autocomplete !== undefined) {
+            return res.serverError(400, msg);
+          }
+          res.status(400);
+          return res.type('text/plain').end(msg);
         }
         if (Config.debug) {
           console.log('/api/unique result', util.inspect(result, false, 50));
@@ -4164,6 +4190,7 @@ class SessionAPIs {
 
     const writerOptions = { writeHeader: true };
 
+    // esProxy's searchRootIdFilter only passes this exact query shape from sensor viewers
     const filter = [{ term: { rootId: req.params.id } }];
 
     // Unlike the other pcap endpoints this one turns a single id into every
@@ -4173,7 +4200,7 @@ class SessionAPIs {
       const userExpression = await BuildQuery.userExpressionQuery(req);
       if (userExpression) { filter.push(userExpression); }
     } catch (err) {
-      console.log(`ERROR - Forced expression (${req.user.getExpression()}) doesn't compile -`, util.inspect(err, false, 50));
+      console.log('ERROR - Forced expression (%s) doesn\'t compile -', req.user.getExpression(), util.inspect(err, false, 50));
       return res.status(403).end();
     }
 
@@ -4342,7 +4369,7 @@ class SessionAPIs {
               SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
-                  return res.type('text/plain').end(String(err.message ?? err));
+                  return res.type('text/plain').end(SessionAPIs.#itemByHashErrorMsg(req, err));
                 } else if (item) {
                   ArkimeUtil.noCache(req, res, 'application/force-download');
                   res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
@@ -4358,7 +4385,7 @@ class SessionAPIs {
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
-              preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${hash}`;
+              preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${encodeURIComponent(hash)}`;
               return ViewerUtils.proxyRequest(preq, res);
             }
           } else {
@@ -4395,7 +4422,7 @@ class SessionAPIs {
     SessionAPIs.#localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
       if (err) {
         res.status(400);
-        return res.type('text/plain').end(String(err.message ?? err));
+        return res.type('text/plain').end(SessionAPIs.#itemByHashErrorMsg(req, err));
       } else if (item) {
         ArkimeUtil.noCache(req, res, 'application/force-download');
         res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
@@ -4624,7 +4651,8 @@ class SessionAPIs {
    * @name /sessions/receive
    * @param {string} saveId - The sessionId to save the session.
    */
-  static #saveIds = {};
+  // A Map, so a saveId like toString can't find an inherited builtin
+  static #saveIds = new Map();
   static receiveSession (req, res) {
     if (!ArkimeUtil.isString(req.query.saveId)) { return res.serverError(200, 'Missing saveId', 'api.sessions.missingSaveId'); }
 
@@ -4632,9 +4660,10 @@ class SessionAPIs {
 
     if (req.query.saveId.length === 0 || ArkimeUtil.isPP(req.query.saveId)) { return res.serverError(200, 'Bad saveId', 'api.sessions.badSaveId'); }
 
-    let saveId = SessionAPIs.#saveIds[req.query.saveId];
+    let saveId = SessionAPIs.#saveIds.get(req.query.saveId);
     if (!saveId) {
-      saveId = SessionAPIs.#saveIds[req.query.saveId] = { start: 0 };
+      saveId = { start: 0 };
+      SessionAPIs.#saveIds.set(req.query.saveId, saveId);
     }
 
     let sessionlen = -1;
@@ -4644,6 +4673,9 @@ class SessionAPIs {
     let buffer;
     let file;
     let writeHeader;
+    let ended = false;
+    let creatingFile = false;
+    let savedNoPcap;
 
     async function makeFilename (cb) {
       if (saveId.filename) {
@@ -4669,16 +4701,21 @@ class SessionAPIs {
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/sessions/receive ${saveId}`, util.inspect(err, false, 50));
+        saveId.inProgress = 0;
+        req.resume();
+        if (!res.headersSent) { res.send({ success: false, text: 'Error creating pcap' }); }
       }
     }
 
-    function saveSession () {
+    async function saveSession () {
       const id = session.id;
       delete session.id;
       try {
-        Db.indexNow(Db.sid2Index(id), Db.sid2Id(id), session);
+        await Db.indexNow(Db.sid2Index(id), Db.sid2Id(id), session);
+        return true;
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/sessions/receive`, util.inspect(err, false, 50));
+        return false;
       }
     }
 
@@ -4694,6 +4731,9 @@ class SessionAPIs {
     }
 
     req.on('data', (chunk) => {
+      // Already answered, an error making the file, nothing more to do
+      if (res.headersSent) { return; }
+
       // If the file is open, just write the current chunk
       if (file) {
         return chunkWrite(chunk);
@@ -4728,6 +4768,7 @@ class SessionAPIs {
         if (filelen > 0) {
           req.pause();
 
+          creatingFile = true;
           makeFilename((filename) => {
             req.resume();
             session.packetPos[0] = -saveId.seq;
@@ -4738,6 +4779,14 @@ class SessionAPIs {
             } else {
               file = fs.createWriteStream(filename, { start: saveId.start, flags: 'r+' });
             }
+            // Without a listener a write error would exit the viewer
+            file.on('error', (err) => {
+              console.log('ERROR - receiveSession writing', filename, err);
+              // Start a new file for the next chunk instead of failing to reopen this one forever
+              if (SessionAPIs.#saveIds.get(req.query.saveId) === saveId) {
+                SessionAPIs.#saveIds.delete(req.query.saveId);
+              }
+            });
             writeHeader = saveId.start === 0;
 
             // Adjust packet location based on where we start writing
@@ -4758,19 +4807,34 @@ class SessionAPIs {
               chunkWrite(buffer);
             }
 
-            saveSession();
+            // A small body can end before the file was ready
+            if (ended) { finish(); }
           });
         } else {
-          saveSession();
+          savedNoPcap = saveSession();
         }
       }
     });
 
-    req.on('end', (chunk) => {
-      if (file) {
-        file.end();
+    // Only index the session once its packets are on disk, and tell the sender if they aren't
+    async function finish () {
+      if (res.headersSent) { return; }
+      if (!file) {
+        return res.send({ success: savedNoPcap ? await savedNoPcap : true });
       }
-      return res.send({ success: true });
+      file.end(async (err) => {
+        if (err) {
+          return res.send({ success: false, text: 'Error writing pcap' });
+        }
+        return res.send({ success: await saveSession() });
+      });
+    }
+
+    req.on('end', (chunk) => {
+      ended = true;
+      // makeFilename is still running, its callback will finish
+      if (creatingFile && !file) { return; }
+      finish();
     });
   }
 }

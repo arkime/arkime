@@ -113,9 +113,13 @@ class User {
 
     if (!options.noUsersCheck && !Auth.isAnonymousMode()) {
       setImmediate(async () => {
-        const count = await User.numberOfUsers();
-        if (count === 0) {
-          console.log('WARNING\nWARNING - No users are defined, use `/opt/arkime/bin/arkime_add_user.sh` to add one\nWARNING');
+        try {
+          const count = await User.numberOfUsers();
+          if (count === 0) {
+            console.log('WARNING\nWARNING - No users are defined, use `/opt/arkime/bin/arkime_add_user.sh` to add one\nWARNING');
+          }
+        } catch (err) {
+          console.log('WARNING - Couldn\'t count users', ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
         }
       });
     }
@@ -1269,7 +1273,7 @@ class User {
 
       User.setUser(req.settingUser.userId, req.settingUser, (err) => {
         if (err) {
-          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
+          console.log('ERROR - %s %s settings update error', req.method, ArkimeUtil.sanitizeStr(req.originalUrl), util.inspect(err, false, 50));
           // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
           return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
         }

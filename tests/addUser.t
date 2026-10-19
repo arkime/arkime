@@ -1,9 +1,10 @@
 # Test addUser.js and general authentication
-use Test::More tests => 133;
+use Test::More tests => 158;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
+use Digest::MD5 qw(md5_hex);
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -114,6 +115,52 @@ $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'authte
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/");
 is ($response->code, 200);
 
+# Bad Digest headers, sent without letting LWP answer the challenge
+my $noAuthUA = LWP::UserAgent->new(timeout => 10, max_redirect => 0);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/");
+is ($response->code, 401);
+like ($response->header('WWW-Authenticate'), qr/Digest realm="Moloch", nonce="[0-9a-f]+\.[0-9a-f]+\.[0-9a-f]+", algorithm=MD5, qop="auth"/);
+
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => 'Digest ' . ('a,' x 3000));
+is ($response->code, 400);
+
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => 'Digest username="authtest2", realm="Moloch');
+is ($response->code, 400);
+
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => 'Digest username="authtest2", realm="Moloch", nonce="abc", uri="/", qop=auth, nc=00000001, cnonce="x", response="00000000000000000000000000000000"');
+is ($response->code, 401);
+
+# A high byte in a 32 char response or nonce must be rejected, not throw in the compare
+my ($nonce) = $response->header('WWW-Authenticate') =~ /nonce="([^"]+)"/;
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => "Digest username=\"authtest2\", realm=\"Moloch\", nonce=\"$nonce\", uri=\"/\", qop=auth, nc=00000001, cnonce=\"x\", response=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\xe9\"");
+is ($response->code, 401);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => "Digest username=\"authtest2\", realm=\"Moloch\", nonce=\"1.2.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\xe9\", uri=\"/\", qop=auth, nc=00000001, cnonce=\"x\", response=\"00000000000000000000000000000000\"");
+is ($response->code, 401);
+like ($response->header('WWW-Authenticate'), qr/^Digest realm="Moloch"/);
+
+# A nonce this viewer didn't sign (another viewer, restart) is stale, so the right password gets a silent retry
+sub digestAuth {
+  my ($user, $pass, $nonce) = @_;
+  my $ha1 = md5_hex("$user:Moloch:$pass");
+  my $ha2 = md5_hex("GET:/");
+  my $resp = md5_hex("$ha1:$nonce:00000001:x:auth:$ha2");
+  return "Digest username=\"$user\", realm=\"Moloch\", nonce=\"$nonce\", uri=\"/\", qop=auth, nc=00000001, cnonce=\"x\", response=\"$resp\"";
+}
+my $otherNonce = sprintf("%x", time()) . '.0123456789abcdef.' . ('0' x 32);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => digestAuth('authtest2', 'authtest2', $otherNonce));
+is ($response->code, 401);
+like ($response->header('WWW-Authenticate'), qr/, stale=true$/);
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => digestAuth('authtest2', 'wrong', $otherNonce));
+is ($response->code, 401);
+unlike ($response->header('WWW-Authenticate'), qr/stale/);
+($nonce) = $response->header('WWW-Authenticate') =~ /nonce="([^"]+)"/;
+$response = $noAuthUA->get("http://$ArkimeTest::host:8126/", Authorization => digestAuth('authtest2', 'authtest2', $nonce));
+is ($response->code, 302);
+
+# Digest repeats the url in the Authorization header, long urls must still work
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/?x=" . ('a' x 5000));
+is ($response->code, 200);
+
 # /receiveSession
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession");
 is ($response->content, "receive session only allowed s2s");
@@ -221,6 +268,51 @@ my $rjson = from_json($response->content);
 is ($rjson->{success}, 0, "receiveSession missing saveId");
 is ($rjson->{i18n}, "api.sessions.missingSaveId", "receiveSession missing saveId i18n");
 is ($response->code, 200);
+
+sub receiveSession {
+    my ($saveId, $sid, $noPcap) = @_;
+    $sid = "3\@receivetest:" . ($sid // $saveId) if ($sid // '') !~ /@/;
+    my $session = '{"id":"' . $sid . '","node":"receivetest","packetPos":[-1,24],"firstPacket":1}';
+    my $pcap = $noPcap ? '' : pack("VvvlVVV", 0xa1b2c3d4, 2, 4, 0, 0, 65535, 1) . pack("VVVV", 1, 0, 24, 24) . ("\0" x 24);
+    my $path = "/receiveSession?saveId=$saveId";
+    return $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126$path", ':x-arkime-auth' => '{"path": "' . $path . '", "user": "authtest2", "date": ' . time() * 1000 .'}',
+        'Content-Type' => 'application/octet-stream', Content => pack("NNN", length($session), 0, length($pcap)) . $session . $pcap);
+}
+
+# /receiveSession - a saveId naming an inherited builtin used to make the write stream fail and exit the viewer
+$response = receiveSession("toString");
+like ($response->content, qr/"success":\s*true/, "receiveSession saveId=toString accepted");
+sleep(2);
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession");
+isnt ($response->header('Client-Warning') // '', 'Internal response', "viewer still running after saveId=toString");
+
+# /receiveSession - the sender is told when the pcap can't be written, a later chunk for the same saveId reopens the file r+
+$response = receiveSession("receivefail");
+like ($response->content, qr/"success":\s*true/, "receiveSession first chunk accepted");
+unlink glob("/tmp/test3-*-receivefail.pcap");
+$response = receiveSession("receivefail", "receivefail2");
+like ($response->content, qr/"success":\s*false/, "receiveSession reports pcap write failure");
+ok (!esGet("/tests2_sessions3-receivetest/_doc/receivefail2")->{found}, "session not indexed when its pcap write failed");
+$response = receiveSession("receivefail", "receivefail3");
+like ($response->content, qr/"success":\s*true/, "receiveSession after a failed write starts a new pcap");
+ok (esGet("/tests2_sessions3-receivetest/_doc/receivefail3")->{found}, "session after a failed write indexed");
+
+# /receiveSession - a session without packets reports when it can't be indexed
+$response = receiveSession("receivenopcap", '9@receivetest:x', 1);
+like ($response->content, qr/"success":\s*false/, "receiveSession reports session indexing failure");
+
+# /receiveSession - a received session is indexed once its pcap is written, pointing at the new file
+$response = receiveSession("receiveok");
+like ($response->content, qr/"success":\s*true/, "receiveSession with pcap accepted");
+my $received = esGet("/tests2_sessions3-receivetest/_doc/receiveok");
+is ($received->{_source}->{srcNode}, "receivetest", "received session indexed");
+ok ($received->{_source}->{packetPos}->[0] < 0 && -e glob("/tmp/test3-*-receiveok.pcap"), "received session points at written pcap");
+esDelete("/tests2_sessions3-receivetest");
+
+esPost("/tests2_files*/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"wildcard":{"name":"*-toString.pcap"}},{"wildcard":{"name":"*-receivefail.pcap"}},{"wildcard":{"name":"*-receiveok.pcap"}}]}}}');
+unlink glob("/tmp/test3-*-receiveok.pcap");
+unlink glob("/tmp/test3-*-receivefail.pcap");
+unlink glob("/tmp/test3-*-toString.pcap");
 
 # /users - bad
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7', 'test7');

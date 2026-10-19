@@ -225,6 +225,10 @@ class CronAPIs {
       return res.serverError(403, 'Notifier field must be an array of strings', 'api.crons.notifierMustBeArray');
     }
 
+    if (!await Notifier.canUseNotifiers(req.user, req.body.notifier)) {
+      return res.serverError(403, "You don't have access to one or more of these notifiers", 'api.crons.notifierNotAllowed');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string', 'api.crons.usersMustBeString');
     }
@@ -250,7 +254,7 @@ class CronAPIs {
 
     // Convert notifier array to comma-separated string for storage
     if (req.body.notifier && req.body.notifier.length > 0) {
-      doc.doc.notifier = req.body.notifier.join(',');
+      doc.doc.notifier = [...new Set(req.body.notifier)].join(',');
     }
 
     if (ArkimeUtil.isString(req.body.description)) {
@@ -373,7 +377,7 @@ class CronAPIs {
 
     // Convert notifier array to comma-separated string for storage
     if (req.body.notifier && req.body.notifier.length > 0) {
-      doc.doc.notifier = req.body.notifier.join(',');
+      doc.doc.notifier = [...new Set(req.body.notifier)].join(',');
     } else {
       doc.doc.notifier = '';
     }
@@ -384,6 +388,12 @@ class CronAPIs {
 
     try {
       const { body: { _source: cron } } = await Db.getQuery(key);
+
+      // Only notifiers being added, an editor resaving a cron keeps the ones already on it
+      const current = Array.isArray(cron.notifier) ? cron.notifier : ArkimeUtil.isString(cron.notifier) ? cron.notifier.split(',') : [];
+      if (!await Notifier.canUseNotifiers(req.user, req.body.notifier?.filter(id => !current.includes(id)))) {
+        return res.serverError(403, "You don't have access to one or more of these notifiers", 'api.crons.notifierNotAllowed');
+      }
 
       // sets the owner if it has changed
       doc.doc.creator ??= req.body.creator;
@@ -478,7 +488,8 @@ class CronAPIs {
       return;
     }
 
-    const nodes = {};
+    // Keyed by session node, which sensors write
+    const nodes = Object.create(null);
 
     for (const item of list) {
       if (!nodes[item.node]) {
@@ -769,7 +780,7 @@ class CronAPIs {
             doc.doc.lastNotified = Math.floor(Date.now() / 1000);
 
             let urlPath = 'sessions?expression=';
-            const tags = cq.tags.split(',');
+            const tags = options.tags.split(','); // sanitized, cq.tags is raw user input
             for (let t = 0, tlen = tags.length; t < tlen; t++) {
               const tag = tags[t];
               urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
@@ -785,13 +796,7 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + ArkimeUtil.safeStr(c
 
             Db.refresh('*'); // Before sending alert make sure everything has been refreshed
 
-            // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-            if (cq.notifier) {
-              const notifiers = cq.notifier.split(',');
-              for (const notifierId of notifiers) {
-                Notifier.issueAlert(notifierId, message, () => {});
-              }
-            }
+            Notifier.issueAlerts(cq.notifier, message);
 
             // persist the notification state so the 10-minute throttle works
             try {

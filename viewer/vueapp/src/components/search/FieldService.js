@@ -115,12 +115,13 @@ export default {
   getField (search, ignoreAliases) {
     if (!search) { return undefined; }
 
+    // own keys only, so __proto__ and friends don't return builtins
     // search the fields map first
-    if (store.state.fieldsMap[search]) return store.state.fieldsMap[search];
+    if (Object.hasOwn(store.state.fieldsMap, search)) return store.state.fieldsMap[search];
     // then search the custom fields
-    if (customCols[search]) return customCols[search];
+    if (Object.hasOwn(customCols, search)) return customCols[search];
     // then search aliases if not excluded from search
-    if (!ignoreAliases && store.state.fieldsAliasMap[search]) {
+    if (!ignoreAliases && Object.hasOwn(store.state.fieldsAliasMap, search)) {
       return store.state.fieldsAliasMap[search];
     }
     // lastly, check the super special ip.dst:port field

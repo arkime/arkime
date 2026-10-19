@@ -543,6 +543,12 @@ class ItemHTTPStream extends ItemTransform {
     return (item.data.length >= 4 && item.data.slice(0, 4).toString() === 'HTTP');
   }
 
+  // Captured traffic is untrusted, a bad length is treated as no body
+  static parseContentLength (str) {
+    const len = /^\s*\d+\s*$/.test(str) ? parseInt(str, 10) : 0;
+    return Number.isSafeInteger(len) ? len : 0;
+  }
+
   add (item, endPos) {
     this.itemPos++;
     const buf = {
@@ -604,7 +610,7 @@ class ItemHTTPStream extends ItemTransform {
       }
       upper = line.toUpperCase();
       if (upper.startsWith('CONTENT-LENGTH')) {
-        this.contentLength[item.client] = +upper.substring(15);
+        this.contentLength[item.client] = ItemHTTPStream.parseContentLength(upper.substring(15));
       } else if (upper.startsWith('CONTENT-TYPE')) {
         this.contentType[item.client] = upper.substring(14);
       } else if (upper.startsWith('TRANSFER-ENCODING')) {
@@ -615,7 +621,8 @@ class ItemHTTPStream extends ItemTransform {
     case ItemHTTPStream.STATES.req_body_chunk:
       if (line.length === 0) { break; }
       this.contentLength[item.client] = Number.parseInt(line, 16);
-      if (isNaN(this.contentLength[item.client])) { throw new Error('Missing Chunk Length'); }
+      // A negative size would move the read position backwards
+      if (!Number.isSafeInteger(this.contentLength[item.client]) || this.contentLength[item.client] < 0) { throw new Error('Missing Chunk Length'); }
       if (this.contentLength[item.client] === 0) {
         this.msgEnd(item);
       } else {
@@ -643,7 +650,7 @@ class ItemHTTPStream extends ItemTransform {
       }
       upper = line.toUpperCase();
       if (upper.startsWith('CONTENT-LENGTH')) {
-        this.contentLength[item.client] = +upper.substring(15);
+        this.contentLength[item.client] = ItemHTTPStream.parseContentLength(upper.substring(15));
       } else if (upper.startsWith('CONTENT-TYPE')) {
         this.contentType[item.client] = upper.substring(14);
       } else if (upper.startsWith('TRANSFER-ENCODING')) {
@@ -655,7 +662,8 @@ class ItemHTTPStream extends ItemTransform {
       if (line.length === 0) { break; }
 
       this.contentLength[item.client] = Number.parseInt(line, 16);
-      if (isNaN(this.contentLength[item.client])) { throw new Error('Missing Chunk Length'); }
+      // A negative size would move the read position backwards
+      if (!Number.isSafeInteger(this.contentLength[item.client]) || this.contentLength[item.client] < 0) { throw new Error('Missing Chunk Length'); }
       if (this.contentLength[item.client] === 0) {
         this.msgEnd(item);
       } else {
@@ -731,6 +739,7 @@ class ItemHTTPStream extends ItemTransform {
     let pos = 0;
     while (pos < item.data.length) {
       const state = this.states[item.client];
+      const prevPos = pos;
       if (state === ItemHTTPStream.STATES.pass) {
         this.push({ client: item.client, ts: item.ts, data: item.data.slice(0, item.data.length), itemPos: ++this.itemPos });
         break;
@@ -739,6 +748,8 @@ class ItemHTTPStream extends ItemTransform {
       } else {
         pos = this.processText(item, pos);
       }
+      // Never spin when nothing was consumed and the state didn't change
+      if (pos <= prevPos && this.states[item.client] === state) { break; }
     }
 
     callback();

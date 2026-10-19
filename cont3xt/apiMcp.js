@@ -41,9 +41,9 @@ class MCPCont3xtAPIs {
    * Run the streaming search handler and fold its chunks into one result.
    *
    * apiSearch writes a newline delimited json array as each integration
-   * finishes and only ends after the last one, so we buffer to completion. It
-   * also has no timeout of its own - a hung integration would never call
-   * finishWrite - so we always impose one and report what did arrive.
+   * finishes and only ends after the last one, so we buffer to completion.
+   * apiSearch gives up at searchTimeout (2m), MCP clients want an answer
+   * sooner, so we impose our own shorter one and report what did arrive.
    * @ignore
    */
   static async #runSearch (req, options) {

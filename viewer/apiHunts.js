@@ -203,11 +203,7 @@ class HuntAPIs {
 ${Config.arkimeWebURL()}hunt
       `;
 
-      // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-      const notifiers = hunt.notifier.split(',');
-      for (const notifierId of notifiers) {
-        Notifier.issueAlert(notifierId, message, () => {});
-      }
+      Notifier.issueAlerts(hunt.notifier, message);
     }
   }
 
@@ -432,11 +428,7 @@ ${Config.arkimeWebURL()}hunt
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
-          // Handle multiple notifiers (stored as comma-separated string)
-          const notifiers = hunt.notifier.split(',');
-          for (const notifierId of notifiers) {
-            Notifier.issueAlert(notifierId, message, () => {});
-          }
+          Notifier.issueAlerts(hunt.notifier, message);
           continueProcess();
         } else {
           return continueProcess();
@@ -486,8 +478,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
       }
 
-      // Gather all the hits by node
-      const hitsByNode = {};
+      // Gather all the hits by node, sensors write node
+      const hitsByNode = Object.create(null);
       for (const hit of hits) {
         (hitsByNode[hit._source.node] ??= []).push(hit);
       }
@@ -613,11 +605,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
 
-          // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-          const notifiers = hunt.notifier.split(',');
-          for (const notifierId of notifiers) {
-            Notifier.issueAlert(notifierId, message, () => {});
-          }
+          Notifier.issueAlerts(hunt.notifier, message);
         }
 
         return continueProcess();
@@ -852,7 +840,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions', 'api.hunts.noSessions'); }
     if (!ArkimeUtil.isString(req.body.name)) { return res.serverError(403, 'Missing hunt name', 'api.hunts.missingName'); }
-    if (!req.body.size) { return res.serverError(403, 'Missing max number of packets to examine per session', 'api.hunts.missingSize'); }
+    // An array or non-integer size used to wedge the hunt worker in reassembly
+    if (req.body.size === undefined || req.body.size === '') { return res.serverError(403, 'Missing max number of packets to examine per session', 'api.hunts.missingSize'); }
+    const size = (typeof req.body.size === 'number' || (ArkimeUtil.isString(req.body.size) && /^\d+$/.test(req.body.size))) ? Number(req.body.size) : NaN;
+    if (!Number.isSafeInteger(size) || size < 1) { return res.serverError(403, 'Invalid max number of packets to examine per session', 'api.hunts.invalidSize'); }
     if (!ArkimeUtil.isString(req.body.search)) { return res.serverError(403, 'Missing packet search text', 'api.hunts.missingSearch'); }
     if (!req.body.src && !req.body.dst) {
       return res.serverError(403, 'The hunt must search source or destination packets (or both)', 'api.hunts.missingSrcOrDst');
@@ -897,6 +888,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Notifier field must be an array of strings', 'api.hunts.notifierMustBeArray');
     }
 
+    if (!await Notifier.canUseNotifiers(req.user, req.body.notifier)) {
+      return res.serverError(403, "You don't have access to one or more of these notifiers", 'api.hunts.notifierNotAllowed');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string', 'api.hunts.usersMustBeString');
     }
@@ -911,7 +906,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     const hunt = {
       name: req.body.name,
-      size: req.body.size,
+      size,
       search: req.body.search,
       searchType: req.body.searchType,
       type: req.body.type,
@@ -935,7 +930,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     // Convert notifier array to comma-separated string for storage
     if (ArkimeUtil.isStringArray(req.body.notifier)) {
-      hunt.notifier = req.body.notifier.join(',');
+      hunt.notifier = [...new Set(req.body.notifier)].join(',');
     }
 
     let query;
@@ -1067,6 +1062,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             hunt.userId = '';
             hunt.searchType = '';
             delete hunt.query;
+            delete hunt.notifier;
           }
         }
 

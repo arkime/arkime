@@ -1,4 +1,4 @@
-use Test::More tests => 70;
+use Test::More tests => 84;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -238,7 +238,10 @@ $txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=s
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
 
 # other ways to ask for all time
-foreach my $param ("date=-1.0", "date=-01", "date=-1e0", "date=bad", "segments=all", "startTime=notatime&stopTime=alsonot", "date=73", "startTime=1386000000&stopTime=1386360000") {
+# non-finite times used to give an Infinity start that passed the check
+my $huge = "9" x 400;
+foreach my $param ("date=-1.0", "date=-01", "date=-1e0", "date=bad", "segments=all", "startTime=notatime&stopTime=alsonot", "date=73", "startTime=1386000000&stopTime=1386360000",
+                   "date=-Infinity", "date=-1e400", "startTime=$huge&stopTime=1386003600", "startTime=1386000000&stopTime=$huge") {
     $txt = get("$param&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
     eq_or_diff($txt, "User time limit (72 hours) exceeded\n", "time limit $param");
 }
@@ -249,7 +252,7 @@ foreach my $param ("date=72", "startTime=1386000000&stopTime=1386003600") {
 }
 
 # zero or inverted time windows
-foreach my $param ("startTime=0&stopTime=0", "startTime=1386000000&stopTime=0") {
+foreach my $param ("startTime=0&stopTime=0", "startTime=1386000000&stopTime=0", "date=-2") {
     $txt = get("$param&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test1");
     eq_or_diff($txt, "\n", "time limit $param returns nothing");
 }
@@ -260,6 +263,15 @@ viewerPostToken("/api/user", '{"userId": "sac-test2", "userName": "sac-test2", "
 
 $txt = get("date=-1&field=node&expression=$files&counts=1&arkimeRegressionUser=sac-test2");
 eq_or_diff($txt, "User time limit (72 hours) exceeded\n");
+
+# A search-time failure (terms agg on a text field) must not look like an empty result
+my $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=dns.hostTokens");
+is($res->code, 400, "unique search failure returns 400");
+ok($res->content =~ /fielddata/i, "unique search failure returns error reason");
+
+$res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=dns.hostTokens&autocomplete=1");
+is($res->code, 400, "unique autocomplete search failure returns 400");
+ok($res->content =~ /"success":false/, "unique autocomplete search failure returns json error");
 
 viewerDeleteToken("/api/user/sac-test1", $token);
 viewerDeleteToken("/api/user/sac-test2", $token);

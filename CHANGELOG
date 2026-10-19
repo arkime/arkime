@@ -74,6 +74,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           EL9 and EL10 also use the OS yara, libmaxminddb, nghttp2 and librdkafka, AL2023 uses the OS libmaxminddb
           and nghttp2. The rpm and deb packages now depend on those libraries instead of bundling static copies
   - #4267 Amazon Linux 2027 support, uses the OS libraries except yara and librdkafka which AL2027 does not package
+  - #4346 Alpine 3.24 apk packages for x86_64 and aarch64, unsigned so install with apk add --allow-untrusted
 ## All
   - Add a "newer release available" check to the version menu in viewer, cont3xt, parliament and wise. It only ever sends
           the major version. Controlled by the new checkForUpdates setting: off, manual (the default, nothing is sent until 
@@ -156,10 +157,18 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Breaking
   - #4309 esProxy refuses to start if an esproxy-sensors entry has an empty pass or ip, or neither
   - #4309 esProxy rejects query parameters that capture and viewer don't send, including extra parameters added to esBulkQuery
+  - #4338 WISE and Cont3xt Databricks connections now verify TLS certificates, set insecure=true in the databricks section to skip
+  - #4343 Viewers behind esProxy MUST use authMode=s2s
+  - #4345 esproxy-sensors entries without host are locked to the hostname the sensor first reported, set host if a sensor's hostname changes
+  - #4348 authMode=basic+header now only allows localhost until userAuthIps is set, the same as the other header modes
+  - #4350 Refuse to start if requiredAuthHeaderVal is set without requiredAuthHeader
+  - #4350 SNMPv3 notifiers with an unknown auth or privacy protocol, privacy without auth, or a key without its protocol now fail instead of sending unprotected traps
 ## Release
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
   - #4316 Cyberchef 11.5.0
+## All
+  - #4352 Basic and digest auth no longer use the unmaintained passport-http module
 ## Capture
   - #4313 Fix TLS and QUIC SNI and JA4 sometimes missing when the Client Hello is split or retransmitted
   - #4313 Fix HTTP/2 headers being wrong or missing on busy connections
@@ -176,9 +185,21 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4315 Fix pcap files being lost when S3 uploads back up, and S3 reading hanging on very long object keys
   - #4315 The snf and netmap readers now apply the bpf setting
   - #4315 Fix the Lua pattern_ismatch function being able to crash capture
+  - #4340 New _maxPackets rule op to override maxPackets for matching sessions
+  - #4347 Fix crafted DNS traffic being able to use excessive CPU and memory
+  - #4347 Fix WISE lookups on very busy sessions being able to crash capture
+  - #4347 Fix offline reading hanging after an empty pcap file
+  - #4347 Fix a crafted SQS message being able to crash capture
+  - #4347 Fix s3:// and sqs:// reading failing or crashing after AWS credentials rotate
 ## Cont3xt
   - #4300 Fix some indicators that aren't domains being sent to domain integrations
   - #4328 Fix requests and large integration settings that could crash Cont3xt
+  - #4348 Results from a user's own integration keys or host are no longer shared with other users
+  - #4348 Fix URL searches sending more than the domain to domain integrations
+  - #4348 Fix saving integration settings undoing an admin disabling the user or removing roles
+  - #4348 New urlapi integration to look up indicators in your own JSON api, see https://arkime.com/settings#cont3xt-urlapi
+  - #4350 Fix searches never finishing or being left out of history when an integration doesn't answer, new searchTimeout setting (default 2m)
+  - #4350 Fix long searches or tags being left out of history, searches allow at most 50 tags
 ## db.pl
   - #4312 Fix users-update --removeRole usersAdmin not removing usersAdmin
   - #4312 Fix initorupgrade erasing everything when OpenSearch/Elasticsearch returns an error
@@ -188,6 +209,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4300 Fix a capture node being able to make Elasticsearch requests esProxy should block
   - #4309 Fix a capture node being able to read and change other indices through esProxy
   - #4309 Fix some viewer and capture requests being wrongly rejected by esProxy
+  - #4342 Fix more ways a capture node could get around esProxy, new optional host setting in esproxy-sensors
+  - #4330 Rejected bulk and POST request bodies are now only logged with --debug, rejected bulk logs name the failing command (thanks @rht-jbittner)
+  - #4343 Fix a capture node being able to read user hashed passwords, TOTP secrets and Cont3xt keys through esProxy
+  - #4345 Fix more ways a capture node could read other nodes' data or change sessions, fields and stats through esProxy
+  - #4352 Fix a capture node being able to read or hunt other hosts' sessions and write history entries through esProxy
 ## Parliament
   - #4325 Fix a monitored cluster being able to hang or slow down Parliament
   - #4325 Fix issue search and the dashboard failing for some node names
@@ -203,8 +229,21 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4329 Fix role assigners being able to create a circular role
   - #4327 Fix a capture node being able to run code in the viewer or browser through custom-views field labels
   - #4335 Fix History not logging searches with a very long time range
+  - #4341 Fix unique values returning an empty list instead of an error when the search fails
+  - #4342 Fix captured traffic and some requests being able to hang or crash the viewer
+  - #4342 Fix users being able to search outside their time limit or use notifiers not shared with them
+  - #4342 Fix some requests not being recorded in History
+  - #4345 Fix a capture node being able to make pcap expiry delete files outside the pcap directories
+  - #4345 Fix a capture node being able to break the field list or stats pages for every viewer
+  - #4350 Fix MCP header auth changing a user's roles from request headers when authMode isn't a header mode
+  - #4350 Fix /mcp accepting form posts, so another web site can't make MCP calls as a logged in user
+  - #4350 Fix periodic query alerts including unsanitized tags
+  - #4350 Fix a notifier listed more than once on a periodic query or hunt sending duplicate alerts
+  - #4351 Fix a crafted search expression being able to hang the viewer, malformed number ranges are now rejected
+  - #4359 Fix session detail not encoding some fields in links
 ## WISE
   - #4300 Fix a lookup request being able to crash wiseService
+  - #4338 urlapi sources support insecure=true to skip TLS certificate verification
 
 6.8.0 2026/09/30
 ## Breaking

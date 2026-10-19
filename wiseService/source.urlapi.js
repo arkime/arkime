@@ -9,6 +9,7 @@
 
 const WISESource = require('./wiseSource.js');
 const axios = require('axios');
+const https = require('https');
 
 class URLApiSource extends WISESource {
 // ----------------------------------------------------------------------------
@@ -35,6 +36,11 @@ class URLApiSource extends WISESource {
 
     this.resultField = api.getConfig(section, 'resultField', 0);
 
+    const insecure = api.getConfig(section, 'insecure', false);
+    if (api.insecure || insecure === true || insecure === 'true') { // ini values are strings
+      this.httpsAgent = new https.Agent({ rejectUnauthorized: false });
+    }
+
     this[this.api.funcName(this.type)] = this.sendResult;
     api.addSource(section, this, [this.type]);
 
@@ -52,7 +58,7 @@ class URLApiSource extends WISESource {
       .replace(/{valueBase64}/g, () => encodeURIComponent(b64))
       .replace(/{valueBase64Url}/g, () => b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
 
-    axios.get(url, { headers: this.headers })
+    axios.get(url, { headers: this.headers, httpsAgent: this.httpsAgent })
       .then((response) => {
         const json = (typeof response.data === 'string') ? JSON.parse(response.data) : response.data;
         const eskey = json[this.resultField];
@@ -86,7 +92,8 @@ exports.initSource = function (api) {
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'url', required: true, help: 'The URL to load, {value} is replaced with the url encoded value, {valueBase64} with the base64 (url encoded) value, {valueBase64Url} with the base64url value' },
       { name: 'resultField', required: true, help: 'Field that is required to be in the result' },
-      { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
+      { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' },
+      { name: 'insecure', required: false, regex: '^(true|false)$', help: 'Set to true to disable TLS certificate verification' }
     ]
   });
 

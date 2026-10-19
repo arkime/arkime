@@ -209,7 +209,12 @@ class ViewerUtils {
   static async loadFields () {
     try {
       let data = await Db.loadFields();
-      data = data.hits.hits;
+      // Field docs can be written by sensors, drop a bad one before anything reads it
+      data = data.hits.hits.filter((field) => {
+        if (Config.isValidFieldDoc(field)) { return true; }
+        console.log('WARNING - skipping invalid field definition', ArkimeUtil.sanitizeStr(JSON.stringify(field?._id)));
+        return false;
+      });
 
       // Everything will use fieldECS or dbField2 as dbField
       for (let i = 0, ilen = data.length; i < ilen; i++) {
@@ -353,8 +358,22 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // new URL() collapses dot segments (also %2e, \ and tab/newline forms), so the
+  // path we sign for the peer would not be the one routed here, never allow them
+  static #hasDotSegment (path) {
+    return path.replace(/[\t\n\r]/g, '').split('?')[0].split(/[/\\]/).some((segment) => {
+      segment = segment.toLowerCase().replaceAll('%2e', '.');
+      return segment === '.' || segment === '..';
+    });
+  }
+
+  // ----------------------------------------------------------------------------
   static async makeRequest (node, path, user, cb, cluster) {
     try {
+      if (ViewerUtils.#hasDotSegment(path)) {
+        throw new Error(`Bad path ${path}`);
+      }
+
       let viewUrl, client, options;
       const portal = await ViewerUtils.portalRequest(node);
       if (portal) {
@@ -437,6 +456,11 @@ class ViewerUtils {
   // --------------------------------------------------------------------------
   static async proxyRequest (req, res) {
     ArkimeUtil.noCache(req, res);
+
+    if (ViewerUtils.#hasDotSegment(req.url)) {
+      console.log('ERROR - proxyRequest bad path', ArkimeUtil.sanitizeStr(req.url));
+      return res.status(400).send('Bad path');
+    }
 
     try {
       let viewUrl, client, options;

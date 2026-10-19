@@ -302,8 +302,23 @@ if [ "$UNAME" = "FreeBSD" ]; then
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
-  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
-  mkdir -p thirdparty
+  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake util-linux-dev lua5.4-dev yara-dev nghttp2-dev linux-headers libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  if [ $? -ne 0 ]; then
+    echo "ARKIME: apk failed"
+    exit 1
+  fi
+  sudo apk add --no-cache libnl3-dev libxdp-dev jemalloc-dev || echo "ARKIME: optional apk packages not installed"
+
+  if [ $DOTHIRDPARTY -eq 0 ]; then
+    LUA_CFLAGS="$(pkg-config --cflags lua5.4)"
+    LUA_LIBS="$(pkg-config --libs lua5.4)"
+    export LUA_CFLAGS LUA_LIBS
+    with_lua=no
+
+    export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
+    export KAFKA_LIBS="-lrdkafka"
+    with_kafka=no
+  fi
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
@@ -426,36 +441,6 @@ elif [ -f "/etc/arch-release" ]; then
       --with-pfring=no \
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
-      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no $EXTRACONFIGURE
-elif [ -f "/etc/alpine-release" ] ; then
-
-    DOKAFKA=1
-    BUILDKAFKA=0
-
-    (cd thirdparty; buildYara)
-
-    echo './configure \
-      --prefix=$TDIR \
-      --with-zstd=yes \
-      --with-libpcap=no \
-      --with-yara=thirdparty/yara/yara-$YARA \
-      --with-glib2=no \
-      --with-pfring=no \
-      --with-curl=no \
-      --with-lua=no LIBS="-lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
-      KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no' $EXTRACONFIGURE
-
-    ./configure \
-      --prefix=$TDIR \
-      --with-zstd=yes \
-      --with-libpcap=no \
-      --with-yara=thirdparty/yara/yara-$YARA \
-      --with-glib2=no \
-      --with-pfring=no \
-      --with-curl=no \
-      --with-lua=no LIBS="-L/usr/lib -lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no $EXTRACONFIGURE
 elif [ $DOTHIRDPARTY -eq 0 ]; then

@@ -14,6 +14,8 @@
 #define HOST_IP_JSON_LEN 800 // worst case: 255-char host emits ~258 bytes plus up to ~512 in hostTokens
 #define ANSWER_JSON_LEN 200
 #define DNS_MAX_JSON_SIZE 200000
+#define DNS_MAX_MSG_JSON_SIZE 2000000 // well above any real message, bounds crafted answer floods
+#define DNS_MAX_NSEC_TYPES 256
 
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)
 #define FNV_PRIME ((uint32_t)0x01000193)
@@ -162,6 +164,7 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
 {
     BSB  nbsb;
     int  didPointer = 0;
+    int  wireLen = 1; // RFC 1035 255 limit includes the terminating 0
     BSB  tmpbsb;
     BSB *curbsb;
 
@@ -198,6 +201,13 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
 
         if (ch & 0xc0) {
             // 0x40 and 0x80 are reserved label types (RFC 1035 4.1.4), not pointers
+            return 0;
+        }
+
+        // Count labels reached through pointers too, so the total work per name is bounded
+        wireLen += 1 + ch;
+        if (wireLen > 255) {
+            arkime_session_add_tag(session, "dns:name-too-long");
             return 0;
         }
 
@@ -811,6 +821,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     for (int recordType = RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
         int recordNum = resultRecordCount[recordType - 1];
         for (int i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
+            // Bound memory one message can hold until the next save
+            if (jsonLen > DNS_MAX_MSG_JSON_SIZE) {
+                arkime_session_add_tag(session, "dns:records-truncated");
+                goto recordsdone;
+            }
+
             namelen = sizeof(namebuf);
             name = dns_name(session, data, len, &bsb, namebuf, &namelen);
 
@@ -1235,21 +1251,29 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 // Parse type bit maps
                 GString *typeListStr = g_string_new("");
+                int lastWindow = -1;
+                int typeCnt = 0;
                 while (BSB_REMAINING(rdbsb) >= 2 && !BSB_IS_ERROR(rdbsb)) {
                     uint8_t windowBlock = 0;
                     BSB_IMPORT_u08(rdbsb, windowBlock);
                     uint8_t bitmapLen = 0;
                     BSB_IMPORT_u08(rdbsb, bitmapLen);
 
-                    if (bitmapLen > BSB_REMAINING(rdbsb) || bitmapLen > 32) {
+                    // RFC 4034 4.1.2 windows are increasing and never repeat, so the list stays bounded
+                    if (bitmapLen > BSB_REMAINING(rdbsb) || bitmapLen > 32 || windowBlock <= lastWindow) {
                         break;
                     }
+                    lastWindow = windowBlock;
 
                     for (int b = 0; b < bitmapLen; b++) {
                         uint8_t byte = 0;
                         BSB_IMPORT_u08(rdbsb, byte);
                         for (int bit = 0; bit < 8; bit++) {
                             if (byte & (0x80 >> bit)) {
+                                if (typeCnt++ >= DNS_MAX_NSEC_TYPES) {
+                                    arkime_session_add_tag(session, "dns:nsec-too-many-types");
+                                    goto nsecdone;
+                                }
                                 uint16_t rrtype = windowBlock * 256 + b * 8 + bit;
                                 if (rrtype < ARRAY_LEN(qtypes) && qtypes[rrtype]) {
                                     g_string_append_printf(typeListStr, "%s ", qtypes[rrtype]);
@@ -1260,6 +1284,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                         }
                     }
                 }
+nsecdone:
                 // Remove trailing space
                 if (typeListStr->len > 0 && typeListStr->str[typeListStr->len - 1] == ' ') {
                     g_string_truncate(typeListStr, typeListStr->len - 1);
@@ -1338,6 +1363,7 @@ continueerr:
         } // record loop
     } // record type loop
 
+recordsdone:
     dns->headerFlags = (data[2] & 0x07) << 4 | ((data[3] & 0xf0) >> 4);
 
     session->fields[dnsField]->jsonSize += jsonLen;

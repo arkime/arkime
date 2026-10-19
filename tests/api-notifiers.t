@@ -1,5 +1,7 @@
-use Test::More tests => 101;
+use Test::More tests => 132;
 use Cwd;
+use IO::Socket::INET;
+use IO::Select;
 use URI::Escape;
 use ArkimeTest;
 use JSON;
@@ -13,7 +15,7 @@ my $notAdminToken = getTokenCookie('sac-notadmin');
 viewerGet("/regressionTests/deleteAllNotifiers");
 
 # add users for sharing tests
-  viewerPostToken("/api/user", '{"userId": "sac-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+  viewerPostToken("/api/user", '{"userId": "sac-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "packetSearch":true, "roles":["arkimeUser"]}', $token);
   viewerPostToken("/api/user", '{"userId": "sac-user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
 # notifier types
@@ -266,9 +268,107 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   ok($json->{success}, "snmp v3 notifier update success");
   is($json->{notifier}->{name}, "snmp1v3", "snmp v3 notifier name updated");
 
+# snmp v3 settings that would send unprotected traps are refused
+  my $v3 = '{"name":"snmpbad","type":"snmp","fields":[{"name":"host","value":"trap.example.com"},{"name":"version","value":"3"},{"name":"v3User","value":"myuser"}';
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3,{\"name\":\"v3AuthProtocol\",\"value\":\"sha1\"},{\"name\":\"v3AuthKey\",\"value\":\"authpass1\"}]}", $token);
+  is($json->{text}, "Unknown SNMPv3 auth protocol", "snmp v3 unknown auth protocol refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3,{\"name\":\"v3AuthProtocol\",\"value\":\"sha\"},{\"name\":\"v3AuthKey\",\"value\":\"authpass1\"},{\"name\":\"v3PrivProtocol\",\"value\":\"aes128\"},{\"name\":\"v3PrivKey\",\"value\":\"privpass1\"}]}", $token);
+  is($json->{text}, "Unknown SNMPv3 privacy protocol", "snmp v3 unknown privacy protocol refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3,{\"name\":\"v3PrivProtocol\",\"value\":\"aes\"},{\"name\":\"v3PrivKey\",\"value\":\"privpass1\"}]}", $token);
+  is($json->{text}, "SNMPv3 privacy needs an auth protocol", "snmp v3 privacy without auth refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3,{\"name\":\"v3AuthKey\",\"value\":\"authpass1\"}]}", $token);
+  is($json->{text}, "SNMPv3 auth key is set but auth protocol is none", "snmp v3 auth key without protocol refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3,{\"name\":\"v3AuthProtocol\",\"value\":\"sha\"}]}", $token);
+  is($json->{text}, "SNMPv3 auth protocol needs an auth key", "snmp v3 auth protocol without key refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3,{\"name\":\"v3AuthProtocol\",\"value\":\"SHA256\"},{\"name\":\"v3AuthKey\",\"value\":\"authpass1\"}]}", $token);
+  ok($json->{success}, "snmp v3 protocol names are case insensitive");
+  $json = viewerPutToken("/api/notifier/$snmpId", "$v3]}", $token);
+  ok($json->{success}, "snmp v3 with no auth or privacy is still allowed");
+  $json = viewerPutToken("/api/notifier/$snmpId", '{"name":"snmpbad","type":"snmp","fields":[{"name":"host","value":"trap.example.com"},{"name":"version","value":"3"}]}', $token);
+  is($json->{text}, "Security username is required for SNMPv3", "snmp v3 without a user refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", '{"name":"snmpbad","type":"snmp","fields":[{"name":"host","value":"trap.example.com"},{"name":"version","value":"2c"}]}', $token);
+  is($json->{text}, "Community string is required for SNMPv1/v2c", "snmp v2c without a community refused");
+  $json = viewerPutToken("/api/notifier/$snmpId", '{"name":"snmpbad","type":"snmp","fields":[{"name":"host","value":"trap.example.com"},{"name":"version","value":"4"},{"name":"community","value":"public"}]}', $token);
+  is($json->{text}, "Version must be 1, 2c, or 3", "snmp unknown version refused");
+
+# a notifier saved before these checks existed is refused when it tries to send
+  my $legacy = `cd ../common && node -e "require('./notifier.snmp.js').sendSnmpAlert({host:'127.0.0.1',version:'3',v3User:'u',v3PrivProtocol:'aes',v3PrivKey:'k'}, 'm', null, r => console.log(JSON.stringify(r)))" 2>&1`;
+  like($legacy, qr/SNMPv3 privacy needs an auth protocol/, "legacy snmp v3 notifier with a bad combination is refused at send time");
+
 # cleanup
   $json = viewerDeleteToken("/api/notifier/$snmpId", $token);
   ok($json->{success}, "snmp notifier delete success");
+
+# hunts and crons can only attach notifiers the user can see, test1 isn't shared with sac-notadmin, test3 is.
+# users:1 fails the check after the notifier one, so an allowed notifier gets that error and nothing is created.
+  my $hunt = '"totalSessions":1,"name":"notifier acl","size":50,"search":"x","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"ip.src == 10.199.199.199"}';
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-notadmin", "{$hunt,\"notifier\":[\"$id1\"],\"users\":1}", $notAdminToken);
+  is($json->{i18n}, "api.hunts.notifierNotAllowed", "hunt with unshared notifier rejected");
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-notadmin", "{$hunt,\"notifier\":[\"$id3\",\"$id1\"],\"users\":1}", $notAdminToken);
+  is($json->{i18n}, "api.hunts.notifierNotAllowed", "hunt with shared and unshared notifier rejected");
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-notadmin", "{$hunt,\"notifier\":[\"$id3\"],\"users\":1}", $notAdminToken);
+  is($json->{i18n}, "api.hunts.usersMustBeString", "hunt with shared notifier passes notifier check");
+  $json = viewerPostToken("/api/hunt", "{$hunt,\"notifier\":[\"$id1\"],\"users\":1}", $token);
+  is($json->{i18n}, "api.hunts.usersMustBeString", "admin hunt with any notifier passes notifier check");
+
+  my $cron = '"name":"notifier acl","query":"ip.src == 10.199.199.199","action":"tag","tags":"notifieracl"';
+  $json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id1\"]}", $notAdminToken);
+  is($json->{i18n}, "api.crons.notifierNotAllowed", "cron with unshared notifier rejected");
+  $json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id3\",\"$id3\",\"$id3\"]}", $notAdminToken);
+  ok($json->{success}, "cron with shared notifier created");
+  is_deeply($json->{query}->{notifier}, [$id3], "cron stores a repeated notifier once");
+  my $cronKey = $json->{query}->{key};
+  $json = viewerPostToken("/api/cron/$cronKey?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id3\",\"$id1\"]}", $notAdminToken);
+  is($json->{i18n}, "api.crons.notifierNotAllowed", "cron update adding unshared notifier rejected");
+  $json = viewerPostToken("/api/cron/$cronKey?arkimeRegressionUser=sac-notadmin", "{$cron,\"notifier\":[\"$id3\",\"$id3\"]}", $notAdminToken);
+  ok($json->{success}, "cron update keeping shared notifier allowed");
+  my ($aclCron) = grep { $_->{key} eq $cronKey } @{viewerGetToken("/api/crons?arkimeRegressionUser=sac-notadmin", $notAdminToken)};
+  is_deeply($aclCron->{notifier}, [$id3], "cron update stores a repeated notifier once");
+  viewerDeleteToken("/api/cron/$cronKey?arkimeRegressionUser=sac-notadmin", $notAdminToken);
+
+# hunt list doesn't show notifier ids of hunts the user can't see the secrets of
+  $json = viewerPostToken("/api/hunt", "{$hunt,\"notifier\":[\"$id1\",\"$id1\",\"$id1\"]}", $token);
+  ok($json->{success}, "admin hunt with notifier created");
+  my $huntId = $json->{hunt}->{id};
+  viewerGet("/regressionTests/processHuntJobs");
+  my ($adminHunt) = grep { $_->{name} eq "notifier acl" } @{viewerGet("/api/hunts?all=true")->{data}};
+  is_deeply($adminHunt->{notifier}, [$id1], "creator sees hunt notifier, a repeated one stored once");
+  my ($otherHunt) = grep { $_->{name} eq "notifier acl" } @{viewerGetToken("/api/hunts?all=true&arkimeRegressionUser=sac-notadmin", $notAdminToken)->{data}};
+  ok($otherHunt && !exists $otherHunt->{notifier}, "hunt notifier hidden from other users");
+  viewerDeleteToken("/api/hunt/$huntId", $token);
+
+# a periodic query alert goes to each notifier once, even for a doc saved with a repeated id before the
+# api deduped them, and links the tags as they were applied (sanitized), not as typed
+  my $udp = IO::Socket::INET->new(Proto => 'udp', LocalAddr => '127.0.0.1', LocalPort => 0) or die "udp listen: $!";
+  my $udpPort = $udp->sockport();
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"cronsyslog\",\"type\":\"syslog\",\"fields\":[{\"name\":\"host\",\"value\":\"127.0.0.1\"},{\"name\":\"port\",\"value\":\"$udpPort\"},{\"name\":\"protocol\",\"value\":\"udp\"}]}", $token);
+  ok($json->{success}, "syslog notifier for cron alerts created");
+  my $sysId = $json->{notifier}->{id};
+  my $suffix = int(rand() * 1000000);
+  # creating a query runs it right away, so start with one that matches nothing and no alert goes out
+  $json = viewerPostToken("/api/cron", to_json({ name => "notifier alert", query => "ip.src == 10.199.199.199", action => "tag", tags => "alert$suffix,x y!z", since => -1, notifier => [$sysId] }), $token);
+  ok($json->{success}, "periodic query with notifier created");
+  my $alertKey = $json->{query}->{key};
+  my $lpValue = $json->{query}->{lpValue};
+  ok($lpValue, "periodic query starts at the oldest session");
+  viewerGet("/regressionTests/processCronQueries"); # let the run the create kicked off finish, it advances lpValue
+  # now a matching query, the start reset, and the notifier twice like a doc saved before the api deduped them
+  $json = esPost("/tests_queries/_update/$alertKey?refresh=true", "{\"doc\":{\"notifier\":\"$sysId,$sysId\",\"query\":\"file=*/pcap/smtp-originating.pcap\",\"lpValue\":$lpValue}}");
+  is($json->{result}, "updated", "stored the notifier twice behind the api's back");
+  my ($alertCron) = grep { $_->{key} eq $alertKey } @{viewerGetToken("/api/crons", $token)};
+  is_deeply($alertCron->{notifier}, [$sysId, $sysId], "the periodic query now lists the notifier twice");
+  viewerGet("/regressionTests/processCronQueries");
+  my $sel = IO::Select->new($udp);
+  my @alerts;
+  while ($sel->can_read(@alerts ? 2 : 10)) {
+    my $buf;
+    $udp->recv($buf, 65535);
+    push @alerts, $buf;
+  }
+  is(scalar @alerts, 1, "a repeated notifier id sends one alert");
+  like($alerts[0], qr/sessions\?expression=tags%20%3D%3D%20alert$suffix%20%26%26%20tags%20%3D%3D%20xyz/, "alert links the sanitized tags");
+  viewerDeleteToken("/api/cron/$alertKey", $token);
+  viewerDeleteToken("/api/notifier/$sysId", $token);
 
 # cleanup
   $json = viewerDeleteToken("/api/notifier/badid", $token);
