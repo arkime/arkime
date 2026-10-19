@@ -753,7 +753,7 @@ async function validateBulk (req) {
 
 // Validate Files Search, the shapes capture and the sensor viewer's expiry send.
 // Only top level keys that can't widen the node filter, aggs global ignores the query.
-// Db.search adds profile to every viewer search, so the expiry query always has it.
+// Db.search adds profile when esProfile is set.
 const filesSearchKeys = ['size', 'sort', 'query', '_source', 'profile'];
 async function validateFilesSearch (req) {
   try {
@@ -780,6 +780,7 @@ const searchIdsKeys = ['query', '_source', 'fields', 'profile'];
 function searchIdsFilter (json) {
   try {
     if (!Object.keys(json).every(key => searchIdsKeys.includes(key))) { return undefined; }
+    if (json.profile !== undefined && typeof json.profile !== 'boolean') { return undefined; }
     if (Object.keys(json.query).length !== 1 || Object.keys(json.query.ids).length !== 1) { return undefined; }
     const values = json.query.ids.values;
     if (!Array.isArray(values) || values.length !== 1 || !ArkimeUtil.isString(values[0])) { return undefined; }
@@ -800,6 +801,7 @@ const searchRootIdKeys = ['size', '_source', 'sort', 'query', 'profile'];
 function searchRootIdFilter (json) {
   try {
     if (!Object.keys(json).every(key => searchRootIdKeys.includes(key))) { return undefined; }
+    if (json.profile !== undefined && typeof json.profile !== 'boolean') { return undefined; }
     if (Object.keys(json.query).length !== 1) { return undefined; }
 
     // pre 6.7.1 viewers sent the bare term

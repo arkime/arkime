@@ -649,7 +649,7 @@ Db.indexNow = async (index, id, doc) => {
 
 // Anything added to the body here must also be allowed by esProxy's sessions and files search validators
 Db.search = async (index, query, options) => {
-  query.profile = internals.esProfile;
+  if (internals.esProfile) { query.profile = true; }
 
   const params = {
     index: fixIndex(index),

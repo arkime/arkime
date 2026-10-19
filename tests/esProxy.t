@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 373;
+use Test::More tests => 376;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -385,6 +385,8 @@ my $search_ids = qq({"query":{"ids":{"values":["240101-abc"]}},"_source":["cert"
 my $search_entire = qq({"size":1000,"_source":["rootId"],"sort":{"lastPacket":{"order":"asc"}},"query":{"bool":{"filter":[{"term":{"rootId":"240101-abc"}}]}},"profile":false});
 my $search_ids_aggs = qq({"query":{"ids":{"values":["240101-abc"]}},"size":0,"aggs":{"u":{"terms":{"field":"userId"}}}});
 my $search_ids_two = qq({"query":{"ids":{"values":["240101-abc"]},"match_all":{}}});
+my $search_ids_profile = qq({"query":{"ids":{"values":["240101-abc"]}},"profile":{"x":1}});
+my $search_entire_profile = qq({"size":1,"query":{"bool":{"filter":[{"term":{"rootId":"240101-abc"}}]}},"profile":"x"});
 my $session_params = "rest_total_hits_as_int=true";
 my $entire_params = "preference=primaries&ignore_unavailable=true&rest_total_hits_as_int=true";
 foreach my $test (
@@ -401,6 +403,8 @@ foreach my $test (
     ["tests_users%2Ctests_sessions3-2024/_search", $search_entire, 400, "sessions search starting with non sessions index rejected"],
     ["tests_sessions3-2024/_search", $search_ids_aggs, 400, "sessions search by id with aggs rejected"],
     ["tests_sessions3-2024/_search", $search_ids_two, 400, "sessions search by id with extra query clause rejected"],
+    ["tests_sessions3-2024/_search", $search_ids_profile, 400, "sessions search by id with non boolean profile rejected"],
+    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire_profile, 400, "sessions search by rootId with non boolean profile rejected"],
 ) {
     my ($path, $body, $code, $name) = @$test;
     $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$path");
@@ -632,8 +636,9 @@ is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":[
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}}}', "tests_files/_search/template"), 400, "files search template path rejected");
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost","test"]}}]}}}'), 400, "files search for a node on another host rejected");
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost"]}}]}}}'), 200, "files search for own node with host allowed");
-# The sensor viewer's expiry query, Db.search always adds profile
+# The sensor viewer's expiry query, Db.search adds profile when esProfile is set
 is (filesSearch("test", '{"_source":["num","name","first","size","node","indexFilename"],"size":500,"query":{"bool":{"filter":[{"terms":{"node":["test"]}},{"bool":{"should":[{"wildcard":{"name":"/x/*"}}]}}],"must_not":{"term":{"locked":1}}}},"sort":{"first":{"order":"asc"}},"profile":false}'), 200, "files search expiry query with profile allowed");
+is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":true}'), 200, "files search with profile true allowed");
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":{"x":1}}'), 400, "files search with non boolean profile rejected");
 # WHATWG URL turns the backslashes into slashes, isOwnFilesDoc only looked for /
 is (rawStatus("DELETE", "/tests_files/_doc/test-5%3f\\..\\..\\..\\tests_esproxy_nosuchindex"), 400, "DELETE backslash path confusion rejected");
