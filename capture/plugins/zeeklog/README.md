@@ -122,6 +122,7 @@ Run capture with `--debug` to print the final schema of every log at startup.
 | `@krb.request_type` | string | AS or TGS from the Kerberos message types |
 | `@http.status_code` `@http.info_code` | count | final (2xx+) and informational (1xx) HTTP status codes |
 | `@ntp.mode` | count | NTP mode name turned back into its number |
+| `@ntp.poll` `@ntp.precision` `@ntp.root_delay` `@ntp.root_disp` | interval | Arkime's seconds, nanoseconds and microseconds as Zeek seconds |
 | `@socks.status` | string | Arkime's short status token spelled out the way Zeek does |
 | `@ldap.result` | string | Arkime's camelCase result code as Zeek's spaced words |
 | `@tunnel.type` `@tunnel.action` | enum | Tunnel::GRE/VXLAN/GTPv1/GENEVE and Tunnel::DISCOVER |
@@ -833,10 +834,10 @@ Trigger: `ntp`, one row per session.
 | version | `ntp.version:count` |
 | mode | `@ntp.mode` |
 | stratum | `ntp.stratumNum:count` |
-| poll | `ntp.poll:interval` |
-| precision | `ntp.precision:interval` |
-| root_delay | `ntp.rootDelay:interval` |
-| root_disp | `ntp.rootDispersion:interval` |
+| poll | `@ntp.poll` |
+| precision | `@ntp.precision` |
+| root_delay | `@ntp.root_delay` |
+| root_disp | `@ntp.root_disp` |
 | ref_id | `ntp.ref-id:string` |
 | ref_time | `ntp.refTime:time` |
 | org_time | `ntp.orgTime:time` |

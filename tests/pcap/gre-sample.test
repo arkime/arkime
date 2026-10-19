@@ -251,8 +251,8 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      4e-06,
-      8e-06
+      "3815",
+      "7629"
      ],
      "precisionCnt" : 2,
      "recTime" : [
@@ -271,13 +271,13 @@
      ],
      "refTimeCnt" : 2,
      "rootDelay" : [
-      0,
-      0.014587
+      "0",
+      "14587"
      ],
      "rootDelayCnt" : 2,
      "rootDispersion" : [
-      0.011078,
-      0.011292
+      "11078",
+      "11292"
      ],
      "rootDispersionCnt" : 2,
      "stratum" : [
@@ -858,7 +858,7 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      8e-06
+      7629
      ],
      "precisionCnt" : 1,
      "recTime" : [
@@ -877,13 +877,13 @@
      ],
      "refTimeCnt" : 2,
      "rootDelay" : [
-      0,
-      0.034409
+      "0",
+      "34409"
      ],
      "rootDelayCnt" : 2,
      "rootDispersion" : [
-      0.011368,
-      0.033829
+      "11368",
+      "33829"
      ],
      "rootDispersionCnt" : 2,
      "stratum" : [
@@ -1079,8 +1079,8 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      0.000488,
-      8e-06
+      "488281",
+      "7629"
      ],
      "precisionCnt" : 2,
      "recTime" : [
@@ -1099,13 +1099,13 @@
      ],
      "refTimeCnt" : 2,
      "rootDelay" : [
-      0,
-      0.022308
+      "0",
+      "22308"
      ],
      "rootDelayCnt" : 2,
      "rootDispersion" : [
-      0.011414,
-      0.047394
+      "11414",
+      "47394"
      ],
      "rootDispersionCnt" : 2,
      "stratum" : [

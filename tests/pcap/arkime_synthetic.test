@@ -9665,7 +9665,7 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      1
+      1000000000
      ],
      "precisionCnt" : 1,
      "rootDelay" : [
@@ -22079,7 +22079,7 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      1e-06
+      954
      ],
      "precisionCnt" : 1,
      "refId" : [
@@ -42574,8 +42574,8 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      0,
-      1e-06
+      "119",
+      "954"
      ],
      "precisionCnt" : 2,
      "recTime" : [
@@ -42593,13 +42593,13 @@
      ],
      "refTimeCnt" : 2,
      "rootDelay" : [
-      0,
-      0.071106
+      "0",
+      "71106"
      ],
      "rootDelayCnt" : 2,
      "rootDispersion" : [
-      0.003906,
-      0.671097
+      "3906",
+      "671097"
      ],
      "rootDispersionCnt" : 2,
      "stratum" : [

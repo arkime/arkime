@@ -6265,13 +6265,13 @@ sub sessions3Update
           "type" : "long"
         },
         "poll" : {
-          "type" : "float"
+          "type" : "long"
         },
         "pollCnt" : {
           "type" : "long"
         },
         "precision" : {
-          "type" : "float"
+          "type" : "long"
         },
         "precisionCnt" : {
           "type" : "long"
@@ -6295,13 +6295,13 @@ sub sessions3Update
           "type" : "long"
         },
         "rootDelay" : {
-          "type" : "float"
+          "type" : "long"
         },
         "rootDelayCnt" : {
           "type" : "long"
         },
         "rootDispersion" : {
-          "type" : "float"
+          "type" : "long"
         },
         "rootDispersionCnt" : {
           "type" : "long"

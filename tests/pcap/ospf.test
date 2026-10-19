@@ -3327,7 +3327,7 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      0
+      60
      ],
      "precisionCnt" : 1,
      "refId" : [
@@ -3339,7 +3339,7 @@
      ],
      "rootDelayCnt" : 1,
      "rootDispersion" : [
-      3.1e-05
+      31
      ],
      "rootDispersionCnt" : 1,
      "stratum" : [
@@ -3577,7 +3577,7 @@
      ],
      "pollCnt" : 1,
      "precision" : [
-      0
+      60
      ],
      "precisionCnt" : 1,
      "refId" : [
@@ -3589,7 +3589,7 @@
      ],
      "rootDelayCnt" : 1,
      "rootDispersion" : [
-      6.1e-05
+      61
      ],
      "rootDispersionCnt" : 1,
      "stratum" : [

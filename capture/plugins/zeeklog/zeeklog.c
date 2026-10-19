@@ -144,7 +144,8 @@ enum {
     ZS_X509_FINGERPRINT, ZS_X509_SERIAL, ZS_X509_SUBJECT, ZS_X509_ISSUER, ZS_X509_NOT_VALID_BEFORE, ZS_X509_NOT_VALID_AFTER,
     ZS_X509_KEY_ALG, ZS_X509_KEY_TYPE, ZS_X509_CURVE, ZS_X509_SAN_DNS, ZS_X509_CA, ZS_X509_HOST_CERT,
     ZS_X509_VERSION, ZS_X509_SIG_ALG, ZS_X509_KEY_LENGTH, ZS_X509_EXPONENT, ZS_X509_PATH_LEN, ZS_X509_SAN_EMAIL, ZS_X509_SAN_URI, ZS_X509_SAN_IP,
-    ZS_KRB_REQUEST_TYPE, ZS_HTTP_STATUS_CODE, ZS_HTTP_INFO_CODE, ZS_NTP_MODE, ZS_SOCKS_STATUS, ZS_LDAP_RESULT,
+    ZS_KRB_REQUEST_TYPE, ZS_HTTP_STATUS_CODE, ZS_HTTP_INFO_CODE, ZS_NTP_MODE, ZS_NTP_POLL, ZS_NTP_PRECISION, ZS_NTP_ROOT_DELAY, ZS_NTP_ROOT_DISP,
+    ZS_SOCKS_STATUS, ZS_LDAP_RESULT,
     ZS_FILE_FUID, ZS_FILE_SOURCE, ZS_FILE_MIME_TYPE, ZS_FILE_MD5, ZS_FILE_SHA256, ZS_FILE_FILENAME, ZS_FILE_IS_ORIG,
     ZS_MAX
 };
@@ -231,6 +232,10 @@ LOCAL const ZeekSpecialDef_t zeekSpecials[ZS_MAX] = {
     [ZS_HTTP_STATUS_CODE]         = {"http.status_code", ZB_COUNT, ZC_SCALAR},
     [ZS_HTTP_INFO_CODE]           = {"http.info_code", ZB_COUNT, ZC_SCALAR},
     [ZS_NTP_MODE]                 = {"ntp.mode", ZB_COUNT, ZC_SCALAR},
+    [ZS_NTP_POLL]                 = {"ntp.poll", ZB_INTERVAL, ZC_SCALAR},
+    [ZS_NTP_PRECISION]            = {"ntp.precision", ZB_INTERVAL, ZC_SCALAR},
+    [ZS_NTP_ROOT_DELAY]           = {"ntp.root_delay", ZB_INTERVAL, ZC_SCALAR},
+    [ZS_NTP_ROOT_DISP]            = {"ntp.root_disp", ZB_INTERVAL, ZC_SCALAR},
     [ZS_SOCKS_STATUS]             = {"socks.status", ZB_STRING, ZC_SCALAR},
     [ZS_LDAP_RESULT]              = {"ldap.result", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_FUID]                = {"file.fuid", ZB_STRING, ZC_SCALAR},
@@ -386,8 +391,8 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "ntp", "ntp", ZITER_SESSION,
-        CONN_ID "version=ntp.version:count mode=@ntp.mode stratum=ntp.stratumNum:count poll=ntp.poll:interval precision=ntp.precision:interval "
-                "root_delay=ntp.rootDelay:interval root_disp=ntp.rootDispersion:interval ref_id=ntp.ref-id:string ref_time=ntp.refTime:time org_time=ntp.orgTime:time "
+        CONN_ID "version=ntp.version:count mode=@ntp.mode stratum=ntp.stratumNum:count poll=@ntp.poll precision=@ntp.precision "
+                "root_delay=@ntp.root_delay root_disp=@ntp.root_disp ref_id=ntp.ref-id:string ref_time=ntp.refTime:time org_time=ntp.orgTime:time "
                 "rec_time=ntp.recTime:time xmt_time=ntp.xmtTime:time num_exts=ntp.extensions:count"
     },
     {
@@ -459,6 +464,10 @@ LOCAL int krbRealmField;
 LOCAL int krbMsgTypeField;
 LOCAL int httpStatusField;
 LOCAL int ntpModeField;
+LOCAL int ntpPollField;
+LOCAL int ntpPrecisionField;
+LOCAL int ntpRootDelayField;
+LOCAL int ntpRootDispField;
 LOCAL int socksStatusField;
 LOCAL int ldapResultField;
 LOCAL int vlanField;
@@ -1469,6 +1478,37 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
         }
         break;
     }
+    case ZS_NTP_POLL:
+    case ZS_NTP_PRECISION:
+    case ZS_NTP_ROOT_DELAY:
+    case ZS_NTP_ROOT_DISP: {
+        // Arkime keeps whole seconds, nanoseconds or microseconds, Zeek wants seconds
+        int    pos;
+        double divisor;
+        switch (special) {
+        case ZS_NTP_POLL:
+            pos = ntpPollField;
+            divisor = 1.0;
+            break;
+        case ZS_NTP_PRECISION:
+            pos = ntpPrecisionField;
+            divisor = 1000000000.0;
+            break;
+        case ZS_NTP_ROOT_DELAY:
+            pos = ntpRootDelayField;
+            divisor = 1000000.0;
+            break;
+        default:
+            pos = ntpRootDispField;
+            divisor = 1000000.0;
+            break;
+        }
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, pos, ZB_STRING);
+        for (int i = 0; i < scratch->num; i++)
+            zeeklog_items_addf(items, "%.6f", atoll(scratch->items[i]) / divisor);
+        break;
+    }
     case ZS_SOCKS_STATUS: {
         static const struct {
             const char *arkime;
@@ -2409,6 +2449,10 @@ void arkime_plugin_init()
     krbMsgTypeField      = arkime_field_by_exp_ignore_error("krb5.msgType");
     httpStatusField      = arkime_field_by_exp_ignore_error("http.statuscode");
     ntpModeField         = arkime_field_by_exp_ignore_error("ntp.mode");
+    ntpPollField         = arkime_field_by_exp_ignore_error("ntp.poll");
+    ntpPrecisionField    = arkime_field_by_exp_ignore_error("ntp.precision");
+    ntpRootDelayField    = arkime_field_by_exp_ignore_error("ntp.rootDelay");
+    ntpRootDispField     = arkime_field_by_exp_ignore_error("ntp.rootDispersion");
     socksStatusField     = arkime_field_by_exp_ignore_error("socks.status");
     ldapResultField      = arkime_field_by_exp_ignore_error("ldap.result");
 

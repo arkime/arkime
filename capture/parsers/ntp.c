@@ -174,11 +174,14 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
         return 0;
     ntp->seen |= (1 << which);
 
-    // Exponents of two, stored as seconds
-    arkime_field_float_add(pollField, session, ldexpf(1.0f, poll));
-    arkime_field_float_add(precisionField, session, ldexpf(1.0f, precision));
-    arkime_field_float_add(rootDelayField, session, rootDelay / 65536.0f);
-    arkime_field_float_add(rootDispersionField, session, rootDispersion / 65536.0f);
+    // Poll and precision are power of two exponents, stored as whole seconds and nanoseconds since
+    // integer fields are unsigned, delay and dispersion are 16.16 seconds stored as microseconds
+    uint64_t pollSecs = poll >= 0 ? 1ULL << MIN(poll, 31) : 0;
+    uint64_t precisionNs = precision >= 0 ? 1000000000ULL << MIN(precision, 20) : (1000000000ULL + (1ULL << (-precision - 1))) >> -precision;
+    arkime_field_int_add(pollField, session, (int)MIN(pollSecs, (uint64_t)INT32_MAX));
+    arkime_field_int_add(precisionField, session, (int)MIN(precisionNs, (uint64_t)INT32_MAX));
+    arkime_field_int_add(rootDelayField, session, (int)(((uint64_t)rootDelay * 1000000 + 32768) >> 16));
+    arkime_field_int_add(rootDispersionField, session, (int)(((uint64_t)rootDispersion * 1000000 + 32768) >> 16));
 
     // Reference, origin, receive and transmit timestamps
     for (int i = 0; i < 4 && BSB_REMAINING(bsb) >= 8; i++) {
@@ -275,28 +278,28 @@ void arkime_parser_init()
                                           ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
 
-    pollField = arkime_field_define("ntp", "float",
+    pollField = arkime_field_define("ntp", "integer",
                                     "ntp.poll", "Poll", "ntp.poll",
                                     "NTP poll interval in seconds",
-                                    ARKIME_FIELD_TYPE_FLOAT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                    ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                     (char *)NULL);
 
-    precisionField = arkime_field_define("ntp", "float",
+    precisionField = arkime_field_define("ntp", "integer",
                                          "ntp.precision", "Precision", "ntp.precision",
-                                         "NTP clock precision in seconds",
-                                         ARKIME_FIELD_TYPE_FLOAT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         "NTP clock precision in nanoseconds",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                          (char *)NULL);
 
-    rootDelayField = arkime_field_define("ntp", "float",
+    rootDelayField = arkime_field_define("ntp", "integer",
                                          "ntp.rootDelay", "Root Delay", "ntp.rootDelay",
-                                         "NTP root delay in seconds",
-                                         ARKIME_FIELD_TYPE_FLOAT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         "NTP root delay in microseconds",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                          (char *)NULL);
 
-    rootDispersionField = arkime_field_define("ntp", "float",
+    rootDispersionField = arkime_field_define("ntp", "integer",
                                               "ntp.rootDispersion", "Root Dispersion", "ntp.rootDispersion",
-                                              "NTP root dispersion in seconds",
-                                              ARKIME_FIELD_TYPE_FLOAT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                              "NTP root dispersion in microseconds",
+                                              ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                               (char *)NULL);
 
     timeFields[0] = arkime_field_define("ntp", "termfield",
