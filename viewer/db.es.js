@@ -539,7 +539,6 @@ class DbESImpl {
       const params = { scroll: '2m' };
       Db.merge(params, options);
       query.size = 1000; // Get 1000 items per scroll call
-      query.profile = internals.esProfile;
 
       let response = await Db.search(index, query, params);
 
@@ -606,7 +605,6 @@ class DbESImpl {
     const params = { scroll: '2m' };
     Db.merge(params, options);
     query.size = internals.regressionTests ? 20 : 2000;
-    query.profile = internals.esProfile;
 
     let response = await Db.search(index, query, params);
 

@@ -268,6 +268,11 @@ if (ArkimeConfig.regressionTests) {
     });
   });
 
+  // the exact body expiry's files search sends, so esProxy.t can check its validator
+  app.get('/regressionTests/expireQuery', (req, res) => {
+    res.send(Db.searchBody(buildExpireQuery(`${req.query.nodes}`.split(','), `${req.query.dirs}`.split(','))));
+  });
+
   app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
@@ -1143,14 +1148,8 @@ function isInDirs (file, dirs) {
   return false;
 }
 
-// Search the oldest 500 files on a set of nodes in a set of directories.
-// If less than 10 items are returned we don't delete anything, otherwise
-// ignore the 10 most recent files and delete files until we have enough free space.
-// Doesn't support mounting sub directories in main directory, don't do it.
-async function expireDevice (nodes, dirs, minFreeSpaceG) {
-  if (Config.debug > 0) {
-    console.log('EXPIRE - device', nodes, 'dirs', dirs, 'minFreeSpaceG', minFreeSpaceG);
-  }
+// The oldest 500 files on a set of nodes in a set of directories
+function buildExpireQuery (nodes, dirs) {
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
     size: 500,
@@ -1175,6 +1174,19 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
     }
     query.query.bool.filter[1].bool.should.push(obj);
   }
+
+  return query;
+}
+
+// Search the oldest 500 files on a set of nodes in a set of directories.
+// If less than 10 items are returned we don't delete anything, otherwise
+// ignore the 10 most recent files and delete files until we have enough free space.
+// Doesn't support mounting sub directories in main directory, don't do it.
+async function expireDevice (nodes, dirs, minFreeSpaceG) {
+  if (Config.debug > 0) {
+    console.log('EXPIRE - device', nodes, 'dirs', dirs, 'minFreeSpaceG', minFreeSpaceG);
+  }
+  const query = buildExpireQuery(nodes, dirs);
 
   if (Config.debug > 1) {
     console.log('EXPIRE - device query', JSON.stringify(query, null, 2));

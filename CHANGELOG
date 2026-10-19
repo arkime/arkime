@@ -222,6 +222,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4343 Fix a capture node being able to read user hashed passwords, TOTP secrets and Cont3xt keys through esProxy
   - #4345 Fix more ways a capture node could read other nodes' data or change sessions, fields and stats through esProxy
   - #4352 Fix a capture node being able to read or hunt other hosts' sessions and write history entries through esProxy
+  - #4362 Fix esProxy to only allow valid files search queries
 ## Parliament
   - #4325 Fix a monitored cluster being able to hang or slow down Parliament
   - #4325 Fix issue search and the dashboard failing for some node names
