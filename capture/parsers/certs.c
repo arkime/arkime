@@ -9,6 +9,7 @@
 #include "openssl/objects.h"
 #include <openssl/ec.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 extern ArkimeConfig_t        config;
 
