@@ -145,10 +145,10 @@
       "http/1.1"
      ],
      "clientAlpnCnt" : 2,
-     "curve" : [
+     "group" : [
       "x25519"
      ],
-     "curveCnt" : 1,
+     "groupCnt" : 1,
      "ja3" : [
       "4826a90ec2daf4f7b4b64cc1c8bd343b"
      ],

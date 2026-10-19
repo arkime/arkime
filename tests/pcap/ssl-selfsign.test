@@ -130,7 +130,7 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert:certificate-authority"
+     "cert:self-signed"
     ],
     "tagsCnt" : 1,
     "tcpSynAckValidated" : true,

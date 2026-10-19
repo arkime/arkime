@@ -332,7 +332,7 @@ LOCAL void certinfo_basic_constraints(ArkimeCertsInfo_t *certs, BSB *bsb)
         if (!value)
             return;
         if (atag == 1 && alen == 1 && value[0])
-            certs->isCA = 1;
+            certs->basicConstraintsCA = 1;
         else if (atag == 2 && alen >= 1 && alen <= 2)
             certs->pathLen = alen == 1 ? value[0] : (value[0] << 8 | value[1]);
     }
@@ -347,7 +347,7 @@ LOCAL void certinfo_alt_add(ArkimeStringHead_t *head, const char *str, int len)
     DLL_PUSH_TAIL(s_, head, element);
 }
 /******************************************************************************/
-LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid, int depth)
+LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid, int depth, int inSan)
 {
     uint32_t apc, atag, alen;
 
@@ -355,6 +355,8 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
         return;
 
     while (BSB_REMAINING(*bsb) >= 2) {
+        // GeneralName choices are context specific tags, a directoryName holds universal tags that must not be mistaken for them
+        int cls = BSB_PEEK(*bsb) & 0xc0;
         uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
 
         if (!value)
@@ -363,8 +365,8 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1);
-        } else if (atag == 6) {
+            certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1, inSan);
+        } else if (!inSan && cls == 0 && atag == 6) {
             arkime_parsers_asn_decode_oid(lastOid, 100, value, alen);
             if (strcmp(lastOid, "2.5.29.15") == 0) {
                 certinfo_key_usage(certs, bsb);
@@ -374,12 +376,13 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
             }
             if (strcmp(lastOid, "2.5.29.17") != 0)
                 lastOid[0] = 0;
-        } else if (lastOid[0] && atag == 4) {
+        } else if (!inSan && lastOid[0] && atag == 4) {
+            // subjectAltName extnValue, inside it the tags are GeneralName choices
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1);
+            certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1, 1);
             return;
-        } else if (lastOid[0] && atag == 2) {
+        } else if (inSan && cls == 0x80 && atag == 2) {
             if (g_utf8_validate((char *)value, alen, NULL)) {
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->str = g_ascii_strdown((char *)value, alen);
@@ -390,11 +393,11 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
             } else {
                 arkime_session_add_tag(session, "bad-altname");
             }
-        } else if (lastOid[0] && (atag == 1 || atag == 6)) {
+        } else if (inSan && cls == 0x80 && (atag == 1 || atag == 6)) {
             // rfc822Name and uniformResourceIdentifier
             if (g_utf8_validate((char *)value, alen, NULL))
                 certinfo_alt_add(atag == 1 ? &certs->altEmail : &certs->altUri, (char *)value, alen);
-        } else if (lastOid[0] && atag == 7 && (alen == 4 || alen == 16)) {
+        } else if (inSan && cls == 0x80 && atag == 7 && (alen == 4 || alen == 16)) {
             char ipstr[INET6_ADDRSTRLEN];
             if (inet_ntop(alen == 4 ? AF_INET : AF_INET6, value, ipstr, sizeof(ipstr)))
                 certinfo_alt_add(&certs->altIp, ipstr, strlen(ipstr));
@@ -535,7 +538,8 @@ LOCAL void certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *data, u
     }
 
     value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen);
-    if (BSB_IS_ERROR(tbsb) || !value || atag != 2 || alen == 0 || alen > 8)
+    // 7 bytes max so the value fits the signed long ES mapping
+    if (BSB_IS_ERROR(tbsb) || !value || atag != 2 || alen == 0 || alen > 7)
         return;
     for (uint32_t i = 0; i < alen; i++) {
         certs->exponent = (certs->exponent << 8) | value[i];
@@ -704,7 +708,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
         BSB_INIT(tbsb, value, alen);
         char lastOid[100];
         lastOid[0] = 0;
-        certinfo_alt_names(session, certs, &tbsb, lastOid, 0);
+        certinfo_alt_names(session, certs, &tbsb, lastOid, 0, 0);
     }
 
     // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName

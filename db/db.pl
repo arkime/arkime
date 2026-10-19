@@ -6265,13 +6265,13 @@ sub sessions3Update
           "type" : "long"
         },
         "poll" : {
-          "type" : "long"
+          "type" : "float"
         },
         "pollCnt" : {
           "type" : "long"
         },
         "precision" : {
-          "type" : "long"
+          "type" : "float"
         },
         "precisionCnt" : {
           "type" : "long"
@@ -7379,14 +7379,14 @@ sub sessions3Update
         "clientAlpnCnt" : {
           "type" : "long"
         },
-        "curve" : {
-          "type" : "keyword"
-        },
-        "curveCnt" : {
-          "type" : "long"
-        },
         "dstSessionId" : {
           "type" : "keyword"
+        },
+        "group" : {
+          "type" : "keyword"
+        },
+        "groupCnt" : {
+          "type" : "long"
         },
         "ja3" : {
           "type" : "keyword"

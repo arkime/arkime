@@ -329,10 +329,10 @@
       "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"
      ],
      "cipherCnt" : 1,
-     "curve" : [
+     "group" : [
       "secp256r1"
      ],
-     "curveCnt" : 1,
+     "groupCnt" : 1,
      "ja3" : [
       "a314eb64cee6cb832aaaa372c8295bab"
      ],

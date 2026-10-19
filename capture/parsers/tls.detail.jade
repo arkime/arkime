@@ -3,6 +3,10 @@ if (session.tls || session.cert)
   dl.sessionDetailMeta
     +arrayList(session.tls, "version", "Version", "tls.version")
     +arrayList(session.tls, "cipher", "Cipher", "tls.cipher")
+    +arrayList(session.tls, "group", "Group", "tls.group")
+    +arrayList(session.tls, "alpn", "ALPN", "tls.alpn")
+    +arrayList(session.tls, "clientAlpn", "Client ALPN", "tls.alpn.src")
+    +arrayList(session.tls, "alert", "Alerts", "tls.alert")
     +arrayList(session.tls, "srcSessionId", "Src Session Id", "tls.sessionid.src")
     +arrayList(session.tls, "dstSessionId", "Dst Session Id", "tls.sessionid.dst")
     +arrayList(session.tls, "ja3", "JA3", "tls.ja3")
@@ -27,6 +31,18 @@ if (session.tls || session.cert)
             +clickableValue('cert.hash', cert.hash)
             span(style="display:inline-flex")
               |] &nbsp;
+          - if (cert.sha256)
+            span.no-wrap
+              strong.ms-1 SHA256
+              +clickableValue('cert.sha256', cert.sha256)
+          - if (cert.version)
+            span.no-wrap
+              strong.ms-1 Version
+              +clickableValue('cert.version', cert.version)
+          - if (cert.signatureAlgorithm)
+            span.no-wrap
+              strong.ms-1 Signature Algorithm
+              +clickableValue('cert.signatureAlgorithm', cert.signatureAlgorithm)
           - if (cert.notBefore)
             span.no-wrap
               strong.ms-1 Not Before
@@ -127,6 +143,36 @@ if (session.tls || session.cert)
             span.no-wrap
               strong.ms-1 Curve
               +clickableValue('cert.curve', cert.curve)
+          - if (cert.keyLength)
+            span.no-wrap
+              strong.ms-1 Key Length
+              +clickableValue('cert.keyLength', cert.keyLength)
+          - if (cert.exponent)
+            span.no-wrap
+              strong.ms-1 Exponent
+              +clickableValue('cert.exponent', cert.exponent)
+          - if (cert.pathLen !== undefined)
+            span.no-wrap
+              strong.ms-1 Path Length
+              +clickableValue('cert.pathLen', cert.pathLen)
+          - if (cert.altEmail)
+            strong.ms-1 Alt Email
+            each alt,i in cert.altEmail
+              if (i > 0)
+                |,
+              +clickableValue('cert.alt.email', alt)
+          - if (cert.altUri)
+            strong.ms-1 Alt URI
+            each alt,i in cert.altUri
+              if (i > 0)
+                |,
+              +clickableValue('cert.alt.uri', alt)
+          - if (cert.altIp)
+            strong.ms-1 Alt IP
+            each alt,i in cert.altIp
+              if (i > 0)
+                |,
+              +clickableValue('cert.alt.ip', alt)
           - if (cert.ja4x)
             span.no-wrap
               strong.ms-1 JA4x

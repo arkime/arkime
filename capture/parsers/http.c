@@ -1042,9 +1042,14 @@ LOCAL void http_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(HTTPInfo_t, http);
 }
 /******************************************************************************/
-LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "http"))
+        return;
+
+    // SIP shares the method names, its request line ends in SIP/2.0
+    const char *crlf = arkime_memstr((const char *)data, MIN(len, 200), "\r\n", 2);
+    if (crlf && crlf - (const char *)data >= 8 && memcmp(crlf - 8, " SIP/2.0", 8) == 0)
         return;
 
     arkime_session_add_protocol(session, "http");

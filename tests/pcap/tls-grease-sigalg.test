@@ -163,13 +163,13 @@
       "http/1.1"
      ],
      "clientAlpnCnt" : 2,
-     "curve" : [
-      "X25519MLKEM768"
-     ],
-     "curveCnt" : 1,
      "dstSessionId" : [
       "f41d8266437eafcc6e346d4a7bb29ef7e7239b9ed62314ccb3877e7eb0a4c9dd"
      ],
+     "group" : [
+      "X25519MLKEM768"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "2e458aa272e715ee356efdfff6a60e20"
      ],

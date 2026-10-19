@@ -258,10 +258,10 @@
       "spdy/3.1"
      ],
      "clientAlpnCnt" : 3,
-     "curve" : [
+     "group" : [
       "secp256r1"
      ],
-     "curveCnt" : 1,
+     "groupCnt" : 1,
      "ja3" : [
       "8ca01c116f7fa9e77c6e1800eac1bec2"
      ],

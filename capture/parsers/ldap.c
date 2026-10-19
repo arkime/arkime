@@ -17,39 +17,19 @@ LOCAL const char *ldapOps[26] = {
     [19] = "search_reference", [23] = "extended", [24] = "extended_response", [25] = "intermediate_response"
 };
 
-/******************************************************************************/
-LOCAL const char *ldap_result_name(uint8_t code)
-{
-    switch (code) {
-    case 0:
-        return "success";
-    case 1:
-        return "operationsError";
-    case 2:
-        return "protocolError";
-    case 7:
-        return "authMethodNotSupported";
-    case 8:
-        return "strongerAuthRequired";
-    case 14:
-        return "saslBindInProgress";
-    case 32:
-        return "noSuchObject";
-    case 48:
-        return "inappropriateAuthentication";
-    case 49:
-        return "invalidCredentials";
-    case 50:
-        return "insufficientAccessRights";
-    case 53:
-        return "unwillingToPerform";
-    default: {
-        static __thread char buf[16];
-        snprintf(buf, sizeof(buf), "%u", code);
-        return buf;
-    }
-    }
-}
+LOCAL const char *ldapResults[] = {
+    [0] = "success", [1] = "operationsError", [2] = "protocolError", [3] = "timeLimitExceeded", [4] = "sizeLimitExceeded",
+    [5] = "compareFalse", [6] = "compareTrue", [7] = "authMethodNotSupported", [8] = "strongerAuthRequired",
+    [9] = "partialResults", [10] = "referral", [11] = "adminLimitExceeded", [12] = "unavailableCriticalExtension",
+    [13] = "confidentialityRequired", [14] = "saslBindInProgress", [16] = "noSuchAttribute", [17] = "undefinedAttributeType",
+    [18] = "inappropriateMatching", [19] = "constraintViolation", [20] = "attributeOrValueExists", [21] = "invalidAttributeSyntax",
+    [32] = "noSuchObject", [33] = "aliasProblem", [34] = "invalidDNSyntax", [36] = "aliasDereferencingProblem",
+    [48] = "inappropriateAuthentication", [49] = "invalidCredentials", [50] = "insufficientAccessRights", [51] = "busy",
+    [52] = "unavailable", [53] = "unwillingToPerform", [54] = "loopDetect", [60] = "sortControlMissing", [61] = "offsetRangeError",
+    [64] = "namingViolation", [65] = "objectClassViolation", [66] = "notAllowedOnNonLeaf", [67] = "notAllowedOnRDN",
+    [68] = "entryAlreadyExists", [69] = "objectClassModsProhibited", [71] = "affectsMultipleDSAs", [76] = "virtualListViewError",
+    [80] = "other"
+};
 LOCAL  int authTypeField;
 
 /******************************************************************************/
@@ -149,8 +129,8 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
             uint32_t rpc, rtag, rlen;
             // resultCode (ENUMERATED)
             const uint8_t *rcvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
-            if (rcvalue && rtag == 10 && rlen == 1)
-                arkime_field_string_add(resultField, session, ldap_result_name(rcvalue[0]), -1, TRUE);
+            if (rcvalue && rtag == 10 && rlen == 1 && rcvalue[0] < ARRAY_LEN(ldapResults) && ldapResults[rcvalue[0]])
+                arkime_field_string_add(resultField, session, ldapResults[rcvalue[0]], -1, TRUE);
             // matchedDN (OCTET STRING)
             const uint8_t *rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
             if (rvalue && rlen >= 8 && memcmp(rvalue, "NTLMSSP\0", 8) == 0) {

@@ -328,13 +328,13 @@
       "TLS_ECDHE_RSA_WITH_RC4_128_SHA"
      ],
      "cipherCnt" : 1,
-     "curve" : [
-      "secp256r1"
-     ],
-     "curveCnt" : 1,
      "dstSessionId" : [
       "95c3c5ac6f647c1b7214c7bcf4387b6f34819f9f17095c690caafbdbcf6a36ec"
      ],
+     "group" : [
+      "secp256r1"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "f917ae2520ef9784557b0a3c02489c2c"
      ],

@@ -382,6 +382,10 @@ dl
         +clickableLabel('socks.user', 'Socks User')
       dd
         +clickableValue('socks.user', session.socks.user)
+    +arrayList(session.socks, "version", "Socks Version", "socks.version")
+    +arrayList(session.socks, "status", "Socks Status", "socks.status")
+    +ipArrayList(session.socks, "boundIp", "Socks Bound IP", "socks.bound.ip")
+    +arrayList(session.socks, "boundPort", "Socks Bound Port", "socks.bound.port")
 
   if (session.greIp)
     +ipArrayList(session, "greIp", "GRE IPs", "gre.ip")

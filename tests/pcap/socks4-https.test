@@ -222,6 +222,23 @@
      "bytes" : 6784
     },
     "socks" : {
+     "boundASN" : [
+      "AS8075 Microsoft Corporation"
+     ],
+     "boundGEO" : [
+      "US"
+     ],
+     "boundIp" : [
+      "131.253.61.80"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      443
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      "ARIN"
+     ],
      "host" : "login.live.com",
      "port" : 443,
      "status" : [
@@ -318,13 +335,13 @@
       "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
      ],
      "cipherCnt" : 1,
-     "curve" : [
-      "secp256r1"
-     ],
-     "curveCnt" : 1,
      "dstSessionId" : [
       "972d0000e526f027ac3e73bab09d466f73291c310391f9b105146302a6ffab30"
      ],
+     "group" : [
+      "secp256r1"
+     ],
+     "groupCnt" : 1,
      "ja3s" : [
       "45c746ac8e66bbaef4f2ebd6e6cd82db"
      ],

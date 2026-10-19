@@ -546,10 +546,11 @@
      "lte" : 1700004000003
     },
     "protocol" : [
+     "esp",
      "isakmp",
      "udp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 32

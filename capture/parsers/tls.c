@@ -30,7 +30,7 @@ LOCAL uint32_t tls_process_client_hello_func;
 LOCAL uint32_t tls_process_server_hello_func;
 LOCAL int alpnField;
 LOCAL int clientAlpnField;
-LOCAL int curveField;
+LOCAL int groupField;
 LOCAL int alertField;
 LOCAL uint32_t tls_process_server_certificate_func;
 
@@ -179,11 +179,11 @@ LOCAL void tls_add_group(ArkimeSession_t *session, uint16_t group)
     default:
         if (tls_is_grease_value(group))
             return;
-        snprintf(buf, sizeof(buf), "unknown-%u", group);
+        snprintf(buf, sizeof(buf), "0x%04x", group);
         name = buf;
         break;
     }
-    arkime_field_string_add(curveField, session, name, -1, TRUE);
+    arkime_field_string_add(groupField, session, name, -1, TRUE);
 }
 /******************************************************************************/
 LOCAL const char *tls_alert_name(uint8_t desc)
@@ -433,11 +433,16 @@ LOCAL int tls_process_server_handshake_record(ArkimeSession_t *session, const ui
         case 11:
             arkime_parsers_call_named_func(tls_process_server_certificate_func, session, hdata + 4, hlen - 4, NULL);
             break;
-        case 12:
-            // ServerKeyExchange, for ECDHE it starts with curve_type named_curve(3) and the group
-            if (hlen >= 7 && hdata[4] == 3)
+        case 12: {
+            // ServerKeyExchange, for ECDHE it starts with curve_type named_curve(3), the group and the point length.
+            // A DHE message starts with the prime length, a 0x03xx byte prime needs a far longer message and
+            // its first byte has the high bit set, while an EC point is at most 133 bytes
+            uint32_t declared = hdata[1] << 16 | hdata[2] << 8 | hdata[3];
+            if (hlen >= 8 && hdata[4] == 3 &&
+                (declared < (uint32_t)(2 + (hdata[4] << 8 | hdata[5]) + 6) || hdata[7] < 0x80))
                 tls_add_group(session, hdata[5] << 8 | hdata[6]);
             break;
+        }
         case 14:
             return 1;
         }
@@ -1082,8 +1087,8 @@ void arkime_parser_init()
                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
 
-    curveField = arkime_field_define("tls", "termfield",
-                                     "tls.curve", "Curve", "tls.curve",
+    groupField = arkime_field_define("tls", "termfield",
+                                     "tls.group", "Group", "tls.group",
                                      "SSL/TLS key exchange group selected by the server",
                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);

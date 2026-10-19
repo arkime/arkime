@@ -1708,6 +1708,11 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE"
+     ]
+    },
     "client" : {
      "bytes" : 0
     },
@@ -1753,9 +1758,10 @@
      "lte" : 1571662581526
     },
     "protocol" : [
+     "bgp",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -1875,6 +1881,11 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE"
+     ]
+    },
     "client" : {
      "bytes" : 0
     },
@@ -1920,9 +1931,10 @@
      "lte" : 1571662598506
     },
     "protocol" : [
+     "bgp",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -3311,11 +3323,11 @@
      ],
      "modeCnt" : 1,
      "poll" : [
-      6
+      64
      ],
      "pollCnt" : 1,
      "precision" : [
-      4294967272
+      0
      ],
      "precisionCnt" : 1,
      "refId" : [
@@ -3561,11 +3573,11 @@
      ],
      "modeCnt" : 1,
      "poll" : [
-      6
+      64
      ],
      "pollCnt" : 1,
      "precision" : [
-      4294967272
+      0
      ],
      "precisionCnt" : 1,
      "refId" : [

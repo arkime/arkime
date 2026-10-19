@@ -13,7 +13,7 @@ produce several rows with the same `uid`, the same way Zeek logs long connection
 
 ```ini
 [default]
-plugins=zeeklog.so
+plugins=zeeklog.so                    # list it last so fields set by other plugins' save hooks are logged
 zeekLogDir=/opt/arkime/logs/zeek      # directory for the .log files, default .
 zeekLogFormat=ascii                   # ascii (Zeek TSV) or json (one object per line)
 zeekLogs=*                            # which logs to write, * = all builtin logs
@@ -122,7 +122,8 @@ Run capture with `--debug` to print the final schema of every log at startup.
 | `@krb.request_type` | string | AS or TGS from the Kerberos message types |
 | `@http.status_code` `@http.info_code` | count | final (2xx+) and informational (1xx) HTTP status codes |
 | `@ntp.mode` | count | NTP mode name turned back into its number |
-| `@ntp.poll` `@ntp.precision` | interval | 2^exponent seconds, the way Zeek logs them |
+| `@socks.status` | string | Arkime's short status token spelled out the way Zeek does |
+| `@ldap.result` | string | Arkime's camelCase result code as Zeek's spaced words |
 | `@tunnel.type` `@tunnel.action` | enum | Tunnel::GRE/VXLAN/GTPv1/GENEVE and Tunnel::DISCOVER |
 | `@dns.*` | | `trans_id rtt query qclass qclass_name qtype qtype_name rcode rcode_name AA TC RD RA Z answers TTLs rejected opcode opcode_name`, need `iterate=dns` |
 | `@x509.*` | | `fingerprint serial subject issuer not_valid_before not_valid_after key_alg key_type curve san_dns san_email san_uri san_ip ca host_cert version sig_alg key_length exponent path_len`, need `iterate=cert` |
@@ -144,7 +145,7 @@ Run capture with `--debug` to print the final schema of every log at startup.
 
 ## Missing fields
 
-Measured with `compare.py` over every pcap in `tests/pcap` against Zeek 9.0. These are the Zeek
+Measured with `compare.py` over every pcap in `tests/pcap` against Zeek 9.0 (the generated report is not checked in, rerun the command below to refresh it). These are the Zeek
 columns that Zeek fills and the plugin never can, because Arkime does not keep the data. The
 "Always unset" lists under each schema below are the complete per-log view; this table groups
 them by the parser work that would close the gap.
@@ -311,7 +312,7 @@ Trigger: `tls,dtls`, one row per session.
 | id.resp_p | `@resp_p` |
 | version | `@tls.version` |
 | cipher | `tls.cipher:string` |
-| curve | `tls.curve:string` |
+| curve | `tls.group:string` |
 | server_name | `host.http:string` |
 | resumed | `@tls.resumed` |
 | last_alert | `tls.alert:string` |
@@ -725,7 +726,7 @@ Trigger: `socks`, one row per session.
 | version | `socks.version:count` |
 | user | `socks.user:string` |
 | password | `@none:string` |
-| status | `socks.status:string` |
+| status | `@socks.status` |
 | request.host | `ip.socks:addr` |
 | request.name | `host.socks:string` |
 | request_p | `port.socks:port` |
@@ -832,8 +833,8 @@ Trigger: `ntp`, one row per session.
 | version | `ntp.version:count` |
 | mode | `@ntp.mode` |
 | stratum | `ntp.stratumNum:count` |
-| poll | `@ntp.poll` |
-| precision | `@ntp.precision` |
+| poll | `ntp.poll:interval` |
+| precision | `ntp.precision:interval` |
 | root_delay | `ntp.rootDelay:interval` |
 | root_disp | `ntp.rootDispersion:interval` |
 | ref_id | `ntp.ref-id:string` |
@@ -905,7 +906,7 @@ Trigger: `ldap`, one row per session.
 | message_id | `@none:int` |
 | version | `@none:int` |
 | opcode | `ldap.op:string` |
-| result | `ldap.result:string` |
+| result | `@ldap.result` |
 | diagnostic_message | `@none:string` |
 | object | `ldap.bindname:string` |
 | argument | `@none:string` |

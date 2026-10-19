@@ -16,6 +16,7 @@ AC_CONFIG_FILES([
   capture/plugins/napatech/Makefile
   capture/plugins/lua/Makefile
   capture/plugins/kafka/Makefile
+  capture/plugins/zeeklog/Makefile
   capture/parsers/Makefile
   db/Makefile
   tests/plugins/Makefile

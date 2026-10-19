@@ -193,7 +193,7 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
     int len = packet->payloadLen;
 
-    if (len < 256)
+    if (len < 244)
         return 0;
 
     BSB bsb;
@@ -238,7 +238,9 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         switch (t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
-            if (valueStr)
+            while (valueStr && l > 0 && valueStr[l - 1] == 0)
+                l--;
+            if (valueStr && l > 0)
                 arkime_field_string_add_lower(hostField, session, (char *)valueStr, l);
             break;
         case 53: // Message Type
@@ -294,14 +296,16 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         }
         case 15: // Domain Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
-            if (valueStr)
+            while (valueStr && l > 0 && valueStr[l - 1] == 0)
+                l--;
+            if (valueStr && l > 0)
                 arkime_field_string_add_lower(domainField, session, (char *)valueStr, l);
             break;
         case 51: // IP Address Lease Time
             if (l == 4) {
                 uint32_t lease = 0;
                 BSB_IMPORT_u32(bsb, lease);
-                arkime_field_int_add(leaseTimeField, session, lease);
+                arkime_field_int_add(leaseTimeField, session, MIN(lease, (uint32_t)INT32_MAX));
             } else {
                 BSB_IMPORT_skip(bsb, l);
             }
@@ -349,7 +353,7 @@ LOCAL ArkimePacketRC dhcp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
     // Validate: minimum size, op field (1=request, 2=reply), magic cookie
-    if (len < 256 || (data[0] != 1 && data[0] != 2) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
+    if (len < 244 || (data[0] != 1 && data[0] != 2) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
         return ARKIME_PACKET_UNKNOWN_IP;
 
     // Validate hardware type (1=Ethernet) and address length (6 bytes)

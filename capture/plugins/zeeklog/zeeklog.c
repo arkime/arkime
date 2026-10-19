@@ -10,8 +10,8 @@
  */
 
 #include "arkime.h"
-#include "../parsers/dns_info.h"
-#include "../parsers/certs_info.h"
+#include "../../parsers/dns_info.h"
+#include "../../parsers/certs_info.h"
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <errno.h>
@@ -144,7 +144,7 @@ enum {
     ZS_X509_FINGERPRINT, ZS_X509_SERIAL, ZS_X509_SUBJECT, ZS_X509_ISSUER, ZS_X509_NOT_VALID_BEFORE, ZS_X509_NOT_VALID_AFTER,
     ZS_X509_KEY_ALG, ZS_X509_KEY_TYPE, ZS_X509_CURVE, ZS_X509_SAN_DNS, ZS_X509_CA, ZS_X509_HOST_CERT,
     ZS_X509_VERSION, ZS_X509_SIG_ALG, ZS_X509_KEY_LENGTH, ZS_X509_EXPONENT, ZS_X509_PATH_LEN, ZS_X509_SAN_EMAIL, ZS_X509_SAN_URI, ZS_X509_SAN_IP,
-    ZS_KRB_REQUEST_TYPE, ZS_HTTP_STATUS_CODE, ZS_HTTP_INFO_CODE, ZS_NTP_MODE, ZS_NTP_POLL, ZS_NTP_PRECISION,
+    ZS_KRB_REQUEST_TYPE, ZS_HTTP_STATUS_CODE, ZS_HTTP_INFO_CODE, ZS_NTP_MODE, ZS_SOCKS_STATUS, ZS_LDAP_RESULT,
     ZS_FILE_FUID, ZS_FILE_SOURCE, ZS_FILE_MIME_TYPE, ZS_FILE_MD5, ZS_FILE_SHA256, ZS_FILE_FILENAME, ZS_FILE_IS_ORIG,
     ZS_MAX
 };
@@ -231,8 +231,8 @@ LOCAL const ZeekSpecialDef_t zeekSpecials[ZS_MAX] = {
     [ZS_HTTP_STATUS_CODE]         = {"http.status_code", ZB_COUNT, ZC_SCALAR},
     [ZS_HTTP_INFO_CODE]           = {"http.info_code", ZB_COUNT, ZC_SCALAR},
     [ZS_NTP_MODE]                 = {"ntp.mode", ZB_COUNT, ZC_SCALAR},
-    [ZS_NTP_POLL]                 = {"ntp.poll", ZB_INTERVAL, ZC_SCALAR},
-    [ZS_NTP_PRECISION]            = {"ntp.precision", ZB_INTERVAL, ZC_SCALAR},
+    [ZS_SOCKS_STATUS]             = {"socks.status", ZB_STRING, ZC_SCALAR},
+    [ZS_LDAP_RESULT]              = {"ldap.result", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_FUID]                = {"file.fuid", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_SOURCE]              = {"file.source", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_MIME_TYPE]           = {"file.mime_type", ZB_STRING, ZC_SCALAR},
@@ -271,7 +271,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "ssl", "tls,dtls", ZITER_SESSION,
-        CONN_ID "version=@tls.version cipher=tls.cipher:string curve=tls.curve:string server_name=host.http:string resumed=@tls.resumed "
+        CONN_ID "version=@tls.version cipher=tls.cipher:string curve=tls.group:string server_name=host.http:string resumed=@tls.resumed "
                 "last_alert=tls.alert:string next_protocol=tls.alpn:string established=@tls.established ssl_history=@none:string "
                 "cert_chain_fps=@ssl.cert_chain_fps client_cert_chain_fps=@empty:vector[string] sni_matches_cert=@tls.sni_matches_cert"
     },
@@ -364,7 +364,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "socks", "socks", ZITER_SESSION,
-        CONN_ID "version=socks.version:count user=socks.user:string password=@none:string status=socks.status:string request.host=ip.socks:addr "
+        CONN_ID "version=socks.version:count user=socks.user:string password=@none:string status=@socks.status request.host=ip.socks:addr "
                 "request.name=host.socks:string request_p=port.socks:port bound.host=socks.bound.ip:addr bound.name=@none:string bound_p=socks.bound.port:port"
     },
     {
@@ -386,7 +386,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "ntp", "ntp", ZITER_SESSION,
-        CONN_ID "version=ntp.version:count mode=@ntp.mode stratum=ntp.stratumNum:count poll=@ntp.poll precision=@ntp.precision "
+        CONN_ID "version=ntp.version:count mode=@ntp.mode stratum=ntp.stratumNum:count poll=ntp.poll:interval precision=ntp.precision:interval "
                 "root_delay=ntp.rootDelay:interval root_disp=ntp.rootDispersion:interval ref_id=ntp.ref-id:string ref_time=ntp.refTime:time org_time=ntp.orgTime:time "
                 "rec_time=ntp.recTime:time xmt_time=ntp.xmtTime:time num_exts=ntp.extensions:count"
     },
@@ -402,7 +402,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "ldap", "ldap", ZITER_SESSION,
-        CONN_ID "message_id=@none:int version=@none:int opcode=ldap.op:string result=ldap.result:string diagnostic_message=@none:string "
+        CONN_ID "message_id=@none:int version=@none:int opcode=ldap.op:string result=@ldap.result diagnostic_message=@none:string "
                 "object=ldap.bindname:string argument=@none:string"
     },
     {
@@ -459,8 +459,8 @@ LOCAL int krbRealmField;
 LOCAL int krbMsgTypeField;
 LOCAL int httpStatusField;
 LOCAL int ntpModeField;
-LOCAL int ntpPollField;
-LOCAL int ntpPrecisionField;
+LOCAL int socksStatusField;
+LOCAL int ldapResultField;
 LOCAL int vlanField;
 
 /******************************************************************************/
@@ -700,16 +700,6 @@ LOCAL const char *zeeklog_service_name(const char *protocol)
     return protocol;
 }
 /******************************************************************************/
-// Arkime counts wire bytes, Zeek counts IP bytes, so strip the Ethernet header
-LOCAL uint64_t zeeklog_ip_bytes(const ArkimeSession_t *session, int which)
-{
-    uint64_t header = 14;
-    if (zeeklog_session_field(session, vlanField))
-        header += 4;
-    uint64_t overhead = header * session->packets[which];
-    return session->bytes[which] > overhead ? session->bytes[which] - overhead : 0;
-}
-/******************************************************************************/
 LOCAL void zeeklog_conn_state(ZeekItems_t *items, const ArkimeSession_t *session)
 {
     const char *state;
@@ -826,7 +816,7 @@ LOCAL ArkimeCertsInfo_t *zeeklog_leaf_cert(const ArkimeSession_t *session)
         ArkimeCertsInfo_t *ci = object->object;
         if (!ci)
             continue;
-        if (!ci->isCA)
+        if (!ci->basicConstraintsCA)
             return ci;
         if (!first)
             first = ci;
@@ -1027,11 +1017,21 @@ LOCAL void zeeklog_ssh_fingerprint(ZeekItems_t *items, const ArkimeSession_t *se
     g_checksum_free(sum);
     g_free(raw);
 
-    char fp[48];
+    char fp[49];
     for (int i = 0; i < 16; i++) {
         snprintf(fp + i * 3, 4, "%02x:", digest[i]);
     }
     zeeklog_items_add(items, fp, 47);
+}
+/******************************************************************************/
+// Arkime counts wire bytes, Zeek counts IP bytes, so strip the Ethernet header
+LOCAL uint64_t zeeklog_ip_bytes(const ArkimeSession_t *session, int which)
+{
+    uint64_t header = 14;
+    if (zeeklog_session_field(session, vlanField))
+        header += 4;
+    uint64_t overhead = header * session->packets[which];
+    return session->bytes[which] > overhead ? session->bytes[which] - overhead : 0;
 }
 /******************************************************************************/
 LOCAL void zeeklog_tunnel_type(ZeekItems_t *items, const ArkimeSession_t *session)
@@ -1400,11 +1400,11 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
         break;
     case ZS_X509_CA:
         if (cert)
-            zeeklog_items_add_bool(items, cert->isCA);
+            zeeklog_items_add_bool(items, cert->basicConstraintsCA);
         break;
     case ZS_X509_HOST_CERT:
         if (cert)
-            zeeklog_items_add_bool(items, !cert->isCA);
+            zeeklog_items_add_bool(items, !cert->basicConstraintsCA);
         break;
     case ZS_X509_VERSION:
         if (cert)
@@ -1469,14 +1469,48 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
         }
         break;
     }
-    case ZS_NTP_POLL:
-    case ZS_NTP_PRECISION:
+    case ZS_SOCKS_STATUS: {
+        static const struct {
+            const char *arkime;
+            const char *zeek;
+        } names[] = {
+            {"succeeded", "succeeded"}, {"failure", "general SOCKS server failure"}, {"not-allowed", "connection not allowed by ruleset"},
+            {"network-unreachable", "Network unreachable"}, {"host-unreachable", "Host unreachable"}, {"refused", "Connection refused"},
+            {"ttl-expired", "TTL expired"}, {"command-not-supported", "Command not supported"},
+            {"address-type-not-supported", "Address type not supported"}, {"granted", "succeeded"},
+            {"rejected", "general SOCKS server failure"}, {"no-identd", "request failed because client is not running identd"},
+            {"identd-mismatch", "request failed because client's identd could not confirm the user ID string in the request"}
+        };
         zeeklog_items_reset(scratch);
-        zeeklog_field_items(scratch, session, special == ZS_NTP_POLL ? ntpPollField : ntpPrecisionField, ZB_INT);
+        zeeklog_field_items(scratch, session, socksStatusField, ZB_STRING);
         for (int i = 0; i < scratch->num; i++) {
-            zeeklog_items_addf(items, "%f", pow(2.0, atoi(scratch->items[i])));
+            for (int n = 0; n < (int)ARRAY_LEN(names); n++) {
+                if (strcmp(scratch->items[i], names[n].arkime) == 0)
+                    zeeklog_items_add_str(items, names[n].zeek);
+            }
         }
         break;
+    }
+    case ZS_LDAP_RESULT: {
+        // invalidCredentials -> invalid credentials, notAllowedOnRDN -> not allowed on RDN
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, ldapResultField, ZB_STRING);
+        for (int i = 0; i < scratch->num; i++) {
+            const char *in = scratch->items[i];
+            char        out[128];
+            int         len = 0;
+            for (int c = 0; in[c] && len < (int)sizeof(out) - 2; c++) {
+                gboolean upper = isupper((unsigned char)in[c]);
+                gboolean startsWord = upper && c > 0 && (islower((unsigned char)in[c - 1]) || (isupper((unsigned char)in[c - 1]) && islower((unsigned char)in[c + 1])));
+                if (startsWord)
+                    out[len++] = ' ';
+                gboolean acronym = upper && (isupper((unsigned char)in[c + 1]) || (c > 0 && isupper((unsigned char)in[c - 1]) && !islower((unsigned char)in[c + 1])));
+                out[len++] = acronym ? in[c] : tolower((unsigned char)in[c]);
+            }
+            zeeklog_items_add(items, out, len);
+        }
+        break;
+    }
     case ZS_HTTP_STATUS_CODE:
     case ZS_HTTP_INFO_CODE: {
         zeeklog_items_reset(scratch);
@@ -1564,6 +1598,15 @@ LOCAL void zeeklog_ascii_escape(BSB *bsb, const char *str, int len, gboolean inS
             BSB_EXPORT_cstr(*bsb, "\\\\");
         } else if (c < 0x20 || c == 0x7f || (!zeekUtf8 && c >= 0x80)) {
             BSB_EXPORT_sprintf(*bsb, "\\x%02x", c);
+        } else if (c >= 0x80) {
+            gunichar u = g_utf8_get_char_validated(str + i, len - i);
+            if (u == (gunichar) - 1 || u == (gunichar) - 2) {
+                BSB_EXPORT_sprintf(*bsb, "\\x%02x", c);
+            } else {
+                int slen = g_utf8_skip[c];
+                BSB_EXPORT_ptr(*bsb, str + i, slen);
+                i += slen - 1;
+            }
         } else if (inSet && c == ',') {
             BSB_EXPORT_cstr(*bsb, "\\x2c");
         } else {
@@ -1706,7 +1749,8 @@ LOCAL void zeeklog_close(ZeekLog_t *log, gboolean rotate)
         zeeklog_timestamp(time(NULL), stamp, sizeof(stamp));
         fprintf(log->fp, "#close\t%s\n", stamp);
     }
-    fclose(log->fp);
+    if (fclose(log->fp) != 0)
+        LOG("ERROR - Couldn't write %s: %s", log->filename, strerror(errno));
     log->fp = NULL;
 
     if (rotate) {
@@ -1726,17 +1770,19 @@ LOCAL gboolean zeeklog_open(ZeekLog_t *log)
         return TRUE;
 
     struct stat st;
+    const char *mode = "w";
     if (stat(log->filename, &st) == 0 && st.st_size > 0) {
         char stamp[32];
         zeeklog_timestamp(st.st_mtime, stamp, sizeof(stamp));
         char *leftover = g_strdup_printf("%s/%s.%s.log", zeekLogDir, log->path, stamp);
         if (rename(log->filename, leftover) != 0) {
-            LOG("ERROR - Couldn't move leftover %s to %s: %s", log->filename, leftover, strerror(errno));
+            LOG("ERROR - Couldn't move leftover %s to %s, appending: %s", log->filename, leftover, strerror(errno));
+            mode = "a";
         }
         g_free(leftover);
     }
 
-    log->fp = fopen(log->filename, "w");
+    log->fp = fopen(log->filename, mode);
     if (!log->fp) {
         LOG("ERROR - Couldn't open %s: %s", log->filename, strerror(errno));
         return FALSE;
@@ -1777,15 +1823,20 @@ LOCAL void zeeklog_write_row(ZeekLog_t *log, ZeekRow_t *row)
     BSB_EXPORT_u08(bsb, '\n');
 
     if (BSB_IS_ERROR(bsb)) {
-        if (log->dropped++ == 0)
+        if (__sync_fetch_and_add(&log->dropped, 1) == 0)
             LOG("WARNING - zeeklog row too long for %s.log, dropping", log->path);
         return;
     }
 
     pthread_mutex_lock(&log->lock);
     if (zeeklog_open(log)) {
-        fwrite(td->row, 1, BSB_LENGTH(bsb), log->fp);
-        log->rows++;
+        if (fwrite(td->row, 1, BSB_LENGTH(bsb), log->fp) != BSB_LENGTH(bsb)) {
+            LOG("ERROR - Couldn't write %s: %s", log->filename, strerror(errno));
+            fclose(log->fp);
+            log->fp = NULL;
+        } else {
+            log->rows++;
+        }
     }
     pthread_mutex_unlock(&log->lock);
 }
@@ -1808,18 +1859,27 @@ LOCAL const char *zeeklog_single_item(ZeekItems_t *scratch, const ArkimeSession_
     return scratch->num == 1 ? scratch->items[0] : NULL;
 }
 /******************************************************************************/
-LOCAL void zeeklog_plugin_save(ArkimeSession_t *session, int UNUSED(final))
+// Registered as an arkime_session_save named func so it runs after plugin save hooks and after the
+// python save hooks of anything loaded before it, list zeeklog.so last in plugins=
+LOCAL uint32_t zeeklog_session_save(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(final), void *UNUSED(uw), void *UNUSED(cbuw))
 {
     ZeekRow_t row;
 
     memset(&row, 0, sizeof(row));
     row.session = session;
     row.file.isOrig = -1;
-    zeeklog_make_uid('C', session->sessionId, session->sessionId[0], row.uid);
+    uint8_t uidData[ARKIME_SESSIONID_LEN + sizeof(session->firstPacket)];
+    int     uidLen = session->sessionId[0];
+    memcpy(uidData, session->sessionId, uidLen);
+    memcpy(uidData + uidLen, &session->firstPacket, sizeof(session->firstPacket));
+    zeeklog_make_uid('C', uidData, uidLen + sizeof(session->firstPacket), row.uid);
 
     for (guint l = 0; l < zeekLogs->len; l++) {
         ZeekLog_t *log = g_ptr_array_index(zeekLogs, l);
         if (!log->enabled || !zeeklog_log_matches(log, session))
+            continue;
+        // Zeek only logs IP flows, arp/lldp/isis and friends have no conn row
+        if (log->builtin && session->ipProtocol == 0)
             continue;
 
         switch (log->iter) {
@@ -1888,6 +1948,7 @@ LOCAL void zeeklog_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         }
         }
     }
+    return 0;
 }
 /******************************************************************************/
 LOCAL gboolean zeeklog_timer(gpointer UNUSED(user_data))
@@ -2333,8 +2394,8 @@ void arkime_plugin_init()
     zeekRotateSeconds = arkime_config_int(NULL, "zeekLogRotateSeconds", 0, 0, 0x7fffffff);
 
     protocolField        = arkime_field_by_exp("protocols");
-    certsField           = arkime_field_by_db("cert");
-    dnsField             = arkime_field_by_db("dns");
+    certsField           = arkime_field_by_exp_ignore_error("cert");
+    dnsField             = arkime_field_by_exp_ignore_error("dns");
     tlsSrcSessionIdField = arkime_field_by_exp_ignore_error("tls.sessionid.src");
     tlsDstSessionIdField = arkime_field_by_exp_ignore_error("tls.sessionid.dst");
     tlsCipherField       = arkime_field_by_exp_ignore_error("tls.cipher");
@@ -2348,8 +2409,8 @@ void arkime_plugin_init()
     krbMsgTypeField      = arkime_field_by_exp_ignore_error("krb5.msgType");
     httpStatusField      = arkime_field_by_exp_ignore_error("http.statuscode");
     ntpModeField         = arkime_field_by_exp_ignore_error("ntp.mode");
-    ntpPollField         = arkime_field_by_exp_ignore_error("ntp.poll");
-    ntpPrecisionField    = arkime_field_by_exp_ignore_error("ntp.precision");
+    socksStatusField     = arkime_field_by_exp_ignore_error("socks.status");
+    ldapResultField      = arkime_field_by_exp_ignore_error("ldap.result");
 
     for (int f = 0; f < ARRAY_LEN(zeekFileSources); f++) {
         ZeekFileSource_t *fs = &zeekFileSources[f];
@@ -2400,12 +2461,13 @@ void arkime_plugin_init()
     if (config.debug)
         zeeklog_dump_schema();
 
+    arkime_parsers_add_named_func2("arkime_session_save", zeeklog_session_save, NULL);
     arkime_plugins_set_cb("zeeklog",
                           NULL,
                           NULL,
                           NULL,
                           NULL,
-                          zeeklog_plugin_save,
+                          NULL,
                           NULL,
                           zeeklog_plugin_exit,
                           NULL

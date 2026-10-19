@@ -277,10 +277,10 @@
       "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
      ],
      "cipherCnt" : 1,
-     "curve" : [
+     "group" : [
       "secp256r1"
      ],
-     "curveCnt" : 1,
+     "groupCnt" : 1,
      "ja3" : [
       "b288289af2999820648eb3ca4d8304c5"
      ],

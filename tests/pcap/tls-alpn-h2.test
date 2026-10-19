@@ -217,13 +217,13 @@
       "http/1.1"
      ],
      "clientAlpnCnt" : 2,
-     "curve" : [
-      "x25519"
-     ],
-     "curveCnt" : 1,
      "dstSessionId" : [
       "b89ff1ab695278c69b8a73f76242ef755e0b13dc6d459aaaa784fec9c2dfce34"
      ],
+     "group" : [
+      "x25519"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "3faa4ad39f690c4ef1c3160caa375465"
      ],

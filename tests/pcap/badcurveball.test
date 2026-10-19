@@ -185,10 +185,9 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
-     "cert.alt test",
-     "cert:certificate-authority"
+     "cert.alt test"
     ],
-    "tagsCnt" : 2,
+    "tagsCnt" : 1,
     "tcpSynAckValidated" : true,
     "tcpSynValidated" : true,
     "tcpflags" : {
@@ -227,10 +226,10 @@
       "http/1.1"
      ],
      "clientAlpnCnt" : 2,
-     "curve" : [
+     "group" : [
       "secp256r1"
      ],
-     "curveCnt" : 1,
+     "groupCnt" : 1,
      "ja3" : [
       "66918128f1b9b03303d77c6f2eefd128"
      ],

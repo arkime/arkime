@@ -505,6 +505,14 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (packet->tunnel & ARKIME_PACKET_TUNNEL_GENEVE) {
             arkime_session_add_protocol(session, "geneve");
         }
+
+        if (packet->tunnel & ARKIME_PACKET_TUNNEL_AH) {
+            arkime_session_add_protocol(session, "ah");
+        }
+
+        if (packet->tunnel & ARKIME_PACKET_TUNNEL_ERSPAN) {
+            arkime_session_add_protocol(session, "erspan");
+        }
     }
 
     if (mProtocols[packet->mProtocol].process) {

@@ -27,6 +27,7 @@ typedef struct arkime_certsinfo {
     uint8_t                  hash[60];
     char                     sha256[65];
     char                     isCA;
+    char                     basicConstraintsCA;
     uint8_t                  version;
     int16_t                  pathLen;
     uint32_t                 keyLength;
