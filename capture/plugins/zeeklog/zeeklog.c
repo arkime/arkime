@@ -13,6 +13,7 @@
 #include "../../parsers/dns_info.h"
 #include "../../parsers/certs_info.h"
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -1870,7 +1871,7 @@ LOCAL void zeeklog_write_row(ZeekLog_t *log, ZeekRow_t *row)
 
     pthread_mutex_lock(&log->lock);
     if (zeeklog_open(log)) {
-        if (fwrite(td->row, 1, BSB_LENGTH(bsb), log->fp) != BSB_LENGTH(bsb)) {
+        if (fwrite(td->row, 1, BSB_LENGTH(bsb), log->fp) != (size_t)BSB_LENGTH(bsb)) {
             LOG("ERROR - Couldn't write %s: %s", log->filename, strerror(errno));
             fclose(log->fp);
             log->fp = NULL;
