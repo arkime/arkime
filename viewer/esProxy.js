@@ -753,11 +753,13 @@ async function validateBulk (req) {
 
 // Validate Files Search, the shapes capture and the sensor viewer's expiry send.
 // Only top level keys that can't widen the node filter, aggs global ignores the query.
-const filesSearchKeys = ['size', 'sort', 'query', '_source'];
+// Db.search adds profile to every viewer search, so the expiry query always has it.
+const filesSearchKeys = ['size', 'sort', 'query', '_source', 'profile'];
 async function validateFilesSearch (req) {
   try {
     const json = parseDocBody(req);
     if (!Object.keys(json).every(key => filesSearchKeys.includes(key))) { return false; }
+    if (json.profile !== undefined && typeof json.profile !== 'boolean') { return false; }
     if (Object.keys(json.query).length !== 1) { return false; }
     const bool = json.query.bool;
     if (!Object.keys(bool).every(key => ['filter', 'must', 'must_not'].includes(key))) { return false; }

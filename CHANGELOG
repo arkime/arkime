@@ -49,6 +49,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4306 Fix docker.sh ignoring docker stop, capture now finishes writing its open pcap files (thanks @usmanTheCoder)
   - #4313 Node 22.23.3
   - #4316 Cyberchef 11.5.0
+  - esProxy allows profile in files searches, the sensor viewer's pcap expiry was refused and its disk could fill
 ## All
   - #4352 Basic and digest auth no longer use the unmaintained passport-http module
 ## Capture
