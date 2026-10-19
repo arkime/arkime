@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 376;
+use Test::More tests => 377;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -636,8 +636,10 @@ is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":[
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}}}', "tests_files/_search/template"), 400, "files search template path rejected");
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost","test"]}}]}}}'), 400, "files search for a node on another host rejected");
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost"]}}]}}}'), 200, "files search for own node with host allowed");
-# The sensor viewer's expiry query, Db.search adds profile when esProfile is set
-is (filesSearch("test", '{"_source":["num","name","first","size","node","indexFilename"],"size":500,"query":{"bool":{"filter":[{"terms":{"node":["test"]}},{"bool":{"should":[{"wildcard":{"name":"/x/*"}}]}}],"must_not":{"term":{"locked":1}}}},"sort":{"first":{"order":"asc"}},"profile":false}'), 200, "files search expiry query with profile allowed");
+# The exact body the viewer's expiry sends
+is (filesSearch("test", to_json(viewerGet("/regressionTests/expireQuery?nodes=test&dirs=/x,/y/"))), 200, "files search real expiry query allowed");
+# Older sensor viewers always send profile false
+is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":false}'), 200, "files search with profile false allowed");
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":true}'), 200, "files search with profile true allowed");
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":{"x":1}}'), 400, "files search with non boolean profile rejected");
 # WHATWG URL turns the backslashes into slashes, isOwnFilesDoc only looked for /
