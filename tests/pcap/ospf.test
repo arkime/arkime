@@ -1708,6 +1708,11 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE"
+     ]
+    },
     "client" : {
      "bytes" : 0
     },
@@ -1753,9 +1758,10 @@
      "lte" : 1571662581526
     },
     "protocol" : [
+     "bgp",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -1875,6 +1881,11 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE"
+     ]
+    },
     "client" : {
      "bytes" : 0
     },
@@ -1920,9 +1931,10 @@
      "lte" : 1571662598506
     },
     "protocol" : [
+     "bgp",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -3302,22 +3314,50 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client"
      ],
      "modeCnt" : 1,
+     "poll" : [
+      64
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      60
+     ],
+     "precisionCnt" : 1,
      "refId" : [
       "INIT"
      ],
      "refIdCnt" : 1,
+     "rootDelay" : [
+      0
+     ],
+     "rootDelayCnt" : 1,
+     "rootDispersion" : [
+      31
+     ],
+     "rootDispersionCnt" : 1,
      "stratum" : [
       "unspecified"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      0
+     ],
+     "stratumNumCnt" : 1,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1571662571.362939"
+     ],
+     "xmtTimeCnt" : 1
     },
     "packetLen" : [
      126
@@ -3524,22 +3564,50 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client"
      ],
      "modeCnt" : 1,
+     "poll" : [
+      64
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      60
+     ],
+     "precisionCnt" : 1,
      "refId" : [
       "INIT"
      ],
      "refIdCnt" : 1,
+     "rootDelay" : [
+      0
+     ],
+     "rootDelayCnt" : 1,
+     "rootDispersion" : [
+      61
+     ],
+     "rootDispersionCnt" : 1,
      "stratum" : [
       "unspecified"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      0
+     ],
+     "stratumNumCnt" : 1,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1571662573.212011"
+     ],
+     "xmtTimeCnt" : 1
     },
     "packetLen" : [
      126

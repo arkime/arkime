@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "arkime.h"
+#include <inttypes.h>
+#include <math.h>
 
 /*
  * NTP (Network Time Protocol) - RFC 5905
@@ -21,6 +23,10 @@
  *   Bytes 40-47: Transmit Timestamp
  */
 
+typedef struct {
+    uint8_t seen; // bit per direction
+} NTPInfo_t;
+
 LOCAL const char *ntpModes[] = {
     [0] = "reserved",
     [1] = "symmetric-active",
@@ -38,10 +44,42 @@ LOCAL  int versionField;
 LOCAL  int modeField;
 LOCAL  int stratumField;
 LOCAL  int refIdField;
+LOCAL  int stratumNumField;
+LOCAL  int pollField;
+LOCAL  int precisionField;
+LOCAL  int rootDelayField;
+LOCAL  int rootDispersionField;
+LOCAL  int timeFields[4];
+LOCAL  int extensionsField;
+
+#define NTP_UNIX_OFFSET 2208988800ULL
 
 /******************************************************************************/
-LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+// NTP 64 bit timestamp to "unixseconds.microseconds", nothing is added for an unset (zero) timestamp
+LOCAL void ntp_add_time(ArkimeSession_t *session, int field, BSB *bsb)
 {
+    uint32_t secs = 0, frac = 0;
+    BSB_IMPORT_u32(*bsb, secs);
+    BSB_IMPORT_u32(*bsb, frac);
+    if (BSB_IS_ERROR(*bsb) || (secs == 0 && frac == 0))
+        return;
+
+    // Era 0 wraps in 2036, treat small values as era 1
+    uint64_t unixSecs = secs >= NTP_UNIX_OFFSET ? secs - NTP_UNIX_OFFSET : secs + (0x100000000ULL - NTP_UNIX_OFFSET);
+    uint32_t usec = (uint32_t)(((uint64_t)frac * 1000000ULL + (1ULL << 31)) >> 32); // round to the nearest microsecond
+    if (usec == 1000000) {
+        usec = 0;
+        unixSecs++;
+    }
+    char str[32];
+    int len = snprintf(str, sizeof(str), "%" PRIu64 ".%06u", unixSecs, usec);
+    arkime_field_string_add(field, session, str, len, TRUE);
+}
+
+/******************************************************************************/
+LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
+{
+    NTPInfo_t *ntp = uw;
     BSB bsb;
     BSB_INIT(bsb, data, len);
 
@@ -76,11 +114,21 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
         arkime_field_string_add(stratumField, session, "unsynchronized", -1, TRUE);
     }
 
-    // Skip poll and precision
-    BSB_IMPORT_skip(bsb, 2);
+    // Modes 6 and 7 (control, private) use a different layout after the first byte
+    if (mode >= 6) {
+        return 0;
+    }
 
-    // Skip root delay and root dispersion
-    BSB_IMPORT_skip(bsb, 8);
+    arkime_field_int_add(stratumNumField, session, stratum);
+
+    int8_t poll = 0, precision = 0;
+    BSB_IMPORT_u08(bsb, poll);
+    BSB_IMPORT_u08(bsb, precision);
+
+    // Root delay and dispersion are 16.16 fixed point seconds
+    uint32_t rootDelay = 0, rootDispersion = 0;
+    BSB_IMPORT_u32(bsb, rootDelay);
+    BSB_IMPORT_u32(bsb, rootDispersion);
 
     // Reference ID (4 bytes)
     // For stratum 0-1: 4-character ASCII string (e.g., "GPS", "PPS", "LOCL")
@@ -112,15 +160,56 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
                 }
             }
         } else if (stratum <= 15) {
-            // For stratum 2+: IPv4 address of upstream server, or first 4 bytes of MD5 hash for IPv6
-            // Display as hex since we can't distinguish IPv4 from IPv6 hash
-            char refStr[12];
-            arkime_sprint_hex_string(refStr, refId, 4);
-            arkime_field_string_add(refIdField, session, refStr, 8, TRUE);
+            // For stratum 2+: IPv4 address of the upstream server, or the first 4 bytes of the MD5 hash
+            // of its IPv6 address, shown dotted like ntpq and Zeek do either way
+            char refStr[16];
+            int  refLen = snprintf(refStr, sizeof(refStr), "%u.%u.%u.%u", refId[0], refId[1], refId[2], refId[3]);
+            arkime_field_string_add(refIdField, session, refStr, refLen, TRUE);
         }
+        BSB_IMPORT_skip(bsb, 4);
     }
 
+    // The remaining values change every packet, only record the first packet each direction
+    if (ntp->seen & (1 << which))
+        return 0;
+    ntp->seen |= (1 << which);
+
+    // Poll and precision are power of two exponents, stored as whole seconds and nanoseconds since
+    // integer fields are unsigned, delay and dispersion are 16.16 seconds stored as microseconds
+    uint64_t pollSecs = poll >= 0 ? 1ULL << MIN(poll, 31) : 0;
+    uint64_t precisionNs = precision >= 0 ? 1000000000ULL << MIN(precision, 20) : (1000000000ULL + (1ULL << (-precision - 1))) >> -precision;
+    arkime_field_int_add(pollField, session, (int)MIN(pollSecs, (uint64_t)INT32_MAX));
+    arkime_field_int_add(precisionField, session, (int)MIN(precisionNs, (uint64_t)INT32_MAX));
+    arkime_field_int_add(rootDelayField, session, (int)(((uint64_t)rootDelay * 1000000 + 32768) >> 16));
+    arkime_field_int_add(rootDispersionField, session, (int)(((uint64_t)rootDispersion * 1000000 + 32768) >> 16));
+
+    // Reference, origin, receive and transmit timestamps
+    for (int i = 0; i < 4 && BSB_REMAINING(bsb) >= 8; i++) {
+        ntp_add_time(session, timeFields[i], &bsb);
+    }
+
+    // Extension fields (RFC 7822): u16 type, u16 length including the header, padded to 4 bytes,
+    // minimum 16 bytes, anything shorter left over is the MAC
+    int extensions = 0;
+    while (BSB_REMAINING(bsb) >= 16) {
+        // Exactly a key id plus MD5 or SHA1 digest left is the MAC
+        if (BSB_REMAINING(bsb) == 20 || BSB_REMAINING(bsb) == 24)
+            break;
+        const uint8_t *ext = BSB_WORK_PTR(bsb);
+        uint32_t elen = (ext[2] << 8) | ext[3];
+        if (elen < 16 || (elen & 3) || elen > BSB_REMAINING(bsb))
+            break;
+        BSB_IMPORT_skip(bsb, elen);
+        extensions++;
+    }
+    arkime_field_int_add(extensionsField, session, extensions);
+
     return 0;
+}
+/******************************************************************************/
+LOCAL void ntp_free(ArkimeSession_t *UNUSED(session), void *uw)
+{
+    ARKIME_TYPE_FREE(NTPInfo_t, uw);
 }
 /******************************************************************************/
 LOCAL void ntp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
@@ -153,7 +242,8 @@ LOCAL void ntp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
         return;
 
     arkime_session_add_protocol(session, "ntp");
-    arkime_parsers_register(session, ntp_udp_parser, 0, 0);
+    NTPInfo_t *ntp = ARKIME_TYPE_ALLOC0(NTPInfo_t);
+    arkime_parsers_register(session, ntp_udp_parser, ntp, ntp_free);
 }
 /******************************************************************************/
 void arkime_parser_init()
@@ -181,6 +271,66 @@ void arkime_parser_init()
                                      "NTP reference identifier",
                                      ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
+
+    stratumNumField = arkime_field_define("ntp", "integer",
+                                          "ntp.stratumNum", "Stratum Number", "ntp.stratumNum",
+                                          "NTP stratum as a number",
+                                          ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    pollField = arkime_field_define("ntp", "integer",
+                                    "ntp.poll", "Poll", "ntp.poll",
+                                    "NTP poll interval in seconds",
+                                    ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                    (char *)NULL);
+
+    precisionField = arkime_field_define("ntp", "integer",
+                                         "ntp.precision", "Precision", "ntp.precision",
+                                         "NTP clock precision in nanoseconds",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
+
+    rootDelayField = arkime_field_define("ntp", "integer",
+                                         "ntp.rootDelay", "Root Delay", "ntp.rootDelay",
+                                         "NTP root delay in microseconds",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
+
+    rootDispersionField = arkime_field_define("ntp", "integer",
+                                              "ntp.rootDispersion", "Root Dispersion", "ntp.rootDispersion",
+                                              "NTP root dispersion in microseconds",
+                                              ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                              (char *)NULL);
+
+    timeFields[0] = arkime_field_define("ntp", "termfield",
+                                        "ntp.refTime", "Reference Time", "ntp.refTime",
+                                        "NTP reference timestamp as unix seconds.microseconds",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
+
+    timeFields[1] = arkime_field_define("ntp", "termfield",
+                                        "ntp.orgTime", "Origin Time", "ntp.orgTime",
+                                        "NTP origin timestamp as unix seconds.microseconds",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
+
+    timeFields[2] = arkime_field_define("ntp", "termfield",
+                                        "ntp.recTime", "Receive Time", "ntp.recTime",
+                                        "NTP receive timestamp as unix seconds.microseconds",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
+
+    timeFields[3] = arkime_field_define("ntp", "termfield",
+                                        "ntp.xmtTime", "Transmit Time", "ntp.xmtTime",
+                                        "NTP transmit timestamp as unix seconds.microseconds",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
+
+    extensionsField = arkime_field_define("ntp", "integer",
+                                          "ntp.extensions", "Extension Fields", "ntp.extensions",
+                                          "Number of NTP extension fields in a packet",
+                                          ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     // NTP uses UDP port 123. Register by port and let ntp_udp_classify
     // validate version/mode/stratum so all valid first-byte combinations

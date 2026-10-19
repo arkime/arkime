@@ -103,6 +103,25 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4210 tcpSaveTimeout and tcpClosingTimeout now only apply to tcp; use [protocol-settings] for the other mProtocols.
           tcpClosingTimeout previously also applied to sctp and to sessions closed by the closeNow rule action, so set
           eg sctp=closing:<seconds> if you had changed it from the default of 5
+  - #4360 New zeeklog plugin writes Zeek style conn/dns/http/ssl/x509/files/... log files from sessions, see capture/plugins/zeeklog/README.md
+  - #4360 New fields: tls.alpn, tls.alpn.src, tls.group, tls.alert; cert.sha256, cert.version, cert.signatureAlgorithm, cert.keyLength, cert.exponent, 
+          cert.pathLen, cert.alt.email, cert.alt.uri, cert.alt.ip; ssh.ver.src, ssh.ver.dst, ssh.kex, ssh.hostKeyAlg, ssh.cipher, ssh.mac, ssh.compression; 
+	  ntlm.nbComputerName, ntlm.nbDomainName, ntlm.dnsComputerName, ntlm.dnsDomainName, ntlm.dnsTreeName; http.bodylen.src, http.bodylen.dst;
+          dhcp.leaseTime, dhcp.serverIp, dhcp.domain; krb5.msgType, krb5.options, krb5.ticketEtype; email.date, email.reply-to,
+          email.in-reply-to, email.reply; ftp.responseMsg; socks.version, socks.status, socks.bound.ip, socks.bound.port;
+          mqtt.payloadLen; ldap.op, ldap.result; ntp.stratumNum, ntp.poll, ntp.precision, ntp.rootDelay, ntp.rootDispersion, ntp.refTime,
+          ntp.orgTime, ntp.recTime, ntp.xmtTime, ntp.extensions
+  - #4360 SMB session setup responses (SMB1 and SMB2) are now decoded so the NTLM challenge is seen, SMB sessions gain the ntlm protocol
+  - #4360 socks.ip/socks.port now record IPv6 SOCKS5 targets, and SOCKS4 replies fill socks.bound.ip/port when the server sets them
+  - #4360 ntp.refId for stratum 2+ is now the dotted upstream address (was hex), NTP timestamps are rounded to the microsecond
+  - #4360 The dcerpc classifier now checks the data representation byte and frag_length, so SOCKS5 replies and similar 05 00 prefixed data are no longer tagged dcerpc
+  - #4360 The SMTP Date, Reply-To and In-Reply-To headers now have their own fields instead of landing in email.headerValue,
+          an existing [headers-email] entry for one of them keeps its configured field
+  - #4360 IMAP now records the Message-ID header in email.id like SMTP
+  - #4360 Sessions carried in AH, ERSPAN or UDP encapsulated ESP (port 4500) are now tagged ah, erspan and esp, TCAP over SCCP is tagged tcap
+  - #4360 SIP is now classified on every request method (ACK, BYE, SUBSCRIBE, MESSAGE, ...) and on tel: URIs, not just sip: URIs
+  - #4360 SIP requests over TCP are no longer also tagged http
+  - #4360 DHCP packets shorter than 256 bytes are now parsed, and BGP sessions seen only from the server side are now classified
 ## Viewer
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets

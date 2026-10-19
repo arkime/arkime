@@ -12,6 +12,9 @@ LOCAL  int realmField;
 LOCAL  int cnameField;
 LOCAL  int snameField;
 LOCAL  int etypeField;
+LOCAL  int msgTypeField;
+LOCAL  int optionsField;
+LOCAL  int ticketEtypeField;
 LOCAL  int errorCodeField;
 
 // Encryption type names - RFC 3961/3962/8009
@@ -169,6 +172,30 @@ LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const uint8_t *data, in
     const char *value;
     for (int i = 0; i < num; i++) {
         switch (seq[i].tag) {
+        case 0: {
+            // kdc-options BIT STRING, RFC 4120 5.4.1
+            static const struct {
+                int         byte;
+                uint8_t     bit;
+                const char *name;
+            } kdcOptions[] = {
+                {1, 0x40, "forwardable"}, {1, 0x20, "forwarded"}, {1, 0x10, "proxiable"}, {1, 0x08, "proxy"},
+                {1, 0x04, "allow-postdate"}, {1, 0x02, "postdated"}, {2, 0x80, "renewable"}, {2, 0x01, "canonicalize"},
+                {4, 0x20, "disable-transited-check"}, {4, 0x10, "renewable-ok"}, {4, 0x08, "enc-tkt-in-skey"},
+                {4, 0x02, "renew"}, {4, 0x01, "validate"}
+            };
+            BSB obsb;
+            uint32_t opc, otag, olen;
+            BSB_INIT(obsb, seq[i].value, seq[i].len);
+            const uint8_t *ovalue = arkime_parsers_asn_get_tlv(&obsb, &opc, &otag, &olen);
+            if (!ovalue || otag != 3 || olen < 5)
+                break;
+            for (int o = 0; o < (int)ARRAY_LEN(kdcOptions); o++) {
+                if (ovalue[kdcOptions[o].byte] & kdcOptions[o].bit)
+                    arkime_field_string_add(optionsField, session, kdcOptions[o].name, -1, TRUE);
+            }
+            break;
+        }
         case 1:
             krb5_parse_principal_name(session, cnameField, seq[i].value, seq[i].len);
             break;
@@ -242,9 +269,41 @@ LOCAL void krb5_parse_req(ArkimeSession_t *session, const uint8_t *data, int len
 --      enc-part[6]             EncryptedData
 --}
 */
-LOCAL void krb5_parse_rep(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_rep(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     arkime_session_add_protocol(session, "krb5");
+
+    ArkimeASNSeq_t seq[7];
+    int num = arkime_parsers_asn_get_sequence(seq, 7, data, len, TRUE);
+    for (int i = 0; i < num; i++) {
+        if (seq[i].tag != 5)
+            continue;
+
+        // ticket [APPLICATION 1] SEQUENCE { tkt-vno[0], realm[1], sname[2], enc-part[3] EncryptedData { etype[0], kvno[1], cipher[2] } }
+        BSB tbsb;
+        uint32_t tpc, ttag, tlen;
+        BSB_INIT(tbsb, seq[i].value, seq[i].len);
+        const uint8_t *tvalue = arkime_parsers_asn_get_tlv(&tbsb, &tpc, &ttag, &tlen);
+        if (!tvalue || !tpc)
+            break;
+
+        ArkimeASNSeq_t tseq[4];
+        int tnum = arkime_parsers_asn_get_sequence(tseq, 4, tvalue, tlen, TRUE);
+        for (int j = 0; j < tnum; j++) {
+            if (tseq[j].tag != 3)
+                continue;
+            ArkimeASNSeq_t eseq[3];
+            int enum_ = arkime_parsers_asn_get_sequence(eseq, 3, tseq[j].value, tseq[j].len, TRUE);
+            for (int k = 0; k < enum_; k++) {
+                if (eseq[k].tag != 0)
+                    continue;
+                int etype = arkime_parsers_asn_sequence_to_int(&eseq[k]);
+                if (etype >= 0 && etype < (int)ARRAY_LEN(krb5Etypes) && krb5Etypes[etype])
+                    arkime_field_string_add(ticketEtypeField, session, krb5Etypes[etype], -1, TRUE);
+            }
+        }
+        break;
+    }
 }
 /******************************************************************************/
 /* wireshark: k5.asn which is based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
@@ -335,14 +394,23 @@ LOCAL void krb5_parse(ArkimeSession_t *session, const uint8_t *data, int len)
 
     switch (msgType) {
     case 10:
+        arkime_field_string_add(msgTypeField, session, "AS-REQ", 6, TRUE);
+        krb5_parse_req(session, ovalue, olen);
+        break;
     case 12:
+        arkime_field_string_add(msgTypeField, session, "TGS-REQ", 7, TRUE);
         krb5_parse_req(session, ovalue, olen);
         break;
     case 11:
+        arkime_field_string_add(msgTypeField, session, "AS-REP", 6, TRUE);
+        krb5_parse_rep(session, ovalue, olen);
+        break;
     case 13:
+        arkime_field_string_add(msgTypeField, session, "TGS-REP", 7, TRUE);
         krb5_parse_rep(session, ovalue, olen);
         break;
     case 30:
+        arkime_field_string_add(msgTypeField, session, "KRB-ERROR", 9, TRUE);
         krb5_parse_error(session, ovalue, olen);
         break;
     }
@@ -446,6 +514,24 @@ void arkime_parser_init()
                                      "Kerberos 5 encryption type",
                                      ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
+
+    msgTypeField = arkime_field_define("krb5", "termfield",
+                                       "krb5.msgType", "Message Type", "krb5.msgType",
+                                       "Kerberos message types seen (AS-REQ, AS-REP, TGS-REQ, TGS-REP, KRB-ERROR)",
+                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
+
+    optionsField = arkime_field_define("krb5", "termfield",
+                                       "krb5.options", "KDC Options", "krb5.options",
+                                       "Kerberos request kdc-options flags",
+                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
+
+    ticketEtypeField = arkime_field_define("krb5", "termfield",
+                                           "krb5.ticketEtype", "Ticket Encryption Type", "krb5.ticketEtype",
+                                           "Encryption type of the ticket in the KDC reply",
+                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
     errorCodeField = arkime_field_define("krb5", "termfield",
                                          "krb5.error", "Error Code", "krb5.error",

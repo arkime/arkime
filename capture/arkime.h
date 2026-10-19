@@ -578,6 +578,8 @@ struct arkime_pcap_sf_pkthdr {
 #define ARKIME_PACKET_TUNNEL_VXLAN      0x20
 #define ARKIME_PACKET_TUNNEL_VXLAN_GPE  0x40
 #define ARKIME_PACKET_TUNNEL_GENEVE     0x80
+#define ARKIME_PACKET_TUNNEL_AH         0x100
+#define ARKIME_PACKET_TUNNEL_ERSPAN     0x200
 // Increase tunnel size below
 
 #define ARKIME_PACKET_LEN_FILE_DONE     1
@@ -600,7 +602,7 @@ typedef struct arkimepacket_t {
     uint8_t        interfaceIndex;      // which interface within fileInfo[readerPos] (pcapng EPB interface_id)
     uint32_t       etherOffset: 11;     // offset to current ethernet frame from start
     uint32_t       outerEtherOffset: 11; // offset to previous ethernet frame from start
-    uint32_t       tunnel: 8;           // tunnel type
+    uint32_t       tunnel: 10;          // tunnel type
     uint32_t       direction: 1;        // direction of packet
     uint32_t       v6: 1;               // v6 or not
     uint32_t       outerv6: 1;          // outer v6 or not

@@ -37,10 +37,18 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "user-agent"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      489
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type"

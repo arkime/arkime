@@ -7,6 +7,29 @@
 extern ArkimeConfig_t        config;
 
 LOCAL  int bindNameField;
+LOCAL  int opField;
+LOCAL  int resultField;
+
+LOCAL const char *ldapOps[26] = {
+    [0] = "bind", [1] = "bind_response", [2] = "unbind", [3] = "search", [4] = "search_entry", [5] = "search_result",
+    [6] = "modify", [7] = "modify_response", [8] = "add", [9] = "add_response", [10] = "delete", [11] = "delete_response",
+    [12] = "modifydn", [13] = "modifydn_response", [14] = "compare", [15] = "compare_response", [16] = "abandon",
+    [19] = "search_reference", [23] = "extended", [24] = "extended_response", [25] = "intermediate_response"
+};
+
+LOCAL const char *ldapResults[] = {
+    [0] = "success", [1] = "operationsError", [2] = "protocolError", [3] = "timeLimitExceeded", [4] = "sizeLimitExceeded",
+    [5] = "compareFalse", [6] = "compareTrue", [7] = "authMethodNotSupported", [8] = "strongerAuthRequired",
+    [9] = "partialResults", [10] = "referral", [11] = "adminLimitExceeded", [12] = "unavailableCriticalExtension",
+    [13] = "confidentialityRequired", [14] = "saslBindInProgress", [16] = "noSuchAttribute", [17] = "undefinedAttributeType",
+    [18] = "inappropriateMatching", [19] = "constraintViolation", [20] = "attributeOrValueExists", [21] = "invalidAttributeSyntax",
+    [32] = "noSuchObject", [33] = "aliasProblem", [34] = "invalidDNSyntax", [36] = "aliasDereferencingProblem",
+    [48] = "inappropriateAuthentication", [49] = "invalidCredentials", [50] = "insufficientAccessRights", [51] = "busy",
+    [52] = "unavailable", [53] = "unwillingToPerform", [54] = "loopDetect", [60] = "sortControlMissing", [61] = "offsetRangeError",
+    [64] = "namingViolation", [65] = "objectClassViolation", [66] = "notAllowedOnNonLeaf", [67] = "notAllowedOnRDN",
+    [68] = "entryAlreadyExists", [69] = "objectClassModsProhibited", [71] = "affectsMultipleDSAs", [76] = "virtualListViewError",
+    [80] = "other"
+};
 LOCAL  int authTypeField;
 
 /******************************************************************************/
@@ -34,6 +57,8 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
         uint8_t *ivalue = arkime_parsers_asn_get_tlv(&ibsb, &ipc, &protocolOp, &ilen);
         if (ipc != 1 || protocolOp > 25)
             return;
+        if (ldapOps[protocolOp])
+            arkime_field_string_add(opField, session, ldapOps[protocolOp], -1, TRUE);
 
         if (protocolOp == 0) {
             BSB_INIT(ibsb, ivalue, ilen);
@@ -103,7 +128,9 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
             BSB_INIT(rbsb, ivalue, ilen);
             uint32_t rpc, rtag, rlen;
             // resultCode (ENUMERATED)
-            arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            const uint8_t *rcvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
+            if (rcvalue && rtag == 10 && rlen == 1 && rcvalue[0] < ARRAY_LEN(ldapResults) && ldapResults[rcvalue[0]])
+                arkime_field_string_add(resultField, session, ldapResults[rcvalue[0]], -1, TRUE);
             // matchedDN (OCTET STRING)
             const uint8_t *rvalue = arkime_parsers_asn_get_tlv(&rbsb, &rpc, &rtag, &rlen);
             if (rvalue && rlen >= 8 && memcmp(rvalue, "NTLMSSP\0", 8) == 0) {
@@ -222,6 +249,18 @@ void arkime_parser_init()
                                         "The auth type of ldap bind",
                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                         (char *)NULL);
+
+    opField = arkime_field_define("ldap", "termfield",
+                                  "ldap.op", "Operation", "ldap.op",
+                                  "LDAP protocol operations seen",
+                                  ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
+
+    resultField = arkime_field_define("ldap", "termfield",
+                                      "ldap.result", "Bind Result", "ldap.result",
+                                      "LDAP bind response result code",
+                                      ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
 
     bindNameField = arkime_field_define("ldap", "termfield",
                                         "ldap.bindname", "Bind Name", "ldap.bindname",

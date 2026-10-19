@@ -46,11 +46,19 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      2
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -342,11 +350,19 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      2
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -633,11 +649,19 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      2
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",
@@ -903,11 +927,19 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      2
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "content-length",
       "content-type",

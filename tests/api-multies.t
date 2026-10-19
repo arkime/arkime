@@ -90,8 +90,8 @@ my $json;
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v30", "Correct stats index name");
 
     $json = mesPost("/MULTIPREFIX_fields/_search?rest_total_hits_as_int=true", "{\"size\":1000}");
-    cmp_ok($json->{hits}->{total}, '>=', 590, "fields count is at least 590");
-    cmp_ok($json->{hits}->{total}, '<',  900, "fields count is less than 900");
+    cmp_ok($json->{hits}->{total}, '>=', 790, "fields count is at least 790");
+    cmp_ok($json->{hits}->{total}, '<',  1000, "fields count is less than 1000");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v30", "Correct fields index name");
 
     SKIP: {

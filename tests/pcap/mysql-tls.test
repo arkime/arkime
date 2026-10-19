@@ -5,21 +5,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "0f:74:24:1f:1a:ad:c5:74:02:b5:97:16:7c:17:7d:f9:d9:d3:45:d8",
       "issuerCN" : [
        "mysql_server_5.7.12_auto_generated_ca_certificate"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1779463436000,
       "notBefore" : 1464103436000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3436,
       "remainingSeconds" : 296911218,
       "serial" : "02",
+      "sha256" : "628d31bdd83c4d881a48bcad14159481a62f47ad3e342fbb32da974e15dd1355",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "mysql_server_5.7.12_auto_generated_server_certificate"
       ],
       "validDays" : 3650,
-      "validSeconds" : 315360000
+      "validSeconds" : 315360000,
+      "version" : 1
      }
     ],
     "certCnt" : 1,

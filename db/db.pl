@@ -4626,8 +4626,20 @@ sub sessions3Update
         "altCnt" : {
           "type" : "long"
         },
+        "altEmail" : {
+          "type" : "keyword"
+        },
+        "altIp" : {
+          "type" : "ip"
+        },
+        "altUri" : {
+          "type" : "keyword"
+        },
         "curve" : {
           "type" : "keyword"
+        },
+        "exponent" : {
+          "type" : "long"
         },
         "hash" : {
           "type" : "keyword"
@@ -4647,11 +4659,17 @@ sub sessions3Update
         "ja4x_r" : {
           "type" : "keyword"
         },
+        "keyLength" : {
+          "type" : "long"
+        },
         "notAfter" : {
           "type" : "date"
         },
         "notBefore" : {
           "type" : "date"
+        },
+        "pathLen" : {
+          "type" : "long"
         },
         "publicAlgorithm" : {
           "type" : "keyword"
@@ -4663,6 +4681,12 @@ sub sessions3Update
           "type" : "long"
         },
         "serial" : {
+          "type" : "keyword"
+        },
+        "sha256" : {
+          "type" : "keyword"
+        },
+        "signatureAlgorithm" : {
           "type" : "keyword"
         },
         "subjectCN" : {
@@ -4678,6 +4702,9 @@ sub sessions3Update
           "type" : "long"
         },
         "validSeconds" : {
+          "type" : "long"
+        },
+        "version" : {
           "type" : "long"
         }
       }
@@ -4890,6 +4917,12 @@ sub sessions3Update
         "classIdCnt" : {
           "type" : "long"
         },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "domainCnt" : {
+          "type" : "long"
+        },
         "host" : {
           "type" : "keyword",
           "copy_to" : [
@@ -4920,6 +4953,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "ja4d6Cnt" : {
+          "type" : "long"
+        },
+        "leaseTime" : {
+          "type" : "long"
+        },
+        "leaseTimeCnt" : {
           "type" : "long"
         },
         "mac" : {
@@ -4953,6 +4992,21 @@ sub sessions3Update
           "type" : "long"
         },
         "requestRIR" : {
+          "type" : "keyword"
+        },
+        "serverASN" : {
+          "type" : "keyword"
+        },
+        "serverGEO" : {
+          "type" : "keyword"
+        },
+        "serverIp" : {
+          "type" : "ip"
+        },
+        "serverIpCnt" : {
+          "type" : "long"
+        },
+        "serverRIR" : {
           "type" : "keyword"
         },
         "type" : {
@@ -5208,6 +5262,12 @@ sub sessions3Update
         "contentTypeCnt" : {
           "type" : "long"
         },
+        "date" : {
+          "type" : "keyword"
+        },
+        "dateCnt" : {
+          "type" : "long"
+        },
         "dst" : {
           "type" : "keyword"
         },
@@ -5270,6 +5330,12 @@ sub sessions3Update
         "idCnt" : {
           "type" : "long"
         },
+        "inReplyTo" : {
+          "type" : "keyword"
+        },
+        "inReplyToCnt" : {
+          "type" : "long"
+        },
         "ip" : {
           "type" : "ip"
         },
@@ -5286,6 +5352,18 @@ sub sessions3Update
           "type" : "keyword"
         },
         "mimeVersionCnt" : {
+          "type" : "long"
+        },
+        "reply" : {
+          "type" : "keyword"
+        },
+        "replyCnt" : {
+          "type" : "long"
+        },
+        "replyTo" : {
+          "type" : "keyword"
+        },
+        "replyToCnt" : {
           "type" : "long"
         },
         "sha256" : {
@@ -5421,6 +5499,12 @@ sub sessions3Update
           "type" : "integer"
         },
         "responseCodeCnt" : {
+          "type" : "long"
+        },
+        "responseMsg" : {
+          "type" : "keyword"
+        },
+        "responseMsgCnt" : {
           "type" : "long"
         }
       }
@@ -5558,6 +5642,12 @@ sub sessions3Update
         "requestBody" : {
           "type" : "keyword"
         },
+        "requestBodyLen" : {
+          "type" : "long"
+        },
+        "requestBodyLenCnt" : {
+          "type" : "long"
+        },
         "requestHeader" : {
           "type" : "keyword"
         },
@@ -5581,6 +5671,12 @@ sub sessions3Update
         },
         "response-server" : {
           "type" : "keyword"
+        },
+        "responseBodyLen" : {
+          "type" : "long"
+        },
+        "responseBodyLenCnt" : {
+          "type" : "long"
         },
         "responseHeader" : {
           "type" : "keyword"
@@ -5786,6 +5882,18 @@ sub sessions3Update
         "etypeCnt" : {
           "type" : "long"
         },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "options" : {
+          "type" : "keyword"
+        },
+        "optionsCnt" : {
+          "type" : "long"
+        },
         "realm" : {
           "type" : "keyword"
         },
@@ -5796,6 +5904,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "snameCnt" : {
+          "type" : "long"
+        },
+        "ticketEtype" : {
+          "type" : "keyword"
+        },
+        "ticketEtypeCnt" : {
           "type" : "long"
         }
       }
@@ -5818,6 +5932,18 @@ sub sessions3Update
           "type" : "keyword"
         },
         "bindnameCnt" : {
+          "type" : "long"
+        },
+        "op" : {
+          "type" : "keyword"
+        },
+        "opCnt" : {
+          "type" : "long"
+        },
+        "result" : {
+          "type" : "keyword"
+        },
+        "resultCnt" : {
           "type" : "long"
         }
       }
@@ -5967,6 +6093,12 @@ sub sessions3Update
         "flagsCnt" : {
           "type" : "long"
         },
+        "payloadLen" : {
+          "type" : "long"
+        },
+        "payloadLenCnt" : {
+          "type" : "long"
+        },
         "qos" : {
           "type" : "long"
         },
@@ -6042,8 +6174,78 @@ sub sessions3Update
         }
       }
     },
+    "ntlm" : {
+      "properties" : {
+        "dnsComputerName" : {
+          "type" : "keyword"
+        },
+        "dnsComputerNameCnt" : {
+          "type" : "long"
+        },
+        "dnsDomainName" : {
+          "type" : "keyword"
+        },
+        "dnsDomainNameCnt" : {
+          "type" : "long"
+        },
+        "dnsTreeName" : {
+          "type" : "keyword"
+        },
+        "dnsTreeNameCnt" : {
+          "type" : "long"
+        },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "domainCnt" : {
+          "type" : "long"
+        },
+        "host" : {
+          "type" : "keyword"
+        },
+        "hostCnt" : {
+          "type" : "long"
+        },
+        "nbComputerName" : {
+          "type" : "keyword"
+        },
+        "nbComputerNameCnt" : {
+          "type" : "long"
+        },
+        "nbDomainName" : {
+          "type" : "keyword"
+        },
+        "nbDomainNameCnt" : {
+          "type" : "long"
+        },
+        "targetName" : {
+          "type" : "keyword"
+        },
+        "targetNameCnt" : {
+          "type" : "long"
+        },
+        "type" : {
+          "type" : "long"
+        },
+        "typeCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "ntp" : {
       "properties" : {
+        "extensions" : {
+          "type" : "long"
+        },
+        "extensionsCnt" : {
+          "type" : "long"
+        },
         "ja4n" : {
           "type" : "keyword"
         },
@@ -6056,10 +6258,52 @@ sub sessions3Update
         "modeCnt" : {
           "type" : "long"
         },
+        "orgTime" : {
+          "type" : "keyword"
+        },
+        "orgTimeCnt" : {
+          "type" : "long"
+        },
+        "poll" : {
+          "type" : "long"
+        },
+        "pollCnt" : {
+          "type" : "long"
+        },
+        "precision" : {
+          "type" : "long"
+        },
+        "precisionCnt" : {
+          "type" : "long"
+        },
+        "recTime" : {
+          "type" : "keyword"
+        },
+        "recTimeCnt" : {
+          "type" : "long"
+        },
         "refId" : {
           "type" : "keyword"
         },
         "refIdCnt" : {
+          "type" : "long"
+        },
+        "refTime" : {
+          "type" : "keyword"
+        },
+        "refTimeCnt" : {
+          "type" : "long"
+        },
+        "rootDelay" : {
+          "type" : "long"
+        },
+        "rootDelayCnt" : {
+          "type" : "long"
+        },
+        "rootDispersion" : {
+          "type" : "long"
+        },
+        "rootDispersionCnt" : {
           "type" : "long"
         },
         "stratum" : {
@@ -6068,10 +6312,22 @@ sub sessions3Update
         "stratumCnt" : {
           "type" : "long"
         },
+        "stratumNum" : {
+          "type" : "long"
+        },
+        "stratumNumCnt" : {
+          "type" : "long"
+        },
         "version" : {
           "type" : "long"
         },
         "versionCnt" : {
+          "type" : "long"
+        },
+        "xmtTime" : {
+          "type" : "keyword"
+        },
+        "xmtTimeCnt" : {
           "type" : "long"
         }
       }
@@ -6632,6 +6888,27 @@ sub sessions3Update
         "RIR" : {
           "type" : "keyword"
         },
+        "boundASN" : {
+          "type" : "keyword"
+        },
+        "boundGEO" : {
+          "type" : "keyword"
+        },
+        "boundIp" : {
+          "type" : "ip"
+        },
+        "boundIpCnt" : {
+          "type" : "long"
+        },
+        "boundPort" : {
+          "type" : "long"
+        },
+        "boundPortCnt" : {
+          "type" : "long"
+        },
+        "boundRIR" : {
+          "type" : "keyword"
+        },
         "host" : {
           "type" : "keyword",
           "copy_to" : [
@@ -6652,8 +6929,20 @@ sub sessions3Update
         "port" : {
           "type" : "long"
         },
+        "status" : {
+          "type" : "keyword"
+        },
+        "statusCnt" : {
+          "type" : "long"
+        },
         "user" : {
           "type" : "keyword"
+        },
+        "version" : {
+          "type" : "long"
+        },
+        "versionCnt" : {
+          "type" : "long"
         }
       }
     },
@@ -6795,6 +7084,24 @@ sub sessions3Update
     },
     "ssh" : {
       "properties" : {
+        "cipher" : {
+          "type" : "keyword"
+        },
+        "cipherCnt" : {
+          "type" : "long"
+        },
+        "clientVersion" : {
+          "type" : "keyword"
+        },
+        "clientVersionCnt" : {
+          "type" : "long"
+        },
+        "compression" : {
+          "type" : "keyword"
+        },
+        "compressionCnt" : {
+          "type" : "long"
+        },
         "hassh" : {
           "type" : "keyword"
         },
@@ -6807,16 +7114,40 @@ sub sessions3Update
         "hasshServerCnt" : {
           "type" : "long"
         },
+        "hostKeyAlg" : {
+          "type" : "keyword"
+        },
+        "hostKeyAlgCnt" : {
+          "type" : "long"
+        },
         "ja4ssh" : {
           "type" : "keyword"
         },
         "ja4sshCnt" : {
           "type" : "long"
         },
+        "kex" : {
+          "type" : "keyword"
+        },
+        "kexCnt" : {
+          "type" : "long"
+        },
         "key" : {
           "type" : "keyword"
         },
         "keyCnt" : {
+          "type" : "long"
+        },
+        "mac" : {
+          "type" : "keyword"
+        },
+        "macCnt" : {
+          "type" : "long"
+        },
+        "serverVersion" : {
+          "type" : "keyword"
+        },
+        "serverVersionCnt" : {
           "type" : "long"
         },
         "version" : {
@@ -7024,14 +7355,38 @@ sub sessions3Update
     },
     "tls" : {
       "properties" : {
+        "alert" : {
+          "type" : "keyword"
+        },
+        "alertCnt" : {
+          "type" : "long"
+        },
+        "alpn" : {
+          "type" : "keyword"
+        },
+        "alpnCnt" : {
+          "type" : "long"
+        },
         "cipher" : {
           "type" : "keyword"
         },
         "cipherCnt" : {
           "type" : "long"
         },
+        "clientAlpn" : {
+          "type" : "keyword"
+        },
+        "clientAlpnCnt" : {
+          "type" : "long"
+        },
         "dstSessionId" : {
           "type" : "keyword"
+        },
+        "group" : {
+          "type" : "keyword"
+        },
+        "groupCnt" : {
+          "type" : "long"
         },
         "ja3" : {
           "type" : "keyword"

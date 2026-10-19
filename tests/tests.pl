@@ -136,13 +136,13 @@ sub sortObj {
         if ($r eq "HASH") {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
-            if ($key =~ /(dns)/) {
+            if ($key eq "dns") {
                 for my $dnsObj ( @{$obj->{$key}} ) {
                     sortObj($key, $dnsObj);
                 }
             }
             next if (scalar (@{$obj->{$key}}) < 2);
-            next if ($key =~ /(packetPos|packetLen|cert|dns)/);
+            next if ($key =~ /^(packetPos|packetLen|cert|dns)$/);
             next if ("$parentkey.$key" =~ /dns.answers|vlan.id/);
             if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});

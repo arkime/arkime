@@ -36,6 +36,10 @@
       "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Thu, 5 Dec 2013 14:56:55 +0100"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "xxxxx-xxxx@xxxx.xxx.xx.jp"
      ],
@@ -50,19 +54,18 @@
       "to"
      ],
      "headerCnt" : 7,
-     "headerField" : [
-      "date",
-      "reply-to"
-     ],
-     "headerValue" : [
-      "\"1234567899@aol.com\" <1234567899@aol.com>",
-      "Thu, 5 Dec 2013 14:56:55 +0100"
-     ],
-     "headerValueCnt" : 2,
      "mimeVersion" : [
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "521 5.2.1 MUST COMPLETE IMAGE PUZZLE BEFORE SENDING. PLEASE GOTO http://challenge.aol.com/spam.html"
+     ],
+     "replyCnt" : 1,
+     "replyTo" : [
+      "1234567899@aol.com"
+     ],
+     "replyToCnt" : 1,
      "smtpHello" : [
       "xxxxxxxx.xxx.aol.com"
      ],

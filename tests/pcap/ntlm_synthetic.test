@@ -575,12 +575,21 @@
       "NTLM TlRMTVNTUAADAAAAGAAYAFgAAAAYABgAcAAAAA4ADgCIAAAACAAIAJYAAAAQABAAngAAABAAEACuAAAABQIAAgoAYUoAAAAPAAAAAAAAAAAAAAAAAAAAAExMTExMTExMTExMTExMTExMTExMTExMTE5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTkgAVABUAFAARABPAE0AZABhAHYAZQBIAFQAVABQAEgATwBTAFQAS0tLS0tLS0tLS0tLS0tLSw=="
      ],
      "request-authorizationCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "authorization",
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 3,
+     "responseBodyLen" : [
+      "0",
+      "3"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "connection",
       "content-length",
@@ -812,12 +821,21 @@
       "Negotiate TlRMTVNTUAADAAAAGAAYAFgAAAAYABgAcAAAABAAEACIAAAABgAGAJgAAAASABIAngAAABAAEACwAAAABQIAAgoAXVgAAAAPAAAAAAAAAAAAAAAAAAAAAExMTExMTExMTExMTExMTExMTExMTExMTE5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTkgAVABUAFAANgBEAE8ATQBlAHYAZQBIAFQAVABQADYASABPAFMAVABLS0tLS0tLS0tLS0tLS0tL"
      ],
      "request-authorizationCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "authorization",
       "host",
       "user-agent"
      ],
      "requestHeaderCnt" : 3,
+     "responseBodyLen" : [
+      "0",
+      "3"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "connection",
       "content-length",
@@ -1033,7 +1051,17 @@
       "<ROOT>",
       "cn=anon"
      ],
-     "bindnameCnt" : 2
+     "bindnameCnt" : 2,
+     "op" : [
+      "bind",
+      "bind_response"
+     ],
+     "opCnt" : 2,
+     "result" : [
+      "saslBindInProgress",
+      "success"
+     ],
+     "resultCnt" : 2
     },
     "length" : 102,
     "network" : {
@@ -1202,7 +1230,17 @@
      "bindname" : [
       "<ROOT>"
      ],
-     "bindnameCnt" : 1
+     "bindnameCnt" : 1,
+     "op" : [
+      "bind",
+      "bind_response"
+     ],
+     "opCnt" : 2,
+     "result" : [
+      "saslBindInProgress",
+      "success"
+     ],
+     "resultCnt" : 2
     },
     "length" : 78,
     "network" : {
@@ -1368,7 +1406,16 @@
      "bindname" : [
       "cn=anon"
      ],
-     "bindnameCnt" : 1
+     "bindnameCnt" : 1,
+     "op" : [
+      "bind",
+      "bind_response"
+     ],
+     "opCnt" : 2,
+     "result" : [
+      "invalidCredentials"
+     ],
+     "resultCnt" : 1
     },
     "length" : 54,
     "network" : {

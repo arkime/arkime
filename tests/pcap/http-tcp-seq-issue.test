@@ -69,6 +69,10 @@
       "http://xxx.xxxxxxxxxxxx.xxx.xx/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx?Command=FileUpload&Type=File&CurrentFolder=%2F"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      300
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "connection",

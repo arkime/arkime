@@ -382,8 +382,14 @@ LOCAL void sip_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
     if (len < 12)
         return;
 
-    // Verify SIP/2.0 present
-    if (!arkime_memstr((char *)data, MIN(len, 200), "SIP/2.0", 7))
+    // Verify SIP/2.0 is on the request/status line, skipping leading CRLF keepalives
+    const char *start = (const char *)data;
+    const char *end = start + MIN(len, 200);
+    while (start + 2 <= end && start[0] == '\r' && start[1] == '\n')
+        start += 2;
+    const char *sip20 = arkime_memstr(start, end - start, "SIP/2.0", 7);
+    const char *crlf = arkime_memstr(start, end - start, "\r\n", 2);
+    if (!sip20 || (crlf && crlf < sip20))
         return;
 
     arkime_session_add_protocol(session, "sip");
@@ -399,8 +405,14 @@ LOCAL void sip_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int l
     if (len < 12)
         return;
 
-    // Verify SIP/2.0 present
-    if (!arkime_memstr((char *)data, MIN(len, 200), "SIP/2.0", 7))
+    // Verify SIP/2.0 is on the request/status line, skipping leading CRLF keepalives
+    const char *start = (const char *)data;
+    const char *end = start + MIN(len, 200);
+    while (start + 2 <= end && start[0] == '\r' && start[1] == '\n')
+        start += 2;
+    const char *sip20 = arkime_memstr(start, end - start, "SIP/2.0", 7);
+    const char *crlf = arkime_memstr(start, end - start, "\r\n", 2);
+    if (!sip20 || (crlf && crlf < sip20))
         return;
 
     arkime_session_add_protocol(session, "sip");
@@ -469,17 +481,39 @@ void arkime_parser_init()
 
     // UDP classifiers
     arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"SIP/2.0", 7, sip_udp_classify);
-    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"INVITE sip:", 11, sip_udp_classify);
-    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"REGISTER sip:", 13, sip_udp_classify);
-    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"OPTIONS sip:", 12, sip_udp_classify);
-    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"NOTIFY sip:", 11, sip_udp_classify);
+    // Any request line, the classify functions verify SIP/2.0 is present
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"INVITE ", 7, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"ACK ", 4, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"BYE ", 4, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"CANCEL ", 7, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"OPTIONS ", 8, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"REGISTER ", 9, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"PRACK ", 6, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"SUBSCRIBE ", 10, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"NOTIFY ", 7, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"PUBLISH ", 8, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"INFO ", 5, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"REFER ", 6, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"MESSAGE ", 8, sip_udp_classify);
+    arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"UPDATE ", 7, sip_udp_classify);
     arkime_parsers_classifier_register_udp("sip", NULL, 0, (uint8_t *)"\r\n", 2, sip_udp_classify);
 
     // TCP classifiers
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"SIP/2.0", 7, sip_tcp_classify);
-    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"INVITE sip:", 11, sip_tcp_classify);
-    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"REGISTER sip:", 13, sip_tcp_classify);
-    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"OPTIONS sip:", 12, sip_tcp_classify);
-    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"NOTIFY sip:", 11, sip_tcp_classify);
+    // Any request line, the classify functions verify SIP/2.0 is present
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"INVITE ", 7, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"ACK ", 4, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"BYE ", 4, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"CANCEL ", 7, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"OPTIONS ", 8, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"REGISTER ", 9, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"PRACK ", 6, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"SUBSCRIBE ", 10, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"NOTIFY ", 7, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"PUBLISH ", 8, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"INFO ", 5, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"REFER ", 6, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"MESSAGE ", 8, sip_tcp_classify);
+    arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"UPDATE ", 7, sip_tcp_classify);
     arkime_parsers_classifier_register_tcp("sip", NULL, 0, (uint8_t *)"\r\n", 2, sip_tcp_classify);
 }
