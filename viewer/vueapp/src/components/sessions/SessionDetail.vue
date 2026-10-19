@@ -548,7 +548,7 @@ SPDX-License-Identifier: Apache-2.0
 import { ref, reactive, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, inject, provide, watch } from 'vue';
 // internal imports
 import store from '@/store';
-import { timezoneDateString } from '@common/vueFilters.js';
+import { timezoneDateString, escapeHtml } from '@common/vueFilters.js';
 import PacketOptions from './PacketOptions.vue';
 import SessionActions from './SessionActions.vue';
 import SessionsService from './SessionsService';
@@ -908,11 +908,11 @@ const packetOptionsHandlers = {
 };
 
 const showSrcBytesImg = () => {
-  const url = `api/session/raw/${props.session.node}/${props.session.id}.png?type=src`;
+  const url = `api/session/raw/${encodeURIComponent(props.session.node)}/${encodeURIComponent(props.session.id)}.png?type=src`;
   packetContainerRef.value.getElementsByClassName('src-col-tip')[0].innerHTML = `Source Bytes:
     <br>
     <img src="${url}">
-    <a class="no-decoration download-bytes" href="${url}" download="${props.session.id}-src.png">
+    <a class="no-decoration download-bytes" href="${url}" download="${escapeHtml(props.session.id)}-src.png">
       <i class="mdi mdi-download"></i>&nbsp;
       Download source bytes image
     </a>
@@ -921,11 +921,11 @@ const showSrcBytesImg = () => {
 };
 
 const showDstBytesImg = () => {
-  const url = `api/session/raw/${props.session.node}/${props.session.id}.png?type=dst`;
+  const url = `api/session/raw/${encodeURIComponent(props.session.node)}/${encodeURIComponent(props.session.id)}.png?type=dst`;
   packetContainerRef.value.getElementsByClassName('dst-col-tip')[0].innerHTML = `Destination Bytes:
     <br>
     <img src="${url}">
-    <a class="no-decoration download-bytes" href="${url}" download="${props.session.id}-dst.png">
+    <a class="no-decoration download-bytes" href="${url}" download="${escapeHtml(props.session.id)}-dst.png">
       <i class="mdi mdi-download"></i>&nbsp;
       Download destination bytes image
     </a>
