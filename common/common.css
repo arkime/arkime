@@ -408,7 +408,9 @@ pre {
   background-color: transparent;
 }
 .arkime-table > tbody > tr > td,
-.arkime-table > tbody > tr > th {
+.arkime-table > tbody > tr > th,
+.arkime-table > tfoot > tr > td,
+.arkime-table > tfoot > tr > th {
   padding: 0.25rem;
   border-bottom: 1px solid rgb(var(--v-theme-neutral-lighter));
   background-color: transparent;
@@ -424,7 +426,9 @@ pre {
 /* xs modifier: tighter cell padding for high-density tables. */
 .arkime-table--xs > thead > tr > th,
 .arkime-table--xs > tbody > tr > td,
-.arkime-table--xs > tbody > tr > th {
+.arkime-table--xs > tbody > tr > th,
+.arkime-table--xs > tfoot > tr > td,
+.arkime-table--xs > tfoot > tr > th {
   padding: 0.15rem 0.25rem;
 }
 /* row-tint modifiers used by parliament Issues to color rows by issue
