@@ -18,7 +18,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 const Config = require('./config.js');
 const DbESImpl = require('./db.es');
-const DbSQLiteImpl = require('./db.sqlite');
+const DbUsersImpl = require('./db.users');
 const DbCHImpl = require('./db.ch');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
@@ -172,25 +172,17 @@ Db.initialize = async (info) => {
 
   internals.usersClient7 = User.getClient();
 
-  // Initialize the users DB backend for views, shareables, etc.
-  if (internals.usersClient7) {
-    internals.usersImpl = new DbESImpl(internals.usersClient7, internals.usersPrefix);
-  } else {
-    const dbUrl = User.getDbUrl();
-    if (dbUrl?.startsWith('sqlite')) {
-      internals.usersImpl = new DbSQLiteImpl(ArkimeUtil.createSQLiteDB(dbUrl));
-    } else if (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) {
-      console.log(`WARN - views/shareables not yet supported for '${dbUrl}', using ES only`);
-    } else {
-      console.log(`ERROR - Don't understand users db impl for '${dbUrl}'`);
-      process.exit(1);
-    }
-  }
+  // views, shareables and shortcuts live in the users db, whatever backend it is
+  const usersConn = internals.usersClient7
+    ? ArkimeUtil.dbConnect(User.getDbUrl(), { client: internals.usersClient7, prefix: internals.usersPrefix })
+    : ArkimeUtil.dbConnect(User.getDbUrl(), { section: 'users' });
+  internals.usersImpl = new DbUsersImpl(usersConn);
+  await internals.usersImpl.init();
 
   // Initialize the sessions DB backend. sessionsImpl serves sessions indices
   // (ClickHouse when sessionsDbUrl says so, otherwise Elasticsearch); esImpl
   // always exists and serves everything else.
-  internals.esImpl = new DbESImpl(internals.client7, internals.prefix, { Db, internals, fixIndex });
+  internals.esImpl = new DbESImpl({ Db, internals, fixIndex });
 
   const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
   if (isClickHouseSessionsUrl(sessionsDbUrl) && !internals.multiES) {
@@ -1027,6 +1019,7 @@ Db.updateSession = async (index, id, doc) => {
 Db.close = async () => {
   User.close();
   internals.sessionsImpl.close();
+  await ArkimeUtil.dbCloseAll();
   return internals.client7.close();
 };
 
