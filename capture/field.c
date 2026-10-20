@@ -619,6 +619,13 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     return minfo->pos;
 }
 /******************************************************************************/
+/* Mark an internal field whose parser calls ARKIME_RULES_RUN_FIELD_SET when it
+ * gets a value, so fieldSet expression rules can trigger on it. */
+void arkime_field_internal_sets_rules(int pos)
+{
+    config.fields[pos]->runsFieldSet = 1;
+}
+/******************************************************************************/
 int arkime_field_by_db(const char *dbField)
 {
     ArkimeFieldInfo_t *info = 0;

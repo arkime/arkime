@@ -856,6 +856,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     certAltField = arkime_field_by_exp_add_internal("cert.alt", ARKIME_FIELD_TYPE_STR_ARRAY, certs_getcb_alt, NULL);
+    arkime_field_internal_sets_rules(certAltField);
 
     arkime_field_define("cert", "lotermfield",
                         "cert.alt.email", "Alt Email", "cert.altEmail",

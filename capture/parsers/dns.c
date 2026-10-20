@@ -2191,6 +2191,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostField = arkime_field_by_exp_add_internal("dns.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host, NULL);
+    arkime_field_internal_sets_rules(dnsHostField);
     arkime_field_by_exp_add_special("host.dns", dnsHostField);
 
     arkime_field_define("dns", "lotextfield",
@@ -2208,6 +2209,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostNameserverField = arkime_field_by_exp_add_internal("host.dns.nameserver", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host_nameserver, NULL);
+    arkime_field_internal_sets_rules(dnsHostNameserverField);
 
     arkime_field_define("dns", "lotermfield",
                         "host.dns.mailserver", "DNS MX Host", "dns.mailserverHost",
@@ -2217,6 +2219,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostMailserverField = arkime_field_by_exp_add_internal("host.dns.mailserver", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host_mailserver, NULL);
+    arkime_field_internal_sets_rules(dnsHostMailserverField);
 
     arkime_field_define("dns", "lotermfield",
                         "host.dns.all", "DNS All Host", "dnshostall",
@@ -2232,6 +2235,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsPunyField = arkime_field_by_exp_add_internal("dns.puny", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_puny, NULL);
+    arkime_field_internal_sets_rules(dnsPunyField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.status", "DNS Status Code", "dns.status",
@@ -2240,6 +2244,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsStatusField = arkime_field_by_exp_add_internal("dns.status", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_status, NULL);
+    arkime_field_internal_sets_rules(dnsStatusField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.opcode", "DNS Op Code", "dns.opcode",
@@ -2248,6 +2253,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsOpcodeField = arkime_field_by_exp_add_internal("dns.opcode", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_opcode, NULL);
+    arkime_field_internal_sets_rules(dnsOpcodeField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.query.type", "DNS Query Type", "dns.qt",
@@ -2256,6 +2262,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsQueryTypeField = arkime_field_by_exp_add_internal("dns.query.type", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_type, NULL);
+    arkime_field_internal_sets_rules(dnsQueryTypeField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.query.class", "DNS Query Class", "dns.qc",
@@ -2264,6 +2271,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsQueryClassField = arkime_field_by_exp_add_internal("dns.query.class", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_class, NULL);
+    arkime_field_internal_sets_rules(dnsQueryClassField);
 
     arkime_field_define("dns", "lotermfield",
                         "dns.query.host", "DNS Query Host", "dns.queryHost",
@@ -2273,6 +2281,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsQueryHostField = arkime_field_by_exp_add_internal("dns.query.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_host, NULL);
+    arkime_field_internal_sets_rules(dnsQueryHostField);
 
     arkime_field_define("dns", "integer",
                         "dns.answer.cnt", "DNS Answers Cnt", "dns.answersCnt",

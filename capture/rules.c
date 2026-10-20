@@ -56,7 +56,6 @@ typedef struct {
     uint8_t              saveFlags;                  // When to save for beforeSave
     uint8_t              log;                        // should we log or not
     uint8_t              setRule;                    // This is a set rule type
-    uint8_t              fieldsRule;                 // fields: rule, for fieldSet the field that was just set already matched
 } ArkimeRule_t;
 
 /* All the information about the rules.  To support reloading while running
@@ -586,7 +585,6 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     if (fields) {
         ArkimeRulesV2Fields_t *builder = arkime_rulesv2_fields_new();
         GHashTable *kinds = g_hash_table_new(NULL, NULL);
-        rule->fieldsRule = 1;
 
         for (int i = 0; i < (int)fields->len; i++) {
             YamlNode_t *node = g_ptr_array_index(fields, i);
@@ -896,8 +894,8 @@ void arkime_rules_recompile()
     }
 }
 /******************************************************************************/
-// skipField is the fieldSet field that was just set for fields: rules, or -1
-LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *const rule, ArkimePacket_t *packet, int skipField)
+// For fieldSet, triggerField was just set to triggerValue, else -1
+LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *const rule, ArkimePacket_t *packet, int triggerField, const void *triggerValue)
 {
     if (rule->log) {
         char ipStr[200];
@@ -906,7 +904,7 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
 
         if (rule->prog) {
             GString *explain = g_string_new(NULL);
-            arkime_rulesv2_explain(rule->prog, session, packet, skipField, explain);
+            arkime_rulesv2_explain(rule->prog, session, packet, triggerField, triggerValue, explain);
             if (explain->len > 0)
                 LOG("%s - %s - %s", rule->name, ipStr, explain->str);
             g_string_free(explain, TRUE);
@@ -916,35 +914,48 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
     arkime_field_ops_run(session, &rule->ops);
 }
 /******************************************************************************/
-// Rules already evaluated for the value being set
+// One field being set, and the rules already checked for it
 typedef struct {
+    const void   *value;
     ArkimeRule_t *rules[32];
     int           num;
-} ArkimeRulesSeen_t;
+    GHashTable   *more;     // once rules is full
+} ArkimeRulesSetEvent_t;
 
-LOCAL void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArray *rules, ArkimeRulesSeen_t *seen)
+// A rule can be indexed under several keys that match the same value, returns if it was already checked
+LOCAL gboolean arkime_rules_set_event_seen(ArkimeRulesSetEvent_t *event, ArkimeRule_t *rule)
+{
+    for (int s = 0; s < event->num; s++) {
+        if (event->rules[s] == rule)
+            return TRUE;
+    }
+    if (event->num < (int)G_N_ELEMENTS(event->rules)) {
+        event->rules[event->num++] = rule;
+        return FALSE;
+    }
+    if (!event->more)
+        event->more = g_hash_table_new(NULL, NULL);
+    return !g_hash_table_add(event->more, rule);
+}
+/******************************************************************************/
+LOCAL void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArray *rules, ArkimeRulesSetEvent_t *event)
 {
     for (int r = 0; r < (int)rules->len; r++) {
         ArkimeRule_t *rule = g_ptr_array_index(rules, r);
-
-        // A rule can be indexed under several keys that match the same value
-        int s;
-        for (s = 0; s < seen->num && seen->rules[s] != rule; s++);
-        if (s < seen->num)
+        if (arkime_rules_set_event_seen(event, rule))
             continue;
-        if (seen->num < (int)G_N_ELEMENTS(seen->rules))
-            seen->rules[seen->num++] = rule;
 
-        const int skipField = rule->fieldsRule ? pos : -1;
-        if (arkime_rulesv2_eval_fields(rule->prog, session, NULL, skipField))
-            arkime_rules_match(session, rule, NULL, skipField);
+        if (arkime_rulesv2_eval_set(rule->prog, session, pos, event->value))
+            arkime_rules_match(session, rule, NULL, pos, event->value);
     }
 }
 /******************************************************************************/
 void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointer value)
 {
-    ArkimeRulesSeen_t seen;
-    seen.num = 0;
+    ArkimeRulesSetEvent_t event;
+    event.value = value;
+    event.num = 0;
+    event.more = NULL;
 
     if (ARKIME_FIELD_TYPE_IS_IP(config.fields[pos]->type)) {
 
@@ -961,7 +972,7 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
 
         // These are all the possible rules that match
         for (int i = 0; i < cnt; i++) {
-            arkime_rules_run_field_set_rules(session, pos, nodes[i]->data, &seen);
+            arkime_rules_run_field_set_rules(session, pos, nodes[i]->data, &event);
         }
     } else {
         GPtrArray *rules;
@@ -979,7 +990,7 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
                     match.num = num;
                     uint32_t test = (uint32_t)(long)value;
                     if (test >= match.min && test <= match.max) {
-                        arkime_rules_run_field_set_rules(session, pos, rules, &seen);
+                        arkime_rules_run_field_set_rules(session, pos, rules, &event);
                     }
                 }
             } else {
@@ -993,15 +1004,15 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
                     switch (akey[0]) {
                     case ARKIME_RULES_STR_MATCH_TAIL:
                         if (memcmp(akey + 2, (char *)value + len - akey[1], akey[1]) == 0)
-                            arkime_rules_run_field_set_rules(session, pos, rules, &seen);
+                            arkime_rules_run_field_set_rules(session, pos, rules, &event);
                         break;
                     case ARKIME_RULES_STR_MATCH_HEAD:
                         if (memcmp(akey + 2, (char *)value, akey[1]) == 0)
-                            arkime_rules_run_field_set_rules(session, pos, rules, &seen);
+                            arkime_rules_run_field_set_rules(session, pos, rules, &event);
                         break;
                     case ARKIME_RULES_STR_MATCH_CONTAINS:
                         if (arkime_memstr((char *)value, len, (char *)akey + 2, akey[1]) != 0)
-                            arkime_rules_run_field_set_rules(session, pos, rules, &seen);
+                            arkime_rules_run_field_set_rules(session, pos, rules, &event);
                     }
                 }
             }
@@ -1011,12 +1022,15 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
         if (current.fieldsHash[pos]) {
             rules = g_hash_table_lookup(current.fieldsHash[pos], value);
             if (rules)
-                arkime_rules_run_field_set_rules(session, pos, rules, &seen);
+                arkime_rules_run_field_set_rules(session, pos, rules, &event);
         }
     }
 
     if (current.fieldsAny[pos])
-        arkime_rules_run_field_set_rules(session, pos, current.fieldsAny[pos], &seen);
+        arkime_rules_run_field_set_rules(session, pos, current.fieldsAny[pos], &event);
+
+    if (event.more)
+        g_hash_table_destroy(event.more);
 }
 /******************************************************************************/
 void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *packet)
@@ -1025,14 +1039,14 @@ void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *pa
         ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_SESSION_SETUP], r);
         if (rule->prog) {
             if (arkime_rulesv2_eval(rule->prog, session, packet))
-                arkime_rules_match(session, rule, packet, -1);
+                arkime_rules_match(session, rule, packet, -1, NULL);
         } else if (rule->bpf) {
             const int dltIndex = arkime_packet_dlt_index(packet);
             if (dltIndex < 0)
                 continue;
             struct bpf_program *bpfp = ARKIME_THREAD_ATOMIC_LOAD(rule->bpfp[dltIndex]);
             if (bpfp && bpfp->bf_len && bpf_filter(bpfp->bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-                arkime_rules_match(session, rule, packet, -1);
+                arkime_rules_match(session, rule, packet, -1, NULL);
             }
         }
     }
@@ -1043,7 +1057,7 @@ void arkime_rules_run_after_classify(ArkimeSession_t *session)
     for (guint r = 0; r < current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY]->len; r++) {
         ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY], r);
         if (rule->prog && arkime_rulesv2_eval(rule->prog, session, NULL))
-            arkime_rules_match(session, rule, NULL, -1);
+            arkime_rules_match(session, rule, NULL, -1, NULL);
     }
 }
 /******************************************************************************/
@@ -1057,7 +1071,7 @@ void arkime_rules_run_before_save(ArkimeSession_t *session, int final)
         }
 
         if (rule->prog && arkime_rulesv2_eval(rule->prog, session, NULL))
-            arkime_rules_match(session, rule, NULL, -1);
+            arkime_rules_match(session, rule, NULL, -1, NULL);
     }
 }
 /******************************************************************************/
@@ -1113,6 +1127,12 @@ void arkime_rules_init()
     srcIpField = arkime_field_by_exp("ip.src");
     dstPortField = arkime_field_by_exp("port.dst");
     dstIpField = arkime_field_by_exp("ip.dst");
+
+    // arkime_rules_session_create runs fieldSet for these
+    arkime_field_internal_sets_rules(srcPortField);
+    arkime_field_internal_sets_rules(srcIpField);
+    arkime_field_internal_sets_rules(dstPortField);
+    arkime_field_internal_sets_rules(dstIpField);
 
     if (rulesFiles) {
         arkime_config_monitor_files("rules files", rulesFiles, arkime_rules_load);

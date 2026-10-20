@@ -112,10 +112,13 @@ checked for fields that are only used under `!`, because fields only gain values
 negated condition can only become false. Fields set in any order work:
 `http.method == GET && host.http == *.example.com` is checked when either one is set.
 
-Only fields that capture sets as it parses can trigger the check: any non internal
-field, plus `ip.src`, `ip.dst`, `port.src` and `port.dst`. A fieldSet expression with
-nothing to trigger on, such as only negations or only internal fields like
-`packets.src`, fails to load. Use a stage like `beforeFinalSave` for those.
+Only fields that are set while parsing can trigger the check: any non internal field,
+`ip.src`, `ip.dst`, `port.src` and `port.dst`, and internal fields whose parser runs
+fieldSet for them, `cert.alt` and the `dns.*`/`host.dns.*` fields. While checking, the
+value just set counts as one of the field's values, even for fields like `cert.alt`
+that can't be read back until parsing finishes. A fieldSet expression with nothing to
+trigger on, such as only negations or only internal fields like `packets.src`, fails
+to load. Use a stage like `beforeFinalSave` for those.
 
 Direct matches such as `host.http == [a, *.b]` or `port.dst == 1000-2000` only check the
 rule for matching values. Other uses check it for any new value of the field.
@@ -175,6 +178,7 @@ before.
 - Parentheses, `!` and `-` can be nested at most 256 deep.
 - `any()`/`all()` can be nested 6 deep.
 - Lists can be large; 50,000 values load in well under a second.
+- `log: true` cuts each condition's text at 200 characters.
 
 ## Plugin functions
 
@@ -204,6 +208,10 @@ isBadHost(host.http) && port.dst == 80
   the session, so calls with constant args are computed once at load with a NULL
   session.
 - A multi value field passed to a function checks each value, like the builtins.
+
+A parser with an internal field (one added with `arkime_field_by_exp_add_internal`)
+that calls `ARKIME_RULES_RUN_FIELD_SET` for it should also call
+`arkime_field_internal_sets_rules(pos)`, so fieldSet expression rules can trigger on it.
 
 ## Notes
 

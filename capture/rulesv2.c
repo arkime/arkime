@@ -1416,16 +1416,30 @@ needField:
         return 0;
     }
 
+    // Same as bpf: rules, ok if it compiles for any supported DLT
     if (strcmp(func->name, "bpf") == 0) {
-        struct bpf_program bpfp;
-        pcap_t *deadPcap = pcap_open_dead(DLT_EN10MB, 65535);
-        if (pcap_compile(deadPcap, &bpfp, RV2_KID(node, 0)->str, 1, PCAP_NETMASK_UNKNOWN) == -1) {
-            rv2_error(p, RV2_KID(node, 0)->start, "bad bpf: %s", pcap_geterr(deadPcap));
+        char error[PCAP_ERRBUF_SIZE] = "";
+        int attempted = 0, compiled = 0;
+        for (int d = 0; d < arkime_packet_dlt_index_count(); d++) {
+            const int dlt = arkime_packet_index_to_dlt(d);
+            if (dlt == DLT_NFLOG)
+                continue;
+            attempted++;
+            struct bpf_program bpfp;
+            pcap_t *deadPcap = pcap_open_dead(dlt, 65535);
+            if (pcap_compile(deadPcap, &bpfp, RV2_KID(node, 0)->str, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+                if (!error[0])
+                    g_strlcpy(error, pcap_geterr(deadPcap), sizeof(error));
+            } else {
+                compiled++;
+                pcap_freecode(&bpfp);
+            }
             pcap_close(deadPcap);
+        }
+        if (attempted && !compiled) {
+            rv2_error(p, RV2_KID(node, 0)->start, "bad bpf: %s", error);
             return 0;
         }
-        pcap_freecode(&bpfp);
-        pcap_close(deadPcap);
     }
 
     node->vtype = func->ret ? func->ret : numVt;
@@ -1688,11 +1702,6 @@ ArkimeRulesV2Node_t *arkime_rulesv2_parse(const char *expression, int ruleType, 
  *    has(), any() or all(), anywhere else the leaf is wrapped in any()
  */
 /******************************************************************************/
-LOCAL const RV2Func_t *rv2_func(const char *name)
-{
-    return rv2_lookup_func(name);
-}
-/******************************************************************************/
 LOCAL gboolean rv2_is_call(const ArkimeRulesV2Node_t *node, const char *name)
 {
     return node->type == RV2_NODE_CALL && strcmp(node->func->name, name) == 0;
@@ -1765,7 +1774,7 @@ LOCAL ArkimeRulesV2Node_t *rv2_wrap_multi(RV2Parser_t *p, ArkimeRulesV2Node_t *l
 
     ArkimeRulesV2Node_t *any = rv2_node_new(RV2_NODE_CALL, leaf->start, leaf->end);
     any->str = g_strdup("any");
-    any->func = rv2_func("any");
+    any->func = rv2_lookup_func("any");
     any->vtype = RV2_VT_BOOL;
     any->i = depth;
     rv2_node_add_kid(any, field);
@@ -2043,11 +2052,16 @@ typedef struct {
     uint16_t         jf;
     int16_t          field;
     uint16_t         k;
-    uint16_t         srcStart;      // test ops, source of the condition for explain
-    uint16_t         srcLen : 14;
-    uint16_t         neg : 1;       // condition is under !, so false is what matches
-    uint16_t         textNeg : 1;   // source was written with != so it already reads that way
+    uint32_t         unused;
 } RV2Insn_t;
+
+// Explain only, kept out of the instructions so they stay small
+typedef struct {
+    int              start;         // test ops, source of the condition, 0 len for none
+    int              len;
+    uint8_t          neg;           // condition is under !, so false is what matches
+    uint8_t          textNeg;       // source was written with != so it already reads that way
+} RV2Span_t;
 
 // Jump targets that return instead of going to a RET instruction
 #define RV2_JUMP_RET_FALSE 0xfffe
@@ -2055,6 +2069,7 @@ typedef struct {
 
 typedef struct {
     RV2Insn_t       *insns;
+    RV2Span_t       *spans;         // one per insn
     int              ninsns;
     int              depth;                      // placeholders live at entry
     uint8_t          entryTypes[RV2_MAX_DEPTH];  // set by the verifier from the caller
@@ -2455,8 +2470,10 @@ void arkime_rulesv2_prog_free(ArkimeRulesV2Prog_t *prog)
 {
     if (!prog)
         return;
-    for (int b = 0; b < prog->nblocks; b++)
+    for (int b = 0; b < prog->nblocks; b++) {
         g_free(prog->blocks[b].insns);
+        g_free(prog->blocks[b].spans);
+    }
     g_free(prog->blocks);
     for (int k = 0; k < prog->nconsts; k++)
         rv2_const_free(&prog->consts[k]);
@@ -2976,6 +2993,7 @@ typedef struct {
     GArray          *blocks;    // RV2Block_t
     GArray          *consts;    // RV2Const_t
     GArray          *insns;     // current block
+    GArray          *spans;     // current block, one per insn
     GArray          *labels;    // current block, label to insn index
     GPtrArray       *cseNodes;  // values already in a register in the current leaf
     GArray          *cseRegs;
@@ -2991,6 +3009,9 @@ LOCAL RV2Insn_t *rv2_emit(RV2Gen_t *gen, RV2Op op)
     insn.op = op;
     insn.field = -1;
     g_array_append_val(gen->insns, insn);
+    RV2Span_t span;
+    memset(&span, 0, sizeof(span));
+    g_array_append_val(gen->spans, span);
     return &g_array_index(gen->insns, RV2Insn_t, gen->insns->len - 1);
 }
 /******************************************************************************/
@@ -3392,10 +3413,13 @@ LOCAL void rv2_gen_leaf(RV2Gen_t *gen, ArkimeRulesV2Node_t *node, int lt, int lf
 
     insn->jt = lt;
     insn->jf = lf;
-    insn->srcStart = MIN(node->start, 0xffff);
-    insn->srcLen = MIN(node->end - node->start, 0x3fff);
-    insn->neg = neg;
-    insn->textNeg = node->textNeg;
+
+    // The test is always the last instruction of its leaf
+    RV2Span_t *span = &g_array_index(gen->spans, RV2Span_t, gen->spans->len - 1);
+    span->start = node->start;
+    span->len = node->end - node->start;
+    span->neg = neg;
+    span->textNeg = node->textNeg;
 }
 /******************************************************************************/
 LOCAL void rv2_gen_cond(RV2Gen_t *gen, ArkimeRulesV2Node_t *node, int lt, int lf, gboolean neg)
@@ -3442,8 +3466,10 @@ LOCAL int rv2_gen_block(RV2Gen_t *gen, ArkimeRulesV2Node_t *cond, int depth)
     g_array_append_val(gen->blocks, empty);
 
     GArray *savedInsns = gen->insns;
+    GArray *savedSpans = gen->spans;
     GArray *savedLabels = gen->labels;
     gen->insns = g_array_new(FALSE, FALSE, sizeof(RV2Insn_t));
+    gen->spans = g_array_new(FALSE, FALSE, sizeof(RV2Span_t));
     gen->labels = g_array_new(FALSE, FALSE, sizeof(int));
 
     const int lt = rv2_label_new(gen);
@@ -3486,9 +3512,11 @@ LOCAL int rv2_gen_block(RV2Gen_t *gen, ArkimeRulesV2Node_t *cond, int depth)
     block->depth = depth;
     block->ninsns = gen->insns->len;
     block->insns = (RV2Insn_t *)g_array_free(gen->insns, FALSE);
+    block->spans = (RV2Span_t *)g_array_free(gen->spans, FALSE);
     g_array_free(gen->labels, TRUE);
 
     gen->insns = savedInsns;
+    gen->spans = savedSpans;
     gen->labels = savedLabels;
     return idx;
 }
@@ -3639,8 +3667,9 @@ LOCAL char *rv2_verify(ArkimeRulesV2Prog_t *prog)
             if (info->flags & RV2_F_RET)
                 continue;
 
-            if (insn->srcStart + insn->srcLen > prog->sourceLen)
-                RV2_VERIFY_FAIL("%s source span %d+%d past %d", info->name, insn->srcStart, insn->srcLen, prog->sourceLen);
+            const RV2Span_t *span = &block->spans[pc];
+            if (span->start < 0 || span->len < 0 || span->start + span->len > prog->sourceLen)
+                RV2_VERIFY_FAIL("%s source span %d+%d past %d", info->name, span->start, span->len, prog->sourceLen);
 
 #define RV2_BAD_JUMP(t) ((t) < RV2_JUMP_RET_FALSE && ((t) <= pc || (t) >= n))
             if (info->flags & RV2_F_TEST) {
@@ -3744,7 +3773,8 @@ typedef struct {
     GPtrArray                 *heap;        // lower()/upper() results that didn't fit in scratch
     GString                   *explain;     // set when explaining a match, only in block 0
     int                        scratchUsed;
-    int                        skipField;   // fieldSet fields: rules, the field that triggered already matched
+    int                        triggerField; // fieldSet, the field just set and its value, -1 otherwise
+    const void                *triggerValue;
     int                        ngetcb;
     int16_t                    getcbPos[8]; // internal field values, a getCb may compute its value
     void                      *getcbValue[8];
@@ -3783,25 +3813,35 @@ LOCAL int64_t rv2_count(RV2Ctx_t *ctx, int pos)
     const ArkimeFieldInfo_t *info = config.fields[pos];
 
     if (pos >= config.minInternalField) {
-        if (!info->getCb)
-            return 0;
-        void *value = rv2_getcb(ctx, pos);
-        switch (info->type) {
-        case ARKIME_FIELD_TYPE_INT:
-            return 1;
-        case ARKIME_FIELD_TYPE_STR:
-        case ARKIME_FIELD_TYPE_IP:
-            return value != NULL;
-        case ARKIME_FIELD_TYPE_STR_ARRAY:
-            return value ? ((GPtrArray *)value)->len : 0;
-        case ARKIME_FIELD_TYPE_INT_ARRAY:
-        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
-            return value ? ((GArray *)value)->len : 0;
-        case ARKIME_FIELD_TYPE_STR_GHASH:
-            return value ? g_hash_table_size(value) : 0;
-        default:
-            return 0;
+        int64_t count = 0;
+        if (info->getCb) {
+            void *value = rv2_getcb(ctx, pos);
+            switch (info->type) {
+            case ARKIME_FIELD_TYPE_INT:
+                count = 1;
+                break;
+            case ARKIME_FIELD_TYPE_STR:
+            case ARKIME_FIELD_TYPE_IP:
+                count = value != NULL;
+                break;
+            case ARKIME_FIELD_TYPE_STR_ARRAY:
+                count = value ? ((GPtrArray *)value)->len : 0;
+                break;
+            case ARKIME_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+                count = value ? ((GArray *)value)->len : 0;
+                break;
+            case ARKIME_FIELD_TYPE_STR_GHASH:
+                count = value ? g_hash_table_size(value) : 0;
+                break;
+            default:
+                break;
+            }
         }
+        // See RV2_TRIGGERED
+        if (count == 0 && pos == ctx->triggerField)
+            count = 1;
+        return count;
     }
 
     return rv2_session_count(session, pos);
@@ -3849,7 +3889,7 @@ LOCAL gboolean rv2_exists(RV2Ctx_t *ctx, int pos)
 /******************************************************************************/
 /* Field iteration, calls cb for each value until it returns TRUE.
  * Returns -1 when there are no values, 1 when cb returned TRUE, else 0. */
-RV2_INLINE int rv2_iter_int(RV2Ctx_t *ctx, int pos, RV2IntCb cb, void *arg)
+RV2_INLINE int rv2_iter_int_values(RV2Ctx_t *ctx, int pos, RV2IntCb cb, void *arg)
 {
     const ArkimeSession_t *session = ctx->session;
     const ArkimeFieldInfo_t *info = config.fields[pos];
@@ -3950,7 +3990,7 @@ RV2_INLINE int rv2_iter_float(RV2Ctx_t *ctx, int pos, RV2FloatCb cb, void *arg)
     }
 }
 /******************************************************************************/
-RV2_INLINE int rv2_iter_str(RV2Ctx_t *ctx, int pos, RV2StrCb cb, void *arg)
+RV2_INLINE int rv2_iter_str_values(RV2Ctx_t *ctx, int pos, RV2StrCb cb, void *arg)
 {
     const ArkimeSession_t *session = ctx->session;
     const ArkimeFieldInfo_t *info = config.fields[pos];
@@ -4023,7 +4063,7 @@ RV2_INLINE int rv2_iter_str(RV2Ctx_t *ctx, int pos, RV2StrCb cb, void *arg)
     }
 }
 /******************************************************************************/
-RV2_INLINE int rv2_iter_ip(RV2Ctx_t *ctx, int pos, RV2IpCb cb, void *arg)
+RV2_INLINE int rv2_iter_ip_values(RV2Ctx_t *ctx, int pos, RV2IpCb cb, void *arg)
 {
     const ArkimeSession_t *session = ctx->session;
     const ArkimeFieldInfo_t *info = config.fields[pos];
@@ -4057,6 +4097,33 @@ RV2_INLINE int rv2_iter_ip(RV2Ctx_t *ctx, int pos, RV2IpCb cb, void *arg)
     default:
         return -1;
     }
+}
+/******************************************************************************/
+/* An internal field's value may not be readable until its parser finishes, so
+ * for fieldSet the value that triggered is also one of its values. Non internal
+ * fields already have it. */
+#define RV2_TRIGGERED(ctx, pos) (G_UNLIKELY((pos) == (ctx)->triggerField) && (pos) >= config.minInternalField)
+
+RV2_INLINE int rv2_iter_int(RV2Ctx_t *ctx, int pos, RV2IntCb cb, void *arg)
+{
+    const int r = rv2_iter_int_values(ctx, pos, cb, arg);
+    if (r != 1 && RV2_TRIGGERED(ctx, pos))
+        return cb(ctx, (long)ctx->triggerValue, arg);
+    return r;
+}
+RV2_INLINE int rv2_iter_str(RV2Ctx_t *ctx, int pos, RV2StrCb cb, void *arg)
+{
+    const int r = rv2_iter_str_values(ctx, pos, cb, arg);
+    if (r != 1 && RV2_TRIGGERED(ctx, pos))
+        return cb(ctx, (const char *)ctx->triggerValue, arg);
+    return r;
+}
+RV2_INLINE int rv2_iter_ip(RV2Ctx_t *ctx, int pos, RV2IpCb cb, void *arg)
+{
+    const int r = rv2_iter_ip_values(ctx, pos, cb, arg);
+    if (r != 1 && RV2_TRIGGERED(ctx, pos))
+        return cb(ctx, (const struct in6_addr *)ctx->triggerValue, arg);
+    return r;
 }
 /******************************************************************************/
 LOCAL gboolean rv2_cb_store_int(RV2Ctx_t *UNUSED(ctx), int64_t v, void *arg)
@@ -4334,22 +4401,29 @@ LOCAL void rv2_print_reg(GString *out, const RV2Reg_t *reg, int vtype)
     }
 }
 /******************************************************************************/
+#define RV2_EXPLAIN_MAX_TEXT 200
+
 LOCAL void rv2_explain(RV2Ctx_t *ctx, const RV2Insn_t *insn, gboolean result)
 {
-    if (result == insn->neg || insn->srcLen == 0)
+    // Only runs in block 0
+    const RV2Block_t *block = &ctx->prog->blocks[0];
+    const RV2Span_t *span = &block->spans[insn - block->insns];
+    if (result == span->neg || span->len == 0)
         return;
 
     GString *out = ctx->explain;
-    const char *src = ctx->prog->source + insn->srcStart;
+    const char *src = ctx->prog->source + span->start;
+    const int len = MIN(span->len, RV2_EXPLAIN_MAX_TEXT);
+    const char *more = span->len > RV2_EXPLAIN_MAX_TEXT ? "..." : "";
     const RV2OpInfo_t *info = &rv2OpInfo[insn->op];
     const RV2Const_t *k = &ctx->prog->consts[insn->k];
 
     // != text matched by its lowered == under !, or !(a != b) folded to a == b
-    if (insn->neg != insn->textNeg)
-        g_string_append_printf(out, "!(%.*s)", insn->srcLen, src);
+    if (span->neg != span->textNeg)
+        g_string_append_printf(out, "!(%.*s%s)", len, src, more);
     else
-        g_string_append_len(out, src, insn->srcLen);
-    if (insn->neg) {
+        g_string_append_printf(out, "%.*s%s", len, src, more);
+    if (span->neg) {
         g_string_append(out, ", ");
         return;
     }
@@ -4567,13 +4641,13 @@ op_EQ_IP:
     RV2_BRANCH(memcmp(RA.ip, RB.ip, sizeof(struct in6_addr)) == 0);
 
 op_MATCH_FIELD_INT:
-    RV2_BRANCH(insn->field == ctx->skipField || rv2_iter_int(ctx, insn->field, rv2_cb_intset, K.iset) == 1);
+    RV2_BRANCH(rv2_iter_int(ctx, insn->field, rv2_cb_intset, K.iset) == 1);
 op_MATCH_FIELD_FLOAT:
-    RV2_BRANCH(insn->field == ctx->skipField || rv2_iter_float(ctx, insn->field, rv2_cb_floatset, K.fset) == 1);
+    RV2_BRANCH(rv2_iter_float(ctx, insn->field, rv2_cb_floatset, K.fset) == 1);
 op_MATCH_FIELD_STR:
-    RV2_BRANCH(insn->field == ctx->skipField || rv2_iter_str(ctx, insn->field, rv2_cb_strset, K.sset) == 1);
+    RV2_BRANCH(rv2_iter_str(ctx, insn->field, rv2_cb_strset, K.sset) == 1);
 op_MATCH_FIELD_IP:
-    RV2_BRANCH(insn->field == ctx->skipField || rv2_iter_ip(ctx, insn->field, rv2_cb_ipset, K.ipset) == 1);
+    RV2_BRANCH(rv2_iter_ip(ctx, insn->field, rv2_cb_ipset, K.ipset) == 1);
 op_MATCH_INT:
     RV2_BRANCH(rv2_intset_match(K.iset, RA.i));
 op_MATCH_FLOAT:
@@ -4649,7 +4723,7 @@ LOCAL __attribute__((noinline)) gboolean rv2_test_int(RV2Ctx_t *ctx, int pos, vo
     const ArkimeFieldInfo_t *info = config.fields[pos];
     if (info->cntForPos)
         return rv2_intset_match(set, rv2_count(ctx, info->cntForPos));
-    if (pos >= config.minInternalField && info->type == ARKIME_FIELD_TYPE_INT && info->getCb)
+    if (pos >= config.minInternalField && info->type == ARKIME_FIELD_TYPE_INT && info->getCb && pos != ctx->triggerField)
         return rv2_intset_match(set, (long)info->getCb(ctx->session, pos));
     return rv2_iter_int(ctx, pos, rv2_cb_intset, set) == 1;
 }
@@ -4664,7 +4738,7 @@ LOCAL __attribute__((noinline)) gboolean rv2_test_str(RV2Ctx_t *ctx, int pos, vo
 LOCAL __attribute__((noinline)) gboolean rv2_test_ip(RV2Ctx_t *ctx, int pos, void *set)
 {
     const ArkimeFieldInfo_t *info = config.fields[pos];
-    if (pos >= config.minInternalField && info->type == ARKIME_FIELD_TYPE_IP && info->getCb) {
+    if (pos >= config.minInternalField && info->type == ARKIME_FIELD_TYPE_IP && info->getCb && pos != ctx->triggerField) {
         const struct in6_addr *ip = info->getCb(ctx->session, pos);
         return ip && rv2_ipset_match(set, ip);
     }
@@ -4688,16 +4762,16 @@ LOCAL gboolean rv2_exec_tests(RV2Ctx_t *ctx, int pc)
         gboolean r;
         switch (insn->op) {
         case RV2_OP_MATCH_FIELD_INT:
-            r = insn->field == ctx->skipField || (!rv2_field_unset(ctx, insn->field) && rv2_test_int(ctx, insn->field, consts[insn->k].iset));
+            r = !rv2_field_unset(ctx, insn->field) && rv2_test_int(ctx, insn->field, consts[insn->k].iset);
             break;
         case RV2_OP_MATCH_FIELD_FLOAT:
-            r = insn->field == ctx->skipField || (!rv2_field_unset(ctx, insn->field) && rv2_test_float(ctx, insn->field, consts[insn->k].fset));
+            r = !rv2_field_unset(ctx, insn->field) && rv2_test_float(ctx, insn->field, consts[insn->k].fset);
             break;
         case RV2_OP_MATCH_FIELD_STR:
-            r = insn->field == ctx->skipField || (!rv2_field_unset(ctx, insn->field) && rv2_test_str(ctx, insn->field, consts[insn->k].sset));
+            r = !rv2_field_unset(ctx, insn->field) && rv2_test_str(ctx, insn->field, consts[insn->k].sset);
             break;
         case RV2_OP_MATCH_FIELD_IP:
-            r = insn->field == ctx->skipField || (!rv2_field_unset(ctx, insn->field) && rv2_test_ip(ctx, insn->field, consts[insn->k].ipset));
+            r = !rv2_field_unset(ctx, insn->field) && rv2_test_ip(ctx, insn->field, consts[insn->k].ipset);
             break;
         case RV2_OP_EXISTS:
             r = rv2_exists(ctx, insn->field);
@@ -4720,10 +4794,12 @@ LOCAL gboolean rv2_exec_tests(RV2Ctx_t *ctx, int pc)
     }
 }
 /******************************************************************************/
-LOCAL gboolean rv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, GString *explain, int skipField, int pc)
+LOCAL gboolean rv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, GString *explain,
+                         int triggerField, const void *triggerValue, int pc)
 {
     RV2Ctx_t ctx;
-    ctx.skipField = skipField;
+    ctx.triggerField = triggerField;
+    ctx.triggerValue = triggerValue;
     ctx.session = session;
     ctx.packet = packet;
     ctx.prog = prog;
@@ -4739,7 +4815,7 @@ LOCAL gboolean rv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *sessio
     return result;
 }
 /******************************************************************************/
-LOCAL __attribute__((noinline)) int rv2_first_target_ctx(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int skipField)
+LOCAL __attribute__((noinline)) int rv2_first_target_ctx(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int triggerField, const void *triggerValue)
 {
     const RV2Insn_t *insn = prog->blocks[0].insns;
     RV2Ctx_t ctx;
@@ -4749,31 +4825,28 @@ LOCAL __attribute__((noinline)) int rv2_first_target_ctx(const ArkimeRulesV2Prog
     ctx.heap = NULL;
     ctx.explain = NULL;
     ctx.scratchUsed = 0;
-    ctx.skipField = skipField;
+    ctx.triggerField = triggerField;
+    ctx.triggerValue = triggerValue;
     ctx.ngetcb = 0;
 
     gboolean r;
-    if (insn->field == skipField) {
-        r = TRUE;
-    } else {
-        switch (insn->op) {
-        case RV2_OP_MATCH_FIELD_INT:
-            r = rv2_test_int(&ctx, insn->field, prog->consts[insn->k].iset);
-            break;
-        case RV2_OP_MATCH_FIELD_FLOAT:
-            r = rv2_test_float(&ctx, insn->field, prog->consts[insn->k].fset);
-            break;
-        case RV2_OP_MATCH_FIELD_STR:
-            r = rv2_test_str(&ctx, insn->field, prog->consts[insn->k].sset);
-            break;
-        case RV2_OP_MATCH_FIELD_IP:
-            r = rv2_test_ip(&ctx, insn->field, prog->consts[insn->k].ipset);
-            break;
-        default:
-            // EXISTS, which has no const
-            r = rv2_exists(&ctx, insn->field);
-            break;
-        }
+    switch (insn->op) {
+    case RV2_OP_MATCH_FIELD_INT:
+        r = rv2_test_int(&ctx, insn->field, prog->consts[insn->k].iset);
+        break;
+    case RV2_OP_MATCH_FIELD_FLOAT:
+        r = rv2_test_float(&ctx, insn->field, prog->consts[insn->k].fset);
+        break;
+    case RV2_OP_MATCH_FIELD_STR:
+        r = rv2_test_str(&ctx, insn->field, prog->consts[insn->k].sset);
+        break;
+    case RV2_OP_MATCH_FIELD_IP:
+        r = rv2_test_ip(&ctx, insn->field, prog->consts[insn->k].ipset);
+        break;
+    default:
+        // EXISTS, which has no const
+        r = rv2_exists(&ctx, insn->field);
+        break;
     }
     return r ? insn->jt : insn->jf;
 }
@@ -4783,10 +4856,10 @@ LOCAL __attribute__((noinline)) int rv2_first_target_ctx(const ArkimeRulesV2Prog
  * rules always and && rules usually. Internal int and ip fields just read the
  * session, so they don't need a context at all. No explain, that goes through
  * rv2_eval. */
-LOCAL int rv2_first_target(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int skipField)
+LOCAL int rv2_first_target(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int triggerField, const void *triggerValue)
 {
     const RV2Insn_t *insn = prog->blocks[0].insns;
-    if (insn->field >= config.minInternalField && insn->field != skipField) {
+    if (insn->field >= config.minInternalField && insn->field != triggerField) {
         const ArkimeFieldInfo_t *info = config.fields[insn->field];
         if (insn->op == RV2_OP_MATCH_FIELD_IP && info->type == ARKIME_FIELD_TYPE_IP && info->getCb) {
             const struct in6_addr *ip = info->getCb(session, insn->field);
@@ -4797,55 +4870,55 @@ LOCAL int rv2_first_target(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *ses
     }
 
     // .cnt of a non internal field is just a count of the session's field
-    if (insn->op == RV2_OP_MATCH_FIELD_INT && insn->field != skipField) {
+    if (insn->op == RV2_OP_MATCH_FIELD_INT) {
         const int cntFor = config.fields[insn->field]->cntForPos;
         if (cntFor && cntFor < config.minInternalField)
             return rv2_intset_match(prog->consts[insn->k].iset, rv2_session_count(session, cntFor)) ? insn->jt : insn->jf;
     }
-    return rv2_first_target_ctx(prog, session, skipField);
+    return rv2_first_target_ctx(prog, session, triggerField, triggerValue);
 }
 /******************************************************************************/
-LOCAL gboolean rv2_eval_first(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, int skipField)
+LOCAL gboolean rv2_eval_first(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, int triggerField, const void *triggerValue)
 {
-    const int target = rv2_first_target(prog, session, skipField);
+    const int target = rv2_first_target(prog, session, triggerField, triggerValue);
     if (target >= RV2_JUMP_RET_FALSE)
         return target == RV2_JUMP_RET_TRUE;
-    return rv2_eval(prog, session, packet, NULL, skipField, target);
+    return rv2_eval(prog, session, packet, NULL, triggerField, triggerValue, target);
 }
 /******************************************************************************/
-// Most rules fail their first test on a field the session doesn't have
-#define RV2_QUICK(prog, session, skipField) \
-    ((prog)->quickField >= 0 && (prog)->quickField != (skipField) && \
-     ((prog)->quickField >= (session)->maxFields || !(session)->fields[(prog)->quickField]))
+/* Most rules fail their first test on a field the session doesn't have. Only
+ * plain session fields, which already have a value that triggered a fieldSet. */
+#define RV2_QUICK(prog, session) \
+    ((prog)->quickField >= 0 && ((prog)->quickField >= (session)->maxFields || !(session)->fields[(prog)->quickField]))
 
 gboolean arkime_rulesv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet)
 {
-    if (RV2_QUICK(prog, session, -1))
+    if (RV2_QUICK(prog, session))
         return prog->quickResult;
     if (prog->firstTest)
-        return rv2_eval_first(prog, session, packet, -1);
-    return rv2_eval(prog, session, packet, NULL, -1, 0);
+        return rv2_eval_first(prog, session, packet, -1, NULL);
+    return rv2_eval(prog, session, packet, NULL, -1, NULL, 0);
 }
 /******************************************************************************/
-/* For fieldSet fields: rules, a match on the field that was just set counts as
- * true, since the index already matched its value and some internal fields,
- * such as cert.alt, can't be read until parsing finishes. Not for expressions,
- * where a field can be in several different conditions. */
-gboolean arkime_rulesv2_eval_fields(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, int skipField)
+/* For fieldSet, field was just set to value, in the form passed to
+ * arkime_rules_run_field_set. Internal fields like cert.alt that can't be read
+ * until parsing finishes see value as one of theirs. */
+gboolean arkime_rulesv2_eval_set(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int field, const void *value)
 {
-    if (RV2_QUICK(prog, session, skipField))
+    if (RV2_QUICK(prog, session))
         return prog->quickResult;
     if (prog->firstTest)
-        return rv2_eval_first(prog, session, packet, skipField);
-    return rv2_eval(prog, session, packet, NULL, skipField, 0);
+        return rv2_eval_first(prog, session, NULL, field, value);
+    return rv2_eval(prog, session, NULL, NULL, field, value, 0);
 }
 /******************************************************************************/
-/* Appends what made the expression match, as "condition (value), ...".
- * skipField is the same as for arkime_rulesv2_eval_fields, or -1. */
-void arkime_rulesv2_explain(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, int skipField, GString *out)
+/* Appends what made the expression match, as "condition (value), ...". For
+ * fieldSet pass the field and value like arkime_rulesv2_eval_set, else -1. */
+void arkime_rulesv2_explain(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet,
+                            int triggerField, const void *triggerValue, GString *out)
 {
     const gsize start = out->len;
-    rv2_eval(prog, session, packet, out, skipField, 0);
+    rv2_eval(prog, session, packet, out, triggerField, triggerValue, 0);
     if (out->len >= start + 2)
         g_string_truncate(out, out->len - 2);
 }
@@ -4865,26 +4938,10 @@ void arkime_rulesv2_recompile(ArkimeRulesV2Prog_t *prog, const char *filename)
  * trigger only on their values. count(), .cnt and all() can also become true
  * when a field under a ! gets a value, so those trigger in either polarity. */
 /******************************************************************************/
+// Internal fields only trigger if something calls ARKIME_RULES_RUN_FIELD_SET for them
 LOCAL gboolean rv2_triggerable(int pos)
 {
-    static int ipPort[4] = {-1, -1, -1, -1};
-    if (ipPort[0] == -1) {
-        ipPort[0] = arkime_field_by_exp("ip.src");
-        ipPort[1] = arkime_field_by_exp("ip.dst");
-        ipPort[2] = arkime_field_by_exp("port.src");
-        ipPort[3] = arkime_field_by_exp("port.dst");
-    }
-
-    if (pos < config.minInternalField)
-        return TRUE;
-    // arkime_rules_session_create sets these
-    return pos == ipPort[0] || pos == ipPort[1] || pos == ipPort[2] || pos == ipPort[3];
-}
-/******************************************************************************/
-// Duplicates are removed by rv2_triggers_finish
-LOCAL void rv2_trigger_add(GArray *triggers, ArkimeRulesV2Trigger_t *trigger)
-{
-    g_array_append_val(triggers, *trigger);
+    return pos < config.minInternalField || config.fields[pos]->runsFieldSet;
 }
 /******************************************************************************/
 LOCAL void rv2_trigger_any(GArray *triggers, int pos)
@@ -4898,7 +4955,7 @@ LOCAL void rv2_trigger_any(GArray *triggers, int pos)
     memset(&trigger, 0, sizeof(trigger));
     trigger.kind = ARKIME_RULESV2_TRIGGER_ANY;
     trigger.field = pos;
-    rv2_trigger_add(triggers, &trigger);
+    g_array_append_val(triggers, trigger);
 }
 /******************************************************************************/
 // All fields used anywhere in the subtree
@@ -4988,7 +5045,7 @@ LOCAL void rv2_trigger_match(GArray *triggers, const ArkimeRulesV2Node_t *node, 
         ArkimeRulesV2Trigger_t *trigger = &g_array_index(values, ArkimeRulesV2Trigger_t, t);
         if (trigger->kind >= ARKIME_RULESV2_TRIGGER_STR && trigger->kind != ARKIME_RULESV2_TRIGGER_CIDR)
             trigger->str = g_strdup(trigger->str);
-        rv2_trigger_add(triggers, trigger);
+        g_array_append_val(triggers, *trigger);
     }
     g_array_free(values, TRUE);
     return;
@@ -5167,7 +5224,7 @@ LOCAL ArkimeRulesV2Prog_t *rv2_compile_tree(const char *filename, const char *ru
         prog->ntriggers = triggers->len;
         prog->triggers = (ArkimeRulesV2Trigger_t *)g_array_free(triggers, FALSE);
         if (prog->ntriggers == 0)
-            CONFIGEXIT("%s: rule '%s' fieldSet expression has nothing to trigger on, it needs a condition not under ! on a field that capture sets, such as ip.src, port.dst or any non internal field", filename, ruleName);
+            CONFIGEXIT("%s: rule '%s' fieldSet expression has nothing to trigger on, it needs a condition not under ! on a field that is set while parsing, such as ip.src, port.dst, cert.alt or any non internal field, internal fields like packets.src aren't", filename, ruleName);
     }
     arkime_rulesv2_free(root);
 

@@ -248,6 +248,7 @@ typedef struct arkime_field_info {
     ArkimeFieldObjectFreeFunc object_free;
     ArkimeFieldObjectHashFunc object_hash;
     ArkimeFieldObjectCmpFunc  object_cmp;
+    char                      runsFieldSet;    // internal field that calls ARKIME_RULES_RUN_FIELD_SET, see arkime_field_internal_sets_rules
 } ArkimeFieldInfo_t;
 
 typedef struct {
@@ -1706,6 +1707,7 @@ void arkime_field_free_one(ArkimeSession_t *session, int pos);
 void arkime_field_exit();
 
 int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);
+void arkime_field_internal_sets_rules(int pos);
 
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
@@ -1850,7 +1852,9 @@ void arkime_rulesv2_print(const ArkimeRulesV2Node_t *node, GString *out);
 void arkime_rulesv2_free(ArkimeRulesV2Node_t *node);
 ArkimeRulesV2Prog_t *arkime_rulesv2_compile(const char *filename, const char *ruleName, int ruleType, const char *expression);
 gboolean arkime_rulesv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet);
-void arkime_rulesv2_explain(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, int skipField, GString *out);
+gboolean arkime_rulesv2_eval_set(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int field, const void *value);
+void arkime_rulesv2_explain(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet,
+                            int triggerField, const void *triggerValue, GString *out);
 void arkime_rulesv2_recompile(ArkimeRulesV2Prog_t *prog, const char *filename);
 void arkime_rulesv2_disassemble(const ArkimeRulesV2Prog_t *prog, GString *out);
 void arkime_rulesv2_prog_free(ArkimeRulesV2Prog_t *prog);
@@ -1917,7 +1921,6 @@ typedef struct arkime_rulesv2_fields ArkimeRulesV2Fields_t;
 ArkimeRulesV2Fields_t *arkime_rulesv2_fields_new();
 void arkime_rulesv2_fields_add(ArkimeRulesV2Fields_t *fields, int pos, gboolean negated, int matchType, const char *key);
 ArkimeRulesV2Prog_t *arkime_rulesv2_fields_compile(ArkimeRulesV2Fields_t *fields, const char *filename, const char *ruleName, int ruleType);
-gboolean arkime_rulesv2_eval_fields(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, int skipField);
 
 /******************************************************************************/
 /*

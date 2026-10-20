@@ -94,7 +94,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           compiled to verified bytecode at load, matches on the same field are merged and cheap tests run first,
           fieldSet expressions are checked as their fields get values in any order, and log: true logs what matched.
           See capture/RULES.md
-  - Plugins can add rules expression functions with arkime_rulesv2_register_function()
+  - Plugins can add rules expression functions with arkime_rulesv2_register_function(). Parsers that call
+          ARKIME_RULES_RUN_FIELD_SET for an internal field should call arkime_field_internal_sets_rules() for it
   - fields: rules are now compiled onto the same engine as expression: rules, with the same meaning. They match
           about 1.3-2x faster (wide many field rules and large integer lists the most), large lists use hash tables,
           and each rule no longer allocates ~40KB of per field tables. log: true for a fields: rule now logs

@@ -1,7 +1,7 @@
 # Test rules v2 expressions, runs capture in --tests mode so no Elasticsearch is
 # needed. Parse tests read the parsed form capture logs with debug=2, match tests
 # check which rules tagged a known session.
-use Test::More tests => 167;
+use Test::More tests => 181;
 use JSON;
 use strict;
 
@@ -148,6 +148,66 @@ fieldsError("beforeFinalSave", "      port.dst: 90-80\n", "Min 90 > Max 80 not a
 fieldsError("beforeFinalSave", "      \"!ip.src\": 1.2.3.4\n", "Currently only string and integer fields support NOT rules");
 like(fieldsRule("beforeFinalSave", "      host.http: xxxxxxxxxxxxx.xxx.com\n      port.dst: [80, 443]\n      \"!http.method\": POST\n", "http-content-zip.pcap", 1),
      qr/arkime_rules_match\(\): t - \S+ => \S+ - port\.dst \(80\), host\.http \(xxxxxxxxxxxxx\.xxx\.com\)\n/, "fields log: field (value) for each matched field");
+
+# fieldSet on internal fields their parser sets, cert.alt is fieldSet before it can be read back
+sub pcapTags {
+    my ($pcap, @rules) = @_;
+    open(my $fh, '>', $file) or die "can't write $file";
+    print $fh "version: 1\nrules:\n";
+    for (my $i = 0; $i <= $#rules; $i++) {
+        my ($when, $expression, $log) = @{$rules[$i]};
+        $expression =~ s/'/''/g;
+        print $fh "  - name: \"r$i\"\n    when: \"$when\"\n" . ($log ? "    log: true\n" : "") . "    expression: '$expression'\n    ops:\n      tags: \"rv2-r$i\"\n";
+    }
+    close($fh);
+    my $out = `../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$file -r pcap/$pcap 2>&1`;
+    my %tags;
+    $tags{$_} = 1 for map { @{from_json("[$_]")} } ($out =~ /"tags":\[([^\]]*)\]/g);
+    return (\%tags, $out);
+}
+{
+    my ($tags) = pcapTags("badcurveball.pcap",
+        ["fieldSet", "cert.alt == *.curveballtest.com"],
+        ["fieldSet", "cert.alt == *.curveballtest.com && port.dst == 443"],
+        ["fieldSet", "cert.alt == *.nomatch.com"],
+        ["fieldSet", "count(cert.alt) >= 1 && ip.dst == 54.226.182.138"]);
+    ok($tags->{"rv2-r0"}, "fieldSet cert.alt expression matches");
+    ok($tags->{"rv2-r1"}, "fieldSet cert.alt and port.dst expression matches");
+    ok(!$tags->{"rv2-r2"}, "fieldSet cert.alt expression doesn't match other names");
+    ok($tags->{"rv2-r3"}, "fieldSet count(cert.alt) sees the value being set");
+
+    ($tags) = pcapTags("dns-udp.pcap",
+        ["fieldSet", "dns.query.host == www.github.com"],
+        ["fieldSet", "dns.query.host == *.github.com && port.dst == 53"],
+        ["fieldSet", "dns.query.host == www.gitlab.com"]);
+    ok($tags->{"rv2-r0"}, "fieldSet dns.query.host expression matches");
+    ok($tags->{"rv2-r1"}, "fieldSet dns.query.host and port.dst expression matches");
+    ok(!$tags->{"rv2-r2"}, "fieldSet dns.query.host expression doesn't match other names");
+}
+triggers('dns.query.host == www.github.com', 'dns.query.host:str:www.github.com');
+triggers('cert.alt == *.example.com', 'cert.alt:tail:.example.com');
+
+# More than the 32 rules the seen list holds before using a hash, each indexed under 3 overlapping cidrs
+# that all match 10.0.0.2, ops and logs must run once per rule
+{
+    my ($tags, $out) = pcapTags("http-content-zip.pcap", map { ["fieldSet", "ip.dst == [10.0.0.0/8, 10.0.0.0/16, 10.0.0.2]", 1] } (0 .. 39));
+    my %logs;
+    $logs{$1}++ while ($out =~ /arkime_rules_match\(\): (r\d+) - /g);
+    is(scalar(keys %logs), 40, "40 fieldSet rules matched");
+    is(scalar(grep { $logs{$_} != 1 } keys %logs), 0, "each rule ran once though 3 index keys matched");
+}
+
+# bpf() accepts filters that compile for any supported link type, like bpf: rules
+is(runRule("sessionSetup", 'bpf("wlan type mgt")', "optimized"), '(bpf "wlan type mgt")', "bpf() 802.11 only filter loads");
+
+# Explain past 64KB of source shows the right condition, long conditions are cut short
+{
+    my $list = join(", ", map { "h$_.example.net" } (1 .. 20000));
+    my ($tags, $out) = pcapTags("http-content-zip.pcap", ["beforeFinalSave", "host.http == [$list, xxxxxxxxxxxxx.xxx.com] && port.dst == 80 && http.method == GET", 1]);
+    my ($line) = $out =~ /arkime_rules_match\(\): r0 - \S+ => \S+ - (.*)/;
+    like($line, qr/http\.method == GET \(GET\)/, "explain: condition past 64KB of source");
+    like($line, qr/^port\.dst == 80 \(80\), host\.http == \[h1\.example\.net, .{150,}\.\.\. \(xxxxxxxxxxxxx\.xxx\.com\)/, "explain: long condition cut short");
+}
 
 # Registered functions, tests/plugins/test.c registers the test* ones
 optimized('testDouble(21) == 42 && port.dst == 1', '(== port.dst 1)');
