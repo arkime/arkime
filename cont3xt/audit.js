@@ -185,7 +185,7 @@ class Audit {
       }
       // ----------------------------------------
 
-      const results = await Db.implementation.deleteAudit(req.params.id);
+      const results = await Db.deleteAudit(req.params.id);
 
       if (!results) {
         return res.send({ success: false, text: 'Database error' });
