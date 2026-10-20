@@ -88,7 +88,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
-  - #4364 Rules can use expression: instead of fields: or bpf:, using the viewer's search syntax plus math and functions,
+  - #4364 Rules can use expression: instead of fields: or bpf:, with a syntax similar to the viewer's search plus math and functions,
           eg protocols == tls && port.dst != [443, 8443] && !(ip.dst == 10.0.0.0/8). Works in existing version 1 rules
           files alongside fields:/bpf: rules, which are unchanged, and in every when: except everyPacket. Expressions are
           compiled to verified bytecode at load, matches on the same field are merged and cheap tests run first,

@@ -1,7 +1,7 @@
 # Capture Rules Expressions
 
 Rules files (`rulesFiles=`) can match sessions with an `expression:` instead of
-`fields:` or `bpf:`. Expressions use the same syntax as the viewer search bar, plus
+`fields:` or `bpf:`. Expressions use a syntax similar to the viewer search bar, plus
 math and functions, and are compiled into bytecode when the rules load.
 All three kinds can be mixed in the same `version: 1` file. `fields:` rules keep their
 syntax and meaning, and are compiled onto the same engine (see below).
@@ -67,6 +67,19 @@ compares two fields. Quote strings that contain spaces or operators. Shortcuts
 Fields that capture keeps lowercase (or uppercase) have their exact and wildcard values
 converted to match, so `host.http == WWW.Example.com` still works. Regex values aren't
 converted.
+
+### Differences from the viewer search bar
+
+- Use a specific field. The `ip`, `host` and `port` groups aren't supported, so use
+  `ip.src` or `host.http` instead.
+- IPs must be full addresses or cidrs: `1.2.3.0/24` instead of `1.2.3`, and
+  `ip.dst == 1.2.3.4 && port.dst == 80` instead of `ip.dst == 1.2.3.4:80`.
+- Shortcuts (`$name`) aren't supported.
+- Only fields capture has can be used. Viewer only fields, such as `starttime` or
+  `ip.protocol`, aren't available.
+- Regex uses PCRE instead of the OpenSearch/Elasticsearch regex syntax. Simple
+  patterns work the same.
+- Math, comparing two fields and functions are only in rules.
 
 ### Matching rules
 
