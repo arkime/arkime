@@ -88,15 +88,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
-  - Rules can use expression: instead of fields: or bpf:, using the viewer's search syntax plus math and functions,
+  - #4364 Rules can use expression: instead of fields: or bpf:, using the viewer's search syntax plus math and functions,
           eg protocols == tls && port.dst != [443, 8443] && !(ip.dst == 10.0.0.0/8). Works in existing version 1 rules
           files alongside fields:/bpf: rules, which are unchanged, and in every when: except everyPacket. Expressions are
           compiled to verified bytecode at load, matches on the same field are merged and cheap tests run first,
           fieldSet expressions are checked as their fields get values in any order, and log: true logs what matched.
           See capture/RULES.md
-  - Plugins can add rules expression functions with arkime_rulesv2_register_function(). Parsers that call
+  - #4364 Plugins can add rules expression functions with arkime_rulesv2_register_function(). Parsers that call
           ARKIME_RULES_RUN_FIELD_SET for an internal field should call arkime_field_internal_sets_rules() for it
-  - fields: rules are now compiled onto the same engine as expression: rules, with the same meaning. They match
+  - #4364 fields: rules are now compiled onto the same engine as expression: rules, with the same meaning. They match
           about 1.3-2x faster (wide many field rules and large integer lists the most), large lists use hash tables,
           and each rule no longer allocates ~40KB of per field tables. log: true for a fields: rule now logs
           "field (value), ..." instead of "field: value, ..."

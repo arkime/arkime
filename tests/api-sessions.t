@@ -328,7 +328,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
         # bodyhash builds the proxied path from the hash, a / in it must not become a path separator
         (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
-        my $bodyHashHit = esGet("/tests_sessions3-*/_search?q=_id:$bodyHashId")->{hits}->{hits}->[0];
+        my $bodyHashHit = esPost("/tests_sessions3-*/_search", to_json({ query => { ids => { values => [$bodyHashId] } } }))->{hits}->{hits}->[0];
         (my $bodyHashIndex = $bodyHashHit->{_index}) =~ s/^tests_/tests2_/;
         esPost("/$bodyHashIndex/_doc/$bodyHashId?refresh=true", to_json($bodyHashHit->{_source}));
         my $hash = "x" . ("%2F.." x 6) . "%2Fapi%2Fsession%2Ftest%2Fabc%2Fsend%3FsaveId%3Did%26remoteCluster%3Dnope";
