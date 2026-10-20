@@ -8,7 +8,6 @@
  */
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 7;
 const MIN_DB_VERSION = 79;
 
 // Cap the size of responses we accept from monitored clusters so a malicious
@@ -26,7 +25,6 @@ const favicon = require('serve-favicon');
 const bp = require('body-parser');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
-const upgrade = require('./upgrade');
 const path = require('path');
 const axios = require('axios');
 const { LRUCache } = require('lru-cache');
@@ -56,13 +54,6 @@ const issueTypes = {
   lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' },
   lowDiskSpaceES: { on: true, name: 'ES Low Disk Space', text: 'ES node has low disk space', severity: 'yellow', description: 'the ES node has low disk space' }
 };
-
-const parliamentReadError = `
-You must fix this before you can run Parliament.
-Try using parliament.example.json as a starting point.
-Use the "file" setting in your Parliament config to point to your Parliament JSON file.
-See https://arkime.com/settings#parliament for more information.
-`;
 
 const internals = {
   stats: new Map(),
@@ -123,8 +114,6 @@ if (ArkimeConfig.regressionTests) {
   });
 }
 
-// parliament object!
-let parliamentFile;
 // issues object!
 let issues;
 
@@ -1169,8 +1158,7 @@ function findIssue (clusterId, issueType, node) {
   }
 }
 
-// Initializes the parliament with ids for each group and cluster
-// Upgrades the parliament if necessary
+// Initializes the parliament, creating it in the DB if it doesn't exist
 async function initializeParliament () {
   if (User.getClient()) {
     ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.get('usersPrefix'), MIN_DB_VERSION);
@@ -1188,77 +1176,35 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
-  // fetch parliament file if it exists
-  const parliamentFileName = ArkimeConfig.get('file');
-  if (parliamentFileName) {
-    try {
-      parliamentFile = JSON.parse(fs.readFileSync(parliamentFileName, 'utf8'));
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        console.log('Error reading parliament file:', err.message);
-        process.exit(1);
-      }
-    }
-  }
-
-  // if there's a parliament file, check that it is the correct version
-  if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
-    console.log( // notify of upgrade
-      `WARNING - Current parliament version (${parliamentFile.version ?? 1}) is less than required version (${MIN_PARLIAMENT_VERSION})
-        Upgrading your Parliament...\n`
-    );
-
-    // do the upgrade
-    const upgraded = await upgrade.upgrade(parliamentFile, issues, Parliament);
-    parliamentFile = upgraded.parliament;
-    issues = upgraded.issues;
-
-    try { // write the upgraded files
-      if (Buffer.from(JSON.stringify(parliamentFile, null, 2)).length > 100) {
-        fs.writeFileSync(ArkimeConfig.get('file'), JSON.stringify(parliamentFile, null, 2), 'utf8');
-      }
-      if (!validateIssues()) {
-        fs.writeFileSync(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8');
-      }
-    } catch (e) { // notify of error saving upgraded parliament and exit
-      console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-      if (ArkimeConfig.debug) {
-        console.log(parliamentReadError);
-      }
-      throw new Error(e);
-    }
-
-    // notify of upgrade success
-    console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
-  }
-
-  // create parliament in db if it doesn't exist
-  // (there was no parliament file to upgrade from)
+  let existing;
   try {
-    const existing = await Parliament.getParliament();
-    if (!existing) {
-      console.log('Parliament does not exist in DB. creating!');
+    existing = await Parliament.getParliament();
+  } catch (err) {
+    console.error('ERROR - Error fetching Parliament', err);
+    return;
+  }
+
+  if (!existing) {
+    // pre Arkime 5 parliaments lived in the file, they must be upgraded with 6.x first
+    let oldFile;
+    try {
+      oldFile = JSON.parse(fs.readFileSync(ArkimeConfig.get('file'), 'utf8'));
+    } catch (err) {}
+
+    if (oldFile?.groups && !(oldFile.version >= 7)) {
+      console.log(`ERROR - ${ArkimeConfig.get('file')} is an old parliament file, upgrade with Arkime 6.x first so it is copied into the DB`);
+      process.exit(1);
+    }
+
+    console.log('Parliament does not exist in DB. creating!');
+    try {
       await Parliament.createParliament({
         groups: [],
         name: internals.parliamentName,
         settings: Parliament.settingsDefault
       });
-    }
-  } catch (err) {
-    console.error('ERROR - Error fetching Parliament', err);
-  }
-
-  if (parliamentFile && parliamentFile.version < 7) {
-    if (!parliamentFile.groups) { parliamentFile.groups = []; }
-
-    // set id for each group/cluster
-    for (const group of parliamentFile.groups) {
-      group.id = uuid();
-      if (group.clusters) {
-        for (const cluster of group.clusters) {
-          cluster.id = uuid();
-        }
-      }
+    } catch (err) {
+      console.error('ERROR - Error creating Parliament', err);
     }
   }
 

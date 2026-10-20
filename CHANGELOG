@@ -66,6 +66,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - More settings are validated at startup, so a value that used to be silently ignored now refuses to start. Booleans
           must be true or false (not 0, 1 or False), rotateIndex must be one capture accepts, freeSpaceG must be a
           number or a percentage, and the hunt/tshark limits, timeouts and ports must be numbers in range
+  - Parliament no longer upgrades pre Arkime 5 parliament.json files into the DB, upgrade with Arkime 6.x first.
+          The file setting is now only used to name the parliament.issues.json file
 ## Release
   - #4253 Node 24.21.0
   - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm
