@@ -12,22 +12,16 @@ SPDX-License-Identifier: Apache-2.0
           :queue-count="localJob.queueCount" />
       </v-col>
     </v-row>
-    <v-row>
-      <v-col
-        cols="12"
-        class="d-flex">
+    <div class="hunt-info">
+      <div class="hunt-info-row">
         <v-icon
           icon="mdi-file-document"
-          class="mt-1" />&nbsp;
+          class="hunt-info-icon" />
         <template v-if="!editDescription">
-          <span
-            v-if="localJob.description"
-            class="ps-1">
+          <span v-if="localJob.description">
             {{ localJob.description }}
           </span>
-          <em
-            v-else
-            class="ps-1">
+          <em v-else>
             {{ $t('hunts.noDescription') }}
           </em>
           <v-btn
@@ -82,110 +76,125 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </div>
         </div>
-      </v-col>
-    </v-row>
-    <div>
-      <v-icon icon="mdi-eye" />&nbsp;
-      <span
-        v-html="$t('hunts.results-searchedHtml', {
-          matched: commaString(localJob.matchedSessions),
-          search: escapeHtml(localJob.search),
-          searchType: localJob.searchType,
-          searched: localJob.failedSessionIds && localJob.failedSessionIds.length ? commaString(localJob.searchedSessions - localJob.failedSessionIds.length) : commaString(localJob.searchedSessions),
-          total: commaString(localJob.totalSessions)
-        })" />
-      <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
-        <br>
-        <v-icon icon="mdi-magnify-plus" />&nbsp;
+      </div>
+      <div class="hunt-info-row">
+        <v-icon
+          icon="mdi-eye"
+          class="hunt-info-icon" />
+        <span
+          v-html="$t('hunts.results-searchedHtml', {
+            matched: commaString(localJob.matchedSessions),
+            search: escapeHtml(localJob.search),
+            searchType: localJob.searchType,
+            searched: failedCount ? commaString(localJob.searchedSessions - failedCount) : commaString(localJob.searchedSessions),
+            total: commaString(localJob.totalSessions)
+          })" />
+      </div>
+      <div
+        v-if="failedCount || localJob.totalSessions !== localJob.searchedSessions"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-magnify-plus"
+          class="hunt-info-icon" />
         <span
           v-html="$t('hunts.results-stillNeedHtml', {
-            remaining: commaString(localJob.totalSessions - localJob.searchedSessions + localJob.failedSessionIds.length),
+            remaining: commaString(localJob.totalSessions - localJob.searchedSessions + failedCount),
             total: commaString(localJob.totalSessions),
           })" />
-        <br>
-        <v-icon icon="mdi-alert" />&nbsp;
+      </div>
+      <div
+        v-if="failedCount"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-alert"
+          class="hunt-info-icon" />
         <span
           v-html="$t('hunts.results-failedHtml', {
-            failed: commaString(localJob.failedSessionIds.length)
+            failed: commaString(failedCount)
           })" />
-      </span>
-      <span v-else-if="localJob.totalSessions !== localJob.searchedSessions">
-        <br>
-        <v-icon icon="mdi-magnify-plus" />&nbsp;
-        <span
-          v-html="$t('hunts.results-stillNeedHtml', {
-            remaining: commaString(localJob.totalSessions - localJob.searchedSessions),
-            total: commaString(localJob.totalSessions),
-          })" />
-      </span>
-    </div>
-    <v-row>
-      <v-col cols="12">
-        <v-icon icon="mdi-clock-outline" />&nbsp;
-        {{ $t('common.created') }}:
-        <strong>
-          {{ timezoneDateString(localJob.created * 1000, user.settings.timezone, false) }}
-        </strong>
-      </v-col>
-    </v-row>
-    <v-row
-      v-if="localJob.lastUpdated">
-      <v-col cols="12">
-        <v-icon icon="mdi-clock-outline" />&nbsp;
-        {{ $t('common.lastUpdated') }}:
-        <strong>
-          {{ timezoneDateString(localJob.lastUpdated * 1000, user.settings.timezone, false) }}
-        </strong>
-      </v-col>
-    </v-row>
-    <v-row
-      v-if="localJob.notifier">
-      <v-col cols="12">
-        <v-icon icon="mdi-bell" />&nbsp;
-        Notifying: {{ getNotifierNames(localJob.notifier) }}
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-icon icon="mdi-magnify" />&nbsp;
+      </div>
+      <div class="hunt-info-row">
+        <v-icon
+          icon="mdi-clock-outline"
+          class="hunt-info-icon" />
+        <span>
+          {{ $t('common.created') }}:
+          <strong>
+            {{ timezoneDateString(localJob.created * 1000, user.settings.timezone, false) }}
+          </strong>
+        </span>
+      </div>
+      <div
+        v-if="localJob.lastUpdated"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-clock-outline"
+          class="hunt-info-icon" />
+        <span>
+          {{ $t('common.lastUpdated') }}:
+          <strong>
+            {{ timezoneDateString(localJob.lastUpdated * 1000, user.settings.timezone, false) }}
+          </strong>
+        </span>
+      </div>
+      <div
+        v-if="localJob.notifier"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-bell"
+          class="hunt-info-icon" />
+        <span>
+          Notifying: {{ getNotifierNames(localJob.notifier) }}
+        </span>
+      </div>
+      <div class="hunt-info-row">
+        <v-icon
+          icon="mdi-magnify"
+          class="hunt-info-icon" />
         <span
           v-html="$t('hunts.results-examiningHtml', {
             size: localJob.size > 0 ? localJob.size : $t('common.all'),
             type: localJob.type,
             srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') + '</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
           })" />
-      </v-col>
-    </v-row>
-    <v-row
-      v-if="localJob.query.expression">
-      <v-col cols="12">
-        <v-icon icon="mdi-magnify" />&nbsp;
-        {{ $t('hunts.results-queryExpression') }}:
-        <strong>{{ localJob.query.expression }}</strong>
-      </v-col>
-    </v-row>
-    <v-row
-      v-if="localJob.query.view">
-      <v-col cols="12">
-        <v-icon icon="mdi-magnify" />&nbsp;
-        {{ $t('hunts.results-queryView') }}:
-        <strong>{{ getViewName(localJob.query.view) }}</strong>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-icon icon="mdi-clock-outline" />&nbsp;
+      </div>
+      <div
+        v-if="localJob.query.expression"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-magnify"
+          class="hunt-info-icon" />
+        <span>
+          {{ $t('hunts.results-queryExpression') }}:
+          <strong>{{ localJob.query.expression }}</strong>
+        </span>
+      </div>
+      <div
+        v-if="localJob.query.view"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-magnify"
+          class="hunt-info-icon" />
+        <span>
+          {{ $t('hunts.results-queryView') }}:
+          <strong>{{ getViewName(localJob.query.view) }}</strong>
+        </span>
+      </div>
+      <div class="hunt-info-row">
+        <v-icon
+          icon="mdi-clock-outline"
+          class="hunt-info-icon" />
         <span
           v-html="$t('hunts.results-timeRangeHtml', {
             start: timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false),
             stop: timezoneDateString(localJob.query.stopTime * 1000, user.settings.timezone, false)
           })" />
-      </v-col>
-    </v-row>
-    <template v-if="canEdit">
-      <v-row>
-        <v-col cols="12">
-          <v-icon icon="mdi-share-variant" />&nbsp;
+      </div>
+      <template v-if="canEdit">
+        <div class="hunt-info-row">
+          <v-icon
+            icon="mdi-share-variant"
+            class="hunt-info-icon" />
           <template v-if="localJob.users && localJob.users.length">
             {{ $t('hunts.sharedWithUsers') }}:
             <v-chip
@@ -219,92 +228,93 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('hunts.addUserTip') }}
             </v-tooltip>
           </v-btn>
-          <template v-if="showAddUsers">
-            <div class="arkime-input-group arkime-input-group--fluid mb-3 mt-2">
-              <span
-                :id="'users-' + localJob.id"
-                class="arkime-input-label cursor-help">
-                Users
-                <v-tooltip :activator="`[id='users-${localJob.id}']`">
-                  {{ $t('hunts.addedUserTip') }}
-                </v-tooltip>
-              </span>
-              <input
-                type="text"
-                v-model="newUsers"
-                class="arkime-input-control"
-                v-focus="focusInput"
-                @keyup.enter="addUsers(newUsers, localJob)"
-                :placeholder="$t('hunts.jobUsersPlaceholder')">
-              <v-btn
-                color="warning"
-                variant="flat"
-                size="small"
-                density="comfortable"
-                class="me-1"
-                @click="toggleAddUsers">
-                {{ $t('common.cancel') }}
-              </v-btn>
-              <v-btn
-                variant="flat"
-                size="small"
-                density="comfortable"
-                :style="tertiaryBtnStyle"
-                class="me-1"
-                :title="$t('hunts.addedUserTip')"
-                @click="addUsers(newUsers, localJob)">
-                {{ $t('hunts.addUser') }}
-              </v-btn>
-            </div>
-          </template>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-icon icon="mdi-share-variant" />&nbsp;
+          <div
+            v-if="showAddUsers"
+            class="arkime-input-group arkime-input-group--fluid w-100 mt-1">
+            <span
+              :id="'users-' + localJob.id"
+              class="arkime-input-label cursor-help">
+              Users
+              <v-tooltip :activator="`[id='users-${localJob.id}']`">
+                {{ $t('hunts.addedUserTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              v-model="newUsers"
+              class="arkime-input-control"
+              v-focus="focusInput"
+              @keyup.enter="addUsers(newUsers, localJob)"
+              :placeholder="$t('hunts.jobUsersPlaceholder')">
+            <v-btn
+              color="warning"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              class="me-1"
+              @click="toggleAddUsers">
+              {{ $t('common.cancel') }}
+            </v-btn>
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="tertiaryBtnStyle"
+              class="me-1"
+              :title="$t('hunts.addedUserTip')"
+              @click="addUsers(newUsers, localJob)">
+              {{ $t('hunts.addUser') }}
+            </v-btn>
+          </div>
+        </div>
+        <div class="hunt-info-row">
+          <v-icon
+            icon="mdi-share-variant"
+            class="hunt-info-icon" />
           <template v-if="localJob.roles && localJob.roles.length">
             {{ $t('hunts.addRoles') }}:
           </template>
-          <template v-else-if="!localJob.roles || !localJob.roles.length">
+          <template v-else>
             {{ $t('hunts.noRoles') }}:
           </template>
           <RoleDropdown
-            size="large"
-            class="d-inline"
+            class="ms-1"
             :roles="roles"
             :selected-roles="localJob.roles"
             @selected-roles-updated="updateJobRoles" />
-        </v-col>
-      </v-row>
-    </template>
-    <v-row
-      class="mb-2"
-      v-else-if="isShared">
-      <v-col cols="12">
-        <v-icon icon="mdi-share-variant" />&nbsp;
+        </div>
+      </template>
+      <div
+        v-else-if="isShared"
+        class="hunt-info-row">
+        <v-icon
+          icon="mdi-share-variant"
+          class="hunt-info-icon" />
         {{ $t('hunts.haveAccess') }}
-      </v-col>
-    </v-row>
-    <template v-if="localJob.errors">
-      <v-row
-        v-for="(error, index) in localJob.errors"
-        :key="index"
-        class="text-danger">
-        <v-col cols="12">
-          <v-icon icon="mdi-alert" />&nbsp;
-          <span v-if="error.time">
-            {{ timezoneDateString(error.time * 1000, user.settings.timezone, false) }}
+      </div>
+      <template v-if="localJob.errors">
+        <div
+          v-for="(error, index) in localJob.errors"
+          :key="index"
+          class="hunt-info-row text-danger">
+          <v-icon
+            icon="mdi-alert"
+            class="hunt-info-icon" />
+          <span>
+            <template v-if="error.time">
+              {{ timezoneDateString(error.time * 1000, user.settings.timezone, false) }}
+            </template>
+            <template v-if="error.node">
+              ({{ error.node }} node)
+            </template>
+            <template v-if="error.time || error.node">
+              -
+            </template>
+            {{ error.value }}
           </span>
-          <span v-if="error.node">
-            ({{ error.node }} node)
-          </span>
-          <span v-if="error.time || error.node">
-            -
-          </span>
-          {{ error.value }}
-        </v-col>
-      </v-row>
-    </template>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -368,6 +378,9 @@ export default {
     },
     notifiers () {
       return this.$store.state.notifiers;
+    },
+    failedCount () {
+      return this.localJob.failedSessionIds?.length || 0;
     }
   },
   methods: {
@@ -414,3 +427,17 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.hunt-info-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.25rem;
+  min-height: 2rem;
+}
+.hunt-info-icon {
+  width: 1.5rem;
+  margin-right: 0.25rem;
+}
+</style>
