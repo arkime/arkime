@@ -1044,3 +1044,6 @@ ArkimeUtil.createElasticsearchInfo = ArkimeDb.createElasticsearchInfo;
 ArkimeUtil.createMemcachedClient = ArkimeDb.createMemcachedClient;
 ArkimeUtil.createLMDBStore = ArkimeDb.createLMDBStore;
 ArkimeUtil.createSQLiteDB = ArkimeDb.createSQLiteDB;
+ArkimeUtil.dbConnect = ArkimeDb.connect;
+ArkimeUtil.dbRegister = ArkimeDb.register;
+ArkimeUtil.dbCloseAll = ArkimeDb.closeAll;
