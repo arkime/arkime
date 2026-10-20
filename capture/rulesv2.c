@@ -2052,7 +2052,7 @@ typedef struct {
     uint16_t         jf;
     int16_t          field;
     uint16_t         k;
-    uint32_t         unused;
+    uint32_t         unused;        // keeps insns 16 bytes, 4 per cache line and indexed with a shift
 } RV2Insn_t;
 
 // Explain only, kept out of the instructions so they stay small
@@ -3806,6 +3806,7 @@ RV2_INLINE void *rv2_getcb(RV2Ctx_t *ctx, int pos)
 }
 /******************************************************************************/
 LOCAL int64_t rv2_session_count(const ArkimeSession_t *session, int pos);
+LOCAL gboolean rv2_trigger_present(RV2Ctx_t *ctx, int pos);
 
 LOCAL int64_t rv2_count(RV2Ctx_t *ctx, int pos)
 {
@@ -3838,9 +3839,9 @@ LOCAL int64_t rv2_count(RV2Ctx_t *ctx, int pos)
                 break;
             }
         }
-        // See RV2_TRIGGERED
-        if (count == 0 && pos == ctx->triggerField)
-            count = 1;
+        // See RV2_TRIGGERED, the value being set counts if the getCb can't see it yet
+        if (pos == ctx->triggerField && !rv2_trigger_present(ctx, pos))
+            count++;
         return count;
     }
 
@@ -4124,6 +4125,36 @@ RV2_INLINE int rv2_iter_ip(RV2Ctx_t *ctx, int pos, RV2IpCb cb, void *arg)
     if (r != 1 && RV2_TRIGGERED(ctx, pos))
         return cb(ctx, (const struct in6_addr *)ctx->triggerValue, arg);
     return r;
+}
+/******************************************************************************/
+LOCAL gboolean rv2_cb_equal_int(RV2Ctx_t *UNUSED(ctx), int64_t v, void *arg)
+{
+    return v == (long)arg;
+}
+LOCAL gboolean rv2_cb_equal_str(RV2Ctx_t *UNUSED(ctx), const char *v, void *arg)
+{
+    return strcmp(v, arg) == 0;
+}
+LOCAL gboolean rv2_cb_equal_ip(RV2Ctx_t *UNUSED(ctx), const struct in6_addr *v, void *arg)
+{
+    return memcmp(v, arg, sizeof(struct in6_addr)) == 0;
+}
+/******************************************************************************/
+// Whether the internal field's getCb already sees the fieldSet value
+LOCAL gboolean rv2_trigger_present(RV2Ctx_t *ctx, int pos)
+{
+    void *value = (void *)ctx->triggerValue;
+    uint8_t multi;
+    switch (rv2_field_vtype(pos, &multi)) {
+    case RV2_VT_INT:
+        return rv2_iter_int_values(ctx, pos, rv2_cb_equal_int, value) == 1;
+    case RV2_VT_STR:
+        return rv2_iter_str_values(ctx, pos, rv2_cb_equal_str, value) == 1;
+    case RV2_VT_IP:
+        return rv2_iter_ip_values(ctx, pos, rv2_cb_equal_ip, value) == 1;
+    default:
+        return TRUE;
+    }
 }
 /******************************************************************************/
 LOCAL gboolean rv2_cb_store_int(RV2Ctx_t *UNUSED(ctx), int64_t v, void *arg)

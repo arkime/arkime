@@ -623,6 +623,19 @@ int arkime_field_define(const char *group, const char *kind, const char *express
  * gets a value, so fieldSet expression rules can trigger on it. */
 void arkime_field_internal_sets_rules(int pos)
 {
+    // The types rules can read from an internal field's getCb
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_INT:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+    case ARKIME_FIELD_TYPE_STR:
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
+    case ARKIME_FIELD_TYPE_IP:
+        break;
+    default:
+        LOGEXIT("ERROR - rules can't read internal field %s, its type %d isn't supported", config.fields[pos]->expression, config.fields[pos]->type);
+    }
     config.fields[pos]->runsFieldSet = 1;
 }
 /******************************************************************************/

@@ -390,7 +390,6 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
                 element->len = alen;
                 element->utf8 = 1;
                 DLL_PUSH_TAIL(s_, &certs->alt, element);
-                ARKIME_RULES_RUN_FIELD_SET(session, certAltField, element->str);
             } else {
                 arkime_session_add_tag(session, "bad-altname");
             }
@@ -733,6 +732,14 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
     if (!arkime_field_object_add(certsField, session, fobject, clen * 3 + 600)) {
         certinfo_free(fobject);
         certs = 0;
+    }
+
+    // Once the cert is in the session cert.alt can read back all its names
+    if (certs) {
+        const ArkimeString_t *string;
+        DLL_FOREACH(s_, &certs->alt, string) {
+            ARKIME_RULES_RUN_FIELD_SET(session, certAltField, string->str);
+        }
     }
 
     if (certs)

@@ -1,7 +1,7 @@
 # Test rules v2 expressions, runs capture in --tests mode so no Elasticsearch is
 # needed. Parse tests read the parsed form capture logs with debug=2, match tests
 # check which rules tagged a known session.
-use Test::More tests => 181;
+use Test::More tests => 185;
 use JSON;
 use strict;
 
@@ -176,13 +176,24 @@ sub pcapTags {
     ok(!$tags->{"rv2-r2"}, "fieldSet cert.alt expression doesn't match other names");
     ok($tags->{"rv2-r3"}, "fieldSet count(cert.alt) sees the value being set");
 
+    # A cert's names are all readable once the cert is added, so count() sees every one
+    ($tags) = pcapTags("https-generalizedtime.pcap",
+        ["fieldSet", "count(cert.alt) >= 12"],
+        ["fieldSet", "count(cert.alt) >= 13"],
+        ["fieldSet", "count(cert.alt) == 12 && cert.alt == mail.yandex.az"]);
+    ok($tags->{"rv2-r0"}, "fieldSet count(cert.alt) sees all 12 names of a cert");
+    ok(!$tags->{"rv2-r1"}, "fieldSet count(cert.alt) doesn't over count");
+    ok($tags->{"rv2-r2"}, "fieldSet count(cert.alt) exact with a name");
+
     ($tags) = pcapTags("dns-udp.pcap",
         ["fieldSet", "dns.query.host == www.github.com"],
         ["fieldSet", "dns.query.host == *.github.com && port.dst == 53"],
-        ["fieldSet", "dns.query.host == www.gitlab.com"]);
+        ["fieldSet", "dns.query.host == www.gitlab.com"],
+        ["fieldSet", "count(dns.query.host) == 1"]);
     ok($tags->{"rv2-r0"}, "fieldSet dns.query.host expression matches");
     ok($tags->{"rv2-r1"}, "fieldSet dns.query.host and port.dst expression matches");
     ok(!$tags->{"rv2-r2"}, "fieldSet dns.query.host expression doesn't match other names");
+    ok($tags->{"rv2-r3"}, "fieldSet count() counts the value being set once");
 }
 triggers('dns.query.host == www.github.com', 'dns.query.host:str:www.github.com');
 triggers('cert.alt == *.example.com', 'cert.alt:tail:.example.com');

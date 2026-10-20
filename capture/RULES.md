@@ -115,8 +115,8 @@ negated condition can only become false. Fields set in any order work:
 Only fields that are set while parsing can trigger the check: any non internal field,
 `ip.src`, `ip.dst`, `port.src` and `port.dst`, and internal fields whose parser runs
 fieldSet for them, `cert.alt` and the `dns.*`/`host.dns.*` fields. While checking, the
-value just set counts as one of the field's values, even for fields like `cert.alt`
-that can't be read back until parsing finishes. A fieldSet expression with nothing to
+value just set counts as one of the field's values, even for an internal field that
+can't be read back until its parser finishes. A fieldSet expression with nothing to
 trigger on, such as only negations or only internal fields like `packets.src`, fails
 to load. Use a stage like `beforeFinalSave` for those.
 
