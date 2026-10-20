@@ -20,6 +20,7 @@ const collections = {
     idType: 'hex',
     es: { index: 'cont3xt_links', create: { settings: esSettings, mappings: { dynamic_templates: keywordStrings } } },
     sqlite: { table: 'link_groups' },
+    pg: { table: 'link_groups' },
     lmdb: { db: 'linkGroups' },
     redis: { prefix: 'lg:' }
   },
