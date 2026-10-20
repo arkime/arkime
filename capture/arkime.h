@@ -248,6 +248,7 @@ typedef struct arkime_field_info {
     ArkimeFieldObjectFreeFunc object_free;
     ArkimeFieldObjectHashFunc object_hash;
     ArkimeFieldObjectCmpFunc  object_cmp;
+    char                      runsFieldSet;    // internal field that calls ARKIME_RULES_RUN_FIELD_SET, see arkime_field_internal_sets_rules
 } ArkimeFieldInfo_t;
 
 typedef struct {
@@ -1706,6 +1707,7 @@ void arkime_field_free_one(ArkimeSession_t *session, int pos);
 void arkime_field_exit();
 
 int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);
+void arkime_field_internal_sets_rules(int pos);
 
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
@@ -1834,6 +1836,91 @@ void arkime_rules_run_after_classify(ArkimeSession_t *session);
 void arkime_rules_run_before_save(ArkimeSession_t *session, int final);
 void arkime_rules_stats();
 void arkime_rules_exit();
+struct bpf_program;
+void arkime_rules_bpf_compile(const char *filename, const char *bpf, struct bpf_program **bpfp);
+void arkime_rules_bpfp_free(gpointer data);
+
+/******************************************************************************/
+/*
+ * rulesv2.c
+ */
+typedef struct arkime_rulesv2_node ArkimeRulesV2Node_t;
+typedef struct arkime_rulesv2_prog ArkimeRulesV2Prog_t;
+
+ArkimeRulesV2Node_t *arkime_rulesv2_parse(const char *expression, int ruleType, char **error);
+void arkime_rulesv2_print(const ArkimeRulesV2Node_t *node, GString *out);
+void arkime_rulesv2_free(ArkimeRulesV2Node_t *node);
+ArkimeRulesV2Prog_t *arkime_rulesv2_compile(const char *filename, const char *ruleName, int ruleType, const char *expression);
+gboolean arkime_rulesv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet);
+gboolean arkime_rulesv2_eval_set(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, int field, const void *value);
+void arkime_rulesv2_explain(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet,
+                            int triggerField, const void *triggerValue, GString *out);
+void arkime_rulesv2_recompile(ArkimeRulesV2Prog_t *prog, const char *filename);
+void arkime_rulesv2_disassemble(const ArkimeRulesV2Prog_t *prog, GString *out);
+void arkime_rulesv2_prog_free(ArkimeRulesV2Prog_t *prog);
+
+typedef enum {
+    ARKIME_RULESV2_TRIGGER_ANY,         // any new value
+    ARKIME_RULESV2_TRIGGER_INT,
+    ARKIME_RULESV2_TRIGGER_INT_RANGE,
+    ARKIME_RULESV2_TRIGGER_FLOAT,
+    ARKIME_RULESV2_TRIGGER_STR,
+    ARKIME_RULESV2_TRIGGER_HEAD,
+    ARKIME_RULESV2_TRIGGER_TAIL,
+    ARKIME_RULESV2_TRIGGER_CONTAINS,
+    ARKIME_RULESV2_TRIGGER_CIDR         // str is addr/bits
+} ArkimeRulesV2TriggerKind;
+
+// Which fieldSet values should evaluate an expression rule
+typedef struct {
+    ArkimeRulesV2TriggerKind  kind;
+    int16_t                   field;
+    union {
+        struct {
+            int64_t           imin;
+            int64_t           imax;
+        };
+        float                 f;
+        struct {
+            char             *str;
+            uint8_t           family;   // CIDR: 4 or 6
+        };
+    };
+} ArkimeRulesV2Trigger_t;
+
+int arkime_rulesv2_triggers(const ArkimeRulesV2Prog_t *prog, const ArkimeRulesV2Trigger_t **triggers);
+
+// A value passed to or returned from a rules function
+typedef union {
+    int64_t                i;       // also the result of a boolean function
+    double                 f;
+    const char            *s;
+    const struct in6_addr *ip;
+} ArkimeRulesV2Value_t;
+
+/* A function rule expressions can call, from any packet thread. Return FALSE
+ * for no result, the condition using it is then false like a missing field.
+ * A returned string must stay valid until the evaluation finishes, for example
+ * session memory or arkime_free_later. */
+typedef gboolean (*ArkimeRulesV2FuncCb)(ArkimeSession_t *session, const ArkimeRulesV2Value_t *args, int nargs, ArkimeRulesV2Value_t *result, gpointer uw);
+
+// Same args always give the same result without using the session, calls with constant args run once at load with a NULL session
+#define ARKIME_RULESV2_FUNC_PURE 0x0001
+
+/* Register before rules load, normally from arkime_plugin_init. signature is
+ * the return type, a colon, then up to 8 argument types, using i integer,
+ * f float, s string, a ip, and b boolean for the return, e.g. "b:si". */
+void arkime_rulesv2_register_function(const char *name, const char *signature, uint32_t flags, ArkimeRulesV2FuncCb cb, gpointer uw);
+
+// Compile fields: rules, matchType is how a string value compares
+#define ARKIME_RULESV2_FIELDS_EXACT     0
+#define ARKIME_RULESV2_FIELDS_HEAD      1
+#define ARKIME_RULESV2_FIELDS_TAIL      2
+#define ARKIME_RULESV2_FIELDS_CONTAINS  3
+typedef struct arkime_rulesv2_fields ArkimeRulesV2Fields_t;
+ArkimeRulesV2Fields_t *arkime_rulesv2_fields_new();
+void arkime_rulesv2_fields_add(ArkimeRulesV2Fields_t *fields, int pos, gboolean negated, int matchType, const char *key);
+ArkimeRulesV2Prog_t *arkime_rulesv2_fields_compile(ArkimeRulesV2Fields_t *fields, const char *filename, const char *ruleName, int ruleType);
 
 /******************************************************************************/
 /*

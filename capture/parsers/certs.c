@@ -390,7 +390,6 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
                 element->len = alen;
                 element->utf8 = 1;
                 DLL_PUSH_TAIL(s_, &certs->alt, element);
-                ARKIME_RULES_RUN_FIELD_SET(session, certAltField, element->str);
             } else {
                 arkime_session_add_tag(session, "bad-altname");
             }
@@ -735,6 +734,14 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
         certs = 0;
     }
 
+    // Once the cert is in the session cert.alt can read back all its names
+    if (certs) {
+        const ArkimeString_t *string;
+        DLL_FOREACH(s_, &certs->alt, string) {
+            ARKIME_RULES_RUN_FIELD_SET(session, certAltField, string->str);
+        }
+    }
+
     if (certs)
         arkime_parsers_call_named_func(tls_process_certificate_wInfo_func, session, data, clen, certs);
 
@@ -856,6 +863,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     certAltField = arkime_field_by_exp_add_internal("cert.alt", ARKIME_FIELD_TYPE_STR_ARRAY, certs_getcb_alt, NULL);
+    arkime_field_internal_sets_rules(certAltField);
 
     arkime_field_define("cert", "lotermfield",
                         "cert.alt.email", "Alt Email", "cert.altEmail",
