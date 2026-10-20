@@ -324,6 +324,7 @@ class MiscAPIs {
 
     console.log('upload command: ', cmd);
     exec(cmd, (error, stdout, stderr) => {
+      fs.unlinkSync(req.file.path);
       if (error !== null) {
         console.log(`ERROR - ${req.method} /api/upload`, util.inspect(error, false, 50));
         res.status(500);
@@ -334,7 +335,6 @@ class MiscAPIs {
       res.write('<pre>');
       res.write(ArkimeUtil.safeStr(stdout));
       res.end('</pre>');
-      fs.unlinkSync(req.file.path);
     });
   }
 

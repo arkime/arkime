@@ -33,20 +33,27 @@ mkdir($pcapdir);
 symlink("$cwd/pcap/dns-udp.pcap", "$pcapdir/dns-udp.pcap");
 symlink("$cwd/pcap/dns-mx.pcap", "$pcapdir/dns-mx.pcap");
 
+# Bytes read past the end of a line, per socket, so a notification that arrives
+# in the same read as an ack is returned by the next read_line call
+my %pending;
+
 # Helper: read a full line from socket with timeout
 sub read_line {
     my ($sock, $sel, $timeout) = @_;
     $timeout //= 10;
-    my $buf = "";
+    my $buf = delete $pending{fileno($sock)} // "";
     my $deadline = time() + $timeout;
-    while (time() < $deadline) {
+    while ($buf !~ /\n/ && time() < $deadline) {
         if ($sel->can_read($deadline - time())) {
             my $chunk = "";
             my $n = $sock->sysread($chunk, 4096);
             return undef if (!defined $n || $n == 0);
             $buf .= $chunk;
-            return $buf if ($buf =~ /\n/);
         }
+    }
+    if ($buf =~ s/^(.*?\n)//s) {
+        $pending{fileno($sock)} = $buf if (length $buf);
+        return $1;
     }
     return $buf;
 }
@@ -55,7 +62,7 @@ sub read_line {
 sub read_all {
     my ($sock, $sel, $timeout) = @_;
     $timeout //= 10;
-    my $buf = "";
+    my $buf = delete $pending{fileno($sock)} // "";
     my $deadline = time() + $timeout;
     while (time() < $deadline) {
         last unless $sel->can_read($deadline - time());
