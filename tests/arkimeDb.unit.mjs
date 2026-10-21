@@ -167,6 +167,14 @@ describe('ArkimeDb', () => {
     assert.notEqual(ArkimeUtil.dbConnect(url), ArkimeUtil.dbConnect(url, { prefix: 'x_' }));
   });
 
+  test('table names every sql backend unless overridden', async () => {
+    const conn = ArkimeUtil.dbConnect(`sqlite://${tmp}/tables.db`);
+    await conn.collection('shared', { table: 'shared_table' }).put('x', { a: 1 });
+    await conn.collection('own', { table: 'shared_table2', sqlite: { table: 'own_table' } }).put('y', { b: 2 });
+    const tables = conn.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all().map(r => r.name);
+    assert.deepEqual(tables, ['meta', 'own_table', 'shared_table']);
+  });
+
   test('unknown schemes throw', () => {
     assert.throws(() => ArkimeUtil.dbConnect('nope://x'), /Unknown db url scheme 'nope'/);
   });

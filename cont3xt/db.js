@@ -18,9 +18,8 @@ const keywordStrings = [{ string_template: { match_mapping_type: 'string', mappi
 const collections = {
   linkGroups: {
     idType: 'hex',
+    table: 'link_groups',
     es: { index: 'cont3xt_links', create: { settings: esSettings, mappings: { dynamic_templates: keywordStrings } } },
-    sqlite: { table: 'link_groups' },
-    pg: { table: 'link_groups' },
     lmdb: { db: 'linkGroups' },
     redis: { prefix: 'lg:' }
   },
@@ -41,7 +40,6 @@ const collections = {
         }
       }
     },
-    sqlite: { table: 'views' },
     lmdb: { db: 'views' },
     redis: { prefix: 'view:' }
   },
@@ -66,7 +64,7 @@ const collections = {
         }
       }
     },
-    sqlite: { table: 'audits', columns: { issuedAt: 'INTEGER' } },
+    sqlite: { columns: { issuedAt: 'INTEGER' } },
     lmdb: { db: 'audits' },
     redis: { prefix: 'audit:' }
   },
@@ -97,7 +95,6 @@ const collections = {
         }
       }
     },
-    sqlite: { table: 'overviews' },
     lmdb: { db: 'overviews' },
     redis: { prefix: 'overview:' }
   }

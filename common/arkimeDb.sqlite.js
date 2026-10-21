@@ -19,7 +19,7 @@ class SQLiteCollection extends ArkimeDb.Collection {
   constructor (db, collName, options) {
     super(collName, options);
     this.#db = db;
-    this.#table = ArkimeDb.checkField(options.sqlite?.table ?? collName);
+    this.#table = ArkimeDb.checkField(options.sqlite?.table ?? options.table ?? collName);
     this.#columns = options.sqlite?.columns ?? {};
     this.#version = !!options.version;
 

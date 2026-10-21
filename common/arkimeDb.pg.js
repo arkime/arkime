@@ -18,7 +18,7 @@ class PGCollection extends ArkimeDb.Collection {
   constructor (pool, prefix, collName, options) {
     super(collName, options);
     this.#pool = pool;
-    this.#table = ArkimeDb.checkField(options.pg?.table ?? `${prefix}${collName}`);
+    this.#table = ArkimeDb.checkField(options.pg?.table ?? `${prefix}${options.table ?? collName}`);
   }
 
   init () {

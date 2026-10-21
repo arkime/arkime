@@ -10,9 +10,9 @@
 
 // Names match the layouts each backend used before collections
 const COLLECTIONS = {
-  views: { sqlite: { table: 'views' } },
-  shareables: { sqlite: { table: 'shareables' } },
-  shortcuts: { version: true, es: { index: 'lookups' }, sqlite: { table: 'shortcuts' } }
+  views: {},
+  shareables: {},
+  shortcuts: { version: true, es: { index: 'lookups' } }
 };
 
 class DbUsersImpl {

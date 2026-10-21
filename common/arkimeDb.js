@@ -402,8 +402,9 @@ class ArkimeDb {
  * Collection options:
  *   idType: 'uuid' (default) or 'hex' for generated ids
  *   version: true to keep a per doc version that every put bumps
+ *   table: the table name for every SQL backend, defaults to the collection name
  *   es: { index, create: { settings, mappings } }, sqlite: { table, columns }, pg: { table },
- *   lmdb: { db, json }, redis: { prefix } - backend names/layout, default from the collection name
+ *   lmdb: { db, json }, redis: { prefix } - per backend names/layout, only needed for older layouts
  */
 class ArkimeDbCollection {
   name;
