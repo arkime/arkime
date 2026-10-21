@@ -279,9 +279,11 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
         headers[3] = tokenHeader;
     }
-    arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
-
+    // Hold waitingsqs before scheduling: sqs_done unlocks it from the http
+    // thread, and a reply that lands before this thread takes the mutex would
+    // otherwise unlock nothing and leave the second lock waiting forever
     ARKIME_LOCK(waitingsqs);
+    arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
     ARKIME_LOCK(waitingsqs);
     ARKIME_UNLOCK(waitingsqs);
 
@@ -301,9 +303,9 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
                 snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
             }
 
-            // request more items
-            arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
+            // request more items, holding waitingsqs first (see above)
             ARKIME_LOCK(waitingsqs);
+            arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
             ARKIME_LOCK(waitingsqs);
             ARKIME_UNLOCK(waitingsqs);
             continue;
