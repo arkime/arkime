@@ -9,7 +9,7 @@
 const ArkimeDb = require('./arkimeDb');
 
 // Each collection is a table of (id, json[, version][, extra columns]), sqlite.idColumn
-// renames the id column for older tables.
+// renames the id column for older tables and sqlite.legacyMeta { key: oldMetaKey } moves their meta.
 // json fields are matched through json_each so arrays and scalars behave the same.
 class SQLiteCollection extends ArkimeDb.Collection {
   #db;
@@ -33,6 +33,14 @@ class SQLiteCollection extends ArkimeDb.Collection {
     }
     db.exec(`CREATE TABLE IF NOT EXISTS ${this.#table} (${cols.join(', ')})`);
     db.exec('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+
+    // Older layouts kept meta under their own key names, move those under <table>:<key>
+    for (const [key, legacyKey] of Object.entries(options.sqlite?.legacyMeta ?? {})) {
+      const row = db.prepare('SELECT value FROM meta WHERE key = ?').get(legacyKey);
+      if (!row) { continue; }
+      db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').run(`${this.#table}:${key}`, row.value);
+      db.prepare('DELETE FROM meta WHERE key = ?').run(legacyKey);
+    }
   }
 
   async get (id) {
@@ -95,12 +103,19 @@ class SQLiteCollection extends ArkimeDb.Collection {
       .run(id, JSON.stringify({ name: owner, lastRun: now, enabled: false }), owner, now, owner, now, ttlMs).changes > 0;
   }
 
+  // Top level fields replace, json_patch would drop nulls and merge nested objects
   async update (id, fields) {
     const cols = Object.keys(this.#columns).filter(c => c in fields);
-    const sets = ['json = json_patch(json, ?)', ...cols.map(c => `${c} = ?`)];
+    const sets = ['json = ?', ...cols.map(c => `${c} = ?`)];
     if (this.#version) { sets.push('version = version + 1'); }
-    return this.#db.prepare(`UPDATE ${this.#table} SET ${sets.join(', ')} WHERE ${this.#idCol} = ?`)
-      .run(JSON.stringify(fields), ...cols.map(c => sqlValue(fields[c])), id).changes > 0;
+    return this.#db.transaction(() => {
+      const row = this.#db.prepare(`SELECT json FROM ${this.#table} WHERE ${this.#idCol} = ?`).get(id);
+      if (!row) { return false; }
+      const doc = Object.assign(JSON.parse(row.json), fields);
+      this.#db.prepare(`UPDATE ${this.#table} SET ${sets.join(', ')} WHERE ${this.#idCol} = ?`)
+        .run(JSON.stringify(doc), ...cols.map(c => sqlValue(fields[c])), id);
+      return true;
+    })();
   }
 
   async delete (id) {

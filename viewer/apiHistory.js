@@ -151,19 +151,10 @@ class HistoryAPIs {
    *
    * Deletes a history entry (admin only).
    * @name /history/:id
-   * @param {string} index - The OpenSearch/Elasticsearch index that the history item was stored in.
    * @returns {boolean} success - Whether the delete history operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async deleteHistory (req, res) {
-    if (!req.query.index) {
-      return res.serverError(403, 'Missing history index', 'api.history.missingIndex');
-    }
-
-    if (!/_history_v\d+-/.test(req.query.index)) {
-      return res.serverError(403, 'Invalid history index');
-    }
-
     try {
       await Db.deleteHistory(req.params.id, req.query.cluster);
       return res.json({

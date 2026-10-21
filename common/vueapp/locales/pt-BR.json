@@ -2293,7 +2293,6 @@
     "history": {
       "needAdminPrivileges": "Necessário privilégios de admin",
       "retrieveFailed": "Erro ao recuperar histórico",
-      "missingIndex": "Índice de histórico ausente",
       "deletedSuccessfully": "Item de histórico excluído com sucesso",
       "deleteFailed": "Erro ao excluir item de histórico"
     },

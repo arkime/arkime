@@ -2293,7 +2293,6 @@
     "history": {
       "needAdminPrivileges": "管理者権限が必要です",
       "retrieveFailed": "履歴の取得エラー",
-      "missingIndex": "履歴インデックスがありません",
       "deletedSuccessfully": "履歴項目を正常に削除しました",
       "deleteFailed": "履歴項目の削除エラー"
     },

@@ -1454,7 +1454,15 @@ async function loadIssues () {
 
 // Saves the issues to the db. The dirty flag is cleared before the async writes so
 // a setIssue that lands mid-save stays dirty, and set again if the save fails.
-async function saveIssues () {
+// Saves run one at a time, the poll and the api can both ask for one.
+let savingIssues = Promise.resolve();
+function saveIssues () {
+  const save = savingIssues.then(doSaveIssues);
+  savingIssues = save.catch(() => {});
+  return save;
+}
+
+async function doSaveIssues () {
   internals.issuesDirty = false;
   try {
     const ids = new Set();

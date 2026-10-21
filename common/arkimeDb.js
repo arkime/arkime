@@ -214,6 +214,8 @@ class ArkimeDb {
   ]);
 
   static #connections = new Map();
+  // The options that change what a connection talks to, so callers only share one when these match
+  static #connOptions = ['prefix', 'node', 'apiKey', 'basicAuth', 'insecure', 'caTrustFile', 'clientKey', 'clientCert', 'clientKeyPass', 'requestTimeout'];
 
   /**
    * Register a backend for a url scheme
@@ -225,7 +227,7 @@ class ArkimeDb {
   }
 
   /**
-   * Get a connection for a url, connections are shared per url and prefix.
+   * Get a connection for a url, connections are shared per url and connection options.
    * @param {string} url - The db url, the scheme picks the backend
    * @param {object} options - Backend options, prefix is used by all of them.
    *   For ES, client reuses an existing @elastic/elasticsearch client.
@@ -235,7 +237,7 @@ class ArkimeDb {
       return new (ArkimeDb.#backend('http'))(url, options);
     }
 
-    const key = `${url}\t${options.prefix ?? ''}`;
+    const key = `${url}\t${JSON.stringify(ArkimeDb.#connOptions.map(o => options[o] ?? null))}`;
     let conn = ArkimeDb.#connections.get(key);
     if (!conn) {
       const scheme = url?.match(/^([a-z0-9+.-]+):/i)?.[1].toLowerCase();

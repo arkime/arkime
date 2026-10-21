@@ -8,7 +8,7 @@
 
 const ArkimeDb = require('./arkimeDb');
 
-// Each doc is a json string at <prefix><id>. Only GET/SET/DEL/KEYS are used
+// Each doc is a json string at <prefix><id>. Only GET/MGET/SET/DEL/KEYS are used
 // so it works with every redis flavor and the test mini-redis.
 class RedisCollection extends ArkimeDb.ScanCollection {
   #client;
@@ -22,15 +22,27 @@ class RedisCollection extends ArkimeDb.ScanCollection {
     this.#version = !!options.version;
   }
 
+  // MGET needs every key on one node, so a cluster gets parallel GETs instead
+  async #getMany (keys) {
+    if (keys.length === 0) { return []; }
+    if (this.#client.isCluster) { return Promise.all(keys.map(key => this.#client.get(key))); }
+    const values = [];
+    for (let i = 0; i < keys.length; i += 1000) {
+      values.push(...await this.#client.mget(keys.slice(i, i + 1000)));
+    }
+    return values;
+  }
+
   async scan () {
     const keys = await this.#client.keys(`${this.#prefix}*`);
+    const jsons = await this.#getMany(keys);
+    const ids = keys.map(key => key.slice(this.#prefix.length));
+    const versions = this.#version ? await this.#getMany(ids.map(id => this.#versionKey(id))) : [];
     const items = [];
-    for (const key of keys) {
-      const json = await this.#client.get(key);
-      if (!json) { continue; }
-      const id = key.slice(this.#prefix.length);
-      const item = { id, doc: JSON.parse(json) };
-      if (this.#version) { item.version = parseInt(await this.#client.get(this.#versionKey(id)) ?? '1'); }
+    for (let i = 0; i < keys.length; i++) {
+      if (!jsons[i]) { continue; }
+      const item = { id: ids[i], doc: JSON.parse(jsons[i]) };
+      if (this.#version) { item.version = parseInt(versions[i] ?? '1'); }
       items.push(item);
     }
     return items;

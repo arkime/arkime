@@ -2293,7 +2293,6 @@
     "history": {
       "needAdminPrivileges": "Vajalikud administraatoriõigused",
       "retrieveFailed": "Ajaloo toomine ebaõnnestus",
-      "missingIndex": "Ajaloo indeks puudub",
       "deletedSuccessfully": "Ajaloo kirje edukalt kustutatud",
       "deleteFailed": "Viga ajaloo kirje kustutamisel"
     },

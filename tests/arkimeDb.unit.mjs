@@ -134,6 +134,7 @@ for (const backend of backends) {
       assert.equal(page.total, 4);
       assert.equal(order(page), 'ab');
       assert.deepEqual(page.data[0].doc, docs.a);
+      assert.equal(order(await coll.find({ sort: { issuedAt: 'asc' }, from: 1 })), 'abc');
     });
 
     test('aggregate', async () => {
@@ -180,6 +181,9 @@ for (const backend of backends) {
       assert.deepEqual(await vcoll.get('co'), { name: 'first', lastUsed: 5 });
       const { data } = await vcoll.find({ where: { id: 'co' }, version: true });
       assert.equal(data[0].version, 2);
+
+      assert.equal(await vcoll.update('co', { lastUsed: null, tags: { a: 1 } }), true);
+      assert.deepEqual(await vcoll.get('co'), { name: 'first', lastUsed: null, tags: { a: 1 } });
 
       assert.equal(await vcoll.update('missing', { lastUsed: 5 }), false);
       assert.equal(await vcoll.get('missing'), null);
@@ -254,10 +258,12 @@ for (const backend of backends) {
 }
 
 describe('ArkimeDb', () => {
-  test('connections are shared per url and prefix', () => {
+  test('connections are shared per url and connection options', () => {
     const url = `sqlite://${tmp}/shared.db`;
     assert.equal(ArkimeUtil.dbConnect(url), ArkimeUtil.dbConnect(url));
+    assert.equal(ArkimeUtil.dbConnect(url, { section: 'a' }), ArkimeUtil.dbConnect(url, { section: 'b' }));
     assert.notEqual(ArkimeUtil.dbConnect(url), ArkimeUtil.dbConnect(url, { prefix: 'x_' }));
+    assert.notEqual(ArkimeUtil.dbConnect(url, { basicAuth: 'a:b' }), ArkimeUtil.dbConnect(url, { basicAuth: 'a:c' }));
   });
 
   test('table names every sql backend unless overridden', async () => {
@@ -266,6 +272,15 @@ describe('ArkimeDb', () => {
     await conn.collection('own', { table: 'shared_table2', sqlite: { table: 'own_table' } }).put('y', { b: 2 });
     const tables = conn.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all().map(r => r.name);
     assert.deepEqual(tables, ['meta', 'own_table', 'shared_table']);
+  });
+
+  test('sqlite legacyMeta moves older meta keys under the table', async () => {
+    const conn = ArkimeUtil.dbConnect(`sqlite://${tmp}/legacymeta.db`);
+    conn.db.exec('CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+    conn.db.prepare('INSERT INTO meta (key, value) VALUES (?, ?)').run('shortcutsVersion', '7');
+    const shortcuts = conn.collection('shortcuts', { version: true, sqlite: { legacyMeta: { version: 'shortcutsVersion' } } });
+    assert.equal(await shortcuts.getMeta('version'), 7);
+    assert.equal(conn.db.prepare("SELECT COUNT(*) AS n FROM meta WHERE key = 'shortcutsVersion'").get().n, 0);
   });
 
   test('sqlite idColumn keeps older tables keyed by another column', async () => {

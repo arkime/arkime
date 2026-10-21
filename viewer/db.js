@@ -237,11 +237,27 @@ Db.initialize = async (info) => {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
 
-  // hunts, queries and history live in the cluster db, the sessions ES unless clusterDbUrl is another db
+  // hunts, queries and history live in the cluster db, the sessions ES unless clusterDbUrl says otherwise.
+  // Another ES uses the sessions ES credentials.
   const clusterDbUrl = info.clusterDbUrl ?? Config.get('clusterDbUrl');
   const esConn = ArkimeUtil.dbConnect(undefined, { client: internals.client7 });
-  const clusterConn = (clusterDbUrl && !ArkimeUtil.dbIsES(clusterDbUrl)) ? ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster' }) : esConn;
-  internals.clusterImpl = new DbClusterImpl({ conn: clusterConn, esConn, prefix: internals.prefix, fixIndex });
+  let clusterConn = esConn;
+  if (clusterDbUrl) {
+    clusterConn = ArkimeUtil.dbIsES(clusterDbUrl)
+      ? ArkimeUtil.dbConnect(clusterDbUrl, {
+        prefix: internals.prefix,
+        insecure: info.insecure,
+        caTrustFile: info.caTrustFile,
+        requestTimeout: info.requestTimeout,
+        clientKey: info.esClientKey,
+        clientCert: info.esClientCert,
+        clientKeyPass: info.esClientKeyPass,
+        apiKey: info.esApiKey,
+        basicAuth: info.esBasicAuth
+      })
+      : ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster' });
+  }
+  internals.clusterImpl = new DbClusterImpl({ conn: clusterConn, esConn, isES: !clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl), prefix: internals.prefix, fixIndex });
   await internals.clusterImpl.init();
 
   try {

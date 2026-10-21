@@ -12,7 +12,7 @@
 const COLLECTIONS = {
   views: {},
   shareables: {},
-  shortcuts: { version: true, es: { index: 'lookups' } }
+  shortcuts: { version: true, es: { index: 'lookups' }, sqlite: { legacyMeta: { version: 'shortcutsVersion' } } }
 };
 
 class DbUsersImpl {

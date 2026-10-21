@@ -2293,7 +2293,6 @@
     "history": {
       "needAdminPrivileges": "Administratorrechte erforderlich",
       "retrieveFailed": "Fehler beim Abrufen des Verlaufs",
-      "missingIndex": "Verlaufsindex fehlt",
       "deletedSuccessfully": "Verlaufseintrag erfolgreich gelöscht",
       "deleteFailed": "Fehler beim Löschen des Verlaufseintrags"
     },

@@ -144,6 +144,8 @@ class ESCollection extends ArkimeDb.Collection {
       return { total: hits.total, data: hits.hits.map(toHit) };
     }
 
+    // ES won't scroll with a from, so skip the first hits here instead
+    body.from = 0;
     let { body: resp } = await this.#client.search({ ...params, scroll: '1m' });
     const total = resp.hits.total;
     const data = [];
@@ -155,7 +157,7 @@ class ESCollection extends ArkimeDb.Collection {
     if (resp._scroll_id) {
       try { await this.#client.clearScroll({ body: { scroll_id: [resp._scroll_id] }, cluster }); } catch (err) { }
     }
-    return { total, data };
+    return { total, data: from > 0 ? data.slice(from) : data };
   }
 
   async count (where, { cluster } = {}) {

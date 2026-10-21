@@ -8,9 +8,6 @@
 
 'use strict';
 
-// Non ES history has no index, but the client sends one back to delete
-const HISTORY_INDEX = 'arkime_history_v1-db';
-
 function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
 }
@@ -20,6 +17,7 @@ class DbClusterImpl {
   #queries;
   #history;
   #isES;
+  #sharedES;
 
   // capture still writes these to the sessions ES, so they are read from there
   files;
@@ -31,10 +29,13 @@ class DbClusterImpl {
   /**
    * @param conn the cluster db connection
    * @param esConn the sessions ES connection
+   * @param isES conn is an Elasticsearch/OpenSearch connection
    * @param prefix, fixIndex build the sessions ES index names
    */
-  constructor ({ conn, esConn, prefix, fixIndex }) {
-    this.#isES = conn === esConn;
+  constructor ({ conn, esConn, isES, prefix, fixIndex }) {
+    this.#isES = isES;
+    // Only the sessions ES client knows the multi cluster routing
+    this.#sharedES = conn === esConn;
     for (const collName of ['files', 'stats', 'dstats', 'fields', 'sequence']) {
       this[collName] = esConn.collection(collName, { es: { index: fixIndex(collName) } });
     }
@@ -65,31 +66,35 @@ class DbClusterImpl {
     await Promise.all([this.#hunts.init(), this.#queries.init(), this.#history.init()]);
   }
 
+  #cluster (cluster) {
+    return this.#sharedES ? cluster : undefined;
+  }
+
   // --------------------------------------------------------------------------
   // HUNTS
   // --------------------------------------------------------------------------
   async createHunt (doc, cluster) {
-    return this.#hunts.put(null, doc, { cluster });
+    return this.#hunts.put(null, doc, { cluster: this.#cluster(cluster) });
   }
 
   async getHunt (id, cluster) {
-    return this.#hunts.get(id, { cluster });
+    return this.#hunts.get(id, { cluster: this.#cluster(cluster) });
   }
 
   async updateHunt (id, fields, cluster) {
-    return this.#hunts.update(id, fields, { cluster });
+    return this.#hunts.update(id, fields, { cluster: this.#cluster(cluster) });
   }
 
   async deleteHunt (id, cluster) {
-    return this.#hunts.delete(id, { cluster });
+    return this.#hunts.delete(id, { cluster: this.#cluster(cluster) });
   }
 
   async searchHunts (params, cluster) {
-    return this.#hunts.find({ ...params, cluster });
+    return this.#hunts.find({ ...params, cluster: this.#cluster(cluster) });
   }
 
   async countHunts (where, cluster) {
-    return this.#hunts.count(where, { cluster });
+    return this.#hunts.count(where, { cluster: this.#cluster(cluster) });
   }
 
   // --------------------------------------------------------------------------
@@ -141,23 +146,19 @@ class DbClusterImpl {
   // HISTORY
   // --------------------------------------------------------------------------
   async addHistory (doc, cluster) {
-    return this.#history.put(null, doc, { cluster });
+    return this.#history.put(null, doc, { cluster: this.#cluster(cluster) });
   }
 
   async searchHistory (params, cluster) {
-    const { total, data } = await this.#history.find({ ...params, cluster });
-    for (const hit of data) {
-      hit.index ??= HISTORY_INDEX;
-    }
-    return { total, data };
+    return this.#history.find({ ...params, cluster: this.#cluster(cluster) });
   }
 
   async countHistory (cluster) {
-    return this.#history.count(null, { cluster });
+    return this.#history.count(null, { cluster: this.#cluster(cluster) });
   }
 
   async deleteHistory (id, cluster) {
-    return this.#history.delete(id, { cluster });
+    return this.#history.delete(id, { cluster: this.#cluster(cluster) });
   }
 
   async deleteAllHistory () {

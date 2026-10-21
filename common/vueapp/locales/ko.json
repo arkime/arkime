@@ -2293,7 +2293,6 @@
     "history": {
       "needAdminPrivileges": "관리자 권한이 필요합니다",
       "retrieveFailed": "기록 조회 오류",
-      "missingIndex": "기록 인덱스가 없습니다",
       "deletedSuccessfully": "기록 항목이 성공적으로 삭제되었습니다",
       "deleteFailed": "기록 항목 삭제 오류"
     },

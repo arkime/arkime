@@ -2293,7 +2293,6 @@
     "history": {
       "needAdminPrivileges": "Need admin privileges",
       "retrieveFailed": "Error retrieving history",
-      "missingIndex": "Missing history index",
       "deletedSuccessfully": "Deleted history item successfully",
       "deleteFailed": "Error deleting history item"
     },

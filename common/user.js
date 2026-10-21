@@ -2074,9 +2074,9 @@ class UserDbImplementation {
     if (query.filter && searchFields.length) {
       if (query.filter.startsWith('!') && searchFields.includes('roles')) {
         // a leading ! excludes users that have a matching role
-        and.push({ $not: { roles: { $icontains: query.filter.slice(1) } } });
+        and.push({ $not: { roles: { $wildcard: `*${query.filter.slice(1)}*` } } });
       } else {
-        and.push({ $or: searchFields.map(field => ({ [field]: { $icontains: query.filter } })) });
+        and.push({ $or: searchFields.map(field => ({ [field]: { $wildcard: `*${query.filter}*` } })) });
       }
     }
 
