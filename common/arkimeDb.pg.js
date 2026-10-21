@@ -58,6 +58,39 @@ class PGCollection extends ArkimeDb.Collection {
     return id;
   }
 
+  async aggregate ({ where, groupBy, metrics = {}, size = 1000 } = {}) {
+    ArkimeDb.checkMetrics(metrics);
+    const params = [];
+    const w = compile(where, params);
+    const keySource = groupBy === 'id' ? '(SELECT to_jsonb(id) AS value) AS g' : valuesSource(ArkimeDb.checkField(groupBy), 'g');
+    const cols = Object.entries(metrics).map(([metricName, metric]) => {
+      const [op, field] = Object.entries(metric)[0];
+      const v = `(doc #> ${pathLiteral(field)})`;
+      const agg = `${op.toUpperCase()}(CASE WHEN jsonb_typeof(${v}) = 'number' THEN (${v} #>> '{}')::numeric END)`;
+      return `${op === 'sum' ? `COALESCE(${agg}, 0)` : agg} AS "m_${ArkimeDb.checkField(metricName)}"`;
+    });
+    params.push(size);
+    const { rows } = await this.#query(`SELECT g.value AS key, COUNT(*)::int AS count${cols.map(c => ', ' + c).join('')}
+      FROM ${this.#table}, ${keySource} WHERE ${w}
+      GROUP BY g.value ORDER BY count DESC, g.value LIMIT $${params.length}`, params);
+    return rows.map(r => {
+      const bucket = { key: r.key, count: r.count };
+      for (const metricName of Object.keys(metrics)) {
+        const m = r[`m_${metricName}`];
+        bucket[metricName] = m === null ? null : Number(m);
+      }
+      return bucket;
+    });
+  }
+
+  async nextSequence (id) {
+    const t = this.#table;
+    const { rows } = await this.#query(`INSERT INTO ${t} (id, doc) VALUES ($1, '{"seq":1}')
+      ON CONFLICT (id) DO UPDATE SET doc = jsonb_set(${t}.doc, '{seq}', to_jsonb(COALESCE((${t}.doc->>'seq')::bigint, 0) + 1))
+      RETURNING (doc->>'seq')::bigint AS seq`, [id]);
+    return Number(rows[0].seq);
+  }
+
   async lease (id, owner, ttlMs) {
     const now = Date.now();
     const t = this.#table;
@@ -147,10 +180,10 @@ function pathLiteral (field) {
 }
 
 // The values of a field as a set of jsonb rows, [] when missing or null
-function valuesSource (field) {
+function valuesSource (field, alias = 'e') {
   const v = `(doc #> ${pathLiteral(field)})`;
   return `jsonb_array_elements(CASE WHEN jsonb_typeof(${v}) = 'array' THEN ${v} ` +
-    `WHEN ${v} IS NULL OR jsonb_typeof(${v}) = 'null' THEN '[]'::jsonb ELSE jsonb_build_array(${v}) END) AS e(value)`;
+    `WHEN ${v} IS NULL OR jsonb_typeof(${v}) = 'null' THEN '[]'::jsonb ELSE jsonb_build_array(${v}) END) AS ${alias}(value)`;
 }
 
 function compileOp (field, op, c, params) {
@@ -171,6 +204,7 @@ function compileOp (field, op, c, params) {
     case '$icontains': return `strpos(lower(id), lower(${p(String(c))})) > 0`;
     case '$prefix': return `left(id, length(${p(String(c))})) = $${params.length}`;
     case '$wildcard': return `id LIKE ${p(likePattern(c))} ESCAPE '\\'`;
+    case '$regex': return `id ~ ('^(?:' || ${p(String(c))} || ')$')`;
     }
   }
 
@@ -209,6 +243,9 @@ function compileOp (field, op, c, params) {
     break;
   case '$wildcard':
     test = `jsonb_typeof(value) = 'string' AND ${text} LIKE ${p(likePattern(c))} ESCAPE '\\'`;
+    break;
+  case '$regex':
+    test = `jsonb_typeof(value) = 'string' AND ${text} ~ ('^(?:' || ${p(String(c))} || ')$')`;
     break;
   }
 

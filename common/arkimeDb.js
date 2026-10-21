@@ -274,7 +274,22 @@ class ArkimeDb {
   // where/sort helpers shared by the backends
   // ----------------------------------------------------------------------------
   static #FIELD_RE = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/;
-  static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard']);
+  static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard', '$regex']);
+  static #regexCache = new Map();
+
+  /**
+   * A whole value match regex like ES regexp, RE2 so user patterns can't backtrack forever
+   */
+  static regex (pattern) {
+    let re = ArkimeDb.#regexCache.get(pattern);
+    if (!re) {
+      const RE2 = require('re2');
+      re = new RE2(`^(?:${pattern})$`, 's');
+      if (ArkimeDb.#regexCache.size > 1000) { ArkimeDb.#regexCache.clear(); }
+      ArkimeDb.#regexCache.set(pattern, re);
+    }
+    return re;
+  }
 
   static checkField (field) {
     if (typeof field !== 'string' || !ArkimeDb.#FIELD_RE.test(field)) {
@@ -339,6 +354,7 @@ class ArkimeDb {
     case '$contains': return vals.some(v => typeof v === 'string' && v.includes(c));
     case '$icontains': return vals.some(v => typeof v === 'string' && v.toLowerCase().includes(String(c).toLowerCase()));
     case '$prefix': return vals.some(v => typeof v === 'string' && v.startsWith(c));
+    case '$regex': return vals.some(v => typeof v === 'string' && ArkimeDb.regex(String(c)).test(v));
     case '$wildcard': {
       const re = new RegExp('^' + String(c).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 's');
       return vals.some(v => typeof v === 'string' && re.test(v));
@@ -400,6 +416,49 @@ class ArkimeDb {
     return { total, data: hits };
   }
 
+  /**
+   * Group [{ id, doc }] in memory like an ES terms aggregation, biggest groups first
+   */
+  static aggregateInMemory (items, { where, groupBy, metrics = {}, size = 1000 } = {}) {
+    const groups = new Map();
+    for (const { id, doc } of items) {
+      if (!ArkimeDb.matches(doc, id, where)) { continue; }
+      const key = groupBy === 'id' ? id : ArkimeDb.getPath(doc, ArkimeDb.checkField(groupBy));
+      for (const k of ArkimeDb.#values(key)) {
+        let g = groups.get(k);
+        if (!g) { g = { key: k, count: 0, docs: [] }; groups.set(k, g); }
+        g.count++;
+        g.docs.push(doc);
+      }
+    }
+
+    const buckets = [...groups.values()]
+      .sort((a, b) => b.count - a.count || (a.key < b.key ? -1 : (a.key > b.key ? 1 : 0)))
+      .slice(0, size);
+    for (const b of buckets) {
+      for (const [metricName, metric] of Object.entries(metrics)) {
+        const [op, field] = Object.entries(metric)[0];
+        const nums = b.docs.flatMap(d => ArkimeDb.#values(ArkimeDb.getPath(d, ArkimeDb.checkField(field)))).filter(v => typeof v === 'number');
+        if (op === 'sum') {
+          b[metricName] = nums.reduce((t, v) => t + v, 0);
+        } else {
+          b[metricName] = nums.length ? nums.reduce((m, v) => Math[op](m, v)) : null;
+        }
+      }
+      delete b.docs;
+    }
+    return buckets;
+  }
+
+  static checkMetrics (metrics = {}) {
+    for (const metric of Object.values(metrics)) {
+      const [op, field] = Object.entries(metric)[0] ?? [];
+      if (!['min', 'max', 'sum'].includes(op)) { throw new Error(`Unknown db metric '${op}'`); }
+      ArkimeDb.checkField(field);
+    }
+    return metrics;
+  }
+
   static newId (idType) {
     return idType === 'hex' ? cryptoLib.randomBytes(16).toString('hex') : cryptoLib.randomUUID();
   }
@@ -419,7 +478,9 @@ class ArkimeDbConflictError extends Error {
  * A collection of json docs keyed by id. Every backend implements:
  *   init(), get(id), put(id, doc, { createOnly, refresh }), create(doc), update(id, fields, { refresh }),
  *   delete(id), deleteWhere(where), deleteAll(), find({ where, sort, from, size, version, fields }),
- *   count(where), getMeta(key), setMeta(obj), refresh(), lease(id, owner, ttlMs)
+ *   count(where), getMeta(key), setMeta(obj), refresh(), lease(id, owner, ttlMs), nextSequence(id),
+ *   aggregate({ where, groupBy, metrics: { name: { min|max|sum: field } }, size })
+ * aggregate returns [{ key, count, <metric names> }] like an ES terms aggregation, biggest first.
  * find returns { total, data: [{ id, doc, version? }] }, with no size it returns every match.
  * fields is a hint (ES only fetches those), callers still get whatever the backend returns.
  * update sets top level fields of an existing doc and returns false when there is no doc.
@@ -483,6 +544,19 @@ class ArkimeDbScanCollection extends ArkimeDbCollection {
     if (!doc) { return false; }
     await this.put(id, Object.assign(doc, fields));
     return true;
+  }
+
+  async aggregate (params = {}) {
+    ArkimeDb.checkMetrics(params.metrics);
+    return ArkimeDb.aggregateInMemory(await this.scan(), params);
+  }
+
+  // Not atomic, these backends are single host
+  async nextSequence (id) {
+    const doc = await this.get(id);
+    const seq = (doc?.seq ?? 0) + 1;
+    await this.put(id, { seq });
+    return seq;
   }
 
   // Not atomic, these backends are single host

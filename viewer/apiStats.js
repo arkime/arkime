@@ -89,82 +89,49 @@ class StatsAPIs {
    * @returns {number} recordsFiltered - The number of nodes returned in this result.
    */
   static getStats (req, res) {
-    const query = {
-      from: 0,
-      size: 10000,
-      query: {
-        bool: {
-          filter: [],
-          should: [],
-          must_not: [
-            { term: { hide: true } }
-          ]
-        }
-      }
-    };
+    const now = Math.floor(Date.now() / 1000);
+    const and = [{ hide: { $ne: true } }];
 
-    if (req.query.filter !== undefined && req.query.filter !== '') {
-      const names = req.query.filter.split(',');
-      for (let n of names) {
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      const names = [];
+      for (let n of req.query.filter.split(',')) {
         n = n.trim();
         if (n !== '') {
           if (n.endsWith('$')) { n = n.slice(0, -1); } else { n += '.*'; }
-          query.query.bool.should.push({
-            regexp: { nodeName: n }
-          });
+          names.push({ nodeName: { $regex: n } });
         }
       }
+      if (names.length) { and.push({ $or: names }); }
     }
-    ViewerUtils.addCluster(req.query.cluster, query);
-
-    const rquery = {
-      query: { term: { locked: 0 } },
-      size: 0,
-      aggregations: {
-        buckets: {
-          terms: { field: 'node', size: 1000 },
-          aggregations: {
-            first: { min: { field: 'first' } }
-          }
-        }
-      }
-    };
-    ViewerUtils.addCluster(req.query.cluster, rquery);
 
     if (req.query.hide !== undefined && req.query.hide !== 'none') {
       if (req.query.hide === 'old' || req.query.hide === 'both') {
-        query.query.bool.filter.push({ range: { currentTime: { gte: 'now-5m' } } });
+        and.push({ currentTime: { $gte: now - 5 * 60 } });
       }
       if (req.query.hide === 'nosession' || req.query.hide === 'both') {
-        query.query.bool.filter.push({ range: { monitoring: { gte: '1' } } });
+        and.push({ monitoring: { $gte: 1 } });
       }
     }
+    const where = { $and: and };
 
-    const now = Math.floor(Date.now() / 1000);
-
-    Promise.all([Db.search('stats', query),
-      Db.numberOfDocuments('stats', rquery.cluster ? { cluster: rquery.cluster } : {}),
-      Db.search('files', rquery)
-    ]).then(([stats, total, retention]) => {
-      if (stats.error) { throw stats.error; }
-
-      if (retention.aggregations.buckets && retention.aggregations.buckets.buckets) {
-        retention = ViewerUtils.arrayToObject(retention.aggregations.buckets.buckets, 'key');
-      } else {
-        retention = {};
+    Promise.all([
+      Db.searchStats({ where, size: 10000 }, req.query.cluster),
+      Db.countStats(req.query.cluster),
+      Db.filesRetention(req.query.cluster)
+    ]).then(([stats, total, retentionBuckets]) => {
+      const retention = Object.create(null);
+      for (const bucket of retentionBuckets) {
+        retention[bucket.key] = bucket.first;
       }
 
-      const results = { total: stats.hits.total, results: [] };
+      const results = { total: stats.total, results: [] };
 
-      for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
-        const fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
-        if (stats.hits.hits[i]._source) {
-          ViewerUtils.mergeUnarray(fields, stats.hits.hits[i].fields);
-        }
-        fields.id = stats.hits.hits[i]._id;
+      for (const hit of stats.data) {
+        const fields = hit.doc;
+        fields.id = hit.id;
 
-        if (retention[fields.id]) {
-          fields.retention = now - retention[fields.id].first.value;
+        if (retention[fields.id] !== undefined && retention[fields.id] !== null) {
+          fields.retention = now - retention[fields.id];
         } else {
           fields.retention = 0;
         }
@@ -232,12 +199,12 @@ class StatsAPIs {
       const stopLen = from + (+req.query.length || 500);
 
       res.send({
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.results.length,
         data: results.results.slice(from, stopLen)
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/stats`, JSON.stringify(where), util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   }
@@ -265,27 +232,19 @@ class StatsAPIs {
 
     const nodeName = req.query.nodeName;
 
-    const query = {
-      query: {
-        bool: {
-          filter: [
-            {
-              range: { currentTime: { gte: req.query.start, lte: req.query.stop } }
-            },
-            {
-              term: { interval: req.query.interval || 60 }
-            }
-          ]
-        }
+    const params = {
+      where: {
+        currentTime: { $gte: +req.query.start, $lte: +req.query.stop },
+        interval: +(req.query.interval || 60)
       }
     };
 
     if (nodeName !== undefined && nodeName !== 'Total' && nodeName !== 'Average') {
-      query.sort = { currentTime: { order: 'desc' } };
-      query.size = req.query.size || 1440;
-      query.query.bool.filter.push({ term: { nodeName } });
+      params.sort = { currentTime: 'desc' };
+      params.size = +req.query.size || 1440;
+      params.where.nodeName = nodeName;
     } else {
-      query.size = 100000;
+      params.size = 100000;
     }
 
     const mapping = {
@@ -308,13 +267,13 @@ class StatsAPIs {
       cpu: { _source: ['cpu'], func: function (item) { return item.cpu * 0.01; } }
     };
 
-    query._source = mapping[req.query.name] ? mapping[req.query.name]._source : [req.query.name];
-    query._source.push('nodeName', 'currentTime');
+    params.fields = mapping[req.query.name] ? [...mapping[req.query.name]._source] : [req.query.name];
+    params.fields.push('nodeName', 'currentTime');
 
     const func = mapping[req.query.name] ? mapping[req.query.name].func : function (item) { return item[req.query.name]; };
 
     try {
-      const result = await Db.search('dstats', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' });
+      const result = await Db.searchDStats(params);
 
       let i, ilen;
       // Keyed by nodeName, which sensors write
@@ -330,9 +289,9 @@ class StatsAPIs {
         console.log('/api/dstats result', util.inspect(result, false, 50));
       }
 
-      if (result && result.hits && result.hits.hits) {
-        for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          const fields = result.hits.hits[i]._source;
+      if (result?.data) {
+        for (i = 0, ilen = result.data.length; i < ilen; i++) {
+          const fields = result.data[i].doc;
           const pos = Math.floor((fields.currentTime - req.query.start) / req.query.step);
 
           if (data[fields.nodeName] === undefined) {
@@ -369,7 +328,7 @@ class StatsAPIs {
         }
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/dstats`, JSON.stringify(params), util.inspect(err, false, 50));
       res.send({});
     }
   }
@@ -1737,16 +1696,10 @@ class StatsAPIs {
    * @returns {number} recordsFiltered - The number of stats returned in this result.
    */
   static getParliament (req, res) {
-    const query = {
+    const params = {
+      where: { hide: { $ne: true } },
       size: 1000,
-      query: {
-        bool: {
-          must_not: [
-            { term: { hide: true } }
-          ]
-        }
-      },
-      _source: [
+      fields: [
         'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes',
         'deltaPackets', 'deltaMS', 'deltaESDropped', 'deltaDropped',
         'deltaOverloadDropped', 'freeSpaceM', 'freeSpaceP'
@@ -1754,21 +1707,15 @@ class StatsAPIs {
     };
 
     Promise.all([
-      Db.search('stats', query),
-      Db.numberOfDocuments('stats'),
+      Db.searchStats(params),
+      Db.countStats(),
       Db.nodesStatsCache()
     ]).then(([stats, total, nodesStats]) => {
-      if (stats.error) { throw stats.error; }
+      const results = { total: stats.total, results: [] };
 
-      const results = { total: stats.hits.total, results: [] };
-
-      for (const stat of stats.hits.hits) {
-        const fields = stat._source || stat.fields;
-
-        if (stat._source) {
-          ViewerUtils.mergeUnarray(fields, stat.fields);
-        }
-        fields.id = stat._id;
+      for (const stat of stats.data) {
+        const fields = stat.doc;
+        fields.id = stat.id;
 
         // make sure necessary fields are not undefined
         const keys = ['deltaOverloadDropped', 'monitoring', 'deltaESDropped'];
@@ -1804,7 +1751,7 @@ class StatsAPIs {
 
       const r = {
         data: results.results,
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.total,
         esNodes
       };

@@ -270,7 +270,7 @@ if (ArkimeConfig.regressionTests) {
 
   // the exact body expiry's files search sends, so esProxy.t can check its validator
   app.get('/regressionTests/expireQuery', (req, res) => {
-    res.send(Db.searchBody(buildExpireQuery(`${req.query.nodes}`.split(','), `${req.query.dirs}`.split(','))));
+    res.send(Db.filesSearchBody(buildExpireQuery(`${req.query.nodes}`.split(','), `${req.query.dirs}`.split(','))));
   });
 
   app.post('/regressionTests/shutdown', function (req, res) {
@@ -1157,34 +1157,18 @@ function isInDirs (file, dirs) {
   return false;
 }
 
-// The oldest 500 files on a set of nodes in a set of directories
+// The oldest 500 files on a set of nodes in a set of directories, node must be the first condition for esProxy
 function buildExpireQuery (nodes, dirs) {
-  const query = {
-    _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
-    size: 500,
-    query: {
-      bool: {
-        filter: [
-          { terms: { node: nodes } },
-          { bool: { should: [] } }
-        ],
-        must_not: { term: { locked: 1 } }
-      }
+  return {
+    where: {
+      node: { $in: nodes },
+      $or: [...dirs].map(dir => ({ name: { $prefix: dir.endsWith('/') ? dir : dir + '/' } })),
+      locked: { $ne: 1 }
     },
-    sort: { first: { order: 'asc' } }
+    fields: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
+    size: 500,
+    sort: { first: 'asc' }
   };
-
-  for (const pcapDir of dirs) {
-    const obj = { wildcard: {} };
-    if (pcapDir.endsWith('/')) {
-      obj.wildcard.name = pcapDir + '*';
-    } else {
-      obj.wildcard.name = pcapDir + '/*';
-    }
-    query.query.bool.filter[1].bool.should.push(obj);
-  }
-
-  return query;
 }
 
 // Search the oldest 500 files on a set of nodes in a set of directories.
@@ -1202,32 +1186,34 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
   }
 
   try {
-    const data = await Db.search('files', query);
-    // Always log, if expiry can't search files the disk fills up
-    if (data.error || !data.hits) {
-      console.log('EXPIRE ERROR - searching files', data.error || 'no data.hits');
+    let data;
+    try {
+      data = await Db.searchFiles(query);
+    } catch (err) {
+      // Always log, if expiry can't search files the disk fills up
+      console.log('EXPIRE ERROR - searching files', err?.message ?? err);
       return;
     }
 
     if (Config.debug === 1) {
-      console.log('EXPIRE - device results hits:', data.hits.hits.length);
+      console.log('EXPIRE - device results hits:', data.data.length);
     } else if (Config.debug > 1) {
-      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(data, null, 2));
+      console.log('EXPIRE - device results', data.data.length, JSON.stringify(data, null, 2));
     }
 
-    if (data.hits.total <= 10) {
-      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
+    if (data.total <= 10) {
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return;
     }
 
     // Keep 10 most recent files by truncating array
-    data.hits.hits.length -= 10;
+    data.data.length -= 10;
 
     // The index file lives in the node's first pcapDir, which may be on another device
     const indexDirs = nodes.flatMap(node => Config.getFullArray(node, 'pcapDir', '/opt/arkime/raw'));
 
-    for (const item of data.hits.hits) {
-      const fields = item._source || item.fields;
+    for (const item of data.data) {
+      const fields = item.doc;
 
       // The wildcard query matches strings, so a name can still climb out with ..
       // Drop the doc instead of skipping it so bogus docs can't fill the oldest 500 and stall expiry
@@ -1235,9 +1221,9 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
         console.log('EXPIRE WARNING - not deleting file outside pcapDir', ArkimeUtil.sanitizeStr(fields.name));
         // Keep expiring the rest if the doc can't be removed, through esProxy only own docs can be
         try {
-          await Db.deleteDocument('files', item._id);
+          await Db.deleteFileDoc(item.id);
         } catch (err) {
-          console.log('EXPIRE ERROR - deleting files doc', ArkimeUtil.sanitizeStr(item._id), ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+          console.log('EXPIRE ERROR - deleting files doc', ArkimeUtil.sanitizeStr(item.id), ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
         }
         continue;
       }
@@ -1262,7 +1248,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
             }
           });
         }
-        await Db.deleteFile(fields.node, item._id, fields.name);
+        await Db.deleteFile(fields.node, item.id, fields.name);
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);

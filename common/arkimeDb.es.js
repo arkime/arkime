@@ -107,9 +107,8 @@ class ESCollection extends ArkimeDb.Collection {
     return body.deleted;
   }
 
-  // With no size every match is returned, using scroll past the first 1000.
-  // Hits also carry the ES index they came from.
-  async find ({ where, sort, from = 0, size, version, fields, cluster } = {}) {
+  // The search body find sends, so validators like esProxy's can be tested against it
+  searchBody ({ where, sort, from = 0, size, fields } = {}) {
     const body = {
       query: compile(where),
       from,
@@ -117,10 +116,21 @@ class ESCollection extends ArkimeDb.Collection {
       track_total_hits: true
     };
     const sortList = ArkimeDb.sortList(sort);
-    if (sortList.length) {
-      body.sort = sortList.map(([field, order]) => ({ [field === 'id' ? '_id' : field]: { order, missing: '_last' } }));
+    // One field goes as an object like the rest of viewer sends, multies only re-sorts arrays
+    const sorts = sortList.map(([field, order]) => ({ [field === 'id' ? '_id' : field]: { order, missing: '_last' } }));
+    if (sorts.length === 1) {
+      body.sort = sorts[0];
+    } else if (sorts.length > 1) {
+      body.sort = sorts;
     }
     if (fields) { body._source = fields; }
+    return body;
+  }
+
+  // With no size every match is returned, using scroll past the first 1000.
+  // Hits also carry the ES index they came from.
+  async find ({ where, sort, from = 0, size, version, fields, cluster } = {}) {
+    const body = this.searchBody({ where, sort, from, size, fields });
 
     const toHit = (h) => {
       const hit = { id: h._id, doc: h._source, index: h._index };
@@ -156,6 +166,36 @@ class ESCollection extends ArkimeDb.Collection {
       if (err.meta?.statusCode === 404) { return 0; }
       throw err;
     }
+  }
+
+  async aggregate ({ where, groupBy, metrics = {}, size = 1000, cluster } = {}) {
+    ArkimeDb.checkMetrics(metrics);
+    const aggs = {};
+    for (const [metricName, metric] of Object.entries(metrics)) {
+      const [op, field] = Object.entries(metric)[0];
+      aggs[metricName] = { [op]: { field } };
+    }
+    const { body } = await this.#client.search({
+      index: this.#index,
+      body: {
+        query: compile(where),
+        size: 0,
+        aggregations: { groups: { terms: { field: groupBy === 'id' ? '_id' : ArkimeDb.checkField(groupBy), size }, aggregations: aggs } }
+      },
+      rest_total_hits_as_int: true,
+      cluster
+    });
+    return (body.aggregations?.groups?.buckets ?? []).map(b => {
+      const bucket = { key: b.key, count: b.doc_count };
+      for (const metricName of Object.keys(metrics)) { bucket[metricName] = b[metricName]?.value ?? null; }
+      return bucket;
+    });
+  }
+
+  // Indexing the doc bumps its _version, the counter capture also uses
+  async nextSequence (id, { cluster } = {}) {
+    const { body } = await this.#client.index({ index: this.#index, id, body: {}, cluster });
+    return body._version;
   }
 
   // Take or renew a lease on doc id for owner, true if we hold it. Someone
@@ -243,6 +283,9 @@ function compileOp (field, op, c) {
   case '$wildcard':
     if (field === 'id') { throw new Error('$wildcard is not supported on id'); }
     return { wildcard: { [f]: { value: String(c) } } };
+  case '$regex':
+    if (field === 'id') { throw new Error('$regex is not supported on id'); }
+    return { regexp: { [f]: { value: String(c) } } };
   }
 }
 

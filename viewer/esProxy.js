@@ -754,8 +754,8 @@ async function validateBulk (req) {
 
 // Validate Files Search, the shapes capture and the sensor viewer's expiry send.
 // Only top level keys that can't widen the node filter, aggs global ignores the query.
-// Db.search adds profile when esProfile is set.
-const filesSearchKeys = ['size', 'sort', 'query', '_source', 'profile'];
+// Db.search adds profile when esProfile is set, collection searches add from and track_total_hits.
+const filesSearchKeys = ['size', 'sort', 'query', '_source', 'profile', 'from', 'track_total_hits'];
 async function validateFilesSearch (req) {
   try {
     const json = parseDocBody(req);

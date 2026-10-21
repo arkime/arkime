@@ -239,11 +239,9 @@ Db.initialize = async (info) => {
 
   // hunts, queries and history live in the cluster db, the sessions ES unless clusterDbUrl is another db
   const clusterDbUrl = info.clusterDbUrl ?? Config.get('clusterDbUrl');
-  if (clusterDbUrl && !ArkimeUtil.dbIsES(clusterDbUrl)) {
-    internals.clusterImpl = new DbClusterImpl(ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster' }));
-  } else {
-    internals.clusterImpl = new DbClusterImpl(ArkimeUtil.dbConnect(undefined, { client: internals.client7 }), { prefix: internals.prefix, fixIndex });
-  }
+  const esConn = ArkimeUtil.dbConnect(undefined, { client: internals.client7 });
+  const clusterConn = (clusterDbUrl && !ArkimeUtil.dbIsES(clusterDbUrl)) ? ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster' }) : esConn;
+  internals.clusterImpl = new DbClusterImpl({ conn: clusterConn, esConn, prefix: internals.prefix, fixIndex });
   await internals.clusterImpl.init();
 
   try {
@@ -1396,12 +1394,9 @@ Db.getShareable = async (id) => {
 };
 
 Db.arkimeNodeStats = async (nodeName) => {
-  try {
-    const { body: stat } = await Db.get('stats', nodeName);
-    return stat._source;
-  } catch (err) {
-    throw new Error('Unknown node');
-  }
+  const stat = await internals.clusterImpl.stats.get(nodeName);
+  if (!stat) { throw new Error('Unknown node'); }
+  return stat;
 };
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
@@ -1466,22 +1461,11 @@ Db.masterCache = async (cluster) => {
 Db.loadESId2Info = async (cluster) => {
   if (esId2InfoLoadedCluster.has(cluster)) { return; }
 
-  const query = {
-    size: 10000,
-    query: {
-      wildcard: {
-        nodeName: 'es:*'
-      }
-    },
-    cluster
-  };
-
-  const data = await Db.search('dstats', query);
-  if (!data.hits) { return; }
-  for (const hit of data.hits.hits) {
-    const id = hit._id.substring(3);
-    const nodeName = hit._source.nodeName.substring(3);
-    const hostname = hit._source.hostname.substring(3);
+  const { data } = await internals.clusterImpl.dstats.find({ where: { nodeName: { $prefix: 'es:' } }, size: 10000, cluster });
+  for (const hit of data) {
+    const id = hit.id.substring(3);
+    const nodeName = hit.doc.nodeName.substring(3);
+    const hostname = hit.doc.hostname.substring(3);
     esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
   }
   esId2InfoLoadedCluster.set(cluster, true);
@@ -1500,7 +1484,7 @@ Db.updateESId2Info = async (id, nodeName, hostname, cluster) => {
   }
 
   esId2Info.set(key, { nodeName, hostname });
-  await Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
+  await internals.clusterImpl.dstats.put(`es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` }, { refresh: false });
 };
 
 Db.nodesStatsCache = async (cluster) => {
@@ -1553,10 +1537,8 @@ Db.indicesSettingsCache = async (cluster) => {
 };
 
 Db.hostnameToNodeids = async (hostname) => {
-  const query = { query: { match: { hostname } } };
-  const sdata = await Db.search('stats', query);
-  // If results, return array of _id, otherwise empty array
-  return sdata?.hits?.hits?.map(hit => hit._id) ?? [];
+  const { data } = await internals.clusterImpl.stats.find({ where: { hostname }, fields: ['hostname'], size: 10000 });
+  return data.map(hit => hit.id);
 };
 
 Db.fileIdToFile = async (node, num) => {
@@ -1568,40 +1550,41 @@ Db.fileIdToFile = async (node, num) => {
 
   let file = null;
   try {
-    const { body: fresult } = await Db.get('files', node + '-' + num);
-    file = fresult._source;
+    file = await internals.clusterImpl.files.get(node + '-' + num);
+  } catch (err) {
+  }
+  if (file) {
     internals.fileId2File.set(key, file);
     internals.fileName2File.set(file.name, file);
-  } catch (err) { // Cache file is unknown
+  } else { // Cache file is unknown
     internals.fileId2File.delete(key);
   }
   return file;
 };
 
 Db.fileNameToFiles = async (fileName) => {
-  let query;
+  let where;
+  let size = 10;
   if (fileName[0] === '/' && fileName[fileName.length - 1] === '/') {
-    query = { query: { regexp: { name: fileName.substring(1, fileName.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
+    where = { name: { $regex: fileName.substring(1, fileName.length - 1) } };
   } else if (fileName.indexOf('*') !== -1) {
-    query = { query: { wildcard: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
+    where = { name: { $wildcard: fileName } };
   }
 
   // Not wildcard/regex check the cache
-  if (!query) {
+  if (!where) {
     if (internals.fileName2File.has(fileName)) {
       return [internals.fileName2File.get(fileName)];
     }
-    query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
+    where = { name: fileName };
+    size = 100;
   }
 
   try {
-    const data = await Db.search('files', query);
-    if (!data.hits) {
-      return null;
-    }
+    const { data } = await internals.clusterImpl.files.find({ where, sort: { num: 'desc' }, size });
     const files = [];
-    for (const hit of data.hits.hits) {
-      const file = hit._source;
+    for (const hit of data) {
+      const file = hit.doc;
       const key = file.node + '!' + file.num;
       internals.fileId2File.set(key, file);
       internals.fileName2File.set(file.name, file);
@@ -1614,8 +1597,34 @@ Db.fileNameToFiles = async (fileName) => {
 };
 
 Db.getSequenceNumber = async (sName) => {
-  const { body: sinfo } = await Db.index('sequence', sName, {});
-  return sinfo._version;
+  return internals.clusterImpl.sequence.nextSequence(sName);
+};
+
+// Files, stats and dstats, params are collection find params
+Db.searchFiles = async (params, cluster) => {
+  return internals.clusterImpl.files.find({ ...params, cluster });
+};
+Db.filesSearchBody = (params) => {
+  return internals.clusterImpl.files.searchBody?.(params);
+};
+Db.countFiles = async (cluster) => {
+  return internals.clusterImpl.files.count(null, { cluster });
+};
+Db.putFile = async (id, doc) => {
+  return internals.clusterImpl.files.put(id, doc);
+};
+// [{ key: node, count, first }] the oldest file per node
+Db.filesRetention = async (cluster) => {
+  return internals.clusterImpl.files.aggregate({ where: { locked: 0 }, groupBy: 'node', metrics: { first: { min: 'first' } }, cluster });
+};
+Db.searchStats = async (params, cluster) => {
+  return internals.clusterImpl.stats.find({ ...params, cluster });
+};
+Db.countStats = async (cluster) => {
+  return internals.clusterImpl.stats.count(null, { cluster });
+};
+Db.searchDStats = async (params, cluster) => {
+  return internals.clusterImpl.dstats.find({ ...params, cluster });
 };
 
 Db.numberOfDocuments = async (index, options) => {
@@ -1696,7 +1705,12 @@ Db.deleteFile = async (node, id, path) => {
   } catch (err) {
     console.log('EXPIRE - error deleting file', node, id, path, err);
   }
-  await Db.deleteDocument('files', id);
+  await Db.deleteFileDoc(id);
+};
+
+// Only the files doc, not the pcap
+Db.deleteFileDoc = async (id) => {
+  return internals.clusterImpl.files.delete(id);
 };
 
 Db.session2Sid = function (item) {
@@ -1790,8 +1804,9 @@ Db.sid2Index = function (id, options) {
   return results[0] ?? fs3;
 };
 
+// [{ id, doc }] every field definition
 Db.loadFields = async () => {
-  return Db.search('fields', { size: 10000 });
+  return (await internals.clusterImpl.fields.find({ size: 10000 })).data;
 };
 
 Db.getSessionIndices = function (excludeExtra) {

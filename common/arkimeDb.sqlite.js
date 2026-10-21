@@ -57,6 +57,35 @@ class SQLiteCollection extends ArkimeDb.Collection {
     return id;
   }
 
+  async aggregate ({ where, groupBy, metrics = {}, size = 1000 } = {}) {
+    ArkimeDb.checkMetrics(metrics);
+    const t = this.#table;
+    const w = this.#where(where);
+    const keySource = groupBy === 'id' || this.#columns[groupBy]
+      ? `(SELECT ${t}.${groupBy === 'id' ? this.#idCol : groupBy} AS value)`
+      : `json_each(${t}.json, '$.${ArkimeDb.checkField(groupBy)}')`;
+    const cols = Object.entries(metrics).map(([metricName, metric]) => {
+      const [op, field] = Object.entries(metric)[0];
+      const agg = `${op.toUpperCase()}(${this.#expr(field).replace(/^json_extract\(json/, `json_extract(${t}.json`)})`;
+      return `${op === 'sum' ? `COALESCE(${agg}, 0)` : agg} AS m_${ArkimeDb.checkField(metricName)}`;
+    });
+    const rows = this.#db.prepare(`SELECT g.value AS key, COUNT(*) AS count${cols.map(c => ', ' + c).join('')}
+      FROM ${t}, ${keySource} AS g ${w.sql ? w.sql + ' AND' : 'WHERE'} g.value IS NOT NULL
+      GROUP BY g.value ORDER BY count DESC, g.value LIMIT ?`).all(...w.params, size);
+    return rows.map(r => {
+      const bucket = { key: r.key, count: r.count };
+      for (const metricName of Object.keys(metrics)) { bucket[metricName] = r[`m_${metricName}`]; }
+      return bucket;
+    });
+  }
+
+  async nextSequence (id) {
+    const t = this.#table;
+    return this.#db.prepare(`INSERT INTO ${t} (${this.#idCol}, json) VALUES (?, '{"seq":1}')
+      ON CONFLICT(${this.#idCol}) DO UPDATE SET json = json_set(${t}.json, '$.seq', COALESCE(json_extract(${t}.json, '$.seq'), 0) + 1)
+      RETURNING json_extract(json, '$.seq') AS seq`).get(id).seq;
+  }
+
   async lease (id, owner, ttlMs) {
     const now = Date.now();
     const t = this.#table;
@@ -193,6 +222,10 @@ class SQLiteCollection extends ArkimeDb.Collection {
       test = "type = 'text' AND substr(value, 1, length(?)) = ?";
       params.push(String(c), String(c));
       break;
+    case '$regex':
+      test = "type = 'text' AND arkime_regexp(?, value)";
+      params.push(String(c));
+      break;
     case '$wildcard':
       // GLOB is case sensitive with the same * and ?, [ starts a class so match it literally
       test = "type = 'text' AND value GLOB ?";
@@ -224,6 +257,7 @@ class SQLiteConnection {
 
   constructor (url, options) {
     this.db = options.db ?? ArkimeDb.createSQLiteDB(url);
+    this.db.function('arkime_regexp', { deterministic: true }, (pattern, value) => ArkimeDb.regex(pattern).test(value) ? 1 : 0);
   }
 
   collection (collName, options = {}) {

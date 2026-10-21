@@ -65,6 +65,10 @@ const whereCases = [
   [{ tags: { $wildcard: 'F*' } }, 'a'],
   [{ name: { $wildcard: 'al%' } }, ''],
   [{ name: { $wildcard: '[B]eta' } }, ''],
+  [{ name: { $regex: 'g.*a' } }, 'c'],
+  [{ creator: { $regex: 'b.b' } }, 'ac'],
+  [{ name: { $regex: 'eta' } }, ''],
+  [{ tags: { $regex: '[Ff]oo' } }, 'a'],
   [{ id: 'a' }, 'a'],
   [{ id: { $in: ['a', 'd'] } }, 'ad'],
   [{ id: { $ne: 'a' }, creator: 'bob' }, 'c'],
@@ -132,9 +136,20 @@ for (const backend of backends) {
       assert.deepEqual(page.data[0].doc, docs.a);
     });
 
+    test('aggregate', async () => {
+      assert.deepEqual(await coll.aggregate({ groupBy: 'creator', metrics: { first: { min: 'issuedAt' }, last: { max: 'issuedAt' }, total: { sum: 'n' } } }), [
+        { key: 'bob', count: 2, first: 100, last: 300, total: 6 },
+        { key: 'ann', count: 1, first: 50, last: 50, total: 0 },
+        { key: 'sue', count: 1, first: 200, last: 200, total: 10 }
+      ]);
+      assert.deepEqual((await coll.aggregate({ groupBy: 'roles' })).map(b => `${b.key}:${b.count}`), ['r2:2', 'r1:1', 'r3:1']);
+      assert.deepEqual((await coll.aggregate({ where: { issuedAt: { $gte: 100 } }, groupBy: 'creator', size: 1 })).map(b => `${b.key}:${b.count}`), ['bob:2']);
+      await assert.rejects(coll.aggregate({ groupBy: 'creator', metrics: { x: { avg: 'n' } } }), /Unknown db metric/);
+    });
+
     test('rejects bad field names and operators', async () => {
       await assert.rejects(coll.find({ where: { "x') OR 1=1 --": 1 } }), /Invalid db field name/);
-      await assert.rejects(coll.find({ where: { name: { $regex: '.*' } } }), /Unknown db where operator/);
+      await assert.rejects(coll.find({ where: { name: { $like: '%' } } }), /Unknown db where operator/);
       await assert.rejects(coll.find({ sort: { 'bad name': 'asc' } }), /Invalid db field name/);
     });
 
@@ -168,6 +183,15 @@ for (const backend of backends) {
 
       assert.equal(await vcoll.update('missing', { lastUsed: 5 }), false);
       assert.equal(await vcoll.get('missing'), null);
+    });
+
+    test('nextSequence', async () => {
+      assert.equal(await vcoll.nextSequence('seqA'), 1);
+      assert.equal(await vcoll.nextSequence('seqA'), 2);
+      assert.equal(await vcoll.nextSequence('seqB'), 1);
+      assert.equal(await vcoll.nextSequence('seqA'), 3);
+      await vcoll.delete('seqA');
+      await vcoll.delete('seqB');
     });
 
     test('lease', async () => {

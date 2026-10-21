@@ -21,14 +21,25 @@ class DbClusterImpl {
   #history;
   #isES;
 
+  // capture still writes these to the sessions ES, so they are read from there
+  files;
+  stats;
+  dstats;
+  fields;
+  sequence;
+
   /**
    * @param conn the cluster db connection
-   * @param esNames when conn is the sessions ES: { prefix, fixIndex } to build the index names
+   * @param esConn the sessions ES connection
+   * @param prefix, fixIndex build the sessions ES index names
    */
-  constructor (conn, esNames) {
-    this.#isES = !!esNames;
-    if (esNames) {
-      const { prefix, fixIndex } = esNames;
+  constructor ({ conn, esConn, prefix, fixIndex }) {
+    this.#isES = conn === esConn;
+    for (const collName of ['files', 'stats', 'dstats', 'fields', 'sequence']) {
+      this[collName] = esConn.collection(collName, { es: { index: fixIndex(collName) } });
+    }
+
+    if (this.#isES) {
       this.#hunts = conn.collection('hunts', { es: { index: fixIndex('hunts') } });
       this.#queries = conn.collection('queries', { es: { index: fixIndex('queries') } });
       this.#history = conn.collection('history', {

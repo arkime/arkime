@@ -4695,7 +4695,7 @@ class SessionAPIs {
         saveId.seq = seq;
         const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
 
-        await Db.indexNow('files', Config.nodeName() + '-' + saveId.seq, options);
+        await Db.putFile(Config.nodeName() + '-' + saveId.seq, options);
 
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
