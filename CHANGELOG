@@ -69,7 +69,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Parliament no longer upgrades pre Arkime 5 parliament.json files into the DB, upgrade with Arkime 6.x first.
           The file setting is now only used to name the parliament.issues.json file
 ## Release
-  - #4253 Node 24.21.0
+  - Node 24.22.1
   - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm
           packages, the libraries built into capture, the bundled Node.js and CyberChef
   - #4266 easybutton-build.sh no longer builds glib, curl, zstd, lua or libpcap, the OS packages are used everywhere.
@@ -175,7 +175,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4279 New MISP source that either periodically bulk loads attributes or queries per item, configured with [misp:<name>] sections
 
 
-6.8.1 2026/10/xx
+6.9.1 2026/11/xx
+## Release
+  - #4373 Node 22.23.4
+
+6.9.0 2026/10/21
 ## Breaking
   - #4309 esProxy refuses to start if an esproxy-sensors entry has an empty pass or ip, or neither
   - #4309 esProxy rejects query parameters that capture and viewer don't send, including extra parameters added to esBulkQuery
