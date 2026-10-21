@@ -19,6 +19,7 @@ const { LRUCache } = require('lru-cache');
 const Config = require('./config.js');
 const DbESImpl = require('./db.es');
 const DbUsersImpl = require('./db.users');
+const DbClusterImpl = require('./db.cluster');
 const DbCHImpl = require('./db.ch');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
@@ -235,6 +236,15 @@ Db.initialize = async (info) => {
   if (internals.debug > 1) {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
+
+  // hunts, queries and history live in the cluster db, the sessions ES unless clusterDbUrl is another db
+  const clusterDbUrl = info.clusterDbUrl ?? Config.get('clusterDbUrl');
+  if (clusterDbUrl && !ArkimeUtil.dbIsES(clusterDbUrl)) {
+    internals.clusterImpl = new DbClusterImpl(ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster' }));
+  } else {
+    internals.clusterImpl = new DbClusterImpl(ArkimeUtil.dbConnect(undefined, { client: internals.client7 }), { prefix: internals.prefix, fixIndex });
+  }
+  await internals.clusterImpl.init();
 
   try {
     const { body: data } = await internals.client7.info();
@@ -1098,76 +1108,44 @@ Db.flushCache = function () {
   cache60.clear();
 };
 
-function twoDigitString (value) {
-  return (value < 10) ? ('0' + value) : value.toString();
-}
-
 // History DB interactions
-Db.historyIt = async function (doc, cluster) {
-  const d = new Date(Date.now());
-  const jan = new Date(d.getUTCFullYear(), 0, 0);
-  const iname = internals.prefix + 'history_v1-' +
-    twoDigitString(d.getUTCFullYear() % 100) + 'w' +
-    twoDigitString(Math.floor((d - jan) / 604800000));
-
-  return internals.client7.index({
-    index: iname, body: doc, refresh: true, timeout: '10m', cluster
-  });
+Db.historyIt = async (doc, cluster) => {
+  return internals.clusterImpl.addHistory(doc, cluster);
 };
-Db.searchHistory = async (query) => {
-  return internals.client7.search({
-    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    body: query,
-    rest_total_hits_as_int: true
-  });
+// params are collection find params, returns { total, data: [{ id, doc, index }] }
+Db.searchHistory = async (params, cluster) => {
+  return internals.clusterImpl.searchHistory(params, cluster);
 };
 Db.countHistory = async (cluster) => {
-  return internals.client7.count({
-    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    ignore_unavailable: true,
-    cluster
-  });
+  return internals.clusterImpl.countHistory(cluster);
 };
-Db.deleteHistory = async (id, index, cluster) => {
-  return internals.client7.delete({
-    index, id, refresh: true, cluster
-  });
+Db.deleteHistory = async (id, cluster) => {
+  return internals.clusterImpl.deleteHistory(id, cluster);
+};
+Db.deleteAllHistory = async () => {
+  return internals.clusterImpl.deleteAllHistory();
 };
 
 // Hunt DB interactions
 Db.createHunt = async (doc, cluster) => {
-  return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m', cluster
-  });
+  return internals.clusterImpl.createHunt(doc, cluster);
 };
-Db.searchHunt = async (query, cluster) => {
-  return internals.client7.search({
-    index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true, cluster
-  });
+// params are collection find params, returns { total, data: [{ id, doc, index }] }
+Db.searchHunts = async (params, cluster) => {
+  return internals.clusterImpl.searchHunts(params, cluster);
 };
-Db.countHunts = async (cluster) => {
-  return internals.client7.count({ index: fixIndex('hunts'), cluster });
+Db.countHunts = async (where, cluster) => {
+  return internals.clusterImpl.countHunts(where, cluster);
 };
 Db.deleteHunt = async (id, cluster) => {
-  return internals.client7.delete({
-    index: fixIndex('hunts'), id, refresh: true, cluster
-  });
+  return internals.clusterImpl.deleteHunt(id, cluster);
 };
-Db.updateHunt = async (id, doc, cluster) => {
-  const params = {
-    refresh: true,
-    retry_on_conflict: 3,
-    index: fixIndex('hunts'),
-    body: { doc },
-    id,
-    timeout: '10m',
-    cluster
-  };
-
-  return internals.client7.update(params);
+Db.updateHunt = async (id, fields, cluster) => {
+  return internals.clusterImpl.updateHunt(id, fields, cluster);
 };
+// returns the hunt or null
 Db.getHunt = async (id, cluster) => {
-  return internals.client7.get({ index: fixIndex('hunts'), id, cluster });
+  return internals.clusterImpl.getHunt(id, cluster);
 };
 
 // fetches the version of the shortcuts from the users backend
@@ -1866,90 +1844,29 @@ Db.putTemplate = async (templateName, body, cluster) => {
   return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body, cluster });
 };
 
+// Queries (crons) DB interactions
 Db.setQueriesNode = async (node, force) => {
-  const namePid = `${node}-${process.pid}`;
-
-  // force is true we just rewrite the primary-viewer entry every time
-  if (force) {
-    await internals.client7.index({
-      id: 'primary-viewer',
-      index: fixIndex('queries'),
-      body: { name: namePid, lastRun: Date.now(), enabled: false }
-    });
-    return true;
-  }
-
-  // force is false. Try and update the previous record. If our record
-  // just update the time stamp. If not our record then take the record if
-  // timestamp is 1 min old. Otherwise noop.
-
-  const script = `
-    if (ctx._source.name == params.name) {
-      ctx._source.lastRun = ctx['_now'];
-    } else if (ctx['_now'] - ctx._source.lastRun >= 60000) {
-      ctx._source.lastRun = ctx['_now'];
-      ctx._source.name = params.name;
-    } else {
-      ctx.op = "none";
-    }
-  `;
-
-  const body = {
-    script: {
-      source: script,
-      lang: 'painless',
-      params: {
-        name: namePid
-      }
-    }
-  };
-  try {
-    const result = await internals.client7.update({
-      id: 'primary-viewer',
-      index: fixIndex('queries'),
-      body
-    });
-    return result.body.result === 'updated';
-  } catch (e) {
-    // There was no entry to update, just try and create a new record as ourself
-    try {
-      const result = await internals.client7.index({
-        id: 'primary-viewer',
-        index: fixIndex('queries'),
-        body: { name: namePid, lastRun: Date.now(), enabled: false },
-        op_type: 'create'
-      });
-      return result.body.result === 'created';
-    } catch (e2) {
-      return false;
-    }
-  }
+  return internals.clusterImpl.setQueriesNode(node, force);
 };
 
 Db.getQueriesNode = async () => {
-  try {
-    const { body: doc } = await internals.client7.get({
-      id: 'primary-viewer',
-      index: fixIndex('queries')
-    });
-    return {
-      node: doc._source?.name,
-      updateTime: doc._source?.lastRun
-    };
-  } catch (e) {
-    const { body: doc } = await internals.client7.indices.getMapping({
-      index: fixIndex('queries')
-    });
-    // Since queries is an alias we don't know the real index name here
-    const meta = doc[Object.keys(doc)[0]].mappings._meta;
-
-    return {
-      node: meta?.node,
-      updateTime: meta?.updateTime
-    };
-  }
+  return internals.clusterImpl.getQueriesNode();
 };
 
+// returns the query or null
 Db.getQuery = async (id) => {
-  return internals.client7.get({ index: fixIndex('queries'), id });
+  return internals.clusterImpl.getQuery(id);
+};
+Db.createQuery = async (doc) => {
+  return internals.clusterImpl.createQuery(doc);
+};
+Db.updateQuery = async (id, fields) => {
+  return internals.clusterImpl.updateQuery(id, fields);
+};
+Db.deleteQuery = async (id) => {
+  return internals.clusterImpl.deleteQuery(id);
+};
+// params are collection find params, returns { total, data: [{ id, doc }] }
+Db.searchQueries = async (params) => {
+  return internals.clusterImpl.searchQueries(params);
 };

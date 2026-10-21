@@ -58,6 +58,13 @@ const whereCases = [
   [{ tags: { $icontains: 'foo' } }, 'a'],
   [{ tags: { $contains: 'foo' } }, ''],
   [{ name: { $prefix: 'ga' } }, 'c'],
+  [{ creator: { $wildcard: 'b*' } }, 'ac'],
+  [{ creator: { $wildcard: '?u?' } }, 'b'],
+  [{ name: { $wildcard: '*eta' } }, 'b'],
+  [{ name: { $wildcard: '*ETA' } }, ''],
+  [{ tags: { $wildcard: 'F*' } }, 'a'],
+  [{ name: { $wildcard: 'al%' } }, ''],
+  [{ name: { $wildcard: '[B]eta' } }, ''],
   [{ id: 'a' }, 'a'],
   [{ id: { $in: ['a', 'd'] } }, 'ad'],
   [{ id: { $ne: 'a' }, creator: 'bob' }, 'c'],
@@ -162,6 +169,42 @@ for (const backend of backends) {
       assert.equal(await vcoll.update('missing', { lastUsed: 5 }), false);
       assert.equal(await vcoll.get('missing'), null);
     });
+
+    test('lease', async () => {
+      assert.equal(await vcoll.lease('pv', 'a', 60000), true);
+      assert.equal(await vcoll.lease('pv', 'a', 60000), true, 'owner renews');
+      assert.equal(await vcoll.lease('pv', 'b', 60000), false, 'fresh lease is held');
+      assert.equal((await vcoll.get('pv')).name, 'a');
+      assert.equal(await vcoll.lease('pv', 'b', 0), true, 'stale lease is taken');
+      await vcoll.refresh();
+      assert.equal((await vcoll.get('pv')).name, 'b');
+      assert.equal(await vcoll.delete('pv'), true);
+    });
+
+    if (backend.name === 'pg') {
+      test('pg tables can be created by several processes at once', async () => {
+        const PGConnection = require('../common/arkimeDb.pg.js');
+        const conns = Array.from({ length: 6 }, () => new PGConnection(backend.url, { prefix: backend.prefix }));
+        await Promise.all(conns.map(c => c.collection(`race${run}`).init()));
+        await conns[0].pool.query(`DROP TABLE ${backend.prefix}race${run}`);
+        await Promise.all(conns.map(c => c.close()));
+      });
+    }
+
+    if (backend.name === 'es') {
+      test('es writeIndex reads a pattern and writes one index', async () => {
+        const hist = conn.collection(`hist${run}`, { es: { index: `${backend.prefix}hist${run}_*`, writeIndex: () => `${backend.prefix}hist${run}_a` } });
+        const id = await hist.create({ api: '/x' });
+        await hist.put('fixed', { api: '/y' });
+        await hist.refresh();
+        assert.deepEqual(await hist.get(id), { api: '/x' });
+        const { data } = await hist.find();
+        assert.deepEqual(data.map(h => h.index), [`${backend.prefix}hist${run}_a`, `${backend.prefix}hist${run}_a`]);
+        assert.equal(await hist.delete(id), true);
+        assert.equal(await hist.get(id), null);
+        await conn.client.indices.delete({ index: `${backend.prefix}hist${run}_a` });
+      });
+    }
 
     test('find with no size returns every match', async () => {
       for (let i = 0; i < 1200; i++) {

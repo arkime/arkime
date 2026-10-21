@@ -57,6 +57,15 @@ class SQLiteCollection extends ArkimeDb.Collection {
     return id;
   }
 
+  async lease (id, owner, ttlMs) {
+    const now = Date.now();
+    const t = this.#table;
+    return this.#db.prepare(`INSERT INTO ${t} (${this.#idCol}, json) VALUES (?, ?)
+      ON CONFLICT(${this.#idCol}) DO UPDATE SET json = json_set(${t}.json, '$.name', ?, '$.lastRun', ?)
+      WHERE json_extract(${t}.json, '$.name') = ? OR ? - json_extract(${t}.json, '$.lastRun') >= ?`)
+      .run(id, JSON.stringify({ name: owner, lastRun: now, enabled: false }), owner, now, owner, now, ttlMs).changes > 0;
+  }
+
   async update (id, fields) {
     const cols = Object.keys(this.#columns).filter(c => c in fields);
     const sets = ['json = json_patch(json, ?)', ...cols.map(c => `${c} = ?`)];
@@ -183,6 +192,11 @@ class SQLiteCollection extends ArkimeDb.Collection {
     case '$prefix':
       test = "type = 'text' AND substr(value, 1, length(?)) = ?";
       params.push(String(c), String(c));
+      break;
+    case '$wildcard':
+      // GLOB is case sensitive with the same * and ?, [ starts a class so match it literally
+      test = "type = 'text' AND value GLOB ?";
+      params.push(String(c).replace(/\[/g, '[[]'));
       break;
     }
 

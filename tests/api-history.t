@@ -25,7 +25,8 @@ my ($url) = @_;
     my $otherToken = getTokenCookie('historytest1');
 
 # Clear all history
-    esDelete("/tests*_history_v1*");
+    viewerGet("/regressionTests/deleteAllHistory");
+    viewerGet2("/regressionTests/deleteAllHistory");
     sleep(1);
     esGet("/_flush");
     esGet("/_refresh");

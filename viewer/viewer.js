@@ -305,8 +305,8 @@ if (ArkimeConfig.regressionTests) {
       if (HuntAPIs.isHuntJobRunning()) {
         setTimeout(checkHuntFinished, 1000);
       } else {
-        const result = await Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } });
-        if (result.hits.total > 0) {
+        const active = await Db.countHunts({ status: { $in: ['running', 'queued'] } });
+        if (active > 0) {
           HuntAPIs.processHuntJobs();
           await Db.refresh();
           setTimeout(checkHuntFinished, 1000);
@@ -332,6 +332,15 @@ if (ArkimeConfig.regressionTests) {
   app.get('/regressionTests/deleteAllShareables', async (req, res) => {
     await Db.deleteAllShareables();
     res.send('{}');
+  });
+  app.get('/regressionTests/deleteAllHistory', async (req, res) => {
+    await Db.deleteAllHistory();
+    res.send('{}');
+  });
+  // Change a periodic query the way older versions or other tooling could have saved it
+  app.post('/regressionTests/updateQuery/:id', async (req, res) => {
+    const updated = await Db.updateQuery(req.params.id, req.body);
+    res.send({ result: updated ? 'updated' : 'not_found' });
   });
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
@@ -711,11 +720,11 @@ async function checkHuntAccess (req, res, next) {
     return next();
   } else {
     try {
-      const { body: huntHit } = await Db.getHunt(req.params.id);
+      const hunt = await Db.getHunt(req.params.id);
 
-      if (!huntHit || !huntHit.found) { throw new Error('Hunt not found'); }
+      if (!hunt) { throw new Error('Hunt not found'); }
 
-      if (huntHit._source.userId === req.user.userId) {
+      if (hunt.userId === req.user.userId) {
         return next();
       }
 

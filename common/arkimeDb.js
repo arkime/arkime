@@ -274,7 +274,7 @@ class ArkimeDb {
   // where/sort helpers shared by the backends
   // ----------------------------------------------------------------------------
   static #FIELD_RE = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/;
-  static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix']);
+  static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard']);
 
   static checkField (field) {
     if (typeof field !== 'string' || !ArkimeDb.#FIELD_RE.test(field)) {
@@ -339,6 +339,10 @@ class ArkimeDb {
     case '$contains': return vals.some(v => typeof v === 'string' && v.includes(c));
     case '$icontains': return vals.some(v => typeof v === 'string' && v.toLowerCase().includes(String(c).toLowerCase()));
     case '$prefix': return vals.some(v => typeof v === 'string' && v.startsWith(c));
+    case '$wildcard': {
+      const re = new RegExp('^' + String(c).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 's');
+      return vals.some(v => typeof v === 'string' && re.test(v));
+    }
     }
     return false;
   }
@@ -415,7 +419,7 @@ class ArkimeDbConflictError extends Error {
  * A collection of json docs keyed by id. Every backend implements:
  *   init(), get(id), put(id, doc, { createOnly, refresh }), create(doc), update(id, fields, { refresh }),
  *   delete(id), deleteWhere(where), deleteAll(), find({ where, sort, from, size, version, fields }),
- *   count(where), getMeta(key), setMeta(obj), refresh()
+ *   count(where), getMeta(key), setMeta(obj), refresh(), lease(id, owner, ttlMs)
  * find returns { total, data: [{ id, doc, version? }] }, with no size it returns every match.
  * fields is a hint (ES only fetches those), callers still get whatever the backend returns.
  * update sets top level fields of an existing doc and returns false when there is no doc.
@@ -478,6 +482,15 @@ class ArkimeDbScanCollection extends ArkimeDbCollection {
     const doc = await this.get(id);
     if (!doc) { return false; }
     await this.put(id, Object.assign(doc, fields));
+    return true;
+  }
+
+  // Not atomic, these backends are single host
+  async lease (id, owner, ttlMs) {
+    const now = Date.now();
+    const doc = await this.get(id);
+    if (doc && doc.name !== owner && now - doc.lastRun < ttlMs) { return false; }
+    await this.put(id, { ...doc, name: owner, lastRun: now, enabled: doc?.enabled ?? false });
     return true;
   }
 }

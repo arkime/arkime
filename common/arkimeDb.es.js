@@ -12,14 +12,19 @@ const ArkimeDb = require('./arkimeDb');
 
 // Each collection is an index, <prefix><name> unless es.index is set. Indices
 // are only created when es.create is set, otherwise db.pl owns them.
+// With es.writeIndex the index is a read pattern and each put goes to
+// writeIndex(), so gets and deletes by id search across the pattern.
+// Every call takes an optional cluster, which multi cluster viewers route on.
 class ESCollection extends ArkimeDb.Collection {
   #client;
   #index;
+  #writeIndex;
 
   constructor (client, prefix, collName, options) {
     super(collName, options);
     this.#client = client;
     this.#index = options.es?.index ?? `${prefix}${collName}`;
+    this.#writeIndex = options.es?.writeIndex;
   }
 
   get index () {
@@ -44,9 +49,13 @@ class ESCollection extends ArkimeDb.Collection {
     }
   }
 
-  async get (id) {
+  async get (id, { cluster } = {}) {
+    if (this.#writeIndex) {
+      const { body: { hits } } = await this.#client.search({ index: this.#index, body: { query: { ids: { values: [id] } }, size: 1 }, cluster });
+      return hits.hits[0]?._source ?? null;
+    }
     try {
-      const { body } = await this.#client.get({ index: this.#index, id });
+      const { body } = await this.#client.get({ index: this.#index, id, cluster });
       return body._source ?? null;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return null; }
@@ -54,8 +63,8 @@ class ESCollection extends ArkimeDb.Collection {
     }
   }
 
-  async put (id, doc, { createOnly, refresh = true } = {}) {
-    const params = { index: this.#index, body: doc, refresh };
+  async put (id, doc, { createOnly, refresh = true, cluster } = {}) {
+    const params = { index: this.#writeIndex ? this.#writeIndex() : this.#index, body: doc, refresh, cluster };
     if (id !== null && id !== undefined) { params.id = id; }
     if (createOnly) { params.op_type = 'create'; }
     try {
@@ -67,9 +76,10 @@ class ESCollection extends ArkimeDb.Collection {
     }
   }
 
-  async update (id, fields, { refresh = true } = {}) {
+  async update (id, fields, { refresh = true, cluster } = {}) {
+    if (this.#writeIndex) { throw new Error(`update isn't supported on ${this.#index}`); }
     try {
-      await this.#client.update({ index: this.#index, id, body: { doc: fields }, retry_on_conflict: 3, refresh });
+      await this.#client.update({ index: this.#index, id, body: { doc: fields }, retry_on_conflict: 3, refresh, cluster });
       return true;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return false; }
@@ -77,9 +87,12 @@ class ESCollection extends ArkimeDb.Collection {
     }
   }
 
-  async delete (id, { refresh = true } = {}) {
+  async delete (id, { refresh = true, cluster } = {}) {
+    if (this.#writeIndex) {
+      return (await this.deleteWhere({ id }, { cluster })) > 0;
+    }
     try {
-      await this.#client.delete({ index: this.#index, id, refresh });
+      await this.#client.delete({ index: this.#index, id, refresh, cluster });
       return true;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return false; }
@@ -87,15 +100,16 @@ class ESCollection extends ArkimeDb.Collection {
     }
   }
 
-  async deleteWhere (where) {
+  async deleteWhere (where, { cluster } = {}) {
     const { body } = await this.#client.deleteByQuery({
-      index: this.#index, body: { query: compile(where) }, refresh: true, conflicts: 'proceed'
+      index: this.#index, body: { query: compile(where) }, refresh: true, conflicts: 'proceed', cluster
     });
     return body.deleted;
   }
 
-  // With no size every match is returned, using scroll past the first 1000
-  async find ({ where, sort, from = 0, size, version, fields } = {}) {
+  // With no size every match is returned, using scroll past the first 1000.
+  // Hits also carry the ES index they came from.
+  async find ({ where, sort, from = 0, size, version, fields, cluster } = {}) {
     const body = {
       query: compile(where),
       from,
@@ -109,12 +123,12 @@ class ESCollection extends ArkimeDb.Collection {
     if (fields) { body._source = fields; }
 
     const toHit = (h) => {
-      const hit = { id: h._id, doc: h._source };
+      const hit = { id: h._id, doc: h._source, index: h._index };
       if (version) { hit.version = h._version; }
       return hit;
     };
 
-    const params = { index: this.#index, body, rest_total_hits_as_int: true, version: !!version };
+    const params = { index: this.#index, body, rest_total_hits_as_int: true, version: !!version, cluster };
     if (size !== undefined) {
       const { body: { hits } } = await this.#client.search(params);
       return { total: hits.total, data: hits.hits.map(toHit) };
@@ -126,21 +140,56 @@ class ESCollection extends ArkimeDb.Collection {
     while (resp.hits.hits.length > 0) {
       data.push(...resp.hits.hits.map(toHit));
       if (data.length >= total) { break; }
-      ({ body: resp } = await this.#client.scroll({ scroll_id: resp._scroll_id, scroll: '1m', rest_total_hits_as_int: true }));
+      ({ body: resp } = await this.#client.scroll({ scroll_id: resp._scroll_id, scroll: '1m', rest_total_hits_as_int: true, cluster }));
     }
     if (resp._scroll_id) {
-      try { await this.#client.clearScroll({ body: { scroll_id: [resp._scroll_id] } }); } catch (err) { }
+      try { await this.#client.clearScroll({ body: { scroll_id: [resp._scroll_id] }, cluster }); } catch (err) { }
     }
     return { total, data };
   }
 
-  async count (where) {
+  async count (where, { cluster } = {}) {
     try {
-      const { body } = await this.#client.count({ index: this.#index, body: { query: compile(where) } });
+      const { body } = await this.#client.count({ index: this.#index, body: { query: compile(where) }, ignore_unavailable: true, cluster });
       return body.count;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return 0; }
       throw err;
+    }
+  }
+
+  // Take or renew a lease on doc id for owner, true if we hold it. Someone
+  // else's lease can be taken once it is ttlMs old.
+  async lease (id, owner, ttlMs) {
+    try {
+      const { body } = await this.#client.update({
+        index: this.#index,
+        id,
+        body: {
+          script: {
+            lang: 'painless',
+            source: `
+              if (ctx._source.name == params.name) {
+                ctx._source.lastRun = ctx['_now'];
+              } else if (ctx['_now'] - ctx._source.lastRun >= params.ttl) {
+                ctx._source.lastRun = ctx['_now'];
+                ctx._source.name = params.name;
+              } else {
+                ctx.op = "none";
+              }`,
+            params: { name: owner, ttl: ttlMs }
+          }
+        }
+      });
+      return body.result === 'updated';
+    } catch (err) {
+      // There was no entry to update, just try and create a new record as ourself
+      try {
+        await this.put(id, { name: owner, lastRun: Date.now(), enabled: false }, { createOnly: true, refresh: false });
+        return true;
+      } catch (err2) {
+        return false;
+      }
     }
   }
 
@@ -159,12 +208,12 @@ class ESCollection extends ArkimeDb.Collection {
     await this.#client.indices.putMapping({ index: this.#index, body: { _meta: meta } });
   }
 
-  async refresh () {
-    await this.#client.indices.refresh({ index: this.#index });
+  async refresh ({ cluster } = {}) {
+    await this.#client.indices.refresh({ index: this.#index, cluster });
   }
 
-  async flush () {
-    await this.#client.indices.flush({ index: this.#index });
+  async flush ({ cluster } = {}) {
+    await this.#client.indices.flush({ index: this.#index, cluster });
   }
 }
 
@@ -191,6 +240,9 @@ function compileOp (field, op, c) {
   case '$contains': return { wildcard: { [f]: { value: `*${wildcardEscape(c)}*` } } };
   case '$icontains': return { wildcard: { [f]: { value: `*${wildcardEscape(c)}*`, case_insensitive: true } } };
   case '$prefix': return { prefix: { [f]: c } };
+  case '$wildcard':
+    if (field === 'id') { throw new Error('$wildcard is not supported on id'); }
+    return { wildcard: { [f]: { value: String(c) } } };
   }
 }
 

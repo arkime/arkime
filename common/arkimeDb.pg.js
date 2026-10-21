@@ -21,11 +21,21 @@ class PGCollection extends ArkimeDb.Collection {
     this.#table = ArkimeDb.checkField(options.pg?.table ?? `${prefix}${options.table ?? collName}`);
   }
 
+  // IF NOT EXISTS still races when several processes create the same table at
+  // once, so the loser's duplicate errors mean it exists now
   init () {
-    this.#ready ??= this.#pool.query(`
-      CREATE TABLE IF NOT EXISTS ${this.#table} (id TEXT PRIMARY KEY, doc JSONB NOT NULL, version INTEGER NOT NULL DEFAULT 1);
-      CREATE TABLE IF NOT EXISTS arkime_meta (key TEXT PRIMARY KEY, value JSONB NOT NULL)
-    `);
+    this.#ready ??= (async () => {
+      for (const sql of [
+        `CREATE TABLE IF NOT EXISTS ${this.#table} (id TEXT PRIMARY KEY, doc JSONB NOT NULL, version INTEGER NOT NULL DEFAULT 1)`,
+        'CREATE TABLE IF NOT EXISTS arkime_meta (key TEXT PRIMARY KEY, value JSONB NOT NULL)'
+      ]) {
+        try {
+          await this.#pool.query(sql);
+        } catch (err) {
+          if (!['23505', '42P07', '42710'].includes(err.code)) { throw err; }
+        }
+      }
+    })();
     return this.#ready;
   }
 
@@ -46,6 +56,16 @@ class PGCollection extends ArkimeDb.Collection {
       [id, JSON.stringify(doc)]);
     if (createOnly && rowCount === 0) { throw new ArkimeDb.ConflictError(id); }
     return id;
+  }
+
+  async lease (id, owner, ttlMs) {
+    const now = Date.now();
+    const t = this.#table;
+    const { rowCount } = await this.#query(`INSERT INTO ${t} (id, doc) VALUES ($1, $2)
+      ON CONFLICT (id) DO UPDATE SET doc = ${t}.doc || jsonb_build_object('name', $3::text, 'lastRun', $4::bigint)
+      WHERE ${t}.doc->>'name' = $3 OR $4 - (${t}.doc->>'lastRun')::bigint >= $5`,
+    [id, JSON.stringify({ name: owner, lastRun: now, enabled: false }), owner, now, ttlMs]);
+    return rowCount > 0;
   }
 
   async update (id, fields) {
@@ -117,6 +137,11 @@ class PGCollection extends ArkimeDb.Collection {
   }
 }
 
+// * and ? to a LIKE pattern, LIKE's own % _ and \ are literal
+function likePattern (c) {
+  return String(c).replace(/[\\%_]/g, '\\$&').replace(/\*/g, '%').replace(/\?/g, '_');
+}
+
 function pathLiteral (field) {
   return `'{${field.split('.').join(',')}}'`;
 }
@@ -145,6 +170,7 @@ function compileOp (field, op, c, params) {
     case '$contains': return `strpos(id, ${p(String(c))}) > 0`;
     case '$icontains': return `strpos(lower(id), lower(${p(String(c))})) > 0`;
     case '$prefix': return `left(id, length(${p(String(c))})) = $${params.length}`;
+    case '$wildcard': return `id LIKE ${p(likePattern(c))} ESCAPE '\\'`;
     }
   }
 
@@ -180,6 +206,9 @@ function compileOp (field, op, c, params) {
     break;
   case '$prefix':
     test = `jsonb_typeof(value) = 'string' AND left(${text}, length(${p(String(c))})) = $${params.length}`;
+    break;
+  case '$wildcard':
+    test = `jsonb_typeof(value) = 'string' AND ${text} LIKE ${p(likePattern(c))} ESCAPE '\\'`;
     break;
   }
 

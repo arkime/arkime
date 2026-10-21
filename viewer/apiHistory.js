@@ -10,7 +10,6 @@
 const Db = require('./db.js');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
-const ViewerUtils = require('./viewerUtils');
 
 class HistoryAPIs {
   // --------------------------------------------------------------------------
@@ -70,51 +69,31 @@ class HistoryAPIs {
         userId = req.user.userId;
       }
 
-      const query = {
-        sort: {},
+      const sortField = /^[A-Za-z_][A-Za-z0-9_.]*$/.test(req.query.sortField ?? '') ? req.query.sortField : 'timestamp';
+      const params = {
+        sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' },
         from: +req.query.start || 0,
         size: +req.query.length || 1000
       };
 
-      query.sort[req.query.sortField || 'timestamp'] = {
-        order: req.query.desc === 'true' ? 'desc' : 'asc'
-      };
-
-      if (req.query.searchTerm || userId) {
-        query.query = { bool: { filter: [] } };
-
-        if (req.query.searchTerm) { // apply search term across whitelisted fields only
-          query.query.bool.filter.push({
-            bool: {
-              should: ['expression', 'userId', 'api', 'view.name', 'view.expression'].map(field => ({
-                wildcard: { [field]: `*${req.query.searchTerm}*` }
-              })),
-              minimum_should_match: 1
-            }
-          });
-        }
-
-        if (userId) { // filter on userId
-          query.query.bool.filter.push({
-            wildcard: { userId }
-          });
-        }
+      const and = [];
+      if (ArkimeUtil.isString(req.query.searchTerm)) { // apply search term across whitelisted fields only
+        and.push({ $or: ['expression', 'userId', 'api', 'view.name', 'view.expression'].map(field => ({ [field]: { $contains: req.query.searchTerm } })) });
       }
 
-      if (req.query.api) { // filter on api endpoint
-        if (!query.query) { query.query = { bool: { filter: [] } }; }
-        query.query.bool.filter.push({
-          wildcard: { api: '*' + req.query.api + '*' }
-        });
+      if (userId) { // filter on userId, admins can use * and ?
+        and.push({ userId: { $wildcard: userId } });
       }
 
-      if (req.query.exists) {
-        if (!query.query) { query.query = { bool: { filter: [] } }; }
-        const existsArr = req.query.exists.split(',');
-        for (let i = 0, len = existsArr.length; i < len; ++i) {
-          query.query.bool.filter.push({
-            exists: { field: existsArr[i] }
-          });
+      if (ArkimeUtil.isString(req.query.api)) { // filter on api endpoint
+        and.push({ api: { $contains: req.query.api } });
+      }
+
+      if (ArkimeUtil.isString(req.query.exists)) {
+        for (const field of req.query.exists.split(',')) {
+          if (/^[A-Za-z_][A-Za-z0-9_.]*$/.test(field)) {
+            and.push({ [field]: { $exists: true } });
+          }
         }
       }
 
@@ -132,30 +111,21 @@ class HistoryAPIs {
           req.query.stopTime = parseInt(req.query.stopTime, 10);
         }
 
-        if (!query.query) { query.query = { bool: { filter: [] } }; }
-        query.query.bool.filter.push({
-          range: {
-            timestamp: {
-              gte: '' + req.query.startTime,
-              lte: '' + req.query.stopTime
-            }
-          }
-        });
+        and.push({ timestamp: { $gte: req.query.startTime, $lte: req.query.stopTime } });
       }
+      params.where = { $and: and };
 
-      ViewerUtils.addCluster(req.query.cluster, query);
-
-      const [{ body: { hits: histories } }, { body: { count: total } }] = await Promise.all([
-        Db.searchHistory(query),
+      const [histories, total] = await Promise.all([
+        Db.searchHistory(params, req.query.cluster),
         Db.countHistory(req.query.cluster)
       ]);
 
       const results = { total: histories.total, results: [] };
       const isAdmin = req.user.hasRole('arkimeAdmin');
-      for (const hit of histories.hits) {
-        const item = hit._source;
-        item.id = hit._id;
-        item.index = hit._index;
+      for (const hit of histories.data) {
+        const item = hit.doc;
+        item.id = hit.id;
+        item.index = hit.index;
         if (!isAdmin) {
           // remove forced expression and es query for reqs made by nonadmin users
           item.forcedExpression = undefined;
@@ -195,7 +165,7 @@ class HistoryAPIs {
     }
 
     try {
-      await Db.deleteHistory(req.params.id, req.query.index, req.query.cluster);
+      await Db.deleteHistory(req.params.id, req.query.cluster);
       return res.json({
         success: true,
         text: 'Deleted history item successfully',

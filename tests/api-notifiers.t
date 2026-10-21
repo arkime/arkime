@@ -353,7 +353,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   ok($lpValue, "periodic query starts at the oldest session");
   viewerGet("/regressionTests/processCronQueries"); # let the run the create kicked off finish, it advances lpValue
   # now a matching query, the start reset, and the notifier twice like a doc saved before the api deduped them
-  $json = esPost("/tests_queries/_update/$alertKey?refresh=true", "{\"doc\":{\"notifier\":\"$sysId,$sysId\",\"query\":\"file=*/pcap/smtp-originating.pcap\",\"lpValue\":$lpValue}}");
+  $json = viewerPost("/regressionTests/updateQuery/$alertKey", "{\"notifier\":\"$sysId,$sysId\",\"query\":\"file=*/pcap/smtp-originating.pcap\",\"lpValue\":$lpValue}");
   is($json->{result}, "updated", "stored the notifier twice behind the api's back");
   my ($alertCron) = grep { $_->{key} eq $alertKey } @{viewerGetToken("/api/crons", $token)};
   is_deeply($alertCron->{notifier}, [$sysId, $sysId], "the periodic query now lists the notifier twice");
