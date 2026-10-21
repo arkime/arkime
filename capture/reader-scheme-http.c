@@ -107,6 +107,10 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     else
         snprintf(pathquery, sizeof(pathquery), "%s", path);
 
+    // Hold waiting before scheduling: scheme_http_done unlocks it from the http
+    // thread, and a reply that lands first would otherwise unlock nothing and
+    // leave the second lock waiting forever
+    ARKIME_LOCK(waiting);
     arkime_http_schedule2(server, "GET", pathquery, -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_NORMAL, scheme_http_done, scheme_http_read, req);
 
     curl_free(scheme);
@@ -116,7 +120,6 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     curl_free(query);
     curl_url_cleanup(h);
 
-    ARKIME_LOCK(waiting);
     ARKIME_LOCK(waiting);
     ARKIME_UNLOCK(waiting);
 
