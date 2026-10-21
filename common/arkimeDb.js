@@ -187,10 +187,10 @@ class ArkimeDb {
       dbPath = url;
     }
 
-    const db = new Database(dbPath);
+    // timeout first, several processes opening a new db race on switching it to WAL
+    const db = new Database(dbPath, { timeout: 5000 });
     db.pragma('journal_mode = WAL');
     db.pragma('synchronous = NORMAL');
-    db.pragma('busy_timeout = 5000');
     return db;
   }
 
