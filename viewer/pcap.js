@@ -15,6 +15,12 @@ const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 
+// Compressed pcap is read in slices that end mid-frame, so the decoder must
+// hand back what it has instead of failing on the truncated tail. For zstd that
+// is ZSTD_e_flush: Z_SYNC_FLUSH has the value of ZSTD_e_end, which Node 24.22+
+// treats as "the input must be complete" and rejects with Z_BUF_ERROR.
+const ZSTD_FINISH_FLUSH = zlib.constants.ZSTD_e_flush;
+
 const pr2name = {
   1: 'icmp',
   2: 'igmp',
@@ -81,8 +87,9 @@ class Pcap {
   // current block is unused, so truncating loses nothing and bounds memory.
   static decompressBlock (compression, buffer, maxLength) {
     return new Promise((resolve, reject) => {
-      const opts = { finishFlush: zlib.constants.Z_SYNC_FLUSH };
-      const stream = compression === 'gzip' ? zlib.createInflateRaw(opts) : zlib.createZstdDecompress(opts);
+      const stream = compression === 'gzip'
+        ? zlib.createInflateRaw({ finishFlush: zlib.constants.Z_SYNC_FLUSH })
+        : zlib.createZstdDecompress({ finishFlush: ZSTD_FINISH_FLUSH });
       const chunks = [];
       let len = 0;
       let done = false;
@@ -114,12 +121,13 @@ class Pcap {
   // --------------------------------------------------------------------------
   // Sync gzip or zstd decompress of the longest prefix of buffer that fits in maxLength bytes
   static decompressPrefixSync (compression, buffer, maxLength) {
-    const opts = { finishFlush: zlib.constants.Z_SYNC_FLUSH, maxOutputLength: maxLength };
     let len = buffer.length;
     while (true) {
       try {
         const input = buffer.subarray(0, len);
-        return compression === 'gzip' ? zlib.gunzipSync(input, opts) : zlib.zstdDecompressSync(input, opts);
+        return compression === 'gzip'
+          ? zlib.gunzipSync(input, { finishFlush: zlib.constants.Z_SYNC_FLUSH, maxOutputLength: maxLength })
+          : zlib.zstdDecompressSync(input, { finishFlush: ZSTD_FINISH_FLUSH, maxOutputLength: maxLength });
       } catch (e) {
         if (e.code !== 'ERR_BUFFER_TOO_LARGE' || len <= 1) { throw e; }
         len = Math.floor(len / 2);
@@ -317,7 +325,7 @@ class Pcap {
         if (this.compression === 'gzip') {
           this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (this.compression === 'zstd') {
-          this.headBuffer = zlib.zstdDecompressSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          this.headBuffer = zlib.zstdDecompressSync(this.headBuffer, { finishFlush: ZSTD_FINISH_FLUSH });
         }
       } catch (e) {
         this.corrupt = true;

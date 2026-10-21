@@ -137,6 +137,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4360 SIP requests over TCP are no longer also tagged http
   - #4360 DHCP packets shorter than 256 bytes are now parsed, and BGP sessions seen only from the server side are now classified
 ## Viewer
+  - Fix reading zstd compressed pcap with Node 24.22 and later
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets
   - #4235 Session and export PCAP downloads can now be saved as PCAPNG, which preserves every interface and link type; a PCAP download that would span multiple link types is refused with a message to use PCAPNG instead
