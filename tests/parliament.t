@@ -355,19 +355,15 @@ parliamentGet("/regressionTests/updateParliament");
 $result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(scalar @{$result->{issues}} >= 2);
 
-# the poll saves its issues to the issues file once per cycle (written async, so allow a moment)
-my $issuesOnDisk = [];
+# the poll saves its issues to the db once per cycle (saved async, so allow a moment)
+my $issuesSaved = [];
 for (my $i = 0; $i < 10; $i++) {
-    if (open(my $fh, '<', 'parliament.dev.issues.json')) {
-        local $/;
-        my $data = eval { from_json(<$fh>) };
-        close($fh);
-        $issuesOnDisk = $data if ref $data eq 'ARRAY';
-    }
-    last if grep { ($_->{clusterId} // '') eq $down1Id } @$issuesOnDisk;
+    my $data = parliamentGet("/regressionTests/savedIssues");
+    $issuesSaved = $data if ref $data eq 'ARRAY';
+    last if grep { ($_->{clusterId} // '') eq $down1Id } @$issuesSaved;
     sleep(1);
 }
-ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesOnDisk), "poll issues are written to the issues file");
+ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesSaved), "poll issues are saved to the db");
 
 # filter passed as an array is ignored instead of throwing (500) on .toLowerCase()
 $result = parliamentGetToken("/parliament/api/issues?filter=a&filter=b&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);

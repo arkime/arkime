@@ -2016,8 +2016,7 @@ class UserDbImplementation {
 
   constructor (options) {
     const url = options.url;
-    // anything that isn't one of the other dbs is the users ES
-    this.#isES = !/^(lmdb|redis[a-z-]*|sqlite3?|postgres(ql)?):/.test(url ?? '');
+    this.#isES = ArkimeUtil.dbIsES(url);
     const prefix = this.#isES ? ArkimeUtil.formatPrefix(options.prefix) : undefined;
     this.#conn = ArkimeUtil.dbConnect(this.#isES ? (url ?? 'http://localhost:9200') : url, { ...options, prefix, section: 'User' });
 

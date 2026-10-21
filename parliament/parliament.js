@@ -25,6 +25,7 @@ const favicon = require('serve-favicon');
 const bp = require('body-parser');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
+const cryptoLib = require('crypto');
 const path = require('path');
 const axios = require('axios');
 const { LRUCache } = require('lru-cache');
@@ -109,13 +110,19 @@ if (ArkimeConfig.regressionTests) {
       }
     }, 500);
   });
+  app.get('/regressionTests/savedIssues', async function (req, res) {
+    const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
+    res.json(data.map(h => h.doc));
+  });
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
 }
 
-// issues object!
-let issues;
+// issues object! the working set, saved to the db once per poll and on every api change
+let issues = [];
+// ids of the issues last saved to the db, so issues that went away get deleted
+let savedIssueIds = new Set();
 
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
@@ -244,18 +251,13 @@ app.use(cspHeader);
 app.use(ArkimeUtil.jsonParser);
 app.use(bp.urlencoded({ extended: true }));
 
-function newError (code, msg) {
-  const error = new Error(msg);
-  error.httpStatusCode = code;
-  return error;
-}
-
 // ----------------------------------------------------------------------------
 // PARLIAMENT CLASS
 // ----------------------------------------------------------------------------
 class Parliament {
   static name;
-  static #implementation;
+  static #parliaments;
+  static issues;
   static #cache = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 
   static settingsDefault = {
@@ -286,23 +288,27 @@ class Parliament {
     Parliament.name = options.name;
 
     const url = options.url ?? User.getDbUrl();
+    const conn = ArkimeUtil.dbIsES(url)
+      ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: ArkimeUtil.formatPrefix(options.prefix) })
+      : ArkimeUtil.dbConnect(url, { section: 'Parliament' });
 
-    if (!url || url.startsWith('http')) {
-      Parliament.#implementation = new ParliamentESImplementation(options);
-    } else if (url.startsWith('lmdb')) {
-      Parliament.#implementation = new ParliamentLMDBImplementation({ ...options, url });
-    } else if (url.startsWith('redis')) {
-      Parliament.#implementation = new ParliamentRedisImplementation({ ...options, url });
-    } else if (url.startsWith('sqlite')) {
-      Parliament.#implementation = new ParliamentSQLiteImplementation({ ...options, url });
-    } else {
-      Parliament.#implementation = new ParliamentESImplementation(options);
-    }
+    // Names match the layouts each backend used before collections
+    Parliament.#parliaments = conn.collection('parliament', {
+      sqlite: { idColumn: 'name' },
+      lmdb: { db: 'Parliament', json: true },
+      redis: { prefix: 'parliament:' }
+    });
+
+    const esSettings = { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-2' };
+    Parliament.issues = conn.collection('parliament_issues', {
+      es: { create: { settings: esSettings, mappings: { dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword' } } }] } } }
+    });
+    await Parliament.issues.init();
   }
 
   // DB INTERACTIONS ---------------------------------------------------------
   static async getParliament () {
-    const parliament = await Parliament.#implementation.getParliament(Parliament.name);
+    const parliament = await Parliament.#parliaments.get(Parliament.name);
 
     if (parliament) {
       Parliament.#cache.set('parliament', parliament);
@@ -312,12 +318,12 @@ class Parliament {
   }
 
   static async createParliament (parliament) {
-    return Parliament.#implementation.createParliament(Parliament.name, parliament);
+    return Parliament.#parliaments.put(Parliament.name, parliament, { createOnly: true });
   }
 
   static async setParliament (parliament) {
     try {
-      await Parliament.#implementation.setParliament(Parliament.name, parliament);
+      await Parliament.#parliaments.put(Parliament.name, parliament);
       Parliament.#cache.set('parliament', parliament);
     } catch (err) {
       if (ArkimeConfig.debug) {
@@ -868,124 +874,6 @@ class Parliament {
   }
 }
 
-/******************************************************************************/
-// ES Implementation
-/******************************************************************************/
-class ParliamentESImplementation {
-  client;
-  parliamentIndex;
-
-  constructor (options) {
-    this.client = User.getClient();
-    const prefix = ArkimeUtil.formatPrefix(options.prefix);
-    this.parliamentIndex = `${prefix}parliament`;
-  }
-
-  async getParliament (pName) {
-    try {
-      const { body: { _source: doc } } = await this.client.get({
-        index: this.parliamentIndex, id: pName
-      });
-      return doc || null;
-    } catch (err) {
-      if (err.meta?.statusCode === 404) { return null; }
-      throw err;
-    }
-  }
-
-  async createParliament (pName, parliament) {
-    await this.client.create({
-      index: this.parliamentIndex, body: parliament, id: pName, timeout: '10m'
-    });
-  }
-
-  async setParliament (pName, parliament) {
-    await this.client.index({
-      index: this.parliamentIndex, body: parliament, id: pName, refresh: true, timeout: '10m'
-    });
-  }
-}
-
-/******************************************************************************/
-// LMDB Implementation
-/******************************************************************************/
-class ParliamentLMDBImplementation {
-  store;
-
-  constructor (options) {
-    this.store = ArkimeUtil.createLMDBStore(options.url, 'Parliament');
-  }
-
-  async getParliament (pName) {
-    const json = this.store.get(pName);
-    if (!json) { return null; }
-    return JSON.parse(json);
-  }
-
-  async createParliament (pName, parliament) {
-    await this.store.put(pName, JSON.stringify(parliament));
-  }
-
-  async setParliament (pName, parliament) {
-    await this.store.put(pName, JSON.stringify(parliament));
-  }
-}
-
-/******************************************************************************/
-// Redis Implementation
-/******************************************************************************/
-class ParliamentRedisImplementation {
-  client;
-  prefix = 'parliament:';
-
-  constructor (options) {
-    this.client = ArkimeUtil.createRedisClient(options.url, 'Parliament');
-  }
-
-  async getParliament (pName) {
-    const json = await this.client.get(this.prefix + pName);
-    if (!json) { return null; }
-    return JSON.parse(json);
-  }
-
-  async createParliament (pName, parliament) {
-    await this.client.set(this.prefix + pName, JSON.stringify(parliament));
-  }
-
-  async setParliament (pName, parliament) {
-    await this.client.set(this.prefix + pName, JSON.stringify(parliament));
-  }
-}
-
-/******************************************************************************/
-// SQLite Implementation
-/******************************************************************************/
-class ParliamentSQLiteImplementation {
-  db;
-
-  constructor (options) {
-    this.db = ArkimeUtil.createSQLiteDB(options.url);
-    this.db.exec(`CREATE TABLE IF NOT EXISTS parliament (
-      name TEXT PRIMARY KEY,
-      json TEXT NOT NULL
-    )`);
-  }
-
-  async getParliament (pName) {
-    const row = this.db.prepare('SELECT json FROM parliament WHERE name = ?').get(pName);
-    if (!row) { return null; }
-    return JSON.parse(row.json);
-  }
-
-  async createParliament (pName, parliament) {
-    this.db.prepare('INSERT INTO parliament (name, json) VALUES (?, ?)').run(pName, JSON.stringify(parliament));
-  }
-
-  async setParliament (pName, parliament) {
-    this.db.prepare('INSERT OR REPLACE INTO parliament (name, json) VALUES (?, ?)').run(pName, JSON.stringify(parliament));
-  }
-}
-
 // ----------------------------------------------------------------------------
 // MIDDLEWARE
 // ----------------------------------------------------------------------------
@@ -1171,7 +1059,7 @@ async function initializeParliament () {
   ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
   Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
 
-  Parliament.initialize({
+  await Parliament.initialize({
     name: internals.parliamentName,
     prefix: ArkimeConfig.get('usersPrefix')
   });
@@ -1207,6 +1095,8 @@ async function initializeParliament () {
       console.error('ERROR - Error creating Parliament', err);
     }
   }
+
+  await loadIssues();
 
   if (ArkimeConfig.debug) {
     console.log('Parliament initialized!');
@@ -1531,24 +1421,62 @@ async function getStats (cluster) {
   });
 }
 
-// Writes the issues file. The dirty flag is cleared before the async write so
-// a setIssue that lands mid-write stays dirty, and set again if the write fails.
-function saveIssues () {
-  if (validateIssues()) { return; }
+// One db doc per parliament + cluster + type + node, so pollers can't duplicate an issue
+function issueId (issue) {
+  return cryptoLib.createHash('sha256')
+    .update(`${Parliament.name}\t${issue.clusterId}\t${issue.type}\t${issue.node ?? ''}`)
+    .digest('hex');
+}
 
-  internals.issuesDirty = false;
-  fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-    (err) => {
-      if (err) {
-        console.log('Unable to write issues:', err.message ?? err);
-        internals.issuesDirty = true;
-      }
+// Loads this parliament's issues, importing the old issues file the first time
+async function loadIssues () {
+  const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
+  issues = data.map(({ doc }) => { delete doc.parliament; return doc; });
+  savedIssueIds = new Set(data.map(h => h.id));
+  if (issues.length > 0) { return; }
+
+  const configFile = ArkimeConfig.get('file');
+  const issuesFile = configFile?.endsWith('.json') ? `${configFile.slice(0, -5)}.issues.json` : undefined;
+  if (!issuesFile || !fs.existsSync(issuesFile)) { return; }
+
+  try {
+    const fileIssues = JSON.parse(fs.readFileSync(issuesFile, 'utf8'));
+    if (Array.isArray(fileIssues)) {
+      issues = fileIssues;
+      await saveIssues();
     }
-  );
+    fs.renameSync(issuesFile, `${issuesFile}.imported`);
+    console.log(`Imported ${issues.length} issues from ${issuesFile} into the db, renamed it to ${issuesFile}.imported`);
+  } catch (err) {
+    console.log(`ERROR - importing issues from ${issuesFile}`, err.message ?? err);
+  }
+}
+
+// Saves the issues to the db. The dirty flag is cleared before the async writes so
+// a setIssue that lands mid-save stays dirty, and set again if the save fails.
+async function saveIssues () {
+  internals.issuesDirty = false;
+  try {
+    const ids = new Set();
+    for (const issue of [...issues]) {
+      const id = issueId(issue);
+      ids.add(id);
+      await Parliament.issues.put(id, { ...issue, parliament: Parliament.name }, { refresh: false });
+    }
+    for (const id of savedIssueIds) {
+      if (!ids.has(id)) { await Parliament.issues.delete(id, { refresh: false }); }
+    }
+    savedIssueIds = ids;
+    await Parliament.issues.refresh();
+  } catch (err) {
+    console.log('Unable to save issues:', err.message ?? err);
+    internals.issuesDirty = true;
+    throw err;
+  }
 }
 
 // Chains all promises for requests for health and stats for each cluster in the parliament
-// this also sets all the issues in the issues.json file
+// this also saves the issues to the db
 async function updateParliament () {
   internals.updateInProgress = true;
   let issuesRemoved = false;
@@ -1591,7 +1519,7 @@ async function updateParliament () {
   } finally {
     // save the issues once per poll, even a failed one, not on every setIssue
     if (issuesRemoved || internals.issuesDirty) {
-      saveIssues();
+      saveIssues().catch(() => {});
     }
     internals.updateInProgress = false;
   }
@@ -1618,48 +1546,20 @@ function removeIssue (issueType, clusterId, nodeId) {
   return foundIssue;
 }
 
-// Validates that issues exist
-// Use this before writing the issues file
-function validateIssues (next) {
-  const len = Buffer.from(JSON.stringify(issues, null, 2)).length;
-  if (len < 2) {
-    // if it's an empty file, don't save it, return an error
-    const errorMsg = 'Error writing issue data: empty issues';
-    console.log(errorMsg);
-    if (next) {
-      return newError(500, errorMsg);
-    }
-    return errorMsg;
-  }
-  return false;
-}
-
-// Writes the issues to the issues json file then sends success or error
-function writeIssues (req, res, next, successObj, errorText, sendIssues) {
-  const issuesError = validateIssues(next);
-  if (issuesError) {
-    return next(issuesError);
+// Saves the issues to the db then sends success or error
+async function writeIssues (req, res, next, successObj, errorText, sendIssues) {
+  try {
+    await saveIssues();
+  } catch (err) {
+    return res.serverError(500, 'Unable to write issue data');
   }
 
-  fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-    (err) => {
-      if (ArkimeConfig.debug) {
-        console.log('Wrote issues file', err ?? '');
-      }
+  // send the updated issues with the response
+  if (sendIssues && successObj.issues) {
+    successObj.issues = issues;
+  }
 
-      if (err) {
-        console.log(`Unable to write issue data: ${err.message ?? err}`);
-        return res.serverError(500, 'Unable to write issue data');
-      }
-
-      // send the updated issues with the response
-      if (sendIssues && successObj.issues) {
-        successObj.issues = issues;
-      }
-
-      return res.json(successObj);
-    }
-  );
+  return res.json(successObj);
 }
 
 // ----------------------------------------------------------------------------
@@ -2220,21 +2120,6 @@ async function main () {
     process.exit(1);
   }
 
-  // construct the issues file name
-  let issuesFilename = 'issues.json';
-  const configFile = ArkimeConfig.get('file');
-  if (configFile?.endsWith('.json')) {
-    issuesFilename = `${configFile.slice(0, -5)}.issues.json`;
-  }
-  app.set('issuesfile', issuesFilename);
-
-  // get the issues file or create it if it doesn't exist
-  try {
-    issues = JSON.parse(fs.readFileSync(issuesFilename, 'utf8'));
-  } catch (err) {
-    issues = [];
-  }
-
   await setupAuth();
 
   const parliamentHost = ArkimeConfig.get('parliamentHost');
@@ -2242,7 +2127,6 @@ async function main () {
   ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), async () => {
     if (ArkimeConfig.debug) {
       console.log('Parliament file:', ArkimeConfig.get('file'));
-      console.log('Issues file:', issuesFilename);
     }
 
     try {

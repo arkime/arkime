@@ -245,6 +245,14 @@ class ArkimeDb {
     return conn;
   }
 
+  /**
+   * Is the url (or a missing url) an Elasticsearch/OpenSearch db. Apps default to ES
+   * for anything they don't recognize, so only the other backends are checked.
+   */
+  static isES (url) {
+    return !/^(lmdb|redis[a-z-]*|sqlite3?|postgres(ql)?):/i.test(url ?? '');
+  }
+
   static #backend (scheme) {
     const backend = ArkimeDb.#backends.get(scheme);
     if (!backend) {

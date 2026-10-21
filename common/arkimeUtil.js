@@ -1047,3 +1047,4 @@ ArkimeUtil.createSQLiteDB = ArkimeDb.createSQLiteDB;
 ArkimeUtil.dbConnect = ArkimeDb.connect;
 ArkimeUtil.dbRegister = ArkimeDb.register;
 ArkimeUtil.dbCloseAll = ArkimeDb.closeAll;
+ArkimeUtil.dbIsES = ArkimeDb.isES;

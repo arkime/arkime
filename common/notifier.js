@@ -25,7 +25,7 @@ class Notifier {
     const url = options.url ?? User.getDbUrl();
 
     // Names match the layouts each backend used before collections
-    const conn = (!url || /^(https?|elasticsearch|opensearch):/.test(url))
+    const conn = ArkimeUtil.dbIsES(url)
       ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: ArkimeUtil.formatPrefix(options.prefix) })
       : ArkimeUtil.dbConnect(url, { section: 'Notifier' });
     Notifier.#notifiers = conn.collection('notifiers', {
