@@ -22,9 +22,33 @@ SPDX-License-Identifier: Apache-2.0
           hide-details
           class="mb-3" />
 
+        <!-- text widget: just a title and the text -->
+        <template v-if="staticMode">
+          <div class="arkime-input-group arkime-input-group--fluid mb-3">
+            <span class="arkime-input-label">
+              {{ $t('sessions.summary.widget.title') }}
+            </span>
+            <input
+              v-model="form.title"
+              type="text"
+              class="arkime-input-control"
+              :placeholder="titlePlaceholder">
+          </div>
+          <v-textarea
+            v-model="form.text"
+            :label="$t('sessions.summary.widget.text')"
+            :placeholder="$t('sessions.summary.widget.textHint')"
+            rows="6"
+            auto-grow
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mb-3" />
+        </template>
+
         <!-- connections is an ordered src -> dst pair, so each end gets its own
              picker over its own list (ip.dst:port only resolves as a destination) -->
-        <template v-if="fieldPair">
+        <template v-else-if="fieldPair">
           <div class="arkime-input-group arkime-input-group--fluid mb-3">
             <span
               id="widgetSrcField"
@@ -60,9 +84,17 @@ SPDX-License-Identifier: Apache-2.0
         <div
           v-else
           class="arkime-input-group arkime-input-group--fluid mb-3"
-          :class="{ 'input-disabled': !needsField }">
-          <span class="arkime-input-label">
-            {{ multiField ? $t('sessions.summary.widget.fields') : $t('sessions.summary.widget.field') }}<sup v-if="needsField">*</sup>
+          :class="{ 'input-disabled': !needsField && !optionalField }">
+          <span
+            id="widgetField"
+            class="arkime-input-label"
+            :class="{ 'cursor-help': optionalField }">
+            {{ multiField ? $t('sessions.summary.widget.fields') : $t(optionalField ? 'sessions.summary.widget.fieldOptional' : 'sessions.summary.widget.field') }}<sup v-if="needsField">*</sup>
+            <v-tooltip
+              v-if="optionalField"
+              activator="#widgetField">
+              {{ $t('sessions.summary.widget.fieldOptionalHint') }}
+            </v-tooltip>
           </span>
           <v-autocomplete
             v-if="multiField"
@@ -87,10 +119,21 @@ SPDX-License-Identifier: Apache-2.0
             :fields="usableFields"
             :initial-value="fieldFriendlyName"
             @field-selected="onFieldSelected" />
+          <v-btn
+            v-if="optionalField && form.field"
+            variant="text"
+            size="small"
+            icon
+            :title="$t('common.clear')"
+            @click="onFieldSelected(null)">
+            <v-icon icon="mdi-close" />
+          </v-btn>
         </div>
 
         <!-- Title override -->
-        <div class="arkime-input-group arkime-input-group--fluid mb-3">
+        <div
+          v-if="!staticMode"
+          class="arkime-input-group arkime-input-group--fluid mb-3">
           <span class="arkime-input-label">
             {{ $t('sessions.summary.widget.title') }}
           </span>
@@ -101,9 +144,11 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="titlePlaceholder">
         </div>
 
-        <div class="d-flex flex-wrap gap-3 mb-3">
-          <!-- Metric basis: Sessions count, or numeric field(s) summed per value.
-               Tables take several metric columns + a sort-by; charts take one. -->
+        <div
+          v-if="!staticMode"
+          class="d-flex flex-wrap gap-3 mb-3">
+          <!-- Metric basis: Sessions count, or numeric field(s) aggregated per
+               value. Tables take several metric columns + a sort-by; charts one. -->
           <template v-if="multiMetric">
             <v-autocomplete
               v-model="form.metrics"
@@ -139,9 +184,78 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             auto-select-first
             style="min-width: 200px" />
+          <!-- How the metric field(s) combine per value; only the summary-endpoint
+               modes take one, and it means nothing for the session count -->
+          <span
+            v-if="aggEnabled"
+            id="widgetMetricAgg"
+            style="min-width: 140px">
+            <v-select
+              v-model="form.metricAgg"
+              :items="aggItems"
+              :label="$t('sessions.summary.widget.metricAgg')"
+              :disabled="!aggApplies"
+              density="compact"
+              variant="outlined"
+              hide-details />
+            <v-tooltip activator="#widgetMetricAgg">
+              {{ $t('sessions.summary.widget.metricAggTip') }}
+            </v-tooltip>
+          </span>
         </div>
 
-        <div class="d-flex flex-wrap gap-3 mb-3">
+        <!-- bar: split each value by a second field (stacked or grouped segments) -->
+        <div
+          v-if="splitEnabled"
+          class="d-flex flex-wrap gap-3 mb-3 align-center">
+          <div
+            class="arkime-input-group arkime-input-group--fluid flex-grow-1"
+            style="min-width: 220px">
+            <span
+              id="widgetSplitField"
+              class="arkime-input-label cursor-help">
+              {{ $t('sessions.summary.widget.splitField') }}
+              <v-tooltip activator="#widgetSplitField">
+                {{ $t('sessions.summary.widget.splitFieldTip') }}
+              </v-tooltip>
+            </span>
+            <ArkimeFieldTypeahead
+              :fields="splitFields"
+              :initial-value="splitFieldFriendlyName"
+              @field-selected="onSplitFieldSelected" />
+            <v-btn
+              v-if="form.splitField"
+              variant="text"
+              size="small"
+              icon
+              :title="$t('common.clear')"
+              @click="form.splitField = ''">
+              <v-icon icon="mdi-close" />
+            </v-btn>
+          </div>
+          <v-select
+            v-model="form.splitLength"
+            :items="splitLengthItems"
+            :label="$t('sessions.summary.widget.splitLength')"
+            :disabled="!form.splitField"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 120px" />
+          <v-select
+            v-model="form.barMode"
+            :items="barModeItems"
+            :label="$t('sessions.summary.widget.barMode')"
+            :disabled="!form.splitField || !additiveMetric"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 120px" />
+        </div>
+
+        <div
+          v-if="!staticMode"
+          class="d-flex flex-wrap gap-3 mb-3">
           <!-- Data limit (Top/Bottom N, or a session sample for connections) -->
           <v-select
             v-model="form.length"
@@ -191,7 +305,7 @@ SPDX-License-Identifier: Apache-2.0
              top of the global search). Disabled for session-wide widgets, which
              always describe the whole result set. -->
         <v-select
-          v-if="viewsSupported"
+          v-if="viewsSupported && !staticMode"
           v-model="form.view"
           :items="viewItems"
           :label="$t('sessions.summary.widget.localView')"
@@ -211,6 +325,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-select>
 
         <div
+          v-if="!staticMode"
           class="arkime-input-group arkime-input-group--fluid mb-1"
           :class="{ 'input-disabled': !localFilterEnabled }">
           <span
@@ -274,7 +389,8 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
-import { hasMetric, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, allowsMultiField, allowsMultiMetric, hasLocalFilter } from './widgets/viewModes';
+import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, allowsMultiField, allowsMultiMetric, allowsSplit, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -302,7 +418,12 @@ const blankForm = () => ({
   viewMode: 'bar',
   metricType: 'sessions',
   metrics: [],
+  metricAgg: 'sum',
   sortMetric: 'sessions',
+  splitField: '',
+  splitLength: 5,
+  barMode: 'stacked',
+  text: '',
   length: 20,
   order: 'desc',
   width: 2,
@@ -352,7 +473,31 @@ const fieldMode = computed(() => isFieldMode(form.value.viewMode));
 const geoMode = computed(() => isGeoFieldMode(form.value.viewMode));
 // a field selection is required by both general field-bound and geo (map) types
 const needsField = computed(() => fieldMode.value || geoMode.value);
+// metric: a field splits the number per top value but isn't required
+const optionalField = computed(() => isOptionalFieldMode(form.value.viewMode));
+// text: no data inputs at all
+const staticMode = computed(() => isStaticMode(form.value.viewMode));
 const metricEnabled = computed(() => hasMetric(form.value.viewMode));
+// aggregation choice: only the summary-endpoint modes, and only once a metric
+// field (not the session count) is chosen
+const aggEnabled = computed(() => hasMetricAgg(form.value.viewMode));
+const aggApplies = computed(() => multiMetric.value
+  ? (form.value.metrics || []).some(m => m !== 'sessions')
+  : (form.value.metricType && form.value.metricType !== 'sessions'));
+const aggItems = computed(() => METRIC_AGGS.map(a => ({ title: t(`sessions.summary.agg.${a}`), value: a })));
+// bar: optional split field
+const splitEnabled = computed(() => allowsSplit(form.value.viewMode));
+const splitFields = computed(() => fields.value.filter(f => fieldIsAggregatable(f) && f.exp !== 'ip' && f.exp !== 'ip.dst:port' && f.exp !== form.value.field));
+// averages, extremes and unique counts can't stack; the chart draws them
+// grouped whatever is stored, and the editor says so by pinning the choice
+const additiveMetric = computed(() => metricIsAdditive(form.value.metricType, form.value.metricAgg));
+watch(additiveMetric, (additive) => { if (!additive) { form.value.barMode = 'grouped'; } });
+const splitFieldFriendlyName = computed(() => (form.value.splitField
+  ? (FieldService.getField(form.value.splitField, true)?.friendlyName || form.value.splitField)
+  : ''));
+const onSplitFieldSelected = (field) => { form.value.splitField = field?.exp || ''; };
+const splitLengthItems = SPLIT_LENGTHS.map(n => ({ title: String(n), value: n }));
+const barModeItems = computed(() => BAR_MODES.map(m => ({ title: t(`sessions.summary.widget.barMode-${m}`), value: m })));
 // tables take multiple metric columns + a sort-by; charts take a single metric
 const multiMetric = computed(() => allowsMultiMetric(form.value.viewMode));
 const lengthEnabled = computed(() => hasLength(form.value.viewMode));
@@ -387,21 +532,33 @@ const viewModeItems = computed(() => [
   { title: t('sessions.summary.timelineView'), value: 'timeline' },
   { title: t('sessions.summary.mapView'), value: 'map' },
   { title: t('sessions.summary.statsView'), value: 'stats' },
-  { title: t('sessions.summary.timeView'), value: 'time' }
+  { title: t('sessions.summary.timeView'), value: 'time' },
+  { title: t('sessions.summary.metricView'), value: 'metric' },
+  { title: t('sessions.summary.textView'), value: 'text' }
 ]);
 
-// Metric basis: session count plus every numeric (integer) field, summed per
+// Metric basis: session count plus every numeric (integer) field, aggregated per
 // value. Mirrors the timeline graph's metric set — Settings.vue uses the same
-// `type === 'integer'` criterion for its timeline data filters.
-const numericFields = computed(() => (store.state.fieldsArr || [])
-  .filter(f => f.type === 'integer')
+// `type === 'integer'` criterion for its timeline data filters. A unique count
+// (cardinality) works on any field, so that aggregation offers them all. The
+// "All X" groups have no real column, so neither list offers them.
+const metricFields = computed(() => (store.state.fieldsArr || [])
+  .filter(f => f.dbField && fieldIsAggregatable(f) && (f.type === 'integer' || (aggEnabled.value && form.value.metricAgg === 'cardinality')))
   .map(f => ({ title: f.friendlyName || f.exp, value: f.exp }))
   .sort((a, b) => a.title.localeCompare(b.title)));
 
 const metricItems = computed(() => [
   { title: t('sessions.summary.sessions'), value: 'sessions' },
-  ...numericFields.value
+  ...metricFields.value
 ]);
+
+// leaving the unique-count aggregation drops any non-numeric metric field(s)
+watch(() => form.value.metricAgg, (agg) => {
+  if (agg === 'cardinality') { return; }
+  const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
+  if (!numeric(form.value.metricType)) { form.value.metricType = 'sessions'; }
+  if (Array.isArray(form.value.metrics)) { form.value.metrics = form.value.metrics.filter(numeric); }
+});
 
 // Sort-by options for the table: Sessions plus the chosen metric columns
 const sortByItems = computed(() => {
@@ -461,6 +618,11 @@ watch(() => props.show, (isOpen) => {
         ? [...props.widget.metrics]
         : (props.widget.metricType && props.widget.metricType !== 'sessions' ? [props.widget.metricType] : []),
       sortMetric: props.widget.sortMetric || props.widget.metricType || 'sessions',
+      metricAgg: METRIC_AGGS.includes(props.widget.metricAgg) ? props.widget.metricAgg : 'sum',
+      splitField: props.widget.splitField || '',
+      splitLength: SPLIT_LENGTHS.includes(props.widget.splitLength) ? props.widget.splitLength : 5,
+      barMode: BAR_MODES.includes(props.widget.barMode) ? props.widget.barMode : 'stacked',
+      text: props.widget.text || '',
       expression: props.widget.expression || '',
       view: props.widget.view || '',
       title: props.widget.title || ''
@@ -526,7 +688,7 @@ const save = () => {
   let fieldList;
   if (multiField.value) {
     fieldList = (form.value.fields || []).filter(Boolean).slice(0, maxFields.value);
-  } else if (needsField.value) { // single field-bound types + the map's geo field
+  } else if (needsField.value || optionalField.value) { // single field-bound types + the map's geo field
     fieldList = form.value.field ? [form.value.field] : [];
   } else {
     fieldList = []; // session-wide widgets have no field
@@ -548,7 +710,16 @@ const save = () => {
   if (multiMetric.value && sortMetric !== 'sessions' && !metrics.includes(sortMetric)) {
     sortMetric = metrics[0] || 'sessions';
   }
-  const metricType = multiMetric.value ? sortMetric : form.value.metricType;
+  let metricType = multiMetric.value ? sortMetric : form.value.metricType;
+  // only a unique count (on a mode that offers one) can use a non-numeric
+  // metric field; anything else would ask for a sum of text
+  const metricAgg = aggEnabled.value ? (form.value.metricAgg || 'sum') : 'sum';
+  if (metricAgg !== 'cardinality') {
+    const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
+    if (!numeric(metricType)) { metricType = 'sessions'; }
+    for (let i = metrics.length - 1; i >= 0; i--) { if (!numeric(metrics[i])) { metrics.splice(i, 1); } }
+    if (!numeric(sortMetric)) { sortMetric = metrics[0] || 'sessions'; }
+  }
   emit('save', {
     ...props.widget,
     field: fieldList[0] || '',
@@ -557,7 +728,12 @@ const save = () => {
     viewMode: form.value.viewMode,
     metricType,
     metrics,
+    metricAgg,
     sortMetric: multiMetric.value ? sortMetric : metricType,
+    splitField: splitEnabled.value ? (form.value.splitField || '') : '',
+    splitLength: form.value.splitLength || 5,
+    barMode: additiveMetric.value ? (form.value.barMode || 'stacked') : 'grouped',
+    text: staticMode.value ? (form.value.text || '') : '',
     length: form.value.length,
     order: form.value.order,
     width: form.value.width,

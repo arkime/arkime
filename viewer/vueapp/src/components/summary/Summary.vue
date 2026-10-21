@@ -42,6 +42,8 @@ SPDX-License-Identifier: Apache-2.0
         :position="tooltipPosition"
         :percentage="tooltipPercentage"
         :metric-type="tooltipMetricType"
+        :metric-agg="tooltipMetricAgg"
+        :split="tooltipSplit"
         @close="hideTooltip" />
 
       <!-- empty state when no widgets configured -->
@@ -120,6 +122,9 @@ SPDX-License-Identifier: Apache-2.0
             :error="w.error"
             :view-mode="w.viewMode"
             :metric-type="w.metricType"
+            :metric-agg="w.metricAgg"
+            :split-field="w.splitField"
+            :bar-mode="w.barMode"
             :field="w.field"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
@@ -166,6 +171,21 @@ SPDX-License-Identifier: Apache-2.0
             v-else-if="w.viewMode === 'map'"
             :widget="w"
             :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- big number(s): the metric over the result set, or per top-N value -->
+          <MetricWidget
+            v-else-if="w.viewMode === 'metric'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- static notes -->
+          <TextWidget
+            v-else-if="w.viewMode === 'text'"
+            :widget="w"
             :info-items="widgetInfo(w)"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -219,9 +239,11 @@ import TimelineWidget from './widgets/TimelineWidget.vue';
 import MapWidget from './widgets/MapWidget.vue';
 import StatsWidget from './widgets/StatsWidget.vue';
 import TimeWidget from './widgets/TimeWidget.vue';
+import MetricWidget from './widgets/MetricWidget.vue';
+import TextWidget from './widgets/TextWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField } from './widgets/viewModes';
-import { widgetLocalExpression, widgetFields } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit } from './widgets/viewModes';
+import { widgetLocalExpression, widgetFields, metricLabel } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -371,6 +393,8 @@ const tooltipPosition = ref({ x: 0, y: 0 });
 const tooltipPercentage = ref(null);
 const tooltipFieldConfig = ref(null);
 const tooltipMetricType = ref('sessions');
+const tooltipMetricAgg = ref('sum');
+const tooltipSplit = ref(null);
 
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
@@ -397,6 +421,8 @@ const toRequestWidget = (w) => ({
   length: w.length,
   order: w.order,
   metricType: w.metricType,
+  metricAgg: w.metricAgg,
+  ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   expression: widgetLocalExpression(w, store.state.views)
 });
 
@@ -415,14 +441,18 @@ const widgetInfo = (w) => {
 
   // metric only applies to the metric-driven charts / tables
   if (hasMetric(w.viewMode)) {
-    const metricName = (m) => (m === 'sessions'
-      ? t('sessions.summary.sessions')
-      : (FieldService.getField(m, true)?.friendlyName || m));
+    const agg = hasMetricAgg(w.viewMode) ? w.metricAgg : 'sum';
+    const metricName = (m) => metricLabel(m, agg, t);
     const metricExps = (Array.isArray(w.metrics) && w.metrics.length) ? w.metrics : [w.metricType || 'sessions'];
     rows.push({ label: t('sessions.summary.widget.metric'), value: metricExps.map(metricName).join(', ') });
     if (metricExps.length > 1 && w.sortMetric) {
       rows.push({ label: t('sessions.summary.widget.sortBy'), value: metricName(w.sortMetric) });
     }
+  }
+
+  if (allowsSplit(w.viewMode) && w.splitField) {
+    const fieldName = FieldService.getField(w.splitField, true)?.friendlyName || w.splitField;
+    rows.push({ label: t('sessions.summary.widget.splitField'), value: `${fieldName} (${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, ${w.splitLength || 5})` });
   }
 
   // The limit row reads as a session sample for connections, a Top/Bottom N for
@@ -758,6 +788,8 @@ const showTooltip = (evt) => {
   tooltipPercentage.value = evt.percentage !== undefined ? evt.percentage : null;
   tooltipFieldConfig.value = evt.fieldConfig;
   tooltipMetricType.value = evt.metricType || 'sessions';
+  tooltipMetricAgg.value = evt.metricAgg || 'sum';
+  tooltipSplit.value = evt.split || null;
   tooltipVisible.value = true;
 };
 
@@ -767,6 +799,8 @@ const hideTooltip = () => {
   tooltipPercentage.value = null;
   tooltipFieldConfig.value = null;
   tooltipMetricType.value = 'sessions';
+  tooltipMetricAgg.value = 'sum';
+  tooltipSplit.value = null;
 };
 
 // Close tooltip on outside click
@@ -1136,6 +1170,9 @@ const onEditSave = (updated) => {
     prev.length !== updated.length ||
     prev.order !== updated.order ||
     (prev.metricType || 'sessions') !== (updated.metricType || 'sessions') ||
+    (prev.metricAgg || 'sum') !== (updated.metricAgg || 'sum') ||
+    (prev.splitField || '') !== (updated.splitField || '') ||
+    (prev.splitLength || 5) !== (updated.splitLength || 5) ||
     (prev.expression || '') !== (updated.expression || '') ||
     (prev.view || '') !== (updated.view || ''));
 
@@ -1177,6 +1214,13 @@ const getWidgets = () => {
     fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, 3) : (w.field ? [w.field] : []),
     viewMode: w.viewMode,
     metricType: w.metricType,
+    metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
+    sortMetric: w.sortMetric || w.metricType || 'sessions',
+    metricAgg: w.metricAgg || 'sum',
+    splitField: w.splitField || '',
+    splitLength: w.splitLength || 5,
+    barMode: w.barMode || 'stacked',
+    text: w.text || '',
     length: w.length,
     order: w.order,
     expression: w.expression || '',

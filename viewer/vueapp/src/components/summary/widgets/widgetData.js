@@ -33,15 +33,46 @@ export function metricHistoKey (widget) {
   return dbField ? `${dbField}Histo` : 'sessionsHisto';
 }
 
-/** True when a widget's metric is a byte-valued field (wants human-readable formatting). */
-export function metricIsBytes (metricType) {
-  if (!metricType || metricType === 'sessions') { return false; }
+/** True when a widget's metric is a byte-valued field (wants human-readable
+ *  formatting). A unique count of a bytes field is a count, not bytes. */
+export function metricIsBytes (metricType, metricAgg) {
+  if (!metricType || metricType === 'sessions' || metricAgg === 'cardinality') { return false; }
   return /bytes/i.test(metricType) || /bytes/i.test(FieldService.getField(metricType, true)?.dbField || '');
 }
 
-/** Format a widget metric value: human-readable bytes for byte metrics, else a comma count. */
-export function formatMetricValue (metricType, v) {
-  return metricIsBytes(metricType) ? humanReadableBytes(v || 0) : commaString(v || 0);
+/** Format a widget metric value: human-readable bytes for byte metrics, else a
+ *  comma count (averages keep up to two decimals). */
+export function formatMetricValue (metricType, v, metricAgg) {
+  if (metricIsBytes(metricType, metricAgg)) { return humanReadableBytes(v || 0); }
+  if (metricAgg === 'avg' && Number.isFinite(v) && !Number.isInteger(v)) {
+    return commaString(Math.round(v * 100) / 100);
+  }
+  return commaString(v || 0);
+}
+
+/** The i18n key for a metric aggregation's label (sessions.summary.agg.<agg>). */
+export function metricAggKey (metricAgg) {
+  return `sessions.summary.agg.${metricAgg || 'sum'}`;
+}
+
+/** A metric's display label: "Sessions", the field's name for a sum, else
+ *  "<Agg> <Field>" (eg "Max Bytes"). One place, so every widget agrees. */
+export function metricLabel (metricType, metricAgg, t) {
+  if (!metricType || metricType === 'sessions') { return t('sessions.summary.sessions'); }
+  const fieldName = FieldService.getField(metricType, true)?.friendlyName || metricType;
+  return metricAgg && metricAgg !== 'sum' ? `${t(metricAggKey(metricAgg))} ${fieldName}` : fieldName;
+}
+
+/** True when a metric adds up: the session count or a sum. Averages, extremes
+ *  and unique counts can't be stacked or totalled. */
+export function metricIsAdditive (metricType, metricAgg) {
+  return !metricType || metricType === 'sessions' || !metricAgg || metricAgg === 'sum';
+}
+
+/** True when a field can back a terms aggregation: not a noFacet field, not an
+ *  "All X" group (their dbField isn't a real column) and not a text field. */
+export function fieldIsAggregatable (field) {
+  return !!field && !field.noFacet && !field.regex && !/textfield/.test(field.type || '');
 }
 
 // Neutralize CSV/spreadsheet formula injection (a cell starting with = + - @ TAB CR
@@ -231,10 +262,27 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
       order: widget.order,
       metricType: widget.metricType,
       metrics: widget.metrics,
+      metricAgg: widget.metricAgg,
       sortMetric: widget.sortMetric,
       ...(localExp ? { expression: localExp } : {})
     }))
   };
+  const res = await postSummary(route, store, body, signal);
+  const chunks = Array.isArray(res) ? res : [];
+  return fields.map((exp, i) => {
+    const chunk = chunks.find(c => c && c.id === `f${i}`);
+    return {
+      exp,
+      friendlyName: FieldService.getField(exp, true)?.friendlyName || exp,
+      data: chunk?.data || [],
+      error: chunk?.error || null
+    };
+  });
+}
+
+/** POST a widgets body to /api/sessions/summary with the global search, time
+ *  window and route params folded in. Returns the chunk array. */
+async function postSummary (route, store, body, signal) {
   if (route.query.expression) { body.expression = route.query.expression; } // global search
   for (const p of ['view', 'bounding', 'interval', 'cluster']) {
     if (route.query[p]) { body[p] = route.query[p]; }
@@ -246,16 +294,33 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
     body.startTime = store.state.time.startTime;
     body.stopTime = store.state.time.stopTime;
   }
+  return await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal });
+}
 
-  const res = await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal });
-  const chunks = Array.isArray(res) ? res : [];
-  return fields.map((exp, i) => {
-    const chunk = chunks.find(c => c && c.id === `f${i}`);
-    return {
-      exp,
-      friendlyName: FieldService.getField(exp, true)?.friendlyName || exp,
-      data: chunk?.data || [],
-      error: chunk?.error || null
-    };
-  });
+/**
+ * Fetch the Metric widget's number(s): the metric aggregated over the whole
+ * result set (total: true, no field), or one per top-N value of its field.
+ * Returns the widget chunk's data[] ({ item, sessions, value, metricValues }).
+ */
+export async function fetchMetric (route, store, widget, { signal } = {}) {
+  const localExp = widgetLocalExpression(widget, store.state.views);
+  const field = widgetFields(widget)[0] || '';
+  const body = {
+    facets: 1,
+    noStats: true,
+    widgets: [{
+      id: 'm',
+      field,
+      total: !field,
+      length: widget.length,
+      order: widget.order,
+      metricType: widget.metricType,
+      metricAgg: widget.metricAgg,
+      ...(localExp ? { expression: localExp } : {})
+    }]
+  };
+  const res = await postSummary(route, store, body, signal);
+  const chunk = (Array.isArray(res) ? res : []).find(c => c && c.id === 'm');
+  if (chunk?.error) { throw new Error(chunk.error); }
+  return chunk?.data || [];
 }

@@ -143,6 +143,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4235 Session and export PCAP downloads can now be saved as PCAPNG, which preserves every interface and link type; a PCAP download that would span multiple link types is refused with a message to use PCAPNG instead
   - #4225 Add a sankey dashboard widget that shows flows between 1-3 fields
   - #4225 Add a connections dashboard widget: a display-only src → dst force graph with hover details
+  - #4375 Dashboard bar, pie, table and metric widgets can aggregate their metric field by sum, average, min, max or unique count
+  - #4375 Dashboard bar widgets can be split by a second field into stacked or grouped bars
+  - #4375 Add a metric dashboard widget: one big number for the search, or one per top value of a field
+  - #4375 Add a text dashboard widget for notes
+  - #4375 Fix multi viewer SPI Graph hierarchy views (pie/treemap/sankey with 2-3 fields) keeping only one cluster's inner levels
   - #4225 Fix the multi viewer Sessions timeline showing only one cluster's bytes and packets per bar
   - #4225 Fix multi viewer top 10/20/50 lists showing the wrong rows when sorted by bytes or packets
   - #4225 Fix the multi viewer Nodes page retention showing one cluster's oldest pcap when clusters share a node name
