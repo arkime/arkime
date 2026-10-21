@@ -149,6 +149,32 @@ for (const backend of backends) {
       assert.equal(await vcoll.getMeta('initSync'), true);
     });
 
+    test('createOnly conflicts and update', async () => {
+      await vcoll.put('co', { name: 'first' }, { createOnly: true });
+      await assert.rejects(vcoll.put('co', { name: 'second' }, { createOnly: true }), ArkimeDb.ConflictError);
+      assert.deepEqual(await vcoll.get('co'), { name: 'first' });
+
+      assert.equal(await vcoll.update('co', { lastUsed: 5 }), true);
+      assert.deepEqual(await vcoll.get('co'), { name: 'first', lastUsed: 5 });
+      const { data } = await vcoll.find({ where: { id: 'co' }, version: true });
+      assert.equal(data[0].version, 2);
+
+      assert.equal(await vcoll.update('missing', { lastUsed: 5 }), false);
+      assert.equal(await vcoll.get('missing'), null);
+    });
+
+    test('find with no size returns every match', async () => {
+      for (let i = 0; i < 1200; i++) {
+        await vcoll.put(`many${i}`, { many: true, i }, { refresh: false });
+      }
+      await vcoll.refresh();
+      const { total, data } = await vcoll.find({ where: { many: true } });
+      assert.equal(total, 1200);
+      assert.equal(data.length, 1200);
+      assert.equal(new Set(data.map(h => h.doc.i)).size, 1200);
+      assert.equal((await vcoll.find({ where: { many: true }, sort: { i: 'desc' }, size: 3 })).data.map(h => h.doc.i).join(), '1199,1198,1197');
+    });
+
     test('deleteWhere and replace', async () => {
       assert.equal(await coll.deleteWhere({ issuedAt: { $lt: 150 } }), 2);
       assert.equal(ids(await coll.find()), 'bc');
@@ -173,6 +199,19 @@ describe('ArkimeDb', () => {
     await conn.collection('own', { table: 'shared_table2', sqlite: { table: 'own_table' } }).put('y', { b: 2 });
     const tables = conn.db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all().map(r => r.name);
     assert.deepEqual(tables, ['meta', 'own_table', 'shared_table']);
+  });
+
+  test('sqlite idColumn keeps older tables keyed by another column', async () => {
+    const conn = ArkimeUtil.dbConnect(`sqlite://${tmp}/idcol.db`);
+    conn.db.exec('CREATE TABLE users (userId TEXT PRIMARY KEY, json TEXT NOT NULL)');
+    conn.db.prepare('INSERT INTO users (userId, json) VALUES (?, ?)').run('bob', JSON.stringify({ userId: 'bob' }));
+    const users = conn.collection('users', { sqlite: { idColumn: 'userId' } });
+    assert.deepEqual(await users.get('bob'), { userId: 'bob' });
+    await users.put('sue', { userId: 'sue' });
+    assert.equal((await users.find({ where: { id: { $in: ['bob', 'sue'] } }, sort: { id: 'desc' } })).data.map(h => h.id).join(), 'sue,bob');
+    await assert.rejects(users.put('bob', {}, { createOnly: true }), ArkimeDb.ConflictError);
+    assert.equal(await users.update('bob', { lastUsed: 1 }), true);
+    assert.equal(await users.delete('sue'), true);
   });
 
   test('unknown schemes throw', () => {

@@ -394,10 +394,24 @@ class ArkimeDb {
 }
 
 /**
+ * Thrown by put with createOnly when the id already exists
+ */
+class ArkimeDbConflictError extends Error {
+  constructor (id) {
+    super(`Document '${id}' already exists`);
+    this.id = id;
+  }
+}
+
+/**
  * A collection of json docs keyed by id. Every backend implements:
- *   init(), get(id), put(id, doc), create(doc), delete(id), deleteWhere(where), deleteAll(),
- *   find({ where, sort, from, size, version }), count(where), getMeta(key), setMeta(obj), refresh()
- * find returns { total, data: [{ id, doc, version? }] }.
+ *   init(), get(id), put(id, doc, { createOnly, refresh }), create(doc), update(id, fields, { refresh }),
+ *   delete(id), deleteWhere(where), deleteAll(), find({ where, sort, from, size, version, fields }),
+ *   count(where), getMeta(key), setMeta(obj), refresh()
+ * find returns { total, data: [{ id, doc, version? }] }, with no size it returns every match.
+ * fields is a hint (ES only fetches those), callers still get whatever the backend returns.
+ * update sets top level fields of an existing doc and returns false when there is no doc.
+ * refresh: false skips the ES refresh after a write, other backends ignore it.
  *
  * Collection options:
  *   idType: 'uuid' (default) or 'hex' for generated ids
@@ -451,8 +465,16 @@ class ArkimeDbScanCollection extends ArkimeDbCollection {
     }
     return data.length;
   }
+
+  async update (id, fields) {
+    const doc = await this.get(id);
+    if (!doc) { return false; }
+    await this.put(id, Object.assign(doc, fields));
+    return true;
+  }
 }
 
+ArkimeDb.ConflictError = ArkimeDbConflictError;
 ArkimeDb.Collection = ArkimeDbCollection;
 ArkimeDb.ScanCollection = ArkimeDbScanCollection;
 

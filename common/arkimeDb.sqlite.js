@@ -8,11 +8,13 @@
 
 const ArkimeDb = require('./arkimeDb');
 
-// Each collection is a table of (id, json[, version][, extra columns]).
+// Each collection is a table of (id, json[, version][, extra columns]), sqlite.idColumn
+// renames the id column for older tables.
 // json fields are matched through json_each so arrays and scalars behave the same.
 class SQLiteCollection extends ArkimeDb.Collection {
   #db;
   #table;
+  #idCol;
   #columns;
   #version;
 
@@ -20,10 +22,11 @@ class SQLiteCollection extends ArkimeDb.Collection {
     super(collName, options);
     this.#db = db;
     this.#table = ArkimeDb.checkField(options.sqlite?.table ?? options.table ?? collName);
+    this.#idCol = ArkimeDb.checkField(options.sqlite?.idColumn ?? 'id');
     this.#columns = options.sqlite?.columns ?? {};
     this.#version = !!options.version;
 
-    const cols = ['id TEXT PRIMARY KEY', 'json TEXT NOT NULL'];
+    const cols = [`${this.#idCol} TEXT PRIMARY KEY`, 'json TEXT NOT NULL'];
     if (this.#version) { cols.push('version INTEGER DEFAULT 1'); }
     for (const [col, type] of Object.entries(this.#columns)) {
       cols.push(`${ArkimeDb.checkField(col)} ${type}`);
@@ -33,24 +36,37 @@ class SQLiteCollection extends ArkimeDb.Collection {
   }
 
   async get (id) {
-    const row = this.#db.prepare(`SELECT json FROM ${this.#table} WHERE id = ?`).get(id);
+    const row = this.#db.prepare(`SELECT json FROM ${this.#table} WHERE ${this.#idCol} = ?`).get(id);
     return row ? JSON.parse(row.json) : null;
   }
 
-  async put (id, doc) {
+  async put (id, doc, { createOnly } = {}) {
     id ??= this.newId();
     const cols = Object.keys(this.#columns);
-    const names = ['id', 'json', ...cols];
+    const names = [this.#idCol, 'json', ...cols];
     const updates = ['json = excluded.json', ...cols.map(c => `${c} = excluded.${c}`)];
     if (this.#version) { updates.push('version = version + 1'); }
-    this.#db.prepare(`INSERT INTO ${this.#table} (${names.join(', ')}) VALUES (${names.map(() => '?').join(', ')})
-      ON CONFLICT(id) DO UPDATE SET ${updates.join(', ')}`)
-      .run(id, JSON.stringify(doc), ...cols.map(c => sqlValue(doc[c])));
+    const upsert = createOnly ? '' : ` ON CONFLICT(${this.#idCol}) DO UPDATE SET ${updates.join(', ')}`;
+    try {
+      this.#db.prepare(`INSERT INTO ${this.#table} (${names.join(', ')}) VALUES (${names.map(() => '?').join(', ')})${upsert}`)
+        .run(id, JSON.stringify(doc), ...cols.map(c => sqlValue(doc[c])));
+    } catch (err) {
+      if (createOnly && err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') { throw new ArkimeDb.ConflictError(id); }
+      throw err;
+    }
     return id;
   }
 
+  async update (id, fields) {
+    const cols = Object.keys(this.#columns).filter(c => c in fields);
+    const sets = ['json = json_patch(json, ?)', ...cols.map(c => `${c} = ?`)];
+    if (this.#version) { sets.push('version = version + 1'); }
+    return this.#db.prepare(`UPDATE ${this.#table} SET ${sets.join(', ')} WHERE ${this.#idCol} = ?`)
+      .run(JSON.stringify(fields), ...cols.map(c => sqlValue(fields[c])), id).changes > 0;
+  }
+
   async delete (id) {
-    return this.#db.prepare(`DELETE FROM ${this.#table} WHERE id = ?`).run(id).changes > 0;
+    return this.#db.prepare(`DELETE FROM ${this.#table} WHERE ${this.#idCol} = ?`).run(id).changes > 0;
   }
 
   async deleteWhere (where) {
@@ -67,7 +83,7 @@ class SQLiteCollection extends ArkimeDb.Collection {
       const expr = this.#expr(field);
       return `(${expr} IS NULL), ${expr} ${dir.toUpperCase()}`;
     });
-    const sql = `SELECT id, json${this.#version ? ', version' : ''} FROM ${this.#table} ${w.sql}` +
+    const sql = `SELECT ${this.#idCol} AS id, json${this.#version ? ', version' : ''} FROM ${this.#table} ${w.sql}` +
       (order.length ? ` ORDER BY ${order.join(', ')}` : '') + ' LIMIT ? OFFSET ?';
     const rows = this.#db.prepare(sql).all(...w.params, size ?? -1, from);
 
@@ -100,7 +116,8 @@ class SQLiteCollection extends ArkimeDb.Collection {
 
   // --------------------------------------------------------------------------
   #expr (field) {
-    if (field === 'id' || this.#columns[field]) { return field; }
+    if (field === 'id') { return this.#idCol; }
+    if (this.#columns[field]) { return field; }
     return `json_extract(json, '$.${field}')`;
   }
 
@@ -171,7 +188,8 @@ class SQLiteCollection extends ArkimeDb.Collection {
 
     let source;
     if (field === 'id' || this.#columns[field]) {
-      source = `(SELECT ${this.#table}.${field} AS value, typeof(${this.#table}.${field}) AS type)`;
+      const col = `${this.#table}.${field === 'id' ? this.#idCol : field}`;
+      source = `(SELECT ${col} AS value, typeof(${col}) AS type)`;
     } else {
       source = `json_each(${this.#table}.json, '$.${field}')`;
     }
@@ -204,7 +222,7 @@ class SQLiteConnection {
   }
 
   async close () {
-    this.db.close();
+    if (this.db.open) { this.db.close(); }
   }
 }
 

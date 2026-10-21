@@ -54,16 +54,32 @@ class ESCollection extends ArkimeDb.Collection {
     }
   }
 
-  async put (id, doc) {
-    const params = { index: this.#index, body: doc, refresh: true };
+  async put (id, doc, { createOnly, refresh = true } = {}) {
+    const params = { index: this.#index, body: doc, refresh };
     if (id !== null && id !== undefined) { params.id = id; }
-    const { body } = await this.#client.index(params);
-    return body._id;
+    if (createOnly) { params.op_type = 'create'; }
+    try {
+      const { body } = await this.#client.index(params);
+      return body._id;
+    } catch (err) {
+      if (createOnly && err.meta?.statusCode === 409) { throw new ArkimeDb.ConflictError(id); }
+      throw err;
+    }
   }
 
-  async delete (id) {
+  async update (id, fields, { refresh = true } = {}) {
     try {
-      await this.#client.delete({ index: this.#index, id, refresh: true });
+      await this.#client.update({ index: this.#index, id, body: { doc: fields }, retry_on_conflict: 3, refresh });
+      return true;
+    } catch (err) {
+      if (err.meta?.statusCode === 404) { return false; }
+      throw err;
+    }
+  }
+
+  async delete (id, { refresh = true } = {}) {
+    try {
+      await this.#client.delete({ index: this.#index, id, refresh });
       return true;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return false; }
@@ -78,35 +94,54 @@ class ESCollection extends ArkimeDb.Collection {
     return body.deleted;
   }
 
-  async find ({ where, sort, from = 0, size = 10000, version } = {}) {
+  // With no size every match is returned, using scroll past the first 1000
+  async find ({ where, sort, from = 0, size, version, fields } = {}) {
     const body = {
       query: compile(where),
       from,
-      size,
+      size: size ?? 1000,
       track_total_hits: true
     };
     const sortList = ArkimeDb.sortList(sort);
     if (sortList.length) {
       body.sort = sortList.map(([field, order]) => ({ [field === 'id' ? '_id' : field]: { order, missing: '_last' } }));
     }
+    if (fields) { body._source = fields; }
 
-    const { body: { hits } } = await this.#client.search({
-      index: this.#index, body, rest_total_hits_as_int: true, version: !!version
-    });
-
-    return {
-      total: hits.total,
-      data: hits.hits.map(h => {
-        const hit = { id: h._id, doc: h._source };
-        if (version) { hit.version = h._version; }
-        return hit;
-      })
+    const toHit = (h) => {
+      const hit = { id: h._id, doc: h._source };
+      if (version) { hit.version = h._version; }
+      return hit;
     };
+
+    const params = { index: this.#index, body, rest_total_hits_as_int: true, version: !!version };
+    if (size !== undefined) {
+      const { body: { hits } } = await this.#client.search(params);
+      return { total: hits.total, data: hits.hits.map(toHit) };
+    }
+
+    let { body: resp } = await this.#client.search({ ...params, scroll: '1m' });
+    const total = resp.hits.total;
+    const data = [];
+    while (resp.hits.hits.length > 0) {
+      data.push(...resp.hits.hits.map(toHit));
+      if (data.length >= total) { break; }
+      ({ body: resp } = await this.#client.scroll({ scroll_id: resp._scroll_id, scroll: '1m', rest_total_hits_as_int: true }));
+    }
+    if (resp._scroll_id) {
+      try { await this.#client.clearScroll({ body: { scroll_id: [resp._scroll_id] } }); } catch (err) { }
+    }
+    return { total, data };
   }
 
   async count (where) {
-    const { body } = await this.#client.count({ index: this.#index, body: { query: compile(where) } });
-    return body.count;
+    try {
+      const { body } = await this.#client.count({ index: this.#index, body: { query: compile(where) } });
+      return body.count;
+    } catch (err) {
+      if (err.meta?.statusCode === 404) { return 0; }
+      throw err;
+    }
   }
 
   // Meta lives in the index mapping _meta, which putMapping replaces as a whole
@@ -182,6 +217,7 @@ function compile (where) {
 class ESConnection {
   client;
   prefix;
+  #closed = false;
   #collections = new Map();
 
   constructor (url, options) {
@@ -199,6 +235,8 @@ class ESConnection {
   }
 
   async close () {
+    if (this.#closed) { return; }
+    this.#closed = true;
     await this.client.close();
   }
 }

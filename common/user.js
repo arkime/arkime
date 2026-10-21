@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
-const { Client } = require('@elastic/elasticsearch');
-const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
 const { LRUCache } = require('lru-cache');
@@ -32,18 +30,6 @@ const systemRolesMapping = new Map([
 
 const adminRoles = ['usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
 const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliamentAdmin', 'wiseAdmin', 'cont3xtAdmin', 'dbAdmin'];
-
-const usersMissing = {
-  userId: '',
-  userName: '',
-  expression: '',
-  enabled: 0,
-  webEnabled: 0,
-  headerAuthEnabled: 0,
-  emailSearch: 0,
-  removeEnabled: 0,
-  lastUsed: 0
-};
 
 const searchColumns = [
   'userId', 'userName', 'expression', 'enabled',
@@ -99,17 +85,7 @@ class User {
     const url = options.url ?? (Array.isArray(options.node) ? options.node[0] : options.node);
     User.#dbUrl = url;
 
-    if (!url || url.startsWith('http')) {
-      User.#implementation = new UserESImplementation(options);
-    } else if (url.startsWith('lmdb')) {
-      User.#implementation = new UserLMDBImplementation({ ...options, url });
-    } else if (url.startsWith('redis')) {
-      User.#implementation = new UserRedisImplementation({ ...options, url });
-    } else if (url.startsWith('sqlite')) {
-      User.#implementation = new UserSQLiteImplementation({ ...options, url });
-    } else {
-      User.#implementation = new UserESImplementation(options);
-    }
+    User.#implementation = new UserDbImplementation({ ...options, url });
 
     if (!options.noUsersCheck && !Auth.isAnonymousMode()) {
       setImmediate(async () => {
@@ -2028,87 +2004,42 @@ function sortUsers (users, sortField, sortDescending) {
   }
 }
 /******************************************************************************/
-// Filter Users
+// Users DB, a collection on whatever backend the url picks
 /******************************************************************************/
-function filterUsers (users, filter, searchFields, noRoles) {
-  const validSearchFields = searchFields
-    ?.filter(field => field === 'userId' || field === 'userName' || field === 'roles') || [];
-  // a leading ! excludes users that have a matching role
-  const negateRoles = filter?.startsWith('!') && validSearchFields.includes('roles');
-  if (negateRoles) { filter = filter.slice(1); }
-  const usingFilter = filter && validSearchFields.length;
-  if (!noRoles && !usingFilter && !negateRoles) {
-    return users; // nothing to filter on
-  }
-  const re = (usingFilter || negateRoles) ? ArkimeUtil.wildcardToRegexp(`*${filter}*`) : null;
+const VERSION_CONFLICT = { meta: { body: { error: { type: 'version_conflict_engine_exception' } } } };
 
-  return users.filter(user => {
-    // exclude roles
-    if (noRoles && user.userId.startsWith('role:')) { return false; }
-
-    if (negateRoles) { return !user.roles?.some(v => v.match(re)); }
-
-    // filter searched fields
-    return (!usingFilter || validSearchFields.some(field => Array.isArray(user[field]) ? user[field].some(v => v.match(re)) : user[field]?.match(re)));
-  });
-}
-
-/******************************************************************************/
-// OpenSearch/Elasticsearch Implementation of Users DB
-/******************************************************************************/
-class UserESImplementation {
-  prefix;
-  client;
-  schemaVersion;
+class UserDbImplementation {
+  #conn;
+  #users;
+  #isES;
+  #schemaVersion;
 
   constructor (options) {
-    this.prefix = ArkimeUtil.formatPrefix(options.prefix);
+    const url = options.url;
+    // anything that isn't one of the other dbs is the users ES
+    this.#isES = !/^(lmdb|redis[a-z-]*|sqlite3?|postgres(ql)?):/.test(url ?? '');
+    const prefix = this.#isES ? ArkimeUtil.formatPrefix(options.prefix) : undefined;
+    this.#conn = ArkimeUtil.dbConnect(this.#isES ? (url ?? 'http://localhost:9200') : url, { ...options, prefix, section: 'User' });
 
-    const esSSLOptions = { rejectUnauthorized: !options.insecure };
-    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); }
-    if (options.clientKey) {
-      esSSLOptions.key = fs.readFileSync(options.clientKey);
-      esSSLOptions.cert = fs.readFileSync(options.clientCert);
-      if (options.clientKeyPass) {
-        esSSLOptions.passphrase = options.clientKeyPass;
-      }
-    }
+    // Names match the layouts each backend used before collections
+    this.#users = this.#conn.collection('users', {
+      sqlite: { idColumn: 'userId' },
+      lmdb: { db: 'User' },
+      redis: { prefix: 'user:' }
+    });
 
-    const esOptions = {
-      node: options.node,
-      maxRetries: 2,
-      requestTimeout: (parseInt(options.requestTimeout) + 30) * 1000 || 330000,
-      ssl: esSSLOptions
-    };
-
-    if (options.apiKey) {
-      esOptions.auth = {
-        apiKey: options.apiKey
-      };
-    } else if (options.basicAuth) {
-      let basicAuth = options.basicAuth;
-      if (!basicAuth.includes(':')) {
-        basicAuth = Buffer.from(basicAuth, 'base64').toString();
-      }
-      basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
-      esOptions.auth = {
-        username: basicAuth[0],
-        password: basicAuth[1]
-      };
-    }
-
-    this.client = new Client(esOptions);
+    if (!this.#isES) { return; }
 
     // soft fetch (no minVersion): the users es may not have the sessions3 template
-    ArkimeUtil.checkArkimeSchemaVersion(this.client, options.prefix)
-      .then((version) => { this.schemaVersion = version; });
+    ArkimeUtil.checkArkimeSchemaVersion(this.#conn.client, options.prefix)
+      .then((version) => { this.#schemaVersion = version; });
 
     if (!Auth.isAnonymousMode()) {
       process.nextTick(async () => {
         try {
-          await this.client.indices.stats({ index: this.prefix + 'users' });
+          await this.#conn.client.indices.stats({ index: this.#users.index });
         } catch (err) {
-          ArkimeUtil.searchErrorMsg(err, options.node, `Issue with OpenSearch/Elasticsearch '${this.prefix + 'users'}' index`);
+          ArkimeUtil.searchErrorMsg(err, options.node, `Issue with OpenSearch/Elasticsearch '${this.#users.index}' index`);
           process.exit(1);
         }
       });
@@ -2116,157 +2047,93 @@ class UserESImplementation {
   }
 
   getClient () {
-    return this.client;
+    return this.#isES ? this.#conn.client : null;
   }
 
   getSchemaVersion () {
-    return this.schemaVersion;
+    return this.#schemaVersion;
   }
 
   async flush (cluster) {
-    await this.client.indices.flush({ index: this.prefix + 'users', cluster });
-    await this.client.indices.refresh({ index: this.prefix + 'users', cluster });
+    if (!this.#isES) { return; }
+    await this.#conn.client.indices.flush({ index: this.#users.index, cluster });
+    await this.#conn.client.indices.refresh({ index: this.#users.index, cluster });
+  }
+
+  async close () {
+    await this.#conn.close();
   }
 
   // search against user index, promise only
   async searchUsers (query) {
-    const esQuery = {
-      _source: searchColumns,
-      from: query.from ?? 0,
-      size: query.size ?? 10000,
-      query: {
-        bool: {
-          must_not: [
-            { term: { userId: '_moloch_shared' } } // exclude shared user
-          ]
-        }
+    const and = [{ userId: { $ne: '_moloch_shared' } }];
+    if (query.noRoles) {
+      and.push({ $not: { userId: { $prefix: 'role:' } } });
+    }
+
+    const searchFields = (query.searchFields ?? []).filter(field => field === 'userId' || field === 'userName' || field === 'roles');
+    if (query.filter && searchFields.length) {
+      if (query.filter.startsWith('!') && searchFields.includes('roles')) {
+        // a leading ! excludes users that have a matching role
+        and.push({ $not: { roles: { $icontains: query.filter.slice(1) } } });
+      } else {
+        and.push({ $or: searchFields.map(field => ({ [field]: { $icontains: query.filter } })) });
       }
+    }
+
+    const sortField = allowedSortFields[query.sortField] ? query.sortField : 'userId';
+    const params = {
+      where: { $and: and },
+      sort: { [sortField]: query.sortDescending === true ? 'desc' : 'asc' },
+      from: query.from ?? 0,
+      size: query.size,
+      fields: searchColumns
     };
 
-    if (query.noRoles) {
-      esQuery.query.bool.must_not.push({
-        wildcard: { userId: 'role:*' } // exclude roles
-      });
-    }
-
-    if (query.filter && query.searchFields.length) {
-      if (query.filter.startsWith('!') && query.searchFields.includes('roles')) {
-        // a leading ! excludes users that have a matching role
-        esQuery.query.bool.must_not.push({
-          wildcard: { roles: '*' + query.filter.slice(1) + '*' }
-        });
-      } else {
-        const searchFilters = query.searchFields
-          .filter(field => field === 'userId' || field === 'userName' || field === 'roles')
-          .map(validField => { return { wildcard: { [validField]: '*' + query.filter + '*' } }; });
-        if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
-      }
-    }
-
-    if (query.sortField && !ArkimeUtil.isPP(query.sortField)) {
-      esQuery.sort = {};
-      esQuery.sort[query.sortField] = { order: query.sortDescending === true ? 'desc' : 'asc' };
-      esQuery.sort[query.sortField].missing = usersMissing[query.sortField];
-    }
-
-    // If the index's mapping has the sort field as `text` (instead of
+    // If the ES index's mapping has the sort field as `text` (instead of
     // the canonical `keyword`), ES refuses with "Fielddata is disabled
     // on [field]". Retry without sort + do an in-memory sort below.
-    let users;
+    let result;
+    let sortInMemory = false;
     try {
-      ({ body: users } = await this.client.search({
-        index: this.prefix + 'users',
-        body: esQuery,
-        rest_total_hits_as_int: true
-      }));
+      result = await this.#users.find(params);
     } catch (err) {
       const isFielddata = err?.meta?.body?.error?.root_cause?.[0]?.type === 'illegal_argument_exception' &&
         /Fielddata is disabled/.test(err?.meta?.body?.error?.root_cause?.[0]?.reason || '');
-      if (!isFielddata || !esQuery.sort) { throw err; }
-      delete esQuery.sort;
-      ({ body: users } = await this.client.search({
-        index: this.prefix + 'users',
-        body: esQuery,
-        rest_total_hits_as_int: true
-      }));
+      if (!isFielddata) { throw err; }
+      delete params.sort;
+      sortInMemory = true;
+      result = await this.#users.find(params);
     }
 
-    if (users.error) {
-      return { error: users.error };
-    }
+    const users = result.data.map(({ id, doc }) => {
+      const user = cleanSearchUser(doc);
+      user.id = id;
+      return Object.assign(new User(), user);
+    });
+    if (sortInMemory) { sortUsers(users, sortField, query.sortDescending === true); }
 
-    const hits = [];
-    for (const user of users.hits.hits) {
-      const fields = user._source || user.fields;
-      fields.id = user._id;
-      cleanUser(fields);
-      hits.push(Object.assign(new User(), fields));
-    }
-
-    // If we had to drop the ES sort (text-field mapping), sort
-    // the hits in JS so the client still gets ordered data.
-    if (!esQuery.sort && query.sortField && hits.length > 1) {
-      sortUsers(hits, query.sortField, query.sortDescending === true);
-    }
-
-    return { users: hits, total: users.hits.total };
+    return { users, total: result.total };
   }
 
   // Return ALL users with full raw data (incl passStore/cont3xt), promise only
   async getAllUsers () {
-    const users = [];
-    let resp = await this.client.search({
-      index: this.prefix + 'users',
-      scroll: '5m',
-      body: { size: 1000, query: { match_all: {} } }
-    });
-
-    while (resp.body.hits.hits.length > 0) {
-      for (const hit of resp.body.hits.hits) {
-        users.push(hit._source);
-      }
-      resp = await this.client.scroll({ scroll_id: resp.body._scroll_id, scroll: '5m' });
-    }
-
-    if (resp.body?._scroll_id) {
-      try { await this.client.clearScroll({ body: { scroll_id: [resp.body._scroll_id] } }); } catch (err) { /* ignore */ }
-    }
-
-    return users;
+    const { data } = await this.#users.find();
+    return data.map(h => h.doc);
   }
 
   // Return a user from DB, callback only
   getUser (userId, cb) {
-    this.client.get({ index: this.prefix + 'users', id: userId }, (err, result) => {
-      if (result?.body?.found === false) {
-        return cb(null, null);
-      } else if (err) {
-        return cb(err, null);
-      }
-      return cb(null, result.body._source);
-    });
+    this.#users.get(userId).then(doc => cb(null, doc), err => cb(err, null));
   }
 
   async numberOfUsers () {
-    const { body: count } = await this.client.count({
-      index: this.prefix + 'users',
-      ignore_unavailable: true,
-      body: {
-        query: { // exclude the shared user from results
-          bool: { must_not: { term: { userId: '_moloch_shared' } } }
-        }
-      }
-    });
-    return count.count;
+    return this.#users.count({ userId: { $ne: '_moloch_shared' } });
   }
 
   // Delete user, promise only
   async deleteUser (userId) {
-    await this.client.delete({
-      index: this.prefix + 'users',
-      id: userId,
-      refresh: true
-    });
+    await this.#users.delete(userId);
     User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
@@ -2274,430 +2141,31 @@ class UserESImplementation {
   setUser (userId, doc, cb) {
     const createOnly = !!doc._createOnly;
     delete doc._createOnly;
-    this.client.index({
-      index: this.prefix + 'users',
-      body: doc,
-      id: userId,
-      refresh: true,
-      timeout: '10m',
-      op_type: createOnly ? 'create' : 'index'
-    }, (err) => {
+    this.#users.put(userId, doc, { createOnly }).then(() => {
       User.deleteCache(userId); // Delete again after db says it's done refreshing
-      cb(err);
-    });
-  }
-
-  setLastUsed (userId, now) {
-    const params = {
-      index: this.prefix + 'users',
-      body: { doc: { lastUsed: now } },
-      id: userId,
-      retry_on_conflict: 3
-    };
-
-    return this.client.update(params);
-  }
-
-  async allRoles () {
-    const response = await this.client.search({
-      index: this.prefix + 'users',
-      body: {
-        size: 1000,
-        query: { prefix: { userId: 'role:' } }
-      },
-      rest_total_hits_as_int: true
-    });
-
-    return response.body.hits.hits.map(h => h._source.userId);
-  }
-
-  async getAssignableRoles (userId) {
-    const query = {
-      bool: {
-        must: [
-          { prefix: { userId: 'role:' } },
-          { term: { roleAssigners: userId } }
-        ]
-      }
-    };
-
-    const response = await this.client.search({
-      index: this.prefix + 'users',
-      body: { query },
-      rest_total_hits_as_int: true
-    });
-
-    return response.body.hits.hits.map(h => h._source.userId);
-  }
-
-  async deleteAllUsers () {
-    await this.client.indices.refresh({ index: '_all' });
-    await this.client.deleteByQuery({
-      index: this.prefix + 'users',
-      body: { query: { match_all: { } } },
-      conflicts: 'proceed',
-      refresh: true
-    });
-  }
-}
-
-/******************************************************************************/
-// LMDB Implementation of Users DB
-/******************************************************************************/
-class UserLMDBImplementation {
-  store;
-
-  constructor (options) {
-    this.store = ArkimeUtil.createLMDBStore(options.url, 'User');
-  }
-
-  // search against user index, promise only
-  async searchUsers (query) {
-    let hits = [];
-    this.store.getRange({})
-      .forEach(({ key, value }) => {
-        value = cleanSearchUser(value);
-        value.id = key;
-        hits.push(Object.assign(new User(), value));
-      });
-
-    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
-    sortUsers(hits, query.sortField, query.sortDescending);
-
-    const from = query.from ?? 0;
-    const size = query.size ?? hits.length;
-    return {
-      total: hits.length,
-      users: hits.slice(from, from + size)
-    };
-  }
-
-  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
-  async getAllUsers () {
-    const users = [];
-    this.store.getRange({}).forEach(({ key, value }) => {
-      users.push(value);
-    });
-    return users;
-  }
-
-  // Return a user from DB, callback only
-  getUser (userId, cb) {
-    try {
-      return cb(null, this.store.get(userId));
-    } catch (err) {
-      return cb(err);
-    }
-  }
-
-  async numberOfUsers () {
-    return this.store.getCount({});
-  }
-
-  // Delete user, promise only
-  async deleteUser (userId) {
-    await this.store.remove(userId);
-    User.deleteCache(userId); // Delete again after db says it's done refreshing
-  }
-
-  // Set user, callback only
-  async setUser (userId, doc, cb) {
-    const createOnly = !!doc._createOnly;
-    delete doc._createOnly;
-    try {
-      if (createOnly) {
-        const user = this.store.get(userId);
-        if (!user) {
-          await this.store.put(userId, doc);
-          User.deleteCache(userId);
-          cb(null);
-        } else {
-          cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
-        }
-      } else {
-        await this.store.put(userId, doc);
-        User.deleteCache(userId);
-        cb(null);
-      }
-    } catch (err) {
-      cb(err);
-    }
-  }
-
-  async setLastUsed (userId, now) {
-    const user = this.store.get(userId);
-    user.lastUsed = now;
-    await this.store.put(userId, user);
-  }
-
-  async allRoles () {
-    const hits = [];
-    this.store.getKeys({})
-      .filter(key => { return key.startsWith('role:'); })
-      .forEach(key => {
-        hits.push(key);
-      });
-
-    return hits;
-  }
-
-  async getAssignableRoles (userId) {
-    const hits = [];
-    this.store.getRange({})
-      .filter(({ key, value }) => { return key.startsWith('role:') && value.roleAssigners?.includes(userId); })
-      .forEach(({ key }) => {
-        hits.push(key);
-      });
-
-    return hits;
-  }
-
-  async deleteAllUsers () {
-    for (const key of this.store.getKeys({})) {
-      await this.store.remove(key);
-    }
-  }
-}
-
-/******************************************************************************/
-// Redis Implementation of Users DB
-/******************************************************************************/
-class UserRedisImplementation {
-  client;
-  prefix = 'user:';
-
-  constructor (options) {
-    this.client = ArkimeUtil.createRedisClient(options.url, 'User');
-  }
-
-  // search against user index, promise only
-  async searchUsers (query) {
-    const keys = await this.client.keys(this.prefix + '*');
-    let hits = [];
-    for (const key of keys) {
-      const data = await this.client.get(key);
-      if (!data) { continue; }
-      let user = JSON.parse(data);
-      user = cleanSearchUser(user);
-      user.id = key.slice(this.prefix.length);
-      hits.push(Object.assign(new User(), user));
-    }
-
-    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
-    sortUsers(hits, query.sortField, query.sortDescending);
-
-    const from = query.from ?? 0;
-    const size = query.size ?? hits.length;
-    return {
-      total: hits.length,
-      users: hits.slice(from, from + size)
-    };
-  }
-
-  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
-  async getAllUsers () {
-    const keys = await this.client.keys(this.prefix + '*');
-    const users = [];
-    for (const key of keys) {
-      const data = await this.client.get(key);
-      if (!data) { continue; }
-      users.push(JSON.parse(data));
-    }
-    return users;
-  }
-
-  // Return a user from DB, callback only
-  getUser (userId, cb) {
-    this.client.get(this.prefix + userId, (err, user) => {
-      if (err || !user) { return cb(err, user); }
-      user = JSON.parse(user);
-      return cb(err, user);
-    });
-  }
-
-  async numberOfUsers () {
-    const keys = await this.client.keys(this.prefix + '*');
-    return keys.length;
-  }
-
-  // Delete user, promise only
-  async deleteUser (userId) {
-    await this.client.del(this.prefix + userId);
-    User.deleteCache(userId); // Delete again after db says it's done refreshing
-  }
-
-  // Set user, callback only
-  async setUser (userId, doc, cb) {
-    const createOnly = !!doc._createOnly;
-    delete doc._createOnly;
-    doc = JSON.stringify(doc);
-    try {
-      if (createOnly) {
-        const result = await this.client.setnx(this.prefix + userId, doc);
-        if (result === 0) {
-          cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
-        } else {
-          User.deleteCache(userId);
-          cb(null);
-        }
-      } else {
-        await this.client.set(this.prefix + userId, doc);
-        User.deleteCache(userId);
-        cb(null);
-      }
-    } catch (err) {
-      cb(err);
-    }
-  }
-
-  async setLastUsed (userId, now) {
-    let user = await this.client.get(this.prefix + userId);
-    if (!user) { return; }
-    user = JSON.parse(user);
-    user.lastUsed = now;
-    user = JSON.stringify(user);
-    await this.client.set(this.prefix + userId, user);
-  }
-
-  async allRoles () {
-    const keys = await this.client.keys(this.prefix + 'role:*');
-    return keys.map(key => key.slice(this.prefix.length));
-  }
-
-  async getAssignableRoles (userId) {
-    const keys = await this.allRoles();
-    const results = await Promise.all(keys.map(async key => {
-      const data = await this.client.get(this.prefix + key);
-      if (!data) { return false; }
-      const user = JSON.parse(data);
-      return user.roleAssigners?.includes(userId);
-    }));
-
-    return keys.filter((_, i) => results[i]);
-  }
-
-  async deleteAllUsers () {
-    const keys = await this.client.keys(this.prefix + '*');
-    if (keys.length > 0) {
-      await this.client.del(...keys);
-    }
-  }
-
-  async close () {
-    this.client.disconnect();
-  }
-}
-
-/******************************************************************************/
-// SQLite Implementation of Users DB
-/******************************************************************************/
-class UserSQLiteImplementation {
-  db;
-
-  constructor (options) {
-    this.db = ArkimeUtil.createSQLiteDB(options.url);
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        userId TEXT PRIMARY KEY,
-        json TEXT NOT NULL
-      )
-    `);
-  }
-
-  // search against user index, promise only
-  async searchUsers (query) {
-    const rows = this.db.prepare('SELECT userId, json FROM users').all();
-    let hits = rows.map(row => {
-      let value = JSON.parse(row.json);
-      value = cleanSearchUser(value);
-      value.id = row.userId;
-      return Object.assign(new User(), value);
-    });
-
-    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
-    sortUsers(hits, query.sortField, query.sortDescending);
-
-    const from = query.from ?? 0;
-    const size = query.size ?? hits.length;
-    return {
-      total: hits.length,
-      users: hits.slice(from, from + size)
-    };
-  }
-
-  // Return ALL users with full raw data (incl passStore/cont3xt), promise only
-  async getAllUsers () {
-    const rows = this.db.prepare('SELECT json FROM users').all();
-    return rows.map(row => JSON.parse(row.json));
-  }
-
-  // Return a user from DB, callback only
-  getUser (userId, cb) {
-    try {
-      const row = this.db.prepare('SELECT json FROM users WHERE userId = ?').get(userId);
-      if (!row) { return cb(null, null); }
-      return cb(null, JSON.parse(row.json));
-    } catch (err) {
-      return cb(err);
-    }
-  }
-
-  async numberOfUsers () {
-    const row = this.db.prepare('SELECT COUNT(*) as count FROM users').get();
-    return row.count;
-  }
-
-  // Delete user, promise only
-  async deleteUser (userId) {
-    this.db.prepare('DELETE FROM users WHERE userId = ?').run(userId);
-    User.deleteCache(userId);
-  }
-
-  // Set user, callback only
-  async setUser (userId, doc, cb) {
-    const createOnly = !!doc._createOnly;
-    delete doc._createOnly;
-    try {
-      if (createOnly) {
-        const existing = this.db.prepare('SELECT 1 FROM users WHERE userId = ?').get(userId);
-        if (existing) {
-          return cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
-        }
-      }
-      this.db.prepare('INSERT OR REPLACE INTO users (userId, json) VALUES (?, ?)').run(userId, JSON.stringify(doc));
-      User.deleteCache(userId);
       cb(null);
-    } catch (err) {
-      cb(err);
-    }
+    }, (err) => {
+      cb(err instanceof ArkimeDb.ConflictError ? VERSION_CONFLICT : err);
+    });
   }
 
   async setLastUsed (userId, now) {
-    const row = this.db.prepare('SELECT json FROM users WHERE userId = ?').get(userId);
-    if (!row) { return; }
-    const user = JSON.parse(row.json);
-    user.lastUsed = now;
-    this.db.prepare('UPDATE users SET json = ? WHERE userId = ?').run(JSON.stringify(user), userId);
+    await this.#users.update(userId, { lastUsed: now }, { refresh: false });
   }
 
   async allRoles () {
-    const rows = this.db.prepare("SELECT userId FROM users WHERE userId LIKE 'role:%'").all();
-    return rows.map(row => row.userId);
+    const { data } = await this.#users.find({ where: { userId: { $prefix: 'role:' } }, fields: ['userId'] });
+    return data.map(h => h.id);
   }
 
   async getAssignableRoles (userId) {
-    const rows = this.db.prepare("SELECT userId, json FROM users WHERE userId LIKE 'role:%'").all();
-    return rows
-      .filter(row => {
-        const user = JSON.parse(row.json);
-        return user.roleAssigners?.includes(userId);
-      })
-      .map(row => row.userId);
+    const { data } = await this.#users.find({ where: { userId: { $prefix: 'role:' }, roleAssigners: userId }, fields: ['userId'] });
+    return data.map(h => h.id);
   }
 
   async deleteAllUsers () {
-    this.db.prepare('DELETE FROM users').run();
+    await this.#users.refresh();
+    await this.#users.deleteAll();
   }
 }
 
@@ -2705,4 +2173,5 @@ module.exports = User;
 
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeDb = require('../common/arkimeDb');
 const ArkimeConfig = require('../common/arkimeConfig');

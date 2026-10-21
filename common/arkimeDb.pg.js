@@ -39,11 +39,19 @@ class PGCollection extends ArkimeDb.Collection {
     return rows[0]?.doc ?? null;
   }
 
-  async put (id, doc) {
+  async put (id, doc, { createOnly } = {}) {
     id ??= this.newId();
-    await this.#query(`INSERT INTO ${this.#table} (id, doc) VALUES ($1, $2)
-      ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = ${this.#table}.version + 1`, [id, JSON.stringify(doc)]);
+    const onConflict = createOnly ? 'DO NOTHING' : `DO UPDATE SET doc = excluded.doc, version = ${this.#table}.version + 1`;
+    const { rowCount } = await this.#query(`INSERT INTO ${this.#table} (id, doc) VALUES ($1, $2) ON CONFLICT (id) ${onConflict}`,
+      [id, JSON.stringify(doc)]);
+    if (createOnly && rowCount === 0) { throw new ArkimeDb.ConflictError(id); }
     return id;
+  }
+
+  async update (id, fields) {
+    const { rowCount } = await this.#query(`UPDATE ${this.#table} SET doc = doc || $1::jsonb, version = version + 1 WHERE id = $2`,
+      [JSON.stringify(fields), id]);
+    return rowCount > 0;
   }
 
   async delete (id) {
@@ -202,6 +210,7 @@ function compile (where, params) {
 class PGConnection {
   pool;
   prefix;
+  #closed = false;
   #collections = new Map();
 
   constructor (url, options) {
@@ -220,6 +229,8 @@ class PGConnection {
   }
 
   async close () {
+    if (this.#closed) { return; }
+    this.#closed = true;
     await this.pool.end();
   }
 }

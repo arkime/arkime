@@ -52,8 +52,9 @@ class LMDBCollection extends ArkimeDb.ScanCollection {
     return this.#decode(this.#store.get(id));
   }
 
-  async put (id, doc) {
+  async put (id, doc, { createOnly } = {}) {
     id ??= this.newId();
+    if (createOnly && this.#store.get(id) !== undefined) { throw new ArkimeDb.ConflictError(id); }
     if (this.#versions) {
       const exists = this.#store.get(id) !== undefined;
       await this.#versions.put(id, exists ? (this.#versions.get(id) ?? 1) + 1 : 1);
@@ -84,6 +85,7 @@ class LMDBCollection extends ArkimeDb.ScanCollection {
 
 class LMDBConnection {
   root;
+  #closed = false;
   #collections = new Map();
 
   constructor (url, options) {
@@ -100,6 +102,8 @@ class LMDBConnection {
   }
 
   async close () {
+    if (this.#closed) { return; }
+    this.#closed = true;
     await this.root.close();
   }
 }

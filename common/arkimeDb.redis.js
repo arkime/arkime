@@ -53,8 +53,13 @@ class RedisCollection extends ArkimeDb.ScanCollection {
     return json ? JSON.parse(json) : null;
   }
 
-  async put (id, doc) {
+  async put (id, doc, { createOnly } = {}) {
     id ??= this.newId();
+    if (createOnly) {
+      if (!await this.#client.setnx(this.#prefix + id, JSON.stringify(doc))) { throw new ArkimeDb.ConflictError(id); }
+      if (this.#version) { await this.#client.set(this.#versionKey(id), '1'); }
+      return id;
+    }
     if (this.#version) {
       const exists = await this.#client.get(this.#prefix + id);
       const version = exists ? parseInt(await this.#client.get(this.#versionKey(id)) ?? '1') + 1 : 1;
@@ -84,6 +89,7 @@ class RedisCollection extends ArkimeDb.ScanCollection {
 
 class RedisConnection {
   client;
+  #closed = false;
   #collections = new Map();
 
   constructor (url, options) {
@@ -100,6 +106,8 @@ class RedisConnection {
   }
 
   async close () {
+    if (this.#closed) { return; }
+    this.#closed = true;
     this.client.disconnect();
   }
 }
