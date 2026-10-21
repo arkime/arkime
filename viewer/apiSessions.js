@@ -3668,12 +3668,12 @@ class SessionAPIs {
    * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp summed per value), metrics (array of numeric field exps, each summed per value — the multi-metric table's columns; falls back to [metricType]), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max' or 'cardinality'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
    * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
    * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
    * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
    * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
-   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, length, order, expression, data[] } or { id, field, error } on per-widget failure. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's sum, or session count), metricValues (each requested metric's sum keyed by exp, + 'sessions') }.
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, expression, data[] } or { id, field, error } on per-widget failure. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values) }.
    *
    */
   static summary (req, res) {
@@ -3732,14 +3732,18 @@ class SessionAPIs {
     const widgetSpecs = [];
     for (let i = 0; i < rawWidgets.length; i++) {
       const w = rawWidgets[i] || {};
-      const fieldExp = w.field;
-      if (!ArkimeUtil.isString(fieldExp)) { continue; }
+      // a total widget aggregates the whole result set and needs no field
+      const total = w.total === true || w.total === 'true';
+      const fieldExp = total ? (ArkimeUtil.isString(w.field) ? w.field : '') : w.field;
+      if (!ArkimeUtil.isString(fieldExp, total ? 0 : 1)) { continue; }
 
       const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
       const spec = {
         id: ArkimeUtil.isString(w.id) ? w.id : `w${i}`,
         field: fieldExp,
+        total,
         aggName: `agg${i}`,
+        metricAgg: ViewerUtils.metricAgg(w.metricAgg),
         length: clampLength(w.length, defaultTopNum),
         order: w.order === 'asc' ? 'asc' : (w.order === 'desc' ? 'desc' : defaultOrder),
         expression: ArkimeUtil.isString(w.expression) && w.expression.length > 0 ? w.expression : undefined,
@@ -3749,15 +3753,34 @@ class SessionAPIs {
         metricType: (ArkimeUtil.isString(w.metricType) && w.metricType.length > 0) ? w.metricType : metadata.metricType
       };
 
-      if (specialFields.includes(fieldExp)) {
+      if (total) {
+        // nothing to resolve: no terms aggregation
+      } else if (specialFields.includes(fieldExp)) {
         spec.isSpecial = true;
       } else {
         const field = fieldsMap[fieldExp];
         if (!field) {
           console.log(`Warning: Unknown field expression '${fieldExp}' in summary widgets`);
           spec.unknown = true;
+          spec.unknownFields = [fieldExp];
         } else {
           spec.dbField = field.dbField;
+        }
+      }
+
+      // optional second level under each value (stacked/grouped bars)
+      if (!total && ArkimeUtil.isString(w.splitField) && w.splitField.length > 0) {
+        const splitField = fieldsMap[w.splitField];
+        if (!splitField?.dbField || specialFields.includes(w.splitField)) {
+          console.log(`Warning: Unknown split field expression '${w.splitField}' in summary widgets`);
+          spec.unknown = true;
+          spec.unknownFields = [...(spec.unknownFields ?? []), w.splitField];
+        } else {
+          spec.splitField = w.splitField;
+          spec.splitDbField = splitField.dbField;
+          let n = parseInt(w.splitLength);
+          if (!Number.isFinite(n) || n <= 0) { n = 5; }
+          spec.splitLength = Math.min(n, 50);
         }
       }
 
@@ -3769,19 +3792,52 @@ class SessionAPIs {
       spec.metrics = [];
       for (const exp of requestedMetrics) {
         if (!ArkimeUtil.isString(exp) || exp === 'sessions') { continue; }
-        const dbField = ViewerUtils.metricDbField(exp);
+        const dbField = ViewerUtils.metricDbField(exp, spec.metricAgg);
         if (dbField && !spec.metrics.some(m => m.exp === exp)) {
           spec.metrics.push({ exp, dbField, aggKey: `m${spec.metrics.length}` });
         }
       }
       const sortExp = ArkimeUtil.isString(w.sortMetric) ? w.sortMetric : spec.metrics[0]?.exp;
       spec.sortAggKey = spec.metrics.find(m => m.exp === sortExp)?.aggKey;
+      spec.sortExp = spec.sortAggKey ? sortExp : undefined;
+      // an average is fetched as sum + count so multi-viewer can recombine it
+      // exactly; the terms order still needs a single-value agg, so an extra
+      // avg agg (<key>o) ranks the buckets
+      spec.orderAggKey = spec.sortAggKey ? (spec.metricAgg === 'avg' ? `${spec.sortAggKey}o` : spec.sortAggKey) : undefined;
 
       widgetSpecs.push(spec);
     }
 
     // `value` = the sort metric's sum (or session count). `metricValues` holds
     // each requested metric keyed by exp (+ 'sessions') for the table's columns.
+    function bucketMetrics (bucket, spec) {
+      const metricValues = { sessions: bucket.doc_count };
+      for (const m of (spec.metrics || [])) {
+        if (spec.metricAgg === 'avg') {
+          const count = bucket[`${m.aggKey}c`]?.value ?? 0;
+          metricValues[m.exp] = count ? (bucket[m.aggKey]?.value ?? 0) / count : 0;
+        } else {
+          metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
+        }
+      }
+      return metricValues;
+    }
+
+    // the aggregations one bucket needs for a widget's metrics (per metricAgg)
+    function metricAggsFor (spec) {
+      const aggs = {};
+      for (const m of spec.metrics) {
+        if (spec.metricAgg === 'avg') {
+          aggs[m.aggKey] = { sum: { field: m.dbField } };
+          aggs[`${m.aggKey}c`] = { value_count: { field: m.dbField } };
+          if (m.aggKey === spec.sortAggKey) { aggs[`${m.aggKey}o`] = { avg: { field: m.dbField } }; }
+        } else {
+          aggs[m.aggKey] = { [spec.metricAgg]: { field: m.dbField } };
+        }
+      }
+      return aggs;
+    }
+
     function convert (agg, limit, spec) {
       if (!agg || !agg.buckets) {
         return [];
@@ -3790,17 +3846,21 @@ class SessionAPIs {
       const results = [];
       for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
         const bucket = agg.buckets[i];
-        const metricValues = { sessions: bucket.doc_count };
-        for (const m of (spec.metrics || [])) {
-          metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
-        }
+        const metricValues = bucketMetrics(bucket, spec);
+        const split = spec.splitField
+          ? (bucket.split?.buckets ?? []).map(sb => {
+            const mv = bucketMetrics(sb, spec);
+            return { item: sb.key, sessions: sb.doc_count, value: spec.sortExp ? mv[spec.sortExp] : sb.doc_count, metricValues: mv };
+          })
+          : undefined;
         results.push({
           item: bucket.key,
           sessions: bucket.doc_count,
           bytes: bucket.bytes.value,
           packets: bucket.packets.value,
-          value: spec.sortAggKey ? (bucket[spec.sortAggKey]?.value ?? 0) : bucket.doc_count,
-          metricValues
+          value: spec.sortExp ? metricValues[spec.sortExp] : bucket.doc_count,
+          metricValues,
+          ...(split ? { split } : {})
         });
       }
       return results;
@@ -3949,7 +4009,7 @@ class SessionAPIs {
         if (clientDisconnected || res.destroyed) { break; }
         try {
           if (spec.unknown) {
-            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.field}` }, false);
+            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}` }, false);
             continue;
           }
 
@@ -3961,13 +4021,24 @@ class SessionAPIs {
 
           // Per-widget metric: when a numeric field is selected, sum it per
           // bucket and order Top/Bottom N by that sum; otherwise order by count.
-          const widgetAggs = { ...extraAggs };
-          for (const m of spec.metrics) {
-            widgetAggs[m.aggKey] = { sum: { field: m.dbField } };
-          }
-          const termsOrder = spec.sortAggKey ? { [spec.sortAggKey]: spec.order } : { _count: spec.order };
+          const metricAggs = metricAggsFor(spec);
+          const termsOrder = spec.orderAggKey ? { [spec.orderAggKey]: spec.order } : { _count: spec.order };
 
-          if (spec.isSpecial) {
+          const widgetAggs = { ...extraAggs, ...metricAggs };
+          if (spec.splitDbField) {
+            // a bar is always split by its top sub-values, whichever end of
+            // the ranking the bars themselves come from
+            const splitOrder = spec.orderAggKey ? { [spec.orderAggKey]: 'desc' } : { _count: 'desc' };
+            widgetAggs.split = {
+              terms: { field: spec.splitDbField, size: spec.splitLength, order: splitOrder },
+              aggs: metricAggs
+            };
+          }
+
+          if (spec.total) {
+            // whole result set: the metric aggregations alone, as one item
+            wquery.aggregations = widgetAggs;
+          } else if (spec.isSpecial) {
             // Special fields use Painless scripts (no direct dbField mapping)
             const source = spec.field === 'ip'
               ? "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];"
@@ -3998,13 +4069,29 @@ class SessionAPIs {
             field: spec.field,
             viewMode: spec.viewMode,
             metricType: spec.metricType,
+            metricAgg: spec.metricAgg,
             length: spec.length,
             order: spec.order,
             expression: spec.expression,
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration
           };
-          let data = convert(phase2.aggregations[spec.aggName], spec.length, spec);
+          let data;
+          if (spec.total) {
+            const aggs = phase2.aggregations ?? {};
+            const bucket = { ...aggs, doc_count: phase2.hits?.total ?? 0 };
+            const metricValues = bucketMetrics(bucket, spec);
+            data = [{
+              item: '',
+              sessions: bucket.doc_count,
+              bytes: aggs.bytes?.value ?? 0,
+              packets: aggs.packets?.value ?? 0,
+              value: spec.sortExp ? metricValues[spec.sortExp] : bucket.doc_count,
+              metricValues
+            }];
+          } else {
+            data = convert(phase2.aggregations[spec.aggName], spec.length, spec);
+          }
           if (spec.field === 'ip.dst:port') {
             data = data.map(ipDstPortProcessor);
           }

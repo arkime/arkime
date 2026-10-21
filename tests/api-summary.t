@@ -1,4 +1,4 @@
-use Test::More tests => 122;
+use Test::More tests => 160;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -307,6 +307,146 @@ foreach my $item (@{$bChunk->{data}}) {
     $prev = $item->{value};
 }
 ok($sorted, "bottom-N metric data is ranked ascending");
+
+# metricAgg - max/avg/cardinality replace the per-bucket sum
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wSum', field => 'ip.src', length => 5, metricType => 'bytes', metricAgg => 'sum' },
+        { id => 'wMax', field => 'ip.src', length => 5, metricType => 'bytes', metricAgg => 'max' },
+        { id => 'wAvg', field => 'ip.src', length => 5, metricType => 'bytes', metricAgg => 'avg' },
+        { id => 'wCard', field => 'ip.src', length => 5, metricType => 'ip.dst', metricAgg => 'cardinality' },
+        { id => 'wBadAgg', field => 'ip.src', length => 5, metricType => 'bytes', metricAgg => 'nope' }
+    ]
+});
+my $sumChunk = getChunk($chunks, 'wSum');
+my $maxChunk = getChunk($chunks, 'wMax');
+my $avgChunk = getChunk($chunks, 'wAvg');
+my $cardChunk = getChunk($chunks, 'wCard');
+my $badAggChunk = getChunk($chunks, 'wBadAgg');
+is($sumChunk->{metricAgg}, 'sum', "sum metricAgg is echoed");
+is($maxChunk->{metricAgg}, 'max', "max metricAgg is echoed");
+is($cardChunk->{metricAgg}, 'cardinality', "cardinality metricAgg is echoed");
+is($badAggChunk->{metricAgg}, 'sum', "an unknown metricAgg falls back to sum");
+my %sumByIp = map { $_->{item} => $_ } @{$sumChunk->{data}};
+my ($maxOk, $avgOk) = (1, 1);
+foreach my $item (@{$maxChunk->{data}}) {
+    my $sum = $sumByIp{$item->{item}};
+    next unless defined $sum;
+    $maxOk = 0 if $item->{value} > $sum->{value} || $item->{value} <= 0;
+    $maxOk = 0 if $item->{sessions} == 1 && $item->{value} != $sum->{value};
+}
+ok($maxOk, "max of bytes per value is at most its sum and equals it for single-session values");
+foreach my $item (@{$avgChunk->{data}}) {
+    my $sum = $sumByIp{$item->{item}};
+    next unless defined $sum;
+    $avgOk = 0 if abs($item->{value} * $item->{sessions} - $sum->{value}) > 0.01 * $sum->{value} + 1;
+}
+ok($avgOk, "avg of bytes per value times its session count matches its sum");
+ok(@{$cardChunk->{data}} > 0, "cardinality widget has data");
+my $cardOk = 1;
+foreach my $item (@{$cardChunk->{data}}) {
+    $cardOk = 0 if $item->{value} < 1 || $item->{value} > $item->{sessions};
+    $cardOk = 0 if $item->{metricValues}->{'ip.dst'} != $item->{value};
+}
+ok($cardOk, "unique destination count per source is between 1 and its session count");
+is($sumByIp{$sumChunk->{data}->[0]->{item}}->{value}, $sumChunk->{data}->[0]->{metricValues}->{bytes}, "sum value matches metricValues");
+
+# splitField - each value carries its top sub-values with the same metric
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wSplit', field => 'ip.src', length => 5, splitField => 'protocols', splitLength => 3 },
+        { id => 'wSplitBytes', field => 'ip.src', length => 5, metricType => 'bytes', splitField => 'protocols', splitLength => 2 },
+        { id => 'wNoSplit', field => 'ip.src', length => 5 },
+        { id => 'wBadSplit', field => 'ip.src', length => 5, splitField => 'no.such.field' }
+    ]
+});
+my $splitChunk = getChunk($chunks, 'wSplit');
+my $splitBytesChunk = getChunk($chunks, 'wSplitBytes');
+my $noSplitChunk = getChunk($chunks, 'wNoSplit');
+my $badSplitChunk = getChunk($chunks, 'wBadSplit');
+ok(@{$splitChunk->{data}} > 0, "split widget has data");
+ok(!exists $noSplitChunk->{data}->[0]->{split}, "no split array without splitField");
+ok(exists $badSplitChunk->{error}, "unknown splitField returns a per-widget error");
+like($badSplitChunk->{error}, qr/no\.such\.field/, "unknown splitField error names the split field");
+my ($splitShape, $splitLen, $splitSum, $splitSorted) = (1, 1, 1, 1);
+foreach my $item (@{$splitChunk->{data}}) {
+    $splitShape = 0 unless ref($item->{split}) eq 'ARRAY' && @{$item->{split}} > 0;
+    $splitLen = 0 if @{$item->{split}} > 3;
+    my $prev;
+    foreach my $sub (@{$item->{split}}) {
+        $splitShape = 0 unless exists $sub->{item} && exists $sub->{sessions} && exists $sub->{value} && exists $sub->{metricValues};
+        $splitSum = 0 if $sub->{sessions} > $item->{sessions} || $sub->{value} != $sub->{sessions};
+        $splitSorted = 0 if defined $prev && $sub->{value} > $prev;
+        $prev = $sub->{value};
+    }
+}
+ok($splitShape, "each split entry carries item/sessions/value/metricValues");
+ok($splitLen, "split is capped at splitLength");
+ok($splitSum, "a split entry never exceeds its parent and its value is the session count");
+ok($splitSorted, "split entries are ranked by value descending");
+my ($bytesSplitOk, $bytesSplitLen) = (1, 1);
+foreach my $item (@{$splitBytesChunk->{data}}) {
+    $bytesSplitLen = 0 if @{$item->{split}} > 2;
+    foreach my $sub (@{$item->{split}}) {
+        $bytesSplitOk = 0 if $sub->{value} != $sub->{metricValues}->{bytes} || $sub->{value} > $item->{value};
+    }
+}
+ok($bytesSplitOk, "split entries carry the bytes metric when the widget has one");
+ok($bytesSplitLen, "bytes split is capped at its splitLength");
+
+# Bottom-N bars are still split by their most common sub-values, and both
+# unknown fields are named when the field and the split field are bad
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wAscSplit', field => 'ip.src', length => 5, order => 'asc', splitField => 'protocols', splitLength => 2 },
+        { id => 'wBothBad', field => 'no.such.field', splitField => 'no.such.split' }
+    ]
+});
+my $ascSplitChunk = getChunk($chunks, 'wAscSplit');
+my $bothBadChunk = getChunk($chunks, 'wBothBad');
+ok(@{$ascSplitChunk->{data}} > 0, "bottom-N split widget has data");
+my ($ascOk, $splitDescOk) = (1, 1);
+$prev = undef;
+foreach my $item (@{$ascSplitChunk->{data}}) {
+    $ascOk = 0 if defined $prev && $item->{value} < $prev;
+    $prev = $item->{value};
+    my $sprev;
+    foreach my $sub (@{$item->{split}}) {
+        $splitDescOk = 0 if defined $sprev && $sub->{value} > $sprev;
+        $sprev = $sub->{value};
+    }
+}
+ok($ascOk, "bottom-N bars are ranked ascending");
+ok($splitDescOk, "bottom-N bars are split by their top sub-values (descending)");
+like($bothBadChunk->{error}, qr/no\.such\.field/, "error names the unknown field");
+like($bothBadChunk->{error}, qr/no\.such\.split/, "error names the unknown split field too");
+
+# total - the metrics over the whole result set as a single item
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wTotal', total => JSON::true },
+        { id => 'wTotalBytes', total => JSON::true, metricType => 'bytes' },
+        { id => 'wTotalMax', total => JSON::true, metricType => 'bytes', metricAgg => 'max' },
+        { id => 'wTotalUniq', total => JSON::true, metricType => 'ip.src', metricAgg => 'cardinality' },
+        { id => 'wTotalLocal', total => JSON::true, expression => 'file=*/bigendian.pcap' }
+    ]
+});
+my $stats = $chunks->[0];
+my $totalChunk = getChunk($chunks, 'wTotal');
+my $totalBytesChunk = getChunk($chunks, 'wTotalBytes');
+my $totalMaxChunk = getChunk($chunks, 'wTotalMax');
+my $totalUniqChunk = getChunk($chunks, 'wTotalUniq');
+my $totalLocalChunk = getChunk($chunks, 'wTotalLocal');
+is(scalar(@{$totalChunk->{data}}), 1, "total widget returns a single item");
+is($totalChunk->{data}->[0]->{sessions}, $stats->{sessions}, "total sessions matches the stats chunk");
+is($totalChunk->{data}->[0]->{value}, $stats->{sessions}, "total value defaults to the session count");
+is($totalBytesChunk->{data}->[0]->{value}, $stats->{bytes}, "total bytes sum matches the stats chunk");
+is($totalBytesChunk->{data}->[0]->{metricValues}->{bytes}, $stats->{bytes}, "total metricValues.bytes matches the stats chunk");
+cmp_ok($totalMaxChunk->{data}->[0]->{value}, '<=', $stats->{bytes}, "total max bytes is at most the bytes sum");
+cmp_ok($totalMaxChunk->{data}->[0]->{value}, '>', 0, "total max bytes is positive");
+cmp_ok($totalUniqChunk->{data}->[0]->{value}, '>', 1, "total unique source ips is more than one");
+cmp_ok($totalUniqChunk->{data}->[0]->{value}, '<=', $stats->{sessions}, "total unique source ips is at most the session count");
+is($totalLocalChunk->{data}->[0]->{sessions}, 1, "total honors the widget's local expression");
 
 # Unknown field - per-widget error chunk, later widgets still return data
 $chunks = postSummary("/api/sessions/summary?date=-1", {

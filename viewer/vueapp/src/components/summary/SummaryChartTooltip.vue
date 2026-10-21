@@ -29,6 +29,13 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- Statistics in vertical format -->
         <div class="stats-container">
+          <!-- the split (second field) value for a bar segment -->
+          <div
+            v-if="split"
+            class="stat-row">
+            <span class="stat-label">{{ split.label }}:</span>
+            <span class="stat-value">{{ split.value }}</span>
+          </div>
           <div class="stat-row">
             <span class="stat-label">{{ $t('sessions.summary.sessions') }}:</span>
             <span class="stat-value">{{ formatNumber(data.sessions) }}</span>
@@ -57,7 +64,8 @@ import { computed } from 'vue';
 import { commaString } from '@common/vueFilters.js';
 import ArkimeSessionField from '../sessions/SessionField.vue';
 import FieldService from '../search/FieldService';
-import { formatMetricValue } from './widgets/widgetData';
+import { useI18n } from 'vue-i18n';
+import { formatMetricValue, metricLabel as metricLabelFor } from './widgets/widgetData';
 
 const props = defineProps({
   visible: {
@@ -83,8 +91,19 @@ const props = defineProps({
   metricType: {
     type: String,
     default: 'sessions'
+  },
+  metricAgg: {
+    type: String,
+    default: 'sum'
+  },
+  // { label, value } of a bar segment's split field
+  split: {
+    type: Object,
+    default: null
   }
 });
+
+const { t } = useI18n();
 
 defineEmits(['close']);
 
@@ -94,11 +113,11 @@ const metricField = computed(() => {
   return FieldService.getField(props.metricType, true);
 });
 
-const metricLabel = computed(() => metricField.value?.friendlyName || props.metricType);
+const metricLabel = computed(() => metricLabelFor(props.metricType, props.metricAgg, t));
 
 const showMetricRow = computed(() => metricField.value != null && props.data?.value != null);
 
-const formattedMetric = computed(() => formatMetricValue(props.metricType, props.data?.value));
+const formattedMetric = computed(() => formatMetricValue(props.metricType, props.data?.value, props.metricAgg));
 
 const tooltipStyle = computed(() => {
   // Position tooltip to the top-right of the pointer

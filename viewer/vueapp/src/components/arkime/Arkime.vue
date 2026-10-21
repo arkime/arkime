@@ -165,7 +165,7 @@ import Utils from '../utils/utils';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
-import { DEFAULT_VIEW_MODES, defaultLength } from '../summary/widgets/viewModes';
+import { DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES } from '../summary/widgets/viewModes';
 import { toV6Shape } from '../summary/dashboardConfig';
 
 const DashboardService = createShareableService('summaryConfig');
@@ -239,7 +239,13 @@ export default {
         viewMode,
         metricType: 'sessions',
         metrics: [], // table multi-metric columns (falls back to metricType)
+        metricAgg: 'sum', // sum/avg/min/max/cardinality of the metric field(s)
         sortMetric: 'sessions',
+        // bar: optional second field each value is split by
+        splitField: '',
+        splitLength: 5,
+        barMode: 'stacked',
+        text: '', // text widget content
         // top-N cap, or a session sample size for connections
         length: defaultLength(viewMode),
         order: 'desc',
@@ -266,7 +272,12 @@ export default {
         viewMode,
         metricType: w.metricType || 'sessions',
         metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
+        metricAgg: METRIC_AGGS.includes(w.metricAgg) ? w.metricAgg : 'sum',
         sortMetric: w.sortMetric || w.metricType || 'sessions',
+        splitField: typeof w.splitField === 'string' ? w.splitField : '',
+        splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
+        barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
+        text: typeof w.text === 'string' ? w.text : '',
         length: w.length || defaultLength(viewMode),
         order: w.order || 'desc',
         expression: w.expression || '',

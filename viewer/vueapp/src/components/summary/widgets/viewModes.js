@@ -32,20 +32,40 @@ export const SESSION_VIEW_MODES = ['timeline', 'stats', 'time'];
 // Field-bound to a geo field only (country/*.geo): the map choropleth.
 export const GEO_FIELD_VIEW_MODES = ['map'];
 
+// Field is optional: a big-number metric over the whole result set, or one
+// number per top-N value when a field is chosen.
+export const OPTIONAL_FIELD_VIEW_MODES = ['metric'];
+
+// Static content (no fetch, no field, no metric): a text/notes panel.
+export const STATIC_VIEW_MODES = ['text'];
+
 // Types that visualize a single selectable metric (Sessions or a numeric field).
 // timeline plots the metric's <dbField>Histo series over time.
-export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline'];
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'metric'];
+
+// Types whose metric can use an aggregation other than sum (avg/min/max/unique
+// count). Only the /api/sessions/summary paths take one; the spigraph-backed
+// modes (heatmap/treemap/timeline) always sum into their histo series.
+export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric'];
+
+// The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS).
+export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality'];
+
+// Types that can split each value by a second field (stacked/grouped bars).
+export const SPLIT_VIEW_MODES = ['bar'];
+export const BAR_MODES = ['stacked', 'grouped'];
+export const SPLIT_LENGTHS = [3, 5, 10];
 
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection', 'metric'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
 // /api/connections have no order parameter, so offering the control for those
 // modes would silently do nothing.
-export const ORDER_VIEW_MODES = ['bar', 'pie', 'table'];
+export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric'];
 
 // Types whose limit is a session sample size rather than a top-N cut, so they
 // get their own (much larger) scale.
@@ -71,7 +91,7 @@ export const STREAM_VIEW_MODES = ['bar', 'pie'];
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'intersection', 'map', 'table'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'intersection', 'map', 'table', 'metric'];
 
 // [min, max] fields each view mode accepts — nested combinations (pie/treemap/
 // sankey/intersection via spigraphhierarchy), side-by-side columns (table via
@@ -102,6 +122,18 @@ export const isSessionMode = (viewMode) => SESSION_VIEW_MODES.includes(viewMode)
 
 /** True when the widget aggregates a chosen geo field (the map choropleth). */
 export const isGeoFieldMode = (viewMode) => GEO_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True when the widget may take a field but works without one (metric). */
+export const isOptionalFieldMode = (viewMode) => OPTIONAL_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True for static widgets with no data fetch at all (text). */
+export const isStaticMode = (viewMode) => STATIC_VIEW_MODES.includes(viewMode);
+
+/** True when the widget's metric can pick an aggregation (sum/avg/min/max/unique). */
+export const hasMetricAgg = (viewMode) => METRIC_AGG_VIEW_MODES.includes(viewMode);
+
+/** True when the widget can split each value by a second field. */
+export const allowsSplit = (viewMode) => SPLIT_VIEW_MODES.includes(viewMode);
 
 /** True when the widget exposes a metric selector. */
 export const hasMetric = (viewMode) => METRIC_VIEW_MODES.includes(viewMode);
@@ -152,4 +184,4 @@ export const allowsMultiMetric = (viewMode) => MULTI_METRIC_VIEW_MODES.includes(
 /** True when the widget fetches its own data and can take a per-widget local
  *  filter (a saved View + expression). Only the global capture-stats widgets
  *  (stats/time), which describe the whole result set, can't. */
-export const hasLocalFilter = (viewMode) => !['stats', 'time'].includes(viewMode);
+export const hasLocalFilter = (viewMode) => !['stats', 'time', ...STATIC_VIEW_MODES].includes(viewMode);

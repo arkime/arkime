@@ -30,6 +30,7 @@ SPDX-License-Identifier: Apache-2.0
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
+        :metric-agg="metricAgg"
         :color-scheme="colorScheme"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -39,9 +40,12 @@ SPDX-License-Identifier: Apache-2.0
         :data="data"
         :svg-id="svgId"
         :field-config="fieldConfig"
+        :split-field-config="splitFieldConfig"
+        :bar-mode="barMode"
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
+        :metric-agg="metricAgg"
         :color-scheme="colorScheme"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -64,7 +68,7 @@ import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
-import { metricIsBytes } from './widgets/widgetData';
+import { metricLabel, formatMetricValue } from './widgets/widgetData';
 
 const { t } = useI18n();
 
@@ -114,6 +118,19 @@ const props = defineProps({
     type: String,
     default: 'sessions'
   },
+  metricAgg: {
+    type: String,
+    default: 'sum'
+  },
+  // bar: optional second field each value is split by, and the segment layout
+  splitField: {
+    type: String,
+    default: ''
+  },
+  barMode: {
+    type: String,
+    default: 'stacked'
+  },
   // Data and visualization props
   data: {
     type: Array,
@@ -139,6 +156,7 @@ defineEmits(['export', 'show-tooltip', 'remove-field', 'retry-field', 'edit']);
 const fieldConfig = computed(() => {
   return FieldService.getField(props.field, true);
 });
+const splitFieldConfig = computed(() => (props.splitField ? FieldService.getField(props.splitField, true) : null));
 
 // Check if field configuration is valid
 const hasValidField = computed(() => {
@@ -166,11 +184,7 @@ const exportLabel = computed(() => {
 });
 
 // The selected metric's column label + formatting (mirrors the chart tooltip)
-const metricLabel = computed(() => {
-  const m = props.metricType || 'sessions';
-  if (m === 'sessions') { return t('sessions.summary.sessions'); }
-  return FieldService.getField(m, true)?.friendlyName || m;
-});
+const metricColumnLabel = computed(() => metricLabel(props.metricType, props.metricAgg, t));
 
 // Table columns: the grouping field + the selected metric (single metric for now;
 // a future tableColumns[] enables multi-metric). Metric value is data[].value.
@@ -182,7 +196,7 @@ const columns = computed(() => [
     useSessionField: true,
     ...(fieldConfig.value?.exp && { expr: fieldConfig.value.exp })
   },
-  { key: 'value', header: metricLabel.value, align: 'end', format: metricIsBytes(props.metricType) ? 'bytes' : 'number' }
+  { key: 'value', header: metricColumnLabel.value, align: 'end', formatter: (v) => formatMetricValue(props.metricType, v, props.metricAgg) }
 ]);
 
 // ResizeObserver for dynamic chart sizing

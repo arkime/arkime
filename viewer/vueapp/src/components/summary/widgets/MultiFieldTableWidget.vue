@@ -85,7 +85,7 @@ import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchSummaryFields, formatMetricValue, downloadCSV } from './widgetData';
+import { fetchSummaryFields, formatMetricValue, downloadCSV, metricLabel as metricLabelFor } from './widgetData';
 
 const { t } = useI18n();
 
@@ -122,11 +122,10 @@ const metricCols = computed(() => {
   const legacy = props.widget.metricType;
   return (legacy && legacy !== 'sessions') ? [legacy] : ['sessions'];
 });
-const metricLabel = (exp) => (exp === 'sessions'
-  ? t('sessions.summary.sessions')
-  : (FieldService.getField(exp, true)?.friendlyName || exp));
+const metricAgg = computed(() => props.widget.metricAgg || 'sum');
+const metricLabel = (exp) => metricLabelFor(exp, metricAgg.value, t);
 const cellValue = (exp, row) => (exp === 'sessions' ? row.sessions : (row.metricValues?.[exp] ?? 0));
-const formatCell = (exp, row) => formatMetricValue(exp, cellValue(exp, row));
+const formatCell = (exp, row) => formatMetricValue(exp, cellValue(exp, row), exp === 'sessions' ? undefined : metricAgg.value);
 
 const exportLabel = computed(() => t('sessions.summary.downloadCSV'));
 const exportCSV = () => {
