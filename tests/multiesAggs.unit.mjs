@@ -127,6 +127,26 @@ describe('nested terms', () => {
     assert.deepEqual(ip1.split.buckets.map(b => [b.key, b.doc_count, b.m0.value]), [['udp', 7, 70], ['tcp', 5, 50]]);
   });
 
+  test('a fractional size cuts like ES does, and an unusable one does not cut', () => {
+    const withSplitSize = (size) => {
+      const aggs = structuredClone(aggregations);
+      aggs.agg0.aggs.split.terms.size = size;
+      return aggs;
+    };
+    const clusters = [
+      { agg0: terms([{ key: 'ip1', doc_count: 6, split: terms([{ key: 'tcp', doc_count: 5 }, { key: 'udp', doc_count: 1 }]) }]) },
+      { agg0: terms([{ key: 'ip1', doc_count: 8, split: terms([{ key: 'udp', doc_count: 6 }, { key: 'icmp', doc_count: 2 }]) }]) }
+    ];
+    const splitKeys = (size) => merge(withSplitSize(size), ...clusters).agg0.buckets[0].split.buckets.map(b => b.key);
+
+    assert.deepEqual(splitKeys(1.5), ['udp'], 'floored to 1');
+    assert.deepEqual(splitKeys('2'), ['udp', 'tcp']);
+    // objects (even ones whose conversion throws) and arrays don't become a size
+    for (const size of [-1, 0, 'abc', null, [2], { valueOf: null, toString: null }]) {
+      assert.deepEqual(splitKeys(size), ['udp', 'tcp', 'icmp'], `size ${JSON.stringify(size)} leaves the split uncut`);
+    }
+  });
+
   test('a value in one cluster keeps that cluster\'s split', () => {
     const split = terms([{ key: 'tcp', doc_count: 2, m0: { value: 20 } }]);
     const merged = merge(aggregations,

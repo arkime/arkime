@@ -170,10 +170,16 @@ import { toV6Shape } from '../summary/dashboardConfig';
 
 const DashboardService = createShareableService('summaryConfig');
 
+// Saved and shared dashboards can hold any JSON (a shared one is written by
+// another user), so each widget value is only kept when it has the right type;
+// an object there would throw wherever it is turned into a string.
+const str = (v, def = '') => (typeof v === 'string' ? v : def);
+const int = (v) => ((typeof v === 'number' || typeof v === 'string') ? parseInt(v, 10) : NaN);
+
 // widgets span 1-4 columns and 1-8 rows; anything missing/invalid falls back to
 // `def` (rows allow a larger max since the grid uses a fine 160px row unit)
 const spanOrDefault = (v, def, max = 4) => {
-  const n = parseInt(v, 10);
+  const n = int(v);
   return n >= 1 && n <= max ? n : def;
 };
 
@@ -263,28 +269,29 @@ export default {
     normalizeWidget: function (w) {
       // fields[] is the source of truth (1-3); field stays = fields[0] for back-compat
       const fields = Array.isArray(w.fields) && w.fields.length
-        ? w.fields.slice(0, 3)
-        : (w.field ? [w.field] : []);
-      const viewMode = w.viewMode || DEFAULT_VIEW_MODES[w.field] || 'bar';
+        ? w.fields.filter(f => typeof f === 'string').slice(0, 3)
+        : (str(w.field) ? [w.field] : []);
+      const viewMode = str(w.viewMode) || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
+      const limit = int(w.length);
       return this.makeWidgetDef(fields[0] || '', {
-        id: w.id || Utils.createRandomString(),
+        id: str(w.id) || Utils.createRandomString(),
         fields,
         viewMode,
-        metricType: w.metricType || 'sessions',
-        metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
+        metricType: str(w.metricType) || 'sessions',
+        metrics: Array.isArray(w.metrics) ? w.metrics.filter(m => typeof m === 'string').slice(0, 4) : [],
         metricAgg: METRIC_AGGS.includes(w.metricAgg) ? w.metricAgg : 'sum',
-        sortMetric: w.sortMetric || w.metricType || 'sessions',
-        splitField: typeof w.splitField === 'string' ? w.splitField : '',
+        sortMetric: str(w.sortMetric) || str(w.metricType) || 'sessions',
+        splitField: str(w.splitField),
         splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
         barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
-        text: typeof w.text === 'string' ? w.text : '',
-        length: w.length || defaultLength(viewMode),
-        order: w.order || 'desc',
-        expression: w.expression || '',
-        view: w.view || '',
+        text: str(w.text),
+        length: limit > 0 ? limit : defaultLength(viewMode),
+        order: w.order === 'asc' ? 'asc' : 'desc',
+        expression: str(w.expression),
+        view: str(w.view),
         height: spanOrDefault(w.height, 3, 8),
         width: spanOrDefault(w.width, 2),
-        title: w.title || ''
+        title: str(w.title)
       });
     },
     /**
@@ -362,14 +369,15 @@ export default {
      */
     applyConfig: function (cfg) {
       if (Array.isArray(cfg?.widgets) && cfg.widgets.length) {
-        this.widgets = cfg.widgets.map(w => this.normalizeWidget(w));
+        this.widgets = cfg.widgets.map(w => this.normalizeWidget(w || {}));
       } else if (Array.isArray(cfg?.fields) && cfg.fields.length) {
         // Legacy summaryConfig: migrate fields[] into widget objects
-        this.widgets = cfg.fields.map(f => this.makeWidgetDef(f.field, {
-          viewMode: f.viewMode || DEFAULT_VIEW_MODES[f.field] || 'bar',
-          metricType: f.metricType || 'sessions',
-          length: cfg.resultsLimit || 20,
-          order: cfg.order || 'desc'
+        this.widgets = cfg.fields.map(f => this.normalizeWidget({
+          field: f?.field,
+          viewMode: f?.viewMode,
+          metricType: f?.metricType,
+          length: cfg.resultsLimit,
+          order: cfg.order
         }));
       } else {
         this.widgets = this.defaultWidgets();

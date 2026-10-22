@@ -313,6 +313,17 @@ function makeRequest (url, options, cb) {
 }
 
 function simpleGather (req, res, bodies, doneCb, preFetched) {
+  // A throw while merging would otherwise leave the request open until the
+  // caller's own timeout, holding its socket
+  const finish = (err, results) => {
+    try {
+      return doneCb(err, results);
+    } catch (e) {
+      console.log('ERROR - %s %s merging cluster results', req.method, req.url, e);
+      if (!res.headersSent) { res.status(500).send({ error: 'Failed to merge cluster results' }); }
+    }
+  };
+
   let cluster = null;
   if (req.query.cluster) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
@@ -321,7 +332,7 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
   }
   const activeNodes = getActiveNodes(cluster);
   if (activeNodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
-    return doneCb(true, [{}]);
+    return finish(true, [{}]);
   }
   async.map(activeNodes, (node, asyncCb) => {
     if (preFetched && Object.prototype.hasOwnProperty.call(preFetched, node)) {
@@ -444,7 +455,7 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
       if (good.length > 0) { results = good; }
       for (const r of results) { if (r) { delete r.arkime_failed; } }
     }
-    return doneCb(err, results);
+    return finish(err, results);
   });
 }
 
@@ -1212,6 +1223,10 @@ function msearch (req, res) {
     });
   }, (err) => {
     simpleGather(req, res, bodies, (err, results) => {
+      // no cluster answered (unknown cluster, or all of them down)
+      if (err || !Array.isArray(results[0]?.responses)) {
+        return res.status(500).send({ error: 'No cluster answered the msearch' });
+      }
       const obj = { responses: [] };
       for (let h = 0; h < results[0].responses.length; h++) {
         obj.responses[h] = newResult(JSON.parse(lines[h * 2 + 1]));

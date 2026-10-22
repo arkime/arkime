@@ -1,4 +1,4 @@
-use Test::More tests => 113;
+use Test::More tests => 121;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -181,3 +181,10 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     is ($json->{items}->[0]->{'network.bytesHisto'}, 104190, "metric sort: first item bytes sum");
     is ($json->{items}->[1]->{name}, "10.180.156.185", "metric sort: second highest-bytes ip");
     is ($json->{items}->[1]->{'network.bytesHisto'}, 46190, "metric sort: second item bytes sum");
+
+# a fractional size is used as a whole number; it used to hang the multi viewer's
+# nested terms merge (ip.dst:port is the nested branch)
+    my $frac = get("/spigraph.json?date=-1&exp=ip.dst:port&size=1.5&expression=" . uri_escape($sortfiles));
+    my $one = get("/spigraph.json?date=-1&exp=ip.dst:port&size=1&expression=" . uri_escape($sortfiles));
+    is (scalar @{$frac->{items}}, 1, "fractional size: 1 item");
+    eq_or_diff ($frac->{items}, $one->{items}, "fractional size matches size 1");

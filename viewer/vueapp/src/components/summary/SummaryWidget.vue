@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0
     :empty-text="emptyText"
     :no-data-message="noDataMessage"
     :info-items="infoItems"
+    :link="link"
     @edit="$emit('edit')"
     @export="$emit('export', svgId)"
     @remove="$emit('remove-field')"
@@ -147,7 +148,8 @@ const props = defineProps({
   infoItems: {
     type: Array,
     default: () => []
-  }
+  },
+  link: { type: Object, default: null }
 });
 
 defineEmits(['export', 'show-tooltip', 'remove-field', 'retry-field', 'edit']);

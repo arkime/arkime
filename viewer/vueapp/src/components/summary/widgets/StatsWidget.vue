@@ -10,6 +10,7 @@ fed by the host's global stats chunk (no self-fetch).
     :title="displayTitle"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
     @edit="$emit('edit')"
     @remove="$emit('remove')">
     <div class="stats-grid">
@@ -68,7 +69,8 @@ const { t } = useI18n();
 const props = defineProps({
   stats: { type: Object, default: () => null },
   title: { type: String, default: '' },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);

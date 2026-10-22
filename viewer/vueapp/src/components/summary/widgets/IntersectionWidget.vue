@@ -14,6 +14,7 @@ combinations (a column pair per field level, grouped by parent). Count-based.
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
     scroll
     @edit="$emit('edit')"
     @remove="$emit('remove')"
@@ -75,7 +76,8 @@ import { fetchHierarchy, widgetFields } from './widgetData';
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);

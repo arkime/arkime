@@ -1,4 +1,4 @@
-use Test::More tests => 23;
+use Test::More tests => 26;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -58,3 +58,8 @@ cmp_ok (scalar(@{$hier->{tableResults}}), '>', 0, "single-field intersection ret
 cmp_ok (scalar(@{$hier->{tableResults}}), '<=', 3, "single-field intersection honors size");
 is (scalar(@{$hier->{tableResults}->[0]->{parents}}), 0, "single-field intersection rows have no parents");
 ok (defined $hier->{tableResults}->[0]->{name} && defined $hier->{tableResults}->[0]->{size}, "single-field intersection row has name + size");
+
+# a fractional size is used as a whole number at every level; it used to hang
+# the multi viewer's nested terms merge
+my $frac = get("date=-1&exp=ip.src,ip.dst&size=1.5&expression=$files");
+eq_or_diff($frac, get("date=-1&exp=ip.src,ip.dst&size=1&expression=$files"), "fractional size matches size 1");

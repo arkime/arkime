@@ -14,6 +14,7 @@ filter) and colors each country by its session count. Clicking a country adds a
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
     @edit="$emit('edit')"
     @remove="$emit('remove')"
     @retry="fetchData">
@@ -44,7 +45,8 @@ const store = useStore();
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);

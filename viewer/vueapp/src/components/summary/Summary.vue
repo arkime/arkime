@@ -94,6 +94,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -103,6 +104,7 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -112,6 +114,7 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <SummaryWidget
@@ -128,6 +131,7 @@ SPDX-License-Identifier: Apache-2.0
             :field="w.field"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @show-tooltip="showTooltip"
             @export="handleWidgetExport(w, $event)"
             @edit="openEdit(w.id)"
@@ -139,6 +143,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <TreemapWidget
@@ -147,6 +152,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -155,6 +161,7 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <!-- session-wide widgets: fed by the host's global stats chunk -->
@@ -164,6 +171,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :timeline-data-filters="timelineDataFilters"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @time-range="onTimeRange"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -172,6 +180,7 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <!-- big number(s): the metric over the result set, or per top-N value -->
@@ -180,6 +189,7 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <!-- static notes -->
@@ -187,6 +197,7 @@ SPDX-License-Identifier: Apache-2.0
             v-else-if="w.viewMode === 'text'"
             :widget="w"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <StatsWidget
@@ -194,6 +205,7 @@ SPDX-License-Identifier: Apache-2.0
             :stats="summary"
             :title="w.title"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <TimeWidget
@@ -201,6 +213,7 @@ SPDX-License-Identifier: Apache-2.0
             :stats="summary"
             :title="w.title"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
         </div>
@@ -243,7 +256,7 @@ import MetricWidget from './widgets/MetricWidget.vue';
 import TextWidget from './widgets/TextWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit } from './widgets/viewModes';
-import { widgetLocalExpression, widgetFields, metricLabel } from './widgets/widgetData';
+import { widgetLocalExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -424,6 +437,14 @@ const toRequestWidget = (w) => ({
   metricAgg: w.metricAgg,
   ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   expression: widgetLocalExpression(w, store.state.views)
+});
+
+// The full page (SPI Graph / Sessions) showing what each widget shows, by
+// widget id; computed so re-renders (tooltips, streamed chunks) reuse them
+const widgetLinks = computed(() => {
+  const links = Object.create(null); // keyed by widget ids from saved/shared configs
+  for (const w of summary.value?.fields || []) { links[w.id] = widgetFullPageLink(route, store, w); }
+  return links;
 });
 
 // Rows describing a widget's configuration that isn't visible on the card

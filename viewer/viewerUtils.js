@@ -104,6 +104,16 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // A requested count (eg a terms size) as an integer from 1 to max (if given);
+  // anything else is the fallback. A fractional size reaches array lengths in
+  // multies.
+  static clampInt (val, fallback, max = Infinity) {
+    const n = parseInt(val);
+    if (!Number.isFinite(n) || n <= 0) { return fallback; }
+    return Math.min(n, max);
+  }
+
+  // ----------------------------------------------------------------------------
   // A dashboard widget can request an extra metric field (already resolved to a
   // dbField via metricDbField); append it to the timeline data filters so its
   // per-bucket sum / <dbField>Histo series is built alongside the user's filters.

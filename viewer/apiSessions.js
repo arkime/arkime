@@ -594,7 +594,8 @@ class SessionAPIs {
     req.query.base = req.query.base || 'ascii';
     req.query.showFrames = req.query.showFrames === 'true' || false;
 
-    req.query.packets = req.query.packets || 200;
+    // a fractional count becomes an array length in reassembly and throws there
+    req.query.packets = ViewerUtils.clampInt(req.query.packets, 200, 10000);
     if (req.query.needimage || req.query.needgzip) {
       // displaying images & uncompressing require all packets from a session
       req.query.packets = 10000;
@@ -2413,7 +2414,7 @@ class SessionAPIs {
 
       delete query.sort;
       query.size = 0;
-      const size = +req.query.size || 20;
+      const size = ViewerUtils.clampInt(req.query.size, 20);
 
       let field = req.query.field || 'node';
 
@@ -2631,7 +2632,7 @@ class SessionAPIs {
       query.size = 0; // Don't need any real results, just aggregations
       delete query.sort;
       delete query.aggregations;
-      const size = +req.query.size || 20;
+      const size = ViewerUtils.clampInt(req.query.size, 20);
 
       if (!query.query.bool.filter) {
         query.query.bool.filter = [];
@@ -3678,12 +3679,7 @@ class SessionAPIs {
    */
   static summary (req, res) {
     // Clamp a requested top/bottom N to a sane range
-    function clampLength (val, fallback) {
-      let n = parseInt(val);
-      if (!Number.isFinite(n) || n <= 0) { n = fallback; }
-      if (n > 1000) { n = 1000; }
-      return n;
-    }
+    const clampLength = (val, fallback) => ViewerUtils.clampInt(val, fallback, 1000);
 
     // Global limit/order are defaults for widgets that don't set their own
     const defaultTopNum = clampLength(req.query.length, 20);

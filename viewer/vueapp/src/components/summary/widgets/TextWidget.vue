@@ -10,6 +10,7 @@ the text is part of the widget definition and edited in the widget modal.
     :title="title"
     :has-data="true"
     :info-items="infoItems"
+    :link="link"
     @edit="$emit('edit')"
     @remove="$emit('remove')">
     <div
@@ -34,7 +35,8 @@ const { t } = useI18n();
 
 const props = defineProps({
   widget: { type: Object, required: true },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);

@@ -82,6 +82,26 @@ SPDX-License-Identifier: Apache-2.0
                 id="connections-controls-anchor"
                 class="connections-controls-anchor d-flex flex-wrap align-center gap-1" />
 
+              <!-- bar layout (bar only): how a second field's values are drawn -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'bar'">
+                <span class="arkime-input-label">
+                  {{ $t('spigraph.barMode') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="barMode"
+                  @change="changeBarMode($event.target.value)">
+                  <option value="stacked">
+                    {{ $t('spigraph.barMode-stacked') }}
+                  </option>
+                  <option value="grouped">
+                    {{ $t('spigraph.barMode-grouped') }}
+                  </option>
+                </select>
+              </div> <!-- /bar layout -->
+
               <!-- intensity select (heatmap only) -->
               <div
                 class="arkime-input-group"
@@ -173,7 +193,7 @@ SPDX-License-Identifier: Apache-2.0
 
               <!-- hierarchy "add another field" anchor (own full-width row) -->
               <div
-                v-if="['pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
+                v-if="['bar', 'pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
                 id="spigraph-subfield-anchor"
                 class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1" />
             </div>
@@ -218,6 +238,7 @@ SPDX-License-Identifier: Apache-2.0
           :fields="fields"
           :query="query"
           :spi-graph-type="spiGraphType"
+          :bar-mode="barMode"
           @toggle-load="toggleLoad"
           @toggle-error="toggleError"
           @fetched-results="fetchedResults" />
@@ -367,7 +388,7 @@ export default {
       // <option> blocks into one.
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
-      graphTypeOptions: ['default', 'heatmap', 'pie', 'table', 'treemap', 'sankey', 'connections']
+      graphTypeOptions: ['default', 'heatmap', 'bar', 'pie', 'table', 'treemap', 'sankey', 'connections']
     };
   },
   computed: {
@@ -424,6 +445,10 @@ export default {
     },
     fields: function () {
       return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
+    },
+    // bar graph segment layout, kept in the url like the other options
+    barMode: function () {
+      return this.$route.query.barMode === 'grouped' ? 'grouped' : 'stacked';
     }
   },
   watch: {
@@ -521,6 +546,14 @@ export default {
         }
       });
     },
+    changeBarMode: function (barMode) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          barMode
+        }
+      });
+    },
     changeIntensity: function (value) {
       // recolors + re-sorts client-side (all metrics are already fetched); the
       // backend top-N ranking only switches to this metric on the next fetch
@@ -556,7 +589,7 @@ export default {
     changeSpiGraphType: function (spiGraphType) {
       const leavingConnections = this.spiGraphType === 'connections';
       this.spiGraphType = spiGraphType;
-      if (this.spiGraphType === 'pie' ||
+      if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' ||
         this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5

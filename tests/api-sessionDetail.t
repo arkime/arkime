@@ -1,4 +1,4 @@
-use Test::More tests => 93;
+use Test::More tests => 95;
 
 use Cwd;
 use URI::Escape;
@@ -66,6 +66,13 @@ my $pwd = "*/pcap";
 
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=true&ts=false&base=hex")->content;
     ok($sd =~ /00000272:.*636f 6c3a 2038 303a 7175 6963 0d0a 0d0a.*col:.80:quic.*00000000:.*0800 0000 0000 02ff/s, "encoding:hex line:true");
+
+# a fractional packet count is used as a whole number; it used to throw in
+# reassembly and leave the request unanswered
+    my $fracPackets = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&packets=1.5");
+    my $onePacket = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&packets=1");
+    is($fracPackets->code, 200, "fractional packets answers");
+    is($fracPackets->content, $onePacket->content, "fractional packets matches packets=1");
 
 # find-in-packets (byte-level content search)
     # ascii search is case-insensitive and wraps the matched bytes in a find-hit span
