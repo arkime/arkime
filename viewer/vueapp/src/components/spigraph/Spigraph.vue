@@ -622,7 +622,9 @@ export default {
         this.baseField = field.exp;
       }
       this.$store.commit('setExpression', graph.expression);
-      if (q.spiGraphType === 'heatmap') { this.$store.commit('updateGraphType', q.graphType); }
+      // the ranking (a heatmap's intensity) falls back to the store's metric
+      // when the url names none, so a sessions graph must not keep the last one
+      this.$store.commit('updateGraphType', q.graphType || 'sessionsHisto');
       this.spiGraphType = q.spiGraphType;
       // the fetch reads its field, size and view from the url
       await this.$router.push({
