@@ -412,7 +412,7 @@ import { GRAPH_VIEW_MODES, graphFromWidget } from './dashboardConfig';
 const GraphService = createShareableService('spigraphConfig');
 
 const store = useStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   show: {
@@ -545,7 +545,9 @@ function viewModeLabel (vm) {
 }
 
 const viewModeItems = computed(() => allViewModeItems.value.filter(i => !props.graphOnly || GRAPH_VIEW_MODES.includes(i.value)));
-const allViewModeItems = computed(() => Object.entries(VIEW_MODE_LABEL_KEYS).map(([value, key]) => ({ title: t(key), value })));
+const allViewModeItems = computed(() => Object.entries(VIEW_MODE_LABEL_KEYS)
+  .map(([value, key]) => ({ title: t(key), value }))
+  .sort((a, b) => a.title.localeCompare(b.title, locale.value)));
 
 // Metric basis: session count plus every numeric (integer) field, aggregated per
 // value. Mirrors the timeline graph's metric set — Settings.vue uses the same
@@ -555,7 +557,7 @@ const allViewModeItems = computed(() => Object.entries(VIEW_MODE_LABEL_KEYS).map
 const metricFields = computed(() => (store.state.fieldsArr || [])
   .filter(f => f.dbField && fieldIsAggregatable(f) && (f.type === 'integer' || (aggEnabled.value && form.value.metricAgg === 'cardinality')))
   .map(f => ({ title: f.friendlyName || f.exp, value: f.exp }))
-  .sort((a, b) => a.title.localeCompare(b.title)));
+  .sort((a, b) => a.title.localeCompare(b.title, locale.value)));
 
 const metricItems = computed(() => [
   { title: t('sessions.summary.sessions'), value: 'sessions' },

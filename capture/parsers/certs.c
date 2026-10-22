@@ -190,6 +190,8 @@ LOCAL void certinfo_free(ArkimeFieldObject_t *object)
     if (ci->extra)
         g_hash_table_destroy(ci->extra);
 
+    g_free(ci->issuerDN);
+    g_free(ci->subjectDN);
     ARKIME_TYPE_FREE(ArkimeCertsInfo_t, ci);
     ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
 }
