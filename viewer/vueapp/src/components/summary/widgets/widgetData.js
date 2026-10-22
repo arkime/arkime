@@ -126,6 +126,73 @@ export function combinedExpression (route, store, widget) {
 }
 
 /**
+ * The full page view of a widget: the SPI Graph type that draws the same
+ * thing, or the Sessions page for the session-wide widgets, with the widget's
+ * fields, limit and combined search carried over in the url. Null for the
+ * widgets with no full page equivalent (map, stats, time, text).
+ * @returns {object|null} a vue-router location ({ path, query })
+ */
+export function widgetFullPageLink (route, store, widget) {
+  const mode = widget?.viewMode;
+  const fields = widgetFields(widget);
+  // SPI Graph aggregates a real column, so the "All X fields" groups (All IP
+  // fields and friends, which the summary endpoint handles with a script)
+  // have no full page; the Sessions page targets don't aggregate at all
+  if (!['timeline', 'metric'].includes(mode)) {
+    const usable = (fieldExp) => {
+      if (fieldExp === 'ip.dst:port' || fieldExp === 'destination.ip:port') { return true; }
+      const field = FieldService.getField(fieldExp, true);
+      return !!field && !field.noFacet && !field.regex;
+    };
+    if (!fields.length || !fields.every(usable)) { return null; }
+  }
+  const query = {};
+  const exp = combinedExpression(route, store, widget);
+  if (exp) { query.expression = exp; }
+  for (const p of ['view', 'bounding', 'interval', 'cluster']) {
+    if (route.query[p]) { query[p] = route.query[p]; }
+  }
+  if (route.query.spanning === 'true') { query.spanning = 'true'; }
+  // a summed metric ranks SPI Graph and draws the Sessions timeline the same
+  // way; averages, extremes and unique counts have no full page equivalent
+  const histo = metricHistoKey(widget);
+  if (histo !== 'sessionsHisto' && (widget.metricAgg || 'sum') === 'sum') { query.graphType = histo; }
+  const timeRange = parseInt(store.state.timeRange, 10);
+  if (timeRange === 0 && store.state.time?.startTime) {
+    query.startTime = store.state.time.startTime;
+    query.stopTime = store.state.time.stopTime;
+  } else {
+    query.date = store.state.timeRange;
+  }
+
+  const spigraph = (spiGraphType, extra = {}) => ({ path: '/spigraph', query: { ...query, spiGraphType, ...extra } });
+  const subFields = (list) => (list.length ? list.join(',') : undefined);
+  switch (mode) {
+  case 'pie':
+  case 'treemap':
+  case 'sankey':
+    return spigraph(mode, { exp: fields[0], subFields: subFields(fields.slice(1)), size: widget.length });
+  case 'table': // side by side fields have no combined view; show the first
+    return spigraph('table', { exp: fields[0], size: widget.length });
+  case 'intersection':
+    return spigraph('table', { exp: fields[0], subFields: subFields(fields.slice(1)), size: widget.length });
+  case 'heatmap':
+    return spigraph('heatmap', { exp: fields[0], size: widget.length });
+  case 'bar':
+    return spigraph('bar', { exp: fields[0], subFields: widget.splitField || undefined, barMode: widget.barMode || undefined, size: widget.length });
+  case 'connections': {
+    const toDb = (e) => ((e === 'ip.dst:port' || e === 'destination.ip:port') ? e : FieldService.getField(e, true)?.dbField);
+    return spigraph('connections', { srcField: toDb(fields[0]), dstField: toDb(fields[1]) });
+  }
+  case 'timeline':
+  case 'metric':
+    return { path: '/sessions', query };
+  default:
+    return null;
+  }
+}
+
+/**
  * Build the shared query params (combined expression + time window + view /
  * bounding / cluster) for a widget's independent fetch, plus endpoint extras.
  */

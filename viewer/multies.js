@@ -444,7 +444,14 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
       if (good.length > 0) { results = good; }
       for (const r of results) { if (r) { delete r.arkime_failed; } }
     }
-    return doneCb(err, results);
+    // A throw while merging would otherwise leave the request open until the
+    // caller's own timeout, holding its socket
+    try {
+      return doneCb(err, results);
+    } catch (e) {
+      console.log(`ERROR - ${req.method} ${req.url} merging cluster results`, e);
+      if (!res.headersSent) { res.status(500).send({ error: 'Failed to merge cluster results' }); }
+    }
   });
 }
 

@@ -10,9 +10,10 @@ SPDX-License-Identifier: Apache-2.0
       defer
       to="#spigraph-subfield-anchor">
       <div class="d-flex flex-row align-center">
+        <!-- a bar is split by at most one more field -->
         <div
           class="d-inline"
-          v-if="fields && fields.length">
+          v-if="fields && fields.length && !(spiGraphType === 'bar' && fieldTypeaheadList.length >= 1)">
           <div class="arkime-input-group subfield-group">
             <span class="arkime-input-label">
               {{ $t('spigraph.addAnotherField') }}:
@@ -60,6 +61,33 @@ SPDX-License-Identifier: Apache-2.0
       id="sankey-area"
       v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length" />
     <!-- /sankey area -->
+
+    <!-- bar area: the first field's values as bars, split by the second
+         field's values when one is chosen (stacked or grouped) -->
+    <div
+      v-show="spiGraphType === 'bar' && barData.length"
+      class="bar-area">
+      <summary-bar-chart
+        v-if="spiGraphType === 'bar' && barData.length && baseFieldObj"
+        :data="barData"
+        svg-id="spigraph-bar"
+        :field-config="baseFieldObj"
+        :split-field-config="barSplitField"
+        :bar-mode="barMode"
+        :width="barWidth"
+        :height="barHeight"
+        metric-type="sessions"
+        @show-tooltip="showBarTooltip" />
+      <summary-chart-tooltip
+        :visible="barTooltip.visible"
+        :data="barTooltip.data"
+        :field-config="baseFieldObj"
+        :position="barTooltip.position"
+        :percentage="barTooltip.percentage"
+        metric-type="sessions"
+        :split="barTooltip.split"
+        @close="barTooltip.visible = false" />
+    </div> <!-- /bar area -->
 
     <!-- table area -->
     <div
@@ -208,6 +236,8 @@ import { themedColor } from '@common/themes/themedColor.js';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
+import SummaryBarChart from '../summary/SummaryBarChart.vue';
+import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 // import utils
 import Utils from '../utils/utils';
 import { hierarchyToSankey } from '../utils/sankeyData';
@@ -353,12 +383,19 @@ export default {
   components: {
     ArkimeFieldTypeahead,
     Popup,
-    DragList
+    DragList,
+    SummaryBarChart,
+    SummaryChartTooltip
   },
   props: {
     spiGraphType: {
       type: String,
       default: ''
+    },
+    // bar: 'stacked' | 'grouped' layout of the second field's values
+    barMode: {
+      type: String,
+      default: 'stacked'
     },
     baseField: {
       type: String,
@@ -389,7 +426,10 @@ export default {
       vizData: undefined,
       sankeyData: undefined,
       hiddenColumns: false,
-      popupInfo: undefined
+      popupInfo: undefined,
+      barWidth: 800,
+      barHeight: 500,
+      barTooltip: { visible: false, data: null, position: { x: 0, y: 0 }, percentage: null, split: null }
     };
   },
   async mounted () {
@@ -404,6 +444,7 @@ export default {
       for (const exp of subFieldExps) {
         this.fieldTypeaheadList.push(this.getFieldObj(exp));
       }
+      this.trimBarFields();
     }
 
     d3 = await import('d3'); // lazy load d3 to avoid loading it on every page
@@ -414,8 +455,10 @@ export default {
 
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
+    this.sizeBar();
     // close info popup if the user presses escape
     window.addEventListener('keyup', this.closeInfoOnEsc);
+    document.addEventListener('click', this.closeBarTooltipOnOutsideClick);
   },
   watch: {
     graphData: function (newVal, oldVal) {
@@ -431,10 +474,21 @@ export default {
     },
     spiGraphType: function (newVal, oldVal) {
       this.closeInfo();
+      this.barTooltip.visible = false;
       this.applyGraphData(this.vizData);
       if (newVal === 'table') {
         this.initializeColResizable();
       }
+      if (newVal === 'bar') {
+        this.$nextTick(this.sizeBar);
+        // sankey keeps its own node/link shape; the bar needs the hierarchy
+        if (!this.vizData?.children) { this.loadData(); }
+      }
+    },
+    // trims once the url says bar: trimming on the prop change would push a
+    // url built before the graph type change landed and undo it
+    '$route.query.spiGraphType': function () {
+      this.trimBarFields();
     },
     '$route.query.subFields': function (newVal, oldVal) {
       this.loadData();
@@ -454,6 +508,23 @@ export default {
     fieldList: function () {
       const fieldList = [this.baseFieldObj];
       return fieldList.concat(this.fieldTypeaheadList);
+    },
+    // the hierarchy as the bar chart wants it: one item per first-field
+    // value, with the second field's values (if any) as its split
+    barData: function () {
+      const children = this.vizData?.children || [];
+      const split = this.fieldTypeaheadList.length > 0;
+      // a value with children has its count in sizeValue (size is cleared)
+      const count = (node) => node.sizeValue ?? node.size;
+      return children.map(c => ({
+        item: c.name,
+        sessions: count(c),
+        value: count(c),
+        ...(split ? { split: (c.children || []).map(s => ({ item: s.name, sessions: count(s), value: count(s) })) } : {})
+      }));
+    },
+    barSplitField: function () {
+      return this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : null;
     }
   },
   methods: {
@@ -523,6 +594,36 @@ export default {
       this.initializeColResizable();
     },
     /* event functions ----------------------------------------------------- */
+    /** Fits the bar chart to the content area */
+    sizeBar: function () {
+      this.barWidth = Math.max(300, getWindowWidth());
+      this.barHeight = Math.max(300, getWindowHeight());
+    },
+    /**
+     * A bar is split by at most one more field, so drop any others carried
+     * over from another graph type
+     * @returns {Boolean} true when fields were dropped (the url change reloads)
+     */
+    trimBarFields: function () {
+      if (this.spiGraphType !== 'bar' || this.fieldTypeaheadList.length <= 1) { return false; }
+      this.fieldTypeaheadList.splice(1);
+      this.applyFieldListToUrl();
+      return true;
+    },
+    closeBarTooltipOnOutsideClick: function (e) {
+      if (this.barTooltip.visible && !e.target.closest('.summary-tooltip')) {
+        this.barTooltip.visible = false;
+      }
+    },
+    showBarTooltip: function (evt) {
+      this.barTooltip = {
+        visible: true,
+        data: evt.data,
+        position: evt.position,
+        percentage: evt.percentage ?? null,
+        split: evt.split || null
+      };
+    },
     /**
      * Resizes the pie graph after the window is resized
      * Waits for the window resize to stop for .5 sec
@@ -530,6 +631,7 @@ export default {
     resize: function () {
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(() => {
+        this.sizeBar();
         // recalculate from the live scroll container
         width = getWindowWidth();
         height = getWindowHeight();
@@ -1233,6 +1335,7 @@ export default {
     // remove listeners
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keyup', this.closeInfoOnEsc);
+    document.removeEventListener('click', this.closeBarTooltipOnOutsideClick);
 
     // remove elements
     if (newSlice) {

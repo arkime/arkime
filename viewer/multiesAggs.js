@@ -69,9 +69,12 @@ function nestedTermsInfo (aggConfig) {
   const info = {};
   for (const subName in subs) {
     if (subs[subName]?.terms) {
+      // the size becomes an array length, so only a positive integer (ES
+      // floors a fractional size too); anything else means no cut
+      const size = Math.floor(Number(subs[subName].terms.size));
       info[subName] = {
         order: subs[subName].terms.order,
-        size: subs[subName].terms.size,
+        size: size > 0 ? size : undefined,
         subAggs: subAggOps(subs[subName]),
         nested: nestedTermsInfo(subs[subName])
       };

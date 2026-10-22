@@ -173,6 +173,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           be fingerprinted on demand from the new Featherprint page. Configure watched ranges in [featherprint-subnet];
           adds the featherprint, featherprint_history and featherprint_alerts indices (db.pl v89). Alert ack state is
           shared by everyone and reversible; featherprintAckRoles (default arkimeAdmin) controls who may change it
+  - #4377 Add a bar graph type to SPI Graph, with an optional second field drawn as stacked or grouped segments
+  - #4377 Dashboard widgets link to their full page view in SPI Graph or Sessions with the same search
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

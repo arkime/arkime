@@ -62,6 +62,15 @@ The widget content is provided via the default slot.
       </div>
       <div class="widget-actions no-wrap d-flex align-center ga-2">
         <v-btn
+          v-if="link"
+          variant="outlined"
+          size="large"
+          icon
+          :to="link"
+          :title="$t('sessions.summary.openFullPage')">
+          <v-icon icon="mdi-open-in-new" />
+        </v-btn>
+        <v-btn
           variant="outlined"
           size="large"
           icon
@@ -142,6 +151,15 @@ The widget content is provided via the default slot.
       </div>
       <div class="widget-actions no-wrap d-flex align-center ga-2">
         <v-btn
+          v-if="link"
+          variant="outlined"
+          size="large"
+          icon
+          :to="link"
+          :title="$t('sessions.summary.openFullPage')">
+          <v-icon icon="mdi-open-in-new" />
+        </v-btn>
+        <v-btn
           variant="outlined"
           size="large"
           icon
@@ -205,7 +223,9 @@ defineProps({
   scroll: { type: Boolean, default: false },
   // [{ label, value }] rows shown in the header info tooltip (config not
   // otherwise visible: metric / limit / local filter / view)
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  // vue-router location of the widget's full page view (null: no link)
+  link: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove', 'export', 'retry']);

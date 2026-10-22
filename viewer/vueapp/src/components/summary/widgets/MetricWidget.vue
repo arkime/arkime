@@ -14,6 +14,7 @@ top-N value when a split field is chosen. Self-fetches /api/sessions/summary
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
     @edit="$emit('edit')"
     @remove="$emit('remove')"
     @retry="fetchData">
@@ -69,7 +70,8 @@ const { t } = useI18n();
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);
