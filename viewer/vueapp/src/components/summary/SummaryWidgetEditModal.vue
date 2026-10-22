@@ -644,7 +644,7 @@ const savedGraphId = ref(null);
 const savedGraphItems = computed(() => savedGraphs.value.map(g => ({ title: g.name, value: g.id })));
 const loadSavedGraphs = async () => {
   try {
-    const response = await GraphService.list();
+    const response = await GraphService.list({ viewOnly: false, length: 1000 });
     savedGraphs.value = response.data || [];
   } catch (err) {
     savedGraphs.value = [];

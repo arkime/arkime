@@ -464,10 +464,11 @@ const toRequestWidget = (w) => ({
 
 // Each widget as saved-graph data (null for the ones that aren't graphs), so
 // the card can offer "save as graph"; the card opens the dialog through the
-// provided function rather than threading an event through every widget
+// provided function rather than threading an event through every widget.
+// Built from the definitions, so streamed data chunks don't rebuild it
 const widgetGraphs = computed(() => {
   const graphs = Object.create(null); // keyed by widget ids from saved/shared configs
-  for (const w of summary.value?.fields || []) { if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget(w); } }
+  for (const w of props.widgets) { if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget(w); } }
   return graphs;
 });
 const graphSaveShow = ref(false);

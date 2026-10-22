@@ -199,7 +199,7 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     overrides = { splitField: subFields[0] || '', barMode: query.barMode === 'grouped' ? 'grouped' : 'stacked' };
   } else if (type === 'connections') {
     // the connections url carries database field names
-    const byDb = (db) => (fieldsArr || []).find(f => f.dbField === db)?.exp || (db === 'ip.dst:port' ? db : '');
+    const byDb = (db) => ((db === 'ip.dst:port' || db === 'destination.ip:port') ? 'ip.dst:port' : (fieldsArr || []).find(f => f.dbField === db)?.exp || '');
     fields = [byDb(str(query.srcField) || 'source.ip'), byDb(str(query.dstField) || 'destination.ip')];
   } else if (type === 'heatmap' && str(query.graphType) && query.graphType !== 'sessionsHisto') {
     // the intensity metric is a <dbField>Histo key
@@ -210,7 +210,7 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
   if (!fields.length || !fields[0]) { return null; }
   // connections' limit is its session sample size, a url param of its own
   const limit = int(type === 'connections' ? query.connectionsLength : query.size);
-  const graph = normalizeWidget({
+  return graphFromWidget({
     field: fields[0],
     fields,
     viewMode,
@@ -219,9 +219,12 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     view: str(query.view),
     ...overrides
   });
-  const data = {};
-  for (const key of GRAPH_KEYS) { data[key] = graph[key]; }
-  return data;
+};
+
+// the <dbField>Histo key SPI Graph ranks by (and a heatmap colors by)
+const histoKey = (metricType) => {
+  const db = metricType && metricType !== 'sessions' ? FieldService.getField(metricType, true)?.dbField : undefined;
+  return db ? `${db}Histo` : 'sessionsHisto';
 };
 
 /**
@@ -232,7 +235,10 @@ export const spigraphQueryFromGraph = (graph) => {
   const g = normalizeWidget(graph || {});
   const fields = g.fields.length ? g.fields : (g.field ? [g.field] : []);
   if (!fields.length) { return null; }
-  const base = { exp: fields[0], size: g.length, view: g.view || undefined };
+  // a summed metric ranks SPI Graph; other aggregations have no equivalent
+  const histo = histoKey(g.metricType);
+  const graphType = g.metricAgg === 'sum' && histo !== 'sessionsHisto' ? histo : undefined;
+  const base = { exp: fields[0], size: g.length, view: g.view || undefined, graphType };
   switch (g.viewMode) {
   case 'bar':
     return { ...base, spiGraphType: 'bar', subFields: g.splitField || undefined, barMode: g.barMode };
@@ -244,10 +250,9 @@ export const spigraphQueryFromGraph = (graph) => {
     return { ...base, spiGraphType: 'table', subFields: undefined };
   case 'intersection':
     return { ...base, spiGraphType: 'table', subFields: fields.slice(1).join(',') || undefined };
-  case 'heatmap': {
-    const db = g.metricType && g.metricType !== 'sessions' ? FieldService.getField(g.metricType, true)?.dbField : undefined;
-    return { ...base, spiGraphType: 'heatmap', graphType: db ? `${db}Histo` : undefined };
-  }
+  case 'heatmap':
+    // always named, so the page doesn't keep its last intensity
+    return { ...base, spiGraphType: 'heatmap', graphType: histo };
   case 'connections': {
     const toDb = (e) => ((e === 'ip.dst:port' || e === 'destination.ip:port') ? e : FieldService.getField(e, true)?.dbField);
     return { spiGraphType: 'connections', srcField: toDb(fields[0]), dstField: toDb(fields[1]), connectionsLength: g.length, view: base.view };
@@ -275,6 +280,10 @@ export const graphOnSpigraph = (saved, page) => {
   const keys = page.viewMode === 'heatmap' ? [...SPIGRAPH_KEYS, 'metricType'] : SPIGRAPH_KEYS;
   const merged = { ...saved };
   for (const key of keys) { merged[key] = page[key]; }
+  // SPI Graph's table shows only the first of a table's side by side fields
+  if (page.viewMode === 'table' && saved.viewMode === 'table') {
+    merged.fields = [page.fields[0], ...(saved.fields || []).slice(1)];
+  }
   return graphFromWidget(merged);
 };
 

@@ -1,4 +1,4 @@
-use Test::More tests => 239;
+use Test::More tests => 241;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -451,6 +451,7 @@ my @badGraphs = (
     ['an object expression', '"viewMode":"bar","field":"source.ip","expression":{"a":1}'],
     ['a non-string metric', '"viewMode":"table","field":"source.ip","metrics":[{}]'],
     ['a string length', '"viewMode":"bar","field":"source.ip","length":"20"'],
+    ['a view mode that is not a graph', '"viewMode":"stats","field":"source.ip"'],
 );
 foreach my $bad (@badGraphs) {
     $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", qq({"name":"graph bad","type":"spigraphConfig","data":{$bad->[1]}}), $token);

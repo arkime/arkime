@@ -156,8 +156,10 @@ one. A widget never references a saved graph, so a dashboard stays self-containe
 
 Every key has the meaning of the same `summaryConfig` widget key. `viewMode` and
 a non-empty `fields` or `field` are required (`api.shareables.missingGraph`).
-`fields` and `metrics` must be arrays of non-empty strings, `length` and
-`splitLength` integers, and the other keys strings (`api.shareables.invalidGraph`).
+`viewMode` must be one of `bar`, `pie`, `table`, `intersection`, `treemap`,
+`sankey`, `heatmap` or `connections`; `fields` and `metrics` must be arrays of
+non-empty strings, `length` and `splitLength` integers, and the other keys
+strings (`api.shareables.invalidGraph`).
 Readers still normalize the data (`graphFromWidget` in `dashboardConfig.js`),
 since a stored graph may predate these rules.
 

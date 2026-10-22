@@ -142,6 +142,12 @@ describe('graphFromSpigraphQuery', () => {
     assert.equal(g.view, 'v1');
   });
 
+  test('connections map the ip:port destination either way it is spelled', () => {
+    for (const dstField of ['ip.dst:port', 'destination.ip:port']) {
+      assert.deepEqual(graphFromSpigraphQuery({ spiGraphType: 'connections', srcField: 'source.ip', dstField }, { fieldsArr }).fields, ['ip.src', 'ip.dst:port']);
+    }
+  });
+
   test('a nested table is an intersection', () => {
     const g = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.src', subFields: 'ip.dst,port.dst' });
     assert.equal(g.viewMode, 'intersection');
@@ -179,6 +185,13 @@ describe('spigraphQueryFromGraph', () => {
     }
   });
 
+  test('a summed metric ranks the graph; a heatmap always names its intensity', () => {
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes' })).graphType, 'totBytesHisto');
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg' })).graphType, undefined);
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.src' })).graphType, undefined);
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src' })).graphType, 'sessionsHisto');
+  });
+
   test('graphs SPI Graph has no type for give null', () => {
     assert.equal(spigraphQueryFromGraph({ viewMode: 'stats' }), null);
     assert.equal(spigraphQueryFromGraph({ viewMode: 'bar' }), null);
@@ -209,6 +222,14 @@ describe('graphOnSpigraph', () => {
   test('an unchanged page is the saved graph', () => {
     const page = graphFromSpigraphQuery(spigraphQueryFromGraph(saved), { fieldsArr });
     assert.deepEqual(graphOnSpigraph(saved, page), saved);
+  });
+
+  test('a table keeps the side by side fields SPI Graph does not show', () => {
+    const table = graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst', 'port.dst'] });
+    const page = graphFromSpigraphQuery(spigraphQueryFromGraph(table), { fieldsArr });
+    assert.deepEqual(graphOnSpigraph(table, page), table);
+    const changed = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'protocols' });
+    assert.deepEqual(graphOnSpigraph(table, changed).fields, ['protocols', 'ip.dst', 'port.dst']);
   });
 
   test('a heatmap takes the page intensity, other types keep the saved metric', () => {

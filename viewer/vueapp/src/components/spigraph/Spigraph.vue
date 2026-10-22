@@ -611,7 +611,7 @@ export default {
     /* Shows a saved graph: its type, fields, options, search and view take
        over (having no search or view included). Its id stays in the url so
        later changes can be saved back to it */
-    loadGraph: function (saved) {
+    loadGraph: async function (saved) {
       // a shared graph is another user's data: normalize it before use
       const graph = graphFromWidget(saved.data);
       const q = spigraphQueryFromGraph(graph);
@@ -622,10 +622,10 @@ export default {
         this.baseField = field.exp;
       }
       this.$store.commit('setExpression', graph.expression);
-      // a sessions heatmap has no graphType, but must not keep the last intensity
-      if (q.spiGraphType === 'heatmap') { this.$store.commit('updateGraphType', q.graphType || 'sessionsHisto'); }
+      if (q.spiGraphType === 'heatmap') { this.$store.commit('updateGraphType', q.graphType); }
       this.spiGraphType = q.spiGraphType;
-      this.$router.push({
+      // the fetch reads its field, size and view from the url
+      await this.$router.push({
         query: {
           ...this.$route.query,
           subFields: undefined,

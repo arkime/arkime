@@ -15,6 +15,9 @@ const User = require('../common/user');
 // name, and far short of the 32766 byte ES keyword limit.
 const NAME_MAX_LENGTH = 256;
 
+// the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections'];
+
 class ShareableAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
@@ -144,6 +147,7 @@ class ShareableAPIs {
       // a saved graph is one dashboard widget definition without its layout;
       // readers normalize it, this keeps out values of the wrong type
       if (!ArkimeUtil.isString(data.viewMode)) { return missingGraph; }
+      if (!GRAPH_VIEW_MODES.includes(data.viewMode)) { return invalidGraph; }
       const optString = (v) => v === undefined || typeof v === 'string';
       if (data.fields !== undefined && !ArkimeUtil.isStringArray(data.fields)) { return invalidGraph; }
       if (!optString(data.field)) { return invalidGraph; }

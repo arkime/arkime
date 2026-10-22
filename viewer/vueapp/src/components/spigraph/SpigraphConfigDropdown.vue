@@ -246,7 +246,8 @@ const loadGraphs = async () => {
   loading.value = true;
   error.value = '';
   try {
-    const response = await GraphService.list();
+    // every graph the user can see (incl. edit-only shares), past the default page of 50
+    const response = await GraphService.list({ viewOnly: false, length: 1000 });
     // shared graphs are other users' data: normalize them before use
     graphs.value = (response.data || []).map(g => ({ ...g, data: graphFromWidget(g.data) }));
   } catch (err) {

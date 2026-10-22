@@ -206,13 +206,9 @@ watch(() => props.show, async (isOpen) => {
 const appendToCurrent = async (widget) => {
   if (current.value.id) { return appendToShareable(current.value.id, widget); }
 
-  let cfg;
-  try {
-    const response = await UserService.getPageConfig('summary');
-    cfg = response?.summaryConfig;
-  } catch (err) {
-    cfg = undefined;
-  }
+  // a failed read throws: saving anyway would replace the dashboard with the starter one
+  const response = await UserService.getPageConfig('summary');
+  const cfg = response?.summaryConfig;
   const all = [...widgetsFromConfig(cfg), widget];
   await UserService.saveState({ colorScheme: cfg?.colorScheme || 'rainbow', widgets: all, ...toV6Shape(all) }, 'summary');
   return t('sessions.summary.addToDashboard.current');
