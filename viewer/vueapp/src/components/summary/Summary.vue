@@ -95,6 +95,7 @@ SPDX-License-Identifier: Apache-2.0
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -105,6 +106,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -115,6 +117,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <SummaryWidget
@@ -132,6 +135,7 @@ SPDX-License-Identifier: Apache-2.0
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @export="handleWidgetExport(w, $event)"
             @edit="openEdit(w.id)"
@@ -144,6 +148,7 @@ SPDX-License-Identifier: Apache-2.0
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <TreemapWidget
@@ -153,6 +158,7 @@ SPDX-License-Identifier: Apache-2.0
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -162,6 +168,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <!-- session-wide widgets: fed by the host's global stats chunk -->
@@ -226,12 +233,26 @@ SPDX-License-Identifier: Apache-2.0
       :widget="editingWidget"
       @close="onEditClose"
       @save="onEditSave" />
+
+    <!-- save a widget as a graph (a spigraphConfig shareable) -->
+    <SummaryConfigSaveModal
+      kind="graph"
+      :show="graphSaveShow"
+      :config="graphToSave"
+      @close="graphSaveShow = false"
+      @saved="onGraphSaved" />
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="4000">
+      {{ snackbar.text }}
+    </v-snackbar>
   </div>
 </template>
 
 <script setup>
 // external dependencies
-import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import { ref, inject, provide, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { themedColor } from '@common/themes/themedColor.js';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -242,6 +263,8 @@ import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
+import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
+import { widgetIsGraph, graphFromWidget } from './dashboardConfig';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import IntersectionWidget from './widgets/IntersectionWidget.vue';
@@ -438,6 +461,26 @@ const toRequestWidget = (w) => ({
   ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   expression: widgetLocalExpression(w, store.state.views)
 });
+
+// Each widget as saved-graph data (null for the ones that aren't graphs), so
+// the card can offer "save as graph"; the card opens the dialog through the
+// provided function rather than threading an event through every widget.
+// Built from the definitions, so streamed data chunks don't rebuild it
+const widgetGraphs = computed(() => {
+  const graphs = Object.create(null); // keyed by widget ids from saved/shared configs
+  for (const w of props.widgets) { if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget(w); } }
+  return graphs;
+});
+const graphSaveShow = ref(false);
+const graphToSave = ref(null);
+const snackbar = ref({ show: false, text: '', color: 'success' });
+provide('saveWidgetGraph', (graph) => {
+  graphToSave.value = graph;
+  graphSaveShow.value = true;
+});
+const onGraphSaved = () => {
+  snackbar.value = { show: true, text: t('spigraph.graphs.saved'), color: 'success' };
+};
 
 // The full page (SPI Graph / Sessions) showing what each widget shows, by
 // widget id; computed so re-renders (tooltips, streamed chunks) reuse them

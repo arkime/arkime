@@ -96,6 +96,14 @@ SPDX-License-Identifier: Apache-2.0
               class="me-1" />
             {{ $t('settings.nav.spiViewLayout') }}
           </v-tab>
+          <v-tab
+            v-if="!multiviewer || hasUsersES"
+            value="graphs">
+            <v-icon
+              icon="mdi-chart-bar"
+              class="me-1" />
+            {{ $t('settings.nav.graphs') }}
+          </v-tab>
           <v-tab value="theme">
             <v-icon
               icon="mdi-brush"
@@ -1339,6 +1347,12 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'dashboards'"
           @display-message="displayMessage" />
 
+        <!-- saved spi graph settings -->
+        <Graphs
+          id="graphs"
+          v-if="visibleTab === 'graphs'"
+          @display-message="displayMessage" />
+
         <!-- cron query settings -->
         <PeriodicQueries
           id="cron"
@@ -1367,6 +1381,7 @@ import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Dashboards from './Dashboards.vue';
+import Graphs from './Graphs.vue';
 import { createLayoutService } from '../users/ShareableService';
 import LayoutEditor from './LayoutEditor.vue';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -1397,6 +1412,7 @@ export default {
     LayoutEditor,
     PeriodicQueries,
     Dashboards,
+    Graphs,
     Shortcuts,
     Notifiers,
     Views
@@ -1539,7 +1555,7 @@ export default {
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
         tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
         tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts' ||
-        tab === 'dashboards' || tab === 'totp') {
+        tab === 'dashboards' || tab === 'graphs' || tab === 'totp') {
         this.visibleTab = tab;
       }
 

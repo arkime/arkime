@@ -245,28 +245,13 @@ SPDX-License-Identifier: Apache-2.0
 import Sortable from 'sortablejs';
 import { createShareableService } from '../users/ShareableService';
 import { toV6Shape } from '../summary/dashboardConfig';
+import { viewModeLabelKey } from '../summary/widgets/viewModes';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import { resolveMessage } from '@common/resolveI18nMessage';
 import ShareInputs from './ShareInputs.vue';
 
 const DashboardService = createShareableService('summaryConfig');
-
-// same labels the widget edit modal offers on the Arkime page
-const VIEW_MODE_LABELS = {
-  bar: 'sessions.summary.barChart',
-  pie: 'sessions.summary.pieChart',
-  table: 'sessions.summary.tableView',
-  intersection: 'sessions.summary.intersectionView',
-  heatmap: 'sessions.summary.heatmapView',
-  treemap: 'sessions.summary.treemapView',
-  sankey: 'sessions.summary.sankeyView',
-  connections: 'sessions.summary.connectionsView',
-  timeline: 'sessions.summary.timelineView',
-  map: 'sessions.summary.mapView',
-  stats: 'sessions.summary.statsView',
-  time: 'sessions.summary.timeView'
-};
 
 export default {
   name: 'Dashboards',
@@ -339,7 +324,7 @@ export default {
       }
     },
     viewModeLabel (viewMode) {
-      const key = VIEW_MODE_LABELS[viewMode];
+      const key = viewModeLabelKey(viewMode);
       return key ? this.$t(key) : viewMode;
     },
     /* what the widget is titled on the dashboard: its own title, else the

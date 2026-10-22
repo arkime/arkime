@@ -161,27 +161,12 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
-import Utils from '../utils/utils';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
-import { DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES } from '../summary/widgets/viewModes';
-import { toV6Shape } from '../summary/dashboardConfig';
+import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig } from '../summary/dashboardConfig';
 
 const DashboardService = createShareableService('summaryConfig');
-
-// Saved and shared dashboards can hold any JSON (a shared one is written by
-// another user), so each widget value is only kept when it has the right type;
-// an object there would throw wherever it is turned into a string.
-const str = (v, def = '') => (typeof v === 'string' ? v : def);
-const int = (v) => ((typeof v === 'number' || typeof v === 'string') ? parseInt(v, 10) : NaN);
-
-// widgets span 1-4 columns and 1-8 rows; anything missing/invalid falls back to
-// `def` (rows allow a larger max since the grid uses a fine 160px row unit)
-const spanOrDefault = (v, def, max = 4) => {
-  const n = int(v);
-  return n >= 1 && n <= max ? n : def;
-};
 
 export default {
   name: 'Arkime',
@@ -233,100 +218,8 @@ export default {
     this.loadDashboardConfig();
   },
   methods: {
-    /**
-     * Builds a default widget definition for a field expression
-     */
-    makeWidgetDef: function (fieldExp, overrides = {}) {
-      const viewMode = overrides.viewMode || DEFAULT_VIEW_MODES[fieldExp] || 'bar';
-      return {
-        id: Utils.createRandomString(),
-        field: fieldExp,
-        fields: fieldExp ? [fieldExp] : [], // 1-3 fields for multi-field widgets
-        viewMode,
-        metricType: 'sessions',
-        metrics: [], // table multi-metric columns (falls back to metricType)
-        metricAgg: 'sum', // sum/avg/min/max/cardinality of the metric field(s)
-        sortMetric: 'sessions',
-        // bar: optional second field each value is split by
-        splitField: '',
-        splitLength: 5,
-        barMode: 'stacked',
-        text: '', // text widget content
-        // top-N cap, or a session sample size for connections
-        length: defaultLength(viewMode),
-        order: 'desc',
-        expression: '',
-        view: '',
-        height: 3, // 3 × 160px row unit = 480px (chart default)
-        width: 2,
-        title: '',
-        ...overrides
-      };
-    },
-    /**
-     * Ensures a saved widget has an id and all expected fields
-     */
-    normalizeWidget: function (w) {
-      // fields[] is the source of truth (1-3); field stays = fields[0] for back-compat
-      const fields = Array.isArray(w.fields) && w.fields.length
-        ? w.fields.filter(f => typeof f === 'string').slice(0, 3)
-        : (str(w.field) ? [w.field] : []);
-      const viewMode = str(w.viewMode) || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
-      const limit = int(w.length);
-      return this.makeWidgetDef(fields[0] || '', {
-        id: str(w.id) || Utils.createRandomString(),
-        fields,
-        viewMode,
-        metricType: str(w.metricType) || 'sessions',
-        metrics: Array.isArray(w.metrics) ? w.metrics.filter(m => typeof m === 'string').slice(0, 4) : [],
-        metricAgg: METRIC_AGGS.includes(w.metricAgg) ? w.metricAgg : 'sum',
-        sortMetric: str(w.sortMetric) || str(w.metricType) || 'sessions',
-        splitField: str(w.splitField),
-        splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
-        barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
-        text: str(w.text),
-        length: limit > 0 ? limit : defaultLength(viewMode),
-        order: w.order === 'asc' ? 'asc' : 'desc',
-        expression: str(w.expression),
-        view: str(w.view),
-        height: spanOrDefault(w.height, 3, 8),
-        width: spanOrDefault(w.width, 2),
-        title: str(w.title)
-      });
-    },
-    /**
-     * Curated starter dashboard (no saved config): the capture-wide band
-     * (stats/time/timeline), a geo map + top-talkers bar, then one of each
-     * aggregating visualization spanning sessions / bytes / packets metrics.
-     */
-    defaultWidgets: function () {
-      return [
-        // capture-wide summary band
-        this.makeWidgetDef('', { viewMode: 'stats', width: 2, height: 1 }),
-        this.makeWidgetDef('', { viewMode: 'time', width: 2, height: 1 }),
-        this.makeWidgetDef('', { viewMode: 'timeline', width: 4, height: 2 }),
-        // geo distribution + all-IP top talkers (bar)
-        this.makeWidgetDef('country.src', { viewMode: 'map', width: 2, height: 3 }),
-        this.makeWidgetDef('ip', { viewMode: 'bar', width: 2, height: 3, length: 15 }),
-        // protocols breakdown (pie)
-        this.makeWidgetDef('protocols', { viewMode: 'pie', width: 2, height: 3, length: 8 }),
-        // multi-metric table: Dst IP:Port ranked by bytes, with session/packet columns
-        this.makeWidgetDef('ip.dst:port', {
-          viewMode: 'table',
-          width: 2,
-          height: 3,
-          metrics: ['sessions', 'bytes', 'packets'],
-          sortMetric: 'bytes',
-          metricType: 'bytes'
-        }),
-        // Dst IP heatmap by packets over time
-        this.makeWidgetDef('ip.dst', { viewMode: 'heatmap', width: 2, height: 3, metricType: 'packets' }),
-        // Src IP treemap sized by bytes
-        this.makeWidgetDef('ip.src', { viewMode: 'treemap', width: 2, height: 3, metricType: 'bytes' }),
-        // Src → Dst IP combinations (intersection)
-        this.makeWidgetDef('ip.src', { viewMode: 'intersection', width: 4, height: 3, fields: ['ip.src', 'ip.dst'] })
-      ];
-    },
+    makeWidgetDef,
+    defaultWidgets,
     /**
      * Loads summary data when search is triggered
      */
@@ -368,27 +261,7 @@ export default {
      * ({ colorScheme, widgets }).
      */
     applyConfig: function (cfg) {
-      if (Array.isArray(cfg?.widgets) && cfg.widgets.length) {
-        this.widgets = cfg.widgets.map(w => this.normalizeWidget(w || {}));
-      } else if (Array.isArray(cfg?.fields) && cfg.fields.length) {
-        // Legacy summaryConfig: migrate fields[] into widget objects
-        this.widgets = cfg.fields.map(f => this.normalizeWidget({
-          field: f?.field,
-          viewMode: f?.viewMode,
-          metricType: f?.metricType,
-          length: cfg.resultsLimit,
-          order: cfg.order
-        }));
-      } else {
-        this.widgets = this.defaultWidgets();
-      }
-      // Guarantee unique widget ids — hand-edited imports may collide, which
-      // would leave a widget stuck loading (stream chunks are matched by id)
-      const seen = new Set();
-      for (const w of this.widgets) {
-        if (!w.id || seen.has(w.id)) { w.id = Utils.createRandomString(); }
-        seen.add(w.id);
-      }
+      this.widgets = widgetsFromConfig(cfg);
       this.colorScheme = normalizePalette(cfg?.colorScheme);
     },
     loadDashboardConfig: async function () {
