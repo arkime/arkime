@@ -51,6 +51,7 @@ function freePort () {
 
 describe('multies', () => {
   let clusters, multies, url, dir;
+  let out = ''; // multies' stdout + stderr
 
   before(async () => {
     clusters = await Promise.all([startFakeCluster(), startFakeCluster()]);
@@ -71,7 +72,6 @@ describe('multies', () => {
     ].join('\n'));
 
     multies = spawn(process.execPath, [path.join(VIEWER, 'multies.js'), '-c', ini, '-n', 'multi'], { cwd: VIEWER, stdio: ['ignore', 'pipe', 'pipe'] });
-    let out = '';
     multies.stdout.on('data', (d) => { out += d; });
     multies.stderr.on('data', (d) => { out += d; });
     const started = Date.now();
@@ -89,12 +89,14 @@ describe('multies', () => {
     if (dir) { fs.rmSync(dir, { recursive: true, force: true }); }
   });
 
-  const search = () => fetch(`${url}/MULTIPREFIX_sessions3-*/_search`, {
+  const post = (urlPath, body) => fetch(`${url}${urlPath}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ size: 0, aggregations: { bytes: { sum: { field: 'network.bytes' } } } }),
+    body,
     signal: AbortSignal.timeout(5000)
   });
+  const search = (qs = '') => post(`/MULTIPREFIX_sessions3-*/_search${qs}`, JSON.stringify({ size: 0, aggregations: { bytes: { sum: { field: 'network.bytes' } } } }));
+  const msearch = (qs, ...queries) => post(`/_msearch${qs}`, queries.map(q => `{}\n${JSON.stringify(q)}\n`).join(''));
 
   test('merges the clusters\' aggregations', async () => {
     answerAggs = () => ({ bytes: { value: 10 } });
@@ -109,5 +111,30 @@ describe('multies', () => {
     const res = await search();
     assert.equal(res.status, 500);
     assert.match((await res.json()).error, /merge/);
+  });
+
+  test('the merge error is logged even when the url has format specifiers', async () => {
+    answerAggs = () => ({ unexpected: { value: 1 } });
+    const res = await search('?x=%c');
+    assert.equal(res.status, 500);
+    const started = Date.now();
+    while (!/x=%c merging cluster results [\s\S]*TypeError/.test(out) && Date.now() - started < 2000) {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    assert.match(out, /x=%c merging cluster results [\s\S]*TypeError/);
+  });
+
+  test('an msearch no cluster answers gets a 500', async () => {
+    const res = await msearch('?cluster=nosuchcluster', { size: 0 });
+    assert.equal(res.status, 500);
+    assert.match((await res.json()).error, /No cluster answered/);
+  });
+
+  test('an msearch no cluster answers gets a 500 after an async files lookup too', async () => {
+    // a fileand term makes the query rewrite look up files first, so the
+    // merge runs later, outside the express handler
+    const res = await msearch('?cluster=nosuchcluster', { size: 0, query: { fileand: 'test.pcap' } });
+    assert.equal(res.status, 500);
+    assert.match((await res.json()).error, /No cluster answered/);
   });
 });

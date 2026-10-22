@@ -440,9 +440,11 @@ export default {
     this.baseFieldObj = this.getFieldObj(this.baseField);
 
     if (this.$route.query.subFields) {
-      const subFieldExps = this.$route.query.subFields.split(',');
+      const subFieldExps = String(this.$route.query.subFields).split(',');
       for (const exp of subFieldExps) {
-        this.fieldTypeaheadList.push(this.getFieldObj(exp));
+        // a field this viewer doesn't know (eg a hand-edited url) is skipped
+        const field = this.getFieldObj(exp);
+        if (field) { this.fieldTypeaheadList.push(field); }
       }
       this.trimBarFields();
     }

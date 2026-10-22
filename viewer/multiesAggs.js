@@ -70,8 +70,10 @@ function nestedTermsInfo (aggConfig) {
   for (const subName in subs) {
     if (subs[subName]?.terms) {
       // the size becomes an array length, so only a positive integer (ES
-      // floors a fractional size too); anything else means no cut
-      const size = Math.floor(Number(subs[subName].terms.size));
+      // floors a fractional size too); anything else means no cut. Objects
+      // aren't converted: their valueOf/toString can throw
+      const raw = subs[subName].terms.size;
+      const size = (typeof raw === 'number' || typeof raw === 'string') ? Math.floor(Number(raw)) : NaN;
       info[subName] = {
         order: subs[subName].terms.order,
         size: size > 0 ? size : undefined,

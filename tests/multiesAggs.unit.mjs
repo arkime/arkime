@@ -141,8 +141,9 @@ describe('nested terms', () => {
 
     assert.deepEqual(splitKeys(1.5), ['udp'], 'floored to 1');
     assert.deepEqual(splitKeys('2'), ['udp', 'tcp']);
-    for (const size of [-1, 0, 'abc', null]) {
-      assert.deepEqual(splitKeys(size), ['udp', 'tcp', 'icmp'], `size ${size} leaves the split uncut`);
+    // objects (even ones whose conversion throws) and arrays don't become a size
+    for (const size of [-1, 0, 'abc', null, [2], { valueOf: null, toString: null }]) {
+      assert.deepEqual(splitKeys(size), ['udp', 'tcp', 'icmp'], `size ${JSON.stringify(size)} leaves the split uncut`);
     }
   });
 

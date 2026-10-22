@@ -442,7 +442,7 @@ const toRequestWidget = (w) => ({
 // The full page (SPI Graph / Sessions) showing what each widget shows, by
 // widget id; computed so re-renders (tooltips, streamed chunks) reuse them
 const widgetLinks = computed(() => {
-  const links = {};
+  const links = Object.create(null); // keyed by widget ids from saved/shared configs
   for (const w of summary.value?.fields || []) { links[w.id] = widgetFullPageLink(route, store, w); }
   return links;
 });

@@ -144,7 +144,9 @@ export function widgetFullPageLink (route, store, widget) {
       const field = FieldService.getField(fieldExp, true);
       return !!field && !field.noFacet && !field.regex;
     };
-    if (!fields.length || !fields.every(usable)) { return null; }
+    // a bar's split field becomes another SPI Graph field
+    const linked = (mode === 'bar' && widget.splitField) ? [...fields, widget.splitField] : fields;
+    if (!fields.length || !linked.every(usable)) { return null; }
   }
   const query = {};
   const exp = combinedExpression(route, store, widget);
