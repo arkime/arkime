@@ -185,9 +185,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4279 New MISP source that either periodically bulk loads attributes or queries per item, configured with [misp:<name>] sections
 
 
-6.9.1 2026/11/xx
+6.9.2 2026/11/xx
+
+6.9.1 2026/10/22
 ## Release
   - #4373 Node 22.23.4
+## Capture
+  - #4376 Fix reading pcap from s3, sqs or http sometimes hanging
 
 6.9.0 2026/10/21
 ## Breaking
