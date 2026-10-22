@@ -115,9 +115,9 @@ Run capture with `--debug` to print the final schema of every log at startup.
 | `@tls.version` | string | Arkime tls.version spelled the Zeek way (TLSv1.2 → TLSv12) |
 | `@tls.sni_matches_cert` | bool | SNI matches the leaf certificate CN or alt names |
 | `@ssl.cert_chain_fps` | vector[string] | SHA256 certificate fingerprints |
-| `@ssl.subject` `@ssl.issuer` | string | `CN=,O=,OU=` of the first non-CA certificate |
+| `@ssl.subject` `@ssl.issuer` | string | RFC 2253 name of the first non-CA certificate, printed by OpenSSL like Zeek (only `CN`/`OU`/`O` if OpenSSL can't parse the cert) |
 | `@ssh.version` | count | 1 or 2 from the banners |
-| `@ssh.host_key_fingerprint` | string | MD5 of the host key |
+| `@ssh.host_key_fingerprint` | string | `SHA256:` fingerprint of the host key in `ssh-keygen -l` format |
 | `@krb.client` | string | `cname/REALM` |
 | `@krb.request_type` | string | AS or TGS from the Kerberos message types |
 | `@http.status_code` `@http.info_code` | count | final (2xx+) and informational (1xx) HTTP status codes |
@@ -125,6 +125,9 @@ Run capture with `--debug` to print the final schema of every log at startup.
 | `@ntp.poll` `@ntp.precision` `@ntp.root_delay` `@ntp.root_disp` | interval | Arkime's seconds, nanoseconds and microseconds as Zeek seconds |
 | `@socks.status` | string | Arkime's short status token spelled out the way Zeek does |
 | `@ldap.result` | string | Arkime's camelCase result code as Zeek's spaced words |
+| `@ldap.opcode` | string | requests and responses folded into one operation, binds named by auth type (`bind simple`, `bind SASL`, `sicily_negotiate`, `sicily_response`) |
+| `@snmp.version` | string | `1`, `2c` or `3` |
+| `@modbus.func` `@modbus.exception` | string | Zeek's function and exception code names, `unknown-N` for the rest |
 | `@tunnel.type` `@tunnel.action` | enum | Tunnel::GRE/VXLAN/GTPv1/GENEVE and Tunnel::DISCOVER |
 | `@dns.*` | | `trans_id rtt query qclass qclass_name qtype qtype_name rcode rcode_name AA TC RD RA Z answers TTLs rejected opcode opcode_name`, need `iterate=dns` |
 | `@x509.*` | | `fingerprint serial subject issuer not_valid_before not_valid_after key_alg key_type curve san_dns san_email san_uri san_ip ca host_cert version sig_alg key_length exponent path_len`, need `iterate=cert` |
@@ -143,6 +146,9 @@ Run capture with `--debug` to print the final schema of every log at startup.
 * No per-transaction timing: `rtt`, `request_body_len`, `status_msg`, Zeek file ids and
   similar columns are left unset. The "always unset" lists below say exactly which.
 * `uid`/`fuid` values are stable hashes, not Zeek's random ids, so they never match Zeek's.
+* `ssh.log` `host_key_fingerprint` has all 43 base64 characters like `ssh-keygen -l`. Zeek 9.0
+  sizes its buffer for the 32 byte digest and cuts the base64 to 32 characters, so Zeek's value
+  is a prefix of ours.
 
 ## Missing fields
 
@@ -701,7 +707,7 @@ Trigger: `snmp`, one row per session.
 | id.resp_h | `@resp_h` |
 | id.resp_p | `@resp_p` |
 | duration | `@duration` |
-| version | `snmp.version:string` |
+| version | `@snmp.version` |
 | community | `snmp.community:string` |
 | get_requests | `@none:count` |
 | get_bulk_requests | `@none:count` |
@@ -795,9 +801,9 @@ Trigger: `modbus`, one row per session.
 | id.resp_p | `@resp_p` |
 | tid | `modbus.transactionid:count` |
 | unit | `modbus.unitid:count` |
-| func | `modbus.funccode:string` |
+| func | `@modbus.func` |
 | pdu_type | `@none:string` |
-| exception | `modbus.exccode:string` |
+| exception | `@modbus.exception` |
 
 Always unset: `pdu_type`
 
@@ -906,7 +912,7 @@ Trigger: `ldap`, one row per session.
 | id.resp_p | `@resp_p` |
 | message_id | `@none:int` |
 | version | `@none:int` |
-| opcode | `ldap.op:string` |
+| opcode | `@ldap.opcode` |
 | result | `@ldap.result` |
 | diagnostic_message | `@none:string` |
 | object | `ldap.bindname:string` |

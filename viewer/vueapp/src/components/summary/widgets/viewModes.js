@@ -22,7 +22,7 @@ export const DEFAULT_VIEW_MODES = {
   'dns.query.host': 'table'
 };
 
-// i18n label key per view mode, in the order the widget editor lists them
+// i18n label key per view mode, the widget editor sorts them by translated label
 export const VIEW_MODE_LABEL_KEYS = {
   bar: 'sessions.summary.barChart',
   pie: 'sessions.summary.pieChart',
