@@ -16,7 +16,6 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const http = require('http');
 const https = require('https');
-const fs = require('fs');
 const path = require('path');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -49,7 +48,7 @@ process.on('warning', (w) => {
   console.error('====================');
 });
 
-const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
+let esSSLOptions; // set once the config is loaded
 let httpAgent;
 let httpsAgent;
 let multiESBasicAuthHmac;
@@ -58,18 +57,13 @@ let multiESBasicAuthHmac;
 let backendTimeout = 300 * 1000;
 
 ArkimeConfig.loaded(() => {
-  const esClientKey = Config.get('esClientKey');
-  const esClientCert = Config.get('esClientCert');
-  const caTrustFile = Config.get('caTrustFile');
-  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); }
-  if (esClientKey) {
-    esSSLOptions.key = fs.readFileSync(esClientKey);
-    esSSLOptions.cert = fs.readFileSync(esClientCert);
-    const esClientKeyPass = Config.get('esClientKeyPass');
-    if (esClientKeyPass) {
-      esSSLOptions.passphrase = esClientKeyPass;
-    }
-  }
+  esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
+    insecure: ArkimeConfig.insecure,
+    caTrustFile: Config.get('caTrustFile'),
+    clientKey: Config.get('esClientKey'),
+    clientCert: Config.get('esClientCert'),
+    clientKeyPass: Config.get('esClientKeyPass')
+  }, 'OpenSearch/Elasticsearch');
   httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
   httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 

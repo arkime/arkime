@@ -6,7 +6,6 @@
 const Integration = require('../../integration.js');
 const ArkimeConfig = require('../../../common/arkimeConfig');
 const axios = require('axios');
-const https = require('https');
 
 class URLApiIntegration extends Integration {
   // Integration Items
@@ -81,10 +80,8 @@ class URLApiIntegration extends Integration {
       maxRedirects: parseInt(ArkimeConfig.getFull(section, 'maxRedirects', 0))
     };
 
-    const insecure = ArkimeConfig.getFull(section, 'insecure', false);
-    if (ArkimeConfig.insecure || insecure === true || insecure === 'true') {
-      this.#axiosOptions.httpsAgent = new https.Agent({ rejectUnauthorized: false });
-    }
+    // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+    this.#axiosOptions.httpsAgent = this.httpsAgent(this.#url);
 
     Integration.register(this);
   }

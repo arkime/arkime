@@ -1154,6 +1154,32 @@ class Integration {
     return this.getConfig('userAgent', ArkimeConfig.get('userAgent', 'cont3xt'));
   }
 
+  /**
+   * The TLS options for this integration's outbound https calls, from the
+   * section's insecure, caTrustFile, clientKey, clientCert and clientKeyPass
+   * settings. A bad setting is fatal, like any other required config.
+   * @param {string|string[]} [urls] - the url(s) called, so https://localhost skips verification like the ES connections do
+   * @returns {object} see ArkimeUtil.tlsOptions
+   */
+  tlsOptions (urls) {
+    try {
+      return ArkimeUtil.sectionTlsOptions(this.section ?? this.name, urls);
+    } catch (err) {
+      console.log(`ERROR - ${this.section ?? this.name} ${err.message}`);
+      process.exit(1);
+    }
+  }
+
+  /**
+   * An https.Agent built from tlsOptions(), or undefined when the section has
+   * no TLS settings so axios uses its default agent.
+   * @param {string|string[]} [urls] - see tlsOptions
+   * @returns {https.Agent|undefined}
+   */
+  httpsAgent (urls) {
+    return ArkimeUtil.httpsAgent(this.tlsOptions(urls));
+  }
+
   normalizeCard () {
     const card = this.card;
     if (!card) { return; }

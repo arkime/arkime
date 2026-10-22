@@ -920,6 +920,7 @@ ArkimeConfig.registerSettings({
   elasticsearchAPIKey: { secret: true },
   elasticsearchBasicAuth: { secret: true },
   esClientKeyPass: { secret: true },
+  clientKeyPass: { secret: true },
   usersElasticsearchAPIKey: { secret: true },
   usersElasticsearchBasicAuth: { secret: true },
   elasticsearch: { type: 'urls' },

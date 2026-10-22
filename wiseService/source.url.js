@@ -7,6 +7,7 @@
  */
 'use strict';
 
+const WISESource = require('./wiseSource.js');
 const SimpleSource = require('./simpleSource.js');
 const axios = require('axios');
 const RE2 = require('re2');
@@ -14,7 +15,7 @@ const RE2 = require('re2');
 class URLSource extends SimpleSource {
 // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { reload: true });
+    super(api, section, { reload: true, tlsSettings: true });
     this.url = api.getConfig(section, 'url');
     this.urlScrapeRedirect = api.getConfig(section, 'urlScrapeRedirect');
     if (this.urlScrapeRedirect) {
@@ -51,11 +52,11 @@ class URLSource extends SimpleSource {
 
   // ----------------------------------------------------------------------------
   simpleSourceLoad (cb) {
-    if (!this.url) {
+    if (!this.url || this.tlsOptions === undefined) { // no url or bad TLS settings, both logged at startup
       return;
     }
 
-    axios.get(this.url, { headers: this.headers, transformResponse: x => x })
+    axios.get(this.url, { headers: this.headers, httpsAgent: this.httpsAgent, transformResponse: x => x })
       .then((response) => {
         console.log(this.url, response.status);
         if (response.status !== 200) {
@@ -68,7 +69,10 @@ class URLSource extends SimpleSource {
           }
 
           const url = `${this.urlScrapePrefix}${match[0]}${this.urlScrapeSuffix}`;
-          axios.get(url, { headers: this.headers, transformResponse: x => x })
+          // the section's caTrustFile and client cert are for the configured url, a
+          // scraped url on another host gets the default agent and system CAs
+          const httpsAgent = new URL(url).origin === new URL(this.url).origin ? this.httpsAgent : undefined;
+          axios.get(url, { headers: this.headers, httpsAgent, transformResponse: x => x })
             .then((subResponse) => {
               return cb(null, subResponse.data);
             }).catch((subError) => {
@@ -104,7 +108,8 @@ exports.initSource = function (api) {
       { name: 'urlScrapePrefix', required: false, help: 'If set, prefix the results of urlScrapeRedirect with this value' },
       { name: 'urlScrapeSuffix', required: false, help: 'If set, add this value as the suffix to the results of urlScrapeRedirect' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
-      { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
+      { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' },
+      ...WISESource.tlsConfigFields
     ]
   });
 

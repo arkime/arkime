@@ -7,9 +7,11 @@
  * ignored.
  *
  * Both SDKs insist on talking HTTPS to their host, so this server serves TLS
- * with an embedded self-signed cert (CN=localhost). The splunk-sdk sets
- * rejectUnauthorized:false itself; the databricks and urlapi sources use
- * insecure=true in config.wise.yaml.
+ * with a self-signed cert (CN=localhost, mini-wise-source.key/.crt). The
+ * splunk-sdk sets rejectUnauthorized:false itself; the databricks and urlapi
+ * sources use insecure=true in config.wise.yaml, except the urlapi mTLS
+ * sections which trust it with caTrustFile and send mtls-client.crt. The
+ * server asks for a client cert and echoes its CN back as clientCN.
  *
  * Splunk  - plain REST/JSON: /services/auth/login, /services/server/info,
  *           and a oneshot search POST to .../search/jobs.
@@ -38,6 +40,7 @@
  */
 'use strict';
 
+const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const thrift = require('thrift');
@@ -69,54 +72,11 @@ const DATABRICKS_ROWS = [
 ];
 
 // ----------------------------------------------------------------------------
-// Embedded self-signed cert for localhost (valid ~100 years).
+// Self-signed cert for localhost (valid ~100 years), in files so tests can
+// also point caTrustFile at mini-wise-source.crt instead of using insecure.
 // ----------------------------------------------------------------------------
-const KEY = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDGW+gGgl2gI/mB
-Ng4vrriBuT6rf5jHZWm8M9mXHsrlR6pwIELNuaFl6xKCMEN3zMqmIEFUVKvWG7lJ
-PFDN4ljfNRLJRaFfbRFeYOmSWmaw6+pSfeUqJqsLZXjFQh10f0QESkS45r5LPIx1
-V6fCKPMnZ5DeIZJ+fhE9BcVJ3CHnmqjE4GJqXx8CXsbpgdwubZNwT/lFvv28miiS
-9LfjgCePRaPkinqUlqHU8guJXrFlCVhq+M90CJjtukwu++4dZ316Lx5f6nzBQzSz
-uyn202ENDZkI/b4p20og+XhEgUh/abVVskXiCkPv3wgDCa7KN6kab+LFFD7qWhU9
-A6n2/HGDAgMBAAECggEBAJBZ39+kzZe1tmQ2v1op73HQKnBJ2hf5kFn67bVRHlx+
-q+UPRS5Lkc4GpSCDGQY8zZjZzlEdkTOuV0eZkkBSIVTGXdaFSquURtiE9FWiXisQ
-dCT2I2hqXX1cqef7dk4KM6hfl+VrXj6IYLsgQCBHBrS9ZKqSifZtrgPXiDx461+M
-YDB7TBUOLgzLRAVSlICmazNM1SvyuA6xf59BT2fvdLCHYova2i6DejfkZX6svoVI
-ClWQpH+SPh7yJPwILcpa96hN2HAW4X58uSH0g76QMrl4YkuU79CseByGWWkGuRKx
-rjF/niQAlVJGRh+cm8rb/sXZPsMrnbNh9TY6b/frIlkCgYEA7QkMSbFDIjCMiBpC
-Jff+8IaoO/RhSTGhb0vQmYPzCBpZ3lB6DSV5SFAAkmaN2/eN9gsCsqkImxW/qX9a
-e/3P07CTDzM6z7zVNyCOPpNTKxT3r4gfRf5uTX6FocSULwBhdEak+jfMr78IYaJs
-J+TOB3w+iLfdCech7tKAIOaVivcCgYEA1jqwzRiewQji7dXPb/F8JciCfaMVfRkZ
-VgJ3sesUPV7shHpiFIcHiBTxkrZovM+5KwwN3pHiUL8IudoZRkRIHqf+nchy4ki1
-5dXgPngNzYmftOlE0sGkxi3+QRKaLIyXoAMGJdSTqIpUkVu18piG//HaZG+SGTKF
-YdcpnuBYPtUCgYBohbvgZwUmd2gQwBt5KLFHmOlofqvDndoE/NaAS1oIsa39RVl8
-oJCpnXWTGRvm6nO0EkjfRYBg+qcoc9sPn+1b+JnwcvO1FRykEXwIBej/r2BFC+5W
-bApxq5/7pHZ/f1h58IjhOWfN+5wTiY7NzKw5SsU8fm8+5afl6vbLC0LYIwKBgBzN
-OTXpyHY1ZqUJKOFo+wLtaTXQ9jOiaziYDlWaQFdb6rqI5aTS3p1aC3xpD73Kw59Y
-+Ihi3qVyeY7bFqjOx09v0JiP+XoYwnPLBGIBrAFlLlaZQgp/xFJsnpFLGfVBVaVK
-osn1QYDYUDRWuyiJfyTr9CuqoF7I3wvfbJYSnWqdAoGAOa/UHk1QotM96TNsfM5j
-2rXzIEtF0JbuBqKHjFetnWV1AdQAvbepfHd5V5oN2FKLX+pam4BPNDkCDMFAUe5V
-rOgXIqepvAWHl/1QREsisltRgHZSheNSF1k3n+XB7IiK7c87Mlf++enmWWUVxw63
-qEBsMPdlCLQbx2l4nG47p1k=
------END PRIVATE KEY-----`;
-
-const CERT = `-----BEGIN CERTIFICATE-----
-MIICyzCCAbOgAwIBAgIJAP+sa1l20MjhMA0GCSqGSIb3DQEBCwUAMBQxEjAQBgNV
-BAMMCWxvY2FsaG9zdDAgFw0yNjA3MTAxNTQwNDJaGA8yMTI2MDYxNjE1NDA0Mlow
-FDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
-CgKCAQEAxlvoBoJdoCP5gTYOL664gbk+q3+Yx2VpvDPZlx7K5UeqcCBCzbmhZesS
-gjBDd8zKpiBBVFSr1hu5STxQzeJY3zUSyUWhX20RXmDpklpmsOvqUn3lKiarC2V4
-xUIddH9EBEpEuOa+SzyMdVenwijzJ2eQ3iGSfn4RPQXFSdwh55qoxOBial8fAl7G
-6YHcLm2TcE/5Rb79vJookvS344Anj0Wj5Ip6lJah1PILiV6xZQlYavjPdAiY7bpM
-LvvuHWd9ei8eX+p8wUM0s7sp9tNhDQ2ZCP2+KdtKIPl4RIFIf2m1VbJF4gpD798I
-AwmuyjepGm/ixRQ+6loVPQOp9vxxgwIDAQABox4wHDAaBgNVHREEEzARgglsb2Nh
-bGhvc3SHBH8AAAEwDQYJKoZIhvcNAQELBQADggEBAKHLvK7xVDmzzoaqAMwxPfyF
-BCzEXHcLWHTHhGXGgV45roMoBVvjCiuXVq0mNcfuKN69RlbaaoAmyaPMZFEsTBRG
-3JSmN6a0uHX+2yohQWj2avvzpPKzCl4DxpS02X/E4HiVl2ymAydkC3KHe7ZUnss8
-Rx3jRiE/TC3lj4NBqerjEoB9ddptmzaef30+yOXffmZborIKe60gsaCO+LrTvN1i
-7YlCLrkGF65NZal7Xn89JbIruxVauOlqeKcl/dmJM/0K4f6R4+Q9Mzlg/anCvn2g
-JAX0pBPenRVmpFPfupy4B7ezQBytmQf9JWpwzlREuKznN4ivMMDDxZ5sQSK+3gQ=
------END CERTIFICATE-----`;
+const KEY = fs.readFileSync(path.join(__dirname, 'mini-wise-source.key'));
+const CERT = fs.readFileSync(path.join(__dirname, 'mini-wise-source.crt'));
 
 function log (...args) {
   if (debug) { console.log(...args); }
@@ -167,13 +127,18 @@ function handleSplunk (req, res, body) {
 // ----------------------------------------------------------------------------
 // URLApi emulation
 // ----------------------------------------------------------------------------
+// CN of the client certificate the request was made with, null when none
+function clientCN (req) {
+  return req.socket.getPeerCertificate()?.subject?.CN ?? null;
+}
+
 function handleURLApi (req, res) {
   const segs = req.url.split('?')[0].split('/').slice(2).map((s) => decodeURIComponent(s));
   log(`URLAPI ${req.url} -> ${JSON.stringify(segs)}`);
   if (segs[0] === undefined || segs[0] === 'miss') {
     return send(res, 404, 'application/json', '{}');
   }
-  return sendJSON(res, { value: segs[0], b64: segs[1], b64url: segs[2] });
+  return sendJSON(res, { value: segs[0], b64: segs[1], b64url: segs[2], clientCN: clientCN(req) });
 }
 
 const cont3xtHits = new Map();
@@ -192,7 +157,7 @@ function handleCont3xt (req, res) {
   }
   const hits = (cont3xtHits.get(segs[1]) ?? 0) + 1;
   cont3xtHits.set(segs[1], hits);
-  return sendJSON(res, { value: segs[1], b64: segs[2], b64url: segs[3], key: req.headers['x-api-key'] ?? null, hits });
+  return sendJSON(res, { value: segs[1], b64: segs[2], b64url: segs[3], key: req.headers['x-api-key'] ?? null, hits, clientCN: clientCN(req) });
 }
 
 // ----------------------------------------------------------------------------
@@ -479,7 +444,9 @@ function sendJSON (res, obj) {
   send(res, 200, 'application/json', JSON.stringify(obj));
 }
 
-const server = https.createServer({ key: KEY, cert: CERT }, (req, res) => {
+// requestCert so the urlapi mTLS tests can see the client cert, without
+// rejecting the sources that don't send one
+const server = https.createServer({ key: KEY, cert: CERT, requestCert: true, rejectUnauthorized: false }, (req, res) => {
   const chunks = [];
   req.on('data', (c) => chunks.push(c));
   req.on('end', () => {

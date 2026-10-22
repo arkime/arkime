@@ -29,6 +29,7 @@ class WISESource {
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
    * @param {boolean} [options.fullQuery=false] - for MD5/SHA, query will be query.value and query.contentType
+   * @param {boolean|string} [options.tlsSettings=false] - load the insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings into tlsOptions and httpsAgent, tlsOptions is undefined when they are bad. true reads the url setting, or name the setting holding the url, so https://localhost skips verification like the ES connections do
    */
   constructor (api, section, options) {
     this.api = api;
@@ -62,6 +63,22 @@ class WISESource {
 
     if (options.formatSetting) {
       this.formatSetting(options.formatSetting);
+    }
+
+    // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings, for
+    // sources that call a url and pass tlsSettings: tlsOptions for an ES
+    // client's ssl setting, httpsAgent for axios. A bad setting leaves
+    // tlsOptions undefined so the source can refuse to load, like it does for
+    // any other bad setting.
+    if (options.tlsSettings) {
+      try {
+        const url = api.getConfig(section, options.tlsSettings === true ? 'url' : options.tlsSettings);
+        this.tlsOptions = ArkimeUtil.sectionTlsOptions(section, url);
+        this.httpsAgent = ArkimeUtil.httpsAgent(this.tlsOptions);
+      } catch (err) {
+        console.log(section, '- ERROR not loading since', err.message);
+        this.tlsOptions = undefined;
+      }
     }
 
     let items;
@@ -455,6 +472,20 @@ class WISESource {
     }
     this.typeFunc = this.api.funcName(this.type);
   }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The config fields behind tlsOptions/httpsAgent, for the configDef of a
+   * source that calls a url: `fields: [ ..., ...WISESource.tlsConfigFields ]`,
+   * which also passes tlsSettings: true to super()
+   */
+  static tlsConfigFields = [
+    { name: 'insecure', required: false, regex: '^(true|false)$', help: 'Set to true to disable TLS certificate verification' },
+    { name: 'caTrustFile', required: false, help: 'Path to a PEM file with the CA certificates to trust for this url, replaces the system ones' },
+    { name: 'clientKey', required: false, help: 'Path to a PEM private key presented to the server (mTLS), requires clientCert' },
+    { name: 'clientCert', required: false, help: 'Path to a PEM certificate presented to the server (mTLS), requires clientKey' },
+    { name: 'clientKeyPass', required: false, password: true, help: 'Passphrase for clientKey' }
+  ];
 
   // ----------------------------------------------------------------------------
   /** A simple constant that should be used when needing to represent an empty result */

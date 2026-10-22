@@ -8,13 +8,14 @@
 'use strict';
 
 const ArkimeUtil = require('../common/arkimeUtil');
+const WISESource = require('./wiseSource.js');
 const SimpleSource = require('./simpleSource.js');
 const axios = require('axios');
 
 class ElasticsearchFileSource extends SimpleSource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { reload: true, formatSetting: 'json' });
+    super(api, section, { reload: true, formatSetting: 'json', tlsSettings: true });
     this.url = api.getConfig(section, 'url');
   }
 
@@ -35,10 +36,13 @@ class ElasticsearchFileSource extends SimpleSource {
     if (this.url === undefined) {
       return cb('no url specified in config file');
     }
+    if (this.tlsOptions === undefined) {
+      return cb('bad TLS settings, see the startup log');
+    }
 
     const info = ArkimeUtil.createElasticsearchInfo(this.url);
 
-    axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth })
+    axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth, httpsAgent: this.httpsAgent })
       .then((response) => {
         if (response.status === 404 || response?.data?._source === undefined) {
           return cb(null, '{}');
@@ -55,10 +59,13 @@ class ElasticsearchFileSource extends SimpleSource {
     if (this.url === undefined) {
       return cb('no url specified in config file');
     }
+    if (this.tlsOptions === undefined) {
+      return cb('bad TLS settings, see the startup log');
+    }
 
     const info = ArkimeUtil.createElasticsearchInfo(this.url);
 
-    axios.post(info.url, file, { headers: { 'Content-Type': 'application/json' }, auth: info.auth })
+    axios.post(info.url, file, { headers: { 'Content-Type': 'application/json' }, auth: info.auth, httpsAgent: this.httpsAgent })
       .then((response) => {
         this.load();
         return cb();
@@ -83,7 +90,8 @@ exports.initSource = function (api) {
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
       { name: 'arrayPath', required: true, help: 'The path of where to find the array' },
       { name: 'keyPath', required: true, help: 'The path of what field to use as the key inside each item' },
-      { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' }
+      { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
+      ...WISESource.tlsConfigFields
     ]
   });
 

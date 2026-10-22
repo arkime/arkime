@@ -7,7 +7,6 @@
 'use strict';
 
 const axios = require('axios');
-const https = require('https');
 const iptrie = require('arkime-iptrie');
 const WISESource = require('./wiseSource.js');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -51,7 +50,7 @@ class MISPSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
     // api mode lets the wise cache hold results, bulk mode holds everything itself
-    super(api, section, { dontCache: api.getConfig(section, 'mode', 'bulk') !== 'api', tagsSetting: true });
+    super(api, section, { dontCache: api.getConfig(section, 'mode', 'bulk') !== 'api', tagsSetting: true, tlsSettings: true });
 
     this.mode = api.getConfig(section, 'mode', 'bulk');
     if (this.mode !== 'bulk' && this.mode !== 'api') {
@@ -74,9 +73,7 @@ class MISPSource extends WISESource {
     this.enforceWarninglist = api.getConfigBool(section, 'enforceWarninglist', true);
     this.mispTags = api.getConfig(section, 'mispTags');
 
-    if (api.getConfigBool(section, 'insecure', false)) {
-      this.httpsAgent = new https.Agent({ rejectUnauthorized: false });
-    }
+    if (this.tlsOptions === undefined) { return; } // bad TLS settings, already logged
 
     this.serverField = this.api.addField('field:misp.server;db:misp.server;kind:termfield;friendly:Server;help:MISP Server;count:true');
     this.eventIdField = this.api.addField('field:misp.event-id;db:misp.eventId;kind:termfield;friendly:Event Id;help:MISP Event Id;count:true');
@@ -411,7 +408,7 @@ exports.initSource = function (api) {
       { name: 'maxAttributes', required: false, help: 'bulk mode - Stop loading after this many attributes, default 2000000' },
       { name: 'maxResults', required: false, help: 'api mode - Max attributes per lookup, default 50' },
       { name: 'maxConns', required: false, help: 'api mode - Max outstanding MISP requests, lookups past this are dropped, default 20' },
-      { name: 'insecure', required: false, help: 'Accept self-signed certificates, default false' }
+      ...WISESource.tlsConfigFields
     ]
   };
   api.addSourceConfigDef('misp', configDef);
