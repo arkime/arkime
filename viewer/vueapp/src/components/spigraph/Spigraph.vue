@@ -76,6 +76,16 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /maxElements select -->
 
+              <!-- saved graphs for connections: before its controls, which
+                   fill the rest of the row -->
+              <spigraph-config-dropdown
+                v-if="spiGraphType === 'connections'"
+                :current-graph="currentGraph"
+                :loaded-graph-id="$route.query.graphId"
+                @load="loadGraph"
+                @saved-as="onGraphSavedAs"
+                @message="onGraphMessage" />
+
               <!-- connections controls anchor -->
               <div
                 v-if="spiGraphType === 'connections'"
@@ -190,6 +200,15 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('spigraph.exportCSVSPIGraphTip') }}
                 </v-tooltip>
               </v-btn> <!-- /export button-->
+
+              <!-- saved graphs: save, load, share, add to a dashboard -->
+              <spigraph-config-dropdown
+                v-if="spiGraphType !== 'default' && spiGraphType !== 'connections'"
+                :current-graph="currentGraph"
+                :loaded-graph-id="$route.query.graphId"
+                @load="loadGraph"
+                @saved-as="onGraphSavedAs"
+                @message="onGraphMessage" />
 
               <!-- hierarchy "add another field" anchor (own full-width row) -->
               <div
@@ -314,6 +333,22 @@ SPDX-License-Identifier: Apache-2.0
       v-else
       ref="connectionsGraph" /> <!-- /connections graph type -->
 
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="5000">
+      {{ snackbar.text }}
+      <template
+        v-if="snackbar.link"
+        #actions>
+        <v-btn
+          variant="text"
+          :to="snackbar.link">
+          {{ $t('sessions.summary.addToDashboard.open') }}
+        </v-btn>
+      </template>
+    </v-snackbar>
+
     <!-- overlay anchor: connections floating buttons teleport here -->
     <template
       v-if="spiGraphType === 'connections'"
@@ -340,6 +375,8 @@ import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
 import ArkimeHeatmap from './Heatmap.vue';
 import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
+import SpigraphConfigDropdown from './SpigraphConfigDropdown.vue';
+import { graphFromSpigraphQuery, spigraphQueryFromGraph, graphFromWidget } from '../summary/dashboardConfig';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
@@ -362,7 +399,8 @@ export default {
     PageLayout,
     ArkimePie,
     ArkimeHeatmap,
-    ArkimeConnectionsGraph
+    ArkimeConnectionsGraph,
+    SpigraphConfigDropdown
   },
   data: function () {
     return {
@@ -388,6 +426,7 @@ export default {
       // <option> blocks into one.
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
+      snackbar: { show: false, text: '', color: 'success', link: '' },
       graphTypeOptions: ['default', 'heatmap', 'bar', 'pie', 'table', 'treemap', 'sankey', 'connections']
     };
   },
@@ -449,6 +488,26 @@ export default {
     // bar graph segment layout, kept in the url like the other options
     barMode: function () {
       return this.$route.query.barMode === 'grouped' ? 'grouped' : 'stacked';
+    },
+    // what the page shows as saved-graph data (null for the timeline type).
+    // The field, size and type come from the page state, since the url only
+    // carries them once the user has changed them from their defaults
+    currentGraph: function () {
+      const settings = this.$store.state.user?.settings || {};
+      return graphFromSpigraphQuery({
+        ...this.$route.query,
+        spiGraphType: this.spiGraphType,
+        exp: this.query.exp,
+        size: this.query.size,
+        // the heatmap draws the store's intensity, which the url may not carry
+        graphType: this.spiGraphType === 'heatmap' ? this.intensity : this.$route.query.graphType,
+        // connections falls back to the user's own default fields
+        srcField: this.$route.query.srcField || settings.connSrcField,
+        dstField: this.$route.query.dstField || settings.connDstField
+      }, {
+        expression: this.$store.state.expression,
+        fieldsArr: this.$store.state.fieldsArr
+      });
     }
   },
   watch: {
@@ -476,6 +535,9 @@ export default {
     }
   },
   mounted: function () {
+    // a link (a saved graph, a dashboard widget's full page) names its metric
+    if (this.$route.query.graphType) { this.$store.commit('updateGraphType', this.$route.query.graphType); }
+
     const field = FieldService.getField(this.query.exp, true);
     if (field) {
       this.fieldTypeahead = field.friendlyName;
@@ -546,6 +608,49 @@ export default {
         }
       });
     },
+    /* Shows a saved graph: its type, fields, options, search and view take
+       over (having no search or view included). Its id stays in the url so
+       later changes can be saved back to it */
+    loadGraph: function (saved) {
+      // a shared graph is another user's data: normalize it before use
+      const graph = graphFromWidget(saved.data);
+      const q = spigraphQueryFromGraph(graph);
+      if (!q) { return; }
+      const field = FieldService.getField(q.exp, true);
+      if (field) {
+        this.fieldTypeahead = field.friendlyName;
+        this.baseField = field.exp;
+      }
+      this.$store.commit('setExpression', graph.expression);
+      // a sessions heatmap has no graphType, but must not keep the last intensity
+      if (q.spiGraphType === 'heatmap') { this.$store.commit('updateGraphType', q.graphType || 'sessionsHisto'); }
+      this.spiGraphType = q.spiGraphType;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          subFields: undefined,
+          barMode: undefined,
+          srcField: undefined,
+          dstField: undefined,
+          graphType: undefined,
+          connectionsLength: undefined,
+          view: undefined,
+          ...q,
+          graphId: saved.id,
+          expression: graph.expression || undefined
+        }
+      });
+      if (q.spiGraphType !== 'connections') {
+        this.cancelAndLoad(true);
+      }
+    },
+    /* The graph just saved as new is now the loaded one (no reload needed) */
+    onGraphSavedAs: function (id) {
+      this.$router.replace({ query: { ...this.$route.query, graphId: id } });
+    },
+    onGraphMessage: function ({ msg, type, link }) {
+      this.snackbar = { show: true, text: msg, color: type === 'danger' ? 'error' : 'success', link: link || '' };
+    },
     changeBarMode: function (barMode) {
       this.$router.push({
         query: {
@@ -558,6 +663,11 @@ export default {
       // recolors + re-sorts client-side (all metrics are already fetched); the
       // backend top-N ranking only switches to this metric on the next fetch
       this.$store.commit('updateGraphType', value);
+      // a graphType in the url (a loaded graph, a link) would otherwise keep
+      // ranking by the old metric and be saved as the graph's intensity
+      if (this.$route.query.graphType) {
+        this.$router.replace({ query: { ...this.$route.query, graphType: value === 'sessionsHisto' ? undefined : value } });
+      }
     },
     changeSortBy: function (sortBy) {
       this.sortBy = sortBy;

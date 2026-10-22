@@ -15,6 +15,7 @@ by rank. Metric columns are the widget's metrics[] (falls back to metricType).
     :has-data="hasData"
     :info-items="infoItems"
     :link="link"
+    :graph="graphDef"
     :show-export="hasData"
     :export-label="exportLabel"
     scroll
@@ -94,7 +95,8 @@ const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
   infoItems: { type: Array, default: () => [] },
-  link: { type: Object, default: null }
+  link: { type: Object, default: null },
+  graphDef: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);

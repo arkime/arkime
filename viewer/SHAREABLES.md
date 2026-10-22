@@ -123,6 +123,46 @@ capture stats / time fit a single ~160px row).
 
 ---
 
+### `spigraphConfig` (Viewer Vue app)
+
+A saved graph: one dashboard widget definition without its layout (`id`, `width`,
+`height`, `title`). SPI Graph saves, loads and shares them; a dashboard copies
+one in as a widget ("add to dashboard"), and a widget can be saved back out as
+one. A widget never references a saved graph, so a dashboard stays self-contained.
+
+**Used by:** `viewer/vueapp/src/components/spigraph/SpigraphConfigDropdown.vue`, `summary/AddToDashboardModal.vue`, `summary/dashboardConfig.js`, `settings/Graphs.vue`
+
+```json
+{
+  "type": "spigraphConfig",
+  "data": {
+    "field": "source.ip",
+    "fields": ["source.ip", "protocols"],
+    "viewMode": "bar",
+    "metricType": "sessions",
+    "metrics": [],
+    "metricAgg": "sum",
+    "sortMetric": "sessions",
+    "splitField": "protocols",
+    "splitLength": 5,
+    "barMode": "stacked",
+    "length": 20,
+    "order": "desc",
+    "expression": "protocols == tls",
+    "view": ""
+  }
+}
+```
+
+Every key has the meaning of the same `summaryConfig` widget key. `viewMode` and
+a non-empty `fields` or `field` are required (`api.shareables.missingGraph`).
+`fields` and `metrics` must be arrays of non-empty strings, `length` and
+`splitLength` integers, and the other keys strings (`api.shareables.invalidGraph`).
+Readers still normalize the data (`graphFromWidget` in `dashboardConfig.js`),
+since a stored graph may predate these rules.
+
+---
+
 ### `sessionsTableLayout` (Viewer Vue app)
 
 Sessions tab column layout: which columns the session table shows and how it sorts.

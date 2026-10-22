@@ -71,6 +71,15 @@ The widget content is provided via the default slot.
           <v-icon icon="mdi-open-in-new" />
         </v-btn>
         <v-btn
+          v-if="graph && saveWidgetGraph"
+          variant="outlined"
+          size="large"
+          icon
+          :title="$t('sessions.summary.widget.saveAsGraph')"
+          @click="saveWidgetGraph(graph)">
+          <v-icon icon="mdi-bookmark-plus-outline" />
+        </v-btn>
+        <v-btn
           variant="outlined"
           size="large"
           icon
@@ -160,6 +169,15 @@ The widget content is provided via the default slot.
           <v-icon icon="mdi-open-in-new" />
         </v-btn>
         <v-btn
+          v-if="graph && saveWidgetGraph"
+          variant="outlined"
+          size="large"
+          icon
+          :title="$t('sessions.summary.widget.saveAsGraph')"
+          @click="saveWidgetGraph(graph)">
+          <v-icon icon="mdi-bookmark-plus-outline" />
+        </v-btn>
+        <v-btn
           variant="outlined"
           size="large"
           icon
@@ -210,6 +228,11 @@ The widget content is provided via the default slot.
 </template>
 
 <script setup>
+import { inject } from 'vue';
+
+// the dashboard provides this; it opens the save-graph dialog for a widget
+const saveWidgetGraph = inject('saveWidgetGraph', null);
+
 defineProps({
   title: { type: String, required: true },
   loading: { type: Boolean, default: false },
@@ -225,7 +248,9 @@ defineProps({
   // otherwise visible: metric / limit / local filter / view)
   infoItems: { type: Array, default: () => [] },
   // vue-router location of the widget's full page view (null: no link)
-  link: { type: Object, default: null }
+  link: { type: Object, default: null },
+  // the widget as saved-graph data, when it can be saved as one (null: can't)
+  graph: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove', 'export', 'retry']);

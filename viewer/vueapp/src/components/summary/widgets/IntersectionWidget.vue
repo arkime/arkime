@@ -15,6 +15,7 @@ combinations (a column pair per field level, grouped by parent). Count-based.
     :has-data="hasData"
     :info-items="infoItems"
     :link="link"
+    :graph="graphDef"
     scroll
     @edit="$emit('edit')"
     @remove="$emit('remove')"
@@ -77,7 +78,8 @@ const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
   infoItems: { type: Array, default: () => [] },
-  link: { type: Object, default: null }
+  link: { type: Object, default: null },
+  graphDef: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);

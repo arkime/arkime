@@ -439,15 +439,8 @@ export default {
 
     this.baseFieldObj = this.getFieldObj(this.baseField);
 
-    if (this.$route.query.subFields) {
-      const subFieldExps = String(this.$route.query.subFields).split(',');
-      for (const exp of subFieldExps) {
-        // a field this viewer doesn't know (eg a hand-edited url) is skipped
-        const field = this.getFieldObj(exp);
-        if (field) { this.fieldTypeaheadList.push(field); }
-      }
-      this.trimBarFields();
-    }
+    this.syncFieldsFromRoute();
+    this.trimBarFields();
 
     d3 = await import('d3'); // lazy load d3 to avoid loading it on every page
     const { sankey: d3sankey, sankeyLinkHorizontal: d3sankeyLinkHorizontal } = await import('d3-sankey');
@@ -488,11 +481,15 @@ export default {
       }
     },
     // trims once the url says bar: trimming on the prop change would push a
-    // url built before the graph type change landed and undo it
+    // url built before the graph type change landed and undo it. The fields
+    // come from the url first: a loaded graph changes both at once, and this
+    // watcher runs before the subFields one
     '$route.query.spiGraphType': function () {
+      this.syncFieldsFromRoute();
       this.trimBarFields();
     },
     '$route.query.subFields': function (newVal, oldVal) {
+      this.syncFieldsFromRoute();
       this.loadData();
     },
     // Resize svg height after toggle is updated and mounted()
@@ -607,10 +604,23 @@ export default {
      * @returns {Boolean} true when fields were dropped (the url change reloads)
      */
     trimBarFields: function () {
-      if (this.spiGraphType !== 'bar' || this.fieldTypeaheadList.length <= 1) { return false; }
+      // the url's type: on back/forward the prop catches up a tick later
+      const type = this.$route.query.spiGraphType || this.spiGraphType;
+      if (type !== 'bar' || this.fieldTypeaheadList.length <= 1) { return false; }
       this.fieldTypeaheadList.splice(1);
       this.applyFieldListToUrl();
       return true;
+    },
+    /**
+     * The url is the source of truth for the extra fields: a loaded saved
+     * graph (or back/forward) changes it without going through changeField.
+     * A field this viewer doesn't know (eg a hand-edited url) is skipped
+     */
+    syncFieldsFromRoute: function () {
+      const exps = String(this.$route.query.subFields || '').split(',').filter(Boolean);
+      if (exps.join(',') !== this.fieldTypeaheadList.map(f => f?.exp).join(',')) {
+        this.fieldTypeaheadList = exps.map(exp => this.getFieldObj(exp)).filter(Boolean);
+      }
     },
     closeBarTooltipOnOutsideClick: function (e) {
       if (this.barTooltip.visible && !e.target.closest('.summary-tooltip')) {

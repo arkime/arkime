@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     max-width="900">
     <v-card density="compact">
       <v-card-title>
-        {{ editing ? $t('sessions.summary.config.editConfig') : $t('sessions.summary.config.saveConfig') }}
+        {{ modalTitle }}
       </v-card-title>
       <v-card-text>
         <!-- Name input -->
@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             class="arkime-input-label cursor-help">
             {{ $t('sessions.summary.config.name') }}<sup>*</sup>
             <v-tooltip activator="#configName">
-              {{ $t('sessions.summary.config.nameTip') }}
+              {{ kind === 'graph' ? $t('spigraph.graphs.nameTip') : $t('sessions.summary.config.nameTip') }}
             </v-tooltip>
           </span>
           <input
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
             class="arkime-input-control"
             v-model="configName"
             maxlength="256"
-            :placeholder="$t('sessions.summary.config.namePlaceholder')">
+            :placeholder="kind === 'graph' ? $t('spigraph.graphs.namePlaceholder') : $t('sessions.summary.config.namePlaceholder')">
         </div>
 
         <!-- Description input -->
@@ -99,8 +99,10 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- Configuration preview -->
         <div class="config-preview mt-3 p-2 border rounded">
-          <strong>{{ $t('sessions.summary.config.preview') }}</strong>
-          <div class="mt-1 small">
+          <strong>{{ kind === 'graph' ? $t('spigraph.graphs.preview') : $t('sessions.summary.config.preview') }}</strong>
+          <div
+            v-if="kind !== 'graph'"
+            class="mt-1 small">
             <span class="text-medium-emphasis">{{ $t('sessions.summary.config.widgetsCount') }}:</span>
             {{ config?.widgets?.length || 0 }}
           </div>
@@ -160,8 +162,7 @@ import { useI18n } from 'vue-i18n';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import { createShareableService } from '../users/ShareableService';
 import FieldService from '../search/FieldService';
-
-const SummaryConfigService = createShareableService('summaryConfig');
+import { viewModeLabelKey } from './widgets/viewModes';
 
 const store = useStore();
 const { t } = useI18n();
@@ -178,7 +179,19 @@ const props = defineProps({
   editing: {
     type: Object,
     default: null // The shareable object being edited, null for new
+  },
+  // what is being saved: a 'dashboard' (summaryConfig) or a 'graph' (spigraphConfig)
+  kind: {
+    type: String,
+    default: 'dashboard'
   }
+});
+
+const service = computed(() => createShareableService(props.kind === 'graph' ? 'spigraphConfig' : 'summaryConfig'));
+
+const modalTitle = computed(() => {
+  if (props.kind === 'graph') { return props.editing ? t('spigraph.graphs.editGraph') : t('spigraph.graphs.saveGraph'); }
+  return props.editing ? t('sessions.summary.config.editConfig') : t('sessions.summary.config.saveConfig');
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -196,8 +209,17 @@ const saving = ref(false);
 // Get roles from store
 const roles = computed(() => store.state.roles || []);
 
-// Preview text showing widget field friendly names
+// Preview text showing widget field friendly names (a graph: its type and fields)
 const fieldsList = computed(() => {
+  if (props.kind === 'graph') {
+    if (!props.config) { return ''; }
+    const fields = (props.config.fields?.length ? props.config.fields : [props.config.field]).filter(Boolean);
+    const names = fields.map(f => FieldService.getField(f, true)?.friendlyName || f);
+    if (props.config.splitField) { names.push(FieldService.getField(props.config.splitField, true)?.friendlyName || props.config.splitField); }
+    const labelKey = viewModeLabelKey(props.config.viewMode);
+    const label = labelKey ? t(labelKey) : props.config.viewMode;
+    return `${label}: ${names.join(', ')}`;
+  }
   if (!props.config?.widgets?.length) return '';
   return props.config.widgets.map(w => {
     const fieldObj = FieldService.getField(w.field, true);
@@ -260,9 +282,9 @@ const saveConfig = async () => {
 
     let response;
     if (props.editing?.id) {
-      response = await SummaryConfigService.update(props.editing.id, configData);
+      response = await service.value.update(props.editing.id, configData);
     } else {
-      response = await SummaryConfigService.save(configData);
+      response = await service.value.save(configData);
     }
 
     emit('saved', response.shareable);

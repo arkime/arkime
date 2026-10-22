@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     @update:model-value="(val) => { if (!val) $emit('close'); }">
     <v-card density="compact">
       <v-card-title>
-        {{ $t('sessions.summary.editWidget') }}
+        {{ graphOnly ? $t('settings.graphs.editGraph') : $t('sessions.summary.editWidget') }}
       </v-card-title>
       <v-card-text>
         <!-- Visualization type leads: it decides which inputs below apply -->
@@ -21,6 +21,19 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           hide-details
           class="mb-3" />
+
+        <!-- start from a saved graph: fills everything below from it -->
+        <v-select
+          v-if="!staticMode && !graphOnly && savedGraphItems.length"
+          v-model="savedGraphId"
+          :items="savedGraphItems"
+          :label="$t('sessions.summary.widget.loadGraph')"
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          class="mb-3"
+          @update:model-value="applySavedGraph" />
 
         <!-- text widget: just a title and the text -->
         <template v-if="staticMode">
@@ -130,9 +143,9 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
         </div>
 
-        <!-- Title override -->
+        <!-- Title override (a saved graph has a name instead) -->
         <div
-          v-if="!staticMode"
+          v-if="!staticMode && !graphOnly"
           class="arkime-input-group arkime-input-group--fluid mb-3">
           <span class="arkime-input-label">
             {{ $t('sessions.summary.widget.title') }}
@@ -279,7 +292,9 @@ SPDX-License-Identifier: Apache-2.0
             style="min-width: 120px" />
         </div>
 
-        <div class="d-flex flex-wrap gap-3 mb-3">
+        <div
+          v-if="!graphOnly"
+          class="d-flex flex-wrap gap-3 mb-3">
           <!-- Width -->
           <v-select
             v-model="form.width"
@@ -389,8 +404,12 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
+import { createShareableService } from '../users/ShareableService';
 import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, allowsMultiField, allowsMultiMetric, allowsSplit, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES } from './widgets/viewModes';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, allowsMultiField, allowsMultiMetric, allowsSplit, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, VIEW_MODE_LABEL_KEYS } from './widgets/viewModes';
+import { GRAPH_VIEW_MODES, graphFromWidget } from './dashboardConfig';
+
+const GraphService = createShareableService('spigraphConfig');
 
 const store = useStore();
 const { t } = useI18n();
@@ -403,6 +422,11 @@ const props = defineProps({
   widget: {
     type: Object,
     default: () => null
+  },
+  // editing a saved graph (settings page): only the graph view modes, no layout
+  graphOnly: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -520,22 +544,8 @@ function viewModeLabel (vm) {
   return viewModeItems.value.find(i => i.value === vm)?.title || vm;
 }
 
-const viewModeItems = computed(() => [
-  { title: t('sessions.summary.barChart'), value: 'bar' },
-  { title: t('sessions.summary.pieChart'), value: 'pie' },
-  { title: t('sessions.summary.tableView'), value: 'table' },
-  { title: t('sessions.summary.intersectionView'), value: 'intersection' },
-  { title: t('sessions.summary.heatmapView'), value: 'heatmap' },
-  { title: t('sessions.summary.treemapView'), value: 'treemap' },
-  { title: t('sessions.summary.sankeyView'), value: 'sankey' },
-  { title: t('sessions.summary.connectionsView'), value: 'connections' },
-  { title: t('sessions.summary.timelineView'), value: 'timeline' },
-  { title: t('sessions.summary.mapView'), value: 'map' },
-  { title: t('sessions.summary.statsView'), value: 'stats' },
-  { title: t('sessions.summary.timeView'), value: 'time' },
-  { title: t('sessions.summary.metricView'), value: 'metric' },
-  { title: t('sessions.summary.textView'), value: 'text' }
-]);
+const viewModeItems = computed(() => allViewModeItems.value.filter(i => !props.graphOnly || GRAPH_VIEW_MODES.includes(i.value)));
+const allViewModeItems = computed(() => Object.entries(VIEW_MODE_LABEL_KEYS).map(([value, key]) => ({ title: t(key), value })));
 
 // Metric basis: session count plus every numeric (integer) field, aggregated per
 // value. Mirrors the timeline graph's metric set — Settings.vue uses the same
@@ -604,29 +614,58 @@ const viewItems = computed(() => [
   ...(store.state.views || []).map(v => ({ title: v.name, value: v.id }))
 ]);
 
+// fill the form from a widget (or a widget merged with a saved graph)
+const fillForm = (w) => {
+  form.value = {
+    ...blankForm(),
+    ...w,
+    fields: Array.isArray(w.fields) && w.fields.length
+      ? [...w.fields]
+      : (w.field ? [w.field] : []),
+    // migrate legacy single metricType into the metrics[] list
+    metrics: Array.isArray(w.metrics) && w.metrics.length
+      ? [...w.metrics]
+      : (w.metricType && w.metricType !== 'sessions' ? [w.metricType] : []),
+    sortMetric: w.sortMetric || w.metricType || 'sessions',
+    metricAgg: METRIC_AGGS.includes(w.metricAgg) ? w.metricAgg : 'sum',
+    splitField: w.splitField || '',
+    splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
+    barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
+    text: w.text || '',
+    expression: w.expression || '',
+    view: w.view || '',
+    title: w.title || ''
+  };
+};
+
+// saved graphs (spigraphConfig shareables) the widget can start from
+const savedGraphs = ref([]);
+const savedGraphId = ref(null);
+const savedGraphItems = computed(() => savedGraphs.value.map(g => ({ title: g.name, value: g.id })));
+const loadSavedGraphs = async () => {
+  try {
+    const response = await GraphService.list();
+    savedGraphs.value = response.data || [];
+  } catch (err) {
+    savedGraphs.value = [];
+  }
+};
+// the graph's settings replace the widget's (all of them: a shared graph is
+// normalized first, so it has every graph key); its id, title and layout stay
+const applySavedGraph = (id) => {
+  const graph = savedGraphs.value.find(g => g.id === id)?.data;
+  if (!graph) { return; }
+  const { id: widgetId, title, width, height } = form.value;
+  fillForm({ ...props.widget, ...graphFromWidget(graph), id: widgetId, title, width, height });
+};
+
 watch(() => props.show, (isOpen) => {
   if (isOpen && props.widget) {
     error.value = '';
-    form.value = {
-      ...blankForm(),
-      ...props.widget,
-      fields: Array.isArray(props.widget.fields) && props.widget.fields.length
-        ? [...props.widget.fields]
-        : (props.widget.field ? [props.widget.field] : []),
-      // migrate legacy single metricType into the metrics[] list
-      metrics: Array.isArray(props.widget.metrics) && props.widget.metrics.length
-        ? [...props.widget.metrics]
-        : (props.widget.metricType && props.widget.metricType !== 'sessions' ? [props.widget.metricType] : []),
-      sortMetric: props.widget.sortMetric || props.widget.metricType || 'sessions',
-      metricAgg: METRIC_AGGS.includes(props.widget.metricAgg) ? props.widget.metricAgg : 'sum',
-      splitField: props.widget.splitField || '',
-      splitLength: SPLIT_LENGTHS.includes(props.widget.splitLength) ? props.widget.splitLength : 5,
-      barMode: BAR_MODES.includes(props.widget.barMode) ? props.widget.barMode : 'stacked',
-      text: props.widget.text || '',
-      expression: props.widget.expression || '',
-      view: props.widget.view || '',
-      title: props.widget.title || ''
-    };
+    savedGraphId.value = null;
+    fillForm(props.widget);
+    // the saved-graph picker isn't shown when editing a saved graph itself
+    if (!props.graphOnly) { loadSavedGraphs(); }
   }
 });
 

@@ -11,6 +11,7 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { defaultLength } from './viewModes';
+import { spigraphQueryFromGraph } from '../dashboardConfig';
 
 /**
  * A widget's field list (1-3 field exps). Multi-field widgets store `fields`;
@@ -167,31 +168,12 @@ export function widgetFullPageLink (route, store, widget) {
     query.date = store.state.timeRange;
   }
 
-  const spigraph = (spiGraphType, extra = {}) => ({ path: '/spigraph', query: { ...query, spiGraphType, ...extra } });
-  const subFields = (list) => (list.length ? list.join(',') : undefined);
-  switch (mode) {
-  case 'pie':
-  case 'treemap':
-  case 'sankey':
-    return spigraph(mode, { exp: fields[0], subFields: subFields(fields.slice(1)), size: widget.length });
-  case 'table': // side by side fields have no combined view; show the first
-    return spigraph('table', { exp: fields[0], size: widget.length });
-  case 'intersection':
-    return spigraph('table', { exp: fields[0], subFields: subFields(fields.slice(1)), size: widget.length });
-  case 'heatmap':
-    return spigraph('heatmap', { exp: fields[0], size: widget.length });
-  case 'bar':
-    return spigraph('bar', { exp: fields[0], subFields: widget.splitField || undefined, barMode: widget.barMode || undefined, size: widget.length });
-  case 'connections': {
-    const toDb = (e) => ((e === 'ip.dst:port' || e === 'destination.ip:port') ? e : FieldService.getField(e, true)?.dbField);
-    return spigraph('connections', { srcField: toDb(fields[0]), dstField: toDb(fields[1]) });
-  }
-  case 'timeline':
-  case 'metric':
-    return { path: '/sessions', query };
-  default:
-    return null;
-  }
+  if (mode === 'timeline' || mode === 'metric') { return { path: '/sessions', query }; }
+  // the same SPI Graph url a saved graph opens with; the widget's own view is
+  // already in the combined expression, so the page keeps the global one
+  const graphQuery = spigraphQueryFromGraph(widget);
+  if (!graphQuery) { return null; }
+  return { path: '/spigraph', query: { ...query, ...graphQuery, view: query.view } };
 }
 
 /**

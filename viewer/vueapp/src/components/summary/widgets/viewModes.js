@@ -22,6 +22,26 @@ export const DEFAULT_VIEW_MODES = {
   'dns.query.host': 'table'
 };
 
+// i18n label key per view mode, in the order the widget editor lists them
+export const VIEW_MODE_LABEL_KEYS = {
+  bar: 'sessions.summary.barChart',
+  pie: 'sessions.summary.pieChart',
+  table: 'sessions.summary.tableView',
+  intersection: 'sessions.summary.intersectionView',
+  heatmap: 'sessions.summary.heatmapView',
+  treemap: 'sessions.summary.treemapView',
+  sankey: 'sessions.summary.sankeyView',
+  connections: 'sessions.summary.connectionsView',
+  timeline: 'sessions.summary.timelineView',
+  map: 'sessions.summary.mapView',
+  stats: 'sessions.summary.statsView',
+  time: 'sessions.summary.timeView',
+  metric: 'sessions.summary.metricView',
+  text: 'sessions.summary.textView'
+};
+// saved view modes come from shared data, so only own keys count
+export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
+
 // Field-bound types: aggregate one field's top-N values (require a field).
 export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection'];
 
