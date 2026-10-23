@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp);
+@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -12,6 +12,7 @@ use JSON;
 use URI::Escape;
 use Data::Dumper;
 use IO::Socket::INET;
+use Time::HiRes ();
 use Try::Tiny;
 use Text::ParseWords qw(shellwords);
 
@@ -577,6 +578,22 @@ my ($url, $content, $token, $debug) = @_;
     my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     return my_from_json($url, $response->content, $debug);
+}
+################################################################################
+# Call $check every 100ms until it returns true or $timeout seconds (default 10)
+# pass, use instead of a fixed sleep when waiting on something the server
+# writes after it responds
+sub waitUntil {
+my ($check, $timeout) = @_;
+    $timeout //= 10;
+    my $end = Time::HiRes::time() + $timeout;
+    while (1) {
+        return 1 if ($check->());
+        last if (Time::HiRes::time() >= $end);
+        Time::HiRes::sleep(0.1);
+    }
+    diag "waitUntil timed out after ${timeout}s";
+    return 0;
 }
 ################################################################################
 sub waitFor {
