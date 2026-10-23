@@ -56,7 +56,7 @@ class URLSource extends SimpleSource {
       return;
     }
 
-    axios.get(this.url, { headers: this.headers, httpsAgent: this.httpsAgent, transformResponse: x => x })
+    axios.get(this.url, { headers: this.headers, ...this.axiosTls, transformResponse: x => x })
       .then((response) => {
         console.log(this.url, response.status);
         if (response.status !== 200) {
@@ -71,8 +71,8 @@ class URLSource extends SimpleSource {
           const url = `${this.urlScrapePrefix}${match[0]}${this.urlScrapeSuffix}`;
           // the section's caTrustFile and client cert are for the configured url, a
           // scraped url on another host gets the default agent and system CAs
-          const httpsAgent = new URL(url).origin === new URL(this.url).origin ? this.httpsAgent : undefined;
-          axios.get(url, { headers: this.headers, httpsAgent, transformResponse: x => x })
+          const axiosTls = new URL(url).origin === new URL(this.url).origin ? this.axiosTls : {};
+          axios.get(url, { headers: this.headers, ...axiosTls, transformResponse: x => x })
             .then((subResponse) => {
               return cb(null, subResponse.data);
             }).catch((subError) => {

@@ -1171,13 +1171,14 @@ class Integration {
   }
 
   /**
-   * An https.Agent built from tlsOptions(), or undefined when the section has
-   * no TLS settings so axios uses its default agent.
-   * @param {string|string[]} [urls] - see tlsOptions
-   * @returns {https.Agent|undefined}
+   * The axios options for calling url with the tlsOptions() agent, which is
+   * only used for url's origin so redirects elsewhere don't get it. Empty when
+   * the section has no TLS settings so axios uses its default agent.
+   * @param {string} url - the url called, see tlsOptions
+   * @returns {object} to spread into the axios options, see ArkimeUtil.axiosAgentOptions
    */
-  httpsAgent (urls) {
-    return ArkimeUtil.httpsAgent(this.tlsOptions(urls));
+  axiosTls (url) {
+    return ArkimeUtil.axiosAgentOptions(url, ArkimeUtil.httpsAgent(this.tlsOptions(url)));
   }
 
   normalizeCard () {

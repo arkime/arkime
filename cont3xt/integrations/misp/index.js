@@ -63,7 +63,7 @@ class MISPIntegration extends Integration {
   #maxResults;
   #enforceWarninglist;
   #toIds;
-  #httpsAgent;
+  #axiosTls;
 
   // ----------------------------------------------------------------------------
   constructor (section) {
@@ -82,7 +82,7 @@ class MISPIntegration extends Integration {
     this.#toIds = ArkimeConfig.getFullBool(section, 'toIds', false);
 
     // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
-    this.#httpsAgent = this.httpsAgent(this.#url);
+    this.#axiosTls = this.axiosTls(this.#url);
 
     const itypes = ArkimeConfig.getFullArray(section, 'itypes', 'ip,domain,url,email,hash,phone');
     itypes.forEach(itype => {
@@ -126,7 +126,7 @@ class MISPIntegration extends Integration {
           'Content-Type': 'application/json',
           'User-Agent': this.userAgent()
         },
-        httpsAgent: this.#httpsAgent,
+        ...this.#axiosTls,
         maxRedirects: 0,
         timeout: 30 * 1000
       });

@@ -29,7 +29,7 @@ class WISESource {
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
    * @param {boolean} [options.fullQuery=false] - for MD5/SHA, query will be query.value and query.contentType
-   * @param {boolean|string} [options.tlsSettings=false] - load the insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings into tlsOptions and httpsAgent, tlsOptions is undefined when they are bad. true reads the url setting, or name the setting holding the url, so https://localhost skips verification like the ES connections do
+   * @param {boolean|string} [options.tlsSettings=false] - load the insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings into tlsOptions and axiosTls, tlsOptions is undefined when they are bad. true reads the url setting, or name the setting holding the url, so https://localhost skips verification like the ES connections do
    */
   constructor (api, section, options) {
     this.api = api;
@@ -67,14 +67,15 @@ class WISESource {
 
     // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings, for
     // sources that call a url and pass tlsSettings: tlsOptions for an ES
-    // client's ssl setting, httpsAgent for axios. A bad setting leaves
-    // tlsOptions undefined so the source can refuse to load, like it does for
-    // any other bad setting.
+    // client's ssl setting, axiosTls to spread into the axios options for the
+    // url, which keeps the agent off redirects to other origins. A bad setting
+    // leaves tlsOptions undefined so the source can refuse to load, like it
+    // does for any other bad setting.
     if (options.tlsSettings) {
       try {
         const url = api.getConfig(section, options.tlsSettings === true ? 'url' : options.tlsSettings);
         this.tlsOptions = ArkimeUtil.sectionTlsOptions(section, url);
-        this.httpsAgent = ArkimeUtil.httpsAgent(this.tlsOptions);
+        this.axiosTls = ArkimeUtil.axiosAgentOptions(url, ArkimeUtil.httpsAgent(this.tlsOptions));
       } catch (err) {
         console.log(section, '- ERROR not loading since', err.message);
         this.tlsOptions = undefined;
@@ -475,7 +476,7 @@ class WISESource {
 
   // ----------------------------------------------------------------------------
   /**
-   * The config fields behind tlsOptions/httpsAgent, for the configDef of a
+   * The config fields behind tlsOptions/axiosTls, for the configDef of a
    * source that calls a url: `fields: [ ..., ...WISESource.tlsConfigFields ]`,
    * which also passes tlsSettings: true to super()
    */

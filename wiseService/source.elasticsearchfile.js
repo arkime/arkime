@@ -42,7 +42,7 @@ class ElasticsearchFileSource extends SimpleSource {
 
     const info = ArkimeUtil.createElasticsearchInfo(this.url);
 
-    axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth, httpsAgent: this.httpsAgent })
+    axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth, ...this.axiosTls })
       .then((response) => {
         if (response.status === 404 || response?.data?._source === undefined) {
           return cb(null, '{}');
@@ -50,7 +50,8 @@ class ElasticsearchFileSource extends SimpleSource {
 
         return cb(null, JSON.stringify(response.data._source, null, 2));
       }).catch((err) => {
-        return cb(err);
+        // just the message, the AxiosError has the auth and the agent's client key in it
+        return cb(err.message);
       });
   }
 
@@ -65,12 +66,12 @@ class ElasticsearchFileSource extends SimpleSource {
 
     const info = ArkimeUtil.createElasticsearchInfo(this.url);
 
-    axios.post(info.url, file, { headers: { 'Content-Type': 'application/json' }, auth: info.auth, httpsAgent: this.httpsAgent })
+    axios.post(info.url, file, { headers: { 'Content-Type': 'application/json' }, auth: info.auth, ...this.axiosTls })
       .then((response) => {
         this.load();
         return cb();
       }).catch((err) => {
-        return cb(err);
+        return cb(err.message);
       });
   }
 }

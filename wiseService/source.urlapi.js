@@ -54,7 +54,7 @@ class URLApiSource extends WISESource {
       .replace(/{valueBase64}/g, () => encodeURIComponent(b64))
       .replace(/{valueBase64Url}/g, () => b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
 
-    axios.get(url, { headers: this.headers, httpsAgent: this.httpsAgent })
+    axios.get(url, { headers: this.headers, ...this.axiosTls })
       .then((response) => {
         const json = (typeof response.data === 'string') ? JSON.parse(response.data) : response.data;
         const eskey = json[this.resultField];

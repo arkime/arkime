@@ -511,8 +511,8 @@ class ArkimeUtil {
    * The TLS options for a config section's outbound https calls, from its
    * insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings.
    * --insecure applies to every section; without it the section's own insecure
-   * setting decides, and when that isn't set an https://localhost url skips
-   * verification like the OpenSearch/Elasticsearch connections do (see
+   * setting decides, and when that isn't set urls that are all loopback hosts
+   * skip verification like the OpenSearch/Elasticsearch connections do (see
    * ArkimeConfig.isInsecure). caTrustFile does not fall back to the default
    * section's, since it replaces the system CAs.
    * @param {string} section - the config section name
@@ -542,6 +542,33 @@ class ArkimeUtil {
   static httpsAgent (tls) {
     if (tls.rejectUnauthorized && !tls.ca && !tls.key) { return undefined; }
     return new https.Agent({ keepAlive: true, ...tls });
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The axios options that use httpsAgent only for url's origin. The agent has
+   * the section's client certificate, caTrustFile and insecure settings, so a
+   * redirect to another origin gets the default agent and system CAs instead,
+   * the same way follow-redirects drops the Authorization header.
+   * @param {string} url - the url being requested
+   * @param {https.Agent} [httpsAgent] - from httpsAgent()
+   * @returns {object} httpsAgent and beforeRedirect to spread into the axios options
+   */
+  static axiosAgentOptions (url, httpsAgent) {
+    if (!httpsAgent) { return {}; }
+    const agentOrigin = ArkimeUtil.parseUrl(url)?.origin;
+    return {
+      httpsAgent,
+      beforeRedirect: (options) => {
+        if (agentOrigin && ArkimeUtil.parseUrl(options.href)?.origin === agentOrigin) { return; }
+        // Behind a proxy axios tunnels with an agent built from httpsAgent's
+        // options, which can't be swapped for the default one, so don't follow
+        if (options.protocol === 'https:' && options.agents?.https && options.agents.https !== httpsAgent) {
+          throw new Error(`Not following redirect to ${ArkimeUtil.parseUrl(options.href)?.origin} through a proxy with the TLS settings for ${agentOrigin}`);
+        }
+        options.agents = {};
+      }
+    };
   }
 
   // ----------------------------------------------------------------------------

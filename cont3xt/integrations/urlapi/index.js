@@ -74,14 +74,15 @@ class URLApiIntegration extends Integration {
 
     this.#resultField = ArkimeConfig.getFull(section, 'resultField');
 
+    // A bad maxRedirects is NaN, which axios treats as follow, so use 0
+    const maxRedirects = parseInt(ArkimeConfig.getFull(section, 'maxRedirects', 0));
     this.#axiosOptions = {
       timeout: parseInt(ArkimeConfig.getFull(section, 'timeout', 30)) * 1000,
       maxContentLength: parseInt(ArkimeConfig.getFull(section, 'maxSize', 10 * 1024 * 1024)),
-      maxRedirects: parseInt(ArkimeConfig.getFull(section, 'maxRedirects', 0))
+      maxRedirects: maxRedirects >= 0 ? maxRedirects : 0,
+      // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+      ...this.axiosTls(this.#url)
     };
-
-    // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
-    this.#axiosOptions.httpsAgent = this.httpsAgent(this.#url);
 
     Integration.register(this);
   }

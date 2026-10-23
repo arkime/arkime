@@ -1603,7 +1603,7 @@ if (internals.webconfig) {
 
     source.getSourceRaw((err, raw) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        return res.send({ success: false, text: String(err.message ?? err) });
       }
       return res.send({ success: true, raw: raw ? raw.toString('utf8') : '' });
     });
@@ -1631,7 +1631,7 @@ if (internals.webconfig) {
 
     source.putSourceRaw(raw, (err) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        return res.send({ success: false, text: String(err.message ?? err) });
       }
       return res.send({ success: true, text: 'Saved' });
     });
@@ -1734,7 +1734,7 @@ if (internals.webconfig) {
     ArkimeConfig.replace(config);
     ArkimeConfig.save((err) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        return res.send({ success: false, text: String(err.message ?? err) });
       } else {
         res.send({ success: true, text: 'Saved & Restarting' });
         // Because of nodemon

@@ -155,7 +155,7 @@ class MISPSource extends WISESource {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
-      httpsAgent: this.httpsAgent,
+      ...this.axiosTls,
       maxRedirects: 0,
       timeout: this.mode === 'api' ? 30 * 1000 : 5 * 60 * 1000
     });
