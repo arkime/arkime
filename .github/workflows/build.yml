@@ -20,6 +20,11 @@ permissions:
   contents: read
   packages: read
 
+# Disable npm audit and funding notice to reduce requests
+env:
+  NPM_CONFIG_AUDIT: "false"
+  NPM_CONFIG_FUND: "false"
+
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest
@@ -97,6 +102,8 @@ jobs:
 
   build:
     needs: [generate-matrix, cache-node]
+    # An empty matrix fails the whole run, so skip the job instead
+    if: needs.generate-matrix.outputs.matrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
@@ -403,6 +410,7 @@ jobs:
 ############# FreeBSD Build #############
   freebsd-build:
     needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.freebsdmatrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
@@ -478,6 +486,7 @@ jobs:
 ############# Alpine Build #############
   alpine-build:
     needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.alpinematrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.alpinematrix)}}
@@ -587,6 +596,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build, freebsd-build, alpine-build]
+    # a job skipped for an empty matrix must not skip the notice, a failed or cancelled one does
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1

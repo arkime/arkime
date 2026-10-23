@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 198;
+use Test::More tests => 202;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -319,6 +319,25 @@ eq_or_diff($wise, from_json('[{"field":"urlapi.value","len":28,"value":"http://e
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapitest/miss")->content;
 eq_or_diff($wise, '[]', "urlapi miss");
 
+# mTLS: the mock is verified with caTrustFile (no insecure) and sent the client cert, whose key has a passphrase
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapimtls/mtls")->content;
+eq_or_diff(from_json($wise), from_json('[{"field":"urlapi.value","len":4,"value":"mtls"},
+{"field":"urlapi.clientcn","len":18,"value":"arkime-test-client"},
+{"field":"tags","len":10,"value":"urlapimtls"}]'), "urlapi mtls caTrustFile and clientKey/clientCert");
+
+# urlapi:badtls has clientKey without clientCert so it isn't loaded, the /sources and /types checks below show it is absent
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapibad/x")->content;
+eq_or_diff($wise, '[]', "urlapi clientKey without clientCert not loaded");
+
+# the section agent only serves its origin: a same-origin redirect keeps the client cert, a redirect to
+# 127.0.0.1 (another origin than localhost) gets the system CAs, so the self-signed mock fails the lookup
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapimtls/redirect-same")->content;
+eq_or_diff(from_json($wise), from_json('[{"field":"urlapi.value","len":15,"value":"redirected-same"},
+{"field":"urlapi.clientcn","len":18,"value":"arkime-test-client"},
+{"field":"tags","len":10,"value":"urlapimtls"}]'), "urlapi same-origin redirect keeps the client cert");
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapimtls/redirect-cross")->content;
+eq_or_diff($wise, 'Not found', "urlapi cross-origin redirect does not get the section TLS settings");
+
 $wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/databricks:test")->content . "]";
 @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};
 eq_or_diff(\@wise, from_json('[
@@ -418,11 +437,11 @@ eq_or_diff($wise, '[]', "misp api miss");
 
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","misp:api","misp:test","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","urlapi:test","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["databricks:test","fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","misp:api","misp:test","reversedns","splunk:test","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","urlapi:mtls","urlapi:test","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
-eq_or_diff($wise, '["databrickstest","domain","email","ip","ja3","mac","md5","sha256","splunktest","url","urlapitest"]',"types");
+eq_or_diff($wise, '["databrickstest","domain","email","ip","ja3","mac","md5","sha256","splunktest","url","urlapimtls","urlapitest"]',"types");
 
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types/file:ip")->content;
 eq_or_diff($wise, '["ip"]',"types file:ip");
@@ -461,7 +480,7 @@ eq_or_diff($wise, '{"misp":"if (session.misp)\\n  div.sessionDetailMeta.bold MIS
 
 # Fields
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/fields")->content;
-is(length($wise), 1634);
+is(length($wise), 1729);
 
 my $info = viewerGet("/api/fields");
 eq_or_diff($info->{"wise.int.cnt"}, from_json('{"friendlyName":"Int Cnt","type":"integer","exp":"wise.int.cnt","help":"Unique number of Help Int","dbField":"wise.intCnt","group":"wise","dbField2":"wise.intCnt"}'));

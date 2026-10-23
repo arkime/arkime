@@ -37,6 +37,7 @@ class CsvJsonIntegration extends Integration {
   #load; // Function pointer
   #parse; // Function pointer
   #url;
+  #axiosTls = {};
   #redisClient;
   #redisKey;
   #doIp; // process should setup ip cache
@@ -122,6 +123,11 @@ class CsvJsonIntegration extends Integration {
     } else {
       console.log(this.section, "- ERROR not loading, don't know how to open", this.#url);
       return;
+    }
+
+    if (this.#load === this.#loadHttp) {
+      // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+      this.#axiosTls = this.axiosTls(this.#url);
     }
 
     setImmediate(this.#load.bind(this));
@@ -316,7 +322,8 @@ class CsvJsonIntegration extends Integration {
     axios.get(this.#url, {
       timeout: 60 * 1000,
       maxContentLength: 1024 * 1024 * 1024,
-      maxBodyLength: 1024 * 1024 * 1024
+      maxBodyLength: 1024 * 1024 * 1024,
+      ...this.#axiosTls
     })
       .then((response) => {
         return this.#process(response.data);

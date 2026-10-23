@@ -8,7 +8,6 @@ const Integration = require('../../integration.js');
 const ArkimeConfig = require('../../../common/arkimeConfig');
 const ArkimeUtil = require('../../../common/arkimeUtil');
 const axios = require('axios');
-const https = require('https');
 
 ArkimeConfig.registerSettings({
   key: { secret: true }
@@ -64,7 +63,7 @@ class MISPIntegration extends Integration {
   #maxResults;
   #enforceWarninglist;
   #toIds;
-  #httpsAgent;
+  #axiosTls;
 
   // ----------------------------------------------------------------------------
   constructor (section) {
@@ -82,9 +81,8 @@ class MISPIntegration extends Integration {
     this.#enforceWarninglist = ArkimeConfig.getFullBool(section, 'enforceWarninglist', true);
     this.#toIds = ArkimeConfig.getFullBool(section, 'toIds', false);
 
-    if (ArkimeConfig.getFullBool(section, 'insecure', false)) {
-      this.#httpsAgent = new https.Agent({ rejectUnauthorized: false });
-    }
+    // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+    this.#axiosTls = this.axiosTls(this.#url);
 
     const itypes = ArkimeConfig.getFullArray(section, 'itypes', 'ip,domain,url,email,hash,phone');
     itypes.forEach(itype => {
@@ -128,7 +126,7 @@ class MISPIntegration extends Integration {
           'Content-Type': 'application/json',
           'User-Agent': this.userAgent()
         },
-        httpsAgent: this.#httpsAgent,
+        ...this.#axiosTls,
         maxRedirects: 0,
         timeout: 30 * 1000
       });

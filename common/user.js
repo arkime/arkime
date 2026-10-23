@@ -7,7 +7,6 @@
  */
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
-const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
 const { LRUCache } = require('lru-cache');
@@ -2064,15 +2063,7 @@ class UserESImplementation {
   constructor (options) {
     this.prefix = ArkimeUtil.formatPrefix(options.prefix);
 
-    const esSSLOptions = { rejectUnauthorized: !options.insecure };
-    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); }
-    if (options.clientKey) {
-      esSSLOptions.key = fs.readFileSync(options.clientKey);
-      esSSLOptions.cert = fs.readFileSync(options.clientCert);
-      if (options.clientKeyPass) {
-        esSSLOptions.passphrase = options.clientKeyPass;
-      }
-    }
+    const esSSLOptions = ArkimeUtil.tlsOptionsOrExit(options, 'OpenSearch/Elasticsearch');
 
     const esOptions = {
       node: options.node,

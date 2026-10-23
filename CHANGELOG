@@ -85,6 +85,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           with plus the command line -o overrides and which settings came from the environment. Who it is shown to is the
           new viewConfigMode setting: off, superAdmin (the default) or appAdmin.
   - All four apps are now Vuetify only, with ten built in themes plus a shareable custom theme
+  - #4384 A caTrustFile with no PEM certificates in it, or an esClientKey/esClientCert without the other, is now a startup error
+          instead of being silently ignored
+  - #4384 The https://localhost rule that skips certificate verification now only matches a loopback host (localhost,
+          127.x.x.x, [::1]) instead of any host starting with localhost or 127.0.0.1, and only when every https url is
+          one, so a mixed list like https://localhost:9200,https://es2:9200 is now verified; set insecure to keep skipping it
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
 ## Capture/Viewer
@@ -181,8 +186,21 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password
   - #4279 New MISP integration, configured with [misp:<name>] sections so multiple instances are supported
+  - #4384 esClientKey/esClientCert/esClientKeyPass now also apply to the cont3xt OpenSearch/Elasticsearch connection, not just the users one
+  - #4384 The urlapi, elasticsearch, arkime, misp, csv and json sections accept caTrustFile, clientKey, clientCert and
+          clientKeyPass to verify the server with a private CA and present a client certificate (mTLS). The elasticsearch,
+          arkime and misp sections also honor --insecure now, like urlapi already did, and all of them skip verification
+          for an https://localhost url like the OpenSearch/Elasticsearch connections do unless the section sets insecure=false.
+          The client certificate and caTrustFile are only used for the configured url's origin, a redirect elsewhere gets
+          the system CAs. A urlapi maxRedirects that isn't a number is now 0 instead of following redirects
 ## WISE
   - #4279 New MISP source that either periodically bulk loads attributes or queries per item, configured with [misp:<name>] sections
+  - #4384 New esClientKey/esClientCert/esClientKeyPass settings present a client certificate (mTLS) to the users OpenSearch/Elasticsearch
+  - #4384 The urlapi, url, elasticsearch, elasticsearchfile and misp sources accept insecure, caTrustFile, clientKey, clientCert and
+          clientKeyPass to verify the server with a private CA and present a client certificate (mTLS), and all
+          of them honor --insecure now, like urlapi already did, and skip verification for an https://localhost url like
+          the OpenSearch/Elasticsearch connections do unless the section sets insecure=false. The client certificate
+          and caTrustFile are only used for the configured url's origin, a redirect elsewhere gets the system CAs
 
 
 6.9.2 2026/11/xx

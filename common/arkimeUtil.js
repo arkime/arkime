@@ -458,6 +458,126 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Build the TLS options shared by the OpenSearch/Elasticsearch client ssl
+   * setting and https.Agent from config values. The ca/key/cert files are read
+   * once, here, so a bad path fails at startup instead of on the first request.
+   * @param {object} options
+   * @param {boolean} [options.insecure] - skip server certificate verification
+   * @param {string} [options.caTrustFile] - PEM file with the CA certificates to trust, replaces the system ones
+   * @param {string} [options.clientKey] - PEM private key file presented to the server (mTLS), requires clientCert
+   * @param {string} [options.clientCert] - PEM certificate file presented to the server (mTLS), requires clientKey
+   * @param {string} [options.clientKeyPass] - passphrase for clientKey
+   * @returns {object} options for tls.connect, https.Agent or the ES client ssl setting
+   * @throws {Error} when caTrustFile has no certificates, only one of clientKey/clientCert is set or a file can't be read
+   */
+  static tlsOptions (options = {}) {
+    const tls = { rejectUnauthorized: !options.insecure };
+    if (options.caTrustFile) {
+      tls.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile);
+      if (tls.ca === undefined) {
+        throw new Error(`caTrustFile ${options.caTrustFile} has no PEM certificates in it`);
+      }
+    }
+    if (options.clientKey || options.clientCert) {
+      if (!options.clientKey || !options.clientCert) {
+        throw new Error('clientKey and clientCert must both be set to use a client certificate');
+      }
+      tls.key = fs.readFileSync(options.clientKey);
+      tls.cert = fs.readFileSync(options.clientCert);
+      if (options.clientKeyPass) { tls.passphrase = options.clientKeyPass; }
+    }
+    return tls;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * tlsOptions for a connection the app can't run without, so a bad setting
+   * is a one line startup error instead of an unhandled exception.
+   * @param {object} options - see tlsOptions
+   * @param {string} what - names the connection in the error, eg OpenSearch/Elasticsearch
+   * @returns {object} see tlsOptions
+   */
+  static tlsOptionsOrExit (options, what) {
+    try {
+      return ArkimeUtil.tlsOptions(options);
+    } catch (err) {
+      console.log(`ERROR - ${what} TLS settings: ${err.message}`);
+      process.exit(1);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The TLS options for a config section's outbound https calls, from its
+   * insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings.
+   * --insecure applies to every section; without it the section's own insecure
+   * setting decides, and when that isn't set urls that are all loopback hosts
+   * skip verification like the OpenSearch/Elasticsearch connections do (see
+   * ArkimeConfig.isInsecure). caTrustFile does not fall back to the default
+   * section's, since it replaces the system CAs.
+   * @param {string} section - the config section name
+   * @param {string|string[]} [urls] - the url(s) the section calls, for the localhost rule
+   * @returns {object} see tlsOptions
+   * @throws {Error} see tlsOptions
+   */
+  static sectionTlsOptions (section, urls) {
+    if (!Array.isArray(urls)) { urls = [urls]; }
+    return ArkimeUtil.tlsOptions({
+      insecure: ArkimeConfig.insecure || (ArkimeConfig.getFullBool(section, 'insecure', undefined) ?? ArkimeConfig.isInsecure(urls)),
+      caTrustFile: ArkimeConfig.getFull(section, 'caTrustFile'),
+      clientKey: ArkimeConfig.getFull(section, 'clientKey'),
+      clientCert: ArkimeConfig.getFull(section, 'clientCert'),
+      clientKeyPass: ArkimeConfig.getFull(section, 'clientKeyPass')
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * An https.Agent for the tls options, with keepAlive like the global agent,
+   * or undefined when they are all the defaults so axios keeps using its global
+   * agent.
+   * @param {object} tls - from tlsOptions or sectionTlsOptions
+   * @returns {https.Agent|undefined}
+   */
+  static httpsAgent (tls) {
+    if (tls.rejectUnauthorized && !tls.ca && !tls.key) { return undefined; }
+    return new https.Agent({ keepAlive: true, ...tls });
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The axios options that use httpsAgent only for url's origin. The agent has
+   * the section's client certificate, caTrustFile and insecure settings, so a
+   * redirect to another origin gets the default agent and system CAs instead,
+   * the same way follow-redirects drops the Authorization header, and a later
+   * hop back to url's origin gets the agent again.
+   * @param {string} url - the url being requested
+   * @param {https.Agent} [httpsAgent] - from httpsAgent()
+   * @returns {object} httpsAgent and beforeRedirect to spread into the axios options
+   */
+  static axiosAgentOptions (url, httpsAgent) {
+    if (!httpsAgent) { return {}; }
+    const agentOrigin = ArkimeUtil.parseUrl(url)?.origin;
+    return {
+      httpsAgent,
+      beforeRedirect: (options) => {
+        if (agentOrigin && ArkimeUtil.parseUrl(options.href)?.origin === agentOrigin) {
+          // back on the configured origin, maybe after a hop elsewhere dropped the agent
+          if (options.agents && !options.agents.https) { options.agents.https = httpsAgent; }
+          return;
+        }
+        // Behind a proxy axios tunnels with an agent built from httpsAgent's
+        // options, which can't be swapped for the default one, so don't follow
+        if (options.protocol === 'https:' && options.agents?.https && options.agents.https !== httpsAgent) {
+          throw new Error(`Not following redirect to ${ArkimeUtil.parseUrl(options.href)?.origin} through a proxy with the TLS settings for ${agentOrigin}`);
+        }
+        options.agents = {};
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Check the Arkime Schema Version and return it. With minVersion it is a
    * fatal startup check; without, failures just return undefined.
    */

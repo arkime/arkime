@@ -578,6 +578,9 @@ async function setupAuth () {
     url: dbUrl,
     node: es,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
+    clientKey: ArkimeConfig.get('esClientKey'),
+    clientCert: ArkimeConfig.get('esClientCert'),
+    clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
     apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
   });

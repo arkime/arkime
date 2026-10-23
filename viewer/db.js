@@ -102,15 +102,13 @@ Db.initialize = async (info) => {
 
   internals.regressionTests = info.regressionTests ?? false;
 
-  const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
-  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); }
-  if (info.esClientKey) {
-    esSSLOptions.key = fs.readFileSync(info.esClientKey);
-    esSSLOptions.cert = fs.readFileSync(info.esClientCert);
-    if (info.esClientKeyPass) {
-      esSSLOptions.passphrase = info.esClientKeyPass;
-    }
-  }
+  const esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
+    insecure: internals.info.insecure,
+    caTrustFile: internals.info.caTrustFile,
+    clientKey: info.esClientKey,
+    clientCert: info.esClientCert,
+    clientKeyPass: info.esClientKeyPass
+  }, 'OpenSearch/Elasticsearch');
 
   const esClientOptions = {
     node: internals.info.host,

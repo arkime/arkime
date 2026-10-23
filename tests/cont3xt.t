@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 345;
+use Test::More tests => 351;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1700,6 +1700,21 @@ ok(!exists $json->{data}->{data}, "urlapi miss has no result");
 # redirects aren't followed by default
 $json = cont3xtPost('/api/integration/text/urlapi:redirect/search', to_json({ query => "redir" }));
 is($json->{purpose}, "fail", "urlapi redirect not followed");
+
+# mTLS: the mock is verified with caTrustFile (no insecure) and sent the client cert
+$json = cont3xtPost('/api/integration/text/urlapi:mtls/search', to_json({ query => "mtls" }));
+is($json->{data}->{data}->{value}, "mtls", "urlapi caTrustFile verifies the server");
+is($json->{data}->{data}->{clientCN}, "arkime-test-client", "urlapi clientKey/clientCert sent");
+$json = cont3xtPost('/api/integration/text/urlapi:test/search', to_json({ query => "nomtls" }));
+is($json->{data}->{data}->{clientCN}, undef, "urlapi without clientCert sends none");
+
+# with maxRedirects a same-origin redirect is followed with the client cert, one to another
+# origin (127.0.0.1 is not localhost) loses the cert and private CA, so the self-signed mock fails
+$json = cont3xtPost('/api/integration/text/urlapi:redirects/search', to_json({ query => "redirect" }));
+is($json->{data}->{data}->{value}, "redirected", "urlapi same-origin redirect followed");
+is($json->{data}->{data}->{clientCN}, "arkime-test-client", "urlapi same-origin redirect keeps the client cert");
+$json = cont3xtPost('/api/integration/text/urlapi:redirects/search', to_json({ query => "redirect-cross" }));
+is($json->{purpose}, "fail", "urlapi cross-origin redirect does not get the section TLS settings");
 
 # a result fetched with a user's own key is only cached for that user
 sub urlapiResult {

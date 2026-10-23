@@ -133,6 +133,13 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * Should certificate verification be skipped for these urls: --insecure, or
+   * every https url is a loopback host. The urls share one TLS setting, so a
+   * single remote host means verifying all of them.
+   * @param {Array<string|string[]>} [urls] - urls or arrays of urls, falsy entries are skipped
+   * @returns {boolean}
+   */
   static isInsecure (urls) {
     if (ArkimeConfig.insecure) {
       return true;
@@ -142,21 +149,21 @@ class ArkimeConfig {
       return false;
     }
 
-    for (let url of urls) {
+    let loopback = false;
+    for (const url of urls.flat()) {
       if (!url) {
         continue;
       }
-      if (Array.isArray(url)) {
-        url = url[0];
-      }
       const u = ArkimeUtil.parseUrl(url);
       if (u === undefined) { continue; } // reported by the config validation
-      if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1') || u.origin?.startsWith('https://[::1]')) {
-        return true;
+      if (u.protocol !== 'https:') { continue; }
+      if (u.hostname !== 'localhost' && u.hostname !== '[::1]' && !/^127\.\d+\.\d+\.\d+$/.test(u.hostname)) {
+        return false;
       }
+      loopback = true;
     }
 
-    return false;
+    return loopback;
   }
 
   // ----------------------------------------------------------------------------
@@ -920,6 +927,7 @@ ArkimeConfig.registerSettings({
   elasticsearchAPIKey: { secret: true },
   elasticsearchBasicAuth: { secret: true },
   esClientKeyPass: { secret: true },
+  clientKeyPass: { secret: true },
   usersElasticsearchAPIKey: { secret: true },
   usersElasticsearchBasicAuth: { secret: true },
   elasticsearch: { type: 'urls' },
