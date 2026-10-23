@@ -344,7 +344,7 @@ sub esCopy
 
         $id = $incoming->{_scroll_id};
 
-        esPost("/_bulk?refresh=wait_for", $out);
+        esPost("/_bulk?refresh=true", $out);
     }
 }
 ################################################################################
