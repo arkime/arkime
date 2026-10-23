@@ -37,7 +37,7 @@
     "@ckpack/vue-color": "^1.6.0",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
-    "maxmind": "^4.3.22",
+    "maxmind": "^5.0.7",
     "punycode": "^2.3.1",
     "vue-debounce": "^5.0.1",
     "vue-draggable-next": "^2.3.0",
