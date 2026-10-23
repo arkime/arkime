@@ -595,9 +595,10 @@ jobs:
   slack:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build, freebsd-build, alpine-build]
+    needs: [generate-matrix, cache-node, build, freebsd-build, alpine-build]
     # a job skipped for an empty matrix must not skip the notice, a failed or cancelled one does
-    if: ${{ !failure() && !cancelled() }}
+    # a timed out job reports as cancelled, which failure() and cancelled() (whole run only) don't catch
+    if: ${{ !failure() && !cancelled() && !contains(needs.*.result, 'cancelled') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
