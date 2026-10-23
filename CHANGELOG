@@ -17,7 +17,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
-  * Arkime >= 7.0.0 requires NodeJS >= 24.0.0 or < 25
+  * Arkime >= 7.0.0 requires NodeJS >= 24.0.0 or < 27
   * Arkime >= 6.0.0 requires NodeJS >= 22.15.0 or < 23
   * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
@@ -69,7 +69,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Parliament no longer upgrades pre Arkime 5 parliament.json files into the DB, upgrade with Arkime 6.x first.
           The file setting is now only used to name the parliament.issues.json file
 ## Release
-  - Node 24.22.1
+  - #4389 Node 26.12.1
   - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm
           packages, the libraries built into capture, the bundled Node.js and CyberChef
   - #4266 easybutton-build.sh no longer builds glib, curl, zstd, lua or libpcap, the OS packages are used everywhere.

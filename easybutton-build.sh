@@ -17,7 +17,7 @@ YARA=4.5.8
 DAQ=2.0.7
 KAFKA=2.15.1
 
-NODE=24.22.1
+NODE=26.12.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -210,7 +210,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   fi
-  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel libmaxminddb-devel libnghttp2-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel libmaxminddb-devel libnghttp2-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny libatomic
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -285,7 +285,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node26 npm-node26 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
