@@ -44,7 +44,7 @@ export default defineConfig({
     modulePreload: false, // preload helper ignores <base href>, 404s under webBasePath
     outDir: './viewer/vueapp/dist',
     manifest: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: path.resolve(import.meta.dirname, 'src/main.js'),
       // jQuery globals come from @rollup/plugin-inject (needed in dev too); silence rolldown's prefer-builtin advisory
       checks: { preferBuiltinFeature: false }

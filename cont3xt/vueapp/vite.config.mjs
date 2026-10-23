@@ -42,7 +42,7 @@ export default defineConfig({
     modulePreload: false, // preload helper ignores <base href>, 404s under webBasePath
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: path.resolve(import.meta.dirname, 'src/main.js')
     }
   },

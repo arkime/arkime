@@ -1,7 +1,6 @@
 // NOTE: vueapp/build/** & vueapp/config/** currently unused - we may want to add back in check-versions.js?
 
 import { fileURLToPath } from 'node:url';
-import inject from '@rollup/plugin-inject';
 
 import path from 'path';
 import { defineConfig } from 'vite';
@@ -40,7 +39,7 @@ export default defineConfig({
     modulePreload: false, // preload helper ignores <base href>, 404s under webBasePath
     outDir: './parliament/vueapp/dist',
     manifest: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: path.resolve(import.meta.dirname, 'src/main.js')
     }
   },
