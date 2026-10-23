@@ -102,6 +102,8 @@ jobs:
 
   build:
     needs: [generate-matrix, cache-node]
+    # An empty matrix fails the whole run, so skip the job instead
+    if: needs.generate-matrix.outputs.matrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
@@ -408,6 +410,7 @@ jobs:
 ############# FreeBSD Build #############
   freebsd-build:
     needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.freebsdmatrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
@@ -483,6 +486,7 @@ jobs:
 ############# Alpine Build #############
   alpine-build:
     needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.alpinematrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.alpinematrix)}}
