@@ -8,7 +8,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import Vuetify from 'vite-plugin-vuetify';
 
-import { git } from '../../common/git';
+import { git } from '../../common/git.mjs';
 import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
@@ -48,10 +48,11 @@ export default defineConfig({
     }
   },
   build: {
+    modulePreload: false, // preload helper ignores <base href>, 404s under webBasePath
     outDir: './viewer/vueapp/dist',
     manifest: true,
-    rollupOptions: {
-      input: path.resolve(__dirname, 'src/main.js'),
+    rolldownOptions: {
+      input: path.resolve(import.meta.dirname, 'src/main.js'),
       // jQuery globals come from @rollup/plugin-inject (needed in dev too); silence rolldown's prefer-builtin advisory
       checks: { preferBuiltinFeature: false }
     }

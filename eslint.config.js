@@ -95,7 +95,7 @@ const vueRuleOverrides = {
 module.exports = defineConfig([
     // Configuration for JavaScript files
     {
-        files: ["**/*.js"],
+        files: ["**/*.js", "**/*.mjs"],
         languageOptions: {
             parserOptions: {
                 ecmaVersion: "latest",
