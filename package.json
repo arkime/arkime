@@ -11,7 +11,7 @@
     "@databricks/sql": "^2.3.0",
     "@elastic/elasticsearch": "7.10.0",
     "acorn": "^8.19.0",
-    "arkime-iptrie": "^0.0.10",
+    "arkime-iptrie": "^0.1.0",
     "arkime-notifme-sdk": "^1.11.13",
     "async": "^3.2.6",
     "aws4": "^1.13.2",
