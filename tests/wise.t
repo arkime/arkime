@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 200;
+use Test::More tests => 202;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -328,6 +328,15 @@ eq_or_diff(from_json($wise), from_json('[{"field":"urlapi.value","len":4,"value"
 # urlapi:badtls has clientKey without clientCert so it isn't loaded, the /sources and /types checks below show it is absent
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapibad/x")->content;
 eq_or_diff($wise, '[]', "urlapi clientKey without clientCert not loaded");
+
+# the section agent only serves its origin: a same-origin redirect keeps the client cert, a redirect to
+# 127.0.0.1 (another origin than localhost) gets the system CAs, so the self-signed mock fails the lookup
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapimtls/redirect-same")->content;
+eq_or_diff(from_json($wise), from_json('[{"field":"urlapi.value","len":15,"value":"redirected-same"},
+{"field":"urlapi.clientcn","len":18,"value":"arkime-test-client"},
+{"field":"tags","len":10,"value":"urlapimtls"}]'), "urlapi same-origin redirect keeps the client cert");
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/urlapimtls/redirect-cross")->content;
+eq_or_diff($wise, 'Not found', "urlapi cross-origin redirect does not get the section TLS settings");
 
 $wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/databricks:test")->content . "]";
 @wise = sort { $a->{key} cmp $b->{key}} @{from_json($wise, {relaxed=>1})};

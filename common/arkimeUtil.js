@@ -549,7 +549,8 @@ class ArkimeUtil {
    * The axios options that use httpsAgent only for url's origin. The agent has
    * the section's client certificate, caTrustFile and insecure settings, so a
    * redirect to another origin gets the default agent and system CAs instead,
-   * the same way follow-redirects drops the Authorization header.
+   * the same way follow-redirects drops the Authorization header, and a later
+   * hop back to url's origin gets the agent again.
    * @param {string} url - the url being requested
    * @param {https.Agent} [httpsAgent] - from httpsAgent()
    * @returns {object} httpsAgent and beforeRedirect to spread into the axios options
@@ -560,7 +561,11 @@ class ArkimeUtil {
     return {
       httpsAgent,
       beforeRedirect: (options) => {
-        if (agentOrigin && ArkimeUtil.parseUrl(options.href)?.origin === agentOrigin) { return; }
+        if (agentOrigin && ArkimeUtil.parseUrl(options.href)?.origin === agentOrigin) {
+          // back on the configured origin, maybe after a hop elsewhere dropped the agent
+          if (options.agents && !options.agents.https) { options.agents.https = httpsAgent; }
+          return;
+        }
         // Behind a proxy axios tunnels with an agent built from httpsAgent's
         // options, which can't be swapped for the default one, so don't follow
         if (options.protocol === 'https:' && options.agents?.https && options.agents.https !== httpsAgent) {

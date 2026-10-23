@@ -138,6 +138,16 @@ function handleURLApi (req, res) {
   if (segs[0] === undefined || segs[0] === 'miss') {
     return send(res, 404, 'application/json', '{}');
   }
+  // for the TLS agent tests: a same origin redirect keeps the section's client
+  // cert, 127.0.0.1 is another origin than localhost so it must not get it
+  if (segs[0] === 'redirect-same') {
+    res.writeHead(302, { Location: '/urlapi/redirected-same' });
+    return res.end();
+  }
+  if (segs[0] === 'redirect-cross') {
+    res.writeHead(302, { Location: `https://127.0.0.1:${port}/urlapi/redirected-cross` });
+    return res.end();
+  }
   return sendJSON(res, { value: segs[0], b64: segs[1], b64url: segs[2], clientCN: clientCN(req) });
 }
 
@@ -147,6 +157,11 @@ function handleCont3xt (req, res) {
   log(`CONT3XT ${req.url} -> ${JSON.stringify(segs)}`);
   if (segs[0] === 'redirect') {
     res.writeHead(302, { Location: '/cont3xt/echo/redirected' });
+    return res.end();
+  }
+  // another origin than localhost, so the section's client cert and CA must not follow
+  if (segs[0] === 'redirect-cross') {
+    res.writeHead(302, { Location: `https://127.0.0.1:${port}/cont3xt/echo/redirected` });
     return res.end();
   }
   if (segs[0] === 'slow') {

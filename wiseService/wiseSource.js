@@ -29,7 +29,7 @@ class WISESource {
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
    * @param {boolean} [options.fullQuery=false] - for MD5/SHA, query will be query.value and query.contentType
-   * @param {boolean|string} [options.tlsSettings=false] - load the insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings into tlsOptions and axiosTls, tlsOptions is undefined when they are bad. true reads the url setting, or name the setting holding the url, so https://localhost skips verification like the ES connections do
+   * @param {boolean|string} [options.tlsSettings=false] - load the insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings into tlsOptions and axiosTls, tlsOptions is undefined when they are bad. true reads the url setting, or name the setting holding the url, so https://localhost skips verification like the ES connections do; elasticsearch(s):// and opensearch(s):// urls are read as http(s)
    */
   constructor (api, section, options) {
     this.api = api;
@@ -73,7 +73,9 @@ class WISESource {
     // does for any other bad setting.
     if (options.tlsSettings) {
       try {
-        const url = api.getConfig(section, options.tlsSettings === true ? 'url' : options.tlsSettings);
+        let url = api.getConfig(section, options.tlsSettings === true ? 'url' : options.tlsSettings);
+        // the ES sources take elasticsearch(s):// and opensearch(s):// urls, which are http(s) for TLS purposes
+        if (url !== undefined) { url = ArkimeUtil.createElasticsearchInfo(url).url; }
         this.tlsOptions = ArkimeUtil.sectionTlsOptions(section, url);
         this.axiosTls = ArkimeUtil.axiosAgentOptions(url, ArkimeUtil.httpsAgent(this.tlsOptions));
       } catch (err) {
