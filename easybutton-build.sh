@@ -17,7 +17,7 @@ YARA=4.5.8
 DAQ=2.0.7
 KAFKA=2.15.1
 
-NODE=24.22.1
+NODE=26.12.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -285,7 +285,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node26 npm-node26 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
