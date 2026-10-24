@@ -1142,7 +1142,7 @@ Db.deleteHistory = async (id, index, cluster) => {
 // Hunt DB interactions
 Db.createHunt = async (doc, cluster) => {
   return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m', cluster
+    index: fixIndex('hunts'), body: doc, refresh: true, timeout: '10m', cluster
   });
 };
 Db.searchHunt = async (query, cluster) => {

@@ -161,7 +161,7 @@ class DbESImpl {
     const { body } = await this.#client.index({
       index: `${this.#prefix}views`,
       body: doc,
-      refresh: 'wait_for',
+      refresh: true,
       timeout: '10m'
     });
     return body._id;
@@ -236,7 +236,7 @@ class DbESImpl {
     const { body } = await this.#client.index({
       index: `${this.#prefix}shareables`,
       body: doc,
-      refresh: 'wait_for',
+      refresh: true,
       timeout: '10m'
     });
     return body._id;
@@ -311,7 +311,7 @@ class DbESImpl {
     const { body } = await this.#client.index({
       index: `${this.#prefix}lookups`,
       body: doc,
-      refresh: 'wait_for',
+      refresh: true,
       timeout: '10m'
     });
     return body._id;
