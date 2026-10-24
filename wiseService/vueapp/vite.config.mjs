@@ -5,10 +5,10 @@ import { fileURLToPath } from 'node:url';
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import Components from 'unplugin-vue-components/vite';
-import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
+import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git.mjs';
+import thirdPartyLicenses from '../../common/vite-plugin-third-party-licenses.mjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,9 +23,8 @@ export default defineConfig({
   },
   plugins: [
     vue({}),
-    Components({
-      resolvers: [BootstrapVueNextResolver()],
-    })
+    Vuetify({ treeShake: true }),
+    thirdPartyLicenses({ file: fileURLToPath(new URL('./third-party-licenses.json', import.meta.url)) })
   ],
   resolve: {
     alias: {

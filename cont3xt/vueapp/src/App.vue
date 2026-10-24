@@ -7,65 +7,23 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="compatibleBrowser"
       class="d-flex flex-column h-100">
+      <app-banner />
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
-        <router-view />
+        <router-view class="flex-grow-1 w-100" />
         <keyboard-shortcuts
           @shift-hold-change="shiftHoldChange"
           shortcuts-class="cont3xt-shortcuts"
           shortcuts-btn-transition="cont3xt-shortcuts-slide"
           shortcuts-help-transition="cont3xt-shortcuts-slide-long">
           <template #content>
-            <span class="cont3xt-shortcuts-content ">
-              <code>'Q'</code> - set focus to query bar
-              <br>
-              <code>'T'</code> - set focus to the start time field
-              <br>
-              <code>'F'</code> - set focus to the link group search filter
-              <br>
-              <code>'V'</code> - set focus to the view dropdown search filter
-              <br>
-              <code>'O'</code> - set focus to the overview dropdown search filter
-              <br>
-              <code>'G'</code> - set focus to the tag input
-              <br>
-              <code>'E'</code> - toggle cache On/Off
-              <br>
-              <code>'R'</code> - generate a report of the current results
-              <br>
-              <code>'L'</code> - copy the share link to the clipboard
-              <br>
-              <code>'S'</code> - jump to the Settings page
-              <br>
-              <code>'C'</code> - jump to the Cont3xt search page
-              <br>
-              <code>'A'</code> - jump to the Stats page
-              <br>
-              <code>'Y'</code> - jump to the History page
-              <br>
-              <code>'H'</code> - jump to the Help page
-              <br>
-              <code>'&lt;'</code> - toggle the integration panel
-              <br>
-              <code>'&gt;'</code> - toggle the link group panel
-              <br>
-              <code>'shift -'</code> - collapse all top-level indicator result tree nodes
-              <br>
-              <code>'shift +'</code> - expand all top-level indicator result tree nodes
-              <br>
-              <code>'h'</code> - collapse active indicator result tree node, or navigate left
-              <br>
-              <code>'j'</code> - navigate down in indicator result tree
-              <br>
-              <code>'k'</code> - navigate up in indicator result tree
-              <br>
-              <code>'l'</code> - expand active indicator result tree node, or navigate right
-              <br>
-              <code>'shift + enter'</code> - issue search/refresh
-              <br>
-              <code>'esc'</code> - remove focus from any input and close this dialog
-              <br>
-              <code>'?'</code> - shows you this dialog, but I guess you already knew that
+            <span class="cont3xt-shortcuts-content">
+              <template
+                v-for="(shortcut, index) in shortcuts"
+                :key="shortcut.keys">
+                <br v-if="index > 0">
+                <code>{{ shortcut.keys }}</code> - {{ shortcut.text }}
+              </template>
             </span>
           </template>
         </keyboard-shortcuts>
@@ -87,13 +45,16 @@ import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
+import AppBanner from '@common/AppBanner.vue';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
   components: {
     Cont3xtNavbar,
     KeyboardShortcuts,
-    Cont3xtUpgradeBrowser
+    Cont3xtUpgradeBrowser,
+    AppBanner
   },
   data: function () {
     return {
@@ -101,7 +62,37 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getShiftKeyHold'])
+    ...mapGetters(['getShiftKeyHold']),
+    // keys are physical, so they stay literal -- only the descriptions translate
+    shortcuts () {
+      return [
+        { keys: "'Q'", text: this.$t('cont3xt.shortcuts.focusQuery') },
+        { keys: "'T'", text: this.$t('cont3xt.shortcuts.focusStartTime') },
+        { keys: "'F'", text: this.$t('cont3xt.shortcuts.focusLinkFilter') },
+        { keys: "'V'", text: this.$t('cont3xt.shortcuts.focusViewFilter') },
+        { keys: "'O'", text: this.$t('cont3xt.shortcuts.focusOverviewFilter') },
+        { keys: "'G'", text: this.$t('cont3xt.shortcuts.focusTag') },
+        { keys: "'E'", text: this.$t('cont3xt.shortcuts.toggleCache') },
+        { keys: "'R'", text: this.$t('cont3xt.shortcuts.report') },
+        { keys: "'L'", text: this.$t('cont3xt.shortcuts.shareLink') },
+        { keys: "'S'", text: this.$t('cont3xt.shortcuts.jumpSettings') },
+        { keys: "'C'", text: this.$t('cont3xt.shortcuts.jumpCont3xt') },
+        { keys: "'A'", text: this.$t('cont3xt.shortcuts.jumpStats') },
+        { keys: "'Y'", text: this.$t('cont3xt.shortcuts.jumpHistory') },
+        { keys: "'H'", text: this.$t('cont3xt.shortcuts.jumpHelp') },
+        { keys: "'<'", text: this.$t('cont3xt.shortcuts.toggleIntegrationPanel') },
+        { keys: "'>'", text: this.$t('cont3xt.shortcuts.toggleLinkGroupPanel') },
+        { keys: "'shift -'", text: this.$t('cont3xt.shortcuts.collapseRoots') },
+        { keys: "'shift +'", text: this.$t('cont3xt.shortcuts.expandRoots') },
+        { keys: "'h'", text: this.$t('cont3xt.shortcuts.treeLeft') },
+        { keys: "'j'", text: this.$t('cont3xt.shortcuts.treeDown') },
+        { keys: "'k'", text: this.$t('cont3xt.shortcuts.treeUp') },
+        { keys: "'l'", text: this.$t('cont3xt.shortcuts.treeRight') },
+        { keys: "'shift + enter'", text: this.$t('cont3xt.shortcuts.issueSearch') },
+        { keys: "'esc'", text: this.$t('cont3xt.shortcuts.escape') },
+        { keys: "'?'", text: this.$t('cont3xt.shortcuts.showDialog') }
+      ];
+    }
   },
   mounted () {
     this.compatibleBrowser = (typeof Object.__defineSetter__ === 'function') &&
@@ -121,7 +112,7 @@ export default {
     });
     LinkService.getLinkGroups();
     OverviewService.getOverviews();
-    UserService.getUser();
+    UserService.getUser().then((user) => { this.hydrateThemeFromUser(user); });
     UserService.getRoles();
     UserService.getUserSettings().then((response) => {
       this.$store.commit('SET_SELECTED_OVERVIEW_ID_MAP', response.selectedOverviews ?? {});
@@ -268,6 +259,11 @@ export default {
         hash: this.$route.hash,
         query: { ...this.$route.query }
       });
+    },
+    hydrateThemeFromUser (user) {
+      applyServerTheme(user?.settings, (themeId, customTheme) => {
+        this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
+      });
     }
   }
 };
@@ -289,8 +285,8 @@ body {
   z-index: 9;
   position: fixed;
   color: rgb(var(--v-theme-info));
-  border: var(--color-gray);
-  background: var(--color-light);
+  border: rgb(var(--v-theme-outline));
+  background: rgb(var(--v-theme-neutral-lighter));
   border-radius: 4px 0 0 4px;
   border-right: none;
   -webkit-box-shadow: 0 0 16px -2px black;

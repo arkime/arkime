@@ -4,30 +4,34 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="spigraph-pie">
-    <!-- field select -->
-    <div
-      class="d-flex flex-row ps-1"
-      :class="{'position-absolute': !!tableData.length}">
-      <div
-        class="d-inline"
-        v-if="fields && fields.length">
-        <div class="input-group input-group-sm me-2">
-          <span class="input-group-text">
-            {{ $t('spigraph.addAnotherField') }}:
-          </span>
-          <arkime-field-typeahead
-            :fields="fields"
-            @field-selected="changeField"
-            page="SpigraphSubfield" />
+    <!-- field select: teleported into the spigraph sub-navbar, alongside the
+         other controls (same pattern as the connections view) -->
+    <teleport
+      defer
+      to="#spigraph-subfield-anchor">
+      <div class="d-flex flex-row align-center">
+        <!-- a bar is split by at most one more field -->
+        <div
+          class="d-inline"
+          v-if="fields && fields.length && !(spiGraphType === 'bar' && fieldTypeaheadList.length >= 1)">
+          <div class="arkime-input-group subfield-group">
+            <span class="arkime-input-label">
+              {{ $t('spigraph.addAnotherField') }}:
+            </span>
+            <arkime-field-typeahead
+              :fields="fields"
+              @field-selected="changeField"
+              page="SpigraphSubfield" />
+          </div>
+        </div>
+        <div class="d-inline ms-1">
+          <drag-list
+            :list="this.fieldTypeaheadList"
+            @reorder="reorderFields"
+            @remove="removeField" />
         </div>
       </div>
-      <div class="d-inline ms-1">
-        <drag-list
-          :list="this.fieldTypeaheadList"
-          @reorder="reorderFields"
-          @remove="removeField" />
-      </div>
-    </div> <!-- /field select -->
+    </teleport> <!-- /field select -->
 
     <!-- info area -->
     <div
@@ -49,23 +53,48 @@ SPDX-License-Identifier: Apache-2.0
     <!-- treemap area -->
     <div
       id="treemap-area"
-      class="pt-3"
       v-show="spiGraphType === 'treemap' && vizData && vizData.children.length" />
     <!-- /treemap area -->
 
     <!-- sankey area -->
     <div
       id="sankey-area"
-      class="pt-4"
       v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length" />
     <!-- /sankey area -->
+
+    <!-- bar area: the first field's values as bars, split by the second
+         field's values when one is chosen (stacked or grouped) -->
+    <div
+      v-show="spiGraphType === 'bar' && barData.length"
+      class="bar-area">
+      <summary-bar-chart
+        v-if="spiGraphType === 'bar' && barData.length && baseFieldObj"
+        :data="barData"
+        svg-id="spigraph-bar"
+        :field-config="baseFieldObj"
+        :split-field-config="barSplitField"
+        :bar-mode="barMode"
+        :width="barWidth"
+        :height="barHeight"
+        metric-type="sessions"
+        @show-tooltip="showBarTooltip" />
+      <summary-chart-tooltip
+        :visible="barTooltip.visible"
+        :data="barTooltip.data"
+        :field-config="baseFieldObj"
+        :position="barTooltip.position"
+        :percentage="barTooltip.percentage"
+        metric-type="sessions"
+        :split="barTooltip.split"
+        @close="barTooltip.visible = false" />
+    </div> <!-- /bar area -->
 
     <!-- table area -->
     <div
       v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
-      class="m-1 pt-5">
+      class="m-1 pt-1">
       <table
-        class="table-bordered table-hover spigraph-table"
+        class="spigraph-table"
         id="spigraphTable"
         ref="table">
         <thead>
@@ -85,11 +114,10 @@ SPDX-License-Identifier: Apache-2.0
                   {{ field.friendlyName }}
                   <a
                     v-if="index === fieldList.length - 1 && hiddenColumns"
-                    class="pull-right cursor-pointer ms-2"
-                    id="showHiddenColumns"
+                    class="float-right cursor-pointer ms-2"
                     @click="showHiddenColumns">
-                    <span class="fa fa-plus-square" />
-                    <BTooltip target="showHiddenColumns">{{ $t('spigraph.showHiddenColumnsTip') }}</BTooltip>
+                    <v-icon icon="mdi-plus-box" />
+                    <v-tooltip activator="parent">{{ $t('spigraph.showHiddenColumnsTip') }}</v-tooltip>
                   </a>
                 </span>
               </th>
@@ -103,15 +131,14 @@ SPDX-License-Identifier: Apache-2.0
                 class="cursor-pointer"
                 @click="columnClick(index, 'name')">
                 {{ $t('spigraph.tableValue') }}
-                <span
-                  v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ms-2" />
-                <span
-                  v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ms-2" />
-                <span
-                  v-show="tableSortField !== index || tableSortType !== 'name'"
-                  class="fa fa-sort ms-2" />
+                <v-icon
+                  icon="mdi-chevron-up"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'name' && !tableDesc" />
+                <v-icon
+                  icon="mdi-chevron-down"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'name' && tableDesc" />
               </th>
               <th
                 class="cursor-pointer"
@@ -119,22 +146,20 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick(index, 'size')"
                 v-if="item && !item.hide">
                 {{ $t('spigraph.tableCount') }}
-                <span
-                  v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ms-2" />
-                <span
-                  v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ms-2" />
-                <span
-                  v-show="tableSortField !== index || tableSortType !== 'size'"
-                  class="fa fa-sort ms-2" />
+                <v-icon
+                  icon="mdi-chevron-up"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'size' && !tableDesc" />
+                <v-icon
+                  icon="mdi-chevron-down"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'size' && tableDesc" />
                 <a
                   @click="hideColumn(item)"
-                  id="hideColumn"
-                  class="pull-right ms-2"
+                  class="float-right ms-2"
                   v-if="index !== fieldList.length - 1">
-                  <span class="fa fa-minus-square" />
-                  <BTooltip target="hideColumn">{{ $t('spigraph.hideColumnTip') }}</BTooltip>
+                  <v-icon icon="mdi-minus-box" />
+                  <v-tooltip activator="parent">{{ $t('spigraph.hideColumnTip') }}</v-tooltip>
                 </a>
               </th>
             </template>
@@ -206,14 +231,19 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // import services
 import SpigraphService from './SpigraphService';
+import { themedColor } from '@common/themes/themedColor.js';
 // import internal
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
+import SummaryBarChart from '../summary/SummaryBarChart.vue';
+import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 // import utils
 import Utils from '../utils/utils';
+import { hierarchyToSankey } from '../utils/sankeyData';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
+import { attachTableGrips } from '@common/composables/useColumnResize.js';
 
 let d3; // lazy load d3
 let sankey, sankeyLinkHorizontal; // lazy load d3-sankey
@@ -237,75 +267,36 @@ let radius = getRadius();
 
 // page treemap variables -------------------------------------------------- //
 let gtree, newBox;
-const treemapMargin = 10;
+const treemapMargin = 4;
 let treemapWidth = getTreemapWidth();
 let treemapHeight = getTreemapHeight();
 
 // page sankey variables -------------------------------------------------- //
 let gsankey;
-const sankeyMargin = { top: 10, right: 10, bottom: 10, left: 10 };
+const sankeyMargin = { top: 2, right: 2, bottom: 2, left: 2 };
 let sankeyWidth = getSankeyWidth();
 let sankeyHeight = getSankeyHeight();
 
-// column resize variables ------------------------------------------------- //
-let selectedColElem; // store selected column to watch drag and calculate new column width
-let colStartOffset; // store column offset width to calculate new column width
-let colWidthBeforeResize; // sore column width before resize to calculate diff
-let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
-let table; // store table element to update its width after column resize
-let cols; // store cols to add grip event handlers and save new widths
-let selectedGripElem; // store the grip to style it while resizing column
-
-// column resize functions ------------------------------------------------- //
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, col) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedColElem = col;
-  colWidthBeforeResize = col.style.width.slice(0, -2);
-  tableWidthBeforeResize = table.style.width.slice(0, -2);
-  colStartOffset = col.offsetWidth - e.pageX;
-  selectedGripElem = col.getElementsByClassName('grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
-    selectedGripElem.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
-    selectedColElem.style.width = `${newWidth}px`;
-
-    // update the width of the table. need to do this or else the table
-    // cannot overflow its container
-    const diff = newWidth - colWidthBeforeResize;
-    table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
-
-    selectedGripElem.style.borderLeft = 'unset';
-    selectedGripElem.style.left = 'unset';
-  }
-
-  selectedGripElem = undefined;
-  selectedColElem = undefined;
-}
+const MIN_COL_WIDTH = 70;
 
 // pie functions ----------------------------------------------------------- //
-function getWindowWidth () {
-  return window.innerWidth;
+// the scroll container is the real drawing area; measure it directly
+function getContentEl () {
+  return document.querySelector('.spigraph-page .page-scroll');
 }
 
-function getWindowHeight (toolbarDown = true) {
-  return window.innerHeight - 184; // height - (footer + headers + padding)
+function getWindowWidth () {
+  const el = getContentEl();
+  return (el ? el.clientWidth : window.innerWidth) - 8;
+}
+
+function getWindowHeight () {
+  const el = getContentEl();
+  if (!el) { return window.innerHeight - 184; }
+  // measure the live scroll container, not a guessed fixed header height
+  const area = el.querySelector('.spigraph-pie');
+  const offsetTop = area ? (area.getBoundingClientRect().top - el.getBoundingClientRect().top) : 0;
+  return el.clientHeight - offsetTop - 8;
 }
 
 function getRadius () {
@@ -348,11 +339,11 @@ function getUid (d) {
 }
 
 function getTreemapWidth () {
-  return getWindowWidth() - (treemapMargin * 2);
+  return getWindowWidth();
 }
 
 function getTreemapHeight () {
-  return getWindowHeight() - (treemapMargin * 2);
+  return getWindowHeight() + 6;
 }
 
 function mouseoverBox (d, self) {
@@ -371,11 +362,11 @@ function fillBoxText (d) {
 
 // sankey functions ------------------------------------------------------- //
 function getSankeyWidth () {
-  return window.innerWidth - (sankeyMargin.left + sankeyMargin.right);
+  return getWindowWidth();
 }
 
 function getSankeyHeight () {
-  return window.innerHeight - 200 - (sankeyMargin.top + sankeyMargin.bottom);
+  return getWindowHeight() + 6;
 }
 
 // common functions -------------------------------------------------------- //
@@ -392,12 +383,19 @@ export default {
   components: {
     ArkimeFieldTypeahead,
     Popup,
-    DragList
+    DragList,
+    SummaryBarChart,
+    SummaryChartTooltip
   },
   props: {
     spiGraphType: {
       type: String,
       default: ''
+    },
+    // bar: 'stacked' | 'grouped' layout of the second field's values
+    barMode: {
+      type: String,
+      default: 'stacked'
     },
     baseField: {
       type: String,
@@ -428,23 +426,21 @@ export default {
       vizData: undefined,
       sankeyData: undefined,
       hiddenColumns: false,
-      popupInfo: undefined
+      popupInfo: undefined,
+      barWidth: 800,
+      barHeight: 500,
+      barTooltip: { visible: false, data: null, position: { x: 0, y: 0 }, percentage: null, split: null }
     };
   },
   async mounted () {
     // set colors to match the background
-    const styles = window.getComputedStyle(document.body);
-    background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-    foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
+    background = themedColor('background', '#FFFFFF');
+    foreground = themedColor('foreground', '#333333');
 
     this.baseFieldObj = this.getFieldObj(this.baseField);
 
-    if (this.$route.query.subFields) {
-      const subFieldExps = this.$route.query.subFields.split(',');
-      for (const exp of subFieldExps) {
-        this.fieldTypeaheadList.push(this.getFieldObj(exp));
-      }
-    }
+    this.syncFieldsFromRoute();
+    this.trimBarFields();
 
     d3 = await import('d3'); // lazy load d3 to avoid loading it on every page
     const { sankey: d3sankey, sankeyLinkHorizontal: d3sankeyLinkHorizontal } = await import('d3-sankey');
@@ -454,8 +450,10 @@ export default {
 
     // resize the pie with the window
     window.addEventListener('resize', this.resize);
+    this.sizeBar();
     // close info popup if the user presses escape
     window.addEventListener('keyup', this.closeInfoOnEsc);
+    document.addEventListener('click', this.closeBarTooltipOnOutsideClick);
   },
   watch: {
     graphData: function (newVal, oldVal) {
@@ -471,12 +469,27 @@ export default {
     },
     spiGraphType: function (newVal, oldVal) {
       this.closeInfo();
+      this.barTooltip.visible = false;
       this.applyGraphData(this.vizData);
       if (newVal === 'table') {
         this.initializeColResizable();
       }
+      if (newVal === 'bar') {
+        this.$nextTick(this.sizeBar);
+        // sankey keeps its own node/link shape; the bar needs the hierarchy
+        if (!this.vizData?.children) { this.loadData(); }
+      }
+    },
+    // trims once the url says bar: trimming on the prop change would push a
+    // url built before the graph type change landed and undo it. The fields
+    // come from the url first: a loaded graph changes both at once, and this
+    // watcher runs before the subFields one
+    '$route.query.spiGraphType': function () {
+      this.syncFieldsFromRoute();
+      this.trimBarFields();
     },
     '$route.query.subFields': function (newVal, oldVal) {
+      this.syncFieldsFromRoute();
       this.loadData();
     },
     // Resize svg height after toggle is updated and mounted()
@@ -494,6 +507,23 @@ export default {
     fieldList: function () {
       const fieldList = [this.baseFieldObj];
       return fieldList.concat(this.fieldTypeaheadList);
+    },
+    // the hierarchy as the bar chart wants it: one item per first-field
+    // value, with the second field's values (if any) as its split
+    barData: function () {
+      const children = this.vizData?.children || [];
+      const split = this.fieldTypeaheadList.length > 0;
+      // a value with children has its count in sizeValue (size is cleared)
+      const count = (node) => node.sizeValue ?? node.size;
+      return children.map(c => ({
+        item: c.name,
+        sessions: count(c),
+        value: count(c),
+        ...(split ? { split: (c.children || []).map(s => ({ item: s.name, sessions: count(s), value: count(s) })) } : {})
+      }));
+    },
+    barSplitField: function () {
+      return this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : null;
     }
   },
   methods: {
@@ -563,6 +593,49 @@ export default {
       this.initializeColResizable();
     },
     /* event functions ----------------------------------------------------- */
+    /** Fits the bar chart to the content area */
+    sizeBar: function () {
+      this.barWidth = Math.max(300, getWindowWidth());
+      this.barHeight = Math.max(300, getWindowHeight());
+    },
+    /**
+     * A bar is split by at most one more field, so drop any others carried
+     * over from another graph type
+     * @returns {Boolean} true when fields were dropped (the url change reloads)
+     */
+    trimBarFields: function () {
+      // the url's type: on back/forward the prop catches up a tick later
+      const type = this.$route.query.spiGraphType || this.spiGraphType;
+      if (type !== 'bar' || this.fieldTypeaheadList.length <= 1) { return false; }
+      this.fieldTypeaheadList.splice(1);
+      this.applyFieldListToUrl();
+      return true;
+    },
+    /**
+     * The url is the source of truth for the extra fields: a loaded saved
+     * graph (or back/forward) changes it without going through changeField.
+     * A field this viewer doesn't know (eg a hand-edited url) is skipped
+     */
+    syncFieldsFromRoute: function () {
+      const exps = String(this.$route.query.subFields || '').split(',').filter(Boolean);
+      if (exps.join(',') !== this.fieldTypeaheadList.map(f => f?.exp).join(',')) {
+        this.fieldTypeaheadList = exps.map(exp => this.getFieldObj(exp)).filter(Boolean);
+      }
+    },
+    closeBarTooltipOnOutsideClick: function (e) {
+      if (this.barTooltip.visible && !e.target.closest('.summary-tooltip')) {
+        this.barTooltip.visible = false;
+      }
+    },
+    showBarTooltip: function (evt) {
+      this.barTooltip = {
+        visible: true,
+        data: evt.data,
+        position: evt.position,
+        percentage: evt.percentage ?? null,
+        split: evt.split || null
+      };
+    },
     /**
      * Resizes the pie graph after the window is resized
      * Waits for the window resize to stop for .5 sec
@@ -570,10 +643,10 @@ export default {
     resize: function () {
       if (resizeTimer) { clearTimeout(resizeTimer); }
       resizeTimer = setTimeout(() => {
-        // recalculate width, height, and radius
+        this.sizeBar();
+        // recalculate from the live scroll container
         width = getWindowWidth();
-        // re-add the header space if collapsed
-        height = getWindowHeight() + (this.showToolBars ? 0 : 113);
+        height = getWindowHeight();
         radius = getRadius();
 
         // set the new width and height of the pie
@@ -689,76 +762,10 @@ export default {
      * @returns {Object} formattedData The formatted data object
      */
     formatDataFromSpigraphSankey: function (hierarchicalData) {
-      const nodes = [];
-      const links = [];
-      const nodeMap = new Map();
-
-      if (!hierarchicalData || !hierarchicalData.children) {
-        return { nodes, links };
+      const { nodes, links } = hierarchyToSankey(hierarchicalData);
+      for (const node of nodes) { // the popup resolves a node's field by name
+        node.field = this.fieldList[node.depth] ? this.fieldList[node.depth].exp : this.baseField;
       }
-
-      // First pass: calculate cumulative values for each node
-      const calculateCumulativeValue = (node) => {
-        if (!node.children || node.children.length === 0) {
-          return node.size || 0;
-        }
-
-        const childSum = node.children.reduce((sum, child) => {
-          return sum + calculateCumulativeValue(child);
-        }, 0);
-
-        // Use the larger of the node's own size or the sum of children
-        return Math.max(node.size || 0, childSum);
-      };
-
-      // Traverse the hierarchical data and create nodes and links
-      const traverse = (node, depth = 0, parentId = null, parentCumulativeValue = 0) => {
-        const nodeId = `${node.name}_${depth}`;
-        const cumulativeValue = calculateCumulativeValue(node);
-
-        if (!nodeMap.has(nodeId)) {
-          nodeMap.set(nodeId, {
-            id: nodeId,
-            name: node.name,
-            value: cumulativeValue,
-            depth: depth,
-            field: this.fieldList[depth] ? this.fieldList[depth].exp : this.baseField
-          });
-          nodes.push(nodeMap.get(nodeId));
-        }
-
-        if (parentId && parentId !== nodeId) {
-          // For the link value, use the cumulative value of this node
-          // This ensures first-level links show full height
-          links.push({
-            source: parentId,
-            target: nodeId,
-            value: cumulativeValue
-          });
-        }
-
-        if (node.children && node.children.length > 0) {
-          node.children.forEach(child => {
-            traverse(child, depth + 1, nodeId, cumulativeValue);
-          });
-        }
-      };
-
-      // Check if we have multiple levels (any child has children)
-      const hasMultipleLevels = hierarchicalData.children.some(child =>
-        child.children && child.children.length > 0
-      );
-
-      if (hasMultipleLevels) {
-        // Skip the top level and start with children
-        hierarchicalData.children.forEach(child => {
-          traverse(child, 0);
-        });
-      } else {
-        // Keep the top level if there's only one level
-        traverse(hierarchicalData, 0);
-      }
-
       return { nodes, links };
     },
     /**
@@ -817,6 +824,15 @@ export default {
      * @param {Object} data The data to construct the pie
      */
     initializeGraphs: function (data) {
+      // size to the live scroll container before creating the svgs
+      width = getWindowWidth();
+      height = getWindowHeight();
+      radius = getRadius();
+      treemapWidth = getTreemapWidth();
+      treemapHeight = getTreemapHeight();
+      sankeyWidth = getSankeyWidth();
+      sankeyHeight = getSankeyHeight();
+
       g = d3.select('#pie-area')
         .append('svg')
         .attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
@@ -964,12 +980,13 @@ export default {
         .sum((d) => { return d.size; }); // sum each node's children
 
       const treemap = d3.treemap() // organize data into treemap
-        .size([treemapWidth - 12, treemapHeight - 12])
-        .paddingTop(18) // padding between children and parent
-        .paddingLeft(8)
-        .paddingRight(8)
-        .paddingBottom(8)
-        .paddingInner(4) // padding between children
+        .size([treemapWidth - (treemapMargin * 2), treemapHeight - (treemapMargin * 2)])
+        // root label is hidden, so reserve no top band for it
+        .paddingTop((d) => d.depth === 0 ? 2 : 18)
+        .paddingLeft(2)
+        .paddingRight(2)
+        .paddingBottom(2)
+        .paddingInner(3) // padding between children
         .round(true); // round the width/height numbers
 
       // combine treemap var (data structure) with the root node (the actual data)
@@ -1077,7 +1094,7 @@ export default {
         .nodeId(d => d.id)
         .nodeWidth(15)
         .nodePadding(10)
-        .extent([[1, 1], [sankeyWidth - sankeyMargin.left - sankeyMargin.right - 1, sankeyHeight - sankeyMargin.top - sankeyMargin.bottom - 6]]);
+        .extent([[1, 1], [sankeyWidth - sankeyMargin.left - sankeyMargin.right - 1, sankeyHeight - sankeyMargin.top - sankeyMargin.bottom - 2]]);
 
       // Generate the sankey layout
       const graph = sankeyLayout(data);
@@ -1229,39 +1246,19 @@ export default {
     },
     initializeColResizable: function () {
       this.destroyColResizable();
-
       this.$nextTick(() => {
-        cols = document.getElementsByClassName('col-header');
-        table = this.$refs.table;
-
-        for (const col of cols) { // listen for grip dragging
-          const grip = col.getElementsByClassName('grip')[0];
-          if (grip) {
-            grip.addEventListener('mousedown', (e) => gripClick(e, col));
-          }
-        }
-
-        document.addEventListener('mousemove', gripDrag);
-        const self = this;
-        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+        this._gripAttachment = attachTableGrips({
+          cols: document.getElementsByClassName('col-header'),
+          table: this.$refs.table,
+          minWidth: MIN_COL_WIDTH
+        });
       });
     },
     destroyColResizable () {
-      if (!cols) return;
-
-      for (const col of cols) { // remove all grip dragging listeners
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.removeEventListener('mousedown', gripClick);
-        }
+      if (this._gripAttachment) {
+        this._gripAttachment.detach();
+        this._gripAttachment = null;
       }
-
-      // remove document listeners
-      document.removeEventListener('mousemove', gripDrag);
-      document.removeEventListener('mouseup', gripUnclick);
-
-      cols = undefined;
-      table = undefined;
     },
     /**
      * Transforms sankey node data to match the popup component expectations
@@ -1350,6 +1347,7 @@ export default {
     // remove listeners
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keyup', this.closeInfoOnEsc);
+    document.removeEventListener('click', this.closeBarTooltipOnOutsideClick);
 
     // remove elements
     if (newSlice) {
@@ -1397,6 +1395,15 @@ export default {
 </script>
 
 <style>
+/* not scoped: teleported into the spigraph sub-navbar */
+/* widen the "Add another field" typeahead so its placeholder isn't clipped */
+.subfield-group {
+  flex: 0 1 auto;
+}
+.subfield-group input {
+  min-width: 280px;
+}
+
 /* styling for the lines connecting the labels to the slices
    make sure they are lines, not triangles (no fill) */
 .spigraph-pie polyline {
@@ -1428,6 +1435,23 @@ export default {
 
 .col-header {
   position: relative;
+}
+
+/* cell borders + hover */
+.spigraph-table {
+  border-collapse: collapse;
+  width: 100%;
+  color: rgb(var(--v-theme-foreground));
+}
+.spigraph-table > thead > tr > th,
+.spigraph-table > tbody > tr > td,
+.spigraph-table > tbody > tr > th {
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  padding: 0.25rem;
+}
+.spigraph-table > tbody > tr:hover > td,
+.spigraph-table > tbody > tr:hover > th {
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 /* make sure field dropdowns are visible in the table */

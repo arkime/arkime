@@ -352,6 +352,18 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "cipher" : [
+      "aes128-ctr"
+     ],
+     "cipherCnt" : 1,
+     "clientVersion" : [
+      "ssh-2.0-openssh_5.3"
+     ],
+     "clientVersionCnt" : 1,
+     "compression" : [
+      "none"
+     ],
+     "compressionCnt" : 1,
      "hassh" : [
       "21b457a327ce7a2d4fce5ef2c42400bd"
      ],
@@ -360,10 +372,26 @@
       "ce3c327f37ea2ec21f317fbc3fd1ea43"
      ],
      "hasshServerCnt" : 1,
+     "hostKeyAlg" : [
+      "ssh-rsa"
+     ],
+     "hostKeyAlgCnt" : 1,
+     "kex" : [
+      "diffie-hellman-group-exchange-sha256"
+     ],
+     "kexCnt" : 1,
      "key" : [
       "AAAAB3NzaC1yc2EAAAADAQABAAABAQD3hhRu6jfkHMwRwqx62+1UjpD59ai23ki8TdJs/vegGiSq6IK+V5ueuRC3Rio4A3XAVwNRLPOqEYmgHo37WVYRRtNnBm/uWfdHMDNs7mEIq65hv47A39K4HYxbFhFvxBUbuLbWt+1jy9Lc0beuJl8z3rIxZvGe7UO72Sg7fq1wOigxgYZ79nB1xk1nIFlHDziA1jS90WdyXSD74ycbqnmfyXmVeoRR2pQpc/a8e8TYH89W7kh1qHI/oe9MuXaqdyIE4dPYFrB/f/RmHRiakNolcET1YHjX4VFYt6fEH79W+Bo7YF4TCdr3Htj3DivZzX6zOcvT0ivXGlvFP7GaoqOH"
      ],
      "keyCnt" : 1,
+     "mac" : [
+      "hmac-md5"
+     ],
+     "macCnt" : 1,
+     "serverVersion" : [
+      "ssh-2.0-openssh_5.9p1 debian-5ubuntu1"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-openssh_5.3",
       "ssh-2.0-openssh_5.9p1 debian-5ubuntu1"

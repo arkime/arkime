@@ -231,7 +231,8 @@ LOCAL void reader_napatech_start()
      * All that remains is to tell Arkime the link type and spawn threads. */
 
     /* Tell Arkime the link type and snap length */
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    for (int i = 0; config.interface[i]; i++)
+        arkime_packet_set_interface(i, 0, DLT_EN10MB, config.snapLen);
 
     LOG("Napatech: starting %d capture thread(s)", ntNumStreams);
     for (int s = 0; s < ntNumStreams; s++) {

@@ -5,6 +5,7 @@ use ArkimeTest;
 use JSON;
 use Test::Differences;
 use Data::Dumper;
+use Time::HiRes;
 use strict;
 
 my $pwd = "*/pcap";
@@ -21,6 +22,27 @@ my ($url) = @_;
     return $json
 }
 
+# History is written after the response is sent, so poll for it instead of sleeping
+sub waitForHistory {
+my ($url, $check) = @_;
+
+    waitUntil(sub { $check->(viewerGet($url)) });
+}
+
+# History timestamps are in seconds and the tests check the newest item, so the
+# next request has to start in a later second than the last one
+sub nextSecond {
+    my $now = Time::HiRes::time();
+    Time::HiRes::sleep(int($now) + 1.01 - $now);
+}
+
+# Wait for the newest anonymous sessions history item to pass $check
+sub waitForNewestSessions {
+my ($check) = @_;
+
+    waitForHistory("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true", sub { $_[0]->{data}->[0] && $check->($_[0]->{data}->[0]) });
+}
+
     my $token = getTokenCookie();
     my $otherToken = getTokenCookie('historytest1');
 
@@ -32,7 +54,7 @@ my ($url) = @_;
 
 # Make a request
     countTest(4, "arkimeRegressionUser=historytest1&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
-    sleep(2);
+    waitForHistory("/api/histories?arkimeRegressionUser=historytest1", sub { $_[0]->{recordsFiltered} >= 1 });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -162,7 +184,9 @@ my ($url) = @_;
 
     # issue a request as the user with the forced expression
     countTest(1, "arkimeRegressionUser=sac-historytest3&date=-1&expression=" . uri_escape("(file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap)&&tags=domainwise"));
-    sleep(2);
+    # both the create user and the search items are needed below
+    waitForHistory("/api/histories?userId=anonymous", sub { $_[0]->{recordsFiltered} >= 1 });
+    waitForHistory("/api/histories?userId=sac-historytest3", sub { $_[0]->{recordsFiltered} >= 1 });
     esGet("/_refresh");
     esGet("/_flush");
 
@@ -200,12 +224,12 @@ my ($url) = @_;
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/historytest1", $token);
-    sleep(1);
     esGet("/_refresh");
     esGet("/_flush");
 
+    nextSecond();
     $json = viewerDeleteToken("/api/user/sac-historytest3", $token);
-    sleep(1);
+    waitForHistory("/api/histories?arkimeRegressionUser=anonymous", sub { $_[0]->{recordsFiltered} >= 2 });
     esGet("/_refresh");
     esGet("/_flush");
 
@@ -225,7 +249,7 @@ my ($url) = @_;
     my $viewId = $json->{view}->{id};
 
     viewerGet("/sessions.json?date=-1&view=historyview&expression=" . uri_escape("file=$pwd/socks-https-example.pcap||file=$pwd/dns-mx.pcap"));
-    sleep(2);
+    waitForNewestSessions(sub { $_[0]->{view}->{name} eq "historyview" });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -238,8 +262,9 @@ my ($url) = @_;
     is ($json->{success}, 1, "View: deleted");
 
 # A cluster in a POST body is still recorded in history
+    nextSecond();
     viewerPost("/api/sessions", '{"date":-1,"cluster":"nosuchcluster","expression":"file=' . $pwd . '/dns-mx.pcap"}');
-    sleep(2);
+    waitForNewestSessions(sub { $_[0]->{expression} eq "file=$pwd/dns-mx.pcap" });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -247,8 +272,9 @@ my ($url) = @_;
     is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Cluster: body cluster is still recorded");
 
 # A time range wider than an integer is still recorded in history
+    nextSecond();
     viewerGet("/api/sessions?startTime=-2129218200&stopTime=2482597800&expression=" . uri_escape("file=$pwd/socks-https-example.pcap"));
-    sleep(2);
+    waitForNewestSessions(sub { $_[0]->{expression} eq "file=$pwd/socks-https-example.pcap" && $_[0]->{range} == 2147483647 });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -257,8 +283,9 @@ my ($url) = @_;
     is ($json->{data}->[0]->{range}, 2147483647, "Range: range is capped");
 
 # A reversed range below the integer minimum is still recorded in history
+    nextSecond();
     viewerGet("/api/sessions?startTime=2482597800&stopTime=-2129218200&expression=" . uri_escape("file=$pwd/dns-mx.pcap"));
-    sleep(2);
+    waitForNewestSessions(sub { $_[0]->{expression} eq "file=$pwd/dns-mx.pcap" && $_[0]->{range} == -2147483648 });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -267,8 +294,9 @@ my ($url) = @_;
     is ($json->{data}->[0]->{range}, -2147483648, "Range: reversed range is capped");
 
 # Date string times are resolved the same way the query resolves them
+    nextSecond();
     viewerGet("/api/sessions?startTime=2020-01-01&stopTime=2026-01-01&expression=" . uri_escape("file=$pwd/socks-https-example.pcap"));
-    sleep(2);
+    waitForNewestSessions(sub { $_[0]->{expression} eq "file=$pwd/socks-https-example.pcap" && $_[0]->{range} == 189388800 });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -277,8 +305,9 @@ my ($url) = @_;
     is ($json->{data}->[0]->{range}, 189388800, "Range: date string range is computed");
 
 # A numeric 0 startTime in a POST body is still a range
+    nextSecond();
     viewerPost("/api/sessions", '{"startTime":0,"stopTime":2482597800,"expression":"file=' . $pwd . '/dns-mx.pcap"}');
-    sleep(2);
+    waitForNewestSessions(sub { $_[0]->{expression} eq "file=$pwd/dns-mx.pcap" && $_[0]->{range} == 2147483647 });
     esGet("/_flush");
     esGet("/_refresh");
 
@@ -290,17 +319,18 @@ my ($url) = @_;
 # expression on a by-id route returns data without parsing it
     my $historyId = viewerGet("/api/sessions?date=-1&length=1")->{data}->[0]->{id};
     viewerGet("/api/session/$historyId?expression[a]=b");
-    sleep(2);
+    (my $historyIdPart = $historyId) =~ s/.*://;
+    waitForHistory("/api/histories?userId=anonymous&api=$historyIdPart", sub { $_[0]->{recordsFiltered} >= 1 });
     esGet("/_flush");
     esGet("/_refresh");
-    (my $historyIdPart = $historyId) =~ s/.*://;
     $json = viewerGet("/api/histories?userId=anonymous&api=$historyIdPart");
     is ($json->{data}->[0]->{api}, "/api/session/$historyId", "Reject: non-string expression is recorded");
     is ($json->{data}->[0]->{expression}, '{"a":"b"}', "Reject: non-string expression is stored as a string");
 
 # A value over the es keyword term limit, only possible in a POST body
+    nextSecond();
     viewerPost("/api/sessions", '{"date":-1,"length":1,"historylong":"' . ("x" x 40000) . '"}');
-    sleep(2);
+    waitForNewestSessions(sub { length($_[0]->{query}) == 8192 });
     esGet("/_flush");
     esGet("/_refresh");
     $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");

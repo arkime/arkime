@@ -44,14 +44,19 @@ Layout:
   - http_connect_plain (2 sessions, 20 packets)
   - smb_compound_andx (2 sessions, 14 packets)
   - smb_nbss_139 (10 packets)
-  - sip_tcp_long (216 packets)
+  - sip_tcp_long (two-way, 216 packets)
   - smb_andx_skip (7 packets)
   - sip_tcp_body_skip (212 packets)
   - http_connect_split_line (11 packets)
   - http_connect_smtp_guess (13 packets)
-  - dns_limits (3 sessions, 3 packets, appended last)
+  - dns_limits (3 sessions, 3 packets)
+  - socks_ips (8 sessions, 94 packets)
+  - dhcp_ips (2 sessions, 9 packets)
+  - zeek_fields (6 sessions, TLS SAN cert, krb5 AS/TGS, ldap bind failure, smtp headers, ntp extension, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
+main() shifts every section after the LEGACY blob so file timestamps never run backwards
+(each section keeps its own relative timing); otherwise Zeek and Arkime expire the sessions packet by packet.
 Each section function below documents the session(s) it generates.
 """
 
@@ -3881,8 +3886,20 @@ def sec_sip_tcp_long():
                 b'CSeq: %d OPTIONS\r\n'
                 b'Content-Length: 0\r\n\r\n' % (cseq, callid, cseq))
 
-    segments = [('c', options(b'options-keepalive@10.9.67.1', i)) for i in range(1, 210)]
-    segments.append(('c', options(b'after-200@10.9.67.1', 210)))
+    def ok(callid, cseq):
+        return (b'SIP/2.0 200 OK\r\n'
+                b'Via: SIP/2.0/TCP 10.9.67.1:50109;branch=z9hG4bK%d\r\n'
+                b'From: <sip:pbx@example.com>;tag=1\r\n'
+                b'To: <sip:trunk.example>;tag=7\r\n'
+                b'Call-ID: %s\r\n'
+                b'CSeq: %d OPTIONS\r\n'
+                b'Content-Length: 0\r\n\r\n' % (cseq, callid, cseq))
+
+    # every keepalive is answered so this is a real two-way dialog
+    segments = []
+    for i in range(1, 210):
+        segments += [('c', options(b'options-keepalive@10.9.67.1', i)), ('s', ok(b'options-keepalive@10.9.67.1', i))]
+    segments += [('c', options(b'after-200@10.9.67.1', 210)), ('s', ok(b'after-200@10.9.67.1', 210))]
     return _tcp_session('10.9.67.1', '10.9.67.2', 50109, 5060, 1700024200.0, segments)
 
 
@@ -3921,7 +3938,23 @@ def sec_sip_tcp_body_skip():
                b'Call-ID: after-body@10.9.70.1\r\n'
                b'CSeq: 2 OPTIONS\r\n'
                b'Content-Length: 0\r\n\r\n')
-    segments = [('c', message)] + [('c', body[i:i + 100]) for i in range(0, len(body), 100)] + [('c', options)]
+    trying = (b'SIP/2.0 100 Trying\r\n'
+              b'Via: SIP/2.0/TCP 10.9.70.1:50112;branch=z9hG4bK1\r\n'
+              b'From: <sip:alice@example.com>;tag=1\r\n'
+              b'To: <sip:bob@example.com>\r\n'
+              b'Call-ID: long-body@10.9.70.1\r\n'
+              b'CSeq: 1 INVITE\r\n'
+              b'Content-Length: 0\r\n\r\n')
+    ok_invite = trying.replace(b'100 Trying', b'200 OK').replace(b'To: <sip:bob@example.com>', b'To: <sip:bob@example.com>;tag=9')
+    ok_options = (b'SIP/2.0 200 OK\r\n'
+                  b'Via: SIP/2.0/TCP 10.9.70.1:50112;branch=z9hG4bK2\r\n'
+                  b'From: <sip:alice@example.com>;tag=1\r\n'
+                  b'To: <sip:example.com>;tag=9\r\n'
+                  b'Call-ID: after-body@10.9.70.1\r\n'
+                  b'CSeq: 2 OPTIONS\r\n'
+                  b'Content-Length: 0\r\n\r\n')
+    segments = ([('c', message), ('s', trying)] + [('c', body[i:i + 100]) for i in range(0, len(body), 100)] +
+                [('s', ok_invite), ('c', options), ('s', ok_options)])
     return _tcp_session('10.9.70.1', '10.9.70.2', 50112, 5060, 1700024400.0, segments)
 
 
@@ -4001,65 +4034,534 @@ def sec_dns_limits():
     ], 1700024700.0)
 
 
+def sec_socks_ips():
+    # SOCKS sessions covering every socks IP/port field, appended to arkime_synthetic.pcap.
+    #
+    # 8 TCP sessions (Ethernet linktype), 10.9.50.x and 2001:db8:50::x:
+    #   1. SOCKS5 no-auth, IPv4 target 93.184.216.34:80, bound 10.0.0.2:40000, HTTP inside
+    #   2. SOCKS5 IPv6 target 2001:db8::1:443, IPv6 bound 2001:db8::2:40001
+    #   3. SOCKS5 domain target example.com:80, domain bound proxy.example:40002
+    #   4. SOCKS5 user/pass auth (alice), IPv4 target 10.1.1.1:443, bound 10.0.0.3:40003
+    #   5. SOCKS5 connection refused reply (status 5)
+    #   6. SOCKS4 CONNECT 10.1.2.3:22 user alice, granted with DSTIP/DSTPORT bound
+    #   7. SOCKS4a CONNECT www.example.org:80 user bob, rejected
+    #   8. SOCKS5 over an IPv6 transport, IPv4 target, IPv6 bound 2001:db8::5:40005
+
+    import socket
+    TS_START = 1700050000.0
+    CLI_MAC = bytes.fromhex('02aa00005001')
+    SRV_MAC = bytes.fromhex('02aa00005002')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def ip4(a):
+        return socket.inet_pton(socket.AF_INET, a)
+
+    def ip6(a):
+        return socket.inet_pton(socket.AF_INET6, a)
+
+    def tcp_seg(sport, dport, seq, ack, flags, payload):
+        return struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0) + payload
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        tcp = tcp_seg(sport, dport, seq, ack, flags, payload)
+        if ':' in src:
+            ip = struct.pack('>IHBB', 0x60000000, len(tcp), 6, 64) + ip6(src) + ip6(dst)
+            pseudo = ip6(src) + ip6(dst) + struct.pack('>IBBBB', len(tcp), 0, 0, 0, 6)
+            tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp)) + tcp[18:]
+            return dmac + smac + b'\x86\xdd' + ip + tcp
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + len(tcp), 1, 0, 64, 6, 0, ip4(src), ip4(dst))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, len(tcp))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp
+
+    def session(cli, srv, cport, sport, exchange):
+        # exchange: list of ('c'|'s', payload); returns the packets of a full session
+        pkts = []
+        cseq, sseq = 0x1000, 0x2000
+        pkts.append(eth_ip_tcp(cli, srv, CLI_MAC, SRV_MAC, cport, sport, cseq, 0, 0x02))
+        cseq += 1
+        pkts.append(eth_ip_tcp(srv, cli, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x12))
+        sseq += 1
+        pkts.append(eth_ip_tcp(cli, srv, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x10))
+        for who, payload in exchange:
+            if who == 'c':
+                pkts.append(eth_ip_tcp(cli, srv, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x18, payload))
+                cseq += len(payload)
+                pkts.append(eth_ip_tcp(srv, cli, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x10))
+            else:
+                pkts.append(eth_ip_tcp(srv, cli, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x18, payload))
+                sseq += len(payload)
+                pkts.append(eth_ip_tcp(cli, srv, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x10))
+        pkts.append(eth_ip_tcp(cli, srv, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x11))
+        cseq += 1
+        pkts.append(eth_ip_tcp(srv, cli, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x11))
+        sseq += 1
+        pkts.append(eth_ip_tcp(cli, srv, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x10))
+        return pkts
+
+    HTTP_REQ = b'GET / HTTP/1.1\r\nHost: example.com\r\nUser-Agent: socks-synth\r\n\r\n'
+    HTTP_RSP = b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nok'
+
+    def v4req(ip, port):
+        return b'\x05\x01\x00\x01' + ip4(ip) + struct.pack('>H', port)
+
+    def v4rep(status, ip, port):
+        return bytes([5, status, 0, 1]) + ip4(ip) + struct.pack('>H', port)
+
+    sessions = [
+        ('10.9.50.1', '10.9.50.2', 50001, 1080, [
+            ('c', b'\x05\x01\x00'), ('s', b'\x05\x00'),
+            ('c', v4req('93.184.216.34', 80)), ('s', v4rep(0, '10.0.0.2', 40000)),
+            ('c', HTTP_REQ), ('s', HTTP_RSP)]),
+        ('10.9.50.1', '10.9.50.2', 50002, 1080, [
+            ('c', b'\x05\x01\x00'), ('s', b'\x05\x00'),
+            ('c', b'\x05\x01\x00\x04' + ip6('2001:db8::1') + struct.pack('>H', 443)),
+            ('s', b'\x05\x00\x00\x04' + ip6('2001:db8::2') + struct.pack('>H', 40001)),
+            ('c', b'hello v6 target\r\n'), ('s', b'hi\r\n')]),
+        ('10.9.50.1', '10.9.50.2', 50003, 1080, [
+            ('c', b'\x05\x01\x00'), ('s', b'\x05\x00'),
+            ('c', b'\x05\x01\x00\x03' + bytes([11]) + b'example.com' + struct.pack('>H', 80)),
+            ('s', b'\x05\x00\x00\x03' + bytes([13]) + b'proxy.example' + struct.pack('>H', 40002)),
+            ('c', HTTP_REQ), ('s', HTTP_RSP)]),
+        ('10.9.50.1', '10.9.50.2', 50004, 1080, [
+            ('c', b'\x05\x01\x02'), ('s', b'\x05\x02'),
+            ('c', b'\x01\x05alice\x06secret'), ('s', b'\x01\x00'),
+            ('c', v4req('10.1.1.1', 443)), ('s', v4rep(0, '10.0.0.3', 40003)),
+            ('c', b'hello auth\r\n'), ('s', b'hi\r\n')]),
+        ('10.9.50.1', '10.9.50.2', 50005, 1080, [
+            ('c', b'\x05\x01\x00'), ('s', b'\x05\x00'),
+            ('c', v4req('10.1.1.2', 25)), ('s', v4rep(5, '0.0.0.0', 0))]),
+        ('10.9.50.1', '10.9.50.2', 50006, 1080, [
+            ('c', b'\x04\x01' + struct.pack('>H', 22) + ip4('10.1.2.3') + b'alice\x00'),
+            ('s', b'\x00\x5a' + struct.pack('>H', 22) + ip4('10.1.2.3')),
+            ('c', b'hello socks4\r\n'), ('s', b'hi\r\n')]),
+        ('10.9.50.1', '10.9.50.2', 50007, 1080, [
+            ('c', b'\x04\x01' + struct.pack('>H', 80) + ip4('0.0.0.1') + b'bob\x00www.example.org\x00'),
+            ('s', b'\x00\x5b' + struct.pack('>H', 0) + ip4('0.0.0.0'))]),
+        ('2001:db8:50::10', '2001:db8:50::1', 50008, 1080, [
+            ('c', b'\x05\x01\x00'), ('s', b'\x05\x00'),
+            ('c', v4req('93.184.216.34', 80)),
+            ('s', b'\x05\x00\x00\x04' + ip6('2001:db8::5') + struct.pack('>H', 40005)),
+            ('c', HTTP_REQ), ('s', HTTP_RSP)]),
+    ]
+
+    out = b''
+    ts = TS_START
+    for cli, srv, cport, sport, exchange in sessions:
+        for p in session(cli, srv, cport, sport, exchange):
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+        ts += 1.0
+    return out
+
+
+def sec_dhcp_ips():
+    # DHCP sessions covering requestIp, yiaddrIp, serverIp, leaseTime and domain, appended to arkime_synthetic.pcap.
+    #
+    # Client 02:aa:00:00:dd:01 (one dhcp session, keyed by chaddr):
+    #   DISCOVER/OFFER/REQUEST/ACK broadcast with server 192.168.5.1, lease 7200, domain lab.example
+    #   NAK from a second server 192.168.5.2
+    #   unicast renewal REQUEST/ACK with lease 3600
+    # Client 02:aa:00:00:dd:02 through relay 192.168.6.1 to server 10.9.9.9, lease 86400
+
+    import socket
+    TS_START = 1700051000.0
+    BCAST_MAC = b'\xff' * 6
+    CLI1_MAC = bytes.fromhex('02aa0000dd01')
+    CLI2_MAC = bytes.fromhex('02aa0000dd02')
+    SRV_MAC = bytes.fromhex('02aa0000dd10')
+    RELAY_MAC = bytes.fromhex('02aa0000dd20')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def ip4(a):
+        return socket.inet_pton(socket.AF_INET, a)
+
+    def eth_ip_udp(src, dst, smac, dmac, sport, dport, payload):
+        udplen = 8 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + udplen, 1, 0, 64, 17, 0, ip4(src), ip4(dst))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        udp = struct.pack('>HHHH', sport, dport, udplen, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 17, udplen)
+        ck = csum(pseudo + udp + payload)
+        udp = udp[:6] + struct.pack('>H', ck if ck else 0xffff)
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+    def opt(code, value):
+        return bytes([code, len(value)]) + value
+
+    def dhcp(op, xid, mac, options, ciaddr='0.0.0.0', yiaddr='0.0.0.0', siaddr='0.0.0.0', giaddr='0.0.0.0', flags=0x8000):
+        msg = struct.pack('>BBBBIHH', op, 1, 6, 0, xid, 0, flags)
+        msg += ip4(ciaddr) + ip4(yiaddr) + ip4(siaddr) + ip4(giaddr)
+        msg += mac + b'\0' * 10 + b'\0' * 64 + b'\0' * 128
+        msg += b'\x63\x82\x53\x63' + b''.join(options) + b'\xff'
+        return msg + b'\0' * max(0, 300 - len(msg))
+
+    XID1 = 0x11223344
+    HOST1 = opt(12, b'synth-client')
+    CLASS1 = opt(60, b'MSFT 5.0')
+    PRL = opt(55, bytes([1, 3, 6, 15, 51, 54]))
+    CID1 = opt(61, b'\x01' + CLI1_MAC)
+    SRV1 = opt(54, ip4('192.168.5.1'))
+    DOMAIN = opt(15, b'lab.example')
+
+    pkts = [
+        eth_ip_udp('0.0.0.0', '255.255.255.255', CLI1_MAC, BCAST_MAC, 68, 67,
+                   dhcp(1, XID1, CLI1_MAC, [opt(53, b'\x01'), CID1, HOST1, CLASS1, PRL])),
+        eth_ip_udp('192.168.5.1', '255.255.255.255', SRV_MAC, BCAST_MAC, 67, 68,
+                   dhcp(2, XID1, CLI1_MAC, [opt(53, b'\x02'), SRV1, opt(51, struct.pack('>I', 7200)),
+                                            opt(1, ip4('255.255.255.0')), opt(3, ip4('192.168.5.1')), DOMAIN],
+                        yiaddr='192.168.5.50', siaddr='192.168.5.1')),
+        eth_ip_udp('0.0.0.0', '255.255.255.255', CLI1_MAC, BCAST_MAC, 68, 67,
+                   dhcp(1, XID1, CLI1_MAC, [opt(53, b'\x03'), CID1, opt(50, ip4('192.168.5.50')), SRV1, HOST1,
+                                            opt(81, b'\x00\x00\x00synth-client.lab.example'), PRL])),
+        eth_ip_udp('192.168.5.1', '255.255.255.255', SRV_MAC, BCAST_MAC, 67, 68,
+                   dhcp(2, XID1, CLI1_MAC, [opt(53, b'\x05'), SRV1, opt(51, struct.pack('>I', 7200)), DOMAIN],
+                        yiaddr='192.168.5.50', siaddr='192.168.5.1')),
+        eth_ip_udp('192.168.5.2', '255.255.255.255', SRV_MAC, BCAST_MAC, 67, 68,
+                   dhcp(2, XID1, CLI1_MAC, [opt(53, b'\x06'), opt(54, ip4('192.168.5.2'))])),
+        eth_ip_udp('192.168.5.50', '192.168.5.1', CLI1_MAC, SRV_MAC, 68, 67,
+                   dhcp(1, XID1 + 1, CLI1_MAC, [opt(53, b'\x03'), CID1, HOST1, PRL], ciaddr='192.168.5.50', flags=0)),
+        eth_ip_udp('192.168.5.1', '192.168.5.50', SRV_MAC, CLI1_MAC, 67, 68,
+                   dhcp(2, XID1 + 1, CLI1_MAC, [opt(53, b'\x05'), SRV1, opt(51, struct.pack('>I', 3600)), DOMAIN],
+                        ciaddr='192.168.5.50', yiaddr='192.168.5.50', siaddr='192.168.5.1', flags=0)),
+        # relayed client: the relay forwards with giaddr set
+        eth_ip_udp('192.168.6.1', '10.9.9.9', RELAY_MAC, SRV_MAC, 67, 67,
+                   dhcp(1, 0x55667788, CLI2_MAC, [opt(53, b'\x01'), opt(61, b'\x01' + CLI2_MAC), opt(12, b'relayed-client'),
+                                                  opt(50, ip4('192.168.6.77')), PRL], giaddr='192.168.6.1', flags=0)),
+        eth_ip_udp('10.9.9.9', '192.168.6.1', SRV_MAC, RELAY_MAC, 67, 67,
+                   dhcp(2, 0x55667788, CLI2_MAC, [opt(53, b'\x02'), opt(54, ip4('10.9.9.9')), opt(51, struct.pack('>I', 86400)),
+                                                  opt(15, b'branch.example')],
+                        yiaddr='192.168.6.77', siaddr='10.9.9.9', giaddr='192.168.6.1', flags=0)),
+    ]
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.2
+    return out
+
+
+def sec_zeek_fields():
+    # Sessions that exercise fields added for the zeeklog plugin which no other pcap covers,
+    # appended to arkime_synthetic.pcap (Ethernet linktype, 10.9.60.x):
+    #   1. TLS with a certificate carrying URI/IP/email SANs and basicConstraints pathlen 2
+    #   2. Kerberos AS-REQ/AS-REP over UDP with a ticket (ticketEtype, kdc-options)
+    #   3. Kerberos TGS-REQ/TGS-REP over UDP (TGS msgType)
+    #   4. LDAP simple bind that fails with invalidCredentials
+    #   5. SMTP message with Date, Reply-To and In-Reply-To headers
+    #   6. NTP client with an extension field and MAC, server reply with all timestamps set
+
+    import base64
+    import socket
+    TS_START = 1700060000.0
+    CLI_MAC = bytes.fromhex('02aa00006001')
+    SRV_MAC = bytes.fromhex('02aa00006002')
+    CLI_IP = '10.9.60.1'
+    SRV_IP = '10.9.60.2'
+
+    CERT_SAN_MIX = base64.b64decode(
+        'MIIDkTCCAnmgAwIBAgIJAMH4/I3/vI02MA0GCSqGSIb3DQEBCwUAMD0xGjAYBgNVBAMMEXNhbi1z'
+        'eW50aC5leGFtcGxlMRIwEAYDVQQKDAlTeW50aCBPcmcxCzAJBgNVBAsMAlFBMB4XDTI2MTAxOTE0'
+        'MzA0NloXDTM2MTAxNjE0MzA0NlowPTEaMBgGA1UEAwwRc2FuLXN5bnRoLmV4YW1wbGUxEjAQBgNV'
+        'BAoMCVN5bnRoIE9yZzELMAkGA1UECwwCUUEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB'
+        'AQCbK6lb/3AtJisdZ9GhqEwElLd5SPw46PaJwaw77kaH+9MMw7Qp2CASG3C5WTbQdlWufZxvFNyn'
+        'udyqHniFwgmH0gTCfU+JWRpRAUpIbo0TqK4CMUcMiMEiX0RGwppey9O1tbRVO14qzpqiC4kk5WIE'
+        'CSXiRJGJmfJ8pgXM1t4oWcJY7PlFJ7nWDpLwqMPSgFY9R3aC6alxcZkptzmJAgx1GI64A48KSayn'
+        'r6xyeFOLpwJJKaWFh/wf6bw7Bi11ZOobti/2zx0TSrZpshwcFEiWjpLGpuBStsuoKRNsiDdOa1Od'
+        '/jdzYbWnKr7w6WlKGEMPuZWcKWSjAkFBROh3Z1N5AgMBAAGjgZMwgZAwagYDVR0RBGMwYYIRc2Fu'
+        'LXN5bnRoLmV4YW1wbGWGG2h0dHBzOi8vc2FuLXN5bnRoLmV4YW1wbGUveIcECgk8BYcQIAENuABg'
+        'AAAAAAAAAAAABYEXYWRtaW5Ac2FuLXN5bnRoLmV4YW1wbGUwEgYDVR0TAQH/BAgwBgEB/wIBAjAO'
+        'BgNVHQ8BAf8EBAMCAoQwDQYJKoZIhvcNAQELBQADggEBABY+dHvI13Lf6IeksHn7lF4rhe5NavJ+'
+        'XOltmzxUqTSHk0lynaQC3QoExvIcW9YQxG0DCRg98wwLJh30blwNaKDNsKPQsGchoTtspou97iy3'
+        'S9yNDMHsU4Vo4lyg9q/woFaLMBeRisIt9lfdDkgWqM4oqSG3b/ivBPVlJbVhwQFs1anFzZd0EwAR'
+        'afMot6puB95InJ70Xc1Og3RySw1DWifjkDy+FFBnqZbkn+vhMIQvbICJTbMcFwlheugP1hY0e63l'
+        'QSrCZ9QVsD4ladtQCaFkx5sYm7Xoz96CpMeIWJeocNyvlH0JZmCcTJiMfBKhjiACnE7UzRymq1Ck'
+        'PIovP/o=')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def ip4(a):
+        return socket.inet_pton(socket.AF_INET, a)
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0) + payload
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + len(tcp), 1, 0, 64, 6, 0, ip4(src), ip4(dst))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, len(tcp))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp
+
+    def eth_ip_udp(src, dst, smac, dmac, sport, dport, payload):
+        udplen = 8 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + udplen, 1, 0, 64, 17, 0, ip4(src), ip4(dst))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        udp = struct.pack('>HHHH', sport, dport, udplen, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 17, udplen)
+        ck = csum(pseudo + udp + payload)
+        udp = udp[:6] + struct.pack('>H', ck if ck else 0xffff)
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+    def tcp_session(cport, sport, exchange):
+        pkts = []
+        cseq, sseq = 0x1000, 0x2000
+        pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, cport, sport, cseq, 0, 0x02))
+        cseq += 1
+        pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x12))
+        sseq += 1
+        pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x10))
+        for who, payload in exchange:
+            if who == 'c':
+                pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x18, payload))
+                cseq += len(payload)
+                pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x10))
+            else:
+                pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x18, payload))
+                sseq += len(payload)
+                pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x10))
+        pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x11))
+        cseq += 1
+        pkts.append(eth_ip_tcp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, sport, cport, sseq, cseq, 0x11))
+        sseq += 1
+        pkts.append(eth_ip_tcp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, cport, sport, cseq, sseq, 0x10))
+        return pkts
+
+    # --- TLS 1.2 handshake carrying the SAN certificate ---
+    def tls_rec(ctype, body):
+        return struct.pack('>BHH', ctype, 0x0303, len(body)) + body
+
+    def hs_msg(htype, body):
+        return struct.pack('>B', htype) + struct.pack('>I', len(body))[1:] + body
+
+    client_hello = tls_rec(0x16, hs_msg(1, struct.pack('>H', 0x0303) + bytes(32) + b'\x00' +
+                                        struct.pack('>HH', 2, 0x002f) + b'\x01\x00'))
+    server_hello = tls_rec(0x16, hs_msg(2, struct.pack('>H', 0x0303) + bytes(32) + b'\x00' +
+                                        struct.pack('>H', 0x002f) + b'\x00'))
+    entry = struct.pack('>I', len(CERT_SAN_MIX))[1:] + CERT_SAN_MIX
+    certificate = tls_rec(0x16, hs_msg(11, struct.pack('>I', len(entry))[1:] + entry))
+    server_done = tls_rec(0x16, hs_msg(14, b''))
+
+    # --- minimal DER builders for Kerberos and LDAP ---
+    def der(tag, body):
+        if len(body) < 128:
+            return bytes([tag, len(body)]) + body
+        if len(body) < 256:
+            return bytes([tag, 0x81, len(body)]) + body
+        return bytes([tag, 0x82]) + struct.pack('>H', len(body)) + body
+
+    def ctx(n, body):
+        return der(0xa0 | n, body)
+
+    def app(n, body):
+        return der(0x60 | n, body)
+
+    def integer(v):
+        return der(0x02, bytes([v]))
+
+    def gstr(v):
+        return der(0x1b, v.encode())
+
+    def seq(*items):
+        return der(0x30, b''.join(items))
+
+    def principal(ntype, names):
+        return seq(ctx(0, integer(ntype)), ctx(1, seq(*[gstr(n) for n in names])))
+
+    REALM = 'SYNTH.EXAMPLE'
+    # pre-auth data pads the message past 128 bytes so the pvno lands at the classifier offset
+    padata = seq(seq(ctx(1, integer(2)), ctx(2, der(0x04, b'\x11' * 96))))
+
+    def kdc_req(msg_type, sname):
+        body = seq(ctx(0, der(0x03, b'\x00\x40\x81\x00\x10')),       # forwardable, renewable, renewable-ok
+                   ctx(1, principal(1, ['synthuser'])),
+                   ctx(2, gstr(REALM)),
+                   ctx(3, principal(2, sname)),
+                   ctx(5, der(0x18, b'20370913024805Z')),
+                   ctx(7, der(0x02, b'\x12\x34\x56\x78')),
+                   ctx(8, seq(integer(18), integer(17), integer(23))))
+        return app(msg_type, seq(ctx(1, integer(5)), ctx(2, integer(msg_type)), ctx(3, padata), ctx(4, body)))
+
+    def kdc_rep(msg_type, sname, ticket_etype):
+        ticket = app(1, seq(ctx(0, integer(5)), ctx(1, gstr(REALM)), ctx(2, principal(2, sname)),
+                            ctx(3, seq(ctx(0, integer(ticket_etype)), ctx(1, integer(2)), ctx(2, der(0x04, b'\xaa' * 64))))))
+        return app(msg_type, seq(ctx(0, integer(5)), ctx(1, integer(msg_type)), ctx(3, gstr(REALM)),
+                                 ctx(4, principal(1, ['synthuser'])), ctx(5, ticket),
+                                 ctx(6, seq(ctx(0, integer(18)), ctx(2, der(0x04, b'\xbb' * 48))))))
+
+    ldap_bind = seq(integer(1), app(0, integer(3) + der(0x04, b'cn=bad,dc=synth,dc=example') + der(0x80, b'wrongpw')))
+    ldap_bind_rsp = seq(integer(1), app(1, der(0x0a, b'\x31') + der(0x04, b'') +
+                                         der(0x04, b'80090308: LdapErr: DSID-0C0903A9, comment: AcceptSecurityContext error')))
+    ldap_unbind = seq(integer(2), der(0x42, b''))
+
+    # --- NTP ---
+    NTP_EPOCH = 2208988800
+
+    def ntp_ts(unix, frac=0):
+        return struct.pack('>II', unix + NTP_EPOCH, frac)
+
+    ntp_client = (bytes([0x23, 0, 6, 0xec]) + struct.pack('>II', 0, 0x100) + ip4('0.0.0.0') +
+                  ntp_ts(0) + ntp_ts(0) + ntp_ts(0) + ntp_ts(1700060005, 0x40000000) +
+                  struct.pack('>HH', 0x0104, 20) + b'\x5a' * 16 +                     # one extension field
+                  struct.pack('>I', 1) + b'\x6b' * 16)                                 # key id + MD5 MAC
+    ntp_server = (bytes([0x24, 2, 6, 0xe9]) + struct.pack('>II', 0x1234, 0xabcd) + ip4('10.9.80.9') +
+                  ntp_ts(1700059000, 0x80000000) + ntp_ts(1700060005, 0x40000000) +
+                  ntp_ts(1700060005, 0x60000000) + ntp_ts(1700060005, 0x70000000))
+
+    pkts = []
+    pkts += tcp_session(60001, 443, [('c', client_hello), ('s', server_hello + certificate + server_done)])
+    pkts += tcp_session(60002, 389, [('c', ldap_bind), ('s', ldap_bind_rsp), ('c', ldap_unbind)])
+    pkts += tcp_session(60003, 25, [
+        ('s', b'220 mail.synth.example ESMTP\r\n'), ('c', b'EHLO client.synth.example\r\n'),
+        ('s', b'250 mail.synth.example\r\n'), ('c', b'MAIL FROM:<alice@synth.example>\r\n'),
+        ('s', b'250 2.1.0 Ok\r\n'), ('c', b'RCPT TO:<bob@synth.example>\r\n'), ('s', b'250 2.1.5 Ok\r\n'),
+        ('c', b'DATA\r\n'), ('s', b'354 End data with <CR><LF>.<CR><LF>\r\n'),
+        ('c', b'From: alice@synth.example\r\nTo: bob@synth.example\r\n'
+              b'Date: Mon, 20 Oct 2025 10:00:00 +0000\r\nReply-To: replies@synth.example\r\n'
+              b'In-Reply-To: <orig-123@synth.example>\r\nMessage-ID: <reply-456@synth.example>\r\n'
+              b'Subject: Re: synth\r\n\r\nbody\r\n.\r\n'),
+        ('s', b'250 2.0.0 Ok: queued as SYNTH1\r\n'), ('c', b'QUIT\r\n'), ('s', b'221 Bye\r\n')])
+    pkts.append(eth_ip_udp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 60088, 88, kdc_req(10, ['krbtgt', REALM])))
+    pkts.append(eth_ip_udp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, 88, 60088, kdc_rep(11, ['krbtgt', REALM], 18)))
+    pkts.append(eth_ip_udp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 60089, 88, kdc_req(12, ['cifs', 'files.synth.example'])))
+    pkts.append(eth_ip_udp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, 88, 60089, kdc_rep(13, ['cifs', 'files.synth.example'], 17)))
+    pkts.append(eth_ip_udp(CLI_IP, SRV_IP, CLI_MAC, SRV_MAC, 60123, 123, ntp_client))
+    pkts.append(eth_ip_udp(SRV_IP, CLI_IP, SRV_MAC, CLI_MAC, 123, 60123, ntp_server))
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
+def _max_ts(blob):
+    # Latest timestamp among the pcap records in blob (header already stripped for sections)
+    pos = 24 if blob[:4] in (b'\xd4\xc3\xb2\xa1', b'\xa1\xb2\xc3\xd4') else 0
+    best = 0.0
+    while pos + 16 <= len(blob):
+        sec, usec, caplen, _ = struct.unpack('<IIII', blob[pos:pos + 16])
+        best = max(best, sec + usec / 1e6)
+        pos += 16 + caplen
+    return best
+
+
+def _after(blob, tmax):
+    # Shift a section's records so they start after tmax, keeping their relative spacing.
+    # Sections were written with independent clocks; without this the file runs backwards in
+    # time and tools that expire sessions on the capture clock (Zeek, Arkime) tear every
+    # session apart packet by packet.
+    recs = []
+    pos = 0
+    while pos + 16 <= len(blob):
+        sec, usec, caplen, wirelen = struct.unpack('<IIII', blob[pos:pos + 16])
+        recs.append([sec, usec, blob[pos + 16:pos + 16 + caplen], wirelen])
+        pos += 16 + caplen
+    if not recs:
+        return blob, tmax
+    lowest = min(r[0] + r[1] / 1e6 for r in recs)
+    shift = int(tmax) + 1 - int(lowest) if lowest <= tmax else 0
+    out = b''
+    for sec, usec, pkt, wirelen in recs:
+        out += struct.pack('<IIII', sec + shift, usec, len(pkt), wirelen) + pkt
+        tmax = max(tmax, sec + shift + usec / 1e6)
+    return out, tmax
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/arkime_synthetic.pcap'
     out = LEGACY
-    out += sec_icmpv6_haad()
-    out += sec_ikev2_sa_init()
-    out += sec_dns_https_empty_alpn()
-    out += sec_certs_keyusage()
-    out += sec_imap_crsplit()
-    out += sec_krb5_biglen()
-    out += sec_quic_zerotag()
-    out += sec_s7comm_frameclamp()
-    out += sec_sctp_interleave()
-    out += sec_smb1_dialect0()
-    out += sec_smb1_malformed_delete()
-    out += sec_nbns_response()
-    out += sec_ssdp()
-    out += sec_ssh_kexinit_overrun()
-    out += sec_udp_zero_ulen()
-    out += sec_websocket_split()
-    out += sec_tls_ja3_edge()
-    out += sec_modbus_edge()
-    out += sec_oracle_big_connect()
-    out += sec_sip_radius_edge()
-    out += sec_tls_256ext()
-    out += sec_dhcpv6_relay()
-    out += sec_ip4_deep_offset()
-    out += sec_ip6_deep_offset()
-    out += sec_dns_https_trailing_empty_param()
-    out += sec_http2_pseudo_order()
-    out += sec_ip4_frag_last_first()
-    out += sec_http2_stream_slots()
-    out += sec_tls_hello_reassembly()
-    out += sec_quic_duplicate_crypto()
-    out += sec_udp_tunnel_port_fallback()
-    out += sec_http_upgrade_not_switched()
-    out += sec_http_connect_407()
-    out += sec_smtp_bdat_dot_header()
-    out += sec_stun_tcp_channeldata()
-    out += sec_sip_tcp_crlf_hcolon()
-    out += sec_quic_bad_tag()
-    out += sec_http_auth_challenge()
-    out += sec_ftp_helo_late()
-    out += sec_http_connect_variants()
-    out += sec_http_101_leftover()
-    out += sec_http2_path_upgrade_hook()
-    out += sec_gre_undecodable()
-    out += sec_dtls_fragmented_hello()
-    out += sec_quic_v2()
-    out += sec_sctp_bad_vtag()
-    out += sec_http_subparser_paths()
-    out += sec_http_connect_plain()
-    out += sec_smb_compound_andx()
-    out += sec_smb_nbss_139()
-    out += sec_sip_tcp_long()
-    out += sec_smb_andx_skip()
-    out += sec_sip_tcp_body_skip()
-    out += sec_http_connect_split_line()
-    out += sec_http_connect_smtp_guess()
-    out += sec_dns_limits()
+    tmax = _max_ts(LEGACY)
+    for blob in [
+        sec_icmpv6_haad(),
+        sec_ikev2_sa_init(),
+        sec_dns_https_empty_alpn(),
+        sec_certs_keyusage(),
+        sec_imap_crsplit(),
+        sec_krb5_biglen(),
+        sec_quic_zerotag(),
+        sec_s7comm_frameclamp(),
+        sec_sctp_interleave(),
+        sec_smb1_dialect0(),
+        sec_smb1_malformed_delete(),
+        sec_nbns_response(),
+        sec_ssdp(),
+        sec_ssh_kexinit_overrun(),
+        sec_udp_zero_ulen(),
+        sec_websocket_split(),
+        sec_tls_ja3_edge(),
+        sec_modbus_edge(),
+        sec_oracle_big_connect(),
+        sec_sip_radius_edge(),
+        sec_tls_256ext(),
+        sec_dhcpv6_relay(),
+        sec_ip4_deep_offset(),
+        sec_ip6_deep_offset(),
+        sec_dns_https_trailing_empty_param(),
+        sec_http2_pseudo_order(),
+        sec_ip4_frag_last_first(),
+        sec_http2_stream_slots(),
+        sec_tls_hello_reassembly(),
+        sec_quic_duplicate_crypto(),
+        sec_udp_tunnel_port_fallback(),
+        sec_http_upgrade_not_switched(),
+        sec_http_connect_407(),
+        sec_smtp_bdat_dot_header(),
+        sec_stun_tcp_channeldata(),
+        sec_sip_tcp_crlf_hcolon(),
+        sec_quic_bad_tag(),
+        sec_http_auth_challenge(),
+        sec_ftp_helo_late(),
+        sec_http_connect_variants(),
+        sec_http_101_leftover(),
+        sec_http2_path_upgrade_hook(),
+        sec_gre_undecodable(),
+        sec_dtls_fragmented_hello(),
+        sec_quic_v2(),
+        sec_sctp_bad_vtag(),
+        sec_http_subparser_paths(),
+        sec_http_connect_plain(),
+        sec_smb_compound_andx(),
+        sec_smb_nbss_139(),
+        sec_sip_tcp_long(),
+        sec_smb_andx_skip(),
+        sec_sip_tcp_body_skip(),
+        sec_http_connect_split_line(),
+        sec_http_connect_smtp_guess(),
+        sec_dns_limits(),
+        sec_socks_ips(),
+        sec_dhcp_ips(),
+        sec_zeek_fields(),
+    ]:
+        blob, tmax = _after(blob, tmax)
+        out += blob
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

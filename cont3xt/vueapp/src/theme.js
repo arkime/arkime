@@ -1,114 +1,44 @@
-// NOTE: in theming, it is important to specify both light/dark variants (or use `all`)
-//       unless it is a pre-existing color. Otherwise, vuetify components
-//       will have janky background colors over the unspecified variant
-//       since they use the background color to calculate parts of their color.
-/** @type{Object<string, { dark: string, light: string }>} */
-const theming = {
-  info: { all: '#AB4CFF' },
-  background: { // existing color `background`
-    dark: '#212121'
-  },
-  dark: {
-    light: '#343a40',
-    dark: '#131313'
-  },
-  light: { // used for variant="light" badges
-    light: '#f3f3f3',
-    dark: '#131313'
-  },
-  'secondary-gray': { all: '#6C757D' },
-  muted: { // used for icons on pre-search cont3xt page
-    light: '#6c757d',
-    dark: '#6c757d'
-  },
-  well: {
-    light: '#d6d8d9',
-    dark: '#333'
-  },
-  'well-border': {
-    light: '#c6c8ca',
-    dark: '#444'
-  },
-  'progress-bar': {
-    light: '#e9ecef',
-    dark: '#404040'
-  },
-  'side-stub': {
-    light: '#e9ecef',
-    dark: '#555'
-  },
-  'integration-panel': {
-    dark: '#333', // dark well color
-    light: '#FFFFFF'
-  },
-  'cont3xt-card': {
-    light: '#E9ECEF',
-    dark: '#303030'
-  },
-  'cont3xt-card-hover': {
-    light: '#d9dbde',
-    dark: '#3d3d3d'
-  },
-  'cont3xt-card-border': {
-    light: '#FFF',
-    dark: '#232323'
-  },
-  'cont3xt-table-border': {
-    light: '#dee2e6',
-    dark: '#CCC'
-  },
-  'integration-btn': { all: '#343a40' },
-  textarea: {
-    light: '#FFFFFF',
-    dark: '#000000'
-  },
-  'textarea-disabled': {
-    light: '#EEEEEE',
-    dark: '#111111'
-  },
-  'textarea-border': {
-    light: '#ced4da',
-    dark: '#EEEEEE'
-  }
-};
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 
 /**
-  * @param {'light' | 'dark'} variant
-  */
-export function createCont3xtTheme (variant) {
+ * Cont3xt Vuetify theme configuration.
+ *
+ * Cont3xt now consumes the same shared theme manifest as viewer
+ * (common/vueapp/themes/manifest.js) -- 10 baked-in themes with
+ * unified semantic tokens (primary/secondary/success/info, neutral
+ * ramp, surface-card/surface-well/input-bg etc.).
+ *
+ * The legacy cont3xt-specific token names (cont3xt-card, textarea,
+ * well, side-stub, integration-panel) have been generalized into
+ * shared surface-card / input-bg / surface-well / surface-sidebar /
+ * surface-panel respectively. See cont3xt/vueapp/src/index.scss +
+ * cont3xt.css for the renames at the call sites.
+ *
+ * Per-user Custom themes are registered at runtime in cont3xt's
+ * App.vue / store boot path via the shared common/vueapp/themes/customTheme.js
+ * helper.
+ */
+
+import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
+
+export function buildVuetifyThemes () {
   return {
-    dark: variant === 'dark',
-    colors:
-      Object.fromEntries(
-        Object.entries(theming)
-          .map(([colorName, colors]) => [colorName, colors[variant] ?? colors.all])
-          .filter(([_, color]) => color != null)
-      )
+    defaultTheme: DEFAULT_THEME_ID,
+    // We hand-author shade variants in the manifest; disable
+    // Vuetify's algorithmic variation generation.
+    variations: { colors: [], lighten: 0, darken: 0 },
+    themes: Object.fromEntries(
+      THEMES.map(t => [t.id, {
+        dark: t.dark,
+        colors: {
+          'surface-variant': t.colors.foreground,
+          'on-surface-variant': t.colors.background,
+          ...t.colors
+        }
+      }])
+    )
   };
 }
-
-// /* old bootstrap theming colors for reference --------------- */
-// $theme-colors: (
-//   "danger": #FF0080,
-//   "warning": #E39300,
-//   "success": #00AF68,
-//   "primary": #00AAC5,
-//   "info": #AB4CFF
-// );
-//
-// body {
-//   --color-light: #F3F3F3;
-//   --color-gray-light: #BBBBBB;
-//   --color-gray: #777777;
-//   --color-gray-dark: #555555;
-//   --color-dark: #131313;
-//   --color-background: #FFFFFF;
-// }
-// body.dark {
-//   --color-dark: #F3F3F3;
-//   --color-gray-dark: #BBBBBB;
-//   --color-gray: #777777;
-//   --color-gray-light: #555555;
-//   --color-light: #131313;
-//   --color-background: #222;
-// }

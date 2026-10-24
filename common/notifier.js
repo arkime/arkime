@@ -573,7 +573,7 @@ class NotifierESImplementation {
 
   async createNotifier (doc) {
     const { body: { _id: id } } = await this.client.index({
-      index: this.notifiersIndex, body: doc, refresh: 'wait_for', timeout: '10m'
+      index: this.notifiersIndex, body: doc, refresh: true, timeout: '10m'
     });
     return id;
   }

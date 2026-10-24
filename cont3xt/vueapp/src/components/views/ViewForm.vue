@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <v-form>
     <!-- view name -->
     <trimmed-text-field
-      label="Name"
+      :label="$t('cont3xt.views.name')"
       v-model="localView.name"
       v-focus="focus"
       required
@@ -15,23 +15,23 @@ SPDX-License-Identifier: Apache-2.0
       @update:model-value="val => $emit('update-view', { ...localView, name: val })" />
     <div class="my-1 d-flex">
       <RoleDropdown
-        class="mr-1"
+        class="me-1"
         :roles="getRoles"
-        display-text="Who Can View"
+        :display-text="$t('cont3xt.whoCanView')"
         :selected-roles="localView.viewRoles"
         @selected-roles-updated="updateViewRoles" />
       <RoleDropdown
         :roles="getRoles"
-        display-text="Who Can Edit"
+        :display-text="$t('cont3xt.whoCanEdit')"
         :selected-roles="localView.editRoles"
         @selected-roles-updated="updateEditRoles" />
       <v-icon
         size="large"
         icon="mdi-information"
-        class="cursor-help ml-2 mr-1"
-        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'" />
+        class="cursor-help ms-2 me-1"
+        v-tooltip="$t('cont3xt.views.rolesTip')" />
       <span v-if="!localView.creator">
-        As the creator, you can always view and edit your views.
+        {{ $t('cont3xt.views.creatorNote') }}
       </span>
     </div>
     <!-- selected integrations -->
@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
         color="secondary"
         :indeterminate="indeterminate">
         <template #label>
-          <strong>Select All</strong>
+          <strong>{{ $t('common.selectAll') }}</strong>
         </template>
       </v-checkbox>
       <div>
@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
         color="secondary"
         :indeterminate="indeterminate">
         <template #label>
-          <strong>Select All</strong>
+          <strong>{{ $t('common.selectAll') }}</strong>
         </template>
       </v-checkbox>
     </div> <!-- /selected integrations -->
@@ -74,15 +74,15 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="mt-2"
       v-if="localView.creator">
-      Created by
+      {{ $t('cont3xt.createdBy') }}
       <span class="text-info">
         {{ localView.creator }}
       </span>
       <v-icon
         icon="mdi-information"
-        class="ml-2 cursor-help"
+        class="ms-2 cursor-help"
         v-if="!localView.creator || (getUser && localView.creator === getUser.userId)"
-        v-tooltip="'As the creator, you can always view and edit your views.'" />
+        v-tooltip="$t('cont3xt.views.creatorNote')" />
     </div>
   </v-form>
 </template>

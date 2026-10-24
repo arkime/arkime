@@ -11,27 +11,27 @@ SPDX-License-Identifier: Apache-2.0
     <v-card-title class="px-2 py-1">
       <h6 class="mb-0 link-header">
         <v-icon
-          class="mr-1 cursor-pointer"
+          class="me-1 cursor-pointer"
           :icon="collapsedLinkGroups[linkGroup._id] ? 'mdi-chevron-down' : 'mdi-chevron-up'"
           @click="toggleLinkGroup(linkGroup)" />
         <v-icon
-          class="mr-1 cursor-help"
+          class="me-1 cursor-help"
           icon="mdi-share-circle mdi-fw"
           v-if="getUser && linkGroup.creator !== getUser.userId"
-          v-tooltip="`Shared with you by ${linkGroup.creator}`" />
+          v-tooltip="$t('common.sharedTip', { creator: linkGroup.creator })" />
         {{ linkGroup.name }}
         <div
           v-if="!itype && getUser && linkGroup.creator !== getUser.userId"
           class="float-right">
           <small>
-            You can only view this Link Group
+            {{ $t('cont3xt.linkGroups.viewOnly') }}
           </small>
           <v-btn
             size="small"
             color="secondary"
             variant="elevated"
             @click="rawEditMode = !rawEditMode"
-            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+            v-tooltip="rawEditMode ? $t('cont3xt.linkGroups.viewFormTip') : $t('cont3xt.linkGroups.viewRawTip')">
             <v-icon :icon="`${rawEditMode ? 'mdi-file-text-outline' : 'mdi-pencil-box'} mdi-fw`" />
           </v-btn>
         </div>
@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ link.name }}
               </a>
               <link-guidance
-                class="ml-1"
+                class="ms-1"
                 :link="link"
                 :element-id="`${linkGroup._id}-${i}`" />
             </div> <!-- /display link to click -->
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ link.url }}
               </a>
               <link-guidance
-                class="ml-1"
+                class="ms-1"
                 :link="link"
                 :element-id="`${linkGroup.name}-${i}`" />
             </div> <!-- /display link to view -->
@@ -110,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             role="checkbox"
             v-model="allChecked"
-            v-tooltip:right="'Select All'"
+            v-tooltip:right="$t('common.selectAll')"
             @click="e => toggleAllLinks(linkGroup, e)" />
           <v-btn
             size="small"
@@ -119,8 +119,8 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             variant="elevated"
             @click="openAllLinks(linkGroup)"
-            v-tooltip="'Open all selected links in this group'">
-            Open Selected
+            v-tooltip="$t('cont3xt.linkGroups.openSelectedTip')">
+            {{ $t('cont3xt.linkGroups.openSelected') }}
           </v-btn>
         </div>
       </template>
@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this link group'">
+              v-tooltip="$t('cont3xt.linkGroups.deleteTip')">
               <v-icon icon="mdi-trash-can mdi-fw" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -150,8 +150,8 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
               size="small"
-              v-tooltip="'Cancel'"
-              title="Cancel"
+              v-tooltip="$t('common.cancel')"
+              :title="$t('common.cancel')"
               color="warning"
               variant="elevated"
               v-if="confirmDelete"
@@ -165,8 +165,8 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="error"
               variant="elevated"
-              v-tooltip="'Are you sure?'"
-              title="Are you sure?"
+              v-tooltip="$t('common.areYouSure')"
+              :title="$t('common.areYouSure')"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
               <v-icon icon="mdi-check-bold mdi-fw" />
@@ -178,15 +178,15 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           density="compact"
           style="font-size: 0.8rem"
-          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
+          class="mb-0 mt-0 me-1 ms-1 pt-0 pb-0">
           <v-icon
             icon="mdi-check-bold"
-            class="mr-2" />
+            class="me-2" />
           <template v-if="message">
             {{ message }}
           </template>
           <template v-else>
-            Saved!
+            {{ $t('cont3xt.settings.saved') }}
           </template>
         </v-alert>
         <div class="d-flex flex-row ga-1">
@@ -195,8 +195,8 @@ SPDX-License-Identifier: Apache-2.0
             color="info"
             variant="elevated"
             v-if="canTransfer(linkGroup)"
-            v-tooltip="'Transfer ownership of this link group'"
-            title="Transfer ownership of this link group"
+            v-tooltip="$t('cont3xt.linkGroups.transferTip')"
+            :title="$t('cont3xt.linkGroups.transferTip')"
             @click="$emit('open-transfer-resource', linkGroup)">
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
@@ -206,7 +206,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              v-tooltip="rawEditMode ? $t('cont3xt.linkGroups.editFormTip') : $t('cont3xt.linkGroups.editRawTip')">
               <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
@@ -217,7 +217,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-tooltip="'Cancel unsaved updates'">
+              v-tooltip="$t('cont3xt.linkGroups.cancelChangesTip')">
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
@@ -228,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="saveLinkGroup(linkGroup)"
-              v-tooltip="'Save this link group'">
+              v-tooltip="$t('cont3xt.linkGroups.saveTip')">
               <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
@@ -243,7 +243,7 @@ SPDX-License-Identifier: Apache-2.0
         @update-link-group="updateLinkGroup" />
     </v-card-text>
     <template #actions>
-      <div class="w-100 d-flex justify-space-between mr-2 ml-2">
+      <div class="w-100 d-flex justify-space-between me-2 ms-2">
         <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
@@ -253,7 +253,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this link group'">
+              v-tooltip="$t('cont3xt.linkGroups.deleteTip')">
               <v-icon icon="mdi-trash-can" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -261,8 +261,8 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
               size="small"
-              v-tooltip="'Cancel'"
-              title="Cancel"
+              v-tooltip="$t('common.cancel')"
+              :title="$t('common.cancel')"
               color="warning"
               variant="elevated"
               v-if="confirmDelete"
@@ -273,12 +273,12 @@ SPDX-License-Identifier: Apache-2.0
           <!-- confirm delete button -->
           <transition name="buttons">
             <v-btn
-              class="ml-0"
+              class="ms-0"
               size="small"
               color="error"
               variant="elevated"
-              v-tooltip="'Are you sure?'"
-              title="Are you sure?"
+              v-tooltip="$t('common.areYouSure')"
+              :title="$t('common.areYouSure')"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
               <v-icon icon="mdi-check-bold" />
@@ -289,11 +289,11 @@ SPDX-License-Identifier: Apache-2.0
           v-if="success"
           color="success"
           density="compact"
-          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
+          class="mb-0 mt-0 me-1 ms-1 pt-0 pb-0">
           <v-icon
             icon="mdi-check-bold"
-            class="mr-2" />
-          Saved!
+            class="me-2" />
+          {{ $t('cont3xt.settings.saved') }}
         </v-alert>
         <div class="d-flex flex-row ga-1">
           <v-btn
@@ -301,8 +301,8 @@ SPDX-License-Identifier: Apache-2.0
             color="info"
             variant="elevated"
             v-if="canTransfer(linkGroup)"
-            v-tooltip="'Transfer ownership of this link group'"
-            title="Transfer ownership of this link group"
+            v-tooltip="$t('cont3xt.linkGroups.transferTip')"
+            :title="$t('cont3xt.linkGroups.transferTip')"
             @click="$emit('open-transfer-resource', linkGroup)">
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
@@ -312,7 +312,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              v-tooltip="rawEditMode ? $t('cont3xt.linkGroups.editFormTip') : $t('cont3xt.linkGroups.editRawTip')">
               <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
@@ -323,7 +323,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-tooltip="'Cancel unsaved updates'">
+              v-tooltip="$t('cont3xt.linkGroups.cancelChangesTip')">
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
@@ -334,7 +334,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="saveLinkGroup(linkGroup)"
-              v-tooltip="'Save this link group'">
+              v-tooltip="$t('cont3xt.linkGroups.saveTip')">
               <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
@@ -348,6 +348,7 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment';
 import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
+import { parseSeconds } from '@common/vueFilters.js';
 
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
@@ -565,7 +566,7 @@ export default {
       let date = match.includes('end') ? this.stopDate : this.startDate;
 
       if (options.timeSnap) {
-        date = this.$options.filters.parseSeconds(options.timeSnap, date) * 1000;
+        date = parseSeconds(options.timeSnap, date) * 1000;
       }
 
       const formattedDate = moment(date).format(format);

@@ -72,9 +72,10 @@
     },
     "protocol" : [
      "corrupt-ip",
+     "erspan",
      "gre"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -235,10 +236,11 @@
      "lte" : 1402723255669
     },
     "protocol" : [
+     "erspan",
      "gre",
      "icmp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 160

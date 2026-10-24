@@ -77,6 +77,10 @@
       "http://www.xxxxxxxx.com/xxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx.html"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-charset",
@@ -109,6 +113,10 @@
       "trafic_ranking=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
      ],
      "requestHeaderValueCnt" : 7,
+     "responseBodyLen" : [
+      165
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "cache-control",
       "connection",

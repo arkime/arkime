@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     :class="{'wrap-btns justify-space-between': buttonIntegrations.length > 4}">
     <overview-selector
       v-if="getActiveIndicator && !hideOverviewSelector"
-      class="mr-1"
+      class="me-1"
       :class="{'mb-1': marginBottom}"
       :i-type="getActiveIndicator.itype"
       :selected-overview="selectedOverview"
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       tabindex="0"
       variant="outlined"
-      class="mr-1 no-wrap flex-grow-1 wrap-btns-btn"
+      class="me-1 no-wrap flex-grow-1 wrap-btns-btn"
       :class="{'mb-1': marginBottom}"
       :id="`${indicatorId}-${integration.name}-btn`"
       @click="setAsActive(integration)">

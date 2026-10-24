@@ -5,21 +5,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "8e:84:ad:9c:17:5e:82:cc:93:db:92:df:75:79:24:5e:25:ab:9a:71",
       "issuerCN" : [
        "ikev1.example.com"
       ],
+      "keyLength" : 512,
       "notAfter" : 1770140448000,
       "notBefore" : 1770054048000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 811,
       "remainingSeconds" : 70140448,
       "serial" : "00e7fe6cc44427d5fe",
+      "sha256" : "c04e32f50d4960d5c6779b40524387ad0f6121eba26a9bbedf4a3617b3d726b9",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "ikev1.example.com"
       ],
       "validDays" : 1,
-      "validSeconds" : 86400
+      "validSeconds" : 86400,
+      "version" : 1
      }
     ],
     "certCnt" : 1,
@@ -117,21 +122,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "3a:6f:0c:34:be:12:31:9d:b7:6f:f5:0b:85:e6:7f:53:a9:29:45:42",
       "issuerCN" : [
        "ikev2.example.com"
       ],
+      "keyLength" : 512,
       "notAfter" : 1770140448000,
       "notBefore" : 1770054048000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 811,
       "remainingSeconds" : 70139448,
       "serial" : "00cba85d9a334981b1",
+      "sha256" : "4ce2bfd09894932eb16e8597db884536d4cb42a313605d2e326622cf840bfd50",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "ikev2.example.com"
       ],
       "validDays" : 1,
-      "validSeconds" : 86400
+      "validSeconds" : 86400,
+      "version" : 1
      }
     ],
     "certCnt" : 1,
@@ -231,21 +241,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "6e:8b:29:72:f8:9f:93:ba:70:26:73:de:63:c9:be:3b:53:bc:ba:fb",
       "issuerCN" : [
        "ikev1-ipv6.example.com"
       ],
+      "keyLength" : 512,
       "notAfter" : 1770140448000,
       "notBefore" : 1770054048000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 811,
       "remainingSeconds" : 70138448,
       "serial" : "00ab57469c81477296",
+      "sha256" : "074d880d4dcaa0cafd9c7ce63d6544ceb916850db19b2438a2c8c11125edd63e",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "ikev1-ipv6.example.com"
       ],
       "validDays" : 1,
-      "validSeconds" : 86400
+      "validSeconds" : 86400,
+      "version" : 1
      }
     ],
     "certCnt" : 1,
@@ -347,21 +362,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "24:78:f8:64:68:c7:07:fd:9c:dd:62:5b:96:ac:06:9a:72:8d:af:7a",
       "issuerCN" : [
        "ikev2-ipv6.example.com"
       ],
+      "keyLength" : 512,
       "notAfter" : 1770140448000,
       "notBefore" : 1770054048000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 811,
       "remainingSeconds" : 70137448,
       "serial" : "00c5f2c6d10670ff49",
+      "sha256" : "8c35238f2031076936d886066d004d8e7e07913d0fdb2f4a2b45af521245dacb",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "ikev2-ipv6.example.com"
       ],
       "validDays" : 1,
-      "validSeconds" : 86400
+      "validSeconds" : 86400,
+      "version" : 1
      }
     ],
     "certCnt" : 1,
@@ -526,10 +546,11 @@
      "lte" : 1700004000003
     },
     "protocol" : [
+     "esp",
      "isakmp",
      "udp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 32

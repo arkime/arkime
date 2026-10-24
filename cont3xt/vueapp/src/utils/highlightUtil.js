@@ -1,4 +1,7 @@
 /**
+ * Copyright Yahoo Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Utility functions for highlighting text based on keywords or regex patterns
  *
  * USAGE:

@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <RolesCommon
     :current-user="getUser"
-    :cont3xt-dark-theme="getDarkThemeEnabled"
     @update-current-user="updateCurrentUser" />
 </template>
 
@@ -20,7 +19,7 @@ export default {
     RolesCommon
   },
   computed: {
-    ...mapGetters(['getUser', 'getDarkThemeEnabled'])
+    ...mapGetters(['getUser'])
   },
   methods: {
     updateCurrentUser () {

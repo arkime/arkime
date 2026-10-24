@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev7" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "dev7" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -20,6 +20,11 @@ permissions:
   contents: read
   packages: read
 
+# Disable npm audit and funding notice to reduce requests
+env:
+  NPM_CONFIG_AUDIT: "false"
+  NPM_CONFIG_FUND: "false"
+
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest
@@ -27,6 +32,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
+      alpinematrix: ${{ steps.set-matrix.outputs.alpinematrix }}
     env:
       HEAD_REF: ${{ github.head_ref }}
     steps:
@@ -41,15 +47,19 @@ jobs:
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
             FREEBSD_MATRIX='{"include":[]}'
+            ALPINE_MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
           else
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not)]}' .github/workflows/versions | jq -c)
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
+            ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine"))]}' .github/workflows/versions | jq -c)
           fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
+          echo "alpinematrix=$ALPINE_MATRIX" >> $GITHUB_OUTPUT
 
   cache-node:
     runs-on: ubuntu-latest
@@ -92,6 +102,8 @@ jobs:
 
   build:
     needs: [generate-matrix, cache-node]
+    # An empty matrix fails the whole run, so skip the job instead
+    if: needs.generate-matrix.outputs.matrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
@@ -153,7 +165,6 @@ jobs:
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
-          ${{ matrix.npmgcc }}
           INSTALL_BUNDLE=bundle make install
 
       - name: lint
@@ -175,6 +186,7 @@ jobs:
           cat /tmp/os
           curl http://localhost:9200/_cat/health
           free -h || true
+          npm run test:unit
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
 
       - name: viewer test arkimedb
@@ -193,6 +205,28 @@ jobs:
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
           head /tmp/arkimedb.log
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: viewer test clickhouse
+        if: ${{ matrix.viewertest == 'clickhouse' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+          curl -fsSL -o /usr/local/bin/arkimedb "https://github.com/arkime/arkime-testdb/releases/latest/download/arkimedb-linux-${arch}"
+          chmod +x /usr/local/bin/arkimedb
+          mkdir -p /tmp/arkimedb-data
+          arkimedb serve --data-dir /tmp/arkimedb-data --port 9200 > /tmp/arkimedb.log 2>&1 &
+          curl -fsSL https://clickhouse.com/ | sh
+          mv clickhouse /usr/local/bin/clickhouse
+          mkdir -p /tmp/clickhouse-data
+          (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && curl -fsS http://localhost:9200/ >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
+          curl -fsS http://localhost:9100/ping || (tail -50 /tmp/clickhouse.log; exit 1)
+          clickhouse client --query "SELECT version()"
+          (cd tests ; G_SLICE=always-malloc ./tests_ch.sh --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}
@@ -236,7 +270,7 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
+          (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)
@@ -245,7 +279,7 @@ jobs:
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
-        if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
+        if: ${{ matrix.version == 'el9.x86_64' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           rm -rf /data/moloch; mkdir -p /data
@@ -305,8 +339,9 @@ jobs:
         if: ${{ matrix.notice }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
-          ls -l NOT*
+          (npm install license-checker; release/notice.txt.pl /opt/arkime release/NOTICEHEADER release/CAPTURENOTICE release/VIEWERNOTICE > NOTICE.txt)
+          release/sbom.mjs > arkime-sbom.cdx.json
+          ls -l NOT* arkime-sbom*
 
       - name: upload github
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
@@ -322,6 +357,7 @@ jobs:
             *.rpm
             *.zst
             NOTICE.txt
+            arkime-sbom.cdx.json
 
       - name: tag last-commit
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
@@ -374,6 +410,7 @@ jobs:
 ############# FreeBSD Build #############
   freebsd-build:
     needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.freebsdmatrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
@@ -408,7 +445,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar pcre2 python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime
@@ -423,7 +460,7 @@ jobs:
             ls -l *.pkg
 
             if [ "${{ matrix.ja4plus }}" = "true" ]; then
-              (cd .. ; git clone https://github.com/arkime/ja4)
+              (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
@@ -445,6 +482,64 @@ jobs:
           files: |
             *.pkg
             *.so
+
+############# Alpine Build #############
+  alpine-build:
+    needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.alpinematrix != '{"include":[]}'
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-matrix.outputs.alpinematrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+
+      - name: set major version
+        run: |
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
+          echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+
+      # JavaScript actions refuse to run in Alpine containers on arm64, so run
+      # the build with docker on the host and keep the actions outside it
+      - name: Build on Alpine
+        run: |
+          docker run --rm -i -v "$GITHUB_WORKSPACE:/work" -w /work ${{ matrix.container }} bash -s <<'EOF'
+          set -e
+          git config --global --add safe.directory /work
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ls -l capture/capture
+          export PATH=/opt/arkime/bin:$PATH
+          (cd tests; ./tests.pl)
+          INSTALL_BUNDLE=bundle make install
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
+          ls -l *.apk
+          EOF
+
+      - name: upload github
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.apk
 
 ############# Docker Manifest #############
   create-manifest:
@@ -500,7 +595,10 @@ jobs:
   slack:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build, freebsd-build]
+    needs: [generate-matrix, cache-node, build, freebsd-build, alpine-build]
+    # a job skipped for an empty matrix must not skip the notice, a failed or cancelled one does
+    # a timed out job reports as cancelled, which failure() and cancelled() (whole run only) don't catch
+    if: ${{ !failure() && !cancelled() && !contains(needs.*.result, 'cancelled') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1

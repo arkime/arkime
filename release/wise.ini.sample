@@ -10,6 +10,17 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 # usersElasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearchBasicAuth=
 #
+# File with trusted roots/certs for OpenSearch/Elasticsearch. WARNING! this replaces default roots
+# caTrustFile=ARKIME_INSTALL_DIR/etc/roots.cert
+#
+# Client certificate (mTLS) presented to OpenSearch/Elasticsearch
+# esClientKey=ARKIME_INSTALL_DIR/etc/es-client.key
+# esClientCert=ARKIME_INSTALL_DIR/etc/es-client.crt
+# esClientKeyPass=
+#
+# Sources that call a url (urlapi, url, elasticsearch, elasticsearchfile, misp) take their own
+# insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings
+#
 # Use digest auth by default
 # If using SSO change to the http header with the username in it
 userNameHeader=digest
