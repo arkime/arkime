@@ -9189,14 +9189,14 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|shareables-?import|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|wipenoprompt|upgrade|upgradenoprompt|disable-?users|shareables-?import|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?update|users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
-parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
+parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|wipe|wipenoprompt|optimize)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore|restorenoprompt|backup)$/);
 
 $ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|shrink|ilm|ism)$/);
@@ -11205,7 +11205,7 @@ if ($ARGV[1] eq "initorupgrade") {
     $ARGV[1] = ($main::versionNumber < 0) ? "initnoprompt" : "upgradenoprompt";
 }
 
-if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
+if ($ARGV[1] =~ /^wipe(noprompt)?$/ && $main::versionNumber != $VERSION) {
     die "Can only use wipe if mappings are up to date.  Use upgrade first.";
 }
 
