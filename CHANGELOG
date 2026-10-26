@@ -95,6 +95,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
+  - #4400 rulesFiles entries can be directories, every *.rules.yml / *.rules.yaml in one is loaded and the directory is watched so
+          added or removed files reload like edits do, once they stop changing. The default is now /opt/arkime/etc, where
+          default.rules.yml is installed and replaced on upgrade (DO NOT EDIT it). default.* files load first and a rule in
+          a later file with the same name replaces it, or disabled: true removes it, so put your own rules in eg
+          /opt/arkime/etc/local.rules.yml. rulesFiles= turns rules off. See capture/RULES.md
   - #4364 Rules can use expression: instead of fields: or bpf:, with a syntax similar to the viewer's search plus math and functions,
           eg protocols == tls && port.dst != [443, 8443] && !(ip.dst == 10.0.0.0/8). Works in existing version 1 rules
           files alongside fields:/bpf: rules, which are unchanged, and in every when: except everyPacket. Expressions are
@@ -145,6 +150,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           scheme readers stop mid file on SIGINT and log what was skipped, files still queued on the command socket get a
           file-error, S3 listings and SQS stop fetching, and a quiet tzsp link no longer blocks exit
 ## Viewer
+  - #4400 Featherprint classifier rules are loaded from every *.featherprint.yml / *.featherprint.yaml file in the
+          featherprintRulesFiles files and directories (default /opt/arkime/etc), where default.featherprint.yml is installed
+          and replaced on upgrade (DO NOT EDIT it). Other files are consulted before default.*, so a classify rule in eg
+          /opt/arkime/etc/local.featherprint.yml wins over the default one. Replaces the featherprintRulesFile setting
+          and viewer/featherprint.rules.yaml
   - Fix reading zstd compressed pcap with Node 24.22 and later
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
   - Add an Arkime Dashboards settings tab to rename dashboards, change who they are shared with and reorder their widgets

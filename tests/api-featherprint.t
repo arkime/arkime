@@ -36,7 +36,7 @@ my %expect = (
   "10.177.0.12" => "raspberry_pi",     # macPrefixIn OUI beats linux vendor class
   "10.177.0.13" => "android",          # dhcpVendorClassMatches android-dhcp
   "10.177.0.14" => "windows_pc",       # dhcpVendorClassMatches MSFT
-  "10.177.0.62" => "windows_pc",       # nameMatches desktop-xxxxxxx via NBNS
+  "10.177.0.62" => "test_override",    # featherprint-rules/local.featherprint.yml wins over default.* windows_pc
 );
 for my $ip (sort keys %expect) {
     my $r = viewerGet("/api/featherprint/ip/$ip");

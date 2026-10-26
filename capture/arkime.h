@@ -1106,6 +1106,7 @@ typedef void (*ArkimeFilesChange_cb)(char **names);
 void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChange_cb cb, const char *msg);
 void arkime_config_monitor_file(const char *desc, char *name, ArkimeFileChange_cb cb);
 void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChange_cb cb);
+void arkime_config_monitor_dir_files(const char *desc, char **entries, const char *suffixes, ArkimeFilesChange_cb cb);
 
 #define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
