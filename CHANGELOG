@@ -141,7 +141,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4360 SIP is now classified on every request method (ACK, BYE, SUBSCRIBE, MESSAGE, ...) and on tel: URIs, not just sip: URIs
   - #4360 SIP requests over TCP are no longer also tagged http
   - #4360 DHCP packets shorter than 256 bytes are now parsed, and BGP sessions seen only from the server side are now classified
-  - #4399 Capture shuts down cleanly: packet threads are joined, Python sub-interpreters are ended in order, the offline and
+  - Capture shuts down cleanly: packet threads are joined, Python sub-interpreters are ended in order, the offline and
           scheme readers stop mid file on SIGINT and log what was skipped, files still queued on the command socket get a
           file-error, S3 listings and SQS stop fetching, and a quiet tzsp link no longer blocks exit
 ## Viewer

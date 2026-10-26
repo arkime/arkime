@@ -11,7 +11,7 @@
 use lib ".";
 use strict;
 use warnings;
-use Test::More tests => 17;
+use Test::More tests => 20;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
