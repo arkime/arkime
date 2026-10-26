@@ -87,6 +87,7 @@ ARKIME_LOCK_DEFINE(fileInfoLock);
 
 typedef struct {
     ArkimePacketHead_t    packetQ;
+    GThread              *thread;
     uint64_t              overloadDrops;
     uint32_t              overloadDropTimes;
     uint64_t              writtenBytes;
@@ -135,6 +136,7 @@ LOCAL ArkimeDropHashGroup_t      packetDrop6S;
 
 
 LOCAL int runThreads = 1;
+LOCAL int packetThreadsRunning;
 
 LOCAL int arkime_packet_thread_init_func;
 LOCAL int arkime_packet_thread_exit_func;
@@ -540,12 +542,13 @@ LOCAL void *arkime_packet_thread(void *threadp)
     arkime_call_named_func(arkime_packet_thread_init_func, thread, NULL);
 
     // Continue while packet_exit hasn't been called and we still have outstanding packets
-    while (likely(runThreads || DLL_COUNT(packet_, &packetThreadData[thread].packetQ))) {
+    while (likely(ARKIME_THREAD_ATOMIC_LOAD_RELAXED(runThreads) || DLL_COUNT(packet_, &packetThreadData[thread].packetQ))) {
         ArkimePacket_t  *packet;
 
         ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
         ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 0);
-        if (DLL_COUNT(packet_, &packetThreadData[thread].packetQ) == 0) {
+        // Re-check runThreads under the lock so a wake from arkime_packet_exit can't be lost
+        if (DLL_COUNT(packet_, &packetThreadData[thread].packetQ) == 0 && ARKIME_THREAD_ATOMIC_LOAD_RELAXED(runThreads)) {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME_COARSE, &ts);
             arkimeThreadData[thread].currentTime = ts.tv_sec;
@@ -601,6 +604,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
 
     arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
     ARKIME_THREAD_ATOMIC_STORE_RELAXED(packetThreadData[thread].inProgress, 0); // Clear after calling exit function delaying can quit
+    ARKIME_THREAD_DECR(packetThreadsRunning);
 
     return NULL;
 }
@@ -2329,7 +2333,8 @@ void arkime_packet_init()
         ARKIME_COND_INIT(packetThreadData[t].packetQ.lock);
         snprintf(name, sizeof(name), "arkime-pkt%d", t);
 #ifndef FUZZLOCH
-        g_thread_unref(g_thread_new(name, &arkime_packet_thread, (gpointer)(long)t));
+        ARKIME_THREAD_INCR(packetThreadsRunning);
+        packetThreadData[t].thread = g_thread_new(name, &arkime_packet_thread, (gpointer)(long)t);
 #endif
     }
 
@@ -2638,7 +2643,28 @@ void arkime_packet_flip_src_dst(ArkimeSession_t *session)
 /******************************************************************************/
 void arkime_packet_exit()
 {
-    runThreads = 0;
+    ARKIME_THREAD_ATOMIC_STORE_RELAXED(runThreads, 0);
+
+    // The wake takes each packetQ lock, and the threads re-check runThreads under that lock
+    // before waiting, so the wake can't be lost.
+    arkime_packet_thread_wake(-1);
+
+    // A reader that was still mid file when the can quits passed can still send packets and a
+    // FILE_DONE, and a packet thread processing FILE_DONE waits on the http queue, which is
+    // driven by the main loop. So keep the main loop running until the threads are done.
+    while (ARKIME_THREAD_ATOMIC_LOAD_RELAXED(packetThreadsRunning) > 0) {
+        g_main_context_iteration(NULL, FALSE);
+        usleep(1000);
+    }
+
+    // Join to also wait for their thread local destructors
+    for (int t = 0; t < config.packetThreads; t++) {
+        if (packetThreadData[t].thread) {
+            g_thread_join(packetThreadData[t].thread);
+            packetThreadData[t].thread = NULL;
+        }
+    }
+
     if (ipTree4) {
         Destroy_Patricia(ipTree4, NULL);
         ipTree4 = 0;

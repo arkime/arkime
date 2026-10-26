@@ -220,6 +220,10 @@ LOCAL int reader_libpcapfile_next()
 
     pcap = 0;
 
+    // don't open any more files once quitting
+    if (config.quitting)
+        return 0;
+
     if (config.pcapReadFiles) {
         static int pcapFilePos = 0;
 
@@ -391,6 +395,9 @@ dirsDone:
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_monitor_gfunc(gpointer UNUSED(user_data))
 {
+    if (config.quitting)
+        return G_SOURCE_REMOVE;
+
     if (DLL_COUNT(s_, &monitorQ) == 0)
         return G_SOURCE_CONTINUE;
 
@@ -450,6 +457,24 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_read()
 {
+    // stop reading once quitting, the rest of this file is skipped and it isn't deleted
+    // since it wasn't fully processed. This also keeps packets from reaching reader
+    // callbacks after the reader exit hook has run.
+    if (config.quitting) {
+        const char *name = offlinePcapFilename[0] ? offlinePcapFilename : "-";
+        if (!config.dryRun && !config.copyPcap && fileInfo[readerPos].lastPackets > 0) {
+            // The files record is created when the first packet is written, so once packets
+            // have been read it exists and --skip would skip this file next time
+            LOG("Quitting, skipping rest of %s - it is recorded as processed, use --reprocess to read it again", name);
+            arkime_packet_batch_end_of_file(readerPos);
+        } else {
+            LOG("Quitting, skipping rest of %s", name);
+        }
+        pcap_close(pcap);
+        pcap = 0;
+        return G_SOURCE_REMOVE;
+    }
+
     // pause reading if too many waiting disk operations
     if (arkime_writer_queue_length() > 10) {
         if (config.debug)

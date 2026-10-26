@@ -46,6 +46,9 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
     g_object_unref(addr);
 
+    // Timeout the receive so the loop notices config.quitting on a quiet link
+    g_socket_set_timeout(socket, 1);
+
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
     while (!config.quitting) {
@@ -53,6 +56,10 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
         gsize len = g_socket_receive(socket, buf, sizeof(buf), NULL, &error);
         if (error) {
+            if (g_error_matches(error, G_IO_ERROR, G_IO_ERROR_TIMED_OUT)) {
+                g_clear_error(&error);
+                continue;
+            }
             LOG("Error: %s", error->message);
             g_clear_error(&error);
             dropped++;

@@ -49,6 +49,7 @@ typedef struct s3_request {
     uint8_t                isS3 : 1;     // Use S3 URL
     uint8_t                tryAgain : 1; // Try again because wrong region
     uint8_t                first : 1;    // The first attempt at url
+    uint8_t                httpError : 1; // Object request got a non 2xx reply, http thread -> scheme thread
 } S3Request;
 
 
@@ -230,16 +231,28 @@ LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
 {
     S3Request *req = uw;
     if (!req->isDir) {
+        // A wrong region reply is retried by the s3:// loader, anything else non 2xx means the
+        // object wasn't read and the load must fail rather than look like an empty file
+        if ((code < 200 || code >= 300) && !(req->isS3 && req->tryAgain)) {
+            LOG("ERROR - S3 request failed with HTTP %d for %s", code, req->url);
+            req->httpError = TRUE;
+        }
         ARKIME_UNLOCK(waiting);
         return;
     }
 
-    if (req->first) {
+    // Only s3:// has a region retry loop. For s3http(s) the region is part of the host, so a wrong
+    // region reply goes to the http error path below, which sets done instead of leaving it unset
+    if (req->first && req->isS3) {
         req->first = FALSE;
         if (data_len > 200 && arkime_memstr((char *)data, MIN(400, data_len), "' is wrong; expecting '", 23)) {
             scheme_s3_parse_region(data, data_len, req->url, req);
-            ARKIME_UNLOCK(waitingdir);
-            return;
+            // Only skip the error path below when a retry was actually set up, otherwise done
+            // would never be set and the listing would wait forever
+            if (req->tryAgain) {
+                ARKIME_UNLOCK(waitingdir);
+                return;
+            }
         }
     }
 
@@ -413,6 +426,76 @@ LOCAL char *scheme_s3_prefix_encode(const char *prefix)
     return encoded;
 }
 /******************************************************************************/
+// Drain a directory listing, requesting continuation pages as needed. base is the uri up to
+// and including the bucket ("s3://bucket" or scheme://host/bucket) so base + path is a request.
+// The list callback sets done last, after it has written req->continuation and queued the
+// page's keys, and doesn't touch req after that. So only once done is set is req->continuation
+// read, the next page requested, or the loop left, never while a page request is in flight.
+LOCAL void scheme_s3_list_loop(void *server, S3Request *req, const char *base, const char *bucket, gboolean pathStyle, const char *prefix, const char *dir, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+{
+    int skipped = 0;
+    while (1) {
+        ARKIME_LOCK(s3Items->lock);
+        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
+            ARKIME_COND_WAIT(s3Items->lock);
+        }
+        S3Item *item;
+        DLL_POP_HEAD(item_, s3Items, item);
+        const int pageDone = s3Items->done;
+        ARKIME_UNLOCK(s3Items->lock);
+
+        gboolean requested = FALSE;
+        if (pageDone && req->continuation) {
+            // Once quitting don't fetch more pages
+            if (!config.quitting) {
+                char *uri2;
+
+                if (prefix) {
+                    uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2&prefix=%s", base, req->continuation, prefix);
+                } else {
+                    uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2", base, req->continuation);
+                }
+
+                // Another page is coming, clear done before it can be set again
+                ARKIME_LOCK(s3Items->lock);
+                s3Items->done = 0;
+                ARKIME_UNLOCK(s3Items->lock);
+
+                ARKIME_LOCK(waitingdir);
+                if (scheme_s3_request(server, uri2 + strlen(base), bucket, req, pathStyle, NULL)) {
+                    // Nothing was scheduled, so no callback will unlock waitingdir or set done
+                    ARKIME_UNLOCK(waitingdir);
+                    LOG("ERROR - Failed to request the next page of %s", dir);
+                    ARKIME_LOCK(s3Items->lock);
+                    s3Items->done = 1;
+                    ARKIME_UNLOCK(s3Items->lock);
+                } else {
+                    requested = TRUE;
+                }
+                g_free(uri2);
+            }
+            g_free(req->continuation);
+            req->continuation = NULL;
+        }
+
+        if (!item) {
+            if (requested) // Empty page, but more pages to fetch
+                continue;
+            break;
+        }
+
+        if (config.quitting) {
+            skipped++; // the load would be skipped anyway, avoid a notification per object
+        } else {
+            arkime_reader_scheme_load(item->url, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
+        }
+        g_free(item->url);
+        ARKIME_TYPE_FREE(S3Item, item);
+    }
+    if (skipped)
+        LOG("Quitting, skipped %d objects from %s", skipped, dir);
+}
+/******************************************************************************/
 LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     char **uris = g_strsplit(dir, "/", 4);
@@ -475,50 +558,21 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         // http thread, and a reply that lands first would otherwise unlock
         // nothing and leave the second lock waiting forever
         ARKIME_LOCK(waitingdir);
-        scheme_s3_request(server, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
+        if (scheme_s3_request(server, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL)) {
+            // Nothing was scheduled, so no callback will unlock waitingdir
+            ARKIME_UNLOCK(waitingdir);
+            LOG("ERROR - Failed to request %s", dir);
+            g_free(prefix);
+            g_strfreev(uris);
+            return 1;
+        }
         ARKIME_LOCK(waitingdir);
         ARKIME_UNLOCK(waitingdir);
     } while (req.tryAgain);
 
-    while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0 || req.continuation) {
-        if (req.continuation) {
-            char *uri2;
-
-            if (prefix) {
-                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, prefix);
-            } else {
-                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2", uris[2], req.continuation);
-            }
-
-            g_free(req.continuation);
-            req.continuation = NULL;
-
-            // Another page is coming, clear done before it can be set again
-            ARKIME_LOCK(s3Items->lock);
-            s3Items->done = 0;
-            ARKIME_UNLOCK(s3Items->lock);
-
-            ARKIME_LOCK(waitingdir);
-            scheme_s3_request(server, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
-            g_free(uri2);
-        }
-        ARKIME_LOCK(s3Items->lock);
-        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
-            ARKIME_COND_WAIT(s3Items->lock);
-        }
-        if (DLL_COUNT(item_, s3Items) == 0) {
-            ARKIME_UNLOCK(s3Items->lock);
-            if (req.continuation) // Empty page, but more pages to fetch
-                continue;
-            break;
-        }
-        S3Item *item;
-        DLL_POP_HEAD(item_, s3Items, item);
-        ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
-        g_free(item->url);
-        ARKIME_TYPE_FREE(S3Item, item);
-    }
+    char base[300];
+    snprintf(base, sizeof(base), "s3://%s", uris[2]);
+    scheme_s3_list_loop(server, &req, base, uris[2], s3PathAccessStyle, prefix, dir, flags, actions);
     g_free(prefix);
     g_strfreev(uris);
     return 1;
@@ -614,7 +668,14 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 
     s3Items->done = 0;
 
-    scheme_s3_request(server, uri + strlen(shpb), paths[1], &req, TRUE, NULL);
+    // Hold waitingdir like the later pages do, scheme_s3_done unlocks it
+    ARKIME_LOCK(waitingdir);
+    const gboolean failed = scheme_s3_request(server, uri + strlen(shpb), paths[1], &req, TRUE, NULL);
+    if (failed) {
+        // Nothing was scheduled, so no callback will unlock waitingdir or set done
+        ARKIME_UNLOCK(waitingdir);
+        LOG("ERROR - Failed to request %s", dir);
+    }
 
     curl_free(scheme);
     curl_free(host);
@@ -622,45 +683,13 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     curl_free(path);
     curl_url_cleanup(h);
 
-    while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0 || req.continuation) {
-        if (req.continuation) {
-            char *uri2;
-
-            if (prefix) {
-                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, prefix);
-            } else {
-                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
-            }
-
-            g_free(req.continuation);
-            req.continuation = NULL;
-
-            // Another page is coming, clear done before it can be set again
-            ARKIME_LOCK(s3Items->lock);
-            s3Items->done = 0;
-            ARKIME_UNLOCK(s3Items->lock);
-
-            ARKIME_LOCK(waitingdir);
-            scheme_s3_request(server, uri2 + strlen(shpb), paths[1], &req, TRUE, NULL);
-            g_free(uri2);
-        }
-        ARKIME_LOCK(s3Items->lock);
-        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
-            ARKIME_COND_WAIT(s3Items->lock);
-        }
-        if (DLL_COUNT(item_, s3Items) == 0) {
-            ARKIME_UNLOCK(s3Items->lock);
-            if (req.continuation) // Empty page, but more pages to fetch
-                continue;
-            break;
-        }
-        S3Item *item;
-        DLL_POP_HEAD(item_, s3Items, item);
-        ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
-        g_free(item->url);
-        ARKIME_TYPE_FREE(S3Item, item);
+    if (failed) {
+        g_free(prefix);
+        g_strfreev(paths);
+        return 1;
     }
+
+    scheme_s3_list_loop(server, &req, shpb, paths[1], TRUE, prefix, dir, flags, actions);
     g_free(prefix);
     g_strfreev(paths);
     return 1;
@@ -755,6 +784,8 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
         ARKIME_LOCK(waiting);
         ARKIME_UNLOCK(waiting);
     } while (req.tryAgain);
+    if (req.httpError)
+        rc = 1;
     g_free(req.extraInfo);
     g_free(reqPath);
     g_free(extraPath);
@@ -910,7 +941,7 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     }
     g_free(req.extraInfo);
 
-    return failed ? 1 : 0;
+    return (failed || req.httpError) ? 1 : 0;
 }
 /******************************************************************************/
 LOCAL void scheme_s3_exit()

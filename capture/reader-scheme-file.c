@@ -191,7 +191,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
     }
 
     GPtrArray *files = (flags & ARKIME_SCHEME_FLAG_SORTED) ? g_ptr_array_new_with_free_func(g_free) : NULL;
-    while (1) {
+    while (!config.quitting) {
         const gchar *filename = g_dir_read_name(pcapGDir);
 
         // No more files, stop processing this directory
@@ -232,7 +232,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
         return 1;
 
     g_ptr_array_sort(files, scheme_file_name_cmp);
-    for (guint i = 0; i < files->len; i++) {
+    for (guint i = 0; !config.quitting && i < files->len; i++) {
         const gchar *filename = files->pdata[i];
         gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
@@ -308,7 +308,8 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
             if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL, actions)) {
                 if (!isStdin)
                     close(fd);
-                if (config.ignoreErrors && (flags & ARKIME_SCHEME_FLAG_DELETE)) { // ALW - Maybe this should always delete?
+                // Not if processing stopped because of quitting, the rest of the file wasn't read
+                if (config.ignoreErrors && (flags & ARKIME_SCHEME_FLAG_DELETE) && !config.quitting) { // ALW - Maybe this should always delete?
                     if (config.debug)
                         LOG("Deleting %s", uri);
                     int rc = unlink(uri);
