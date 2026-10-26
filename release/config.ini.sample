@@ -145,8 +145,9 @@ rirFile=ARKIME_INSTALL_DIR/etc/ipv4-address-space.csv
 ouiFile=ARKIME_INSTALL_DIR/etc/oui.txt
 
 # Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state.
+# A list of files and/or directories, every *.rules.yml file in a directory is loaded, default.* first.
 # See https://arkime.com/rulesformat
-#rulesFiles=ARKIME_INSTALL_DIR/etc/arkime.rules
+#rulesFiles=ARKIME_INSTALL_DIR/etc
 
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=nobody

@@ -1,9 +1,13 @@
-# featherprint.rules.yaml -- featherprint classifier rules.
+# DO NOT EDIT - default.featherprint.yml is installed by Arkime and replaced on
+# every upgrade.
 #
-# Loaded by viewer/apiFeatherprint.js at startup. To override, point the
-# arkime ini `featherprintRulesFile` setting at a different file, or drop a
-# replacement at /opt/arkime/etc/featherprint.rules.yaml (preferred) or
-# ./featherprint.rules.yaml.
+# Featherprint classifier rules, loaded by the viewer at startup from every
+# *.featherprint.yml file in the featherprintRulesFiles directories (default
+# /opt/arkime/etc). To add or change rules put them in your own file next to
+# this one, eg /opt/arkime/etc/local.featherprint.yml: classify rules are first
+# match wins and every other file is consulted before default.*, so a rule in
+# your file for a device wins over the ones here, and a macSourceRank entry in
+# your file replaces the one here.
 
 # --- MAC source ranking ------------------------------------------------------
 # Confidence ordering for MAC observations. When the same IP yields different

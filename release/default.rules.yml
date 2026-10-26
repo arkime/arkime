@@ -1,0 +1,18 @@
+# DO NOT EDIT - default.rules.yml is installed by Arkime and replaced on every
+# upgrade.
+#
+# Capture rules, loaded at startup from every *.rules.yml file in the rulesFiles
+# directories (default /opt/arkime/etc) and reloaded when a file changes. To add
+# or change rules put them in your own file next to this one, eg
+# /opt/arkime/etc/local.rules.yml. default.* loads first and later files win:
+# a rule with the same name as one here replaces it, and a rule with just the
+# name and disabled: true turns it off, eg
+#
+#   version: 1
+#   rules:
+#     - name: "some default rule"
+#       disabled: true
+#
+# See https://arkime.com/rulesformat and capture/RULES.md
+version: 1
+rules: []
