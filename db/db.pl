@@ -8811,8 +8811,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $endTimeIndex = time2index("weekly", "${PREFIX}history_v1-", $endTime);
     delete $hindices->{$endTimeIndex};
 
-    # Use the same instant as $endTime. A second gmtime call can make the keep
-    # loop stop one day short and delete the viewer's current history index.
     @startTime = gmtime($endTime);
     $startTime[3] -= 7 * $HISTORY;
 
