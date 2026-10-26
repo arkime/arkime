@@ -191,8 +191,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           be fingerprinted on demand from the new Featherprint page. Configure watched ranges in [featherprint-subnet];
           adds the featherprint, featherprint_history and featherprint_alerts indices (db.pl v89). Alert ack state is
           shared by everyone and reversible; featherprintAckRoles (default arkimeAdmin) controls who may change it
-  - Email and Slack notifier alerts escape < and >, so device names Featherprint sees on the network can't inject HTML, links or @mentions
-  - Teams notifier alerts escape Markdown link brackets, so device names Featherprint sees on the network can't inject links
+  - #4401 Email and Slack notifier alerts escape < and >, so device names Featherprint sees on the network can't inject HTML, links or @mentions
+  - #4401 Teams notifier alerts escape Markdown link brackets, so device names Featherprint sees on the network can't inject links
   - #4377 Add a bar graph type to SPI Graph, with an optional second field drawn as stacked or grouped segments
   - #4377 Dashboard widgets link to their full page view in SPI Graph or Sessions with the same search
   - #4379 Saved graphs: SPI Graph can save, share and load a graph, and add it or the current graph to a dashboard as a widget;
