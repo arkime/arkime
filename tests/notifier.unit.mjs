@@ -2,7 +2,8 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Unit tests for the notifme notifiers (email, slack, twilio). Run with `npm run test:unit`.
+Unit tests for the notifme notifiers (email, slack, twilio) and the Teams card
+builder. Run with `npm run test:unit`.
 
 The alert message can carry strings seen on the network (featherprint device
 names come from DHCP, NBNS, SSDP and DNS), so the channels that render markup
@@ -14,6 +15,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const notifme = require('../common/notifier.notifme.js');
+const teams = require('../common/notifier.teams.js');
 // resolve the sdk the same way notifier.notifme.js does, so we stub that copy
 const Notifme = createRequire(require.resolve('../common/notifier.notifme.js'))('arkime-notifme-sdk');
 
@@ -67,5 +69,39 @@ describe('notifier.notifme', () => {
   test('twilio sms is plain text and left as is', async () => {
     await send(notifme.sendTwilioAlert, TWILIO, FEATHERPRINT);
     assert.equal(sent[0].sms.text, FEATHERPRINT);
+  });
+});
+
+describe('notifier.teams', () => {
+  // the TextBlock text of the card Teams is sent
+  function teamsText (message, links) {
+    return teams.buildTeamsMessage(message, links).attachments[0].content.body[0].text;
+  }
+
+  test('escapes Markdown link brackets in the message', () => {
+    assert.equal(
+      teamsText('featherprint: 10.0.0.5 newName: {"name":"[Click to ack](http://evil.example/)","source":"ssdp-server"}'),
+      'featherprint: 10.0.0.5 newName: {"name":"\\[Click to ack\\](http://evil.example/)","source":"ssdp-server"}'
+    );
+    assert.equal(teamsText('![x](http://evil.example/p.gif)'), '!\\[x\\](http://evil.example/p.gif)');
+  });
+
+  test('a backslash in the message cannot cancel the escape', () => {
+    assert.equal(teamsText('\\[x\\](http://evil.example/)'), '\\\\\\[x\\\\\\](http://evil.example/)');
+  });
+
+  test('hunt and cron *bold* and urls are left as is', () => {
+    const message = `
+*A&amp;B* hunt job finished:
+*5* matched sessions out of *10* searched sessions.
+https://arkime.example/sessions?expression=huntId==1&stopTime=2&startTime=1
+`;
+    assert.equal(teamsText(message), message);
+  });
+
+  test('links become card actions unchanged', () => {
+    const card = teams.buildTeamsMessage('cluster - esDown', [{ text: 'Parliament Dashboard', url: 'https://parliament.example/?searchTerm=c1' }]).attachments[0].content;
+    assert.equal(card.body[0].text, 'cluster - esDown');
+    assert.deepEqual(card.actions, [{ type: 'Action.OpenUrl', title: 'Parliament Dashboard', url: 'https://parliament.example/?searchTerm=c1' }]);
   });
 });
