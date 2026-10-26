@@ -9,6 +9,15 @@
 
 const Notifme = require('arkime-notifme-sdk');
 
+// The alert message is plain text, and some senders build it from strings they
+// don't control (featherprint includes device names seen on the network). Email
+// renders it as HTML and Slack turns <...> into links and @mentions, so escape
+// < and > for those channels. & is left alone: without < no markup can form,
+// and senders that already safeStr their values would be double escaped.
+function escapeMarkup (str) {
+  return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 exports.init = function (api) {
   api.register('slack', {
     name: 'Slack',
@@ -106,7 +115,7 @@ exports.sendSlackAlert = function (config, message, links, cb) {
   });
 
   // add links to the slack alert
-  const slackMsgObj = { slack: { text: message } };
+  const slackMsgObj = { slack: { text: escapeMarkup(message) } };
   if (links && links.length) {
     slackMsgObj.slack.attachments = [];
     for (const link of links) {
@@ -192,15 +201,16 @@ exports.sendEmailAlert = function (config, message, links, cb) {
     }
   });
 
+  let html = escapeMarkup(message);
   if (links && links.length) {
     for (const link of links) {
-      message += `<br><a href="${link.url}">${link.text}</a>`;
+      html += `<br><a href="${link.url}">${link.text}</a>`;
     }
   }
 
   EmailNotifier.send({
     email: {
-      html: message,
+      html,
       to: config.to,
       from: config.from,
       subject: config.subject || 'Parliament Alert'

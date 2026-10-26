@@ -1,0 +1,71 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+
+Unit tests for the notifme notifiers (email, slack, twilio). Run with `npm run test:unit`.
+
+The alert message can carry strings seen on the network (featherprint device
+names come from DHCP, NBNS, SSDP and DNS), so the channels that render markup
+must not let them inject any. The notifme sdk is stubbed so nothing is sent.
+*/
+import { test, describe, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const notifme = require('../common/notifier.notifme.js');
+// resolve the sdk the same way notifier.notifme.js does, so we stub that copy
+const Notifme = createRequire(require.resolve('../common/notifier.notifme.js'))('arkime-notifme-sdk');
+
+let sent;
+Notifme.default = class {
+  send (payload) {
+    sent.push(payload);
+    return Promise.resolve({ status: 'success' });
+  }
+};
+
+// send one alert and wait for the callback
+function send (fn, config, message, links) {
+  return new Promise((resolve) => fn(config, message, links, resolve));
+}
+
+const EMAIL = { host: 'localhost', port: 25, to: 'admin@example.com', from: 'arkime@example.com' };
+const SLACK = { slackWebhookUrl: 'https://hooks.slack.com/services/x' };
+const TWILIO = { accountSid: 'x', authToken: 'x', toNumber: '+15550000000', fromNumber: '+15550000001' };
+
+// what featherprint sends for an SSDP SERVER header of the attacker's choosing
+const FEATHERPRINT = 'featherprint: 10.0.0.5 newName: {"name":"<a href=\\"http://evil.example/\\">ack</a><img src=http://evil.example/p.gif>","source":"ssdp-server"}';
+
+describe('notifier.notifme', () => {
+  beforeEach(() => { sent = []; });
+
+  test('email escapes markup in the message', async () => {
+    await send(notifme.sendEmailAlert, EMAIL, FEATHERPRINT);
+    const html = sent[0].email.html;
+    assert.ok(!html.includes('<'), html);
+    assert.ok(!html.includes('>'), html);
+    assert.ok(html.includes('&lt;a href=\\"http://evil.example/\\"&gt;ack&lt;/a&gt;&lt;img src=http://evil.example/p.gif&gt;'), html);
+  });
+
+  test('email still renders the links it adds', async () => {
+    await send(notifme.sendEmailAlert, EMAIL, 'cluster <b> - esDown', [{ text: 'Parliament Dashboard', url: 'https://parliament.example/?searchTerm=c1' }]);
+    assert.equal(sent[0].email.html, 'cluster &lt;b&gt; - esDown<br><a href="https://parliament.example/?searchTerm=c1">Parliament Dashboard</a>');
+  });
+
+  test('email does not double escape an already safeStr\'d message', async () => {
+    const message = 'A&amp;B &lt;x&gt; hunt job finished: https://arkime.example/sessions?expression=huntId==1&stopTime=2&startTime=1';
+    await send(notifme.sendEmailAlert, EMAIL, message);
+    assert.equal(sent[0].email.html, message);
+  });
+
+  test('slack escapes links and @mentions in the message', async () => {
+    await send(notifme.sendSlackAlert, SLACK, 'featherprint: 10.0.0.5 newName: {"name":"<!channel> <http://evil.example/|click to ack>"}');
+    assert.equal(sent[0].slack.text, 'featherprint: 10.0.0.5 newName: {"name":"&lt;!channel&gt; &lt;http://evil.example/|click to ack&gt;"}');
+  });
+
+  test('twilio sms is plain text and left as is', async () => {
+    await send(notifme.sendTwilioAlert, TWILIO, FEATHERPRINT);
+    assert.equal(sent[0].sms.text, FEATHERPRINT);
+  });
+});
