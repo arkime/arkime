@@ -101,14 +101,22 @@ for my $mode (["--libpcap", "-o", "offlineDispatchAfter=10"], ["--scheme"]) {
     open(my $in, '<', $bigpcap) or die "open $bigpcap: $!";
     binmode($in);
     local $SIG{PIPE} = 'IGNORE';
-    my $start = time();
+    # Startup can take a few seconds under the sanitizers, so wait for the reader to log that
+    # it opened stdin before timing the interrupt, otherwise the quit lands during init and
+    # there is no file to skip. 1k every 50ms gives about 17 seconds of runway.
+    my $started = 0;
+    my $startedAt = 0;
     my $sentInt = 0;
     my $exited = 0;
     my $buf;
-    while (read($in, $buf, 2048)) {
+    while (read($in, $buf, 1024)) {
         last unless defined syswrite($wr, $buf); # capture went away
         select(undef, undef, undef, 0.05);
-        if (!$sentInt && time() - $start >= 1) {
+        if (!$started && slurp($log) =~ /Processing -/) {
+            $started = 1;
+            $startedAt = time();
+        }
+        if ($started && !$sentInt && time() - $startedAt >= 1) {
             kill('INT', $pid);
             $sentInt = 1;
         }
@@ -118,6 +126,7 @@ for my $mode (["--libpcap", "-o", "offlineDispatchAfter=10"], ["--scheme"]) {
         }
     }
     close($in);
+    diag("$name: reader never logged Processing before the pcap ran out") unless $started;
     kill('INT', $pid) unless $sentInt;
     $exited ||= wait_exit($pid, 10);
     close($wr);
