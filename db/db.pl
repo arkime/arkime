@@ -8811,7 +8811,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     $endTimeIndex = time2index("weekly", "${PREFIX}history_v1-", $endTime);
     delete $hindices->{$endTimeIndex};
 
-    @startTime = gmtime;
+    @startTime = gmtime($endTime);
     $startTime[3] -= 7 * $HISTORY;
 
     $optimizecnt = 0;
