@@ -157,6 +157,7 @@ dropGroup=daemon
 
 # Header to use for determining the username to check in the database for instead of
 # using http digest. Use this if apache or something else is doing the auth.
+# Requires authMode=header, authMode defaults to digest when not set.
 # Set viewHost to localhost or use iptables
 # Might need something like this in the httpd.conf
 # RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]

@@ -122,20 +122,19 @@ class Auth {
       console.log('Auth.initialize', options);
     }
 
+    // userNameHeader used to also select the auth mode, now it is only ever the header name
+    if (options.userNameHeader?.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form|s2s)$/)) {
+      console.log(`WARNING - Ignoring userNameHeader=${options.userNameHeader}, it no longer selects the auth mode, use authMode instead.`);
+      delete options.userNameHeader;
+    }
+
     if (options.mode === undefined) {
       if (options.userNameHeader) {
-        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form)$/)) {
-          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
-          options.mode = options.userNameHeader;
-          delete options.userNameHeader;
-        } else {
-          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
-          options.mode = 'header';
-        }
+        console.log('WARNING - Using authMode=digest since not set, userNameHeader alone no longer enables header auth, set authMode=header to use it.');
       } else {
         console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
-        options.mode = 'digest';
       }
+      options.mode = 'digest';
     }
 
     Auth.mode = options.mode;
