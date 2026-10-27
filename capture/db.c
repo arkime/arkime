@@ -674,7 +674,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     /* jsonSize is an estimate of how much space it will take to encode the session */
-    jsonSize = 1300 + session->filePosArray->len * 17 + 11 * session->fileNumArray->len;
+    jsonSize = 2000 + session->filePosArray->len * 17 + 11 * session->fileNumArray->len;
     if (config.enablePacketLen) {
         jsonSize += 10 * session->fileLenArray->len;
     }
@@ -1540,7 +1540,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     if (jsonSize < (uint32_t)(BSB_WORK_PTR(jbsb) - startPtr)) {
-        LOG("WARNING - %s BIGGER than expected json %u %d\n", id, jsonSize, (int)(BSB_WORK_PTR(jbsb) - startPtr));
+        LOG_RATE(30, "WARNING - %s BIGGER than expected json %u %d\n", id, jsonSize, (int)(BSB_WORK_PTR(jbsb) - startPtr));
         if (config.debug)
             LOG("Data:\n%.*s\n", (int)(BSB_WORK_PTR(jbsb) - startPtr), startPtr);
     }
