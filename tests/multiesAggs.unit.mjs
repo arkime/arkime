@@ -12,8 +12,8 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr } = require('../viewer/multiesAggs.js');
+const cjsRequire = createRequire(import.meta.url);
+const { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr } = cjsRequire('../viewer/multiesAggs.js');
 
 // merge cluster responses the way multies.js does for one search
 const merge = (aggregations, ...responses) => {

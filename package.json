@@ -63,8 +63,8 @@
     "vuetify": "^3.12.4"
   },
   "scripts": {
-    "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt",
-    "lint-fix": "eslint --fix parliament viewer wiseService capture/plugins common cont3xt",
+    "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt tests",
+    "lint-fix": "eslint --fix parliament viewer wiseService capture/plugins common cont3xt tests",
     "test:unit": "node --no-warnings=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.unit.mjs",
     "test:endpoint": "node --no-warnings=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.endpoint.mjs",
     "common:lint": "eslint common",
