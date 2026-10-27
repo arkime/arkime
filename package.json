@@ -63,8 +63,9 @@
     "vuetify": "^3.12.4"
   },
   "scripts": {
-    "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt",
-    "lint-fix": "eslint --fix parliament viewer wiseService capture/plugins common cont3xt",
+    "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt tests",
+    "lint-fix": "eslint --fix parliament viewer wiseService capture/plugins common cont3xt tests",
+    "test:unit": "node --test tests/*.unit.mjs",
     "common:lint": "eslint common",
     "common:lint-fix": "eslint --fix common",
     "cont3xt:addtestuser": "cd viewer && node addUser.js -c ../tests/cont3xt.ini -n cont3xt admin admin admin --admin --packetSearch --createOnly",
