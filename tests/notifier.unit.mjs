@@ -1,5 +1,5 @@
 /*
-Copyright Yahoo Inc.
+Copyright Andy Wick
 SPDX-License-Identifier: Apache-2.0
 
 Unit tests for the notifme notifiers (email, slack, twilio) and the Teams card
@@ -14,11 +14,11 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const notifme = require('../common/notifier.notifme.js');
-const teams = require('../common/notifier.teams.js');
+const cjsRequire = createRequire(import.meta.url);
+const notifme = cjsRequire('../common/notifier.notifme.js');
+const teams = cjsRequire('../common/notifier.teams.js');
 // resolve the sdk the same way notifier.notifme.js does, so we stub that copy
-const Notifme = createRequire(require.resolve('../common/notifier.notifme.js'))('arkime-notifme-sdk');
+const Notifme = createRequire(cjsRequire.resolve('../common/notifier.notifme.js'))('arkime-notifme-sdk');
 
 let sent;
 Notifme.default = class {
@@ -53,6 +53,11 @@ describe('notifier.notifme', () => {
     assert.equal(sent[0].email.html, 'cluster &lt;b&gt; - esDown<br><a href="https://parliament.example/?searchTerm=c1">Parliament Dashboard</a>');
   });
 
+  test('email escapes the link text and quotes in the link url', async () => {
+    await send(notifme.sendEmailAlert, EMAIL, 'cluster - esDown', [{ text: 'Dashboard <b>', url: 'https://parliament.example/?q=" onclick="x' }]);
+    assert.equal(sent[0].email.html, 'cluster - esDown<br><a href="https://parliament.example/?q=&quot; onclick=&quot;x">Dashboard &lt;b&gt;</a>');
+  });
+
   test('email does not double escape an already safeStr\'d message', async () => {
     const message = 'A&amp;B &lt;x&gt; hunt job finished: https://arkime.example/sessions?expression=huntId==1&stopTime=2&startTime=1';
     await send(notifme.sendEmailAlert, EMAIL, message);
@@ -72,23 +77,23 @@ describe('notifier.notifme', () => {
 
 describe('notifier.teams', () => {
   // the TextBlock text of the card Teams is sent
-  function teamsText (message, links) {
-    return teams.buildTeamsMessage(message, links).attachments[0].content.body[0].text;
+  function teamsText (message) {
+    return teams.buildTeamsMessage(message).attachments[0].content.body[0].text;
   }
 
-  test('escapes Markdown link brackets in the message', () => {
+  test('replaces Markdown link brackets in the message', () => {
     assert.equal(
       teamsText('cluster1 - node [Click to ack](http://evil.example/) is down'),
-      'cluster1 - node \\[Click to ack\\](http://evil.example/) is down'
+      'cluster1 - node ［Click to ack］(http://evil.example/) is down'
     );
-    assert.equal(teamsText('![x](http://evil.example/p.gif)'), '!\\[x\\](http://evil.example/p.gif)');
+    assert.equal(teamsText('![x](http://evil.example/p.gif)'), '!［x］(http://evil.example/p.gif)');
   });
 
-  test('a backslash in the message cannot cancel the escape', () => {
-    assert.equal(teamsText('\\[x\\](http://evil.example/)'), '\\\\\\[x\\\\\\](http://evil.example/)');
+  test('a backslash in the message cannot bring the brackets back', () => {
+    assert.equal(teamsText('\\[x\\](http://evil.example/)'), '\\［x\\］(http://evil.example/)');
   });
 
-  test('hunt and cron *bold* and urls are left as is', () => {
+  test('hunt and cron *emphasis* and urls are left as is', () => {
     const message = `
 *A&amp;B* hunt job finished:
 *5* matched sessions out of *10* searched sessions.

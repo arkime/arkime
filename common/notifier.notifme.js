@@ -205,7 +205,7 @@ exports.sendEmailAlert = function (config, message, links, cb) {
   let html = escapeMarkup(message);
   if (links && links.length) {
     for (const link of links) {
-      html += `<br><a href="${link.url}">${link.text}</a>`;
+      html += `<br><a href="${String(link.url).replace(/"/g, '&quot;')}">${escapeMarkup(link.text)}</a>`;
     }
   }
 
