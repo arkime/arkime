@@ -175,6 +175,7 @@ jobs:
           cat /tmp/os
           curl http://localhost:9200/_cat/health
           free -h || true
+          npm run test:unit
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
 
       - name: viewer test arkimedb

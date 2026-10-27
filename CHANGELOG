@@ -36,6 +36,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.9.2 2026/11/xx
+## All
+  - #4402 Email and Slack notifier alerts escape < and >, and Teams alerts escape Markdown link brackets, so values in the alert text can't inject HTML, links or @mentions
 ## db.pl
   - #4398 Fix expire deleting the current weekly history index when viewer runs in a timezone east of UTC (thanks @jejex0)
 
