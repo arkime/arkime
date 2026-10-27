@@ -68,6 +68,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           number or a percentage, and the hunt/tshark limits, timeouts and ports must be numbers in range
   - Parliament no longer upgrades pre Arkime 5 parliament.json files into the DB, upgrade with Arkime 6.x first.
           The file setting is now only used to name the parliament.issues.json file
+  - #4403 userNameHeader no longer selects the auth mode, authMode must be set or it defaults to digest. Header auth now needs
+          authMode=header, and a userNameHeader that is an auth mode name (digest, basic, oidc, ...) is ignored, so replace
+          userNameHeader=digest from older cont3xt and wise sample configs with authMode=digest
 ## Release
   - #4389 Node 26.12.1
   - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm

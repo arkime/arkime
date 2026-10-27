@@ -21,9 +21,9 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 # Sources that call a url (urlapi, url, elasticsearch, elasticsearchfile, misp) take their own
 # insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings
 #
-# Use digest auth by default
-# If using SSO change to the http header with the username in it
-userNameHeader=digest
+# Use digest auth by default, see https://arkime.com/settings#authMode for other modes
+# If using SSO set authMode=header and userNameHeader to the http header with the username in it
+authMode=digest
 
 ############## Redis Cache ##############
 
