@@ -1776,7 +1776,7 @@ process_packet:
 
     batch->totalPackets++;
 
-    uint32_t thread = packet->hash % config.packetThreads;
+    uint32_t thread = ARKIME_SESSION_HASH_THREAD(packet->hash);
 
     batch->totalBytes += packet->pktlen;
 

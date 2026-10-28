@@ -1101,7 +1101,7 @@ LOCAL void arkime_session_load_stopped()
             continue;
 
         const uint32_t hash = arkime_session_hash(key);
-        const int      thread = hash % config.packetThreads;
+        const int      thread = ARKIME_SESSION_HASH_THREAD(hash);
 
         if (!sessionThreadData[thread].stoppedSessions.old[mProtocol])
             sessionThreadData[thread].stoppedSessions.old[mProtocol] = g_hash_table_new_full(arkime_session_hash, (GEqualFunc)arkime_session_equal, g_free, NULL);
@@ -1186,7 +1186,7 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
         hash = arkime_session_hash(sessionId);
     }
 
-    int thread = hash % config.packetThreads;
+    int thread = ARKIME_SESSION_HASH_THREAD(hash);
 
     session = arkime_session_hash_find(&sessionThreadData[thread].sessions[mProtocol], hash, sessionId);
 
