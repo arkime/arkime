@@ -84,7 +84,7 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
     struct timespec currentTime;
     clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
 
-    uint32_t secondSlot = currentTime.tv_sec % dedupSeconds;
+    uint32_t secondSlot = (uint32_t)currentTime.tv_sec % dedupSeconds;
 
     // Create hash, headerLen should be length of ip & tcp/udp header
     uint8_t md[16];

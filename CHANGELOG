@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4402 Email and Slack notifier alerts escape < and >, and Teams alerts replace Markdown link brackets, so values in the alert text can't inject HTML, links or @mentions
 ## Capture
   - #4404 Fix "BIGGER than expected json" warnings and rare lost sessions when using GeoLite2 City and ASN
+  - #4405 Fix slow session lookups when packetThreads is even, each thread only used part of its session table
 ## db.pl
   - #4398 Fix expire deleting the current weekly history index when viewer runs in a timezone east of UTC (thanks @jejex0)
 
