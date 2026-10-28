@@ -16,6 +16,8 @@ SPI Graph page: src = primary, dst = quaternary, both = tertiary theme colors.
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
+    :graph="graphDef"
     @edit="$emit('edit')"
     @remove="$emit('remove')"
     @retry="fetchData">
@@ -39,7 +41,9 @@ import { fetchConnections, widgetFields } from './widgetData';
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null },
+  graphDef: { type: Object, default: null }
 });
 
 const emit = defineEmits(['edit', 'remove', 'show-tooltip']);

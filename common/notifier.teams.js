@@ -7,6 +7,18 @@
  */
 'use strict';
 
+// Teams renders a TextBlock as Markdown, and the message is built from strings
+// the sender doesn't control (hunt and periodic query names, what monitored
+// clusters report to Parliament). safeStr doesn't touch Markdown, so a [text](url)
+// in one would show as a link with text of the sender's choosing. Swap [ and ]
+// for their fullwidth lookalikes so no link or image syntax can form on any
+// renderer, rather than backslash escaping, which depends on every Teams client
+// honoring it. * and _ are left alone so the *emphasis* in hunt and cron
+// messages still renders.
+function neutralizeMarkdown (str) {
+  return String(str).replace(/\[/g, '［').replace(/\]/g, '］');
+}
+
 exports.init = function (api) {
   api.register('teams', {
     name: 'Microsoft Teams',
@@ -32,7 +44,7 @@ exports.buildTeamsMessage = function (message, links) {
     version: '1.4',
     body: [{
       type: 'TextBlock',
-      text: String(message),
+      text: neutralizeMarkdown(message),
       wrap: true
     }]
   };

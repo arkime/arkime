@@ -16,11 +16,11 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const http = require('http');
 const https = require('https');
-const fs = require('fs');
 const path = require('path');
 const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr } = require('./multiesAggs');
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('=== UNHANDLED REJECTION ===');
@@ -48,7 +48,7 @@ process.on('warning', (w) => {
   console.error('====================');
 });
 
-const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
+let esSSLOptions; // set once the config is loaded
 let httpAgent;
 let httpsAgent;
 let multiESBasicAuthHmac;
@@ -57,18 +57,13 @@ let multiESBasicAuthHmac;
 let backendTimeout = 300 * 1000;
 
 ArkimeConfig.loaded(() => {
-  const esClientKey = Config.get('esClientKey');
-  const esClientCert = Config.get('esClientCert');
-  const caTrustFile = Config.get('caTrustFile');
-  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); }
-  if (esClientKey) {
-    esSSLOptions.key = fs.readFileSync(esClientKey);
-    esSSLOptions.cert = fs.readFileSync(esClientCert);
-    const esClientKeyPass = Config.get('esClientKeyPass');
-    if (esClientKeyPass) {
-      esSSLOptions.passphrase = esClientKeyPass;
-    }
-  }
+  esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
+    insecure: ArkimeConfig.insecure,
+    caTrustFile: Config.get('caTrustFile'),
+    clientKey: Config.get('esClientKey'),
+    clientCert: Config.get('esClientCert'),
+    clientKeyPass: Config.get('esClientKeyPass')
+  }, 'OpenSearch/Elasticsearch');
   httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
   httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
 
@@ -312,6 +307,17 @@ function makeRequest (url, options, cb) {
 }
 
 function simpleGather (req, res, bodies, doneCb, preFetched) {
+  // A throw while merging would otherwise leave the request open until the
+  // caller's own timeout, holding its socket
+  const finish = (err, results) => {
+    try {
+      return doneCb(err, results);
+    } catch (e) {
+      console.log('ERROR - %s %s merging cluster results', req.method, req.url, e);
+      if (!res.headersSent) { res.status(500).send({ error: 'Failed to merge cluster results' }); }
+    }
+  };
+
   let cluster = null;
   if (req.query.cluster) {
     cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
@@ -320,7 +326,7 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
   }
   const activeNodes = getActiveNodes(cluster);
   if (activeNodes.length === 0) { // Empty nodes. Either all clusters are down or invalid clusters
-    return doneCb(true, [{}]);
+    return finish(true, [{}]);
   }
   async.map(activeNodes, (node, asyncCb) => {
     if (preFetched && Object.prototype.hasOwnProperty.call(preFetched, node)) {
@@ -443,7 +449,7 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
       if (good.length > 0) { results = good; }
       for (const r of results) { if (r) { delete r.arkime_failed; } }
     }
-    return doneCb(err, results);
+    return finish(err, results);
   });
 }
 
@@ -894,212 +900,6 @@ function facetAdd (obj1, obj2) {
   }
 }
 
-// Aggregations are a pain, we convert from array to map to back to array
-/// ///////////////////////////////////////////////////////////////////////////////
-
-function agg2Obj (field, agg) {
-  const obj = {};
-  for (let i = 0; i < agg.length; i++) {
-    obj[agg[i][field]] = agg[i];
-  }
-  return obj;
-}
-
-// Metric aggregation operators we can merge across clusters. Anything else
-// (avg, percentiles, ...) can't be recombined from per-cluster results alone
-// and is summed, which is what this code has always done.
-const METRIC_OPS = ['sum', 'min', 'max', 'value_count', 'cardinality', 'avg'];
-
-/**
- * The declared operator of each metric sub-aggregation of a bucket aggregation,
- * eg { bytes: 'sum', packets: 'sum', first: 'min' }, so merging buckets across
- * clusters can combine each sub-agg the way the query asked rather than
- * assuming they are all sums. apiSessions writes sub-aggs under `aggs`, while
- * apiStats and buildQuery use `aggregations`.
- * @returns {object|undefined} operator by sub-agg name (undefined if none)
- */
-function subAggOps (aggConfig) {
-  const subs = aggConfig?.aggs ?? aggConfig?.aggregations;
-  if (!subs) { return undefined; }
-  const ops = {};
-  for (const subName in subs) {
-    const op = METRIC_OPS.find(o => subs[subName]?.[o]);
-    if (op) { ops[subName] = op; }
-  }
-  return Object.keys(ops).length ? ops : undefined;
-}
-
-/** Combine two metric values per the aggregation's declared operator. */
-function mergeMetric (op, v1, v2) {
-  if (op === 'min') { return Math.min(v1, v2); }
-  if (op === 'max') { return Math.max(v1, v2); }
-  return v1 + v2;
-}
-
-function agg2Arr (agg, type, order) {
-  let arr = [];
-  for (const attrname in agg) {
-    arr.push(agg[attrname]);
-  }
-
-  if (type === 'histogram') {
-    return arr.sort((a, b) => { return a.key - b.key; });
-  }
-
-  // terms: honor the order the query asked for (_count, _key or a metric
-  // sub-agg's sum), matching what a single cluster returns; the ES default
-  // is doc_count descending
-  const orderKey = order ? Object.keys(order)[0] : '_count';
-  const dir = order && order[orderKey] === 'asc' ? 1 : -1;
-  const orderValue = (bucket) => {
-    if (orderKey === '_count') { return bucket.doc_count; }
-    if (orderKey === '_key') { return bucket.key; }
-    return bucket[orderKey]?.value ?? 0;
-  };
-  arr = arr.sort((a, b) => {
-    const av = orderValue(a);
-    const bv = orderValue(b);
-    if (av !== bv) {
-      if (typeof av === 'string' || typeof bv === 'string') {
-        return dir * String(av).localeCompare(String(bv));
-      }
-      return dir * (av - bv);
-    }
-    // ES breaks ties on the key, ascending, in the field's own term order.
-    // Numeric keys we can reproduce. For string keys the right order depends
-    // on the field type (an ip field orders numerically, a keyword field
-    // lexicographically) and isn't recoverable from a response, so keep the
-    // order the buckets were merged in — imposing one would disagree with what
-    // a single cluster returns. Returning 0 rather than subtracting strings
-    // (which yielded NaN) keeps the comparator consistent and the sort stable.
-    if (typeof a.key === 'number' && typeof b.key === 'number') { return a.key - b.key; }
-    return 0;
-  });
-  return arr;
-}
-
-function aggConvert2Obj (aggs) {
-  for (const aggname in aggs) {
-    // Handle filter aggregations (have doc_count but no buckets or value at top level)
-    if (aggs[aggname].doc_count !== undefined && !aggs[aggname].buckets && !aggs[aggname].value) {
-      // Recursively convert nested aggregations within the filter
-      for (const nestedAgg in aggs[aggname]) {
-        if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
-          aggs[aggname][nestedAgg].buckets = agg2Obj('key', aggs[aggname][nestedAgg].buckets);
-        }
-      }
-    }
-    // Handle standard bucket aggregations
-    else if (aggs[aggname].buckets) {
-      aggs[aggname].buckets = agg2Obj('key', aggs[aggname].buckets);
-    }
-  }
-}
-
-function aggConvert2Arr (aggs) {
-  for (const aggname in aggs) {
-    // Handle filter aggregations (have doc_count but no buckets or value at top level)
-    if (aggs[aggname].doc_count !== undefined && !aggs[aggname].buckets && !aggs[aggname].value) {
-      // Recursively convert nested aggregations within the filter
-      for (const nestedAgg in aggs[aggname]) {
-        if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
-          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type, aggs[aggname][nestedAgg]._order);
-          delete aggs[aggname][nestedAgg]._type;
-          delete aggs[aggname][nestedAgg]._order;
-          delete aggs[aggname][nestedAgg]._subAggs;
-        }
-      }
-    }
-    // Handle standard bucket aggregations
-    else if (aggs[aggname].buckets) {
-      aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type, aggs[aggname]._order);
-      delete aggs[aggname]._type;
-      delete aggs[aggname]._order;
-      delete aggs[aggname]._subAggs;
-    }
-  }
-}
-
-function aggAdd (obj1, obj2) {
-  for (const aggname in obj2) {
-    // Handle metric aggregations (min, max, sum) that have a 'value' property
-    if (obj1[aggname].value !== undefined && obj2[aggname].value !== undefined) {
-      // Skip if obj2 value is null (no results from that cluster)
-      if (obj2[aggname].value === null) {
-        continue;
-      }
-      // If obj1 value is null, use obj2 value
-      if (obj1[aggname].value === null) {
-        obj1[aggname].value = obj2[aggname].value;
-        continue;
-      }
-
-      // For min aggregations
-      if (aggname.toLowerCase().includes('min') || aggname === 'firstPacket') {
-        obj1[aggname].value = Math.min(obj1[aggname].value, obj2[aggname].value);
-      }
-      // For max aggregations
-      else if (aggname.toLowerCase().includes('max') || aggname === 'lastPacket') {
-        obj1[aggname].value = Math.max(obj1[aggname].value, obj2[aggname].value);
-      }
-      // For sum aggregations and others, add the values
-      else {
-        obj1[aggname].value += obj2[aggname].value;
-      }
-      continue;
-    }
-
-    // Handle filter aggregations (have doc_count and nested aggregations)
-    if (obj1[aggname].doc_count !== undefined && obj2[aggname].doc_count !== undefined &&
-        !obj1[aggname].buckets) {
-      obj1[aggname].doc_count += obj2[aggname].doc_count;
-      // Recursively merge nested aggregations
-      for (const nestedAgg in obj2[aggname]) {
-        if (nestedAgg !== 'doc_count' && obj1[aggname][nestedAgg]) {
-          // Recursively call aggAdd for nested aggregations
-          const tempObj1 = { [nestedAgg]: obj1[aggname][nestedAgg] };
-          const tempObj2 = { [nestedAgg]: obj2[aggname][nestedAgg] };
-          aggAdd(tempObj1, tempObj2);
-          obj1[aggname][nestedAgg] = tempObj1[nestedAgg];
-        }
-      }
-      continue;
-    }
-
-    // Handle terms/buckets aggregations
-    if (obj1[aggname].buckets && obj2[aggname].buckets) {
-      if (obj1[aggname].doc_count_error_upper_bound !== undefined) {
-        obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
-      }
-      if (obj1[aggname].sum_other_doc_count !== undefined) {
-        obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
-      }
-      for (const entry in obj2[aggname].buckets) {
-        if (!obj1[aggname].buckets[entry]) {
-          obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
-        } else {
-          const o1 = obj1[aggname].buckets[entry];
-          const o2 = obj2[aggname].buckets[entry];
-
-          o1.doc_count += o2.doc_count;
-          // merge metric sub-aggs (the timeline's source.bytes/client.bytes, the
-          // summary widgets' bytes/packets/mN, /api/stats' first, ...) each per
-          // the operator its query declared, defaulting to sum
-          const subOps = obj1[aggname]._subAggs;
-          for (const sub in o2) {
-            if (o2[sub] === null || typeof o2[sub] !== 'object' || typeof o2[sub].value !== 'number') { continue; }
-            if (o1[sub] === undefined) {
-              o1[sub] = o2[sub];
-            } else if (typeof o1[sub].value === 'number') {
-              o1[sub].value = mergeMetric(subOps?.[sub], o1[sub].value, o2[sub].value);
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 function fixQuery (node, body, doneCb) {
   try {
     body = JSON.parse(body);
@@ -1242,36 +1042,7 @@ function newResult (search) {
     }
   }
   if (search.aggregations) {
-    result.aggregations = {};
-    for (const agg in search.aggregations) {
-      // Check for metric aggregations (min, max, sum, avg, etc.)
-      const aggConfig = search.aggregations[agg];
-      if (aggConfig.min || aggConfig.max || aggConfig.sum || aggConfig.avg ||
-          aggConfig.value_count || aggConfig.cardinality || aggConfig.stats ||
-          aggConfig.extended_stats || aggConfig.percentiles) {
-        // Metric aggregations have a value property - initialize to null
-        // The first real value from a cluster will replace this
-        result.aggregations[agg] = { value: null };
-      } else if (aggConfig.filter) {
-        // Filter aggregations contain nested aggregations
-        result.aggregations[agg] = { doc_count: 0 };
-        // Recursively initialize nested aggregations
-        if (aggConfig.aggs || aggConfig.aggregations) {
-          const nestedAggs = aggConfig.aggs || aggConfig.aggregations;
-          for (const nestedAgg in nestedAggs) {
-            if (nestedAggs[nestedAgg].histogram) {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
-            } else {
-              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', _order: nestedAggs[nestedAgg].terms?.order, _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
-            }
-          }
-        }
-      } else if (aggConfig.histogram) {
-        result.aggregations[agg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
-      } else {
-        result.aggregations[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
-      }
-    }
+    result.aggregations = newAggregations(search.aggregations);
   }
   return result;
 }
@@ -1446,6 +1217,10 @@ function msearch (req, res) {
     });
   }, (err) => {
     simpleGather(req, res, bodies, (err, results) => {
+      // no cluster answered (unknown cluster, or all of them down)
+      if (err || !Array.isArray(results[0]?.responses)) {
+        return res.status(500).send({ error: 'No cluster answered the msearch' });
+      }
       const obj = { responses: [] };
       for (let h = 0; h < results[0].responses.length; h++) {
         obj.responses[h] = newResult(JSON.parse(lines[h * 2 + 1]));

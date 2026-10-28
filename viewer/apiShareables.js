@@ -15,6 +15,9 @@ const User = require('../common/user');
 // name, and far short of the 32766 byte ES keyword limit.
 const NAME_MAX_LENGTH = 256;
 
+// the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections'];
+
 class ShareableAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
@@ -117,6 +120,8 @@ class ShareableAPIs {
     const missingSortOrder = { text: 'Missing sort order', i18n: 'api.shareables.missingSortOrder' };
     const missingFields = { text: 'Missing fields', i18n: 'api.shareables.missingFields' };
     const missingWidgets = { text: 'Missing widgets or fields', i18n: 'api.shareables.missingWidgets' };
+    const missingGraph = { text: 'Missing viewMode or field', i18n: 'api.shareables.missingGraph' };
+    const invalidGraph = { text: 'Invalid graph settings', i18n: 'api.shareables.invalidGraph' };
 
     switch (type) {
     case 'sessionsTableLayout':
@@ -136,6 +141,24 @@ class ShareableAPIs {
       if (!Array.isArray(entries)) { return missingWidgets; }
       // a null or scalar entry throws in the dashboard loader
       if (entries.some(e => !e || typeof e !== 'object')) { return missingWidgets; }
+      break;
+    }
+    case 'spigraphConfig': {
+      // a saved graph is one dashboard widget definition without its layout;
+      // readers normalize it, this keeps out values of the wrong type
+      if (!ArkimeUtil.isString(data.viewMode)) { return missingGraph; }
+      if (!GRAPH_VIEW_MODES.includes(data.viewMode)) { return invalidGraph; }
+      const optString = (v) => v === undefined || typeof v === 'string';
+      if (data.fields !== undefined && !ArkimeUtil.isStringArray(data.fields)) { return invalidGraph; }
+      if (!optString(data.field)) { return invalidGraph; }
+      if (!data.fields?.length && !data.field) { return missingGraph; }
+      if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics)) { return invalidGraph; }
+      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'order', 'expression', 'view']) {
+        if (!optString(data[key])) { return invalidGraph; }
+      }
+      for (const key of ['length', 'splitLength']) {
+        if (data[key] !== undefined && !Number.isInteger(data[key])) { return invalidGraph; }
+      }
       break;
     }
     }

@@ -12,8 +12,8 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const ArkimeUtil = require('../common/arkimeUtil.js');
+const cjsRequire = createRequire(import.meta.url);
+const ArkimeUtil = cjsRequire('../common/arkimeUtil.js');
 
 const {
   initUpdateCheck, checkForUpdates, optIn, updateCheckState, dismissUpdate,
@@ -76,10 +76,10 @@ describe('UpdateCheckService', () => {
   let store, calls, lastUrl, lastOpts;
   const state = updateCheckState();
 
-  const serve = (body, status = 200) => {
+  const serve = (body, httpStatus = 200) => {
     globalThis.fetch = async (url, opts) => {
       calls++; lastUrl = url; lastOpts = opts;
-      return { ok: status >= 200 && status < 300, status, json: async () => body };
+      return { ok: httpStatus >= 200 && httpStatus < 300, status: httpStatus, json: async () => body };
     };
   };
   const boot = (o = {}) => initUpdateCheck({ ...BASE, ...o }); // a page load

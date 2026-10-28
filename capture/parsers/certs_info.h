@@ -35,5 +35,7 @@ typedef struct arkime_certsinfo {
     const char              *publicAlgorithm;
     const char              *signatureAlgorithm;
     const char              *curve;
+    char                    *issuerDN;  // RFC 2253, only set by tls_process_certificate_wInfo listeners
+    char                    *subjectDN;
     GHashTable              *extra;
 } ArkimeCertsInfo_t;

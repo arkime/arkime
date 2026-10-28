@@ -18,6 +18,8 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <math.h>
+#include <openssl/bio.h>
+#include <openssl/x509.h>
 
 extern ArkimeConfig_t        config;
 
@@ -146,7 +148,7 @@ enum {
     ZS_X509_KEY_ALG, ZS_X509_KEY_TYPE, ZS_X509_CURVE, ZS_X509_SAN_DNS, ZS_X509_CA, ZS_X509_HOST_CERT,
     ZS_X509_VERSION, ZS_X509_SIG_ALG, ZS_X509_KEY_LENGTH, ZS_X509_EXPONENT, ZS_X509_PATH_LEN, ZS_X509_SAN_EMAIL, ZS_X509_SAN_URI, ZS_X509_SAN_IP,
     ZS_KRB_REQUEST_TYPE, ZS_HTTP_STATUS_CODE, ZS_HTTP_INFO_CODE, ZS_NTP_MODE, ZS_NTP_POLL, ZS_NTP_PRECISION, ZS_NTP_ROOT_DELAY, ZS_NTP_ROOT_DISP,
-    ZS_SOCKS_STATUS, ZS_LDAP_RESULT,
+    ZS_SOCKS_STATUS, ZS_LDAP_RESULT, ZS_LDAP_OPCODE, ZS_SNMP_VERSION, ZS_MODBUS_FUNC, ZS_MODBUS_EXCEPTION,
     ZS_FILE_FUID, ZS_FILE_SOURCE, ZS_FILE_MIME_TYPE, ZS_FILE_MD5, ZS_FILE_SHA256, ZS_FILE_FILENAME, ZS_FILE_IS_ORIG,
     ZS_MAX
 };
@@ -239,6 +241,10 @@ LOCAL const ZeekSpecialDef_t zeekSpecials[ZS_MAX] = {
     [ZS_NTP_ROOT_DISP]            = {"ntp.root_disp", ZB_INTERVAL, ZC_SCALAR},
     [ZS_SOCKS_STATUS]             = {"socks.status", ZB_STRING, ZC_SCALAR},
     [ZS_LDAP_RESULT]              = {"ldap.result", ZB_STRING, ZC_SCALAR},
+    [ZS_LDAP_OPCODE]              = {"ldap.opcode", ZB_STRING, ZC_SCALAR},
+    [ZS_SNMP_VERSION]             = {"snmp.version", ZB_STRING, ZC_SCALAR},
+    [ZS_MODBUS_FUNC]              = {"modbus.func", ZB_STRING, ZC_SCALAR},
+    [ZS_MODBUS_EXCEPTION]         = {"modbus.exception", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_FUID]                = {"file.fuid", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_SOURCE]              = {"file.source", ZB_STRING, ZC_SCALAR},
     [ZS_FILE_MIME_TYPE]           = {"file.mime_type", ZB_STRING, ZC_SCALAR},
@@ -365,7 +371,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "snmp", "snmp", ZITER_SESSION,
-        CONN_ID "duration=@duration version=snmp.version:string community=snmp.community:string get_requests=@none:count "
+        CONN_ID "duration=@duration version=@snmp.version community=snmp.community:string get_requests=@none:count "
                 "get_bulk_requests=@none:count get_responses=@none:count set_requests=@none:count display_string=@none:string up_since=@none:time"
     },
     {
@@ -384,7 +390,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "modbus", "modbus", ZITER_SESSION,
-        CONN_ID "tid=modbus.transactionid:count unit=modbus.unitid:count func=modbus.funccode:string pdu_type=@none:string exception=modbus.exccode:string"
+        CONN_ID "tid=modbus.transactionid:count unit=modbus.unitid:count func=@modbus.func pdu_type=@none:string exception=@modbus.exception"
     },
     {
         "dnp3", "dnp3", ZITER_SESSION,
@@ -408,7 +414,7 @@ LOCAL const ZeekBuiltin_t zeekBuiltins[] = {
     },
     {
         "ldap", "ldap", ZITER_SESSION,
-        CONN_ID "message_id=@none:int version=@none:int opcode=ldap.op:string result=@ldap.result diagnostic_message=@none:string "
+        CONN_ID "message_id=@none:int version=@none:int opcode=@ldap.opcode result=@ldap.result diagnostic_message=@none:string "
                 "object=ldap.bindname:string argument=@none:string"
     },
     {
@@ -471,6 +477,11 @@ LOCAL int ntpRootDelayField;
 LOCAL int ntpRootDispField;
 LOCAL int socksStatusField;
 LOCAL int ldapResultField;
+LOCAL int ldapOpField;
+LOCAL int ldapAuthTypeField;
+LOCAL int snmpVersionField;
+LOCAL int modbusFuncField;
+LOCAL int modbusExcField;
 LOCAL int vlanField;
 
 /******************************************************************************/
@@ -793,8 +804,15 @@ LOCAL void zeeklog_history(ZeekItems_t *items, const ArkimeSession_t *session)
     zeeklog_items_add(items, history, len);
 }
 /******************************************************************************/
-LOCAL void zeeklog_dn(ZeekItems_t *items, const ArkimeCertInfo_t *info)
+LOCAL void zeeklog_dn(ZeekItems_t *items, const char *dn, const ArkimeCertInfo_t *info)
 {
+    if (dn) {
+        zeeklog_items_add_str(items, dn);
+        return;
+    }
+
+    // OpenSSL couldn't parse the cert, use the parts Arkime keeps in RFC 2253 order
+
     char  buf[4096];
     BSB   bsb;
     ArkimeString_t *string;
@@ -803,15 +821,131 @@ LOCAL void zeeklog_dn(ZeekItems_t *items, const ArkimeCertInfo_t *info)
     DLL_FOREACH(s_, &info->commonName, string) {
         BSB_EXPORT_sprintf(bsb, "CN=%s,", string->str);
     }
-    DLL_FOREACH(s_, &info->orgName, string) {
-        BSB_EXPORT_sprintf(bsb, "O=%s,", string->str);
-    }
     DLL_FOREACH(s_, &info->orgUnit, string) {
         BSB_EXPORT_sprintf(bsb, "OU=%s,", string->str);
+    }
+    DLL_FOREACH(s_, &info->orgName, string) {
+        BSB_EXPORT_sprintf(bsb, "O=%s,", string->str);
     }
     if (BSB_IS_ERROR(bsb) || BSB_LENGTH(bsb) == 0)
         return;
     zeeklog_items_add(items, buf, BSB_LENGTH(bsb) - 1);
+}
+/******************************************************************************/
+LOCAL char *zeeklog_x509_name(const X509_NAME *name)
+{
+    BIO *bio = BIO_new(BIO_s_mem());
+    if (!bio)
+        return NULL;
+
+    char *str = NULL;
+    if (X509_NAME_print_ex(bio, name, 0, XN_FLAG_RFC2253) >= 0) {
+        char *data;
+        long  len = BIO_get_mem_data(bio, &data);
+        // An empty name (RFC 5280 allows a SAN-only subject) is still a name, Zeek logs ""
+        str = g_strndup(data, MAX(len, 0));
+    }
+    BIO_free(bio);
+    return str;
+}
+/******************************************************************************/
+// Arkime only keeps CN/O/OU, Zeek logs the whole name the way OpenSSL prints it
+LOCAL uint32_t zeeklog_cert_dn(ArkimeSession_t *UNUSED(session), const uint8_t *data, int len, void *uw)
+{
+    ArkimeCertsInfo_t   *certs = uw;
+    const unsigned char *p = data;
+    X509                *x509 = d2i_X509(NULL, &p, len);
+
+    if (!x509)
+        return 0;
+
+    if (!certs->subjectDN)
+        certs->subjectDN = zeeklog_x509_name(X509_get_subject_name(x509));
+    if (!certs->issuerDN)
+        certs->issuerDN = zeeklog_x509_name(X509_get_issuer_name(x509));
+    X509_free(x509);
+    return 0;
+}
+/******************************************************************************/
+LOCAL const char *modbusFuncNames[0x80] = {
+    [0x01] = "READ_COILS", [0x02] = "READ_DISCRETE_INPUTS", [0x03] = "READ_HOLDING_REGISTERS",
+    [0x04] = "READ_INPUT_REGISTERS", [0x05] = "WRITE_SINGLE_COIL", [0x06] = "WRITE_SINGLE_REGISTER",
+    [0x07] = "READ_EXCEPTION_STATUS", [0x08] = "DIAGNOSTICS", [0x09] = "PROGRAM_484", [0x0A] = "POLL_484",
+    [0x0B] = "GET_COMM_EVENT_COUNTER", [0x0C] = "GET_COMM_EVENT_LOG", [0x0D] = "PROGRAM_584_984",
+    [0x0E] = "POLL_584_984", [0x0F] = "WRITE_MULTIPLE_COILS", [0x10] = "WRITE_MULTIPLE_REGISTERS",
+    [0x11] = "REPORT_SLAVE_ID", [0x12] = "PROGRAM_884_U84", [0x13] = "RESET_COMM_LINK_884_U84",
+    [0x14] = "READ_FILE_RECORD", [0x15] = "WRITE_FILE_RECORD", [0x16] = "MASK_WRITE_REGISTER",
+    [0x17] = "READ_WRITE_MULTIPLE_REGISTERS", [0x18] = "READ_FIFO_QUEUE", [0x28] = "PROGRAM_CONCEPT",
+    [0x29] = "MULTIPLE_FUNCTION_CODES", [0x2B] = "ENCAP_INTERFACE_TRANSPORT", [0x5A] = "PROGRAM_UNITY",
+    [0x5B] = "OBJECT_MESSAGING", [0x7D] = "FIRMWARE_REPLACEMENT", [0x7E] = "PROGRAM_584_984_2",
+    [0x7F] = "REPORT_LOCAL_ADDRESS"
+};
+
+LOCAL const char *modbusExcNames[0x0C] = {
+    [0x01] = "ILLEGAL_FUNCTION", [0x02] = "ILLEGAL_DATA_ADDRESS", [0x03] = "ILLEGAL_DATA_VALUE",
+    [0x04] = "SLAVE_DEVICE_FAILURE", [0x05] = "ACKNOWLEDGE", [0x06] = "SLAVE_DEVICE_BUSY",
+    [0x08] = "MEMORY_PARITY_ERROR", [0x0A] = "GATEWAY_PATH_UNAVAILABLE",
+    [0x0B] = "GATEWAY_TARGET_DEVICE_FAILED_TO_RESPOND"
+};
+/******************************************************************************/
+// Zeek folds requests and responses into one opcode and names binds by auth type
+LOCAL void zeeklog_ldap_opcode(ZeekItems_t *items, const ArkimeSession_t *session, ZeekItems_t *scratch)
+{
+    LOCAL const struct {
+        const char *arkime;
+        const char *zeek;
+    } ops[] = {
+        {"bind_response", "bind"}, {"search_entry", "search"}, {"search_result", "search"},
+        {"search_reference", "search"}, {"modify_response", "modify"}, {"modifydn", "modify"},
+        {"modifydn_response", "modify"}, {"add_response", "add"}, {"delete_response", "delete"},
+        {"compare_response", "compare"}, {"extended_response", "extended"}, {"intermediate_response", "intermediate"}
+    };
+    LOCAL const struct {
+        const char *arkime;
+        const char *zeek;
+    } binds[] = {
+        {"none", "bind simple"}, {"simple", "bind simple"}, {"sasl", "bind SASL"},
+        {"ntlmsspNegotiate", "sicily_negotiate"}, {"ntlmsspAuth", "sicily_response"}
+    };
+
+    zeeklog_items_reset(scratch);
+    if (!zeeklog_field_items(scratch, session, ldapOpField, ZB_STRING))
+        return;
+    items->present = TRUE;
+
+    gboolean bind = FALSE;
+    for (int i = 0; i < scratch->num; i++) {
+        const char *op = scratch->items[i];
+        for (int o = 0; o < (int)ARRAY_LEN(ops); o++) {
+            if (strcmp(op, ops[o].arkime) == 0) {
+                op = ops[o].zeek;
+                break;
+            }
+        }
+        if (strcmp(op, "bind") == 0) {
+            bind = TRUE;
+            continue;
+        }
+        if (!zeeklog_items_contains(items, op))
+            zeeklog_items_add_str(items, op);
+    }
+
+    if (!bind)
+        return;
+
+    zeeklog_items_reset(scratch);
+    zeeklog_field_items(scratch, session, ldapAuthTypeField, ZB_STRING);
+    gboolean named = FALSE;
+    for (int i = 0; i < scratch->num; i++) {
+        for (int b = 0; b < (int)ARRAY_LEN(binds); b++) {
+            if (strcmp(scratch->items[i], binds[b].arkime) == 0 && !zeeklog_items_contains(items, binds[b].zeek)) {
+                zeeklog_items_add_str(items, binds[b].zeek);
+                named = TRUE;
+            }
+        }
+    }
+    if (!named && !zeeklog_items_contains(items, "bind"))
+        zeeklog_items_add_str(items, "bind");
 }
 /******************************************************************************/
 LOCAL ArkimeCertsInfo_t *zeeklog_leaf_cert(const ArkimeSession_t *session)
@@ -1019,19 +1153,21 @@ LOCAL void zeeklog_ssh_fingerprint(ZeekItems_t *items, const ArkimeSession_t *se
     if (!raw)
         return;
 
-    guint8 digest[16];
+    guint8 digest[32];
     gsize  dlen = sizeof(digest);
-    GChecksum *sum = g_checksum_new(G_CHECKSUM_MD5);
+    GChecksum *sum = g_checksum_new(G_CHECKSUM_SHA256);
     g_checksum_update(sum, raw, len);
     g_checksum_get_digest(sum, digest, &dlen);
     g_checksum_free(sum);
     g_free(raw);
 
-    char fp[49];
-    for (int i = 0; i < 16; i++) {
-        snprintf(fp + i * 3, 4, "%02x:", digest[i]);
-    }
-    zeeklog_items_add(items, fp, 47);
+    // ssh-keygen -l format, unpadded base64
+    gchar *b64 = g_base64_encode(digest, dlen);
+    int    blen = strlen(b64);
+    while (blen > 0 && b64[blen - 1] == '=')
+        blen--;
+    zeeklog_items_addf(items, "SHA256:%.*s", blen, b64);
+    g_free(b64);
 }
 /******************************************************************************/
 // Arkime counts wire bytes, Zeek counts IP bytes, so strip the Ethernet header
@@ -1238,12 +1374,12 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
     case ZS_SSL_SUBJECT:
         cert = zeeklog_leaf_cert(session);
         if (cert)
-            zeeklog_dn(items, &cert->subject);
+            zeeklog_dn(items, cert->subjectDN, &cert->subject);
         break;
     case ZS_SSL_ISSUER:
         cert = zeeklog_leaf_cert(session);
         if (cert)
-            zeeklog_dn(items, &cert->issuer);
+            zeeklog_dn(items, cert->issuerDN, &cert->issuer);
         break;
     case ZS_SSH_VERSION:
         zeeklog_ssh_version(items, session, scratch);
@@ -1370,11 +1506,11 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
         break;
     case ZS_X509_SUBJECT:
         if (cert)
-            zeeklog_dn(items, &cert->subject);
+            zeeklog_dn(items, cert->subjectDN, &cert->subject);
         break;
     case ZS_X509_ISSUER:
         if (cert)
-            zeeklog_dn(items, &cert->issuer);
+            zeeklog_dn(items, cert->issuerDN, &cert->issuer);
         break;
     case ZS_X509_NOT_VALID_BEFORE:
         if (cert)
@@ -1549,6 +1685,32 @@ LOCAL void zeeklog_special_items(ZeekItems_t *items, int special, const ZeekRow_
                 out[len++] = acronym ? in[c] : tolower((unsigned char)in[c]);
             }
             zeeklog_items_add(items, out, len);
+        }
+        break;
+    }
+    case ZS_LDAP_OPCODE:
+        zeeklog_ldap_opcode(items, session, scratch);
+        break;
+    case ZS_SNMP_VERSION:
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, snmpVersionField, ZB_COUNT);
+        for (int i = 0; i < scratch->num; i++) {
+            zeeklog_items_add_str(items, strcmp(scratch->items[i], "2") == 0 ? "2c" : scratch->items[i]);
+        }
+        break;
+    case ZS_MODBUS_FUNC:
+    case ZS_MODBUS_EXCEPTION: {
+        gboolean            isFunc = special == ZS_MODBUS_FUNC;
+        const char * const *names = isFunc ? modbusFuncNames : modbusExcNames;
+        int                 num = isFunc ? ARRAY_LEN(modbusFuncNames) : ARRAY_LEN(modbusExcNames);
+        zeeklog_items_reset(scratch);
+        zeeklog_field_items(scratch, session, isFunc ? modbusFuncField : modbusExcField, ZB_COUNT);
+        for (int i = 0; i < scratch->num; i++) {
+            int code = atoi(scratch->items[i]);
+            if (code >= 0 && code < num && names[code])
+                zeeklog_items_add_str(items, names[code]);
+            else
+                zeeklog_items_addf(items, "unknown-%d", code);
         }
         break;
     }
@@ -2456,6 +2618,11 @@ void arkime_plugin_init()
     ntpRootDispField     = arkime_field_by_exp_ignore_error("ntp.rootDispersion");
     socksStatusField     = arkime_field_by_exp_ignore_error("socks.status");
     ldapResultField      = arkime_field_by_exp_ignore_error("ldap.result");
+    ldapOpField          = arkime_field_by_exp_ignore_error("ldap.op");
+    ldapAuthTypeField    = arkime_field_by_exp_ignore_error("ldap.authtype");
+    snmpVersionField     = arkime_field_by_exp_ignore_error("snmp.version");
+    modbusFuncField      = arkime_field_by_exp_ignore_error("modbus.funccode");
+    modbusExcField       = arkime_field_by_exp_ignore_error("modbus.exccode");
 
     for (int f = 0; f < ARRAY_LEN(zeekFileSources); f++) {
         ZeekFileSource_t *fs = &zeekFileSources[f];
@@ -2505,6 +2672,22 @@ void arkime_plugin_init()
 
     if (config.debug)
         zeeklog_dump_schema();
+
+    gboolean wantCertDN = FALSE;
+    for (guint l = 0; l < zeekLogs->len && !wantCertDN; l++) {
+        const ZeekLog_t *log = g_ptr_array_index(zeekLogs, l);
+        for (guint c = 0; log->enabled && c < log->columns->len && !wantCertDN; c++) {
+            const ZeekColumn_t *col = g_ptr_array_index(log->columns, c);
+            for (int s = 0; s < col->numSources; s++) {
+                int sp = col->sources[s].special;
+                if (col->sources[s].kind == ZSRC_SPECIAL &&
+                    (sp == ZS_SSL_SUBJECT || sp == ZS_SSL_ISSUER || sp == ZS_X509_SUBJECT || sp == ZS_X509_ISSUER))
+                    wantCertDN = TRUE;
+            }
+        }
+    }
+    if (wantCertDN)
+        arkime_parsers_add_named_func("tls_process_certificate_wInfo", zeeklog_cert_dn);
 
     arkime_parsers_add_named_func2("arkime_session_save", zeeklog_session_save, NULL);
     arkime_plugins_set_cb("zeeklog",

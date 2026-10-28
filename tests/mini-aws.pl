@@ -208,14 +208,21 @@ sub write_all {
     my ($fh, $data) = @_;
     my $offset = 0;
     my $len = length($data);
+    my $stalls = 0;
     while ($offset < $len) {
         my $n = syswrite($fh, $data, $len - $offset, $offset);
         if (defined $n) {
             $offset += $n;
+            $stalls = 0;
             next;
         }
         if ($!{EAGAIN} || $!{EWOULDBLOCK}) {
-            IO::Select->new($fh)->can_write(5);
+            # the server is single threaded, so a client that stops reading
+            # must not hold everyone else up: give it 30s, then drop the response
+            if (!IO::Select->new($fh)->can_write(5) && ++$stalls >= 6) {
+                print "write to client stalled, dropping response\n";
+                return;
+            }
             next;
         }
         return;  # real error, give up

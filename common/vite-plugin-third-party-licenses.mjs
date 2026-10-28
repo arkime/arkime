@@ -17,9 +17,9 @@ function packageRoot (id) {
   const i = clean.lastIndexOf(NM);
   if (i < 0) { return undefined; }
   const rest = clean.slice(i + NM.length).split('/');
-  const name = rest[0].startsWith('@') ? rest.slice(0, 2).join('/') : rest[0];
-  if (!name) { return undefined; }
-  return clean.slice(0, i + NM.length) + name;
+  const pkgName = rest[0].startsWith('@') ? rest.slice(0, 2).join('/') : rest[0];
+  if (!pkgName) { return undefined; }
+  return clean.slice(0, i + NM.length) + pkgName;
 }
 
 function licenseText (dir) {

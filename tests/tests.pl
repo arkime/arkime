@@ -13,6 +13,8 @@ use Test::Differences;
 use Cwd;
 use URI::Escape;
 use TAP::Harness;
+use File::Temp qw(tempdir);
+use POSIX ();
 use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
@@ -187,6 +189,7 @@ sub doTests {
 
     plan tests => scalar @files;
 
+    my @runs;
     foreach my $origfilename (@files) {
         my $filename = $origfilename;
         if ($filename =~ /\.pcapng$/) {
@@ -198,21 +201,54 @@ sub doTests {
         }
         die "Missing $filename.test" if (! -f "$filename.test");
 
-        open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
-        my $savedData = do { local $/; <$fh> };
-        my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
-
         my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
         }
 
-        if ($main::debug) {
-            print "$cmd\n";
+        push @runs, {filename => $filename, cmd => $cmd};
+    }
+
+    # Run up to --jobs captures at once, each child saves its output to a file,
+    # results are still compared in order so the output matches a serial run
+    my $outDir = tempdir(CLEANUP => 1);
+    # exit normally on ^C or kill so the output dir still gets cleaned up
+    local $SIG{INT} = sub { exit 130 };
+    local $SIG{TERM} = sub { exit 143 };
+    my %running;
+    my @finished;
+    my $started = 0;
+    for (my $i = 0; $i <= $#runs; $i++) {
+        while ($started <= $#runs && scalar(keys %running) < $main::jobs) {
+            print "$runs[$started]->{cmd}\n" if ($main::debug);
+            my $pid = fork();
+            die "fork failed: $!" if (!defined $pid);
+            if ($pid == 0) {
+                $SIG{INT} = $SIG{TERM} = 'DEFAULT';
+                my $out = `$runs[$started]->{cmd}`;
+                open my $ofh, '>', "$outDir/$started" or POSIX::_exit(1);
+                print $ofh $out;
+                close $ofh;
+                # skip Test::More's END block in the child
+                POSIX::_exit(0);
+            }
+            $running{$pid} = $started++;
         }
 
-        my $testData = `$cmd`;
+        while (!$finished[$i]) {
+            my $pid = waitpid(-1, 0);
+            die "waitpid failed: $!" if ($pid == -1);
+            $finished[delete $running{$pid}] = 1 if (exists $running{$pid});
+        }
+
+        my $filename = $runs[$i]->{filename};
+        open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
+        my $savedData = do { local $/; <$fh> };
+        my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
+
+        open my $tfh, '<', "$outDir/$i" or die "error opening capture output for $filename: $!";
+        my $testData = do { local $/; <$tfh> };
         my $testJson;
 
         eval {
@@ -553,6 +589,7 @@ $main::debug = 0;
 $main::c8 = 0;
 $main::valgrind = 0;
 $main::copy = "";
+$main::jobs = 4;
 $main::cmd = "--capture";
 
 while (scalar (@ARGV) > 0) {
@@ -597,6 +634,11 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
+    } elsif ($ARGV[0] eq "--jobs") {
+        shift @ARGV;
+        $main::jobs = $ARGV[0];
+        die "--jobs requires a number >= 1" if (!defined $main::jobs || $main::jobs !~ /^[1-9]\d*$/);
+        shift @ARGV;
     } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|shutdown|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
         $main::cmd = $ARGV[0];
         # Map new aliases to existing commands
@@ -637,6 +679,7 @@ if ($main::cmd eq "--fix") {
     print "  --elasticsearch <url>  Set elasticsearch URL\n";
     print "  --debug                Turn on debugging\n";
     print "  --valgrind             Use valgrind on capture\n";
+    print "  --jobs <n>             Run up to n captures at once for the pcap tests (default 4)\n";
     print "\n";
     print "Commands:\n";
     print "  --help                 This help\n";

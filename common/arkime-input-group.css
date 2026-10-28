@@ -88,9 +88,10 @@
   outline: none;
 }
 /* native <select> arrow caret needs a touch more right padding so the
-   native browser caret doesn't bump the right border. */
+   native browser caret doesn't bump the right border (the menulist look
+   already reserves its own caret inset, so keep this small). */
 select.arkime-input-control {
-  padding-right: 24px;
+  padding-right: 14px;
   -webkit-appearance: menulist;
   cursor: pointer;
 }

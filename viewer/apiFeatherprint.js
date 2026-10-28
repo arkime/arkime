@@ -10,7 +10,7 @@
  * Also home for [featherprint-defaults] + [featherprint-subnet] config
  * parsing, the longest-prefix-match PolicyTree used to filter sessions, and
  * the per-IP signal extraction / device-classification logic (rule data
- * loaded from featherprint.rules.yaml).
+ * loaded from *.featherprint.yml files).
  *
  * Copyright Yahoo Inc.
  *
@@ -27,6 +27,7 @@ const Config = require('./config.js');
 const Notifier = require('../common/notifier');
 const ArkimeConfig = require('../common/arkimeConfig');
 const ArkimeUtil = require('../common/arkimeUtil');
+const version = require('../common/version');
 const iptrie = require('arkime-iptrie');
 const arkimeparser = require('./arkimeparser.js');
 const BuildQuery = require('./buildQuery');
@@ -110,50 +111,110 @@ class PolicyTree {
 // ============================================================================
 // Classifier -- per-IP signal extraction + device classification.
 //
-// Rule data (MAC source ranking, device classification heuristics) lives in
-// featherprint.rules.yaml, loaded once at startup. Override the file via the
-// arkime ini `featherprintRulesFile` setting, or drop a replacement at
-// /opt/arkime/etc/featherprint.rules.yaml or ./featherprint.rules.yaml.
+// Rule data (MAC source ranking, device classification heuristics) comes from
+// *.featherprint.yml / *.featherprint.yaml files, loaded once at startup. The
+// featherprintRulesFiles setting lists files and/or directories (default
+// /opt/arkime/etc). Arkime ships default.featherprint.yml there; add your own
+// file next to it to extend or override it: classify rules are first match
+// wins, so every other file is consulted before default.*, and a macSourceRank
+// entry in another file beats the default one.
 // ============================================================================
 
-function findRulesFile () {
-  const explicit = Config.get('featherprintRulesFile');
-  const candidates = [
-    explicit,
-    '/opt/arkime/etc/featherprint.rules.yaml',
-    './featherprint.rules.yaml',
-    path.join(__dirname, 'featherprint.rules.yaml')
-  ].filter(Boolean);
-  for (const c of candidates) {
+const RULES_SUFFIXES = ['.featherprint.yml', '.featherprint.yaml'];
+
+// Expand files and directories into just files. Directories contribute the files
+// in them with a rules suffix, sorted by name. default.* files are moved to the
+// end so user files get first match. Missing entries are logged and skipped.
+function expandRulesFiles (entries) {
+  const out = [];
+  for (const entry of entries) {
+    let st;
     try {
-      if (fs.statSync(c).isFile()) return c;
-    } catch (_) { /* not found */ }
+      st = fs.statSync(entry);
+    } catch (e) {
+      console.log(`FEATHERPRINT - can't read rules entry ${entry}: ${e.message}`);
+      continue;
+    }
+    if (!st.isDirectory()) {
+      if (st.isFile()) {
+        out.push(entry);
+      } else {
+        console.log(`FEATHERPRINT - skipping rules entry ${entry}, it isn't a file or directory`);
+      }
+      continue;
+    }
+    let all;
+    try {
+      all = fs.readdirSync(entry);
+    } catch (e) {
+      console.log(`FEATHERPRINT - can't read rules directory ${entry}: ${e.message}`);
+      continue;
+    }
+    // TODO, remove in 7.1
+    // featherprint.rules.yaml was the override file before featherprint was released
+    if (all.includes('featherprint.rules.yaml')) {
+      console.log(`FEATHERPRINT - ignoring ${path.join(entry, 'featherprint.rules.yaml')}, it isn't used anymore and should be deleted`);
+    }
+    const names = all
+      .filter(n => !n.startsWith('.') && RULES_SUFFIXES.some(suf => n.endsWith(suf)))
+      .sort();
+    for (const n of names) {
+      const full = path.join(entry, n);
+      try {
+        if (fs.statSync(full).isFile()) { out.push(full); }
+      } catch (_) { /* vanished */ }
+    }
   }
-  return null;
+  // default.* files go last whichever entry they came from, so every other file is consulted first
+  const isDefault = f => path.basename(f).startsWith('default.');
+  return [...out.filter(f => !isDefault(f)), ...out.filter(isDefault)];
 }
 
+function findRulesFiles () {
+  const explicit = Config.getArray('featherprintRulesFiles');
+  let files = expandRulesFiles(explicit ?? [`${version.config_prefix}/etc`]);
+  // Not installed (dev/tests): use the copy in the source tree
+  if (files.length === 0 && explicit === undefined) {
+    files = expandRulesFiles([path.join(__dirname, '..', 'release')]);
+  }
+  return files;
+}
+
+const isMapping = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+
 function loadRules () {
-  const file = findRulesFile();
-  if (!file) {
-    console.log('FEATHERPRINT - no rules file found; classifier disabled');
+  const files = findRulesFiles();
+  if (files.length === 0) {
+    console.log('FEATHERPRINT - no rules files found; classifier disabled');
     return { macSourceRank: {}, classify: [] };
   }
-  try {
-    const doc = yaml.load(fs.readFileSync(file, 'utf8')) || {};
-    console.log(`FEATHERPRINT - loaded rules from ${file}`);
-    return {
-      macSourceRank: doc.macSourceRank || {},
-      classify: Array.isArray(doc.classify) ? doc.classify : []
-    };
-  } catch (e) {
-    console.log(`FEATHERPRINT - failed to load rules from ${file}: ${e.message}`);
-    return { macSourceRank: {}, classify: [] };
+  const rules = { macSourceRank: {}, classify: [] };
+  for (const file of files) {
+    try {
+      const doc = yaml.load(fs.readFileSync(file, 'utf8')) || {};
+      console.log(`FEATHERPRINT - loaded rules from ${file}`);
+      // Earlier files win: their classify rules come first and their ranks stick
+      if (isMapping(doc.macSourceRank)) {
+        rules.macSourceRank = { ...doc.macSourceRank, ...rules.macSourceRank };
+      }
+      for (const rule of Array.isArray(doc.classify) ? doc.classify : []) {
+        // compileClause and clauseMatches expect every rule and anyOf entry to be a mapping
+        if (isMapping(rule) && (rule.anyOf === undefined || (Array.isArray(rule.anyOf) && rule.anyOf.every(isMapping)))) {
+          rules.classify.push(rule);
+        } else {
+          console.log(`FEATHERPRINT - ${file}: skipping classify entry that isn't a mapping: ${JSON.stringify(rule)}`);
+        }
+      }
+    } catch (e) {
+      console.log(`FEATHERPRINT - failed to load rules from ${file}: ${e.message}`);
+    }
   }
+  return rules;
 }
 
 // Loaded in FeatherprintAPIs.initialize(), not at require time: Config isn't
-// initialized until premain(), so findRulesFile() can't read the
-// featherprintRulesFile ini setting any earlier.
+// initialized until premain(), so findRulesFiles() can't read the
+// featherprintRulesFiles ini setting any earlier.
 let RULES = { macSourceRank: {}, classify: [] };
 
 // Caps so a noisy/hostile device can't grow a record unbounded (every SSDP
@@ -198,7 +259,7 @@ function initRules () {
 function clauseMatches (clause, ctx) {
   if (clause.hasService !== undefined && !ctx.serviceTypes.has(clause.hasService)) return false;
   // ctx.nameStrs are lowercased; lowercase the needle too so nameContains is
-  // case-insensitive as documented in featherprint.rules.yaml.
+  // case-insensitive as documented in default.featherprint.yml.
   if (clause.nameContains !== undefined &&
       !ctx.nameStrs.some(n => n.includes(String(clause.nameContains).toLowerCase()))) return false;
   for (const [key, ctxKey] of Object.entries(REGEX_CLAUSES)) {
@@ -745,7 +806,7 @@ class FeatherprintAPIs {
 
   // --------------------------------------------------------------------------
   static initialize (options = {}) {
-    initRules(); // Config is available now; load rules so featherprintRulesFile applies
+    initRules(); // Config is available now; load rules so featherprintRulesFiles applies
     const cfg = FeatherprintAPIs.loadConfig();
     historyLimit = cfg.settings.historyLimit;
     FeatherprintAPIs.#internals = {

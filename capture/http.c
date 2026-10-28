@@ -462,7 +462,15 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 if (request->func) {
                     if (request->dataIn)
                         request->dataIn[request->used] = 0;
-                    request->func(responseCode, request->dataIn, request->used, request->uw);
+                    // A streamed transfer that died mid body still carries its http status. Report
+                    // it as failed (code 0) so the stream owner doesn't treat a partial body as the
+                    // whole thing. CURLE_WRITE_ERROR is the read callback stopping on purpose.
+                    long cbCode = responseCode;
+                    if (request->rfunc && msg->data.result != CURLE_OK && msg->data.result != CURLE_WRITE_ERROR) {
+                        LOG("ERROR - Transfer of %s failed: %s", request->url, curl_easy_strerror(msg->data.result));
+                        cbCode = 0;
+                    }
+                    request->func(cbCode, request->dataIn, request->used, request->uw);
                 }
                 if (request->dataIn) {
                     if (!server->dontFreeResponse)

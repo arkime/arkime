@@ -15,6 +15,8 @@ no metric). Colored by the dashboard palette; hover uses the shared chart popove
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
+    :graph="graphDef"
     @edit="$emit('edit')"
     @remove="$emit('remove')"
     @retry="fetchData">
@@ -44,7 +46,9 @@ const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
   colorScheme: { type: String, default: 'rainbow' },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null },
+  graphDef: { type: Object, default: null }
 });
 
 const emit = defineEmits(['edit', 'remove', 'show-tooltip']);

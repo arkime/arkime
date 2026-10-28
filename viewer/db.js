@@ -103,15 +103,13 @@ Db.initialize = async (info) => {
 
   internals.regressionTests = info.regressionTests ?? false;
 
-  const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
-  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); }
-  if (info.esClientKey) {
-    esSSLOptions.key = fs.readFileSync(info.esClientKey);
-    esSSLOptions.cert = fs.readFileSync(info.esClientCert);
-    if (info.esClientKeyPass) {
-      esSSLOptions.passphrase = info.esClientKeyPass;
-    }
-  }
+  const esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
+    insecure: internals.info.insecure,
+    caTrustFile: internals.info.caTrustFile,
+    clientKey: info.esClientKey,
+    clientCert: info.esClientCert,
+    clientKeyPass: info.esClientKeyPass
+  }, 'OpenSearch/Elasticsearch');
 
   const esClientOptions = {
     node: internals.info.host,
@@ -1652,10 +1650,10 @@ Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
   if (nodeVersion < 240000) {
-    console.log(`ERROR - Need node 24, currently using ${process.version}`);
+    console.log(`ERROR - Need node 24 or 26, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 250000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 24`);
+  } else if ((nodeVersion >= 250000 && nodeVersion < 260000) || nodeVersion >= 270000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 24 or 26`);
     process.exit(1);
   }
 

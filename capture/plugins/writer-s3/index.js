@@ -129,7 +129,9 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         if (params.Key.endsWith('.gz')) {
           header = zlib.gunzipSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (params.Key.endsWith('.zst')) {
-          header = zlib.zstdDecompressSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          // ZSTD_e_flush, not Z_SYNC_FLUSH (= ZSTD_e_end): the body is a slice that
+          // ends mid-frame, which Node 24.22+ rejects in end mode (see pcap.js)
+          header = zlib.zstdDecompressSync(body, { finishFlush: zlib.constants.ZSTD_e_flush });
         } else {
           header = body;
         }

@@ -5,6 +5,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include "arkimeconfig.h"
 #include "arkime.h"
 #include <stdarg.h>
 #include <arpa/inet.h>
@@ -261,7 +262,8 @@ LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, const char *path)
 LOCAL char *arkime_rules_parser_get_value(YamlNode_t *parent, const char *path)
 {
     const YamlNode_t *node = arkime_rules_parser_get(parent, path);
-    if (!node)
+    // A scalar in a sequence has no value, just the YAML_NODE_SEQUENCE_VALUE marker
+    if (!node || node->value == YAML_NODE_SEQUENCE_VALUE)
         return NULL;
     return node->value;
 }
@@ -570,7 +572,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     ArkimeRule_t *rule = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
     g_ptr_array_add(loading.rules[type], rule);
     rule->name = g_strdup(name);
-    rule->filename = filename;
+    rule->filename = g_strdup(filename);
     rule->saveFlags = saveFlags;
     rule->log = log && strcasecmp(log, "true") == 0;
     rule->setRule = type == ARKIME_RULE_TYPE_FIELD_SET;
@@ -648,7 +650,17 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     }
 }
 /******************************************************************************/
-LOCAL void arkime_rules_parser_load_file(char *filename, YamlNode_t *parent)
+typedef struct {
+    char       *filename;
+    YamlNode_t *node;
+} ArkimeRulePending_t;
+
+/* Collect the rules of one file. A rule with the same name as ones collected from earlier
+ * files replaces them, so files loaded later (user files after default.*) override earlier
+ * ones. A rule with just name: and disabled: true removes them instead. Rules in the same
+ * file don't replace each other, names never had to be unique.
+ */
+LOCAL void arkime_rules_parser_load_file(char *filename, YamlNode_t *parent, GPtrArray *pending)
 {
     const char *str;
     GPtrArray  *rules;
@@ -658,13 +670,39 @@ LOCAL void arkime_rules_parser_load_file(char *filename, YamlNode_t *parent)
         CONFIGEXIT("%s: Missing version: 1", filename);
     }
 
-    rules = arkime_rules_parser_get_values(parent, "rules");
-    if (!rules) {
+    if (!arkime_rules_parser_get(parent, "rules")) {
         CONFIGEXIT("%s: Missing rules", filename);
     }
 
-    for (int i = 0; i < (int)rules->len; i++) {
-        arkime_rules_parser_load_rule(filename, g_ptr_array_index(rules, i));
+    // rules: [] or an empty rules: is a valid file with nothing in it
+    rules = arkime_rules_parser_get_values(parent, "rules");
+    for (int i = 0; rules && i < (int)rules->len; i++) {
+        YamlNode_t *node = g_ptr_array_index(rules, i);
+        const char *name = arkime_rules_parser_get_value(node, "name");
+        if (!name)
+            CONFIGEXIT("%s: name required for rule", filename);
+
+        const char *disabled = arkime_rules_parser_get_value(node, "disabled");
+        gboolean isDisabled = disabled && strcasecmp(disabled, "true") == 0;
+
+        for (guint p = 0; p < pending->len;) {
+            ArkimeRulePending_t *prev = g_ptr_array_index(pending, p);
+            if (prev->filename == filename || strcmp(arkime_rules_parser_get_value(prev->node, "name"), name) != 0) {
+                p++;
+                continue;
+            }
+            LOG("%s: rule '%s' %s the one from %s", filename, name, isDisabled ? "disables" : "replaces", prev->filename);
+            ARKIME_TYPE_FREE(ArkimeRulePending_t, prev);
+            g_ptr_array_remove_index(pending, p);
+        }
+
+        if (isDisabled)
+            continue;
+
+        ArkimeRulePending_t *rp = ARKIME_TYPE_ALLOC0(ArkimeRulePending_t);
+        rp->filename = filename;
+        rp->node = node;
+        g_ptr_array_add(pending, rp);
     }
 }
 /******************************************************************************/
@@ -685,7 +723,7 @@ LOCAL void arkime_rules_load_complete()
         for (int i = 0; bpfs[i]; i++) {
             ArkimeRule_t *rule = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
             g_ptr_array_add(loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP], rule);
-            rule->filename = "dontSaveBPFs";
+            rule->filename = g_strdup("dontSaveBPFs");
             arkime_field_ops_init(&rule->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
 
             GMatchInfo *match_info = 0;
@@ -711,7 +749,7 @@ LOCAL void arkime_rules_load_complete()
         for (int i = 0; bpfs[i]; i++) {
             ArkimeRule_t *rule = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
             g_ptr_array_add(loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP], rule);
-            rule->filename = "minPacketsSaveBPFs";
+            rule->filename = g_strdup("minPacketsSaveBPFs");
             arkime_field_ops_init(&rule->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
 
             GMatchInfo *match_info = 0;
@@ -774,6 +812,7 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
             ArkimeRule_t *rule = g_ptr_array_index(freeing->rules[t], r);
 
             g_free(rule->name);
+            g_free(rule->filename);
             if (rule->bpf)
                 g_free(rule->bpf);
             for (int d = 0; d < ARKIME_DLT_MAX; d++) {
@@ -803,8 +842,18 @@ LOCAL void arkime_rules_load(char **names)
             loading.rules[t] = g_ptr_array_new();
     }
 
-    // Load all the rule files
+    // Read all the rule files, later files override earlier ones by rule name
+    GPtrArray *parents = g_ptr_array_new();
+    GPtrArray *pending = g_ptr_array_new();
     for (int i = 0; names[i]; i++) {
+        // TODO, remove in 7.1
+        // featherprint.rules.yaml was the viewer's override file before featherprint was released
+        const char *base = strrchr(names[i], '/');
+        if (strcmp(base ? base + 1 : names[i], "featherprint.rules.yaml") == 0) {
+            LOG("WARNING - Skipping %s, it isn't used anymore and should be deleted", names[i]);
+            continue;
+        }
+
         yaml_parser_t parser;
         yaml_parser_initialize(&parser);
         FILE *input = fopen(names[i], "rb");
@@ -822,9 +871,21 @@ LOCAL void arkime_rules_load(char **names)
         if (config.debug > 1) {
             arkime_rules_parser_print(parent, 0);
         }
-        arkime_rules_parser_load_file(names[i], parent);
-        arkime_rules_parser_free_node(parent);
+        g_ptr_array_add(parents, parent);
+        arkime_rules_parser_load_file(names[i], parent, pending);
     }
+
+    // Now load the rules that survived
+    for (guint p = 0; p < pending->len; p++) {
+        ArkimeRulePending_t *rp = g_ptr_array_index(pending, p);
+        arkime_rules_parser_load_rule(rp->filename, rp->node);
+        ARKIME_TYPE_FREE(ArkimeRulePending_t, rp);
+    }
+    g_ptr_array_free(pending, TRUE);
+
+    for (guint p = 0; p < parents->len; p++)
+        arkime_rules_parser_free_node(g_ptr_array_index(parents, p));
+    g_ptr_array_free(parents, TRUE);
 
     // Part 2, which will also copy loading to current
     arkime_rules_load_complete();
@@ -1119,9 +1180,25 @@ void arkime_rules_stats()
     }
 }
 /******************************************************************************/
+#define ARKIME_RULES_SUFFIXES ".rules.yml;.rules.yaml"
 void arkime_rules_init()
 {
     rulesFiles = arkime_config_str_list(NULL, "rulesFiles", NULL);
+
+    // Not set, use the etc directory if there is one, missing is just no rules. This runs after
+    // the privilege drop, so if dropUser can't read it warn and run without rules instead.
+    if (!rulesFiles) {
+        GError *error = NULL;
+        GDir *dir = g_dir_open(CONFIG_PREFIX "/etc", 0, &error);
+        if (dir) {
+            g_dir_close(dir);
+            rulesFiles = g_strsplit(CONFIG_PREFIX "/etc", ";", 0);
+        } else {
+            if (!g_error_matches(error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+                LOG("WARNING - Not loading rules from %s, set rulesFiles= to silence: %s", CONFIG_PREFIX "/etc", error->message);
+            g_error_free(error);
+        }
+    }
 
     srcPortField = arkime_field_by_exp("port.src");
     srcIpField = arkime_field_by_exp("ip.src");
@@ -1135,7 +1212,7 @@ void arkime_rules_init()
     arkime_field_internal_sets_rules(dstIpField);
 
     if (rulesFiles) {
-        arkime_config_monitor_files("rules files", rulesFiles, arkime_rules_load);
+        arkime_config_monitor_dir_files("rules files", rulesFiles, ARKIME_RULES_SUFFIXES, arkime_rules_load);
     } else
         arkime_rules_load_complete();
 }

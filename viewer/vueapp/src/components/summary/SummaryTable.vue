@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         :pull-left="true" />
       <!-- Formatted value -->
       <template v-else>
-        {{ formatValue(item[column.key], column.format) }}
+        {{ column.formatter ? column.formatter(item[column.key]) : formatValue(item[column.key], column.format) }}
       </template>
     </template>
   </v-data-table>

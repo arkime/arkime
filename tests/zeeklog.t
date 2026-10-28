@@ -1,6 +1,6 @@
 # Test the zeeklog plugin writes Zeek style logs, runs capture in --tests mode
 # so no Elasticsearch is needed
-use Test::More tests => 30;
+use Test::More tests => 42;
 use Cwd qw(getcwd);
 use File::Path qw(make_path remove_tree);
 use strict;
@@ -97,5 +97,52 @@ open($jfh, "<", "$dir/mylog.log");
 $jline = <$jfh>;
 close($jfh);
 is($jline, qq({"ts":1386104996.973318,"query":"mx.com","proto":"udp"}\n), "custom log section with dns iteration");
+
+# ---- values spelled the way Zeek does ----
+sub colValues {
+    my ($log, $name) = @_;
+    return map { col($log, $_, $name) } @{$log->{rows}};
+}
+
+remove_tree($dir); make_path($dir);
+runCapture("SNMPv2c_get_requests.pcap");
+is((colValues(readLog("snmp.log"), "version"))[0], "2c", "snmp version 2c");
+
+remove_tree($dir); make_path($dir);
+runCapture("modbus.pcap");
+my $modbus = readLog("modbus.log");
+ok((grep { /(^|,)READ_HOLDING_REGISTERS(,|$)/ } colValues($modbus, "func")), "modbus func names");
+ok((grep { /(^|,)ILLEGAL_DATA_ADDRESS(,|$)/ } colValues($modbus, "exception")), "modbus exception names");
+ok((grep { /(^|,)unknown-0,.*,unknown-100(,|$)/ } colValues($modbus, "func")), "modbus func codes without a Zeek name are unknown-N");
+ok((grep { /(^|,)GATEWAY_TARGET_DEVICE_FAILED_TO_RESPOND(,|$)/ } colValues($modbus, "exception")), "modbus last named exception code");
+
+remove_tree($dir); make_path($dir);
+runCapture("ldap-simpleauth.pcap");
+my @opcodes = split(/,/, (colValues(readLog("ldap.log"), "opcode"))[0]);
+is(join(",", sort @opcodes), "bind simple,search", "ldap opcodes folded and bind named by auth type");
+
+remove_tree($dir); make_path($dir);
+runCapture("ldap-and-search.pcap");
+@opcodes = split(/,/, (colValues(readLog("ldap.log"), "opcode"))[0]);
+is(join(",", sort @opcodes), "bind simple,search", "ldap anonymous bind (authtype none) is bind simple");
+
+remove_tree($dir); make_path($dir);
+runCapture("ldap-ssl.pcap");
+is((colValues(readLog("ldap.log"), "opcode"))[0], "extended", "ldap session without a bind gets no bind opcode");
+
+remove_tree($dir); make_path($dir);
+runCapture("snmpv3_synthetic.pcap");
+my %versions = map { $_ => 1 } colValues(readLog("snmp.log"), "version");
+is(join(",", sort keys %versions), "1,2c,3", "snmp versions 1, 2c and 3");
+
+remove_tree($dir); make_path($dir);
+runCapture("ssh2.pcap");
+is((colValues(readLog("ssh.log"), "host_key_fingerprint"))[0], "SHA256:kIcbzNsMLKUL/mqujE0lkCrMGlH8i4+ClwuEnRyq91g", "ssh fingerprint in ssh-keygen format");
+
+remove_tree($dir); make_path($dir);
+runCapture("openssl-tls1_2.pcap");
+my $x509 = readLog("x509.log");
+ok((grep { $_ eq "CN=*.google.com,O=Google Inc,L=Mountain View,ST=California,C=US" } colValues($x509, "certificate.subject")), "x509 subject is the full RFC 2253 name");
+ok((grep { $_ eq "OU=Equifax Secure Certificate Authority,O=Equifax,C=US" } colValues($x509, "certificate.issuer")), "x509 issuer is the full RFC 2253 name");
 
 remove_tree($dir);

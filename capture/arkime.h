@@ -1106,6 +1106,7 @@ typedef void (*ArkimeFilesChange_cb)(char **names);
 void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChange_cb cb, const char *msg);
 void arkime_config_monitor_file(const char *desc, char *name, ArkimeFileChange_cb cb);
 void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChange_cb cb);
+void arkime_config_monitor_dir_files(const char *desc, char **entries, const char *suffixes, ArkimeFilesChange_cb cb);
 
 #define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
@@ -1379,6 +1380,9 @@ char    *arkime_session_id_string(const uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int len);
 
 uint32_t arkime_session_hash(const void *key);
+
+// Packet thread from the high hash bits (fastrange), the low bits pick the session bucket
+#define ARKIME_SESSION_HASH_THREAD(hash) ((uint32_t)(((uint64_t)(hash) * (uint32_t)config.packetThreads) >> 32))
 
 ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew);
 
@@ -1809,6 +1813,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_actions_deref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
+gboolean arkime_reader_scheme_last_load_batched();
 gboolean arkime_reader_scheme_s3_valid_bucket(const char *bucket);
 
 /******************************************************************************/

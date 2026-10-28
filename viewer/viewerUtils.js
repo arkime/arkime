@@ -19,6 +19,7 @@ const internals = require('./internals');
 const PacketPortal = require('./packetPortal');
 
 class ViewerUtils {
+  static METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality'];
   static #oldDBFields = new Map();
   static #caTrustCerts = new Map();
   static #hostnameRE = /^(?:[a-zA-Z0-9._-]+|\[[0-9a-fA-F:]+\])$/;
@@ -86,10 +87,30 @@ class ViewerUtils {
   // set the widget editor and timeline data filters offer. Returns undefined for
   // 'sessions', unknown, or non-numeric fields so callers fall back to a
   // session-count metric instead of building an invalid sum aggregation.
-  static metricDbField (metricExp) {
+  // A cardinality (unique count) aggregation is meaningful on any field, so that
+  // agg accepts every field with a dbField.
+  static metricDbField (metricExp, agg) {
     if (!ArkimeUtil.isString(metricExp) || metricExp === 'sessions') { return undefined; }
     const field = Config.getFieldsMap()[metricExp];
-    return (field?.dbField && field.type === 'integer') ? field.dbField : undefined;
+    if (!field?.dbField) { return undefined; }
+    if (agg === 'cardinality') { return field.dbField; }
+    return field.type === 'integer' ? field.dbField : undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  // The aggregation a dashboard metric uses per bucket; anything unknown is a sum.
+  static metricAgg (agg) {
+    return ViewerUtils.METRIC_AGGS.includes(agg) ? agg : 'sum';
+  }
+
+  // ----------------------------------------------------------------------------
+  // A requested count (eg a terms size) as an integer from 1 to max (if given);
+  // anything else is the fallback. A fractional size reaches array lengths in
+  // multies.
+  static clampInt (val, fallback, max = Infinity) {
+    const n = parseInt(val);
+    if (!Number.isFinite(n) || n <= 0) { return fallback; }
+    return Math.min(n, max);
   }
 
   // ----------------------------------------------------------------------------

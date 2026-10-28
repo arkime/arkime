@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { colorRange } from './widgets/chartColors';
+import { metricIsAdditive } from './widgets/widgetData';
 
 const props = defineProps({
   data: {
@@ -39,6 +40,10 @@ const props = defineProps({
     type: String,
     default: 'sessions'
   },
+  metricAgg: {
+    type: String,
+    default: 'sum'
+  },
   colorScheme: {
     type: String,
     default: 'rainbow'
@@ -63,7 +68,8 @@ const showTooltip = (data, evt, percentage) => {
     },
     percentage,
     fieldConfig: props.fieldConfig,
-    metricType: props.metricType
+    metricType: props.metricType,
+    metricAgg: props.metricAgg
   });
 };
 
@@ -77,7 +83,8 @@ const createChartHoverHandlers = () => {
   return {
     mouseover: function (e, d) {
       d3.select(this).style('opacity', 0.7);
-      const percentage = getSlicePercentage(d) * 100;
+      // averages, extremes and unique counts have no meaningful share of a total
+      const percentage = metricIsAdditive(props.metricType, props.metricAgg) ? getSlicePercentage(d) * 100 : null;
       showTooltip(d.data, e, percentage);
     },
     mouseleave: function () {

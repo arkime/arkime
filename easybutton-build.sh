@@ -17,7 +17,7 @@ YARA=4.5.8
 DAQ=2.0.7
 KAFKA=2.15.1
 
-NODE=24.21.0
+NODE=26.12.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -210,7 +210,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     with_kafka=no
   fi
-  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel libmaxminddb-devel libnghttp2-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl glib2-devel libcurl-devel libzstd-devel lua-devel libpcap-devel libmaxminddb-devel libnghttp2-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny perl-Time-HiRes libatomic
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -285,7 +285,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node24 npm-node24 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl flex bison gettext glib gmake yara lua53 librdkafka pkgconf node26 npm-node26 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -322,7 +322,7 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-net-ssleay perl-io-socket-ssl perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then

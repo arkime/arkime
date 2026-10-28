@@ -1001,17 +1001,25 @@ class DbCHImpl {
   }
 
   metricExpression (agg) {
-    const wrapDate = (field, expr) => DATE_FIELDS.has(field) ? `toUnixTimestamp64Milli(${expr})` : expr;
-    if (agg.sum) { return `sum(${this.columnForField(agg.sum.field)})`; }
-    if (agg.min) { return wrapDate(agg.min.field, `min(${this.columnForField(agg.min.field)})`); }
-    if (agg.max) { return wrapDate(agg.max.field, `max(${this.columnForField(agg.max.field)})`); }
-    if (agg.avg) { return wrapDate(agg.avg.field, `avg(${this.columnForField(agg.avg.field)})`); }
-    if (agg.cardinality) { return `uniqExact(${this.columnForField(agg.cardinality.field)})`; }
-    throw chError(`aggregation ${Object.keys(agg).join(',')}`);
+    const op = ['sum', 'min', 'max', 'avg', 'cardinality', 'value_count'].find(o => agg[o]);
+    if (!op) { throw chError(`aggregation ${Object.keys(agg).join(',')}`); }
+    const field = agg[op].field;
+    const col = this.columnForField(field);
+    // an array column holds many values per row; aggregate the values, as ES
+    // does, not the arrays
+    if (this.isJsonArrayField(field)) {
+      if (op === 'cardinality') { return `uniqExactArray(${col})`; }
+      if (op === 'value_count') { return `sum(length(${col}))`; }
+      return `${op}Array(${col})`;
+    }
+    if (op === 'cardinality') { return `uniqExact(${col})`; }
+    if (op === 'value_count') { return `count(${col})`; }
+    if (op === 'sum') { return `sum(${col})`; }
+    return DATE_FIELDS.has(field) ? `toUnixTimestamp64Milli(${op}(${col}))` : `${op}(${col})`;
   }
 
   isMetricAgg (agg) {
-    return !!(agg.sum || agg.min || agg.max || agg.avg || agg.cardinality);
+    return !!(agg.sum || agg.min || agg.max || agg.avg || agg.cardinality || agg.value_count);
   }
 
   async translateAggs (aggs, where) {
@@ -1043,7 +1051,7 @@ class DbCHImpl {
   async runAgg (agg, where) {
     if (agg.terms) { return this.runTermsAgg(agg, where); }
     if (agg.histogram || agg.date_histogram) { return this.runHistogramAgg(agg, where); }
-    if (agg.sum || agg.min || agg.max || agg.avg || agg.cardinality) {
+    if (this.isMetricAgg(agg)) {
       const expr = this.metricExpression(agg);
       const result = await this.query(`SELECT ${expr} AS value FROM ${this.tableName()} WHERE ${where}`);
       return { value: result.data?.[0]?.value ?? 0 };

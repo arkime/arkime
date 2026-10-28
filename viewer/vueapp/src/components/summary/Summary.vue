@@ -42,6 +42,8 @@ SPDX-License-Identifier: Apache-2.0
         :position="tooltipPosition"
         :percentage="tooltipPercentage"
         :metric-type="tooltipMetricType"
+        :metric-agg="tooltipMetricAgg"
+        :split="tooltipSplit"
         @close="hideTooltip" />
 
       <!-- empty state when no widgets configured -->
@@ -92,6 +94,8 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -101,6 +105,8 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -110,6 +116,8 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <SummaryWidget
@@ -120,9 +128,14 @@ SPDX-License-Identifier: Apache-2.0
             :error="w.error"
             :view-mode="w.viewMode"
             :metric-type="w.metricType"
+            :metric-agg="w.metricAgg"
+            :split-field="w.splitField"
+            :bar-mode="w.barMode"
             :field="w.field"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @export="handleWidgetExport(w, $event)"
             @edit="openEdit(w.id)"
@@ -134,6 +147,8 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <TreemapWidget
@@ -142,6 +157,8 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -150,6 +167,8 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <!-- session-wide widgets: fed by the host's global stats chunk -->
@@ -159,6 +178,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :timeline-data-filters="timelineDataFilters"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @time-range="onTimeRange"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -167,6 +187,24 @@ SPDX-License-Identifier: Apache-2.0
             :widget="w"
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- big number(s): the metric over the result set, or per top-N value -->
+          <MetricWidget
+            v-else-if="w.viewMode === 'metric'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- static notes -->
+          <TextWidget
+            v-else-if="w.viewMode === 'text'"
+            :widget="w"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <StatsWidget
@@ -174,6 +212,7 @@ SPDX-License-Identifier: Apache-2.0
             :stats="summary"
             :title="w.title"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <TimeWidget
@@ -181,6 +220,7 @@ SPDX-License-Identifier: Apache-2.0
             :stats="summary"
             :title="w.title"
             :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
         </div>
@@ -193,12 +233,26 @@ SPDX-License-Identifier: Apache-2.0
       :widget="editingWidget"
       @close="onEditClose"
       @save="onEditSave" />
+
+    <!-- save a widget as a graph (a spigraphConfig shareable) -->
+    <SummaryConfigSaveModal
+      kind="graph"
+      :show="graphSaveShow"
+      :config="graphToSave"
+      @close="graphSaveShow = false"
+      @saved="onGraphSaved" />
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="4000">
+      {{ snackbar.text }}
+    </v-snackbar>
   </div>
 </template>
 
 <script setup>
 // external dependencies
-import { ref, inject, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
+import { ref, inject, provide, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { themedColor } from '@common/themes/themedColor.js';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -209,6 +263,8 @@ import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
+import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
+import { widgetIsGraph, graphFromWidget } from './dashboardConfig';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import IntersectionWidget from './widgets/IntersectionWidget.vue';
@@ -219,9 +275,11 @@ import TimelineWidget from './widgets/TimelineWidget.vue';
 import MapWidget from './widgets/MapWidget.vue';
 import StatsWidget from './widgets/StatsWidget.vue';
 import TimeWidget from './widgets/TimeWidget.vue';
+import MetricWidget from './widgets/MetricWidget.vue';
+import TextWidget from './widgets/TextWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField } from './widgets/viewModes';
-import { widgetLocalExpression, widgetFields } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit } from './widgets/viewModes';
+import { widgetLocalExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -371,6 +429,8 @@ const tooltipPosition = ref({ x: 0, y: 0 });
 const tooltipPercentage = ref(null);
 const tooltipFieldConfig = ref(null);
 const tooltipMetricType = ref('sessions');
+const tooltipMetricAgg = ref('sum');
+const tooltipSplit = ref(null);
 
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
@@ -397,7 +457,37 @@ const toRequestWidget = (w) => ({
   length: w.length,
   order: w.order,
   metricType: w.metricType,
+  metricAgg: w.metricAgg,
+  ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   expression: widgetLocalExpression(w, store.state.views)
+});
+
+// Each widget as saved-graph data (null for the ones that aren't graphs), so
+// the card can offer "save as graph"; the card opens the dialog through the
+// provided function rather than threading an event through every widget.
+// Built from the definitions, so streamed data chunks don't rebuild it
+const widgetGraphs = computed(() => {
+  const graphs = Object.create(null); // keyed by widget ids from saved/shared configs
+  for (const w of props.widgets) { if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget(w); } }
+  return graphs;
+});
+const graphSaveShow = ref(false);
+const graphToSave = ref(null);
+const snackbar = ref({ show: false, text: '', color: 'success' });
+provide('saveWidgetGraph', (graph) => {
+  graphToSave.value = graph;
+  graphSaveShow.value = true;
+});
+const onGraphSaved = () => {
+  snackbar.value = { show: true, text: t('spigraph.graphs.saved'), color: 'success' };
+};
+
+// The full page (SPI Graph / Sessions) showing what each widget shows, by
+// widget id; computed so re-renders (tooltips, streamed chunks) reuse them
+const widgetLinks = computed(() => {
+  const links = Object.create(null); // keyed by widget ids from saved/shared configs
+  for (const w of summary.value?.fields || []) { links[w.id] = widgetFullPageLink(route, store, w); }
+  return links;
 });
 
 // Rows describing a widget's configuration that isn't visible on the card
@@ -415,14 +505,18 @@ const widgetInfo = (w) => {
 
   // metric only applies to the metric-driven charts / tables
   if (hasMetric(w.viewMode)) {
-    const metricName = (m) => (m === 'sessions'
-      ? t('sessions.summary.sessions')
-      : (FieldService.getField(m, true)?.friendlyName || m));
+    const agg = hasMetricAgg(w.viewMode) ? w.metricAgg : 'sum';
+    const metricName = (m) => metricLabel(m, agg, t);
     const metricExps = (Array.isArray(w.metrics) && w.metrics.length) ? w.metrics : [w.metricType || 'sessions'];
     rows.push({ label: t('sessions.summary.widget.metric'), value: metricExps.map(metricName).join(', ') });
     if (metricExps.length > 1 && w.sortMetric) {
       rows.push({ label: t('sessions.summary.widget.sortBy'), value: metricName(w.sortMetric) });
     }
+  }
+
+  if (allowsSplit(w.viewMode) && w.splitField) {
+    const fieldName = FieldService.getField(w.splitField, true)?.friendlyName || w.splitField;
+    rows.push({ label: t('sessions.summary.widget.splitField'), value: `${fieldName} (${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, ${w.splitLength || 5})` });
   }
 
   // The limit row reads as a session sample for connections, a Top/Bottom N for
@@ -758,6 +852,8 @@ const showTooltip = (evt) => {
   tooltipPercentage.value = evt.percentage !== undefined ? evt.percentage : null;
   tooltipFieldConfig.value = evt.fieldConfig;
   tooltipMetricType.value = evt.metricType || 'sessions';
+  tooltipMetricAgg.value = evt.metricAgg || 'sum';
+  tooltipSplit.value = evt.split || null;
   tooltipVisible.value = true;
 };
 
@@ -767,6 +863,8 @@ const hideTooltip = () => {
   tooltipPercentage.value = null;
   tooltipFieldConfig.value = null;
   tooltipMetricType.value = 'sessions';
+  tooltipMetricAgg.value = 'sum';
+  tooltipSplit.value = null;
 };
 
 // Close tooltip on outside click
@@ -1136,6 +1234,9 @@ const onEditSave = (updated) => {
     prev.length !== updated.length ||
     prev.order !== updated.order ||
     (prev.metricType || 'sessions') !== (updated.metricType || 'sessions') ||
+    (prev.metricAgg || 'sum') !== (updated.metricAgg || 'sum') ||
+    (prev.splitField || '') !== (updated.splitField || '') ||
+    (prev.splitLength || 5) !== (updated.splitLength || 5) ||
     (prev.expression || '') !== (updated.expression || '') ||
     (prev.view || '') !== (updated.view || ''));
 
@@ -1177,6 +1278,13 @@ const getWidgets = () => {
     fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, 3) : (w.field ? [w.field] : []),
     viewMode: w.viewMode,
     metricType: w.metricType,
+    metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
+    sortMetric: w.sortMetric || w.metricType || 'sessions',
+    metricAgg: w.metricAgg || 'sum',
+    splitField: w.splitField || '',
+    splitLength: w.splitLength || 5,
+    barMode: w.barMode || 'stacked',
+    text: w.text || '',
     length: w.length,
     order: w.order,
     expression: w.expression || '',

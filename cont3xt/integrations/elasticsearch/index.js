@@ -87,9 +87,8 @@ class ElasticsearchIntegration extends Integration {
       auth: info.auth,
       requestTimeout: 300000,
       maxRetries: 2,
-      ssl: {
-        rejectUnauthorized: !ArkimeConfig.getFull(section, 'insecure', false)
-      }
+      // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+      ssl: this.tlsOptions(info.url)
     };
 
     const apiKey = ArkimeConfig.getFull(section, 'apiKey');

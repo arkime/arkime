@@ -14,6 +14,8 @@ by rank. Metric columns are the widget's metrics[] (falls back to metricType).
     :error="error"
     :has-data="hasData"
     :info-items="infoItems"
+    :link="link"
+    :graph="graphDef"
     :show-export="hasData"
     :export-label="exportLabel"
     scroll
@@ -85,14 +87,16 @@ import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchSummaryFields, formatMetricValue, downloadCSV } from './widgetData';
+import { fetchSummaryFields, formatMetricValue, downloadCSV, metricLabel as metricLabelFor } from './widgetData';
 
 const { t } = useI18n();
 
 const props = defineProps({
   widget: { type: Object, required: true },
   reloadNonce: { type: Number, default: 0 },
-  infoItems: { type: Array, default: () => [] }
+  infoItems: { type: Array, default: () => [] },
+  link: { type: Object, default: null },
+  graphDef: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove']);
@@ -122,11 +126,10 @@ const metricCols = computed(() => {
   const legacy = props.widget.metricType;
   return (legacy && legacy !== 'sessions') ? [legacy] : ['sessions'];
 });
-const metricLabel = (exp) => (exp === 'sessions'
-  ? t('sessions.summary.sessions')
-  : (FieldService.getField(exp, true)?.friendlyName || exp));
+const metricAgg = computed(() => props.widget.metricAgg || 'sum');
+const metricLabel = (exp) => metricLabelFor(exp, metricAgg.value, t);
 const cellValue = (exp, row) => (exp === 'sessions' ? row.sessions : (row.metricValues?.[exp] ?? 0));
-const formatCell = (exp, row) => formatMetricValue(exp, cellValue(exp, row));
+const formatCell = (exp, row) => formatMetricValue(exp, cellValue(exp, row), exp === 'sessions' ? undefined : metricAgg.value);
 
 const exportLabel = computed(() => t('sessions.summary.downloadCSV'));
 const exportCSV = () => {

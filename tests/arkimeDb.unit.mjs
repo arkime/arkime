@@ -16,9 +16,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const require = createRequire(import.meta.url);
-const ArkimeUtil = require('../common/arkimeUtil.js');
-const ArkimeDb = require('../common/arkimeDb.js');
+const cjsRequire = createRequire(import.meta.url);
+const ArkimeUtil = cjsRequire('../common/arkimeUtil.js');
+const ArkimeDb = cjsRequire('../common/arkimeDb.js');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'arkimedb-unit-'));
 const run = Date.now().toString(36);
@@ -211,7 +211,7 @@ for (const backend of backends) {
 
     if (backend.name === 'pg') {
       test('pg tables can be created by several processes at once', async () => {
-        const PGConnection = require('../common/arkimeDb.pg.js');
+        const PGConnection = cjsRequire('../common/arkimeDb.pg.js');
         const conns = Array.from({ length: 6 }, () => new PGConnection(backend.url, { prefix: backend.prefix }));
         await Promise.all(conns.map(c => c.collection(`race${run}`).init()));
         await conns[0].pool.query(`DROP TABLE ${backend.prefix}race${run}`);

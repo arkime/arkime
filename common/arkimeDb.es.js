@@ -6,7 +6,6 @@
  */
 'use strict';
 
-const fs = require('fs');
 const util = require('util');
 const ArkimeDb = require('./arkimeDb');
 
@@ -341,15 +340,7 @@ class ESConnection {
 function createClient (url, options) {
   const { Client } = require('@elastic/elasticsearch');
 
-  const esSSLOptions = { rejectUnauthorized: !options.insecure };
-  if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); }
-  if (options.clientKey) {
-    esSSLOptions.key = fs.readFileSync(options.clientKey);
-    esSSLOptions.cert = fs.readFileSync(options.clientCert);
-    if (options.clientKeyPass) {
-      esSSLOptions.passphrase = options.clientKeyPass;
-    }
-  }
+  const esSSLOptions = ArkimeUtil.tlsOptionsOrExit(options, 'OpenSearch/Elasticsearch');
 
   const esOptions = {
     node: options.node ?? url.split(',').map(u => u.replace(/^(elasticsearch|opensearch)/, 'http')),

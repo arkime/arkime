@@ -1,4 +1,4 @@
-use Test::More tests => 211;
+use Test::More tests => 241;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -423,6 +423,56 @@ SKIP: {
     ok(!$info->{success}, "explicitly sending data without order is still rejected");
 
     viewerDeleteToken("/api/shareable/legacyshape1?arkimeRegressionUser=sac-test1", $token);
+}
+
+# --- spigraphConfig (saved graph) shape validation ---
+$token = getTokenCookie('sac-test1');
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph ok","type":"spigraphConfig","data":{"field":"source.ip","fields":["source.ip","protocols"],"viewMode":"bar","splitField":"protocols","barMode":"stacked","length":20}}', $token);
+ok($info->{success}, "create spigraphConfig with viewMode and fields succeeds");
+my $idGraph1 = $info->{id};
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph field only","type":"spigraphConfig","data":{"field":"protocols","viewMode":"pie"}}', $token);
+ok($info->{success}, "create spigraphConfig with viewMode and a field string succeeds");
+my $idGraph2 = $info->{id};
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph no mode","type":"spigraphConfig","data":{"fields":["source.ip"]}}', $token);
+ok(!$info->{success}, "create spigraphConfig without viewMode fails");
+is($info->{i18n}, "api.shareables.missingGraph", "spigraphConfig missing viewMode i18n");
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph no field","type":"spigraphConfig","data":{"viewMode":"bar"}}', $token);
+ok(!$info->{success}, "create spigraphConfig without a field fails");
+is($info->{i18n}, "api.shareables.missingGraph", "spigraphConfig missing field i18n");
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph empty fields","type":"spigraphConfig","data":{"viewMode":"bar","fields":[],"field":""}}', $token);
+ok(!$info->{success}, "create spigraphConfig with empty fields and field fails");
+is($info->{i18n}, "api.shareables.missingGraph", "spigraphConfig empty fields i18n");
+
+# readers normalize a graph, but values of the wrong type are kept out
+my @badGraphs = (
+    ['a non-string field entry', '"viewMode":"bar","fields":["source.ip",1]'],
+    ['an empty field entry', '"viewMode":"bar","fields":[""]'],
+    ['an object field', '"viewMode":"bar","field":{"a":1}'],
+    ['an object expression', '"viewMode":"bar","field":"source.ip","expression":{"a":1}'],
+    ['a non-string metric', '"viewMode":"table","field":"source.ip","metrics":[{}]'],
+    ['a string length', '"viewMode":"bar","field":"source.ip","length":"20"'],
+    ['a view mode that is not a graph', '"viewMode":"stats","field":"source.ip"'],
+);
+foreach my $bad (@badGraphs) {
+    $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", qq({"name":"graph bad","type":"spigraphConfig","data":{$bad->[1]}}), $token);
+    ok(!$info->{success}, "create spigraphConfig with $bad->[0] fails");
+    is($info->{i18n}, "api.shareables.invalidGraph", "spigraphConfig with $bad->[0] i18n");
+}
+
+# an update is checked the same way
+$info = viewerPutToken("/api/shareable/${idGraph1}?arkimeRegressionUser=sac-test1", '{"data":{"viewMode":"bar","fields":[]}}', $token);
+ok(!$info->{success}, "update spigraphConfig removing its fields fails");
+is($info->{i18n}, "api.shareables.missingGraph", "spigraphConfig update missing field i18n");
+$info = viewerPutToken("/api/shareable/${idGraph1}?arkimeRegressionUser=sac-test1", '{"data":{"viewMode":"bar","field":"source.ip","expression":["a"]}}', $token);
+ok(!$info->{success}, "update spigraphConfig with an array expression fails");
+is($info->{i18n}, "api.shareables.invalidGraph", "spigraphConfig update invalid i18n");
+$info = viewerPutToken("/api/shareable/${idGraph1}?arkimeRegressionUser=sac-test1", '{"data":{"viewMode":"pie","fields":["protocols"],"expression":"port.dst == 53","length":10}}', $token);
+ok($info->{success}, "update spigraphConfig with a valid graph succeeds");
+eq_or_diff($info->{shareable}->{data}, from_json('{"viewMode":"pie","fields":["protocols"],"expression":"port.dst == 53","length":10}'), "spigraphConfig update stores the new graph");
+
+foreach my $id ($idGraph1, $idGraph2) {
+    $info = viewerDeleteToken("/api/shareable/${id}?arkimeRegressionUser=sac-test1", $token);
+    ok($info->{success}, "delete saved graph");
 }
 
 # --- summaryConfig (dashboard) shape validation ---
