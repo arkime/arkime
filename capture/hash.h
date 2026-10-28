@@ -62,11 +62,11 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 
 #define HASHP_INIT(name, varname, sz, hashfunc, cmpfunc) \
   do { \
-       (varname).size = sz; \
+       (varname).size = (sz); \
        (varname).hash = hashfunc; \
        (varname).cmp = cmpfunc; \
        (varname).count = 0; \
-       (varname).buckets = malloc(sz * sizeof((varname).buckets[0])); \
+       (varname).buckets = malloc((sz) * sizeof((varname).buckets[0])); \
        for (int _i = 0; _i < (varname).size; _i++) { \
            DLL_INIT(name, &((varname).buckets[_i])); \
        } \
@@ -127,9 +127,12 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
       } \
   }
 
+// One loop so a break in the body stops the whole walk with count still right
 #define HASH_FORALL_POP_HEAD2(name, varname, element) \
-  for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) \
-      for (; DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element); (varname).count--)
+  for ( int _##name##b = 0;  _##name##b < (varname).size; ) \
+      if (!DLL_POP_HEAD(name, &((varname).buckets[_##name##b]), element)) \
+          _##name##b++; \
+      else if ((varname).count--, 1)
 
 #define HASH_FORALL(name, varname, element, code) \
   for ( int _##name##b = 0;  _##name##b < (varname).size;  _##name##b++) {\
