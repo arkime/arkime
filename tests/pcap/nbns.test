@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 544
+     "bytes" : 952
     },
     "destination" : {
      "bytes" : 0,
@@ -25,8 +25,8 @@
     "fileId" : [],
     "firstPacket" : 1576409797553,
     "ipProtocol" : 17,
-    "lastPacket" : 1576409799059,
-    "length" : 1506,
+    "lastPacket" : 1576409928060,
+    "length" : 130507,
     "nbns" : {
      "ASN" : [
       "---"
@@ -38,36 +38,45 @@
       "ARIN"
      ],
      "host" : [
+      "MARTIN ROSENAU",
       "MDJR98",
       "WORKGROUP"
      ],
-     "hostCnt" : 2,
+     "hostCnt" : 3,
      "ip" : [
       "192.168.239.129"
      ],
      "ipCnt" : 1,
      "name" : [
+      "MARTIN ROSENAU",
       "MDJR98",
       "WORKGROUP"
      ],
-     "nameCnt" : 2,
+     "nameCnt" : 3,
      "queryHost" : [
+      "MARTIN ROSENAU",
       "MDJR98",
       "WORKGROUP"
      ],
-     "queryHostCnt" : 2,
+     "queryHostCnt" : 3,
      "queryType" : [
       "NB"
      ],
      "queryTypeCnt" : 1
     },
     "network" : {
-     "bytes" : 880,
+     "bytes" : 1540,
      "community_id" : "1:t4zL7qEN8sILhXXFxBieTz/X9hU=",
-     "packets" : 8
+     "packets" : 14
     },
     "node" : "test",
     "packetLen" : [
+     126,
+     126,
+     126,
+     126,
+     126,
+     126,
      126,
      126,
      126,
@@ -85,11 +94,17 @@
      604,
      730,
      856,
-     982
+     982,
+     6321,
+     6447,
+     6573,
+     8701,
+     8827,
+     8953
     ],
     "packetRange" : {
      "gte" : 1576409797553,
-     "lte" : 1576409799059
+     "lte" : 1576409928060
     },
     "protocol" : [
      "nbns",
@@ -101,13 +116,13 @@
      "bytes" : 0
     },
     "source" : {
-     "bytes" : 880,
+     "bytes" : 1540,
      "ip" : "192.168.239.129",
      "mac" : [
       "00:50:56:33:78:9e"
      ],
      "mac-cnt" : 1,
-     "packets" : 8,
+     "packets" : 14,
      "port" : 137
     },
     "srcOui" : [
@@ -120,7 +135,7 @@
      128
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 544
+    "totDataBytes" : 952
    },
    "header" : {
     "index" : {
@@ -455,130 +470,6 @@
     ],
     "srcTTLCnt" : 1,
     "totDataBytes" : 2817
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-19m12"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 408
-    },
-    "destination" : {
-     "bytes" : 0,
-     "ip" : "192.168.239.2",
-     "mac" : [
-      "00:50:56:e9:89:56"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0,
-     "port" : 137
-    },
-    "dstOui" : [
-     "VMware, Inc."
-    ],
-    "dstOuiCnt" : 1,
-    "dstRIR" : "ARIN",
-    "ethertype" : 2048,
-    "fileId" : [],
-    "firstPacket" : 1576409897749,
-    "ipProtocol" : 17,
-    "lastPacket" : 1576409928060,
-    "length" : 30311,
-    "nbns" : {
-     "ASN" : [
-      "---"
-     ],
-     "GEO" : [
-      "---"
-     ],
-     "RIR" : [
-      "ARIN"
-     ],
-     "host" : [
-      "MARTIN ROSENAU",
-      "WORKGROUP"
-     ],
-     "hostCnt" : 2,
-     "ip" : [
-      "192.168.239.129"
-     ],
-     "ipCnt" : 1,
-     "name" : [
-      "MARTIN ROSENAU",
-      "WORKGROUP"
-     ],
-     "nameCnt" : 2,
-     "queryHost" : [
-      "MARTIN ROSENAU",
-      "WORKGROUP"
-     ],
-     "queryHostCnt" : 2,
-     "queryType" : [
-      "NB"
-     ],
-     "queryTypeCnt" : 1
-    },
-    "network" : {
-     "bytes" : 660,
-     "community_id" : "1:t4zL7qEN8sILhXXFxBieTz/X9hU=",
-     "packets" : 6
-    },
-    "node" : "test",
-    "packetLen" : [
-     126,
-     126,
-     126,
-     126,
-     126,
-     126
-    ],
-    "packetPos" : [
-     6321,
-     6447,
-     6573,
-     8701,
-     8827,
-     8953
-    ],
-    "packetRange" : {
-     "gte" : 1576409897749,
-     "lte" : 1576409928060
-    },
-    "protocol" : [
-     "nbns",
-     "udp"
-    ],
-    "protocolCnt" : 2,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 660,
-     "ip" : "192.168.239.129",
-     "mac" : [
-      "00:50:56:33:78:9e"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 6,
-     "port" : 137
-    },
-    "srcOui" : [
-     "VMware, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "srcPayload8" : "0022290000010000",
-    "srcRIR" : "ARIN",
-    "srcTTL" : [
-     128
-    ],
-    "srcTTLCnt" : 1,
-    "totDataBytes" : 408
    },
    "header" : {
     "index" : {

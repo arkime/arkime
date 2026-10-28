@@ -150,22 +150,72 @@
     "fileId" : [],
     "firstPacket" : 1159067138213,
     "ipProtocol" : 0,
-    "lastPacket" : 1159067138213,
-    "length" : 0,
+    "lastPacket" : 1159068101058,
+    "length" : 962845,
     "network" : {
-     "bytes" : 60,
-     "packets" : 1
+     "bytes" : 1560,
+     "packets" : 26
     },
     "node" : "test",
     "packetLen" : [
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
      76
     ],
     "packetPos" : [
-     173
+     173,
+     414,
+     660,
+     810,
+     886,
+     5884,
+     5960,
+     6359,
+     6435,
+     6827,
+     6903,
+     7295,
+     7371,
+     7804,
+     7954,
+     8030,
+     8425,
+     8501,
+     8899,
+     8975,
+     9382,
+     10160,
+     10637,
+     10713,
+     10873,
+     11123
     ],
     "packetRange" : {
      "gte" : 1159067138213,
-     "lte" : 1159067138213
+     "lte" : 1159068101058
     },
     "protocol" : [
      "corrupt-ether"
@@ -176,12 +226,12 @@
      "bytes" : 0
     },
     "source" : {
-     "bytes" : 60,
+     "bytes" : 1560,
      "mac" : [
       "00:60:2d:00:15:d5"
      ],
      "mac-cnt" : 1,
-     "packets" : 1
+     "packets" : 26
     },
     "srcOui" : [
      "Alerton Technologies, Inc."
@@ -292,69 +342,6 @@
   {
    "body" : {
     "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 0
-    },
-    "destination" : {
-     "bytes" : 0,
-     "mac" : [
-      "ff:ff:ff:ff:ff:ff"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0
-    },
-    "ethertype" : 25,
-    "fileId" : [],
-    "firstPacket" : 1159067316132,
-    "ipProtocol" : 0,
-    "lastPacket" : 1159067316132,
-    "length" : 0,
-    "network" : {
-     "bytes" : 60,
-     "packets" : 1
-    },
-    "node" : "test",
-    "packetLen" : [
-     76
-    ],
-    "packetPos" : [
-     414
-    ],
-    "packetRange" : {
-     "gte" : 1159067316132,
-     "lte" : 1159067316132
-    },
-    "protocol" : [
-     "corrupt-ether"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 60,
-     "mac" : [
-      "00:60:2d:00:15:d5"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 1
-    },
-    "srcOui" : [
-     "Alerton Technologies, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "totDataBytes" : 0
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-06m09"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
     "bacnet" : {
      "apduType" : [
       "unconfirmed-request"
@@ -439,91 +426,6 @@
     ],
     "srcTTLCnt" : 1,
     "totDataBytes" : 32
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-06m09"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 0
-    },
-    "destination" : {
-     "bytes" : 0,
-     "mac" : [
-      "ff:ff:ff:ff:ff:ff"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0
-    },
-    "ethertype" : 30,
-    "fileId" : [],
-    "firstPacket" : 1159067394952,
-    "ipProtocol" : 0,
-    "lastPacket" : 1159067603074,
-    "length" : 208122,
-    "network" : {
-     "bytes" : 720,
-     "packets" : 12
-    },
-    "node" : "test",
-    "packetLen" : [
-     76,
-     76,
-     76,
-     76,
-     76,
-     76,
-     76,
-     76,
-     76,
-     76,
-     76,
-     76
-    ],
-    "packetPos" : [
-     660,
-     810,
-     886,
-     5884,
-     5960,
-     6359,
-     6435,
-     6827,
-     6903,
-     7295,
-     7371,
-     7804
-    ],
-    "packetRange" : {
-     "gte" : 1159067394952,
-     "lte" : 1159067603074
-    },
-    "protocol" : [
-     "corrupt-ether"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 720,
-     "mac" : [
-      "00:60:2d:00:15:d5"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 12
-    },
-    "srcOui" : [
-     "Alerton Technologies, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "totDataBytes" : 0
    },
    "header" : {
     "index" : {
@@ -781,71 +683,6 @@
   {
    "body" : {
     "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 0
-    },
-    "destination" : {
-     "bytes" : 0,
-     "mac" : [
-      "ff:ff:ff:ff:ff:ff"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0
-    },
-    "ethertype" : 24,
-    "fileId" : [],
-    "firstPacket" : 1159067682027,
-    "ipProtocol" : 0,
-    "lastPacket" : 1159067682068,
-    "length" : 41,
-    "network" : {
-     "bytes" : 120,
-     "packets" : 2
-    },
-    "node" : "test",
-    "packetLen" : [
-     76,
-     76
-    ],
-    "packetPos" : [
-     7954,
-     8030
-    ],
-    "packetRange" : {
-     "gte" : 1159067682027,
-     "lte" : 1159067682068
-    },
-    "protocol" : [
-     "corrupt-ether"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 120,
-     "mac" : [
-      "00:60:2d:00:15:d5"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 2
-    },
-    "srcOui" : [
-     "Alerton Technologies, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "totDataBytes" : 0
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-06m09"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
     "bacnet" : {
      "apduType" : [
       "unconfirmed-request"
@@ -1028,77 +865,6 @@
     ],
     "srcTTLCnt" : 1,
     "totDataBytes" : 42
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-06m09"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 0
-    },
-    "destination" : {
-     "bytes" : 0,
-     "mac" : [
-      "ff:ff:ff:ff:ff:ff"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0
-    },
-    "ethertype" : 24,
-    "fileId" : [],
-    "firstPacket" : 1159067754992,
-    "ipProtocol" : 0,
-    "lastPacket" : 1159067818080,
-    "length" : 63088,
-    "network" : {
-     "bytes" : 300,
-     "packets" : 5
-    },
-    "node" : "test",
-    "packetLen" : [
-     76,
-     76,
-     76,
-     76,
-     76
-    ],
-    "packetPos" : [
-     8425,
-     8501,
-     8899,
-     8975,
-     9382
-    ],
-    "packetRange" : {
-     "gte" : 1159067754992,
-     "lte" : 1159067818080
-    },
-    "protocol" : [
-     "corrupt-ether"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 300,
-     "mac" : [
-      "00:60:2d:00:15:d5"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 5
-    },
-    "srcOui" : [
-     "Alerton Technologies, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "totDataBytes" : 0
    },
    "header" : {
     "index" : {
@@ -1324,69 +1090,6 @@
   {
    "body" : {
     "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 0
-    },
-    "destination" : {
-     "bytes" : 0,
-     "mac" : [
-      "ff:ff:ff:ff:ff:ff"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0
-    },
-    "ethertype" : 32,
-    "fileId" : [],
-    "firstPacket" : 1159067980861,
-    "ipProtocol" : 0,
-    "lastPacket" : 1159067980861,
-    "length" : 0,
-    "network" : {
-     "bytes" : 60,
-     "packets" : 1
-    },
-    "node" : "test",
-    "packetLen" : [
-     76
-    ],
-    "packetPos" : [
-     10160
-    ],
-    "packetRange" : {
-     "gte" : 1159067980861,
-     "lte" : 1159067980861
-    },
-    "protocol" : [
-     "corrupt-ether"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 60,
-     "mac" : [
-      "00:60:2d:00:15:d5"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 1
-    },
-    "srcOui" : [
-     "Alerton Technologies, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "totDataBytes" : 0
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-06m09"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
     "bacnet" : {
      "apduType" : [
       "confirmed-request",
@@ -1484,75 +1187,6 @@
     ],
     "srcTTLCnt" : 1,
     "totDataBytes" : 87
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-06m09"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 0
-    },
-    "destination" : {
-     "bytes" : 0,
-     "mac" : [
-      "ff:ff:ff:ff:ff:ff"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0
-    },
-    "ethertype" : 32,
-    "fileId" : [],
-    "firstPacket" : 1159068059129,
-    "ipProtocol" : 0,
-    "lastPacket" : 1159068101058,
-    "length" : 41929,
-    "network" : {
-     "bytes" : 240,
-     "packets" : 4
-    },
-    "node" : "test",
-    "packetLen" : [
-     76,
-     76,
-     76,
-     76
-    ],
-    "packetPos" : [
-     10637,
-     10713,
-     10873,
-     11123
-    ],
-    "packetRange" : {
-     "gte" : 1159068059129,
-     "lte" : 1159068101058
-    },
-    "protocol" : [
-     "corrupt-ether"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 240,
-     "mac" : [
-      "00:60:2d:00:15:d5"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 4
-    },
-    "srcOui" : [
-     "Alerton Technologies, Inc."
-    ],
-    "srcOuiCnt" : 1,
-    "totDataBytes" : 0
    },
    "header" : {
     "index" : {

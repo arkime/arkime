@@ -1027,7 +1027,7 @@ LOCAL void arkime_session_load_stopped()
         }
 
         const uint32_t hash = arkime_session_hash(key);
-        const int      thread = hash % config.packetThreads;
+        const int      thread = ARKIME_SESSION_HASH_THREAD(hash);
 
         g_hash_table_insert(sessionThreadData[thread].stoppedSessions.old, g_memdup(key, key[0]), (gpointer)(long)value);
     }
@@ -1091,7 +1091,7 @@ ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId)
     ArkimeSession_t *session;
 
     uint32_t hash = arkime_session_hash(sessionId);
-    int      thread = hash % config.packetThreads;
+    int      thread = ARKIME_SESSION_HASH_THREAD(hash);
 
     session = arkime_session_hash_find(&sessionThreadData[thread].sessions[ses], hash, sessionId);
     return session;
@@ -1106,7 +1106,7 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
         hash = arkime_session_hash(sessionId);
     }
 
-    int          thread = hash % config.packetThreads;
+    int          thread = ARKIME_SESSION_HASH_THREAD(hash);
     SessionTypes ses = mProtocols[mProtocol].ses;
 
     session = arkime_session_hash_find(&sessionThreadData[thread].sessions[ses], hash, sessionId);

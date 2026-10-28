@@ -174,7 +174,9 @@ sub sortJson {
         return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
         return $a->{body}->{lastPacket} <=> $b->{body}->{lastPacket} if ($a->{body}->{lastPacket} != $b->{body}->{lastPacket});
         return $a->{body}->{source}->{port} <=> $b->{body}->{source}->{port} if ($a->{body}->{source}->{port} != $b->{body}->{source}->{port});
-        return $a->{body}->{source}->{ip} cmp $b->{body}->{source}->{ip};
+        return $a->{body}->{source}->{ip} cmp $b->{body}->{source}->{ip} if (($a->{body}->{source}->{ip} // '') ne ($b->{body}->{source}->{ip} // ''));
+        return ($a->{body}->{destination}->{port} // 0) <=> ($b->{body}->{destination}->{port} // 0) if (($a->{body}->{destination}->{port} // 0) != ($b->{body}->{destination}->{port} // 0));
+        return ($a->{body}->{destination}->{ip} // '') cmp ($b->{body}->{destination}->{ip} // '');
     } @{$json->{sessions3}};
     return $json;
 }

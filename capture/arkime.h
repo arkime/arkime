@@ -1363,6 +1363,9 @@ char    *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int l
 
 uint32_t arkime_session_hash(const void *key);
 
+// Packet thread from the high hash bits (fastrange), the low bits pick the session bucket
+#define ARKIME_SESSION_HASH_THREAD(hash) ((uint32_t)(((uint64_t)(hash) * (uint32_t)config.packetThreads) >> 32))
+
 ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId);
 ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew);
 
