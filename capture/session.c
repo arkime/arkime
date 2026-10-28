@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include "arkime.h"
+#include "siphash.h"
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
@@ -20,6 +21,7 @@ extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
 LOCAL int                   protocolField;
 extern uint32_t             hashSalt;
+extern uint64_t             hashKey[2];
 
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
 #define PROBE_EMPTY   0x80
@@ -287,7 +289,16 @@ char *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int len)
     return buf;
 }
 
-#ifndef MURMUR3
+#if !defined(MURMUR1) && !defined(MURMUR3)
+/******************************************************************************/
+/* Keyed SipHash-1-3, so traffic can't be crafted to pile into one packet thread
+ * and bucket. Build with -DMURMUR1 (the old default) or -DMURMUR3 to compare.
+ */
+uint32_t arkime_session_hash(const void *key)
+{
+    return (uint32_t)arkime_siphash(hashKey, key, ((const uint8_t *)key)[0]);
+}
+#elif defined(MURMUR1)
 /******************************************************************************/
 /* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
  * MurmurHash based
