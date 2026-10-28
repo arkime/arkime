@@ -27,6 +27,7 @@
 #include "nghttp2/nghttp2.h"
 #include <errno.h>
 #include <sys/stat.h>
+#include <openssl/rand.h>
 
 /******************************************************************************/
 ArkimeConfig_t         config;
@@ -37,6 +38,7 @@ uint8_t                arkime_char_to_hexstr[256][3];
 uint8_t                arkime_hex_to_char[256][256];
 char                   arkime_ip_byte_lookup[256][4];
 uint32_t               hashSalt;
+uint64_t               hashKey[2];  // SipHash key for session hashing and dedup
 LOCAL pthread_t        mainThread;
 
 ArkimeThreadData_t     arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
@@ -325,6 +327,9 @@ LOCAL void parse_args(int argc, char **argv)
 
     if (config.tests) {
         config.dryRun = 1;
+        // Same session to packet thread assignment every run so output is reproducible
+        hashSalt = 0;
+        memset(hashKey, 0, sizeof(hashKey));
     }
 
     if (config.pcapSkip && config.copyPcap) {
@@ -1168,6 +1173,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
+    memset(hashKey, 0, sizeof(hashKey));
     arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
@@ -1231,6 +1237,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
+    memset(hashKey, 0, sizeof(hashKey));
     arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
@@ -1319,7 +1326,10 @@ int main(int argc, char **argv)
 
     mainLoop = g_main_loop_new(NULL, FALSE);
 
-    hashSalt = (uint32_t)time(NULL);
+    // Random so traffic can't be crafted to collide in the session table or dedup
+    if (RAND_bytes((unsigned char *)&hashSalt, sizeof(hashSalt)) != 1 ||
+        RAND_bytes((unsigned char *)hashKey, sizeof(hashKey)) != 1)
+        LOGEXIT("ERROR - Couldn't generate random hash keys");
 
     parse_args(argc, argv);
     if (config.debug)

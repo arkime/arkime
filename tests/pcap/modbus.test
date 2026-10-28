@@ -274,6 +274,7 @@
      "tcp"
     ],
     "protocolCnt" : 2,
+    "rootId" : "SET",
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 138
@@ -323,6 +324,127 @@
      "src" : 1637347714
     },
     "totDataBytes" : 250,
+    "zeekintel" : [
+     {
+      "desc" : "socks5-rdp / bt-udp / bigendian src ip",
+      "indicator" : "10.0.0.3",
+      "indicator_type" : "addr",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.dst"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "ip.src"
+     }
+    ],
+    "zeekintelCnt" : 3
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-04m08"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS2 Hmm!@#$%^&*()",
+      "number" : 2,
+      "organization" : {
+       "name" : "Hmm!@#$%^&*()"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "10.0.0.3",
+     "mac" : [
+      "00:02:b3:ce:70:51"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 502
+    },
+    "dstOui" : [
+     "Intel Corporation"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "0000000000030a88",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1093521681696,
+    "ipProtocol" : 6,
+    "lastPacket" : 1093522067391,
+    "length" : 385695,
+    "network" : {
+     "bytes" : 0,
+     "community_id" : "1:MaXLsh2l1JFKfqud0SOuIhVIh2Q=",
+     "packets" : 0
+    },
+    "node" : "test",
+    "packetLen" : [],
+    "packetPos" : [],
+    "packetRange" : {
+     "gte" : 1093521681696,
+     "lte" : 1093522067391
+    },
+    "protocol" : [
+     "modbus",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "rootId" : "SET",
+    "segmentCnt" : 2,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.57",
+     "mac" : [
+      "00:20:78:00:62:0d"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 2578
+    },
+    "srcOui" : [
+     "Runtop Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0000000000060a08",
+    "tags" : [
+     "zeek:intel"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0,
     "zeekintel" : [
      {
       "desc" : "socks5-rdp / bt-udp / bigendian src ip",

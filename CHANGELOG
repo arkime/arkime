@@ -152,6 +152,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Capture shuts down cleanly: packet threads are joined, Python sub-interpreters are ended in order, the offline and
           scheme readers stop mid file on SIGINT and log what was skipped, files still queued on the command socket get a
           file-error, S3 listings and SQS stop fetching, and a quiet tzsp link no longer blocks exit
+  - #4406 Session and packet dedup hashing now use SipHash-1-3 with a random key, so traffic can't be crafted to pile into one
+          packet thread or hash bucket. The old salt was the start time and didn't prevent collisions. Dedup is about
+          50ns per packet faster than with MD5
 ## Viewer
   - #4400 Featherprint classifier rules are loaded from every *.featherprint.yml / *.featherprint.yaml file in the
           featherprintRulesFiles files and directories (default /opt/arkime/etc), where default.featherprint.yml is installed

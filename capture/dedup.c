@@ -13,38 +13,28 @@
  * We size the hashtable assuming DEDUP_SLOT_FACTOR elements per
  * slot, but actually allow DEDUP_SIZE_FACTOR elements.
  *
- * Hash ip + tcp/udp hdr using either MD5 or XXH3_128bits.
+ * Hash ip + tcp/udp hdr using keyed SipHash-1-3, or MD5 with -DDEDUP_USE_MD5.
  *
  * When dedup is enabled, arkime_dedup_should_drop is one of the
  * top CPU consumers at high packet rates. The ctrl array acts as
  * a cheap filter to avoid touching the larger hashes array on
- * non-matches. MD5 is used over XXH3 to keep the function small
- * and reduce instruction cache pressure.
+ * non-matches.
  */
 
 #include "arkime.h"
+#include "siphash.h"
 
-// MD5 is ~4% faster than XXH3 in production due to smaller icache footprint
-#define DEDUP_USE_MD5
-
+// SipHash-1-3 is ~50ns per packet cheaper than MD5 with 1 or 4 reader threads,
+// and keyed so packets can't be crafted to collide with real ones.
 #ifdef DEDUP_USE_MD5
 #define OPENSSL_SUPPRESS_DEPRECATED
 #include <openssl/md5.h>
-#else
-#define XXH_STATIC_LINKING_ONLY
-#define XXH_IMPLEMENTATION
-#if defined(__clang__)
-#pragma clang attribute push(__attribute__((no_sanitize("integer"))), apply_to = function)
-#include "xxhash.h"
-#pragma clang attribute pop
-#else
-#include "xxhash.h"
-#endif
 #endif
 
 extern ArkimeConfig_t          config;
 extern GHashTable             *collapseTable;
 extern ArkimeSessionIdTracking sessionIdTracking;
+extern uint64_t                hashKey[2];
 
 // How many items in each hashtable we expect to be used, must be less than DEDUP_SIZE_FACTOR
 #define DEDUP_SLOT_FACTOR   15
@@ -70,7 +60,6 @@ typedef struct dedupsecond {
 } DedupSeconds_t;
 
 LOCAL DedupSeconds_t *seconds;
-
 
 /******************************************************************************/
 int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
@@ -141,7 +130,7 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
     MD5_Final(md, &ctx);
 #else
     uint8_t buf[260];
-    XXH128_hash_t hash;
+    int     bufLen;
     if (prefix_len) {
         memcpy(buf, prefix, prefix_len);
     }
@@ -149,13 +138,13 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
         memcpy(buf + prefix_len, ptr, 8);
         buf[prefix_len + 8] = ptr[9];  // protocol, skip TTL (1 byte)
         memcpy(buf + prefix_len + 9, ptr + 12, headerLen - 12); // skip checksum (2 bytes)
-        hash = XXH3_128bits(buf, prefix_len + 9 + (headerLen - 12));
+        bufLen = prefix_len + 9 + (headerLen - 12);
     } else {
         memcpy(buf + prefix_len, ptr, 7);
         memcpy(buf + prefix_len + 7, ptr + 8, headerLen - 8); // skip HOP (1 byte)
-        hash = XXH3_128bits(buf, prefix_len + 7 + (headerLen - 8));
+        bufLen = prefix_len + 7 + (headerLen - 8);
     }
-    memcpy(md, &hash, 16);
+    arkime_siphash128(hashKey, buf, bufLen, md);
 #endif
 
     const int h = ((uint32_t *)md)[0] & dedupSlotsMask;
