@@ -1,4 +1,4 @@
-use Test::More tests => 8;
+use Test::More tests => 10;
 use ArkimeTest;
 use File::Temp qw(tempfile);
 use JSON;
@@ -29,8 +29,8 @@ my $configUri = "$scheme://$userinfo\@$hostpath/$index/_doc/viewer";
 esPut("/$index/_doc/viewer?refresh=true", to_json({
     default => {
         uploadRoles => 'arkimeUser',
-        # The second echo prints the uri rewritten the way capture does in its errors
-        uploadCommand => "echo {CONFIG}; echo {CONFIG} | sed 's/^elasticsearch/http/;s/_doc/_source/' && test {ORIGINALNAME} != fail.pcap"
+        # Print the uri from the urlinfile:// file rewritten the way capture does in its errors
+        uploadCommand => q{f={CONFIG}; echo $f; sed 's/^elasticsearch/http/;s/_doc/_source/' "${f#urlinfile://}" && test {ORIGINALNAME} != fail.pcap}
     }
 }));
 
@@ -82,14 +82,17 @@ sub upload {
 
 my $response = upload('good.pcap');
 is ($response->code, 200);
-like ($response->content, qr/^echo elasticsearchs?:&#47;&#47;\*\*\*\*@/, "upload response shows the redacted config");
-like ($response->content, qr/^https?:&#47;&#47;\*\*\*\*@/m, "upload response redacts the uri as capture rewrites it");
+like ($response->content, qr/^f=urlinfile:&#47;&#47;&#47;tmp&#47;[0-9a-f]{32}\.config; /, "upload command gets the config in a file");
+like ($response->content, qr/<pre>urlinfile:&#47;&#47;&#47;tmp&#47;[0-9a-f]{32}\.config\n/, "upload command sees the config file");
+like ($response->content, qr/^https?:&#47;&#47;\*\*\*\*@/m, "config file has the uri, redacted as capture rewrites it");
 unlike ($response->content, qr/\Q$secret\E/, "upload response hides the config password");
+my ($configTmpFile) = $response->content =~ /&#47;tmp&#47;([0-9a-f]{32}\.config)/;
+ok (defined $configTmpFile && !-e "/tmp/$configTmpFile", "config file removed");
 
 $response = upload('fail.pcap');
 is ($response->code, 500);
 unlike ($response->content, qr/\Q$secret\E/, "failed upload response hides the config password");
 
 my $log = do { local $/; open my $fh, '<', $logFile or die $!; <$fh> };
-like ($log, qr{upload command: +echo elasticsearchs?://\*\*\*\*@}, "upload log shows the redacted config");
+like ($log, qr{upload command: +f=urlinfile:///tmp/[0-9a-f]{32}\.config; }, "upload log shows the config file");
 unlike ($log, qr/\Q$secret\E/, "viewer log hides the config password");

@@ -310,6 +310,22 @@ class MiscAPIs {
     // uploadCommand without risking shell injection from the uploaded filename.
     const safeOriginalName = (req.file.originalname || '').replace(/[^-a-zA-Z0-9._]/g, '');
 
+    // A uri can have credentials, so pass it to capture in a file instead of on the command line
+    let config = ArkimeConfig.childConfigFile;
+    let configTmpFile;
+    if (uploadCommand.includes('{CONFIG}') && /^[a-zA-Z][-a-zA-Z0-9+.]*:\/\//.test(config)) {
+      configTmpFile = `${req.file.path}.config`;
+      try {
+        fs.writeFileSync(configTmpFile, `${config}\n`, { mode: 0o600, flag: 'wx' });
+      } catch (err) {
+        fs.unlinkSync(req.file.path);
+        console.log(`ERROR - ${req.method} /api/upload`, err.message);
+        res.status(500);
+        return res.end('Upload command failed');
+      }
+      config = `urlinfile://${configTmpFile}`;
+    }
+
     // security-scanner-ignore: {INSECURE-ORIGINALNAME} is intentionally unsanitized.
     // Operators who use this template variable accept the risk — the variable name serves as the warning.
     // Prefer the sanitized {ORIGINALNAME} variable instead.
@@ -319,7 +335,7 @@ class MiscAPIs {
       TMPFILE: req.file.path,
       ORIGINALNAME: safeOriginalName,
       'INSECURE-ORIGINALNAME': req.file.originalname,
-      CONFIG: ArkimeConfig.childConfigFile
+      CONFIG: config
     });
     // Config may be a credential-bearing URI, never return or log it
     const safeCmd = ArkimeConfig.redactConfig(cmd);
@@ -327,6 +343,7 @@ class MiscAPIs {
     console.log('upload command: ', safeCmd);
     exec(cmd, (error, stdout, stderr) => {
       fs.unlinkSync(req.file.path);
+      if (configTmpFile) { fs.rmSync(configTmpFile, { force: true }); }
       if (error !== null) {
         console.log(`ERROR - ${req.method} /api/upload`, ArkimeConfig.redactConfig(error.message));
         res.status(500);
