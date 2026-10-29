@@ -1300,7 +1300,7 @@ class Auth {
           console.log('AUTH: passport.authenticate fail', err);
         }
         res.status(403);
-        return res.json({ success: false, text: err });
+        return res.json({ success: false, text: String(err?.message ?? err) });
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {

@@ -79,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
       <div
         class="alert alert-danger mt-4"
         v-if="error">
-        <div v-html="error" />
+        <div>{{ error }}</div>
       </div> <!-- /file upload error -->
     </div>
   </div>
