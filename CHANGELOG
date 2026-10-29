@@ -43,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4405 Fix slow session lookups when packetThreads is even, each thread only used part of its session table
 ## db.pl
   - #4398 Fix expire deleting the current weekly history index when viewer runs in a timezone east of UTC (thanks @jejex0)
+  - #4409 Fix RADIUS sessions with a NAS-Port above 2147483647 being rejected by OpenSearch/Elasticsearch, only sessions indices created after upgrading get the new mapping
 
 6.9.1 2026/10/22
 ## Release
