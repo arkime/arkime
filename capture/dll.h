@@ -19,7 +19,7 @@
 
 #define DLL_INIT(name, head) \
     ((head)->name##count = 0, \
-     (head)->name##next = (head)->name##prev = (void *)head \
+     (head)->name##next = (head)->name##prev = (void *)(head) \
     )
 
 #define DLL_PUSH_TAIL(name, head, element) \

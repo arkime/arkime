@@ -85,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="tonal"
         density="compact"
         class="mt-4">
-        <div v-html="error" />
+        <div>{{ error }}</div>
       </v-alert> <!-- /file upload error -->
     </div>
   </div>

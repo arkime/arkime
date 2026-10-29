@@ -190,10 +190,12 @@ $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/uplo
         file => [undef, 'a;rm -rf x$(id).pcap', 'Content-Type' => 'application/octet-stream', Content => 'notreallyapcap']
     ]);
 is ($response->code, 200);
-like ($response->content, qr/^true  --tag good --tag badtag --tag x arm-rfxid\.pcap &#47;tmp&#47;[0-9a-f]{32}<br>/);
-my ($tmpFile) = $response->content =~ /&#47;tmp&#47;([0-9a-f]{32})/;
-ok (defined $tmpFile, "upload tmp file name returned");
-ok (!-e "/tmp/$tmpFile", "upload tmp file removed");
+is ($response->content, "Upload succeeded");
+my $uploadOut = do { local $/; open my $fh, '<', '/tmp/arkime.test3.upload'; <$fh> };
+like ($uploadOut, qr{^--tag good --tag badtag --tag x arm-rfxid\.pcap /tmp/[0-9a-f]{32} \.\./tests/config\.test\.ini$}m, "upload command gets the config arg as given");
+my ($tmpFile) = $uploadOut =~ m{/tmp/([0-9a-f]{32})};
+ok (defined $tmpFile && !-e "/tmp/$tmpFile", "upload tmp file removed");
+unlink '/tmp/arkime.test3.upload';
 
 # No arkimeUser role
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test8', 'test8' );

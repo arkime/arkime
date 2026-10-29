@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 101;
+use Test::More tests => 109;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -354,9 +354,18 @@ $url = "redis://127.0.0.1:7379/0/notfound";
 
 doNotFoundTest($url);
 
+#### HIDDENCONFIG and URLINFILE, the first line of the file is the real config location
+open(FH, '>', "testconfig.hiddenconfig") or die $!;
+print FH "../tests/testconfig.ini\n";
+close(FH);
+
+doGoodTest("../tests/testconfig.hiddenconfig");
+doGoodTest("urlinfile://../tests/testconfig.hiddenconfig");
+
 #### Clean up
 unlink("testconfig.ini");
 unlink("testconfig.json");
+unlink("testconfig.hiddenconfig");
 
 #### View Config API - what the running viewer will show an admin
 

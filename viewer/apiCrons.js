@@ -71,7 +71,7 @@ class CronAPIs {
     } else if (!Config.getBool('multiES', false)) {
       const info = await Db.getQueriesNode();
       if (info.node === undefined) {
-        console.log(`WARNING - No cronQueries=true found in ${ArkimeConfig.configFile}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
+        console.log(`WARNING - No cronQueries=true found in ${Config.debug ? ArkimeConfig.configFile : 'config'}, one and only one node MUST have cronQueries=true set for cron/hunts to work`);
       } else if (Date.now() - info.updateTime > 2 * 60 * 1000) {
         console.log(`WARNING - cronQueries=true node '${info.node}' hasn't checked in lately, cron/hunts might be broken`);
       }

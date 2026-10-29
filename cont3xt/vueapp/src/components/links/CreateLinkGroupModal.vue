@@ -61,13 +61,6 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
-});
-
 const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const error = ref('');

@@ -13,7 +13,7 @@
 
 use lib ".";
 use strict;
-use Test::More tests => 22;
+use Test::More tests => 29;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
@@ -54,6 +54,21 @@ sub read_line {
     if ($buf =~ s/^(.*?\n)//s) {
         $pending{fileno($sock)} = $buf if (length $buf);
         return $1;
+    }
+    return $buf;
+}
+
+# Helper: read lines until $count lines have matched $re or the timeout passes
+sub read_until {
+    my ($sock, $sel, $re, $timeout, $count) = @_;
+    $count //= 1;
+    my $buf = "";
+    my $deadline = time() + ($timeout // 10);
+    while ($count > 0 && time() < $deadline) {
+        my $line = read_line($sock, $sel, $deadline - time());
+        last unless defined $line;
+        $buf .= $line;
+        $count-- if ($line =~ $re);
     }
     return $buf;
 }
@@ -110,7 +125,7 @@ for (my $i = 0; $i < 100; $i++) {
 ok($ready, "command socket appeared");
 
 SKIP: {
-    skip "capture did not start, skipping socket tests", 16 unless $ready;
+    skip "capture did not start, skipping socket tests", 23 unless $ready;
 
     my $sock = IO::Socket::UNIX->new(
         Peer => $sockpath,
@@ -118,7 +133,7 @@ SKIP: {
     );
     ok(defined $sock, "connected to command socket");
 
-    skip "could not connect to socket", 15 unless defined $sock;
+    skip "could not connect to socket", 22 unless defined $sock;
 
     $sock->autoflush(1);
     my $sel = IO::Select->new($sock);
@@ -127,6 +142,28 @@ SKIP: {
     print $sock "file-status\n";
     my $init = read_line($sock, $sel, 10);
     ok(defined $init && $init =~ /file-status done/, "capture is responsive");
+
+    # --- Test 0: perf-stats dumps every section and ends with a done marker ---
+    print $sock "perf-stats\n";
+    my $perf = read_until($sock, $sel, qr/^perf-stats done\n/, 10);
+    like($perf, qr/^== general ==\n.*^== packets ==\n.*^== sessions ==\n.*^== pq ==\n.*^== dedup ==\n.*^== http ==\n.*^perf-stats done\n/ms, "perf-stats prints every section");
+    like($perf, qr/^pkt0 \s+\d+ \s+(yes|no)/m, "perf-stats has a packet thread row");
+    print $sock "perf-stats --human\n";
+    $perf = read_until($sock, $sel, qr/^perf-stats done\n/, 10);
+    like($perf, qr/^now: \s+\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/m, "perf-stats --human prints dates");
+    print $sock "perf-stats bogus\n";
+    is(read_line($sock, $sel, 5), "Usage: perf-stats [--all] [--human]\n", "perf-stats rejects unknown arguments");
+
+    # Pipelined responses that together exceed the socket buffer must all arrive whole, not be truncated
+    my $perf_count = 300;
+    print $sock "perf-stats --all\n" x $perf_count;
+    my $big = read_until($sock, $sel, qr/^perf-stats done\n/, 30, $perf_count);
+    my $big_done = () = $big =~ /^perf-stats done$/mg;
+    my $big_general = () = $big =~ /^== general ==$/mg;
+    my $big_http = () = $big =~ /^== http ==$/mg;
+    is($big_done, $perf_count, "every pipelined perf-stats --all response arrives");
+    ok($big_general == $perf_count && $big_http == $perf_count, "pipelined perf-stats --all responses are not truncated");
+    cmp_ok(length($big), '>', 1024 * 1024, "pipelined perf-stats responses exceed the socket buffer");
 
     # --- Test 1: add-file WITHOUT --notify (backward compat) ---
     print $sock "add-file $pcap\n";

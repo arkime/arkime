@@ -168,3 +168,34 @@ void arkime_pq_flush(int thread)
     }
 }
 /******************************************************************************/
+void arkime_pq_perf_stats(GString *out, gboolean human)
+{
+    g_string_append(out, "\n== pq ==\n");
+    if (!pqs || pqs->len == 0) {
+        g_string_append(out, "none\n");
+        return;
+    }
+
+    g_string_append_printf(out, "%-18s %u\n", "pqs:", pqs->len);
+    g_string_append_printf(out, "%-18s %d\n", "hashBuckets:", ((ArkimePQ_t *)g_ptr_array_index(pqs, 0))->keys[0].size);
+
+    const int tw = human ? ARKIME_PERF_TIME_LEN - 1 : 11;
+    char timeBuf[ARKIME_PERF_TIME_LEN];
+    g_string_append_printf(out, "\n%-6s %8s %*s", "thread", "entries", tw, "lastRun");
+    for (guint i = 0; i < pqs->len; i++) {
+        const ArkimePQ_t *pq = g_ptr_array_index(pqs, i);
+        char name[32];
+        snprintf(name, sizeof(name), "pq%u(%us)", i, pq->timeout);
+        g_string_append_printf(out, " %12s", name);
+    }
+    g_string_append_c(out, '\n');
+    for (int t = 0; t < config.packetThreads; t++) {
+        g_string_append_printf(out, "pkt%-3d %8u %*s", t, pqThreadData[t].pqEntries, tw, arkime_perf_time(timeBuf, pqThreadData[t].lastRun, human));
+        for (guint i = 0; i < pqs->len; i++) {
+            const ArkimePQ_t *pq = g_ptr_array_index(pqs, i);
+            g_string_append_printf(out, " %12d", DLL_COUNT(pql_, &pq->lists[t]));
+        }
+        g_string_append_c(out, '\n');
+    }
+}
+/******************************************************************************/

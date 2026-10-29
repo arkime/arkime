@@ -992,7 +992,6 @@ LOCAL void arkime_config_load()
         arkime_config_load_hidden(config.configFile + 12);
 
     } else if (g_str_has_suffix(config.configFile, ".hiddenconfig")) {
-        config.configFile[strlen(config.configFile) - 13] = 0;
         arkime_config_load_hidden(config.configFile);
     }
 
@@ -1018,7 +1017,7 @@ LOCAL void arkime_config_load()
         } else {
             status = TRUE;
             if (config.noConfigOption)
-                LOG("Redis key not found for %s", config.configFile);
+                LOG("Redis key not found for %s", config.debug ? config.configFile : "config, use --debug to see the location");
             else
                 CONFIGEXIT("Redis key not found for %s", config.configFile);
         }
@@ -1066,7 +1065,7 @@ LOCAL void arkime_config_load()
 
     if (!status || error) {
         if (config.noConfigOption) {
-            LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
+            LOG("Couldn't load config file (%s) %s", config.debug ? config.configFile : "use --debug to see the location", (error ? error->message : ""));
             g_clear_error(&error);
             g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
         } else

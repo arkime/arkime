@@ -225,8 +225,6 @@ const NODE = grab(easybutton, /^NODE=(\S+)/m, 'NODE');
 const CYBERCHEF = grab(path.join(ROOT, 'viewer/Makefile.in'), /^CYBERCHEF_VERSION=(\S+)/m, 'CYBERCHEF_VERSION');
 const hp = path.join(ROOT, 'capture/thirdparty/http_parser.h');
 const HTTP_PARSER = `${grab(hp, /HTTP_PARSER_VERSION_MAJOR (\d+)/, 'major')}.${grab(hp, /HTTP_PARSER_VERSION_MINOR (\d+)/, 'minor')}`;
-const xx = path.join(ROOT, 'capture/thirdparty/xxhash.h');
-const XXHASH = `${grab(xx, /XXH_VERSION_MAJOR\s+(\d+)/, 'major')}.${grab(xx, /XXH_VERSION_MINOR\s+(\d+)/, 'minor')}.${grab(xx, /XXH_VERSION_RELEASE\s+(\d+)/, 'release')}`;
 const d3v = grab(path.join(ROOT, 'viewer/public/d3.min.js'), /version:"([0-9.]+)"/, 'd3 version');
 const cubismv = grab(path.join(ROOT, 'viewer/public/cubism.v1.min.js'), /version:"([0-9.]+)"/, 'cubism version');
 
@@ -238,8 +236,6 @@ const extra = [
     properties: [{ name: 'arkime:component', value: 'capture' }, { name: 'arkime:linkage', value: 'static' }, { name: 'arkime:platforms', value: 'al2023 al2027' }] },
   // vendored C sources compiled into capture
   { type: 'library', name: 'http_parser', version: HTTP_PARSER, purl: `pkg:github/nodejs/http-parser@v${HTTP_PARSER}`, licenses: licenses('MIT'),
-    properties: [{ name: 'arkime:component', value: 'capture' }, { name: 'arkime:linkage', value: 'source' }] },
-  { type: 'library', name: 'xxHash', version: XXHASH, purl: `pkg:github/Cyan4973/xxHash@v${XXHASH}`, licenses: licenses('BSD-2-Clause'),
     properties: [{ name: 'arkime:component', value: 'capture' }, { name: 'arkime:linkage', value: 'source' }] },
   { type: 'library', name: 'js0n', purl: 'pkg:github/quartzjer/js0n', licenses: licenses('Public Domain'),
     properties: [{ name: 'arkime:component', value: 'capture' }, { name: 'arkime:linkage', value: 'source' }] },

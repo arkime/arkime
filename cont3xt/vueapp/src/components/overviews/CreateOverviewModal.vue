@@ -68,13 +68,6 @@ const defaultOverview = {
   editRoles: []
 };
 
-defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
-});
-
 const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const error = ref('');

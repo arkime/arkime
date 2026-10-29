@@ -98,6 +98,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
+  - #4410 Add perf-stats command socket command that dumps per packet thread queue depths, session hash sizes and bucket usage,
+          session/closing/save queue lengths, dedup table usage, pq entries and http outstanding requests for performance debugging,
+          --all also lists empty session protocols and scans hash buckets and dedup slots, --human prints timestamps as dates
+  - #4410 Fix command socket responses larger than the socket buffer being truncated, a client that stops reading for 5s is disconnected
+  - #4410 Session hash tables now resize at 2 sessions per bucket instead of 4, keeping chains shorter for faster lookups
+  - #4410 Move the session hash value next to the hash links in ArkimeSession_t so a chain lookup touches one cache line per
+          session instead of two, struct size is unchanged
   - #4400 rulesFiles entries can be directories, every *.rules.yml / *.rules.yaml in one is loaded and the directory is watched so
           added or removed files reload like edits do, once they stop changing. The default is now /opt/arkime/etc, where
           default.rules.yml is installed and replaced on upgrade (DO NOT EDIT it). default.* files load first and a rule in
@@ -152,6 +159,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Capture shuts down cleanly: packet threads are joined, Python sub-interpreters are ended in order, the offline and
           scheme readers stop mid file on SIGINT and log what was skipped, files still queued on the command socket get a
           file-error, S3 listings and SQS stop fetching, and a quiet tzsp link no longer blocks exit
+  - #4406 Session and packet dedup hashing now use SipHash-1-3 with a random key, so traffic can't be crafted to pile into one
+          packet thread or hash bucket. The old salt was the start time and didn't prevent collisions. Dedup is about
+          50ns per packet faster than with MD5
 ## Viewer
   - #4400 Featherprint classifier rules are loaded from every *.featherprint.yml / *.featherprint.yaml file in the
           featherprintRulesFiles files and directories (default /opt/arkime/etc), where default.featherprint.yml is installed
@@ -220,6 +230,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 
 6.9.2 2026/11/xx
+## Breaking
+  - #4415 uploadCommand {CONFIG} is now the -c value as given, with .hiddenconfig or urlinfile:// the dropUser must be able to read that file
+  - #4415 capture -c file.hiddenconfig now reads the config location from that file like viewer does, instead of from the file without the suffix
 ## All
   - #4402 Email and Slack notifier alerts escape < and >, and Teams alerts replace Markdown link brackets, so values in the alert text can't inject HTML, links or @mentions
 ## Capture
@@ -227,6 +240,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4405 Fix slow session lookups when packetThreads is even, each thread only used part of its session table
 ## db.pl
   - #4398 Fix expire deleting the current weekly history index when viewer runs in a timezone east of UTC (thanks @jejex0)
+  - #4409 Fix RADIUS sessions with a NAS-Port above 2147483647 being rejected by OpenSearch/Elasticsearch, only sessions indices created after upgrading get the new mapping
+## Viewer
+  - #4415 PCAP upload no longer returns the upload command and its output, use --debug to log them
 
 6.9.1 2026/10/22
 ## Release
