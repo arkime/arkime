@@ -151,19 +151,36 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
-  /**
-   * Replace the userinfo of a uri with ****, plain file paths are returned as is
-   */
-  static redactUri (uri) {
+  // Only the passwords, so a username like elastic doesn't redact the rest of the output
+  static #passwords (uri) {
     const userinfo = ArkimeConfig.#userinfo(uri);
-    if (userinfo === undefined) { return uri; }
-    const start = uri.indexOf('://') + 3;
-    return uri.substring(0, start) + '****' + uri.substring(start + userinfo.length);
+    if (!userinfo?.includes(':')) { return []; }
+    const [first, rest] = ArkimeUtil.splitRemain(userinfo, ':', 1);
+    // redis-sentinel://sentinelPassword:redisPassword@
+    return uri.startsWith('redis-sentinel://') ? [first, rest] : [rest];
   }
 
   // ----------------------------------------------------------------------------
   /**
-   * Replace the config uri and its userinfo in str with the redacted form
+   * Replace the userinfo and query values of a uri with ****, plain file paths are returned as is
+   */
+  static redactUri (uri) {
+    if (typeof uri !== 'string') { return uri; }
+    const userinfo = ArkimeConfig.#userinfo(uri);
+    if (userinfo !== undefined) {
+      const start = uri.indexOf('://') + 3;
+      uri = uri.substring(0, start) + '****' + uri.substring(start + userinfo.length);
+    }
+    const q = uri.indexOf('?');
+    if (q !== -1 && /^[a-zA-Z][-a-zA-Z0-9+.]*:\/\//.test(uri)) {
+      uri = uri.substring(0, q) + uri.substring(q).replace(/([?&][^=&#]*=)[^&#]*/g, '$1****');
+    }
+    return uri;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Replace the config uri, its userinfo and its passwords (raw, decoded and encoded) in str with the redacted form
    * @param {string} str The string to redact
    * @param {string} uri The config uri, defaults to the one loaded
    */
@@ -174,6 +191,22 @@ class ArkimeConfig {
     // capture rewrites the uri before printing it, so also catch the userinfo by itself
     const userinfo = ArkimeConfig.#userinfo(uri);
     if (userinfo) { str = str.split(`${userinfo}@`).join('****@'); }
+
+    // and the passwords in any form, skipping short ones that would mangle the output
+    const secrets = new Set();
+    for (const password of ArkimeConfig.#passwords(uri)) {
+      let decoded = password;
+      try { decoded = decodeURIComponent(password); } catch { }
+      for (const form of [password, decoded]) {
+        secrets.add(form);
+        try { secrets.add(encodeURIComponent(form)); } catch { }
+      }
+    }
+
+    // longest first so a part doesn't break up a longer match
+    for (const secret of [...secrets].filter(s => s.length >= 4).sort((a, b) => b.length - a.length)) {
+      str = str.split(secret).join('****');
+    }
     return str;
   }
 

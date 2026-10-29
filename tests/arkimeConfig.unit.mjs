@@ -55,6 +55,42 @@ describe('redactConfig', () => {
   });
 });
 
+describe('redactUri query', () => {
+  test('strips query values but not the path', () => {
+    assert.equal(ArkimeConfig.redactUri('https://cfg.example.com/c.json?token=abc123&format=json'), 'https://cfg.example.com/c.json?token=****&format=****');
+    assert.equal(ArkimeConfig.redactUri('https://es/a&b=c/d.json?x=1'), 'https://es/a&b=c/d.json?x=****');
+    assert.equal(ArkimeConfig.redactUri('https://host?token=a@b'), 'https://host?token=****');
+  });
+});
+
+describe('redactConfig passwords', () => {
+  test('redacts the password in any form', () => {
+    const uri = 'elasticsearch://elastic:p:w%40d@es:9200/idx/_doc/cfg';
+    const out = ArkimeConfig.redactConfig(`decoded p:w@d raw p:w%40d encoded ${encodeURIComponent('p:w@d')} ${encodeURIComponent(uri)}`, uri);
+    for (const secret of ['p:w@d', 'p:w%40d', 'p%3Aw%40d', 'p%3Aw%2540d']) {
+      assert.ok(!out.includes(secret), `${secret} in ${out}`);
+    }
+  });
+
+  test('keeps the username readable', () => {
+    assert.equal(ArkimeConfig.redactConfig('user elastic logged in', 'elasticsearch://elastic:pwpw@es/i/_doc/c'), 'user elastic logged in');
+    assert.equal(ArkimeConfig.redactConfig('/opt/arkime/bin', 'https://arkime@cfg/c.json'), '/opt/arkime/bin');
+  });
+
+  test('redacts both redis-sentinel passwords, longest first', () => {
+    assert.equal(ArkimeConfig.redactConfig('x abcd abcdef y', 'redis-sentinel://abcd:abcdef@h:1/n/0/k'), 'x **** **** y');
+  });
+
+  test('skips short passwords that would mangle the output', () => {
+    assert.equal(ArkimeConfig.redactConfig('Loaded /opt/arkime/etc/a.ini', 'redis://:a@r/0/k'), 'Loaded /opt/arkime/etc/a.ini');
+  });
+
+  test('handles passwords that are not valid uri encoding', () => {
+    assert.equal(ArkimeConfig.redactConfig('pw 100%x', 'elasticsearch://u:100%x@h/i/_doc/c'), 'pw ****');
+    assert.equal(ArkimeConfig.redactConfig('ok', 'elasticsearch://u:ab\ud800cd@h/i/_doc/c'), 'ok');
+  });
+});
+
 describe('expandPlaceholders', () => {
   test('substituted values cannot add placeholders', () => {
     assert.equal(ArkimeUtil.expandPlaceholders('a {NAME} {CONFIG}', { NAME: '{CONFIG}.pcap', CONFIG: 'secret' }), 'a {CONFIG}.pcap secret');
