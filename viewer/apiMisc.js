@@ -318,6 +318,7 @@ class MiscAPIs {
       try {
         fs.writeFileSync(configTmpFile, `${config}\n`, { mode: 0o600, flag: 'wx' });
       } catch (err) {
+        if (err.code !== 'EEXIST') { fs.rmSync(configTmpFile, { force: true }); }
         fs.unlinkSync(req.file.path);
         console.log(`ERROR - ${req.method} /api/upload`, err.message);
         res.status(500);
@@ -342,8 +343,8 @@ class MiscAPIs {
 
     console.log('upload command: ', safeCmd);
     exec(cmd, (error, stdout, stderr) => {
-      fs.unlinkSync(req.file.path);
       if (configTmpFile) { fs.rmSync(configTmpFile, { force: true }); }
+      fs.unlinkSync(req.file.path);
       if (error !== null) {
         console.log(`ERROR - ${req.method} /api/upload`, ArkimeConfig.redactConfig(error.message));
         res.status(500);
