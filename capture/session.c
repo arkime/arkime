@@ -587,8 +587,9 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
             continue;
         arkime_session_hash_add(hash, oldSessions[s]->ses_hash, oldSessions[s]);
     }
-    ARKIME_SIZE_FREE("sessions", oldSessions);
-    ARKIME_SIZE_FREE("ctrl", oldCtrl);
+    // Free later since perf-stats may be scanning the old arrays from the main thread
+    arkime_free_later(oldSessions, free);
+    arkime_free_later(oldCtrl, free);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
@@ -716,7 +717,8 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
             session = next;
         }
     }
-    ARKIME_SIZE_FREE("sessions", oldSessions);
+    // Free later since perf-stats may be scanning the old array from the main thread
+    arkime_free_later(oldSessions, free);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
@@ -819,7 +821,8 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
             DLL_PUSH_HEAD(ses_, &hash->buckets[b2], session);
         }
     }
-    ARKIME_SIZE_FREE("buckets", oldBuckets);
+    // Free later since perf-stats may be scanning the old array from the main thread
+    arkime_free_later(oldBuckets, free);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
@@ -1273,15 +1276,21 @@ uint32_t arkime_session_monitoring()
 #endif
 /* Bucket usage of one session hash. This runs on the main thread while the
  * owning packet thread mutates the table, so it only reads the table's own
- * arrays and never follows a session pointer. A concurrent resize can still
- * make the numbers garbage, which is acceptable for a debug command. */
+ * arrays and never follows a session pointer. A resize frees the old arrays
+ * with arkime_free_later so they stay readable, but a concurrent resize can
+ * still make the numbers garbage, which is acceptable for a debug command. */
 LOCAL void arkime_session_hash_perf_stats(const ArkimeSessionHash_t *hash, GString *out)
 {
     const uint32_t size = hash->size;
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
     const uint8_t *ctrl = hash->ctrl;
     uint32_t used = 0, deleted = 0, run = 0, maxRun = 0;
-    for (uint32_t s = 0; s < size; s++) {
+    // Probing wraps, so start after an empty slot to count a run that wraps as one
+    uint32_t start = 0;
+    while (start < size && ctrl[start] != PROBE_EMPTY)
+        start++;
+    for (uint32_t i = 0; i < size; i++) {
+        const uint32_t s = (start + i) & (size - 1);
         if (ctrl[s] == PROBE_EMPTY) {
             run = 0;
             continue;
@@ -1308,7 +1317,7 @@ LOCAL void arkime_session_hash_perf_stats(const ArkimeSessionHash_t *hash, GStri
     uint32_t used = 0;
     int maxChain = 0;
     for (uint32_t b = 0; b < size; b++) {
-        if (buckets[b].ses_next == NULL || buckets[b].ses_count == 0)
+        if (buckets[b].ses_count == 0)
             continue;
         used++;
         if (buckets[b].ses_count > maxChain)
@@ -1365,7 +1374,8 @@ void arkime_session_perf_stats(GString *out, gboolean all)
             g_string_append_printf(out, "pkt%-3d %-14s %9u %9u %5.1f%%",
                                    t, mProtocols[mProtocol].name, hash->count, hash->size,
                                    hash->size ? hash->count * 100.0 / hash->size : 0.0);
-            if (hash->count)
+            // Scanning every bucket array can stall the main thread with many threads, so only with --all
+            if (all && hash->count)
                 arkime_session_hash_perf_stats(hash, out);
             else
                 g_string_append_printf(out, ARKIME_SESSION_HASH_EMPTY);

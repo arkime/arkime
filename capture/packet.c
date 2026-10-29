@@ -2388,6 +2388,9 @@ void arkime_packet_perf_stats(GString *out, gboolean human)
     if (!arkime_reader_stats || arkime_reader_stats(&stats)) {
         stats.dropped = 0;
         stats.total = arkimeCounters.totalPackets;
+    } else {
+        // Same baseline as the packet log and stats
+        stats.dropped -= initialDropped;
     }
 
     g_string_append(out, "\n== packets ==\n");
@@ -2416,9 +2419,10 @@ void arkime_packet_perf_stats(GString *out, gboolean human)
     };
     g_string_append_printf(out, "\n%-18s %12s\n", "pstat", "count");
     for (int i = 0; i < ARKIME_PACKET_MAX; i++) {
+        char fallback[16];
         if (!pstatNames[i])
-            continue;
-        g_string_append_printf(out, "%-18s %12" PRIu64 "\n", pstatNames[i], arkimeCounters.packetStats[i]);
+            snprintf(fallback, sizeof(fallback), "pstat%d", i);
+        g_string_append_printf(out, "%-18s %12" PRIu64 "\n", pstatNames[i] ? pstatNames[i] : fallback, arkimeCounters.packetStats[i]);
     }
 
     const int tw = human ? ARKIME_PERF_TIME_LEN - 1 : 11;

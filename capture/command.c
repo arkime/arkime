@@ -31,6 +31,7 @@ typedef struct {
     uint32_t                len;
     int                     readWatch;
     int                     refs;
+    gboolean                sendFailed;
 } CommandClient_t;
 
 #define MAX_INDENT 40
@@ -125,6 +126,9 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
         }
         return TRUE;
     }
+
+    // Sends block the main thread, so give up on a client that stops reading
+    g_socket_set_timeout(client, 5);
 
     CommandClient_t *cc = ARKIME_TYPE_ALLOC0(CommandClient_t);
     cc->socket = client;
@@ -229,22 +233,20 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
         return;
     }
 
+    // Already shut down, don't log an error for every queued command
+    if (client->sendFailed)
+        return;
+
     // Large responses can exceed the socket buffer, so loop over partial sends
-    // and wait for the socket to drain instead of silently truncating
+    // instead of silently truncating. Each send waits at most the socket timeout.
     while (len > 0) {
         gssize sent = g_socket_send(client->socket, data, len, NULL, &error);
         if (sent < 0) {
-            if (g_error_matches(error, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK)) {
-                g_clear_error(&error);
-                if (!g_socket_condition_timed_wait(client->socket, G_IO_OUT, 5 * G_USEC_PER_SEC, NULL, &error)) {
-                    LOG("ERROR - Sending response: %s", error ? error->message : "Timed out waiting for client");
-                    g_clear_error(&error);
-                    return;
-                }
-                continue;
-            }
             LOG("ERROR - Sending response: %s", error ? error->message : "Unknown error");
             g_clear_error(&error);
+            // Shut down so a half sent response can't misframe later replies, the read watch then frees the client
+            g_socket_shutdown(client->socket, TRUE, TRUE, NULL);
+            client->sendFailed = TRUE;
             return;
         }
         data += sent;

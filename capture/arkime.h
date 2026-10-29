@@ -1191,7 +1191,7 @@ void     arkime_db_set_send_bulk(ArkimeDbSendBulkFunc func);
 void arkime_dedup_init();
 void arkime_dedup_exit();
 int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen);
-void arkime_dedup_perf_stats(GString *out);
+void arkime_dedup_perf_stats(GString *out, gboolean all);
 
 /******************************************************************************/
 /*

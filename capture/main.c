@@ -221,10 +221,6 @@ LOCAL void arkime_cmd_shutdown(int UNUSED(argc), char UNUSED( * *argv), gpointer
     arkime_quit();
 }
 /******************************************************************************/
-/* Dump internal counters, queue depths and table sizes for performance
- * debugging. Everything is read racily from the main thread without locks,
- * the same as packet-stats, so the numbers are a snapshot and not consistent
- * with each other. Nothing here follows a pointer owned by a packet thread. */
 // Format an epoch timestamp for perf-stats, as the raw number or as a local
 // date/time with --human, buf must be at least ARKIME_PERF_TIME_LEN bytes
 const char *arkime_perf_time(char *buf, time_t t, gboolean human)
@@ -241,6 +237,11 @@ const char *arkime_perf_time(char *buf, time_t t, gboolean human)
     return buf;
 }
 /******************************************************************************/
+/* Dump internal counters, queue depths and table sizes for performance
+ * debugging. Everything is read racily from the main thread without locks,
+ * the same as packet-stats, so the numbers are a snapshot and not consistent
+ * with each other. The only packet thread pointer followed is the oldest
+ * session of each sessionsQ for the idle column, the same as the packet log. */
 LOCAL void arkime_cmd_perf_stats(int argc, char **argv, gpointer cc)
 {
     gboolean all = FALSE;
@@ -279,7 +280,7 @@ LOCAL void arkime_cmd_perf_stats(int argc, char **argv, gpointer cc)
     arkime_packet_perf_stats(out, human);
     arkime_session_perf_stats(out, all);
     arkime_pq_perf_stats(out, human);
-    arkime_dedup_perf_stats(out);
+    arkime_dedup_perf_stats(out, all);
     arkime_http_perf_stats(out);
 
     g_string_append(out, "perf-stats done\n");
@@ -1412,7 +1413,7 @@ int main(int argc, char **argv)
     arkime_command_register("version", arkime_cmd_version, "Arkime Version");
     arkime_command_register("shutdown", arkime_cmd_shutdown, "Shutdown Arkime");
     arkime_command_register_opts("perf-stats", arkime_cmd_perf_stats, "Internal queue, hash and table stats for performance debugging",
-                                 "--all", "Also list session protocols with nothing in them",
+                                 "--all", "Also list empty session protocols and scan hash buckets and dedup slots (slower)",
                                  "--human", "Print timestamps as local date/time instead of epoch seconds",
                                  NULL);
     arkime_cloud_init();

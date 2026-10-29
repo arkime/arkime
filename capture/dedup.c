@@ -246,7 +246,7 @@ void arkime_dedup_init()
         LOG("Dedup mode: %s", dedupMode == DEDUP_VLAN ? "VLAN" : dedupMode == DEDUP_VNI ? "VNI" : "PLAIN");
 }
 /******************************************************************************/
-void arkime_dedup_perf_stats(GString *out)
+void arkime_dedup_perf_stats(GString *out, gboolean all)
 {
     g_string_append(out, "\n== dedup ==\n");
     if (!config.enablePacketDedup) {
@@ -268,6 +268,10 @@ void arkime_dedup_perf_stats(GString *out)
     g_string_append_printf(out, "%-18s %" PRIu64 " bytes\n", "memory:", mem);
     g_string_append_printf(out, "%-18s %" PRIu64 "\n", "duplicatesDropped:", arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]);
 
+    // Scanning every second's counts can stall the main thread, so only with --all
+    if (!all)
+        return;
+
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC_COARSE, &now);
 
@@ -277,14 +281,16 @@ void arkime_dedup_perf_stats(GString *out)
         const uint32_t tv_sec = ARKIME_THREAD_ATOMIC_LOAD(seconds[s].tv_sec);
         uint32_t entries = 0, usedSlots = 0, fullSlots = 0, maxEntries = 0;
         for (uint32_t i = 0; i < dedupSlots; i++) {
-            const uint8_t c = seconds[s].counts[i];
-            if (!c)
+            // counts keeps incrementing for inserts rejected by a full slot, so clamp to what is really stored
+            const uint8_t raw = seconds[s].counts[i];
+            if (!raw)
                 continue;
+            const uint8_t c = MIN(raw, DEDUP_SIZE_FACTOR);
             usedSlots++;
             entries += c;
             if (c > maxEntries)
                 maxEntries = c;
-            if (c >= DEDUP_SIZE_FACTOR)
+            if (raw >= DEDUP_SIZE_FACTOR)
                 fullSlots++;
         }
 

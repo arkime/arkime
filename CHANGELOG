@@ -100,9 +100,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #4410 Add perf-stats command socket command that dumps per packet thread queue depths, session hash sizes and bucket usage,
           session/closing/save queue lengths, dedup table usage, pq entries and http outstanding requests for performance debugging,
-          --all includes empty session protocols and --human prints timestamps as dates
-  - #4410 Fix command socket responses larger than the socket buffer being truncated
-  - #4410 Session hash tables now resize at 2 sessions per bucket instead of 4, shortening the resize stall on the packet thread
+          --all also lists empty session protocols and scans hash buckets and dedup slots, --human prints timestamps as dates
+  - #4410 Fix command socket responses larger than the socket buffer being truncated, a client that stops reading for 5s is disconnected
+  - #4410 Session hash tables now resize at 2 sessions per bucket instead of 4, keeping chains shorter for faster lookups
   - #4410 Move the session hash value next to the hash links in ArkimeSession_t so a chain lookup touches one cache line per
           session instead of two, struct size is unchanged
   - #4400 rulesFiles entries can be directories, every *.rules.yml / *.rules.yaml in one is loaded and the directory is watched so
