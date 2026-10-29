@@ -51,13 +51,6 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { ref } from 'vue';
 
-defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
-});
-
 const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const emit = defineEmits(['transfer-resource']);
