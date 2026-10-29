@@ -1666,8 +1666,7 @@ if (internals.webconfig) {
 
     return res.send({
       success: true,
-      config,
-      filePath: ArkimeConfig.configFile
+      config
     });
   });
   // ----------------------------------------------------------------------------

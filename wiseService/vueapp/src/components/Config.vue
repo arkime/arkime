@@ -652,7 +652,6 @@ export default {
       displayData: '',
       displayJSON: null,
       showPrettyJSON: false,
-      filePath: '',
       newSource: '',
       newSourceName: '',
       configViewSelected: this.$route.query.view || 'config',
@@ -988,10 +987,6 @@ export default {
               variant: 'danger'
             };
             return;
-          }
-
-          if (data.filePath) {
-            this.filePath = data.filePath;
           }
 
           // Always include services even if omitted from config file

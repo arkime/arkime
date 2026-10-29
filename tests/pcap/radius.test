@@ -111,7 +111,7 @@
      ],
      "nasIpCnt" : 1,
      "nasPort" : [
-      0
+      2500000000
      ],
      "nasPortCnt" : 1,
      "nasRIR" : [
