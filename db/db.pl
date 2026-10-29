@@ -6261,7 +6261,7 @@ sub sessions3Update
           "type" : "keyword"
         },
         "nasPort" : {
-          "type" : "integer"
+          "type" : "long"
         },
         "nasPortCnt" : {
           "type" : "long"
