@@ -109,10 +109,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 const VFocus = Focus;
 
 const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => ({ startDate: '', stopDate: '' })
-  },
   placeHolderTip: { // (Question mark hover text) -- shape of { title: String }
     type: Object,
     required: true
