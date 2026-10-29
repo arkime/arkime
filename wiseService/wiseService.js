@@ -1498,7 +1498,7 @@ if (internals.webconfig) {
 
     source.getSourceRaw((err, raw) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        return res.send({ success: false, text: String(err) });
       }
       return res.send({ success: true, raw: raw ? raw.toString('utf8') : '' });
     });
@@ -1526,7 +1526,7 @@ if (internals.webconfig) {
 
     source.putSourceRaw(raw, (err) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        return res.send({ success: false, text: String(err) });
       }
       return res.send({ success: true, text: 'Saved' });
     });
@@ -1561,8 +1561,7 @@ if (internals.webconfig) {
 
     return res.send({
       success: true,
-      config,
-      filePath: ArkimeConfig.configFile
+      config
     });
   });
   // ----------------------------------------------------------------------------
@@ -1629,7 +1628,7 @@ if (internals.webconfig) {
     ArkimeConfig.replace(config);
     ArkimeConfig.save((err) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        return res.send({ success: false, text: String(err) });
       } else {
         res.send({ success: true, text: 'Saved & Restarting' });
         // Because of nodemon

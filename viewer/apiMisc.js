@@ -319,21 +319,24 @@ class MiscAPIs {
       .replace(/{TMPFILE}/g, req.file.path)
       .replace(/{ORIGINALNAME}/g, safeOriginalName)
       .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
-      .replace(/{CONFIG}/g, ArkimeConfig.configFile);
+      .replace(/{CONFIG}/g, () => ArkimeConfig.configFileArg);
 
-    console.log('upload command: ', cmd);
+    if (Config.debug) {
+      console.log('upload command: ', cmd);
+    }
     exec(cmd, (error, stdout, stderr) => {
-      fs.unlinkSync(req.file.path);
+      // The command may have already removed the tmp file, capture --delete for example
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
       if (error !== null) {
-        console.log(`ERROR - ${req.method} /api/upload`, util.inspect(error, false, 50));
+        if (Config.debug) {
+          console.log(`ERROR - ${req.method} /api/upload`, util.inspect(error, false, 50), stdout, stderr);
+        } else {
+          console.log(`ERROR - ${req.method} /api/upload command failed with ${error.signal ? `signal ${error.signal}` : `exit code ${error.code}`}, use --debug to see the command and output`);
+        }
         res.status(500);
-        res.write('<b>Upload command failed:</b><br>');
+        return res.end('Upload command failed');
       }
-      res.write(ArkimeUtil.safeStr(cmd));
-      res.write('<br>');
-      res.write('<pre>');
-      res.write(ArkimeUtil.safeStr(stdout));
-      res.end('</pre>');
+      res.end('Upload succeeded');
     });
   }
 

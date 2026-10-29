@@ -28,6 +28,7 @@ class ArkimeConfig {
   static #configImpl;
   static #schemes = {};
   static #configFile;
+  static #configFileArg;
   static #uri;
   static #dumpConfig;
   static #defaultSections;
@@ -40,6 +41,7 @@ class ArkimeConfig {
    */
   static async initialize (options) {
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
+    ArkimeConfig.#configFileArg = ArkimeConfig.#configFile;
 
     if (ArkimeConfig.debug > 1) {
       console.log('ArkimeConfig.initialize', ArkimeConfig.#configFile, options);
@@ -54,12 +56,12 @@ class ArkimeConfig {
       ArkimeConfig.#defaultSections = [options.defaultSections];
     }
 
-    // The config is actually hidden
-    if (ArkimeConfig.#configFile.endsWith('.hiddenconfig')) {
-      ArkimeConfig.#configFile = fs.readFileSync(ArkimeConfig.#configFile).toString().split('\n')[0].trim();
-    }
+    // The config is actually hidden, the first line of the file is the real location.
+    // Prefix first like capture, so a urlinfile pointing at a .hiddenconfig works
     if (ArkimeConfig.#configFile.startsWith('urlinfile://')) {
       ArkimeConfig.#configFile = fs.readFileSync(ArkimeConfig.#configFile.substring(12)).toString().split('\n')[0].trim();
+    } else if (ArkimeConfig.#configFile.endsWith('.hiddenconfig')) {
+      ArkimeConfig.#configFile = fs.readFileSync(ArkimeConfig.#configFile).toString().split('\n')[0].trim();
     }
 
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
@@ -127,8 +129,20 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * The config location with any credentials in a URI removed, safe to log
+   */
   static get configFile () {
-    return ArkimeConfig.#configFile;
+    return ArkimeConfig.#configFile?.replace(/^([a-z0-9+.-]+:\/\/)[^/]*@/i, '$1***@');
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The config location as given on the command line, so a child process like
+   * capture gets the same urlinfile:// or .hiddenconfig and not the resolved URI
+   */
+  static get configFileArg () {
+    return ArkimeConfig.#configFileArg;
   }
 
   // ----------------------------------------------------------------------------
@@ -163,7 +177,12 @@ class ArkimeConfig {
    * Reload the config file
    */
   static async reload () {
-    ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
+    try {
+      ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
+    } catch (err) {
+      // A new Error so the axios error, which carries the credentials, is never printed
+      throw new Error(`Couldn't load config ${ArkimeConfig.configFile} - ${err.message}`);
+    }
 
     /* Setup any environment variable
      * ARKIME__var - will convert to default var=value
@@ -473,7 +492,7 @@ class ArkimeConfig {
     if (ArkimeConfig.#configImpl.save) {
       ArkimeConfig.#configImpl.save(ArkimeConfig.#uri, ArkimeConfig.#config, cb);
     } else {
-      console.log('WARNING - Saving config is not supported by', ArkimeConfig.#uri);
+      console.log('WARNING - Saving config is not supported by', ArkimeConfig.debug ? ArkimeConfig.configFile : 'this config type');
     }
   }
 
@@ -604,7 +623,7 @@ class ConfigIni {
       fs.writeFileSync(uri, output);
       cb(null);
     } catch (e) {
-      cb(e.message);
+      cb(e.code ? `Couldn't write config file (${e.code})` : e.message);
     }
   }
 }
@@ -630,7 +649,7 @@ class ConfigJson {
       fs.writeFileSync(uri, JSON.stringify(config, null, 1));
       cb();
     } catch (e) {
-      cb(e.message);
+      cb(e.code ? `Couldn't write config file (${e.code})` : e.message);
     }
   }
 }
@@ -648,7 +667,7 @@ class ConfigYaml {
       fs.writeFileSync(uri, yaml.dump(config));
       cb();
     } catch (e) {
-      cb(e.message);
+      cb(e.code ? `Couldn't write config file (${e.code})` : e.message);
     }
   }
 }
@@ -777,7 +796,7 @@ class ConfigElasticsearch {
         cb(null);
       })
       .catch((error) => {
-        cb(error);
+        cb(new Error(error.message));
       });
   }
 }

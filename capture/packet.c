@@ -1766,7 +1766,7 @@ process_packet:
         packetThreadData[thread].overloadDrops++;
         if ((packetThreadData[thread].overloadDrops % 10000) == 1 && (packetThreadData[thread].overloadDropTimes + 60) < packet->ts.tv_sec) {
             packetThreadData[thread].overloadDropTimes = packet->ts.tv_sec;
-            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, packetThreadData[thread].overloadDrops, config.configFile);
+            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, packetThreadData[thread].overloadDrops, config.debug ? config.configFile : "the config file");
         }
         ARKIME_COND_SIGNAL(packetThreadData[thread].packetQ.lock);
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);

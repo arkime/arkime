@@ -1418,7 +1418,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             console.log('HUNT - result', huntId, sessionId, err, matched);
           }
           if (err) {
-            if (!res.headersSent) { res.send({ matched: false, error: err }); }
+            if (!res.headersSent) { res.send({ matched: false, error: String(err?.message ?? err) }); }
             return;
           }
 
@@ -1434,7 +1434,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/hunt/%s/%s/remote/%s`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.huntId), ArkimeUtil.sanitizeStr(req.params.sessionId), util.inspect(err, false, 50));
-      if (!res.headersSent) { res.send({ matched: false, error: err }); }
+      if (!res.headersSent) { res.send({ matched: false, error: String(err?.message ?? err) }); }
     });
   }
 }
