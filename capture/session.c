@@ -721,8 +721,8 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
 {
-    // Resize when there are 4 entries per bucket on average
-    if (hash->count >= hash->size << 2) {
+    // Resize when there are 2 entries per bucket on average
+    if (hash->count >= hash->size << 1) {
         arkime_session_hash_resize(hash);
     }
 
@@ -824,8 +824,8 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
 {
-    // Resize when there are 4 entries per bucket on average
-    if (hash->count >= hash->size << 2) {
+    // Resize when there are 2 entries per bucket on average
+    if (hash->count >= hash->size << 1) {
         arkime_session_hash_resize(hash);
     }
 
@@ -1256,6 +1256,122 @@ uint32_t arkime_session_monitoring()
         }
     }
     return count;
+}
+/******************************************************************************/
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
+#define ARKIME_SESSION_HASH_NAME "ctrl-probe"
+#define ARKIME_SESSION_HASH_HEADER " %10s %6s %10s %11s", "used", "used%", "deleted", "maxProbeRun"
+#define ARKIME_SESSION_HASH_EMPTY  " %10s %6s %10s %11s", "-", "-", "-", "-"
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+#define ARKIME_SESSION_HASH_NAME "sll"
+#define ARKIME_SESSION_HASH_HEADER " %11s %6s %8s", "usedBuckets", "used%", "avgChain"
+#define ARKIME_SESSION_HASH_EMPTY  " %11s %6s %8s", "-", "-", "-"
+#else
+#define ARKIME_SESSION_HASH_NAME "dll"
+#define ARKIME_SESSION_HASH_HEADER " %11s %6s %8s", "usedBuckets", "used%", "maxChain"
+#define ARKIME_SESSION_HASH_EMPTY  " %11s %6s %8s", "-", "-", "-"
+#endif
+/* Bucket usage of one session hash. This runs on the main thread while the
+ * owning packet thread mutates the table, so it only reads the table's own
+ * arrays and never follows a session pointer. A concurrent resize can still
+ * make the numbers garbage, which is acceptable for a debug command. */
+LOCAL void arkime_session_hash_perf_stats(const ArkimeSessionHash_t *hash, GString *out)
+{
+    const uint32_t size = hash->size;
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
+    const uint8_t *ctrl = hash->ctrl;
+    uint32_t used = 0, deleted = 0, run = 0, maxRun = 0;
+    for (uint32_t s = 0; s < size; s++) {
+        if (ctrl[s] == PROBE_EMPTY) {
+            run = 0;
+            continue;
+        }
+        // Tombstones extend a probe run too
+        if (++run > maxRun)
+            maxRun = run;
+        if (ctrl[s] == PROBE_DELETED)
+            deleted++;
+        else
+            used++;
+    }
+    g_string_append_printf(out, " %10u %5.1f%% %10u %11u", used, hash->size ? 100.0 * used / hash->size : 0.0, deleted, maxRun);
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+    ArkimeSession_t *const *sessions = hash->sessions;
+    uint32_t used = 0;
+    for (uint32_t b = 0; b < size; b++) {
+        if (sessions[b])
+            used++;
+    }
+    g_string_append_printf(out, " %11u %5.1f%% %8.2f", used, hash->size ? 100.0 * used / hash->size : 0.0, used ? (double)hash->count / used : 0.0);
+#else
+    const ArkimeSessionHead_t *buckets = hash->buckets;
+    uint32_t used = 0;
+    int maxChain = 0;
+    for (uint32_t b = 0; b < size; b++) {
+        if (buckets[b].ses_next == NULL || buckets[b].ses_count == 0)
+            continue;
+        used++;
+        if (buckets[b].ses_count > maxChain)
+            maxChain = buckets[b].ses_count;
+    }
+    g_string_append_printf(out, " %11u %5.1f%% %8d", used, hash->size ? 100.0 * used / hash->size : 0.0, maxChain);
+#endif
+}
+/******************************************************************************/
+void arkime_session_perf_stats(GString *out, gboolean all)
+{
+    g_string_append(out, "\n== sessions ==\n");
+    g_string_append_printf(out, "%-18s %s\n", "hashImpl:", ARKIME_SESSION_HASH_NAME);
+    g_string_append_printf(out, "%-18s %s\n", "tracking:",
+                           sessionIdTracking == ARKIME_TRACKING_VLAN ? "vlan" : sessionIdTracking == ARKIME_TRACKING_VNI ? "vni" : "none");
+    g_string_append_printf(out, "%-18s %u\n", "monitoring:", arkime_session_monitoring());
+    g_string_append_printf(out, "%-18s %d\n", "closeOutstanding:", arkime_session_close_outstanding());
+    g_string_append_printf(out, "%-18s %d\n", "needSave:", arkime_session_need_save_outstanding());
+
+    g_string_append_printf(out, "\n%-14s %9s %6s %10s %10s %14s %11s %14s\n",
+                           "protocol", "sessions", "idle", "maxStreams", "maxPackets", "sessionTimeout", "saveTimeout", "closingTimeout");
+    for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+        const int count = arkime_session_watch_count(mProtocol);
+        if (!all && count == 0)
+            continue;
+        g_string_append_printf(out, "%-14s %9d %6d %10u %10u %14d %11d %14d\n",
+                               mProtocols[mProtocol].name, count, arkime_session_idle_seconds(mProtocol),
+                               mProtocols[mProtocol].maxStreams, mProtocols[mProtocol].maxPackets,
+                               mProtocols[mProtocol].sessionTimeout, mProtocols[mProtocol].saveTimeout,
+                               mProtocols[mProtocol].closingTimeout);
+    }
+
+    g_string_append_printf(out, "\n%-6s %6s %8s\n", "thread", "cmds", "needSave");
+    for (int t = 0; t < config.packetThreads; t++) {
+        g_string_append_printf(out, "pkt%-3d %6d %8d\n", t, DLL_COUNT(cmd_, &sessionThreadData[t].sessionCmds), sessionThreadData[t].needSave);
+    }
+
+    g_string_append_printf(out, "\n%-6s %-14s %9s %9s %6s", "thread", "protocol", "hashCount", "hashSize", "load%");
+    g_string_append_printf(out, ARKIME_SESSION_HASH_HEADER);
+    g_string_append_printf(out, " %9s %8s %6s %10s %10s\n", "sessionsQ", "closingQ", "saveQ", "stoppedNew", "stoppedOld");
+    for (int t = 0; t < config.packetThreads; t++) {
+        const SessionThreadData_t *td = &sessionThreadData[t];
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            const ArkimeSessionHash_t *hash = &td->sessions[mProtocol];
+            const int sessionsQ = DLL_COUNT(q_, &td->sessionsQ[mProtocol]);
+            const int closingQ  = DLL_COUNT(q_, &td->closingQ[mProtocol]);
+            const int saveQ     = DLL_COUNT(save_, &td->saveQ[mProtocol]);
+            const uint32_t stoppedNew = td->stoppedSessions.new[mProtocol] ? g_hash_table_size(td->stoppedSessions.new[mProtocol]) : 0;
+            const uint32_t stoppedOld = td->stoppedSessions.old[mProtocol] ? g_hash_table_size(td->stoppedSessions.old[mProtocol]) : 0;
+
+            if (!all && hash->count == 0 && sessionsQ == 0 && closingQ == 0 && saveQ == 0 && stoppedNew == 0 && stoppedOld == 0)
+                continue;
+
+            g_string_append_printf(out, "pkt%-3d %-14s %9u %9u %5.1f%%",
+                                   t, mProtocols[mProtocol].name, hash->count, hash->size,
+                                   hash->size ? hash->count * 100.0 / hash->size : 0.0);
+            if (hash->count)
+                arkime_session_hash_perf_stats(hash, out);
+            else
+                g_string_append_printf(out, ARKIME_SESSION_HASH_EMPTY);
+            g_string_append_printf(out, " %9d %8d %6d %10u %10u\n", sessionsQ, closingQ, saveQ, stoppedNew, stoppedOld);
+        }
+    }
 }
 /******************************************************************************/
 void arkime_session_process_commands(int thread)

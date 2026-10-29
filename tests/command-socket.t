@@ -13,7 +13,7 @@
 
 use lib ".";
 use strict;
-use Test::More tests => 22;
+use Test::More tests => 26;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
@@ -110,7 +110,7 @@ for (my $i = 0; $i < 100; $i++) {
 ok($ready, "command socket appeared");
 
 SKIP: {
-    skip "capture did not start, skipping socket tests", 16 unless $ready;
+    skip "capture did not start, skipping socket tests", 20 unless $ready;
 
     my $sock = IO::Socket::UNIX->new(
         Peer => $sockpath,
@@ -118,7 +118,7 @@ SKIP: {
     );
     ok(defined $sock, "connected to command socket");
 
-    skip "could not connect to socket", 15 unless defined $sock;
+    skip "could not connect to socket", 19 unless defined $sock;
 
     $sock->autoflush(1);
     my $sel = IO::Select->new($sock);
@@ -127,6 +127,29 @@ SKIP: {
     print $sock "file-status\n";
     my $init = read_line($sock, $sel, 10);
     ok(defined $init && $init =~ /file-status done/, "capture is responsive");
+
+    # --- Test 0: perf-stats dumps every section and ends with a done marker ---
+    print $sock "perf-stats\n";
+    my $perf = "";
+    my $perf_deadline = time() + 10;
+    while ($perf !~ /perf-stats done\n/ && time() < $perf_deadline) {
+        my $line = read_line($sock, $sel, $perf_deadline - time());
+        last unless defined $line;
+        $perf .= $line;
+    }
+    like($perf, qr/^== general ==\n.*^== packets ==\n.*^== sessions ==\n.*^== pq ==\n.*^== dedup ==\n.*^== http ==\n.*^perf-stats done\n/ms, "perf-stats prints every section");
+    like($perf, qr/^pkt0 \s+\d+ \s+(yes|no)/m, "perf-stats has a packet thread row");
+    print $sock "perf-stats --human\n";
+    $perf = "";
+    $perf_deadline = time() + 10;
+    while ($perf !~ /perf-stats done\n/ && time() < $perf_deadline) {
+        my $line = read_line($sock, $sel, $perf_deadline - time());
+        last unless defined $line;
+        $perf .= $line;
+    }
+    like($perf, qr/^now: \s+\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/m, "perf-stats --human prints dates");
+    print $sock "perf-stats bogus\n";
+    is(read_line($sock, $sel, 5), "Usage: perf-stats [--all] [--human]\n", "perf-stats rejects unknown arguments");
 
     # --- Test 1: add-file WITHOUT --notify (backward compat) ---
     print $sock "add-file $pcap\n";

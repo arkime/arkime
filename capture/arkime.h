@@ -790,8 +790,11 @@ typedef struct arkime_session {
 #elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_DLL
     struct arkime_session *ses_next, *ses_prev;
 #endif
+    uint32_t               ses_hash; // Next to the hash links so a chain walk touches one cache line per node
 
     uint8_t                sessionId[ARKIME_SESSIONID_LEN];
+    uint16_t               port1;    // Here to fill the padding after sessionId
+    uint16_t               port2;
 
     ArkimeField_t        **fields;
 
@@ -820,13 +823,10 @@ typedef struct arkime_session {
     uint64_t               databytes[2];
     uint64_t               totalDatabytes[2];
 
-    uint32_t               ses_hash;
     uint32_t               lastFileNum;
     uint32_t               saveTime;
     uint32_t               packets[2];
 
-    uint16_t               port1;
-    uint16_t               port2;
     uint16_t               outstandingQueries;
     uint16_t               segments;
     uint16_t               stopSaving;
@@ -1191,6 +1191,7 @@ void     arkime_db_set_send_bulk(ArkimeDbSendBulkFunc func);
 void arkime_dedup_init();
 void arkime_dedup_exit();
 int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen);
+void arkime_dedup_perf_stats(GString *out);
 
 /******************************************************************************/
 /*
@@ -1343,6 +1344,7 @@ void arkime_http_exit();
 int arkime_http_queue_length(const void *server);
 int arkime_http_queue_length_best(const void *server);
 uint64_t arkime_http_dropped_count(const void *server);
+void arkime_http_perf_stats(GString *out);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
 void *arkime_http_get_or_create_server(const char *name, const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew);
@@ -1414,6 +1416,9 @@ void     arkime_session_process_commands(int thread);
 
 int      arkime_session_need_save_outstanding();
 int      arkime_session_cmd_outstanding();
+void     arkime_session_perf_stats(GString *out, gboolean all);
+#define ARKIME_PERF_TIME_LEN 20
+const char *arkime_perf_time(char *buf, time_t t, gboolean human);
 
 typedef enum {
     ARKIME_SES_CMD_FUNC
@@ -1446,6 +1451,7 @@ int      arkime_packet_frags_size();
 uint64_t arkime_packet_dropped_frags();
 uint64_t arkime_packet_dropped_overload();
 uint64_t arkime_packet_total_bytes();
+void     arkime_packet_perf_stats(GString *out, gboolean human);
 uint64_t arkime_packet_written_bytes();
 uint64_t arkime_packet_unwritten_bytes();
 uint64_t arkime_packet_stats(int stat);
@@ -1942,6 +1948,7 @@ void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session);
 void arkime_pq_run(int thread, int max);
 void arkime_pq_free(ArkimeSession_t *session);
 void arkime_pq_flush(int thread);
+void arkime_pq_perf_stats(GString *out, gboolean human);
 
 /******************************************************************************/
 /*

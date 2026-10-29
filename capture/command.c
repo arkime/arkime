@@ -229,9 +229,26 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
         return;
     }
 
-    if (g_socket_send(client->socket, data, len, NULL, &error) != len) {
-        LOG("ERROR - Sending response: %s", error ? error->message : "Unknown error");
-        g_clear_error(&error);
+    // Large responses can exceed the socket buffer, so loop over partial sends
+    // and wait for the socket to drain instead of silently truncating
+    while (len > 0) {
+        gssize sent = g_socket_send(client->socket, data, len, NULL, &error);
+        if (sent < 0) {
+            if (g_error_matches(error, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK)) {
+                g_clear_error(&error);
+                if (!g_socket_condition_timed_wait(client->socket, G_IO_OUT, 5 * G_USEC_PER_SEC, NULL, &error)) {
+                    LOG("ERROR - Sending response: %s", error ? error->message : "Timed out waiting for client");
+                    g_clear_error(&error);
+                    return;
+                }
+                continue;
+            }
+            LOG("ERROR - Sending response: %s", error ? error->message : "Unknown error");
+            g_clear_error(&error);
+            return;
+        }
+        data += sent;
+        len -= sent;
     }
 }
 /******************************************************************************/

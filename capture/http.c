@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <curl/curl.h>
+#include <inttypes.h>
 #include "arkime.h"
 #include "zlib.h"
 #include <errno.h>
@@ -1019,6 +1020,33 @@ uint64_t arkime_http_dropped_count(const void *serverV)
 {
     const ArkimeHttpServer_t  *server = serverV;
     return server ? server->dropped : 0;
+}
+/******************************************************************************/
+void arkime_http_perf_stats(GString *out)
+{
+    g_string_append(out, "\n== http ==\n");
+    if (!servers || g_hash_table_size(servers) == 0) {
+        g_string_append(out, "none\n");
+        return;
+    }
+
+    g_string_append_printf(out, "%-16s %11s %14s %6s %6s %9s %5s %8s %10s %5s %8s\n",
+                           "server", "outstanding", "maxOutstanding", "best", "normal", "droppable", "conns", "maxConns", "dropped", "hosts", "compress");
+    GHashTableIter iter;
+    gpointer       key, value;
+    g_hash_table_iter_init(&iter, servers);
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        const ArkimeHttpServer_t *server = value;
+        g_string_append_printf(out, "%-16s %11u %14u %6u %6u %9u %5u %8u %10" PRIu64 " %5d %8s\n",
+                               (const char *)key,
+                               server->outstanding, server->maxOutstandingRequests,
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_BEST],
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_NORMAL],
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_DROPPABLE],
+                               server->connections, server->maxConns,
+                               server->dropped, server->snamesCnt,
+                               server->compress ? "yes" : "no");
+    }
 }
 /******************************************************************************/
 void arkime_http_set_header_cb(void *serverV, ArkimeHttpHeader_cb cb)

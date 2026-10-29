@@ -221,6 +221,72 @@ LOCAL void arkime_cmd_shutdown(int UNUSED(argc), char UNUSED( * *argv), gpointer
     arkime_quit();
 }
 /******************************************************************************/
+/* Dump internal counters, queue depths and table sizes for performance
+ * debugging. Everything is read racily from the main thread without locks,
+ * the same as packet-stats, so the numbers are a snapshot and not consistent
+ * with each other. Nothing here follows a pointer owned by a packet thread. */
+// Format an epoch timestamp for perf-stats, as the raw number or as a local
+// date/time with --human, buf must be at least ARKIME_PERF_TIME_LEN bytes
+const char *arkime_perf_time(char *buf, time_t t, gboolean human)
+{
+    if (!human) {
+        snprintf(buf, ARKIME_PERF_TIME_LEN, "%ld", (long)t);
+    } else if (t == 0) {
+        snprintf(buf, ARKIME_PERF_TIME_LEN, "-");
+    } else {
+        struct tm tm;
+        localtime_r(&t, &tm);
+        strftime(buf, ARKIME_PERF_TIME_LEN, "%Y-%m-%d %H:%M:%S", &tm);
+    }
+    return buf;
+}
+/******************************************************************************/
+LOCAL void arkime_cmd_perf_stats(int argc, char **argv, gpointer cc)
+{
+    gboolean all = FALSE;
+    gboolean human = FALSE;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--all") == 0) {
+            all = TRUE;
+        } else if (strcmp(argv[i], "--human") == 0) {
+            human = TRUE;
+        } else {
+            arkime_command_respond(cc, "Usage: perf-stats [--all] [--human]\n", -1);
+            return;
+        }
+    }
+    char timeBuf[ARKIME_PERF_TIME_LEN];
+
+    GString *out = g_string_sized_new(16384);
+
+    uint64_t memBytes = 0;
+    float    memPercent = 0;
+    arkime_db_memory_info(TRUE, &memBytes, &memPercent);
+
+    struct timespec now;
+    clock_gettime(CLOCK_REALTIME_COARSE, &now);
+
+    g_string_append(out, "== general ==\n");
+    g_string_append_printf(out, "%-18s %s\n", "version:", PACKAGE_VERSION);
+    g_string_append_printf(out, "%-18s %s\n", "now:", arkime_perf_time(timeBuf, now.tv_sec, human));
+    g_string_append_printf(out, "%-18s %d\n", "packetThreads:", config.packetThreads);
+    g_string_append_printf(out, "%-18s %s\n", "quitting:", config.quitting ? "yes" : "no");
+    g_string_append_printf(out, "%-18s %" PRIu64 " bytes (%.2f%% of system)\n", "memory:", memBytes, memPercent);
+    // Function pointers are NULL until the writer is initialized, which --command-wait lets us run before
+    g_string_append_printf(out, "%-18s %u\n", "writerQueue:", arkime_writer_queue_length ? arkime_writer_queue_length() : 0);
+    g_string_append_printf(out, "%-18s %d\n", "freeLaterQueue:", (freeLaterBack - freeLaterFront) & FREE_LATER_AND);
+
+    arkime_packet_perf_stats(out, human);
+    arkime_session_perf_stats(out, all);
+    arkime_pq_perf_stats(out, human);
+    arkime_dedup_perf_stats(out);
+    arkime_http_perf_stats(out);
+
+    g_string_append(out, "perf-stats done\n");
+    arkime_command_respond(cc, out->str, out->len);
+    g_string_free(out, TRUE);
+}
+/******************************************************************************/
 LOCAL void parse_args(int argc, char **argv)
 {
     GError *error = NULL;
@@ -1345,6 +1411,10 @@ int main(int argc, char **argv)
     arkime_config_init();
     arkime_command_register("version", arkime_cmd_version, "Arkime Version");
     arkime_command_register("shutdown", arkime_cmd_shutdown, "Shutdown Arkime");
+    arkime_command_register_opts("perf-stats", arkime_cmd_perf_stats, "Internal queue, hash and table stats for performance debugging",
+                                 "--all", "Also list session protocols with nothing in them",
+                                 "--human", "Print timestamps as local date/time instead of epoch seconds",
+                                 NULL);
     arkime_cloud_init();
     arkime_writers_init();
     arkime_readers_init();

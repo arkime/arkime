@@ -98,6 +98,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
+  - #4410 Add perf-stats command socket command that dumps per packet thread queue depths, session hash sizes and bucket usage,
+          session/closing/save queue lengths, dedup table usage, pq entries and http outstanding requests for performance debugging,
+          --all includes empty session protocols and --human prints timestamps as dates
+  - #4410 Fix command socket responses larger than the socket buffer being truncated
+  - #4410 Session hash tables now resize at 2 sessions per bucket instead of 4, shortening the resize stall on the packet thread
+  - #4410 Move the session hash value next to the hash links in ArkimeSession_t so a chain lookup touches one cache line per
+          session instead of two, struct size is unchanged
   - #4400 rulesFiles entries can be directories, every *.rules.yml / *.rules.yaml in one is loaded and the directory is watched so
           added or removed files reload like edits do, once they stop changing. The default is now /opt/arkime/etc, where
           default.rules.yml is installed and replaced on upgrade (DO NOT EDIT it). default.* files load first and a rule in
