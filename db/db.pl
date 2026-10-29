@@ -400,6 +400,41 @@ sub esPost
 }
 
 ################################################################################
+# Update the mapping of an existing index. ES/OpenSearch reject the whole update
+# if any field would change type, so drop those fields and retry so the index
+# still gets every other new field.
+sub esPutIndexMapping
+{
+    my ($index, $mapping) = @_;
+
+    my $json = from_json($mapping);
+    for (my $try = 0; $try < 10; $try++) {
+        my $result = esPut("/$index/_mapping?master_timeout=${ESTIMEOUT}s", to_json($json), 1);
+        return if (!defined $result || !defined $result->{error});
+
+        my $reason = $result->{error}->{reason} // '';
+        if ($reason !~ /mapper \[([^\]]+)\] cannot be changed from type \[([^\]]+)\] to \[([^\]]+)\]/) {
+            logmsg "\nWARNING - $index mapping not updated: $reason\n";
+            return;
+        }
+        my ($field, $oldType, $newType) = ($1, $2, $3);
+
+        my @parts = split(/\./, $field);
+        my $last = pop @parts;
+        my $node = $json->{properties};
+        foreach my $part (@parts) {
+            $node = (defined $node && exists $node->{$part}) ? $node->{$part}->{properties} : undef;
+        }
+        if (!defined $node || !exists $node->{$last}) {
+            logmsg "\nWARNING - $index mapping not updated: $reason\n";
+            return;
+        }
+        delete $node->{$last};
+        logmsg "\n$index keeps $field as $oldType, only new indices use $newType\n";
+    }
+    logmsg "\nWARNING - $index mapping not updated, too many type conflicts\n";
+}
+################################################################################
 sub esPut
 {
     my ($url, $content, $dontcheck) = @_;
@@ -6261,7 +6296,7 @@ sub sessions3Update
           "type" : "keyword"
         },
         "nasPort" : {
-          "type" : "integer"
+          "type" : "long"
         },
         "nasPortCnt" : {
           "type" : "long"
@@ -7186,7 +7221,7 @@ if ($COMPRESSION) {
         logmsg "Updating sessions3 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
         foreach my $i (keys %{$indices}) {
             progress("$i ");
-            esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+            esPutIndexMapping($i, $mapping);
         }
         logmsg "\n" if (scalar(keys %{$indices}) != 0);
     }
@@ -7289,7 +7324,7 @@ if ($UPGRADEALLSESSIONS) {
     logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
     foreach my $i (keys %{$indices}) {
         progress("$i ");
-        esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", $mapping, 1);
+        esPutIndexMapping($i, $mapping);
     }
     logmsg "\n" if (scalar(keys %{$indices}) != 0);
 }
@@ -10683,7 +10718,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
             foreach my $i (keys %{$indices}) {
                 progress("$i ");
-                esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                esPutIndexMapping($i, to_json($mapping));
             }
             logmsg "\n";
         } elsif ($template eq "sessions3" && $UPGRADEALLSESSIONS) {
@@ -10691,7 +10726,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             logmsg "Updating sessions3 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
             foreach my $i (keys %{$indices}) {
                 progress("$i ");
-                esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                esPutIndexMapping($i, to_json($mapping));
             }
             logmsg "\n";
         } elsif ($template eq "history_v1") {
@@ -10699,7 +10734,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
             logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
             foreach my $i (keys %{$indices}) {
                 progress("$i ");
-                esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+                esPutIndexMapping($i, to_json($mapping));
             }
             logmsg "\n";
         }
