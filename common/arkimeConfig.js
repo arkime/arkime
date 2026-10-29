@@ -143,23 +143,37 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
-  /**
-   * Replace the userinfo of a uri with ****, plain file paths are returned as is
-   */
-  static redactUri (uri) {
-    if (typeof uri !== 'string') { return uri; }
-    return uri.replace(/^([a-zA-Z][-a-zA-Z0-9+.]*:\/\/)[^/]*@/, '$1****@');
+  // The scheme parsers split on /, so the userinfo is everything before the last @ in the authority
+  static #userinfo (uri) {
+    if (typeof uri !== 'string') { return undefined; }
+    return uri.match(/^[a-zA-Z][-a-zA-Z0-9+.]*:\/\/([^/?#]*)@/)?.[1];
   }
 
   // ----------------------------------------------------------------------------
   /**
-   * Replace the config uri in str with its redacted form
+   * Replace the userinfo of a uri with ****, plain file paths are returned as is
+   */
+  static redactUri (uri) {
+    const userinfo = ArkimeConfig.#userinfo(uri);
+    if (userinfo === undefined) { return uri; }
+    const start = uri.indexOf('://') + 3;
+    return uri.substring(0, start) + '****' + uri.substring(start + userinfo.length);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Replace the config uri and its userinfo in str with the redacted form
    * @param {string} str The string to redact
    * @param {string} uri The config uri, defaults to the one loaded
    */
   static redactConfig (str, uri = ArkimeConfig.#configFile) {
     if (typeof str !== 'string' || typeof uri !== 'string' || uri.length === 0) { return str; }
-    return str.split(uri).join(ArkimeConfig.redactUri(uri));
+    str = str.split(uri).join(ArkimeConfig.redactUri(uri));
+
+    // capture rewrites the uri before printing it, so also catch the userinfo by itself
+    const userinfo = ArkimeConfig.#userinfo(uri);
+    if (userinfo) { str = str.split(`${userinfo}@`).join('****@'); }
+    return str;
   }
 
   // ----------------------------------------------------------------------------

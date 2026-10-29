@@ -1,7 +1,9 @@
-use Test::More tests => 7;
+use Test::More tests => 8;
 use ArkimeTest;
 use File::Temp qw(tempfile);
 use JSON;
+use POSIX qw(WNOHANG);
+use IO::Socket::INET;
 use URI::Escape;
 use strict;
 
@@ -11,11 +13,15 @@ use strict;
 my $port = 8140;
 my $index = "tests_uploadconfig";
 
-# Reuse real credentials if the test ES needs them, otherwise ES ignores fake ones
-my ($scheme, $userinfo, $hostpath) = $ArkimeTest::elasticsearch =~ m{^(https?)://(?:([^@/]*)@)?(.*)$};
-$userinfo //= "uploaduser:s3cr3tpw";
-my ($password) = $userinfo =~ /:(.*)$/;
-$password //= $userinfo;
+# Reuse real credentials if the test ES needs them, otherwise ES ignores fake ones.
+# Real ones also reach the viewer through -o elasticsearch, so only check the whole userinfo then.
+my ($es) = split(/,/, $ArkimeTest::elasticsearch);
+my ($scheme, $userinfo, $hostpath) = $es =~ m{^\s*(https?)://(?:([^@/]*)@)?(.*?)\s*$};
+my $secret = $userinfo;
+if (!defined $userinfo) {
+    $userinfo = "uploaduser:s3cr3tpw";
+    $secret = "s3cr3tpw";
+}
 $scheme =~ s/^http/elasticsearch/;
 $hostpath =~ s{/$}{};
 my $configUri = "$scheme://$userinfo\@$hostpath/$index/_doc/viewer";
@@ -23,7 +29,8 @@ my $configUri = "$scheme://$userinfo\@$hostpath/$index/_doc/viewer";
 esPut("/$index/_doc/viewer?refresh=true", to_json({
     default => {
         uploadRoles => 'arkimeUser',
-        uploadCommand => 'echo {CONFIG} && test {ORIGINALNAME} != fail.pcap'
+        # The second echo prints the uri rewritten the way capture does in its errors
+        uploadCommand => "echo {CONFIG}; echo {CONFIG} | sed 's/^elasticsearch/http/;s/_doc/_source/' && test {ORIGINALNAME} != fail.pcap"
     }
 }));
 
@@ -49,7 +56,16 @@ END {
     esDelete("/$index");
 }
 
-waitFor($ArkimeTest::host, $port, 1);
+# Don't hang if the viewer couldn't start from the uri config
+for (my $i = 0; ; $i++) {
+    last if IO::Socket::INET->new(PeerAddr => $ArkimeTest::host, PeerPort => $port, Proto => 'tcp');
+    if (waitpid($pid, WNOHANG) != 0 || $i >= 60) {
+        my $log = do { local $/; open my $fh, '<', $logFile; <$fh> };
+        BAIL_OUT("viewer from uri config didn't start:\n$log");
+    }
+    sleep 1;
+}
+sleep 1;
 
 my $setCookie = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:$port/regressionTests/makeToken")->{"_headers"}->{"set-cookie"};
 $setCookie =~ /ARKIME-COOKIE=([^;]*)/;
@@ -67,12 +83,13 @@ sub upload {
 my $response = upload('good.pcap');
 is ($response->code, 200);
 like ($response->content, qr/^echo &#39;?elasticsearchs?:&#47;&#47;\*\*\*\*@/, "upload response shows the redacted config");
-unlike ($response->content, qr/\Q$password\E/, "upload response hides the config password");
+like ($response->content, qr/^https?:&#47;&#47;\*\*\*\*@/m, "upload response redacts the uri as capture rewrites it");
+unlike ($response->content, qr/\Q$secret\E/, "upload response hides the config password");
 
 $response = upload('fail.pcap');
 is ($response->code, 500);
-unlike ($response->content, qr/\Q$password\E/, "failed upload response hides the config password");
+unlike ($response->content, qr/\Q$secret\E/, "failed upload response hides the config password");
 
 my $log = do { local $/; open my $fh, '<', $logFile or die $!; <$fh> };
 like ($log, qr{upload command: +echo '?elasticsearchs?://\*\*\*\*@}, "upload log shows the redacted config");
-unlike ($log, qr/\Q$password\E/, "viewer log hides the config password");
+unlike ($log, qr/\Q$secret\E/, "viewer log hides the config password");

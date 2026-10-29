@@ -313,14 +313,14 @@ class MiscAPIs {
     // security-scanner-ignore: {INSECURE-ORIGINALNAME} is intentionally unsanitized.
     // Operators who use this template variable accept the risk — the variable name serves as the warning.
     // Prefer the sanitized {ORIGINALNAME} variable instead.
-    // {CONFIG} first so a filename can't add it
-    const cmd = uploadCommand
-      .replace(/{CONFIG}/g, () => ArkimeConfig.childConfigFile)
-      .replace(/{TAGS}/g, tags)
-      .replace(/{NODE}/g, Config.nodeName())
-      .replace(/{TMPFILE}/g, req.file.path)
-      .replace(/{ORIGINALNAME}/g, safeOriginalName)
-      .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname);
+    const cmd = ArkimeUtil.expandPlaceholders(uploadCommand, {
+      TAGS: tags,
+      NODE: Config.nodeName(),
+      TMPFILE: req.file.path,
+      ORIGINALNAME: safeOriginalName,
+      'INSECURE-ORIGINALNAME': req.file.originalname,
+      CONFIG: ArkimeConfig.childConfigFile
+    });
     // Config may be a credential-bearing URI, never return or log it
     const safeCmd = ArkimeConfig.redactConfig(cmd);
 

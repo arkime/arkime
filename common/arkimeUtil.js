@@ -170,6 +170,14 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Replace {NAME} placeholders in a single pass, so substituted values can't add placeholders
+   */
+  static expandPlaceholders (template, vars) {
+    return template.replace(/{([-A-Z]+)}/g, (match, key) => Object.hasOwn(vars, key) ? vars[key] : match);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Does this string try and do some prototype pollution
    */
   static isPP (str) {
