@@ -151,6 +151,20 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  // The query of a uri, starting at the ?
+  static #query (uri) {
+    if (typeof uri !== 'string' || !/^[a-zA-Z][-a-zA-Z0-9+.]*:\/\//.test(uri)) { return undefined; }
+    const userinfo = ArkimeConfig.#userinfo(uri);
+    const q = uri.indexOf('?', userinfo === undefined ? 0 : uri.indexOf('://') + 3 + userinfo.length);
+    return q === -1 ? undefined : uri.substring(q);
+  }
+
+  // ----------------------------------------------------------------------------
+  static #redactQuery (query) {
+    return query.replace(/([?&][^=&#]*=)[^&#]*/g, '$1****');
+  }
+
+  // ----------------------------------------------------------------------------
   // Only the passwords, so a username like elastic doesn't redact the rest of the output
   static #passwords (uri) {
     const userinfo = ArkimeConfig.#userinfo(uri);
@@ -166,14 +180,14 @@ class ArkimeConfig {
    */
   static redactUri (uri) {
     if (typeof uri !== 'string') { return uri; }
+    const query = ArkimeConfig.#query(uri);
     const userinfo = ArkimeConfig.#userinfo(uri);
     if (userinfo !== undefined) {
       const start = uri.indexOf('://') + 3;
       uri = uri.substring(0, start) + '****' + uri.substring(start + userinfo.length);
     }
-    const q = uri.indexOf('?');
-    if (q !== -1 && /^[a-zA-Z][-a-zA-Z0-9+.]*:\/\//.test(uri)) {
-      uri = uri.substring(0, q) + uri.substring(q).replace(/([?&][^=&#]*=)[^&#]*/g, '$1****');
+    if (query !== undefined) {
+      uri = uri.substring(0, uri.length - query.length) + ArkimeConfig.#redactQuery(query);
     }
     return uri;
   }
@@ -191,6 +205,10 @@ class ArkimeConfig {
     // capture rewrites the uri before printing it, so also catch the userinfo by itself
     const userinfo = ArkimeConfig.#userinfo(uri);
     if (userinfo) { str = str.split(`${userinfo}@`).join('****@'); }
+
+    // capture prints the host and the path with the query separately
+    const query = ArkimeConfig.#query(uri);
+    if (query) { str = str.split(query).join(ArkimeConfig.#redactQuery(query)); }
 
     // and the passwords in any form, skipping short ones that would mangle the output
     const secrets = new Set();

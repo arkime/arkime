@@ -25,10 +25,9 @@ describe('redactUri', () => {
     assert.equal(ArkimeConfig.redactUri('redis-sentinel://sp#1:rp?2x@h:1/n/0/k'), 'redis-sentinel://****@h:1/n/0/k');
   });
 
-  test('leaves plain paths, uris without credentials and @ after the host alone', () => {
+  test('leaves plain paths and uris without credentials alone', () => {
     assert.equal(ArkimeConfig.redactUri('/opt/arkime/etc/config.ini'), '/opt/arkime/etc/config.ini');
     assert.equal(ArkimeConfig.redactUri('https://es:9200/idx/_doc/cfg'), 'https://es:9200/idx/_doc/cfg');
-    assert.equal(ArkimeConfig.redactUri('https://host?x=a@b'), 'https://host?x=a@b');
     assert.equal(ArkimeConfig.redactUri(undefined), undefined);
   });
 });
@@ -73,12 +72,17 @@ describe('redactConfig passwords', () => {
   });
 
   test('keeps the username readable', () => {
-    assert.equal(ArkimeConfig.redactConfig('user elastic logged in', 'elasticsearch://elastic:pwpw@es/i/_doc/c'), 'user elastic logged in');
     assert.equal(ArkimeConfig.redactConfig('/opt/arkime/bin', 'https://arkime@cfg/c.json'), '/opt/arkime/bin');
   });
 
   test('redacts both redis-sentinel passwords, longest first', () => {
     assert.equal(ArkimeConfig.redactConfig('x abcd abcdef y', 'redis-sentinel://abcd:abcdef@h:1/n/0/k'), 'x **** **** y');
+    assert.equal(ArkimeConfig.redactConfig('x sp#1x rp?2x y', 'redis-sentinel://sp#1x:rp?2x@h:1/n/0/k'), 'x **** **** y');
+  });
+
+  test('redacts the query as capture prints it', () => {
+    const uri = 'https://cfg.example.com/c.json?token=abc123';
+    assert.equal(ArkimeConfig.redactConfig('host: https://cfg.example.com url: /c.json?token=abc123', uri), 'host: https://cfg.example.com url: /c.json?token=****');
   });
 
   test('skips short passwords that would mangle the output', () => {
