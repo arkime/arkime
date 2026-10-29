@@ -17,13 +17,6 @@ SPDX-License-Identifier: Apache-2.0
 
 import { ref, computed } from 'vue';
 
-defineProps({
-  modelValue: {
-    type: String,
-    default: ''
-  }
-});
-
 const vueModel = defineModel({ required: false, default: '', type: String });
 const internalValue = ref(vueModel.value);
 
