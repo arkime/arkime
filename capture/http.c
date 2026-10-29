@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <curl/curl.h>
+#include <inttypes.h>
 #include "arkime.h"
 #include "zlib.h"
 #include <errno.h>
@@ -130,6 +131,10 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
 LOCAL uint32_t httpVLanVNI;
 
 LOCAL GHashTable *servers;
+
+// Every server, including ones not in servers, for perf-stats
+LOCAL GPtrArray  *allServers;
+LOCAL ARKIME_LOCK_DEFINE(allServers);
 
 /******************************************************************************/
 LOCAL int arkime_http_conn_cmp(const void *keyv, const ArkimeHttpConn_t *conn)
@@ -1021,6 +1026,45 @@ uint64_t arkime_http_dropped_count(const void *serverV)
     return server ? server->dropped : 0;
 }
 /******************************************************************************/
+void arkime_http_perf_stats(GString *out)
+{
+    g_string_append(out, "\n== http ==\n");
+    // Locked so a server can't be created or freed by another thread while we walk the list
+    ARKIME_LOCK(allServers);
+    if (!allServers || allServers->len == 0) {
+        ARKIME_UNLOCK(allServers);
+        g_string_append(out, "none\n");
+        return;
+    }
+
+    g_string_append_printf(out, "%-24s %11s %14s %6s %6s %9s %5s %8s %10s %5s %8s\n",
+                           "server", "outstanding", "maxOutstanding", "best", "normal", "droppable", "conns", "maxConns", "dropped", "hosts", "compress");
+    for (guint i = 0; i < allServers->len; i++) {
+        const ArkimeHttpServer_t *server = g_ptr_array_index(allServers, i);
+
+        // Label by the first host, without the scheme or any user:pass@ so creds don't end up in pasted output
+        const char *host = server->snamesCnt ? server->snames[0].name : "-";
+        const char *scheme = strstr(host, "://");
+        if (scheme)
+            host = scheme + 3;
+        const char *at = strchr(host, '@');
+        const char *slash = strchr(host, '/');
+        if (at && (!slash || at < slash))
+            host = at + 1;
+
+        g_string_append_printf(out, "%-24s %11u %14u %6u %6u %9u %5u %8u %10" PRIu64 " %5d %8s\n",
+                               host,
+                               server->outstanding, server->maxOutstandingRequests,
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_BEST],
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_NORMAL],
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_DROPPABLE],
+                               server->connections, server->maxConns,
+                               server->dropped, server->snamesCnt,
+                               server->compress ? "yes" : "no");
+    }
+    ARKIME_UNLOCK(allServers);
+}
+/******************************************************************************/
 void arkime_http_set_header_cb(void *serverV, ArkimeHttpHeader_cb cb)
 {
     ArkimeHttpServer_t        *server = serverV;
@@ -1030,6 +1074,10 @@ void arkime_http_set_header_cb(void *serverV, ArkimeHttpHeader_cb cb)
 void arkime_http_free_server(void *serverV)
 {
     ArkimeHttpServer_t        *server = serverV;
+
+    ARKIME_LOCK(allServers);
+    g_ptr_array_remove_fast(allServers, server);
+    ARKIME_UNLOCK(allServers);
 
     if (server->multiTimer) {
         g_source_remove(server->multiTimer);
@@ -1228,6 +1276,10 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
 
     server->fd2ev = g_hash_table_new(NULL, NULL);
 
+    ARKIME_LOCK(allServers);
+    g_ptr_array_add(allServers, server);
+    ARKIME_UNLOCK(allServers);
+
     ARKIME_LOCK_INIT(server->syncRequest);
 
     httpVLanVNI = arkime_config_int(NULL, "httpVLanVNI", 0, 0, 0xffffff);
@@ -1261,6 +1313,7 @@ void arkime_http_init()
     }
 
     servers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_http_free_server);
+    allServers = g_ptr_array_new();
     z_strms = g_ptr_array_new();
 
     // Can NOT have config_ calls here since need to fetch config

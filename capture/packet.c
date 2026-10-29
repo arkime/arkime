@@ -2382,6 +2382,67 @@ uint64_t arkime_packet_total_bytes()
     return arkimeCounters.totalBytes;
 }
 /******************************************************************************/
+void arkime_packet_perf_stats(GString *out, gboolean human)
+{
+    ArkimeReaderStats_t stats;
+    if (!arkime_reader_stats || arkime_reader_stats(&stats)) {
+        stats.dropped = 0;
+        stats.total = arkimeCounters.totalPackets;
+    } else {
+        // Same baseline as the packet log and stats
+        stats.dropped -= initialDropped;
+    }
+
+    g_string_append(out, "\n== packets ==\n");
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "totalPackets:", arkimeCounters.totalPackets);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "totalBytes:", arkimeCounters.totalBytes);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "readerRecv:", stats.total);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "readerDrop:", stats.dropped);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "totalSessions:", arkimeCounters.totalSessions);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "totalSessionBytes:", arkimeCounters.totalSessionBytes);
+    g_string_append_printf(out, "%-18s %d/%u\n", "frags:", DLL_COUNT(fragl_, &fragsList), config.maxFrags);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "droppedFrags:", droppedFrags);
+    g_string_append_printf(out, "%-18s %u\n", "maxPacketsInQueue:", config.maxPacketsInQueue);
+    g_string_append_printf(out, "%-18s %d\n", "outstanding:", arkime_packet_outstanding());
+
+    static const char *pstatNames[ARKIME_PACKET_MAX] = {
+        [ARKIME_PACKET_DO_PROCESS]        = "process",
+        [ARKIME_PACKET_IP_DROPPED]        = "ipDropped",
+        [ARKIME_PACKET_OVERLOAD_DROPPED]  = "overloadDropped",
+        [ARKIME_PACKET_CORRUPT]           = "corrupt",
+        [ARKIME_PACKET_UNKNOWN_ETHER]     = "unknownEther",
+        [ARKIME_PACKET_UNKNOWN_IP]        = "unknownIp",
+        [ARKIME_PACKET_IPPORT_DROPPED]    = "ipPortDropped",
+        [ARKIME_PACKET_DUPLICATE_DROPPED] = "duplicateDropped",
+        [ARKIME_PACKET_DONT_PROCESS]      = "dontProcess",
+        [ARKIME_PACKET_DONT_PROCESS_OR_FREE] = "dontProcessOrFree",
+    };
+    g_string_append_printf(out, "\n%-18s %12s\n", "pstat", "count");
+    for (int i = 0; i < ARKIME_PACKET_MAX; i++) {
+        char fallback[16];
+        if (!pstatNames[i])
+            snprintf(fallback, sizeof(fallback), "pstat%d", i);
+        g_string_append_printf(out, "%-18s %12" PRIu64 "\n", pstatNames[i] ? pstatNames[i] : fallback, arkimeCounters.packetStats[i]);
+    }
+
+    const int tw = human ? ARKIME_PERF_TIME_LEN - 1 : 11;
+    char lastBuf[ARKIME_PERF_TIME_LEN];
+    char curBuf[ARKIME_PERF_TIME_LEN];
+    g_string_append_printf(out, "\n%-6s %9s %4s %13s %16s %16s %*s %*s\n",
+                           "thread", "queued", "busy", "overloadDrops", "writtenBytes", "unwrittenBytes", tw, "lastPacket", tw, "currentTime");
+    for (int t = 0; t < config.packetThreads; t++) {
+        g_string_append_printf(out, "pkt%-3d %9d %4s %13" PRIu64 " %16" PRIu64 " %16" PRIu64 " %*s %*s\n",
+                               t,
+                               DLL_COUNT(packet_, &packetThreadData[t].packetQ),
+                               ARKIME_THREAD_ATOMIC_LOAD_RELAXED(packetThreadData[t].inProgress) ? "yes" : "no",
+                               packetThreadData[t].overloadDrops,
+                               packetThreadData[t].writtenBytes,
+                               packetThreadData[t].unwrittenBytes,
+                               tw, arkime_perf_time(lastBuf, arkimeThreadData[t].lastPacketSecs, human),
+                               tw, arkime_perf_time(curBuf, arkimeThreadData[t].currentTime, human));
+    }
+}
+/******************************************************************************/
 uint64_t arkime_packet_written_bytes()
 {
     uint64_t count = 0;
