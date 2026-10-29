@@ -82,7 +82,7 @@ sub upload {
 
 my $response = upload('good.pcap');
 is ($response->code, 200);
-like ($response->content, qr/^echo &#39;?elasticsearchs?:&#47;&#47;\*\*\*\*@/, "upload response shows the redacted config");
+like ($response->content, qr/^echo elasticsearchs?:&#47;&#47;\*\*\*\*@/, "upload response shows the redacted config");
 like ($response->content, qr/^https?:&#47;&#47;\*\*\*\*@/m, "upload response redacts the uri as capture rewrites it");
 unlike ($response->content, qr/\Q$secret\E/, "upload response hides the config password");
 
@@ -91,5 +91,5 @@ is ($response->code, 500);
 unlike ($response->content, qr/\Q$secret\E/, "failed upload response hides the config password");
 
 my $log = do { local $/; open my $fh, '<', $logFile or die $!; <$fh> };
-like ($log, qr{upload command: +echo '?elasticsearchs?://\*\*\*\*@}, "upload log shows the redacted config");
+like ($log, qr{upload command: +echo elasticsearchs?://\*\*\*\*@}, "upload log shows the redacted config");
 unlike ($log, qr/\Q$secret\E/, "viewer log hides the config password");

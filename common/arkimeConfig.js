@@ -143,10 +143,11 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
-  // The scheme parsers split on /, so the userinfo is everything before the last @ in the authority
+  // The userinfo is everything before the last @ in the authority, the redis parsers allow ? and # in it
   static #userinfo (uri) {
     if (typeof uri !== 'string') { return undefined; }
-    return uri.match(/^[a-zA-Z][-a-zA-Z0-9+.]*:\/\/([^/?#]*)@/)?.[1];
+    const re = uri.startsWith('redis') ? /^[a-zA-Z][-a-zA-Z0-9+.]*:\/\/([^/]*)@/ : /^[a-zA-Z][-a-zA-Z0-9+.]*:\/\/([^/?#]*)@/;
+    return uri.match(re)?.[1];
   }
 
   // ----------------------------------------------------------------------------

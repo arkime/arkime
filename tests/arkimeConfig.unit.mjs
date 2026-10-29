@@ -22,6 +22,7 @@ describe('redactUri', () => {
     assert.equal(ArkimeConfig.redactUri('redis://:secret@r:6379/0/k'), 'redis://****@r:6379/0/k');
     assert.equal(ArkimeConfig.redactUri('redis-sentinel://sp:rp@h1:1,h2:2/n/0/k'), 'redis-sentinel://****@h1:1,h2:2/n/0/k');
     assert.equal(ArkimeConfig.redactUri('opensearchs://a:b@c@h/i/_doc/d'), 'opensearchs://****@h/i/_doc/d');
+    assert.equal(ArkimeConfig.redactUri('redis-sentinel://sp#1:rp?2x@h:1/n/0/k'), 'redis-sentinel://****@h:1/n/0/k');
   });
 
   test('leaves plain paths, uris without credentials and @ after the host alone', () => {

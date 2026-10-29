@@ -1498,7 +1498,8 @@ if (internals.webconfig) {
 
     source.getSourceRaw((err, raw) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        // an axios error has the config url with its credentials
+        return res.send({ success: false, text: ArkimeConfig.redactConfig(err.message ?? String(err)) });
       }
       return res.send({ success: true, raw: raw ? raw.toString('utf8') : '' });
     });
@@ -1526,7 +1527,8 @@ if (internals.webconfig) {
 
     source.putSourceRaw(raw, (err) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        // an axios error has the config url with its credentials
+        return res.send({ success: false, text: ArkimeConfig.redactConfig(err.message ?? String(err)) });
       }
       return res.send({ success: true, text: 'Saved' });
     });
@@ -1629,7 +1631,8 @@ if (internals.webconfig) {
     ArkimeConfig.replace(config);
     ArkimeConfig.save((err) => {
       if (err) {
-        return res.send({ success: false, text: err });
+        // an axios error has the config url with its credentials
+        return res.send({ success: false, text: ArkimeConfig.redactConfig(err.message ?? String(err)) });
       } else {
         res.send({ success: true, text: 'Saved & Restarting' });
         // Because of nodemon
