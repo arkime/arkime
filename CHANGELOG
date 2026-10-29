@@ -37,7 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 6.9.2 2026/11/xx
 ## Breaking
-  - uploadCommand {CONFIG} is a temporary urlinfile:// file when the config is a uri, so it only exists while the command runs
+  - #4412 uploadCommand {CONFIG} is a temporary urlinfile:// file when the config is a uri, so it only exists while the command runs
 ## All
   - #4402 Email and Slack notifier alerts escape < and >, and Teams alerts replace Markdown link brackets, so values in the alert text can't inject HTML, links or @mentions
 ## Capture
