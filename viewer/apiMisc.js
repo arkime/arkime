@@ -313,26 +313,29 @@ class MiscAPIs {
     // security-scanner-ignore: {INSECURE-ORIGINALNAME} is intentionally unsanitized.
     // Operators who use this template variable accept the risk — the variable name serves as the warning.
     // Prefer the sanitized {ORIGINALNAME} variable instead.
+    // {CONFIG} first so a filename can't add it
     const cmd = uploadCommand
+      .replace(/{CONFIG}/g, () => ArkimeConfig.childConfigFile)
       .replace(/{TAGS}/g, tags)
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
       .replace(/{ORIGINALNAME}/g, safeOriginalName)
-      .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
-      .replace(/{CONFIG}/g, ArkimeConfig.configFile);
+      .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname);
+    // Config may be a credential-bearing URI, never return or log it
+    const safeCmd = ArkimeConfig.redactConfig(cmd);
 
-    console.log('upload command: ', cmd);
+    console.log('upload command: ', safeCmd);
     exec(cmd, (error, stdout, stderr) => {
       fs.unlinkSync(req.file.path);
       if (error !== null) {
-        console.log(`ERROR - ${req.method} /api/upload`, util.inspect(error, false, 50));
+        console.log(`ERROR - ${req.method} /api/upload`, ArkimeConfig.redactConfig(util.inspect(error, false, 50)));
         res.status(500);
         res.write('<b>Upload command failed:</b><br>');
       }
-      res.write(ArkimeUtil.safeStr(cmd));
+      res.write(ArkimeUtil.safeStr(safeCmd));
       res.write('<br>');
       res.write('<pre>');
-      res.write(ArkimeUtil.safeStr(stdout));
+      res.write(ArkimeUtil.safeStr(ArkimeConfig.redactConfig(stdout)));
       res.end('</pre>');
     });
   }

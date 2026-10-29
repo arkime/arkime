@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 158;
+use Test::More tests => 160;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -190,10 +190,19 @@ $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/uplo
         file => [undef, 'a;rm -rf x$(id).pcap', 'Content-Type' => 'application/octet-stream', Content => 'notreallyapcap']
     ]);
 is ($response->code, 200);
-like ($response->content, qr/^true  --tag good --tag badtag --tag x arm-rfxid\.pcap &#47;tmp&#47;[0-9a-f]{32}<br>/);
+like ($response->content, qr/^echo  --tag good --tag badtag --tag x arm-rfxid\.pcap &#47;tmp&#47;[0-9a-f]{32} \.\.&#47;tests&#47;config\.test\.ini &amp;&amp; /);
 my ($tmpFile) = $response->content =~ /&#47;tmp&#47;([0-9a-f]{32})/;
 ok (defined $tmpFile, "upload tmp file name returned");
 ok (!-e "/tmp/$tmpFile", "upload tmp file removed");
+
+# Failed upload command
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test7Token,
+    Content_Type => 'form-data',
+    Content => [
+        file => [undef, 'fail.pcap', 'Content-Type' => 'application/octet-stream', Content => 'notreallyapcap']
+    ]);
+is ($response->code, 500);
+like ($response->content, qr/^<b>Upload command failed:<\/b><br>echo  fail\.pcap &#47;tmp&#47;[0-9a-f]{32} \.\.&#47;tests&#47;config\.test\.ini &amp;&amp; /);
 
 # No arkimeUser role
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test8', 'test8' );

@@ -42,7 +42,7 @@ class ArkimeConfig {
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
     if (ArkimeConfig.debug > 1) {
-      console.log('ArkimeConfig.initialize', ArkimeConfig.#configFile, options);
+      console.log('ArkimeConfig.initialize', ArkimeConfig.redactUri(ArkimeConfig.#configFile), options);
     }
 
     if (options.defaultSections === undefined) {
@@ -127,8 +127,39 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * The config file or uri with any credentials removed, safe to show or log
+   */
   static get configFile () {
+    return ArkimeConfig.redactUri(ArkimeConfig.#configFile);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The config to pass to a child process like capture. It may have credentials, never show or log it.
+   */
+  static get childConfigFile () {
     return ArkimeConfig.#configFile;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Replace the userinfo of a uri with ****, plain file paths are returned as is
+   */
+  static redactUri (uri) {
+    if (typeof uri !== 'string') { return uri; }
+    return uri.replace(/^([a-zA-Z][-a-zA-Z0-9+.]*:\/\/)[^/]*@/, '$1****@');
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Replace the config uri in str with its redacted form
+   * @param {string} str The string to redact
+   * @param {string} uri The config uri, defaults to the one loaded
+   */
+  static redactConfig (str, uri = ArkimeConfig.#configFile) {
+    if (typeof str !== 'string' || typeof uri !== 'string' || uri.length === 0) { return str; }
+    return str.split(uri).join(ArkimeConfig.redactUri(uri));
   }
 
   // ----------------------------------------------------------------------------
@@ -473,7 +504,7 @@ class ArkimeConfig {
     if (ArkimeConfig.#configImpl.save) {
       ArkimeConfig.#configImpl.save(ArkimeConfig.#uri, ArkimeConfig.#config, cb);
     } else {
-      console.log('WARNING - Saving config is not supported by', ArkimeConfig.#uri);
+      console.log('WARNING - Saving config is not supported by', ArkimeConfig.redactUri(ArkimeConfig.#uri));
     }
   }
 
