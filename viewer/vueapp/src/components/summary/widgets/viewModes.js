@@ -37,7 +37,8 @@ export const VIEW_MODE_LABEL_KEYS = {
   stats: 'sessions.summary.statsView',
   time: 'sessions.summary.timeView',
   metric: 'sessions.summary.metricView',
-  text: 'sessions.summary.textView'
+  markdown: 'sessions.summary.markdownView',
+  sessions: 'sessions.summary.sessionsView'
 };
 // saved view modes come from shared data, so only own keys count
 export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
@@ -56,8 +57,12 @@ export const GEO_FIELD_VIEW_MODES = ['map'];
 // number per top-N value when a field is chosen.
 export const OPTIONAL_FIELD_VIEW_MODES = ['metric'];
 
-// Static content (no fetch, no field, no metric): a text/notes panel.
-export const STATIC_VIEW_MODES = ['text'];
+// Static content (no fetch, no field, no metric): a markdown notes panel.
+export const STATIC_VIEW_MODES = ['markdown'];
+
+// Lists of the sessions themselves (no aggregation): the fields are its
+// columns, the limit its rows and the order its sort direction.
+export const LIST_VIEW_MODES = ['sessions'];
 
 // Types that visualize a single selectable metric (Sessions or a numeric field).
 // timeline plots the metric's <dbField>Histo series over time.
@@ -71,21 +76,26 @@ export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric'];
 // The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS).
 export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality'];
 
-// Types that can split each value by a second field (stacked/grouped bars).
-export const SPLIT_VIEW_MODES = ['bar'];
+// Types that can split by a second field: a bar divides each value into
+// stacked/grouped segments, a pie draws one small pie per split value.
+export const SPLIT_VIEW_MODES = ['bar', 'pie'];
 export const BAR_MODES = ['stacked', 'grouped'];
 export const SPLIT_LENGTHS = [3, 5, 10];
 
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection', 'metric'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'intersection', 'metric', 'sessions'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
 // /api/connections have no order parameter, so offering the control for those
 // modes would silently do nothing.
-export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric'];
+export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions'];
+
+// Types that can show an "Other" share for what falls outside the top N (a
+// share only means something where the parts add up to a whole).
+export const OTHER_VIEW_MODES = ['pie'];
 
 // Types whose limit is a session sample size rather than a top-N cut, so they
 // get their own (much larger) scale.
@@ -118,14 +128,21 @@ export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connectio
 // summary), or a source + destination pair (connections). bar is
 // single-dimension; heatmap has no combination-over-time data path. Modes not
 // listed take a single field (or none, for the session-wide ones).
+// The nested types go to 7, as deep as Kibana data tables nest (SPI Graph
+// itself takes any number, so a deeper saved graph is cut to 7 here). A
+// sessions list takes up to 20 columns.
 export const FIELD_COUNT_LIMITS = {
-  pie: [1, 3],
-  treemap: [1, 3],
-  sankey: [1, 3],
-  table: [1, 3],
-  intersection: [1, 3],
-  connections: [2, 2]
+  pie: [1, 7],
+  treemap: [1, 7],
+  sankey: [1, 7],
+  table: [1, 7],
+  intersection: [1, 7],
+  connections: [2, 2],
+  sessions: [1, 20]
 };
+
+// the most fields any saved widget keeps (the largest FIELD_COUNT_LIMITS max)
+export const MAX_FIELDS = Math.max(...Object.values(FIELD_COUNT_LIMITS).map(([, max]) => max));
 
 // Types that accept multiple metric columns (the table's [value | m0 | m1 …]).
 // Charts visualize a single metric, so they stay single-select.
@@ -146,7 +163,10 @@ export const isGeoFieldMode = (viewMode) => GEO_FIELD_VIEW_MODES.includes(viewMo
 /** True when the widget may take a field but works without one (metric). */
 export const isOptionalFieldMode = (viewMode) => OPTIONAL_FIELD_VIEW_MODES.includes(viewMode);
 
-/** True for static widgets with no data fetch at all (text). */
+/** True for widgets listing the sessions themselves (their fields are columns). */
+export const isListMode = (viewMode) => LIST_VIEW_MODES.includes(viewMode);
+
+/** True for static widgets with no data fetch at all (markdown). */
 export const isStaticMode = (viewMode) => STATIC_VIEW_MODES.includes(viewMode);
 
 /** True when the widget's metric can pick an aggregation (sum/avg/min/max/unique). */
@@ -154,6 +174,9 @@ export const hasMetricAgg = (viewMode) => METRIC_AGG_VIEW_MODES.includes(viewMod
 
 /** True when the widget can split each value by a second field. */
 export const allowsSplit = (viewMode) => SPLIT_VIEW_MODES.includes(viewMode);
+
+/** True when the widget can show an "Other" share beside its top N. */
+export const allowsOther = (viewMode) => OTHER_VIEW_MODES.includes(viewMode);
 
 /** True when the widget exposes a metric selector. */
 export const hasMetric = (viewMode) => METRIC_VIEW_MODES.includes(viewMode);

@@ -51,8 +51,8 @@ const {
   GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph,
   graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
-const { viewModeLabelKey } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 
 const graph = (overrides) => graphFromWidget(overrides);
 
@@ -86,8 +86,16 @@ describe('widgetsFromConfig', () => {
     }
   });
 
+  test('keeps up to MAX_FIELDS fields and an Other flag that is really true', () => {
+    const fields = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9'];
+    const [w] = widgetsFromConfig({ widgets: [{ viewMode: 'intersection', fields, other: 'yes' }] });
+    assert.deepEqual(w.fields, fields.slice(0, MAX_FIELDS));
+    assert.equal(w.other, false);
+    assert.equal(widgetsFromConfig({ widgets: [{ viewMode: 'pie', field: 'ip.src', other: true }] })[0].other, true);
+  });
+
   test('survives null entries and makes ids unique', () => {
-    const widgets = widgetsFromConfig({ widgets: [null, { id: 'dup', viewMode: 'text' }, { id: 'dup', viewMode: 'stats' }] });
+    const widgets = widgetsFromConfig({ widgets: [null, { id: 'dup', viewMode: 'markdown' }, { id: 'dup', viewMode: 'stats' }] });
     assert.equal(widgets.length, 3);
     assert.equal(new Set(widgets.map(w => w.id)).size, 3);
     assert.equal(widgets[1].id, 'dup');
@@ -148,10 +156,16 @@ describe('graphFromSpigraphQuery', () => {
     }
   });
 
-  test('a nested table is an intersection', () => {
+  test('an intersection table is an intersection, a unique one a table', () => {
     const g = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.src', subFields: 'ip.dst,port.dst' });
     assert.equal(g.viewMode, 'intersection');
     assert.deepEqual(g.fields, ['ip.src', 'ip.dst', 'port.dst']);
+    const unique = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.src', subFields: 'ip.dst,port.dst', tableMode: 'unique' });
+    assert.equal(unique.viewMode, 'table');
+    assert.deepEqual(unique.fields, ['ip.src', 'ip.dst', 'port.dst']);
+    // one field is the same either way: a plain table
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.src', tableMode: 'unique' }).viewMode, 'table');
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.src' }).viewMode, 'table');
   });
 
   test('types with no graph give null', () => {
@@ -172,9 +186,14 @@ describe('spigraphQueryFromGraph', () => {
     const graphs = [
       graph({ viewMode: 'bar', field: 'ip.src', splitField: 'protocols', barMode: 'grouped', length: 15, view: 'v1', expression: 'port.dst == 53' }),
       graph({ viewMode: 'pie', fields: ['ip.src', 'port.dst'], length: 10 }),
+      graph({ viewMode: 'pie', fields: ['protocols', 'port.dst'], splitField: 'ip.dst', length: 10 }),
+      graph({ viewMode: 'pie', fields: ['protocols'], other: true }),
+      graph({ viewMode: 'pie', fields: ['protocols'], splitField: 'ip.dst', other: true }),
+      graph({ viewMode: 'intersection', fields: ['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets', 'ip.src'] }),
       graph({ viewMode: 'treemap', fields: ['ip.src', 'ip.dst'] }),
       graph({ viewMode: 'sankey', fields: ['ip.src', 'ip.dst', 'port.dst'] }),
       graph({ viewMode: 'table', field: 'protocols', length: 50 }),
+      graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets', 'ip.src'], length: 50 }),
       graph({ viewMode: 'intersection', fields: ['ip.src', 'ip.dst'] }),
       graph({ viewMode: 'heatmap', field: 'ip.dst', metricType: 'packets', length: 30 }),
       graph({ viewMode: 'connections', fields: ['ip.src', 'ip.dst:port'], length: 500 })
@@ -190,6 +209,20 @@ describe('spigraphQueryFromGraph', () => {
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg' })).graphType, undefined);
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.src' })).graphType, undefined);
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src' })).graphType, 'sessionsHisto');
+  });
+
+  test('a split pie opens in SPI Graph\'s split pie mode', () => {
+    const query = spigraphQueryFromGraph(graph({ viewMode: 'pie', fields: ['protocols', 'port.dst'], splitField: 'ip.dst', length: 10 }));
+    assert.equal(query.spiGraphType, 'pie');
+    assert.equal(query.pieMode, 'split');
+    assert.equal(query.exp, 'ip.dst');
+    assert.equal(query.subFields, 'protocols,port.dst');
+    // a split mode with nothing to split is a plain pie
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie', exp: 'ip.dst', pieMode: 'split' }).splitField, '');
+    // only a pie shows Other
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.dst', other: true })).other, 'true');
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.dst' })).other, undefined);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'bar', exp: 'ip.dst', other: 'true' }).other, false);
   });
 
   test('graphs SPI Graph has no type for give null', () => {
@@ -224,12 +257,20 @@ describe('graphOnSpigraph', () => {
     assert.deepEqual(graphOnSpigraph(saved, page), saved);
   });
 
-  test('a table keeps the side by side fields SPI Graph does not show', () => {
-    const table = graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst', 'port.dst'] });
-    const page = graphFromSpigraphQuery(spigraphQueryFromGraph(table), { fieldsArr });
+  test('a table\'s fields are the ones SPI Graph\'s unique table shows', () => {
+    const table = graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst', 'port.dst'], metrics: ['bytes'] });
+    const query = spigraphQueryFromGraph(table);
+    assert.equal(query.tableMode, 'unique');
+    assert.equal(query.subFields, 'ip.dst,port.dst');
+    const page = graphFromSpigraphQuery(query, { fieldsArr });
     assert.deepEqual(graphOnSpigraph(table, page), table);
-    const changed = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'protocols' });
-    assert.deepEqual(graphOnSpigraph(table, changed).fields, ['protocols', 'ip.dst', 'port.dst']);
+    // a field taken off on the page is gone from the saved graph; the metric
+    // columns SPI Graph can't show stay
+    const changed = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'protocols', subFields: 'ip.dst', tableMode: 'unique' });
+    assert.deepEqual(graphOnSpigraph(table, changed).fields, ['protocols', 'ip.dst']);
+    assert.deepEqual(graphOnSpigraph(table, changed).metrics, ['bytes']);
+    // switched to the intersection layout on the page, it saves as an intersection
+    assert.equal(graphOnSpigraph(table, graphFromSpigraphQuery({ ...query, tableMode: undefined })).viewMode, 'intersection');
   });
 
   test('a heatmap takes the page intensity, other types keep the saved metric', () => {
@@ -273,6 +314,27 @@ describe('widgetFullPageLink', () => {
     assert.equal(widgetFullPageLink(route, store, { viewMode: 'timeline' }).path, '/sessions');
     assert.equal(widgetFullPageLink(route, store, { viewMode: 'stats' }), null);
     assert.equal(widgetFullPageLink(route, store, { viewMode: 'bar', field: 'nope' }), null);
+  });
+});
+
+describe('widget fields', () => {
+  const fields = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7'];
+
+  test('each view mode takes up to its own limit', () => {
+    assert.equal(fieldCountLimits('intersection')[1], 7);
+    assert.equal(fieldCountLimits('table')[1], 7);
+    for (const mode of ['pie', 'treemap', 'sankey']) { assert.equal(fieldCountLimits(mode)[1], 7, mode); }
+    assert.deepEqual(widgetFields({ viewMode: 'intersection', fields }), fields);
+    assert.deepEqual(widgetFields({ viewMode: 'pie', fields: [...fields, 'f8'] }), fields);
+    assert.deepEqual(widgetFields({ viewMode: 'sessions', fields: [...fields, 'f8'] }), [...fields, 'f8']);
+    assert.deepEqual(widgetFields({ viewMode: 'bar', fields }), ['f1']);
+  });
+
+  test('a split pie nests its fields under the split field', () => {
+    assert.deepEqual(hierarchyFields({ viewMode: 'pie', fields: ['f1', 'f2'], splitField: 's' }), ['s', 'f1', 'f2']);
+    assert.deepEqual(hierarchyFields({ viewMode: 'pie', fields: ['f1'] }), ['f1']);
+    // only a pie draws small multiples
+    assert.deepEqual(hierarchyFields({ viewMode: 'treemap', fields: ['f1'], splitField: 's' }), ['f1']);
   });
 });
 

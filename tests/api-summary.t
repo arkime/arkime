@@ -1,4 +1,4 @@
-use Test::More tests => 160;
+use Test::More tests => 176;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -393,6 +393,59 @@ foreach my $item (@{$splitBytesChunk->{data}}) {
 }
 ok($bytesSplitOk, "split entries carry the bytes metric when the widget has one");
 ok($bytesSplitLen, "bytes split is capped at its splitLength");
+
+# other - what falls outside the top N, only for a count or a summed metric
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wOther', field => 'ip.src', length => 3, other => JSON::true },
+        { id => 'wOtherBytes', field => 'ip.src', length => 3, metricType => 'bytes', other => JSON::true },
+        { id => 'wOtherAvg', field => 'ip.src', length => 3, metricType => 'bytes', metricAgg => 'avg', other => JSON::true },
+        { id => 'wNoOther', field => 'ip.src', length => 3 },
+        { id => 'wAll', total => JSON::true, metricType => 'bytes', expression => 'ip.src == EXISTS!' }
+    ]
+});
+my $otherChunk = getChunk($chunks, 'wOther');
+my $otherBytesChunk = getChunk($chunks, 'wOtherBytes');
+my $allChunk = getChunk($chunks, 'wAll');
+my ($topSessions, $topBytes) = (0, 0);
+$topSessions += $_->{sessions} foreach @{$otherChunk->{data}};
+$topBytes += $_->{value} foreach @{$otherBytesChunk->{data}};
+cmp_ok($otherChunk->{other}->{sessions}, '>', 0, "other has sessions");
+is($otherChunk->{other}->{sessions} + $topSessions, $allChunk->{data}->[0]->{sessions}, "other plus the top N sessions is every session with the field");
+is($otherChunk->{other}->{value}, $otherChunk->{other}->{sessions}, "a count's other value is its sessions");
+is($otherBytesChunk->{other}->{value} + $topBytes, $allChunk->{data}->[0]->{value}, "other plus the top N bytes is the bytes of every session with the field");
+ok(!exists getChunk($chunks, 'wOtherAvg')->{other}, "an average has no other");
+ok(!exists getChunk($chunks, 'wNoOther')->{other}, "no other unless asked for");
+
+# other - nothing left over, a local filter, a bottom N, and the aggregations
+# and widgets it doesn't apply to
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wOtherNone', field => 'ip.protocol', length => 100, other => JSON::true },
+        { id => 'wOtherExp', field => 'ip.src', length => 2, other => JSON::true, expression => 'port.dst == 80' },
+        { id => 'wOtherExpAll', total => JSON::true, expression => 'port.dst == 80 && ip.src == EXISTS!' },
+        { id => 'wOtherAsc', field => 'ip.dst', length => 3, order => 'asc', other => 'true' },
+        { id => 'wOtherAscAll', total => JSON::true, expression => 'ip.dst == EXISTS!' },
+        { id => 'wOtherMax', field => 'ip.src', length => 3, metricType => 'bytes', metricAgg => 'max', other => JSON::true },
+        { id => 'wOtherCard', field => 'ip.src', length => 3, metricType => 'ip.dst', metricAgg => 'cardinality', other => JSON::true },
+        { id => 'wOtherTotal', total => JSON::true, other => JSON::true },
+        { id => 'wOtherIp', field => 'ip', length => 3, other => JSON::true },
+        { id => 'wOtherCountAvg', field => 'ip.src', length => 3, metricAgg => 'avg', other => JSON::true }
+    ]
+});
+my $chunkSessions = sub { my $total = 0; $total += $_->{sessions} foreach @{$_[0]->{data}}; return $total; };
+my $otherExpChunk = getChunk($chunks, 'wOtherExp');
+my $otherAscChunk = getChunk($chunks, 'wOtherAsc');
+eq_or_diff(getChunk($chunks, 'wOtherNone')->{other}, { sessions => 0, value => 0 }, "other is empty when the top N is every value");
+is($otherExpChunk->{other}->{sessions} + $chunkSessions->($otherExpChunk), getChunk($chunks, 'wOtherExpAll')->{data}->[0]->{sessions},
+    "other honors the widget's local filter");
+is($otherAscChunk->{other}->{sessions} + $chunkSessions->($otherAscChunk), getChunk($chunks, 'wOtherAscAll')->{data}->[0]->{sessions},
+    "other of a bottom N is everything above it");
+ok(!exists getChunk($chunks, 'wOtherMax')->{other}, "a max has no other");
+ok(!exists getChunk($chunks, 'wOtherCard')->{other}, "a unique count has no other");
+ok(!exists getChunk($chunks, 'wOtherTotal')->{other}, "a whole result set widget has no other");
+ok(!exists getChunk($chunks, 'wOtherIp')->{other}, "a script field has no other");
+cmp_ok(getChunk($chunks, 'wOtherCountAvg')->{other}->{sessions}, '>', 0, "a count has an other whatever aggregation the widget carries");
 
 # Bottom-N bars are still split by their most common sub-values, and both
 # unknown fields are named when the field and the split field are bad

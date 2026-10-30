@@ -114,6 +114,22 @@ function mergeBucket (b1, b2, subOps, nested) {
 }
 
 /**
+ * Cut a terms aggregation's (ranked) buckets back to size, folding the cut
+ * ones' sessions into its sum_other_doc_count: a multi viewer merges more
+ * values than any one cluster returned, and what it drops still counts toward
+ * the "Other" a pie or table can show.
+ * @param {object} agg - a terms aggregation result with a buckets array
+ * @param {number} size - how many buckets to keep; unset or 0 keeps them all
+ */
+function cutToSize (agg, size) {
+  if (!size || !Array.isArray(agg?.buckets) || agg.buckets.length <= size) { return; }
+  if (agg.sum_other_doc_count !== undefined) {
+    for (let i = size; i < agg.buckets.length; i++) { agg.sum_other_doc_count += agg.buckets[i].doc_count; }
+  }
+  agg.buckets.length = size;
+}
+
+/**
  * Merge one cluster's nested terms buckets (an array, as ES returns them) into
  * the merged bucket's array: same keys merge, new keys append, then re-rank
  * by the declared order and cut back to the declared size.
@@ -133,7 +149,7 @@ function mergeNestedBuckets (agg1, agg2, info) {
     agg1.sum_other_doc_count += agg2.sum_other_doc_count;
   }
   agg1.buckets = agg2Arr(agg1.buckets, 'terms', info?.order);
-  if (info?.size && agg1.buckets.length > info.size) { agg1.buckets.length = info.size; }
+  cutToSize(agg1, info?.size);
 }
 
 function agg2Arr (agg, type, order) {
@@ -194,19 +210,9 @@ function newAggregations (aggregations) {
       // The first real value from a cluster will replace this
       result[agg] = { value: null, _op: METRIC_OPS.find(o => aggConfig[o]) };
     } else if (aggConfig.filter) {
-      // Filter aggregations contain nested aggregations
-      result[agg] = { doc_count: 0 };
-      // Recursively initialize nested aggregations
-      if (aggConfig.aggs || aggConfig.aggregations) {
-        const nestedAggs = aggConfig.aggs || aggConfig.aggregations;
-        for (const nestedAgg in nestedAggs) {
-          if (nestedAggs[nestedAgg].histogram) {
-            result[agg][nestedAgg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
-          } else {
-            result[agg][nestedAgg] = { buckets: {}, _type: 'terms', _order: nestedAggs[nestedAgg].terms?.order, _subAggs: subAggOps(nestedAggs[nestedAgg]), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
-          }
-        }
-      }
+      // Filter aggregations contain nested aggregations of any kind (metrics
+      // like a summary widget's "Other" total, terms, histograms)
+      result[agg] = { doc_count: 0, ...newAggregations(aggConfig.aggs || aggConfig.aggregations || {}) };
     } else if (aggConfig.histogram) {
       result[agg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
     } else {
@@ -240,11 +246,16 @@ function aggConvert2Arr (aggs) {
     if (aggs[aggname].doc_count !== undefined && !aggs[aggname].buckets && !aggs[aggname].value) {
       // Recursively convert nested aggregations within the filter
       for (const nestedAgg in aggs[aggname]) {
-        if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
-          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type, aggs[aggname][nestedAgg]._order);
-          delete aggs[aggname][nestedAgg]._type;
-          delete aggs[aggname][nestedAgg]._order;
-          delete aggs[aggname][nestedAgg]._subAggs;
+        const nested = aggs[aggname][nestedAgg];
+        if (nestedAgg === 'doc_count' || !nested) { continue; }
+        if (nested.buckets) {
+          nested.buckets = agg2Arr(nested.buckets, nested._type, nested._order);
+          delete nested._type;
+          delete nested._order;
+          delete nested._subAggs;
+          delete nested._nested;
+        } else if (nested.value !== undefined) {
+          delete nested._op;
         }
       }
     }
@@ -335,4 +346,4 @@ function aggAdd (obj1, obj2) {
   }
 }
 
-module.exports = { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr };
+module.exports = { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr, cutToSize };

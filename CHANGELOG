@@ -208,6 +208,16 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4377 Dashboard widgets link to their full page view in SPI Graph or Sessions with the same search
   - #4379 Saved graphs: SPI Graph can save, share and load a graph, and add it or the current graph to a dashboard as a widget;
           a dashboard widget can be saved as a graph and the widget editor can start from one (spigraphConfig shareables)
+  - #4420 Dashboard pie, treemap, sankey, table and intersection widgets take up to 7 fields
+  - #4420 Dashboard pie widgets can show an Other slice for the sessions outside the top values, and can be split by a
+          second field into one small pie per value
+  - #4420 Add a sessions list dashboard widget: the matching sessions as a compact table with chosen columns, sort and rows
+  - #4420 The text dashboard widget is now a Markdown widget: headings, bold, italic, code, lists and links, up to 5000
+          characters. Links may only go to http/https sites or Arkime's own pages
+  - #4420 SPI Graph pies can be split into one small pie per value of the first field and can show Other slices
+  - #4420 SPI Graph tables with several fields can list each field's own top values (Unique) instead of their combinations (Intersection)
+  - #4420 SPI Graph pie labels are cut to fit their ring, and a replaced or abandoned hierarchy request cancels its search
+  - #4420 Fix SPI Graph breaking the page when switching from a pie with several fields to a bar
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password
