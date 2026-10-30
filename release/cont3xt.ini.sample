@@ -11,9 +11,20 @@ elasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearch=ARKIME_ELASTICSEARCH
 # usersElasticsearchBasicAuth=
 
-# Use digest auth by default
-# If using SSO change to the http header with the username in it
-userNameHeader=digest
+# File with trusted roots/certs for OpenSearch/Elasticsearch. WARNING! this replaces default roots
+# caTrustFile=ARKIME_INSTALL_DIR/etc/roots.cert
+
+# Client certificate (mTLS) presented to both OpenSearch/Elasticsearch connections above
+# esClientKey=ARKIME_INSTALL_DIR/etc/es-client.key
+# esClientCert=ARKIME_INSTALL_DIR/etc/es-client.crt
+# esClientKeyPass=
+
+# Integration sections that call a url (urlapi, elasticsearch, arkime, misp, csv, json) take
+# their own insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings
+
+# Use digest auth by default, see https://arkime.com/settings#authMode for other modes
+# If using SSO set authMode=header and userNameHeader to the http header with the username in it
+authMode=digest
 
 # Password Hash Secret - Must be in the [cont3xt] section. Since OpenSearch/Elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this

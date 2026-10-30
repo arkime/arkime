@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp);
+@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -12,6 +12,7 @@ use JSON;
 use URI::Escape;
 use Data::Dumper;
 use IO::Socket::INET;
+use Time::HiRes ();
 use Try::Tiny;
 use Text::ParseWords qw(shellwords);
 
@@ -26,6 +27,16 @@ if ($ENV{INSECURE} eq "--insecure") {
         SSL_verify_mode => 0,
         verify_hostname=> 0
     )
+}
+
+# Where session documents live: ClickHouse when the environment (tests_ch.sh)
+# or config.test.ini has a clickhouse sessionsDbUrl, otherwise Elasticsearch.
+$ArkimeTest::sessionsDbUrl = $ENV{ARKIME_test__sessionsDbUrl} // "";
+if (!$ArkimeTest::sessionsDbUrl && open my $cfgFh, '<', "config.test.ini") {
+    while (<$cfgFh>) {
+        if (/^sessionsDbUrl\s*=\s*(.*?)\s*$/) { $ArkimeTest::sessionsDbUrl = $1; last; }
+    }
+    close $cfgFh;
 }
 
 ################################################################################
@@ -252,6 +263,42 @@ my ($url, $content, $debug) = @_;
     return my_from_json($url, $response->content, $debug);
 }
 ################################################################################
+# Insert a session document into whichever store holds sessions (ES or
+# ClickHouse). $index is the ES-style index name (e.g. tests_sessions3-26m04);
+# for ClickHouse the day suffix is dropped and the doc goes into the table.
+sub sessionsPost {
+my ($index, $id, $doc, $debug) = @_;
+
+    if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
+        return esPost("/$index/_doc/$id?refresh=true", $doc, $debug);
+    }
+
+    my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+    my $obj = from_json($doc);
+    $obj->{'_id'} = $id;
+    (my $table = $index) =~ s/-[^-]*$//;
+    my $sql = "INSERT INTO arkime.$table (fields, \`_id\`, lastPacket) SELECT data, CAST(data.\`_id\` AS String), fromUnixTimestamp64Milli(toInt64OrZero(toString(data.lastPacket))) FROM input('data JSON') FORMAT JSONAsObject " . to_json($obj);
+    my $response = $ArkimeTest::userAgent->post("$chUrl/", Content => $sql, "Content-Type" => "text/plain;charset=UTF-8");
+    diag $response->content if ($debug || !$response->is_success);
+    return $response->is_success;
+}
+################################################################################
+# Delete session documents carrying a tag from whichever store holds sessions.
+sub sessionsDeleteByTag {
+my ($index, $tag, $debug) = @_;
+
+    if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
+        return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "tags": "' . $tag . '" } } }', $debug);
+    }
+
+    my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+    (my $table = $index) =~ s/-[^-]*$//;
+    my $sql = "DELETE FROM arkime.$table WHERE has(fields.tags, '$tag')";
+    my $response = $ArkimeTest::userAgent->post("$chUrl/", Content => $sql, "Content-Type" => "text/plain;charset=UTF-8");
+    diag $response->content if ($debug || !$response->is_success);
+    return $response->is_success;
+}
+################################################################################
 sub esPut {
 my ($url, $content, $debug) = @_;
 
@@ -297,7 +344,7 @@ sub esCopy
 
         $id = $incoming->{_scroll_id};
 
-        esPost("/_bulk?refresh=wait_for", $out);
+        esPost("/_bulk?refresh=true", $out);
     }
 }
 ################################################################################
@@ -531,6 +578,22 @@ my ($url, $content, $token, $debug) = @_;
     my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::DELETE("http://$ArkimeTest::host:3218$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-cont3xt-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     return my_from_json($url, $response->content, $debug);
+}
+################################################################################
+# Call $check every 100ms until it returns true or $timeout seconds (default 10)
+# pass, use instead of a fixed sleep when waiting on something the server
+# writes after it responds
+sub waitUntil {
+my ($check, $timeout) = @_;
+    $timeout //= 10;
+    my $end = Time::HiRes::time() + $timeout;
+    while (1) {
+        return 1 if ($check->());
+        last if (Time::HiRes::time() >= $end);
+        Time::HiRes::sleep(0.1);
+    }
+    diag "waitUntil timed out after ${timeout}s";
+    return 0;
 }
 ################################################################################
 sub waitFor {

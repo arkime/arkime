@@ -27,6 +27,7 @@ LOCAL ArkimePacketRC ah_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_
     if (hlen >= len)
         return ARKIME_PACKET_CORRUPT;
 
+    packet->tunnel |= ARKIME_PACKET_TUNNEL_AH;
     return arkime_packet_run_ip_cb(batch, packet, data + hlen, len - hlen, data[0], "ah");
 }
 /******************************************************************************/

@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
       role="tablist"
       aria-orientation="vertical"
       class="no-overflow">
-      <div class="nav d-flex align-start flex-column nav-pills px-4">
+      <div class="nav d-flex align-start flex-column px-4">
         <v-btn
           v-for="{ name, text, icon } in [
             { name: 'general', text: 'General', icon: 'mdi-cog' },
@@ -31,10 +31,10 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           @click="openView(name)"
           :active="visibleTab === name"
-          class="nav-link cursor-pointer w-100 justify-start"
+          class="cursor-pointer w-100 justify-start"
           :class="{'active':visibleTab === name}">
           <v-icon
-            class="mr-2"
+            class="me-2"
             :icon="`${icon} mdi-fw`" />
           {{ text }}
         </v-btn>
@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3 id="search">
           <v-icon
             icon="mdi-magnify"
-            class="mr-2" />
+            class="me-2" />
           Search
         </h3>
         <p>
@@ -195,7 +195,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3 id="dateInputs">
           <v-icon
             icon="mdi-calendar"
-            class="mr-2" />
+            class="me-2" />
           Dates
         </h3>
         <p>
@@ -257,7 +257,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3>
           <v-icon
             icon="mdi-key"
-            class="mr-2" />
+            class="me-2" />
           Integrations
         </h3>
         <p>
@@ -297,7 +297,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- this page should be updated if the card format section of descriptions.txt is changed -->
         <h3>
           <v-icon
-            class="mr-2"
+            class="me-2"
             icon="mdi-file" />
           Overviews
         </h3>
@@ -325,9 +325,9 @@ SPDX-License-Identifier: Apache-2.0
             disabled>
             <v-icon
               icon="mdi-file"
-              class="mr-1" /> Overview Selector <v-icon
+              class="me-1" /> Overview Selector <v-icon
                 icon="mdi-menu-down"
-                class="ml-1" />
+                class="ms-1" />
           </v-btn> during a search.
         </p>
 
@@ -459,7 +459,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3>
           <v-icon
             icon="mdi-link"
-            class="mr-2" />
+            class="me-2" />
           Link Groups
         </h3>
         <p>

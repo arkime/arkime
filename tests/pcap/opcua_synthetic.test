@@ -138,21 +138,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "9f:21:b7:54:07:8a:fd:14:56:55:96:14:d5:d7:81:68:06:63:43:cf",
       "issuerCN" : [
        "opcua-synthetic-client"
       ],
+      "keyLength" : 1024,
       "notAfter" : 2019686400000,
       "notBefore" : 1704067200000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3700,
       "remainingSeconds" : 319686399,
       "serial" : "11223344",
+      "sha256" : "06bc830e0a0653bddeda425a6be38eb45c8f9f0859ea51c3fb32e9f94e3988cb",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "opcua-synthetic-client"
       ],
       "validDays" : 3653,
-      "validSeconds" : 315619200
+      "validSeconds" : 315619200,
+      "version" : 3
      }
     ],
     "certCnt" : 1,
@@ -424,21 +429,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "f7:ce:38:ac:b0:bb:f1:b4:b1:4a:58:e5:5c:9c:16:a5:be:4c:b5:ea",
       "issuerCN" : [
        "opcua-synthetic-a"
       ],
+      "keyLength" : 1024,
       "notAfter" : 2019686400000,
       "notBefore" : 1704067200000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3700,
       "remainingSeconds" : 319686397,
       "serial" : "11223344",
+      "sha256" : "304adf6f15c04d30f653493c3c2543de1529af6f4821a794146c6783db54ec3d",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "opcua-synthetic-a"
       ],
       "validDays" : 3653,
-      "validSeconds" : 315619200
+      "validSeconds" : 315619200,
+      "version" : 3
      }
     ],
     "certCnt" : 1,

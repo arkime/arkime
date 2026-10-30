@@ -79,6 +79,10 @@
       "http://xx.xxxxx.xxx/xx?id=xxxxxxx&cb=xxxxxxxxxxxxx&referrer=xxxxxxx.xxx"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -108,6 +112,10 @@
       "xxxxxxxxxx=xxx"
      ],
      "requestHeaderValueCnt" : 6,
+     "responseBodyLen" : [
+      190
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "age",
       "alternate-protocol",

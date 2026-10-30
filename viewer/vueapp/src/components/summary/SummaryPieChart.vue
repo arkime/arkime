@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <div class="chart-wrapper">
     <div
@@ -7,12 +11,20 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { colorRange, OTHER_COLOR } from './widgets/chartColors';
+import { metricIsAdditive } from './widgets/widgetData';
 
 const props = defineProps({
   data: {
     type: Array,
     required: true
+  },
+  // the sessions outside the top N ({ sessions, value }), drawn as a last slice
+  other: {
+    type: Object,
+    default: null
   },
   svgId: {
     type: String,
@@ -32,19 +44,31 @@ const props = defineProps({
   },
   metricType: {
     type: String,
-    default: 'sessions',
-    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+    default: 'sessions'
+  },
+  metricAgg: {
+    type: String,
+    default: 'sum'
+  },
+  colorScheme: {
+    type: String,
+    default: 'rainbow'
   }
 });
 
 const emit = defineEmits(['show-tooltip']);
+const { t } = useI18n();
+
+// the slices: the top N, then "Other" when it holds anything
+const slices = computed(() => (props.other?.value > 0
+  ? [...props.data, { item: t('sessions.summary.other'), other: true, sessions: props.other.sessions, value: props.other.value }]
+  : props.data));
 
 const chartContainer = ref(null);
 let d3 = null;
 
 // Label styling constants
 const LABEL_FONT_SIZE = '11px';
-const LABEL_RADIUS = 45;
 
 const showTooltip = (data, evt, percentage) => {
   emit('show-tooltip', {
@@ -55,7 +79,8 @@ const showTooltip = (data, evt, percentage) => {
     },
     percentage,
     fieldConfig: props.fieldConfig,
-    metricType: props.metricType
+    metricType: props.metricType,
+    metricAgg: props.metricAgg
   });
 };
 
@@ -69,7 +94,8 @@ const createChartHoverHandlers = () => {
   return {
     mouseover: function (e, d) {
       d3.select(this).style('opacity', 0.7);
-      const percentage = getSlicePercentage(d) * 100;
+      // averages, extremes and unique counts have no meaningful share of a total
+      const percentage = metricIsAdditive(props.metricType, props.metricAgg) ? getSlicePercentage(d) * 100 : null;
       showTooltip(d.data, e, percentage);
     },
     mouseleave: function () {
@@ -80,7 +106,7 @@ const createChartHoverHandlers = () => {
 
 const renderChart = async () => {
   if (!chartContainer.value) return;
-  if (!props.data || props.data.length === 0) return;
+  if (!slices.value.length) return;
 
   // Load D3 if not already loaded
   if (!d3) {
@@ -99,23 +125,28 @@ const renderChart = async () => {
     .append('g')
     .attr('transform', `translate(${props.width / 2},${props.height / 2})`);
 
-  // Use D3 color scheme
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  // Dashboard palette (shared with the bar/treemap charts)
+  const color = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
+  const fill = (d, i) => (d.data.other ? OTHER_COLOR : color(i));
 
   const pie = d3.pie()
-    .value(d => d[props.metricType])
+    .value(d => d.value)
     .sort(null);
 
+  const innerRadius = radius * 0.5; // Donut chart with 50% inner radius
+  const outerRadius = radius - 10;
   const arc = d3.arc()
-    .innerRadius(radius * 0.5) // Donut chart with 50% inner radius
-    .outerRadius(radius - 10);
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
 
+  // labels sit midway through the ring, so they stay on it at any size
+  const labelRadius = (innerRadius + outerRadius) / 2;
   const labelArc = d3.arc()
-    .innerRadius(radius - LABEL_RADIUS)
-    .outerRadius(radius - LABEL_RADIUS);
+    .innerRadius(labelRadius)
+    .outerRadius(labelRadius);
 
   const arcs = svg.selectAll('.arc')
-    .data(pie(props.data))
+    .data(pie(slices.value))
     .enter()
     .append('g')
     .attr('class', 'arc');
@@ -125,7 +156,7 @@ const renderChart = async () => {
   // Draw pie slices
   arcs.append('path')
     .attr('d', arc)
-    .attr('fill', (d, i) => color(i))
+    .attr('fill', fill)
     .attr('stroke', 'white')
     .style('stroke-width', '2px')
     .style('cursor', 'pointer')
@@ -150,7 +181,7 @@ const renderChart = async () => {
 };
 
 // Watch for data, metric type, or dimension changes
-watch([() => props.data, () => props.metricType, () => props.width, () => props.height], () => {
+watch([slices, () => props.metricType, () => props.width, () => props.height, () => props.colorScheme], () => {
   renderChart();
 }, { deep: true });
 

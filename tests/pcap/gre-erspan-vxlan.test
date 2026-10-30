@@ -51,6 +51,10 @@
       "/Hello"
      ],
      "pathCnt" : 1,
+     "responseBodyLen" : [
+      8
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -101,12 +105,13 @@
      "lte" : 1652950005876
     },
     "protocol" : [
+     "erspan",
      "gre",
      "http",
      "tcp",
      "vxlan-gpe"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 27

@@ -18,7 +18,6 @@
 #include "glib-object.h"
 #include "pcap.h"
 #include "arkime.h"
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 extern ArkimeConfig_t        config;
 
 LOCAL ArkimePacketBatch_t   batch;
@@ -42,6 +41,10 @@ typedef struct {
 } POIClient_t;
 
 LOCAL int                   isConnected[MAX_INTERFACES];
+LOCAL GHashTable           *clients;     // all live POIClient_t so stop can close them
+LOCAL gint                  serverWatch;
+LOCAL GSocket              *serverSocket; // listening socket so stop can close it
+LOCAL guint                 checkTimer;
 
 #define SWAP32(x) ((((x)&0xff000000) >> 24) | (((x)&0x00ff0000) >> 8) | (((x)&0x0000ff00) << 8) | (((x)&0x000000ff) << 24))
 #define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
@@ -52,6 +55,7 @@ LOCAL void pcapoverip_client_free(POIClient_t *poic)
     if (poic->isClient) {
         isConnected[poic->interface] = 0;
     }
+    g_hash_table_remove(clients, poic);
     g_source_remove(poic->readWatch);
     g_object_unref(poic->socket);
 
@@ -97,12 +101,12 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             poic->isNanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
 
             // TODO: Really we should save the header per connection and do stuff
-            if (first) {
-                if (poic->needSwap) {
-                    h->dlt = SWAP32(h->dlt);
-                }
-                arkime_packet_set_dltsnap(h->dlt, config.snapLen);
+            if (poic->needSwap) {
+                h->dlt = SWAP32(h->dlt);
+            }
+            arkime_packet_set_interface(poic->interface, 0, h->dlt, config.snapLen);
 
+            if (first) {
                 if (config.bpf && !bpfCompiled) {
                     arkime_readers_compile_bpf("PcapOverIP", h->dlt, config.snapLen, config.bpf, &bpfp);
                     bpfCompiled = TRUE;
@@ -258,6 +262,7 @@ LOCAL void pcapoverip_client_connect(int interface)
     poic->isClient = 1;
     poic->socket = conn;
     poic->readWatch = arkime_watch_fd(fd, ARKIME_GIO_READ_COND, pcapoverip_client_read_cb, poic);
+    g_hash_table_add(clients, poic);
     isConnected[poic->interface] = 1;
 }
 /******************************************************************************/
@@ -276,8 +281,8 @@ LOCAL void pcapoverip_client_start()
     arkime_call_named_func(initFunc, 0, NULL);
 
     pcapoverip_client_check_connections(NULL);
-    g_timeout_add_seconds(5, pcapoverip_client_check_connections, NULL);
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    checkTimer = g_timeout_add_seconds(5, pcapoverip_client_check_connections, NULL);
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
 LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer data)
@@ -303,6 +308,7 @@ LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(co
 
     int cfd = g_socket_get_fd(client);
     poic->readWatch = arkime_watch_fd(cfd, ARKIME_GIO_READ_COND, pcapoverip_client_read_cb, poic);
+    g_hash_table_add(clients, poic);
     return TRUE;
 }
 /******************************************************************************/
@@ -335,8 +341,9 @@ LOCAL void pcapoverip_server_start()
 
     int fd = g_socket_get_fd(socket);
 
-    arkime_watch_fd(fd, ARKIME_GIO_READ_COND, pcapoverip_server_read_cb, socket);
-    arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
+    serverSocket = socket;
+    serverWatch = arkime_watch_fd(fd, ARKIME_GIO_READ_COND, pcapoverip_server_read_cb, socket);
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
 LOCAL int pcapoverip_stats(ArkimeReaderStats_t *stats)
@@ -348,6 +355,27 @@ LOCAL int pcapoverip_stats(ArkimeReaderStats_t *stats)
 /******************************************************************************/
 LOCAL void pcapoverip_stop()
 {
+    // Stop accepting, reconnecting and reading so no packets arrive after the reader exit hook
+    if (serverWatch) {
+        g_source_remove(serverWatch);
+        serverWatch = 0;
+    }
+    if (serverSocket) {
+        g_socket_close(serverSocket, NULL);
+        g_object_unref(serverSocket);
+        serverSocket = NULL;
+    }
+    if (checkTimer) {
+        g_source_remove(checkTimer);
+        checkTimer = 0;
+    }
+
+    GList *list = g_hash_table_get_keys(clients);
+    for (GList *l = list; l; l = l->next) {
+        pcapoverip_client_free(l->data);
+    }
+    g_list_free(list);
+
     int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
     arkime_call_named_func(exitFunc, 0, NULL);
 }
@@ -355,6 +383,7 @@ LOCAL void pcapoverip_stop()
 void reader_pcapoverip_init(const char *name)
 {
     port        = arkime_config_int(NULL, "pcapOverIpPort", 57012, 1, 0xffff);
+    clients     = g_hash_table_new(g_direct_hash, g_direct_equal);
 
     if (strcmp(name, "pcapoveripclient") == 0 || strcmp(name, "pcap-over-ip-client") == 0) {
         arkime_reader_start         = pcapoverip_client_start;

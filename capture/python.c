@@ -1510,9 +1510,23 @@ LOCAL PyObject *arkime_python_packet_set(PyObject UNUSED(*self), PyObject *args)
 /******************************************************************************/
 LOCAL ArkimePacketRC arkime_python_packet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, void *cbuw)
 {
+    ArkimePyCbMap_t *map = cbuw;
+
+    // Chunks from the s3/http schemes are processed on the main thread, which has no reader
+    // interpreter, so reader callbacks can't run for them. Say so instead of silently skipping.
+    if (arkimeReaderThread < 0) {
+        LOG_RATE(60, "WARNING - python reader callbacks are not run for packets read on the main thread (s3/http schemes)");
+        return ARKIME_PACKET_DO_PROCESS;
+    }
+
+    // The reader interpreter and its callbacks are released by the reader exit hook, which for
+    // main loop based readers can run while a dispatch is still pending
+    if (!readerThreadState[arkimeReaderThread] || !map->cb[arkimeReaderThread]) {
+        return ARKIME_PACKET_DO_PROCESS;
+    }
+
     PyEval_RestoreThread(readerThreadState[arkimeReaderThread]);
 
-    ArkimePyCbMap_t *map = cbuw;
     PyObject *py_callback_obj = map->cb[arkimeReaderThread];
 
     PyObject *py_batch_opaque_ptr = PyLong_FromVoidPtr(batch);
@@ -1717,7 +1731,7 @@ LOCAL int arkime_python_pp_load(const char *path)
     return 0;
 }
 /******************************************************************************/
-LOCAL int threads;
+LOCAL int readerThreads;
 LOCAL ARKIME_LOCK_DEFINE(interpLock);
 
 LOCAL void arkime_python_thread_init(PyThreadState **threadState)
@@ -1819,7 +1833,6 @@ LOCAL uint32_t arkime_python_packet_thread_init(int thread, void UNUSED(*uw), vo
         return 0;
     }
 
-    ARKIME_THREAD_INCR(threads);
     arkime_python_thread_init(&packetThreadState[thread]);
 
     return 0;
@@ -1837,7 +1850,6 @@ LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), vo
     arkime_python_release_callbacks_for_thread(thread, TRUE);
     Py_EndInterpreter(packetThreadState[thread]);
     packetThreadState[thread] = NULL;
-    ARKIME_THREAD_DECR(threads);
     return 0;
 }
 /******************************************************************************/
@@ -1848,7 +1860,7 @@ LOCAL uint32_t arkime_python_reader_thread_init(int thread, void UNUSED(*uw), vo
     }
 
     arkimeReaderThread = thread;
-    ARKIME_THREAD_INCR(threads);
+    ARKIME_THREAD_INCR(readerThreads);
     arkime_python_thread_init(&readerThreadState[thread]);
     arkime_python_reader_load_files(thread);
 
@@ -1867,7 +1879,33 @@ LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), vo
     arkime_python_release_callbacks_for_thread(thread, FALSE);
     Py_EndInterpreter(readerThreadState[thread]);
     readerThreadState[thread] = NULL;
-    ARKIME_THREAD_DECR(threads);
+    ARKIME_THREAD_DECR(readerThreads);
+    return 0;
+}
+/******************************************************************************/
+// Keep the main loop running until the readers have ended their interpreters,
+// some readers need it to finish outstanding http requests.
+// Don't wait forever though, a reader that never reaches its exit hook would
+// otherwise block the writer exit and leave pcap files unfinished.
+#define PYTHON_READER_WAIT_SECS 10
+LOCAL int arkime_python_reader_outstanding()
+{
+    LOCAL int ticks; // arkime_quit_gfunc runs every 100ms
+
+    int outstanding = ARKIME_THREAD_ATOMIC_LOAD_RELAXED(readerThreads);
+    if (!outstanding) {
+        return 0;
+    }
+
+    if (ticks < PYTHON_READER_WAIT_SECS * 10) {
+        ticks++;
+        return outstanding;
+    }
+
+    if (ticks == PYTHON_READER_WAIT_SECS * 10) {
+        ticks++;
+        LOG("WARNING - %d python reader interpreter(s) still running after %d seconds, continuing shutdown without them", outstanding, PYTHON_READER_WAIT_SECS);
+    }
     return 0;
 }
 /******************************************************************************/
@@ -1895,6 +1933,8 @@ void arkime_python_init()
 
     arkime_add_named_func("arkime_reader_thread_init", arkime_python_reader_thread_init, NULL);
     arkime_add_named_func("arkime_reader_thread_exit", arkime_python_reader_thread_exit, NULL);
+
+    arkime_add_can_quit(arkime_python_reader_outstanding, "python reader threads");
 }
 /******************************************************************************/
 void arkime_python_exit()
@@ -1903,15 +1943,26 @@ void arkime_python_exit()
         return;
     }
 
+    // Packet threads were joined in arkime_packet_exit and reader interpreters
+    // were waited for with a can quit, so every sub-interpreter should have ended.
+    // Verify since Py_FinalizeEx aborts if one is still alive, and the callback
+    // map free would decref objects owned by a live interpreter.
+    int live = 0;
+    for (int t = 0; t < ARKIME_MAX_PACKET_THREADS; t++) {
+        if (packetThreadState[t])
+            live++;
+    }
+    for (int t = 0; t < MAX_INTERFACES * MAX_THREADS_PER_INTERFACE; t++) {
+        if (readerThreadState[t])
+            live++;
+    }
+    if (live) {
+        LOG("WARNING - %d python sub-interpreter(s) still running, skipping python finalization", live);
+        return;
+    }
+
     if (config.debug)
         LOG("Exiting Python");
-    arkime_packet_thread_wake(-1);
-
-    while (threads > 0) {
-        if (config.debug > 1)
-            LOG("Waiting for %d Python threads to exit", threads);
-        usleep(10000);
-    }
 
     // Clean up the callback map - the PyObjects have already been decref'd in thread exit
     if (arkimePyCbMap) {

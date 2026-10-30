@@ -1242,14 +1242,18 @@ LOCAL void arkime_config_load()
     config.yara             = arkime_config_str(keyfile, "yara", NULL);
     config.rirFile          = arkime_config_str(keyfile, "rirFile", NULL);
     config.ouiFile          = arkime_config_str(keyfile, "ouiFile", NULL);
-    config.geoLite2ASN      = arkime_config_str_list(keyfile, "geoLite2ASN", "/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-ASN.mmdb");
-    config.geoLite2Country  = arkime_config_str_list(keyfile, "geoLite2Country", "/var/lib/GeoIP/GeoLite2-City.mmdb;/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-City.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-City.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-Country.mmdb");
+    config.geoASNFile       = arkime_config_str_list(keyfile, "geoASNFile", NULL);
+    if (!config.geoASNFile)
+        config.geoASNFile   = arkime_config_str_list(keyfile, "geoLite2ASN", "/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-ASN.mmdb");
+    config.geoFile          = arkime_config_str_list(keyfile, "geoFile", NULL);
+    if (!config.geoFile)
+        config.geoFile      = arkime_config_str_list(keyfile, "geoLite2Country", "/var/lib/GeoIP/GeoLite2-City.mmdb;/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-City.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-City.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-Country.mmdb");
     config.dropUser         = arkime_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = arkime_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = arkime_config_str_list(keyfile, "pluginsDir", CONFIG_PREFIX "/plugins ; ./plugins ");
     config.parsersDir       = arkime_config_str_list(keyfile, "parsersDir", CONFIG_PREFIX "/parsers ; ./parsers ");
     config.caTrustFile      = arkime_config_str(keyfile, "caTrustFile", NULL);
-    char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
+    char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|pcapng|cap)$");
 
     if (config.bpf && *config.bpf == 0) {
         g_free(config.bpf);
@@ -1286,9 +1290,6 @@ LOCAL void arkime_config_load()
     config.maxFileSizeG          = arkime_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG * 1024LL * 1024LL * 1024LL;
     config.maxFileTimeM          = arkime_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
-    config.tcpSaveTimeout        = arkime_config_int(keyfile, "tcpSaveTimeout", 60 * 8, 10, 60 * 120);
-    int maxStreams               = arkime_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
-    config.maxPackets            = arkime_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);
     config.maxPacketsInQueue     = arkime_config_int(keyfile, "maxPacketsInQueue", 200000, 10000, 5000000);
     config.dbBulkSize            = arkime_config_int(keyfile, "dbBulkSize", 1000000, 500000, 15000000);
     config.dbFlushTimeout        = arkime_config_int(keyfile, "dbFlushTimeout", 5, 1, 60 * 30);
@@ -1335,12 +1336,6 @@ LOCAL void arkime_config_load()
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
-    config.maxStreams[SESSION_TCP] = MAX(64, maxStreams / config.packetThreads * 1.25);
-    config.maxStreams[SESSION_UDP] = MAX(64, maxStreams / config.packetThreads / 20);
-    config.maxStreams[SESSION_SCTP] = MAX(64, maxStreams / config.packetThreads / 20);
-    config.maxStreams[SESSION_ICMP] = MAX(64, maxStreams / config.packetThreads / 200);
-    config.maxStreams[SESSION_ESP] = MAX(64, maxStreams / config.packetThreads / 200);
-    config.maxStreams[SESSION_OTHER] = MAX(64, maxStreams / config.packetThreads / 20);
 
     gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {
@@ -1677,6 +1672,11 @@ typedef struct {
     ArkimeFilesChange_cb  cbs;
     off_t                 size[ARKIME_CONFIG_FILES];
     int64_t               modify[ARKIME_CONFIG_FILES];
+    char                **entries;                     // Original file/dir list for dir monitors, NULL otherwise
+    char                **suffixes;                    // File suffixes to load from a dir
+    char                **expanded;                    // The files handed to cbs for dir monitors
+    char                 *loaded;                      // Dir monitors: snapshot of what was last loaded
+    char                 *pending;                     // Dir monitors: changed snapshot waiting to settle
 } ArkimeFileChange_t;
 
 LOCAL GPtrArray          *files;
@@ -1732,6 +1732,166 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
     cb(names);
 }
 /******************************************************************************/
+LOCAL gboolean arkime_config_has_suffix(const char *name, char **suffixes)
+{
+    for (int s = 0; suffixes[s]; s++) {
+        if (g_str_has_suffix(name, suffixes[s]))
+            return TRUE;
+    }
+    return FALSE;
+}
+/******************************************************************************/
+LOCAL gint arkime_config_expand_sort(gconstpointer a, gconstpointer b)
+{
+    return strcmp(*(const char *const *)a, *(const char *const *)b);
+}
+/******************************************************************************/
+#ifdef __APPLE__
+#define ARKIME_STAT_MTIME(sb) (sb).st_mtimespec
+#else
+#define ARKIME_STAT_MTIME(sb) (sb).st_mtim
+#endif
+
+// Add what a reload cares about for a dir or file, nanosecond mtimes so a change in the same second is seen
+LOCAL void arkime_config_snapshot_add(GString *snapshot, const char *path, const struct stat *sb)
+{
+    g_string_append_printf(snapshot, "%s %lld %lld.%09ld %llu\n", path, (long long)sb->st_size,
+                           (long long)ARKIME_STAT_MTIME(*sb).tv_sec, (long)ARKIME_STAT_MTIME(*sb).tv_nsec, (unsigned long long)sb->st_ino);
+}
+/******************************************************************************/
+/* Expand a list of files and directories into just files. A directory contributes the
+ * files in it that end with one of the suffixes sorted by name. default.* files are
+ * moved to the front so later files can override them. Hidden files are skipped. Returns a
+ * g_strfreev list, or NULL (after logging) if an entry can't be read and fatal is FALSE.
+ * Every dir and file is added to snapshot as it is stat'ed, a dir before it is read, so
+ * anything changed after can be noticed by comparing snapshots.
+ */
+LOCAL char **arkime_config_expand_files(const char *desc, char **entries, char **suffixes, GString *snapshot, gboolean fatal)
+{
+    GPtrArray *out = g_ptr_array_new();
+
+    for (int i = 0; entries[i]; i++) {
+        struct stat sb;
+        if (stat(entries[i], &sb) != 0) {
+            if (fatal)
+                CONFIGEXIT("Couldn't stat %s file %s error %s", desc, entries[i], strerror(errno));
+            LOG("Couldn't stat %s file %s error %s", desc, entries[i], strerror(errno));
+            g_ptr_array_set_free_func(out, g_free);
+            g_ptr_array_free(out, TRUE);
+            return NULL;
+        }
+
+        arkime_config_snapshot_add(snapshot, entries[i], &sb);
+
+        if (!S_ISDIR(sb.st_mode)) {
+            g_ptr_array_add(out, g_strdup(entries[i]));
+            continue;
+        }
+
+        GError *error = NULL;
+        GDir *dir = g_dir_open(entries[i], 0, &error);
+        if (!dir) {
+            if (fatal)
+                CONFIGEXIT("Couldn't open %s directory %s error %s", desc, entries[i], error->message);
+            LOG("Couldn't open %s directory %s error %s", desc, entries[i], error->message);
+            g_error_free(error);
+            g_ptr_array_set_free_func(out, g_free);
+            g_ptr_array_free(out, TRUE);
+            return NULL;
+        }
+
+        GPtrArray *names = g_ptr_array_new_with_free_func(g_free);
+        const char *name;
+        while ((name = g_dir_read_name(dir))) {
+            if (name[0] == '.' || !arkime_config_has_suffix(name, suffixes))
+                continue;
+            g_ptr_array_add(names, g_strdup(name));
+        }
+        g_dir_close(dir);
+
+        g_ptr_array_sort(names, arkime_config_expand_sort);
+        for (guint n = 0; n < names->len; n++) {
+            char *path = g_build_filename(entries[i], g_ptr_array_index(names, n), NULL);
+            if (stat(path, &sb) == 0 && S_ISREG(sb.st_mode)) {
+                arkime_config_snapshot_add(snapshot, path, &sb);
+                g_ptr_array_add(out, path);
+            } else
+                g_free(path);
+        }
+        g_ptr_array_free(names, TRUE);
+    }
+
+    // default.* files go first whichever entry they came from, so every other file can override them
+    GPtrArray *sorted = g_ptr_array_new();
+    for (int pass = 0; pass < 2; pass++) {
+        for (guint n = 0; n < out->len; n++) {
+            char *path = g_ptr_array_index(out, n);
+            const char *base = strrchr(path, '/');
+            base = base ? base + 1 : path;
+            if (g_str_has_prefix(base, "default.") == (pass == 0))
+                g_ptr_array_add(sorted, path);
+        }
+    }
+    g_ptr_array_free(out, TRUE);
+
+    g_ptr_array_add(sorted, NULL);
+    return (char **)g_ptr_array_free(sorted, FALSE);
+}
+/******************************************************************************/
+void arkime_config_monitor_dir_files(const char *desc, char **entries, const char *suffixes, ArkimeFilesChange_cb cb)
+{
+    ArkimeFileChange_t *file = ARKIME_TYPE_ALLOC0(ArkimeFileChange_t);
+
+    file->desc = g_strdup(desc);
+    file->cbs = cb;
+    file->entries = g_strdupv(entries);
+    file->suffixes = g_strsplit(suffixes, ";", 0);
+
+    GString *snapshot = g_string_new(NULL);
+    file->expanded = arkime_config_expand_files(desc, file->entries, file->suffixes, snapshot, TRUE);
+    file->loaded = g_string_free(snapshot, FALSE);
+
+    g_ptr_array_add(files, file);
+    cb(file->expanded);
+}
+/******************************************************************************/
+/* Reload a dir monitor once a change has settled, the same snapshot on two checks in a
+ * row, so a file that is still being written isn't loaded half done. The snapshot is
+ * taken before the files are read, so anything changed while loading is seen next time.
+ */
+LOCAL void arkime_config_reload_dir(ArkimeFileChange_t *file)
+{
+    GString *snapshot = g_string_new(NULL);
+    char **expanded = arkime_config_expand_files(file->desc, file->entries, file->suffixes, snapshot, FALSE);
+
+    if (!expanded || strcmp(snapshot->str, file->loaded) == 0) {
+        g_strfreev(expanded);
+        g_string_free(snapshot, TRUE);
+        g_free(file->pending);
+        file->pending = NULL;
+        return;
+    }
+
+    if (g_strcmp0(snapshot->str, file->pending) != 0) {
+        if (config.debug)
+            LOG("Changed %s, waiting for it to settle", file->desc);
+        g_strfreev(expanded);
+        g_free(file->pending);
+        file->pending = g_string_free(snapshot, FALSE);
+        return;
+    }
+
+    if (config.debug)
+        LOG("Reloading %s", file->desc);
+    g_free(file->pending);
+    file->pending = NULL;
+    g_free(file->loaded);
+    file->loaded = g_string_free(snapshot, FALSE);
+    g_strfreev(file->expanded);
+    file->expanded = expanded;
+    file->cbs(file->expanded);
+}
+/******************************************************************************/
 LOCAL gboolean arkime_config_reload_files(gpointer UNUSED(user_data))
 {
     int             f;
@@ -1740,6 +1900,11 @@ LOCAL gboolean arkime_config_reload_files(gpointer UNUSED(user_data))
     for (guint i = 0; i < files->len; i++) {
         int changed = 0;
         ArkimeFileChange_t *file = g_ptr_array_index(files, i);
+        if (file->entries) {
+            arkime_config_reload_dir(file);
+            continue;
+        }
+
         for (f = 0; f < file->num; f++) {
             if (stat(file->name[f], &sb[f]) != 0) {
                 LOG("Couldn't stat %s file %s error %s", file->desc, file->name[f], strerror(errno));
@@ -2037,7 +2202,8 @@ void arkime_config_init()
         CONFIGEXIT("You must set a non empty pcapDir= in the config file (%s) to save files to. You need to fix this before Arkime can continue.", config.configFile);
     }
 
-    if (!config.dryRun) {
+    // A long running dry run still picks up changed files
+    if (!config.dryRun || config.commandWait || config.pcapMonitor) {
         g_timeout_add_seconds(10, arkime_config_reload_files, 0);
     }
 

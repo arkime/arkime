@@ -11,7 +11,7 @@
 #define MAX_IPS 2000
 
 #define DEFAULT_JSON_LEN 200
-#define HOST_IP_JSON_LEN 250
+#define HOST_IP_JSON_LEN 800 // worst case: 255-char host emits ~258 bytes plus up to ~512 in hostTokens
 #define ANSWER_JSON_LEN 200
 #define DNS_MAX_JSON_SIZE 200000
 #define DNS_MAX_MSG_JSON_SIZE 2000000 // well above any real message, bounds crafted answer floods
@@ -101,166 +101,7 @@ LOCAL  char                 *rcodes[24] = {"NOERROR", "FORMERR", "SERVFAIL", "NX
 LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "DSO Message", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
 LOCAL  char                 *flagsStr[7] = {"AA", "TC", "RD", "RA", "Z", "AD", "CD"};
 
-typedef enum dns_type {
-    DNS_RR_A          =   1,
-    DNS_RR_NS         =   2,
-    DNS_RR_CNAME      =   5,
-    DNS_RR_PTR        =  12,
-    DNS_RR_MX         =  15,
-    DNS_RR_TXT        =  16,
-    DNS_RR_AAAA       =  28,
-    DNS_RR_SRV        =  33,
-    DNS_RR_DS         =  43,
-    DNS_RR_RRSIG      =  46,
-    DNS_RR_NSEC       =  47,
-    DNS_RR_HTTPS      =  65,
-    DNS_RR_CAA        = 257
-} DNSType_t;
-
-typedef enum dns_class {
-    CLASS_IN      =     1,
-    CLASS_CS      =     2,
-    CLASS_CH      =     3,
-    CLASS_HS      =     4,
-    CLASS_NONE    =   254,
-    CLASS_ANY     =   255,
-    CLASS_UNKNOWN = 65280
-} DNSClass_t;
-
-typedef enum dns_svcb_param_key {
-    SVCB_PARAM_KEY_ALPN      = 1,
-    SVCB_PARAM_KEY_PORT      = 3,
-    SVCB_PARAM_KEY_IPV4_HINT = 4,
-    SVCB_PARAM_KEY_IPV6_HINT = 6
-} DNSSVCBParamKey_t;
-
-typedef enum dns_result_record_type {
-    RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
-    RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
-    RESULT_RECORD_ADDITIONAL      =     3,    /* Additional Record */
-    RESULT_RECORD_UNKNOWN         =     4,    /* Unknown Record*/
-} DNSResultRecordType_t;
-
-typedef struct dns_answer_mxrdata {
-    uint16_t preference;
-    char    *exchange;
-} DNSMXRData_t;
-
-typedef struct dns_answer_srvrdata {
-    uint16_t priority;
-    uint16_t weight;
-    uint16_t port;
-    char    *target;
-} DNSSRVRData_t;
-
-typedef struct dns_answer_svcbrdata_field_value {
-    struct dns_answer_svcbrdata_field_value  *t_next, *t_prev;
-    DNSSVCBParamKey_t                         key;
-    void                                     *value;
-} DNSSVCBRDataFieldValue_t;
-
-typedef struct {
-    struct dns_answer_svcbrdata_field_value  *t_next, *t_prev;
-    int                                       t_count;
-} DNSSVCBRDataFieldValueHead_t;
-
-typedef struct dns_answer_svcbrdata {
-    uint16_t                       priority;
-    char                          *dname;
-    DNSSVCBRDataFieldValueHead_t   fieldValues;
-} DNSSVCBRData_t ;
-
-typedef struct dns_answer_caadata {
-    char   *tag;
-    char   *value;
-    uint8_t flags;
-} DNSCAARData_t;
-
-typedef struct dns_answer_rrsigdata {
-    char    *signerName;
-    uint32_t originalTTL;
-    uint32_t expiration;
-    uint32_t inception;
-    uint16_t typeCovered;
-    uint16_t keyTag;
-    uint8_t  algorithm;
-    uint8_t  labels;
-} DNSRRSIGRData_t;
-
-typedef struct dns_answer_nsecdata {
-    char *nextDomainName;
-    char *typeList;
-} DNSNSECRData_t;
-
-typedef struct dns_answer_dsdata {
-    char    *digest;
-    uint16_t keyTag;
-    uint8_t  algorithm;
-    uint8_t  digestType;
-} DNSDSRData_t;
-
-typedef struct dns_answer {
-    struct dns_answer  *t_next, *t_prev;
-    union {
-        char            *cname;
-        char            *ptrdname;
-        DNSMXRData_t    *mx;
-        DNSSRVRData_t   *srv;
-        char            *nsdname;
-        uint32_t         ipA;
-        struct in6_addr *ipAAAA;
-        GPtrArray       *txts;
-        DNSCAARData_t   *caa;
-        DNSSVCBRData_t  *svcb;
-        DNSRRSIGRData_t *rrsig;
-        DNSNSECRData_t  *nsec;
-        DNSDSRData_t    *ds;
-    };
-    char                *class;
-    char                *type;
-    char                *name;
-    uint32_t             ttl;
-    uint16_t             type_id; // Only used for choosing correct RDATA in union
-} DNSAnswer_t;
-
-typedef struct {
-    struct dns_answer *t_next, *t_prev;
-    int                t_count;
-} DNSAnswerHead_t;
-
-typedef struct {
-    char    *class;
-    char    *type;
-    char    *opcode;
-    char    *hostname;
-    uint16_t type_id;
-    uint16_t class_id;
-    uint16_t packet_uid;
-    uint8_t  opcode_id;
-} DNSQuery_t;
-
-typedef struct dns {
-    struct dns            *t_next, *t_prev;
-    uint32_t               t_hash;
-    short                  t_bucket;
-    DNSAnswerHead_t        answers;
-    DNSQuery_t             query;
-    ArkimeStringHashStd_t  hosts;
-    ArkimeStringHashStd_t *nsHosts;
-    ArkimeStringHashStd_t *mxHosts;
-    ArkimeStringHashStd_t *punyHosts;
-    GHashTable            *ips;
-    GHashTable            *nsIPs;
-    GHashTable            *mxIPs;
-    char                  *rcode;
-    int8_t                 rcode_id;
-    uint8_t                headerFlags;
-} DNS_t;
-
-typedef struct {
-    struct dns *t_next, *t_prev;
-    int         t_count;
-} DNSHead_t;
+#include "dns_info.h"
 
 typedef HASH_VAR(t_, DNSHash_t, DNSHead_t, 1);
 typedef HASH_VAR(t_, DNSHashStd_t, DNSHead_t, 10);
@@ -929,6 +770,19 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         dns = fobject->object;
     }
 
+    {
+        const uint8_t flags = (data[2] & 0x07) << 4 | ((data[3] & 0xf0) >> 4);
+        if (qr) {
+            if (!dns->responseTime.tv_sec)
+                dns->responseTime = session->lastPacket;
+            dns->responseFlags = flags;
+        } else {
+            if (!dns->queryTime.tv_sec)
+                dns->queryTime = session->lastPacket;
+            dns->queryFlags = flags;
+        }
+    }
+
     if (qr == 0) {
         if (session->fields[dnsField]->jsonSize > DNS_MAX_JSON_SIZE)
             session->midSave = 1;
@@ -980,6 +834,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
 
             DNSAnswer_t *answer = ARKIME_TYPE_ALLOC0(DNSAnswer_t);
+            answer->section = recordType;
 
             if (!namelen) {
                 answer->name = root;
@@ -1701,6 +1556,19 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
         BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"TYPE%u\",", dns->query.type_id);
 
     if (HASH_COUNT(s_, dns->hosts) > 0) {
+        // ES fills hostTokens via copy_to+analyzer; emit it here for sessions
+        // stores without that machinery. Must run before SAVE_STRING_HASH,
+        // which frees the strings as it emits.
+        if (arkime_db_tokens_enabled()) {
+            BSB_EXPORT_cstr(*jbsb, "\"hostTokens\":[");
+            HASH_FORALL2(s_, dns->hosts, string) {
+                arkime_db_export_tokens_str(jbsb, string->str);
+            }
+            if (*(BSB_WORK_PTR(*jbsb) - 1) == ',') {
+                BSB_EXPORT_rewind(*jbsb, 1);
+            }
+            BSB_EXPORT_cstr(*jbsb, "],");
+        }
         SAVE_STRING_HASH(dns->hosts, "host");
     }
     if (HASH_COUNT(s_, *(dns->nsHosts)) > 0) {
@@ -2323,6 +2191,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostField = arkime_field_by_exp_add_internal("dns.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host, NULL);
+    arkime_field_internal_sets_rules(dnsHostField);
     arkime_field_by_exp_add_special("host.dns", dnsHostField);
 
     arkime_field_define("dns", "lotextfield",
@@ -2340,6 +2209,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostNameserverField = arkime_field_by_exp_add_internal("host.dns.nameserver", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host_nameserver, NULL);
+    arkime_field_internal_sets_rules(dnsHostNameserverField);
 
     arkime_field_define("dns", "lotermfield",
                         "host.dns.mailserver", "DNS MX Host", "dns.mailserverHost",
@@ -2349,6 +2219,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostMailserverField = arkime_field_by_exp_add_internal("host.dns.mailserver", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host_mailserver, NULL);
+    arkime_field_internal_sets_rules(dnsHostMailserverField);
 
     arkime_field_define("dns", "lotermfield",
                         "host.dns.all", "DNS All Host", "dnshostall",
@@ -2364,6 +2235,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsPunyField = arkime_field_by_exp_add_internal("dns.puny", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_puny, NULL);
+    arkime_field_internal_sets_rules(dnsPunyField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.status", "DNS Status Code", "dns.status",
@@ -2372,6 +2244,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsStatusField = arkime_field_by_exp_add_internal("dns.status", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_status, NULL);
+    arkime_field_internal_sets_rules(dnsStatusField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.opcode", "DNS Op Code", "dns.opcode",
@@ -2380,6 +2253,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsOpcodeField = arkime_field_by_exp_add_internal("dns.opcode", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_opcode, NULL);
+    arkime_field_internal_sets_rules(dnsOpcodeField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.query.type", "DNS Query Type", "dns.qt",
@@ -2388,6 +2262,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsQueryTypeField = arkime_field_by_exp_add_internal("dns.query.type", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_type, NULL);
+    arkime_field_internal_sets_rules(dnsQueryTypeField);
 
     arkime_field_define("dns", "uptermfield",
                         "dns.query.class", "DNS Query Class", "dns.qc",
@@ -2396,6 +2271,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsQueryClassField = arkime_field_by_exp_add_internal("dns.query.class", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_class, NULL);
+    arkime_field_internal_sets_rules(dnsQueryClassField);
 
     arkime_field_define("dns", "lotermfield",
                         "dns.query.host", "DNS Query Host", "dns.queryHost",
@@ -2405,6 +2281,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsQueryHostField = arkime_field_by_exp_add_internal("dns.query.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_host, NULL);
+    arkime_field_internal_sets_rules(dnsQueryHostField);
 
     arkime_field_define("dns", "integer",
                         "dns.answer.cnt", "DNS Answers Cnt", "dns.answersCnt",

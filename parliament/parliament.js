@@ -8,7 +8,6 @@
  */
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 7;
 const MIN_DB_VERSION = 79;
 
 // Cap the size of responses we accept from monitored clusters so a malicious
@@ -26,7 +25,6 @@ const favicon = require('serve-favicon');
 const bp = require('body-parser');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
-const upgrade = require('./upgrade');
 const path = require('path');
 const axios = require('axios');
 const { LRUCache } = require('lru-cache');
@@ -35,6 +33,8 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const Notifier = require('../common/notifier');
+const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
@@ -54,13 +54,6 @@ const issueTypes = {
   lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' },
   lowDiskSpaceES: { on: true, name: 'ES Low Disk Space', text: 'ES node has low disk space', severity: 'yellow', description: 'the ES node has low disk space' }
 };
-
-const parliamentReadError = `
-You must fix this before you can run Parliament.
-Try using parliament.example.json as a starting point.
-Use the "file" setting in your Parliament config to point to your Parliament JSON file.
-See https://arkime.com/settings#parliament for more information.
-`;
 
 const internals = {
   stats: new Map(),
@@ -121,8 +114,6 @@ if (ArkimeConfig.regressionTests) {
   });
 }
 
-// parliament object!
-let parliamentFile;
 // issues object!
 let issues;
 
@@ -143,24 +134,38 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
+
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
-  styleSrc: ["'self'"],
+  // 'unsafe-inline' for vuetify/vue inline styles (also needed for hot module replacement in dev)
+  styleSrc: ["'self'", "'unsafe-inline'"],
   // need unsafe-eval for vue full build: https://vuejs.org/guide/best-practices/security.html#potential-dangers
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
 };
-if (process.env.NODE_ENV === 'development') {
-  // need unsafe inline styles for hot module replacement
-  cspDirectives.styleSrc.push("'unsafe-inline'");
-}
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: cspDirectives
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
+
+// resolve at config load, so a bad value warns at startup. helmet snapshots
+// the directives when it is constructed, so rebuild the header too.
+ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+});
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -202,8 +207,8 @@ function checkCookieToken (req, res, next) {
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/parliament/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/parliament/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -214,8 +219,8 @@ ArkimeUtil.logger(app);
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -1153,8 +1158,7 @@ function findIssue (clusterId, issueType, node) {
   }
 }
 
-// Initializes the parliament with ids for each group and cluster
-// Upgrades the parliament if necessary
+// Initializes the parliament, creating it in the DB if it doesn't exist
 async function initializeParliament () {
   if (User.getClient()) {
     ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.get('usersPrefix'), MIN_DB_VERSION);
@@ -1164,82 +1168,43 @@ async function initializeParliament () {
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
+  ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
+
   Parliament.initialize({
     name: internals.parliamentName,
     prefix: ArkimeConfig.get('usersPrefix')
   });
 
-  // fetch parliament file if it exists
-  const parliamentFileName = ArkimeConfig.get('file');
-  if (parliamentFileName) {
-    try {
-      parliamentFile = JSON.parse(fs.readFileSync(parliamentFileName, 'utf8'));
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        console.log('Error reading parliament file:', err.message);
-        process.exit(1);
-      }
-    }
-  }
-
-  // if there's a parliament file, check that it is the correct version
-  if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
-    console.log( // notify of upgrade
-      `WARNING - Current parliament version (${parliamentFile.version ?? 1}) is less than required version (${MIN_PARLIAMENT_VERSION})
-        Upgrading your Parliament...\n`
-    );
-
-    // do the upgrade
-    const upgraded = await upgrade.upgrade(parliamentFile, issues, Parliament);
-    parliamentFile = upgraded.parliament;
-    issues = upgraded.issues;
-
-    try { // write the upgraded files
-      if (Buffer.from(JSON.stringify(parliamentFile, null, 2)).length > 100) {
-        fs.writeFileSync(ArkimeConfig.get('file'), JSON.stringify(parliamentFile, null, 2), 'utf8');
-      }
-      if (!validateIssues()) {
-        fs.writeFileSync(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8');
-      }
-    } catch (e) { // notify of error saving upgraded parliament and exit
-      console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-      if (ArkimeConfig.debug) {
-        console.log(parliamentReadError);
-      }
-      throw new Error(e);
-    }
-
-    // notify of upgrade success
-    console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
-  }
-
-  // create parliament in db if it doesn't exist
-  // (there was no parliament file to upgrade from)
+  let existing;
   try {
-    const existing = await Parliament.getParliament();
-    if (!existing) {
-      console.log('Parliament does not exist in DB. creating!');
+    existing = await Parliament.getParliament();
+  } catch (err) {
+    console.error('ERROR - Error fetching Parliament', err);
+    return;
+  }
+
+  if (!existing) {
+    // pre Arkime 5 parliaments lived in the file, they must be upgraded with 6.x first
+    let oldFile;
+    try {
+      oldFile = JSON.parse(fs.readFileSync(ArkimeConfig.get('file'), 'utf8'));
+    } catch (err) {}
+
+    if (oldFile?.groups && !(oldFile.version >= 7)) {
+      console.log(`ERROR - ${ArkimeConfig.get('file')} is an old parliament file, upgrade with Arkime 6.x first so it is copied into the DB`);
+      process.exit(1);
+    }
+
+    console.log('Parliament does not exist in DB. creating!');
+    try {
       await Parliament.createParliament({
         groups: [],
         name: internals.parliamentName,
         settings: Parliament.settingsDefault
       });
-    }
-  } catch (err) {
-    console.error('ERROR - Error fetching Parliament', err);
-  }
-
-  if (parliamentFile && parliamentFile.version < 7) {
-    if (!parliamentFile.groups) { parliamentFile.groups = []; }
-
-    // set id for each group/cluster
-    for (const group of parliamentFile.groups) {
-      group.id = uuid();
-      if (group.clusters) {
-        for (const cluster of group.clusters) {
-          cluster.id = uuid();
-        }
-      }
+    } catch (err) {
+      console.error('ERROR - Error creating Parliament', err);
     }
   }
 
@@ -1729,12 +1694,40 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiU
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
 
+// Banner
+app.get('/parliament/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/parliament/api/banner', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiUpdateBanner);
+app.post('/parliament/api/banner/sync', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiSyncBanner);
+
+// View Config
+app.post('/parliament/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, ViewConfig.checkAccess, checkCookieToken], ViewConfig.apiVerifyTotp);
+app.get('/parliament/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie], ViewConfig.apiGetConfig);
+
 // user endpoints
 app.get('/parliament/api/user', User.apiGetUser);
 app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
 app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
+app.post('/parliament/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
+/**
+ * POST - /parliament/api/settings/update
+ *
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are dropped. Lives off `/api/user/` so a userId like `settings`
+ * isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/parliament/api/settings/update',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettings
+);
+
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
@@ -2139,7 +2132,8 @@ async function setupAuth () {
     node: ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200'),
     prefix: ArkimeConfig.get('usersPrefix'),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
+    getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
   });
 }
 
@@ -2183,6 +2177,8 @@ app.use((req, res, next) => {
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/'),
     environment: process.env.NODE_ENV,
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     manifest,
     footerConfig
   };
@@ -2206,11 +2202,6 @@ app.use((req, res, next) => {
 // MAIN
 // ----------------------------------------------------------------------------
 async function main () {
-  ArkimeConfig.registerValidated({
-    elasticsearch: { type: 'urls' },
-    usersElasticsearch: { type: 'urls' }
-  });
-
   try {
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/parliament.ini`,

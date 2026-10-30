@@ -27,6 +27,7 @@
 #include "nghttp2/nghttp2.h"
 #include <errno.h>
 #include <sys/stat.h>
+#include <openssl/rand.h>
 
 /******************************************************************************/
 ArkimeConfig_t         config;
@@ -37,12 +38,12 @@ uint8_t                arkime_char_to_hexstr[256][3];
 uint8_t                arkime_hex_to_char[256][256];
 char                   arkime_ip_byte_lookup[256][4];
 uint32_t               hashSalt;
+uint64_t               hashKey[2];  // SipHash key for session hashing and dedup
 LOCAL pthread_t        mainThread;
 
 ArkimeThreadData_t     arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
-extern ArkimePcapFileHdr_t     pcapFileHeader;
 
 ARKIME_LOCK_DEFINE(LOG);
 
@@ -175,6 +176,8 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
+    extern int magic_version(void);
+    extern const char *OpenSSL_version(int);
 
     char buf[1024];
     BSB  bsb;
@@ -186,11 +189,9 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     BSB_EXPORT_sprintf(bsb, "curl: %s\n", curl_version());
     BSB_EXPORT_sprintf(bsb, "glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
     BSB_EXPORT_sprintf(bsb, "libpcap: %s\n", pcap_lib_version());
+    BSB_EXPORT_sprintf(bsb, "magic: %d.%02d\n", magic_version() / 100, magic_version() % 100);
     BSB_EXPORT_sprintf(bsb, "maxminddb: %s\n", MMDB_lib_version());
-#ifdef HAVE_LIBPCRE
-    extern char *pcre_version(void);
-    BSB_EXPORT_sprintf(bsb, "pcre: %s\n", pcre_version());
-#endif
+    BSB_EXPORT_sprintf(bsb, "openssl: %s\n", OpenSSL_version(0));
     BSB_EXPORT_sprintf(bsb, "yaml: %s\n", yaml_get_version_string());
     BSB_EXPORT_sprintf(bsb, "yara: %s\n", arkime_yara_version());
     BSB_EXPORT_sprintf(bsb, "zlib: %s\n", zlibVersion());
@@ -206,6 +207,11 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     const char *Py_GetVersion();
     BSB_EXPORT_sprintf(bsb, "python: %s\n", Py_GetVersion());
 #endif
+#ifdef HAVE_LIBXDP
+    // libxdp has no runtime version call, this is what capture was built against
+    BSB_EXPORT_sprintf(bsb, "libxdp: %s\n", LIBXDP_VERSION);
+#endif
+    BSB_EXPORT_sprintf(bsb, "compiler: %s\n", __VERSION__);
 
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
@@ -215,16 +221,84 @@ LOCAL void arkime_cmd_shutdown(int UNUSED(argc), char UNUSED( * *argv), gpointer
     arkime_quit();
 }
 /******************************************************************************/
+// Format an epoch timestamp for perf-stats, as the raw number or as a local
+// date/time with --human, buf must be at least ARKIME_PERF_TIME_LEN bytes
+const char *arkime_perf_time(char *buf, time_t t, gboolean human)
+{
+    if (!human) {
+        snprintf(buf, ARKIME_PERF_TIME_LEN, "%ld", (long)t);
+    } else if (t == 0) {
+        snprintf(buf, ARKIME_PERF_TIME_LEN, "-");
+    } else {
+        struct tm tm;
+        localtime_r(&t, &tm);
+        strftime(buf, ARKIME_PERF_TIME_LEN, "%Y-%m-%d %H:%M:%S", &tm);
+    }
+    return buf;
+}
+/******************************************************************************/
+/* Dump internal counters, queue depths and table sizes for performance
+ * debugging. Everything is read racily from the main thread without locks,
+ * the same as packet-stats, so the numbers are a snapshot and not consistent
+ * with each other. The only packet thread pointer followed is the oldest
+ * session of each sessionsQ for the idle column, the same as the packet log. */
+LOCAL void arkime_cmd_perf_stats(int argc, char **argv, gpointer cc)
+{
+    gboolean all = FALSE;
+    gboolean human = FALSE;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--all") == 0) {
+            all = TRUE;
+        } else if (strcmp(argv[i], "--human") == 0) {
+            human = TRUE;
+        } else {
+            arkime_command_respond(cc, "Usage: perf-stats [--all] [--human]\n", -1);
+            return;
+        }
+    }
+    char timeBuf[ARKIME_PERF_TIME_LEN];
+
+    GString *out = g_string_sized_new(16384);
+
+    uint64_t memBytes = 0;
+    float    memPercent = 0;
+    arkime_db_memory_info(TRUE, &memBytes, &memPercent);
+
+    struct timespec now;
+    clock_gettime(CLOCK_REALTIME_COARSE, &now);
+
+    g_string_append(out, "== general ==\n");
+    g_string_append_printf(out, "%-18s %s\n", "version:", PACKAGE_VERSION);
+    g_string_append_printf(out, "%-18s %s\n", "now:", arkime_perf_time(timeBuf, now.tv_sec, human));
+    g_string_append_printf(out, "%-18s %d\n", "packetThreads:", config.packetThreads);
+    g_string_append_printf(out, "%-18s %s\n", "quitting:", config.quitting ? "yes" : "no");
+    g_string_append_printf(out, "%-18s %" PRIu64 " bytes (%.2f%% of system)\n", "memory:", memBytes, memPercent);
+    // Function pointers are NULL until the writer is initialized, which --command-wait lets us run before
+    g_string_append_printf(out, "%-18s %u\n", "writerQueue:", arkime_writer_queue_length ? arkime_writer_queue_length() : 0);
+    g_string_append_printf(out, "%-18s %d\n", "freeLaterQueue:", (freeLaterBack - freeLaterFront) & FREE_LATER_AND);
+
+    arkime_packet_perf_stats(out, human);
+    arkime_session_perf_stats(out, all);
+    arkime_pq_perf_stats(out, human);
+    arkime_dedup_perf_stats(out, all);
+    arkime_http_perf_stats(out);
+
+    g_string_append(out, "perf-stats done\n");
+    arkime_command_respond(cc, out->str, out->len);
+    g_string_free(out, TRUE);
+}
+/******************************************************************************/
 LOCAL void parse_args(int argc, char **argv)
 {
     GError *error = NULL;
     GOptionContext *context;
 
     extern char *curl_version(void);
+    extern int magic_version(void);
+    extern const char *OpenSSL_version(int);
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
-    //extern int magic_version(void);
 
     context = g_option_context_new("- capture");
     g_option_context_add_main_entries(context, entries, NULL);
@@ -250,13 +324,9 @@ LOCAL void parse_args(int argc, char **argv)
         printf("curl: %s\n", curl_version());
         printf("glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
         printf("libpcap: %s\n", pcap_lib_version());
-        //printf("magic: %d\n", magic_version());
+        printf("magic: %d.%02d\n", magic_version() / 100, magic_version() % 100);
         printf("maxminddb: %s\n", MMDB_lib_version());
-        //printf("openssl: %s\n", OpenSSL_version(0));
-#ifdef HAVE_LIBPCRE
-        extern char *pcre_version(void);
-        printf("pcre: %s\n", pcre_version());
-#endif
+        printf("openssl: %s\n", OpenSSL_version(0));
         printf("yaml: %s\n", yaml_get_version_string());
         printf("yara: %s\n", arkime_yara_version());
         printf("zlib: %s\n", zlibVersion());
@@ -272,6 +342,11 @@ LOCAL void parse_args(int argc, char **argv)
         const char *Py_GetVersion();
         printf("python: %s\n", Py_GetVersion());
 #endif
+#ifdef HAVE_LIBXDP
+        // libxdp has no runtime version call, this is what capture was built against
+        printf("libxdp: %s\n", LIBXDP_VERSION);
+#endif
+        printf("compiler: %s\n", __VERSION__);
 
         exit(0);
     }
@@ -319,6 +394,9 @@ LOCAL void parse_args(int argc, char **argv)
 
     if (config.tests) {
         config.dryRun = 1;
+        // Same session to packet thread assignment every run so output is reproducible
+        hashSalt = 0;
+        memset(hashKey, 0, sizeof(hashKey));
     }
 
     if (config.pcapSkip && config.copyPcap) {
@@ -937,8 +1015,8 @@ LOCAL gboolean arkime_ready_gfunc(gpointer UNUSED(user_data))
     }
     arkime_command_start();
     arkime_readers_start();
-    if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
-        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_dltsnap");
+    if (!config.pcapReadOffline && fileInfo[0].numInterfaces == 0)
+        LOGEXIT("ERROR - Reader didn't call arkime_packet_set_interface");
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
@@ -1162,7 +1240,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
-    pcapFileHeader.dlt = DLT_EN10MB;
+    memset(hashKey, 0, sizeof(hashKey));
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
     arkime_hex_init();
@@ -1186,6 +1265,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_reader_scheme_register("fuzz", NULL, NULL);
     return 0;
@@ -1223,7 +1304,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.ignoreErrors = 1;
 
     hashSalt = 0;
-    pcapFileHeader.dlt = DLT_EN10MB;
+    memset(hashKey, 0, sizeof(hashKey));
+    arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
     arkime_free_later_init();
     arkime_hex_init();
@@ -1247,6 +1329,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
     return 0;
@@ -1309,7 +1393,10 @@ int main(int argc, char **argv)
 
     mainLoop = g_main_loop_new(NULL, FALSE);
 
-    hashSalt = (uint32_t)time(NULL);
+    // Random so traffic can't be crafted to collide in the session table or dedup
+    if (RAND_bytes((unsigned char *)&hashSalt, sizeof(hashSalt)) != 1 ||
+        RAND_bytes((unsigned char *)hashKey, sizeof(hashKey)) != 1)
+        LOGEXIT("ERROR - Couldn't generate random hash keys");
 
     parse_args(argc, argv);
     if (config.debug)
@@ -1325,6 +1412,10 @@ int main(int argc, char **argv)
     arkime_config_init();
     arkime_command_register("version", arkime_cmd_version, "Arkime Version");
     arkime_command_register("shutdown", arkime_cmd_shutdown, "Shutdown Arkime");
+    arkime_command_register_opts("perf-stats", arkime_cmd_perf_stats, "Internal queue, hash and table stats for performance debugging",
+                                 "--all", "Also list empty session protocols and scan hash buckets and dedup slots (slower)",
+                                 "--human", "Print timestamps as local date/time instead of epoch seconds",
+                                 NULL);
     arkime_cloud_init();
     arkime_writers_init();
     arkime_readers_init();
@@ -1357,6 +1448,8 @@ int main(int argc, char **argv)
     arkime_dedup_init();
     arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
+    arkime_mprotocol_config();
+    arkime_session_config();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);
 

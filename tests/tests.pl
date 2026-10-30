@@ -13,6 +13,8 @@ use Test::Differences;
 use Cwd;
 use URI::Escape;
 use TAP::Harness;
+use File::Temp qw(tempdir);
+use POSIX ();
 use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
@@ -136,13 +138,13 @@ sub sortObj {
         if ($r eq "HASH") {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
-            if ($key =~ /(dns)/) {
+            if ($key eq "dns") {
                 for my $dnsObj ( @{$obj->{$key}} ) {
                     sortObj($key, $dnsObj);
                 }
             }
             next if (scalar (@{$obj->{$key}}) < 2);
-            next if ($key =~ /(packetPos|packetLen|cert|dns)/);
+            next if ($key =~ /^(packetPos|packetLen|cert|dns)$/);
             next if ("$parentkey.$key" =~ /dns.answers|vlan.id/);
             if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
@@ -183,29 +185,70 @@ sub sortJson {
 ################################################################################
 sub doTests {
     my @files = @ARGV;
-    @files = glob ("pcap/*.pcap") if ($#files == -1);
+    @files = (glob ("pcap/*.pcap"), glob ("pcap/*.pcapng")) if ($#files == -1);
 
     plan tests => scalar @files;
 
-    foreach my $filename (@files) {
-        $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+    my @runs;
+    foreach my $origfilename (@files) {
+        my $filename = $origfilename;
+        if ($filename =~ /\.pcapng$/) {
+            $filename = substr($filename, 0, -7);
+        } elsif ($filename =~ /\.pcap$/) {
+            $filename = substr($filename, 0, -5);
+        } else {
+            $origfilename = "$filename.pcap";
+        }
         die "Missing $filename.test" if (! -f "$filename.test");
 
-        open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
-        my $savedData = do { local $/; <$fh> };
-        my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
-
-        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
         }
 
-        if ($main::debug) {
-            print "$cmd\n";
+        push @runs, {filename => $filename, cmd => $cmd};
+    }
+
+    # Run up to --jobs captures at once, each child saves its output to a file,
+    # results are still compared in order so the output matches a serial run
+    my $outDir = tempdir(CLEANUP => 1);
+    # exit normally on ^C or kill so the output dir still gets cleaned up
+    local $SIG{INT} = sub { exit 130 };
+    local $SIG{TERM} = sub { exit 143 };
+    my %running;
+    my @finished;
+    my $started = 0;
+    for (my $i = 0; $i <= $#runs; $i++) {
+        while ($started <= $#runs && scalar(keys %running) < $main::jobs) {
+            print "$runs[$started]->{cmd}\n" if ($main::debug);
+            my $pid = fork();
+            die "fork failed: $!" if (!defined $pid);
+            if ($pid == 0) {
+                $SIG{INT} = $SIG{TERM} = 'DEFAULT';
+                my $out = `$runs[$started]->{cmd}`;
+                open my $ofh, '>', "$outDir/$started" or POSIX::_exit(1);
+                print $ofh $out;
+                close $ofh;
+                # skip Test::More's END block in the child
+                POSIX::_exit(0);
+            }
+            $running{$pid} = $started++;
         }
 
-        my $testData = `$cmd`;
+        while (!$finished[$i]) {
+            my $pid = waitpid(-1, 0);
+            die "waitpid failed: $!" if ($pid == -1);
+            $finished[delete $running{$pid}] = 1 if (exists $running{$pid});
+        }
+
+        my $filename = $runs[$i]->{filename};
+        open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
+        my $savedData = do { local $/; <$fh> };
+        my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
+
+        open my $tfh, '<', "$outDir/$i" or die "error opening capture output for $filename: $!";
+        my $testData = do { local $/; <$tfh> };
         my $testJson;
 
         eval {
@@ -298,17 +341,24 @@ my ($json) = @_;
 
 ################################################################################
 sub doMake {
-    foreach my $filename (@ARGV) {
-        $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+    foreach my $origfilename (@ARGV) {
+        my $filename = $origfilename;
+        if ($filename =~ /\.pcapng$/) {
+            $filename = substr($filename, 0, -7);
+        } elsif ($filename =~ /\.pcap$/) {
+            $filename = substr($filename, 0, -5);
+        } else {
+            $origfilename = "$filename.pcap";
+        }
         # Reject filenames with shell metacharacters / NUL since we still need
         # a shell to set up the pipe + redirection below.
-        if ($filename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
-            die "Invalid filename (contains shell metacharacter): $filename\n";
+        if ($origfilename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
+            die "Invalid filename (contains shell metacharacter): $origfilename\n";
         }
         if ($main::debug) {
-          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
+          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
-        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
+        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
     }
 }
 ################################################################################
@@ -373,6 +423,22 @@ my ($cmd) = @_;
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression 2>&1 1>/dev/null");
         }
 
+        # Initialize ClickHouse if a sessionsDbUrl is configured for the test viewer
+        my $sessionsDbUrl = $ArkimeTest::sessionsDbUrl;
+        if ($sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$}) {
+            my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+            print ("Initializing ClickHouse at $chUrl\n");
+            # Test pcaps span two decades; partition none keeps the table at a
+            # handful of parts so per-part query overhead stays negligible.
+            my $chRc;
+            if ($main::debug) {
+                $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init");
+            } else {
+                $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init 2>&1 1>/dev/null");
+            }
+            die "ClickHouse init failed (is ClickHouse running at $chUrl?), aborting so tests don't run against stale sessions\n" if ($chRc != 0);
+        }
+
         print ("Loading tagger\n");
         print("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1\n");
         system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
@@ -415,7 +481,8 @@ my ($cmd) = @_;
     my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh;$ELASTICSEARCH,prefix:tests2_,name:test2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
@@ -496,7 +563,7 @@ my ($cmd) = @_;
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
-    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0) });
+    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0), timer => ($ENV{HARNESS_TIMER} ? 1 : 0) });
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
@@ -522,6 +589,7 @@ $main::debug = 0;
 $main::c8 = 0;
 $main::valgrind = 0;
 $main::copy = "";
+$main::jobs = 4;
 $main::cmd = "--capture";
 
 while (scalar (@ARGV) > 0) {
@@ -566,6 +634,11 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
+    } elsif ($ARGV[0] eq "--jobs") {
+        shift @ARGV;
+        $main::jobs = $ARGV[0];
+        die "--jobs requires a number >= 1" if (!defined $main::jobs || $main::jobs !~ /^[1-9]\d*$/);
+        shift @ARGV;
     } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|shutdown|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
         $main::cmd = $ARGV[0];
         # Map new aliases to existing commands
@@ -606,6 +679,7 @@ if ($main::cmd eq "--fix") {
     print "  --elasticsearch <url>  Set elasticsearch URL\n";
     print "  --debug                Turn on debugging\n";
     print "  --valgrind             Use valgrind on capture\n";
+    print "  --jobs <n>             Run up to n captures at once for the pcap tests (default 4)\n";
     print "\n";
     print "Commands:\n";
     print "  --help                 This help\n";

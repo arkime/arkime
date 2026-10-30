@@ -15,22 +15,22 @@ SPDX-License-Identifier: Apache-2.0
         <div class="w-100 pb-1 d-flex justify-space-between">
           <!--    tag input      -->
           <v-text-field
-            class="input-connect-right medium-input"
+            class="input-connect-right medium-input ms-1"
             style="max-width: 150px; width: 150px"
             type="text"
             tabindex="0"
             ref="tagInput"
-            :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
+            :placeholder="tags.length ? $t('cont3xt.tags.placeholderCount', { count: tags.length }) : $t('cont3xt.tags.placeholder')"
             @keydown.enter="submitTag"
             v-model="tagInput"
             v-focus="getFocusTagInput" />
           <v-btn
             variant="flat"
             color="secondary"
-            class="btn-connect-left skinny-search-row-btn mr-1"
+            class="btn-connect-left skinny-search-row-btn me-1"
             tabindex="0"
             @click="toggleCollapseTagDisplay"
-            title="Collapse tag display"
+            :title="$t('cont3xt.tags.collapseTip')"
             id="expand-collapse-tags"
             :disabled="!tags.length">
             <template v-if="getShiftKeyHold">
@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-tooltip
                 activator="parent"
                 location="top">
-                Expand tag display
+                {{ $t('cont3xt.tags.expandTip') }}
               </v-tooltip>
               <v-icon icon="mdi-chevron-down" />
             </template>
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-tooltip
                 activator="parent"
                 location="top">
-                Collapse tag display
+                {{ $t('cont3xt.tags.collapseTip') }}
               </v-tooltip>
               <v-icon icon="mdi-chevron-up" />
             </template>
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
             id="cont3xt-search-bar"
             class="w-100 medium-input"
             @keydown.enter="handleSearchAction"
-            :placeholder="searchMode === 'query' ? 'Indicators' : 'Highlight patterns (keywords or /regex/)'"
+            :placeholder="searchMode === 'query' ? $t('cont3xt.search.indicatorsPlaceholder') : $t('cont3xt.search.highlightPlaceholder')"
             v-focus="getFocusSearch"
             clearable>
             <template #prepend-inner>
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
                     size="small"
                     variant="text"
                     :icon="searchMode === 'query' ? 'mdi-magnify' : 'mdi-marker'"
-                    v-tooltip="`Mode: ${searchMode === 'query' ? 'Query' : 'Highlight'}`" />
+                    v-tooltip="$t('cont3xt.search.modeTip', { mode: searchMode === 'query' ? $t('cont3xt.search.modeQuery') : $t('cont3xt.search.modeHighlight') })" />
                 </template>
                 <v-list density="compact">
                   <v-list-item
@@ -81,8 +81,8 @@ SPDX-License-Identifier: Apache-2.0
                     <template #prepend>
                       <v-icon icon="mdi-magnify" />
                     </template>
-                    <v-list-item-title>Query Mode</v-list-item-title>
-                    <v-list-item-subtitle>Search for indicators</v-list-item-subtitle>
+                    <v-list-item-title>{{ $t('cont3xt.search.queryMode') }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ $t('cont3xt.search.queryModeTip') }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item
                     @click="switchToHighlightMode"
@@ -90,21 +90,21 @@ SPDX-License-Identifier: Apache-2.0
                     <template #prepend>
                       <v-icon icon="mdi-marker" />
                     </template>
-                    <v-list-item-title>Highlight Mode</v-list-item-title>
-                    <v-list-item-subtitle>Set highlight patterns</v-list-item-subtitle>
+                    <v-list-item-title>{{ $t('cont3xt.search.highlightMode') }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ $t('cont3xt.search.highlightModeTip') }}</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </v-menu>
               <span
                 v-if="getShiftKeyHold"
-                class="search-query-shortcut text-warning ml-1">Q</span>
+                class="search-query-shortcut text-warning ms-1">Q</span>
             </template>
           </v-text-field>
           <v-btn
             tabindex="-1"
             @click="handleSearchAction"
             color="success"
-            :title="searchMode === 'query' ? 'search' : 'set highlight patterns'"
+            :title="searchMode === 'query' ? $t('cont3xt.search.searchTip') : $t('cont3xt.search.setHighlightTip')"
             class="mx-1 search-row-btn cont3xt-search-btn">
             <span
               v-if="!getShiftKeyHold"
@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-icon
                 icon="mdi-rocket-launch"
                 :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }" />
-              Get Cont3xt
+              {{ $t('cont3xt.search.getCont3xt') }}
             </span>
             <v-icon
               v-else
@@ -157,24 +157,24 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-muted mr-2" />
-            <strong class="text-warning cont3xt-welcome-text mr-2">
-              <strong>Welcome to Cont3xt!</strong>
+              class="text-medium-emphasis me-2" />
+            <strong class="text-warning cont3xt-welcome-text me-2">
+              <strong>{{ $t('cont3xt.welcome.title') }}</strong>
             </strong>
             <span
               v-if="!searchTerm"
               class="text-success cont3xt-welcome-text">
-              <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
+              <strong>{{ $t('cont3xt.welcome.prompt') }}</strong>
             </span>
             <span
               v-else
               class="text-success cont3xt-welcome-text">
-              <strong>Hit enter to issue your search!</strong>
+              <strong>{{ $t('cont3xt.welcome.hitEnter') }}</strong>
             </span>
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-muted ml-2" />
+              class="text-medium-emphasis ms-2" />
           </div>
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid">
@@ -182,25 +182,25 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h3>
                     <v-icon
-                      class="text-muted"
+                      class="text-medium-emphasis"
                       icon="mdi-pine-tree-variant"
                       size="x-large" />
                   </h3>
-                  <h1 class="display-4">
-                    Indicator Result Tree
+                  <h1>
+                    {{ $t('cont3xt.welcome.treeTitle') }}
                   </h1>
                   <p class="lead">
-                    Top level indicators presented here
+                    {{ $t('cont3xt.welcome.treeLine1') }}
                   </p>
                   <p class="lead">
-                    Integration icons will display high level result
+                    {{ $t('cont3xt.welcome.treeLine2') }}
                   </p>
                   <p class="lead">
-                    Choose and configure integrations via
+                    {{ $t('cont3xt.welcome.treeLine3') }}
                     <a
                       class="no-decoration"
                       href="settings#integrations">
-                      Settings -> Integrations
+                      {{ $t('cont3xt.welcome.settingsIntegrations') }}
                     </a>
                   </p>
                 </div>
@@ -211,16 +211,16 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       size="x-large"
                       icon="mdi-card-account-details"
-                      class="text-muted" />
+                      class="text-medium-emphasis" />
                   </h3>
-                  <h1 class="display-4">
-                    Indicator Card Detail
+                  <h1>
+                    {{ $t('cont3xt.welcome.cardTitle') }}
                   </h1>
                   <p class="lead">
-                    Displays configurable subset of API results
+                    {{ $t('cont3xt.welcome.cardLine1') }}
                   </p>
                   <p class="lead">
-                    Optionally, access raw results for card display tuning
+                    {{ $t('cont3xt.welcome.cardLine2') }}
                   </p>
                 </div>
               </div>
@@ -230,20 +230,20 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       size="x-large"
                       icon="mdi-link-variant"
-                      class="text-muted" />
+                      class="text-medium-emphasis" />
                   </h3>
-                  <h1 class="display-4">
-                    Link Groups
+                  <h1>
+                    {{ $t('cont3xt.welcome.linkTitle') }}
                   </h1>
                   <p class="lead">
-                    Custom pivot links tailored to the top level indicator query
+                    {{ $t('cont3xt.welcome.linkLine1') }}
                   </p>
                   <p class="lead">
-                    Create/Configure links and link groups in
+                    {{ $t('cont3xt.welcome.linkLine2') }}
                     <a
                       class="no-decoration"
                       href="settings#linkgroups">
-                      Settings -> Link Groups
+                      {{ $t('cont3xt.welcome.settingsLinkGroups') }}
                     </a>
                   </p>
                 </div>
@@ -257,29 +257,26 @@ SPDX-License-Identifier: Apache-2.0
           v-if="error.length || getIntegrationsError.length"
           class="w-100 d-flex flex-column mt-2 mx-3">
           <!-- search error -->
-          <div
+          <v-alert
             v-if="error.length"
-            class="alert alert-warning">
-            <v-icon icon="mdi-alert" />&nbsp;
+            type="warning"
+            variant="tonal"
+            density="compact"
+            closable
+            @click:close="error = ''">
             {{ error }}
-            <button
-              tabindex="-1"
-              type="button"
-              @click="error = ''"
-              class="close cursor-pointer">
-              <span>&times;</span>
-            </button>
-          </div> <!-- /search error -->
+          </v-alert> <!-- /search error -->
 
           <!-- integration error -->
-          <div
+          <v-alert
             v-if="getIntegrationsError.length"
-            class="alert alert-danger">
-            <v-icon icon="mdi-alert" />&nbsp;
-            Error fetching integrations. Viewing data for integrations will not work!
+            type="error"
+            variant="tonal"
+            density="compact">
+            {{ $t('cont3xt.search.integrationsError') }}
             <br>
             {{ getIntegrationsError }}
-          </div> <!-- /integration error -->
+          </v-alert> <!-- /integration error -->
         </div>
         <!-- /errors -->
 
@@ -329,7 +326,7 @@ SPDX-License-Identifier: Apache-2.0
                       color="info"
                       size="64"
                       indeterminate />
-                    <p>Rendering data...</p>
+                    <p>{{ $t('cont3xt.search.renderingData') }}</p>
                   </div>
                 </v-overlay>
                 <div class="mb-5">
@@ -343,10 +340,10 @@ SPDX-License-Identifier: Apache-2.0
                       v-else
                       color="dark"
                       class="text-center">
-                      There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
+                      {{ $t('cont3xt.search.noOverview', { itype: getActiveIndicator.itype }) }}
                       <a
                         class="no-decoration"
-                        href="settings#overviews">Create one!</a>
+                        href="settings#overviews">{{ $t('cont3xt.createOne') }}</a>
                     </v-alert>
                   </template>
                   <integration-card
@@ -362,12 +359,11 @@ SPDX-License-Identifier: Apache-2.0
                   color="info"
                   class="text-center">
                   <v-icon
-                    icon="mdi-chevron-left mr-2"
+                    icon="mdi-chevron-left me-2"
                     size="x-large" />
-                  No integrations selected.
-                  View the Integrations panel on the far left to select integrations to query.
+                  {{ $t('cont3xt.search.noIntegrationsSelected') }}
                   <v-icon
-                    icon="mdi-chevron-left ml-2"
+                    icon="mdi-chevron-left ms-2"
                     size="x-large" />
                 </v-alert>
               </div>
@@ -375,8 +371,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="scrollPx > 100"
                 size="small"
                 @click="toTop"
-                title="Go to top"
-                class="to-top-btn square-btn-sm"
+                :title="$t('cont3xt.search.toTop')"
+                class="to-top-btn"
                 variant="text"
                 color="btn-link"
                 v-show="scrollPx > 100">
@@ -388,7 +384,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               v-if="getLinkGroupsPanelOpen"
               class="link-group-pane">
-              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
+              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ms-3 overflow-hidden">
                 <div
                   v-if="getActiveIndicator"
                   class="mb-1 mx-2">
@@ -410,7 +406,7 @@ SPDX-License-Identifier: Apache-2.0
                         ref="linkSearch"
                         v-debounce="val => linkSearchTerm = val"
                         v-focus="getFocusLinkSearch"
-                        placeholder="Search links below">
+                        :placeholder="$t('cont3xt.linkPanel.searchPlaceholder')">
                         <template #prepend-inner>
                           <v-icon
                             v-if="!getShiftKeyHold"
@@ -426,20 +422,20 @@ SPDX-License-Identifier: Apache-2.0
                         class="input-connect-left small-input"
                         flat
                         style="max-width: 34px"
-                        v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
+                        v-tooltip="$t('cont3xt.linkPanel.itypeSelectTip', { itype: currentItype })"
                         v-model="currentItype"
                         :items="iTypes">
                         <template #selection />
                       </v-select>
                     </div>
                     <v-btn
-                      class="mx-1 square-btn-sm"
-                      v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
+                      class="mx-1"
+                      v-tooltip="toggleAllLinkGroupsTip"
                       variant="outlined"
                       color="secondary"
                       :disabled="!hasVisibleLinkGroup"
                       @click="toggleAllVisibleLinkGroupsCollapse"
-                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                      :title="toggleAllLinkGroupsTip">
                       <v-icon :icon="!allVisibleLinkGroupsCollapsed ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
                     </v-btn>
                     <!-- toggle link groups panel button -->
@@ -448,10 +444,10 @@ SPDX-License-Identifier: Apache-2.0
                       tabindex="-1"
                       color="secondary"
                       variant="elevated"
-                      class="float-right square-btn-sm"
+                      class="float-right"
                       @click="toggleLinkGroupsPanel"
-                      v-tooltip:top="'Hide Link Groups Panel'"
-                      title="Hide Link Groups Panel">
+                      v-tooltip:top="$t('cont3xt.linkPanel.hideTip')"
+                      :title="$t('cont3xt.linkPanel.hideTip')">
                       <v-icon icon="mdi-chevron-double-right" />
                     </v-btn>
                     <!-- /toggle link groups panel button -->
@@ -461,6 +457,7 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- time range input for links -->
                   <time-range-input
                     v-model="timeRangeInfo"
+                    input-group-size="s"
                     :place-holder-tip="linkPlaceholderTip" />
                   <!-- /time range input for links -->
                 </div>
@@ -483,7 +480,7 @@ SPDX-License-Identifier: Apache-2.0
                             :id="`${linkGroup._id}-tt`"
                             class="d-inline link-group-card-handle drag-handle" />
                           <id-tooltip :target="`${linkGroup._id}-tt`">
-                            Drag &amp; drop to reorder Link Groups
+                            {{ $t('cont3xt.linkPanel.dragReorderTip') }}
                           </id-tooltip>
 
                           <link-group-card
@@ -504,16 +501,16 @@ SPDX-License-Identifier: Apache-2.0
                     <!-- no link groups message -->
                     <span
                       v-else-if="hasLinkGroupWithItype"
-                      class="pa-1 text-muted">
-                      There are no Link Groups that match your search.
+                      class="pa-1 text-medium-emphasis">
+                      {{ $t('cont3xt.linkPanel.noMatch') }}
                     </span>
                     <span
                       v-else
-                      class="pa-1 text-muted">
-                      There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
+                      class="pa-1 text-medium-emphasis">
+                      {{ $t('cont3xt.linkPanel.noneForItype', { itype: currentItype }) }}
                       <a
                         class="no-decoration"
-                        href="settings#linkgroups">Create one!</a>
+                        href="settings#linkgroups">{{ $t('cont3xt.createOne') }}</a>
                     </span> <!-- /no link groups message -->
                   </div> <!-- /link groups -->
                 </div>
@@ -524,7 +521,7 @@ SPDX-License-Identifier: Apache-2.0
         <div
           v-if="shouldDisplayResults && !getLinkGroupsPanelOpen"
           class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
-          v-tooltip:top="'Show Link Groups Panel'"
+          v-tooltip:top="$t('cont3xt.linkPanel.showTip')"
           @click="toggleLinkGroupsPanel">
           <v-icon
             icon="mdi-chevron-double-left"
@@ -593,29 +590,29 @@ export default {
       dropdownActions: [
         {
           icon: 'mdi-database',
-          text: 'Skip Cache',
-          tooltip: computed(() => this.skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'),
+          text: computed(() => this.$t('cont3xt.search.skipCache')),
+          tooltip: computed(() => this.skipCache ? this.$t('cont3xt.search.skipCacheOnTip') : this.$t('cont3xt.search.skipCacheOffTip')),
           active: computed(() => this.skipCache),
           action: () => { this.skipCache = !this.skipCache; }
         },
         {
           icon: 'mdi-teddy-bear',
-          text: 'Skip Children',
-          tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
+          text: computed(() => this.$t('cont3xt.search.skipChildren')),
+          tooltip: computed(() => this.skipChildren ? this.$t('cont3xt.search.skipChildrenOnTip') : this.$t('cont3xt.search.skipChildrenOffTip')),
           active: computed(() => this.skipChildren),
           action: this.toggleSkipChildren
         },
         {
           icon: 'mdi-file-document',
-          text: 'Download Report',
-          tooltip: computed(() => 'Download a report of this result (shift + r)'),
+          text: computed(() => this.$t('cont3xt.search.downloadReport')),
+          tooltip: computed(() => this.$t('cont3xt.search.downloadReportTip')),
           disabled: computed(() => !this.searchComplete),
           action: this.generateReport
         },
         {
           icon: 'mdi-share',
-          text: 'Copy Share Link',
-          tooltip: computed(() => 'Copy share link to clipboard (shift + l)'),
+          text: computed(() => this.$t('cont3xt.search.copyShareLink')),
+          tooltip: computed(() => this.$t('cont3xt.search.copyShareLinkTip')),
           active: computed(() => this.activeShareLink),
           action: this.shareLink
         }
@@ -633,10 +630,6 @@ export default {
       hideLinks: {},
       searchMode: 'query', // 'query' or 'highlight'
       previousQueryTerm: '', // Store the query term when switching to highlight mode
-      linkPlaceholderTip: {
-        title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
-            'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
-      },
       activeShareLink: false,
       timeRangeInfo: {
         numDays: 7, // 1 week
@@ -686,6 +679,14 @@ export default {
       'getResultTreeNavigationDirection', 'getCollapsedIndicatorNodeMap',
       'getCollapseOrExpandIndicatorRoots', 'getSelectedIntegrations'
     ]),
+    linkPlaceholderTip () {
+      return { title: this.$t('cont3xt.linkPanel.placeholderTipHtml') };
+    },
+    toggleAllLinkGroupsTip () {
+      return this.allVisibleLinkGroupsCollapsed
+        ? this.$t('cont3xt.linkPanel.expandAllTip')
+        : this.$t('cont3xt.linkPanel.collapseAllTip');
+    },
     tags: {
       get () { return this.getTags; },
       set (val) { this.$store.commit('SET_TAGS', val); }
@@ -986,7 +987,7 @@ export default {
         }
         break;
       case 'error':
-        this.error = `ERROR: ${chunk.text}`;
+        this.error = this.$t('cont3xt.search.errorPrefix', { text: chunk.text });
         break;
       case 'data':
         if (chunk.name && chunk.indicator) {
@@ -1026,7 +1027,7 @@ export default {
         break;
       }
       default:
-        this.error = `ERROR: Unknown purpose '${chunk.purpose}' in data chunk`;
+        this.error = this.$t('cont3xt.search.unknownPurpose', { purpose: chunk.purpose });
         break;
       }
 
@@ -1227,7 +1228,7 @@ export default {
 
       if (chunk.purpose === 'fail') {
         // we don't want to overwrite good data with a failure
-        this.error = 'ERROR: Failed to refresh data';
+        this.error = this.$t('cont3xt.search.refreshFailed');
         return;
       }
       // handle purpose:data and purpose:error
@@ -1335,14 +1336,11 @@ export default {
   padding: 16px 16px 0 16px;
   margin-top: 50px !important;
 }
-body.dark {
-  background-color: #222;
-}
 
 .cont3xt-welcome .well {
   border-radius: 6px;
-  background-color: rgb(var(--v-theme-well));
-  border: 1px solid rgb(var(--v-theme-well-border));
+  background-color: rgb(var(--v-theme-surface-well));
+  border: 1px solid rgb(var(--v-theme-surface-well-border));
   overflow-x: hidden;
 }
 /* better text-wrapping on the welcome screen for browsers that support it */
@@ -1464,6 +1462,7 @@ body.dark {
   border-top-left-radius: 5px;
 }
 .link-group-panel-shadow {
+  background-color: rgb(var(--v-theme-surface-panel));
   -webkit-box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
   box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
 }

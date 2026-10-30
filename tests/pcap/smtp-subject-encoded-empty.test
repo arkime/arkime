@@ -49,6 +49,10 @@
       "to"
      ],
      "headerCnt" : 3,
+     "reply" : [
+      "250 2.0.0 s3PDALgR032600 Message accepted for delivery"
+     ],
+     "replyCnt" : 1,
      "smtpHello" : [
       "xxxxxxxxxxxxx.xxx.com"
      ],

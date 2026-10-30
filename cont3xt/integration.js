@@ -104,6 +104,15 @@ class Integration {
       return;
     }
 
+    // a setting marked password is this integration saying it holds a
+    // credential, so View Config hides it without having to guess from the
+    // name - do this before the disabled check below, so a leftover
+    // credential in a disabled integration's config still gets redacted
+    ArkimeConfig.registerSettings(Object.fromEntries(
+      Object.entries(integration.settings ?? {})
+        .filter(([, setting]) => setting?.password)
+        .map(([key]) => [key, { secret: true }])));
+
     // Can disable an integration globally
     const disabled = integration.getConfig('disabled', false);
     if (disabled === true || disabled === 'true') {
@@ -410,6 +419,7 @@ class Integration {
         cacheTimeout: integration.cacheable ? integration.cacheTimeout : -1,
         cachePolicy: integration.cachePolicy,
         icon: integration.icon,
+        itypes: Object.keys(integration.itypes),
         card,
         order,
         tidbits: integration.tidbits?.fields || [],
@@ -989,6 +999,7 @@ class Integration {
         values,
         globalConfiged,
         homePage: integration.homePage,
+        icon: integration.icon,
         locked: integration.locked
       };
     }
@@ -1141,6 +1152,33 @@ class Integration {
 
   userAgent () {
     return this.getConfig('userAgent', ArkimeConfig.get('userAgent', 'cont3xt'));
+  }
+
+  /**
+   * The TLS options for this integration's outbound https calls, from the
+   * section's insecure, caTrustFile, clientKey, clientCert and clientKeyPass
+   * settings. A bad setting is fatal, like any other required config.
+   * @param {string|string[]} [urls] - the url(s) called, so https://localhost skips verification like the ES connections do
+   * @returns {object} see ArkimeUtil.tlsOptions
+   */
+  tlsOptions (urls) {
+    try {
+      return ArkimeUtil.sectionTlsOptions(this.section ?? this.name, urls);
+    } catch (err) {
+      console.log(`ERROR - ${this.section ?? this.name} ${err.message}`);
+      process.exit(1);
+    }
+  }
+
+  /**
+   * The axios options for calling url with the tlsOptions() agent, which is
+   * only used for url's origin so redirects elsewhere don't get it. Empty when
+   * the section has no TLS settings so axios uses its default agent.
+   * @param {string} url - the url called, see tlsOptions
+   * @returns {object} to spread into the axios options, see ArkimeUtil.axiosAgentOptions
+   */
+  axiosTls (url) {
+    return ArkimeUtil.axiosAgentOptions(url, ArkimeUtil.httpsAgent(this.tlsOptions(url)));
   }
 
   normalizeCard () {
