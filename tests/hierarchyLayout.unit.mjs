@@ -9,7 +9,7 @@ Run with `npm run test:unit`.
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { isUnderOther, smallMultiplesGrid, fitLabel } =
+const { isUnderOther, smallMultiplesGrid, splitPieLayout, fitLabel } =
   await import('../viewer/vueapp/src/components/utils/hierarchyLayout.js');
 
 describe('isUnderOther', () => {
@@ -32,6 +32,34 @@ describe('smallMultiplesGrid', () => {
     assert.deepEqual(smallMultiplesGrid(4, 400, 300, 20), { cols: 2, radius: 65 });
     // a very wide strip lays them all in one row
     assert.equal(smallMultiplesGrid(6, 1200, 100, 20).cols, 6);
+  });
+});
+
+describe('splitPieLayout', () => {
+  const node = (key, children, other) => ({ data: { name: key, ...(other ? { other: true } : {}) }, children });
+
+  test('one cell per pie, Other left out, centers in a top-left box', () => {
+    const root = node('root', [
+      node('a', [node('80'), node('443'), node('Other', undefined, true)]),
+      node('b', [node('443'), node('22')]),
+      node('c', [node('80')]),
+      node('d', [node('53')]),
+      node('Other', undefined, true)
+    ]);
+    const layout = splitPieLayout(root, 400, 300, 20);
+    // same grid as smallMultiplesGrid: 2x2 cells of 200x150
+    assert.equal(layout.radius, 65);
+    assert.equal(layout.cellW, 200);
+    assert.equal(layout.cellH, 150);
+    assert.deepEqual(layout.cells.map(c => [c.pie.data.name, c.cx, c.cy]),
+      [['a', 100, 85], ['b', 300, 85], ['c', 100, 235], ['d', 300, 235]]);
+    // 80, 443, 22, 53: Other takes no palette color
+    assert.equal(layout.sliceCount, 4);
+  });
+
+  test('nothing to draw', () => {
+    assert.equal(splitPieLayout(node('root', [node('Other', undefined, true)]), 400, 300, 20), null);
+    assert.equal(splitPieLayout(node('root'), 400, 300, 20), null);
   });
 });
 

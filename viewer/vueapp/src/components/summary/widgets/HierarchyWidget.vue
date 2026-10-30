@@ -41,7 +41,7 @@ import { colorRange, OTHER_COLOR } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
 import { fetchHierarchy, hierarchyFields } from './widgetData';
 import { hierarchyToSankey } from '../../utils/sankeyData';
-import { isUnderOther, smallMultiplesGrid, fitLabel } from '../../utils/hierarchyLayout';
+import { isUnderOther, splitPieLayout, fitLabel } from '../../utils/hierarchyLayout';
 
 const { t, locale } = useI18n();
 
@@ -270,20 +270,14 @@ const render = async () => {
       .attr('class', 'hierarchy-label')
       .text(d => d.data.name);
   } else if (isSplitPie.value) { // split pie → one small sunburst per split value
-    // the split level's own "Other" has no pie of its own to draw
-    const pies = (root.children || []).filter(c => !c.data.other);
-    if (!pies.length) { return; }
+    const TITLE_H = 14;
+    const layout = splitPieLayout(root, w, h, TITLE_H);
+    if (!layout) { return; }
     // one color per slice value across every pie, so a value reads the same in
     // each; Other is gray, so it takes no palette color
-    const sliceNames = new Set(pies.flatMap(p => (p.children || []).filter(c => !c.data.other).map(c => c.data.name)));
-    const sliceColors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, sliceNames.size));
-    const TITLE_H = 14;
-    const { cols, radius } = smallMultiplesGrid(pies.length, w, h, TITLE_H);
-    const cellW = w / cols;
-    const cellH = h / Math.ceil(pies.length / cols);
-    pies.forEach((pie, i) => {
-      const cx = (i % cols) * cellW + cellW / 2;
-      const cy = Math.floor(i / cols) * cellH + TITLE_H + (cellH - TITLE_H) / 2;
+    const sliceColors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, layout.sliceCount));
+    const { radius, cellW, cellH } = layout;
+    layout.cells.forEach(({ pie, cx, cy }) => {
       const cell = svg.append('g');
       cell.append('text') // the split value: cut to its cell (~6px a character at 11px), whole in the tooltip
         .attr('x', cx)

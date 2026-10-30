@@ -491,6 +491,21 @@ describe('safeLink', () => {
     ]) {
       no(href);
     }
+    // and so are its pre-/api aliases
+    for (const href of [
+      'https://10.0.0.5/arkime/sessions.pcap?expression=x', 'https://10.0.0.5/arkime/sessions.pcapng', 'https://10.0.0.5/arkime/sessions.csv',
+      'https://10.0.0.5/arkime/x/sessions.csv', 'https://10.0.0.5/arkime/unique.txt?exp=ip', 'https://10.0.0.5/arkime/MultiUnique.txt',
+      'https://10.0.0.5/arkime/connections.csv', 'https://10.0.0.5/arkime/sessions.json', 'https://10.0.0.5/arkime/spigraph.json/',
+      'https://10.0.0.5/arkime/test/raw/1-abc', 'https://10.0.0.5/arkime/test/1-abc/body/file/1/x.exe',
+      'https://10.0.0.5/arkime/test/1-abc/bodypng/file/1/x', 'https://10.0.0.5/arkime/bodyHash/abc', 'https://10.0.0.5/arkime/decodings',
+      // the sessions.csv/pcap routes' dot is a regex wildcard
+      'https://10.0.0.5/arkime/sessions/csv?expression=x', 'https://10.0.0.5/arkime/sessions_pcap', 'https://10.0.0.5/arkime/x/sessionsXcsv',
+      'https://10.0.0.5/arkime/cyberchef/test/session/1-abc'
+    ]) {
+      no(href);
+    }
+    assert.ok(safeLink('https://docs.example.com/arkime/sessions.html', SITE).external);
+    assert.ok(safeLink('https://docs.example.com/arkime/stats', SITE).external);
     // a trailing dot is this host, and not this origin
     no('https://arkime.example.com./arkime/sessions');
     // another site's pages under the same base path are just links; only the api is refused

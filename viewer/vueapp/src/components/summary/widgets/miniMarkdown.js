@@ -22,8 +22,8 @@ Inlines: { type: 'text', text } | { type: 'br' } | { type: 'code', text }
 Links are http(s) only. One on this site may only open one of the app's own
 pages (see safeLink), so a shared dashboard can't hand out a one-click api
 call, export or download. The viewer can't tell its own aliases (an ip,
-another dns name, a trailing dot) from other sites, so its api path is
-refused on every host.
+another dns name, a trailing dot) from other sites, so its api paths (and
+their old non-/api aliases) are refused on every host.
 */
 
 export const MAX_TEXT = 5000; // widget text past this is ignored
@@ -58,13 +58,17 @@ function isAppPage (url, site) {
 // a hostname without the trailing dot that names the same host
 const hostOf = (url) => url.hostname.replace(/\.$/, '');
 
+// the viewer's non-/api routes that still answer (viewer.js), lowercased;
+// its sessions.csv/pcap regex routes match anywhere, with an unescaped dot
+const LEGACY_API_RE = /^(?:(?:parliament|eshealth|stats|dstats|esstats|sessions|spiview|spigraph|buildquery|connections)\.json|(?:unique|multiunique)\.txt|connections\.csv|decodings|bodyhash\/.*|cyberchef\/.*|[^/]+\/raw\/.*|[^/]+\/[^/]+\/(?:body|bodypng)\/.*|(?:.*\/)?sessions.(?:csv|pcap).*)$/;
+
 /**
  * True when a url's path would reach the viewer's api under the web base
  * path, read as express routes it: decoded, case folded, repeated slashes
  * collapsed. Checked on every host, since any other name for this server
  * (an ip, another dns name, a trailing dot) reaches the same api. The cost:
- * another site's own api path under the same base can't be linked (with the
- * web root as base, any /api path).
+ * another site's own api path, or a path shaped like a legacy route, under
+ * the same base can't be linked (with the web root as base, on any site).
  */
 function isApiPath (url, site) {
   const webBase = typeof site?.webBase === 'string' && site.webBase.startsWith('/') ? site.webBase : '/';
@@ -73,8 +77,8 @@ function isApiPath (url, site) {
   try { path = decodeURIComponent(url.pathname); } catch { return true; } // undecodable: refuse
   path = path.toLowerCase().replace(/\/{2,}/g, '/');
   if (!path.startsWith(prefix)) { return false; }
-  const rest = path.slice(prefix.length);
-  return rest === 'api' || rest.startsWith('api/');
+  const rest = path.slice(prefix.length).replace(/\/$/, '');
+  return rest === 'api' || rest.startsWith('api/') || LEGACY_API_RE.test(rest);
 }
 
 /**

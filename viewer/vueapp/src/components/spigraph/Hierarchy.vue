@@ -301,7 +301,7 @@ import DragList from '../utils/DragList.vue';
 import SummaryBarChart from '../summary/SummaryBarChart.vue';
 import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import { OTHER_COLOR } from '../summary/widgets/chartColors';
-import { isUnderOther, smallMultiplesGrid, fitLabel } from '../utils/hierarchyLayout';
+import { isUnderOther, splitPieLayout, fitLabel } from '../utils/hierarchyLayout';
 // import utils
 import Utils from '../utils/utils';
 import ConfigService from '../utils/ConfigService';
@@ -1155,25 +1155,17 @@ export default {
       // the hover popup reads a slice's field values up its parents, so the
       // slices keep their place in this whole tree
       const root = d3.hierarchy(data).sum((d) => { return d.size; });
-      // the split level's own "Other" has no fields of its own to draw a pie of
-      const pies = (root.children || []).filter(p => !p.data.other);
-      if (!pies.length) { return; }
-      colors = this.generateColors(new Set(pies.flatMap(p => (p.children || []).filter(c => !c.data.other).map(c => c.data.name))).size);
+      const layout = splitPieLayout(root, width, height, 20);
+      if (!layout) { return; }
+      colors = this.generateColors(layout.sliceCount);
+      const pieRadius = Math.max(layout.radius - 4, 1); // a gap between the pies
+      const cellWidth = layout.cellW;
 
-      // the column count that gives the pies the largest radius
-      const titleHeight = 20;
-      const { cols, radius: fitRadius } = smallMultiplesGrid(pies.length, width, height, titleHeight);
-      const pieRadius = Math.max(fitRadius - 4, 1); // a gap between the pies
-      const cellWidth = width / cols;
-      const cellHeight = height / Math.ceil(pies.length / cols);
-
-      pies.forEach((pie, i) => {
+      layout.cells.forEach(({ pie, cx, cy }) => {
         // the svg's viewBox is centered on the origin
-        const cx = -width / 2 + (i % cols) * cellWidth + cellWidth / 2;
-        const cy = -height / 2 + Math.floor(i / cols) * cellHeight + titleHeight + (cellHeight - titleHeight) / 2;
         const cell = g.append('g')
           .attr('class', 'split-pie')
-          .attr('transform', `translate(${cx},${cy})`);
+          .attr('transform', `translate(${cx - width / 2},${cy - height / 2})`);
 
         cell.append('text') // the split value, above its pie: cut to its cell, whole in the tooltip
           .attr('y', -pieRadius - 6)

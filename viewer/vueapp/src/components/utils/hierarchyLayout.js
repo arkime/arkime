@@ -34,6 +34,28 @@ export function smallMultiplesGrid (n, w, h, titleH) {
 }
 
 /**
+ * Lays out a split pie in a w×h box (top-left origin): one cell per child of
+ * the d3 hierarchy root except its own "Other", in the grid with the largest
+ * circles. Returns null when there is no pie to draw, else { cells: [{ pie,
+ * cx, cy }] (each pie's center), radius, cellW, cellH, sliceCount (distinct
+ * non-Other slice values across the pies, for the palette) }.
+ */
+export function splitPieLayout (root, w, h, titleH) {
+  const pies = (root.children || []).filter(p => !p.data.other);
+  if (!pies.length) { return null; }
+  const sliceCount = new Set(pies.flatMap(p => (p.children || []).filter(c => !c.data.other).map(c => c.data.name))).size;
+  const { cols, radius } = smallMultiplesGrid(pies.length, w, h, titleH);
+  const cellW = w / cols;
+  const cellH = h / Math.ceil(pies.length / cols);
+  const cells = pies.map((pie, i) => ({
+    pie,
+    cx: (i % cols) * cellW + cellW / 2,
+    cy: Math.floor(i / cols) * cellH + titleH + (cellH - titleH) / 2
+  }));
+  return { cells, radius, cellW, cellH, sliceCount };
+}
+
+/**
  * A label cut to what fits in maxPx at about pxPerChar per character: the
  * whole label when it fits, an ellipsized start otherwise, and nothing when
  * not even a few characters fit.
