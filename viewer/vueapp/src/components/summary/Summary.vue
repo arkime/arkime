@@ -87,9 +87,9 @@ SPDX-License-Identifier: Apache-2.0
             class="widget-resize widget-resize--se"
             :title="$t('sessions.summary.dragToResize')"
             @mousedown.stop.prevent="startResize(w, $event, 'both')" />
-          <!-- multi-field (2-3) nested pie/treemap, and sankey (any field count) -->
+          <!-- multi-field nested pie/treemap, split pie, and sankey (any field count) -->
           <HierarchyWidget
-            v-if="w.viewMode === 'sankey' || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
+            v-if="w.viewMode === 'sankey' || isSplitPie(w) || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
@@ -110,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
-          <!-- table: 1-3 fields side by side, each with its metric column(s) -->
+          <!-- table: 1-7 fields side by side, each with its metric column(s) -->
           <MultiFieldTableWidget
             v-else-if="w.viewMode === 'table'"
             :widget="w"
@@ -131,6 +131,7 @@ SPDX-License-Identifier: Apache-2.0
             :metric-agg="w.metricAgg"
             :split-field="w.splitField"
             :bar-mode="w.barMode"
+            :other="w.other ? w.otherData : null"
             :field="w.field"
             :color-scheme="colorScheme"
             :info-items="widgetInfo(w)"
@@ -171,6 +172,15 @@ SPDX-License-Identifier: Apache-2.0
             :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- the sessions themselves: a compact list, rows open their detail -->
+          <SessionsWidget
+            v-else-if="w.viewMode === 'sessions'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- session-wide widgets: fed by the host's global stats chunk -->
           <TimelineWidget
             v-else-if="w.viewMode === 'timeline'"
@@ -200,8 +210,8 @@ SPDX-License-Identifier: Apache-2.0
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <!-- static notes -->
-          <TextWidget
-            v-else-if="w.viewMode === 'text'"
+          <MarkdownWidget
+            v-else-if="w.viewMode === 'markdown'"
             :widget="w"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
@@ -268,6 +278,7 @@ import { widgetIsGraph, graphFromWidget } from './dashboardConfig';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import IntersectionWidget from './widgets/IntersectionWidget.vue';
+import SessionsWidget from './widgets/SessionsWidget.vue';
 import ConnectionsWidget from './widgets/ConnectionsWidget.vue';
 import HierarchyWidget from './widgets/HierarchyWidget.vue';
 import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
@@ -276,9 +287,9 @@ import MapWidget from './widgets/MapWidget.vue';
 import StatsWidget from './widgets/StatsWidget.vue';
 import TimeWidget from './widgets/TimeWidget.vue';
 import MetricWidget from './widgets/MetricWidget.vue';
-import TextWidget from './widgets/TextWidget.vue';
+import MarkdownWidget from './widgets/MarkdownWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit } from './widgets/viewModes';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, MAX_FIELDS } from './widgets/viewModes';
 import { widgetLocalExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -361,9 +372,13 @@ const spanStyle = (w) => ({
   gridRow: `span ${Math.min(8, Math.max(1, w?.height || 3))}`
 });
 
-// True when a widget has 2-3 fields and a view mode that nests/compares them
+// True when a widget has 2+ fields and a view mode that nests/compares them
 // (pie/treemap → HierarchyWidget; table → MultiFieldTableWidget).
 const isMultiField = (w) => allowsMultiField(w?.viewMode) && widgetFields(w).length > 1;
+// a split pie draws one small pie per split value from the hierarchy endpoint
+const isSplitPie = (w) => w?.viewMode === 'pie' && !!w.splitField;
+// stream-mode widgets the host stream doesn't feed: they fetch for themselves
+const selfFetches = (w) => isMultiField(w) || isSplitPie(w);
 
 // Drag-to-resize: a handle on the right edge changes width (1-4 cols), the bottom
 // edge changes height (1-8 rows), the corner does both. Deltas snap to the grid
@@ -444,7 +459,7 @@ const makeEntry = (def) => ({
   data: [],
   // only single-field stream widgets are fed by the host stream; multi-field
   // pie/table and self-fetch modes manage their own loading
-  loading: !!def.field && isStreamMode(def.viewMode) && !isMultiField(def),
+  loading: !!def.field && isStreamMode(def.viewMode) && !selfFetches(def),
   error: null
 });
 
@@ -459,6 +474,7 @@ const toRequestWidget = (w) => ({
   metricType: w.metricType,
   metricAgg: w.metricAgg,
   ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
+  ...(allowsOther(w.viewMode) && w.other ? { other: true } : {}),
   expression: widgetLocalExpression(w, store.state.views)
 });
 
@@ -516,14 +532,20 @@ const widgetInfo = (w) => {
 
   if (allowsSplit(w.viewMode) && w.splitField) {
     const fieldName = FieldService.getField(w.splitField, true)?.friendlyName || w.splitField;
-    rows.push({ label: t('sessions.summary.widget.splitField'), value: `${fieldName} (${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, ${w.splitLength || 5})` });
+    const layout = w.viewMode === 'bar' ? `${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, ` : '';
+    rows.push({ label: t('sessions.summary.widget.splitField'), value: `${fieldName} (${layout}${w.splitLength || 5})` });
   }
 
   // The limit row reads as a session sample for connections, a Top/Bottom N for
-  // the modes whose fetch passes an order, and a plain cap for the rest
+  // the modes whose fetch passes an order, rows plus their sort for a sessions
+  // list, and a plain cap for the rest
   if (hasLength(w.viewMode)) {
     const limit = w.length || defaultLength(w.viewMode);
-    if (isSampleSize(w.viewMode)) {
+    if (isListMode(w.viewMode)) {
+      const sortName = w.sortField ? (FieldService.getField(w.sortField, true)?.friendlyName || w.sortField) : t('sessions.summary.widget.sortStartTime');
+      rows.push({ label: t('sessions.summary.widget.rows'), value: `${limit}` });
+      rows.push({ label: t('sessions.summary.widget.sortBy'), value: `${sortName} (${t(`sessions.summary.widget.sort-${w.order === 'asc' ? 'asc' : 'desc'}`)})` });
+    } else if (isSampleSize(w.viewMode)) {
       rows.push({ label: t('sessions.summary.widget.sampleSize'), value: `${limit}` });
     } else if (hasOrder(w.viewMode)) {
       const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
@@ -622,6 +644,7 @@ const mergeFieldChunk = (chunk) => {
   summary.value.fields[index] = {
     ...summary.value.fields[index],
     data: chunk.data || [],
+    otherData: chunk.other || null, // the pie's "Other" share, when asked for
     loading: false,
     error: chunk.error || null
   };
@@ -751,7 +774,7 @@ const generateSummary = async () => {
 
     // Stream only single-field stream-mode widgets; heatmap/treemap/intersection
     // and multi-field pie/table self-fetch. An empty list still returns the stats chunk.
-    const fieldDefs = props.widgets.filter(w => w.field && isStreamMode(w.viewMode) && !isMultiField(w));
+    const fieldDefs = props.widgets.filter(w => w.field && isStreamMode(w.viewMode) && !selfFetches(w));
     const body = buildRequestBody(fieldDefs, cancelId);
 
     // Create abort controller for request cancellation
@@ -1206,7 +1229,7 @@ const onEditClose = () => {
   editModalShow.value = false;
   const id = editingWidget.value?.id;
   const entry = id && summary.value?.fields?.find(f => f.id === id);
-  if (entry && (isFieldMode(entry.viewMode) || isGeoFieldMode(entry.viewMode)) && !entry.field) {
+  if (entry && (isFieldMode(entry.viewMode) || isGeoFieldMode(entry.viewMode) || isListMode(entry.viewMode)) && !entry.field) {
     removeWidgetLocal(entry);
   }
 };
@@ -1228,7 +1251,7 @@ const onEditSave = (updated) => {
   // to the replaced entry via their own watchers; only single-field stream widgets
   // refetch through the host here.
   const becameStream = isStreamMode(updated.viewMode) && !isStreamMode(prev.viewMode);
-  const needsRefetch = isStreamMode(updated.viewMode) && !isMultiField(updated) && (
+  const needsRefetch = isStreamMode(updated.viewMode) && !selfFetches(updated) && (
     becameStream ||
     prev.field !== updated.field ||
     prev.length !== updated.length ||
@@ -1237,6 +1260,7 @@ const onEditSave = (updated) => {
     (prev.metricAgg || 'sum') !== (updated.metricAgg || 'sum') ||
     (prev.splitField || '') !== (updated.splitField || '') ||
     (prev.splitLength || 5) !== (updated.splitLength || 5) ||
+    !!prev.other !== !!updated.other ||
     (prev.expression || '') !== (updated.expression || '') ||
     (prev.view || '') !== (updated.view || ''));
 
@@ -1275,7 +1299,7 @@ const getWidgets = () => {
   return (summary.value?.fields || []).map(w => ({
     id: w.id,
     field: w.field,
-    fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, 3) : (w.field ? [w.field] : []),
+    fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, MAX_FIELDS) : (w.field ? [w.field] : []),
     viewMode: w.viewMode,
     metricType: w.metricType,
     metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
@@ -1284,9 +1308,11 @@ const getWidgets = () => {
     splitField: w.splitField || '',
     splitLength: w.splitLength || 5,
     barMode: w.barMode || 'stacked',
+    other: w.other === true,
     text: w.text || '',
     length: w.length,
     order: w.order,
+    sortField: w.sortField || '',
     expression: w.expression || '',
     view: w.view || '',
     height: w.height || 3,
@@ -1317,7 +1343,7 @@ const addWidget = (def) => {
   // configured single-field stream widgets fetch immediately; self-fetch modes
   // (heatmap/treemap/intersection + multi-field pie/table) fetch themselves and an
   // unconfigured widget waits for its editor
-  if (def.field && isStreamMode(def.viewMode) && !isMultiField(def)) {
+  if (def.field && isStreamMode(def.viewMode) && !selfFetches(def)) {
     fetchWidgets([def]);
   }
   // bring the new widget into view + flash it (it may be below the fold)

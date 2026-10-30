@@ -2,7 +2,7 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Table widget with 1-3 fields shown side by side: each selected field's independent
+Table widget with 1-7 fields shown side by side: each selected field's independent
 top-N values (NOT combinations). Self-fetches one /api/sessions/summary batch (a
 sub-widget per field) and renders [Value | metric columns] per field, rows aligned
 by rank. Metric columns are the widget's metrics[] (falls back to metricType).

@@ -21,7 +21,12 @@ SPDX-License-Identifier: Apache-2.0
           </a>
         </div>
         <div class="popup-card-body">
+          <!-- "Other" is no value of the field, so it gets no field actions -->
+          <strong v-if="getPopupInfo(index).other">
+            {{ $t('sessions.summary.other') }}
+          </strong>
           <arkime-session-field
+            v-else
             :key="field.exp"
             :field="field"
             :value="getPopupInfo(index).name"
@@ -75,6 +80,9 @@ export default {
        structure -- collapse them into one v-for over a config list. */
     popupStats (index) {
       const info = this.getPopupInfo(index);
+      if (info.other) { // a share of the sessions, with no ips counted
+        return [{ label: this.$t('spigraph.tableCount'), value: this.commaString(info.size) }];
+      }
       return [
         { label: this.$t('spigraph.tableCount'), value: this.commaString(info.size) },
         { label: 'Src IPs', value: this.commaString(info.srcips) },

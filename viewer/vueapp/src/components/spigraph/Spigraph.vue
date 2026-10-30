@@ -112,6 +112,85 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /bar layout -->
 
+              <!-- pie layout (pie only): nested rings, or one pie per value
+                   of the first field (split) -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'pie'">
+                <span class="arkime-input-label">
+                  {{ $t('spigraph.pieMode') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="pieMode"
+                  @change="changePieMode($event.target.value)">
+                  <option value="nested">
+                    {{ $t('spigraph.pieMode-nested') }}
+                  </option>
+                  <option value="split">
+                    {{ $t('spigraph.pieMode-split') }}
+                  </option>
+                </select>
+              </div> <!-- /pie layout -->
+
+              <!-- split pie only: how many pies (the first field's top values) -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'pie' && pieMode === 'split'">
+                <span class="arkime-input-label">
+                  {{ $t('sessions.summary.widget.splitPies') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="pieCount"
+                  @change="changePieCount($event.target.value)">
+                  <option
+                    v-for="n in pieCounts"
+                    :key="n"
+                    :value="n">
+                    {{ n }}
+                  </option>
+                </select>
+              </div> <!-- /pie count -->
+
+              <!-- pie only: a gray slice for what falls outside the top values -->
+              <label
+                v-if="spiGraphType === 'pie'"
+                class="arkime-input-group cursor-pointer">
+                <span class="arkime-input-label">
+                  <input
+                    type="checkbox"
+                    class="arkime-check-input me-2"
+                    :checked="showOther"
+                    @change="changeShowOther($event.target.checked)">
+                  {{ $t('spigraph.showOther') }}
+                </span>
+                <v-tooltip activator="parent">
+                  {{ $t('sessions.summary.widget.showOtherTip') }}
+                </v-tooltip>
+              </label> <!-- /pie other -->
+
+              <!-- table layout (table only): the fields' value combinations
+                   (intersection), or each field's own top values (unique) -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'table'">
+                <span class="arkime-input-label">
+                  {{ $t('spigraph.tableMode') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="tableMode"
+                  @change="changeTableMode($event.target.value)">
+                  <option value="intersection">
+                    {{ $t('spigraph.tableMode-intersection') }}
+                  </option>
+                  <option value="unique">
+                    {{ $t('spigraph.tableMode-unique') }}
+                  </option>
+                </select>
+              </div> <!-- /table layout -->
+
               <!-- intensity select (heatmap only) -->
               <div
                 class="arkime-input-group"
@@ -258,6 +337,10 @@ SPDX-License-Identifier: Apache-2.0
           :query="query"
           :spi-graph-type="spiGraphType"
           :bar-mode="barMode"
+          :pie-mode="pieMode"
+          :pie-count="pieCount"
+          :show-other="showOther"
+          :table-mode="tableMode"
           @toggle-load="toggleLoad"
           @toggle-error="toggleError"
           @fetched-results="fetchedResults" />
@@ -377,6 +460,7 @@ import ArkimeHeatmap from './Heatmap.vue';
 import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import SpigraphConfigDropdown from './SpigraphConfigDropdown.vue';
 import { graphFromSpigraphQuery, spigraphQueryFromGraph, graphFromWidget } from '../summary/dashboardConfig';
+import { SPLIT_LENGTHS } from '../summary/widgets/viewModes';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
@@ -488,6 +572,26 @@ export default {
     // bar graph segment layout, kept in the url like the other options
     barMode: function () {
       return this.$route.query.barMode === 'grouped' ? 'grouped' : 'stacked';
+    },
+    // pie layout: nested rings, or split into one pie per first field value
+    pieMode: function () {
+      return this.$route.query.pieMode === 'split' ? 'split' : 'nested';
+    },
+    // split pie: how many pies, on the dashboard's split length scale
+    pieCount: function () {
+      const n = parseInt(this.$route.query.pieCount, 10);
+      return SPLIT_LENGTHS.includes(n) ? n : 5;
+    },
+    pieCounts: function () {
+      return SPLIT_LENGTHS;
+    },
+    // pie: show what falls outside the top values as "Other"
+    showOther: function () {
+      return this.$route.query.other === 'true';
+    },
+    // table layout: value combinations (intersection), or each field's own (unique)
+    tableMode: function () {
+      return this.$route.query.tableMode === 'unique' ? 'unique' : 'intersection';
     },
     // what the page shows as saved-graph data (null for the timeline type).
     // The field, size and type come from the page state, since the url only
@@ -632,6 +736,10 @@ export default {
           ...this.$route.query,
           subFields: undefined,
           barMode: undefined,
+          pieMode: undefined,
+          pieCount: undefined,
+          other: undefined,
+          tableMode: undefined,
           srcField: undefined,
           dstField: undefined,
           graphType: undefined,
@@ -658,6 +766,39 @@ export default {
         query: {
           ...this.$route.query,
           barMode
+        }
+      });
+    },
+    changePieMode: function (pieMode) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          pieMode: pieMode === 'split' ? 'split' : undefined,
+          pieCount: pieMode === 'split' ? this.$route.query.pieCount : undefined
+        }
+      });
+    },
+    changePieCount: function (pieCount) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          pieCount
+        }
+      });
+    },
+    changeTableMode: function (tableMode) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          tableMode: tableMode === 'unique' ? 'unique' : undefined
+        }
+      });
+    },
+    changeShowOther: function (show) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          other: show ? 'true' : undefined
         }
       });
     },

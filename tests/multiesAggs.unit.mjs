@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const cjsRequire = createRequire(import.meta.url);
-const { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr } = cjsRequire('../viewer/multiesAggs.js');
+const { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr, cutToSize } = cjsRequire('../viewer/multiesAggs.js');
 
 // merge cluster responses the way multies.js does for one search
 const merge = (aggregations, ...responses) => {
@@ -52,6 +52,59 @@ describe('top-level metric aggregations', () => {
       { bytes: { value: 10 }, m0: { value: 7 }, m1: { value: 3 }, m2: { value: 4 } },
       { bytes: { value: null }, m0: { value: null }, m1: { value: null }, m2: { value: null } });
     assert.deepEqual(merged, { bytes: { value: 10 }, m0: { value: 7 }, m1: { value: 3 }, m2: { value: 4 } });
+  });
+});
+
+describe('cutToSize', () => {
+  const bucket = (key, docCount) => ({ key, doc_count: docCount });
+
+  test('keeps the first size buckets and folds the rest into Other', () => {
+    const agg = { sum_other_doc_count: 4, buckets: [bucket('a', 9), bucket('b', 5), bucket('c', 3), bucket('d', 1)] };
+    cutToSize(agg, 2);
+    assert.deepEqual(agg.buckets.map(b => b.key), ['a', 'b']);
+    assert.equal(agg.sum_other_doc_count, 8, 'the cut c and d join the 4 already outside');
+  });
+
+  test('a list within its size, or no size, is left alone', () => {
+    for (const size of [4, 10, 0, undefined]) {
+      const agg = { sum_other_doc_count: 4, buckets: [bucket('a', 9), bucket('b', 5), bucket('c', 3), bucket('d', 1)] };
+      cutToSize(agg, size);
+      assert.equal(agg.buckets.length, 4, `size ${size}`);
+      assert.equal(agg.sum_other_doc_count, 4, `size ${size}`);
+    }
+  });
+
+  test('without an Other count it still cuts, and odd input is ignored', () => {
+    const agg = { buckets: [bucket('a', 9), bucket('b', 5)] };
+    cutToSize(agg, 1);
+    assert.deepEqual(agg, { buckets: [bucket('a', 9)] });
+    for (const odd of [undefined, null, {}, { buckets: 'x' }]) {
+      assert.doesNotThrow(() => cutToSize(odd, 1));
+    }
+  });
+
+  test('cuts a merged first level the way the hierarchy endpoint does', () => {
+    // two clusters each return their own top 2, so the merge holds 3 values
+    const aggregations = { field: { terms: { field: 'protocol', size: 2 } } };
+    const merged = merge(aggregations,
+      { field: { doc_count_error_upper_bound: 0, sum_other_doc_count: 1, buckets: [bucket('tcp', 6), bucket('udp', 4)] } },
+      { field: { doc_count_error_upper_bound: 0, sum_other_doc_count: 0, buckets: [bucket('tcp', 5), bucket('icmp', 2)] } });
+    assert.equal(merged.field.buckets.length, 3, 'the merge alone keeps every value');
+    cutToSize(merged.field, 2);
+    assert.deepEqual(merged.field.buckets.map(b => [b.key, b.doc_count]), [['tcp', 11], ['udp', 4]]);
+    assert.equal(merged.field.sum_other_doc_count, 3, 'icmp joins the first cluster\'s 1');
+  });
+});
+
+describe('filter aggregations', () => {
+  // a summary widget's "Other" total: a sum over the sessions with the field
+  const aggregations = { othertotal: { filter: { exists: { field: 'source.ip' } }, aggs: { total: { sum: { field: 'network.bytes' } } } } };
+
+  test('a metric inside a filter merges per its operator', () => {
+    const merged = merge(aggregations,
+      { othertotal: { doc_count: 3, total: { value: 100 } } },
+      { othertotal: { doc_count: 2, total: { value: 50 } } });
+    assert.deepEqual(merged, { othertotal: { doc_count: 5, total: { value: 150 } } });
   });
 });
 
@@ -125,6 +178,7 @@ describe('nested terms', () => {
     assert.equal(ip1.doc_count, 14);
     assert.equal(ip1.m0.value, 140);
     assert.deepEqual(ip1.split.buckets.map(b => [b.key, b.doc_count, b.m0.value]), [['udp', 7, 70], ['tcp', 5, 50]]);
+    assert.equal(ip1.split.sum_other_doc_count, 2, 'the cut icmp bucket counts toward Other');
   });
 
   test('a fractional size cuts like ES does, and an unusable one does not cut', () => {

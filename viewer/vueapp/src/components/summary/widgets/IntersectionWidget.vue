@@ -3,8 +3,8 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
 Field widget rendered as an "Intersection" table: the unique value combinations
-across 1-3 fields with their session counts, self-fetched from
-/api/spigraphhierarchy. One field → a flat value/count table; 2-3 fields → nested
+across 1-7 fields with their session counts, self-fetched from
+/api/spigraphhierarchy. One field → a flat value/count table; 2+ fields → nested
 combinations (a column pair per field level, grouped by parent). Count-based.
 -->
 <template>
