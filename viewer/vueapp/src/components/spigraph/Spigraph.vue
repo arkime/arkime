@@ -133,6 +133,26 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /pie layout -->
 
+              <!-- split pie only: how many pies (the first field's top values) -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'pie' && pieMode === 'split'">
+                <span class="arkime-input-label">
+                  {{ $t('sessions.summary.widget.splitPies') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="pieCount"
+                  @change="changePieCount($event.target.value)">
+                  <option
+                    v-for="n in pieCounts"
+                    :key="n"
+                    :value="n">
+                    {{ n }}
+                  </option>
+                </select>
+              </div> <!-- /pie count -->
+
               <!-- pie only: a gray slice for what falls outside the top values -->
               <label
                 v-if="spiGraphType === 'pie'"
@@ -318,6 +338,7 @@ SPDX-License-Identifier: Apache-2.0
           :spi-graph-type="spiGraphType"
           :bar-mode="barMode"
           :pie-mode="pieMode"
+          :pie-count="pieCount"
           :show-other="showOther"
           :table-mode="tableMode"
           @toggle-load="toggleLoad"
@@ -439,6 +460,7 @@ import ArkimeHeatmap from './Heatmap.vue';
 import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import SpigraphConfigDropdown from './SpigraphConfigDropdown.vue';
 import { graphFromSpigraphQuery, spigraphQueryFromGraph, graphFromWidget } from '../summary/dashboardConfig';
+import { SPLIT_LENGTHS } from '../summary/widgets/viewModes';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
@@ -554,6 +576,14 @@ export default {
     // pie layout: nested rings, or split into one pie per first field value
     pieMode: function () {
       return this.$route.query.pieMode === 'split' ? 'split' : 'nested';
+    },
+    // split pie: how many pies, on the dashboard's split length scale
+    pieCount: function () {
+      const n = parseInt(this.$route.query.pieCount, 10);
+      return SPLIT_LENGTHS.includes(n) ? n : 5;
+    },
+    pieCounts: function () {
+      return SPLIT_LENGTHS;
     },
     // pie: show what falls outside the top values as "Other"
     showOther: function () {
@@ -707,6 +737,7 @@ export default {
           subFields: undefined,
           barMode: undefined,
           pieMode: undefined,
+          pieCount: undefined,
           other: undefined,
           tableMode: undefined,
           srcField: undefined,
@@ -742,7 +773,16 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          pieMode: pieMode === 'split' ? 'split' : undefined
+          pieMode: pieMode === 'split' ? 'split' : undefined,
+          pieCount: pieMode === 'split' ? this.$route.query.pieCount : undefined
+        }
+      });
+    },
+    changePieCount: function (pieCount) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          pieCount
         }
       });
     },

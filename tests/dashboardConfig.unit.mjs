@@ -94,6 +94,12 @@ describe('widgetsFromConfig', () => {
     assert.equal(widgetsFromConfig({ widgets: [{ viewMode: 'pie', field: 'ip.src', other: true }] })[0].other, true);
   });
 
+  test('a text widget saved before the markdown widget is a markdown widget', () => {
+    const [w] = widgetsFromConfig({ widgets: [{ id: 't', viewMode: 'text', text: '# notes' }] });
+    assert.equal(w.viewMode, 'markdown');
+    assert.equal(w.text, '# notes');
+  });
+
   test('survives null entries and makes ids unique', () => {
     const widgets = widgetsFromConfig({ widgets: [null, { id: 'dup', viewMode: 'markdown' }, { id: 'dup', viewMode: 'stats' }] });
     assert.equal(widgets.length, 3);
@@ -189,6 +195,7 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'pie', fields: ['protocols', 'port.dst'], splitField: 'ip.dst', length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols'], other: true }),
       graph({ viewMode: 'pie', fields: ['protocols'], splitField: 'ip.dst', other: true }),
+      graph({ viewMode: 'pie', fields: ['protocols'], splitField: 'ip.dst', splitLength: 10 }),
       graph({ viewMode: 'intersection', fields: ['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets', 'ip.src'] }),
       graph({ viewMode: 'treemap', fields: ['ip.src', 'ip.dst'] }),
       graph({ viewMode: 'sankey', fields: ['ip.src', 'ip.dst', 'port.dst'] }),
@@ -217,6 +224,10 @@ describe('spigraphQueryFromGraph', () => {
     assert.equal(query.pieMode, 'split');
     assert.equal(query.exp, 'ip.dst');
     assert.equal(query.subFields, 'protocols,port.dst');
+    // its pie count is the widget's split length; a count off the scale is the default
+    assert.equal(query.pieCount, 5);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie', exp: 'ip.dst', subFields: 'protocols', pieMode: 'split', pieCount: '10' }).splitLength, 10);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie', exp: 'ip.dst', subFields: 'protocols', pieMode: 'split', pieCount: '7' }).splitLength, 5);
     // a split mode with nothing to split is a plain pie
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie', exp: 'ip.dst', pieMode: 'split' }).splitField, '');
     // only a pie shows Other
@@ -250,6 +261,11 @@ describe('graphOnSpigraph', () => {
     assert.equal(merged.sortMetric, 'bytes');
     assert.equal(merged.order, 'asc');
     assert.equal(merged.splitLength, 10);
+  });
+
+  test('a split pie\'s pie count comes from the page', () => {
+    const page = graphFromSpigraphQuery({ spiGraphType: 'pie', exp: 'ip.dst', subFields: 'protocols', pieMode: 'split', pieCount: '3' });
+    assert.equal(graphOnSpigraph(saved, page).splitLength, 3);
   });
 
   test('an unchanged page is the saved graph', () => {

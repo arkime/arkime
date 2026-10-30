@@ -21,7 +21,9 @@ Inlines: { type: 'text', text } | { type: 'br' } | { type: 'code', text }
 
 Links are http(s) only. One on this site may only open one of the app's own
 pages (see safeLink), so a shared dashboard can't hand out a one-click api
-call, export or download.
+call, export or download. The viewer can't tell its own aliases (an ip,
+another dns name, a trailing dot) from other sites, so its api path is
+refused on every host.
 */
 
 export const MAX_TEXT = 5000; // widget text past this is ignored
@@ -51,6 +53,28 @@ function isAppPage (url, site) {
   if (!url.pathname.startsWith(prefix)) { return false; }
   const page = url.pathname.slice(prefix.length).replace(/\/$/, '');
   return page === '' || site.pages.includes(page);
+}
+
+// a hostname without the trailing dot that names the same host
+const hostOf = (url) => url.hostname.replace(/\.$/, '');
+
+/**
+ * True when a url's path would reach the viewer's api under the web base
+ * path, read as express routes it: decoded, case folded, repeated slashes
+ * collapsed. Checked on every host, since any other name for this server
+ * (an ip, another dns name, a trailing dot) reaches the same api. The cost:
+ * another site's own api path under the same base can't be linked (with the
+ * web root as base, any /api path).
+ */
+function isApiPath (url, site) {
+  const webBase = typeof site?.webBase === 'string' && site.webBase.startsWith('/') ? site.webBase : '/';
+  const prefix = (webBase.endsWith('/') ? webBase : `${webBase}/`).toLowerCase();
+  let path;
+  try { path = decodeURIComponent(url.pathname); } catch { return true; } // undecodable: refuse
+  path = path.toLowerCase().replace(/\/{2,}/g, '/');
+  if (!path.startsWith(prefix)) { return false; }
+  const rest = path.slice(prefix.length);
+  return rest === 'api' || rest.startsWith('api/');
 }
 
 /**
@@ -91,9 +115,12 @@ export function safeLink (href, site) {
     return null;
   }
 
+  // the viewer's api, on this host or any other name for this server
+  if (isApiPath(url, site)) { return null; }
+
   // this host on another scheme or port (another listener on this server:
   // capture, WISE, a plain http viewer) is never an outside site
-  if (base && url.hostname === base.hostname) {
+  if (base && hostOf(url) === hostOf(base)) {
     if (url.origin !== base.origin || !isAppPage(url, site)) { return null; }
     return { href: url.href, external: false, host: url.host };
   }

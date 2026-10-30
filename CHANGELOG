@@ -213,8 +213,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           second field into one small pie per value
   - #4420 Add a sessions list dashboard widget: the matching sessions as a compact table with chosen columns, sort and rows
   - #4420 The text dashboard widget is now a Markdown widget: headings, bold, italic, code, lists and links, up to 5000
-          characters. Links may only go to http/https sites or Arkime's own pages
-  - #4420 SPI Graph pies can be split into one small pie per value of the first field and can show Other slices
+          characters. Links may only go to http/https sites or Arkime's own pages, never to its API
+  - #4420 SPI Graph pies can be split into 3, 5 or 10 small pies, one per value of the first field, and can show Other slices
   - #4420 SPI Graph tables with several fields can list each field's own top values (Unique) instead of their combinations (Intersection)
   - #4420 SPI Graph pie labels are cut to fit their ring, and a replaced or abandoned hierarchy request cancels its search
   - #4420 Fix SPI Graph breaking the page when switching from a pie with several fields to a bar

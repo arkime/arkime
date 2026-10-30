@@ -60,7 +60,9 @@ export const normalizeWidget = (w) => {
   const fields = Array.isArray(w.fields) && w.fields.length
     ? w.fields.filter(f => typeof f === 'string').slice(0, MAX_FIELDS)
     : (str(w.field) ? [w.field] : []);
-  const viewMode = str(w.viewMode) || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
+  // the text widget of earlier 7.0 builds is the markdown widget
+  const savedMode = str(w.viewMode) === 'text' ? 'markdown' : str(w.viewMode);
+  const viewMode = savedMode || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
   const limit = int(w.length);
   return makeWidgetDef(fields[0] || '', {
     id: str(w.id) || Utils.createRandomString(),
@@ -208,6 +210,9 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
       // one pie per value of the first field, each of the fields after it
       fields = subFields;
       overrides.splitField = exp;
+      // how many pies: SPI Graph's pieCount is the widget's splitLength
+      const pieCount = parseInt(query.pieCount, 10);
+      if (SPLIT_LENGTHS.includes(pieCount)) { overrides.splitLength = pieCount; }
     }
   } else if (type === 'connections') {
     // the connections url carries database field names
@@ -258,7 +263,7 @@ export const spigraphQueryFromGraph = (graph) => {
     // a split pie is SPI Graph's split pie mode: its first field (the split)
     // draws one pie per value of the fields after it
     if (g.splitField) {
-      return { ...base, exp: g.splitField, spiGraphType: 'pie', subFields: fields.join(','), pieMode: 'split', other: g.other ? 'true' : undefined };
+      return { ...base, exp: g.splitField, spiGraphType: 'pie', subFields: fields.join(','), pieMode: 'split', pieCount: g.splitLength, other: g.other ? 'true' : undefined };
     }
     return { ...base, spiGraphType: 'pie', subFields: fields.slice(1).join(',') || undefined, other: g.other ? 'true' : undefined };
   case 'treemap':
@@ -283,7 +288,7 @@ export const spigraphQueryFromGraph = (graph) => {
 
 // the graph keys SPI Graph shows and lets the user change (a heatmap's
 // metricType is its intensity); it can't show the others (metric columns,
-// aggregation, sort metric, order, split length)
+// aggregation, sort metric, order, a bar's split length)
 const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', 'other', 'length', 'expression', 'view'];
 
 /**
@@ -299,6 +304,8 @@ export const graphOnSpigraph = (saved, page) => {
   const keys = page.viewMode === 'heatmap' ? [...SPIGRAPH_KEYS, 'metricType'] : SPIGRAPH_KEYS;
   const merged = { ...saved };
   for (const key of keys) { merged[key] = page[key]; }
+  // a split pie's pie count is on the page too (a bar's split length isn't)
+  if (page.viewMode === 'pie' && page.splitField) { merged.splitLength = page.splitLength; }
   return graphFromWidget(merged);
 };
 

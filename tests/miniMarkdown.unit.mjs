@@ -483,6 +483,27 @@ describe('safeLink', () => {
     assert.ok(safeLink('https://cont3xt.example.com/', SITE).external);
   });
 
+  test('the viewer\'s api is refused however the server is named', () => {
+    for (const href of [
+      'https://10.0.0.5/arkime/api/sessions/pcap?expression=x', 'http://arkime.example.com./arkime/api/user',
+      'https://arkime-alias.example.com/arkime/API/user', 'https://[::1]/arkime/api/user', 'https://10.0.0.5/arkime/%61pi/user',
+      'https://10.0.0.5/arkime//api/user', 'https://10.0.0.5/arkime/api', 'https://10.0.0.5/arkime/api?x=1', 'https://10.0.0.5/arkime%2Fapi/user'
+    ]) {
+      no(href);
+    }
+    // a trailing dot is this host, and not this origin
+    no('https://arkime.example.com./arkime/sessions');
+    // another site's pages under the same base path are just links; only the api is refused
+    assert.ok(safeLink('https://docs.example.com/arkime/sessions', SITE).external);
+    assert.ok(safeLink('https://docs.example.com/arkime/apis/x', SITE).external);
+    assert.ok(safeLink('https://docs.example.com/v1/arkime/api/x', SITE).external);
+    // at the web root that is any /api path
+    const root = { href: 'https://a.example.com/', webBase: '/', pages: ['sessions'] };
+    no('https://10.0.0.5/api/user', root);
+    no('https://docs.example.com/api/x', root);
+    assert.ok(safeLink('https://docs.example.com/v1/api/x', root).external);
+  });
+
   test('a site at the web root', () => {
     const root = { href: 'https://a.example.com/arkime?date=1', webBase: '/', pages: ['sessions', 'arkime'] };
     page('/sessions', 'https://a.example.com/sessions', root);

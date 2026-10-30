@@ -508,6 +508,11 @@ export default {
       type: String,
       default: 'intersection'
     },
+    // split pie: how many pies (the first field's top values)
+    pieCount: {
+      type: Number,
+      default: 5
+    },
     baseField: {
       type: String,
       default: ''
@@ -593,8 +598,9 @@ export default {
         // sankey keeps its own node/link shape; the bar needs the hierarchy
         if (!this.vizData?.children) { this.loadData(); }
       }
-      // only the pie fetches "Other"
-      if (newVal === 'pie' && this.showOther) { this.loadData(); }
+      // only the pie fetches "Other", and a split pie's first level is cut to
+      // its pie count: switching to one, or away from a split, refetches
+      if ((newVal === 'pie' && (this.showOther || this.splitPie)) || (oldVal === 'pie' && this.splitPie)) { this.loadData(); }
     },
     // trims once the url says bar: trimming on the prop change would push a
     // url built before the graph type change landed and undo it. The fields
@@ -610,8 +616,16 @@ export default {
     },
     pieMode: function () {
       this.closeInfo();
-      // nothing to lay out until the first hierarchy fetch has landed
-      if (this.vizData) { this.applyGraphData(this.vizData); }
+      // a split pie's first level is cut to its pie count, so the layouts
+      // need different data; with one field there is nothing to split
+      if (this.fieldTypeaheadList.length) {
+        this.loadData();
+      } else if (this.vizData) { // nothing to lay out until the first fetch has landed
+        this.applyGraphData(this.vizData);
+      }
+    },
+    pieCount: function () {
+      if (this.spiGraphType === 'pie' && this.splitPie) { this.loadData(); }
     },
     showOther: function (show) {
       this.closeInfo();
@@ -663,6 +677,10 @@ export default {
     // only a pie draws "Other": its parts add up to a whole
     wantsOther: function () {
       return this.spiGraphType === 'pie' && this.showOther;
+    },
+    // a split pie: one pie per value of the first field, of the fields after it
+    splitPie: function () {
+      return this.pieMode === 'split' && this.fieldTypeaheadList.length > 0;
     },
     // a unique table: with one field it's the same as the intersection
     uniqueTable: function () {
@@ -1012,14 +1030,15 @@ export default {
     applyGraphData: function (data) {
       // save viz data for resize and switching between viz types
       this.vizData = data;
-      // a pie's "Other" was fetched for it alone: the other types never draw it
-      // (switching to or from the pie refetches with or without it)
-      if (data?.children && this.spiGraphType !== 'pie') { data = withoutOther(data); }
-      // update the spigraph page with results so export can find them
-      this.$emit('fetchedResults', data.children, this.fieldTypeaheadList, this.baseFieldObj);
+      // a pie's "Other" was fetched for it alone: the other types never draw
+      // it, and the page's csv export (handed the rows here) leaves it out,
+      // as the server's table rows do
+      const shown = data?.children ? withoutOther(data) : data;
+      this.$emit('fetchedResults', shown.children, this.fieldTypeaheadList, this.baseFieldObj);
+      if (this.spiGraphType !== 'pie') { data = shown; }
       if (this.spiGraphType === 'pie') {
         // a split needs a field to split into pies and one to draw in them
-        if (this.pieMode === 'split' && this.fieldTypeaheadList.length) {
+        if (this.splitPie) {
           this.applySplitPieGraphData(data);
         } else {
           this.applyPieGraphData(data);
@@ -1433,6 +1452,10 @@ export default {
       params.exp = exps.toString(',');
       params.other = this.wantsOther || undefined;
       params.mode = this.uniqueTable ? 'unique' : undefined;
+      // a split pie draws pieCount pies of size slices: a size per level
+      params.sizes = this.spiGraphType === 'pie' && this.splitPie
+        ? [this.pieCount, ...this.fieldTypeaheadList.map(() => params.size)].join(',')
+        : undefined;
 
       let controller;
       try {
