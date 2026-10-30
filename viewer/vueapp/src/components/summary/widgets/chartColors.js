@@ -43,6 +43,10 @@ export function colorRange (d3, scheme, n) {
   }
 }
 
+// "Other" (what falls outside the top N) is no value of the field, so it gets
+// a neutral gray outside every palette rather than the next palette color
+export const OTHER_COLOR = '#9e9e9e';
+
 /** Normalize an arbitrary value to a known palette (fallback: rainbow). */
 export function normalizePalette (scheme) {
   return PALETTE_VALUES.includes(scheme) ? scheme : 'rainbow';

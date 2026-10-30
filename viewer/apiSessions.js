@@ -33,6 +33,8 @@ const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
 const RE2 = require('re2');
 const BuildQuery = require('./buildQuery');
+const { cutToSize } = require('./multiesAggs');
+const { pdmlTreeBuilder } = require('./tsharkPdml');
 
 // Replace pug's escape with the same algorithm plus {. Detail HTML must be
 // sanitized with decodeEntities:false so the &#123; survives to the client.
@@ -2600,9 +2602,14 @@ class SessionAPIs {
    * @name /spigraphhierarchy
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - Comma separated list of db fields to populate the graph/table.
+   * @param {number} size=20 - The number of values to return for each field
+   * @param {string} sizes - Comma separated per-field sizes, overriding size for the fields they line up with
+   * @param {boolean} other=false - When set each level gets an "Other" child holding the sessions outside its top values
+   * @param {string} mode - 'unique' returns each field's own top values (independent lists, like /unique per field, not combinations like /multiunique) in columns instead of the nested results
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bounding to 'both'
-   * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
+   * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie (an "Other" child carries other: true)
    * @returns {array} tableResults - The list data to populate the table
+   * @returns {array} columns - With mode=unique only (and instead of the two above): one { exp, values: [{ name, size, srcips, dstips }] } per field, in exp order
    */
   static getSPIGraphHierarchy (req, res) {
     if (req.query.exp === undefined) {
@@ -2633,28 +2640,44 @@ class SessionAPIs {
       delete query.sort;
       delete query.aggregations;
       const size = ViewerUtils.clampInt(req.query.size, 20);
+      // a per-field size wins over the shared one (eg a split pie: a few pies
+      // of many slices each)
+      const sizes = ArkimeUtil.isString(req.query.sizes) ? req.query.sizes.split(',') : [];
+      const levelSizes = fields.map((field, i) => ViewerUtils.clampInt(sizes[i], size));
+      const other = req.query.other === true || req.query.other === 'true';
+      // unique: each field's own top values, not their combinations
+      const unique = req.query.mode === 'unique';
+
+      const termsAgg = (i) => ({
+        terms: fields[i].script
+          ? { script: { lang: 'painless', source: fields[i].script }, size: levelSizes[i] }
+          : { field: fields[i].dbField, size: levelSizes[i] },
+        aggregations: {
+          srcip: { cardinality: { field: 'source.ip' } },
+          dstip: { cardinality: { field: 'destination.ip' } }
+        }
+      });
 
       if (!query.query.bool.filter) {
         query.query.bool.filter = [];
       }
 
-      let lastQ = query;
-      for (let i = 0; i < fields.length; i++) {
-        // Require that each field exists
-        query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
-
-        lastQ.aggregations ??= { };
-        if (fields[i].script) {
-          lastQ.aggregations.field = { terms: { script: { lang: 'painless', source: fields[i].script }, size } };
-        } else {
-          lastQ.aggregations.field = { terms: { field: fields[i].dbField, size } };
+      if (unique) {
+        // sibling aggregations of one search: a session counts in a field's
+        // list when it has that field, whatever the others
+        query.aggregations = {};
+        for (let i = 0; i < fields.length; i++) {
+          query.aggregations[`field${i}`] = termsAgg(i);
         }
-
-        lastQ = lastQ.aggregations.field;
-
-        lastQ.aggregations ??= { };
-        lastQ.aggregations.srcip = { cardinality: { field: 'source.ip' } };
-        lastQ.aggregations.dstip = { cardinality: { field: 'destination.ip' } };
+      } else {
+        let lastQ = query;
+        for (let i = 0; i < fields.length; i++) {
+          // Require that each field exists
+          query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
+          lastQ.aggregations ??= { };
+          lastQ.aggregations.field = termsAgg(i);
+          lastQ = lastQ.aggregations.field;
+        }
       }
 
       if (Config.debug > 2) {
@@ -2662,6 +2685,11 @@ class SessionAPIs {
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
+      // so a request the page abandons (a newer one replaced it, the page
+      // closed) cancels its search rather than running it to completion
+      if (req.query.cancelId) {
+        options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
+      }
 
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
@@ -2674,9 +2702,28 @@ class SessionAPIs {
           console.log('/api/spigraphhierarchy result', JSON.stringify(result, false, 2));
         }
 
+        // a multi viewer merges more values than were asked for, so each list
+        // is cut back to its size
+        if (unique) {
+          const columns = fields.map((field, i) => ({
+            exp: parts[i],
+            values: (result.aggregations?.[`field${i}`]?.buckets ?? []).slice(0, levelSizes[i]).map(bucket => ({
+              name: bucket.key,
+              size: bucket.doc_count,
+              srcips: bucket.srcip?.value,
+              dstips: bucket.dstip?.value
+            }))
+          }));
+          return res.send({ success: true, columns });
+        }
+        // the nested levels are cut by the merge itself; the first one here,
+        // its cut values folded into the level's "Other" as the merge does
+        cutToSize(result.aggregations?.field, levelSizes[0]);
+
         // format the data for the pie graph
         const hierarchicalResults = { name: 'Top Talkers', children: [] };
-        function addDataToPie (buckets, addTo) {
+        function addDataToPie (agg, addTo) {
+          const buckets = agg.buckets;
           for (let i = 0; i < buckets.length; i++) {
             const bucket = buckets[i];
             const obj = {
@@ -2696,8 +2743,12 @@ class SessionAPIs {
                 obj.srcips = bucket.srcip.value;
                 obj.dstips = bucket.dstip.value;
               }
-              addDataToPie(bucket.field.buckets, addTo[i].children);
+              addDataToPie(bucket.field, addTo[i].children);
             }
+          }
+          // the sessions outside this level's top values, as one leaf
+          if (other && agg.sum_other_doc_count > 0) {
+            addTo.push({ name: 'Other', other: true, size: agg.sum_other_doc_count });
           }
         }
 
@@ -2726,7 +2777,7 @@ class SessionAPIs {
           }
         }
 
-        addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
+        addDataToPie(result.aggregations.field, hierarchicalResults.children);
         addDataToTable([], result.aggregations.field.buckets);
 
         return res.send({
@@ -3386,61 +3437,18 @@ class SessionAPIs {
     // of proto/field nodes; on </packet> serialize a compact JSON line. We
     // never buffer more than one packet at a time.
     const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: true });
-    let packet = null;          // { layers: [...] } currently being built
-    let stack = null;           // array of containers we're inside (proto or field), top is current
     let pdmlCount = 0;          // 1-based packet number, matches the raw frame tap
-    parser.on('opentag', (node) => {
-      if (!packet) {
-        if (node.name === 'packet') { packet = { layers: [] }; stack = []; }
-        return;
-      }
-      const a = node.attributes;
-      if (node.name === 'proto') {
-        const proto = { name: a.name || '', label: a.showname || a.name || '', fields: [] };
-        if (a.pos !== undefined) { proto.pos = parseInt(a.pos); }
-        if (a.size !== undefined) { proto.size = parseInt(a.size); }
-        packet.layers.push(proto);
-        stack.push(proto);
-      } else if (node.name === 'field') {
-        if (!includeHidden && a.hide === 'yes') { stack.push(null); return; }
-        const f = { name: a.name || '', label: a.showname || a.show || a.name || '' };
-        if (a.show !== undefined && a.show !== '') { f.show = a.show; }
-        if (a.value !== undefined && a.value !== '') { f.value = a.value; }
-        if (a.pos !== undefined) { f.pos = parseInt(a.pos); }
-        if (a.size !== undefined) { f.size = parseInt(a.size); }
-        if (a.hide === 'yes') { f.hide = true; }
-        const cur = stack[stack.length - 1];
-        if (cur) {
-          if (!cur.fields) { cur.fields = []; }
-          cur.fields.push(f);
-        }
-        stack.push(f);
+    const tree = pdmlTreeBuilder(includeHidden, (packet) => {
+      pdmlCount++;
+      const raw = takeRawFrame(pdmlCount);
+      if (raw !== undefined) { packet.bytes = raw; }
+      if (!res.writableEnded) {
+        res.write(JSON.stringify(packet));
+        res.write('\n');
       }
     });
-    parser.on('closetag', (tagName) => {
-      if (!packet) { return; }
-      if (tagName === 'packet') {
-        // Drop empty fields arrays for compactness.
-        const stripEmpty = (n) => {
-          if (n && n.fields) {
-            if (n.fields.length === 0) { delete n.fields; }
-            else { for (const c of n.fields) { stripEmpty(c); } }
-          }
-        };
-        for (const l of packet.layers) { stripEmpty(l); }
-        pdmlCount++;
-        const raw = takeRawFrame(pdmlCount);
-        if (raw !== undefined) { packet.bytes = raw; }
-        if (!res.writableEnded) {
-          res.write(JSON.stringify(packet));
-          res.write('\n');
-        }
-        packet = null;
-        stack = null;
-      } else if (tagName === 'proto' || tagName === 'field') {
-        if (stack) { stack.pop(); }
-      }
-    });
+    parser.on('opentag', tree.opentag);
+    parser.on('closetag', tree.closetag);
     parser.on('error', (err) => {
       // Don't kill the response on bad XML — log and keep going if possible.
       console.log('tshark pdml parse error:', err.message);
@@ -3669,12 +3677,12 @@ class SessionAPIs {
    * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max' or 'cardinality'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max' or 'cardinality'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), other (when true and the metric is the session count or a sum, also return what falls outside the top N), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
    * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
    * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
    * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
    * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
-   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, expression, data[] } or { id, field, error } on per-widget failure. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values) }.
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, expression, data[] } or { id, field, error } on per-widget failure; a widget asking for other also carries other: { sessions, value } for the sessions outside its top N. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values) }.
    *
    */
   static summary (req, res) {
@@ -3800,6 +3808,9 @@ class SessionAPIs {
       // exactly; the terms order still needs a single-value agg, so an extra
       // avg agg (<key>o) ranks the buckets
       spec.orderAggKey = spec.sortAggKey ? (spec.metricAgg === 'avg' ? `${spec.sortAggKey}o` : spec.sortAggKey) : undefined;
+      // "Other" only adds up for a count (whatever metricAgg a saved widget
+      // carries) or a sum, and a script field has no db field to total it over
+      spec.other = (w.other === true || w.other === 'true') && !total && !!spec.dbField && (!spec.sortAggKey || spec.metricAgg === 'sum');
 
       widgetSpecs.push(spec);
     }
@@ -3860,6 +3871,23 @@ class SessionAPIs {
         });
       }
       return results;
+    }
+
+    // what falls outside a widget's top N: ES's sum_other_doc_count plus any
+    // bucket past the limit (a multi viewer merges more than it asked for). A
+    // summed metric is its total less what the top N holds, floored at 0 since
+    // a multi-valued field can count one session under several values
+    function otherBucket (aggs, spec) {
+      const agg = aggs?.[spec.aggName];
+      if (!agg?.buckets) { return undefined; }
+      let sessions = agg.sum_other_doc_count ?? 0;
+      for (const bucket of agg.buckets.slice(spec.length)) { sessions += bucket.doc_count; }
+      let value = sessions;
+      if (spec.sortAggKey) {
+        const inTop = agg.buckets.slice(0, spec.length).reduce((sum, bucket) => sum + (bucket[spec.sortAggKey]?.value ?? 0), 0);
+        value = Math.max(0, (aggs.othertotal?.total?.value ?? 0) - inTop);
+      }
+      return { sessions, value };
     }
 
     function ipDstPortProcessor(ipPortItem) {
@@ -4057,6 +4085,11 @@ class SessionAPIs {
               },
               aggs: widgetAggs
             };
+            // a summed metric's "Other" needs its total over every session with the field
+            if (spec.other && spec.sortAggKey) {
+              const sortDbField = spec.metrics.find(m => m.aggKey === spec.sortAggKey).dbField;
+              wquery.aggregations.othertotal = { filter: { exists: { field: spec.dbField } }, aggs: { total: { sum: { field: sortDbField } } } };
+            }
           }
 
           const phase2 = await Db.searchSessions(indices, wquery, options);
@@ -4092,6 +4125,7 @@ class SessionAPIs {
             data = data.map(ipDstPortProcessor);
           }
           field.data = data;
+          if (spec.other) { field.other = otherBucket(phase2.aggregations, spec); }
           await send(field, false);
         } catch (fieldErr) {
           // Send error for this specific widget, continue with others

@@ -2,7 +2,7 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES } from './widgets/viewModes';
+import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, MAX_FIELDS } from './widgets/viewModes';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
 
@@ -27,7 +27,7 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
   return {
     id: Utils.createRandomString(),
     field: fieldExp,
-    fields: fieldExp ? [fieldExp] : [], // 1-3 fields for multi-field widgets
+    fields: fieldExp ? [fieldExp] : [], // up to MAX_FIELDS for multi-field widgets
     viewMode,
     metricType: 'sessions',
     metrics: [], // table multi-metric columns (falls back to metricType)
@@ -37,10 +37,12 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
     splitField: '',
     splitLength: 5,
     barMode: 'stacked',
-    text: '', // text widget content
+    other: false, // pie: an "Other" slice for what falls outside the top N
+    text: '', // markdown widget content
     // top-N cap, or a session sample size for connections
     length: defaultLength(viewMode),
     order: 'desc',
+    sortField: '', // sessions list: the column it sorts by ('' = start time)
     expression: '',
     view: '',
     height: 3, // 3 × 160px row unit = 480px (chart default)
@@ -54,11 +56,13 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
  * Ensures a saved widget has an id and all expected fields
  */
 export const normalizeWidget = (w) => {
-  // fields[] is the source of truth (1-3); field stays = fields[0] for back-compat
+  // fields[] is the source of truth; field stays = fields[0] for back-compat
   const fields = Array.isArray(w.fields) && w.fields.length
-    ? w.fields.filter(f => typeof f === 'string').slice(0, 3)
+    ? w.fields.filter(f => typeof f === 'string').slice(0, MAX_FIELDS)
     : (str(w.field) ? [w.field] : []);
-  const viewMode = str(w.viewMode) || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
+  // the text widget of earlier 7.0 builds is the markdown widget
+  const savedMode = str(w.viewMode) === 'text' ? 'markdown' : str(w.viewMode);
+  const viewMode = savedMode || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
   const limit = int(w.length);
   return makeWidgetDef(fields[0] || '', {
     id: str(w.id) || Utils.createRandomString(),
@@ -71,9 +75,11 @@ export const normalizeWidget = (w) => {
     splitField: str(w.splitField),
     splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
     barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
+    other: w.other === true,
     text: str(w.text),
     length: limit > 0 ? limit : defaultLength(viewMode),
     order: w.order === 'asc' ? 'asc' : 'desc',
+    sortField: str(w.sortField),
     expression: str(w.expression),
     view: str(w.view),
     height: spanOrDefault(w.height, 3, 8),
@@ -151,7 +157,7 @@ export const widgetsFromConfig = (cfg) => {
    dashboard copies a graph in; it never references one. See SHAREABLES.md. */
 
 // the widget keys a saved graph carries (everything but id/title/width/height/text)
-export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'length', 'order', 'expression', 'view'];
+export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'other', 'length', 'order', 'expression', 'view'];
 
 // view modes a graph can have: the field-bound dashboard types SPI Graph draws
 export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections'];
@@ -192,11 +198,22 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
   let fields = exp ? [exp, ...subFields] : [];
   let overrides = {};
   if (type === 'table' && subFields.length) {
-    // SPI Graph's nested table is the dashboard's intersection view
-    overrides.viewMode = 'intersection';
+    // SPI Graph's intersection table is the dashboard's intersection view, its
+    // unique one the dashboard's table
+    overrides.viewMode = query.tableMode === 'unique' ? 'table' : 'intersection';
   } else if (type === 'bar') {
     fields = exp ? [exp] : [];
     overrides = { splitField: subFields[0] || '', barMode: query.barMode === 'grouped' ? 'grouped' : 'stacked' };
+  } else if (type === 'pie') {
+    overrides = { other: query.other === 'true' || query.other === true };
+    if (query.pieMode === 'split' && subFields.length) {
+      // one pie per value of the first field, each of the fields after it
+      fields = subFields;
+      overrides.splitField = exp;
+      // how many pies: SPI Graph's pieCount is the widget's splitLength
+      const pieCount = parseInt(query.pieCount, 10);
+      if (SPLIT_LENGTHS.includes(pieCount)) { overrides.splitLength = pieCount; }
+    }
   } else if (type === 'connections') {
     // the connections url carries database field names
     const byDb = (db) => ((db === 'ip.dst:port' || db === 'destination.ip:port') ? 'ip.dst:port' : (fieldsArr || []).find(f => f.dbField === db)?.exp || '');
@@ -243,11 +260,18 @@ export const spigraphQueryFromGraph = (graph) => {
   case 'bar':
     return { ...base, spiGraphType: 'bar', subFields: g.splitField || undefined, barMode: g.barMode };
   case 'pie':
+    // a split pie is SPI Graph's split pie mode: its first field (the split)
+    // draws one pie per value of the fields after it
+    if (g.splitField) {
+      return { ...base, exp: g.splitField, spiGraphType: 'pie', subFields: fields.join(','), pieMode: 'split', pieCount: g.splitLength, other: g.other ? 'true' : undefined };
+    }
+    return { ...base, spiGraphType: 'pie', subFields: fields.slice(1).join(',') || undefined, other: g.other ? 'true' : undefined };
   case 'treemap':
   case 'sankey':
     return { ...base, spiGraphType: g.viewMode, subFields: fields.slice(1).join(',') || undefined };
   case 'table':
-    return { ...base, spiGraphType: 'table', subFields: undefined };
+    // each field's own top values are SPI Graph's unique table
+    return { ...base, spiGraphType: 'table', subFields: fields.slice(1).join(',') || undefined, tableMode: fields.length > 1 ? 'unique' : undefined };
   case 'intersection':
     return { ...base, spiGraphType: 'table', subFields: fields.slice(1).join(',') || undefined };
   case 'heatmap':
@@ -264,8 +288,8 @@ export const spigraphQueryFromGraph = (graph) => {
 
 // the graph keys SPI Graph shows and lets the user change (a heatmap's
 // metricType is its intensity); it can't show the others (metric columns,
-// aggregation, sort metric, order, split length)
-const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', 'length', 'expression', 'view'];
+// aggregation, sort metric, order, a bar's split length)
+const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', 'other', 'length', 'expression', 'view'];
 
 /**
  * The graph SPI Graph shows, as saved-graph data: what the page shows on top of
@@ -280,10 +304,8 @@ export const graphOnSpigraph = (saved, page) => {
   const keys = page.viewMode === 'heatmap' ? [...SPIGRAPH_KEYS, 'metricType'] : SPIGRAPH_KEYS;
   const merged = { ...saved };
   for (const key of keys) { merged[key] = page[key]; }
-  // SPI Graph's table shows only the first of a table's side by side fields
-  if (page.viewMode === 'table' && saved.viewMode === 'table') {
-    merged.fields = [page.fields[0], ...(saved.fields || []).slice(1)];
-  }
+  // a split pie's pie count is on the page too (a bar's split length isn't)
+  if (page.viewMode === 'pie' && page.splitField) { merged.splitLength = page.splitLength; }
   return graphFromWidget(merged);
 };
 

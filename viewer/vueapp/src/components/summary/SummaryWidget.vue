@@ -27,6 +27,7 @@ SPDX-License-Identifier: Apache-2.0
       <SummaryPieChart
         v-if="viewMode === 'pie'"
         :data="data"
+        :other="other"
         :svg-id="svgId"
         :field-config="fieldConfig"
         :width="chartWidth"
@@ -74,8 +75,11 @@ import { metricLabel, formatMetricValue } from './widgets/widgetData';
 
 const { t } = useI18n();
 
-// Chart dimension constants
-const MIN_CHART_SIZE = 400;
+// Charts fill their widget, down to the smallest they can still draw: a pie
+// needs room for its slice labels, a bar for its axis and rotated value labels
+// (its margins alone take ~130px of height). Below that they clip.
+const MIN_CHART_WIDTH = 120;
+const MIN_CHART_HEIGHT = { pie: 120, bar: 200 };
 const RESIZE_DEBOUNCE_MS = 500;
 
 // Debounce helper for resize events
@@ -132,6 +136,11 @@ const props = defineProps({
   barMode: {
     type: String,
     default: 'stacked'
+  },
+  // pie: the sessions outside the top N ({ sessions, value }), drawn as one slice
+  other: {
+    type: Object,
+    default: null
   },
   // Data and visualization props
   data: {
@@ -205,13 +214,13 @@ const columns = computed(() => [
 
 // ResizeObserver for dynamic chart sizing
 const chartContainerRef = ref(null);
-const containerWidth = ref(MIN_CHART_SIZE);
-const containerHeight = ref(MIN_CHART_SIZE);
+const containerWidth = ref(0);
+const containerHeight = ref(0);
 let resizeObserver = null;
 
 // Computed chart dimensions with minimum constraints
-const chartWidth = computed(() => Math.max(MIN_CHART_SIZE, containerWidth.value));
-const chartHeight = computed(() => Math.max(MIN_CHART_SIZE, containerHeight.value));
+const chartWidth = computed(() => Math.max(MIN_CHART_WIDTH, containerWidth.value));
+const chartHeight = computed(() => Math.max(MIN_CHART_HEIGHT[props.viewMode] ?? MIN_CHART_WIDTH, containerHeight.value));
 
 // Handle container resize
 const handleResize = debounce((entries) => {
@@ -239,8 +248,8 @@ const setupResizeObserver = () => {
       resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(chartContainerRef.value);
       // Initialize with current size
-      containerWidth.value = chartContainerRef.value.clientWidth || MIN_CHART_SIZE;
-      containerHeight.value = chartContainerRef.value.clientHeight || MIN_CHART_SIZE;
+      containerWidth.value = chartContainerRef.value.clientWidth;
+      containerHeight.value = chartContainerRef.value.clientHeight;
     }
   });
 };

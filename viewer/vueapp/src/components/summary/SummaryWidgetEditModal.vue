@@ -51,6 +51,7 @@ SPDX-License-Identifier: Apache-2.0
             v-model="form.text"
             :label="$t('sessions.summary.widget.text')"
             :placeholder="$t('sessions.summary.widget.textHint')"
+            :maxlength="MAX_TEXT"
             rows="6"
             auto-grow
             density="compact"
@@ -92,17 +93,18 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </template>
 
-        <!-- Field selector: a chips multi-select (up to 3) for pie/treemap/table/
-             intersection, otherwise a single typeahead. Grayed for session types. -->
+        <!-- Field selector: a chips multi-select (up to the type's max) for pie/
+             treemap/table/intersection, otherwise a single typeahead. Grayed for
+             session types. -->
         <div
           v-else
           class="arkime-input-group arkime-input-group--fluid mb-3"
-          :class="{ 'input-disabled': !needsField && !optionalField }">
+          :class="{ 'input-disabled': !needsField && !optionalField, 'input-group-chips': multiField }">
           <span
             id="widgetField"
             class="arkime-input-label"
             :class="{ 'cursor-help': optionalField }">
-            {{ multiField ? $t('sessions.summary.widget.fields') : $t(optionalField ? 'sessions.summary.widget.fieldOptional' : 'sessions.summary.widget.field') }}<sup v-if="needsField">*</sup>
+            {{ listMode ? $t('sessions.summary.widget.columns') : multiField ? $t('sessions.summary.widget.fields') : $t(optionalField ? 'sessions.summary.widget.fieldOptional' : 'sessions.summary.widget.field') }}<sup v-if="needsField">*</sup>
             <v-tooltip
               v-if="optionalField"
               activator="#widgetField">
@@ -113,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="multiField"
             v-model="form.fields"
             :items="fieldItems"
-            :placeholder="$t('sessions.summary.widget.fieldsHint')"
+            :placeholder="$t('sessions.summary.widget.fieldsHint', { count: maxFields })"
             multiple
             chips
             closable-chips
@@ -217,7 +219,8 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </div>
 
-        <!-- bar: split each value by a second field (stacked or grouped segments) -->
+        <!-- split by a second field: a bar's stacked/grouped segments, or one
+             small pie per split value -->
         <div
           v-if="splitEnabled"
           class="d-flex flex-wrap gap-3 mb-3 align-center">
@@ -229,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.widget.splitField') }}
               <v-tooltip activator="#widgetSplitField">
-                {{ $t('sessions.summary.widget.splitFieldTip') }}
+                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : 'sessions.summary.widget.splitPieTip') }}
               </v-tooltip>
             </span>
             <ArkimeFieldTypeahead
@@ -249,13 +252,14 @@ SPDX-License-Identifier: Apache-2.0
           <v-select
             v-model="form.splitLength"
             :items="splitLengthItems"
-            :label="$t('sessions.summary.widget.splitLength')"
+            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : 'sessions.summary.widget.splitPies')"
             :disabled="!form.splitField"
             density="compact"
             variant="outlined"
             hide-details
             style="min-width: 120px" />
           <v-select
+            v-if="barSplit"
             v-model="form.barMode"
             :items="barModeItems"
             :label="$t('sessions.summary.widget.barMode')"
@@ -270,10 +274,21 @@ SPDX-License-Identifier: Apache-2.0
           v-if="!staticMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <!-- Data limit (Top/Bottom N, or a session sample for connections) -->
+          <!-- sessions list: start time or one of its columns -->
+          <v-select
+            v-if="listMode"
+            v-model="form.sortField"
+            :items="sortItems"
+            :label="$t('sessions.summary.widget.sortBy')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 180px" />
+
           <v-select
             v-model="form.length"
             :items="lengthItems"
-            :label="$t(sampleSize ? 'sessions.summary.widget.sampleSize' : 'sessions.summary.widget.limit')"
+            :label="$t(listMode ? 'sessions.summary.widget.rows' : sampleSize ? 'sessions.summary.widget.sampleSize' : 'sessions.summary.widget.limit')"
             :disabled="!lengthEnabled"
             density="compact"
             variant="outlined"
@@ -290,6 +305,22 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             hide-details
             style="min-width: 120px" />
+
+          <!-- pie: a gray slice for what falls outside the top N (only a count
+               or a sum adds up to a whole) -->
+          <span
+            v-if="otherEnabled"
+            id="widgetOther">
+            <v-checkbox
+              v-model="form.other"
+              :label="$t('sessions.summary.widget.showOther')"
+              :disabled="!additiveMetric"
+              density="compact"
+              hide-details />
+            <v-tooltip activator="#widgetOther">
+              {{ $t('sessions.summary.widget.showOtherTip') }}
+            </v-tooltip>
+          </span>
         </div>
 
         <div
@@ -406,8 +437,10 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
 import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, allowsMultiField, allowsMultiMetric, allowsSplit, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, VIEW_MODE_LABEL_KEYS } from './widgets/viewModes';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, VIEW_MODE_LABEL_KEYS } from './widgets/viewModes';
 import { GRAPH_VIEW_MODES, graphFromWidget } from './dashboardConfig';
+import { columnSortDbField, fieldHasColumn } from './widgets/sessionsWidgetData';
+import { MAX_TEXT } from './widgets/miniMarkdown';
 
 const GraphService = createShareableService('spigraphConfig');
 
@@ -447,9 +480,11 @@ const blankForm = () => ({
   splitField: '',
   splitLength: 5,
   barMode: 'stacked',
+  other: false,
   text: '',
   length: 20,
   order: 'desc',
+  sortField: '',
   width: 2,
   height: 3,
   expression: '',
@@ -466,7 +501,7 @@ const fieldFriendlyName = computed(() => {
   return FieldService.getField(form.value.field, true)?.friendlyName || form.value.field;
 });
 
-// how many fields the chosen type takes: [1,3] for the nested/side-by-side
+// how many fields the chosen type takes: up to 7 for the nested/side-by-side
 // types, [2,2] for the connections source + destination pair
 const multiField = computed(() => allowsMultiField(form.value.viewMode));
 const minFields = computed(() => fieldCountLimits(form.value.viewMode)[0]);
@@ -489,14 +524,33 @@ const onPairFieldSelected = (i, field) => {
   next[i] = field?.exp || '';
   form.value.fields = next;
 };
-const fieldItems = computed(() => usableFields.value.map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
+// a sessions list's columns are the Sessions page's: real fields, text ones
+// included, without the summary's All IP / Dst IP:Port aggregation fields
+// (the same test the widget renders its cells by)
+const columnFields = computed(() => (store.state.fieldsArr || []).filter(fieldHasColumn));
+const fieldItems = computed(() => (listMode.value ? columnFields.value : usableFields.value)
+  .map(f => ({ title: f.friendlyName || f.exp, value: f.exp })));
 
 // Capability flags drive which inputs are enabled for the chosen visualization type
 const fieldMode = computed(() => isFieldMode(form.value.viewMode));
 // the map takes a single geo field (country/*.geo) rather than a general field
 const geoMode = computed(() => isGeoFieldMode(form.value.viewMode));
-// a field selection is required by both general field-bound and geo (map) types
-const needsField = computed(() => fieldMode.value || geoMode.value);
+// sessions list: its fields are columns, its order a sort direction
+const listMode = computed(() => isListMode(form.value.viewMode));
+// a field selection is required by the general field-bound, geo (map) and list types
+const needsField = computed(() => fieldMode.value || geoMode.value || listMode.value);
+// a sessions list sorts by start time or by one of its own sortable columns
+const sortItems = computed(() => [
+  { title: t('sessions.summary.widget.sortStartTime'), value: '' },
+  ...(form.value.fields || [])
+    .map(exp => FieldService.getField(exp, true))
+    .filter(f => f && columnSortDbField(f))
+    .map(f => ({ title: f.friendlyName || f.exp, value: f.exp }))
+]);
+// dropping the sorted column falls back to start time
+watch(sortItems, (items) => {
+  if (!items.some(i => i.value === form.value.sortField)) { form.value.sortField = ''; }
+});
 // metric: a field splits the number per top value but isn't required
 const optionalField = computed(() => isOptionalFieldMode(form.value.viewMode));
 // text: no data inputs at all
@@ -509,9 +563,13 @@ const aggApplies = computed(() => multiMetric.value
   ? (form.value.metrics || []).some(m => m !== 'sessions')
   : (form.value.metricType && form.value.metricType !== 'sessions'));
 const aggItems = computed(() => METRIC_AGGS.map(a => ({ title: t(`sessions.summary.agg.${a}`), value: a })));
-// bar: optional split field
+// bar/pie: optional split field (a bar's segments, or one pie per value)
 const splitEnabled = computed(() => allowsSplit(form.value.viewMode));
-const splitFields = computed(() => fields.value.filter(f => fieldIsAggregatable(f) && f.exp !== 'ip' && f.exp !== 'ip.dst:port' && f.exp !== form.value.field));
+const barSplit = computed(() => form.value.viewMode === 'bar');
+const splitFields = computed(() => fields.value.filter(f => fieldIsAggregatable(f) && f.exp !== 'ip' && f.exp !== 'ip.dst:port' &&
+  f.exp !== form.value.field && !(form.value.fields || []).includes(f.exp)));
+// pie: optional "Other" slice
+const otherEnabled = computed(() => allowsOther(form.value.viewMode));
 // averages, extremes and unique counts can't stack; the chart draws them
 // grouped whatever is stored, and the editor says so by pinning the choice
 const additiveMetric = computed(() => metricIsAdditive(form.value.metricType, form.value.metricAgg));
@@ -538,7 +596,8 @@ const localFilterEnabled = computed(() => hasLocalFilter(form.value.viewMode));
 const geoFields = computed(() => fields.value.filter(f =>
   f.exp?.startsWith('country.') || /GEO$/.test(f.dbField || '') || /GEO$/.test(f.dbField2 || '')));
 
-const titlePlaceholder = computed(() => fieldFriendlyName.value || viewModeLabel(form.value.viewMode));
+// a sessions list is titled by its type, not its first column
+const titlePlaceholder = computed(() => (listMode.value ? '' : fieldFriendlyName.value) || viewModeLabel(form.value.viewMode));
 
 function viewModeLabel (vm) {
   return viewModeItems.value.find(i => i.value === vm)?.title || vm;
@@ -596,10 +655,15 @@ const lengthItems = computed(() => {
   return opts.map(n => ({ title: String(n), value: n }));
 });
 
-const orderItems = computed(() => [
-  { title: t('sessions.summary.top'), value: 'desc' },
-  { title: t('sessions.summary.bottom'), value: 'asc' }
-]);
+const orderItems = computed(() => (listMode.value
+  ? [
+    { title: t('sessions.summary.widget.sort-desc'), value: 'desc' },
+    { title: t('sessions.summary.widget.sort-asc'), value: 'asc' }
+  ]
+  : [
+    { title: t('sessions.summary.top'), value: 'desc' },
+    { title: t('sessions.summary.bottom'), value: 'asc' }
+  ]));
 
 // widgets span 1-4 columns (grid is 4 wide) and 1-8 rows (160px row unit)
 const widthItems = [1, 2, 3, 4].map(n => ({ title: String(n), value: n }));
@@ -633,7 +697,9 @@ const fillForm = (w) => {
     splitField: w.splitField || '',
     splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
     barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
+    other: w.other === true,
     text: w.text || '',
+    sortField: w.sortField || '',
     expression: w.expression || '',
     view: w.view || '',
     title: w.title || ''
@@ -671,8 +737,8 @@ watch(() => props.show, (isOpen) => {
   }
 });
 
-// drop fields the chosen view mode can't resolve, cap the selection (3, or 2 for
-// the connections pair), and mirror the first field into the single-field model
+// drop fields the chosen view mode can't resolve, cap the selection (the type's
+// max, or 2 for the connections pair), and mirror the first field into the single-field model
 // so switching between single/multi view types never persists a stale field
 watch([() => form.value.fields, maxFields, () => form.value.viewMode], ([v, max, viewMode]) => {
   if (!Array.isArray(v)) { return; }
@@ -754,7 +820,9 @@ const save = () => {
   let metricType = multiMetric.value ? sortMetric : form.value.metricType;
   // only a unique count (on a mode that offers one) can use a non-numeric
   // metric field; anything else would ask for a sum of text
-  const metricAgg = aggEnabled.value ? (form.value.metricAgg || 'sum') : 'sum';
+  // a count has no aggregation: an agg picked for an earlier metric field
+  // must not stick to it (the select is hidden, so the user can't see it)
+  const metricAgg = aggEnabled.value && aggApplies.value ? (form.value.metricAgg || 'sum') : 'sum';
   if (metricAgg !== 'cardinality') {
     const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
     if (!numeric(metricType)) { metricType = 'sessions'; }
@@ -774,9 +842,11 @@ const save = () => {
     splitField: splitEnabled.value ? (form.value.splitField || '') : '',
     splitLength: form.value.splitLength || 5,
     barMode: additiveMetric.value ? (form.value.barMode || 'stacked') : 'grouped',
+    other: otherEnabled.value && additiveMetric.value && !!form.value.other,
     text: staticMode.value ? (form.value.text || '') : '',
     length: form.value.length,
     order: form.value.order,
+    sortField: listMode.value ? (form.value.sortField || '') : '',
     width: form.value.width,
     height: form.value.height,
     // local filter only applies to field-bound widgets
@@ -798,5 +868,17 @@ const save = () => {
 .arkime-input-group {
   background-color: rgb(var(--v-theme-input-bg));
   border: 1px solid rgb(var(--v-theme-input-border));
+}
+
+/* the fields picker's chips wrap onto more lines (7 table fields, 20 session
+   columns), so its group grows with them instead of the fixed 32px row, the
+   label staying with the first line */
+.arkime-input-group.input-group-chips {
+  height: auto;
+  min-height: 32px;
+  align-items: flex-start;
+}
+.arkime-input-group.input-group-chips > .arkime-input-label {
+  height: 32px;
 }
 </style>

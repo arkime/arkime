@@ -32,6 +32,12 @@ import Arkime from '@/components/arkime/Arkime.vue';
 // On a hard load the user isn't fetched yet, so pull it first.
 const requireRole = createRequireRole(UserService.getCurrent, () => store.state.user, 'Sessions');
 
+// The element id a url hash names: '#' dropped, escapes undone (a malformed
+// one is used as it is)
+function hashId (hash) {
+  try { return decodeURIComponent(hash.slice(1)); } catch { return hash.slice(1); }
+}
+
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
   // eslint-disable-next-line no-undef
@@ -39,12 +45,15 @@ const router = createRouter({
   scrollBehavior: function (to, from, savedPosition) {
     // Hashes double as tab permalinks (e.g. /settings#info) for Vuetify v-tabs
     // which don't render id-anchored DOM. Skip scrolling unless the hash
-    // actually matches an element, so vue-router doesn't warn.
-    if (to.hash && document.querySelector(to.hash)) {
+    // actually matches an element, so vue-router doesn't warn. The hash is
+    // looked up as an id, not a selector: one that isn't a valid selector
+    // (a dashboard note's #/dashboard/<id> link, say) would throw
+    const target = to.hash ? document.getElementById(hashId(to.hash)) : null;
+    if (target) {
       const yoffset = to.path === '/help' ? 50 : 150;
 
       return {
-        el: to.hash,
+        el: target,
         top: yoffset,
         behavior: 'smooth'
       };

@@ -48,7 +48,7 @@ export function useSpigraphWidget (getWidget, getReloadNonce, onResult, fetcher 
 
   watch(() => {
     const w = getWidget();
-    return [getReloadNonce(), w.field, (w.fields || []).join(','), w.expression, w.length, w.view, w.metricType, w.metricAgg, w.order, (w.metrics || []).join(','), w.sortMetric];
+    return [getReloadNonce(), w.field, (w.fields || []).join(','), w.expression, w.length, w.view, w.metricType, w.metricAgg, w.order, (w.metrics || []).join(','), w.sortMetric, w.sortField, w.splitField, w.splitLength, w.other];
   }, fetchData);
 
   onMounted(fetchData);

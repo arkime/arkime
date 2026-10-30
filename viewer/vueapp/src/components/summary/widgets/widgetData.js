@@ -10,15 +10,16 @@ filter and the global time window.
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
-import { defaultLength } from './viewModes';
+import { defaultLength, fieldCountLimits } from './viewModes';
 import { spigraphQueryFromGraph } from '../dashboardConfig';
 
 /**
- * A widget's field list (1-3 field exps). Multi-field widgets store `fields`;
- * single-field widgets store `field` (= fields[0]). Always returns an array.
+ * A widget's field list, capped at what its view mode takes (see
+ * FIELD_COUNT_LIMITS). Multi-field widgets store `fields`; single-field widgets
+ * store `field` (= fields[0]). Always returns an array.
  */
 export function widgetFields (widget) {
-  if (Array.isArray(widget?.fields) && widget.fields.length) { return widget.fields.slice(0, 3); }
+  if (Array.isArray(widget?.fields) && widget.fields.length) { return widget.fields.slice(0, fieldCountLimits(widget.viewMode)[1]); }
   return widget?.field ? [widget.field] : [];
 }
 
@@ -139,14 +140,14 @@ export function widgetFullPageLink (route, store, widget) {
   // SPI Graph aggregates a real column, so the "All X fields" groups (All IP
   // fields and friends, which the summary endpoint handles with a script)
   // have no full page; the Sessions page targets don't aggregate at all
-  if (!['timeline', 'metric'].includes(mode)) {
+  if (!['timeline', 'metric', 'sessions'].includes(mode)) {
     const usable = (fieldExp) => {
       if (fieldExp === 'ip.dst:port' || fieldExp === 'destination.ip:port') { return true; }
       const field = FieldService.getField(fieldExp, true);
       return !!field && !field.noFacet && !field.regex;
     };
-    // a bar's split field becomes another SPI Graph field
-    const linked = (mode === 'bar' && widget.splitField) ? [...fields, widget.splitField] : fields;
+    // a bar's or pie's split field becomes another SPI Graph field
+    const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
   }
   const query = {};
@@ -168,7 +169,7 @@ export function widgetFullPageLink (route, store, widget) {
     query.date = store.state.timeRange;
   }
 
-  if (mode === 'timeline' || mode === 'metric') { return { path: '/sessions', query }; }
+  if (mode === 'timeline' || mode === 'metric' || mode === 'sessions') { return { path: '/sessions', query }; }
   // the same SPI Graph url a saved graph opens with; the widget's own view is
   // already in the combined expression, so the page keeps the global one
   const graphQuery = spigraphQueryFromGraph(widget);
@@ -235,16 +236,30 @@ export async function fetchGraph (route, store, widget, { signal } = {}) {
 }
 
 /**
- * Fetch SPIGraph hierarchy data for one field (the "Intersection" table). For a
- * single field the endpoint returns `tableResults` as a flat list of
- * { name, size, parents: [] } — one row per unique value. Returns the raw
- * response ({ tableResults, hierarchicalResults }).
+ * The fields a hierarchy widget nests, outermost first: a split pie's split
+ * field (one small pie per value) wraps the pie's own fields.
+ */
+export function hierarchyFields (widget) {
+  const fields = widgetFields(widget);
+  return widget?.viewMode === 'pie' && widget.splitField ? [widget.splitField, ...fields] : fields;
+}
+
+/**
+ * Fetch SPIGraph hierarchy data for a widget's nested fields (the
+ * "Intersection" table, nested pie/treemap/sankey). For a single field the
+ * endpoint returns `tableResults` as a flat list of { name, size, parents: [] }
+ * — one row per unique value. Returns the raw response ({ tableResults,
+ * hierarchicalResults }).
  */
 export async function fetchHierarchy (route, store, widget, { signal } = {}) {
-  const data = buildWidgetParams(route, store, widget, {
-    exp: widgetFields(widget).join(','), // 1-3 nested fields
-    size: widget.length
-  });
+  const fields = hierarchyFields(widget);
+  const extra = { exp: fields.join(','), size: widget.length };
+  // a split pie draws splitLength pies, each cut to the widget's limit
+  if (fields.length > widgetFields(widget).length) {
+    extra.sizes = [widget.splitLength || 5, ...fields.slice(1).map(() => widget.length)].join(',');
+  }
+  if (widget.viewMode === 'pie' && widget.other) { extra.other = true; }
+  const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
 }
 

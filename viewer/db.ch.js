@@ -1051,12 +1051,24 @@ class DbCHImpl {
   async runAgg (agg, where) {
     if (agg.terms) { return this.runTermsAgg(agg, where); }
     if (agg.histogram || agg.date_histogram) { return this.runHistogramAgg(agg, where); }
+    if (agg.filter) { return this.runFilterAgg(agg, where); }
     if (this.isMetricAgg(agg)) {
       const expr = this.metricExpression(agg);
       const result = await this.query(`SELECT ${expr} AS value FROM ${this.tableName()} WHERE ${where}`);
       return { value: result.data?.[0]?.value ?? 0 };
     }
     throw chError(`aggregation ${Object.keys(agg).join(',')}`);
+  }
+
+  // One bucket: the rows that also match the filter's clause, with its
+  // sub-aggs beside its doc_count like ES
+  async runFilterAgg (agg, where) {
+    const filterWhere = `(${where}) AND (${this.translateClause(agg.filter)})`;
+    const [count, subs] = await Promise.all([
+      this.query(`SELECT count() AS doc_count FROM ${this.tableName()} WHERE ${filterWhere}`),
+      this.translateAggs(agg.aggregations || agg.aggs, filterWhere)
+    ]);
+    return { doc_count: Number(count.data?.[0]?.doc_count ?? 0), ...subs };
   }
 
   async runTermsAgg (agg, where) {
@@ -1127,11 +1139,13 @@ class DbCHImpl {
     let orderExpr = 'doc_count';
     if (orderKey === '_key') { orderExpr = tieExpr; } else if (orderKey !== '_count' && metricSubs.some(([subName]) => subName === orderKey)) { orderExpr = quoteIdent(orderKey); }
     const select = [`${keyExpr} AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
-    const result = await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key WITH TOTALS ORDER BY ${orderExpr} ${orderDir}, ${tieExpr} ASC LIMIT ${size}`);
+    // Like ES, rows without the field aren't a bucket: HAVING drops their
+    // null/empty key before the LIMIT (so it can't take a top N slot) and
+    // keeps them out of the totals behind sum_other_doc_count
+    const result = await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key WITH TOTALS HAVING isNotNull(key) AND toString(key) != '' ORDER BY ${orderExpr} ${orderDir}, ${tieExpr} ASC LIMIT ${size}`);
     const rows = result.data || [];
     const totalDocCount = Number(result.totals?.doc_count ?? 0);
     const buckets = rows
-      .filter(row => row.key !== null && row.key !== undefined && row.key !== '')
       .map(row => {
         const bucket = { key: row.key, doc_count: Number(row.doc_count) };
         for (const [subName] of metricSubs) { bucket[subName] = { value: row[subName] ?? 0 }; }
