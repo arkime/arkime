@@ -406,7 +406,7 @@ $chunks = postSummary("/api/sessions/summary?date=-1", {
 });
 my $otherChunk = getChunk($chunks, 'wOther');
 my $otherBytesChunk = getChunk($chunks, 'wOtherBytes');
-my $allChunk = getChunk($chunks, 'wAll');
+$allChunk = getChunk($chunks, 'wAll');
 my ($topSessions, $topBytes) = (0, 0);
 $topSessions += $_->{sessions} foreach @{$otherChunk->{data}};
 $topBytes += $_->{value} foreach @{$otherBytesChunk->{data}};

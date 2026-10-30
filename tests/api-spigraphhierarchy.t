@@ -171,7 +171,7 @@ ok (!exists $unique->{hierarchicalResults} && !exists $unique->{tableResults}, "
 for my $i (0 .. 2) {
     my $exp = $unique->{columns}->[$i]->{exp};
     eq_or_diff (pairs($unique->{columns}->[$i]->{values}), pairs(get("date=-1&exp=$exp&size=5")->{tableResults}),
-        "unique: the $exp column is $exp's own top values");
+        "unique: the $exp column is ${exp}'s own top values");
 }
 my $uniqueSorted = 1;
 foreach my $column (@{$unique->{columns}}) {
