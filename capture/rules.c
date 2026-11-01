@@ -1185,18 +1185,29 @@ void arkime_rules_init()
 {
     rulesFiles = arkime_config_str_list(NULL, "rulesFiles", NULL);
 
-    // Not set, use the etc directory if there is one, missing is just no rules. This runs after
-    // the privilege drop, so if dropUser can't read it warn and run without rules instead.
+    // Not set, use the etc (admin's) and share (installed default.rules.yml) directories that exist,
+    // missing is just no rules. This runs after the privilege drop, so if dropUser can't read one
+    // warn and skip it instead.
     if (!rulesFiles) {
-        GError *error = NULL;
-        GDir *dir = g_dir_open(CONFIG_PREFIX "/etc", 0, &error);
-        if (dir) {
-            g_dir_close(dir);
-            rulesFiles = g_strsplit(CONFIG_PREFIX "/etc", ";", 0);
+        const char *defaultDirs[] = {CONFIG_PREFIX "/etc", CONFIG_PREFIX "/share"};
+        GPtrArray *dirs = g_ptr_array_new();
+        for (guint i = 0; i < G_N_ELEMENTS(defaultDirs); i++) {
+            GError *error = NULL;
+            GDir *dir = g_dir_open(defaultDirs[i], 0, &error);
+            if (dir) {
+                g_dir_close(dir);
+                g_ptr_array_add(dirs, g_strdup(defaultDirs[i]));
+            } else {
+                if (!g_error_matches(error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+                    LOG("WARNING - Not loading rules from %s, set rulesFiles= to silence: %s", defaultDirs[i], error->message);
+                g_error_free(error);
+            }
+        }
+        if (dirs->len > 0) {
+            g_ptr_array_add(dirs, NULL);
+            rulesFiles = (char **)g_ptr_array_free(dirs, FALSE);
         } else {
-            if (!g_error_matches(error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
-                LOG("WARNING - Not loading rules from %s, set rulesFiles= to silence: %s", CONFIG_PREFIX "/etc", error->message);
-            g_error_free(error);
+            g_ptr_array_free(dirs, TRUE);
         }
     }
 

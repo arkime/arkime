@@ -26,7 +26,7 @@ top-N value when a split field is chosen. Self-fetches /api/sessions/summary
         :key="i"
         class="metric-card">
         <div
-          v-if="fieldObj"
+          v-if="fieldObj && !row.range"
           class="metric-label">
           <arkime-session-field
             :field="fieldObj"
@@ -35,6 +35,12 @@ top-N value when a split field is chosen. Self-fetches /api/sessions/summary
             :parse="true"
             :session-btn="true"
             :pull-left="true" />
+        </div>
+        <!-- a range bucket ('0-9') is no single value to search for -->
+        <div
+          v-else-if="fieldObj"
+          class="metric-label">
+          {{ row.item }}
         </div>
         <div
           v-else

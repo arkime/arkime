@@ -1,0 +1,154 @@
+{
+  "name": "Certificates",
+  "description": "Sessions that carried an X.509 certificate: subjects, issuers, algorithms and expiry",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "cert.cnt > 0",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "cert.publicAlgorithm",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Sessions with certificates by public key algorithm"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Sessions with certificates"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Expiring within 30 days or expired",
+        "expression": "cert.remainingDays < 30"
+      },
+      {
+        "id": "w4",
+        "field": "cert.subject.cn",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Subject common names"
+      },
+      {
+        "id": "w5",
+        "field": "cert.signatureAlgorithm",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Signature algorithms"
+      },
+      {
+        "id": "w6",
+        "field": "cert.issuer.on",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Issuers"
+      },
+      {
+        "id": "w7",
+        "field": "cert.subject.on",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Subject organizations"
+      },
+      {
+        "id": "w8",
+        "field": "cert.keyLength",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 2,
+        "length": 15,
+        "title": "Key lengths"
+      },
+      {
+        "id": "w9",
+        "field": "cert.remainingDays",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "bucketInterval": 30,
+        "title": "Days until expiry (ranges of 30)"
+      },
+      {
+        "id": "w10",
+        "field": "cert.hash",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Certificate hashes"
+      },
+      {
+        "id": "w11",
+        "field": "cert.alt",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Alternative names"
+      },
+      {
+        "id": "w12",
+        "field": "cert.curve",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Curves"
+      },
+      {
+        "id": "w13",
+        "field": "cert.validfor",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "bucketInterval": 365,
+        "title": "Validity length in days (ranges of a year)"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "cert.subject.cn",
+          "cert.issuer.on",
+          "cert.notafter",
+          "cert.hash"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

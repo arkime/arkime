@@ -32,13 +32,13 @@ same as for other rules. `everyPacket` rules only support `bpf:`.
 ## Rules files and directories
 
 `rulesFiles=` is a `;` separated list of files and directories, and defaults to
-`/opt/arkime/etc`. A directory contributes every `*.rules.yml` and `*.rules.yaml` in
+`/opt/arkime/etc;/opt/arkime/share` (the ones that exist). A directory contributes every `*.rules.yml` and `*.rules.yaml` in
 it (not sub directories or hidden files), sorted by name. Rules are reloaded when
 a file is edited, added or removed, once nothing has changed for one of the 10
 second checks, so a file that is still being written isn't loaded.
 
-Arkime installs `default.rules.yml` in `/opt/arkime/etc` and replaces it on every
-upgrade, so don't edit it. Put your own rules in another file next to it, eg
+Arkime installs `default.rules.yml` in `/opt/arkime/share` and replaces it on every
+upgrade, so don't edit it. Put your own rules in a file in `/opt/arkime/etc`, eg
 `local.rules.yml`. `default.*` files always load first, then the rest in list and
 name order, and a rule in a later file with the same `name:` replaces the earlier
 ones. Rules in the same file never replace each other. A rule with just the name

@@ -119,6 +119,44 @@ SPDX-License-Identifier: Apache-2.0
       </select>
     </div> <!-- /min connections select -->
 
+    <!-- tree layout: the value it starts from and how many hops it draws -->
+    <template v-if="layout === 'tree'">
+      <div class="arkime-input-group">
+        <span
+          id="treeRoot"
+          class="arkime-input-label cursor-help">
+          {{ $t('sessions.summary.widget.treeRoot') }}
+        </span>
+        <v-tooltip
+          activator="#treeRoot"
+          :open-delay="300">
+          {{ $t('sessions.summary.widget.treeRootTip') }}
+        </v-tooltip>
+        <input
+          class="arkime-input-control tree-root-input"
+          :value="treeRoot"
+          :placeholder="$t('sessions.summary.widget.treeRootAuto')"
+          @change="changeTreeRoot($event.target.value)"
+          @keyup.enter="changeTreeRoot($event.target.value)">
+      </div>
+      <div class="arkime-input-group">
+        <span class="arkime-input-label">
+          {{ $t('sessions.summary.widget.treeDepth') }}
+        </span>
+        <select
+          class="arkime-input-control"
+          :value="treeDepth"
+          @change="changeTreeDepth(Number($event.target.value))">
+          <option
+            v-for="opt in treeDepths"
+            :key="opt"
+            :value="opt">
+            {{ opt }}
+          </option>
+        </select>
+      </div>
+    </template> <!-- /tree layout -->
+
     <!-- weight select -->
     <div class="arkime-input-group">
       <span
@@ -364,6 +402,13 @@ SPDX-License-Identifier: Apache-2.0
       class="mt-5"
       :view="query.view" /> <!-- /no results -->
 
+    <!-- tree: the asked for root isn't in the sample -->
+    <div
+      v-if="!error && !loading && layout === 'tree' && treeRootMissing"
+      class="mt-5 text-center text-medium-emphasis">
+      {{ $t('sessions.summary.widget.treeRootMissing', { root: treeRoot }) }}
+    </div>
+
     <!-- connections graph container -->
     <svg
       ref="svgEl"
@@ -407,6 +452,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           icon
           id="unlockNodes"
+          v-if="layout !== 'tree'"
           :aria-label="$t('connections.unlockNodesTip')"
           @click.stop.prevent="unlock">
           <v-icon icon="mdi-lock-open" />
@@ -435,8 +481,10 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
       </div>
 
-      <!-- node distance -->
-      <div class="d-flex ga-1">
+      <!-- node distance (a tree has fixed spacing) -->
+      <div
+        v-if="layout !== 'tree'"
+        class="d-flex ga-1">
         <v-btn
           id="nodeDistUp"
           :aria-label="$t('connections.nodeDistUpTip')"
@@ -568,6 +616,8 @@ import ConfigService from '../utils/ConfigService';
 // import utils
 import store from '@/store';
 import Utils from '../utils/utils';
+import { TREE_DEPTHS, DEFAULT_TREE_DEPTH } from '../summary/widgets/viewModes';
+import { findTreeRoot, buildConnectionTree } from '../summary/widgets/connectionTree';
 import { timezoneDateString, searchFields } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // lazy import these
@@ -589,6 +639,7 @@ const maxLog = Math.ceil(Math.pow(Math.E, 9));
 
 const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
+let lastData; // the last /api/connections response, redrawn when the layout changes
 
 // drag helpers
 function dragstarted (e, d) {
@@ -671,6 +722,11 @@ export default {
     NodePopup,
     LinkPopup
   },
+  props: {
+    // 'force': the force directed graph; 'tree': the same sample as a rooted
+    // tree fanned out from one host (the `tree` SPIGraph type)
+    layout: { type: String, default: 'force' }
+  },
   data: function () {
     return {
       error: '',
@@ -696,6 +752,8 @@ export default {
       fieldHistoryConnectionsSrc: undefined,
       fieldHistoryConnectionsDst: undefined,
       showPopup: false, // whether to show the node/link data popup
+      treeRootMissing: false, // tree: the asked for root isn't in the sample
+      treeDepths: TREE_DEPTHS,
       dataNode: undefined, // data for the node popup
       dataLink: undefined, // data for the link popup
       // node + link field-visibility menus share one v-menu template;
@@ -732,6 +790,14 @@ export default {
     },
     user: function () {
       return store.state.user;
+    },
+    // tree: the value it starts from ('' = the busiest source) and its hops
+    treeRoot: function () {
+      return typeof this.$route.query.treeRoot === 'string' ? this.$route.query.treeRoot : '';
+    },
+    treeDepth: function () {
+      const n = parseInt(this.$route.query.treeDepth, 10);
+      return TREE_DEPTHS.includes(n) ? n : DEFAULT_TREE_DEPTH;
     },
     filteredFields: function () {
       const filteredGroupedFields = {};
@@ -794,6 +860,18 @@ export default {
     },
     '$route.query.srcField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
+    },
+    // the tree is drawn from the sample already fetched
+    '$route.query.treeRoot': function () {
+      if (this.layout === 'tree') { this.redraw(); }
+    },
+    '$route.query.treeDepth': function () {
+      if (this.layout === 'tree') { this.redraw(); }
+    },
+    layout: function () {
+      // the tree pans itself into place; the force graph starts centered
+      if (svg && zoom && d3) { svg.call(zoom.transform, d3.zoomIdentity); }
+      this.redraw();
     },
     '$route.query.dstField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
@@ -1122,6 +1200,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsFiltered = response.recordsFiltered;
+        lastData = response;
         this.drawGraphWrapper(response);
       } catch (error) {
         pendingPromise = null;
@@ -1187,7 +1266,11 @@ export default {
         svg.selectAll('.link').remove();
         svg.selectAll('.node').remove();
         svg.selectAll('.node-label').remove();
+        // and the groups each draw wraps them in, so they don't pile up
+        if (container) { container.selectAll('g').remove(); }
       }
+      // a tree's missing root is decided per sample
+      this.treeRootMissing = false;
 
       // don't do anything if there's no data to process
       if (!data.nodes.length) { return; }
@@ -1201,8 +1284,12 @@ export default {
           // only parse date values if the source field is of type seconds
           // and the node is a source node OR if the destination field is
           // of type seconds and the node is a destination (target) node
-          if ((srcFieldIsTime && dataNode.type === 1) ||
-            (dstFieldIsTime && dataNode.type === 2)) {
+          // once per node: a redraw of the same sample keeps the dates; the
+          // raw value stays as rawId so a tree root asked for by it is found
+          if (dataNode.rawId === undefined &&
+            ((srcFieldIsTime && dataNode.type === 1) ||
+            (dstFieldIsTime && dataNode.type === 2))) {
+            dataNode.rawId = dataNode.id;
             dataNode.id = timezoneDateString(
               dataNode.id,
               this.settings.timezone ||
@@ -1231,6 +1318,11 @@ export default {
 
       // get the min/max values of links and nodes to scale the weight
       this.getMinMaxForScale();
+
+      if (this.layout === 'tree') {
+        this.drawTree(data, width, height);
+        return;
+      }
 
       // setup the force directed graph
       simulation = d3.forceSimulation(nodes)
@@ -1367,6 +1459,110 @@ export default {
         });
       });
     },
+    /* redraws the last response (a layout, root or depth change) */
+    redraw: function () {
+      if (lastData) { this.drawGraphWrapper(lastData); }
+    },
+    changeTreeRoot: function (value) {
+      const treeRoot = (value || '').trim() || undefined;
+      if ((treeRoot || '') === this.treeRoot) { return; }
+      this.$router.push({ query: { ...this.$route.query, treeRoot } });
+    },
+    changeTreeDepth: function (treeDepth) {
+      if (treeDepth === this.treeDepth) { return; }
+      this.$router.push({ query: { ...this.$route.query, treeDepth } });
+    },
+    /**
+     * Draws the sample as a rooted tree (connectionTree.js, shared with the
+     * dashboard tree widget): the root's peers are its branches, theirs the
+     * next hop, up to treeDepth hops. Clicking a node re-roots the tree there.
+     */
+    drawTree: function (data, width, height) {
+      if (simulation) { simulation.stop(); }
+      // the asked for root by its shown id, else by its raw value (a time
+      // field's node shows a formatted date)
+      const rootNode = findTreeRoot(data.nodes, this.treeRoot) ||
+        (this.treeRoot ? data.nodes.find(n => n.rawId !== undefined && String(n.rawId) === this.treeRoot) : null) || null;
+      // only an asked for root can be missing; an empty sample shows no results
+      this.treeRootMissing = !rootNode && !!this.treeRoot;
+      if (!rootNode) { return; }
+
+      const root = d3.hierarchy(buildConnectionTree(data, rootNode, this.treeDepth));
+      const leaves = Math.max(1, root.leaves().length);
+      const labelW = 140;
+      // a row per leaf and a column per hop, the canvas pans when that is bigger
+      const innerH = Math.max(height - 20, leaves * 14);
+      const innerW = Math.max(width - 2 * labelW, root.height * 160);
+      d3.tree().size([innerH, innerW])(root);
+
+      if (!svg) {
+        svg = d3.select(this.$refs.svgEl)
+          .attr('width', width)
+          .attr('height', height)
+          .attr('id', 'graphSvg');
+      }
+      if (!container) { container = svg.append('g'); }
+      svg.call(
+        zoom = d3.zoom()
+          .scaleExtent([0.1, 4])
+          .on('zoom', (e) => { container.attr('transform', e.transform); })
+      );
+      // start with the root's label in view; a re-root or depth change keeps
+      // where the user panned to (the layout watcher resets that)
+      const current = d3.zoomTransform(svg.node());
+      if (current.k === 1 && current.x === 0 && current.y === 0) {
+        svg.call(zoom.transform, d3.zoomIdentity.translate(labelW, 10));
+      }
+
+      const hoverTimer = (fn) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(fn, 600);
+      };
+      const clearTimer = () => { if (popupTimer) { clearTimeout(popupTimer); } };
+
+      link = container.append('g')
+        .selectAll('path')
+        .data(root.links())
+        .enter().append('path')
+        .attr('class', 'link')
+        .attr('fill', 'none')
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-opacity', 0.4)
+        .attr('stroke-width', this.calculateLinkWeight)
+        .attr('d', d3.linkHorizontal().x(d => d.y).y(d => d.x))
+        .on('mouseover', (e, d) => hoverTimer(() => this.showLinkPopup(d.target.data.link)))
+        .on('mouseout', clearTimer);
+
+      node = container.append('g')
+        .selectAll('circle')
+        .data(root.descendants())
+        .enter().append('circle')
+        .attr('class', 'node')
+        .attr('cx', d => d.y)
+        .attr('cy', d => d.x)
+        .attr('fill', d => nodeFillColors[d.data.node.type])
+        .attr('r', this.calculateNodeWeight)
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-width', 0.5)
+        .style('cursor', 'pointer')
+        .on('mouseover', (e, d) => hoverTimer(() => this.showNodePopup(d.data.node)))
+        .on('mouseout', clearTimer)
+        // look from that host; the root itself goes back to the configured one
+        .on('click', (e, d) => this.changeTreeRoot(d.data.id === rootNode.id && this.treeRoot ? '' : d.data.id));
+
+      nodeLabel = container.append('g')
+        .selectAll('text')
+        .data(root.descendants())
+        .enter().append('text')
+        .attr('class', 'node-label')
+        .attr('x', d => d.y + (d.children ? -(this.calculateNodeWeight(d) + 2) : this.calculateNodeWeight(d) + 2))
+        .attr('y', d => d.x)
+        .attr('dy', '0.32em')
+        .attr('text-anchor', d => (d.children ? 'end' : 'start'))
+        .style('font-size', this.fontSize + 'em')
+        .style('pointer-events', 'none')
+        .text(d => d.data.id + this.calculateNodeLabelSuffix(d.data.node));
+    },
     getMinMaxForScale: function () {
       let weightField = this.weight;
 
@@ -1404,14 +1600,18 @@ export default {
       linkScaleFactor = (linkMax - linkMin) / maxLog;
       if (linkScaleFactor < 1) { linkScaleFactor = 1; }
     },
-    calculateLinkWeight: function (l) {
+    calculateLinkWeight: function (datum) {
+      // a tree path is a d3 link whose target carries the sample's link
+      const l = datum?.target?.data?.link || datum;
       let val = this.weight ? l[this.weight] || l.value : 1;
       if (this.weight) {
         val = Math.max(Math.log((val - linkMin) / linkScaleFactor), 0);
       }
       return 1 + val;
     },
-    calculateNodeWeight: function (n) {
+    calculateNodeWeight: function (datum) {
+      // a tree node carries the sample's node
+      const n = datum?.data?.node || datum;
       let val = this.weight ? n[this.weight] || n.sessions : 1;
       if (this.weight) {
         val = Math.max(Math.log((val - nodeMin) / nodeScaleFactor), 0);
@@ -1525,6 +1725,7 @@ export default {
       pendingPromise.controller.abort('Closing Connections page canceled the search');
       pendingPromise = null;
     }
+    lastData = undefined; // the next visit's redraw must not show this sample
 
     // remove listeners
     this._svgResizeObserver?.disconnect();
@@ -1708,5 +1909,8 @@ export default {
   font-size: 110%;
   font-weight: bold;
   opacity: .75;
+}
+.tree-root-input {
+  width: 160px;
 }
 </style>

@@ -1,0 +1,157 @@
+{
+  "name": "HTTP",
+  "description": "HTTP sessions: protocols == http",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == http",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "http.statuscode",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "HTTP sessions by http.statuscode"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "HTTP sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "HTTP bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "host.http",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20
+      },
+      {
+        "id": "w5",
+        "field": "http.method",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true
+      },
+      {
+        "id": "w6",
+        "field": "http.bodymagic",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Response content types"
+      },
+      {
+        "id": "w7",
+        "field": "http.user",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "HTTP users"
+      },
+      {
+        "id": "w8",
+        "field": "http.uri",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w9",
+        "field": "http.user-agent",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w10",
+        "field": "http.version",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "HTTP versions"
+      },
+      {
+        "id": "w11",
+        "field": "http.method",
+        "fields": [
+          "http.method",
+          "http.statuscode"
+        ],
+        "viewMode": "intersection",
+        "width": 2,
+        "height": 3,
+        "title": "Methods and status codes"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w13",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "http.method",
+          "host.http",
+          "http.uri",
+          "http.statuscode"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

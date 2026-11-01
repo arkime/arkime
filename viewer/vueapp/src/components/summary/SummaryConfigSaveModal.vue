@@ -47,6 +47,33 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="$t('sessions.summary.config.descriptionPlaceholder')">
         </div>
 
+        <!-- Folder (dashboards only): groups it in the dashboards menu -->
+        <div
+          v-if="kind !== 'graph'"
+          class="arkime-input-group arkime-input-group--fluid mb-2">
+          <span
+            id="configFolder"
+            class="arkime-input-label cursor-help">
+            {{ $t('sessions.summary.config.folder') }}
+            <v-tooltip activator="#configFolder">
+              {{ $t('sessions.summary.config.folderTip') }}
+            </v-tooltip>
+          </span>
+          <input
+            type="text"
+            class="arkime-input-control"
+            v-model="configFolder"
+            maxlength="64"
+            list="configFolderOptions"
+            :placeholder="$t('sessions.summary.config.folderPlaceholder')">
+          <datalist id="configFolderOptions">
+            <option
+              v-for="f in folderOptions"
+              :key="f"
+              :value="f" />
+          </datalist>
+        </div>
+
         <!-- Sharing controls -->
         <div class="d-flex flex-wrap gap-2 mb-2">
           <RoleDropdown
@@ -163,6 +190,7 @@ import RoleDropdown from '@common/RoleDropdown.vue';
 import { createShareableService } from '../users/ShareableService';
 import FieldService from '../search/FieldService';
 import { viewModeLabelKey } from './widgets/viewModes';
+import { folderOf } from './dashboardFolders';
 
 const store = useStore();
 const { t } = useI18n();
@@ -199,6 +227,18 @@ const emit = defineEmits(['close', 'saved']);
 // Form state
 const configName = ref('');
 const configDescription = ref('');
+const configFolder = ref('');
+// the folders the user's dashboards already use, offered as suggestions
+const folderOptions = ref([]);
+const loadFolderOptions = async () => {
+  if (props.kind === 'graph') { return; }
+  try {
+    const response = await service.value.list({ viewOnly: false, length: 1000 });
+    folderOptions.value = [...new Set((response?.data || []).map(folderOf).filter(Boolean))].sort();
+  } catch (err) {
+    folderOptions.value = [];
+  }
+};
 const viewRoles = ref([]);
 const editRoles = ref([]);
 const viewUsers = ref('');
@@ -232,10 +272,12 @@ const fieldsList = computed(() => {
 watch(() => props.show, (newVal) => {
   if (newVal) {
     error.value = '';
+    loadFolderOptions();
     if (props.editing) {
       // Editing existing config
       configName.value = props.editing.name || '';
       configDescription.value = props.editing.description || '';
+      configFolder.value = folderOf(props.editing);
       viewRoles.value = props.editing.viewRoles || [];
       editRoles.value = props.editing.editRoles || [];
       viewUsers.value = (props.editing.viewUsers || []).join(', ');
@@ -244,6 +286,7 @@ watch(() => props.show, (newVal) => {
       // New config
       configName.value = '';
       configDescription.value = '';
+      configFolder.value = '';
       viewRoles.value = [];
       editRoles.value = [];
       viewUsers.value = '';
@@ -270,10 +313,14 @@ const saveConfig = async () => {
   saving.value = true;
 
   try {
+    // a dashboard's folder rides in its data (data.folder), where a v6 viewer
+    // ignores it ('' clears one when editing); a graph has no folder
+    const folder = props.kind === 'graph' ? '' : (configFolder.value?.trim().slice(0, 64) || '');
+    const data = props.kind === 'graph' ? props.config : { ...props.config, folder };
     const configData = {
       name: configName.value.trim(),
       description: configDescription.value?.trim() || undefined,
-      data: props.config,
+      data,
       viewRoles: viewRoles.value,
       editRoles: editRoles.value,
       viewUsers: parseUsers(viewUsers.value),

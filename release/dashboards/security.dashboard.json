@@ -1,0 +1,181 @@
+{
+  "name": "Security",
+  "description": "Weak and legacy protocols, cleartext logins, failed lookups and remote access paths",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 9,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Remote access sessions by protocol",
+        "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Legacy TLS",
+        "expression": "tls.version == [\"SSLv2\", \"SSLv3\", \"TLSv1\", \"TLSv1.1\"]"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SMBv1",
+        "expression": "smb.dialect == [\"NT LM 0.12\", \"NT LANMAN 1.0\", \"PC NETWORK PROGRAM 1.0\", \"LANMAN1.0\", \"LM1.2X002\", \"LANMAN2.1\"]"
+      },
+      {
+        "id": "w4",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Cleartext logins",
+        "expression": "http.authtype == basic || ftp.command == PASS || protocols == [telnet, pop3, imap]"
+      },
+      {
+        "id": "w5",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SSH v1",
+        "expression": "ssh.ver == \"ssh-1.*\""
+      },
+      {
+        "id": "w6",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "NXDOMAIN lookups",
+        "expression": "dns.status == NXDOMAIN"
+      },
+      {
+        "id": "w7",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Remote access sessions",
+        "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
+      },
+      {
+        "id": "w8",
+        "field": "tls.version",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "TLS versions",
+        "expression": "protocols == tls"
+      },
+      {
+        "id": "w9",
+        "field": "http.authtype",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 2,
+        "length": 15,
+        "title": "HTTP authentication types"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Clients using legacy TLS",
+        "expression": "tls.version == [\"SSLv2\", \"SSLv3\", \"TLSv1\", \"TLSv1.1\"]"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Cleartext login servers",
+        "expression": "http.authtype == basic || ftp.command == PASS || protocols == [telnet, pop3, imap]"
+      },
+      {
+        "id": "w12",
+        "field": "dns.query.host",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "NXDOMAIN queries",
+        "expression": "dns.status == NXDOMAIN"
+      },
+      {
+        "id": "w13",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Remote access clients",
+        "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Remote access tree: SSH, RDP, SMB, Kerberos, DCE/RPC, NTLM, WinRM, VNC, Telnet (click a host to re-root)",
+        "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
+      },
+      {
+        "id": "w15",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "protocols",
+          "user",
+          "http.authtype"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20,
+        "title": "Cleartext login sessions",
+        "expression": "http.authtype == basic || ftp.command == PASS || protocols == [telnet, pop3, imap]"
+      }
+    ]
+  }
+}

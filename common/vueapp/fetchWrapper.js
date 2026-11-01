@@ -6,6 +6,11 @@ import store from '@/store';
 import setReqHeaders from './setReqHeaders';
 
 export class ArkimeError extends Error {
+  /**
+   * @param {string} message - the error text
+   * @param {object} [data] - the error body ({ text, i18n, i18nParams })
+   * (status, the HTTP status code, is set when the response had one)
+   */
   constructor (message, data) {
     super(message);
     this.text = message;
@@ -101,7 +106,9 @@ export async function fetchWrapper (options) {
     }
     const errText = (errData && typeof errData === 'object' ? errData.text : errData) ||
       response.statusText || 'bad response status';
-    throw new ArkimeError(errText, (errData && typeof errData === 'object') ? errData : undefined);
+    const error = new ArkimeError(errText, (errData && typeof errData === 'object') ? errData : undefined);
+    error.status = response.status;
+    throw error;
   }
 
   if (data?.data?.bsqErr) { // check for a bsq error

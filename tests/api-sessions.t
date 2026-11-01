@@ -1,4 +1,4 @@
-use Test::More tests => 246;
+use Test::More tests => 280;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -670,6 +670,112 @@ sub s2sPost {
         startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr, fields => " , "
     }), $token);
     ok (defined $sumBlankFields->{error}, "summary rejects an all-whitespace fields string");
+
+    # --- orderBy: 'key' ranks the buckets by the field's own value instead of the metric ---
+    my $sumKey = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "kPlain",   field => "port.dst",    length => 5 },
+            { id => "kAsc",     field => "port.dst",    length => 5,   order => "asc",  orderBy => "key" },
+            { id => "kDesc",    field => "port.dst",    length => 5,   order => "desc", orderBy => "key" },
+            { id => "kText",    field => "protocols",   length => 100, order => "asc",  orderBy => "key" },
+            { id => "kBucket",  field => "port.dst",    length => 100, order => "asc",  orderBy => "key", bucketInterval => 1024 },
+            { id => "kSpecial", field => "ip.dst:port", length => 5,   order => "asc",  orderBy => "key" },
+            { id => "kBad",     field => "port.dst",    length => 5,   orderBy => "nope" }
+        ]
+    }), $token);
+    my %keyW = map { $_->{id} => $_ } grep { ref($_) eq "HASH" && defined $_->{id} } @$sumKey;
+    is ($keyW{kPlain}->{orderBy}, "value", "summary orderBy defaults to value");
+    is ($keyW{kAsc}->{orderBy}, "key", "summary orderBy key is echoed");
+    is ($keyW{kBad}->{orderBy}, "value", "summary unknown orderBy falls back to value");
+    is ($keyW{kBad}->{data}->[0]->{item}, $keyW{kPlain}->{data}->[0]->{item}, "summary unknown orderBy ranks like the plain widget");
+
+    my @kAsc = map { $_->{item} } @{$keyW{kAsc}->{data}};
+    my @kDesc = map { $_->{item} } @{$keyW{kDesc}->{data}};
+    ok (scalar(@kAsc) > 0 && scalar(@kAsc) <= 5, "summary key asc honors the limit");
+    is_deeply (\@kAsc, [sort { $a <=> $b } @kAsc], "summary key asc ports are numerically ascending");
+    is_deeply (\@kDesc, [sort { $b <=> $a } @kDesc], "summary key desc ports are numerically descending");
+    cmp_ok ($kAsc[0], "<=", $kDesc[-1], "summary key asc starts at or below the smallest port desc reaches");
+    my @plainPorts = sort { $a <=> $b } map { $_->{item} } @{$keyW{kPlain}->{data}};
+    cmp_ok ($kAsc[0], "<=", $plainPorts[0], "summary key asc starts at or below the top-by-count widget's smallest port");
+
+    my @kText = map { $_->{item} } @{$keyW{kText}->{data}};
+    cmp_ok (scalar(@kText), ">", 1, "summary key asc on a text field has data");
+    is_deeply (\@kText, [sort @kText], "summary key asc protocols are alphabetical");
+
+    my @kRanges = map { $_->{range}->[0] } @{$keyW{kBucket}->{data}};
+    cmp_ok (scalar(@kRanges), ">", 0, "summary key asc with bucketInterval has data");
+    is_deeply (\@kRanges, [sort { $a <=> $b } @kRanges], "summary key asc bucket ranges are ascending");
+    is ($keyW{kBucket}->{data}->[0]->{item}, "$kRanges[0]-" . ($kRanges[0] + 1023), "summary key asc first bucket item is its range");
+
+    is ($keyW{kSpecial}->{orderBy}, "key", "summary special field accepts orderBy key");
+    cmp_ok (scalar(@{$keyW{kSpecial}->{data}}), ">", 0, "summary special field key order has data");
+
+    # --- bucketInterval: an integer field's values grouped into ranges of a fixed width ---
+    my $sumBucket = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "bPlain",   field => "port.dst",    length => 100 },
+            { id => "bPort",    field => "port.dst",    length => 100, bucketInterval => 1024 },
+            { id => "bOne",     field => "port.dst",    length => 100, bucketInterval => 1 },
+            { id => "bText",    field => "protocols",   length => 100, bucketInterval => 1024 },
+            { id => "bSpecial", field => "ip.dst:port", length => 100, bucketInterval => 1024 },
+            { id => "bLimit",   field => "port.dst",    length => 1,   bucketInterval => 1 },
+            { id => "bBad",     field => "port.dst",    length => 100, bucketInterval => -5 }
+        ]
+    }), $token);
+    my %bucketW = map { $_->{id} => $_ } grep { ref($_) eq "HASH" && defined $_->{id} } @$sumBucket;
+    ok (defined $bucketW{bPlain}, "summary bucket plain port.dst widget present");
+    ok (defined $bucketW{bPort}, "summary bucket port.dst widget present");
+    is ($bucketW{bPort}->{bucketInterval}, 1024, "summary bucket widget echoes bucketInterval");
+    cmp_ok (scalar(@{$bucketW{bPort}->{data}}), ">", 0, "summary bucket widget has data");
+
+    # each item is a '<start>-<end>' range of the requested width, aligned to it
+    my $bucketItems = 1;
+    my $bucketRanges = 1;
+    my $bucketOrdered = 1;
+    my $bucketSessions = 0;
+    my $prevSessions;
+    foreach my $d (@{$bucketW{bPort}->{data}}) {
+        $bucketItems = 0 unless $d->{item} =~ /^\d+-\d+$/;
+        my $r = $d->{range};
+        $bucketRanges = 0 unless ref($r) eq "ARRAY" && @$r == 2 && $r->[1] - $r->[0] == 1023 && $r->[0] % 1024 == 0 && $d->{item} eq "$r->[0]-$r->[1]";
+        $bucketOrdered = 0 if defined $prevSessions && $d->{sessions} > $prevSessions;
+        $prevSessions = $d->{sessions};
+        $bucketSessions += $d->{sessions};
+    }
+    ok ($bucketItems, "summary bucket items are start-end ranges");
+    ok ($bucketRanges, "summary bucket ranges are aligned and bucketInterval wide");
+    ok ($bucketOrdered, "summary bucket ranges ordered by session count desc");
+    my $plainSessions = 0;
+    $plainSessions += $_->{sessions} foreach @{$bucketW{bPlain}->{data}};
+    is ($bucketSessions, $plainSessions, "summary bucket ranges cover the same sessions as the plain values");
+
+    # a width of 1 is one bucket per value, named by the value alone
+    is ($bucketW{bOne}->{bucketInterval}, 1, "summary bucket width 1 echoed");
+    my $oneItems = 1;
+    my $oneRanges = 1;
+    foreach my $d (@{$bucketW{bOne}->{data}}) {
+        $oneItems = 0 unless $d->{item} =~ /^\d+$/;
+        $oneRanges = 0 unless ref($d->{range}) eq "ARRAY" && $d->{range}->[0] == $d->{range}->[1] && $d->{item} eq $d->{range}->[0];
+    }
+    ok ($oneItems, "summary bucket width 1 items are plain values");
+    ok ($oneRanges, "summary bucket width 1 ranges are single values");
+    is (join(",", sort map { $_->{item} } @{$bucketW{bOne}->{data}}), join(",", sort map { $_->{item} } @{$bucketW{bPlain}->{data}}), "summary bucket width 1 lists the same values as the plain widget");
+
+    # only an integer field can be bucketed; others ignore bucketInterval
+    ok (!defined $bucketW{bText}->{bucketInterval}, "summary bucket ignored on a text field");
+    ok (!exists $bucketW{bText}->{data}->[0]->{range}, "summary bucket text field items have no range");
+    ok (!defined $bucketW{bSpecial}->{bucketInterval}, "summary bucket ignored on a special field");
+
+    # the Top N limit applies to the buckets
+    is (scalar(@{$bucketW{bLimit}->{data}}), 1, "summary bucket limit applied to the buckets");
+
+    # a non-positive width falls back to one bucket per value
+    ok (!defined $bucketW{bBad}->{bucketInterval}, "summary bucket non-positive width ignored");
+    ok ($bucketW{bBad}->{data}->[0]->{item} =~ /^\d+$/ && !exists $bucketW{bBad}->{data}->[0]->{range}, "summary bucket non-positive width lists plain values");
 
 # hostile fields param: a backtick in a field name must not break out of the
 # generated query, and __proto__ path segments must not be materialized

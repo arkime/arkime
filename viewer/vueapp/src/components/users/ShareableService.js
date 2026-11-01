@@ -40,7 +40,7 @@ export const createShareableService = (type) => ({
    */
   async get (id) {
     return await fetchWrapper({
-      url: `api/shareable/${id}`
+      url: `api/shareable/${encodeURIComponent(id)}`
     });
   },
 
@@ -86,7 +86,7 @@ export const createShareableService = (type) => ({
    */
   async update (id, config, userId) {
     return await fetchWrapper({
-      url: `api/shareable/${id}`,
+      url: `api/shareable/${encodeURIComponent(id)}`,
       method: 'PUT',
       params: { userId },
       data: config
@@ -101,7 +101,7 @@ export const createShareableService = (type) => ({
    */
   async delete (id, userId) {
     return await fetchWrapper({
-      url: `api/shareable/${id}`,
+      url: `api/shareable/${encodeURIComponent(id)}`,
       method: 'DELETE',
       params: { userId }
     });

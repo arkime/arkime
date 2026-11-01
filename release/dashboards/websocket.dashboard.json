@@ -1,0 +1,139 @@
+{
+  "name": "WebSocket",
+  "description": "WebSocket sessions: protocols == websocket",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == websocket",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "websocket.opcode",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "WebSocket sessions by websocket.opcode"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "WebSocket sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "WebSocket bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "host.http",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Hosts"
+      },
+      {
+        "id": "w5",
+        "field": "websocket.closeCode",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Close codes"
+      },
+      {
+        "id": "w6",
+        "field": "http.uri",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "URIs"
+      },
+      {
+        "id": "w7",
+        "field": "http.user-agent",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "User agents"
+      },
+      {
+        "id": "w8",
+        "field": "websocket.frameCnt",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 2,
+        "length": 15,
+        "bucketInterval": 10,
+        "title": "Frames per session (ranges of 10)"
+      },
+      {
+        "id": "w9",
+        "field": "websocket.textSample",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Text samples"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "host.http",
+          "http.uri",
+          "websocket.opcode",
+          "websocket.frameCnt"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

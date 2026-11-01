@@ -1,4 +1,4 @@
-use Test::More tests => 176;
+use Test::More tests => 188;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -56,6 +56,12 @@ ok(exists $invalidJson->{error}, "invalid fields type returns error");
 # Test validation - empty fields string
 $invalidJson = viewerPost("/api/sessions/summary?date=-1", to_json({ fields => '' }));
 ok(exists $invalidJson->{error}, "empty fields string returns error");
+
+# Test validation - too many widgets or fields
+$invalidJson = viewerPost("/api/sessions/summary?date=-1", to_json({ widgets => [map { { id => "w$_", field => 'protocols' } } 1..101] }));
+like($invalidJson->{error}, qr/Too many widgets/, "more than 100 widgets returns error");
+$invalidJson = viewerPost("/api/sessions/summary?date=-1", to_json({ fields => join(',', ('protocols') x 101) }));
+like($invalidJson->{error}, qr/Too many widgets/, "more than 100 fields returns error");
 
 # Basic summary test - all PCAP files
 my $summary = getSummary("/api/sessions/summary?date=-1");
@@ -446,6 +452,41 @@ ok(!exists getChunk($chunks, 'wOtherCard')->{other}, "a unique count has no othe
 ok(!exists getChunk($chunks, 'wOtherTotal')->{other}, "a whole result set widget has no other");
 ok(!exists getChunk($chunks, 'wOtherIp')->{other}, "a script field has no other");
 cmp_ok(getChunk($chunks, 'wOtherCountAvg')->{other}->{sessions}, '>', 0, "a count has an other whatever aggregation the widget carries");
+
+# other - a summed metric's other is its total less the top N when the widget
+# also has a split field or groups the values into ranges
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wOtherSplit', field => 'ip.src', length => 3, metricType => 'bytes', splitField => 'protocols', splitLength => 2, other => JSON::true },
+        { id => 'wOtherRange', field => 'port.dst', length => 3, metricType => 'bytes', bucketInterval => 1024, other => JSON::true },
+        { id => 'wOtherRangeCount', field => 'port.dst', length => 3, bucketInterval => 1024, other => JSON::true },
+        { id => 'wAllSrc', total => JSON::true, metricType => 'bytes', expression => 'ip.src == EXISTS!' },
+        { id => 'wAllPort', total => JSON::true, metricType => 'bytes', expression => 'port.dst == EXISTS!' }
+    ]
+});
+my $chunkValue = sub { my $total = 0; $total += $_->{value} foreach @{$_[0]->{data}}; return $total; };
+my $otherSplitChunk = getChunk($chunks, 'wOtherSplit');
+my $otherRangeChunk = getChunk($chunks, 'wOtherRange');
+my $otherRangeCountChunk = getChunk($chunks, 'wOtherRangeCount');
+ok(exists $otherSplitChunk->{data}->[0]->{split}, "a split widget asking for other still carries its split");
+is($otherSplitChunk->{other}->{value} + $chunkValue->($otherSplitChunk), getChunk($chunks, 'wAllSrc')->{data}->[0]->{value},
+    "other plus the top N bytes of a split widget is the bytes of every session with the field");
+is(scalar(@{$otherRangeChunk->{data}}), 3, "a range widget asking for other is cut to its top N");
+like($otherRangeChunk->{data}->[0]->{item}, qr/^\d+-\d+$/, "a range widget asking for other still lists ranges");
+cmp_ok($otherRangeChunk->{other}->{sessions}, '>', 0, "the ranges past the top N are the other");
+is($otherRangeChunk->{other}->{value} + $chunkValue->($otherRangeChunk), getChunk($chunks, 'wAllPort')->{data}->[0]->{value},
+    "other plus the top N bytes of a range widget is the bytes of every session with the field");
+is($otherRangeCountChunk->{other}->{sessions} + $chunkSessions->($otherRangeCountChunk), getChunk($chunks, 'wAllPort')->{data}->[0]->{sessions},
+    "other plus the top N sessions of a range widget is every session with the field");
+
+# a bucket width that would make more ranges than the field's span allows
+# (10000) fails the widget rather than building them all
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wTooNarrow', field => 'port.dst', length => 3, bucketInterval => 1 }
+    ]
+});
+like(getChunk($chunks, 'wTooNarrow')->{error}, qr/more than 10000 ranges/, "a bucket width making too many ranges is a widget error");
 
 # Bottom-N bars are still split by their most common sub-values, and both
 # unknown fields are named when the field and the split field are bad

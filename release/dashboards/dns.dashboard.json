@@ -1,0 +1,180 @@
+{
+  "name": "DNS",
+  "description": "DNS sessions: protocols == dns",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == dns",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "dns.query.type",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "DNS sessions by dns.query.type"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "DNS sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "DNS bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "dns.query.host",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20
+      },
+      {
+        "id": "w5",
+        "field": "dns.status",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true
+      },
+      {
+        "id": "w6",
+        "field": "dns.query.host",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w7",
+        "field": "ip.dns",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Answer IPs"
+      },
+      {
+        "id": "w8",
+        "field": "dns.query.host",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "NXDOMAIN queries",
+        "expression": "dns.status == NXDOMAIN"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Resolvers"
+      },
+      {
+        "id": "w10",
+        "field": "dns.query.type",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Query types"
+      },
+      {
+        "id": "w11",
+        "field": "dns.answer.type",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Answer types"
+      },
+      {
+        "id": "w12",
+        "field": "dns.puny",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Punycode names"
+      },
+      {
+        "id": "w13",
+        "field": "dns.opcode",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Opcodes"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w15",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w16",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "dns.query.host",
+          "dns.query.type",
+          "dns.status",
+          "ip.dns"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

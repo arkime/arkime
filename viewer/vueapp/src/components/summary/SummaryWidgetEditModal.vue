@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- start from a saved graph: fills everything below from it -->
         <v-select
-          v-if="!staticMode && !graphOnly && savedGraphItems.length"
+          v-if="!staticMode && !navMode && !graphOnly && savedGraphItems.length"
           v-model="savedGraphId"
           :items="savedGraphItems"
           :label="$t('sessions.summary.widget.loadGraph')"
@@ -35,8 +35,8 @@ SPDX-License-Identifier: Apache-2.0
           class="mb-3"
           @update:model-value="applySavedGraph" />
 
-        <!-- text widget: just a title and the text -->
-        <template v-if="staticMode">
+        <!-- text widget: just a title and the text; navigation: the title alone -->
+        <template v-if="staticMode || navMode">
           <div class="arkime-input-group arkime-input-group--fluid mb-3">
             <span class="arkime-input-label">
               {{ $t('sessions.summary.widget.title') }}
@@ -48,6 +48,7 @@ SPDX-License-Identifier: Apache-2.0
               :placeholder="titlePlaceholder">
           </div>
           <v-textarea
+            v-if="staticMode"
             v-model="form.text"
             :label="$t('sessions.summary.widget.text')"
             :placeholder="$t('sessions.summary.widget.textHint')"
@@ -97,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
              treemap/table/intersection, otherwise a single typeahead. Grayed for
              session types. -->
         <div
-          v-else
+          v-else-if="!gaugeMode"
           class="arkime-input-group arkime-input-group--fluid mb-3"
           :class="{ 'input-disabled': !needsField && !optionalField, 'input-group-chips': multiField }">
           <span
@@ -147,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- Title override (a saved graph has a name instead) -->
         <div
-          v-if="!staticMode && !graphOnly"
+          v-if="!staticMode && !navMode && !graphOnly"
           class="arkime-input-group arkime-input-group--fluid mb-3">
           <span class="arkime-input-label">
             {{ $t('sessions.summary.widget.title') }}
@@ -160,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <div
-          v-if="!staticMode"
+          v-if="!staticMode && !navMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <!-- Metric basis: Sessions count, or numeric field(s) aggregated per
                value. Tables take several metric columns + a sort-by; charts one. -->
@@ -219,8 +220,45 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </div>
 
-        <!-- split by a second field: a bar's stacked/grouped segments, or one
-             small pie per split value -->
+        <!-- gauge: the arc's full value and the thresholds that color it -->
+        <div
+          v-if="gaugeMode"
+          id="widgetGauge"
+          class="d-flex flex-wrap gap-3 mb-3">
+          <v-text-field
+            v-model.number="form.gaugeMax"
+            type="number"
+            min="0"
+            :label="$t('sessions.summary.widget.gaugeMax')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
+          <v-text-field
+            v-model.number="form.gaugeWarn"
+            type="number"
+            min="0"
+            :label="$t('sessions.summary.widget.gaugeWarn')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
+          <v-text-field
+            v-model.number="form.gaugeCrit"
+            type="number"
+            min="0"
+            :label="$t('sessions.summary.widget.gaugeCrit')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
+          <v-tooltip activator="#widgetGauge">
+            {{ $t('sessions.summary.widget.gaugeTip') }}
+          </v-tooltip>
+        </div>
+
+        <!-- split by a second field: a bar's stacked/grouped segments, one
+             small pie per split value, or one timeline series per value -->
         <div
           v-if="splitEnabled"
           class="d-flex flex-wrap gap-3 mb-3 align-center">
@@ -232,7 +270,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.widget.splitField') }}
               <v-tooltip activator="#widgetSplitField">
-                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : 'sessions.summary.widget.splitPieTip') }}
+                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? 'sessions.summary.widget.splitTimelineTip' : 'sessions.summary.widget.splitPieTip') }}
               </v-tooltip>
             </span>
             <ArkimeFieldTypeahead
@@ -252,7 +290,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-select
             v-model="form.splitLength"
             :items="splitLengthItems"
-            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : 'sessions.summary.widget.splitPies')"
+            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : 'sessions.summary.widget.splitPies')"
             :disabled="!form.splitField"
             density="compact"
             variant="outlined"
@@ -268,10 +306,53 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             hide-details
             style="min-width: 120px" />
+          <v-select
+            v-if="timelineSplit"
+            v-model="timelineDrawAs"
+            :items="drawAsItems"
+            :label="$t('sessions.summary.widget.seriesMode')"
+            :disabled="!form.splitField"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
+        </div>
+
+        <!-- how a bar chart or timeline is drawn -->
+        <div
+          v-if="barSplit || timelineSplit"
+          class="d-flex flex-wrap gap-3 mb-3">
+          <v-select
+            v-if="barSplit"
+            v-model="form.orientation"
+            :items="orientationItems"
+            :label="$t('sessions.summary.widget.orientation')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
+          <v-select
+            v-if="timelineSplit && !form.splitField"
+            v-model="form.seriesType"
+            :items="seriesTypeItems"
+            :label="$t('sessions.summary.widget.seriesMode')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
+          <v-select
+            v-if="timelineSplit"
+            v-model="form.yScale"
+            :items="yScaleItems"
+            :label="$t('sessions.summary.widget.yScale')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
         </div>
 
         <div
-          v-if="!staticMode"
+          v-if="!staticMode && !navMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <!-- Data limit (Top/Bottom N, or a session sample for connections) -->
           <!-- sessions list: start time or one of its columns -->
@@ -295,6 +376,50 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             style="min-width: 140px" />
 
+          <!-- numeric field: ranges of a fixed width instead of one bucket per value -->
+          <span
+            v-if="bucketEnabled"
+            id="widgetBucketInterval">
+            <v-text-field
+              v-model.number="form.bucketInterval"
+              type="number"
+              min="0"
+              :label="$t('sessions.summary.widget.bucketInterval')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              style="min-width: 140px" />
+            <v-tooltip activator="#widgetBucketInterval">
+              {{ $t('sessions.summary.widget.bucketIntervalTip') }}
+            </v-tooltip>
+          </span>
+
+          <!-- connection tree: the value it starts from and how many hops it draws -->
+          <span
+            v-if="treeMode"
+            id="widgetTreeRoot">
+            <v-text-field
+              v-model="form.treeRoot"
+              :label="$t('sessions.summary.widget.treeRoot')"
+              :placeholder="$t('sessions.summary.widget.treeRootAuto')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              style="min-width: 180px" />
+            <v-tooltip activator="#widgetTreeRoot">
+              {{ $t('sessions.summary.widget.treeRootTip') }}
+            </v-tooltip>
+          </span>
+          <v-select
+            v-if="treeMode"
+            v-model="form.treeDepth"
+            :items="treeDepthItems"
+            :label="$t('sessions.summary.widget.treeDepth')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 100px" />
+
           <!-- Order (direction) — only for the modes whose fetch passes one -->
           <v-select
             v-if="orderEnabled"
@@ -305,6 +430,18 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             hide-details
             style="min-width: 120px" />
+
+          <!-- what the order ranks by: the metric (Top/Bottom N), or the
+               field's own value (the N smallest or largest names/numbers) -->
+          <v-select
+            v-if="orderEnabled && !listMode"
+            v-model="form.orderBy"
+            :items="orderByItems"
+            :label="$t('sessions.summary.widget.orderBy')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 140px" />
 
           <!-- pie: a gray slice for what falls outside the top N (only a count
                or a sum adds up to a whole) -->
@@ -351,7 +488,7 @@ SPDX-License-Identifier: Apache-2.0
              top of the global search). Disabled for session-wide widgets, which
              always describe the whole result set. -->
         <v-select
-          v-if="viewsSupported && !staticMode"
+          v-if="viewsSupported && !staticMode && !navMode"
           v-model="form.view"
           :items="viewItems"
           :label="$t('sessions.summary.widget.localView')"
@@ -371,7 +508,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-select>
 
         <div
-          v-if="!staticMode"
+          v-if="!staticMode && !navMode"
           class="arkime-input-group arkime-input-group--fluid mb-1"
           :class="{ 'input-disabled': !localFilterEnabled }">
           <span
@@ -437,8 +574,8 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
 import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, VIEW_MODE_LABEL_KEYS } from './widgets/viewModes';
-import { GRAPH_VIEW_MODES, graphFromWidget } from './dashboardConfig';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH } from './widgets/viewModes';
+import { GRAPH_VIEW_MODES, graphFromWidget, nonNeg } from './dashboardConfig';
 import { columnSortDbField, fieldHasColumn } from './widgets/sessionsWidgetData';
 import { MAX_TEXT } from './widgets/miniMarkdown';
 
@@ -480,10 +617,20 @@ const blankForm = () => ({
   splitField: '',
   splitLength: 5,
   barMode: 'stacked',
+  orientation: 'vertical',
+  seriesType: 'bars',
+  yScale: 'linear',
+  bucketInterval: 0,
+  gaugeMax: 0,
+  gaugeWarn: 0,
+  gaugeCrit: 0,
   other: false,
   text: '',
+  treeRoot: '',
+  treeDepth: DEFAULT_TREE_DEPTH,
   length: 20,
   order: 'desc',
+  orderBy: 'value',
   sortField: '',
   width: 2,
   height: 3,
@@ -555,6 +702,16 @@ watch(sortItems, (items) => {
 const optionalField = computed(() => isOptionalFieldMode(form.value.viewMode));
 // text: no data inputs at all
 const staticMode = computed(() => isStaticMode(form.value.viewMode));
+// navigation: no data inputs either, just a title
+const navMode = computed(() => isNavMode(form.value.viewMode));
+// gauge: one metric over the result set, no field, plus a maximum and thresholds
+const gaugeMode = computed(() => isGaugeMode(form.value.viewMode));
+// connection tree: a root value and a depth on top of the connections pair
+const treeMode = computed(() => isTreeMode(form.value.viewMode));
+const treeDepthItems = TREE_DEPTHS.map(n => ({ title: String(n), value: n }));
+// a numeric single field can be bucketed into ranges of a fixed width
+const bucketEnabled = computed(() => allowsBucketInterval(form.value.viewMode) &&
+  FieldService.getField(form.value.field, true)?.type === 'integer');
 const metricEnabled = computed(() => hasMetric(form.value.viewMode));
 // aggregation choice: only the summary-endpoint modes, and only once a metric
 // field (not the session count) is chosen
@@ -566,6 +723,24 @@ const aggItems = computed(() => METRIC_AGGS.map(a => ({ title: t(`sessions.summa
 // bar/pie: optional split field (a bar's segments, or one pie per value)
 const splitEnabled = computed(() => allowsSplit(form.value.viewMode));
 const barSplit = computed(() => form.value.viewMode === 'bar');
+const timelineSplit = computed(() => form.value.viewMode === 'timeline');
+// a split timeline's "Draw as" is two settings at once: stacked bars, stacked
+// lines, or overlaid (grouped) lines
+const timelineDrawAs = computed({
+  get: () => (form.value.barMode === 'grouped' ? 'grouped-lines' : form.value.seriesType === 'lines' ? 'stacked-lines' : 'stacked-bars'),
+  set: (v) => {
+    form.value.barMode = v === 'grouped-lines' ? 'grouped' : 'stacked';
+    form.value.seriesType = v === 'stacked-bars' ? 'bars' : 'lines';
+  }
+});
+const drawAsItems = computed(() => [
+  { title: t('sessions.summary.widget.seriesMode-stacked'), value: 'stacked-bars' },
+  { title: t('sessions.summary.widget.seriesMode-stackedLines'), value: 'stacked-lines' },
+  { title: t('sessions.summary.widget.seriesMode-grouped'), value: 'grouped-lines' }
+]);
+const seriesTypeItems = computed(() => SERIES_TYPES.map(m => ({ title: t(`sessions.summary.widget.seriesType-${m}`), value: m })));
+const yScaleItems = computed(() => Y_SCALES.map(m => ({ title: t(`sessions.summary.widget.yScale-${m}`), value: m })));
+const orientationItems = computed(() => BAR_ORIENTATIONS.map(m => ({ title: t(`sessions.summary.widget.orientation-${m}`), value: m })));
 const splitFields = computed(() => fields.value.filter(f => fieldIsAggregatable(f) && f.exp !== 'ip' && f.exp !== 'ip.dst:port' &&
   f.exp !== form.value.field && !(form.value.fields || []).includes(f.exp)));
 // pie: optional "Other" slice
@@ -655,7 +830,9 @@ const lengthItems = computed(() => {
   return opts.map(n => ({ title: String(n), value: n }));
 });
 
-const orderItems = computed(() => (listMode.value
+// a list sorts a column, a key order sorts the field's values, a metric order
+// takes the top or bottom of the ranking
+const orderItems = computed(() => (listMode.value || form.value.orderBy === 'key'
   ? [
     { title: t('sessions.summary.widget.sort-desc'), value: 'desc' },
     { title: t('sessions.summary.widget.sort-asc'), value: 'asc' }
@@ -664,6 +841,10 @@ const orderItems = computed(() => (listMode.value
     { title: t('sessions.summary.top'), value: 'desc' },
     { title: t('sessions.summary.bottom'), value: 'asc' }
   ]));
+const orderByItems = computed(() => [
+  { title: t('sessions.summary.widget.orderBy-value'), value: 'value' },
+  { title: t('sessions.summary.widget.orderBy-key'), value: 'key' }
+]);
 
 // widgets span 1-4 columns (grid is 4 wide) and 1-8 rows (160px row unit)
 const widthItems = [1, 2, 3, 4].map(n => ({ title: String(n), value: n }));
@@ -697,7 +878,14 @@ const fillForm = (w) => {
     splitField: w.splitField || '',
     splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
     barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
+    orientation: BAR_ORIENTATIONS.includes(w.orientation) ? w.orientation : 'vertical',
+    seriesType: SERIES_TYPES.includes(w.seriesType) ? w.seriesType : 'bars',
+    yScale: Y_SCALES.includes(w.yScale) ? w.yScale : 'linear',
     other: w.other === true,
+    bucketInterval: w.bucketInterval > 0 ? w.bucketInterval : 0,
+    gaugeMax: w.gaugeMax > 0 ? w.gaugeMax : 0,
+    gaugeWarn: w.gaugeWarn > 0 ? w.gaugeWarn : 0,
+    gaugeCrit: w.gaugeCrit > 0 ? w.gaugeCrit : 0,
     text: w.text || '',
     sortField: w.sortField || '',
     expression: w.expression || '',
@@ -842,10 +1030,20 @@ const save = () => {
     splitField: splitEnabled.value ? (form.value.splitField || '') : '',
     splitLength: form.value.splitLength || 5,
     barMode: additiveMetric.value ? (form.value.barMode || 'stacked') : 'grouped',
+    orientation: barSplit.value && form.value.orientation === 'horizontal' ? 'horizontal' : 'vertical',
+    seriesType: timelineSplit.value && form.value.seriesType === 'lines' ? 'lines' : 'bars',
+    yScale: timelineSplit.value && form.value.yScale === 'log' ? 'log' : 'linear',
     other: otherEnabled.value && additiveMetric.value && !!form.value.other,
+    bucketInterval: bucketEnabled.value ? nonNeg(form.value.bucketInterval) : 0,
+    gaugeMax: gaugeMode.value ? nonNeg(form.value.gaugeMax) : 0,
+    gaugeWarn: gaugeMode.value ? nonNeg(form.value.gaugeWarn) : 0,
+    gaugeCrit: gaugeMode.value ? nonNeg(form.value.gaugeCrit) : 0,
     text: staticMode.value ? (form.value.text || '') : '',
+    treeRoot: treeMode.value ? (form.value.treeRoot?.trim() || '') : '',
+    treeDepth: treeMode.value && TREE_DEPTHS.includes(form.value.treeDepth) ? form.value.treeDepth : DEFAULT_TREE_DEPTH,
     length: form.value.length,
     order: form.value.order,
+    orderBy: orderEnabled.value && !listMode.value && form.value.orderBy === 'key' ? 'key' : 'value',
     sortField: listMode.value ? (form.value.sortField || '') : '',
     width: form.value.width,
     height: form.value.height,

@@ -1,0 +1,204 @@
+{
+  "name": "Hosts",
+  "description": "The hosts on the wire: how many there are, their MAC vendors, VLANs and networks (ASNs), and the services they reach",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "oui.src",
+        "splitLength": 10,
+        "barMode": "stacked",
+        "width": 4,
+        "height": 2,
+        "title": "Sessions by source MAC vendor"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Source hosts",
+        "metricType": "ip.src",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Destination hosts",
+        "metricType": "ip.dst",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w4",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "MAC vendors",
+        "metricType": "oui.src",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w5",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "VLANs",
+        "metricType": "vlan",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w6",
+        "field": "oui.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Source MAC vendors"
+      },
+      {
+        "id": "w7",
+        "field": "oui.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Destination MAC vendors"
+      },
+      {
+        "id": "w8",
+        "field": "mac.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Source MACs"
+      },
+      {
+        "id": "w9",
+        "field": "mac.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Destination MACs"
+      },
+      {
+        "id": "w10",
+        "field": "vlan",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "VLANs"
+      },
+      {
+        "id": "w11",
+        "field": "node",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Capture nodes"
+      },
+      {
+        "id": "w12",
+        "field": "asn.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Source networks (ASN)"
+      },
+      {
+        "id": "w13",
+        "field": "asn.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Destination networks (ASN)"
+      },
+      {
+        "id": "w14",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 4,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Services"
+      },
+      {
+        "id": "w15",
+        "field": "oui.src",
+        "fields": [
+          "oui.src",
+          "port.dst"
+        ],
+        "viewMode": "sankey",
+        "width": 4,
+        "height": 3,
+        "length": 10,
+        "title": "MAC vendors to destination ports"
+      },
+      {
+        "id": "w16",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "mac.src",
+          "oui.src",
+          "ip.dst",
+          "port.dst",
+          "vlan",
+          "asn.dst"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

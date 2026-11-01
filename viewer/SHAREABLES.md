@@ -86,6 +86,7 @@ capture stats / time fit a single ~160px row).
 | Field | Type | Description |
 |-------|------|-------------|
 | `data.colorScheme` | string | Dashboard chart palette (`rainbow`, `tableau10`, `category10`, `viridis`, `cool`, `warm`, `spectral`). Default: `rainbow` |
+| `data.expression` | string | Optional. The dashboard's own filter: a search expression ANDed with the global search for every widget on it. A widget's local filter is applied on top |
 | `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
 | `data.widgets[].field` | string | Primary Arkime field expression (e.g. `source.ip`, `protocols`) = `fields[0]`. For `map` it is a geo field (e.g. `country.src`). Empty (`""`) for session-wide types (`timeline`, `stats`, `time`), which describe the whole result set rather than one field. |
 | `data.widgets[].fields` | string[] | 1–3 field exps. `pie`/`treemap`/`intersection`/`table` accept up to 3 (nested combinations for pie/treemap/intersection; side-by-side per-field columns for table). Other types use a single field (`= [field]`). |

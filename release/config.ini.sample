@@ -146,8 +146,9 @@ ouiFile=ARKIME_INSTALL_DIR/etc/oui.txt
 
 # Arkime rules to allow you specify actions to perform when criteria are met with certain fields or state.
 # A list of files and/or directories, every *.rules.yml file in a directory is loaded, default.* first.
+# default.rules.yml is installed in ARKIME_INSTALL_DIR/share and replaced on upgrade, put your own in etc.
 # See https://arkime.com/rulesformat
-#rulesFiles=ARKIME_INSTALL_DIR/etc
+#rulesFiles=ARKIME_INSTALL_DIR/etc;ARKIME_INSTALL_DIR/share
 
 # User to drop privileges to. The pcapDir must be writable by this user or group below
 dropUser=nobody
@@ -258,6 +259,12 @@ parsersDir=ARKIME_INSTALL_DIR/parsers
 
 # Semicolon ';' separated list of directories to load plugins from
 pluginsDir=ARKIME_INSTALL_DIR/plugins
+
+# Semicolon ';' separated list of directories the viewer loads system dashboards
+# (*.dashboard.json files) from. The first directory with a file name wins.
+# Arkime's own are installed in ARKIME_INSTALL_DIR/share/dashboards and replaced on upgrade,
+# so put your own, or an edited copy of one of Arkime's, in ARKIME_INSTALL_DIR/etc/dashboards.
+#dashboardsDir=ARKIME_INSTALL_DIR/etc/dashboards;ARKIME_INSTALL_DIR/share/dashboards;ARKIME_INSTALL_DIR/plugins
 
 # Semicolon ';' separated list of plugins to load and the order to load in
 # plugins=tagger.so; netflow.so

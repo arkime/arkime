@@ -474,11 +474,12 @@ export const buildExpression = function (field, value, op) {
  * @returns {string}      The fully built expression
  */
 export const buildListExpression = function (field, values, op) {
-  // The list parser splits on , and ] even inside quotes, so those values get their own clause
+  // The list parser splits on , and ] even inside quotes and drops the escapes
+  // that keep a * literal, so those values get their own clause
   const listValues = [];
   const clauses = [];
   for (const value of values.flat()) {
-    if (/[,\]]/.test(value.toString())) {
+    if (/[,\]*]/.test(value.toString())) {
       clauses.push(buildExpression(field, value, op));
     } else {
       listValues.push(expressionValue(value));
@@ -495,8 +496,14 @@ export const buildListExpression = function (field, values, op) {
 function expressionValue (value) {
   value = value.toString();
 
-  // for values required to be strings in the search expression
-  const needQuotes = (value !== 'EXISTS!' && /[^-+a-zA-Z0-9_.@:*?/]+/.test(value)) ||
+  // the parser makes any value with a * a wildcard, even quoted, so escape the
+  // wildcard syntax to match the value exactly
+  const wildcard = value.includes('*');
+  if (wildcard) { value = value.replace(/[\\*?]/g, '\\$&'); }
+
+  // for values required to be strings in the search expression, so a captured
+  // EXISTS! or '' is a value too (callers wanting an exists check build it themselves)
+  const needQuotes = wildcard || value === '' || /[^-+a-zA-Z0-9_.@:?/]/.test(value) ||
     (value.startsWith('/') && value.endsWith('/'));
 
   // escape unescaped quotes

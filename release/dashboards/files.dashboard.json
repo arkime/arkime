@@ -1,0 +1,154 @@
+{
+  "name": "Files",
+  "description": "Sessions that carried a file: HTTP bodies, SMB and FTP files and email attachments",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "http.md5 == EXISTS! || email.bodymagic == EXISTS! || smb.fn == EXISTS! || ftp.filename == EXISTS! || tftp.filename == EXISTS!",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 8,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Sessions with files by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Sessions with files"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Executables and archives",
+        "expression": "http.bodymagic == [application/x-dosexec, application/x-executable, application/x-msdownload, application/vnd.microsoft.portable-executable, application/x-elf, application/x-mach-binary, application/zip, application/x-rar, application/x-7z-compressed, application/gzip, application/x-gzip]"
+      },
+      {
+        "id": "w4",
+        "field": "http.bodymagic",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "HTTP body types"
+      },
+      {
+        "id": "w5",
+        "field": "email.bodymagic",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Email attachment types"
+      },
+      {
+        "id": "w6",
+        "field": "smb.fn",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "SMB files"
+      },
+      {
+        "id": "w7",
+        "field": "email.fn",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Email attachments"
+      },
+      {
+        "id": "w8",
+        "field": "ftp.filename",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "FTP files"
+      },
+      {
+        "id": "w9",
+        "field": "tftp.filename",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "TFTP files"
+      },
+      {
+        "id": "w10",
+        "field": "http.uri",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Executable and archive URIs",
+        "expression": "http.bodymagic == [application/x-dosexec, application/x-executable, application/x-msdownload, application/vnd.microsoft.portable-executable, application/x-elf, application/x-mach-binary, application/zip, application/x-rar, application/x-7z-compressed, application/gzip, application/x-gzip]"
+      },
+      {
+        "id": "w11",
+        "field": "http.md5",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "HTTP body MD5s"
+      },
+      {
+        "id": "w12",
+        "field": "host.http",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Hosts serving executables and archives",
+        "expression": "http.bodymagic == [application/x-dosexec, application/x-executable, application/x-msdownload, application/vnd.microsoft.portable-executable, application/x-elf, application/x-mach-binary, application/zip, application/x-rar, application/x-7z-compressed, application/gzip, application/x-gzip]"
+      },
+      {
+        "id": "w13",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Clients fetching executables and archives",
+        "expression": "http.bodymagic == [application/x-dosexec, application/x-executable, application/x-msdownload, application/vnd.microsoft.portable-executable, application/x-elf, application/x-mach-binary, application/zip, application/x-rar, application/x-7z-compressed, application/gzip, application/x-gzip]"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "protocols",
+          "http.uri",
+          "smb.fn",
+          "email.fn",
+          "ftp.filename"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

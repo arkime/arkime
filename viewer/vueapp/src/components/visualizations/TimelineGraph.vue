@@ -45,7 +45,12 @@ export default {
     timezone: { type: String, default: 'local' },
     // fill the container height (dashboard timeline widget) instead of the fixed
     // 180px host; the ResizeObserver rebuilds at the new height as the card resizes
-    fitHeight: { type: Boolean, default: false }
+    fitHeight: { type: Boolean, default: false },
+    // the series to draw, [{ label, key, color }] each reading graphData[key],
+    // in place of the ones graphType implies (a timeline split by a field)
+    seriesDefs: { type: Array, default: null },
+    // draw the series on top of each other (bars) instead of overlaid
+    stacked: { type: Boolean, default: false }
   },
   emits: ['updateTimeRange'],
   data () {
@@ -58,6 +63,8 @@ export default {
     graphType () { this.rebuild(); },
     seriesType () { this.rebuild(); },
     yScale () { this.rebuild(); },
+    seriesDefs () { this.rebuild(); },
+    stacked () { this.rebuild(); },
     showCapStartTimes () { this.rebuild(); },
     timezone () { this.rebuild(); }
   },
@@ -95,6 +102,7 @@ export default {
       this.restartColor = this.foregroundColor;
     },
     seriesDefsFor (type) {
+      if (this.seriesDefs?.length) { return this.seriesDefs; }
       const defs = COMPOSITE_METRICS[type];
       if (defs) {
         return defs.map(d => ({
@@ -308,7 +316,24 @@ export default {
       this.destroyPlot();
 
       const defs = this.seriesDefsFor(this.graphType);
-      const data = this.aggregateIfDense(this.buildAlignedData(defs), host.clientWidth || 800);
+      let data = this.aggregateIfDense(this.buildAlignedData(defs), host.clientWidth || 800);
+
+      // stacked: each series is drawn at its running total, back (the full
+      // stack) to front (the first series), so every band stays visible; the
+      // tooltip reads the raw values kept aside here
+      this.stack = null;
+      let drawDefs = defs;
+      if (this.stacked && defs.length > 1) {
+        const ys = data.slice(1);
+        const cumulative = ys.map((y, i) => y.map((v, j) => {
+          let sum = 0;
+          for (let k = 0; k <= i; k++) { sum += ys[k][j] || 0; }
+          return sum;
+        }));
+        this.stack = { ys };
+        data = [data[0], ...cumulative.slice().reverse()];
+        drawDefs = defs.slice().reverse();
+      }
 
       const isBars = this.seriesType === 'bars';
       const barsPath = isBars ? uPlot.paths.bars() : undefined;
@@ -371,10 +396,11 @@ export default {
         ],
         series: [
           {},
-          ...defs.map((d) => ({
+          ...drawDefs.map((d) => ({
             label: d.label,
             stroke: d.color,
-            fill: isBars ? d.color : d.color + '33',
+            // a split graph's overlaid lines stay unfilled so each one can be read
+            fill: isBars ? d.color : (this.seriesDefs?.length > 1 ? undefined : d.color + '33'),
             paths: isBars ? barsPath : linesPath,
             width: isBars ? 1 : 1.5,
             points: { show: false }
@@ -467,18 +493,24 @@ export default {
       // colored to match its bar.
       const chips = [];
       defs.forEach((def, i) => {
-        const v = u.data[i + 1]?.[dataIdx];
+        // a stacked plot holds running totals; the raw values are kept aside
+        const v = this.stack ? this.stack.ys[i]?.[dataIdx] : u.data[i + 1]?.[dataIdx];
         if (v == null) return;
+        // an empty bucket of a split series would only crowd the tooltip
+        if (this.seriesDefs && v === 0) return;
         const valStr = commaString(Math.round(v * 100) / 100);
         if (defs.length > 1) {
-          const label = def.label.split(' ')[0];
+          // the composite src/dst labels shorten to their first word; a split
+          // value is shown whole
+          const label = this.seriesDefs ? def.label : def.label.split(' ')[0];
           chips.push(`<span style="color:${def.color}">${this.escapeHtml(label)}</span> <strong>${valStr}</strong>`);
         } else {
           chips.push(`<strong>${valStr}</strong>`);
         }
       });
       if (!chips.length) { this.tooltip = null; return; }
-      const lines = [chips.join(' · '), this.escapeHtml(dateStr)];
+      // a split timeline lists one series per line; the composite pair fits on one
+      const lines = [chips.join(this.seriesDefs ? '<br>' : ' · '), this.escapeHtml(dateStr)];
 
       const xRel = rect.left - hostRect.left + cursorX;
       const flipX = xRel + 12 > hostRect.width * 0.6;

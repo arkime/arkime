@@ -134,6 +134,7 @@ jobs:
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           mv capture/plugins/ja4plus.so ja4plus.${{ env.ARKIME_ARCH }}.so
+          cp ../ja4/ja4plus.dashboard.json .
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
@@ -175,6 +176,7 @@ jobs:
           files: |
             *.deb
             *.so
+            ja4plus.dashboard.json
             *.rpm
             *.zst
             NOTICE.txt
@@ -288,6 +290,7 @@ jobs:
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+              cp ../ja4/ja4plus.dashboard.json .
               ls -l *.so
             fi
 
@@ -307,6 +310,7 @@ jobs:
           files: |
             *.pkg
             *.so
+            ja4plus.dashboard.json
           body: |
             ### [Installation Instructions](https://arkime.com/install) | [5.x -> 6.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_6) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
 

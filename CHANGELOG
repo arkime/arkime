@@ -106,10 +106,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4410 Move the session hash value next to the hash links in ArkimeSession_t so a chain lookup touches one cache line per
           session instead of two, struct size is unchanged
   - #4400 rulesFiles entries can be directories, every *.rules.yml / *.rules.yaml in one is loaded and the directory is watched so
-          added or removed files reload like edits do, once they stop changing. The default is now /opt/arkime/etc, where
-          default.rules.yml is installed and replaced on upgrade (DO NOT EDIT it). default.* files load first and a rule in
-          a later file with the same name replaces it, or disabled: true removes it, so put your own rules in eg
-          /opt/arkime/etc/local.rules.yml. rulesFiles= turns rules off. See capture/RULES.md
+          added or removed files reload like edits do, once they stop changing. The default is now
+          /opt/arkime/etc;/opt/arkime/share, default.rules.yml is installed in share and replaced on upgrade (DO NOT
+          EDIT it). default.* files load first and a rule in a later file with the same name replaces it, or
+          disabled: true removes it, so put your own rules in eg /opt/arkime/etc/local.rules.yml. rulesFiles= turns
+          rules off. See capture/RULES.md
   - #4364 Rules can use expression: instead of fields: or bpf:, with a syntax similar to the viewer's search plus math and functions,
           eg protocols == tls && port.dst != [443, 8443] && !(ip.dst == 10.0.0.0/8). Works in existing version 1 rules
           files alongside fields:/bpf: rules, which are unchanged, and in every when: except everyPacket. Expressions are
@@ -164,9 +165,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           50ns per packet faster than with MD5
 ## Viewer
   - #4400 Featherprint classifier rules are loaded from every *.featherprint.yml / *.featherprint.yaml file in the
-          featherprintRulesFiles files and directories (default /opt/arkime/etc), where default.featherprint.yml is installed
-          and replaced on upgrade (DO NOT EDIT it). Other files are consulted before default.*, so a classify rule in eg
-          /opt/arkime/etc/local.featherprint.yml wins over the default one. Replaces the featherprintRulesFile setting
+          featherprintRulesFiles files and directories (default /opt/arkime/etc;/opt/arkime/share), where
+          default.featherprint.yml is installed in share and replaced on upgrade (DO NOT EDIT it). Other files are
+          consulted before default.*, so a classify rule in eg /opt/arkime/etc/local.featherprint.yml wins over the
+          default one. Replaces the featherprintRulesFile setting
           and viewer/featherprint.rules.yaml
   - Fix reading zstd compressed pcap with Node 24.22 and later
   - Column, info field and spiview layouts can now be created, edited and shared from the Settings page
@@ -212,6 +214,21 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4420 Dashboard pie widgets can show an Other slice for the sessions outside the top values, and can be split by a
           second field into one small pie per value
   - #4420 Add a sessions list dashboard widget: the matching sessions as a compact table with chosen columns, sort and rows
+  - 54 built-in dashboards: Overview, Connections, one per protocol, and Certificates, Databases, Files, Hosts,
+          Multicast, OT, Routing, Security, Software and Tunnels under Analysis. They are *.dashboard.json files in
+          /opt/arkime/share/dashboards (replaced on upgrade); to add or override one, export a dashboard and drop the
+          file in /opt/arkime/etc/dashboards (see the new dashboardsDir setting), no restart needed
+  - The suricata and zeekintel plugins each ship a dashboard, listed once the plugin's fields exist
+  - Dashboards can be grouped into folders, saved back into the dashboard they were loaded from, and opened
+          by url with ?dashboard=<id>
+  - A dashboard can have its own search expression (gear button), applied with the search to every widget
+  - Add gauge, tag cloud and dashboard navigation widgets, and a tag cloud SPI Graph type
+  - Timeline widgets can be split by a field, one series per top value, as stacked bars or lines on a linear
+          or log scale
+  - Bar, pie, table, metric and tag cloud widgets can group a numeric field into ranges (ports, sizes, key
+          lengths) and can be ordered by the field's value instead of the metric
+  - Bar widgets and SPI Graph bars can be horizontal; map widgets can shade countries by any metric
+  - Add a connection tree widget and SPI Graph type: who reached what from one host, hop by hop
   - #4420 The text dashboard widget is now a Markdown widget: headings, bold, italic, code, lists and links, up to 5000
           characters. Links may only go to http/https sites or Arkime's own pages, never to its API
   - #4420 SPI Graph pies can be split into 3, 5 or 10 small pies, one per value of the first field, and can show Other slices

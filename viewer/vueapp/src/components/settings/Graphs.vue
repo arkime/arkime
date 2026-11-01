@@ -294,17 +294,18 @@ const viewModeLabel = (viewMode) => {
   return key ? t(key) : (viewMode || '');
 };
 const fieldName = (exp) => FieldService.getField(exp, true)?.friendlyName || exp;
-// the fields a graph draws, the bar's split field included
+// the fields a graph draws, the bar's (and timeline's) split field included
 const fieldsLabel = (data) => {
   if (!data) { return ''; }
   const names = data.fields.filter(Boolean).map(fieldName);
-  if (data.viewMode === 'bar' && data.splitField) { names.push(fieldName(data.splitField)); }
+  if ((data.viewMode === 'bar' || data.viewMode === 'timeline') && data.splitField) { names.push(fieldName(data.splitField)); }
   return names.join(', ');
 };
 const limitLabel = (data) => {
   if (!data) { return ''; }
   const order = data.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
-  return `${order} ${data.length}`;
+  // a timeline draws its split field's top values, one series each
+  return `${order} ${data.viewMode === 'timeline' ? data.splitLength : data.length}`;
 };
 const viewName = (id) => (store.state.views || []).find(v => v.id === id || v.name === id)?.name || id;
 

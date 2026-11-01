@@ -45,12 +45,27 @@ SPDX-License-Identifier: Apache-2.0
         :field-config="fieldConfig"
         :split-field-config="splitFieldConfig"
         :bar-mode="barMode"
+        :orientation="orientation"
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
         :metric-agg="metricAgg"
         :color-scheme="colorScheme"
         @show-tooltip="$emit('show-tooltip', $event)" />
+
+      <!-- Tag cloud -->
+      <SummaryTagCloud
+        v-else-if="viewMode === 'tagcloud'"
+        :data="data"
+        :svg-id="svgId"
+        :field-config="fieldConfig"
+        :width="chartWidth"
+        :height="chartHeight"
+        :metric-type="metricType"
+        :metric-agg="metricAgg"
+        :color-scheme="colorScheme"
+        @show-tooltip="$emit('show-tooltip', $event)"
+        @hide-tooltip="$emit('hide-tooltip')" />
 
       <!-- Table -->
       <SummaryTable
@@ -68,6 +83,7 @@ import { useI18n } from 'vue-i18n';
 import WidgetCard from './widgets/WidgetCard.vue';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
+import SummaryTagCloud from './SummaryTagCloud.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
@@ -79,7 +95,7 @@ const { t } = useI18n();
 // needs room for its slice labels, a bar for its axis and rotated value labels
 // (its margins alone take ~130px of height). Below that they clip.
 const MIN_CHART_WIDTH = 120;
-const MIN_CHART_HEIGHT = { pie: 120, bar: 200 };
+const MIN_CHART_HEIGHT = { pie: 120, bar: 200, tagcloud: 100 };
 const RESIZE_DEBOUNCE_MS = 500;
 
 // Debounce helper for resize events
@@ -118,7 +134,7 @@ const props = defineProps({
   viewMode: {
     type: String,
     default: 'pie',
-    validator: (value) => ['pie', 'bar', 'table'].includes(value)
+    validator: (value) => ['pie', 'bar', 'table', 'tagcloud'].includes(value)
   },
   metricType: {
     type: String,
@@ -136,6 +152,10 @@ const props = defineProps({
   barMode: {
     type: String,
     default: 'stacked'
+  },
+  orientation: {
+    type: String,
+    default: 'vertical'
   },
   // pie: the sessions outside the top N ({ sessions, value }), drawn as one slice
   other: {
@@ -163,7 +183,7 @@ const props = defineProps({
   graphDef: { type: Object, default: null }
 });
 
-defineEmits(['export', 'show-tooltip', 'remove-field', 'retry-field', 'edit']);
+defineEmits(['export', 'show-tooltip', 'hide-tooltip', 'remove-field', 'retry-field', 'edit']);
 
 // Fetch field configuration from FieldService
 const fieldConfig = computed(() => {

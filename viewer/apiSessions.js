@@ -3280,6 +3280,13 @@ class SessionAPIs {
       return res.end(JSON.stringify({ success: false, text: 'tshark not configured on this viewer' }));
     }
 
+    // Express decodes %2F/%23/%3F in params; on the remote path they would turn
+    // the s2s pcap fetch into a request for some other s2s-only route
+    if (/[/\\?#]/.test(req.params.nodeName) || /[/\\?#]/.test(req.params.id)) {
+      res.status(400);
+      return res.end(JSON.stringify({ success: false, text: 'Bad session id' }));
+    }
+
     // Each request forks a dissector; without a ceiling a single user can fork
     // the viewer host to death. Reject rather than queue so the client finds
     // out now instead of holding a connection open behind the timeout.
@@ -3677,12 +3684,12 @@ class SessionAPIs {
    * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max' or 'cardinality'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), other (when true and the metric is the session count or a sum, also return what falls outside the top N), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response.
-   * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget). One of widgets or fields is required.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), orderBy ('value' default: the Top/Bottom N by the sort metric or session count; 'key': by the field's own value, so asc is the N smallest values or names), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max' or 'cardinality'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), bucketInterval (numeric fields only: bucket the field's values into ranges of this width instead of one bucket per value; each data[] item is then a range, item '<start>-<end>' with range: [start, end]), other (when true and the metric is the session count or a sum, also return what falls outside the top N), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response. At most 100 widgets.
+   * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget), at most 100. One of widgets or fields is required.
    * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
    * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
    * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
-   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, expression, data[] } or { id, field, error } on per-widget failure; a widget asking for other also carries other: { sessions, value } for the sessions outside its top N. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values) }.
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, orderBy, expression, data[] } or { id, field, error } on per-widget failure; a widget asking for other also carries other: { sessions, value } for the sessions outside its top N. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values) }.
    *
    */
   static summary (req, res) {
@@ -3732,6 +3739,16 @@ class SessionAPIs {
       return res.status(400).send({ error: 'Missing or invalid widgets/fields parameter in request body' });
     }
 
+    // Each widget is its own aggregation, up to 1000 values with splits, so
+    // bound the request; the largest system dashboard has under 20
+    const MAX_WIDGETS = 100;
+    if (rawWidgets.length > MAX_WIDGETS) {
+      return res.status(400).send({ error: `Too many widgets/fields, the limit is ${MAX_WIDGETS}` });
+    }
+    // a bucketInterval widget's histogram has no size (ES builds every range
+    // in the field's span), so a widget whose span/width is past this fails
+    const MAX_HISTOGRAM_BUCKETS = 10000;
+
     // Normalize each requested widget into an aggregation spec
     const widgetSpecs = [];
     for (let i = 0; i < rawWidgets.length; i++) {
@@ -3750,6 +3767,7 @@ class SessionAPIs {
         metricAgg: ViewerUtils.metricAgg(w.metricAgg),
         length: clampLength(w.length, defaultTopNum),
         order: w.order === 'asc' ? 'asc' : (w.order === 'desc' ? 'desc' : defaultOrder),
+        orderBy: w.orderBy === 'key' ? 'key' : 'value',
         expression: ArkimeUtil.isString(w.expression) && w.expression.length > 0 ? w.expression : undefined,
         // viewMode/metricType are owned by the client; the response only echoes
         // sensible field-based defaults for the legacy fields-string callers.
@@ -3770,6 +3788,13 @@ class SessionAPIs {
         } else {
           spec.dbField = field.dbField;
         }
+      }
+
+      // numeric fields can be bucketed into ranges of a fixed width (a
+      // histogram aggregation) instead of one bucket per distinct value
+      if (!total && !spec.isSpecial && spec.dbField && fieldsMap[fieldExp]?.type === 'integer') {
+        const interval = parseInt(w.bucketInterval);
+        if (Number.isFinite(interval) && interval > 0) { spec.bucketInterval = interval; }
       }
 
       // optional second level under each value (stacked/grouped bars)
@@ -3860,8 +3885,11 @@ class SessionAPIs {
             return { item: sb.key, sessions: sb.doc_count, value: spec.sortExp ? mv[spec.sortExp] : sb.doc_count, metricValues: mv };
           })
           : undefined;
+        // a histogram bucket's key is the range's lower bound
+        const range = spec.bucketInterval ? [bucket.key, bucket.key + spec.bucketInterval - 1] : undefined;
         results.push({
-          item: bucket.key,
+          item: range ? (spec.bucketInterval > 1 ? `${range[0]}-${range[1]}` : String(range[0])) : bucket.key,
+          ...(range ? { range } : {}),
           sessions: bucket.doc_count,
           bytes: bucket.bytes.value,
           packets: bucket.packets.value,
@@ -4046,7 +4074,10 @@ class SessionAPIs {
           // Per-widget metric: when a numeric field is selected, sum it per
           // bucket and order Top/Bottom N by that sum; otherwise order by count.
           const metricAggs = metricAggsFor(spec);
-          const termsOrder = spec.orderAggKey ? { [spec.orderAggKey]: spec.order } : { _count: spec.order };
+          // by the sort metric (or count), or by the bucket's own key (the field value)
+          const termsOrder = spec.orderBy === 'key'
+            ? { _key: spec.order }
+            : (spec.orderAggKey ? { [spec.orderAggKey]: spec.order } : { _count: spec.order });
 
           const widgetAggs = { ...extraAggs, ...metricAggs };
           if (spec.splitDbField) {
@@ -4075,6 +4106,26 @@ class SessionAPIs {
               },
               aggs: widgetAggs
             };
+          } else if (spec.bucketInterval) {
+            // ranges of a fixed width; a histogram has no size, so the limit
+            // is applied to its (ordered) buckets in convert. ES builds a
+            // bucket (with every sub aggregation) for each range in the
+            // field's span, so bound that from the span first
+            const span = await Db.searchSessions(indices, { ...wquery, aggregations: { lo: { min: { field: spec.dbField } }, hi: { max: { field: spec.dbField } } } }, options);
+            const lo = span.aggregations?.lo?.value;
+            const hi = span.aggregations?.hi?.value;
+            if (typeof lo === 'number' && typeof hi === 'number' && (hi - lo) / spec.bucketInterval > MAX_HISTOGRAM_BUCKETS) {
+              throw new Error(`Bucket width ${spec.bucketInterval} makes more than ${MAX_HISTOGRAM_BUCKETS} ranges over ${lo}-${hi}, use a wider one`);
+            }
+            wquery.aggregations[spec.aggName] = {
+              histogram: {
+                field: spec.dbField,
+                interval: spec.bucketInterval,
+                min_doc_count: 1,
+                order: termsOrder
+              },
+              aggs: widgetAggs
+            };
           } else {
             // Regular field aggregations
             wquery.aggregations[spec.aggName] = {
@@ -4085,11 +4136,11 @@ class SessionAPIs {
               },
               aggs: widgetAggs
             };
-            // a summed metric's "Other" needs its total over every session with the field
-            if (spec.other && spec.sortAggKey) {
-              const sortDbField = spec.metrics.find(m => m.aggKey === spec.sortAggKey).dbField;
-              wquery.aggregations.othertotal = { filter: { exists: { field: spec.dbField } }, aggs: { total: { sum: { field: sortDbField } } } };
-            }
+          }
+          // a summed metric's "Other" needs its total over every session with the field
+          if (spec.other && spec.sortAggKey) {
+            const sortDbField = spec.metrics.find(m => m.aggKey === spec.sortAggKey).dbField;
+            wquery.aggregations.othertotal = { filter: { exists: { field: spec.dbField } }, aggs: { total: { sum: { field: sortDbField } } } };
           }
 
           const phase2 = await Db.searchSessions(indices, wquery, options);
@@ -4101,6 +4152,8 @@ class SessionAPIs {
             metricAgg: spec.metricAgg,
             length: spec.length,
             order: spec.order,
+            orderBy: spec.orderBy,
+            bucketInterval: spec.bucketInterval,
             expression: spec.expression,
             title: undefined, // TODO this will come from the user configuration
             description: undefined // TODO this will come from the user configuration

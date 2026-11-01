@@ -64,6 +64,15 @@
   white-space: nowrap;
   font-weight: 500;
 }
+/* a label right before its own input/select: the two 8px paddings left a
+   wide gap, so the label keeps 4px and the control 2px (icon-only labels
+   keep their own fixed width and the control its full padding) */
+.arkime-input-label:not(.arkime-input-label-fw):has(+ .arkime-input-control) {
+  padding-right: 4px;
+}
+.arkime-input-label:not(.arkime-input-label-fw) + .arkime-input-control {
+  padding-left: 2px;
+}
 /* fixed-width variant for icon-only labels (search glyphs etc.) */
 .arkime-input-label-fw {
   width: 32px;
@@ -89,11 +98,15 @@
 }
 /* native <select> arrow caret needs a touch more right padding so the
    native browser caret doesn't bump the right border (the menulist look
-   already reserves its own caret inset, so keep this small). */
+   already reserves its own caret inset, so keep this small). It sizes to
+   the chosen value rather than the longest option, so a short value isn't
+   followed by a wide gap before the caret (browsers without field-sizing
+   keep the old width). */
 select.arkime-input-control {
-  padding-right: 14px;
+  padding-right: 6px;
   -webkit-appearance: menulist;
   cursor: pointer;
+  field-sizing: content;
 }
 
 /* an icon button appended to the group reads as an inline action

@@ -2,7 +2,7 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, MAX_FIELDS } from './widgets/viewModes';
+import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH } from './widgets/viewModes';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
 
@@ -11,6 +11,8 @@ import Utils from '../utils/utils';
 // an object there would throw wherever it is turned into a string.
 const str = (v, def = '') => (typeof v === 'string' ? v : def);
 const int = (v) => ((typeof v === 'number' || typeof v === 'string') ? parseInt(v, 10) : NaN);
+// a non-negative whole number, 0 when missing or invalid (0 = unset)
+export const nonNeg = (v) => { const n = int(v); return n > 0 ? n : 0; };
 
 // widgets span 1-4 columns and 1-8 rows; anything missing/invalid falls back to
 // `def` (rows allow a larger max since the grid uses a fine 160px row unit)
@@ -37,11 +39,21 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
     splitField: '',
     splitLength: 5,
     barMode: 'stacked',
+    orientation: 'vertical', // bar: 'horizontal' lays the bars along the axis
+    seriesType: 'bars', // timeline: 'bars' or 'lines'
+    yScale: 'linear', // timeline: 'linear' or 'log'
     other: false, // pie: an "Other" slice for what falls outside the top N
+    bucketInterval: 0, // numeric field: range width per bucket (0 = one bucket per value)
+    gaugeMax: 0, // gauge: the arc's full value (0 = the value itself)
+    gaugeWarn: 0, // gauge: at or above this the arc turns amber (0 = none)
+    gaugeCrit: 0, // gauge: at or above this the arc turns red (0 = none)
     text: '', // markdown widget content
+    treeRoot: '', // connection tree: the value the tree starts from ('' = the busiest source)
+    treeDepth: DEFAULT_TREE_DEPTH, // connection tree: hops drawn from the root
     // top-N cap, or a session sample size for connections
     length: defaultLength(viewMode),
     order: 'desc',
+    orderBy: 'value', // 'value': Top/Bottom N by the metric; 'key': by the field's own value
     sortField: '', // sessions list: the column it sorts by ('' = start time)
     expression: '',
     view: '',
@@ -75,10 +87,20 @@ export const normalizeWidget = (w) => {
     splitField: str(w.splitField),
     splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
     barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
+    orientation: BAR_ORIENTATIONS.includes(w.orientation) ? w.orientation : 'vertical',
+    seriesType: SERIES_TYPES.includes(w.seriesType) ? w.seriesType : 'bars',
+    yScale: Y_SCALES.includes(w.yScale) ? w.yScale : 'linear',
     other: w.other === true,
+    bucketInterval: nonNeg(w.bucketInterval),
+    gaugeMax: nonNeg(w.gaugeMax),
+    gaugeWarn: nonNeg(w.gaugeWarn),
+    gaugeCrit: nonNeg(w.gaugeCrit),
     text: str(w.text),
+    treeRoot: str(w.treeRoot),
+    treeDepth: TREE_DEPTHS.includes(w.treeDepth) ? w.treeDepth : DEFAULT_TREE_DEPTH,
     length: limit > 0 ? limit : defaultLength(viewMode),
     order: w.order === 'asc' ? 'asc' : 'desc',
+    orderBy: w.orderBy === 'key' ? 'key' : 'value',
     sortField: str(w.sortField),
     expression: str(w.expression),
     view: str(w.view),
@@ -94,6 +116,8 @@ export const normalizeWidget = (w) => {
  * aggregating visualization spanning sessions / bytes / packets metrics.
  */
 export const defaultWidgets = () => [
+  // links to the system dashboards (one per protocol) and the saved ones
+  makeWidgetDef('', { viewMode: 'navigation', width: 4, height: 1 }),
   // capture-wide summary band
   makeWidgetDef('', { viewMode: 'stats', width: 2, height: 1 }),
   makeWidgetDef('', { viewMode: 'time', width: 2, height: 1 }),
@@ -119,6 +143,32 @@ export const defaultWidgets = () => [
   // Src → Dst IP combinations (intersection)
   makeWidgetDef('ip.src', { viewMode: 'intersection', width: 4, height: 3, fields: ['ip.src', 'ip.dst'] })
 ];
+
+/**
+ * The dashboard config format version this code writes. A saved dashboard
+ * (shareable data, per-user state or a system dashboard file) carries it as
+ * data.version; one without it is version 1. Bump it when the shape changes
+ * and add the upgrade to migrateDashboard, which runs on every load.
+ */
+export const DASHBOARD_VERSION = 1;
+
+/**
+ * Upgrades a dashboard config written by an older version to the current
+ * shape. Returns the config as is (plus version) when it is current, or newer
+ * than this code knows, so a mixed-version cluster still loads it.
+ * @param {object} cfg - { version?, colorScheme?, widgets? | fields? }
+ * @returns {object} the config at DASHBOARD_VERSION
+ */
+export const migrateDashboard = (cfg) => {
+  if (!cfg || typeof cfg !== 'object') { return { version: DASHBOARD_VERSION }; }
+  const from = Number.isInteger(cfg.version) && cfg.version > 0 ? cfg.version : 1;
+  if (cfg.version === from && from >= DASHBOARD_VERSION) { return cfg; }
+  const out = { ...cfg };
+  // version 1 -> 2: (none yet) each step upgrades one version:
+  // if (out.version < 2) { ...; out.version = 2; }
+  out.version = DASHBOARD_VERSION;
+  return out;
+};
 
 /**
  * The widgets a saved dashboard config (a summaryConfig shareable's data or the
@@ -157,13 +207,15 @@ export const widgetsFromConfig = (cfg) => {
    dashboard copies a graph in; it never references one. See SHAREABLES.md. */
 
 // the widget keys a saved graph carries (everything but id/title/width/height/text)
-export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'other', 'length', 'order', 'expression', 'view'];
+export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'orientation', 'other', 'bucketInterval', 'treeRoot', 'treeDepth', 'length', 'order', 'orderBy', 'expression', 'view'];
 
-// view modes a graph can have: the field-bound dashboard types SPI Graph draws
-export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections'];
+// view modes a graph can have: the field-bound dashboard types SPI Graph
+// draws, and a timeline split by a field (SPI Graph's Timeline)
+export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections', 'tree', 'timeline'];
 
 /** True when a widget can be saved as a graph. */
-export const widgetIsGraph = (w) => GRAPH_VIEW_MODES.includes(w?.viewMode) && (Array.isArray(w.fields) ? w.fields.length > 0 : !!w.field);
+export const widgetIsGraph = (w) => GRAPH_VIEW_MODES.includes(w?.viewMode) &&
+  (w.viewMode === 'timeline' ? !!w.splitField : (Array.isArray(w.fields) ? w.fields.length > 0 : !!w.field));
 
 /** The saved-graph data of a widget (normalized, layout and title dropped). */
 export const graphFromWidget = (w) => {
@@ -176,8 +228,9 @@ export const graphFromWidget = (w) => {
 /** A new widget built from a saved graph plus layout overrides (title, width, height). */
 export const widgetFromGraph = (graph, overrides = {}) => normalizeWidget({ ...(graph || {}), id: undefined, ...overrides });
 
-// SPI Graph's types that have a graph (its Timeline has none: one histogram per value)
-const SPIGRAPH_TO_VIEW_MODE = { bar: 'bar', pie: 'pie', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', connections: 'connections', table: 'table' };
+// SPI Graph's types and the graph each is (its Timeline, one histogram per
+// value, is a timeline split by the field)
+const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', connections: 'connections', tree: 'tree', table: 'table' };
 
 /**
  * The graph the SPI Graph page is showing, from its url query and the current
@@ -195,6 +248,25 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
   if (!viewMode) { return null; }
   const subFields = str(query.subFields).split(',').filter(Boolean);
   const exp = str(query.exp) || str(query.field);
+  // a <dbField>Histo key back to its field exp (undefined for sessionsHisto)
+  const histoMetric = (graphType) => {
+    if (!str(graphType) || graphType === 'sessionsHisto') { return undefined; }
+    const db = graphType.replace(/Histo$/, '');
+    return (fieldsArr || []).find(f => f.dbField === db)?.exp;
+  };
+  if (type === 'default') {
+    if (!exp) { return null; }
+    // a split timeline takes 3, 5 or 10 series; SPI Graph's more are cut to 10
+    const size = int(query.size);
+    return graphFromWidget({
+      viewMode: 'timeline',
+      splitField: exp,
+      splitLength: SPLIT_LENGTHS.includes(size) ? size : (size > 10 ? 10 : 5),
+      metricType: histoMetric(query.graphType) || 'sessions',
+      expression: str(expression),
+      view: str(query.view)
+    });
+  }
   let fields = exp ? [exp, ...subFields] : [];
   let overrides = {};
   if (type === 'table' && subFields.length) {
@@ -203,7 +275,14 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     overrides.viewMode = query.tableMode === 'unique' ? 'table' : 'intersection';
   } else if (type === 'bar') {
     fields = exp ? [exp] : [];
-    overrides = { splitField: subFields[0] || '', barMode: query.barMode === 'grouped' ? 'grouped' : 'stacked' };
+    overrides = {
+      splitField: subFields[0] || '',
+      barMode: query.barMode === 'grouped' ? 'grouped' : 'stacked',
+      orientation: query.barOrientation === 'horizontal' ? 'horizontal' : 'vertical'
+    };
+  } else if (type === 'tagcloud') {
+    // a tag cloud draws one field
+    fields = exp ? [exp] : [];
   } else if (type === 'pie') {
     overrides = { other: query.other === 'true' || query.other === true };
     if (query.pieMode === 'split' && subFields.length) {
@@ -214,19 +293,22 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
       const pieCount = parseInt(query.pieCount, 10);
       if (SPLIT_LENGTHS.includes(pieCount)) { overrides.splitLength = pieCount; }
     }
-  } else if (type === 'connections') {
+  } else if (type === 'connections' || type === 'tree') {
     // the connections url carries database field names
     const byDb = (db) => ((db === 'ip.dst:port' || db === 'destination.ip:port') ? 'ip.dst:port' : (fieldsArr || []).find(f => f.dbField === db)?.exp || '');
     fields = [byDb(str(query.srcField) || 'source.ip'), byDb(str(query.dstField) || 'destination.ip')];
-  } else if (type === 'heatmap' && str(query.graphType) && query.graphType !== 'sessionsHisto') {
+    if (type === 'tree') {
+      // the tree's root and depth are url params of its own
+      overrides = { treeRoot: str(query.treeRoot), treeDepth: int(query.treeDepth) };
+    }
+  } else if (type === 'heatmap') {
     // the intensity metric is a <dbField>Histo key
-    const db = query.graphType.replace(/Histo$/, '');
-    const metric = (fieldsArr || []).find(f => f.dbField === db)?.exp;
+    const metric = histoMetric(query.graphType);
     if (metric) { overrides.metricType = metric; }
   }
   if (!fields.length || !fields[0]) { return null; }
   // connections' limit is its session sample size, a url param of its own
-  const limit = int(type === 'connections' ? query.connectionsLength : query.size);
+  const limit = int((type === 'connections' || type === 'tree') ? query.connectionsLength : query.size);
   return graphFromWidget({
     field: fields[0],
     fields,
@@ -250,15 +332,21 @@ const histoKey = (metricType) => {
  */
 export const spigraphQueryFromGraph = (graph) => {
   const g = normalizeWidget(graph || {});
-  const fields = g.fields.length ? g.fields : (g.field ? [g.field] : []);
-  if (!fields.length) { return null; }
   // a summed metric ranks SPI Graph; other aggregations have no equivalent
   const histo = histoKey(g.metricType);
   const graphType = g.metricAgg === 'sum' && histo !== 'sessionsHisto' ? histo : undefined;
+  if (g.viewMode === 'timeline') {
+    // SPI Graph's Timeline of the split field; its smallest Max Elements is
+    // 5, so a 3 series split opens with 5
+    if (!g.splitField) { return null; }
+    return { exp: g.splitField, size: Math.max(5, g.splitLength), view: g.view || undefined, graphType, spiGraphType: 'default' };
+  }
+  const fields = g.fields.length ? g.fields : (g.field ? [g.field] : []);
+  if (!fields.length) { return null; }
   const base = { exp: fields[0], size: g.length, view: g.view || undefined, graphType };
   switch (g.viewMode) {
   case 'bar':
-    return { ...base, spiGraphType: 'bar', subFields: g.splitField || undefined, barMode: g.barMode };
+    return { ...base, spiGraphType: 'bar', subFields: g.splitField || undefined, barMode: g.barMode, barOrientation: g.orientation === 'horizontal' ? 'horizontal' : undefined };
   case 'pie':
     // a split pie is SPI Graph's split pie mode: its first field (the split)
     // draws one pie per value of the fields after it
@@ -266,6 +354,8 @@ export const spigraphQueryFromGraph = (graph) => {
       return { ...base, exp: g.splitField, spiGraphType: 'pie', subFields: fields.join(','), pieMode: 'split', pieCount: g.splitLength, other: g.other ? 'true' : undefined };
     }
     return { ...base, spiGraphType: 'pie', subFields: fields.slice(1).join(',') || undefined, other: g.other ? 'true' : undefined };
+  case 'tagcloud':
+    return { ...base, spiGraphType: 'tagcloud' };
   case 'treemap':
   case 'sankey':
     return { ...base, spiGraphType: g.viewMode, subFields: fields.slice(1).join(',') || undefined };
@@ -277,9 +367,13 @@ export const spigraphQueryFromGraph = (graph) => {
   case 'heatmap':
     // always named, so the page doesn't keep its last intensity
     return { ...base, spiGraphType: 'heatmap', graphType: histo };
-  case 'connections': {
+  case 'connections':
+  case 'tree': {
     const toDb = (e) => ((e === 'ip.dst:port' || e === 'destination.ip:port') ? e : FieldService.getField(e, true)?.dbField);
-    return { spiGraphType: 'connections', srcField: toDb(fields[0]), dstField: toDb(fields[1]), connectionsLength: g.length, view: base.view };
+    const q = { spiGraphType: g.viewMode, srcField: toDb(fields[0]), dstField: toDb(fields[1]), connectionsLength: g.length, view: base.view };
+    // the tree's root and depth are url params of its own
+    if (g.viewMode === 'tree') { q.treeRoot = g.treeRoot || undefined; q.treeDepth = g.treeDepth; }
+    return q;
   }
   default:
     return null;
@@ -289,7 +383,7 @@ export const spigraphQueryFromGraph = (graph) => {
 // the graph keys SPI Graph shows and lets the user change (a heatmap's
 // metricType is its intensity); it can't show the others (metric columns,
 // aggregation, sort metric, order, a bar's split length)
-const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', 'other', 'length', 'expression', 'view'];
+const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', 'orientation', 'other', 'length', 'expression', 'view'];
 
 /**
  * The graph SPI Graph shows, as saved-graph data: what the page shows on top of
@@ -301,17 +395,19 @@ const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', '
 export const graphOnSpigraph = (saved, page) => {
   if (!page) { return null; }
   if (!saved) { return page; }
-  const keys = page.viewMode === 'heatmap' ? [...SPIGRAPH_KEYS, 'metricType'] : SPIGRAPH_KEYS;
+  // a heatmap's intensity and a timeline's series metric are on the page
+  const keys = (page.viewMode === 'heatmap' || page.viewMode === 'timeline') ? [...SPIGRAPH_KEYS, 'metricType'] : SPIGRAPH_KEYS;
   const merged = { ...saved };
   for (const key of keys) { merged[key] = page[key]; }
-  // a split pie's pie count is on the page too (a bar's split length isn't)
-  if (page.viewMode === 'pie' && page.splitField) { merged.splitLength = page.splitLength; }
+  // a split pie's pie count and a timeline's series count are on the page too
+  // (a bar's split length isn't)
+  if ((page.viewMode === 'pie' && page.splitField) || page.viewMode === 'timeline') { merged.splitLength = page.splitLength; }
   return graphFromWidget(merged);
 };
 
 // map v7-only field view modes to the closest mode a v6 viewer can render
 // (v6 knows only bar/pie/table) for the dual-written legacy fields[] shape
-const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', sankey: 'table', connections: 'table' };
+const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', sankey: 'table', connections: 'table', tagcloud: 'bar' };
 
 /**
  * Projects a widget list onto the v6 summaryConfig shape that is dual-written

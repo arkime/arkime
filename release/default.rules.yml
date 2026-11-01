@@ -2,8 +2,8 @@
 # upgrade.
 #
 # Capture rules, loaded at startup from every *.rules.yml file in the rulesFiles
-# directories (default /opt/arkime/etc) and reloaded when a file changes. To add
-# or change rules put them in your own file next to this one, eg
+# directories (default /opt/arkime/etc;/opt/arkime/share) and reloaded when a
+# file changes. To add or change rules put them in your own file in etc, eg
 # /opt/arkime/etc/local.rules.yml. default.* loads first and later files win:
 # a rule with the same name as one here replaces it, and a rule with just the
 # name and disabled: true turns it off, eg

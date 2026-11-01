@@ -1,4 +1,4 @@
-use Test::More tests => 95;
+use Test::More tests => 97;
 
 use Cwd;
 use URI::Escape;
@@ -28,12 +28,18 @@ my $pwd = "*/pcap";
 # tshark
     my $tsharkProbe = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/tshark");
     SKIP: {
-        skip "tshark not available on viewer", 3 if $tsharkProbe->code != 200;
+        skip "tshark not available on viewer", 5 if $tsharkProbe->code != 200;
         ok($tsharkProbe->content =~ m{"layers":\[.*"name":"frame"}s, "/tshark");
         ok($tsharkProbe->content =~ m{"bytes":"[0-9a-f]+"}s, "/tshark bytes");
 
         my $tsharkNoBytes = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/tshark?bytes=false");
         ok($tsharkNoBytes->content !~ m{"bytes":}s, "/tshark bytes=false");
+
+        # a decoded / or # in the id or node would reach another route on the owning node
+        my $tsharkBadId = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/${id}%2Fpcap/tshark");
+        is($tsharkBadId->code, 400, "/tshark rejects a session id with a slash");
+        my $tsharkBadNode = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test%23x/$id/tshark");
+        is($tsharkBadNode->code, 400, "/tshark rejects a node name with a hash");
     }
 
     my $tsharkMulti = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/tshark");

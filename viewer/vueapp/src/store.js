@@ -28,6 +28,8 @@ const store = createStore({
     // eslint-disable-next-line no-undef
     timeRange: DEFAULT_TIME_RANGE ?? 1,
     expression: undefined,
+    // the shown dashboard's own filter (data.expression), ANDed with the search
+    dashboardExpression: '',
     time: {
       startTime: undefined,
       stopTime: undefined
@@ -167,6 +169,9 @@ const store = createStore({
     },
     setViews (state, value) {
       state.views = value;
+    },
+    setDashboardExpression (state, value) {
+      state.dashboardExpression = typeof value === 'string' ? value.trim() : '';
     },
     addView (state, value) {
       state.views.push(value);

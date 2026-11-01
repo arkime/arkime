@@ -15,31 +15,37 @@ SPDX-License-Identifier: Apache-2.0
           <!-- spigraph sub navbar -->
           <div class="spigraph-form mx-1">
             <div class="d-flex flex-wrap align-center gap-1 page-subnav">
-              <!-- main graph type switcher -->
-              <div class="d-flex align-center spigraph-type-switcher">
-                <v-btn-toggle
-                  :model-value="spiGraphType"
-                  @update:model-value="changeSpiGraphType"
-                  mandatory
-                  divided
-                  density="comfortable"
-                  variant="outlined"
-                  color="primary"
-                  class="spigraph-type-toggle">
-                  <v-btn
-                    v-for="t in graphTypeOptions"
+              <!-- main graph type select -->
+              <div class="arkime-input-group">
+                <span class="arkime-input-label">
+                  {{ $t('spigraph.graphType') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="spiGraphType"
+                  @change="changeSpiGraphType($event.target.value)">
+                  <option
+                    v-for="t in sortedGraphTypeOptions"
                     :key="t"
-                    :value="t"
-                    size="small">
+                    :value="t">
                     {{ $t(`spigraph.graphType-${t}`) }}
-                  </v-btn>
-                </v-btn-toggle>
-              </div> <!-- /main graph type switcher -->
+                  </option>
+                </select>
+              </div> <!-- /main graph type select -->
+
+              <!-- saved graphs: save, load, share, add to a dashboard; right
+                   after the type so it is in the same place for every graph -->
+              <spigraph-config-dropdown
+                :current-graph="currentGraph"
+                :loaded-graph-id="$route.query.graphId"
+                @load="loadGraph"
+                @saved-as="onGraphSavedAs"
+                @message="onGraphMessage" />
 
               <!-- field select -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType !== 'connections' && fields && fields.length && fieldTypeahead">
+                v-if="!isConnectionsType && fields && fields.length && fieldTypeahead">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.field') }}:
                 </span>
@@ -54,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- maxElements select -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType !== 'connections'">
+                v-if="!isConnectionsType">
                 <span
                   id="maxElements"
                   class="arkime-input-label cursor-help">
@@ -76,19 +82,9 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /maxElements select -->
 
-              <!-- saved graphs for connections: before its controls, which
-                   fill the rest of the row -->
-              <spigraph-config-dropdown
-                v-if="spiGraphType === 'connections'"
-                :current-graph="currentGraph"
-                :loaded-graph-id="$route.query.graphId"
-                @load="loadGraph"
-                @saved-as="onGraphSavedAs"
-                @message="onGraphMessage" />
-
               <!-- connections controls anchor -->
               <div
-                v-if="spiGraphType === 'connections'"
+                v-if="isConnectionsType"
                 id="connections-controls-anchor"
                 class="connections-controls-anchor d-flex flex-wrap align-center gap-1" />
 
@@ -111,6 +107,26 @@ SPDX-License-Identifier: Apache-2.0
                   </option>
                 </select>
               </div> <!-- /bar layout -->
+
+              <!-- bar orientation (bar only): standing up, or lying along the axis -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'bar'">
+                <span class="arkime-input-label">
+                  {{ $t('sessions.summary.widget.orientation') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="barOrientation"
+                  @change="changeBarOrientation($event.target.value)">
+                  <option value="vertical">
+                    {{ $t('sessions.summary.widget.orientation-vertical') }}
+                  </option>
+                  <option value="horizontal">
+                    {{ $t('sessions.summary.widget.orientation-horizontal') }}
+                  </option>
+                </select>
+              </div> <!-- /bar orientation -->
 
               <!-- pie layout (pie only): nested rings, or one pie per value
                    of the first field (split) -->
@@ -267,7 +283,7 @@ SPDX-License-Identifier: Apache-2.0
 
               <!-- export button-->
               <v-btn
-                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey' && spiGraphType !== 'connections'"
+                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey' && !isConnectionsType"
                 variant="outlined"
                 size="small"
                 density="comfortable"
@@ -280,16 +296,8 @@ SPDX-License-Identifier: Apache-2.0
                 </v-tooltip>
               </v-btn> <!-- /export button-->
 
-              <!-- saved graphs: save, load, share, add to a dashboard -->
-              <spigraph-config-dropdown
-                v-if="spiGraphType !== 'default' && spiGraphType !== 'connections'"
-                :current-graph="currentGraph"
-                :loaded-graph-id="$route.query.graphId"
-                @load="loadGraph"
-                @saved-as="onGraphSavedAs"
-                @message="onGraphMessage" />
-
-              <!-- hierarchy "add another field" anchor (own full-width row) -->
+              <!-- hierarchy "add another field" anchor (own full-width row); a
+                   tag cloud draws one field, so it has none -->
               <div
                 v-if="['bar', 'pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
                 id="spigraph-subfield-anchor"
@@ -314,7 +322,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <div
       class="spigraph-content"
-      v-if="spiGraphType !== 'connections'">
+      v-if="!isConnectionsType">
       <!-- heatmap graph type -->
       <div v-if="spiGraphType === 'heatmap'">
         <arkime-heatmap
@@ -337,6 +345,7 @@ SPDX-License-Identifier: Apache-2.0
           :query="query"
           :spi-graph-type="spiGraphType"
           :bar-mode="barMode"
+          :bar-orientation="barOrientation"
           :pie-mode="pieMode"
           :pie-count="pieCount"
           :show-other="showOther"
@@ -414,7 +423,8 @@ SPDX-License-Identifier: Apache-2.0
          /api/connections fetch, controls, and overlay buttons) -->
     <arkime-connections-graph
       v-else
-      ref="connectionsGraph" /> <!-- /connections graph type -->
+      ref="connectionsGraph"
+      :layout="spiGraphType === 'tree' ? 'tree' : 'force'" /> <!-- /connections graph type -->
 
     <v-snackbar
       v-model="snackbar.show"
@@ -434,7 +444,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- overlay anchor: connections floating buttons teleport here -->
     <template
-      v-if="spiGraphType === 'connections'"
+      v-if="isConnectionsType"
       #overlay>
       <div id="connections-overlay-anchor" />
     </template>
@@ -511,7 +521,7 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'heatmap', 'bar', 'pie', 'table', 'treemap', 'sankey', 'connections']
+      graphTypeOptions: ['default', 'heatmap', 'bar', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'connections', 'tree']
     };
   },
   computed: {
@@ -521,6 +531,11 @@ export default {
     timelineDataFilters: function () {
       const filters = this.user.settings.timelineDataFilters;
       return filters.map(i => FieldService.getField(i));
+    },
+    // the graph types in alphabetical order of their translated labels
+    sortedGraphTypeOptions: function () {
+      const label = (t) => this.$t(`spigraph.graphType-${t}`);
+      return [...this.graphTypeOptions].sort((a, b) => label(a).localeCompare(label(b)));
     },
     graphType: function () {
       return this.$store.state.graphType;
@@ -573,6 +588,9 @@ export default {
     barMode: function () {
       return this.$route.query.barMode === 'grouped' ? 'grouped' : 'stacked';
     },
+    barOrientation: function () {
+      return this.$route.query.barOrientation === 'horizontal' ? 'horizontal' : 'vertical';
+    },
     // pie layout: nested rings, or split into one pie per first field value
     pieMode: function () {
       return this.$route.query.pieMode === 'split' ? 'split' : 'nested';
@@ -593,7 +611,11 @@ export default {
     tableMode: function () {
       return this.$route.query.tableMode === 'unique' ? 'unique' : 'intersection';
     },
-    // what the page shows as saved-graph data (null for the timeline type).
+    // the connections graph draws both the force layout and the tree
+    isConnectionsType: function () {
+      return this.spiGraphType === 'connections' || this.spiGraphType === 'tree';
+    },
+    // what the page shows as saved-graph data.
     // The field, size and type come from the page state, since the url only
     // carries them once the user has changed them from their defaults
     currentGraph: function () {
@@ -603,8 +625,9 @@ export default {
         spiGraphType: this.spiGraphType,
         exp: this.query.exp,
         size: this.query.size,
-        // the heatmap draws the store's intensity, which the url may not carry
-        graphType: this.spiGraphType === 'heatmap' ? this.intensity : this.$route.query.graphType,
+        // the heatmap draws the store's intensity and the timeline the store's
+        // graph type, which the url may not carry
+        graphType: this.spiGraphType === 'heatmap' ? this.intensity : this.spiGraphType === 'default' ? this.graphType : this.$route.query.graphType,
         // connections falls back to the user's own default fields
         srcField: this.$route.query.srcField || settings.connSrcField,
         dstField: this.$route.query.dstField || settings.connDstField
@@ -624,7 +647,7 @@ export default {
       }
       if (newVal.spiGraphType !== this.spiGraphType) {
         this.spiGraphType = newVal.spiGraphType || 'default';
-        if (this.spiGraphType === 'connections') {
+        if (this.isConnectionsType) {
           // connections owns its data; stop spigraph refresh
           this.refresh = 0;
           this.changeRefreshInterval(0);
@@ -649,7 +672,7 @@ export default {
       this.query.exp = field.exp;
     }
 
-    if (this.spiGraphType === 'connections') {
+    if (this.isConnectionsType) {
       // the connections child runs its own /api/connections load on mount
       this.loading = false;
     } else if (field) {
@@ -661,7 +684,7 @@ export default {
     commaString,
     /* Search bar change: connections reloads via its child, others here. */
     onSearch: function () {
-      if (this.spiGraphType === 'connections') {
+      if (this.isConnectionsType) {
         this.$refs.connectionsGraph?.cancelAndLoad(true);
         return;
       }
@@ -736,6 +759,7 @@ export default {
           ...this.$route.query,
           subFields: undefined,
           barMode: undefined,
+          barOrientation: undefined,
           pieMode: undefined,
           pieCount: undefined,
           other: undefined,
@@ -744,13 +768,15 @@ export default {
           dstField: undefined,
           graphType: undefined,
           connectionsLength: undefined,
+          treeRoot: undefined,
+          treeDepth: undefined,
           view: undefined,
           ...q,
           graphId: saved.id,
           expression: graph.expression || undefined
         }
       });
-      if (q.spiGraphType !== 'connections') {
+      if (q.spiGraphType !== 'connections' && q.spiGraphType !== 'tree') {
         this.cancelAndLoad(true);
       }
     },
@@ -766,6 +792,14 @@ export default {
         query: {
           ...this.$route.query,
           barMode
+        }
+      });
+    },
+    changeBarOrientation: function (orientation) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          barOrientation: orientation === 'horizontal' ? 'horizontal' : undefined
         }
       });
     },
@@ -840,9 +874,9 @@ export default {
       }
     },
     changeSpiGraphType: function (spiGraphType) {
-      const leavingConnections = this.spiGraphType === 'connections';
+      const leavingConnections = this.isConnectionsType;
       this.spiGraphType = spiGraphType;
-      if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' ||
+      if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' || this.spiGraphType === 'tagcloud' ||
         this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
@@ -853,7 +887,7 @@ export default {
         this.changeRefreshInterval(0);
       } else if (this.spiGraphType === 'heatmap') {
         if (!this.graphType) { this.$store.commit('updateGraphType', 'sessionsHisto'); }
-      } else if (this.spiGraphType === 'connections') {
+      } else if (this.isConnectionsType) {
         // connections owns its data; stop spigraph refresh
         this.refresh = 0;
         this.changeRefreshInterval(0);
@@ -863,10 +897,13 @@ export default {
           ...this.$route.query,
           size: this.query.size,
           sort: this.sortBy,
-          spiGraphType: this.spiGraphType
+          spiGraphType: this.spiGraphType,
+          // the tree's own params go with it
+          treeRoot: this.spiGraphType === 'tree' ? this.$route.query.treeRoot : undefined,
+          treeDepth: this.spiGraphType === 'tree' ? this.$route.query.treeDepth : undefined
         }
       });
-      if (leavingConnections && this.spiGraphType !== 'connections') {
+      if (leavingConnections && !this.isConnectionsType) {
         // load spigraph data skipped while connections was active
         this.cancelAndLoad(true);
       }
@@ -940,7 +977,7 @@ export default {
       respondedAt = undefined;
 
       // connections loads via its own child
-      if (this.spiGraphType === 'connections') {
+      if (this.isConnectionsType) {
         this.loading = false;
         return;
       }
@@ -1012,16 +1049,6 @@ export default {
   font-weight: 400;
 }
 
-/* primary view switcher: a prominent segmented toggle (not a buried
-   dropdown) sized to the 32px subnav band */
-.spigraph-page .spigraph-type-toggle {
-  height: 32px;
-}
-.spigraph-page .spigraph-type-toggle :deep(.v-btn) {
-  height: 32px;
-  text-transform: none;
-  letter-spacing: normal;
-}
 /* "add another field" on its own row: full-width forces a flex-wrap break */
 .spigraph-page .spigraph-subfield-anchor {
   flex: 1 0 100%;

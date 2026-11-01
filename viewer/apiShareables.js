@@ -14,9 +14,14 @@ const User = require('../common/user');
 // Long enough for db.pl's ' (legacy N)' import suffix on top of a full length
 // name, and far short of the 32766 byte ES keyword limit.
 const NAME_MAX_LENGTH = 256;
+// a dashboard's folder (data.folder) and its own filter (data.expression)
+const FOLDER_MAX_LENGTH = 64;
+const EXPRESSION_MAX_LENGTH = 4096;
+// Cc control, Cf format (bidi overrides, zero width), Zl/Zp separators
+const INVISIBLE_RE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 // the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
-const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections'];
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections', 'tree', 'timeline'];
 
 class ShareableAPIs {
   // --------------------------------------------------------------------------
@@ -85,6 +90,18 @@ class ShareableAPIs {
   }
 
   /**
+   * True for an acceptable dashboard folder: '' (none) or, like a name, up to
+   * FOLDER_MAX_LENGTH visible characters with a letter or digit among them.
+   */
+  static validFolder (folder) {
+    if (typeof folder !== 'string') { return false; }
+    const trimmed = folder.trim();
+    if (!trimmed) { return true; }
+    return !INVISIBLE_RE.test(folder) && /[\p{L}\p{N}]/u.test(trimmed) && trimmed.length <= FOLDER_MAX_LENGTH;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * Checks a new shareable name. A name is shown to everyone the item is
    * shared with, so anything invisible or able to reorder the text around it
    * is refused -- but every real script is kept as typed, a layout can be
@@ -92,8 +109,7 @@ class ShareableAPIs {
    * @returns {object} { name } with the trimmed name, or { error: { text, i18n } }
    */
   static validateName (rawName) {
-    // Cc control, Cf format (bidi overrides, zero width), Zl/Zp separators
-    if (/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u.test(rawName)) {
+    if (INVISIBLE_RE.test(rawName)) {
       return { error: { text: 'Invalid characters in name', i18n: 'api.shareables.invalidNameChars' } };
     }
 
@@ -122,6 +138,10 @@ class ShareableAPIs {
     const missingWidgets = { text: 'Missing widgets or fields', i18n: 'api.shareables.missingWidgets' };
     const missingGraph = { text: 'Missing viewMode or field', i18n: 'api.shareables.missingGraph' };
     const invalidGraph = { text: 'Invalid graph settings', i18n: 'api.shareables.invalidGraph' };
+    const invalidVersion = { text: 'Invalid dashboard version', i18n: 'api.shareables.invalidVersion' };
+    const invalidExpression = { text: 'Invalid dashboard expression', i18n: 'api.shareables.invalidExpression' };
+    const expressionTooLong = { text: `Dashboard expression must be ${EXPRESSION_MAX_LENGTH} characters or less`, i18n: 'api.shareables.expressionTooLong' };
+    const invalidFolder = { text: `Invalid dashboard folder: up to ${FOLDER_MAX_LENGTH} visible characters`, i18n: 'api.shareables.invalidFolder' };
 
     switch (type) {
     case 'sessionsTableLayout':
@@ -141,6 +161,13 @@ class ShareableAPIs {
       if (!Array.isArray(entries)) { return missingWidgets; }
       // a null or scalar entry throws in the dashboard loader
       if (entries.some(e => !e || typeof e !== 'object')) { return missingWidgets; }
+      // the config format version (DASHBOARD_VERSION in dashboardConfig.js), 1 when missing
+      if (data.version !== undefined && (!Number.isInteger(data.version) || data.version < 1)) { return invalidVersion; }
+      // the dashboard's own filter, ANDed with the search for every widget
+      if (data.expression !== undefined && typeof data.expression !== 'string') { return invalidExpression; }
+      if (data.expression !== undefined && data.expression.length > EXPRESSION_MAX_LENGTH) { return expressionTooLong; }
+      // the folder it is listed under: like a name, nothing invisible, '' for none
+      if (data.folder !== undefined && !ShareableAPIs.validFolder(data.folder)) { return invalidFolder; }
       break;
     }
     case 'spigraphConfig': {
@@ -151,18 +178,35 @@ class ShareableAPIs {
       const optString = (v) => v === undefined || typeof v === 'string';
       if (data.fields !== undefined && !ArkimeUtil.isStringArray(data.fields)) { return invalidGraph; }
       if (!optString(data.field)) { return invalidGraph; }
-      if (!data.fields?.length && !data.field) { return missingGraph; }
+      // a timeline graph is split by its field rather than aggregating one
+      const graphField = data.viewMode === 'timeline' ? data.splitField : (data.fields?.length || data.field);
+      if (!graphField) { return missingGraph; }
       if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics)) { return invalidGraph; }
-      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'order', 'expression', 'view']) {
+      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'order', 'orderBy', 'treeRoot', 'expression', 'view']) {
         if (!optString(data[key])) { return invalidGraph; }
       }
-      for (const key of ['length', 'splitLength']) {
+      for (const key of ['length', 'splitLength', 'treeDepth']) {
         if (data[key] !== undefined && !Number.isInteger(data[key])) { return invalidGraph; }
       }
       break;
     }
     }
     return undefined;
+  }
+
+  /**
+   * The stored shareable with this id, or undefined when there is none (the
+   * store throws for a missing id: a 404 from Elasticsearch, 'not found' from
+   * sqlite). Any other failure is rethrown.
+   */
+  static async #find (id) {
+    try {
+      return await Db.getShareable(id);
+    } catch (err) {
+      const code = err?.meta?.statusCode ?? err?.statusCode;
+      if (code === 404 || /not found/i.test(err?.message || '')) { return undefined; }
+      throw err;
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -268,7 +312,8 @@ class ShareableAPIs {
    */
   static async apiGetShareable (req, res) {
     try {
-      const shareable = await Db.getShareable(req.params.id);
+      const shareable = await ShareableAPIs.#find(req.params.id);
+      if (!shareable) { return res.serverError(404, 'Shareable item not found', 'api.shareables.notFound'); }
       const user = req.settingUser;
 
       if (!await ShareableAPIs.canView(user, shareable)) {
@@ -301,7 +346,8 @@ class ShareableAPIs {
    */
   static async apiUpdateShareable (req, res) {
     try {
-      const shareable = await Db.getShareable(req.params.id);
+      const shareable = await ShareableAPIs.#find(req.params.id);
+      if (!shareable) { return res.serverError(404, 'Shareable item not found', 'api.shareables.notFound'); }
       const user = req.settingUser;
 
       if (!await ShareableAPIs.canEdit(user, shareable)) {
@@ -407,7 +453,8 @@ class ShareableAPIs {
    */
   static async apiDeleteShareable (req, res) {
     try {
-      const shareable = await Db.getShareable(req.params.id);
+      const shareable = await ShareableAPIs.#find(req.params.id);
+      if (!shareable) { return res.serverError(404, 'Shareable item not found', 'api.shareables.notFound'); }
       const user = req.settingUser;
 
       if (!ShareableAPIs.canDelete(user, shareable)) {

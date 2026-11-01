@@ -280,6 +280,7 @@ jobs:
           (cd ../ja4; make)
           (cd tests; ./tests.pl --extra "-o plugins=ja4plus.so" ../../ja4/pcap/*.pcap)
           mv capture/plugins/ja4plus.so ja4plus.${{ env.ARKIME_ARCH }}.so
+          cp ../ja4/ja4plus.dashboard.json .
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
@@ -359,6 +360,7 @@ jobs:
           files: |
             *.deb
             *.so
+            ja4plus.dashboard.json
             *.rpm
             *.zst
             NOTICE.txt
@@ -469,6 +471,7 @@ jobs:
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+              cp ../ja4/ja4plus.dashboard.json .
               ls -l *.so
             fi
 
@@ -487,6 +490,7 @@ jobs:
           files: |
             *.pkg
             *.so
+            ja4plus.dashboard.json
 
 ############# Alpine Build #############
   alpine-build:

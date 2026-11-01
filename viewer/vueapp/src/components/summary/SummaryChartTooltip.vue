@@ -10,8 +10,9 @@ SPDX-License-Identifier: Apache-2.0
       :style="tooltipStyle">
       <div class="tooltip-content">
         <!-- Header with session field dropdown and close button. "Other" is no
-             value of the field, so it gets no field actions -->
-        <strong v-if="data.other">{{ data.item }}</strong>
+             value of the field and a range bucket ('0-9') no single value, so
+             neither gets field actions -->
+        <strong v-if="data.other || data.range">{{ data.item }}</strong>
         <arkime-session-field
           v-else
           :parse="true"

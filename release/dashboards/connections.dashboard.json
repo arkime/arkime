@@ -1,0 +1,235 @@
+{
+  "name": "Connections",
+  "description": "Sessions by endpoint, port, protocol and size, with the connection graph and tree",
+  "data": {
+    "version": 1,
+    "colorScheme": "rainbow",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 10,
+        "barMode": "stacked",
+        "width": 4,
+        "height": 2,
+        "title": "Sessions by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "stats",
+        "width": 2,
+        "height": 1
+      },
+      {
+        "id": "w3",
+        "viewMode": "gauge",
+        "metricType": "bytes",
+        "metricAgg": "avg",
+        "width": 1,
+        "height": 1,
+        "title": "Avg bytes/session"
+      },
+      {
+        "id": "w4",
+        "viewMode": "gauge",
+        "metricType": "packets",
+        "metricAgg": "avg",
+        "width": 1,
+        "height": 1,
+        "title": "Avg packets/session"
+      },
+      {
+        "id": "w5",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "bytes",
+        "metricType": "bytes",
+        "title": "Sources by bytes"
+      },
+      {
+        "id": "w6",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "bytes",
+        "metricType": "bytes",
+        "title": "Destinations by bytes"
+      },
+      {
+        "id": "w7",
+        "field": "port.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Top destination ports"
+      },
+      {
+        "id": "w8",
+        "field": "packets",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "bucketInterval": 10,
+        "title": "Sessions by packet count (ranges of 10)"
+      },
+      {
+        "id": "w9",
+        "field": "ip.protocol",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "IP protocols"
+      },
+      {
+        "id": "w10",
+        "field": "session.length",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "bucketInterval": 10000,
+        "title": "Session length in ms (ranges of 10 s)"
+      },
+      {
+        "id": "w11",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SYN with no SYN-ACK",
+        "expression": "tcpflags.syn > 0 && tcpflags.syn-ack == 0"
+      },
+      {
+        "id": "w12",
+        "viewMode": "gauge",
+        "metricType": "initRTT",
+        "metricAgg": "avg",
+        "width": 1,
+        "height": 1,
+        "title": "Avg initial RTT, ms"
+      },
+      {
+        "id": "w13",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Bytes sent",
+        "metricType": "bytes.src"
+      },
+      {
+        "id": "w14",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Bytes received",
+        "metricType": "bytes.dst"
+      },
+      {
+        "id": "w15",
+        "field": "oui.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Source MAC vendors"
+      },
+      {
+        "id": "w16",
+        "field": "oui.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Destination MAC vendors"
+      },
+      {
+        "id": "w17",
+        "field": "country.src",
+        "viewMode": "map",
+        "width": 2,
+        "height": 2,
+        "metricType": "bytes",
+        "title": "Source countries by bytes"
+      },
+      {
+        "id": "w18",
+        "field": "country.dst",
+        "viewMode": "map",
+        "width": 2,
+        "height": 2,
+        "metricType": "bytes",
+        "title": "Destination countries by bytes"
+      },
+      {
+        "id": "w19",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "port.dst",
+          "ip.dst"
+        ],
+        "viewMode": "sankey",
+        "width": 4,
+        "height": 3,
+        "length": 10,
+        "title": "Top paths: source, destination port, destination"
+      },
+      {
+        "id": "w20",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "connections",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "title": "Connection graph"
+      },
+      {
+        "id": "w21",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Connection tree from the busiest source (click a host to re-root)"
+      }
+    ]
+  }
+}
