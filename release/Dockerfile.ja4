@@ -4,4 +4,4 @@ FROM ${ARKIME_BASE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY ja4plus.*.so /opt/arkime/plugins/
+COPY ja4plus.*.so ja4plus.dashboard.json /opt/arkime/plugins/
