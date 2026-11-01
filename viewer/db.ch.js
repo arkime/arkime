@@ -1050,6 +1050,7 @@ class DbCHImpl {
 
   async runAgg (agg, where) {
     if (agg.terms) { return this.runTermsAgg(agg, where); }
+    if (agg.histogram && this.isNumericHistogram(agg.histogram)) { return this.runNumericHistogramAgg(agg, where); }
     if (agg.histogram || agg.date_histogram) { return this.runHistogramAgg(agg, where); }
     if (agg.filter) { return this.runFilterAgg(agg, where); }
     if (this.isMetricAgg(agg)) {
@@ -1244,6 +1245,70 @@ class DbCHImpl {
         return bucket;
       })
     };
+  }
+
+  // An ES histogram over a numeric field (the summary's bucketInterval ranges)
+  // rather than over time: the time ones are on a date field, packetRange or
+  // @timestamp, and go through runHistogramAgg
+  isNumericHistogram (histo) {
+    const field = histo.field;
+    if (!field || field === 'packetRange' || field === '@timestamp' || DATE_FIELDS.has(field)) { return false; }
+    const type = dbFieldsMap()[field]?.type;
+    return type === 'integer' || type === 'float';
+  }
+
+  // Fixed width ranges of a numeric field, like ES: a bucket's key is the
+  // range's floor, a row without the field isn't a bucket, an array column
+  // counts a row once per range its values fall in, and the buckets come
+  // back in the requested order (_key, _count or a metric sub-agg) with no
+  // size. Only populated buckets are returned (ES min_doc_count: 1, which
+  // is what the summary asks for). Metric sub-aggs fold into the GROUP BY,
+  // any other sub-agg (the summary's split terms) runs once per bucket.
+  async runNumericHistogramAgg (agg, where) {
+    const histo = agg.histogram;
+    const field = histo.field;
+    const interval = Number(histo.interval);
+    if (!(interval > 0)) { throw chError(`histogram interval ${histo.interval}`); }
+    const col = this.columnForField(field);
+    // floor, not intDiv: ES rounds a negative value down to the range below it
+    const rangeOf = (x) => `toInt64(floor(toFloat64(${x}) / ${interval})) * ${interval}`;
+    const keyExpr = this.isJsonArrayField(field)
+      ? `arrayJoin(arrayDistinct(arrayMap(x -> ${rangeOf('x')}, ${col})))`
+      : rangeOf(col);
+
+    const subAggs = agg.aggregations || agg.aggs || {};
+    const metricSubs = []; const otherSubs = [];
+    for (const [subName, subAgg] of Object.entries(subAggs)) {
+      (this.isMetricAgg(subAgg) ? metricSubs : otherSubs).push([subName, subAgg]);
+    }
+    const metricSelect = metricSubs.map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
+
+    const orderKey = Object.keys(histo.order || {})[0] || '_key';
+    const orderDir = String(histo.order?.[orderKey] || 'asc').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    let orderExpr = 'key';
+    if (orderKey === '_count') { orderExpr = 'doc_count'; } else if (orderKey !== '_key' && metricSubs.some(([subName]) => subName === orderKey)) { orderExpr = quoteIdent(orderKey); }
+
+    // a row without the field isn't a bucket: the exists predicate keeps a
+    // default valued column out, isNotNull a Nullable one
+    const present = this.translateClause({ exists: { field } });
+    const select = [`${keyExpr} AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
+    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND (${present}) GROUP BY key HAVING isNotNull(key) ORDER BY ${orderExpr} ${orderDir}, key ASC`)).data || [];
+    const buckets = rows.map(row => {
+      const bucket = { key: Number(row.key), doc_count: Number(row.doc_count) };
+      for (const [subName] of metricSubs) { bucket[subName] = { value: row[subName] ?? 0 }; }
+      return bucket;
+    });
+
+    if (otherSubs.length) {
+      await Promise.all(buckets.map(async (bucket) => {
+        const inRange = this.rangePredicate(field, [['>=', bucket.key], ['<', bucket.key + interval]]);
+        const bucketWhere = `(${where}) AND (${inRange})`;
+        for (const [subName, subAgg] of otherSubs) {
+          bucket[subName] = await this.runAgg(subAgg, bucketWhere);
+        }
+      }));
+    }
+    return { buckets };
   }
 
   intervalToMs (interval) {
