@@ -7,10 +7,12 @@ SPDX-License-Identifier: Apache-2.0
     <!-- field select: teleported into the spigraph sub-navbar, alongside the
          other controls (same pattern as the connections view) -->
     <teleport
+      v-if="spiGraphType !== 'tagcloud'"
       defer
       to="#spigraph-subfield-anchor">
       <div class="d-flex flex-row align-center">
-        <!-- a bar is split by at most one more field -->
+        <!-- a bar is split by at most one more field (a tag cloud draws one
+             and has no anchor for this) -->
         <div
           class="d-inline"
           v-if="fields && fields.length && !(spiGraphType === 'bar' && fieldTypeaheadList.length >= 1)">
@@ -74,6 +76,7 @@ SPDX-License-Identifier: Apache-2.0
         :field-config="baseFieldObj"
         :split-field-config="barSplitField"
         :bar-mode="barMode"
+        :orientation="barOrientation"
         :width="barWidth"
         :height="barHeight"
         metric-type="sessions"
@@ -88,6 +91,22 @@ SPDX-License-Identifier: Apache-2.0
         :split="barTooltip.split"
         @close="barTooltip.visible = false" />
     </div> <!-- /bar area -->
+
+    <!-- tag cloud area: the first field's values, sized by session count -->
+    <div
+      v-show="spiGraphType === 'tagcloud' && barData.length"
+      class="bar-area">
+      <summary-tag-cloud
+        v-if="spiGraphType === 'tagcloud' && barData.length && baseFieldObj"
+        :data="barData"
+        svg-id="spigraph-tagcloud"
+        :field-config="baseFieldObj"
+        :width="barWidth"
+        :height="barHeight"
+        metric-type="sessions"
+        @show-tooltip="showBarTooltip"
+        @hide-tooltip="barTooltip.visible = false" />
+    </div> <!-- /tag cloud area -->
 
     <!-- table area: the fields' value combinations (intersection) -->
     <div
@@ -299,6 +318,7 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
 import SummaryBarChart from '../summary/SummaryBarChart.vue';
+import SummaryTagCloud from '../summary/SummaryTagCloud.vue';
 import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import { OTHER_COLOR } from '../summary/widgets/chartColors';
 import { isUnderOther, splitPieLayout, fitLabel } from '../utils/hierarchyLayout';
@@ -480,6 +500,7 @@ export default {
     Popup,
     DragList,
     SummaryBarChart,
+    SummaryTagCloud,
     SummaryChartTooltip
   },
   props: {
@@ -491,6 +512,11 @@ export default {
     barMode: {
       type: String,
       default: 'stacked'
+    },
+    // bar: 'vertical' or 'horizontal' bars
+    barOrientation: {
+      type: String,
+      default: 'vertical'
     },
     // pie: 'nested' rings, or 'split' into one pie per value of the first field
     pieMode: {
@@ -593,7 +619,7 @@ export default {
       if (newVal === 'table') {
         this.initializeColResizable();
       }
-      if (newVal === 'bar') {
+      if (newVal === 'bar' || newVal === 'tagcloud') {
         this.$nextTick(this.sizeBar);
         // sankey keeps its own node/link shape; the bar needs the hierarchy
         if (!this.vizData?.children) { this.loadData(); }
@@ -763,15 +789,16 @@ export default {
       this.barHeight = Math.max(300, getWindowHeight());
     },
     /**
-     * A bar is split by at most one more field, so drop any others carried
-     * over from another graph type
+     * A bar is split by at most one more field and a tag cloud draws one, so
+     * drop any others carried over from another graph type
      * @returns {Boolean} true when fields were dropped (the url change reloads)
      */
     trimBarFields: function () {
       // the url's type: on back/forward the prop catches up a tick later
       const type = this.$route.query.spiGraphType || this.spiGraphType;
-      if (type !== 'bar' || this.fieldTypeaheadList.length <= 1) { return false; }
-      this.fieldTypeaheadList.splice(1);
+      const keep = type === 'bar' ? 1 : type === 'tagcloud' ? 0 : Infinity;
+      if (this.fieldTypeaheadList.length <= keep) { return false; }
+      this.fieldTypeaheadList.splice(keep);
       this.applyFieldListToUrl();
       return true;
     },
@@ -1035,6 +1062,9 @@ export default {
       // as the server's table rows do
       const shown = data?.children ? withoutOther(data) : data;
       this.$emit('fetchedResults', shown.children, this.fieldTypeaheadList, this.baseFieldObj);
+      // the svgs exist once the first hierarchy fetch returns (initializeGraphs
+      // draws the saved data then); the parent's spigraph data can land first
+      if (!g || !gtree || !gsankey) { return; }
       if (this.spiGraphType !== 'pie') { data = shown; }
       if (this.spiGraphType === 'pie') {
         // a split needs a field to split into pies and one to draw in them

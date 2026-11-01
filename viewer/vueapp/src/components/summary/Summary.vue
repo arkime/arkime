@@ -110,6 +110,16 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- rooted tree of a src → dst field pair, fanned out from one host -->
+          <TreeWidget
+            v-else-if="w.viewMode === 'tree'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- table: 1-7 fields side by side, each with its metric column(s) -->
           <MultiFieldTableWidget
             v-else-if="w.viewMode === 'table'"
@@ -131,6 +141,7 @@ SPDX-License-Identifier: Apache-2.0
             :metric-agg="w.metricAgg"
             :split-field="w.splitField"
             :bar-mode="w.barMode"
+            :orientation="w.orientation"
             :other="w.other ? w.otherData : null"
             :field="w.field"
             :color-scheme="colorScheme"
@@ -138,6 +149,7 @@ SPDX-License-Identifier: Apache-2.0
             :link="widgetLinks[w.id]"
             :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
+            @hide-tooltip="hideTooltip"
             @export="handleWidgetExport(w, $event)"
             @edit="openEdit(w.id)"
             @remove-field="removeWidgetLocal(w)"
@@ -186,6 +198,7 @@ SPDX-License-Identifier: Apache-2.0
             v-else-if="w.viewMode === 'timeline'"
             :widget="w"
             :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
             :timeline-data-filters="timelineDataFilters"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
@@ -205,6 +218,24 @@ SPDX-License-Identifier: Apache-2.0
             v-else-if="w.viewMode === 'metric'"
             :widget="w"
             :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- one metric over the result set as an arc with thresholds -->
+          <GaugeWidget
+            v-else-if="w.viewMode === 'gauge'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- links to the system and saved dashboards -->
+          <NavigationWidget
+            v-else-if="w.viewMode === 'navigation'"
+            :widget="w"
+            :dashboards-version="dashboardsVersion"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
@@ -274,12 +305,13 @@ import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
-import { widgetIsGraph, graphFromWidget } from './dashboardConfig';
+import { widgetIsGraph, graphFromWidget, normalizeWidget } from './dashboardConfig';
 import HeatmapWidget from './widgets/HeatmapWidget.vue';
 import TreemapWidget from './widgets/TreemapWidget.vue';
 import IntersectionWidget from './widgets/IntersectionWidget.vue';
 import SessionsWidget from './widgets/SessionsWidget.vue';
 import ConnectionsWidget from './widgets/ConnectionsWidget.vue';
+import TreeWidget from './widgets/TreeWidget.vue';
 import HierarchyWidget from './widgets/HierarchyWidget.vue';
 import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
 import TimelineWidget from './widgets/TimelineWidget.vue';
@@ -288,9 +320,11 @@ import StatsWidget from './widgets/StatsWidget.vue';
 import TimeWidget from './widgets/TimeWidget.vue';
 import MetricWidget from './widgets/MetricWidget.vue';
 import MarkdownWidget from './widgets/MarkdownWidget.vue';
+import GaugeWidget from './widgets/GaugeWidget.vue';
+import NavigationWidget from './widgets/NavigationWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, MAX_FIELDS } from './widgets/viewModes';
-import { widgetLocalExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode } from './widgets/viewModes';
+import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -330,6 +364,11 @@ const props = defineProps({
   colorScheme: {
     type: String,
     default: 'rainbow'
+  },
+  // bumped by the host when a dashboard is saved, renamed or deleted
+  dashboardsVersion: {
+    type: Number,
+    default: 0
   }
 });
 
@@ -471,10 +510,12 @@ const toRequestWidget = (w) => ({
   field: w.field,
   length: w.length,
   order: w.order,
+  ...(w.orderBy === 'key' ? { orderBy: 'key' } : {}),
   metricType: w.metricType,
   metricAgg: w.metricAgg,
   ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   ...(allowsOther(w.viewMode) && w.other ? { other: true } : {}),
+  ...(allowsBucketInterval(w.viewMode) && w.bucketInterval > 0 ? { bucketInterval: w.bucketInterval } : {}),
   expression: widgetLocalExpression(w, store.state.views)
 });
 
@@ -532,8 +573,41 @@ const widgetInfo = (w) => {
 
   if (allowsSplit(w.viewMode) && w.splitField) {
     const fieldName = FieldService.getField(w.splitField, true)?.friendlyName || w.splitField;
-    const layout = w.viewMode === 'bar' ? `${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, ` : '';
+    let layout = '';
+    if (w.viewMode === 'bar') { layout = `${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, `; }
+    if (w.viewMode === 'timeline') {
+      const mode = w.barMode === 'grouped' ? 'grouped' : w.seriesType === 'lines' ? 'stackedLines' : 'stacked';
+      layout = `${t(`sessions.summary.widget.seriesMode-${mode}`)}, `;
+    }
     rows.push({ label: t('sessions.summary.widget.splitField'), value: `${fieldName} (${layout}${w.splitLength || 5})` });
+  }
+
+  if (w.viewMode === 'bar' && w.orientation === 'horizontal') {
+    rows.push({ label: t('sessions.summary.widget.orientation'), value: t('sessions.summary.widget.orientation-horizontal') });
+  }
+  // a split timeline's bars or lines are already in its split row
+  if (w.viewMode === 'timeline' && !w.splitField && w.seriesType === 'lines') {
+    rows.push({ label: t('sessions.summary.widget.seriesMode'), value: t('sessions.summary.widget.seriesType-lines') });
+  }
+  if (w.viewMode === 'timeline' && w.yScale === 'log') {
+    rows.push({ label: t('sessions.summary.widget.yScale'), value: t('sessions.summary.widget.yScale-log') });
+  }
+
+  if (allowsBucketInterval(w.viewMode) && w.bucketInterval > 0) {
+    rows.push({ label: t('sessions.summary.widget.bucketInterval'), value: `${w.bucketInterval}` });
+  }
+
+  if (isTreeMode(w.viewMode)) {
+    rows.push({ label: t('sessions.summary.widget.treeRoot'), value: w.treeRoot || t('sessions.summary.widget.treeRootAuto') });
+    rows.push({ label: t('sessions.summary.widget.treeDepth'), value: `${w.treeDepth || 3}` });
+  }
+
+  if (isGaugeMode(w.viewMode)) {
+    const parts = [];
+    if (w.gaugeMax > 0) { parts.push(`${t('sessions.summary.widget.gaugeMax')} ${w.gaugeMax}`); }
+    if (w.gaugeWarn > 0) { parts.push(`${t('sessions.summary.widget.gaugeWarn')} ${w.gaugeWarn}`); }
+    if (w.gaugeCrit > 0) { parts.push(`${t('sessions.summary.widget.gaugeCrit')} ${w.gaugeCrit}`); }
+    if (parts.length) { rows.push({ label: t('sessions.summary.gaugeView'), value: parts.join(', ') }); }
   }
 
   // The limit row reads as a session sample for connections, a Top/Bottom N for
@@ -547,6 +621,10 @@ const widgetInfo = (w) => {
       rows.push({ label: t('sessions.summary.widget.sortBy'), value: `${sortName} (${t(`sessions.summary.widget.sort-${w.order === 'asc' ? 'asc' : 'desc'}`)})` });
     } else if (isSampleSize(w.viewMode)) {
       rows.push({ label: t('sessions.summary.widget.sampleSize'), value: `${limit}` });
+    } else if (hasOrder(w.viewMode) && w.orderBy === 'key') {
+      // ordered by the field's own value: the N smallest or largest
+      const orderLabel = t(`sessions.summary.widget.sort-${w.order === 'asc' ? 'asc' : 'desc'}`);
+      rows.push({ label: t('sessions.summary.widget.limit'), value: `${limit} (${t('sessions.summary.widget.orderBy-key')}, ${orderLabel})` });
     } else if (hasOrder(w.viewMode)) {
       const orderLabel = w.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
       rows.push({ label: t('sessions.summary.widget.limit'), value: `${orderLabel} ${limit}` });
@@ -561,6 +639,9 @@ const widgetInfo = (w) => {
   }
   if (w.expression) {
     rows.push({ label: t('sessions.summary.widget.localFilter'), value: w.expression });
+  }
+  if (store.state.dashboardExpression && !isNavMode(w.viewMode) && !isStaticMode(w.viewMode)) {
+    rows.push({ label: t('sessions.summary.widget.dashboardFilter'), value: store.state.dashboardExpression });
   }
 
   return rows;
@@ -607,7 +688,12 @@ const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
 
   if (statsless) { body.noStats = true; }
 
-  const routeParams = ['view', 'bounding', 'interval', 'expression', 'cluster'];
+  // the global search AND the dashboard's own filter; the server ANDs each
+  // widget's local filter on top
+  const pageExp = pageExpression(route, store);
+  if (pageExp) { body.expression = pageExp; }
+
+  const routeParams = ['view', 'bounding', 'interval', 'cluster'];
   for (const param of routeParams) {
     if (route.query[param]) {
       body[param] = route.query[param];
@@ -1256,6 +1342,8 @@ const onEditSave = (updated) => {
     prev.field !== updated.field ||
     prev.length !== updated.length ||
     prev.order !== updated.order ||
+    (prev.orderBy || 'value') !== (updated.orderBy || 'value') ||
+    (prev.bucketInterval || 0) !== (updated.bucketInterval || 0) ||
     (prev.metricType || 'sessions') !== (updated.metricType || 'sessions') ||
     (prev.metricAgg || 'sum') !== (updated.metricAgg || 'sum') ||
     (prev.splitField || '') !== (updated.splitField || '') ||
@@ -1295,31 +1383,7 @@ const emitWidgetConfigChange = () => {
 /**
  * Gets the current widget definitions for saving
  */
-const getWidgets = () => {
-  return (summary.value?.fields || []).map(w => ({
-    id: w.id,
-    field: w.field,
-    fields: Array.isArray(w.fields) && w.fields.length ? w.fields.slice(0, MAX_FIELDS) : (w.field ? [w.field] : []),
-    viewMode: w.viewMode,
-    metricType: w.metricType,
-    metrics: Array.isArray(w.metrics) ? w.metrics.slice(0, 4) : [],
-    sortMetric: w.sortMetric || w.metricType || 'sessions',
-    metricAgg: w.metricAgg || 'sum',
-    splitField: w.splitField || '',
-    splitLength: w.splitLength || 5,
-    barMode: w.barMode || 'stacked',
-    other: w.other === true,
-    text: w.text || '',
-    length: w.length,
-    order: w.order,
-    sortField: w.sortField || '',
-    expression: w.expression || '',
-    view: w.view || '',
-    height: w.height || 3,
-    width: w.width || 2,
-    title: w.title || ''
-  }));
-};
+const getWidgets = () => (summary.value?.fields || []).map(normalizeWidget);
 
 // Scroll a (possibly off-screen) widget into view and briefly highlight it
 const scrollToWidget = (id) => {

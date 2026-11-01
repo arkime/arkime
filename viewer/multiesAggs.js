@@ -158,7 +158,9 @@ function agg2Arr (agg, type, order) {
     arr.push(agg[attrname]);
   }
 
-  if (type === 'histogram') {
+  // a histogram's ES default is key ascending; with an order (the summary's
+  // ranges ranked by sessions or a metric) it ranks like a terms aggregation
+  if (type === 'histogram' && !order) {
     return arr.sort((a, b) => { return a.key - b.key; });
   }
 
@@ -214,7 +216,9 @@ function newAggregations (aggregations) {
       // like a summary widget's "Other" total, terms, histograms)
       result[agg] = { doc_count: 0, ...newAggregations(aggConfig.aggs || aggConfig.aggregations || {}) };
     } else if (aggConfig.histogram) {
-      result[agg] = { buckets: {}, _type: 'histogram', _subAggs: subAggOps(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+      // a histogram response has no sum_other_doc_count, so the merged one
+      // doesn't either (a caller's "Other" is the buckets past its limit)
+      result[agg] = { buckets: {}, _type: 'histogram', _order: aggConfig.histogram.order, _subAggs: subAggOps(aggConfig), _nested: nestedTermsInfo(aggConfig) };
     } else {
       result[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, _subAggs: subAggOps(aggConfig), _nested: nestedTermsInfo(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
     }
@@ -326,10 +330,10 @@ function aggAdd (obj1, obj2) {
 
     // Handle terms/buckets aggregations
     if (obj1[aggname].buckets && obj2[aggname].buckets) {
-      if (obj1[aggname].doc_count_error_upper_bound !== undefined) {
+      if (obj1[aggname].doc_count_error_upper_bound !== undefined && typeof obj2[aggname].doc_count_error_upper_bound === 'number') {
         obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
       }
-      if (obj1[aggname].sum_other_doc_count !== undefined) {
+      if (obj1[aggname].sum_other_doc_count !== undefined && typeof obj2[aggname].sum_other_doc_count === 'number') {
         obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
       }
       for (const entry in obj2[aggname].buckets) {

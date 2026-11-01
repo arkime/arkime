@@ -259,6 +259,12 @@ parsersDir=ARKIME_INSTALL_DIR/parsers
 # Semicolon ';' separated list of directories to load plugins from
 pluginsDir=ARKIME_INSTALL_DIR/plugins
 
+# Semicolon ';' separated list of directories the viewer loads system dashboards
+# (*.dashboard.json files) from. The first directory with a file name wins.
+# Arkime's own are installed in ARKIME_INSTALL_DIR/etc/dashboards and replaced on upgrade,
+# so put your own in a different directory and list it first.
+#dashboardsDir=ARKIME_INSTALL_DIR/etc/dashboards;ARKIME_INSTALL_DIR/plugins
+
 # Semicolon ';' separated list of plugins to load and the order to load in
 # plugins=tagger.so; netflow.so
 

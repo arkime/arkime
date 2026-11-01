@@ -344,7 +344,9 @@ export default {
           }
           break;
         case 'integer':
-          if (this.field.category !== 'port' && !noCommas[this.field.exp]) {
+          // a dashboard range bucket ('0-9') is shown as is: commaString
+          // would turn anything that isn't a number into 0
+          if (this.field.category !== 'port' && !noCommas[this.field.exp] && /^-?\d+$/.test(String(val))) {
             qVal = val; // save original value as the query value
             val = commaString(val);
           }

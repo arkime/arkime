@@ -452,6 +452,12 @@ class ViewerUtils {
   // stream/pipe the body instead of buffering. No retry on error.
   static async makeStreamRequest (node, path, user, onResponse, onError, cluster) {
     try {
+      // A fragment is dropped by new URL() and never signed, so the peer would
+      // route a different path than the caller built
+      if (ViewerUtils.#hasDotSegment(path) || path.includes('#')) {
+        throw new Error(`Bad path ${path}`);
+      }
+
       const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
       const nodePath = encodeURI(path);
       let url;
@@ -464,7 +470,7 @@ class ViewerUtils {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
-      Auth.addS2SAuth(options, user, node, url.pathname, ViewerUtils.getClusterSecret(cluster));
+      Auth.addS2SAuth(options, user, node, url.pathname + (url.search ?? ''), ViewerUtils.getClusterSecret(cluster));
       ViewerUtils.addCaTrust(options, node);
       const preq = client.request(url, options, onResponse);
       preq.on('error', (err) => onError(err));

@@ -3,9 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
 Field widget: a world-map choropleth of a chosen geo field (country codes).
-Self-fetches /api/spigraph for the field (global search AND the widget's local
-filter) and colors each country by its session count. Clicking a country adds a
-`<field> == <code>` term to the search.
+Self-fetches the field's values (global search AND the widget's local filter)
+and colors each country by the widget's metric, the session count by default.
+Clicking a country adds a `<field> == <code>` term to the search.
 -->
 <template>
   <WidgetCard
@@ -22,6 +22,7 @@ filter) and colors each country by its session count. Clicking a country adds a
       <div class="map-widget__map">
         <WorldMap
           :layer-values="values"
+          :format-value="formatValue"
           @region-click="onRegionClick" />
       </div>
     </div>
@@ -35,7 +36,7 @@ import WidgetCard from './WidgetCard.vue';
 import WorldMap from '../../visualizations/WorldMap.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchSummaryFields } from './widgetData';
+import { fetchSummaryFields, formatMetricValue } from './widgetData';
 
 // countries are ~250; ask for enough spigraph values to cover them all
 const MAP_TOP = 1000;
@@ -53,10 +54,10 @@ defineEmits(['edit', 'remove']);
 
 const values = ref({});
 
-// per-country counts via the summary endpoint (one terms agg) instead of
-// /api/spigraph, which runs a per-value msearch the map doesn't need
+// per-country metric values via the summary endpoint (one terms agg) instead
+// of /api/spigraph, which runs a per-value msearch the map doesn't need
 const { loading, error, fetchData } = useSpigraphWidget(
-  () => ({ ...props.widget, length: MAP_TOP, metricType: 'sessions' }),
+  () => ({ ...props.widget, length: MAP_TOP }),
   () => props.reloadNonce,
   (res) => {
     const v = {};
@@ -72,6 +73,7 @@ const { loading, error, fetchData } = useSpigraphWidget(
 const fieldObj = computed(() => FieldService.getField(props.widget.field, true));
 const title = computed(() => props.widget.title || fieldObj.value?.friendlyName || props.widget.field);
 const hasData = computed(() => Object.keys(values.value).length > 0);
+const formatValue = (v) => formatMetricValue(props.widget.metricType || 'sessions', v, props.widget.metricAgg);
 
 const onRegionClick = (code) => {
   if (!props.widget.field) { return; }

@@ -212,6 +212,21 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4420 Dashboard pie widgets can show an Other slice for the sessions outside the top values, and can be split by a
           second field into one small pie per value
   - #4420 Add a sessions list dashboard widget: the matching sessions as a compact table with chosen columns, sort and rows
+  - #4422 54 built-in dashboards: Overview, Connections, one per protocol, and Certificates, Databases, Files, Hosts,
+          Multicast, OT, Routing, Security, Software and Tunnels under Analysis. They are *.dashboard.json files in
+          /opt/arkime/etc/dashboards (replaced on upgrade); to add or override one, export a dashboard and drop the
+          file in a directory listed earlier in the new dashboardsDir setting, no restart needed
+  - #4422 The suricata and zeekintel plugins each ship a dashboard, listed once the plugin's fields exist
+  - #4422 Dashboards can be grouped into folders, saved back into the dashboard they were loaded from, and opened
+          by url with ?dashboard=<id>
+  - #4422 A dashboard can have its own search expression (gear button), applied with the search to every widget
+  - #4422 Add gauge, tag cloud and dashboard navigation widgets, and a tag cloud SPI Graph type
+  - #4422 Timeline widgets can be split by a field, one series per top value, as stacked bars or lines on a linear
+          or log scale
+  - #4422 Bar, pie, table, metric and tag cloud widgets can group a numeric field into ranges (ports, sizes, key
+          lengths) and can be ordered by the field's value instead of the metric
+  - #4422 Bar widgets and SPI Graph bars can be horizontal; map widgets can shade countries by any metric
+  - #4422 Add a connection tree widget and SPI Graph type: who reached what from one host, hop by hop
   - #4420 The text dashboard widget is now a Markdown widget: headings, bold, italic, code, lists and links, up to 5000
           characters. Links may only go to http/https sites or Arkime's own pages, never to its API
   - #4420 SPI Graph pies can be split into 3, 5 or 10 small pies, one per value of the first field, and can show Other slices

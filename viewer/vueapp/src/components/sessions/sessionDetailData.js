@@ -16,7 +16,6 @@ import SessionsService from './SessionsService';
 import FieldActions from './FieldActions.vue';
 import UserService from '../users/UserService';
 import ArkimeSessionField from './SessionField.vue';
-import { buildExpression } from '@common/vueFilters.js';
 import { useColumnResize } from '@common/composables/useColumnResize.js';
 
 const MIN_DL_WIDTH = 100;
@@ -209,7 +208,7 @@ export default {
          * @param {string} op     The relational operator
          */
         fieldExists: function (field, op) {
-          const fullExpression = buildExpression(field, 'EXISTS!', op);
+          const fullExpression = `${field} ${op} EXISTS!`;
           store.commit('addToExpression', { expression: fullExpression });
         }
       }

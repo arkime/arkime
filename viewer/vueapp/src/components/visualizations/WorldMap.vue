@@ -50,7 +50,7 @@ methods exposed on this ref, and dispatches the country-click filter.
       class="world-map-tooltip"
       :style="{left: hover.x + 'px', top: hover.y + 'px'}">
       <strong>{{ hover.name }}</strong>{{ hover.code ? ` (${hover.code})` : '' }} —
-      {{ commaString(hover.value || 0) }}
+      {{ formatValue ? formatValue(hover.value || 0) : commaString(hover.value || 0) }}
     </div>
     <div class="world-map-zoom-buttons">
       <v-btn
@@ -95,7 +95,9 @@ export default {
     xffGeo: { type: Boolean, default: false },
     // single pre-merged layer { alpha2Code: count } (dashboard geo-field map);
     // when set it replaces the src/dst/xffGeo layers
-    layerValues: { type: Object, default: null }
+    layerValues: { type: Object, default: null },
+    // how the tooltip shows a layerValues value (eg bytes), a comma count by default
+    formatValue: { type: Function, default: null }
   },
   emits: ['regionClick', 'updateLegend'],
   data () {

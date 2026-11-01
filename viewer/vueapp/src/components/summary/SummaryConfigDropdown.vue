@@ -37,7 +37,18 @@ SPDX-License-Identifier: Apache-2.0
 
       <v-divider />
 
-      <!-- Save current config -->
+      <!-- Save back into the shown saved dashboard (only when editable) -->
+      <v-list-item
+        v-if="currentSaved"
+        :disabled="savingCurrent"
+        @click="saveToCurrent">
+        <v-icon
+          icon="mdi-content-save-edit"
+          class="me-1" />
+        {{ $t('sessions.summary.config.saveTo', { name: currentSaved.name }) }}
+      </v-list-item>
+
+      <!-- Save current config as a new dashboard -->
       <v-list-item @click="openSaveModal">
         <v-icon
           icon="mdi-content-save"
@@ -75,7 +86,44 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('sessions.summary.config.resetToDefault') }}
       </v-list-item>
 
-      <v-divider v-if="filteredConfigs.length > 0 || loading" />
+      <v-divider />
+
+      <!-- System dashboards (the viewer's *.dashboard.json files), grouped by
+           folder (a folder row opens/closes it) -->
+      <v-list-subheader v-if="systemRows.length">
+        {{ $t('sessions.summary.config.system') }}
+      </v-list-subheader>
+      <template
+        v-for="row in systemRows"
+        :key="row.key">
+        <v-list-item
+          v-if="row.kind === 'folder'"
+          class="folder-row"
+          @click="toggleFolder('y:' + row.name)">
+          <v-icon
+            :icon="row.open ? 'mdi-folder-open-outline' : 'mdi-folder-outline'"
+            class="me-1" />
+          {{ row.name }}
+          <small class="text-medium-emphasis ms-1">({{ row.count }})</small>
+        </v-list-item>
+        <v-list-item
+          v-else
+          :class="{ 'ps-8': row.indent, 'config-current': row.item.id === currentId }"
+          @click="loadConfig(row.item)">
+          <v-icon
+            icon="mdi-view-dashboard-outline"
+            class="me-1" />
+          {{ row.item.name }}
+          <v-tooltip
+            activator="parent"
+            location="end"
+            :open-delay="500">
+            {{ row.item.description }}
+          </v-tooltip>
+        </v-list-item>
+      </template>
+
+      <v-divider v-if="savedRows.length > 0 || loading" />
 
       <!-- Loading indicator -->
       <v-list-item
@@ -98,83 +146,100 @@ SPDX-License-Identifier: Apache-2.0
         {{ error }}
       </v-list-item>
 
-      <!-- Saved configurations -->
-      <v-list-item
-        v-for="config in filteredConfigs"
-        :key="config.id"
-        @click="loadConfig(config)">
-        <div class="d-flex justify-space-between align-center w-100">
-          <span class="config-name">
-            <v-icon
-              v-if="config.id === defaultId"
-              icon="mdi-star"
-              class="me-1 text-theme-accent"
-              :title="$t('sessions.summary.config.isDefault')" />
-            <v-icon
-              v-if="config.shared"
-              icon="mdi-share-all"
-              class="me-1" />
-            {{ config.name }}
-            <small
-              v-if="config.creator && config.creator !== user.userId"
-              class="text-medium-emphasis ms-1">
-              ({{ config.creator }})
-            </small>
-          </span>
-          <span
-            class="config-actions"
-            @click.stop>
-            <v-btn
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              :style="config.id === defaultId ? accentBtnStyle : tertiaryBtnStyle"
-              class="ms-1"
-              :title="config.id === defaultId ? $t('sessions.summary.config.unsetDefault') : $t('sessions.summary.config.setDefault')"
-              @click.stop="toggleDefault(config)">
-              <v-icon :icon="config.id === defaultId ? 'mdi-star' : 'mdi-star-outline'" />
-            </v-btn>
-            <v-btn
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              :style="tertiaryBtnStyle"
-              class="ms-1"
-              :title="$t('sessions.summary.config.export')"
-              @click.stop="exportConfig(config)">
-              <v-icon icon="mdi-download" />
-            </v-btn>
-            <v-btn
-              v-if="config.canEdit"
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              :style="tertiaryBtnStyle"
-              class="ms-1"
-              :title="$t('sessions.summary.config.edit')"
-              :aria-label="$t('sessions.summary.config.edit')"
-              @click.stop="openEditModal(config)">
-              <v-icon icon="mdi-pencil" />
-            </v-btn>
-            <v-btn
-              v-if="config.canDelete"
-              color="error"
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              class="ms-1"
-              :title="$t('sessions.summary.config.delete')"
-              :aria-label="$t('sessions.summary.config.delete')"
-              @click.stop="deleteConfig(config)">
-              <v-icon icon="mdi-trash-can-outline" />
-            </v-btn>
-          </span>
-        </div>
-      </v-list-item>
+      <!-- Saved dashboards, grouped by folder -->
+      <v-list-subheader v-if="savedRows.length">
+        {{ $t('sessions.summary.config.savedDashboards') }}
+      </v-list-subheader>
+      <template
+        v-for="row in savedRows"
+        :key="row.key">
+        <v-list-item
+          v-if="row.kind === 'folder'"
+          class="folder-row"
+          @click="toggleFolder('s:' + row.name)">
+          <v-icon
+            :icon="row.open ? 'mdi-folder-open-outline' : 'mdi-folder-outline'"
+            class="me-1" />
+          {{ row.name }}
+          <small class="text-medium-emphasis ms-1">({{ row.count }})</small>
+        </v-list-item>
+        <v-list-item
+          v-else
+          :class="{ 'ps-8': row.indent, 'config-current': row.item.id === currentId }"
+          @click="loadConfig(row.item)">
+          <div class="d-flex justify-space-between align-center w-100">
+            <span class="config-name">
+              <v-icon
+                v-if="row.item.id === defaultId"
+                icon="mdi-star"
+                class="me-1 text-theme-accent"
+                :title="$t('sessions.summary.config.isDefault')" />
+              <v-icon
+                v-if="row.item.shared"
+                icon="mdi-share-all"
+                class="me-1" />
+              {{ row.item.name }}
+              <small
+                v-if="row.item.creator && row.item.creator !== user.userId"
+                class="text-medium-emphasis ms-1">
+                ({{ row.item.creator }})
+              </small>
+            </span>
+            <span
+              class="config-actions"
+              @click.stop>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="row.item.id === defaultId ? accentBtnStyle : tertiaryBtnStyle"
+                class="ms-1"
+                :title="row.item.id === defaultId ? $t('sessions.summary.config.unsetDefault') : $t('sessions.summary.config.setDefault')"
+                @click.stop="toggleDefault(row.item)">
+                <v-icon :icon="row.item.id === defaultId ? 'mdi-star' : 'mdi-star-outline'" />
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="tertiaryBtnStyle"
+                class="ms-1"
+                :title="$t('sessions.summary.config.export')"
+                @click.stop="exportConfig(row.item)">
+                <v-icon icon="mdi-download" />
+              </v-btn>
+              <v-btn
+                v-if="row.item.canEdit"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="tertiaryBtnStyle"
+                class="ms-1"
+                :title="$t('sessions.summary.config.edit')"
+                :aria-label="$t('sessions.summary.config.edit')"
+                @click.stop="openEditModal(row.item)">
+                <v-icon icon="mdi-pencil" />
+              </v-btn>
+              <v-btn
+                v-if="row.item.canDelete"
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
+                :title="$t('sessions.summary.config.delete')"
+                :aria-label="$t('sessions.summary.config.delete')"
+                @click.stop="deleteConfig(row.item)">
+                <v-icon icon="mdi-trash-can-outline" />
+              </v-btn>
+            </span>
+          </div>
+        </v-list-item>
+      </template>
 
       <!-- No configs message -->
       <v-list-item
@@ -189,9 +254,11 @@ SPDX-License-Identifier: Apache-2.0
   <!-- Save/Edit Modal: rendered as a fragment sibling so it doesn't
        wrap the v-menu (which would break the parent v-btn-group). The
        v-dialog inside teleports to body anyway. -->
+  <!-- editing a saved dashboard changes its name, folder and sharing and keeps
+       its own layout; the shown layout is written by "save to current" -->
   <SummaryConfigSaveModal
     :show="showSaveModal"
-    :config="currentConfig"
+    :config="editingConfig ? editingConfig.data : currentConfig"
     :editing="editingConfig"
     @close="closeSaveModal"
     @saved="onConfigSaved" />
@@ -200,15 +267,19 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createShareableService } from '../users/ShareableService';
 import UserService from '../users/UserService';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
+import { loadSystemDashboards } from './systemDashboards';
+import { dashboardRows, folderOf, loadOpenFolders, saveOpenFolders } from './dashboardFolders';
 
 const SummaryConfigService = createShareableService('summaryConfig');
 
 const store = useStore();
-const { t } = useI18n();
+const route = useRoute();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   currentConfig: {
@@ -217,17 +288,19 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['load', 'message', 'reset']);
+const emit = defineEmits(['load', 'message', 'reset', 'saved', 'changed']);
 
 // State
 const menuOpen = ref(false);
 const loading = ref(false);
 const error = ref('');
 const configs = ref([]);
+const systemDashboards = ref([]); // the viewer's *.dashboard.json files, read only
 const search = ref('');
 const showSaveModal = ref(false);
 const editingConfig = ref(null);
 const importInput = ref(null);
+const savingCurrent = ref(false);
 
 // Arkime theme-color v-btn styles for inline row-action buttons inside
 // the dropdown menu. The trigger button takes its color from the
@@ -247,20 +320,40 @@ const user = computed(() => store.state.user);
 // The user's default dashboard id (if any)
 const defaultId = computed(() => store.state.user?.settings?.defaultDashboardId || '');
 
-// Configs filtered by the search box
-const filteredConfigs = computed(() => {
-  const term = search.value?.trim().toLowerCase();
-  if (!term) { return configs.value; }
-  return configs.value.filter(c => (c.name || '').toLowerCase().includes(term));
-});
+// the dashboard the page shows (the ?dashboard url param), highlighted in the lists
+const currentId = computed(() => (typeof route.query.dashboard === 'string' ? route.query.dashboard : ''));
+// the shown dashboard when it is a saved one this user may edit
+const currentSaved = computed(() => configs.value.find(c => c.id === currentId.value && c.canEdit) || null);
 
-// Load saved configurations
+// the folders left open, remembered per browser; system ('y:') and saved
+// ('s:') folders of the same name are tracked apart
+const openFolders = ref(loadOpenFolders());
+const toggleFolder = (key) => {
+  const next = new Set(openFolders.value);
+  if (next.has(key)) { next.delete(key); } else { next.add(key); }
+  openFolders.value = next;
+  saveOpenFolders(next);
+};
+const openIn = (prefix) => new Set([...openFolders.value].filter(k => k.startsWith(prefix)).map(k => k.slice(prefix.length)));
+
+// both lists as rows: ungrouped dashboards, then folders (open ones with
+// their dashboards), everything sorted by name; the search box filters the
+// dashboards and opens every folder holding a match
+const systemRows = computed(() => dashboardRows(systemDashboards.value, { locale: locale.value, openFolders: openIn('y:'), term: search.value }));
+const savedRows = computed(() => dashboardRows(configs.value, { locale: locale.value, openFolders: openIn('s:'), term: search.value }));
+
+// Load the system dashboards (re-read so one added on the viewer shows up)
+// and the saved configurations
 const loadConfigs = async () => {
   loading.value = true;
   error.value = '';
 
   try {
-    const response = await SummaryConfigService.list();
+    const [systemList, response] = await Promise.all([
+      loadSystemDashboards({ refresh: true }).catch(() => systemDashboards.value),
+      SummaryConfigService.list()
+    ]);
+    systemDashboards.value = systemList;
     configs.value = response.data || [];
   } catch (err) {
     error.value = err.text || String(err);
@@ -280,6 +373,28 @@ const loadConfig = (config) => {
 const resetToDefaults = () => {
   emit('reset');
   menuOpen.value = false;
+};
+
+// Write the current layout back into the shown saved dashboard, keeping its
+// name, description, folder and sharing as they are
+const saveToCurrent = async () => {
+  const target = currentSaved.value;
+  if (!target || savingCurrent.value) { return; }
+  savingCurrent.value = true;
+  try {
+    const folder = folderOf(target);
+    const data = folder ? { ...props.currentConfig, folder } : props.currentConfig;
+    const response = await SummaryConfigService.update(target.id, { data });
+    onConfigSaved(response.shareable);
+    menuOpen.value = false;
+  } catch (err) {
+    emit('message', {
+      msg: err.text || String(err),
+      type: 'danger'
+    });
+  } finally {
+    savingCurrent.value = false;
+  }
 };
 
 // Open save modal for new config
@@ -313,6 +428,11 @@ const closeSaveModal = () => {
 const onConfigSaved = (savedConfig) => {
   // Refresh the configs list
   loadConfigs();
+  // the shown dashboard was saved as a new one (not another one edited in
+  // place): the page now shows that saved dashboard
+  if (!editingConfig.value && savedConfig?.id) { emit('saved', savedConfig); }
+  // the lists elsewhere on the page (the navigation widget) follow
+  emit('changed');
   emit('message', {
     msg: t('sessions.summary.config.saved'),
     type: 'success'
@@ -329,6 +449,7 @@ const deleteConfig = async (config) => {
     if (defaultId.value === config.id) {
       await persistDefault('');
     }
+    emit('changed');
     emit('message', {
       msg: t('sessions.summary.config.deleted'),
       type: 'success'
@@ -454,5 +575,11 @@ const onImportFile = async (evt) => {
 
 .summary-config-list {
   min-width: 320px;
+}
+.folder-row {
+  font-weight: 600;
+}
+.config-current {
+  background-color: rgba(var(--v-theme-foreground-accent), 0.15);
 }
 </style>

@@ -41,6 +41,11 @@ const props = defineProps({
     type: String,
     default: 'stacked'
   },
+  // 'vertical' bars stand on the value axis, 'horizontal' ones lie along it
+  orientation: {
+    type: String,
+    default: 'vertical'
+  },
   width: {
     type: Number,
     default: 500
@@ -73,6 +78,15 @@ const OTHER_KEY = '\u0000other';
 const MARGIN = { top: 12, right: 10, bottom: 120, left: 44 };
 const MAX_BAR_WIDTH = 120; // Maximum width per bar to prevent overly wide bars
 const LEGEND_HEIGHT = 26;
+// horizontal: the left margin fits the (cut) labels, up to half the width
+const H_MARGIN = { top: 12, right: 16, bottom: 28 };
+const MAX_LABEL = 28;
+const shortLabel = (v) => {
+  const s = String(v);
+  return s.length > MAX_LABEL ? `${s.slice(0, MAX_LABEL - 1)}…` : s;
+};
+
+const horizontal = computed(() => props.orientation === 'horizontal');
 
 const isSplit = computed(() => !!props.splitFieldConfig && props.data.some(d => Array.isArray(d.split)));
 // the remainder of a value not covered by its top-N sub-values; only additive
@@ -175,6 +189,116 @@ const createChartHoverHandlers = () => {
   };
 };
 
+// the split bars' colors and their legend, shared by both orientations
+const splitColors = (root, width) => {
+  const keys = splitKeys.value;
+  const palette = d3.scaleOrdinal(colorRange(d3, props.colorScheme, keys.length));
+  const keyIndex = new Map(keys.map((k, i) => [k, i]));
+  const color = (key) => palette(keyIndex.get(key) ?? 0);
+  drawLegend(root, keys, color, width);
+  return color;
+};
+
+// Bars lying along the value axis, labels down the left: the same data, split
+// segments and hover as the vertical chart with the axes swapped
+const renderHorizontal = (root, svgWidth, svgHeight, legendHeight) => {
+  const probe = root.append('text').style('font-size', '10px');
+  let widest = 0;
+  for (const d of props.data) {
+    const label = shortLabel(d.item);
+    probe.text(label);
+    widest = Math.max(widest, probe.node().getComputedTextLength() || label.length * 6);
+  }
+  probe.remove();
+  const left = Math.min(Math.ceil(widest) + 12, svgWidth / 2);
+  const plotWidth = Math.max(0, svgWidth - left - H_MARGIN.right);
+  const availableHeight = svgHeight - H_MARGIN.top - H_MARGIN.bottom - legendHeight;
+  const naturalBarHeight = availableHeight / props.data.length * 0.9;
+  const plotHeight = naturalBarHeight > MAX_BAR_WIDTH ? props.data.length * MAX_BAR_WIDTH / 0.9 : availableHeight;
+
+  const svg = root.append('g')
+    .attr('transform', `translate(${left},${H_MARGIN.top + legendHeight})`);
+  const y = d3.scaleBand()
+    .range([0, plotHeight])
+    .domain(props.data.map(d => d.item))
+    .padding(0.1);
+  const handlers = createChartHoverHandlers();
+  let x;
+
+  if (isSplit.value) {
+    const grouped = props.barMode === 'grouped' || !additive.value;
+    const bars = props.data.map(d => ({ parent: d, segments: segmentsFor(d) }));
+    const xMax = grouped
+      ? d3.max(bars, b => d3.max(b.segments, s => s.value) || 0)
+      : d3.max(bars, b => d3.sum(b.segments, s => s.value));
+    x = d3.scaleLinear().domain([0, xMax || 0]).range([0, plotWidth]);
+    const color = splitColors(root, svgWidth);
+
+    const groups = svg.selectAll('.bar-group')
+      .data(bars)
+      .enter()
+      .append('g')
+      .attr('class', 'bar-group')
+      .attr('transform', b => `translate(0,${y(b.parent.item)})`);
+
+    groups.each(function (b) {
+      let rows;
+      if (grouped) {
+        const ys = d3.scaleBand().domain(b.segments.map(s => s.key)).range([0, y.bandwidth()]).padding(0.05);
+        rows = b.segments.map(segment => ({ parent: b.parent, segment, x0: 0, x1: segment.value, y: ys(segment.key), h: ys.bandwidth() }));
+      } else {
+        let x0 = 0;
+        rows = b.segments.map(segment => {
+          const d = { parent: b.parent, segment, x0, x1: x0 + segment.value, y: 0, h: y.bandwidth() };
+          x0 += segment.value;
+          return d;
+        });
+      }
+      d3.select(this).selectAll('rect')
+        .data(rows)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', d => x(d.x0))
+        .attr('width', d => Math.max(0, x(d.x1) - x(d.x0)))
+        .attr('y', d => d.y)
+        .attr('height', d => d.h)
+        .attr('fill', d => color(d.segment.key))
+        .style('cursor', 'pointer')
+        .on('mouseover', handlers.mouseover)
+        .on('mouseleave', handlers.mouseleave);
+    });
+  } else {
+    x = d3.scaleLinear()
+      .domain([0, d3.max(props.data, d => d.value)])
+      .range([0, plotWidth]);
+    const colors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
+    svg.selectAll('.bar')
+      .data(props.data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', 0)
+      .attr('width', d => x(d.value))
+      .attr('y', d => y(d.item))
+      .attr('height', y.bandwidth())
+      .attr('fill', (d, i) => colors(i))
+      .style('cursor', 'pointer')
+      .on('mouseover', handlers.mouseover)
+      .on('mouseleave', handlers.mouseleave);
+  }
+
+  // value axis along the bottom, a tick every ~70px
+  svg.append('g')
+    .attr('transform', `translate(0,${plotHeight})`)
+    .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor(plotWidth / 70))));
+
+  // labels down the left, cut short with the whole value on hover
+  const labels = svg.append('g').call(d3.axisLeft(y).tickFormat(shortLabel));
+  labels.selectAll('text').style('font-size', '10px');
+  labels.selectAll('.tick').append('title').text(d => String(d));
+};
+
 const renderChart = async () => {
   if (!chartContainer.value) return;
   if (!props.data || props.data.length === 0) return;
@@ -214,6 +338,10 @@ const renderChart = async () => {
     .attr('id', props.svgId)
     .attr('width', svgWidth)
     .attr('height', svgHeight);
+  if (horizontal.value) {
+    renderHorizontal(root, svgWidth, svgHeight, legendHeight);
+    return;
+  }
   const svg = root.append('g')
     .attr('transform', `translate(${MARGIN.left},${MARGIN.top + legendHeight})`);
 
@@ -225,7 +353,6 @@ const renderChart = async () => {
   const handlers = createChartHoverHandlers();
 
   if (isSplit.value) {
-    const keys = splitKeys.value;
     // averages, extremes and unique counts don't add up, so they never stack
     const grouped = props.barMode === 'grouped' || !additive.value;
     const bars = props.data.map(d => ({ parent: d, segments: segmentsFor(d) }));
@@ -236,10 +363,7 @@ const renderChart = async () => {
       : d3.max(bars, b => d3.sum(b.segments, s => s.value));
     const y = d3.scaleLinear().domain([0, yMax || 0]).range([height, 0]);
 
-    const palette = d3.scaleOrdinal(colorRange(d3, props.colorScheme, keys.length));
-    const keyIndex = new Map(keys.map((k, i) => [k, i]));
-    const color = (key) => palette(keyIndex.get(key) ?? 0);
-    drawLegend(root, keys, color, svgWidth);
+    const color = splitColors(root, svgWidth);
 
     const groups = svg.selectAll('.bar-group')
       .data(bars)
@@ -329,7 +453,7 @@ const renderChart = async () => {
 };
 
 // Watch for data, metric type, or dimension changes
-watch([() => props.data, () => props.metricType, () => props.metricAgg, () => props.width, () => props.height, () => props.colorScheme, () => props.barMode, () => props.splitFieldConfig], () => {
+watch([() => props.data, () => props.metricType, () => props.metricAgg, () => props.width, () => props.height, () => props.colorScheme, () => props.barMode, () => props.orientation, () => props.splitFieldConfig], () => {
   renderChart();
 }, { deep: true });
 

@@ -1,0 +1,150 @@
+{
+  "name": "Databases",
+  "description": "Database sessions: MySQL, PostgreSQL, Oracle, MSSQL (TDS), MongoDB, Redis, Cassandra, Aerospike and Kafka",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "protocols == [mysql, postgresql, oracle, tds, mongo, redis, cassandra, aerospike, kafka]",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 9,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Database sessions by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Database sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Database bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "protocols",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 9,
+        "other": true,
+        "title": "Database protocols"
+      },
+      {
+        "id": "w5",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Database servers"
+      },
+      {
+        "id": "w6",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Clients"
+      },
+      {
+        "id": "w7",
+        "field": "mysql.user",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "MySQL users"
+      },
+      {
+        "id": "w8",
+        "field": "postgresql.user",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "PostgreSQL users"
+      },
+      {
+        "id": "w9",
+        "field": "oracle.user",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Oracle users"
+      },
+      {
+        "id": "w10",
+        "field": "postgresql.db",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "PostgreSQL databases"
+      },
+      {
+        "id": "w11",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Database tree: clients to servers (click a host to re-root)"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "protocols",
+          "mysql.user",
+          "postgresql.user",
+          "oracle.user"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

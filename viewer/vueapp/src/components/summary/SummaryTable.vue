@@ -16,9 +16,10 @@ SPDX-License-Identifier: Apache-2.0
       v-for="column in columns"
       :key="`cell-${column.key}`"
       #[`item.${column.key}`]="{ item }">
-      <!-- ArkimeSessionField for columns with fieldConfig -->
+      <!-- ArkimeSessionField for columns with fieldConfig; a range bucket
+           ('0-9') is no single value to search for -->
       <arkime-session-field
-        v-if="column.useSessionField && fieldConfig"
+        v-if="column.useSessionField && fieldConfig && !item.range"
         :field="fieldConfig"
         :value="item[column.key]"
         :expr="column.expr || fieldConfig.exp"

@@ -55,6 +55,7 @@ const PacketPortal = require('./packetPortal');
 const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
 const ShareableAPIs = require('./apiShareables');
+const SystemDashboards = require('./systemDashboards');
 const CronAPIs = require('./apiCrons');
 const FeatherprintAPIs = require('./apiFeatherprint');
 const SessionAPIs = require('./apiSessions');
@@ -1651,6 +1652,12 @@ app.delete( // delete shareable endpoint
   ['/api/shareable/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   ShareableAPIs.apiDeleteShareable
+);
+
+app.get( // list the system dashboards (the *.dashboard.json files in dashboardsDir)
+  ['/api/dashboards/system'],
+  [ArkimeUtil.noCacheJson],
+  SystemDashboards.apiList
 );
 
 // cron apis ------------------------------------------------------------------

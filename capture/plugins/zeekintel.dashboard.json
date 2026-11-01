@@ -1,0 +1,180 @@
+{
+  "name": "Zeek Intel",
+  "description": "Sessions that matched a Zeek Intel framework indicator (zeekintel plugin): indicators, types, sources and the hosts involved",
+  "requires": [
+    "zeekintel.indicator"
+  ],
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "zeekintel.indicator == EXISTS!",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "zeekintel.type",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Intel hits by indicator type"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Sessions with intel hits"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Indicators",
+        "metricType": "zeekintel.indicator",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w4",
+        "field": "zeekintel.indicator",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Indicators"
+      },
+      {
+        "id": "w5",
+        "field": "zeekintel.type",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Indicator types"
+      },
+      {
+        "id": "w6",
+        "field": "zeekintel.source",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "orientation": "horizontal",
+        "title": "Intel sources"
+      },
+      {
+        "id": "w7",
+        "field": "zeekintel.indicator",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Top indicators"
+      },
+      {
+        "id": "w8",
+        "field": "zeekintel.where",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Where seen"
+      },
+      {
+        "id": "w9",
+        "field": "zeekintel.desc",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Descriptions"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Hosts with intel hits"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Intel destinations"
+      },
+      {
+        "id": "w12",
+        "field": "zeekintel.url",
+        "viewMode": "table",
+        "width": 4,
+        "height": 2,
+        "length": 20,
+        "title": "Intel URLs"
+      },
+      {
+        "id": "w13",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Intel tree: hosts to what they reached (click a host to re-root)"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "zeekintel.indicator",
+          "zeekintel.type",
+          "zeekintel.source",
+          "zeekintel.desc"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

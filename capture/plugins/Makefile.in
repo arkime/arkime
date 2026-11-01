@@ -26,6 +26,7 @@ install:
 	$(INSTALL) taggerUpload.pl $(BINDIR)
 	$(MKDIR_P) "$(PLUGINDIR)"
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
+	$(INSTALL) -m 644 *.dashboard.json $(PLUGINDIR)
 	$(MKDIR_P) "$(PLUGINDIR)/writer-s3"
 	$(INSTALL) writer-s3/*.js $(PLUGINDIR)/writer-s3
 

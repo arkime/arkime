@@ -821,7 +821,7 @@ import FieldActions from './FieldActions.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 import { createLayoutService } from '../users/ShareableService';
 // import utils
-import { searchFields, buildExpression, buildListExpression } from '@common/vueFilters.js';
+import { searchFields, buildListExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 import { attachTableGrips } from '@common/composables/useColumnResize.js';
 // import external
@@ -1829,7 +1829,7 @@ export default {
      * @param {string} op     The relational operator
      */
     fieldExists: function (field, op) {
-      const fullExpression = buildExpression(field, 'EXISTS!', op);
+      const fullExpression = `${field} ${op} EXISTS!`;
       this.$store.commit('addToExpression', { expression: fullExpression });
     },
     /**

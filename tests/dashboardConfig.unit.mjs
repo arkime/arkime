@@ -48,11 +48,12 @@ globalThis.testFields = [
 const fieldsArr = globalThis.testFields;
 
 const {
-  GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph,
-  graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph
+  GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
+  graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
 const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink, widgetFields, hierarchyFields } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
 
 const graph = (overrides) => graphFromWidget(overrides);
 
@@ -105,6 +106,34 @@ describe('widgetsFromConfig', () => {
     assert.equal(widgets.length, 3);
     assert.equal(new Set(widgets.map(w => w.id)).size, 3);
     assert.equal(widgets[1].id, 'dup');
+  });
+});
+
+describe('normalizeWidget', () => {
+  test('keeps bar orientation and timeline style, defaults the rest', () => {
+    const bar = normalizeWidget({ id: 'b', viewMode: 'bar', field: 'ip.src', orientation: 'horizontal' });
+    assert.equal(bar.orientation, 'horizontal');
+    const line = normalizeWidget({ id: 't', viewMode: 'timeline', seriesType: 'lines', yScale: 'log' });
+    assert.equal(line.seriesType, 'lines');
+    assert.equal(line.yScale, 'log');
+    const odd = normalizeWidget({ id: 'x', viewMode: 'timeline', orientation: 'sideways', seriesType: 'dots', yScale: 'sqrt' });
+    assert.equal(odd.orientation, 'vertical');
+    assert.equal(odd.seriesType, 'bars');
+    assert.equal(odd.yScale, 'linear');
+  });
+
+  // the dashboard saves its widgets through normalizeWidget after a resize,
+  // move or remove, so a render entry must come back with every setting
+  test('a render entry round trips every saved setting', () => {
+    const saved = {
+      id: 'w', viewMode: 'bar', field: 'port.dst', fields: ['port.dst'], orderBy: 'key', bucketInterval: 10,
+      orientation: 'horizontal', treeRoot: '10.0.0.1', treeDepth: 4, gaugeMax: 100, gaugeWarn: 50, gaugeCrit: 90,
+      seriesType: 'lines', yScale: 'log', width: 3, height: 2, title: 'Ports'
+    };
+    const entry = { ...normalizeWidget(saved), data: [{ item: 80 }], loading: false, error: null, otherData: null };
+    const again = normalizeWidget(entry);
+    for (const [k, v] of Object.entries(saved)) { assert.deepEqual(again[k], v, k); }
+    for (const k of ['data', 'loading', 'error', 'otherData']) { assert.equal(k in again, false, k); }
   });
 });
 
@@ -174,9 +203,15 @@ describe('graphFromSpigraphQuery', () => {
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.src' }).viewMode, 'table');
   });
 
-  test('types with no graph give null', () => {
-    assert.equal(graphFromSpigraphQuery({ exp: 'ip.src' }), null);
-    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'ip.src' }), null);
+  test('SPI Graph\'s Timeline is a timeline split by its field', () => {
+    for (const q of [{ exp: 'ip.src' }, { spiGraphType: 'default', exp: 'ip.src' }]) {
+      const g = graphFromSpigraphQuery(q);
+      assert.equal(g.viewMode, 'timeline');
+      assert.equal(g.splitField, 'ip.src');
+    }
+  });
+
+  test('no field gives no graph', () => {
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie' }), null);
   });
 });
@@ -191,6 +226,9 @@ describe('spigraphQueryFromGraph', () => {
   test('a graph SPI Graph shows comes back the same', () => {
     const graphs = [
       graph({ viewMode: 'bar', field: 'ip.src', splitField: 'protocols', barMode: 'grouped', length: 15, view: 'v1', expression: 'port.dst == 53' }),
+      graph({ viewMode: 'bar', field: 'ip.src', orientation: 'horizontal', length: 20 }),
+      graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 10 }),
+      graph({ viewMode: 'timeline', splitField: 'ip.dst', splitLength: 5, metricType: 'bytes', view: 'v1' }),
       graph({ viewMode: 'pie', fields: ['ip.src', 'port.dst'], length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols', 'port.dst'], splitField: 'ip.dst', length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols'], other: true }),
@@ -326,6 +364,32 @@ describe('widgetFullPageLink', () => {
     assert.equal(link.query.view, undefined);
   });
 
+  test('a split timeline opens SPI Graph\'s timeline of its split field', () => {
+    const link = widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline', splitField: 'protocols', splitLength: 10, metricType: 'bytes' });
+    assert.equal(link.path, '/spigraph');
+    assert.equal(link.query.spiGraphType, 'default');
+    assert.equal(link.query.exp, 'protocols');
+    assert.equal(link.query.size, 10);
+    assert.equal(link.query.graphType, 'totBytesHisto');
+    assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline', splitField: 'protocols', splitLength: 3 }).query.size, 5);
+    // a split field SPI Graph can't aggregate falls back to Sessions
+    assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline', splitField: 'nope' }).path, '/sessions');
+  });
+
+  test('a split timeline is a graph, an unsplit one is not', () => {
+    assert.equal(widgetIsGraph({ viewMode: 'timeline', splitField: 'protocols' }), true);
+    assert.equal(widgetIsGraph({ viewMode: 'timeline' }), false);
+    // SPI Graph's Timeline at 20 values is saved as the most a split timeline draws
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', size: '20' }, { fieldsArr }).splitLength, 10);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'default' }, { fieldsArr }), null);
+  });
+
+  test('a horizontal bar opens SPI Graph\'s bar horizontal', () => {
+    const link = widgetFullPageLink({ query: {} }, store, { ...graph({ viewMode: 'bar', field: 'ip.src', orientation: 'horizontal' }), id: 'w3' });
+    assert.equal(link.query.barOrientation, 'horizontal');
+    assert.equal(widgetFullPageLink({ query: {} }, store, { ...graph({ viewMode: 'bar', field: 'ip.src' }), id: 'w4' }).query.barOrientation, undefined);
+  });
+
   test('session-wide widgets open Sessions, the rest have no page', () => {
     assert.equal(widgetFullPageLink(route, store, { viewMode: 'timeline' }).path, '/sessions');
     assert.equal(widgetFullPageLink(route, store, { viewMode: 'stats' }), null);
@@ -359,5 +423,135 @@ describe('viewModeLabelKey', () => {
     assert.equal(viewModeLabelKey('bar'), 'sessions.summary.barChart');
     assert.equal(viewModeLabelKey('constructor'), undefined);
     assert.equal(viewModeLabelKey('__proto__'), undefined);
+  });
+});
+
+describe('tree graphs', () => {
+  test('a tree widget opens the SPI Graph tree with its root and depth', () => {
+    const q = spigraphQueryFromGraph({ viewMode: 'tree', fields: ['ip.src', 'ip.dst'], length: 500, treeRoot: '10.0.0.1', treeDepth: 4 });
+    assert.equal(q.spiGraphType, 'tree');
+    assert.equal(q.srcField, 'source.ip');
+    assert.equal(q.dstField, 'destination.ip');
+    assert.equal(q.connectionsLength, 500);
+    assert.equal(q.treeRoot, '10.0.0.1');
+    assert.equal(q.treeDepth, 4);
+  });
+  test('the SPI Graph tree page is a tree graph', () => {
+    const g = graphFromSpigraphQuery({ spiGraphType: 'tree', srcField: 'source.ip', dstField: 'destination.ip', connectionsLength: 100, treeRoot: '10.0.0.1', treeDepth: 2 }, { fieldsArr });
+    assert.equal(g.viewMode, 'tree');
+    assert.deepEqual(g.fields, ['ip.src', 'ip.dst']);
+    assert.equal(g.treeRoot, '10.0.0.1');
+    assert.equal(g.treeDepth, 2);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'tree', srcField: 'source.ip', dstField: 'destination.ip' }, { fieldsArr }).treeDepth, 3);
+  });
+});
+
+describe('normalizeWidget orderBy', () => {
+  test('defaults to value and only accepts key', () => {
+    assert.equal(widgetsFromConfig({ widgets: [{ viewMode: 'bar', field: 'port.dst' }] })[0].orderBy, 'value');
+    assert.equal(widgetsFromConfig({ widgets: [{ viewMode: 'bar', field: 'port.dst', orderBy: 'key' }] })[0].orderBy, 'key');
+    assert.equal(widgetsFromConfig({ widgets: [{ viewMode: 'bar', field: 'port.dst', orderBy: 'nope' }] })[0].orderBy, 'value');
+  });
+  test('a saved graph keeps its orderBy', () => {
+    assert.equal(graphFromWidget({ viewMode: 'bar', field: 'port.dst', orderBy: 'key' }).orderBy, 'key');
+    assert.ok(GRAPH_KEYS.includes('orderBy'));
+  });
+});
+
+describe('migrateDashboard', () => {
+  test('a current config is returned as is', () => {
+    const cfg = { version: DASHBOARD_VERSION, widgets: [{ id: 'a', viewMode: 'stats' }] };
+    assert.equal(migrateDashboard(cfg), cfg);
+  });
+  test('a config without a version is version 1 and comes out current', () => {
+    const out = migrateDashboard({ widgets: [{ id: 'a', viewMode: 'stats' }] });
+    assert.equal(out.version, DASHBOARD_VERSION);
+    assert.equal(out.widgets.length, 1);
+  });
+  test('a newer config is left alone so a mixed-version cluster still loads it', () => {
+    const cfg = { version: DASHBOARD_VERSION + 5, widgets: [] };
+    assert.equal(migrateDashboard(cfg), cfg);
+  });
+  test('garbage in gives an empty current config', () => {
+    assert.deepEqual(migrateDashboard(null), { version: DASHBOARD_VERSION });
+    assert.deepEqual(migrateDashboard('x'), { version: DASHBOARD_VERSION });
+    assert.equal(migrateDashboard({ version: 'old' }).version, DASHBOARD_VERSION);
+  });
+});
+
+describe('dashboard filter', () => {
+  const views = [{ id: 'v1', name: 'web', expression: 'port.dst == 80' }];
+
+  test('pageExpression ANDs the global search and the dashboard filter', () => {
+    assert.equal(pageExpression({ query: {} }, { state: {} }), undefined);
+    assert.equal(pageExpression({ query: { expression: 'ip == 1.1.1.1' } }, { state: { dashboardExpression: '' } }), 'ip == 1.1.1.1');
+    assert.equal(pageExpression({ query: {} }, { state: { dashboardExpression: 'protocols == dns' } }), 'protocols == dns');
+    assert.equal(pageExpression({ query: { expression: 'ip == 1.1.1.1' } }, { state: { dashboardExpression: 'protocols == dns' } }), '(ip == 1.1.1.1) && (protocols == dns)');
+  });
+
+  test('combinedExpression puts the widget filter on top of the page search', () => {
+    const store = { state: { dashboardExpression: 'protocols == dns', views } };
+    assert.equal(combinedExpression({ query: {} }, store, { expression: 'dns.status == NXDOMAIN' }), '(protocols == dns) && (dns.status == NXDOMAIN)');
+    assert.equal(combinedExpression({ query: { expression: 'node == a' } }, store, { view: 'v1' }), '((node == a) && (protocols == dns)) && (port.dst == 80)');
+    assert.equal(combinedExpression({ query: {} }, store, {}), 'protocols == dns');
+    assert.equal(combinedExpression({ query: {} }, { state: { views } }, {}), undefined);
+  });
+
+  test('the full page link carries the dashboard filter', () => {
+    const store = { state: { timeRange: '1', dashboardExpression: 'protocols == dns', views: [] } };
+    assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline' }).query.expression, 'protocols == dns');
+  });
+});
+
+describe('connection tree', () => {
+  // a -> b (3), a -> c (7), b -> d (1), b -> a (a cycle), e -> e (a self link)
+  const nodes = [
+    { id: 'a', type: 1, sessions: 10 }, { id: 'b', type: 3, sessions: 5 }, { id: 'c', type: 2, sessions: 1 },
+    { id: 'd', type: 2, sessions: 1 }, { id: 'e', type: 1, sessions: 20 }
+  ];
+  const links = [
+    { source: 0, target: 1, value: 3 }, { source: 0, target: 2, value: 7 }, { source: 1, target: 3, value: 1 },
+    { source: 1, target: 0, value: 1 }, { source: 4, target: 4, value: 9 }
+  ];
+  const count = (t) => 1 + t.children.reduce((sum, c) => sum + count(c), 0);
+
+  test('findTreeRoot: the asked for id when present, else the busiest source', () => {
+    assert.equal(findTreeRoot(nodes, 'b').id, 'b');
+    assert.equal(findTreeRoot(nodes, 'nope'), null);
+    assert.equal(findTreeRoot(nodes, '').id, 'e');
+    assert.equal(findTreeRoot([], ''), null);
+    assert.equal(findTreeRoot([{ id: 'x', type: 2, sessions: 9 }], ''), null);
+  });
+
+  test('buildConnectionTree: heaviest first, each host once, no cycles, depth honored', () => {
+    const t = buildConnectionTree({ nodes, links }, nodes[0], 3);
+    assert.equal(t.id, 'a');
+    assert.equal(t.link, undefined);
+    assert.deepEqual(t.children.map(c => c.id), ['c', 'b']);
+    assert.deepEqual(t.children[1].children.map(c => c.id), ['d']);
+    assert.equal(t.children[1].link.value, 3);
+    assert.equal(t.children[1].link.source.id, 'a');
+    assert.equal(t.children[1].link.target.id, 'b');
+    assert.equal(buildConnectionTree({ nodes, links }, nodes[0], 1).children[1].children.length, 0);
+    assert.equal(count(buildConnectionTree({ nodes, links }, nodes[4], 3)), 1);
+  });
+
+  test('a node fans out to MAX_TREE_CHILDREN and the tree stops at MAX_TREE_NODES', () => {
+    const wide = { nodes: [{ id: 'r', type: 1, sessions: 1 }], links: [] };
+    for (let i = 0; i < 40; i++) { wide.nodes.push({ id: `n${i}`, type: 2, sessions: 1 }); wide.links.push({ source: 0, target: i + 1, value: i }); }
+    const t = buildConnectionTree(wide, wide.nodes[0], 1);
+    assert.equal(t.children.length, MAX_TREE_CHILDREN);
+    assert.equal(t.children[0].id, 'n39');
+
+    const deep = { nodes: [{ id: 'r', type: 1, sessions: 1 }], links: [] };
+    for (let i = 0; i < MAX_TREE_CHILDREN; i++) {
+      deep.nodes.push({ id: `c${i}`, type: 3, sessions: 1 }); const ci = deep.nodes.length - 1;
+      deep.links.push({ source: 0, target: ci, value: 1 });
+      for (let j = 0; j < MAX_TREE_CHILDREN; j++) {
+        deep.nodes.push({ id: `c${i}_${j}`, type: 2, sessions: 1 });
+        deep.links.push({ source: ci, target: deep.nodes.length - 1, value: 1 });
+      }
+    }
+    assert.equal(count(buildConnectionTree(deep, deep.nodes[0], 2)), MAX_TREE_NODES);
   });
 });

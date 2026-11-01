@@ -1,0 +1,93 @@
+{
+  "name": "Overview",
+  "description": "The starter dashboard: capture statistics, top talkers, protocols and the session timeline",
+  "data": {
+    "version": 1,
+    "colorScheme": "rainbow",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "stats",
+        "width": 2,
+        "height": 1
+      },
+      {
+        "id": "w2",
+        "viewMode": "time",
+        "width": 2,
+        "height": 1
+      },
+      {
+        "id": "w3",
+        "viewMode": "timeline",
+        "width": 4,
+        "height": 2,
+        "title": "Sessions over time"
+      },
+      {
+        "id": "w4",
+        "field": "country.src",
+        "viewMode": "map",
+        "width": 2,
+        "height": 3,
+        "title": "Source countries"
+      },
+      {
+        "id": "w5",
+        "field": "ip",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Top IPs"
+      },
+      {
+        "id": "w6",
+        "field": "protocols",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 12,
+        "title": "Protocols"
+      },
+      {
+        "id": "w7",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes",
+          "packets"
+        ],
+        "sortMetric": "bytes",
+        "metricType": "bytes",
+        "title": "Destinations by bytes"
+      },
+      {
+        "id": "w8",
+        "field": "ip.dst",
+        "viewMode": "heatmap",
+        "width": 2,
+        "height": 3,
+        "metricType": "packets"
+      },
+      {
+        "id": "w9",
+        "field": "ip.src",
+        "viewMode": "treemap",
+        "width": 2,
+        "height": 3,
+        "metricType": "bytes"
+      }
+    ]
+  }
+}

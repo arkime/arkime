@@ -116,15 +116,28 @@ export function widgetLocalExpression (widget, views) {
 }
 
 /**
- * Combine the global search expression with a widget's local filter (View +
- * expression).
+ * The page's search: the global search expression AND the dashboard's own
+ * filter (store.state.dashboardExpression, the config's data.expression), so
+ * every widget on the page, the capture stats included, sees both.
+ * @returns {string|undefined} the combined expression (or undefined if neither)
+ */
+export function pageExpression (route, store) {
+  const globalExp = route.query.expression;
+  const dashboardExp = store.state.dashboardExpression;
+  if (globalExp && dashboardExp) { return `(${globalExp}) && (${dashboardExp})`; }
+  return dashboardExp || globalExp || undefined;
+}
+
+/**
+ * Combine the page's search (global + dashboard filter) with a widget's local
+ * filter (View + expression).
  * @returns {string|undefined} the combined expression (or undefined if neither)
  */
 export function combinedExpression (route, store, widget) {
-  const globalExp = route.query.expression;
+  const pageExp = pageExpression(route, store);
   const localExp = widgetLocalExpression(widget, store.state.views);
-  if (globalExp && localExp) { return `(${globalExp}) && (${localExp})`; }
-  return localExp || globalExp || undefined;
+  if (pageExp && localExp) { return `(${pageExp}) && (${localExp})`; }
+  return localExp || pageExp || undefined;
 }
 
 /**
@@ -140,12 +153,15 @@ export function widgetFullPageLink (route, store, widget) {
   // SPI Graph aggregates a real column, so the "All X fields" groups (All IP
   // fields and friends, which the summary endpoint handles with a script)
   // have no full page; the Sessions page targets don't aggregate at all
-  if (!['timeline', 'metric', 'sessions'].includes(mode)) {
-    const usable = (fieldExp) => {
-      if (fieldExp === 'ip.dst:port' || fieldExp === 'destination.ip:port') { return true; }
-      const field = FieldService.getField(fieldExp, true);
-      return !!field && !field.noFacet && !field.regex;
-    };
+  const usable = (fieldExp) => {
+    if (fieldExp === 'ip.dst:port' || fieldExp === 'destination.ip:port') { return true; }
+    const field = FieldService.getField(fieldExp, true);
+    return !!field && !field.noFacet && !field.regex;
+  };
+  // a split timeline is SPI Graph's Timeline: one histogram per top value of
+  // the split field (unsplit, it is the Sessions page's own timeline)
+  const splitTimeline = mode === 'timeline' && !!widget.splitField && usable(widget.splitField);
+  if (!['timeline', 'metric', 'gauge', 'sessions'].includes(mode)) {
     // a bar's or pie's split field becomes another SPI Graph field
     const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
@@ -169,7 +185,7 @@ export function widgetFullPageLink (route, store, widget) {
     query.date = store.state.timeRange;
   }
 
-  if (mode === 'timeline' || mode === 'metric' || mode === 'sessions') { return { path: '/sessions', query }; }
+  if ((mode === 'timeline' && !splitTimeline) || mode === 'metric' || mode === 'gauge' || mode === 'sessions') { return { path: '/sessions', query }; }
   // the same SPI Graph url a saved graph opens with; the widget's own view is
   // already in the combined expression, so the page keeps the global one
   const graphQuery = spigraphQueryFromGraph(widget);
@@ -230,6 +246,22 @@ export async function fetchGraph (route, store, widget, { signal } = {}) {
   const extra = { exp: 'node', size: 1 };
   if (widget.metricType && widget.metricType !== 'sessions') {
     extra.metric = widget.metricType;
+  }
+  const data = buildWidgetParams(route, store, widget, extra);
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+}
+
+/**
+ * Fetch the per-value time series of a timeline's split field (the split
+ * Timeline widget): the split field's top splitLength values, each with its
+ * own graph of the widget's metric, plus the top-level graph for the time
+ * bounds. Returns { items, graph, ... }.
+ */
+export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
+  const extra = { exp: widget.splitField, size: widget.splitLength || 5 };
+  if (widget.metricType && widget.metricType !== 'sessions') {
+    extra.metric = widget.metricType;
+    extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
@@ -326,10 +358,12 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
       field: exp,
       length: widget.length,
       order: widget.order,
+      ...(widget.orderBy === 'key' ? { orderBy: 'key' } : {}),
       metricType: widget.metricType,
       metrics: widget.metrics,
       metricAgg: widget.metricAgg,
       sortMetric: widget.sortMetric,
+      ...(widget.bucketInterval > 0 ? { bucketInterval: widget.bucketInterval } : {}),
       ...(localExp ? { expression: localExp } : {})
     }))
   };
@@ -346,10 +380,11 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
   });
 }
 
-/** POST a widgets body to /api/sessions/summary with the global search, time
+/** POST a widgets body to /api/sessions/summary with the page's search, time
  *  window and route params folded in. Returns the chunk array. */
 async function postSummary (route, store, body, signal) {
-  if (route.query.expression) { body.expression = route.query.expression; } // global search
+  const pageExp = pageExpression(route, store); // global search + dashboard filter
+  if (pageExp) { body.expression = pageExp; }
   for (const p of ['view', 'bounding', 'interval', 'cluster']) {
     if (route.query[p]) { body[p] = route.query[p]; }
   }
@@ -380,8 +415,10 @@ export async function fetchMetric (route, store, widget, { signal } = {}) {
       total: !field,
       length: widget.length,
       order: widget.order,
+      ...(widget.orderBy === 'key' ? { orderBy: 'key' } : {}),
       metricType: widget.metricType,
       metricAgg: widget.metricAgg,
+      ...(widget.bucketInterval > 0 ? { bucketInterval: widget.bucketInterval } : {}),
       ...(localExp ? { expression: localExp } : {})
     }]
   };

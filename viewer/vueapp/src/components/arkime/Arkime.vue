@@ -84,10 +84,40 @@ SPDX-License-Identifier: Apache-2.0
                 <SummaryConfigDropdown
                   :current-config="currentDashboardConfig"
                   @load="loadSummaryConfigFromShareable"
+                  @saved="onDashboardSaved"
+                  @changed="dashboardsVersion++"
                   @reset="resetSummaryToDefaults"
                   @message="displayMessage" />
               </v-defaults-provider>
             </v-btn-group>
+
+            <!-- dashboard settings (its filter, ...) -->
+            <v-btn
+              size="large"
+              variant="flat"
+              color="secondary"
+              :aria-label="$t('sessions.summary.dashboardSettings')"
+              @click="settingsShow = true">
+              <v-icon icon="mdi-cog" />
+              <v-tooltip
+                activator="parent"
+                :open-delay="500">
+                {{ $t('sessions.summary.dashboardSettings') }}
+              </v-tooltip>
+            </v-btn>
+
+            <!-- the active dashboard filter, so it's clear what every widget is
+                 filtered by; opens the settings to change it -->
+            <v-chip
+              v-if="dashboardExpression"
+              size="small"
+              variant="tonal"
+              prepend-icon="mdi-filter-outline"
+              class="dashboard-filter-chip"
+              :title="`${$t('sessions.summary.dashboardFilter')}: ${dashboardExpression}`"
+              @click="settingsShow = true">
+              {{ dashboardExpression }}
+            </v-chip>
 
             <!-- cancel loading button -->
             <v-btn
@@ -123,10 +153,17 @@ SPDX-License-Identifier: Apache-2.0
         ref="summaryView"
         :widgets="widgets"
         :color-scheme="colorScheme"
+        :dashboards-version="dashboardsVersion"
         @widget-config-changed="updateWidgetConfigs"
         @streaming-state="summaryStreaming = $event"
         @canceled-state="summaryCanceled = $event" />
     </div>
+
+    <DashboardSettingsModal
+      :show="settingsShow"
+      :expression="dashboardExpression"
+      @close="settingsShow = false"
+      @apply="applyDashboardSettings" />
 
     <!-- stale data warning after cancellation -->
     <v-alert
@@ -161,10 +198,13 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
+import DashboardSettingsModal from '../summary/DashboardSettingsModal.vue';
 import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
-import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig } from '../summary/dashboardConfig';
+import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig, migrateDashboard, DASHBOARD_VERSION } from '../summary/dashboardConfig';
+import { systemDashboard, isSystemId } from '../summary/systemDashboards';
+import { ArkimeError } from '@common/fetchWrapper.js';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -175,14 +215,26 @@ export default {
     ArkimeCollapsible,
     PageLayout,
     ArkimeSummaryView,
-    SummaryConfigDropdown
+    SummaryConfigDropdown,
+    DashboardSettingsModal
   },
   data: function () {
     return {
       // Dashboard configuration
       widgets: [],
       colorScheme: 'rainbow',
+      // the dashboard's own filter (data.expression), ANDed with the search
+      // for every widget; edited in the settings dialog
+      dashboardExpression: '',
+      settingsShow: false,
+      // bumped when a dashboard is saved, renamed or deleted, so the lists
+      // on the page (the navigation widget) reload
+      dashboardsVersion: 0,
+      dashboardLoadSeq: 0, // the latest loadDashboardById call; earlier ones are dropped
       palettes: CHART_PALETTES,
+      // the saved or built-in dashboard the page shows (the ?dashboard url
+      // param), '' for the user's own unsaved state
+      loadedDashboardId: '',
       // UI state
       error: '',
       configLoaded: false,
@@ -202,7 +254,9 @@ export default {
     // are omitted from fields[]. See SHAREABLES.md.
     currentDashboardConfig: function () {
       return {
+        version: DASHBOARD_VERSION,
         colorScheme: this.colorScheme,
+        ...(this.dashboardExpression ? { expression: this.dashboardExpression } : {}),
         widgets: this.widgets,
         ...toV6Shape(this.widgets)
       };
@@ -212,6 +266,28 @@ export default {
     // Handle fetch viz data button click (re-fetch visualizations)
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.reloadSummaryView(); }
+    },
+    // a dashboard link (the navigation widget, a markdown note, a pasted url)
+    // changes the ?dashboard param while the page stays mounted
+    '$route.query.dashboard': async function (id) {
+      if (!id) {
+        // the param was dropped (browser back): what the page shows is now the
+        // user's own unsaved copy, so the same dashboard can be opened again
+        this.loadedDashboardId = '';
+        return;
+      }
+      if (id === this.loadedDashboardId) { return; }
+      const loaded = await this.loadDashboardById(id);
+      // the url moved on while this one loaded: that load applies, not this
+      if (id !== this.$route.query.dashboard) { return; }
+      if (loaded) {
+        this.reloadSummaryView();
+        this.saveDashboardConfig();
+      } else if (loaded === false) {
+        // an unknown id doesn't stay in the url (a failed request keeps it,
+        // the error is shown and a reload can try again)
+        this.setDashboardParam('');
+      }
     }
   },
   created: function () {
@@ -228,6 +304,19 @@ export default {
     },
     setColorScheme: function (scheme) {
       this.colorScheme = scheme;
+      this.saveDashboardConfig();
+    },
+    // the dashboard filter lives in the store too, where the widget fetch
+    // helpers AND it with the global search
+    setDashboardExpression: function (value) {
+      this.dashboardExpression = typeof value === 'string' ? value.trim() : '';
+      this.$store.commit('setDashboardExpression', this.dashboardExpression);
+    },
+    // the settings dialog's Apply: a changed filter reloads every widget
+    applyDashboardSettings: function ({ expression }) {
+      if ((expression || '') === this.dashboardExpression) { return; }
+      this.setDashboardExpression(expression);
+      this.reloadSummaryView();
       this.saveDashboardConfig();
     },
     addDashboardWidget: function () {
@@ -247,8 +336,52 @@ export default {
     loadSummaryConfigFromShareable: function (shareable) {
       if (!shareable?.data) { return; }
       this.applyConfig(shareable.data);
+      this.setDashboardParam(shareable.id || '');
       this.reloadSummaryView();
       this.saveDashboardConfig();
+    },
+    // the shown dashboard was saved (as new or back into its saved copy):
+    // bind the page to it so later edits can be saved to it by name
+    onDashboardSaved: function (shareable) {
+      if (shareable?.id) { this.setDashboardParam(shareable.id); }
+    },
+    /**
+     * Loads a saved (shareable) or system dashboard by id into local state.
+     * @returns {boolean|null} true when it was applied; false when the viewer
+     *   answered that there is no such dashboard (404) or none this user may
+     *   see (403); null when the request failed some other way (the network,
+     *   a 500), so the id may still be good
+     */
+    loadDashboardById: async function (id) {
+      if (typeof id !== 'string' || !id) { return false; }
+      const seq = ++this.dashboardLoadSeq;
+      try {
+        const data = isSystemId(id)
+          ? (await systemDashboard(id))?.data
+          : (await DashboardService.get(id))?.shareable?.data;
+        // a later load (the user switched again) wins; this one is dropped
+        if (seq !== this.dashboardLoadSeq) { return null; }
+        if (!data) { return false; }
+        this.applyConfig(data);
+        this.loadedDashboardId = id;
+        this.error = ''; // an earlier load's error doesn't outlive this one
+        return true;
+      } catch (err) {
+        if (seq !== this.dashboardLoadSeq) { return null; }
+        this.error = err.text || String(err);
+        return (err instanceof ArkimeError && (err.status === 404 || err.status === 403)) ? false : null;
+      }
+    },
+    /**
+     * Records the shown dashboard in the url (?dashboard=<id>) so the page can
+     * be linked to and reloaded; '' drops the param.
+     */
+    setDashboardParam: function (id) {
+      this.loadedDashboardId = id;
+      if ((this.$route.query.dashboard || '') === id) { return; }
+      const query = { ...this.$route.query };
+      if (id) { query.dashboard = id; } else { delete query.dashboard; }
+      this.$router.replace({ query });
     },
     displayMessage: function ({ msg, type }) {
       if (type === 'danger') {
@@ -260,11 +393,22 @@ export default {
      * shape ({ fields, resultsLimit, order }) and the new shape
      * ({ colorScheme, widgets }).
      */
-    applyConfig: function (cfg) {
+    applyConfig: function (rawCfg) {
+      const cfg = migrateDashboard(rawCfg);
       this.widgets = widgetsFromConfig(cfg);
       this.colorScheme = normalizePalette(cfg?.colorScheme);
+      this.setDashboardExpression(cfg?.expression);
     },
     loadDashboardConfig: async function () {
+      // a dashboard named in the url comes first; an unknown one is dropped
+      // (a failed request keeps it, so a reload can try again)
+      const loaded = await this.loadDashboardById(this.$route.query.dashboard);
+      if (loaded) {
+        this.configLoaded = true;
+        return;
+      }
+      if (loaded === false && this.$route.query.dashboard) { this.setDashboardParam(''); }
+
       // Prefer the user's default dashboard if one is set
       const defaultId = this.user?.settings?.defaultDashboardId;
       if (defaultId) {
@@ -293,6 +437,7 @@ export default {
       }
 
       this.widgets = this.defaultWidgets();
+      this.setDashboardExpression('');
       this.configLoaded = true;
     },
     saveDashboardConfig: function () {
@@ -306,6 +451,8 @@ export default {
     resetSummaryToDefaults: function () {
       this.widgets = this.defaultWidgets();
       this.colorScheme = 'rainbow';
+      this.setDashboardExpression('');
+      this.setDashboardParam('');
       this.reloadSummaryView();
       this.saveDashboardConfig();
     },
@@ -325,6 +472,15 @@ export default {
 <style scoped>
 .arkime-content {
   margin-right: 0.5rem;
+}
+
+.dashboard-filter-chip {
+  max-width: 360px;
+  cursor: pointer;
+}
+.dashboard-filter-chip :deep(.v-chip__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* The sibling toolbar buttons are density-compact + size-large = 32px tall.

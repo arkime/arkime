@@ -144,6 +144,32 @@ describe('terms buckets', () => {
   });
 });
 
+describe('histogram buckets', () => {
+  const bucket = (key, docCount, bytes) => ({ key, doc_count: docCount, bytes: { value: bytes } });
+  const histogram = (buckets) => ({ buckets });
+  const cluster1 = { ports: histogram([bucket(0, 5, 50), bucket(1024, 2, 900), bucket(3072, 1, 10)]) };
+  const cluster2 = { ports: histogram([bucket(0, 1, 5), bucket(2048, 4, 40), bucket(3072, 2, 20)]) };
+
+  test('merge by key and come back in key order with no order asked for', () => {
+    const merged = merge({ ports: { histogram: { field: 'destination.port', interval: 1024 }, aggs: { bytes: { sum: { field: 'network.bytes' } } } } }, cluster1, cluster2);
+    assert.deepEqual(merged.ports, histogram([bucket(0, 6, 55), bucket(1024, 2, 900), bucket(2048, 4, 40), bucket(3072, 3, 30)]));
+  });
+
+  test('rank by the order asked for, as a single cluster does', () => {
+    const query = (order) => ({ ports: { histogram: { field: 'destination.port', interval: 1024, min_doc_count: 1, order }, aggs: { bytes: { sum: { field: 'network.bytes' } } } } });
+    assert.deepEqual(merge(query({ _count: 'desc' }), cluster1, cluster2).ports.buckets.map(b => b.key), [0, 2048, 3072, 1024], 'by sessions');
+    assert.deepEqual(merge(query({ _count: 'asc' }), cluster1, cluster2).ports.buckets.map(b => b.key), [1024, 3072, 2048, 0], 'fewest sessions first');
+    assert.deepEqual(merge(query({ bytes: 'desc' }), cluster1, cluster2).ports.buckets.map(b => b.key), [1024, 0, 2048, 3072], 'by a metric sub-aggregation');
+    assert.deepEqual(merge(query({ _key: 'desc' }), cluster1, cluster2).ports.buckets.map(b => b.key), [3072, 2048, 1024, 0], 'by key descending');
+  });
+
+  test('carry no sum_other_doc_count, as a histogram response has none', () => {
+    const merged = merge({ ports: { histogram: { field: 'destination.port', interval: 1024, order: { _count: 'desc' } } } }, cluster1, cluster2);
+    assert.equal(merged.ports.sum_other_doc_count, undefined);
+    assert.equal(merged.ports.doc_count_error_upper_bound, undefined);
+  });
+});
+
 describe('nested terms', () => {
   // a summary bar of source.ip split by its top 2 protocols
   const aggregations = {

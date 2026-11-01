@@ -1,0 +1,142 @@
+{
+  "name": "OT",
+  "description": "Operational technology (ICS) sessions: Modbus, DNP3, BACnet, EtherNet/IP, CIP, S7comm, OPC UA, Synchrophasor, C12.22, Omron FINS and PTP",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "protocols == [modbus, dnp3, bacnet, enip, cip, s7comm, s7comm-plus, opcua, synchrophasor, c1222, omron-fins, ptp]",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 10,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "ICS sessions by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "ICS sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "ICS bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "protocols",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 12,
+        "other": true,
+        "title": "ICS protocols"
+      },
+      {
+        "id": "w5",
+        "field": "country.src",
+        "viewMode": "map",
+        "width": 2,
+        "height": 2,
+        "title": "Source countries"
+      },
+      {
+        "id": "w6",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "ICS clients"
+      },
+      {
+        "id": "w7",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "ICS servers"
+      },
+      {
+        "id": "w8",
+        "field": "ptp.msgType",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "PTP message types",
+        "expression": "protocols == ptp"
+      },
+      {
+        "id": "w9",
+        "field": "ptp.clockId",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "PTP clocks",
+        "expression": "protocols == ptp"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "ICS tree: who reached what (click a host to re-root)"
+      },
+      {
+        "id": "w11",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "protocols",
+          "bytes",
+          "packets"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

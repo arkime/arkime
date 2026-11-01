@@ -184,7 +184,8 @@ const render = async () => {
     // strip outside the diagram to put them in — size it to the widest value
     // (~5.5px per character at 10px) so long ones aren't cut off at the edge,
     // but never let it eat more than a quarter of the widget
-    const widest = Math.max(0, ...nodes.map(n => (n.name || '').length));
+    // a name can be a number (a port), so stringify before measuring
+    const widest = Math.max(0, ...nodes.map(n => String(n.name ?? '').length));
     const margin = { top: 2, right: Math.min(w * 0.25, Math.max(40, widest * 5.5)), bottom: 2, left: 4 };
     const layout = d3sankeyLib.sankey()
       .nodeId(d => d.id)
