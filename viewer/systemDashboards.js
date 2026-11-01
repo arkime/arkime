@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * A system dashboard is a *.dashboard.json file in one of the dashboardsDir
- * directories (default /opt/arkime/etc/dashboards;/opt/arkime/plugins). The
- * install puts Arkime's own there and replaces them on upgrade; an admin adds
- * more by dropping a file in, or a plugin ships its own. The file is the
+ * directories (default /opt/arkime/etc/dashboards;/opt/arkime/share/dashboards;
+ * /opt/arkime/plugins). The install puts Arkime's own in share and replaces
+ * them on upgrade; an admin adds or overrides one by dropping a file in
+ * etc/dashboards, or a plugin ships its own. The file is the
  * dashboards menu's export format, { name, description, data }, where data is
  * a summaryConfig shareable's data (version, folder, colorScheme, widgets).
  *
@@ -56,7 +57,7 @@ class SystemDashboards {
   /** The directories to scan, from dashboardsDir. */
   static dirs () {
     const prefix = version.config_prefix;
-    return Config.getArray('dashboardsDir', `${prefix}/etc/dashboards;${prefix}/plugins`);
+    return Config.getArray('dashboardsDir', `${prefix}/etc/dashboards;${prefix}/share/dashboards;${prefix}/plugins`);
   }
 
   // --------------------------------------------------------------------------

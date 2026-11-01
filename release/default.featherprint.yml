@@ -3,8 +3,8 @@
 #
 # Featherprint classifier rules, loaded by the viewer at startup from every
 # *.featherprint.yml file in the featherprintRulesFiles directories (default
-# /opt/arkime/etc). To add or change rules put them in your own file next to
-# this one, eg /opt/arkime/etc/local.featherprint.yml: classify rules are first
+# /opt/arkime/etc;/opt/arkime/share). To add or change rules put them in your
+# own file in etc, eg /opt/arkime/etc/local.featherprint.yml: classify rules are first
 # match wins and every other file is consulted before default.*, so a rule in
 # your file for a device wins over the ones here, and a macSourceRank entry in
 # your file replaces the one here.

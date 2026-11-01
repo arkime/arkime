@@ -114,8 +114,8 @@ class PolicyTree {
 // Rule data (MAC source ranking, device classification heuristics) comes from
 // *.featherprint.yml / *.featherprint.yaml files, loaded once at startup. The
 // featherprintRulesFiles setting lists files and/or directories (default
-// /opt/arkime/etc). Arkime ships default.featherprint.yml there; add your own
-// file next to it to extend or override it: classify rules are first match
+// /opt/arkime/etc;/opt/arkime/share). Arkime ships default.featherprint.yml in
+// share; add your own file in etc to extend or override it: classify rules are first match
 // wins, so every other file is consulted before default.*, and a macSourceRank
 // entry in another file beats the default one.
 // ============================================================================
@@ -172,7 +172,7 @@ function expandRulesFiles (entries) {
 
 function findRulesFiles () {
   const explicit = Config.getArray('featherprintRulesFiles');
-  let files = expandRulesFiles(explicit ?? [`${version.config_prefix}/etc`]);
+  let files = expandRulesFiles(explicit ?? [`${version.config_prefix}/etc`, `${version.config_prefix}/share`]);
   // Not installed (dev/tests): use the copy in the source tree
   if (files.length === 0 && explicit === undefined) {
     files = expandRulesFiles([path.join(__dirname, '..', 'release')]);
