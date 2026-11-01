@@ -89,6 +89,7 @@ LOCAL ArkimeRulesInfo_t    loading;
 LOCAL char               **rulesFiles;
 
 LOCAL pcap_t              *deadPcap;
+LOCAL ARKIME_LOCK_DEFINE(recompile);
 extern ArkimePcapFileHdr_t pcapFileHeader;
 
 #define ARKIME_RULES_STR_MATCH_HEAD      1
@@ -822,6 +823,11 @@ LOCAL void arkime_rules_load_complete()
 
     memcpy(&current, &loading, sizeof(loading));
     memset(&loading, 0, sizeof(loading));
+
+    // Readers that set the link type in init (tpacketv3, bpf, netmap, tzsp) run before the
+    // rules load, and a live reload builds new rules, so compile the BPFs now if the dlt is known
+    if (deadPcap)
+        arkime_rules_recompile();
 }
 /******************************************************************************/
 LOCAL void arkime_rules_bpfp_free(gpointer data)
@@ -940,6 +946,8 @@ LOCAL void arkime_rules_load(char **names)
  * arkime_free_later release the old one after readers have quiesced. */
 void arkime_rules_recompile()
 {
+    // Offline readers call this from the scheme thread while a rules reload calls it from main
+    ARKIME_LOCK(recompile);
     if (deadPcap)
         pcap_close(deadPcap);
 
@@ -965,6 +973,7 @@ void arkime_rules_recompile()
                 arkime_free_later(oldbpfp, arkime_rules_bpfp_free);
         }
     }
+    ARKIME_UNLOCK(recompile);
 }
 /******************************************************************************/
 LOCAL gboolean arkime_rules_check_ip(const ArkimeRule_t *const rule, const int p, const struct in6_addr *ip, BSB *logStr)
